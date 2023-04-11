@@ -18,8 +18,6 @@ from typing import Dict, List
 
 from knowledge_base import Knowledge, KnowledgeGroup
 
-API_INPUT_MARCO = ['ACL_MEMCPY_HOST_TO_DEVICE', 'ACL_MEMCPY_DEVICE_TO_HOST']
-
 
 def check_filetype(filename: str):
     return filename.endswith('.cpp') or \
@@ -64,7 +62,7 @@ def analysis_310_to_310B(path: str, cfg: Dict[str, str] = {}):
     for root, dirs, files in os.walk(path):
         for filename in files:
             if not check_filetype(filename):
-                return
+                continue
             line_num = 0
             filepath = os.path.join(root, filename)
             with open(filepath, encoding='UTF-8') as f:

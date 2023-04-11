@@ -28,7 +28,7 @@ def print_result(result: Dict[Knowledge, List[str]]):
     print()
     for knowledge, match_infos in result.items():
         print(f'{knowledge._suggestion}')
-        print('查询和匹配到的接口和路径如下：')
+        print('查询和匹配到的接口、文件路径和行号如下：')
         for match_info in match_infos:
             print(f'  {match_info}')
         print()
