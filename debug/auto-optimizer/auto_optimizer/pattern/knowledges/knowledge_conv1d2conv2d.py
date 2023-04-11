@@ -48,7 +48,8 @@ class Conv1dMatch(MatchBase):
 # element_wise允许出现0次，或者多次
 pattern = Pattern() \
     .add_node('Conv', ['Conv'], [Conv1dMatch()]) \
-    .add_node('element_wise', ['Mul', 'Add', 'Sub', 'Div', 'Abs', 'Tanh', 'BatchNormalization', 'LeakyRelu', 'Relu']) \
+    .add_node('element_wise',
+        ['Mul', 'Add', 'Sub', 'Div', 'Abs', 'Tanh', 'BatchNormalization', 'LeakyRelu', 'Relu', 'Concat', 'Split']) \
     .add_edge('Conv', 'element_wise') \
     .set_node_loop('element_wise', MATCH_PATTERN.MATCH_ZERO_OR_MORE) \
     .set_loop(MATCH_PATTERN.MATCH_ONCE_OR_MORE)
