@@ -19,10 +19,12 @@ from typing import List, Dict, Union, Sequence, Optional
 
 import onnx
 import numpy as np
+from collections import deque
 from onnx import helper, GraphProto, ModelProto, OperatorSetIdProto, version_converter
 
-from .. import BaseGraph
+from .. import BaseGraph, Initializer, PlaceHolder
 from .node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
+
 
 
 class OnnxGraph(BaseGraph):
@@ -192,7 +194,7 @@ class OnnxGraph(BaseGraph):
             pass
         if not enable_model_check:
             onnx.checker.check_model = check_model
-
+            
         with tempfile.TemporaryDirectory() as tmpdirname:
             self.save(os.path.join(tmpdirname, 'model.onnx'))
             print('Begin to extract the model.')
@@ -208,6 +210,92 @@ class OnnxGraph(BaseGraph):
             print('Extract the model completed, model saved in {}.'.format(
                     new_model_save_path))
         return OnnxGraph.parse(new_model_save_path)
+    
+    def custom_extract(
+        self,
+        new_model_save_path: str,
+        input_name_list: List[str],
+        output_name_list: List[str]
+    ) -> 'OnnxGraph':
+        
+        # get possible top nodes and bottom nodes
+        top_nodes = []
+        bottom_nodes = []
+        for input_name in input_name_list:
+            if self.get_next_nodes(input_name):
+                top_nodes.extend(self.get_next_nodes(input_name))
+        for output_name in output_name_list:
+            if self.get_prev_node(output_name):
+                bottom_nodes.append(self.get_prev_node(output_name))
+        
+        # collect reachable nodes
+        top_down_visited = self._bfs_search_reachable_nodes(top_nodes)
+        bottom_up_visited = self._bfs_search_reachable_nodes(bottom_nodes, top_down=False)
+        reachable_nodes = top_down_visited & bottom_up_visited
+
+        # collect reachable initializers and value_infos
+        initializers = []
+        value_infos = []
+        for node in reachable_nodes:
+            for inp in node.inputs:
+                if self.get_node(inp, Initializer):
+                    initializers.append(self.get_node(inp, Initializer))
+                elif self.get_node(inp, PlaceHolder) and (inp not in input_name_list):
+                    value_infos.append(self.get_node(inp, PlaceHolder))
+
+        # add inputs and outputs for extracted graph
+        inputs = self._add_new_io_placeholder(input_name_list)
+        outputs = self._add_new_io_placeholder(output_name_list)
+
+        # save_model
+        name = 'extracted graph'
+        meta = self._meta
+        extracted_graph = OnnxGraph(name, reachable_nodes, inputs, outputs, initializers, value_infos, **meta)
+        extracted_graph.save(new_model_save_path)
+        print('Extract the model completed, model saved in {}.'.format(
+                    new_model_save_path))
+
+        return extracted_graph
+        
+    def _bfs_search_reachable_nodes(self, start_nodes, top_down=True):
+        visited = set()
+        queue = deque(start_nodes)
+        while queue:
+            node = queue.popleft()
+            if node in visited:
+                continue
+            visited.add(node)
+            if top_down:
+                for output_name in node.outputs:
+                    for next_node in self.get_next_nodes(output_name):
+                        queue.append(next_node)
+            else:
+                for input_name in node.inputs:
+                    prev_node = self.get_prev_node(input_name)
+                    if prev_node:
+                        queue.append(prev_node)
+        return visited
+    
+    def _add_new_io_placeholder(self, name_list):
+        ph_list = []
+        for name in name_list:
+            value_info = self.get_node(name, PlaceHolder)
+            if value_info:
+                ph_list.append(
+                    OnnxPlaceHolder(
+                    value_info.name,
+                    value_info.dtype,
+                    value_info.shape
+                    )
+                )
+            else:
+                ph_list.append(
+                    OnnxPlaceHolder(
+                    name,
+                    np.dtype('float32')
+                    )
+                )
+        return ph_list
 
     def simplify(self, **kwargs) -> 'OnnxGraph':
         try:
