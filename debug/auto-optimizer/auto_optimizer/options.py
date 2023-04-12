@@ -102,6 +102,20 @@ arg_input = click.argument(
 )
 
 
+arg_start = click.argument(
+    'start_node',
+    nargs=1,
+    type=click.STRING
+)
+
+
+arg_end = click.argument(
+    'end_node',
+    nargs=1,
+    type=click.STRING
+)
+
+
 arg_path = click.argument(
     'path',
     nargs=1,

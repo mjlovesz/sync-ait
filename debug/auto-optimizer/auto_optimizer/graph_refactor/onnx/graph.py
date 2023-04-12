@@ -21,21 +21,21 @@ import onnx
 import numpy as np
 from onnx import helper, GraphProto, ModelProto, OperatorSetIdProto, version_converter
 
-from .. import BaseGraph
+from .. import BaseGraph, Node
 from .node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
 
 
 class OnnxGraph(BaseGraph):
 
     def __init__(
-        self,
-        name: str,
-        nodes: Optional[List[OnnxNode]] = None,
-        inputs: Optional[List[OnnxPlaceHolder]] = None,
-        outputs: Optional[List[OnnxPlaceHolder]] = None,
-        initializers: Optional[List[OnnxInitializer]] = None,
-        value_infos: Optional[List[OnnxPlaceHolder]] = None,
-        **kwargs: Dict[str, object]
+            self,
+            name: str,
+            nodes: Optional[List[OnnxNode]] = None,
+            inputs: Optional[List[OnnxPlaceHolder]] = None,
+            outputs: Optional[List[OnnxPlaceHolder]] = None,
+            initializers: Optional[List[OnnxInitializer]] = None,
+            value_infos: Optional[List[OnnxPlaceHolder]] = None,
+            **kwargs: Dict[str, object]
     ):
         super(OnnxGraph, self).__init__(name, nodes, inputs, outputs, initializers, value_infos)
 
@@ -116,13 +116,13 @@ class OnnxGraph(BaseGraph):
         return self._add_initializer(initializer)
 
     def add_node(
-        self,
-        name: str,
-        op_type: str,
-        inputs: Optional[List[str]] = None,
-        outputs: Optional[List[str]] = None,
-        attrs: Optional[Dict[str, object]] = None,
-        domain: str = ''
+            self,
+            name: str,
+            op_type: str,
+            inputs: Optional[List[str]] = None,
+            outputs: Optional[List[str]] = None,
+            attrs: Optional[Dict[str, object]] = None,
+            domain: str = ''
     ) -> OnnxNode:
         node = OnnxNode(name, op_type, inputs, outputs, attrs=attrs, domain=domain)
         self.update_map()
@@ -168,28 +168,29 @@ class OnnxGraph(BaseGraph):
                     model,
                     os.path.join(tmpdirname, 'model.onnx'),
                     save_as_external_data=True
-                    )
+                )
                 onnx.shape_inference.infer_shapes_path(
-                    os.path.join(tmpdirname, 'model.onnx'), 
+                    os.path.join(tmpdirname, 'model.onnx'),
                     os.path.join(tmpdirname, 'inferred_model.onnx')
-                    )
+                )
                 inferred_model = onnx.load(os.path.join(tmpdirname, 'inferred_model.onnx'))
-       
-       # update value_infos
+
+        # update value_infos
         graph = inferred_model.graph
         self._value_infos = [OnnxPlaceHolder.parse(v) for v in graph.value_info]
         self._value_map = {v.name: v for v in self._value_infos}
 
     def extract(
-        self,
-        new_model_save_path: str,
-        input_name_list: List[str],
-        output_name_list: List[str],
-        enable_model_check: bool = True
+            self,
+            new_model_save_path: str,
+            input_name_list: List[str],
+            output_name_list: List[str],
+            enable_model_check: bool = True
     ) -> 'OnnxGraph':
 
         def check_model(model):
             pass
+
         if not enable_model_check:
             onnx.checker.check_model = check_model
 
@@ -206,8 +207,19 @@ class OnnxGraph(BaseGraph):
             except ValueError as e:
                 raise RuntimeError('Function extract() does not support a Large ONNX Model >2GB currently.') from e
             print('Extract the model completed, model saved in {}.'.format(
-                    new_model_save_path))
+                new_model_save_path))
         return OnnxGraph.parse(new_model_save_path)
+
+    def extract_subgraph(self, subgraph_path: str, start_node_name: str, end_node_name: str):
+        start_node = self.get_node(start_node_name, node_type=Node)
+        if start_node is None:
+            raise ValueError("Start node %s is not exist, please check it", start_node_name)
+        end_node = self.get_node(end_node_name, node_type=Node)
+        if end_node is None:
+            raise ValueError("End node %s is not exist, please check it", end_node_name)
+        inputs = start_node.inputs
+        outputs = end_node.outputs
+        return self.extract(subgraph_path, inputs, outputs)
 
     def simplify(self, **kwargs) -> 'OnnxGraph':
         try:
@@ -237,4 +249,3 @@ class OnnxGraph(BaseGraph):
             converted_model = version_converter.convert_version(model, opset)
             self.graph = OnnxGraph.parse(converted_model)
             self._meta['opset_imports'] = [opset_imports]
-
