@@ -171,7 +171,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 1. 执行requirements.txt文件中的依赖安装，执行如下命令：
 
    ```bash
-   cd ${HOME}/ais-bench_workload/tool/ais_bench/
+   cd ${HOME}/amit/profile/benchmark/
    pip3 install -r ./requirements.txt
    ```
 
