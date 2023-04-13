@@ -229,9 +229,9 @@ class NpuDumpData(DumpData):
 
         self.dynamic_input.add_dynamic_arg_for_benchmark(benchmark_cmd)
         self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
-        os.chdir(os.path.join(benchmark_dir, OUT_PATH))
+        os.chdir(benchmark_dir)
         # do benchmark command
-        utils.print_info_log("Run command line: cd %s && %s" % (os.path.join(benchmark_dir, OUT_PATH), " ".join(benchmark_cmd)))
+        utils.print_info_log("Run command line: cd %s && %s" % (benchmark_dir, " ".join(benchmark_cmd)))
         utils.execute_command(benchmark_cmd)
 
         npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
