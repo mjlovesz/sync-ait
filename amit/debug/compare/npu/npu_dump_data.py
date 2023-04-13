@@ -36,11 +36,11 @@ class DynamicInput(object):
         self.atc_dynamic_arg, self.cur_dynamic_arg = self.get_dynamic_arg_from_om(om_parser)
         self.dynamic_arg_value = self.get_arg_value(om_parser, arguments)
 
-    def add_dynamic_arg_for_benchkmark(self, benchkmark_cmd: list):
+    def add_dynamic_arg_for_benchmark(self, benchmark_cmd: list):
         if self.is_dynamic_shape_scenario():
             self.check_input_dynamic_arg_valid()
-            benchkmark_cmd.append(self.cur_dynamic_arg.value.benchkmark_arg)
-            benchkmark_cmd.append(self.dynamic_arg_value)
+            benchmark_cmd.append(self.cur_dynamic_arg.value.benchmark_arg)
+            benchmark_cmd.append(self.dynamic_arg_value)
 
     @staticmethod
     def get_dynamic_arg_from_om(om_parser):
@@ -168,14 +168,14 @@ class NpuDumpData(DumpData):
     def generate_dump_data(self):
         """
         Function Description:
-            compile and rum benchkmark project
+            compile and rum benchmark project
         Return Value:
             npu dump data path
         """
         self._check_input_path_param()
-        benchkmark_dir = os.path.join(os.path.realpath("../../profile"), BENCHMARK_DIR)
-        self.benchkmark_backend_compile_sh(benchkmark_dir)
-        return self.benchkmark_run(benchkmark_dir)
+        benchmark_dir = os.path.join(os.path.realpath("../../profile"), BENCHMARK_DIR)
+        self.benchmark_backend_compile_sh(benchmark_dir)
+        return self.benchmark_run(benchmark_dir)
 
     def get_expect_output_name(self):
         """
@@ -186,29 +186,29 @@ class NpuDumpData(DumpData):
         """
         return self.om_parser.get_expect_net_output_name()
 
-    def benchkmark_backend_compile_sh(self, benchkmark_dir):
+    def benchmark_backend_compile_sh(self, benchmark_dir):
         """
         Function Description:
-            compile benchkmark backend project
+            compile benchmark backend project
         Parameter:
-            benchkmark_dir: benchkmark project directory
+            benchmark_dir: benchmark project directory
         """
-        execute_path = os.path.join(benchkmark_dir, BENCHMARK_BACKEND_DIR)
-        utils.print_info_log("Start to install benchkmark backend execute_path: %s" % execute_path)
+        execute_path = os.path.join(benchmark_dir, BENCHMARK_BACKEND_DIR)
+        utils.print_info_log("Start to install benchmark backend execute_path: %s" % execute_path)
         build_sh_cmd = ["sh", "install.sh"]
         os.chdir(execute_path)
 
         # do install.sh command
         utils.print_info_log("Run command line: cd %s && %s" % (execute_path, " ".join(build_sh_cmd)))
         utils.execute_command(build_sh_cmd)
-        utils.print_info_log("Finish to install benchkmark backend execute_path: %s." % benchkmark_dir)
+        utils.print_info_log("Finish to install benchmark backend execute_path: %s." % benchmark_dir)
 
-    def benchkmark_run(self, benchmark_dir):
+    def benchmark_run(self, benchmark_dir):
         """
         Function Description:
-            run benchkmark project
+            run benchmark project
         Parameter:
-            benchkmark_dir: benchkmark project directory
+            benchmark_dir: benchmark project directory
         Return Value:
             npu dump data path
         Exception Description:
@@ -227,9 +227,9 @@ class NpuDumpData(DumpData):
                          self.arguments.input_path, "--device", self.arguments.device, "--output", npu_data_output_dir,
                          "--acl_json_path", acl_json_path]
 
-        self.dynamic_input.add_dynamic_arg_for_benchkmark(benchkmark_cmd)
-        self._make_benchkmark_cmd_for_shape_range(benchkmark_cmd)
-        os.chdir(os.path.join(benchkmark_dir, OUT_PATH))
+        self.dynamic_input.add_dynamic_arg_for_benchmark(benchmark_cmd)
+        self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
+        os.chdir(os.path.join(benchmark_dir, OUT_PATH))
         # do benchmark command
         utils.print_info_log("Run command line: cd %s && %s" % (os.path.join(benchmark_dir, OUT_PATH), " ".join(benchmark_cmd)))
         utils.execute_command(benchmark_cmd)
@@ -246,7 +246,7 @@ class NpuDumpData(DumpData):
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
         return npu_dump_data_path, npu_net_output_data_path
 
-    def _make_benchkmark_cmd_for_shape_range(self, benchkmark_cmd):
+    def _make_benchmark_cmd_for_shape_range(self, benchmark_cmd):
         pattern = re.compile(r'^[0-9]+$')
         count = self.om_parser.get_net_output_count()
         if not self.arguments.output_size:
@@ -273,8 +273,8 @@ class NpuDumpData(DumpData):
                     utils.print_error_log("The size (%s) must be large than zero. Please check the output size."
                                           % self.arguments.output_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-            benchkmark_cmd.append(OUTPUT_SIZE)
-            benchkmark_cmd.append(self.arguments.output_size)
+            benchmark_cmd.append(OUTPUT_SIZE)
+            benchmark_cmd.append(self.arguments.output_size)
 
     def _convert_net_output_to_numpy(self, npu_net_output_data_path, npu_dump_data_path):
         net_output_data = None
