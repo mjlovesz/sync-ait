@@ -26,7 +26,7 @@ check_env_valid()
 main()
 {
     check_env_valid
-    res='echo $?'
+    res=`echo $?`
     if [ $res =  $ret_run_failed ]; then
         pip3 whell ./ -v
         pip3 install ./aclruntime-*.whl
