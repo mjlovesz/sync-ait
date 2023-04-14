@@ -163,6 +163,8 @@ def get_dump_data_path(dump_dir, is_net_output=False):
     file_is_exist = False
     dump_data_dir = None
     for i in os.listdir(dump_dir):
+        if not (os.path.isdir((dump_dir, i))):
+            continue
         # net_output dump file directory, name is like 12_423_246_4352
         if is_net_output:
             if not i.isdigit():
