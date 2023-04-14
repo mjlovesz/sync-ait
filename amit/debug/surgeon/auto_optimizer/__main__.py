@@ -27,6 +27,8 @@ from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern import KnowledgeFactory
 from .options import (
     arg_path, arg_input, arg_output,
+    arg_start,
+    arg_end,
     opt_optimizer,
     opt_recursive,
     opt_verbose,
@@ -225,6 +227,27 @@ def command_optimize(
     if infer_test:
         print('=' * 100 + '\n')
 
+
+@cli.command(
+    'extract',
+    aliases=['opt'],
+    short_help='Optimize model with specified knowledges.'
+)
+@arg_input
+@arg_output
+@arg_start
+@arg_end
+def command_extract(
+    input_model: pathlib.Path,
+    output_model: pathlib.Path,
+    start_node: str,
+    end_node: str
+) -> None:
+    if input_model == output_model:
+        logging.warning('output_model is input_model, refuse to overwrite origin model!')
+        return
+    onnx_graph = OnnxGraph.parse(input_model)
+    onnx_graph.extract_subgraph(output_model, start_node, end_node)
 
 if __name__ == "__main__":
     cli()
