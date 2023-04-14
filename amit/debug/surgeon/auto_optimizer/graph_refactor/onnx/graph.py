@@ -19,23 +19,24 @@ from typing import List, Dict, Union, Sequence, Optional
 
 import onnx
 import numpy as np
+from collections import deque
 from onnx import helper, GraphProto, ModelProto, OperatorSetIdProto, version_converter
 
-from .. import BaseGraph, Node
+from .. import BaseGraph, Initializer, PlaceHolder, Node
 from .node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
 
 
 class OnnxGraph(BaseGraph):
 
     def __init__(
-            self,
-            name: str,
-            nodes: Optional[List[OnnxNode]] = None,
-            inputs: Optional[List[OnnxPlaceHolder]] = None,
-            outputs: Optional[List[OnnxPlaceHolder]] = None,
-            initializers: Optional[List[OnnxInitializer]] = None,
-            value_infos: Optional[List[OnnxPlaceHolder]] = None,
-            **kwargs: Dict[str, object]
+        self,
+        name: str,
+        nodes: Optional[List[OnnxNode]] = None,
+        inputs: Optional[List[OnnxPlaceHolder]] = None,
+        outputs: Optional[List[OnnxPlaceHolder]] = None,
+        initializers: Optional[List[OnnxInitializer]] = None,
+        value_infos: Optional[List[OnnxPlaceHolder]] = None,
+        **kwargs: Dict[str, object]
     ):
         super(OnnxGraph, self).__init__(name, nodes, inputs, outputs, initializers, value_infos)
 
@@ -116,13 +117,13 @@ class OnnxGraph(BaseGraph):
         return self._add_initializer(initializer)
 
     def add_node(
-            self,
-            name: str,
-            op_type: str,
-            inputs: Optional[List[str]] = None,
-            outputs: Optional[List[str]] = None,
-            attrs: Optional[Dict[str, object]] = None,
-            domain: str = ''
+        self,
+        name: str,
+        op_type: str,
+        inputs: Optional[List[str]] = None,
+        outputs: Optional[List[str]] = None,
+        attrs: Optional[Dict[str, object]] = None,
+        domain: str = ''
     ) -> OnnxNode:
         node = OnnxNode(name, op_type, inputs, outputs, attrs=attrs, domain=domain)
         self.update_map()
@@ -168,29 +169,28 @@ class OnnxGraph(BaseGraph):
                     model,
                     os.path.join(tmpdirname, 'model.onnx'),
                     save_as_external_data=True
-                )
+                    )
                 onnx.shape_inference.infer_shapes_path(
-                    os.path.join(tmpdirname, 'model.onnx'),
+                    os.path.join(tmpdirname, 'model.onnx'), 
                     os.path.join(tmpdirname, 'inferred_model.onnx')
-                )
+                    )
                 inferred_model = onnx.load(os.path.join(tmpdirname, 'inferred_model.onnx'))
-
-        # update value_infos
+       
+       # update value_infos
         graph = inferred_model.graph
         self._value_infos = [OnnxPlaceHolder.parse(v) for v in graph.value_info]
         self._value_map = {v.name: v for v in self._value_infos}
 
     def extract(
-            self,
-            new_model_save_path: str,
-            input_name_list: List[str],
-            output_name_list: List[str],
-            enable_model_check: bool = True
+        self,
+        new_model_save_path: str,
+        input_name_list: List[str],
+        output_name_list: List[str],
+        enable_model_check: bool = True
     ) -> 'OnnxGraph':
 
         def check_model(model):
             pass
-
         if not enable_model_check:
             onnx.checker.check_model = check_model
 
@@ -210,7 +210,149 @@ class OnnxGraph(BaseGraph):
                 new_model_save_path))
         return OnnxGraph.parse(new_model_save_path)
 
-    def extract_subgraph(self, subgraph_path: str, start_node_name: str, end_node_name: str):
+    def extract_subgraph(self, subgraph_path: str,
+                         start_node_names: List[str],
+                         end_node_names: List[str],
+                         is_check_graph: bool = False):
+        # get possible top nodes and bottom nodes
+        start_nodes = [self.get_node(node_name, node_type=Node) for node_name in start_node_names]
+        end_nodes = [self.get_node(node_name, node_type=Node) for node_name in end_node_names]
+
+        input_name_list = []
+        for node in start_nodes:
+            for input_name in node.inputs:
+                if not self.get_node(input_name, Initializer) and (input_name not in input_name_list):
+                    input_name_list.append(input_name)
+
+        output_name_list = []
+        for node in end_nodes:
+            for output_name in node.outputs:
+                if output_name not in output_name_list:
+                    output_name_list.append(output_name)
+
+        # collect reachable nodes
+        top_down_visited = self._bfs_search_reachable_nodes(start_nodes)
+        bottom_up_visited = self._bfs_search_reachable_nodes(end_nodes, top_down=False)
+        reachable_nodes = top_down_visited & bottom_up_visited
+
+        # collect reachable initializers and value_infos
+        initializers = []
+        value_infos = []
+        for node in reachable_nodes:
+            for inp in node.inputs:
+                if self.get_node(inp, Initializer):
+                    initializers.append(self.get_node(inp, Initializer))
+                elif self.get_node(inp, PlaceHolder):
+                    if inp not in input_name_list:
+                        value_infos.append(self.get_node(inp, PlaceHolder))
+                else:
+                    prev_node = self.get_prev_node(inp)
+                    if prev_node not in reachable_nodes and inp not in input_name_list:
+                        input_name_list.append(inp)
+
+        # add inputs and outputs for extracted graph
+        inputs = self._add_new_io_placeholder(input_name_list)
+        outputs = self._add_new_io_placeholder(output_name_list)
+
+        # save_model
+        name = 'extracted graph'
+        meta = self._meta
+        subgraph = OnnxGraph(name, reachable_nodes, inputs, outputs, initializers, value_infos, **meta)
+
+        if is_check_graph:
+            onnx.checker.check_model(subgraph.model())
+        subgraph.save(subgraph_path)
+        print('Extract the model completed, model saved in {}.'.format(
+                    subgraph_path))
+
+    def custom_extract(
+        self,
+        new_model_save_path: str,
+        input_name_list: List[str],
+        output_name_list: List[str]
+    ) -> 'OnnxGraph':
+
+        # get possible top nodes and bottom nodes
+        top_nodes = []
+        bottom_nodes = []
+        for input_name in input_name_list:
+            if self.get_next_nodes(input_name):
+                top_nodes.extend(self.get_next_nodes(input_name))
+        for output_name in output_name_list:
+            if self.get_prev_node(output_name):
+                bottom_nodes.append(self.get_prev_node(output_name))
+
+        # collect reachable nodes
+        top_down_visited = self._bfs_search_reachable_nodes(top_nodes)
+        bottom_up_visited = self._bfs_search_reachable_nodes(bottom_nodes, top_down=False)
+        reachable_nodes = top_down_visited & bottom_up_visited
+
+        # collect reachable initializers and value_infos
+        initializers = []
+        value_infos = []
+        for node in reachable_nodes:
+            for inp in node.inputs:
+                if self.get_node(inp, Initializer):
+                    initializers.append(self.get_node(inp, Initializer))
+                elif self.get_node(inp, PlaceHolder) and (inp not in input_name_list):
+                    value_infos.append(self.get_node(inp, PlaceHolder))
+
+        # add inputs and outputs for extracted graph
+        inputs = self._add_new_io_placeholder(input_name_list)
+        outputs = self._add_new_io_placeholder(output_name_list)
+
+        # save_model
+        name = 'extracted graph'
+        meta = self._meta
+        extracted_graph = OnnxGraph(name, reachable_nodes, inputs, outputs, initializers, value_infos, **meta)
+        extracted_graph.save(new_model_save_path)
+        print('Extract the model completed, model saved in {}.'.format(
+                    new_model_save_path))
+
+        return extracted_graph
+
+
+    def _bfs_search_reachable_nodes(self, start_nodes, top_down=True):
+        visited = set()
+        queue = deque(start_nodes)
+        while queue:
+            node = queue.popleft()
+            if node in visited:
+                continue
+            visited.add(node)
+            if top_down:
+                for output_name in node.outputs:
+                    for next_node in self.get_next_nodes(output_name):
+                        queue.append(next_node)
+            else:
+                for input_name in node.inputs:
+                    prev_node = self.get_prev_node(input_name)
+                    if prev_node:
+                        queue.append(prev_node)
+        return visited
+
+    def _add_new_io_placeholder(self, name_list):
+        ph_list = []
+        for name in name_list:
+            value_info = self.get_node(name, PlaceHolder)
+            if value_info:
+                ph_list.append(
+                    OnnxPlaceHolder(
+                    value_info.name,
+                    value_info.dtype,
+                    value_info.shape
+                    )
+                )
+            else:
+                ph_list.append(
+                    OnnxPlaceHolder(
+                    name,
+                    np.dtype('float32')
+                    )
+                )
+        return ph_list
+
+    def extract_subgraph2(self, subgraph_path: str, start_node_name: str, end_node_name: str):
         start_node = self.get_node(start_node_name, node_type=Node)
         if start_node is None:
             raise ValueError("Start node %s is not exist, please check it", start_node_name)
