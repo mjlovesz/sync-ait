@@ -215,3 +215,4 @@ opt_output_size = click.option(
     type=str,
     help='Specify real size of graph output.'
 )
+

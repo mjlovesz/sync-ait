@@ -11,14 +11,15 @@ import argparse
 import os
 import sys
 import time
+import click
 
 from atc.atc_utils import AtcUtils
 from common import utils
 from common.utils import AccuracyCompareException
 
-from compare.net_compare import NetCompare
+from test.net_compare import NetCompare
 from npu.npu_dump_data import NpuDumpData
-
+from options import MyArgs
 
 def _accuracy_compare_parser(parser):
     parser.add_argument("-m", "--model-path", dest="model_path", default="",
@@ -133,6 +134,10 @@ def main():
             utils.print_info_log("No operator whose cosine value is less then 0.9 exists.")
     except utils.AccuracyCompareException as error:
         sys.exit(error.error_info)
+
+def cil_enter(my_args:MyArgs):
+    click.echo("cil_enter")
+    return
 
 
 if __name__ == '__main__':
