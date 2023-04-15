@@ -211,29 +211,32 @@ class OnnxGraph(BaseGraph):
         return OnnxGraph.parse(new_model_save_path)
 
     def extract_subgraph(self, subgraph_path: str,
-                         start_node_names: List[str],
-                         end_node_names: List[str],
+                         start_node_name: str,
+                         end_node_name: str,
                          is_check_graph: bool = False):
-        # get possible top nodes and bottom nodes
-        start_nodes = [self.get_node(node_name, node_type=Node) for node_name in start_node_names]
-        end_nodes = [self.get_node(node_name, node_type=Node) for node_name in end_node_names]
+        all_node_names = [node.name for node in self.nodes]
+        if start_node_name not in all_node_names or end_node_name not in all_node_names:
+            raise ValueError("start node %s or end node %s is not in the model.", start_node_name, end_node_name)
+        start_node = self.get_node(start_node_name, node_type=Node)
+        end_node = self.get_node(end_node_name, node_type=Node)
 
         input_name_list = []
-        for node in start_nodes:
-            for input_name in node.inputs:
-                if not self.get_node(input_name, Initializer) and (input_name not in input_name_list):
-                    input_name_list.append(input_name)
+        for input_name in start_node.inputs:
+            if not self.get_node(input_name, Initializer) and (input_name not in input_name_list):
+                input_name_list.append(input_name)
 
         output_name_list = []
-        for node in end_nodes:
-            for output_name in node.outputs:
-                if output_name not in output_name_list:
-                    output_name_list.append(output_name)
+        for output_name in end_node.outputs:
+            if output_name not in output_name_list:
+                output_name_list.append(output_name)
 
         # collect reachable nodes
-        top_down_visited = self._bfs_search_reachable_nodes(start_nodes)
-        bottom_up_visited = self._bfs_search_reachable_nodes(end_nodes, top_down=False)
+        top_down_visited = self._bfs_search_reachable_nodes([start_node])
+        bottom_up_visited = self._bfs_search_reachable_nodes([end_node], top_down=False)
         reachable_nodes = top_down_visited & bottom_up_visited
+
+        if not reachable_nodes:
+            raise ValueError("The start node {} has no path to reach the end node {}".format(start_node_name, end_node_name))
 
         # collect reachable initializers and value_infos
         initializers = []
@@ -265,51 +268,34 @@ class OnnxGraph(BaseGraph):
         print('Extract the model completed, model saved in {}.'.format(
                     subgraph_path))
 
-    def custom_extract(
-        self,
-        new_model_save_path: str,
-        input_name_list: List[str],
-        output_name_list: List[str]
-    ) -> 'OnnxGraph':
+    def simplify(self, **kwargs) -> 'OnnxGraph':
+        try:
+            from onnxsim import simplify
+        except ImportError:
+            raise RuntimeError("No module named 'onnxsim'")
 
-        # get possible top nodes and bottom nodes
-        top_nodes = []
-        bottom_nodes = []
-        for input_name in input_name_list:
-            if self.get_next_nodes(input_name):
-                top_nodes.extend(self.get_next_nodes(input_name))
-        for output_name in output_name_list:
-            if self.get_prev_node(output_name):
-                bottom_nodes.append(self.get_prev_node(output_name))
+        model = self.model()
+        model_sim, check = simplify(model, **kwargs)
+        if not check:
+            raise RuntimeError("Simplified ONNX model could not be validated")
 
-        # collect reachable nodes
-        top_down_visited = self._bfs_search_reachable_nodes(top_nodes)
-        bottom_up_visited = self._bfs_search_reachable_nodes(bottom_nodes, top_down=False)
-        reachable_nodes = top_down_visited & bottom_up_visited
+        return OnnxGraph.parse(model_sim)
 
-        # collect reachable initializers and value_infos
-        initializers = []
-        value_infos = []
-        for node in reachable_nodes:
-            for inp in node.inputs:
-                if self.get_node(inp, Initializer):
-                    initializers.append(self.get_node(inp, Initializer))
-                elif self.get_node(inp, PlaceHolder) and (inp not in input_name_list):
-                    value_infos.append(self.get_node(inp, PlaceHolder))
+    @property
+    def opset_imports(self) -> Optional[Sequence[OperatorSetIdProto]]:
+        return self._meta['opset_imports']
 
-        # add inputs and outputs for extracted graph
-        inputs = self._add_new_io_placeholder(input_name_list)
-        outputs = self._add_new_io_placeholder(output_name_list)
-
-        # save_model
-        name = 'extracted graph'
-        meta = self._meta
-        extracted_graph = OnnxGraph(name, reachable_nodes, inputs, outputs, initializers, value_infos, **meta)
-        extracted_graph.save(new_model_save_path)
-        print('Extract the model completed, model saved in {}.'.format(
-                    new_model_save_path))
-
-        return extracted_graph
+    @opset_imports.setter
+    def opset_imports(self, opset: Union[int, None]) -> None:
+        if not opset:
+            self._meta['opset_imports'] = None
+        else:
+            opset_imports = OperatorSetIdProto()
+            opset_imports.version = opset
+            model = self.model()
+            converted_model = version_converter.convert_version(model, opset)
+            self.graph = OnnxGraph.parse(converted_model)
+            self._meta['opset_imports'] = [opset_imports]
 
 
     def _bfs_search_reachable_nodes(self, start_nodes, top_down=True):
@@ -351,43 +337,3 @@ class OnnxGraph(BaseGraph):
                     )
                 )
         return ph_list
-
-    def extract_subgraph2(self, subgraph_path: str, start_node_name: str, end_node_name: str):
-        start_node = self.get_node(start_node_name, node_type=Node)
-        if start_node is None:
-            raise ValueError("Start node %s is not exist, please check it", start_node_name)
-        end_node = self.get_node(end_node_name, node_type=Node)
-        if end_node is None:
-            raise ValueError("End node %s is not exist, please check it", end_node_name)
-        inputs = start_node.inputs
-        outputs = end_node.outputs
-        return self.extract(subgraph_path, inputs, outputs)
-
-    def simplify(self, **kwargs) -> 'OnnxGraph':
-        try:
-            from onnxsim import simplify
-        except ImportError:
-            raise RuntimeError("No module named 'onnxsim'")
-
-        model = self.model()
-        model_sim, check = simplify(model, **kwargs)
-        if not check:
-            raise RuntimeError("Simplified ONNX model could not be validated")
-
-        return OnnxGraph.parse(model_sim)
-
-    @property
-    def opset_imports(self) -> Optional[Sequence[OperatorSetIdProto]]:
-        return self._meta['opset_imports']
-
-    @opset_imports.setter
-    def opset_imports(self, opset: Union[int, None]) -> None:
-        if not opset:
-            self._meta['opset_imports'] = None
-        else:
-            opset_imports = OperatorSetIdProto()
-            opset_imports.version = opset
-            model = self.model()
-            converted_model = version_converter.convert_version(model, opset)
-            self.graph = OnnxGraph.parse(converted_model)
-            self._meta['opset_imports'] = [opset_imports]
