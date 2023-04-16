@@ -59,7 +59,7 @@ class TestKnowledgeModifyReflectionPad(unittest.TestCase, KnowledgeTestHelper):
     def test_modify_reflection_pad_opset11(self):
         x = np.random.randn(1, 3, 256, 256).astype(np.float32)
         padding = 2
-        onnx_ori = './reflection_pad_opset11.onnx'
+        onnx_ori = 'onnx/reflection_pad_opset11.onnx'
         onnx_opt = f'{onnx_ori[:-5]}_opt.onnx'
 
         self.make_reflection_pad_opset11(onnx_ori, x, padding)
