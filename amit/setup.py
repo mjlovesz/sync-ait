@@ -16,6 +16,6 @@ setup(
     keywords='amit',
     python_requires='>=3.7',
     entry_points={
-        'console_scripts': ['amit=.__main__:cli'],
+        'console_scripts': ['amit=amit_cli:cli'],
     },
 )
