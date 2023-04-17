@@ -27,7 +27,7 @@ def create_graph(name: str = 'test_graph'):
 
 def create_subgraph(name: str = "test_subgraph"):
     input = OnnxPlaceHolder('sqrt0_output', np.dtype('float32'))
-    output = OnnxPlaceHolder('relu4_output', np.dtype('float32'))
+    output = OnnxPlaceHolder('relu3_output', np.dtype('float32'))
     node_1 = OnnxNode('relu1', 'Relu', inputs=['sqrt0_output'], outputs=['relu1_output'], attrs={})
     node_2 = OnnxNode('sqrt2', 'Sqrt', inputs=['relu1_output'], outputs=['sqrt2_output'], attrs={})
     node_3 = OnnxNode('relu3', 'Relu', inputs=['sqrt2_output'], outputs=['relu3_output'], attrs={})
