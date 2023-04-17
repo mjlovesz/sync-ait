@@ -14,6 +14,7 @@ import sys
 import time
 import enum
 import numpy as np
+import itertools
 
 from common.dynamic_argument_bean import DynamicArgumentEnum
 
@@ -36,6 +37,7 @@ ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
 MODEL_TYPE = ['.onnx', '.pb', '.om']
 DIM_PATTERN = r"^(-?[0-9]+)(,-?[0-9]+)*"
+DYNAMIC_DIM_PATTERN = r"^(-?[0-9-~]+)(,-?[0-9-~]+)*"
 MAX_DEVICE_ID = 255
 SEMICOLON = ";"
 COLON = ":"
@@ -287,14 +289,50 @@ def parse_input_shape(input_shape):
     return input_shapes
 
 
+def parse_dymShape_range(dymShape_range):
+    _check_colon_exist(dymShape_range)
+    input_shapes = {}
+    tensor_list = dymShape_range.split(";")
+    info_list = []
+    for tensor in tensor_list:
+        _check_colon_exist(dymShape_range)
+        shapes = []
+        name, shapestr = tensor.split(";")
+        _check_shape_number(shapestr, DYMNAMIC_DIM_PATTERN)
+        for content in shapestr.split(","):
+            if "~" in content:
+                start = int(content.split("~")[0])
+                end = int(content.split("~")[1])
+                step = int(content.split("~")[2]) if len(content.split("~")) == 3 else 1
+                ranges = [str(i) for i in range(start, end+1, step)]
+            elif "-" in content:
+                ranges = content.split("-")
+            else:
+                start = int(content)
+                ranges = [str(start)]
+            shapes.append(ranges)
+        shape_list = [",".join(s) for s in list(itertools.product(*shapes))]
+        info = ["{}:{}".format(name, s) for s in shape_list]
+        info_list.append(info)
+    res = [";".join(s) for s in list(itertools.product(*info_list))]
+    print_info_log("shape_list:" + str(res))
+    return res
+
+
+def get_shape_to_directory_name(input_shape):
+    shape_info = re.sub(r"[:;]", "-", input_shape)
+    shape_info = re.sub(r",", "_", shape_info)
+    return shape_info
+
+
 def _check_colon_exist(input_shape):
     if ":" not in input_shape:
         print_error_log(get_shape_not_match_message(InputShapeError.FORMAT_NOT_MATCH, input_shape))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
-def _check_shape_number(input_shape_value):
-    dim_pattern = re.compile(DIM_PATTERN)
+def _check_shape_number(input_shape_value, pattern=DIM_PATTERN):
+    dim_pattern = re.compile(pattern)
     match = dim_pattern.match(input_shape_value)
     if not match or match.group() is not input_shape_value:
         print_error_log(get_shape_not_match_message(InputShapeError.VALUE_TYPE_NOT_MATCH, input_shape_value))
