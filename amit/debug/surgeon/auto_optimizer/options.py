@@ -102,29 +102,15 @@ arg_input = click.argument(
 )
 
 
-arg_input_model = click.argument(
-    'input_model',
-    nargs=1,
-    type=click.STRING
-)
-
-
-arg_output_model = click.argument(
-    'output_model',
-    nargs=1,
-    type=click.STRING
-)
-
-
 arg_start = click.argument(
-    'start_node',
+    'start_node_name',
     nargs=1,
     type=click.STRING
 )
 
 
 arg_end = click.argument(
-    'end_node',
+    'end_node_name',
     nargs=1,
     type=click.STRING
 )
@@ -252,9 +238,4 @@ opt_output_size = click.option(
     'output_size',
     type=str,
     help='Specify real size of graph output.'
-)
-
-opt_check_subgraph = click.option(
-    '--check-subgraph',
-    ''
 )
