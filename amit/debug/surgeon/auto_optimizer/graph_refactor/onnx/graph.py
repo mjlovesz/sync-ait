@@ -267,6 +267,7 @@ class OnnxGraph(BaseGraph):
         subgraph.save(subgraph_path)
         print('Extract the model completed, model saved in {}.'.format(
                     subgraph_path))
+        return subgraph
 
     def simplify(self, **kwargs) -> 'OnnxGraph':
         try:

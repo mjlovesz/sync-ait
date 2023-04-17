@@ -3,11 +3,10 @@ from itertools import chain
 import unittest
 import numpy as np
 
-from auto_optimizer.graph_refactor.interface.base_node import PlaceHolder, Initializer, Node
 from auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from test_node_common import is_ph_equal, is_ini_equal, is_node_equal
-from test_graph_basic import is_graph_equal, create_graph_1
+from test_graph_basic import is_graph_equal
 
 
 def create_graph(name: str = 'test_graph'):
@@ -16,8 +15,8 @@ def create_graph(name: str = 'test_graph'):
     node_0 = OnnxNode('sqrt0', 'Sqrt', inputs=['input'], outputs=['sqrt0_output'], attrs={})
     node_1 = OnnxNode('relu1', 'Relu', inputs=['sqrt0_output'], outputs=['relu1_output'], attrs={})
     node_2 = OnnxNode('sqrt2', 'Sqrt', inputs=['relu1_output'], outputs=['sqrt2_output'], attrs={})
-    node_3 = OnnxNode('relu3', 'Relu', inputs=['maxpol2_output'], outputs=['relu4_output'], attrs={})
-    node_4 = OnnxNode('flatten4', 'Flatten', inputs=['relu4_output'], outputs=['flatten5_output'], attrs={})
+    node_3 = OnnxNode('relu3', 'Relu', inputs=['sqrt2_output'], outputs=['relu3_output'], attrs={})
+    node_4 = OnnxNode('flatten4', 'Flatten', inputs=['relu3_output'], outputs=['flatten4_output'], attrs={})
     return OnnxGraph(
         name=name,
         nodes=[node_0, node_1, node_2, node_3, node_4],
@@ -27,11 +26,11 @@ def create_graph(name: str = 'test_graph'):
 
 
 def create_subgraph(name: str = "test_subgraph"):
-    input = OnnxPlaceHolder('sqrt0_output', np.dtype('float32'), [1, 3, 224, 224])
-    output = OnnxPlaceHolder('relu4_output', np.dtype('float32'), [1, 3, 224, 224])
+    input = OnnxPlaceHolder('sqrt0_output', np.dtype('float32'))
+    output = OnnxPlaceHolder('relu4_output', np.dtype('float32'))
     node_1 = OnnxNode('relu1', 'Relu', inputs=['sqrt0_output'], outputs=['relu1_output'], attrs={})
     node_2 = OnnxNode('sqrt2', 'Sqrt', inputs=['relu1_output'], outputs=['sqrt2_output'], attrs={})
-    node_3 = OnnxNode('relu3', 'Relu', inputs=['maxpol2_output'], outputs=['relu4_output'], attrs={})
+    node_3 = OnnxNode('relu3', 'Relu', inputs=['sqrt2_output'], outputs=['relu3_output'], attrs={})
     return OnnxGraph(
         name=name,
         nodes=[node_1, node_2, node_3],
