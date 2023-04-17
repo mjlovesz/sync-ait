@@ -252,7 +252,10 @@ def command_extract(
         logging.warning('output_model is input_model, refuse to overwrite origin model!')
         return
     onnx_graph = OnnxGraph.parse(input_model.as_posix())
-    onnx_graph.extract_subgraph(output_model, start_node_name, end_node_name, is_check_subgraph)
+    try:
+        onnx_graph.extract_subgraph(output_model, start_node_name, end_node_name, is_check_subgraph)
+    except ValueError as err:
+        print(err)
 
 
 if __name__ == "__main__":

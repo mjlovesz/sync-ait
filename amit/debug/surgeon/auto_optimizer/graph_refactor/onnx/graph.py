@@ -216,7 +216,7 @@ class OnnxGraph(BaseGraph):
                          is_check_subgraph: bool = False):
         all_node_names = [node.name for node in self.nodes]
         if start_node_name not in all_node_names or end_node_name not in all_node_names:
-            raise ValueError("start node %s or end node %s is not in the model.", start_node_name, end_node_name)
+            raise ValueError("Start node {} or end node {} is not in the model.".format(start_node_name, end_node_name))
         start_node = self.get_node(start_node_name, node_type=Node)
         end_node = self.get_node(end_node_name, node_type=Node)
 
