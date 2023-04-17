@@ -29,8 +29,6 @@ from .options import (
     arg_path,
     arg_input,
     arg_output,
-    arg_input_model,
-    arg_output_model,
     arg_start,
     arg_end,
     opt_check,
@@ -238,23 +236,23 @@ def command_optimize(
     aliases=['ext'],
     short_help='Extract subgraph from onnx model.'
 )
-@arg_input_model
-@arg_output_model
+@arg_input
+@arg_output
 @arg_start
 @arg_end
 @opt_check
 def command_extract(
     input_model: pathlib.Path,
     output_model: pathlib.Path,
-    start_node: str,
-    end_node: str,
+    start_node_name: str,
+    end_node_name: str,
     is_check_subgraph
 ) -> None:
     if input_model == output_model:
         logging.warning('output_model is input_model, refuse to overwrite origin model!')
         return
-    onnx_graph = OnnxGraph.parse(input_model)
-    onnx_graph.extract_subgraph(output_model, start_node, end_node, is_check_subgraph)
+    onnx_graph = OnnxGraph.parse(input_model.as_posix())
+    onnx_graph.extract_subgraph(output_model, start_node_name, end_node_name, is_check_subgraph)
 
 
 if __name__ == "__main__":
