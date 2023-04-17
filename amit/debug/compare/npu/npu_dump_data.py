@@ -163,7 +163,7 @@ class NpuDumpData(DumpData):
         self.arguments = arguments
         self.om_parser = OmParser(output_json_path)
         self.dynamic_input = DynamicInput(self.om_parser, self.arguments)
-        self.python_version = None if (sys.executable is None) else sys.executable.split('/')[-1]
+        self.python_version = sys.executable or "python3"
 
     def generate_dump_data(self):
         """
@@ -195,10 +195,7 @@ class NpuDumpData(DumpData):
         """
         execute_path = os.path.join(benchmark_dir, BENCHMARK_BACKEND_DIR)
         utils.print_info_log("Start to install benchmark backend execute_path: %s" % execute_path)
-        build_sh_cmd = ["sh", "install.sh"]
-        if self.python_version is not None:
-            build_sh_cmd.append("-p")
-            build_sh_cmd.append(self.python_version)
+        build_sh_cmd = ["sh", "install.sh", "-p", self.python_version]
 
         retval = os.getcwd()
         os.chdir(execute_path)
