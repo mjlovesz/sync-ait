@@ -26,9 +26,14 @@ from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern import KnowledgeFactory
 from .options import (
-    arg_path, arg_input, arg_output,
+    arg_path,
+    arg_input,
+    arg_output,
+    arg_input_model,
+    arg_output_model,
     arg_start,
     arg_end,
+    opt_check,
     opt_optimizer,
     opt_recursive,
     opt_verbose,
@@ -230,24 +235,27 @@ def command_optimize(
 
 @cli.command(
     'extract',
-    aliases=['opt'],
-    short_help='Optimize model with specified knowledges.'
+    aliases=['ext'],
+    short_help='Extract subgraph from onnx model.'
 )
-@arg_input
-@arg_output
+@arg_input_model
+@arg_output_model
 @arg_start
 @arg_end
+@opt_check
 def command_extract(
     input_model: pathlib.Path,
     output_model: pathlib.Path,
     start_node: str,
-    end_node: str
+    end_node: str,
+    is_check_subgraph
 ) -> None:
     if input_model == output_model:
         logging.warning('output_model is input_model, refuse to overwrite origin model!')
         return
     onnx_graph = OnnxGraph.parse(input_model)
-    onnx_graph.extract_subgraph(output_model, start_node, end_node)
+    onnx_graph.extract_subgraph(output_model, start_node, end_node, is_check_subgraph)
+
 
 if __name__ == "__main__":
     cli()

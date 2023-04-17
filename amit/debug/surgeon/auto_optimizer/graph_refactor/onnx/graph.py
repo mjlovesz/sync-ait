@@ -213,7 +213,7 @@ class OnnxGraph(BaseGraph):
     def extract_subgraph(self, subgraph_path: str,
                          start_node_name: str,
                          end_node_name: str,
-                         is_check_graph: bool = False):
+                         is_check_subgraph: bool = False):
         all_node_names = [node.name for node in self.nodes]
         if start_node_name not in all_node_names or end_node_name not in all_node_names:
             raise ValueError("start node %s or end node %s is not in the model.", start_node_name, end_node_name)
@@ -258,15 +258,20 @@ class OnnxGraph(BaseGraph):
         outputs = self._add_new_io_placeholder(output_name_list)
 
         # save_model
-        name = 'extracted graph'
-        meta = self._meta
-        subgraph = OnnxGraph(name, reachable_nodes, inputs, outputs, initializers, value_infos, **meta)
 
-        if is_check_graph:
-            onnx.checker.check_model(subgraph.model())
+        subgraph = OnnxGraph('extracted graph', reachable_nodes, inputs, outputs,
+                             initializers, value_infos, **self._meta)
+
         subgraph.save(subgraph_path)
         print('Extract the model completed, model saved in {}.'.format(
                     subgraph_path))
+
+        if is_check_subgraph:
+            try:
+                onnx.checker.check_model(subgraph.model())
+            except Exception as exp:
+                print("Check subgraph failed, error is:", exp)
+
         return subgraph
 
     def simplify(self, **kwargs) -> 'OnnxGraph':
