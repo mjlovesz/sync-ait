@@ -195,13 +195,16 @@ class NpuDumpData(DumpData):
         """
         execute_path = os.path.join(benchmark_dir, BENCHMARK_BACKEND_DIR)
         utils.print_info_log("Start to install benchmark backend execute_path: %s" % execute_path)
-        build_sh_cmd = ["sh", "install.sh"]
+        build_sh_cmd = ["sh", "install.sh", "-p", self.python_version]
+
+        retval = os.getcwd()
         os.chdir(execute_path)
 
         # do install.sh command
         utils.print_info_log("Run command line: cd %s && %s" % (execute_path, " ".join(build_sh_cmd)))
         utils.execute_command(build_sh_cmd)
         utils.print_info_log("Finish to install benchmark backend execute_path: %s." % benchmark_dir)
+        os.chdir(retval)
 
     def benchmark_run(self, benchmark_dir):
         """
@@ -229,10 +232,13 @@ class NpuDumpData(DumpData):
 
         self.dynamic_input.add_dynamic_arg_for_benchmark(benchmark_cmd)
         self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
+
+        retval = os.getcwd()
         os.chdir(benchmark_dir)
         # do benchmark command
         utils.print_info_log("Run command line: cd %s && %s" % (benchmark_dir, " ".join(benchmark_cmd)))
         utils.execute_command(benchmark_cmd)
+        os.chdir(retval)
 
         npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
         if not file_is_exist:
