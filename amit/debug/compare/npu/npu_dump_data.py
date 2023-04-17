@@ -21,7 +21,7 @@ MSAME_DIR = "msame"
 BUILD_SH = "build.sh"
 OUT_PATH = "out"
 MSAME_COMMAND_PATH = "msame"
-ACL_JSON_PATH = "out/acl.json"
+ACL_JSON_PATH = "./acl.json"
 NPU_DUMP_DATA_BASE_PATH = "dump_data/npu"
 RESULT_DIR = "result"
 INPUT = "input"
@@ -200,11 +200,15 @@ class NpuDumpData(DumpData):
         utils.print_info_log("Start to compile %s" % msame_dir)
         out_path = os.path.join(msame_dir, OUT_PATH)
         build_sh_cmd = ["sh", BUILD_SH, "g++", out_path]
+        cur_dir = os.getcwd()
         os.chdir(msame_dir)
         # do build.sh command
         utils.print_info_log("Run command line: cd %s && %s" % (msame_dir, " ".join(build_sh_cmd)))
         utils.execute_command(build_sh_cmd)
         utils.print_info_log("Finish to compile %s." % msame_dir)
+        os.chdir(cur_dir)
+        utils.print_info_log("Run command line: cd %s (back to the working directory)" % (cur_dir))
+
 
     def msame_run(self, msame_dir):
         """
@@ -221,12 +225,15 @@ class NpuDumpData(DumpData):
         npu_data_output_dir = os.path.join(self.arguments.out_path, NPU_DUMP_DATA_BASE_PATH)
         utils.create_directory(npu_data_output_dir)
         model_name, extension = utils.get_model_name_and_extension(self.arguments.offline_model_path)
-        acl_json_path = os.path.join(msame_dir, ACL_JSON_PATH)
+        acl_json_path = ACL_JSON_PATH
         if not os.path.exists(acl_json_path):
             os.mknod(acl_json_path, mode=0o600)
-        self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
-        msame_cmd = ["./" + MSAME_COMMAND_PATH, "--model", self.arguments.offline_model_path, "--input",
-                     self.arguments.input_path, "--device", self.arguments.device, "--output", npu_data_output_dir]
+        if self.arguments.dump:
+            self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
+        rel_msame_dir = os.path.relpath(msame_dir)
+        msame_command_path = os.path.join(rel_msame_dir, OUT_PATH, MSAME_COMMAND_PATH)
+        msame_cmd = ["./" + msame_command_path, "--model", self.arguments.offline_model_path, "--input",
+                     self.arguments.msame_input_path, "--device", self.arguments.device, "--output", npu_data_output_dir]
         self.dynamic_input.add_dynamic_arg_for_msame(msame_cmd)
         self._make_msame_cmd_for_shape_range(msame_cmd)
         os.chdir(os.path.join(msame_dir, OUT_PATH))
@@ -304,10 +311,10 @@ class NpuDumpData(DumpData):
             bin_file_path_array = []
             for item in input_bin_files:
                 bin_file_path_array.append(os.path.join(input_path, item))
-            self.arguments.input_path = ",".join(bin_file_path_array)
+            self.arguments.msame_input_path = ",".join(bin_file_path_array)
         else:
             bin_file_path_array = utils.check_input_bin_file_path(self.arguments.input_path)
-            self.arguments.input_path = ",".join(bin_file_path_array)
+            self.arguments.msame_input_path = ",".join(bin_file_path_array)
 
     def _compare_shape_vs_bin_file(self):
         shape_size_array = self.om_parser.get_shape_size()
@@ -350,8 +357,13 @@ class NpuDumpData(DumpData):
     @staticmethod
     def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir):
         load_dict = {
-            "dump": {"dump_list": [{"model_name": model_name}], "dump_path": npu_data_output_dir, "dump_mode": "all",
-                     "dump_op_switch": "off"}}
+            "dump": {
+                "dump_list": [{"model_name": model_name}],
+                "dump_path": npu_data_output_dir,
+                "dump_mode": "all",
+                "dump_op_switch": "off"
+            }
+        }
         if os.access(acl_json_path, os.W_OK):
             try:
                 with open(acl_json_path, "w") as write_json:

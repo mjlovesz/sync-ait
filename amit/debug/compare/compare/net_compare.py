@@ -13,8 +13,10 @@ import re
 import sys
 import subprocess
 
+import numpy as np
+
 from common import utils
-from common.utils import AccuracyCompareException
+from common.utils import AccuracyCompareException, get_shape_to_directory_name
 
 MSACCUCMP_DIR_PATH = "toolkit/tools/operator_cmp/compare"
 MSACCUCMP_FILE_NAME = ["msaccucmp.py", "msaccucmp.pyc"]
@@ -51,13 +53,13 @@ class NetCompare(object):
             when invalid  msaccucmp command throw exception
         """
         self._check_pyc_to_python_version(self.msaccucmp_command_file_path, self.python_version)
-        msaccucmp_cmd = [self.python_version, self.msaccucmp_command_file_path, "compare", "-m",
+        msaccucmp_cmd = [self.python_version, self.msaccucmp_command_file_path, "compare", "-m", 
                          self.npu_dump_data_path, "-g",
                          self.cpu_dump_data_path, "-f", self.output_json_path, "-out", self.arguments.out_path]
         if self._check_msaccucmp_compare_support_advisor():
             msaccucmp_cmd.append(ADVISOR_ARGS)
         utils.print_info_log("msaccucmp command line: %s " % " ".join(msaccucmp_cmd))
-        status_code, _ = self.execute_msaccucmp_command(msaccucmp_cmd)
+        status_code, _, _ = self.execute_msaccucmp_command(msaccucmp_cmd)
         if status_code == 2 or status_code == 0:
             utils.print_info_log("Finish compare the files in directory %s with those in directory %s." % (
                 self.npu_dump_data_path, self.cpu_dump_data_path))
@@ -82,13 +84,16 @@ class NetCompare(object):
             for each_file in sorted(files):
                 if each_file.endswith(".npy"):
                     npu_dump_file[file_index] = os.path.join(dir_path, each_file)
+                    npu_data = np.load(npu_dump_file.get(file_index))
+                    golden_data = np.load(golden_net_output_info.get(file_index))
+                    np.save(npu_dump_file.get(file_index), npu_data.reshape(golden_data.shape))
                     msaccucmp_cmd = [self.python_version, self.msaccucmp_command_file_path, "compare", "-m",
                                      npu_dump_file.get(file_index), "-g", golden_net_output_info.get(file_index)]
-                    status, compare_result = self.execute_msaccucmp_command(msaccucmp_cmd, True)
+                    status, compare_result, header = self.execute_msaccucmp_command(msaccucmp_cmd, True)
                     if status == 2 or status == 0:
                         self.save_net_output_result_to_csv(npu_dump_file.get(file_index),
                                                            golden_net_output_info.get(file_index),
-                                                           compare_result)
+                                                           compare_result, header)
                         utils.print_info_log("Compare Node_output:{} completely.".format(file_index))
                     else:
                         utils.print_error_log("Failed to execute command: %s" % " ".join(msaccucmp_cmd))
@@ -174,7 +179,13 @@ class NetCompare(object):
                     writer.writerow(line)
         writer.writerow(new_content)
 
-    def save_net_output_result_to_csv(self, npu_file, golden_file, result):
+    def _process_result_to_csv(self, fp_write, npu_file_name, golden_file_name, result, header):
+        writer = csv.writer(fp_write)
+        if header:
+            writer.writerow(header)
+        writer.writerow(result)
+
+    def save_net_output_result_to_csv(self, npu_file, golden_file, result, header):
         """
         save_net_output_result_to_csv
         """
@@ -190,13 +201,20 @@ class NetCompare(object):
                 result_file_backup_path = os.path.join(dir_path, result_file_backup)
                 break
         try:
-            # read result file and write it to backup file,update the result of compare Node_output
-            with open(result_file_path, "r") as fp_read:
-                with os.fdopen(os.open(result_file_backup_path, WRITE_FLAGS, WRITE_MODES), 'w',
-                               newline="") as fp_write:
-                    self._process_result_one_line(fp_write, fp_read, npu_file_name, golden_file_name, result)
-            os.remove(result_file_path)
-            os.rename(result_file_backup_path, result_file_path)
+            if not self.arguments.dump:
+                result_file_path = os.path.join(self.arguments.out_path, "result.csv")
+                if os.path.isfile(result_file_path):
+                    header = []
+                with open(result_file_path, "a+") as fp_writer:
+                    self._process_result_to_csv(fp_writer, npu_file_name, golden_file_name, result, header)
+            else:
+                # read result file and write it to backup file,update the result of compare Node_output
+                with open(result_file_path, "r") as fp_read:
+                    with os.fdopen(os.open(result_file_backup_path, WRITE_FLAGS, WRITE_MODES), 'w',
+                                   newline="") as fp_write:
+                        self._process_result_one_line(fp_write, fp_read, npu_file_name, golden_file_name, result)
+                os.remove(result_file_path)
+                os.rename(result_file_backup_path, result_file_path)
         except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError) as error:
             utils.print_error_log('Failed to write Net_output compare result')
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR)
@@ -206,6 +224,7 @@ class NetCompare(object):
     @staticmethod
     def _catch_compare_result(log_line, catch):
         result = []
+        header = []
         try:
             if catch:
                 # get the compare result
