@@ -3,6 +3,7 @@
 declare -i ret_ok=0
 declare -i ret_run_failed=1
 
+
 check_python_package_is_install()
 {
     local PYTHON_COMMAND=$1
