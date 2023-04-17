@@ -17,7 +17,6 @@ check_python_package_is_install()
 
 check_env_valid()
 {
-    check_command_exist atc || { echo "atc cmd not valid"; return $ret_run_failed; }
     check_python_package_is_install ${PYTHON_COMMAND} "aclruntime" \
     || { echo "aclruntime package not install"; return $ret_run_failed;}
 }
