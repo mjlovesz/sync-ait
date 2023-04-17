@@ -18,7 +18,13 @@ For details about the usage restrictions of the tool, please visit: https://www.
    ```
    pip3.7.5 install onnxruntime
    ```
-4. Install TensorFlow 1.15.0.
+   
+4. Install benchmark tool.
+
+    For details, visit:https://gitee.com/ascend/amit/blob/master/amit/profile/benchmark/README_EN.md
+
+
+5. Install TensorFlow 1.15.0.
 
    For details, visit: https://bbs.huaweicloud.com/blogs/181055
 - Note: If the installation of dependent modules fails using the pip command, it is recommended to execute the command **pip3 install --upgrade pip** to avoid installation failure due to low pip version.
