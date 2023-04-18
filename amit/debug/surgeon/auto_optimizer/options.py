@@ -102,6 +102,30 @@ arg_input = click.argument(
 )
 
 
+arg_start = click.argument(
+    'start_node_name',
+    nargs=1,
+    type=click.STRING
+)
+
+
+arg_end = click.argument(
+    'end_node_name',
+    nargs=1,
+    type=click.STRING
+)
+
+
+opt_check = click.option(
+    '-c',
+    '--is-check-subgraph',
+    'is_check_subgraph',
+    is_flag=True,
+    default=False,
+    help='Whether to check subgraph. Default to False.'
+)
+
+
 arg_path = click.argument(
     'path',
     nargs=1,
