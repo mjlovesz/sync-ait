@@ -234,12 +234,15 @@ class NetCompare(object):
                     info_content = [item for item in info_content if item != '']
                     pattern_num = re.compile(r'^([0-9]+)\.?([0-9]+)?')
                     pattern_nan = re.compile(r'NaN', re.I)
+                    pattern_header = re.compile(r'Cosine|Error|Distance|Divergence|Deviation', re.I)
                     match = pattern_num.match(info_content[0])
                     if match:
                         result = info_content
                     if not match and pattern_nan.match(info_content[0]):
                         result = info_content
-            return result
+                    if not match and pattern_header.search(info_content[0]):
+                        header = info_content
+            return result, header
         except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError):
             utils.print_warn_log('Failed to parse the alg compare result!')
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR)
@@ -256,6 +259,7 @@ class NetCompare(object):
             status code
         """
         result = []
+        header = []
         process = self.execute_command_line(cmd)
         while process.poll() is None:
             line = process.stdout.readline().strip()
@@ -263,7 +267,8 @@ class NetCompare(object):
                 print(line)
                 compare_result = self._catch_compare_result(line, catch)
                 result = compare_result if compare_result else result
-        return process.returncode, result
+                header = header_result if header_result else header
+        return process.returncode, result, header
 
     @staticmethod
     def execute_command_line(cmd):

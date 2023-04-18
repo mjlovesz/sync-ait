@@ -136,7 +136,7 @@ def main():
             # if it's dynamic batch scenario, golden data files should be renamed
             utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
 
-            if args.only_output:
+            if not args.dump:
                 # only compare the final output
                 net_compare = NetCompare(npu_net_output_data_path, golden_dump_data_path, output_json_path, args)
                 net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
