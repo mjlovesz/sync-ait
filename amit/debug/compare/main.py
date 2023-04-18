@@ -18,7 +18,7 @@ from common.utils import AccuracyCompareException
 
 from compare.net_compare import NetCompare
 from npu.npu_dump_data import NpuDumpData
-
+from npu.npu_dump_data_bin2npy import data_convert
 
 def _accuracy_compare_parser(parser):
     parser.add_argument("-m", "--model-path", dest="model_path", default="",
@@ -44,6 +44,8 @@ def _accuracy_compare_parser(parser):
                              " E.g: node_name1:0;node_name2:1;node_name3:0")
     parser.add_argument("--advisor", dest="advisor", action="store_true",
                         help="<Optional> Enable advisor after compare.")
+    parser.add_argument("--convert", dest = "bin2npy", action="store_true",
+                        help="<Optional> Enable npu dump data conversion from bin to npy after compare.")
 
 
 def _generate_golden_data_model(args):
@@ -114,6 +116,8 @@ def main():
         npu_dump = NpuDumpData(args, output_json_path)
         npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data()
         expect_net_output_node = npu_dump.get_expect_output_name()
+        # convert data from bin to npy if --convert is used
+        data_convert(npu_dump_data_path, npu_net_output_data_path, args)
         # if it's dynamic batch scenario, golden data files should be renamed
         utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
         # compare the entire network
