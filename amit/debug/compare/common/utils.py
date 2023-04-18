@@ -37,7 +37,7 @@ ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
 MODEL_TYPE = ['.onnx', '.pb', '.om']
 DIM_PATTERN = r"^(-?[0-9]+)(,-?[0-9]+)*"
-DYNAMIC_DIM_PATTERN = r"^(-?[0-9-~]+)(,-?[0-9-~]+)*"
+DYNAMIC_DIM_PATTERN = r"^(?[0-9-~]+)(,-?[0-9-~]+)*"
 MAX_DEVICE_ID = 255
 SEMICOLON = ";"
 COLON = ":"
@@ -303,9 +303,10 @@ def parse_dymShape_range(dymShape_range):
         _check_shape_number(shapestr, DYNAMIC_DIM_PATTERN)
         for content in shapestr.split(","):
             if "~" in content:
-                start = int(content.split("~")[0])
-                end = int(content.split("~")[1])
-                step = int(content.split("~")[2]) if len(content.split("~")) == 3 else 1
+                content_split = content.split("~")
+                start = int(content_split[0])
+                end = int(content_split[1])
+                step = int(content_split[2]) if len(content_split) == 3 else 1
                 ranges = [str(i) for i in range(start, end+1, step)]
             elif "-" in content:
                 ranges = content.split("-")
