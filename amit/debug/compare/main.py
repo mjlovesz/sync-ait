@@ -54,7 +54,7 @@ def _generate_golden_data_model(args):
         from tf.tf_dump_data import TfDumpData
         return TfDumpData(args)
     elif ".onnx" == extension:
-        from onnx_model.onnx_dump_data import OnnxDumpData
+        from debug.compare.onnx_model.onnx_dump_data import OnnxDumpData
         return OnnxDumpData(args)
     else:
         utils.print_error_log("Only model files whose names end with .pb or .onnx are supported")
