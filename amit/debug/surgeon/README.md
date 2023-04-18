@@ -8,21 +8,20 @@ auto-optimizer（自动调优工具）使能ONNX模型在昇腾芯片的优化�
 
 ![architecture](./docs/img/architecture.png)
 
-auto-optimizer主要通过graph_optimizer、knowledge、graph_refactor和inference_component接口提供专家系统工具的自动调优能力。
+auto-optimizer主要通过graph_optimizer、graph_refactor接口提供ONNX模型自动调优能力。
 
 接口详细介绍请参见如下手册：
 
-- [x]  [knowledge](docs/knowledge_optimizer/knowledge_optimizer_framework.md)
-- [x]  [graph_refactor](auto_optimizer/graph_refactor/README.md)
-- [x]  [inference_component](auto_optimizer/inference_engine/README.md)
+- [x]  graph_optimizer：基于知识库的自动改图优化。同时支持自定义知识库，详细接口请参考[knowledge](docs/knowledge_optimizer/knowledge_optimizer_framework.md)
+- [x]  graph_refactor：改图API。[graph_refactor](auto_optimizer/graph_refactor/README.md)
 
 
 
 ## 工具安装
 
 ```shell
-git clone https://gitee.com/ascend/msadvisor.git
-cd msadvisor/auto-optimizer
+git clone https://gitee.com/ascend/amit.git
+cd amit/amit/debug/surgeon
 
 # it's recommended to upgrade pip and install wheel
 
@@ -40,14 +39,10 @@ python3 -m pip install wheel
 # without any optional feature
 python3 -m pip install .
 
-# with inference feature
-python3 -m pip install .[inference]
-
 # with inference and simplify feature
-python3 -m pip install .[inference,simplify]
+python3 -m pip install .[simplify]
 ```
 
-- inference：提供推理组件，如果需要使用optimize命令的--infer-test选项进行优化，需要安装该特性。
 - simplify：提供onnx.simplify接口。
 
 ## 工具使用
@@ -66,17 +61,18 @@ auto_optimizer <COMMAND> [OPTIONS] [ARGS]
 python3 -m auto_optimizer <COMMAND> [OPTIONS] [ARGS]
 ```
 
-其中<COMMAND>为auto_optimizer执行模式参数，取值为list、evaluate和optimize；[OPTIONS]和[ARGS]为evaluate和optimize命令的额外参数，详细介绍请参见后续“evaluate命令”和“optimize命令”章节。
+其中<COMMAND>为auto_optimizer执行模式参数，取值为list、evaluate、optimize和extract；[OPTIONS]和[ARGS]为evaluate和optimize命令的额外参数，详细介绍请参见后续“evaluate命令”和“optimize命令”章节。
 
 ### 使用流程
 
-auto-optimizer工具建议按照list、evaluate和optimize的顺序执行。
+auto-optimizer工具建议按照list、evaluate和optimize的顺序执行。如需切分子图，可使用extract命令导出子图。
 
 操作流程如下：
 
 1. 执行**list**命令列举当前支持自动调优的所有知识库。
 2. 执行**evaluate**命令搜索可以被指定知识库优化的ONNX模型。
 3. 执行**optimize**命令使用指定的知识库来优化指定的ONNX模型。
+4. 执行**extract**命令对模型进行子图切分。
 
 ### list命令
 
@@ -173,6 +169,34 @@ Applied knowledges:
 Path: aasist_bs1_ori.onnx -> aasist_bs1_ori_out.onnx
 ```
 
+### extract命令
+命令格式如下：
+
+```bash
+python3 -m auto_optimizer extract [OPTIONS] INPUT_MODEL OUTPUT_MODEL START_NODE_NAME END_NODE_NAME
+```
+
+extract 可简写为ext
+
+参数说明：
+
+| 参数              | 说明                                                                 | 是否必选 |
+|-----------------|--------------------------------------------------------------------| -------- |
+| OPTIONS         | 额外参数。可取值：<br/>    -c/--is-check-subgraph：是否校验子图。启用这个选项时，会校验切分后的子图。 | 否       |
+| INPUT_MODEL     | 输入ONNX待优化模型，必须为.onnx文件。                                            | 是       |
+| OUTPUT_MODEL    | 切分后的子图ONNX模型名称，用户自定义，必须为.onnx文件。                                   | 是       |
+| START_NODE_NAME | 起始节点名称。                                                            | 是       |
+| END_NODE_NAME   | 结束节点名称。                                                            | 是       |
+
+命令示例及输出如下：
+
+```bash
+python3 -m auto_optimizer extract origin_model.onnx sub_model.onnx node1 node2
+```
+
+```bash
+Extract the model completed, model was saved in sub_model.onnx
+```
 ## 许可证
 
 [Apache License 2.0](LICENSE)
