@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import os
 from multiprocessing import Pool
 import pathlib
 from functools import partial
@@ -250,6 +251,10 @@ def command_extract(
 ) -> None:
     if input_model == output_model:
         logging.warning('output_model is input_model, refuse to overwrite origin model!')
+        return
+    output_model_dir = os.path.dirname(os.path.abspath(output_model.as_posix()))
+    if not os.path.exists(output_model_dir):
+        print("{} is not exist.".format(output_model_dir))
         return
     onnx_graph = OnnxGraph.parse(input_model.as_posix())
     try:

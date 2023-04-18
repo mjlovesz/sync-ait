@@ -259,9 +259,13 @@ class OnnxGraph(BaseGraph):
         subgraph = OnnxGraph('extracted graph', reachable_nodes, inputs, outputs,
                              initializers, value_infos, **self._meta)
 
-        subgraph.save(subgraph_path)
-        print('Extract the model completed, model saved in {}.'.format(
-                    subgraph_path))
+        subgraph_dir = os.path.dirname(os.path.abspath(subgraph_path))
+        if not os.path.exists(subgraph_dir):
+            print("{} is not exist.".format(subgraph_dir))
+        else:
+            subgraph.save(subgraph_path)
+            print('Extract the model completed, model saved in {}.'.format(
+                        subgraph_path))
 
         if is_check_subgraph:
             try:
