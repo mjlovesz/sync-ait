@@ -14,7 +14,7 @@ import time
 
 from atc.atc_utils import AtcUtils
 from common import utils
-from common.utils import AccuracyCompareException
+from common.utils import AccuracyCompareException, get_shape_to_directory_name
 
 from compare.net_compare import NetCompare
 from npu.npu_dump_data import NpuDumpData
@@ -106,7 +106,7 @@ def main():
         utils.check_device_param_valid(args.device)
         utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
         time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
-        args.out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
+        original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
         args.out_path = original_out_path
 
         # convert the om model to json
@@ -121,7 +121,7 @@ def main():
         for input_shape in input_shapes:
             if input_shape:
                 args.input_shape = input_shape
-                args.out_path = os.path.join(original_out_path, get_shape_to_derectory_name(args.input_shape))
+                args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
 
             # generate dump data by the original model
             golden_dump = _generate_golden_data_model(args)
