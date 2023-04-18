@@ -10,8 +10,8 @@ import os
 import numpy as np
 import tensorflow as tf
 import subprocess
-from common import utils
-from common.utils import AccuracyCompareException
+from debug.compare.common import utils
+from debug.compare.common.utils import AccuracyCompareException
 
 DTYPE_MAP = {
     tf.float16: np.float16,

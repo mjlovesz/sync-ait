@@ -14,9 +14,9 @@
 
 import click
 
-from .options import MyArgs
-from .options import (
+from amit.common.options import (
     opt_model_path,
+    opt_offline_model_path,
     opt_input_path,
     opt_cann_path,
     opt_out_path,
@@ -26,10 +26,13 @@ from .options import (
     opt_output_nodes,
     opt_advisor
 )
+from debug.compare.main import cil_enter
+from debug.compare.args_adapter import MyArgs
 
 
 @click.command(name="compare", short_help='one-click network-wide accuracy analysis of TensorFlow and ONNX models.')
 @opt_model_path
+@opt_offline_model_path
 @opt_input_path
 @opt_cann_path
 @opt_out_path
@@ -40,6 +43,7 @@ from .options import (
 @opt_advisor
 def compare_cli_enter(
     model_path,
+    offline_model_path,
     input_path,
     cann_path,
     out_path,
@@ -49,11 +53,7 @@ def compare_cli_enter(
     output_nodes,
     advisor
 ) -> None:
-    my_agrs = MyArgs(model_path, input_path, cann_path, out_path, input_shape, device,
+    my_agrs = MyArgs(model_path, offline_model_path, input_path, cann_path, out_path, input_shape, device,
                      output_size, output_nodes, advisor)
     return cil_enter(my_agrs)
 
-## todo: for test
-def cil_enter(my_args:MyArgs):
-    click.echo("cil_enter, input:MyArgs")
-    return

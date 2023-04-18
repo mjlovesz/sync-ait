@@ -14,9 +14,10 @@ import time
 import numpy as np
 import pexpect
 import tensorflow as tf
-from common import utils, tf_common
-from common.dump_data import DumpData
-from common.utils import AccuracyCompareException
+
+from debug.compare.common import utils, tf_common
+from debug.compare.common.dump_data import DumpData
+from debug.compare.common.utils import AccuracyCompareException
 
 
 class TfDumpData(DumpData):

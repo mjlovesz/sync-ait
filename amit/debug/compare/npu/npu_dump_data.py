@@ -11,11 +11,11 @@ import os
 import re
 import numpy as np
 
-from common import utils
-from common.dump_data import DumpData
-from common.utils import AccuracyCompareException
-from common.dynamic_argument_bean import DynamicArgumentEnum
-from npu.om_parser import OmParser
+from debug.compare.common import utils
+from debug.compare.common.dump_data import DumpData
+from debug.compare.common.utils import AccuracyCompareException
+from debug.compare.common.dynamic_argument_bean import DynamicArgumentEnum
+from debug.compare.npu.om_parser import OmParser
 
 MSAME_DIR = "msame"
 BUILD_SH = "build.sh"

@@ -13,6 +13,7 @@
 # limitations under the License.
 import click
 
+
 @click.command(
     'list',
     short_help='List available Knowledges.[可用知识库列表]')

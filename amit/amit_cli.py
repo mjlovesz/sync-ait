@@ -1,7 +1,7 @@
 import click
 
-from debug.__main__ import debug_cli_group
-from profile.__main__ import profile_cli_group
+from debug.debug import debug_cli_group
+from profile.profile import profile_cli_group
 
 cli = click.Group(commands=[debug_cli_group, profile_cli_group])
 

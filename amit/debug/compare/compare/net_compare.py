@@ -13,8 +13,8 @@ import re
 import sys
 import subprocess
 
-from common import utils
-from common.utils import AccuracyCompareException
+from debug.compare.common import utils
+from debug.compare.common.utils import AccuracyCompareException
 
 MSACCUCMP_DIR_PATH = "toolkit/tools/operator_cmp/compare"
 MSACCUCMP_FILE_NAME = ["msaccucmp.py", "msaccucmp.pyc"]

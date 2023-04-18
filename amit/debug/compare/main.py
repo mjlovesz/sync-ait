@@ -13,13 +13,14 @@ import sys
 import time
 import click
 
-from atc.atc_utils import AtcUtils
-from common import utils
-from common.utils import AccuracyCompareException
+from debug.compare.atc.atc_utils import AtcUtils
+from debug.compare.common import utils
+from debug.compare.common.utils import AccuracyCompareException
 
-from test.net_compare import NetCompare
-from npu.npu_dump_data import NpuDumpData
-from options import MyArgs
+from debug.compare.compare.net_compare import NetCompare
+from debug.compare.npu.npu_dump_data import NpuDumpData
+from debug.compare.args_adapter import MyArgs
+
 
 def _accuracy_compare_parser(parser):
     parser.add_argument("-m", "--model-path", dest="model_path", default="",
@@ -85,40 +86,34 @@ def _check_output_node_name_mapping(original_net_output_node, golden_net_output_
             break
 
 
-def main():
-    """
-   Function Description:
-       main process function
-   Exception Description:
-       exit the program when an AccuracyCompare Exception  occurs
-   """
-    parser = argparse.ArgumentParser()
-    _accuracy_compare_parser(parser)
-    args = parser.parse_args(sys.argv[1:])
-    args.model_path = os.path.realpath(args.model_path)
-    args.offline_model_path = os.path.realpath(args.offline_model_path)
-    args.cann_path = os.path.realpath(args.cann_path)
+def argsAdapter(args):
+    return MyArgs(args.model_path, args.offline_model_path, args.input_path, args.cann_path, args.out_path, args.input_shape, args.device,
+                  args.output_size, args.output_nodes, args.advisor)
+
+def cmp_main(my_args:MyArgs):
+    my_args.offline_model_path = os.path.realpath(my_args.offline_model_path)
+    my_args.cann_path = os.path.realpath(my_args.cann_path)
     try:
-        utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
+        utils.check_file_or_directory_path(os.path.realpath(my_args.out_path), True)
         time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
-        args.out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
-        utils.check_file_or_directory_path(args.model_path)
-        utils.check_file_or_directory_path(args.offline_model_path)
-        utils.check_device_param_valid(args.device)
+        my_args.out_path = os.path.realpath(os.path.join(my_args.out_path, time_dir))
+        utils.check_file_or_directory_path(my_args.model_path)
+        utils.check_file_or_directory_path(my_args.offline_model_path)
+        utils.check_device_param_valid(my_args.device)
         # generate dump data by the original model
-        golden_dump = _generate_golden_data_model(args)
+        golden_dump = _generate_golden_data_model(my_args)
         golden_dump_data_path = golden_dump.generate_dump_data()
         golden_net_output_info = golden_dump.get_net_output_info()
         # convert the om model to json
-        output_json_path = AtcUtils(args).convert_model_to_json()
+        output_json_path = AtcUtils(my_args).convert_model_to_json()
         # compiling and running source codes
-        npu_dump = NpuDumpData(args, output_json_path)
+        npu_dump = NpuDumpData(my_args, output_json_path)
         npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data()
         expect_net_output_node = npu_dump.get_expect_output_name()
         # if it's dynamic batch scenario, golden data files should be renamed
         utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
         # compare the entire network
-        net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args)
+        net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, my_args)
         net_compare.accuracy_network_compare()
         # Check and correct the mapping of net output node name.
         if len(expect_net_output_node) == 1:
@@ -135,9 +130,25 @@ def main():
     except utils.AccuracyCompareException as error:
         sys.exit(error.error_info)
 
+def main():
+    """
+   Function Description:
+       main process function
+   Exception Description:
+       exit the program when an AccuracyCompare Exception  occurs
+   """
+    parser = argparse.ArgumentParser()
+    _accuracy_compare_parser(parser)
+    args.model_path = os.path.realpath(args.model_path)
+    args = parser.parse_args(sys.argv[1:])
+
+    my_args = argsAdapter(args)
+    return cmp_main(my_args)
+
+
 def cil_enter(my_args:MyArgs):
     click.echo("cil_enter")
-    return
+    return cmp_main(my_args)
 
 
 if __name__ == '__main__':

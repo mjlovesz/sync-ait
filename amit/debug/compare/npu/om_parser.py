@@ -10,9 +10,10 @@ import itertools
 import json
 
 import numpy as np
-from common import utils
-from common.dynamic_argument_bean import DynamicArgumentEnum
-from common.utils import AccuracyCompareException
+
+from debug.compare.common import utils
+from debug.compare.common.dynamic_argument_bean import DynamicArgumentEnum
+from debug.compare.common.utils import AccuracyCompareException
 
 GRAPH_OBJECT = "graph"
 OP_OBJECT = "op"

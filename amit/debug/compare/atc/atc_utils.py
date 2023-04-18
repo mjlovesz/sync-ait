@@ -8,8 +8,8 @@ HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
 """
 import os
 
-from common import utils
-from common.utils import AccuracyCompareException
+from debug.compare.common import utils
+from debug.compare.common.utils import AccuracyCompareException
 
 ATC_FILE_PATH = "compiler/bin/atc"
 OLD_ATC_FILE_PATH = "atc/bin/atc"

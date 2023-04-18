@@ -12,10 +12,10 @@ import os
 import numpy as np
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
-from common import utils, tf_common
+from debug.compare.common import utils, tf_common
 if tf_common.check_tf_version(tf_common.VERSION_TF2X):
     import tfdbg_ascend as dbg
-from common.utils import AccuracyCompareException
+from debug.compare.common.utils import AccuracyCompareException
 
 
 class TfDebugRunner(object):
