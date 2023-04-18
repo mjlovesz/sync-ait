@@ -17,7 +17,7 @@ import pathlib
 import click
 
 
-opt_model_path = click.option(
+opt_gold_model = click.option(
     '-gm',
     '--gold-model',
     'gold_model',
@@ -26,7 +26,7 @@ opt_model_path = click.option(
     help="<Required> The original model (.onnx or .pb) file path",
 )
 
-opt_offline_model_path = click.option(
+opt_om_model = click.option(
     "-om",
     "--om-model",
     "om_model",
