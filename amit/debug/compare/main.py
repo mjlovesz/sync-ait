@@ -139,8 +139,8 @@ def main():
    """
     parser = argparse.ArgumentParser()
     _accuracy_compare_parser(parser)
-    args.model_path = os.path.realpath(args.model_path)
     args = parser.parse_args(sys.argv[1:])
+    args.model_path = os.path.realpath(args.model_path)
 
     my_args = argsAdapter(args)
     return cmp_main(my_args)
@@ -152,4 +152,10 @@ def cil_enter(my_args:MyArgs):
 
 
 if __name__ == '__main__':
+
+    ## 区分不同入口，amit入口以及compare子工具main.py入口
+    retval = os.getcwd()
+    amit_dir = os.path.join(retval, "../../")
+    os.chdir(amit_dir)
     main()
+    os.chdir(retval)
