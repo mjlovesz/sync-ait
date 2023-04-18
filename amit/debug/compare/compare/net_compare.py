@@ -265,7 +265,7 @@ class NetCompare(object):
             line = process.stdout.readline().strip()
             if line:
                 print(line)
-                compare_result = self._catch_compare_result(line, catch)
+                compare_result, header_result = self._catch_compare_result(line, catch)
                 result = compare_result if compare_result else result
                 header = header_result if header_result else header
         return process.returncode, result, header

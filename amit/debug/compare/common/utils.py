@@ -299,8 +299,8 @@ def parse_dymShape_range(dymShape_range):
     for tensor in tensor_list:
         _check_colon_exist(dymShape_range)
         shapes = []
-        name, shapestr = tensor.split(";")
-        _check_shape_number(shapestr, DYMNAMIC_DIM_PATTERN)
+        name, shapestr = tensor.split(":")
+        _check_shape_number(shapestr, DYNAMIC_DIM_PATTERN)
         for content in shapestr.split(","):
             if "~" in content:
                 start = int(content.split("~")[0])
