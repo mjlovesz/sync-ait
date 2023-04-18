@@ -53,7 +53,7 @@ class NetCompare(object):
             when invalid  msaccucmp command throw exception
         """
         self._check_pyc_to_python_version(self.msaccucmp_command_file_path, self.python_version)
-        msaccucmp_cmd = [self.python_version, self.msaccucmp_command_file_path, "compare", "-m", 
+        msaccucmp_cmd = [self.python_version, self.msaccucmp_command_file_path, "compare", "-m",
                          self.npu_dump_data_path, "-g",
                          self.cpu_dump_data_path, "-f", self.output_json_path, "-out", self.arguments.out_path]
         if self._check_msaccucmp_compare_support_advisor():

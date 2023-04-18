@@ -118,45 +118,49 @@ def main():
         if not input_shapes:
             input_shapes.append("")
         for input_shape in input_shapes:
-            if input_shape:
-                args.input_shape = input_shape
-                args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
-
-            # generate dump data by the original model
-            golden_dump = _generate_golden_data_model(args)
-            golden_dump_data_path = golden_dump.generate_dump_data()
-            golden_net_output_info = golden_dump.get_net_output_info()
-
-            # compiling and running source codes
-            npu_dump = NpuDumpData(args, output_json_path)
-            npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data()
-            expect_net_output_node = npu_dump.get_expect_output_name()
-
-            # if it's dynamic batch scenario, golden data files should be renamed
-            utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
-
-            if not args.dump:
-                # only compare the final output
-                net_compare = NetCompare(npu_net_output_data_path, golden_dump_data_path, output_json_path, args)
-                net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
-            else:
-                # compare the entire network
-                net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args)
-                net_compare.accuracy_network_compare()
-        # Check and correct the mapping of net output node name.
-        if len(expect_net_output_node) == 1:
-            _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
-            net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
-        # print the name of the first operator whose cosine similarity is less than 0.9
-        csv_object_item = net_compare.get_csv_object_by_cosine()
-        if csv_object_item is not None:
-            utils.print_info_log(
-                "{} of the first operator whose cosine similarity is less than 0.9".format(
-                    csv_object_item.get("NPUDump")))
-        else:
-            utils.print_info_log("No operator whose cosine value is less then 0.9 exists.")
+            run(args, input_shape, output_json_path)
     except utils.AccuracyCompareException as error:
         sys.exit(error.error_info)
+
+
+def run(args, input_shape, output_json_path):
+    if input_shape:
+        args.input_shape = input_shape
+        args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
+
+    # generate dump data by the original model
+    golden_dump = _generate_golden_data_model(args)
+    golden_dump_data_path = golden_dump.generate_dump_data()
+    golden_net_output_info = golden_dump.get_net_output_info()
+
+    # compiling and running source codes
+    npu_dump = NpuDumpData(args, output_json_path)
+    npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data()
+    expect_net_output_node = npu_dump.get_expect_output_name()
+
+    # if it's dynamic batch scenario, golden data files should be renamed
+    utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
+
+    if not args.dump:
+        # only compare the final output
+        net_compare = NetCompare(npu_net_output_data_path, golden_dump_data_path, output_json_path, args)
+        net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
+    else:
+        # compare the entire network
+        net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args)
+        net_compare.accuracy_network_compare()
+    # Check and correct the mapping of net output node name.
+    if len(expect_net_output_node) == 1:
+        _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
+        net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
+    # print the name of the first operator whose cosine similarity is less than 0.9
+    csv_object_item = net_compare.get_csv_object_by_cosine()
+    if csv_object_item is not None:
+        utils.print_info_log(
+            "{} of the first operator whose cosine similarity is less than 0.9".format(
+                csv_object_item.get("NPUDump")))
+    else:
+        utils.print_info_log("No operator whose cosine value is less then 0.9 exists.")
 
 
 if __name__ == '__main__':

@@ -225,17 +225,15 @@ class NpuDumpData(DumpData):
         acl_json_path = ACL_JSON_PATH
         if not os.path.exists(acl_json_path):
             os.mknod(acl_json_path, mode=0o600)
+        benchmark_cmd = [self.python_version, "ais_infer.py", "--model", self.arguments.offline_model_path,
+                         "--input", self.arguments.benchmark_input_path, "--device", self.arguments.device,
+                         "--output", npu_data_output_dir]
         if self.arguments.dump:
             cur_dir = os.getcwd()
             acl_json_path = os.path.join(cur_dir, acl_json_path)
             self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
-            benchmark_cmd = [self.python_version, "ais_infer.py", "--model", self.arguments.offline_model_path,
-                             "--input", self.arguments.benchmark_input_path, "--device", self.arguments.device,
-                             "--output", npu_data_output_dir, "--acl_json_path", acl_json_path]
-        else:
-            benchmark_cmd = [self.python_version, "ais_infer.py", "--model", self.arguments.offline_model_path,
-                             "--input", self.arguments.benchmark_input_path, "--device", self.arguments.device,
-                             "--output", npu_data_output_dir]
+            benchmark_cmd.extend(["--acl_json_path", acl_json_path])
+
         self.dynamic_input.add_dynamic_arg_for_benchmark(benchmark_cmd)
         self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
 
