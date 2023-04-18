@@ -14,7 +14,7 @@
 
 import click
 
-from amit.common.options import (
+from common.options import (
     opt_gold_model,
     opt_om_model,
     opt_input,
