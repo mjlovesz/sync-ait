@@ -15,9 +15,9 @@
 import click
 
 from amit.common.options import (
-    opt_model_path,
-    opt_offline_model_path,
-    opt_input_path,
+    opt_gold_model,
+    opt_om_model,
+    opt_input,
     opt_cann_path,
     opt_out_path,
     opt_input_shape,
@@ -31,9 +31,9 @@ from debug.compare.args_adapter import MyArgs
 
 
 @click.command(name="compare", short_help='one-click network-wide accuracy analysis of TensorFlow and ONNX models.')
-@opt_model_path
-@opt_offline_model_path
-@opt_input_path
+@opt_gold_model
+@opt_om_model
+@opt_input
 @opt_cann_path
 @opt_out_path
 @opt_input_shape
@@ -42,9 +42,9 @@ from debug.compare.args_adapter import MyArgs
 @opt_output_nodes
 @opt_advisor
 def compare_cli_enter(
-    model_path,
-    offline_model_path,
-    input_path,
+    gold_model,
+    om_model,
+    input,
     cann_path,
     out_path,
     input_shape,
@@ -53,7 +53,7 @@ def compare_cli_enter(
     output_nodes,
     advisor
 ) -> None:
-    my_agrs = MyArgs(model_path, offline_model_path, input_path, cann_path, out_path, input_shape, device,
+    my_agrs = MyArgs(gold_model, om_model, input, cann_path, out_path, input_shape, device,
                      output_size, output_nodes, advisor)
     return cil_enter(my_agrs)
 

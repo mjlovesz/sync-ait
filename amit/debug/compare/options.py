@@ -17,28 +17,26 @@ import pathlib
 import click
 
 
-opt_model_path = click.option(
-    '-m',
-    '--model-path',
-    'model_path',
-    default="",
+opt_gold_model = click.option(
+    '-gm',
+    '--gold-model',
+    'gold_model',
     required=True,
     help="<Required> The original model (.onnx or .pb) file path",
 )
 
-opt_offline_model_path = click.option(
+opt_om_model = click.option(
     "-om",
-    "--offline-model-path",
-    "offline_model_path",
-    default="",
+    "--om-model",
+    "om_model",
     help="<Required> The offline model (.om) file path",
     required=True
 )
 
-opt_input_path = click.option(
+opt_input = click.option(
     "-i",
-    "--input-path",
-    "input_path",
+    "--input",
+    "input",
     default="",
     help="<Optional> The input data path of the model. Separate multiple inputs with commas(,)."
     " E.g: input_0.bin,input_1.bin"

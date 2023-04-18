@@ -14,9 +14,9 @@
 
 class MyArgs:
     def __init__(self,
-                 model_path,
-                 offline_model_path,
-                 input_path,
+                 gold_model, 
+                 om_model, 
+                 input,
                  cann_path,
                  out_path,
                  input_shape,
@@ -24,9 +24,9 @@ class MyArgs:
                  output_size,
                  output_nodes,
                  advisor):
-        self.model_path = model_path
-        self.offline_model_path = offline_model_path
-        self.input_path = input_path
+        self.model_path = gold_model
+        self.offline_model_path = om_model
+        self.input_path = input
         self.cann_path = cann_path
         self.out_path = out_path
         self.input_shape = input_shape

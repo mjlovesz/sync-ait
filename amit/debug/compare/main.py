@@ -132,11 +132,11 @@ def cmp_main(my_args:MyArgs):
 
 def main():
     """
-   Function Description:
-       main process function
-   Exception Description:
-       exit the program when an AccuracyCompare Exception  occurs
-   """
+    Function Description:
+        main process function
+    Exception Description:
+        exit the program when an AccuracyCompare Exception  occurs
+    """
     parser = argparse.ArgumentParser()
     _accuracy_compare_parser(parser)
     args = parser.parse_args(sys.argv[1:])
@@ -147,15 +147,8 @@ def main():
 
 
 def cil_enter(my_args:MyArgs):
-    click.echo("cil_enter")
-    return cmp_main(my_args)
+    cmp_main(my_args)
 
 
 if __name__ == '__main__':
-
-    ## 区分不同入口，amit入口以及compare子工具main.py入口
-    retval = os.getcwd()
-    amit_dir = os.path.join(retval, "../../")
-    os.chdir(amit_dir)
     main()
-    os.chdir(retval)
