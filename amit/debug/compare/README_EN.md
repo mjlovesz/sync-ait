@@ -18,7 +18,13 @@ For details about the usage restrictions of the tool, please visit: https://www.
    ```
    pip3.7.5 install onnxruntime
    ```
-4. Install TensorFlow 1.15.0.
+   
+4. Install benchmark tool.
+
+    For details, visit:https://gitee.com/ascend/amit/blob/master/amit/profile/benchmark/README_EN.md
+
+
+5. Install TensorFlow 1.15.0.
 
    For details, visit: https://bbs.huaweicloud.com/blogs/181055
 - Note: If the installation of dependent modules fails using the pip command, it is recommended to execute the command **pip3 install --upgrade pip** to avoid installation failure due to low pip version.
@@ -26,21 +32,21 @@ For details about the usage restrictions of the tool, please visit: https://www.
 
 - By downloading the package:
 
-   Download the script from the tools repository at https://gitee.com/ascend/tools to any directory on the server, for example, **$HOME/AscendProjects/tools**.
+   Download the script from the tools repository at https://gitee.com/ascend/amit to any directory on the server, for example, **$HOME/AscendProjects/amit**.
 
 - By running the **git** command:
 
    Run the following command in the **$HOME/AscendProjects** directory to download code:
 
-   **git clone https://gitee.com/ascend/tools.git**
+   **git clone https://gitee.com/ascend/amit.git**
 
 ### Tool Usage
 
-1. Go to the tool directory **msquickcmp**.
+1. Go to the tool directory **compare**.
 
 
 ```
-cd $HOME/AscendProjects/tools/msquickcmp/
+cd $HOME/AscendProjects/amit/amit/debug/compare
 ```
 
 2. Set environment variables.
