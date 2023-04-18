@@ -170,37 +170,3 @@ class KnowledgeModifyReflectionPad(KnowledgeBase):
                 graph.update_map()
 
             return True
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
