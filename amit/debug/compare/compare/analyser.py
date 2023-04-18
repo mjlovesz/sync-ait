@@ -17,7 +17,7 @@ INVALID_ROW_VALUES = {
 MONITOR_THRESHOLD = {
     "CosineSimilarity": 0.99,
     "RelativeEuclideanDistance": 0.05,
-    "KullbackLeiblerDivergence": 0.001,
+    "KullbackLeiblerDivergence": 0.005,
     "RootMeanSquareError": 1.0,
     "MeanRelativeError": 1.0,
 }
@@ -48,24 +48,27 @@ def check_element_type(value, element_type, param_name="value"):
 
 
 class Analyser:
-    def __init__(self, csv_result_file):
+    def __init__(self, csv_path):
         """
         Analyser for csv output compare result.
         Args:
-          csv_result_file: str value for csv file path.
+          csv_path: str value for csv file path, or the folder name containing a single csv result file.
 
         Examples:
         >>> from compare import analyser
-        >>> aa = analyser.Analyser({csv_result_file})
+        >>> aa = analyser.Analyser({csv_path})
         >>> _ = aa(strategy=analyser.STRATEGIES.FIRST_INVALID_OVERALL)
         """
-        check_type(csv_result_file, str, param_name="csv_result_file")
-        if not csv_result_file.endswith(".csv"):
-            raise ValueError(f"csv_result_file={csv_result_file} not endswith csv")
-        if not os.path.exists(csv_result_file):
-            raise IOError(f"csv_result_file={csv_result_file} not exists")
+        check_type(csv_path, str, param_name="csv_path")
+        if os.path.isdir(csv_path):
+            csv_path = self._get_single_csv_in_folder(csv_path)
+        if not csv_path.endswith(".csv"):
+            raise ValueError(f"csv_path={csv_path} not endswith csv")
+        if not os.path.exists(csv_path):
+            raise IOError(f"csv_path={csv_path} not exists")
+        utils.print_info_log(f"Analyser init parameter csv_path={csv_path}")
 
-        self.csv_result_file = csv_result_file
+        self.csv_path = csv_path
         self.monitor_threshold = {}
         for monitor, threshold in MONITOR_THRESHOLD.items():
             self.monitor_threshold[monitor] = (1 - threshold) if monitor in REVERSE_MONITORS else threshold
@@ -90,11 +93,12 @@ class Analyser:
             raise ValueError(f"strategy Should be one of {list(STRATEGIES)}")
 
         try:
-            with open(self.csv_result_file, "r") as csv_file:
+            with open(self.csv_path, "r") as csv_file:
                 self.csv_rows = [row for row in csv.DictReader(csv_file) if self._is_valid_row(row)]
         except IOError as csv_file_except:
-            utils.print_error_log('Failed to open"' + self.csv_result_file + '", ' + str(csv_file_except))
+            utils.print_error_log('Failed to open"' + self.csv_path + '", ' + str(csv_file_except))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
+        utils.print_info_log(f"Analyser call parameter strategy={strategy}, max_column_len={max_column_len}")
 
         self._strategy_func = self._strategy_func_dict[strategy]
         invalid_rows, invalid_monitors = self._strategy_func()
@@ -123,8 +127,16 @@ class Analyser:
         return invalid_rows, invalid_monitors
 
     @staticmethod
+    def _get_single_csv_in_folder(csv_path):
+        for file_name in os.listdir(csv_path):
+            if file_name.endswith('.csv'):
+                return os.path.join(csv_path, file_name)
+        raise IOError(f"None csv file exists in folder {csv_path}")
+
+    @staticmethod
     def _show_result(invalid_rows, invalid_monitors, max_column_len=30):
         if len(invalid_rows) == 0:
+            utils.print_info_log("None operator with accuracy issue reported")
             return
 
         utils.print_info_log("Operators may lead to inaccuracy:")
