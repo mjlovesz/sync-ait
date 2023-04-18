@@ -226,6 +226,8 @@ class NpuDumpData(DumpData):
         if not os.path.exists(acl_json_path):
             os.mknod(acl_json_path, mode=0o600)
         if self.arguments.dump:
+            cur_dir = os.getcwd()
+            acl_json_path = os.path.join(cur_dir, acl_json_path)
             self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
             benchmark_cmd = [self.python_version, "ais_infer.py", "--model", self.arguments.offline_model_path,
                              "--input", self.arguments.benchmark_input_path, "--device", self.arguments.device,
