@@ -32,21 +32,21 @@ For details about the usage restrictions of the tool, please visit: https://www.
 
 - By downloading the package:
 
-   Download the script from the tools repository at https://gitee.com/ascend/tools to any directory on the server, for example, **$HOME/AscendProjects/tools**.
+   Download the script from the tools repository at https://gitee.com/ascend/amit to any directory on the server, for example, **$HOME/AscendProjects/amit**.
 
 - By running the **git** command:
 
    Run the following command in the **$HOME/AscendProjects** directory to download code:
 
-   **git clone https://gitee.com/ascend/tools.git**
+   **git clone https://gitee.com/ascend/amit.git**
 
 ### Tool Usage
 
-1. Go to the tool directory **msquickcmp**.
+1. Go to the tool directory **compare**.
 
 
 ```
-cd $HOME/AscendProjects/tools/msquickcmp/
+cd $HOME/AscendProjects/amit/amit/debug/compare
 ```
 
 2. Set environment variables.
