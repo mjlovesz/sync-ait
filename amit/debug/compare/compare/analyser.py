@@ -1,7 +1,12 @@
+# Copyright Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+
 import os
 import csv
 import math
 from collections import namedtuple
+
+from common import utils
+from common.utils import AccuracyCompareException
 
 INVALID_ROW_VALUES = {
     "OpType": ["TransData"],
@@ -44,9 +49,21 @@ def check_element_type(value, element_type, param_name="value"):
 
 class Analyser:
     def __init__(self, csv_result_file):
+        """
+        Analyser for csv output compare result.
+        Args:
+          csv_result_file: str value for csv file path.
+
+        Examples:
+        >>> from compare import analyser
+        >>> aa = analyser.Analyser({csv_result_file})
+        >>> _ = aa(strategy=analyser.STRATEGIES.FIRST_INVALID_OVERALL)
+        """
         check_type(csv_result_file, str, param_name="csv_result_file")
         if not csv_result_file.endswith(".csv"):
-            raise ValueError("csv_result_file not endswith csv")
+            raise ValueError(f"csv_result_file={csv_result_file} not endswith csv")
+        if not os.path.exists(csv_result_file):
+            raise IOError(f"csv_result_file={csv_result_file} not exists")
 
         self.csv_result_file = csv_result_file
         self.monitor_threshold = {}
@@ -59,11 +76,26 @@ class Analyser:
         }
 
     def __call__(self, strategy=STRATEGIES.FIRST_INVALID_OVERALL, max_column_len=30):
+        """
+        Run analyser and print result info.
+        Args:
+          strategy: one of analyser.STRATEGIES.
+              - STRATEGIES.FIRST_INVALID_OVERALL means printing the first operator,
+                that any monitor value is not within threshold.
+              - STRATEGIES.FIRST_INVALID_OVERALL means printing the first operators
+                whose value is not within threshold for each monitor.
+          max_column_len: int value for each column max print length.
+        """
         if not strategy in STRATEGIES:
             raise ValueError(f"strategy Should be one of {list(STRATEGIES)}")
 
-        with open(self.csv_result_file, "r") as csv_file:
-            self.csv_rows = [row for row in csv.DictReader(csv_file) if self._is_valid_row(row)]
+        try:
+            with open(self.csv_result_file, "r") as csv_file:
+                self.csv_rows = [row for row in csv.DictReader(csv_file) if self._is_valid_row(row)]
+        except IOError as csv_file_except:
+            utils.print_error_log('Failed to open"' + self.csv_result_file + '", ' + str(csv_file_except))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
+
         self._strategy_func = self._strategy_func_dict[strategy]
         invalid_rows, invalid_monitors = self._strategy_func()
 
@@ -95,7 +127,7 @@ class Analyser:
         if len(invalid_rows) == 0:
             return
 
-        print("Operators may lead to inaccuracy:")
+        utils.print_info_log("Operators may lead to inaccuracy:")
         results = {}
         for row, monitors in zip(invalid_rows, invalid_monitors):
             for monitor in monitors:
@@ -131,11 +163,22 @@ class Analyser:
 def print_in_markdown_table(input_dict, max_column_len=30):
     """
     Print a dict in markdown table format.
-    Dict is in format liek `{"column_1": [value1, value2], "column_2": ["value_3", "value_4"]}`.
+    Dict is in format liek `{"column_1": ["value1", "value2"], "column_2": ["value_3", "value_4"]}`.
+
+    Args:
+      input_dict: dict value with keys being all str and values being all list or tuple
+          Each element in values needs to be a str.
+      max_column_len: int value for each column max print length.
 
     Exaples:
+    >>> from compare import analyser
     >>> aa = {"aa": ["11", "22", "334455"], "bb": ["cc", "dd", "eeff"]}
-    >>> print_in_markdown_table(aa)
+    >>> analyser.print_in_markdown_table(aa)
+    # |     aa |   bb |
+    # |-------:|-----:|
+    # |     11 |   cc |
+    # |     22 |   dd |
+    # | 334455 | eeff |
 
     >>> # Similar with pandas function `to_markdown`
     >>> import pandas as pd
@@ -157,21 +200,22 @@ def print_in_markdown_table(input_dict, max_column_len=30):
     max_lens = {key: max([len(ii) for ii in value]) for key, value in input_dict.items()}
     max_lens = {key: min(max(value + 1, len(key) + 1), max_column_len) for key, value in max_lens.items()}
 
-    print("|", end="")
+    print_str = "\n|"
     sep_line = "|"
     for key, max_len in max_lens.items():
-        print(" " * (max_len - len(key)) + key + " |", end="")
+        print_str += " " * (max_len - len(key)) + key + " |"
         sep_line += "-" * max_len + ":|"
-    print()
-    print(sep_line)
+    print_str += "\n"
+    print_str += sep_line + "\n"
 
     first_key = list(input_dict.keys())[0]
     for id in range(len(input_dict[first_key])):
-        print("|", end="")
+        print_str += "|"
         for key, max_len in max_lens.items():
             cur_result = input_dict[key][id]
             if len(cur_result) >= max_len:
                 cur_result = " " + cur_result[: max_len - 4] + "..."
-            print(" " * (max_len - len(cur_result)) + cur_result + " |", end="")
-        print()
-    print()
+            print_str += " " * (max_len - len(cur_result)) + cur_result + " |"
+        print_str += "\n"
+
+    print(print_str)
