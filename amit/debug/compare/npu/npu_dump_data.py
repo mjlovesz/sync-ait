@@ -222,11 +222,11 @@ class NpuDumpData(DumpData):
         npu_data_output_dir = os.path.join(self.arguments.out_path, NPU_DUMP_DATA_BASE_PATH)
         utils.create_directory(npu_data_output_dir)
         model_name, extension = utils.get_model_name_and_extension(self.arguments.offline_model_path)
-        acl_json_path = os.path.join(benchmark_dir, ACL_JSON_PATH)
+        acl_json_path = ACL_JSON_PATH
         if not os.path.exists(acl_json_path):
             os.mknod(acl_json_path, mode=0o600)
-        self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
-
+        if self.arguments.dump:
+            self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
         benchmark_cmd = [self.python_version, "ais_infer.py", "--model", self.arguments.offline_model_path, "--input",
                          self.arguments.benchmark_input_path, "--device", self.arguments.device, "--output", npu_data_output_dir,
                          "--acl_json_path", acl_json_path]
@@ -241,10 +241,12 @@ class NpuDumpData(DumpData):
         utils.execute_command(benchmark_cmd)
         os.chdir(retval)
 
-        npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
-        if not file_is_exist:
-            utils.print_error_log("The path {} dump data is not exist.".format(npu_dump_data_path))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+        npu_dump_data_path = ""
+        if self.arguments.dump:
+            npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
+            if not file_is_exist:
+                utils.print_error_log("The path {} dump data is not exist.".format(npu_dump_data_path))
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         # net output data path
         npu_net_output_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir, True)
         if not file_is_exist:
