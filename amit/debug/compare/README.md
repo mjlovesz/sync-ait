@@ -32,23 +32,23 @@
 
 - 下载压缩包方式获取。
 
-   将 https://gitee.com/ascend/tools 仓中的脚本下载至服务器的任意目录。
+   将 https://gitee.com/ascend/amit 仓中的脚本下载至服务器的任意目录。
 
-   例如存放路径为：$HOME/AscendProjects/tools。
+   例如存放路径为：$HOME/AscendProjects/amit。
 
 - 命令行使用git命令方式获取。
 
    在命令行中：$HOME/AscendProjects目录下执行以下命令下载代码。
 
-   **git clone https://gitee.com/ascend/tools.git**
+   **git clone https://gitee.com/ascend/amit.git**
 
 ### 使用方法
 
-1. 进入msquickcmp目录
+1. 进入compare目录
 
 
 ```
-cd $HOME/AscendProjects/tools/msquickcmp/
+cd $HOME/AscendProjects/amit/amit/debug/compare
 ```
 
 2. 设置环境变量
