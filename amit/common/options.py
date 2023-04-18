@@ -35,7 +35,7 @@ opt_om_model = click.option(
     required=True
 )
 
-opt_input_path = click.option(
+opt_input = click.option(
     "-i",
     "--input",
     "input",
