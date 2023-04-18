@@ -75,7 +75,7 @@ convert_and_run_model()
             $cmd || { echo "atc run $cmd failed"; return 1; }
         fi
 
-        cmd="$PYTHON_COMMAND $CUR_PATH/../ais_infer/ais_infer.py --model $om_path --loop $LOOP_COUNT --batchsize=$batchsize --output $CACHE_PATH/$batchsize --device_id=$DEVICE_ID"
+        cmd="$PYTHON_COMMAND $CUR_PATH/../ais_infer.py --model $om_path --loop $LOOP_COUNT --batchsize=$batchsize --output $CACHE_PATH/$batchsize --device=$DEVICE_ID"
         $cmd || { echo "inference run $cmd failed"; return 1; }
     done
 }
@@ -91,10 +91,10 @@ calc_throughput()
     best_batchsize=0
     best_throughput=0
     for batchsize in `seq $MAX_BATCH_NUM`; do
-        sumary_file=`find $CACHE_PATH/$batchsize -name sumary.json`
+        sumary_file=`find $CACHE_PATH/$batchsize -name *_summary.json`
         local _throughput=$(get_sumary_throughput ${sumary_file} )
         echo "batchsize:$batchsize throughput:$_throughput"
-        [[ `expr $_throughput \> $best_throughput` == 0 ]] || { best_throughput=$_throughput;best_batchsize=$batchsize; }
+        [[ `echo "$_throughput > $best_throughput" |bc` == 0 ]] || { best_throughput=$_throughput;best_batchsize=$batchsize; }
      done
     echo "calc end best_batchsize:$best_batchsize best_throughput:$best_throughput"
 }
