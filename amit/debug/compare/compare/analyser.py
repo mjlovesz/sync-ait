@@ -155,11 +155,11 @@ class Analyser:
         invalid_monitors = []
         for monitor, threshold in monitor_threshold.items():
             row_value = float(row.get(monitor, "NaN"))
-            if monitor in REVERSE_MONITORS:
-                row_value = 1 - row_value
-
             if math.isnan(row_value) or math.isinf(row_value):
                 continue
+
+            if monitor in REVERSE_MONITORS:
+                row_value = 1 - row_value
             if row_value > threshold:
                 invalid_monitors.append(monitor)
         return invalid_monitors
