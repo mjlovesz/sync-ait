@@ -18,7 +18,13 @@
    ```
    pip3.7.5 install onnxruntime
    ```
-4. 安装TensorFlow1.15.0的环境
+   
+4. 安装benchmark工具
+
+   安装参考文档：https://gitee.com/ascend/amit/blob/master/amit/profile/benchmark/README.md
+
+
+5. 安装TensorFlow1.15.0的环境
 
    安装参考文档：https://bbs.huaweicloud.com/blogs/181055
 - 注：若pip安装依赖失败，建议执行命令pip3 install --upgrade pip 进行升级，避免因pip版本过低导致安装失败。
@@ -157,6 +163,7 @@ https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxili
 | -d，--device              | 指定运行设备 [0,255]，可选参数，默认0                  | 否    |
 | --output-nodes           | 用户指定的输出节点。多个节点用英文分号（;）隔开。例如:node_name1:0;node_name2:1;node_name3:0 | 否    |
 | --output-size            | 指定模型的输出size，有几个输出，就设几个值。动态shape场景下，获取模型的输出size可能为0，用户需根据输入的shape预估一个较合适的值去申请内存。多个输出size用英文分号（,）隔开, 例如"10000,10000,10000"。 | 否    |
+| --advisor           | 在比对结束后，针对比对结果进行数据分析，给出专家建议。 | 否    |
 
 
 ### 执行案例
