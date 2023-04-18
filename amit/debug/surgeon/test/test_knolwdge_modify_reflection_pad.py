@@ -83,29 +83,3 @@ class TestKnowledgeModifyReflectionPad(unittest.TestCase, KnowledgeTestHelper):
 
 if __name__ == '__main__':
     unittest.main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
