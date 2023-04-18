@@ -8,6 +8,7 @@ graph_refactor 是 AutoOptimizer 工具的一个基础组件，提供简易的�
 - [x] 查询和修改单个节点信息
 - [x] 新增节点，根据条件插入节点
 - [x] 删除指定节点
+- [x] 选定起始节点和结束节点，切分子图
 
 ## 快速上手
 
@@ -41,6 +42,9 @@ g.insert_node('dummy_add', argmax, mode='before') # 由于 argmax 为单输入�
 
 # 保存修改好的 onnx 模型
 g.save('layernorm_modify.onnx')
+
+# 切分子图
+g.extract_subgraph("sub.onnx", "start_node_name", "end_node_name")
 ```
 
 ## 使用方法
