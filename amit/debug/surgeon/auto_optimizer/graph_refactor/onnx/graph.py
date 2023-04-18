@@ -230,10 +230,7 @@ class OnnxGraph(BaseGraph):
             if output_name not in output_name_list:
                 output_name_list.append(output_name)
 
-        # collect reachable nodes
-        top_down_visited = self._bfs_search_reachable_nodes([start_node])
-        bottom_up_visited = self._bfs_search_reachable_nodes([end_node], top_down=False)
-        reachable_nodes = top_down_visited & bottom_up_visited
+        reachable_nodes = self.get_reachable_nodes(start_node, end_node)
 
         if not reachable_nodes:
             raise ValueError("The start node {} has no path to reach the end node {}".format(start_node_name, end_node_name))
@@ -273,6 +270,13 @@ class OnnxGraph(BaseGraph):
                 print("Check subgraph failed, error is:", exp)
 
         return subgraph
+
+    def get_reachable_nodes(self, start_node: OnnxNode, end_node: OnnxNode):
+        # collect reachable nodes
+        top_down_visited = self._bfs_search_reachable_nodes([start_node])
+        bottom_up_visited = self._bfs_search_reachable_nodes([end_node], top_down=False)
+        reachable_nodes = top_down_visited & bottom_up_visited
+        return reachable_nodes
 
     def simplify(self, **kwargs) -> 'OnnxGraph':
         try:
