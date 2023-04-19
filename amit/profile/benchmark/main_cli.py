@@ -11,16 +11,16 @@ from multiprocessing import Manager
 from tqdm import tqdm
 import click
 
-from ais_bench.infer.interface import InferSession, MemorySummary
-from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
+from profile.benchmark.ais_bench.infer.interface import InferSession, MemorySummary
+from profile.benchmark.ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                     create_intensors_from_infileslist,
                                     get_narray_from_files_list,
                                     get_tensor_from_files_list,
                                     convert_real_files,
                                     pure_infer_fake_file, save_tensors_to_file)
-from ais_bench.infer.summary import summary
-from ais_bench.infer.utils import logger
-from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
+from profile.benchmark.ais_bench.infer.summary import summary
+from profile.benchmark.ais_bench.infer.utils import logger
+from profile.benchmark.ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
 from profile.benchmark.options import (
     arg_model,
     opt_input,
@@ -187,54 +187,6 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
         if args.output != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
-def str2bool(v):
-    if isinstance(v, bool):
-        return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return False
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
-
-def check_positive_integer(value):
-    ivalue = int(value)
-    if ivalue <= 0:
-        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
-    return ivalue
-
-def check_batchsize_valid(value):
-    # default value is None
-    if value is None:
-        return value
-    # input value no None
-    else:
-        return check_positive_integer(value)
-
-def check_nonnegative_integer(value):
-    ivalue = int(value)
-    if ivalue < 0:
-        raise argparse.ArgumentTypeError("%s is an invalid nonnegative int value" % value)
-    return ivalue
-
-def check_device_range_valid(value):
-    # if contain , split to int list
-    min_value = 0
-    max_value = 255
-    if ',' in value:
-        ilist = [ int(v) for v in value.split(',') ]
-        for ivalue in ilist:
-            if ivalue < min_value or ivalue > max_value:
-                raise argparse.ArgumentTypeError("{} of device:{} is invalid. valid value range is [{}, {}]".format(
-                    ivalue, value, min_value, max_value))
-        return ilist
-    else:
-		# default as single int value
-        ivalue = int(value)
-        if ivalue < min_value or ivalue > max_value:
-            raise argparse.ArgumentTypeError("device:{} is invalid. valid value range is [{}, {}]".format(
-                ivalue, min_value, max_value))
-        return ivalue
 
 def msprof_run_profiling(args):
     cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup_count=0"

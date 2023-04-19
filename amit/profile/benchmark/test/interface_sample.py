@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 
-from ais_bench.infer.interface import InferSession
+from profile.benchmark.ais_bench.infer.interface import InferSession
 
 model_path = sys.argv[1]
 

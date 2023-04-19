@@ -10,155 +10,17 @@ import pathlib
 
 import click
 from tqdm import tqdm
-from ais_bench.infer.interface import InferSession, MemorySummary
-from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
+from profile.benchmark.ais_bench.infer.interface import InferSession, MemorySummary
+from profile.benchmark.ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                     create_intensors_from_infileslist,
                                     get_narray_from_files_list,
                                     get_tensor_from_files_list,
                                     convert_real_files,
                                     pure_infer_fake_file, save_tensors_to_file)
-from ais_bench.infer.summary import summary
-from ais_bench.infer.utils import logger
-from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
+from profile.benchmark.ais_bench.infer.summary import summary
+from profile.benchmark.ais_bench.infer.utils import logger
+from profile.benchmark.ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
 
-def set_session_options(session, args):
-    # 增加校验
-    if args.dymBatch != 0:
-        session.set_dynamic_batchsize(args.dymBatch)
-    elif args.dymHW !=None:
-        hwstr = args.dymHW.split(",")
-        session.set_dynamic_hw((int)(hwstr[0]), (int)(hwstr[1]))
-    elif args.dymDims !=None:
-        session.set_dynamic_dims(args.dymDims)
-    elif args.dymShape !=None:
-        session.set_dynamic_shape(args.dymShape)
-    else:
-        session.set_staticbatch()
-
-    if args.batchsize == None:
-        args.batchsize = get_batchsize(session, args)
-        logger.info("try get model batchsize:{}".format(args.batchsize))
-
-    # 设置custom out tensors size
-    if args.outputSize != None:
-        customsizes = [int(n) for n in args.outputSize.split(',')]
-        logger.debug("set customsize:{}".format(customsizes))
-        session.set_custom_outsize(customsizes)
-
-def init_inference_session(args):
-    acl_json_path = get_acl_json_path(args)
-    session = InferSession(args.device, args.model, acl_json_path, args.debug, args.loop)
-
-    set_session_options(session, args)
-    logger.debug("session info:{}".format(session.session))
-    return session
-
-def set_dymshape_shape(session, inputs):
-    l = []
-    intensors_desc = session.get_inputs()
-    for i, input in enumerate(inputs):
-        str_shape = [ str(shape) for shape in input.shape ]
-        dyshape = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
-        l.append(dyshape)
-    dyshapes = ';'.join(l)
-    logger.debug("set dymshape shape:{}".format(dyshapes))
-    session.set_dynamic_shape(dyshapes)
-    summary.add_batchsize(inputs[0].shape[0])
-
-def set_dymdims_shape(session, inputs):
-    l = []
-    intensors_desc = session.get_inputs()
-    for i, input in enumerate(inputs):
-        str_shape = [ str(shape) for shape in input.shape ]
-        dydim = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
-        l.append(dydim)
-    dydims = ';'.join(l)
-    logger.debug("set dymdims shape:{}".format(dydims))
-    session.set_dynamic_dims(dydims)
-    summary.add_batchsize(inputs[0].shape[0])
-
-def warmup(session, args, intensors_desc, infiles):
-    # prepare input data
-    infeeds = []
-    for j, files in enumerate(infiles):
-        if args.run_mode == "tensor":
-            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
-            infeeds.append(tensor)
-        else:
-            narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
-            infeeds.append(narray)
-    session.set_loop_count(1)
-    # warmup
-    for i in range(args.warmup_count):
-        outputs = run_inference(session, args, infeeds, out_array=True)
-
-    session.set_loop_count(args.loop)
-
-    # reset summary info
-    summary.reset()
-    session.reset_sumaryinfo()
-    MemorySummary.reset()
-    logger.info("warm up {} done".format(args.warmup_count))
-
-def run_inference(session, args, inputs, out_array=False):
-    if args.auto_set_dymshape_mode == True:
-        set_dymshape_shape(session, inputs)
-    elif args.auto_set_dymdims_mode == True:
-        set_dymdims_shape(session, inputs)
-    outputs = session.run(inputs, out_array)
-    return outputs
-
-# tensor to loop infer
-def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix):
-    for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference tensor Processing')):
-        intensors = []
-        for j, files in enumerate(infiles):
-            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
-            intensors.append(tensor)
-        outputs = run_inference(session, args, intensors)
-        session.convert_tensors_to_host(outputs)
-        if output_prefix != None:
-            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
-
-# files to loop iner
-def infer_loop_files_run(session, args, intensors_desc, infileslist, output_prefix):
-    for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference files Processing')):
-        intensors = []
-        for j, files in enumerate(infiles):
-            real_files = convert_real_files(files)
-            tensor = session.create_tensor_from_fileslist(intensors_desc[j], real_files)
-            intensors.append(tensor)
-        outputs = run_inference(session, args, intensors)
-        session.convert_tensors_to_host(outputs)
-        if output_prefix != None:
-            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
-
-# First prepare the data, then execute the reference, and then write the file uniformly
-def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix):
-    outtensors = []
-    intensorslist = create_intensors_from_infileslist(infileslist, intensors_desc, session, args.pure_data_type, args.no_combine_tensor_mode)
-
-    #for inputs in intensorslist:
-    for inputs in tqdm(intensorslist, file=sys.stdout, desc='Inference Processing full'):
-        outputs = run_inference(session, args, inputs)
-        outtensors.append(outputs)
-
-    for i, outputs in enumerate(outtensors):
-        session.convert_tensors_to_host(outputs)
-        if output_prefix != None:
-            save_tensors_to_file(outputs, output_prefix, infileslist[i], args.outfmt, i, args.output_batchsize_axis)
-
-# loop numpy array to infer
-def infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix):
-    for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference array Processing')):
-        innarrays = []
-        for j, files in enumerate(infiles):
-            narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type)
-            innarrays.append(narray)
-        outputs = run_inference(session, args, innarrays)
-        session.convert_tensors_to_host(outputs)
-        if args.output != None:
-            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
 def str2bool(v):
     if isinstance(v, bool):
