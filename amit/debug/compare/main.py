@@ -121,12 +121,12 @@ def main():
         if not input_shapes:
             input_shapes.append("")
         for input_shape in input_shapes:
-            run(args, input_shape, output_json_path)
+            run(args, input_shape, output_json_path, original_out_path)
     except utils.AccuracyCompareException as error:
         sys.exit(error.error_info)
 
 
-def run(args, input_shape, output_json_path):
+def run(args, input_shape, output_json_path, original_out_path):
     if input_shape:
         args.input_shape = input_shape
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
@@ -160,12 +160,6 @@ def run(args, input_shape, output_json_path):
         _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
         net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
     analyser.Analyser(args.out_path)()
-    if csv_object_item is not None:
-        utils.print_info_log(
-            "{} of the first operator whose cosine similarity is less than 0.9".format(
-                csv_object_item.get("NPUDump")))
-    else:
-        utils.print_info_log("No operator whose cosine value is less then 0.9 exists.")
 
 
 if __name__ == '__main__':
