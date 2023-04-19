@@ -75,8 +75,5 @@ class TestKnowledgeModifyReflectionPad(unittest.TestCase, KnowledgeTestHelper):
         self.assertTrue(self.check_precision(ori_model_path, opt_model_path, feeds))
 
 
-# import pydevd_pycharm
-#
-# pydevd_pycharm.settrace('10.174.180.167', port=9993, stdoutToServer=True, stderrToServer=True)
 if __name__ == '__main__':
     unittest.main()
