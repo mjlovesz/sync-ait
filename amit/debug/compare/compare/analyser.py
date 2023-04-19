@@ -1,4 +1,16 @@
-# Copyright Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+# Copyright 2023 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
 import csv
@@ -89,41 +101,20 @@ class Analyser:
                 whose value is not within threshold for each monitor.
           max_column_len: int value for each column max print length.
         """
-        if not strategy in STRATEGIES:
+        if strategy not in STRATEGIES:
             raise ValueError(f"strategy Should be one of {list(STRATEGIES)}")
 
         try:
             with open(self.csv_path, "r") as csv_file:
-                self.csv_rows = [row for row in csv.DictReader(csv_file) if self._is_valid_row(row)]
+                csv_rows = [row for row in csv.DictReader(csv_file) if self._is_valid_row(row)]
         except IOError as csv_file_except:
             utils.print_error_log('Failed to open"' + self.csv_path + '", ' + str(csv_file_except))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from csv_file_except
         utils.print_info_log(f"Analyser call parameter strategy={strategy}, max_column_len={max_column_len}")
 
-        self._strategy_func = self._strategy_func_dict[strategy]
-        invalid_rows, invalid_monitors = self._strategy_func()
+        invalid_rows, invalid_monitors = self._strategy_func_dict.get(strategy, self._first_invalid_overall)(csv_rows)
 
         self._show_result(invalid_rows, invalid_monitors, max_column_len=max_column_len)
-        return invalid_rows, invalid_monitors
-
-    def _first_invalid_overall(self):
-        for row in self.csv_rows:
-            cur_invalid_monitors = self._get_monitors_exceeding_threshold(row, self.monitor_threshold)
-            if len(cur_invalid_monitors) > 0:
-                return [row], [cur_invalid_monitors]
-        return [], []
-
-    def _first_invalid_each(self):
-        monitor_threshold = self.monitor_threshold.copy()  # use a copy, as will pop item later
-        invalid_rows, invalid_monitors = [], []
-        for row in self.csv_rows:
-            cur_invalid_monitors = self._get_monitors_exceeding_threshold(row, monitor_threshold)
-            if len(cur_invalid_monitors) > 0:
-                invalid_rows.append(row)
-                invalid_monitors.append(cur_invalid_monitors)
-                for monitor in cur_invalid_monitors:
-                    monitor_threshold.pop(monitor)
-
         return invalid_rows, invalid_monitors
 
     @staticmethod
@@ -171,6 +162,26 @@ class Analyser:
                 return False
         return True
 
+    def _first_invalid_overall(self, csv_rows):
+        for row in csv_rows:
+            cur_invalid_monitors = self._get_monitors_exceeding_threshold(row, self.monitor_threshold)
+            if len(cur_invalid_monitors) > 0:
+                return [row], [cur_invalid_monitors]
+        return [], []
+
+    def _first_invalid_each(self, csv_rows):
+        monitor_threshold = self.monitor_threshold.copy()  # use a copy, as will pop item later
+        invalid_rows, invalid_monitors = [], []
+        for row in csv_rows:
+            cur_invalid_monitors = self._get_monitors_exceeding_threshold(row, monitor_threshold)
+            if len(cur_invalid_monitors) > 0:
+                invalid_rows.append(row)
+                invalid_monitors.append(cur_invalid_monitors)
+                for monitor in cur_invalid_monitors:
+                    monitor_threshold.pop(monitor)
+
+        return invalid_rows, invalid_monitors
+
 
 def print_in_markdown_table(input_dict, max_column_len=30):
     """
@@ -212,23 +223,22 @@ def print_in_markdown_table(input_dict, max_column_len=30):
     max_lens = {key: max([len(ii) for ii in value]) for key, value in input_dict.items()}
     max_lens = {key: min(max(value + 1, len(key) + 1), max_column_len) for key, value in max_lens.items()}
 
-    print_str = "\n|"
-    sep_line = "|"
-    for key, max_len in max_lens.items():
-        print_str += " " * (max_len - len(key)) + key + " |"
-        sep_line += "-" * max_len + ":|"
-    print_str += "\n"
-    print_str += sep_line + "\n"
+    # Table header
+    print_str = "\n"
+    print_str += "|" + " |".join([" " * (max_len - len(key)) + key for key, max_len in max_lens.items()]) + " |\n"
+    # Sep line
+    print_str += "|" + ":|".join(["-" * max_len for max_len in max_lens.values()]) + ":|\n"
 
-    num_rows = max([len(value) for value in input_dict.values()])
-    for id in range(num_rows):
-        print_str += "|"
+    # Body
+    num_rows = max([len(values) for values in input_dict.values()])
+    for row_id in range(num_rows):
+        body = []
         for key, max_len in max_lens.items():
             cur_values = input_dict[key]
-            cur_value = cur_values[id] if len(cur_values) > id else ""
+            cur_value = cur_values[row_id] if len(cur_values) > row_id else ""
             if len(cur_value) >= max_len:
                 cur_value = " " + cur_value[: max_len - 4] + "..."
-            print_str += " " * (max_len - len(cur_value)) + cur_value + " |"
-        print_str += "\n"
+            body.append(" " * (max_len - len(cur_value)) + cur_value)
+        print_str +=  "|" + " |".join(body) + " |\n"
 
-    print(print_str)
+    utils.print_info_log(print_str)
