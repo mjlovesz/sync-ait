@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .interface import BaseGraph, Node, Initializer, PlaceHolder
-from .onnx import OnnxGraph, OnnxPlaceHolder, OnnxInitializer, OnnxNode
+from debug.surgeon.auto_optimizer.graph_refactor.interface import BaseGraph, Node, Initializer, PlaceHolder
+from debug.surgeon.auto_optimizer.graph_refactor.onnx import OnnxGraph, OnnxPlaceHolder, OnnxInitializer, OnnxNode

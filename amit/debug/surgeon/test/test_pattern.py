@@ -14,8 +14,8 @@
 
 import unittest
 
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
-from auto_optimizer.pattern.pattern import Pattern
+from debug.surgeon.auto_optimizer.pattern.pattern import MATCH_PATTERN
+from debug.surgeon.auto_optimizer.pattern.pattern import Pattern
 
 
 class TestPattern(unittest.TestCase):

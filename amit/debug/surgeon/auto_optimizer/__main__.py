@@ -21,11 +21,11 @@ from typing import List
 import click
 from click_aliases import ClickAliasedGroup
 
-from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig
-from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
-from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from auto_optimizer.pattern import KnowledgeFactory
-from .options import (
+from debug.surgeon.auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from debug.surgeon.auto_optimizer.pattern import KnowledgeFactory
+from debug.surgeon.auto_optimizer.options import (
     arg_path, arg_input, arg_output,
     opt_optimizer,
     opt_recursive,

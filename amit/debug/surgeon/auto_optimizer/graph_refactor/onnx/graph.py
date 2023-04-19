@@ -22,8 +22,8 @@ import numpy as np
 from collections import deque
 from onnx import helper, GraphProto, ModelProto, OperatorSetIdProto, version_converter
 
-from .. import BaseGraph, Initializer, PlaceHolder
-from .node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
+from debug.surgeon.auto_optimizer.graph_refactor import BaseGraph, Initializer, PlaceHolder
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
 
 
 

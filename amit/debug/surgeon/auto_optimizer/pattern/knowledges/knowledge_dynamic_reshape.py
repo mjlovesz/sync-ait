@@ -16,14 +16,14 @@ import os
 import numpy as np
 import logging
 
-from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from auto_optimizer.pattern.pattern import Pattern, MATCH_PATTERN, MatchBase
-from auto_optimizer.pattern.matcher import MatchResult
-from auto_optimizer.graph_refactor.interface.base_graph import (BaseGraph, Initializer, Node)
-from auto_optimizer.graph_refactor.interface.base_node import BaseNode
-from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
-from auto_optimizer.pattern.utils import insert_squeeze, insert_unsqueeze
-from auto_optimizer.common.utils import dump_op_outputs
+from debug.surgeon.auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
+from debug.surgeon.auto_optimizer.pattern.pattern import Pattern, MATCH_PATTERN, MatchBase
+from debug.surgeon.auto_optimizer.pattern.matcher import MatchResult
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import (BaseGraph, Initializer, Node)
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_node import BaseNode
+from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
+from debug.surgeon.auto_optimizer.pattern.utils import insert_squeeze, insert_unsqueeze
+from debug.surgeon.auto_optimizer.common.utils import dump_op_outputs
 
 
 class DynamicReshapeMatch(MatchBase):

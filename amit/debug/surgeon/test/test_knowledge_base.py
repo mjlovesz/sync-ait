@@ -24,13 +24,13 @@ from onnx import (
     TensorProto,
 )
 
-from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
-from auto_optimizer.graph_refactor.interface.base_node import BaseNode
-from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from auto_optimizer.pattern.pattern import MatchBase
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
-from auto_optimizer.pattern.pattern import Pattern
-from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_node import BaseNode
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from debug.surgeon.auto_optimizer.pattern.pattern import MatchBase
+from debug.surgeon.auto_optimizer.pattern.pattern import MATCH_PATTERN
+from debug.surgeon.auto_optimizer.pattern.pattern import Pattern
+from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 
 
 class Conv1dMatch(MatchBase):

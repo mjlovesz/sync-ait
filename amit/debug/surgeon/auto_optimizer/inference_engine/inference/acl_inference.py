@@ -19,8 +19,8 @@ import subprocess
 
 import numpy as np
 
-from .inference_base import InferenceBase
-from ..data_process_factory import InferenceFactory
+from debug.surgeon.auto_optimizer.inference_engine.inference.inference_base import InferenceBase
+from debug.surgeon.auto_optimizer.inference_engine.data_process_factory import InferenceFactory
 
 try:
     from ais_bench.infer.interface import InferSession

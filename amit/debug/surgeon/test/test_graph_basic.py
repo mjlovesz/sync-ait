@@ -20,9 +20,9 @@ from typing import List, cast
 import numpy as np
 from onnx import helper, numpy_helper, GraphProto, ModelProto, OperatorSetIdProto
 
-from auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
-from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from test_node_common import is_ph_equal, is_ini_equal, is_node_equal
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from debug.surgeon.test.test_node_common import is_ph_equal, is_ini_equal, is_node_equal
 
 try:
     np_dtype_to_tensor_dtype = helper.np_dtype_to_tensor_dtype

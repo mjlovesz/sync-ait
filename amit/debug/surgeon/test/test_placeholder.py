@@ -16,8 +16,8 @@ import unittest
 
 import numpy as np
 
-from auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder
-from test_node_common import create_node
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder
+from debug.surgeon.test.test_node_common import create_node
 
 
 class TestPlaceHolder(unittest.TestCase):

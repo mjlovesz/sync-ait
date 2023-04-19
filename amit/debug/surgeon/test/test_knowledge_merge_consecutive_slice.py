@@ -21,9 +21,9 @@ from onnx import (
     TensorProto,
 )
 
-from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from auto_optimizer.pattern.knowledges.knowledge_merge_consecutive_slice import KnowledgeMergeConsecutiveSlice
-from helper import KnowledgeTestHelper, OptimizationConfig
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_merge_consecutive_slice import KnowledgeMergeConsecutiveSlice
+from debug.surgeon.test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_c2_slice_model(onnx_name, x):

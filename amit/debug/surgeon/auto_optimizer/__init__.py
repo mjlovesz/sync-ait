@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .common import Register
-from .common.config import Config
-from .pattern import KnowledgeFactory
-from .graph_refactor import OnnxGraph, OnnxPlaceHolder, OnnxInitializer, OnnxNode
+from debug.surgeon.auto_optimizer.common import Register
+from debug.surgeon.auto_optimizer.common.config import Config
+from debug.surgeon.auto_optimizer.pattern import KnowledgeFactory
+from debug.surgeon.auto_optimizer.graph_refactor import OnnxGraph, OnnxPlaceHolder, OnnxInitializer, OnnxNode

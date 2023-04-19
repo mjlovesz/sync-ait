@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .register import Register
-from .config import Config
-from .utils import format_to_module, typeassert, check_file_exist
-from .log import setup_logging
-from .singleton import Singleton
+from debug.surgeon.auto_optimizer.common.register import Register
+from debug.surgeon.auto_optimizer.common.config import Config
+from debug.surgeon.auto_optimizer.common.utils import format_to_module, typeassert, check_file_exist
+from debug.surgeon.auto_optimizer.common.log import setup_logging
+from debug.surgeon.auto_optimizer.common.singleton import Singleton
 
 __all__ = ["Register", "Config", "format_to_module", "typeassert", "check_file_exist", "setup_logging", "Singleton"]

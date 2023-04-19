@@ -15,9 +15,10 @@
 import copy
 import types
 from typing import Callable, List, Dict, Optional, Set
-from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
-from auto_optimizer.graph_refactor.interface.base_node import Node
-from .pattern import Pattern, PatternNode
+
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_node import Node
+from debug.surgeon.auto_optimizer.pattern.pattern import Pattern, PatternNode
 
 
 class MatchResult(object):
