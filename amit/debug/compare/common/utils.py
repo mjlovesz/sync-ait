@@ -37,7 +37,7 @@ ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
 MODEL_TYPE = ['.onnx', '.pb', '.om']
 DIM_PATTERN = r"^(-?[0-9]+)(,-?[0-9]+)*"
-DYNAMIC_DIM_PATTERN = r"^(?[0-9-~]+)(,-?[0-9-~]+)*"
+DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+)*"
 MAX_DEVICE_ID = 255
 SEMICOLON = ";"
 COLON = ":"
@@ -304,6 +304,7 @@ def parse_dymShape_range(dymShape_range):
         for content in shapestr.split(","):
             if "~" in content:
                 content_split = content.split("~")
+                _check_content_split_length(content_split)
                 start = int(content_split[0])
                 end = int(content_split[1])
                 step = int(content_split[2]) if len(content_split) == 3 else 1
@@ -331,6 +332,12 @@ def get_shape_to_directory_name(input_shape):
 def _check_colon_exist(input_shape):
     if ":" not in input_shape:
         print_error_log(get_shape_not_match_message(InputShapeError.FORMAT_NOT_MATCH, input_shape))
+        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+
+
+def _check_content_split_length(content_split):
+    if not content_split[1]:
+        print_error_log(get_shape_not_match_message(InputShapeError.VALUE_TYPE_NOT_MATCH, content_split[1]))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
