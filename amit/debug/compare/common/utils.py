@@ -13,8 +13,9 @@ import subprocess
 import sys
 import time
 import enum
-import numpy as np
 import itertools
+
+import numpy as np
 
 from common.dynamic_argument_bean import DynamicArgumentEnum
 
@@ -64,6 +65,7 @@ class InputShapeError(enum.Enum):
     FORMAT_NOT_MATCH = 0
     VALUE_TYPE_NOT_MATCH = 1
     NAME_NOT_MATCH = 2
+    TOO_LONG_PARAMS = 3
 
 
 def _print_log(level, msg):
@@ -291,16 +293,20 @@ def parse_input_shape(input_shape):
     return input_shapes
 
 
-def parse_dymShape_range(dymShape_range):
-    _check_colon_exist(dymShape_range)
+def parse_dymshape_range(dymshape_range):
+    _check_colon_exist(dymshape_range)
     input_shapes = {}
-    tensor_list = dymShape_range.split(";")
+    tensor_list = dymshape_range.split(";")
     info_list = []
     for tensor in tensor_list:
-        _check_colon_exist(dymShape_range)
+        _check_colon_exist(dymshape_range)
         shapes = []
         name, shapestr = tensor.split(":")
-        _check_shape_number(shapestr, DYNAMIC_DIM_PATTERN)
+        if len(shapestr) < 50:
+            _check_shape_number(shapestr, DYNAMIC_DIM_PATTERN)
+        else:
+            print_error_log(get_shape_not_match_message(InputShapeError.TOO_LONG_PARAMS, input_shape))
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
         for content in shapestr.split(","):
             if "~" in content:
                 content_split = content.split("~")
@@ -367,6 +373,8 @@ def get_shape_not_match_message(shape_error_type, value):
         message = "Input shape \"{}\" value not number".format(value)
     if shape_error_type == InputShapeError.NAME_NOT_MATCH:
         message = "Input tensor name \"{}\" not in model".format(value)
+    if shape_error_type == InputShapeError.TOO_LONG_PARAMS:
+        message = "Input \"{}\" value too long".format(value)
     return message
 
 

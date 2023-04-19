@@ -45,11 +45,13 @@ def _accuracy_compare_parser(parser):
     parser.add_argument("--advisor", dest="advisor", action="store_true",
                         help="<Optional> Enable advisor after compare.")
     parser.add_argument("-dr", "--dymShape-range", dest="dymShape_range", default="",
-                        help="<Optional> Dynamic shape range using in dynamic model, using this means ignore input_shape")
+                        help="<Optional> Dynamic shape range using in dynamic model, "
+                             "using this means ignore input_shape")
     parser.add_argument("--dump", dest="dump", default=True, type=str2bool,
                         help="<Optional> Whether to dump all the operations' ouput. Default True.")
     parser.add_argument("--convert", dest = "bin2npy", action="store_true",
                         help="<Optional> Enable npu dump data conversion from bin to npy after compare.")
+
 
 def _generate_golden_data_model(args):
     model_name, extension = utils.get_model_name_and_extension(args.model_path)
@@ -117,7 +119,7 @@ def main():
         # deal with the dymShape_range param if exists
         input_shapes = []
         if args.dymShape_range:
-            input_shapes = utils.parse_dymShape_range(args.dymShape_range)
+            input_shapes = utils.parse_dymshape_range(args.dymShape_range)
         if not input_shapes:
             input_shapes.append("")
         for input_shape in input_shapes:
