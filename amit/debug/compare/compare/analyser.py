@@ -212,22 +212,23 @@ def print_in_markdown_table(input_dict, max_column_len=30):
     max_lens = {key: max([len(ii) for ii in value]) for key, value in input_dict.items()}
     max_lens = {key: min(max(value + 1, len(key) + 1), max_column_len) for key, value in max_lens.items()}
 
-    # Table header
-    print_str = "\n"
-    print_str += "|" + " |".join([" " * (max_len - len(key)) + key for key, max_len in max_lens.items()]) + " |\n"
-    # Sep line
-    print_str += "|" + ":|".join(["-" * max_len for max_len in max_lens.values()]) + ":|\n"
+    print_str = "\n|"
+    sep_line = "|"
+    for key, max_len in max_lens.items():
+        print_str += " " * (max_len - len(key)) + key + " |"
+        sep_line += "-" * max_len + ":|"
+    print_str += "\n"
+    print_str += sep_line + "\n"
 
-    # Body
-    num_rows = max([len(ii) for ii in input_dict.values()])
-    for row_id in range(num_rows):
-        body = []
+    num_rows = max([len(value) for value in input_dict.values()])
+    for id in range(num_rows):
+        print_str += "|"
         for key, max_len in max_lens.items():
             cur_values = input_dict[key]
-            cur_value = cur_values[row_id] if len(cur_values) > row_id else ""
+            cur_value = cur_values[id] if len(cur_values) > id else ""
             if len(cur_value) >= max_len:
                 cur_value = " " + cur_value[: max_len - 4] + "..."
-            body.append(" " * (max_len - len(cur_value)) + cur_value)
-        print_str +=  "|" + " |".join(body) + " |\n"
+            print_str += " " * (max_len - len(cur_value)) + cur_value + " |"
+        print_str += "\n"
 
     print(print_str)
