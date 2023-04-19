@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import os
 from multiprocessing import Pool
 import pathlib
 from functools import partial
@@ -26,7 +27,12 @@ from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern import KnowledgeFactory
 from .options import (
-    arg_path, arg_input, arg_output,
+    arg_path,
+    arg_input,
+    arg_output,
+    arg_start,
+    arg_end,
+    opt_check,
     opt_optimizer,
     opt_recursive,
     opt_verbose,
@@ -224,6 +230,37 @@ def command_optimize(
         print('Result: Unable to optimize, no knowledges matched.')
     if infer_test:
         print('=' * 100 + '\n')
+
+
+@cli.command(
+    'extract',
+    aliases=['ext'],
+    short_help='Extract subgraph from onnx model.'
+)
+@arg_input
+@arg_output
+@arg_start
+@arg_end
+@opt_check
+def command_extract(
+    input_model: pathlib.Path,
+    output_model: pathlib.Path,
+    start_node_name: str,
+    end_node_name: str,
+    is_check_subgraph
+) -> None:
+    if input_model == output_model:
+        logging.warning('output_model is input_model, refuse to overwrite origin model!')
+        return
+    output_model_dir = os.path.dirname(os.path.abspath(output_model.as_posix()))
+    if not os.path.exists(output_model_dir):
+        print("{} is not exist.".format(output_model_dir))
+        return
+    onnx_graph = OnnxGraph.parse(input_model.as_posix())
+    try:
+        onnx_graph.extract_subgraph(output_model, start_node_name, end_node_name, is_check_subgraph)
+    except ValueError as err:
+        print(err)
 
 
 if __name__ == "__main__":

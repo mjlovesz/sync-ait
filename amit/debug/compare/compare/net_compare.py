@@ -122,34 +122,6 @@ class NetCompare(object):
                     "The python version for executing {} must be 3.7.5".format(msaccucmp_command_file_path))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_VERSION_ERROR)
 
-    def get_csv_object_by_cosine(self):
-        """
-        Function Description:
-            get operators whose cosine value is less than 0.9
-        Return Value:
-            operators object or None
-        Exception Description:
-            when invalid data throw exception
-        """
-        result_data = os.walk(self.arguments.out_path)
-        result_file_path = None
-        for dir_path, subs_paths, files in result_data:
-            if len(files) != 0:
-                result_file_path = os.path.join(dir_path, files[0])
-                break
-        try:
-            with open(result_file_path, "r") as csv_file:
-                csv_object = csv.DictReader(csv_file)
-                rows = [row for row in csv_object]
-                for item in rows:
-                    cosine_similarity = item.get("CosineSimilarity")
-                    if cosine_similarity and float(cosine_similarity) < 0.9:
-                        return item
-        except IOError as csv_file_except:
-            utils.print_error_log('Failed to open"' + result_file_path + '", ' + str(csv_file_except))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
-        return None
-
     def _process_result_one_line(self, fp_write, fp_read, npu_file_name, golden_file_name, result):
         writer = csv.writer(fp_write)
         # write header to file

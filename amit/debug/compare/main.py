@@ -15,9 +15,10 @@ import time
 from atc.atc_utils import AtcUtils
 from common import utils
 from common.utils import AccuracyCompareException, get_shape_to_directory_name, str2bool
+from compare import analyser
 from compare.net_compare import NetCompare
 from npu.npu_dump_data import NpuDumpData
-
+from npu.npu_dump_data_bin2npy import data_convert
 
 def _accuracy_compare_parser(parser):
     parser.add_argument("-m", "--model-path", dest="model_path", default="",
@@ -47,6 +48,8 @@ def _accuracy_compare_parser(parser):
                         help="<Optional> Dynamic shape range using in dynamic model, using this means ignore input_shape")
     parser.add_argument("--dump", dest="dump", default=True, type=str2bool,
                         help="<Optional> Whether to dump all the operations' ouput. Default True.")
+    parser.add_argument("--convert", dest = "bin2npy", action="store_true",
+                        help="<Optional> Enable npu dump data conversion from bin to npy after compare.")
 
 def _generate_golden_data_model(args):
     model_name, extension = utils.get_model_name_and_extension(args.model_path)
@@ -138,6 +141,9 @@ def run(args, input_shape, output_json_path):
     npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data()
     expect_net_output_node = npu_dump.get_expect_output_name()
 
+    # convert data from bin to npy if --convert is used
+    data_convert(npu_dump_data_path, npu_net_output_data_path, args)
+
     # if it's dynamic batch scenario, golden data files should be renamed
     utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
 
@@ -153,8 +159,7 @@ def run(args, input_shape, output_json_path):
     if len(expect_net_output_node) == 1:
         _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
         net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
-    # print the name of the first operator whose cosine similarity is less than 0.9
-    csv_object_item = net_compare.get_csv_object_by_cosine()
+    analyser.Analyser(args.out_path)()
     if csv_object_item is not None:
         utils.print_info_log(
             "{} of the first operator whose cosine similarity is less than 0.9".format(
