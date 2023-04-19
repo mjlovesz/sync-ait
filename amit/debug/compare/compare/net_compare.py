@@ -174,8 +174,16 @@ class NetCompare(object):
                 break
         try:
             if not self.arguments.dump:
-                result_file_path = os.path.join(self.arguments.out_path, "result.csv")
-                if os.path.isfile(result_file_path):
+                result_file_path = ""
+                for f in os.listdir(self.arguments.out_path):
+                    if f.endswith(".csv"):
+                        result_file_path = f
+                        break
+                if not result_file_path:
+                    time_suffix = time.strftime("%Y%m%d%H%M%S", time.localtime())
+                    file_name = "result_" + time_suffix + ".csv"
+                    result_file_path = os.path.join(self.arguments.out_path, file_name)
+                else:
                     header = []
                 with open(result_file_path, "a+") as fp_writer:
                     self._process_result_to_csv(fp_writer, npu_file_name, golden_file_name, result, header)
