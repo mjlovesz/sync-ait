@@ -24,7 +24,6 @@ from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 
-
 INT_MIN = -9223372036854775807
 
 
@@ -42,7 +41,7 @@ class ReflectionPadOpMatch(MatchBase):
         if node['mode'] == b'reflect':  # Exception 1: the 3rd param (axes) provided
             if len(node.inputs) > 2:
                 return False
-            if len(node.inputs) == 2:   # opset >= 10
+            if len(node.inputs) == 2:  # opset >= 10
                 if graph[node.inputs[1]] is None:  # Exception 2: cannot get padding value (usually from Initilizer)
                     return False
                 else:
@@ -76,13 +75,13 @@ class KnowledgeModifyReflectionPad(KnowledgeBase):
 
         """
 
-        if func_option == 0: # slice op params
+        if func_option == 0:  # slice op params
             slice_params = [
                 # [start, end, axes, step]
-                [1, 1+padding, 2, 1], [-1-padding, -1, 2, 1],
-                [1, 1+padding, 3, 1], [-1-padding, -1, 3, 1]
+                [1, 1 + padding, 2, 1], [-1 - padding, -1, 2, 1],
+                [1, 1 + padding, 3, 1], [-1 - padding, -1, 3, 1]
             ]
-        else:                # flip op params
+        else:  # flip op params
             slice_params = [
                 [-1, INT_MIN, 2, -1], [-1, INT_MIN, 2, -1],
                 [-1, INT_MIN, 3, -1], [-1, INT_MIN, 3, -1]
@@ -100,8 +99,6 @@ class KnowledgeModifyReflectionPad(KnowledgeBase):
             slice_op_list.append(slice_op)
 
         return slice_op_list
-
-
 
     def _modify_reflection_pad_apply(self, graph: BaseGraph, match_result: MatchResult) -> bool:
         """Replace the origin pad op for a newly organized subgraph comprised of `Slice` and `Concat`
@@ -122,7 +119,7 @@ class KnowledgeModifyReflectionPad(KnowledgeBase):
             next_node = reflection_pad.outputs[0]
 
             # 1. construct four `Slice` ops for Slice
-            slice_op_list = self._construct_slice_ops(graph, padding, func_option=0)
+            slice_op_list = self._construct_slice_ops(graph, padding)
 
             if padding == 1:
                 # 2. construct two `Concat` op
@@ -162,11 +159,10 @@ class KnowledgeModifyReflectionPad(KnowledgeBase):
                 slice_op_list[3].inputs.insert(0, concat_op1.outputs[0])
 
                 # link `Flip` nodes
-                if padding > 1:
-                    for i in range(4):
-                        flip_op_list[i].inputs.insert(0, slice_op_list[i].outputs[0])
+                for i in range(4):
+                    flip_op_list[i].inputs.insert(0, slice_op_list[i].outputs[0])
 
                 graph.remove(reflection_pad.name)
-                graph.update_map()
+            graph.update_map()
 
             return True
