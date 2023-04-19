@@ -155,11 +155,11 @@ class Analyser:
         invalid_monitors = []
         for monitor, threshold in monitor_threshold.items():
             row_value = float(row.get(monitor, "NaN"))
-            if math.isnan(row_value) or math.isinf(row_value):
-                continue
-
             if monitor in REVERSE_MONITORS:
                 row_value = 1 - row_value
+
+            if math.isnan(row_value) or math.isinf(row_value):
+                continue
             if row_value > threshold:
                 invalid_monitors.append(monitor)
         return invalid_monitors
@@ -184,13 +184,13 @@ def print_in_markdown_table(input_dict, max_column_len=30):
 
     Exaples:
     >>> from compare import analyser
-    >>> aa = {"aa": ["11", "22", "334455"], "bb": ["cc", "dd", "eeff"]}
+    >>> aa = {"aa": ["11", "22", "334455"], "bb": ["dd", "eeff"]}
     >>> analyser.print_in_markdown_table(aa)
     # |     aa |   bb |
     # |-------:|-----:|
-    # |     11 |   cc |
-    # |     22 |   dd |
-    # | 334455 | eeff |
+    # |     11 |   dd |
+    # |     22 | eeff |
+    # | 334455 |      |
 
     >>> # Similar with pandas function `to_markdown`
     >>> import pandas as pd
@@ -212,22 +212,22 @@ def print_in_markdown_table(input_dict, max_column_len=30):
     max_lens = {key: max([len(ii) for ii in value]) for key, value in input_dict.items()}
     max_lens = {key: min(max(value + 1, len(key) + 1), max_column_len) for key, value in max_lens.items()}
 
-    print_str = "\n|"
-    sep_line = "|"
-    for key, max_len in max_lens.items():
-        print_str += " " * (max_len - len(key)) + key + " |"
-        sep_line += "-" * max_len + ":|"
-    print_str += "\n"
-    print_str += sep_line + "\n"
+    # Table header
+    print_str = "\n"
+    print_str += "|" + " |".join([" " * (max_len - len(key)) + key for key, max_len in max_lens.items()]) + " |\n"
+    # Sep line
+    print_str += "|" + ":|".join(["-" * max_len for max_len in max_lens.values()]) + ":|\n"
 
-    first_key = list(input_dict.keys())[0]
-    for id in range(len(input_dict[first_key])):
-        print_str += "|"
+    # Body
+    num_rows = max([len(ii) for ii in input_dict.values()])
+    for row_id in range(num_rows):
+        body = []
         for key, max_len in max_lens.items():
-            cur_result = input_dict[key][id]
-            if len(cur_result) >= max_len:
-                cur_result = " " + cur_result[: max_len - 4] + "..."
-            print_str += " " * (max_len - len(cur_result)) + cur_result + " |"
-        print_str += "\n"
+            cur_values = input_dict[key]
+            cur_value = cur_values[row_id] if len(cur_values) > row_id else ""
+            if len(cur_value) >= max_len:
+                cur_value = " " + cur_value[: max_len - 4] + "..."
+            body.append(" " * (max_len - len(cur_value)) + cur_value)
+        print_str +=  "|" + " |".join(body) + " |\n"
 
     print(print_str)
