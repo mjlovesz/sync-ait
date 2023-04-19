@@ -151,11 +151,35 @@ class NetCompare(object):
                     writer.writerow(line)
         writer.writerow(new_content)
 
-    def _process_result_to_csv(self, fp_write, npu_file_name, golden_file_name, result, header):
-        writer = csv.writer(fp_write)
-        if header:
-            writer.writerow(header)
-        writer.writerow(result)
+
+    @staticmethod
+    def _catch_compare_result(log_line, catch):
+        result = []
+        header = []
+        try:
+            if catch:
+                # get the compare result
+                info = log_line.decode().split(INFO_FLAG)
+                if len(info) > 1:
+                    info_content = info[1].strip().split(" ")
+                    info_content = [item for item in info_content if item != '']
+                    pattern_num = re.compile(r'^([0-9]+)\.?([0-9]+)?')
+                    pattern_nan = re.compile(r'NaN', re.I)
+                    pattern_header = re.compile(r'Cosine|Error|Distance|Divergence|Deviation', re.I)
+                    match = pattern_num.match(info_content[0])
+                    if match:
+                        result = info_content
+                    if not match and pattern_nan.match(info_content[0]):
+                        result = info_content
+                    if not match and pattern_header.search(info_content[0]):
+                        header = info_content
+            return result, header
+        except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError):
+            utils.print_warn_log('Failed to parse the alg compare result!')
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR)
+        finally:
+            pass
+
 
     def save_net_output_result_to_csv(self, npu_file, golden_file, result, header):
         """
@@ -185,8 +209,8 @@ class NetCompare(object):
                     result_file_path = os.path.join(self.arguments.out_path, file_name)
                 else:
                     header = []
-                with open(result_file_path, "a+") as fp_writer:
-                    self._process_result_to_csv(fp_writer, npu_file_name, golden_file_name, result, header)
+                with open(result_file_path, "a+", WRITE_FLAGS, WRITE_MODES) as fp_writer:
+                    self._process_result_to_csv(fp_writer, result, header)
             else:
                 # read result file and write it to backup file,update the result of compare Node_output
                 with open(result_file_path, "r") as fp_read:
@@ -201,33 +225,6 @@ class NetCompare(object):
         finally:
             pass
 
-    @staticmethod
-    def _catch_compare_result(log_line, catch):
-        result = []
-        header = []
-        try:
-            if catch:
-                # get the compare result
-                info = log_line.decode().split(INFO_FLAG)
-                if len(info) > 1:
-                    info_content = info[1].strip().split(" ")
-                    info_content = [item for item in info_content if item != '']
-                    pattern_num = re.compile(r'^([0-9]+)\.?([0-9]+)?')
-                    pattern_nan = re.compile(r'NaN', re.I)
-                    pattern_header = re.compile(r'Cosine|Error|Distance|Divergence|Deviation', re.I)
-                    match = pattern_num.match(info_content[0])
-                    if match:
-                        result = info_content
-                    if not match and pattern_nan.match(info_content[0]):
-                        result = info_content
-                    if not match and pattern_header.search(info_content[0]):
-                        header = info_content
-            return result, header
-        except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError):
-            utils.print_warn_log('Failed to parse the alg compare result!')
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR)
-        finally:
-            pass
 
     def execute_msaccucmp_command(self, cmd, catch=False):
         """
@@ -272,3 +269,10 @@ class NetCompare(object):
     def _check_msaccucmp_compare_support_advisor(self):
         return self.arguments.advisor and \
                self._check_msaccucmp_compare_support_args(ADVISOR_ARGS)
+
+
+    def _process_result_to_csv(self, fp_write, result, header):
+        writer = csv.writer(fp_write)
+        if header:
+            writer.writerow(header)
+        writer.writerow(result)
