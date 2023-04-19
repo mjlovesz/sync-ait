@@ -1,8 +1,4 @@
-"""
-Function: Analysing compare result csv file
-Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2023
-"""
+# Copyright Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 
 import os
 import csv
