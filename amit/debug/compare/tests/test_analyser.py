@@ -1,3 +1,5 @@
+# Copyright Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+
 import os
 import stat
 import pytest
