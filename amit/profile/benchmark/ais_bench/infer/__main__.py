@@ -268,7 +268,7 @@ def msprof_run_profiling(args):
     ret = os.system(msprof_cmd)
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
 
-def main(args, index=0, msgq=None):
+def main(args, index=0, msgq=None, device_list=None):
     # if msgq is not None,as subproces run
     if msgq != None:
         logger.info("subprocess_{} main run".format(index))
@@ -279,18 +279,32 @@ def main(args, index=0, msgq=None):
     session = init_inference_session(args)
 
     intensors_desc = session.get_inputs()
-
-    if args.output != None:
-        if args.output_dirname is None:
-            timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
-            output_prefix = os.path.join(args.output, timestr)
+    if device_list != None and len(device_list) > 1:
+        if args.output != None:
+            if args.output_dirname is None:
+                timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
+                output_prefix = os.path.join(args.output, timestr)
+                output_prefix = os.path.join(output_prefix, "device" + str(device_list[index]) + "_" + str(index))
+            else:
+                output_prefix = os.path.join(args.output, args.output_dirname)
+                output_prefix = os.path.join(output_prefix, "device" + str(device_list[index]) + "_" + str(index))
+            if not os.path.exists(output_prefix):
+                os.makedirs(output_prefix, 0o755)
+            logger.info("output path:{}".format(output_prefix))
         else:
-            output_prefix = os.path.join(args.output, args.output_dirname)
-        if not os.path.exists(output_prefix):
-            os.makedirs(output_prefix, 0o755)
-        logger.info("output path:{}".format(output_prefix))
+            output_prefix = None
     else:
-        output_prefix = None
+        if args.output != None:
+            if args.output_dirname is None:
+                timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
+                output_prefix = os.path.join(args.output, timestr)
+            else:
+                output_prefix = os.path.join(args.output, args.output_dirname)
+            if not os.path.exists(output_prefix):
+                os.makedirs(output_prefix, 0o755)
+            logger.info("output path:{}".format(output_prefix))
+        else:
+            output_prefix = None
 
     inputs_list = [] if args.input is None else args.input.split(',')
 
@@ -359,7 +373,7 @@ def multidevice_run(args):
     for i in range(len(device_list)):
         cur_args = copy.deepcopy(args)
         cur_args.device = int(device_list[i])
-        p.apply_async(main, args=(cur_args, i, msgq), error_callback=print_subproces_run_error)
+        p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
 
     p.close()
     p.join()
