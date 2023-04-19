@@ -17,10 +17,13 @@ from multiprocessing import Pool
 import pathlib
 from functools import partial
 from typing import List
+import sys
+import os
 
 import click
 from click_aliases import ClickAliasedGroup
 
+sys.insert(0, os.path.abspath("../../../"))
 from debug.surgeon.auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig
 from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from debug.surgeon.auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
