@@ -1,7 +1,7 @@
 """
 Function: Analysing compare result csv file
 Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
+HuaWei Technologies Co.,Ltd. All Rights Reserved © 2023
 """
 
 import os
