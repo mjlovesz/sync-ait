@@ -1,5 +1,6 @@
 import argparse
 import logging
+import math
 import os
 import sys
 import time
@@ -19,6 +20,9 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
 from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
 from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
+from ais_bench.infer.utils import (get_file_content, get_file_datasize,
+                            get_fileslist_from_dir, list_split, logger,
+                            save_data_to_files)
 
 def set_session_options(session, args):
     # 增加校验
@@ -363,6 +367,37 @@ def main(args, index=0, msgq=None, device_list=None):
 def print_subproces_run_error(value):
     logger.error("subprocess run failed error_callback:{}".format(value))
 
+def seg_input_data_for_multi_process(args, inputs, jobs):
+    inputs_list = [] if inputs is None else inputs.split(',')
+    if inputs_list == None:
+        return inputs_list
+
+    fileslist = []
+    if os.path.isfile(inputs_list[0]) == True:
+        fileslist = inputs_list
+    elif os.path.isdir(inputs_list[0]):
+        for dir in inputs_list:
+            fileslist.extend(get_fileslist_from_dir(dir))
+    else:
+        logger.error('error {} not file or dir'.format(inputs_list[0]))
+        raise RuntimeError()
+
+    args.device = 0
+    session = init_inference_session(args)
+    intensors_desc = session.get_inputs()
+    chunks_elements = math.ceil(len(fileslist) / len(intensors_desc))
+    chunks = list(list_split(fileslist, chunks_elements, None))
+    fileslist = [ [] for e in range(jobs) ]
+    for i, chunk in enumerate(chunks):
+        splits_elements = math.ceil(len(chunk) / jobs)
+        splits = list(list_split(chunk, splits_elements, None))
+        for j, split in enumerate(splits):
+            fileslist[j].extend(split)
+    res = []
+    for files in fileslist:
+        res.append(','.join(list(filter(None, files))))
+    return res
+
 def multidevice_run(args):
     logger.info("multidevice:{} run begin".format(args.device))
     device_list = args.device
@@ -370,9 +405,12 @@ def multidevice_run(args):
     msgq = Manager().Queue()
 
     args.subprocess_count = len(device_list)
+    jobs = args.subprocess_count
+    splits = seg_input_data_for_multi_process(args, args.input, jobs)
     for i in range(len(device_list)):
         cur_args = copy.deepcopy(args)
         cur_args.device = int(device_list[i])
+        cur_args.input = None if splits == None else list(splits)[i]
         p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
 
     p.close()
