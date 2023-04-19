@@ -4,6 +4,7 @@ import pathlib
 import click
 import argparse
 
+
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -169,6 +170,12 @@ opt_dymDims = click.option(
     help='dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"'
 )
 
+opt_dymShape = click.option(
+    '--dymShape',
+    type=str, 
+    default=None, 
+    help='dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\"'
+)
 
 opt_outputSize = click.option(
     '--outputSize',

@@ -47,7 +47,7 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
     my_args = MyArgs(args.model, args.input, args.output, args.output_dirname, args.outfmt, args.loop, args.debug, args.device, 
-                args.dymBatch, args.dymHW, args.dymDims, args.outputSize, args.auto_set_dymshape_mode, 
+                args.dymBatch, args.dymHW, args.dymDims, args.dymShape, args.outputSize, args.auto_set_dymshape_mode, 
                 args.auto_set_dymdims_mode, args.batchsize, args.pure_data_type, args.profiler, args.dump, 
                 args.acl_json_path, args.output_batchsize_axis, args.run_mode, args.display_all_summary, 
                 args.warmup_count, args.dymShape_range)

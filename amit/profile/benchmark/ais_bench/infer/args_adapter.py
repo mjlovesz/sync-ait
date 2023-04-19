@@ -1,5 +1,10 @@
 class MyArgs():
-    def __init__(self, model, input, output, output_dirname, outfmt, loop, debug, device, dymBatch, dymHW, dymDims, outputSize, auto_set_dymshape_mode, auto_set_dymdims_mode, batchsize, pure_data_type, profiler, dump, acl_json_path, output_batchsize_axis, run_mode, display_all_summary, warmup_count, dymShape_range):
+    def __init__(self, model, input, output, output_dirname, outfmt, loop, 
+                 debug, device, dymBatch, dymHW, dymDims, 
+                 dymShape, outputSize, auto_set_dymshape_mode, 
+                 auto_set_dymdims_mode, batchsize, pure_data_type, 
+                 profiler, dump, acl_json_path, output_batchsize_axis, 
+                 run_mode, display_all_summary, warmup_count, dymShape_range):
         self.model = model
         self.input = input
         self.output = output
@@ -11,6 +16,7 @@ class MyArgs():
         self.dymBatch = dymBatch
         self.dymHW = dymHW
         self.dymDims = dymDims
+        self.dymShape = dymShape
         self.outputSize = outputSize
         self.auto_set_dymshape_mode = auto_set_dymshape_mode
         self.auto_set_dymdims_mode = auto_set_dymdims_mode

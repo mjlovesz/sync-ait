@@ -14,6 +14,7 @@ from profile.benchmark.options import (
     opt_dymBatch,
     opt_dymHW,
     opt_dymDims,
+    opt_dymShape,
     opt_outputSize,
     opt_auto_set_dymshape_mode,
     opt_auto_set_dymdims_mode,
@@ -29,7 +30,7 @@ from profile.benchmark.options import (
     opt_dymShape_range
 )
 
-        
+
 @click.group()
 def cli() -> None:
     '''main entrance of auto optimizer.'''
@@ -47,6 +48,7 @@ def cli() -> None:
 @opt_dymBatch
 @opt_dymHW
 @opt_dymDims
+@opt_dymShape
 @opt_outputSize
 @opt_auto_set_dymshape_mode
 @opt_auto_set_dymdims_mode
@@ -61,12 +63,12 @@ def cli() -> None:
 @opt_warmup_count
 @opt_dymShape_range
 def benchmark_cli_enter(model, input, output, output_dirname, outfmt, loop, debug, device, 
-                        dymBatch, dymHW, dymDims, outputSize, auto_set_dymshape_mode, 
+                        dymBatch, dymHW, dymDims, dymShape, outputSize, auto_set_dymshape_mode, 
                         auto_set_dymdims_mode, batchsize, pure_data_type, profiler, dump, 
                         acl_json_path, output_batchsize_axis, run_mode, display_all_summary, 
                         warmup_count, dymShape_range):
     args = MyArgs(model, input, output, output_dirname, outfmt, loop, debug, device, 
-                  dymBatch, dymHW, dymDims, outputSize, auto_set_dymshape_mode, 
+                  dymBatch, dymHW, dymDims, dymShape, outputSize, auto_set_dymshape_mode, 
                   auto_set_dymdims_mode, batchsize, pure_data_type, profiler, dump, 
                   acl_json_path, output_batchsize_axis, run_mode, display_all_summary, 
                   warmup_count, dymShape_range)
