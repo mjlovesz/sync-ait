@@ -16,6 +16,7 @@ from atc.atc_utils import AtcUtils
 from common import utils
 from common.utils import AccuracyCompareException
 
+from compare import analyser
 from compare.net_compare import NetCompare
 from npu.npu_dump_data import NpuDumpData
 from npu.npu_dump_data_bin2npy import data_convert
@@ -127,14 +128,9 @@ def main():
         if len(expect_net_output_node) == 1:
             _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
             net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
-        # print the name of the first operator whose cosine similarity is less than 0.9
-        csv_object_item = net_compare.get_csv_object_by_cosine()
-        if csv_object_item is not None:
-            utils.print_info_log(
-                "{} of the first operator whose cosine similarity is less than 0.9".format(
-                    csv_object_item.get("NPUDump")))
-        else:
-            utils.print_info_log("No operator whose cosine value is less then 0.9 exists.")
+
+        # print operators whose cosine_similarity / mse or other monitor value not in a preset threhold
+        analyser.Analyser(args.out_path)()
     except utils.AccuracyCompareException as error:
         sys.exit(error.error_info)
 
