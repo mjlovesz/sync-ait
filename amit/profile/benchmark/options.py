@@ -1,26 +1,8 @@
-import logging
-import os
-import sys
-import time
-import shutil
-import copy
 from multiprocessing import Pool
 from multiprocessing import Manager
 import pathlib
-
 import click
-from tqdm import tqdm
-from profile.benchmark.ais_bench.infer.interface import InferSession, MemorySummary
-from profile.benchmark.ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
-                                    create_intensors_from_infileslist,
-                                    get_narray_from_files_list,
-                                    get_tensor_from_files_list,
-                                    convert_real_files,
-                                    pure_infer_fake_file, save_tensors_to_file)
-from profile.benchmark.ais_bench.infer.summary import summary
-from profile.benchmark.ais_bench.infer.utils import logger
-from profile.benchmark.ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
-
+import argparse
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -79,8 +61,8 @@ def check_positive_integer(value):
     return ivalue
 
 
-arg_model = click.argument(
-    'model',
+opt_model = click.option(
+    "-m", "--model", required=True, help="the path of the om model",
     type=click.Path(
         exists=True,
         file_okay=True,
