@@ -12,10 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .knowledges.knowledge_base import KnowledgeBase
-from .knowledge_factory import KnowledgeFactory
-
-from .knowledges import *
-from .pattern import Pattern
+from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
+from debug.surgeon.auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
+from debug.surgeon.auto_optimizer.pattern.knowledges import *
+from debug.surgeon.auto_optimizer.pattern.pattern import Pattern
 
 __all__ = ["KnowledgeBase", "KnowledgeFactory", "Pattern"]

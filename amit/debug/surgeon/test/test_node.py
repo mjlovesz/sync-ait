@@ -16,8 +16,8 @@ import unittest
 
 from onnx import helper
 
-from auto_optimizer.graph_refactor.onnx.node import OnnxNode
-from test_node_common import create_node
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.node import OnnxNode
+from debug.surgeon.test.test_node_common import create_node
 
 
 class TestNode(unittest.TestCase):

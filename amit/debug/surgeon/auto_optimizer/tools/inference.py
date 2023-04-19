@@ -18,15 +18,15 @@ import logging
 
 from multiprocessing import Pool, Manager
 
-from auto_optimizer.common.config import Config
-from auto_optimizer.common import Register
-from auto_optimizer.common.log import LogLevel, setup_logging
+from debug.surgeon.auto_optimizer.common.config import Config
+from debug.surgeon.auto_optimizer.common import Register
+from debug.surgeon.auto_optimizer.common.log import LogLevel, setup_logging
 
-from auto_optimizer.inference_engine.data_process_factory import EvaluateFactory
-from auto_optimizer.inference_engine.data_process_factory import PreProcessFactory
-from auto_optimizer.inference_engine.data_process_factory import PostProcessFactory
-from auto_optimizer.inference_engine.data_process_factory import InferenceFactory
-from auto_optimizer.inference_engine.data_process_factory import DatasetFactory
+from debug.surgeon.auto_optimizer.inference_engine.data_process_factory import EvaluateFactory
+from debug.surgeon.auto_optimizer.inference_engine.data_process_factory import PreProcessFactory
+from debug.surgeon.auto_optimizer.inference_engine.data_process_factory import PostProcessFactory
+from debug.surgeon.auto_optimizer.inference_engine.data_process_factory import InferenceFactory
+from debug.surgeon.auto_optimizer.inference_engine.data_process_factory import DatasetFactory
 
 logging = logging.getLogger("auto-optimizer")
 setup_logging(level=LogLevel.WARNING)

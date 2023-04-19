@@ -15,10 +15,10 @@
 import unittest
 import numpy as np
 
-from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from auto_optimizer.pattern.knowledge_factory import KnowledgeType
-from auto_optimizer.pattern.knowledges.knowledge_type_cast import KnowledgeTypeCast
-from helper import KnowledgeTestHelper, OptimizationConfig
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from debug.surgeon.auto_optimizer.pattern.knowledge_factory import KnowledgeType
+from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_type_cast import KnowledgeTypeCast
+from debug.surgeon.test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_type_cast_model(onnx_name, x: np.ndarray, y: np.ndarray, value_type: np.dtype):

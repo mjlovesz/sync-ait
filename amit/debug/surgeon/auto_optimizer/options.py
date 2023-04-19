@@ -16,8 +16,8 @@ import pathlib
 
 import click
 
-from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer
-from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
+from debug.surgeon.auto_optimizer.graph_optimizer.optimizer import GraphOptimizer
+from debug.surgeon.auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 
 
 def convert_to_graph_optimizer(ctx: click.Context, param: click.Option, value: str) -> GraphOptimizer:

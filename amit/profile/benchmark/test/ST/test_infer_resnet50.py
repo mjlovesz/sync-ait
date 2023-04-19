@@ -9,7 +9,7 @@ import aclruntime
 import numpy as np
 import pytest
 from test_common import TestCommonClass
-from ais_bench.infer.interface import InferSession
+from profile.benchmark.ais_bench.infer.interface import InferSession
 
 
 class TestClass():

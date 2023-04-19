@@ -14,7 +14,7 @@
 
 
 from typing import Callable, Dict, Optional, Type
-from .knowledges.knowledge_base import KnowledgeBase
+from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 
 KnowledgeType = Type[KnowledgeBase]
 

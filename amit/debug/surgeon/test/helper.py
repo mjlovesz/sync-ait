@@ -21,10 +21,10 @@ from typing import Any, Dict, List, Tuple
 from numpy.typing import NDArray
 import onnxruntime as ort
 
-from auto_optimizer.common.utils import meet_precision
-from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer
-from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
-from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
+from debug.surgeon.auto_optimizer.common.utils import meet_precision
+from debug.surgeon.auto_optimizer.graph_optimizer.optimizer import GraphOptimizer
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 
 ort.set_default_logger_severity(3)
 

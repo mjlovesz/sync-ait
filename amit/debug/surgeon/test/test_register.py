@@ -15,7 +15,7 @@
 import os
 import unittest
 
-from auto_optimizer.common import Register
+from debug.surgeon.auto_optimizer.common import Register
 
 
 class TestRegister(unittest.TestCase):

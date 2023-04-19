@@ -18,14 +18,14 @@ import logging
 
 import numpy as np
 
-from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
-from auto_optimizer.graph_refactor.interface.base_node import Node, Initializer
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
-from auto_optimizer.pattern.pattern import Pattern
-from auto_optimizer.pattern.matcher import MatchResult
-from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
-from auto_optimizer.pattern.utils import HasInputValue, NextNodeCount, AllNextnodesAreGather
+from debug.surgeon.auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_node import Node, Initializer
+from debug.surgeon.auto_optimizer.pattern.pattern import MATCH_PATTERN
+from debug.surgeon.auto_optimizer.pattern.pattern import Pattern
+from debug.surgeon.auto_optimizer.pattern.matcher import MatchResult
+from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
+from debug.surgeon.auto_optimizer.pattern.utils import HasInputValue, NextNodeCount, AllNextnodesAreGather
 
 
 # QKV Slice 改图的简单图示，将MatMul到Transpose0的算子拆分为若干份，去掉Gather算子

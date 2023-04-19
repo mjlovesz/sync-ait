@@ -17,8 +17,8 @@ import re
 import logging
 from abc import ABC
 
-from ..dataset_base import DatasetBase
-from ...data_process_factory import DatasetFactory
+from debug.surgeon.auto_optimizer.inference_engine.datasets.dataset_base import DatasetBase
+from debug.surgeon.auto_optimizer.inference_engine.data_process_factory import DatasetFactory
 
 logging = logging.getLogger("auto-optimizer")
 

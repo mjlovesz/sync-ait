@@ -4,8 +4,8 @@ import random
 import time
 import numpy as np
 
-from ais_bench.infer.summary import summary
-from ais_bench.infer.utils import (get_file_content, get_file_datasize,
+from profile.benchmark.ais_bench.infer.summary import summary
+from profile.benchmark.ais_bench.infer.utils import (get_file_content, get_file_datasize,
                             get_fileslist_from_dir, list_split, logger,
                             save_data_to_files)
 
