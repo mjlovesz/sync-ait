@@ -11,12 +11,11 @@ import argparse
 import os
 import sys
 import time
-import click
+sys.path.insert(0, os.path.abspath("../../")) ##保证amit入口和debug/compare入口
 
 from debug.compare.atc.atc_utils import AtcUtils
 from debug.compare.common import utils
 from debug.compare.common.utils import AccuracyCompareException
-
 from debug.compare.compare.net_compare import NetCompare
 from debug.compare.npu.npu_dump_data import NpuDumpData
 from debug.compare.args_adapter import MyArgs

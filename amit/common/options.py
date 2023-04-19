@@ -21,18 +21,16 @@ opt_gold_model = click.option(
     '-gm',
     '--gold-model',
     'gold_model',
-    default="",
     required=True,
-    help="<Required> The original model (.onnx or .pb) file path",
+    help="The original model (.onnx or .pb) file path",
 )
 
 opt_om_model = click.option(
     "-om",
     "--om-model",
     "om_model",
-    default="",
-    help="<Required> The offline model (.om) file path",
-    required=True
+    required=True,
+    help="The offline model (.om) file path",
 )
 
 opt_input = click.option(
@@ -40,7 +38,7 @@ opt_input = click.option(
     "--input",
     "input",
     default="",
-    help="<Optional> The input data path of the model. Separate multiple inputs with commas(,)."
+    help="The input data path of the model. Separate multiple inputs with commas(,)."
     " E.g: input_0.bin,input_1.bin"
 )
 
@@ -49,7 +47,7 @@ opt_cann_path = click.option(
     "--cann-path",
     "cann_path",
     default="/usr/local/Ascend/ascend-toolkit/latest/",
-    help="<Optional> The CANN installation path"
+    help="The CANN installation path"
 )
 
 opt_out_path = click.option(
@@ -57,7 +55,7 @@ opt_out_path = click.option(
     "--out-path",
     "out_path",
     default="",
-    help="<Optional> The output path"
+    help="The output path"
 )
 
 opt_input_shape = click.option(
@@ -65,8 +63,8 @@ opt_input_shape = click.option(
     "--input-shape",
     "input_shape",
     default="",
-    help="<Optional> Shape of input shape. Separate multiple nodes with semicolons(;)."
-         " E.g: input_name1:1,224,224,3;input_name2:3,300"
+    help="Shape of input shape. Separate multiple nodes with semicolons(;)."
+         "E.g: input_name1:1,224,224,3;input_name2:3,300"
 )
 
 opt_device = click.option(
@@ -74,27 +72,27 @@ opt_device = click.option(
     "--device",
     "device",
     default="0",
-    help="<Optional> Input device ID [0, 255], default is 0."
+    help="Input device ID [0, 255], default is 0."
 )
 
 opt_output_size = click.option(
     "--output-size",
     "output_size",
     default="",
-    help="<Optional> The size of output. Separate multiple sizes with commas(,). E.g: 10200,34000"
+    help="The size of output. Separate multiple sizes with commas(,). E.g: 10200,34000"
 )
 
 opt_output_nodes = click.option(
     "--output-nodes",
     "output_nodes",
     default="",
-    help="<Optional> Output nodes designated by user. Separate multiple nodes with semicolons(;)."
-         " E.g: node_name1:0;node_name2:1;node_name3:0"
+    help="Output nodes designated by user. Separate multiple nodes with semicolons(;)."
+         "E.g: node_name1:0;node_name2:1;node_name3:0"
 )
 
 opt_advisor = click.option(
     "--advisor",
     "advisor",
     is_flag=True,
-    help="<Optional> Enable advisor after compare."
+    help="Enable advisor after compare."
 )
