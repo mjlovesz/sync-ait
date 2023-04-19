@@ -106,7 +106,7 @@ def evaluate_onnx(
         return []
 
 
-@click.group(cls=ClickAliasedGroup)
+@click.group(name="surgeon", cls=ClickAliasedGroup)
 def cli() -> None:
     '''main entrance of auto optimizer.'''
     pass
