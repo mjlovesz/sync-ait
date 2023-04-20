@@ -12,6 +12,7 @@ import stat
 import re
 import sys
 import subprocess
+import time
 
 import numpy as np
 
@@ -209,7 +210,7 @@ class NetCompare(object):
                     result_file_path = os.path.join(self.arguments.out_path, file_name)
                 else:
                     header = []
-                with open(result_file_path, "a+", WRITE_FLAGS, WRITE_MODES) as fp_writer:
+                with os.fdopen(os.open(result_file_path, WRITE_FLAGS, WRITE_MODES), "a+") as fp_writer:
                     self._process_result_to_csv(fp_writer, result, header)
             else:
                 # read result file and write it to backup file,update the result of compare Node_output
