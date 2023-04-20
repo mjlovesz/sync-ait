@@ -91,4 +91,5 @@ def get_args():
 
 
 if __name__ == "__main__":
-    benchmark_cli_enter()
+    args = get_args()
+    main_enter(args)
