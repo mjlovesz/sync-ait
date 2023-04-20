@@ -31,7 +31,7 @@ from profile.benchmark.options import (
 )
 
 
-@click.command(name="benchmark", short_help = "")
+@click.command(name="benchmark", short_help = "Inference tool to get performance data including latency and throughput")
 @opt_model
 @opt_input
 @opt_output
