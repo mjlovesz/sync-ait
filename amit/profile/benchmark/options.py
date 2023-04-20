@@ -5,7 +5,7 @@ import click
 import argparse
 
 
-def str2bool(v):
+def str2bool(ctx, param, v):
     if isinstance(v, bool):
         return v
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -15,13 +15,13 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
 
-def check_positive_integer(value):
+def check_positive_integer(ctx, param, value):
     ivalue = int(value)
     if ivalue <= 0:
         raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
     return ivalue
 
-def check_batchsize_valid(value):
+def check_batchsize_valid(ctx, param, value):
     # default value is None
     if value is None:
         return value
@@ -29,13 +29,13 @@ def check_batchsize_valid(value):
     else:
         return check_positive_integer(value)
 
-def check_nonnegative_integer(value):
+def check_nonnegative_integer(ctx, param, value):
     ivalue = int(value)
     if ivalue < 0:
         raise argparse.ArgumentTypeError("%s is an invalid nonnegative int value" % value)
     return ivalue
 
-def check_device_range_valid(value):
+def check_device_range_valid(ctx, param, value):
     # if contain , split to int list
     min_value = 0
     max_value = 255
@@ -56,14 +56,17 @@ def check_device_range_valid(value):
 
 
 opt_model = click.option(
-    "-m", "--model", required=True, help="the path of the om model",
+    "-m",
+    "--model",
+    required=True,
     type=click.Path(
         exists=True,
         file_okay=True,
         dir_okay=False,
         readable=True,
         path_type=pathlib.Path
-    )
+    ),
+    help="the path of the om model"
 )
 
 
@@ -134,7 +137,7 @@ opt_device = click.option(
     '-d',
     '--device',
     default=0,
-    type=int,
+    type=str,
     callback=check_device_range_valid,
     help='the NPU device ID to use.valid value range is [0, 255]'
 )
@@ -142,6 +145,7 @@ opt_device = click.option(
 
 opt_dymBatch = click.option(
     '--dymBatch',
+    'dymBatch',
     default=0,
     type=int,
     help='dynamic batch size param, such as --dymBatch 2'
@@ -150,6 +154,7 @@ opt_dymBatch = click.option(
 
 opt_dymHW = click.option(
     '--dymHW',
+    'dymHW',
     default=None,
     type=str,
     help='dynamic image size param, such as --dymHW \"300,500\"'
@@ -158,6 +163,7 @@ opt_dymHW = click.option(
 
 opt_dymDims = click.option(
     '--dymDims',
+    'dymDims',
     default=None,
     type=str,
     help='dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"'
@@ -165,6 +171,7 @@ opt_dymDims = click.option(
 
 opt_dymShape = click.option(
     '--dymShape',
+    'dymShape',
     type=str, 
     default=None, 
     help='dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\"'
@@ -172,6 +179,7 @@ opt_dymShape = click.option(
 
 opt_outputSize = click.option(
     '--outputSize',
+    'outputSize',
     default=None,
     type=str,
     help='output size for dynamic shape mode'
@@ -205,7 +213,7 @@ opt_batchsize = click.option(
 opt_pure_data_type = click.option(
     '--pure_data_type',
     default="zero",
-    type=click.Choice("zero", "random"),
+    type=click.Choice(["zero", "random"]),
     help='null data type for pure inference(zero or random)'
 )
 

@@ -6,13 +6,56 @@ sys.path.insert(0, os.path.abspath("../../")) ##保证amit入口和debug/compare
 from profile.benchmark.ais_bench.infer.utils import logger
 from profile.benchmark.ais_bench.infer.main_enter import main_enter
 from profile.benchmark.ais_bench.infer.args_adapter import MyArgs
-from profile.benchmark.options import (
-    str2bool,
-    check_positive_integer,
-    check_device_range_valid,
-    check_batchsize_valid,
-    check_nonnegative_integer
-)
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
+
+def check_positive_integer(value):
+    ivalue = int(value)
+    if ivalue <= 0:
+        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
+    return ivalue
+
+def check_batchsize_valid(value):
+    # default value is None
+    if value is None:
+        return value
+    # input value no None
+    else:
+        return check_positive_integer(value)
+
+def check_nonnegative_integer(value):
+    ivalue = int(value)
+    if ivalue < 0:
+        raise argparse.ArgumentTypeError("%s is an invalid nonnegative int value" % value)
+    return ivalue
+
+def check_device_range_valid(value):
+    # if contain , split to int list
+    min_value = 0
+    max_value = 255
+    if ',' in value:
+        ilist = [ int(v) for v in value.split(',') ]
+        for ivalue in ilist:
+            if ivalue < min_value or ivalue > max_value:
+                raise argparse.ArgumentTypeError("{} of device:{} is invalid. valid value range is [{}, {}]".format(
+                    ivalue, value, min_value, max_value))
+        return ilist
+    else:
+		# default as single int value
+        ivalue = int(value)
+        if ivalue < min_value or ivalue > max_value:
+            raise argparse.ArgumentTypeError("device:{} is invalid. valid value range is [{}, {}]".format(
+                ivalue, min_value, max_value))
+        return ivalue
 
 
 def get_args():

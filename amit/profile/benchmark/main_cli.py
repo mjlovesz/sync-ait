@@ -31,7 +31,7 @@ from profile.benchmark.options import (
 )
 
 
-@click.command(name="benchmark", short_help = "")
+@click.command(name="benchmark", short_help = "Inference tool to get performance data including latency and throughput")
 @opt_model
 @opt_input
 @opt_output
@@ -62,7 +62,7 @@ def benchmark_cli_enter(model, input, output, output_dirname, outfmt, loop, debu
                         auto_set_dymdims_mode, batchsize, pure_data_type, profiler, dump, 
                         acl_json_path, output_batchsize_axis, run_mode, display_all_summary, 
                         warmup_count, dymShape_range):
-    args = MyArgs(model, input, output, output_dirname, outfmt, loop, debug, device, 
+    args = MyArgs(model.as_posix(), input.as_posix() if input else None, output.as_posix() if output else None, output_dirname, outfmt, loop, debug, device,
                   dymBatch, dymHW, dymDims, dymShape, outputSize, auto_set_dymshape_mode, 
                   auto_set_dymdims_mode, batchsize, pure_data_type, profiler, dump, 
                   acl_json_path, output_batchsize_axis, run_mode, display_all_summary, 
