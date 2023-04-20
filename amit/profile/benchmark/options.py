@@ -281,6 +281,7 @@ opt_warmup_count = click.option(
 
 opt_dymShape_range = click.option(
     '--dymShape_range',
+    'dymShape_range',
     default=None,
     type=str,
     help='dynamic shape range, such as --dymShape_range "data:1,600~700;img_info:1,600-700"'
