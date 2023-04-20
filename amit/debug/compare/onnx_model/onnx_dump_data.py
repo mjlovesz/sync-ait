@@ -7,12 +7,13 @@ Copyright Information:
 Huawei Technologies Co., Ltd. All Rights Reserved © 2021
 """
 import sys
+import time
+import os
+import re
 
 import onnx
 import onnxruntime
 import numpy as np
-import time
-import os
 
 from common.dump_data import DumpData
 from skl2onnx.helpers.onnx_helper import enumerate_model_node_outputs
@@ -63,8 +64,14 @@ class OnnxDumpData(DumpData):
         utils.create_directory(onnx_dump_data_dir)
 
         # create model directory
-        model_dir = os.path.join(self.args.out_path, "model")
-        utils.create_directory(model_dir)
+        model_dir = ""
+        if self.args.dymShape_range:
+            model_relative_name = "../model"
+        else:
+            model_relative_name = "model"
+            if self.args.dump:
+                model_dir = os.path.join(self.args.out_path, model_relative_name)
+                utils.create_directory(model_dir)
 
         return data_dir, onnx_dump_data_dir, model_dir
 
@@ -167,6 +174,8 @@ class OnnxDumpData(DumpData):
         res_idx = 0
         for node in old_onnx_model.graph.node:
             for j, output in enumerate(node.output):
+                if not self.args.dump and output not in net_output_node:
+                    continue
                 file_name = node.name.replace('.', '_').replace('/', '_') + "." + str(j) + "." \
                             + str(round(time.time() * 1000000)) + ".npy"
                 file_path = os.path.join(onnx_dump_data_dir, file_name)
@@ -214,9 +223,13 @@ class OnnxDumpData(DumpData):
             none
         """
         data_dir, onnx_dump_data_dir, model_dir = self._create_dir()
-        old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
+        if not self.args.dump:
+            old_onnx_model = onnx.load(self.args.model_path)
+            session = self._load_session(self.args.model_path)
+        else:
+            old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
+            session = self._load_session(new_onnx_model_path)
         net_output_node = self._get_net_output_node()
-        session = self._load_session(new_onnx_model_path)
         inputs_tensor_info = self._get_inputs_tensor_info(session)
         inputs_map = self._get_inputs_data(data_dir, inputs_tensor_info)
         dump_bins = self._run_model(session, inputs_map)
