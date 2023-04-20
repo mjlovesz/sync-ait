@@ -31,12 +31,7 @@ from profile.benchmark.options import (
 )
 
 
-@click.group()
-def cli() -> None:
-    '''main entrance of auto optimizer.'''
-    pass
-
-@cli.command('benchmark')
+@click.command(name="benchmark", short_help = "")
 @opt_model
 @opt_input
 @opt_output
