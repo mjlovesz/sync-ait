@@ -202,7 +202,7 @@ class NetCompare(object):
                 result_file_path = ""
                 for f in os.listdir(self.arguments.out_path):
                     if f.endswith(".csv"):
-                        result_file_path = f
+                        result_file_path = os.path.join(self.arguments.out_path, f)
                         break
                 if not result_file_path:
                     time_suffix = time.strftime("%Y%m%d%H%M%S", time.localtime())
