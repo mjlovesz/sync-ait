@@ -240,8 +240,9 @@ class OnnxGraph(BaseGraph):
         value_infos = []
         for node in reachable_nodes:
             for inp in node.inputs:
-                if self.get_node(inp, Initializer):
-                    initializers.append(self.get_node(inp, Initializer))
+                ini = self.get_node(inp, Initializer)
+                if ini and ini not in initializers:
+                    initializers.append(ini)
                 elif self.get_node(inp, PlaceHolder):
                     if inp not in input_name_list:
                         value_infos.append(self.get_node(inp, PlaceHolder))
