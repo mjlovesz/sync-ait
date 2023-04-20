@@ -1,4 +1,7 @@
 import argparse
+import os
+import sys
+sys.path.insert(0, os.path.abspath("../../")) ##保证amit入口和debug/compare入口
 
 from profile.benchmark.ais_bench.infer.utils import logger
 from profile.benchmark.ais_bench.infer.main_enter import main_enter

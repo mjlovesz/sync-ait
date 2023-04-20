@@ -7,7 +7,6 @@ import copy
 from multiprocessing import Pool
 from multiprocessing import Manager
 
-sys.path.insert(0, os.path.abspath("../../../../"))
 from tqdm import tqdm
 from profile.benchmark.ais_bench.infer.interface import InferSession, MemorySummary
 from profile.benchmark.ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
