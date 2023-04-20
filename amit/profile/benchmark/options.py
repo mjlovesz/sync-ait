@@ -1,4 +1,3 @@
-import argparse
 import logging
 import os
 import sys
@@ -7,10 +6,10 @@ import shutil
 import copy
 from multiprocessing import Pool
 from multiprocessing import Manager
+import pathlib
 
-from tqdm import tqdm
 import click
-
+from tqdm import tqdm
 from ais_bench.infer.interface import InferSession, MemorySummary
 from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                     create_intensors_from_infileslist,
@@ -21,32 +20,6 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
 from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
 from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
-from profile.benchmark.options import (
-    arg_model,
-    opt_input,
-    opt_output,
-    opt_output_dirname,
-    opt_outfmt,
-    opt_loop,
-    opt_debug,
-    opt_device,
-    opt_dymBatch,
-    opt_dymHW,
-    opt_dymDims,
-    opt_outputSize,
-    opt_auto_set_dymshape_mode,
-    opt_auto_set_dymdims_mode,
-    opt_batchsize,
-    opt_pure_data_type,
-    opt_profiler,
-    opt_dump,
-    opt_acl_json_path,
-    opt_output_batchsize_axis,
-    opt_run_mode,
-    opt_display_all_summary,
-    opt_warmup_count,
-    opt_dymShape_range
-)
 
 def set_session_options(session, args):
     # 增加校验
@@ -236,201 +209,227 @@ def check_device_range_valid(value):
                 ivalue, min_value, max_value))
         return ivalue
 
-def msprof_run_profiling(args):
-    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup_count=0"
-    msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
-        msprof_bin, args.output, cmd)
-    logger.info("msprof cmd:{} begin run".format(msprof_cmd))
-    ret = os.system(msprof_cmd)
-    logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
 
-def main(args, index=0, msgq=None):
-    # if msgq is not None,as subproces run
-    if msgq != None:
-        logger.info("subprocess_{} main run".format(index))
-
-    if args.debug == True:
-        logger.setLevel(logging.DEBUG)
-
-    session = init_inference_session(args)
-
-    intensors_desc = session.get_inputs()
-
-    if args.output != None:
-        if args.output_dirname is None:
-            timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
-            output_prefix = os.path.join(args.output, timestr)
-        else:
-            output_prefix = os.path.join(args.output, args.output_dirname)
-        if not os.path.exists(output_prefix):
-            os.makedirs(output_prefix, 0o755)
-        logger.info("output path:{}".format(output_prefix))
-    else:
-        output_prefix = None
-
-    inputs_list = [] if args.input is None else args.input.split(',')
-
-    # create infiles list accord inputs list
-    if len(inputs_list) == 0:
-        # Pure reference scenario. Create input zero data
-        infileslist = [[ [ pure_infer_fake_file ] for index in intensors_desc ]]
-    else:
-        infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
-
-    warmup(session, args, intensors_desc, infileslist[0])
-
-    if msgq != None:
-		# wait subprocess init ready, if time eplapsed,force ready run
-        logger.info("subprocess_{} qsize:{} now waiting".format(index, msgq.qsize()))
-        msgq.put(index)
-        time_sec = 0
-        while True:
-            if msgq.qsize() >= args.subprocess_count:
-                break
-            time_sec = time_sec + 1
-            if time_sec > 10:
-                logger.warning("subprocess_{} qsize:{} time:{} s elapsed".format(index, msgq.qsize(), time_sec))
-                break
-            time.sleep(1)
-        logger.info("subprocess_{} qsize:{} ready to infer run".format(index, msgq.qsize()))
-
-    start_time = time.time()
-
-    if args.run_mode == "array":
-        infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
-    elif args.run_mode == "files":
-        infer_loop_files_run(session, args, intensors_desc, infileslist, output_prefix)
-    elif args.run_mode == "full":
-        infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix)
-    elif args.run_mode == "tensor":
-        infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix)
-    else:
-        raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
-
-    end_time = time.time()
-
-    summary.add_args(sys.argv)
-    s = session.sumary()
-    summary.npu_compute_time_list = s.exec_time_list
-    summary.h2d_latency_list = MemorySummary.get_H2D_time_list()
-    summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
-    summary.report(args.batchsize, output_prefix, args.display_all_summary)
-
-    if msgq != None:
-		# put result to msgq
-        msgq.put([index, summary.infodict['throughput'], start_time, end_time])
-
-    session.finalize()
-
-def print_subproces_run_error(value):
-    logger.error("subprocess run failed error_callback:{}".format(value))
-
-def multidevice_run(args):
-    logger.info("multidevice:{} run begin".format(args.device))
-    device_list = args.device
-    p = Pool(len(device_list))
-    msgq = Manager().Queue()
-
-    args.subprocess_count = len(device_list)
-    for i in range(len(device_list)):
-        cur_args = copy.deepcopy(args)
-        cur_args.device = int(device_list[i])
-        p.apply_async(main, args=(cur_args, i, msgq), error_callback=print_subproces_run_error)
-
-    p.close()
-    p.join()
-    result  = 0 if 2 * len(device_list) == msgq.qsize() else 1
-    logger.info("multidevice run end qsize:{} result:{}".format(msgq.qsize(), result))
-    tlist = []
-    while msgq.qsize() != 0:
-        ret = msgq.get()
-        if type(ret) == list:
-            print("i:{} device_{} throughput:{} start_time:{} end_time:{}".format(
-                ret[0], device_list[ret[0]], ret[1], ret[2], ret[3]))
-            tlist.append(ret[1])
-    logger.info('summary throughput:{}'.format(sum(tlist)))
-    return result
+def check_positive_integer(value):
+    ivalue = int(value)
+    if ivalue <= 0:
+        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
+    return ivalue
 
 
-class MyArgs():
-    def __init__(self, model, input, output, output_dirname, outfmt, loop, debug, device, dymBatch, dymHW, dymDims, outputSize, auto_set_dymshape_mode, auto_set_dymdims_mode, batchsize, pure_data_type, profiler, dump, acl_json_path, output_batchsize_axis, run_mode, display_all_summary, warmup_count, dymShape_range):
-        self.model = model
-        self.input = input
-        self.output = output
-        self.output_dirname = output_dirname
-        self.outfmt = outfmt
-        self.loop = loop
-        self.debug = debug
-        self.device = device
-        self.dymBatch = dymBatch
-        self.dymHW = dymHW
-        self.dymDims = dymDims
-        self.outputSize = outputSize
-        self.auto_set_dymshape_mode = auto_set_dymshape_mode
-        self.auto_set_dymdims_mode = auto_set_dymdims_mode
-        self.batchsize = batchsize
-        self.pure_data_type = pure_data_type
-        self.profiler = profiler
-        self.dump = dump
-        self.acl_json_path = acl_json_path
-        self.output_batchsize_axis = output_batchsize_axis
-        self.run_mode = run_mode
-        self.display_all_summary = display_all_summary
-        self.warmup_count = warmup_count
-        self.dymShape_range = dymShape_range
-        
-@click.group()
-def cli() -> None:
-    '''main entrance of auto optimizer.'''
-    pass
+arg_model = click.argument(
+    'model',
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        path_type=pathlib.Path
+    )
+)
 
-@cli.command('benchmark')
-@arg_model
-@opt_input
-@opt_output
-@opt_output_dirname
-@opt_outfmt
-@opt_loop
-@opt_debug
-@opt_device
-@opt_dymBatch
-@opt_dymHW
-@opt_dymDims
-@opt_outputSize
-@opt_auto_set_dymshape_mode
-@opt_auto_set_dymdims_mode
-@opt_batchsize
-@opt_pure_data_type
-@opt_profiler
-@opt_dump
-@opt_acl_json_path
-@opt_output_batchsize_axis
-@opt_run_mode
-@opt_display_all_summary
-@opt_warmup_count
-@opt_dymShape_range
-def benchmark_cli_enter(model, input, output, output_dirname, outfmt, loop, debug, device, dymBatch, dymHW, dymDims, outputSize, auto_set_dymshape_mode, auto_set_dymdims_mode, batchsize, pure_data_type, profiler, dump, acl_json_path, output_batchsize_axis, run_mode, display_all_summary, warmup_count, dymShape_range):
-    args = MyArgs(model, input, output, output_dirname, outfmt, loop, debug, device, dymBatch, dymHW, dymDims, outputSize, auto_set_dymshape_mode, auto_set_dymdims_mode, batchsize, pure_data_type, profiler, dump, acl_json_path, output_batchsize_axis, run_mode, display_all_summary, warmup_count, dymShape_range)
 
-    version_check(args)
+opt_input = click.option(
+    '-i',
+    '--input',
+    'input',
+    default=None,
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        path_type=pathlib.Path
+    ),
+    help='input file or dir'
+)
 
-    if args.profiler == True:
-        # try use msprof to run
-        msprof_bin = shutil.which('msprof')
-        if msprof_bin is None or os.getenv('GE_PROFILIGN_TO_STD_OUT') == '1':
-            logger.info("find no msprof continue use acl.json mode")
-        else:
-            msprof_run_profiling(args)
-            exit(0)
 
-    if args.dymShape_range != None and args.dymShape is None:
-        # dymshape range run,according range to run each shape infer get best shape
-        dymshape_range_run(args)
-        exit(0)
+opt_output = click.option(
+    '-o',
+    '--output',
+    'output',
+    default=None,
+    type=click.Path(
+        path_type=pathlib.Path
+    ),
+    help='Inference data output path. The inference results are output to the subdirectory named current date under given output path'
+)
 
-    if type(args.device) == list:
-        # args has multiple device, run single process for each device
-        ret = multidevice_run(args)
-        exit(ret)
 
-    main(args)
+opt_output_dirname = click.option(
+    '--output_dirname',
+    'output_dirname',
+    type=str,
+    help='actual output directory name. Used with parameter output, cannot be used alone. The inference result is output to  subdirectory named by output_dirname under  output path. such as --output_dirname "tmp", the final inference results are output to the folder of  {$output}/tmp'
+)
+
+
+opt_outfmt = click.option(
+    '--outfmt',
+    default='BIN',
+    type=click.Choice(['NPY', 'BIN', 'TXT']),
+    help='Output file format (NPY or BIN or TXT)'
+)
+
+
+opt_loop = click.option(
+    '-l',
+    '--loop',
+    default=1,
+    type=int,
+    callback=check_positive_integer,
+    help='the round of the PureInfer.'
+)
+
+
+opt_debug = click.option(
+    '--debug',
+    default=False,
+    type=str,
+    callback=str2bool,
+    help='Debug switch,print model information'
+)
+
+
+opt_device = click.option(
+    '-d',
+    '--device',
+    default=0,
+    type=int,
+    callback=check_device_range_valid,
+    help='the NPU device ID to use.valid value range is [0, 255]'
+)
+
+
+opt_dymBatch = click.option(
+    '--dymBatch',
+    default=0,
+    type=int,
+    help='dynamic batch size param, such as --dymBatch 2'
+)
+
+
+opt_dymHW = click.option(
+    '--dymHW',
+    default=None,
+    type=str,
+    help='dynamic image size param, such as --dymHW \"300,500\"'
+)
+
+
+opt_dymDims = click.option(
+    '--dymDims',
+    default=None,
+    type=str,
+    help='dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"'
+)
+
+
+opt_outputSize = click.option(
+    '--outputSize',
+    default=None,
+    type=str,
+    help='output size for dynamic shape mode'
+)
+
+
+opt_auto_set_dymshape_mode = click.option(
+    '--auto_set_dymshape_mode',
+    default=False,
+    callback=str2bool,
+    help='auto_set_dymshape_mode'
+)
+
+
+opt_auto_set_dymdims_mode = click.option(
+    '--auto_set_dymdims_mode',
+    default=False,
+    callback=str2bool,
+    help='auto_set_dymdims_mode'
+)
+
+
+opt_batchsize = click.option(
+    '--batchsize',
+    default=None,
+    callback=check_batchsize_valid,
+    help='batch size of input tensor'
+)
+
+
+opt_pure_data_type = click.option(
+    '--pure_data_type',
+    default="zero",
+    type=click.Choice("zero", "random"),
+    help='null data type for pure inference(zero or random)'
+)
+
+
+opt_profiler = click.option(
+    '--profiler',
+    default=False,
+    type=str,
+    callback=str2bool,
+    help='profiler switch'
+)
+
+
+opt_dump = click.option(
+    '--dump',
+    default=False,
+    type=str,
+    callback=str2bool,
+    help='dump switch'
+)
+
+
+opt_acl_json_path = click.option(
+    '--acl_json_path',
+    default=None,
+    type=str,
+    help='acl json path for profiling or dump'
+)
+
+
+opt_output_batchsize_axis = click.option(
+    '--output_batchsize_axis',
+    default=0,
+    type=int,
+    callback=check_nonnegative_integer,
+    help='splitting axis number when outputing tensor results, such as --output_batchsize_axis 1'
+)
+
+
+opt_run_mode = click.option(
+    '--run_mode',
+    default="array",
+    type=click.Choice(["array", "files", "tensor", "full"]),
+    help='run mode'
+)
+
+
+opt_display_all_summary = click.option(
+    '--display_all_summary',
+    default=False,
+    type=str,
+    callback=str2bool,
+    help='display all summary include h2d d2h info'
+)
+
+
+opt_warmup_count = click.option(
+    '--warmup_count',
+    default=1,
+    type=int,
+    callback=check_nonnegative_integer,
+    help='warmup count before inference'
+)
+
+
+opt_dymShape_range = click.option(
+    '--dymShape_range',
+    default=None,
+    type=str,
+    help='dynamic shape range, such as --dymShape_range "data:1,600~700;img_info:1,600-700"'
+)
