@@ -13,6 +13,8 @@ import subprocess
 import sys
 import time
 import enum
+import itertools
+
 import numpy as np
 
 from common.dynamic_argument_bean import DynamicArgumentEnum
@@ -36,6 +38,7 @@ ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
 MODEL_TYPE = ['.onnx', '.pb', '.om']
 DIM_PATTERN = r"^(-?[0-9]+)(,-?[0-9]+)*"
+DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+){0,3}"
 MAX_DEVICE_ID = 255
 SEMICOLON = ";"
 COLON = ":"
@@ -62,6 +65,7 @@ class InputShapeError(enum.Enum):
     FORMAT_NOT_MATCH = 0
     VALUE_TYPE_NOT_MATCH = 1
     NAME_NOT_MATCH = 2
+    TOO_LONG_PARAMS = 3
 
 
 def _print_log(level, msg):
@@ -289,14 +293,62 @@ def parse_input_shape(input_shape):
     return input_shapes
 
 
+def parse_dymshape_range(dymshape_range):
+    _check_colon_exist(dymshape_range)
+    input_shapes = {}
+    tensor_list = dymshape_range.split(";")
+    info_list = []
+    for tensor in tensor_list:
+        _check_colon_exist(dymshape_range)
+        shapes = []
+        name, shapestr = tensor.split(":")
+        if len(shapestr) < 50:
+            _check_shape_number(shapestr, DYNAMIC_DIM_PATTERN)
+        else:
+            print_error_log(get_shape_not_match_message(InputShapeError.TOO_LONG_PARAMS, input_shape))
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+        for content in shapestr.split(","):
+            if "~" in content:
+                content_split = content.split("~")
+                _check_content_split_length(content_split)
+                start = int(content_split[0])
+                end = int(content_split[1])
+                step = int(content_split[2]) if len(content_split) == 3 else 1
+                ranges = [str(i) for i in range(start, end+1, step)]
+            elif "-" in content:
+                ranges = content.split("-")
+            else:
+                start = int(content)
+                ranges = [str(start)]
+            shapes.append(ranges)
+        shape_list = [",".join(s) for s in list(itertools.product(*shapes))]
+        info = ["{}:{}".format(name, s) for s in shape_list]
+        info_list.append(info)
+    res = [";".join(s) for s in list(itertools.product(*info_list))]
+    print_info_log("shape_list:" + str(res))
+    return res
+
+
+def get_shape_to_directory_name(input_shape):
+    shape_info = re.sub(r"[:;]", "-", input_shape)
+    shape_info = re.sub(r",", "_", shape_info)
+    return shape_info
+
+
 def _check_colon_exist(input_shape):
     if ":" not in input_shape:
         print_error_log(get_shape_not_match_message(InputShapeError.FORMAT_NOT_MATCH, input_shape))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
-def _check_shape_number(input_shape_value):
-    dim_pattern = re.compile(DIM_PATTERN)
+def _check_content_split_length(content_split):
+    if not content_split[1]:
+        print_error_log(get_shape_not_match_message(InputShapeError.VALUE_TYPE_NOT_MATCH, content_split[1]))
+        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+
+
+def _check_shape_number(input_shape_value, pattern=DIM_PATTERN):
+    dim_pattern = re.compile(pattern)
     match = dim_pattern.match(input_shape_value)
     if not match or match.group() is not input_shape_value:
         print_error_log(get_shape_not_match_message(InputShapeError.VALUE_TYPE_NOT_MATCH, input_shape_value))
@@ -321,6 +373,8 @@ def get_shape_not_match_message(shape_error_type, value):
         message = "Input shape \"{}\" value not number".format(value)
     if shape_error_type == InputShapeError.NAME_NOT_MATCH:
         message = "Input tensor name \"{}\" not in model".format(value)
+    if shape_error_type == InputShapeError.TOO_LONG_PARAMS:
+        message = "Input \"{}\" value too long".format(value)
     return message
 
 
@@ -423,3 +477,14 @@ def get_data_len_by_shape(shape):
             return -1
         data_len = data_len * item
     return data_len
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
