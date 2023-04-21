@@ -158,7 +158,7 @@ https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxili
 | --output-nodes           | 用户指定的输出节点。多个节点用英文分号（;）隔开。例如:node_name1:0;node_name2:1;node_name3:0 | 否    |
 | --output-size            | 指定模型的输出size，有几个输出，就设几个值。动态shape场景下，获取模型的输出size可能为0，用户需根据输入的shape预估一个较合适的值去申请内存。多个输出size用英文分号（,）隔开, 例如"10000,10000,10000"。 | 否    |
 | --advisor           | 在比对结束后，针对比对结果进行数据分析，给出专家建议。 | 否    |
-| --convert           | 支持om比对结果文件数据格式由bin文件转为npy文件，生成的npy文件目录为dump_data下{时间戳_bin2npy} 文件夹| 否    |
+| --convert           | 支持om比对结果文件数据格式由bin文件转为npy文件，生成的npy文件目录为dump_data/npu/{时间戳_bin2npy} 文件夹| 否    |
 
 
 
