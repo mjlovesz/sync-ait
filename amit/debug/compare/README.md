@@ -164,7 +164,7 @@ https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxili
 | --output-nodes           | 用户指定的输出节点。多个节点用英文分号（;）隔开。例如:node_name1:0;node_name2:1;node_name3:0                                                                                                                            | 否  |
 | --output-size            | 指定模型的输出size，有几个输出，就设几个值。动态shape场景下，获取模型的输出size可能为0，用户需根据输入的shape预估一个较合适的值去申请内存。多个输出size用英文分号（,）隔开, 例如"10000,10000,10000"。                                                                     | 否  |
 | --advisor                | 在比对结束后，针对比对结果进行数据分析，给出专家建议。                                                                                                                                                                   | 否  |
-| -dr，--dymShape-range     | 动态Shape的阈值范围。如果设置该参数，那么将根据参数中所有的Shape列表进行依次推理和精度比对。<br/>配置格式为：input_name1:1,3,200\~224,224-230;input_name2:1,300。<br/>其中，input_name必须是转换前的网络模型中的节点名称；"\~"表示范围，a\~b\~c含义为`[a: b :c]`；"-"表示某一位的取值。 <br/> | 否  |
+| -dr，--dymShape-range     | 动态Shape的阈值范围。如果设置该参数，那么将根据参数中所有的Shape列表进行依次推理和精度比对。<br/>配置格式为：input_name1:1,3,200\~224,224-230;input_name2:1,300。<br/>其中，input_name必须是转换前的网络模型中的节点名称；"\~"表示范围，a\~b\~c含义为[a: b :c]；"-"表示某一位的取值。 <br/> | 否  |
 | --dump                   | 是否dump所有算子的输出并进行精度对比。默认是True，即开启全部算子输出的比对。<br/>使用方式：--dump False                                                                                                                              | 否  |
 
 
