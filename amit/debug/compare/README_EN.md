@@ -151,6 +151,8 @@ https://www.hiascend.com/document/detail/en/CANNCommunityEdition/60RC1alphaX/dev
 | -d，--device                              | Specify running device [0,255], default 0. | No       |
 | --output-nodes                           | Output node specified by the user. Separate multiple nodes with semicolons, for example, **node_name1:0;node_name2:1;node_name3:0**. | No       |
 | --output-size                            | Specify the output size of the model. If there are several outputs, set several values. In the dynamic shape scenario, the output size of the acquired model may be 0. The user needs to estimate a more appropriate value according to the input shape to apply for memory. Multiple output sizes are separated by English semicolons (,), such as "10000,10000,10000"。 | No       |
+| --advisor           | After the comparison, data analysis is performed on the comparison results, and expert advice is given. | No    |
+| --convert           | Support om comparison result file data format from bin file to npy file, the generated npy file directory is ./dump_data/npu/{timestamp_bin2npy} folder | No    |
 
 ### Sample Execution
 
