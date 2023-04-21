@@ -1,8 +1,8 @@
 import click
 
-from profile.benchmark.ais_bench.infer.main_enter import main_enter
-from profile.benchmark.ais_bench.infer.args_adapter import MyArgs
-from profile.benchmark.options import (
+from ais_bench.infer.main_enter import main_enter
+from ais_bench.infer.args_adapter import MyArgs
+from options import (
     opt_model,
     opt_input,
     opt_output,

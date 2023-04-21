@@ -1,6 +1,5 @@
 import click
 import pkg_resources
-from main_cli import benchmark_cli_enter
 
 profile_sub_task = {}
 for entry_point in pkg_resources.iter_entry_points('debug_sub_task'):
