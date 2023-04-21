@@ -8,17 +8,17 @@ from multiprocessing import Pool
 from multiprocessing import Manager
 
 from tqdm import tqdm
-from profile.benchmark.ais_bench.infer.interface import InferSession, MemorySummary
-from profile.benchmark.ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
+from ais_bench.infer.interface import InferSession, MemorySummary
+from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                     create_intensors_from_infileslist,
                                     get_narray_from_files_list,
                                     get_tensor_from_files_list,
                                     convert_real_files,
                                     pure_infer_fake_file, save_tensors_to_file)
-from profile.benchmark.ais_bench.infer.summary import summary
-from profile.benchmark.ais_bench.infer.utils import logger
-from profile.benchmark.ais_bench.infer.miscellaneous import get_acl_json_path, version_check, get_batchsize, dymshape_range_run
-from profile.benchmark.ais_bench.infer.args_adapter import MyArgs
+from ais_bench.infer.summary import summary
+from ais_bench.infer.utils import logger
+from ais_bench.infer.miscellaneous import get_acl_json_path, version_check, get_batchsize, dymshape_range_run
+from ais_bench.infer.args_adapter import MyArgs
 
 
 def args_rule_apply(args:any):

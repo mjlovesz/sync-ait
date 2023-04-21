@@ -4,7 +4,7 @@ import json
 import numpy as np
 import itertools
 
-from profile.benchmark.ais_bench.infer.utils import logger
+from ais_bench.infer.utils import logger
 
 def get_modules_version(name):
     try:

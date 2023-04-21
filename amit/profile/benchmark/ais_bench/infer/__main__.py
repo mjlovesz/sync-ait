@@ -3,8 +3,8 @@ import os
 import sys
 
 sys.path.insert(0, os.path.abspath("../../")) ##保证amit入口和debug/compare入口
-from profile.benchmark.ais_bench.infer.main_enter import main_enter
-from profile.benchmark.ais_bench.infer.args_adapter import MyArgs
+from ais_bench.infer.main_enter import main_enter
+from ais_bench.infer.args_adapter import MyArgs
 
 
 def str2bool(v):
