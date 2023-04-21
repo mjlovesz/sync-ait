@@ -15,5 +15,8 @@ setup(
     packages=find_packages(),
     keywords='ais_bench tool',
     install_requires=required,
-    python_requires='>=3.7'
+    python_requires='>=3.7',
+    entry_points={
+        'debug_sub_task': ['benchmark=main_cli:benchmark_cli_enter']
+    }
 )
