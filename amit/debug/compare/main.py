@@ -52,6 +52,7 @@ def _accuracy_compare_parser(parser):
     parser.add_argument("--convert", dest = "bin2npy", action="store_true",
                         help="<Optional> Enable npu dump data conversion from bin to npy after compare.")
 
+
 def _str2bool(v):
     if isinstance(v, bool):
         return v
@@ -61,6 +62,7 @@ def _str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
+
 
 def _generate_golden_data_model(args):
     model_name, extension = utils.get_model_name_and_extension(args.model_path)
