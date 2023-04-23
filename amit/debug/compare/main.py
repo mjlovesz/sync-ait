@@ -67,48 +67,10 @@ def main():
     args.model_path = os.path.realpath(args.model_path)
 
     my_args = argsAdapter(args)
-    return cmp_main(my_args)
-
+    return cmp_main(my_args, False)
 
 def cil_enter(my_args:MyArgs):
-    cmp_main(my_args)
-
-
-def run(args, input_shape, output_json_path, original_out_path):
-    if input_shape:
-        args.input_shape = input_shape
-        args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
-
-    # generate dump data by the original model
-    golden_dump = _generate_golden_data_model(args)
-    golden_dump_data_path = golden_dump.generate_dump_data()
-    golden_net_output_info = golden_dump.get_net_output_info()
-
-    # compiling and running source codes
-    npu_dump = NpuDumpData(args, output_json_path)
-    npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data()
-    expect_net_output_node = npu_dump.get_expect_output_name()
-
-    # convert data from bin to npy if --convert is used
-    data_convert(npu_dump_data_path, npu_net_output_data_path, args)
-
-    # if it's dynamic batch scenario, golden data files should be renamed
-    utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
-
-    if not args.dump:
-        # only compare the final output
-        net_compare = NetCompare(npu_net_output_data_path, golden_dump_data_path, output_json_path, args)
-        net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
-    else:
-        # compare the entire network
-        net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args)
-        net_compare.accuracy_network_compare()
-    # Check and correct the mapping of net output node name.
-    if len(expect_net_output_node) == 1:
-        _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
-        net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
-    analyser.Analyser(args.out_path)()
-
+    cmp_main(my_args, False)
 
 if __name__ == '__main__':
     main()

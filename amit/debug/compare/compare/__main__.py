@@ -78,7 +78,7 @@ def _check_output_node_name_mapping(original_net_output_node, golden_net_output_
             utils.print_warn_log("the original name: {} of net output maybe not correct!".format(node_name))
             break
 
-def run(args, input_shape, output_json_path, original_out_path):
+def run(args, input_shape, output_json_path, original_out_path, cli_enter):
     if input_shape:
         args.input_shape = input_shape
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
@@ -90,7 +90,7 @@ def run(args, input_shape, output_json_path, original_out_path):
 
     # compiling and running source codes
     npu_dump = NpuDumpData(args, output_json_path)
-    npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data()
+    npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(cli_enter)
     expect_net_output_node = npu_dump.get_expect_output_name()
 
     # convert data from bin to npy if --convert is used
@@ -113,7 +113,7 @@ def run(args, input_shape, output_json_path, original_out_path):
         net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
     analyser.Analyser(args.out_path)()
 
-def cmp_main(my_args:MyArgs):
+def cmp_main(my_args:MyArgs, cli_enter):
     my_args.offline_model_path = os.path.realpath(my_args.offline_model_path)
     my_args.cann_path = os.path.realpath(my_args.cann_path)
     try:
@@ -135,7 +135,7 @@ def cmp_main(my_args:MyArgs):
         if not input_shapes:
             input_shapes.append("")
         for input_shape in input_shapes:
-            run(my_args, input_shape, output_json_path, original_out_path)
+            run(my_args, input_shape, output_json_path, original_out_path, cli_enter)
     except utils.AccuracyCompareException as error:
         sys.exit(error.error_info)
 

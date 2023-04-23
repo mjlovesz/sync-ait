@@ -19,7 +19,6 @@ from compare.common.dynamic_argument_bean import DynamicArgumentEnum
 from compare.npu.om_parser import OmParser
 
 BENCHMARK_DIR = "benchmark"
-BENCHMARK_BACKEND_DIR = "backend"
 ACL_JSON_PATH = "acl.json"
 NPU_DUMP_DATA_BASE_PATH = "dump_data/npu"
 RESULT_DIR = "result"
@@ -165,7 +164,7 @@ class NpuDumpData(DumpData):
         self.dynamic_input = DynamicInput(self.om_parser, self.arguments)
         self.python_version = sys.executable or "python3"
 
-    def generate_dump_data(self):
+    def generate_dump_data(self, cli_enter):
         """
         Function Description:
             compile and rum benchmark project
@@ -174,9 +173,10 @@ class NpuDumpData(DumpData):
         """
         self._check_input_path_param()
 
-        benchmark_dir = os.path.join(os.path.realpath("../../profile"), BENCHMARK_DIR)
-        self.benchmark_backend_compile_sh(benchmark_dir)
-        return self.benchmark_run(benchmark_dir)
+        if not cli_enter:
+            benchmark_dir = os.path.join(os.path.realpath("../../profile"), BENCHMARK_DIR)
+            self.benchmark_backend_compile_sh(benchmark_dir)
+        return self.benchmark_run()
 
     def get_expect_output_name(self):
         """
@@ -194,7 +194,7 @@ class NpuDumpData(DumpData):
         Parameter:
             benchmark_dir: benchmark project directory
         """
-        execute_path = os.path.join(benchmark_dir, BENCHMARK_BACKEND_DIR)
+        execute_path = benchmark_dir
         utils.print_info_log("Start to install benchmark backend execute_path: %s" % execute_path)
         build_sh_cmd = ["sh", "install.sh", "-p", self.python_version]
 
@@ -208,12 +208,10 @@ class NpuDumpData(DumpData):
         os.chdir(retval)
         utils.print_info_log("Run command line: cd %s (back to the working directory)" % (retval))
 
-    def benchmark_run(self, benchmark_dir):
+    def benchmark_run(self):
         """
         Function Description:
             run benchmark project
-        Parameter:
-            benchmark_dir: benchmark project directory
         Return Value:
             npu dump data path
         Exception Description:
@@ -226,7 +224,7 @@ class NpuDumpData(DumpData):
         acl_json_path = ACL_JSON_PATH
         if not os.path.exists(acl_json_path):
             os.mknod(acl_json_path, mode=0o600)
-        benchmark_cmd = [self.python_version, "ais_infer.py", "--model", self.arguments.offline_model_path,
+        benchmark_cmd = [self.python_version, "-m", "ais_bench", "--model", self.arguments.offline_model_path,
                          "--input", self.arguments.benchmark_input_path, "--device", self.arguments.device,
                          "--output", npu_data_output_dir]
         if self.arguments.dump:
@@ -238,12 +236,9 @@ class NpuDumpData(DumpData):
         self.dynamic_input.add_dynamic_arg_for_benchmark(benchmark_cmd)
         self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
 
-        retval = os.getcwd()
-        os.chdir(benchmark_dir)
         # do benchmark command
-        utils.print_info_log("Run command line: cd %s && %s" % (benchmark_dir, " ".join(benchmark_cmd)))
+        utils.print_info_log("Run command line: %s" % (benchmark_cmd))
         utils.execute_command(benchmark_cmd)
-        os.chdir(retval)
 
         npu_dump_data_path = ""
         if self.arguments.dump:
