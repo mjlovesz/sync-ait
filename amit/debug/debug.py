@@ -4,7 +4,6 @@ import pkg_resources
 
 debug_sub_task = {}
 for entry_point in pkg_resources.iter_entry_points('debug_sub_task'):
-    click.echo(entry_point.name)
     debug_sub_task[entry_point.name] = entry_point.load()
 
 
