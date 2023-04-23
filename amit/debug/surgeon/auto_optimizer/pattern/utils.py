@@ -19,9 +19,9 @@ import operator as op
 
 import numpy as np
 
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_node import BaseNode, Initializer, Node, PlaceHolder
-from debug.surgeon.auto_optimizer.pattern.pattern import MatchBase
+from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from auto_optimizer.graph_refactor.interface.base_node import BaseNode, Initializer, Node, PlaceHolder
+from auto_optimizer.pattern.pattern import MatchBase
 
 
 def timing(func: Callable):

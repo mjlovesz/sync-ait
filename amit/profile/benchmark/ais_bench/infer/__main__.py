@@ -1,10 +1,23 @@
 import argparse
+import logging
+import math
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath("../../")) ##保证amit入口和debug/compare入口
-from ais_bench.infer.main_enter import main_enter
-from ais_bench.infer.args_adapter import MyArgs
+from tqdm import tqdm
+from ais_bench.infer.interface import InferSession, MemorySummary
+from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
+                                    create_intensors_from_infileslist,
+                                    get_narray_from_files_list,
+                                    get_tensor_from_files_list,
+                                    convert_real_files,
+                                    pure_infer_fake_file, save_tensors_to_file)
+from ais_bench.infer.summary import summary
+from ais_bench.infer.utils import logger
+from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
+from ais_bench.infer.utils import (get_file_content, get_file_datasize,
+                            get_fileslist_from_dir, list_split, logger,
+                            save_data_to_files)
 
 
 def str2bool(v):
@@ -88,12 +101,191 @@ def get_args():
 
     return args
 
+def msprof_run_profiling(args):
+    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup_count=0"
+    msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
+        msprof_bin, args.output, cmd)
+    logger.info("msprof cmd:{} begin run".format(msprof_cmd))
+    ret = os.system(msprof_cmd)
+    logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
+
+def main(args, index=0, msgq=None, device_list=None):
+    # if msgq is not None,as subproces run
+    if msgq != None:
+        logger.info("subprocess_{} main run".format(index))
+
+    if args.debug == True:
+        logger.setLevel(logging.DEBUG)
+
+    session = init_inference_session(args)
+
+    intensors_desc = session.get_inputs()
+    if device_list != None and len(device_list) > 1:
+        if args.output != None:
+            if args.output_dirname is None:
+                timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
+                output_prefix = os.path.join(args.output, timestr)
+                output_prefix = os.path.join(output_prefix, "device" + str(device_list[index]) + "_" + str(index))
+            else:
+                output_prefix = os.path.join(args.output, args.output_dirname)
+                output_prefix = os.path.join(output_prefix, "device" + str(device_list[index]) + "_" + str(index))
+            if not os.path.exists(output_prefix):
+                os.makedirs(output_prefix, 0o755)
+            logger.info("output path:{}".format(output_prefix))
+        else:
+            output_prefix = None
+    else:
+        if args.output != None:
+            if args.output_dirname is None:
+                timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
+                output_prefix = os.path.join(args.output, timestr)
+            else:
+                output_prefix = os.path.join(args.output, args.output_dirname)
+            if not os.path.exists(output_prefix):
+                os.makedirs(output_prefix, 0o755)
+            logger.info("output path:{}".format(output_prefix))
+        else:
+            output_prefix = None
+
+    inputs_list = [] if args.input is None else args.input.split(',')
+
+    # create infiles list accord inputs list
+    if len(inputs_list) == 0:
+        # Pure reference scenario. Create input zero data
+        infileslist = [[ [ pure_infer_fake_file ] for index in intensors_desc ]]
+    else:
+        infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
+
+    warmup(session, args, intensors_desc, infileslist[0])
+
+    if msgq != None:
+		# wait subprocess init ready, if time eplapsed,force ready run
+        logger.info("subprocess_{} qsize:{} now waiting".format(index, msgq.qsize()))
+        msgq.put(index)
+        time_sec = 0
+        while True:
+            if msgq.qsize() >= args.subprocess_count:
+                break
+            time_sec = time_sec + 1
+            if time_sec > 10:
+                logger.warning("subprocess_{} qsize:{} time:{} s elapsed".format(index, msgq.qsize(), time_sec))
+                break
+            time.sleep(1)
+        logger.info("subprocess_{} qsize:{} ready to infer run".format(index, msgq.qsize()))
+
+    start_time = time.time()
+
+    if args.run_mode == "array":
+        infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
+    elif args.run_mode == "files":
+        infer_loop_files_run(session, args, intensors_desc, infileslist, output_prefix)
+    elif args.run_mode == "full":
+        infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix)
+    elif args.run_mode == "tensor":
+        infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix)
+    else:
+        raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
+
+    end_time = time.time()
+
+    summary.add_args(sys.argv)
+    s = session.sumary()
+    summary.npu_compute_time_list = s.exec_time_list
+    summary.h2d_latency_list = MemorySummary.get_H2D_time_list()
+    summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
+    summary.report(args.batchsize, output_prefix, args.display_all_summary)
+
+    if msgq != None:
+		# put result to msgq
+        msgq.put([index, summary.infodict['throughput'], start_time, end_time])
+
+    session.finalize()
+
+def print_subproces_run_error(value):
+    logger.error("subprocess run failed error_callback:{}".format(value))
+
+def seg_input_data_for_multi_process(args, inputs, jobs):
+    inputs_list = [] if inputs is None else inputs.split(',')
+    if inputs_list == None:
+        return inputs_list
+
+    fileslist = []
+    if os.path.isfile(inputs_list[0]) == True:
+        fileslist = inputs_list
+    elif os.path.isdir(inputs_list[0]):
+        for dir in inputs_list:
+            fileslist.extend(get_fileslist_from_dir(dir))
+    else:
+        logger.error('error {} not file or dir'.format(inputs_list[0]))
+        raise RuntimeError()
+
+    args.device = 0
+    session = init_inference_session(args)
+    intensors_desc = session.get_inputs()
+    chunks_elements = math.ceil(len(fileslist) / len(intensors_desc))
+    chunks = list(list_split(fileslist, chunks_elements, None))
+    fileslist = [ [] for e in range(jobs) ]
+    for i, chunk in enumerate(chunks):
+        splits_elements = math.ceil(len(chunk) / jobs)
+        splits = list(list_split(chunk, splits_elements, None))
+        for j, split in enumerate(splits):
+            fileslist[j].extend(split)
+    res = []
+    for files in fileslist:
+        res.append(','.join(list(filter(None, files))))
+    return res
+
+def multidevice_run(args):
+    logger.info("multidevice:{} run begin".format(args.device))
+    device_list = args.device
+    p = Pool(len(device_list))
+    msgq = Manager().Queue()
+
+    args.subprocess_count = len(device_list)
+    jobs = args.subprocess_count
+    splits = seg_input_data_for_multi_process(args, args.input, jobs)
+    for i in range(len(device_list)):
+        cur_args = copy.deepcopy(args)
+        cur_args.device = int(device_list[i])
+        cur_args.input = None if splits == None else list(splits)[i]
+        p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
+
+    p.close()
+    p.join()
+    result  = 0 if 2 * len(device_list) == msgq.qsize() else 1
+    logger.info("multidevice run end qsize:{} result:{}".format(msgq.qsize(), result))
+    tlist = []
+    while msgq.qsize() != 0:
+        ret = msgq.get()
+        if type(ret) == list:
+            print("i:{} device_{} throughput:{} start_time:{} end_time:{}".format(
+                ret[0], device_list[ret[0]], ret[1], ret[2], ret[3]))
+            tlist.append(ret[1])
+    logger.info('summary throughput:{}'.format(sum(tlist)))
+    return result
 
 if __name__ == "__main__":
     args = get_args()
-    my_args = MyArgs(args.model, args.input, args.output, args.output_dirname, args.outfmt, args.loop, args.debug, args.device,
-                args.dymBatch, args.dymHW, args.dymDims, args.dymShape, args.outputSize, args.auto_set_dymshape_mode,
-                args.auto_set_dymdims_mode, args.batchsize, args.pure_data_type, args.profiler, args.dump,
-                args.acl_json_path, args.output_batchsize_axis, args.run_mode, args.display_all_summary,
-                args.warmup_count, args.dymShape_range)
-    main_enter(my_args)
+
+    version_check(args)
+
+    if args.profiler == True:
+        # try use msprof to run
+        msprof_bin = shutil.which('msprof')
+        if msprof_bin is None or os.getenv('GE_PROFILIGN_TO_STD_OUT') == '1':
+            logger.info("find no msprof continue use acl.json mode")
+        else:
+            msprof_run_profiling(args)
+            exit(0)
+
+    if args.dymShape_range != None and args.dymShape is None:
+        # dymshape range run,according range to run each shape infer get best shape
+        dymshape_range_run(args)
+        exit(0)
+
+    if type(args.device) == list:
+        # args has multiple device, run single process for each device
+        ret = multidevice_run(args)
+        exit(ret)
+
+    main(args)

@@ -1,1 +1,1 @@
-from debug.surgeon.auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig
+from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig

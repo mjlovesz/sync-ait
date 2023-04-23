@@ -15,8 +15,8 @@
 from abc import abstractmethod
 from enum import Enum, unique
 from typing import Dict, List, Optional
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_node import BaseNode
+from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from auto_optimizer.graph_refactor.interface.base_node import BaseNode
 
 
 @unique

@@ -16,8 +16,8 @@ import pathlib
 
 import click
 
-from debug.surgeon.auto_optimizer.graph_optimizer.optimizer import GraphOptimizer
-from debug.surgeon.auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
+from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer
+from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 
 
 def convert_to_graph_optimizer(ctx: click.Context, param: click.Option, value: str) -> GraphOptimizer:
@@ -99,6 +99,30 @@ arg_input = click.argument(
         readable=True,
         path_type=pathlib.Path
     )
+)
+
+
+arg_start = click.argument(
+    'start_node_name',
+    nargs=1,
+    type=click.STRING
+)
+
+
+arg_end = click.argument(
+    'end_node_name',
+    nargs=1,
+    type=click.STRING
+)
+
+
+opt_check = click.option(
+    '-c',
+    '--is-check-subgraph',
+    'is_check_subgraph',
+    is_flag=True,
+    default=False,
+    help='Whether to check subgraph. Default to False.'
 )
 
 

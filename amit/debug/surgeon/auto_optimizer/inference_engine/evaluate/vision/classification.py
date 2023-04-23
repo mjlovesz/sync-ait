@@ -19,8 +19,8 @@ from abc import ABC
 import numpy as np
 from tqdm import tqdm
 
-from debug.surgeon.auto_optimizer.inference_engine.evaluate.evaluate_base import EvaluateBase
-from debug.surgeon.auto_optimizer.inference_engine.data_process_factory import EvaluateFactory
+from auto_optimizer.inference_engine.evaluate.evaluate_base import EvaluateBase
+from auto_optimizer.inference_engine.data_process_factory import EvaluateFactory
 
 logging = logging.getLogger("auto-optimizer")
 

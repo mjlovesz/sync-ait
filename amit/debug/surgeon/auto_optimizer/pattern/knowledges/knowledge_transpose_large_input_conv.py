@@ -19,13 +19,13 @@ import operator as op
 import numpy as np
 import onnx
 
-from debug.surgeon.auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_node import BaseNode, Initializer, Node, PlaceHolder
-from debug.surgeon.auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern, MatchBase
-from debug.surgeon.auto_optimizer.pattern.matcher import MatchResult
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
-from debug.surgeon.auto_optimizer.pattern.utils import NextNodeCount
+from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
+from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from auto_optimizer.graph_refactor.interface.base_node import BaseNode, Initializer, Node, PlaceHolder
+from auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern, MatchBase
+from auto_optimizer.pattern.matcher import MatchResult
+from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
+from auto_optimizer.pattern.utils import NextNodeCount
 
 SHAPE_THRESHOLD = 20000
 

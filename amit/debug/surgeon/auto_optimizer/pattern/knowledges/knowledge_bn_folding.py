@@ -17,15 +17,15 @@ from typing import List, Optional, Tuple
 import numpy as np
 from numpy.typing import NDArray
 
-from debug.surgeon.auto_optimizer.graph_refactor.interface import (
+from auto_optimizer.graph_refactor.interface import (
     BaseGraph, Initializer, Node
 )
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_node import BaseNode
-from debug.surgeon.auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
-from debug.surgeon.auto_optimizer.pattern.matcher import MatchResult
-from debug.surgeon.auto_optimizer.pattern.pattern import MATCH_PATTERN, MatchBase, Pattern
-from debug.surgeon.auto_optimizer.pattern.utils import NextNodeCount
+from auto_optimizer.graph_refactor.interface.base_node import BaseNode
+from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
+from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
+from auto_optimizer.pattern.matcher import MatchResult
+from auto_optimizer.pattern.pattern import MATCH_PATTERN, MatchBase, Pattern
+from auto_optimizer.pattern.utils import NextNodeCount
 
 # when certain conditions are met, tr/bn/tr structure
 # can be replaced by mul/add

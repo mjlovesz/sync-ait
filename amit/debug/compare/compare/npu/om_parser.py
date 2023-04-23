@@ -11,9 +11,9 @@ import json
 
 import numpy as np
 
-from common import utils
-from common.dynamic_argument_bean import DynamicArgumentEnum
-from common.utils import AccuracyCompareException
+from compare.common import utils
+from compare.common.dynamic_argument_bean import DynamicArgumentEnum
+from compare.common.utils import AccuracyCompareException
 
 GRAPH_OBJECT = "graph"
 OP_OBJECT = "op"
@@ -208,6 +208,9 @@ class OmParser(object):
         # if it's dynamic batch scenario, the net output node should be identified by batch index
         _, scenario = self.get_dynamic_scenario_info()
         if scenario in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
+            if not dump_data_path:
+                for operator in net_output_list:
+                    return  self._parse_net_output_node_attr(operator)
             cur_batch_index = utils.get_batch_index(dump_data_path)
             for operator in net_output_list:
                 batch_index_in_operator = utils.get_batch_index_from_name(operator.get(NAME_OBJECT))

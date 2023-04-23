@@ -654,3 +654,31 @@ graph TD
 ```
 
 当没有Transpose时，FusionPass会进行一些类似Conv+BatchNormalization的融合，原理上是一样的，尝试了一些模型，部分性能有劣化，故不考虑。
+
+
+
+## reflect模式的pad算子替换
+
+### 原理
+
+当pad算子的模式为reflect模式时，算子性能较差，因此将pad算子做一些等价变换，以提升模型的性能。
+
+### 示意图
+```mermaid
+graph TD
+    subgraph After
+        A2(input) --> S1("Slice") --> S2("Slice") --> C2("Concat")
+        A2(input) --> S3("Slice") --> S4("Slice") --> C2("Concat")
+        A2(input)  --> C2("Concat")
+        C2("Concat") --> S5("Slice") --> S6("Slice") --> C3("Concat")
+        C2("Concat") --> S7("Slice") --> S8("Slice") --> C3("Concat")
+        C2("Concat") --> C3("Concat")
+        C3("Concat") --> O3("Output")
+    end
+
+    subgraph Before
+        A1(input) --> P1("Pad") --> O2("Output")
+    end
+```
+
+如上图所示，Pad算子转换为一个等价子图。

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from debug.surgeon.auto_optimizer.__main__ import cli as surgeon_cmd_group
+from auto_optimizer.__main__ import cli as surgeon_cmd_group
 
 
 if __file__ == "__main__":
