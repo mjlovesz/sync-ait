@@ -12,12 +12,11 @@ import os
 import sys
 import time
 
-from atc.atc_utils import AtcUtils
-from common import utils
-from common.utils import AccuracyCompareException
-
-from compare.net_compare import NetCompare
-from npu.npu_dump_data import NpuDumpData
+from compare.atc.atc_utils import AtcUtils
+from compare.common import utils
+from compare.common.utils import AccuracyCompareException
+from compare.net_compare.net_compare import NetCompare
+from compare.npu.npu_dump_data import NpuDumpData
 
 
 def _accuracy_compare_parser(parser):
@@ -49,10 +48,10 @@ def _accuracy_compare_parser(parser):
 def _generate_golden_data_model(args):
     model_name, extension = utils.get_model_name_and_extension(args.model_path)
     if ".pb" == extension:
-        from tf.tf_dump_data import TfDumpData
+        from compare.tf.tf_dump_data import TfDumpData
         return TfDumpData(args)
     elif ".onnx" == extension:
-        from onnx_model.onnx_dump_data import OnnxDumpData
+        from compare.onnx_model.onnx_dump_data import OnnxDumpData
         return OnnxDumpData(args)
     else:
         utils.print_error_log("Only model files whose names end with .pb or .onnx are supported")
@@ -84,19 +83,17 @@ def _check_output_node_name_mapping(original_net_output_node, golden_net_output_
             break
 
 
-def main():
+def main(args):
     """
-   Function Description:
-       main process function
-   Exception Description:
-       exit the program when an AccuracyCompare Exception  occurs
-   """
-    parser = argparse.ArgumentParser()
-    _accuracy_compare_parser(parser)
-    args = parser.parse_args(sys.argv[1:])
+    Function Description:
+        main process function
+    Exception Description:
+        exit the program when an AccuracyCompare Exception  occurs
+    """
     args.model_path = os.path.realpath(args.model_path)
     args.offline_model_path = os.path.realpath(args.offline_model_path)
     args.cann_path = os.path.realpath(args.cann_path)
+
     try:
         utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
         time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
@@ -136,4 +133,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    _accuracy_compare_parser(parser)
+    args = parser.parse_args(sys.argv[1:])
+    main(args)
