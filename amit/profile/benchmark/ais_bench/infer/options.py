@@ -1,9 +1,9 @@
 from multiprocessing import Pool
 from multiprocessing import Manager
 import pathlib
-import click
 import argparse
 
+import click
 
 def str2bool(ctx, param, v):
     if isinstance(v, bool):
@@ -98,7 +98,8 @@ opt_output = click.option(
     type=click.Path(
         path_type=pathlib.Path
     ),
-    help='Inference data output path. The inference results are output to the subdirectory named current date under given output path'
+    help='Inference data output path. The inference results are output to '
+        'the subdirectory named current date under given output path'
 )
 
 
@@ -106,7 +107,9 @@ opt_output_dirname = click.option(
     '--output_dirname',
     'output_dirname',
     type=str,
-    help='actual output directory name. Used with parameter output, cannot be used alone. The inference result is output to  subdirectory named by output_dirname under  output path. such as --output_dirname "tmp", the final inference results are output to the folder of  {$output}/tmp'
+    help='actual output directory name. Used with parameter output, cannot be used alone. '
+        'The inference result is output to  subdirectory named by output_dirname under  output path. '
+        'such as --output_dirname "tmp", the final inference results are output to the folder of  {$output}/tmp'
 )
 
 
