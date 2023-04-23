@@ -206,6 +206,7 @@ class NpuDumpData(DumpData):
         utils.execute_command(build_sh_cmd)
         utils.print_info_log("Finish to install benchmark backend execute_path: %s." % benchmark_dir)
         os.chdir(retval)
+        utils.print_info_log("Run command line: cd %s (back to the working directory)" % (retval))
 
     def benchmark_run(self, benchmark_dir):
         """
@@ -222,14 +223,17 @@ class NpuDumpData(DumpData):
         npu_data_output_dir = os.path.join(self.arguments.out_path, NPU_DUMP_DATA_BASE_PATH)
         utils.create_directory(npu_data_output_dir)
         model_name, extension = utils.get_model_name_and_extension(self.arguments.offline_model_path)
-        acl_json_path = os.path.join(benchmark_dir, ACL_JSON_PATH)
+        acl_json_path = ACL_JSON_PATH
         if not os.path.exists(acl_json_path):
             os.mknod(acl_json_path, mode=0o600)
-        self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
-
-        benchmark_cmd = [self.python_version, "-m", "ais_bench", "--model", self.arguments.offline_model_path, "--input",
-                         self.arguments.input_path, "--device", self.arguments.device, "--output", npu_data_output_dir,
-                         "--acl_json_path", acl_json_path]
+        benchmark_cmd = [self.python_version, "ais_infer.py", "--model", self.arguments.offline_model_path,
+                         "--input", self.arguments.benchmark_input_path, "--device", self.arguments.device,
+                         "--output", npu_data_output_dir]
+        if self.arguments.dump:
+            cur_dir = os.getcwd()
+            acl_json_path = os.path.join(cur_dir, acl_json_path)
+            self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
+            benchmark_cmd.extend(["--acl_json_path", acl_json_path])
 
         self.dynamic_input.add_dynamic_arg_for_benchmark(benchmark_cmd)
         self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
@@ -241,10 +245,12 @@ class NpuDumpData(DumpData):
         utils.execute_command(benchmark_cmd)
         os.chdir(retval)
 
-        npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
-        if not file_is_exist:
-            utils.print_error_log("The path {} dump data is not exist.".format(npu_dump_data_path))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+        npu_dump_data_path = ""
+        if self.arguments.dump:
+            npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
+            if not file_is_exist:
+                utils.print_error_log("The path {} dump data is not exist.".format(npu_dump_data_path))
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         # net output data path
         npu_net_output_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir, True)
         if not file_is_exist:
@@ -312,10 +318,10 @@ class NpuDumpData(DumpData):
             bin_file_path_array = []
             for item in input_bin_files:
                 bin_file_path_array.append(os.path.join(input_path, item))
-            self.arguments.input_path = ",".join(bin_file_path_array)
+            self.arguments.benchmark_input_path = ",".join(bin_file_path_array)
         else:
             bin_file_path_array = utils.check_input_bin_file_path(self.arguments.input_path)
-            self.arguments.input_path = ",".join(bin_file_path_array)
+            self.arguments.benchmark_input_path = ",".join(bin_file_path_array)
 
     def _compare_shape_vs_bin_file(self):
         shape_size_array = self.om_parser.get_shape_size()
@@ -326,7 +332,7 @@ class NpuDumpData(DumpData):
 
     def _get_bin_file_size(self):
         bin_file_size = []
-        bin_files = self.arguments.input_path.split(",")
+        bin_files = self.arguments.benchmark_input_path.split(",")
         for item in bin_files:
             bin_file_size.append(os.path.getsize(item))
         return bin_file_size
@@ -358,8 +364,13 @@ class NpuDumpData(DumpData):
     @staticmethod
     def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir):
         load_dict = {
-            "dump": {"dump_list": [{"model_name": model_name}], "dump_path": npu_data_output_dir, "dump_mode": "all",
-                     "dump_op_switch": "off"}}
+            "dump": {
+                "dump_list": [{"model_name": model_name}],
+                "dump_path": npu_data_output_dir,
+                "dump_mode": "all",
+                "dump_op_switch": "off"
+            }
+        }
         if os.access(acl_json_path, os.W_OK):
             try:
                 with open(acl_json_path, "w") as write_json:
