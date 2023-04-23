@@ -12,7 +12,7 @@ setup(
     description='This tool enables one-click network-wide accuracy analysis of TensorFlow and ONNX models.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://gitee.com/ascend/auto-optimizer',
+    url='https://gitee.com/ascend/amit/tree/master/amit/debug/compare',
     packages=find_packages(),
     package_data={'': ['LICENSE']},
     license='Apache-2.0',
@@ -29,21 +29,9 @@ setup(
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development'
     ],
-    extras_require={
-        'inference': [
-            (
-                'aclruntime @ git+https://gitee.com/Ascend/tools.git'
-                '#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend'
-            ),
-            (
-                'ais_bench @ git+https://gitee.com/Ascend/tools.git'
-                '#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_bench'
-            ),
-        ],
-    },
-
     python_requires='>=3.7',
     entry_points={
+        'console_scripts': ['compare=compare.__main__:compare_cli_enter'],
         'debug_sub_task': ['compare=compare.__main__:compare_cli_enter'],
     },
 )
