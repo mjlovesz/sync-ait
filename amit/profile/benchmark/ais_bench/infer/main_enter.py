@@ -1,6 +1,4 @@
-import argparse
 import logging
-import math
 import os
 import sys
 import time
@@ -19,10 +17,33 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                     pure_infer_fake_file, save_tensors_to_file)
 from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
-from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
-from ais_bench.infer.utils import (get_file_content, get_file_datasize,
-                            get_fileslist_from_dir, list_split, logger,
-                            save_data_to_files)
+from ais_bench.infer.miscellaneous import get_acl_json_path, version_check, get_batchsize, dymshape_range_run
+from ais_bench.infer.args_adapter import MyArgs
+
+
+def args_rule_apply(args:any):
+    if args.profiler is True and args.dump is True:
+        logger.error("parameter --profiler cannot be true at the same time as parameter --dump, please check them!\n")
+        raise RuntimeError('error bad parameters --profiler and --dump')
+
+    if (args.profiler is True or args.dump is True) and (args.output is None):
+        logger.error("when dump or profiler, miss output path, please check them!")
+        raise RuntimeError('miss output parameter!')
+
+    if args.auto_set_dymshape_mode == False and args.auto_set_dymdims_mode == False:
+        args.no_combine_tensor_mode = False
+    else:
+        args.no_combine_tensor_mode = True
+
+    if args.profiler is True and args.warmup_count != 0 and args.input != None:
+        logger.info("profiler mode with input change warmup_count to 0")
+        args.warmup_count = 0
+
+    if args.output is None and args.output_dirname is not None:
+        logger.error("parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
+        raise RuntimeError('error bad parameters --output_dirname')
+    return args
+
 
 def set_session_options(session, args):
     # 增加校验
@@ -163,106 +184,6 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
         if args.output != None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
-def str2bool(v):
-    if isinstance(v, bool):
-        return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return False
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
-
-def check_positive_integer(value):
-    ivalue = int(value)
-    if ivalue <= 0:
-        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
-    return ivalue
-
-def check_batchsize_valid(value):
-    # default value is None
-    if value is None:
-        return value
-    # input value no None
-    else:
-        return check_positive_integer(value)
-
-def check_nonnegative_integer(value):
-    ivalue = int(value)
-    if ivalue < 0:
-        raise argparse.ArgumentTypeError("%s is an invalid nonnegative int value" % value)
-    return ivalue
-
-def check_device_range_valid(value):
-    # if contain , split to int list
-    min_value = 0
-    max_value = 255
-    if ',' in value:
-        ilist = [ int(v) for v in value.split(',') ]
-        for ivalue in ilist:
-            if ivalue < min_value or ivalue > max_value:
-                raise argparse.ArgumentTypeError("{} of device:{} is invalid. valid value range is [{}, {}]".format(
-                    ivalue, value, min_value, max_value))
-        return ilist
-    else:
-		# default as single int value
-        ivalue = int(value)
-        if ivalue < min_value or ivalue > max_value:
-            raise argparse.ArgumentTypeError("device:{} is invalid. valid value range is [{}, {}]".format(
-                ivalue, min_value, max_value))
-        return ivalue
-
-def get_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", "-m", required=True, help="the path of the om model")
-    parser.add_argument("--input", "-i", default=None, help="input file or dir")
-    parser.add_argument("--output", "-o", default=None, help="Inference data output path. The inference results are output to the subdirectory named current date under given output path")
-    parser.add_argument("--output_dirname", type=str, default=None, help="actual output directory name. Used with parameter output, cannot be used alone. The inference result is output to  subdirectory named by output_dirname under  output path. such as --output_dirname 'tmp', the final inference results are output to the folder of  {$output}/tmp")
-    parser.add_argument("--outfmt", default="BIN", choices=["NPY", "BIN", "TXT"], help="Output file format (NPY or BIN or TXT)")
-    parser.add_argument("--loop", "-l", type=check_positive_integer, default=1, help="the round of the PureInfer.")
-    parser.add_argument("--debug", type=str2bool, default=False, help="Debug switch,print model information")
-    parser.add_argument("--device", "-d", type=check_device_range_valid, default=0, help="the NPU device ID to use.valid value range is [0, 255]")
-    parser.add_argument("--dymBatch", type=int, default=0, help="dynamic batch size param，such as --dymBatch 2")
-    parser.add_argument("--dymHW", type=str, default=None, help="dynamic image size param, such as --dymHW \"300,500\"")
-    parser.add_argument("--dymDims", type=str, default=None, help="dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"")
-    parser.add_argument("--dymShape", type=str, default=None, help="dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\"")
-    parser.add_argument("--outputSize", type=str, default=None, help="output size for dynamic shape mode")
-    parser.add_argument("--auto_set_dymshape_mode", type=str2bool, default=False, help="auto_set_dymshape_mode")
-    parser.add_argument("--auto_set_dymdims_mode", type=str2bool, default=False, help="auto_set_dymdims_mode")
-    parser.add_argument("--batchsize", type=check_batchsize_valid, default=None, help="batch size of input tensor")
-    parser.add_argument("--pure_data_type", type=str, default="zero", choices=["zero", "random"], help="null data type for pure inference(zero or random)")
-    parser.add_argument("--profiler", type=str2bool, default=False, help="profiler switch")
-    parser.add_argument("--dump", type=str2bool, default=False, help="dump switch")
-    parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
-    parser.add_argument("--output_batchsize_axis",  type=check_nonnegative_integer, default=0, help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 1")
-    parser.add_argument("--run_mode", type=str, default="array", choices=["array", "files", "tensor", "full"], help="run mode")
-    parser.add_argument("--display_all_summary", type=str2bool, default=False, help="display all summary include h2d d2h info")
-    parser.add_argument("--warmup_count",  type=check_nonnegative_integer, default=1, help="warmup count before inference")
-    parser.add_argument("--dymShape_range", type=str, default=None, help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\"")
-
-    args = parser.parse_args()
-
-    if args.profiler is True and args.dump is True:
-        logger.error("parameter --profiler cannot be true at the same time as parameter --dump, please check them!\n")
-        raise RuntimeError('error bad parameters --profiler and --dump')
-
-    if (args.profiler is True or args.dump is True) and (args.output is None):
-        logger.error("when dump or profiler, miss output path, please check them!")
-        raise RuntimeError('miss output parameter!')
-
-    if args.auto_set_dymshape_mode == False and args.auto_set_dymdims_mode == False:
-        args.no_combine_tensor_mode = False
-    else:
-        args.no_combine_tensor_mode = True
-
-    if args.profiler is True and args.warmup_count != 0 and args.input != None:
-        logger.info("profiler mode with input change warmup_count to 0")
-        args.warmup_count = 0
-
-    if args.output is None and args.output_dirname is not None:
-        logger.error("parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
-        raise RuntimeError('error bad parameters --output_dirname')
-    return args
 
 def msprof_run_profiling(args):
     cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup_count=0"
@@ -272,7 +193,7 @@ def msprof_run_profiling(args):
     ret = os.system(msprof_cmd)
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
 
-def main(args, index=0, msgq=None, device_list=None):
+def main(args, index=0, msgq=None):
     # if msgq is not None,as subproces run
     if msgq != None:
         logger.info("subprocess_{} main run".format(index))
@@ -283,32 +204,18 @@ def main(args, index=0, msgq=None, device_list=None):
     session = init_inference_session(args)
 
     intensors_desc = session.get_inputs()
-    if device_list != None and len(device_list) > 1:
-        if args.output != None:
-            if args.output_dirname is None:
-                timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
-                output_prefix = os.path.join(args.output, timestr)
-                output_prefix = os.path.join(output_prefix, "device" + str(device_list[index]) + "_" + str(index))
-            else:
-                output_prefix = os.path.join(args.output, args.output_dirname)
-                output_prefix = os.path.join(output_prefix, "device" + str(device_list[index]) + "_" + str(index))
-            if not os.path.exists(output_prefix):
-                os.makedirs(output_prefix, 0o755)
-            logger.info("output path:{}".format(output_prefix))
+
+    if args.output != None:
+        if args.output_dirname is None:
+            timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
+            output_prefix = os.path.join(args.output, timestr)
         else:
-            output_prefix = None
+            output_prefix = os.path.join(args.output, args.output_dirname)
+        if not os.path.exists(output_prefix):
+            os.makedirs(output_prefix, 0o755)
+        logger.info("output path:{}".format(output_prefix))
     else:
-        if args.output != None:
-            if args.output_dirname is None:
-                timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
-                output_prefix = os.path.join(args.output, timestr)
-            else:
-                output_prefix = os.path.join(args.output, args.output_dirname)
-            if not os.path.exists(output_prefix):
-                os.makedirs(output_prefix, 0o755)
-            logger.info("output path:{}".format(output_prefix))
-        else:
-            output_prefix = None
+        output_prefix = None
 
     inputs_list = [] if args.input is None else args.input.split(',')
 
@@ -367,37 +274,6 @@ def main(args, index=0, msgq=None, device_list=None):
 def print_subproces_run_error(value):
     logger.error("subprocess run failed error_callback:{}".format(value))
 
-def seg_input_data_for_multi_process(args, inputs, jobs):
-    inputs_list = [] if inputs is None else inputs.split(',')
-    if inputs_list == None:
-        return inputs_list
-
-    fileslist = []
-    if os.path.isfile(inputs_list[0]) == True:
-        fileslist = inputs_list
-    elif os.path.isdir(inputs_list[0]):
-        for dir in inputs_list:
-            fileslist.extend(get_fileslist_from_dir(dir))
-    else:
-        logger.error('error {} not file or dir'.format(inputs_list[0]))
-        raise RuntimeError()
-
-    args.device = 0
-    session = init_inference_session(args)
-    intensors_desc = session.get_inputs()
-    chunks_elements = math.ceil(len(fileslist) / len(intensors_desc))
-    chunks = list(list_split(fileslist, chunks_elements, None))
-    fileslist = [ [] for e in range(jobs) ]
-    for i, chunk in enumerate(chunks):
-        splits_elements = math.ceil(len(chunk) / jobs)
-        splits = list(list_split(chunk, splits_elements, None))
-        for j, split in enumerate(splits):
-            fileslist[j].extend(split)
-    res = []
-    for files in fileslist:
-        res.append(','.join(list(filter(None, files))))
-    return res
-
 def multidevice_run(args):
     logger.info("multidevice:{} run begin".format(args.device))
     device_list = args.device
@@ -405,13 +281,10 @@ def multidevice_run(args):
     msgq = Manager().Queue()
 
     args.subprocess_count = len(device_list)
-    jobs = args.subprocess_count
-    splits = seg_input_data_for_multi_process(args, args.input, jobs)
     for i in range(len(device_list)):
         cur_args = copy.deepcopy(args)
         cur_args.device = int(device_list[i])
-        cur_args.input = None if splits == None else list(splits)[i]
-        p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
+        p.apply_async(main, args=(cur_args, i, msgq), error_callback=print_subproces_run_error)
 
     p.close()
     p.join()
@@ -427,8 +300,9 @@ def multidevice_run(args):
     logger.info('summary throughput:{}'.format(sum(tlist)))
     return result
 
-if __name__ == "__main__":
-    args = get_args()
+
+def main_enter(args:MyArgs):
+    args = args_rule_apply(args)
 
     version_check(args)
 

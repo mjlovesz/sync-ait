@@ -10,6 +10,7 @@ import json
 import os
 import re
 import numpy as np
+import sys
 
 from common import utils
 from common.dump_data import DumpData
@@ -17,11 +18,9 @@ from common.utils import AccuracyCompareException
 from common.dynamic_argument_bean import DynamicArgumentEnum
 from npu.om_parser import OmParser
 
-MSAME_DIR = "msame"
-BUILD_SH = "build.sh"
-OUT_PATH = "out"
-MSAME_COMMAND_PATH = "msame"
-ACL_JSON_PATH = "out/acl.json"
+BENCHMARK_DIR = "benchmark"
+BENCHMARK_BACKEND_DIR = "backend"
+ACL_JSON_PATH = "acl.json"
 NPU_DUMP_DATA_BASE_PATH = "dump_data/npu"
 RESULT_DIR = "result"
 INPUT = "input"
@@ -37,11 +36,11 @@ class DynamicInput(object):
         self.atc_dynamic_arg, self.cur_dynamic_arg = self.get_dynamic_arg_from_om(om_parser)
         self.dynamic_arg_value = self.get_arg_value(om_parser, arguments)
 
-    def add_dynamic_arg_for_msame(self, msame_cmd: list):
+    def add_dynamic_arg_for_benchmark(self, benchmark_cmd: list):
         if self.is_dynamic_shape_scenario():
             self.check_input_dynamic_arg_valid()
-            msame_cmd.append(self.cur_dynamic_arg.value.msame_arg)
-            msame_cmd.append(self.dynamic_arg_value)
+            benchmark_cmd.append(self.cur_dynamic_arg.value.benchmark_arg)
+            benchmark_cmd.append(self.dynamic_arg_value)
 
     @staticmethod
     def get_dynamic_arg_from_om(om_parser):
@@ -164,18 +163,19 @@ class NpuDumpData(DumpData):
         self.arguments = arguments
         self.om_parser = OmParser(output_json_path)
         self.dynamic_input = DynamicInput(self.om_parser, self.arguments)
+        self.python_version = sys.executable or "python3"
 
     def generate_dump_data(self):
         """
         Function Description:
-            compile and rum msame project
+            compile and rum benchmark project
         Return Value:
             npu dump data path
         """
         self._check_input_path_param()
-        msame_dir = os.path.join(os.path.realpath(".."), MSAME_DIR)
-        self.msame_compile(msame_dir)
-        return self.msame_run(msame_dir)
+        benchmark_dir = os.path.join(os.path.realpath("../../profile"), BENCHMARK_DIR)
+        self.benchmark_backend_compile_sh(benchmark_dir)
+        return self.benchmark_run(benchmark_dir)
 
     def get_expect_output_name(self):
         """
@@ -186,32 +186,33 @@ class NpuDumpData(DumpData):
         """
         return self.om_parser.get_expect_net_output_name()
 
-    def msame_compile(self, msame_dir):
+    def benchmark_backend_compile_sh(self, benchmark_dir):
         """
         Function Description:
-            compile msame project
+            compile benchmark backend project
         Parameter:
-            msame_dir: msame project directory
+            benchmark_dir: benchmark project directory
         """
-        execute_path = os.path.join(msame_dir, OUT_PATH, MSAME_COMMAND_PATH)
-        if os.path.exists(execute_path):
-            utils.print_info_log("The execute file %s exist. Skip the compile step." % execute_path)
-            return
-        utils.print_info_log("Start to compile %s" % msame_dir)
-        out_path = os.path.join(msame_dir, OUT_PATH)
-        build_sh_cmd = ["sh", BUILD_SH, "g++", out_path]
-        os.chdir(msame_dir)
-        # do build.sh command
-        utils.print_info_log("Run command line: cd %s && %s" % (msame_dir, " ".join(build_sh_cmd)))
-        utils.execute_command(build_sh_cmd)
-        utils.print_info_log("Finish to compile %s." % msame_dir)
+        execute_path = os.path.join(benchmark_dir, BENCHMARK_BACKEND_DIR)
+        utils.print_info_log("Start to install benchmark backend execute_path: %s" % execute_path)
+        build_sh_cmd = ["sh", "install.sh", "-p", self.python_version]
 
-    def msame_run(self, msame_dir):
+        retval = os.getcwd()
+        os.chdir(execute_path)
+
+        # do install.sh command
+        utils.print_info_log("Run command line: cd %s && %s" % (execute_path, " ".join(build_sh_cmd)))
+        utils.execute_command(build_sh_cmd)
+        utils.print_info_log("Finish to install benchmark backend execute_path: %s." % benchmark_dir)
+        os.chdir(retval)
+        utils.print_info_log("Run command line: cd %s (back to the working directory)" % (retval))
+
+    def benchmark_run(self, benchmark_dir):
         """
         Function Description:
-            run msame project
+            run benchmark project
         Parameter:
-            msame_dir: msame project directory
+            benchmark_dir: benchmark project directory
         Return Value:
             npu dump data path
         Exception Description:
@@ -221,22 +222,34 @@ class NpuDumpData(DumpData):
         npu_data_output_dir = os.path.join(self.arguments.out_path, NPU_DUMP_DATA_BASE_PATH)
         utils.create_directory(npu_data_output_dir)
         model_name, extension = utils.get_model_name_and_extension(self.arguments.offline_model_path)
-        acl_json_path = os.path.join(msame_dir, ACL_JSON_PATH)
+        acl_json_path = ACL_JSON_PATH
         if not os.path.exists(acl_json_path):
             os.mknod(acl_json_path, mode=0o600)
-        self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
-        msame_cmd = ["./" + MSAME_COMMAND_PATH, "--model", self.arguments.offline_model_path, "--input",
-                     self.arguments.input_path, "--device", self.arguments.device, "--output", npu_data_output_dir]
-        self.dynamic_input.add_dynamic_arg_for_msame(msame_cmd)
-        self._make_msame_cmd_for_shape_range(msame_cmd)
-        os.chdir(os.path.join(msame_dir, OUT_PATH))
-        # do msame command
-        utils.print_info_log("Run command line: cd %s && %s" % (os.path.join(msame_dir, OUT_PATH), " ".join(msame_cmd)))
-        utils.execute_command(msame_cmd)
-        npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
-        if not file_is_exist:
-            utils.print_error_log("The path {} dump data is not exist.".format(npu_dump_data_path))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+        benchmark_cmd = [self.python_version, "ais_infer.py", "--model", self.arguments.offline_model_path,
+                         "--input", self.arguments.benchmark_input_path, "--device", self.arguments.device,
+                         "--output", npu_data_output_dir]
+        if self.arguments.dump:
+            cur_dir = os.getcwd()
+            acl_json_path = os.path.join(cur_dir, acl_json_path)
+            self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
+            benchmark_cmd.extend(["--acl_json_path", acl_json_path])
+
+        self.dynamic_input.add_dynamic_arg_for_benchmark(benchmark_cmd)
+        self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
+
+        retval = os.getcwd()
+        os.chdir(benchmark_dir)
+        # do benchmark command
+        utils.print_info_log("Run command line: cd %s && %s" % (benchmark_dir, " ".join(benchmark_cmd)))
+        utils.execute_command(benchmark_cmd)
+        os.chdir(retval)
+
+        npu_dump_data_path = ""
+        if self.arguments.dump:
+            npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
+            if not file_is_exist:
+                utils.print_error_log("The path {} dump data is not exist.".format(npu_dump_data_path))
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         # net output data path
         npu_net_output_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir, True)
         if not file_is_exist:
@@ -245,7 +258,7 @@ class NpuDumpData(DumpData):
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
         return npu_dump_data_path, npu_net_output_data_path
 
-    def _make_msame_cmd_for_shape_range(self, msame_cmd):
+    def _make_benchmark_cmd_for_shape_range(self, benchmark_cmd):
         pattern = re.compile(r'^[0-9]+$')
         count = self.om_parser.get_net_output_count()
         if not self.arguments.output_size:
@@ -272,8 +285,8 @@ class NpuDumpData(DumpData):
                     utils.print_error_log("The size (%s) must be large than zero. Please check the output size."
                                           % self.arguments.output_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-            msame_cmd.append(OUTPUT_SIZE)
-            msame_cmd.append(self.arguments.output_size)
+            benchmark_cmd.append(OUTPUT_SIZE)
+            benchmark_cmd.append(self.arguments.output_size)
 
     def _convert_net_output_to_numpy(self, npu_net_output_data_path, npu_dump_data_path):
         net_output_data = None
@@ -304,10 +317,10 @@ class NpuDumpData(DumpData):
             bin_file_path_array = []
             for item in input_bin_files:
                 bin_file_path_array.append(os.path.join(input_path, item))
-            self.arguments.input_path = ",".join(bin_file_path_array)
+            self.arguments.benchmark_input_path = ",".join(bin_file_path_array)
         else:
             bin_file_path_array = utils.check_input_bin_file_path(self.arguments.input_path)
-            self.arguments.input_path = ",".join(bin_file_path_array)
+            self.arguments.benchmark_input_path = ",".join(bin_file_path_array)
 
     def _compare_shape_vs_bin_file(self):
         shape_size_array = self.om_parser.get_shape_size()
@@ -318,7 +331,7 @@ class NpuDumpData(DumpData):
 
     def _get_bin_file_size(self):
         bin_file_size = []
-        bin_files = self.arguments.input_path.split(",")
+        bin_files = self.arguments.benchmark_input_path.split(",")
         for item in bin_files:
             bin_file_size.append(os.path.getsize(item))
         return bin_file_size
@@ -350,8 +363,13 @@ class NpuDumpData(DumpData):
     @staticmethod
     def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir):
         load_dict = {
-            "dump": {"dump_list": [{"model_name": model_name}], "dump_path": npu_data_output_dir, "dump_mode": "all",
-                     "dump_op_switch": "off"}}
+            "dump": {
+                "dump_list": [{"model_name": model_name}],
+                "dump_path": npu_data_output_dir,
+                "dump_mode": "all",
+                "dump_op_switch": "off"
+            }
+        }
         if os.access(acl_json_path, os.W_OK):
             try:
                 with open(acl_json_path, "w") as write_json:
