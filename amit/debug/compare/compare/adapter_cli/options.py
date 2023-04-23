@@ -13,6 +13,7 @@
 # limitations under the License.
 import click
 
+from compare.common.utils import str2bool
 
 opt_gold_model = click.option(
     '-gm',
@@ -94,9 +95,34 @@ opt_advisor = click.option(
     help="<Optional> Enable advisor after compare."
 )
 
+opt_dymShape_range = click.option(
+    "-dr", 
+    "--dymShape-range", 
+    "dymShape_range", 
+    default="",
+    help="<Optional> Dynamic shape range using in dynamic model, using this means ignore input_shape"
+)
+
+opt_dump = click.option(
+    "--dump", 
+    "dump", 
+    default=True, 
+    type=str2bool,
+    help="<Optional> Whether to dump all the operations' ouput. Default True."
+)
+
+opt_convert = click.option(
+    "--convert", 
+    "bin2npy", 
+    default=False, 
+    type=str2bool,
+    help="<Optional> Enable npu dump data conversion from bin to npy after compare."
+)
+
 class MyArgs:
     def __init__(self,
                  model_path,
+                 offline_model_path,
                  input_path,
                  cann_path,
                  out_path,
@@ -104,8 +130,12 @@ class MyArgs:
                  device,
                  output_size,
                  output_nodes,
-                 advisor):
+                 advisor,
+                 dymShape_range,
+                 dump,
+                 bin2npy):
         self.model_path = model_path
+        self.offline_model_path = offline_model_path
         self.input_path = input_path
         self.cann_path = cann_path
         self.out_path = out_path
@@ -114,3 +144,6 @@ class MyArgs:
         self.output_size = output_size
         self.output_nodes = output_nodes
         self.advisor = advisor
+        self.dymShape_range = dymShape_range
+        self.dump = dump
+        self.bin2npy = bin2npy
