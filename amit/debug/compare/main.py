@@ -13,7 +13,7 @@ import sys
 import time
 
 from compare.adapter_cli.args_adapter import MyArgs
-from compare.common.utils import AccuracyCompareException, get_shape_to_directory_name, str2bool
+from compare.common.utils import str2bool
 
 from compare.__main__ import cmp_main
 
@@ -46,13 +46,13 @@ def _accuracy_compare_parser(parser):
                              "using this means ignore input_shape")
     parser.add_argument("--dump", dest="dump", default=True, type=str2bool,
                         help="<Optional> Whether to dump all the operations' ouput. Default True.")
-    parser.add_argument("--convert", dest = "bin2npy", action="store_true",
+    parser.add_argument("--convert", dest = "bin2npy", default=False, type=str2bool,
                         help="<Optional> Enable npu dump data conversion from bin to npy after compare.")
 
 
 def argsAdapter(args):
     return MyArgs(args.model_path, args.offline_model_path, args.input_path, args.cann_path, args.out_path, args.input_shape, args.device,
-                  args.output_size, args.output_nodes, args.advisor)
+                  args.output_size, args.output_nodes, args.advisor, args.dymShape_range, args.dump, args.bin2npy)
 
 def main():
     """

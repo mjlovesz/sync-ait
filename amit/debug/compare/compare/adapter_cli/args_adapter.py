@@ -23,7 +23,10 @@ class MyArgs:
                  device,
                  output_size,
                  output_nodes,
-                 advisor):
+                 advisor,
+                 dymShape_range,
+                 dump,
+                 bin2npy):
         self.model_path = gold_model
         self.offline_model_path = om_model
         self.input_path = input
@@ -34,3 +37,6 @@ class MyArgs:
         self.output_size = output_size
         self.output_nodes = output_nodes
         self.advisor = advisor
+        self.dymShape_range = dymShape_range
+        self.dump = dump
+        self.bin2npy = bin2npy

@@ -15,7 +15,6 @@ import onnx
 import onnxruntime
 import numpy as np
 
-from common.dump_data import DumpData
 from skl2onnx.helpers.onnx_helper import enumerate_model_node_outputs
 from skl2onnx.helpers.onnx_helper import select_model_inputs_outputs
 from skl2onnx.helpers.onnx_helper import save_onnx_model
