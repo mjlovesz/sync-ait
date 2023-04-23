@@ -1,6 +1,11 @@
 import click
+import pkg_resources
 
-from debug.compare.main_cli import compare_cli_enter
-from debug.surgeon.main_cli import surgeon_cmd_group
 
-debug_cli_group = click.Group(name="debug", commands=[compare_cli_enter, surgeon_cmd_group])
+debug_sub_task = {}
+for entry_point in pkg_resources.iter_entry_points('debug_sub_task'):
+    click.echo(entry_point.name)
+    debug_sub_task[entry_point.name] = entry_point.load()
+
+
+debug_cli_group = click.Group(name="debug", commands=debug_sub_task)

@@ -12,11 +12,11 @@ import re
 import numpy as np
 import sys
 
-from common import utils
-from common.dump_data import DumpData
-from common.utils import AccuracyCompareException
-from common.dynamic_argument_bean import DynamicArgumentEnum
-from npu.om_parser import OmParser
+from compare.common import utils
+from compare.common.dump_data import DumpData
+from compare.common.utils import AccuracyCompareException
+from compare.common.dynamic_argument_bean import DynamicArgumentEnum
+from compare.npu.om_parser import OmParser
 
 BENCHMARK_DIR = "benchmark"
 BENCHMARK_BACKEND_DIR = "backend"
@@ -174,7 +174,7 @@ class NpuDumpData(DumpData):
         """
         self._check_input_path_param()
 
-        benchmark_dir = os.path.join(os.path.realpath("profile"), BENCHMARK_DIR)
+        benchmark_dir = os.path.join(os.path.realpath("../../profile"), BENCHMARK_DIR)
         self.benchmark_backend_compile_sh(benchmark_dir)
         return self.benchmark_run(benchmark_dir)
 
@@ -227,7 +227,7 @@ class NpuDumpData(DumpData):
             os.mknod(acl_json_path, mode=0o600)
         self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
 
-        benchmark_cmd = [self.python_version, "ais_infer.py", "--model", self.arguments.offline_model_path, "--input",
+        benchmark_cmd = [self.python_version, "-m", "ais_bench", "--model", self.arguments.offline_model_path, "--input",
                          self.arguments.input_path, "--device", self.arguments.device, "--output", npu_data_output_dir,
                          "--acl_json_path", acl_json_path]
 

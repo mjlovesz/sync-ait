@@ -11,9 +11,9 @@ import json
 
 import numpy as np
 
-from common import utils
-from common.dynamic_argument_bean import DynamicArgumentEnum
-from common.utils import AccuracyCompareException
+from compare.common import utils
+from compare.common.dynamic_argument_bean import DynamicArgumentEnum
+from compare.common.utils import AccuracyCompareException
 
 GRAPH_OBJECT = "graph"
 OP_OBJECT = "op"
