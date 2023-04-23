@@ -17,6 +17,6 @@ setup(
     install_requires=required,
     python_requires='>=3.7',
     entry_points={
-        'debug_sub_task': ['benchmark=main_cli:benchmark_cli_enter']
+        'profile_sub_task': ['benchmark=main_cli:benchmark_cli_enter']
     }
 )
