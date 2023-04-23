@@ -25,9 +25,12 @@ from compare.adapter_cli.options import (
     opt_device,
     opt_output_size,
     opt_output_nodes,
-    opt_advisor
+    opt_advisor,
+    opt_dymShape_range,
+    opt_dump,
+    opt_bin2npy
 )
-from compare.main import main
+from main import main
 
 
 @click.command(name="compare", short_help='one-click network-wide accuracy analysis of TensorFlow and ONNX models.')
@@ -41,6 +44,9 @@ from compare.main import main
 @opt_output_size
 @opt_output_nodes
 @opt_advisor
+@opt_dymShape_range
+@opt_dump
+@opt_bin2npy
 def compare_cli_enter(
     gold_model,
     om_model,
@@ -51,10 +57,13 @@ def compare_cli_enter(
     device,
     output_size,
     output_nodes,
-    advisor
+    advisor,
+    dymShape_range, 
+    dump, 
+    bin2npy
 ) -> None:
     my_agrs = MyArgs(gold_model, om_model, input, cann_path, out_path, input_shape, device,
-                     output_size, output_nodes, advisor)
+                     output_size, output_nodes, advisor, dymShape_range, dump, bin2npy)
     return main(my_agrs)
 
 if __name__ == '__main__':
