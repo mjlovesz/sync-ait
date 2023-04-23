@@ -19,7 +19,7 @@ from typing import Deque, List, Dict, Sequence, Set, Tuple, Union, Optional, Typ
 
 import numpy as np
 
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_node import PlaceHolder, Initializer, Node
+from auto_optimizer.graph_refactor.interface.base_node import PlaceHolder, Initializer, Node
 
 N = TypeVar('N', PlaceHolder, Initializer, Node)
 NodeType = Union[PlaceHolder, Initializer, Node]

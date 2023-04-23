@@ -15,8 +15,8 @@
 import logging
 from abc import ABC
 
-from debug.surgeon.auto_optimizer.inference_engine.post_process.post_process_base import PostProcessBase
-from debug.surgeon.auto_optimizer.inference_engine.data_process_factory import PostProcessFactory
+from auto_optimizer.inference_engine.post_process.post_process_base import PostProcessBase
+from auto_optimizer.inference_engine.data_process_factory import PostProcessFactory
 
 logging = logging.getLogger("auto-optimizer")
 

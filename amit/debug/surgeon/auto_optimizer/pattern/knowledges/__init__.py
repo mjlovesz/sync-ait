@@ -1,20 +1,3 @@
-<<<<<<< HEAD
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_conv1d2conv2d import KnowledgeConv1d2Conv2d
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_merge_consecutive_slice import KnowledgeMergeConsecutiveSlice
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_transpose_large_input_conv import KnowledgeTransposeLargeInputConv
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_merge_consecutive_concat import KnowledgeMergeConsecutiveConcat
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_type_cast import KnowledgeTypeCast
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_split_qkv_matmul import KnowledgeSplitQKVMatmul
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_split_large_kernel import KnowledgeSplitLargeKernelConv
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_resize_mode_to_nearest import KnowledgeResizeModeToNearest
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_topk_fix import KnowledgeTopkFix
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_merge_casts import KnowledgeMergeCasts
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_empty_slice_fix import KnowledgeEmptySliceFix
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_dynamic_reshape import KnowledgeDynamicReshape
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_gather_to_split import KnowledgeGatherToSplit
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_avgpool_split import KnowledgeAvgPoolSplit
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_bn_folding import KnowledgeBNFolding
-=======
 from .knowledge_conv1d2conv2d import KnowledgeConv1d2Conv2d
 from .knowledge_merge_consecutive_slice import KnowledgeMergeConsecutiveSlice
 from .knowledge_transpose_large_input_conv import KnowledgeTransposeLargeInputConv
@@ -31,4 +14,3 @@ from .knowledge_gather_to_split import KnowledgeGatherToSplit
 from .knowledge_avgpool_split import KnowledgeAvgPoolSplit
 from .knowledge_bn_folding import KnowledgeBNFolding
 from .knowledge_modify_reflection_pad import KnowledgeModifyReflectionPad
->>>>>>> 1752d551cc654001eae5dca1ff4e9802e5225724

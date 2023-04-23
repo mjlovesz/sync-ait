@@ -15,7 +15,7 @@
 import subprocess
 import logging
 
-from debug.surgeon.auto_optimizer.inference_engine.model_convert.compiler import Compiler
+from auto_optimizer.inference_engine.model_convert.compiler import Compiler
 
 logger = logging.getLogger("auto-optimizer")
 

@@ -17,7 +17,7 @@ import os
 import importlib
 import logging
 
-from debug.surgeon.auto_optimizer.common.utils import format_to_module
+from auto_optimizer.common.utils import format_to_module
 
 logging = logging.getLogger("auto-optimizer")
 

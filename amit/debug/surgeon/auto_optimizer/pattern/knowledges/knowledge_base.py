@@ -17,10 +17,10 @@ from abc import abstractmethod
 from typing import Dict, Optional, List, Callable
 from collections import defaultdict
 
-from debug.surgeon.auto_optimizer.pattern.pattern import Pattern
-from debug.surgeon.auto_optimizer.pattern.matcher import MatchResult
-from debug.surgeon.auto_optimizer.pattern.matcher import Matcher
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from auto_optimizer.pattern.pattern import Pattern
+from auto_optimizer.pattern.matcher import MatchResult
+from auto_optimizer.pattern.matcher import Matcher
+from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 
 ApplyFunc = Callable[[BaseGraph, MatchResult], bool]
 ApplyFuncs = List[ApplyFunc]

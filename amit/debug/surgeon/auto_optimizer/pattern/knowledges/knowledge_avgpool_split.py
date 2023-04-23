@@ -15,12 +15,12 @@
 import copy
 import numpy as np
 
-from debug.surgeon.auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from debug.surgeon.auto_optimizer.pattern.pattern import Pattern, MATCH_PATTERN, MatchBase
-from debug.surgeon.auto_optimizer.pattern.matcher import MatchResult
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import (BaseGraph, Node)
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_node import BaseNode
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
+from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
+from auto_optimizer.pattern.pattern import Pattern, MATCH_PATTERN, MatchBase
+from auto_optimizer.pattern.matcher import MatchResult
+from auto_optimizer.graph_refactor.interface.base_graph import (BaseGraph, Node)
+from auto_optimizer.graph_refactor.interface.base_node import BaseNode
+from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 
 
 KERNEL_MAX_SIZE = 255

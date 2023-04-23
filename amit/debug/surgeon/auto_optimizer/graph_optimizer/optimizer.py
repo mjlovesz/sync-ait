@@ -24,10 +24,10 @@ import multiprocessing
 
 import numpy as np
 
-from debug.surgeon.auto_optimizer.common.utils import meet_precision
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
-from debug.surgeon.auto_optimizer import KnowledgeFactory
+from auto_optimizer.common.utils import meet_precision
+from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
+from auto_optimizer import KnowledgeFactory
 
 
 logger = logging.getLogger('GraphOptimizer')

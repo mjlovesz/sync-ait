@@ -19,15 +19,15 @@ import numpy as np
 from onnx.onnx_cpp2py_export.shape_inference import InferenceError
 from onnx.defs import OpSchema, get_all_schemas
 
-from debug.surgeon.auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
-from debug.surgeon.auto_optimizer.pattern.pattern import MatchBase
-from debug.surgeon.auto_optimizer.pattern.pattern import MATCH_PATTERN
-from debug.surgeon.auto_optimizer.pattern.pattern import Pattern
-from debug.surgeon.auto_optimizer.pattern.matcher import MatchResult
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
-from debug.surgeon.auto_optimizer.graph_refactor.interface.base_node import BaseNode
-from debug.surgeon.auto_optimizer.common import Singleton
+from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
+from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
+from auto_optimizer.pattern.pattern import MatchBase
+from auto_optimizer.pattern.pattern import MATCH_PATTERN
+from auto_optimizer.pattern.pattern import Pattern
+from auto_optimizer.pattern.matcher import MatchResult
+from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from auto_optimizer.graph_refactor.interface.base_node import BaseNode
+from auto_optimizer.common import Singleton
 
 
 class ElemType(Enum):
