@@ -16,7 +16,7 @@ import os
 import stat
 import pytest
 
-from compare import analyser
+from amit.debug.compare.compare.analyser import analyser
 
 
 @pytest.fixture(scope="module", autouse=True)

@@ -16,8 +16,8 @@ import time
 
 import numpy as np
 
-from common import utils
-from common.utils import AccuracyCompareException, get_shape_to_directory_name
+from compare.common import utils
+from compare.common.utils import AccuracyCompareException, get_shape_to_directory_name
 
 MSACCUCMP_DIR_PATH = "toolkit/tools/operator_cmp/compare"
 MSACCUCMP_FILE_NAME = ["msaccucmp.py", "msaccucmp.pyc"]

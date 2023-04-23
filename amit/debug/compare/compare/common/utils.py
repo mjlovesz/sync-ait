@@ -14,10 +14,11 @@ import sys
 import time
 import enum
 import itertools
+import argparse
 
 import numpy as np
 
-from common.dynamic_argument_bean import DynamicArgumentEnum
+from compare.common.dynamic_argument_bean import DynamicArgumentEnum
 
 ACCURACY_COMPARISON_INVALID_PARAM_ERROR = 1
 ACCURACY_COMPARISON_INVALID_DATA_ERROR = 2

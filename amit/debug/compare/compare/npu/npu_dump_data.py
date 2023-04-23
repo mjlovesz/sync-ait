@@ -12,11 +12,11 @@ import re
 import numpy as np
 import sys
 
-from common import utils
-from common.dump_data import DumpData
-from common.utils import AccuracyCompareException
-from common.dynamic_argument_bean import DynamicArgumentEnum
-from npu.om_parser import OmParser
+from compare.common import utils
+from compare.common.dump_data import DumpData
+from compare.common.utils import AccuracyCompareException
+from compare.common.dynamic_argument_bean import DynamicArgumentEnum
+from compare.npu.om_parser import OmParser
 
 BENCHMARK_DIR = "benchmark"
 BENCHMARK_BACKEND_DIR = "backend"
