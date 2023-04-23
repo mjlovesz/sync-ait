@@ -1,9 +1,9 @@
 
 
-# ais_bench推理工具使用指南
+# benchmark推理工具使用指南
 
 ## 简介
-本文介绍ais_bench推理工具，用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延）。
+本文介绍benchmark推理工具，用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延）。
 
 ## 工具安装
 
@@ -14,7 +14,7 @@
 
 ### 工具安装方式
 
-ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序包**的安装。
+benchmark推理工具的安装包括**aclruntime包**和**benchmark推理程序包**的安装。
 安装方式包括：下载whl包安装、一键式编译安装和源代码编译安装。
 
 **说明**：
@@ -25,7 +25,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 
 #### 下载whl包安装
 
-1. 下载如下aclruntime和ais_bench推理程序的whl包。
+1. 下载如下aclruntime和benchmark推理程序的whl包。
 
    0.0.2版本（aclruntime包请根据当前环境选择适配版本）：
 
@@ -35,7 +35,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    - [aclruntime-0.0.2-cp38-cp38-linux_aarch64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp38-cp38-linux_aarch64.whl)
    - [aclruntime-0.0.2-cp39-cp39-linux_x86_64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp39-cp39-linux_x86_64.whl)
    - [aclruntime-0.0.2-cp39-cp39-linux_aarch64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp39-cp39-linux_aarch64.whl)
-   - [ais_bench-0.0.2-py3-none-any.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ais_bench-0.0.2-py3-none-any.whl)
+   - [benchmark-0.0.2-py3-none-any.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ais_bench-0.0.2-py3-none-any.whl)
 
 2. 执行如下命令，进行安装。
 
@@ -60,7 +60,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    ```bash
    # 成功安装aclruntime
    Successfully installed aclruntime-{version}
-   # 成功安装ais_bench推理程序
+   # 成功安装benchmark推理程序
    Successfully installed ais_bench-{version}
    ```
 
@@ -73,13 +73,13 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    在安装环境执行如下命令安装aclruntime包：
 
    ```bash
-   pip3 install -v 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend'
+   pip3 install -v 'git+https://gitee.com/Ascend/amit.git#egg=aclruntime&subdirectory=amit/profile/benchmark/backend'
    ```
 
    说明：若为覆盖安装，请增加“--force-reinstall”参数强制安装，例如：
 
    ```bash
-   pip3 install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend'
+   pip3 install -v --force-reinstall 'git+https://gitee.com/Ascend/amit.git#egg=aclruntime&subdirectory=amit/profile/benchmark/backend'
    ```
 
    提示如下示例信息则表示安装成功：
@@ -88,18 +88,18 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    Successfully installed aclruntime-{version}
    ```
 
-2. **安装ais_bench推理程序包**
+2. **安装benchmark推理程序包**
 
-   在安装环境执行如下命令安装ais_bench推理程序包：
+   在安装环境执行如下命令安装benchmark推理程序包：
 
    ```bash
-   pip3 install -v 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_bench'
+   pip3 install -v 'git+https://gitee.com/Ascend/amit.git#egg=ais_bench&subdirectory=amit/profile/benchmark'
    ```
 
    说明：若为覆盖安装，请增加“--force-reinstall”参数强制安装，例如：
 
    ```bash
-   pip3 install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_bench'
+   pip3 install -v --force-reinstall 'git+https://gitee.com/Ascend/amit.git#egg=ais_bench&subdirectory=amit/profile/benchmark'
    ```
    
    提示如下示例信息则表示安装成功：
@@ -115,25 +115,25 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 
 2. 将工具压缩包上传并解压至安装环境。
 
-3. 从工具解压目录下进入amit/profile/benchmark/ais_bench目录下，执行如下命令进行编译：
+3. 从工具解压目录下进入amit/profile/benchmark目录下，执行如下命令进行编译：
 
    ```bash
    # 进入工具解压目录
    cd ${HOME}/amit/profile/benchmark
    # 构建aclruntime包
    pip3 wheel ./backend/ -v
-   # 构建ais_bench推理程序包
+   # 构建benchmark推理程序包
    pip3 wheel ./ -v
    ```
 
-   其中，${HOME}为ais_bench推理工具包所在目录。
+   其中，${HOME}为benchmark推理工具包所在目录。
 
    分别提示如下信息则表示编译成功：
 
    ```bash
    # 成功编译aclruntime包
    Successfully built aclruntime
-   # 成功编译ais_bench推理程序包
+   # 成功编译benchmark推理程序包
    Successfully built ais-bench
    ```
 
@@ -142,7 +142,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    ```bash
    # 安装aclruntime
    pip3 install ./aclruntime-{version}-{python_version}-linux_{arch}.whl
-   # 安装ais_bench推理程序
+   # 安装benchmark推理程序
    pip3 install ./ais_bench-{version}-py3-none-any.whl
    ```
 
@@ -160,14 +160,14 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    ```bash
    # 成功安装aclruntime
    Successfully installed aclruntime-{version}
-   # 成功安装ais_bench推理程序
+   # 成功安装benchmark推理程序
    Successfully installed ais_bench-{version}
    ```
    
    
 
 ### 运行准备
-完成ais_bench推理工具安装后，需要执行如下操作，确保工具能够正确运行：
+完成benchmark推理工具安装后，需要执行如下操作，确保工具能够正确运行：
 1. 执行requirements.txt文件中的依赖安装，执行如下命令：
 
    ```bash
@@ -175,7 +175,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    pip3 install -r ./requirements.txt
    ```
 
-   其中，${HOME}为ais_bench推理工具包所在目录。
+   其中，${HOME}为benchmark推理工具包所在目录。
 
    说明：若依赖已安装，忽略此步骤。
 2. 设置CANN包的环境变量，执行如下命令：
@@ -188,7 +188,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 
    说明：若环境变量已配置，忽略此步骤。
 
-完成以上设置后，可以使用ais_bench推理工具进行推理模型的性能测试。
+完成以上设置后，可以使用benchmark推理工具进行推理模型的性能测试。
 
 ## 使用方法
 
@@ -196,7 +196,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 
  #### 使用入口
 
-ais_bench推理工具可以通过ais_bench可执行文件方式启动模型测试。启动方式如下：
+benchmark推理工具可以通过benchmark可执行文件方式启动模型测试。启动方式如下：
 
 ```bash
 python3 -m ais_bench --model *.om
@@ -205,12 +205,12 @@ python3 -m ais_bench --model *.om
 
 #### 参数说明
 
-ais_bench推理工具可以通过配置不同的参数，来应对各种测试场景以及实现其他辅助功能。
+benchmark推理工具可以通过配置不同的参数，来应对各种测试场景以及实现其他辅助功能。
 
 参数按照功能类别分为**基础功能参数**和**高级功能参数**：
 
 - **基础功能参数**：主要包括输入输入文件及格式、debug、推理次数、预热次数、指定运行设备以及帮助信息等。
-- **高级功能参数**：主要包括动态分档场景和动态Shape场景的ais_bench推理测试参数以及profiler或dump数据获取等。
+- **高级功能参数**：主要包括动态分档场景和动态Shape场景的benchmark推理测试参数以及profiler或dump数据获取等。
 
 **说明**：以下参数中，参数和取值之间可以用“ ”空格分隔也可以用“=”等号分隔。例如：--debug 1或--debug=0。
 
@@ -508,7 +508,7 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
 
  #### 输出结果文件保存场景
 
-默认情况下，ais_bench推理工具执行后不保存输出结果数据文件，配置相关参数后，可生成的结果数据如下：
+默认情况下，benchmark推理工具执行后不保存输出结果数据文件，配置相关参数后，可生成的结果数据如下：
 
 | 文件/目录                                | 说明                                                         |
 | ---------------------------------------- | ------------------------------------------------------------ |
@@ -604,7 +604,7 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
 
 ### 输出结果
 
-ais_bench推理工具执行后，打屏输出结果示例如下：
+benchmark推理工具执行后，打屏输出结果示例如下：
 
 - display_all_summary=False时，打印如下：
 
@@ -646,11 +646,11 @@ ais_bench推理工具执行后，打屏输出结果示例如下：
 
 ### 接口开放
 
-开放ais_bench推理工具推理Python接口。
+开放benchmark推理工具推理Python接口。
 
-代码示例参考https://gitee.com/ascend/tools/blob/master/ais-bench_workload/tool/ais_bench/test/interface_sample.py
+代码示例参考[sample](https://gitee.com/ascend/amit/blob/master/amit/profile/benchmark/test/interface_sample.py)
 
-可以通过如下示例代码完成ais_bench推理工具推理操作：
+可以通过如下示例代码完成benchmark推理工具推理操作：
 
 ```python
 def infer_simple():
@@ -711,7 +711,7 @@ EZ9999  The error from device(2), serial number is 17, there is an aicore error,
 -rw-r--r-- 1 root root    4 Jan  7 08:17 exception_cb_index_0_input_2_format_2_dtype_3_shape_.bin
 -rw-r--r-- 1 root root 576K Jan  7 08:17 exception_cb_index_0_output_0_format_2_dtype_1_shape_384x768.bin
 ```
-如果有需要将生成的异常bin文件转换为npy文件，请使用[转换脚本convert_exception_cb_bin_to_npy.py](https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_bench/test/convert_exception_cb_bin_to_npy.py).  
+如果有需要将生成的异常bin文件转换为npy文件，请使用[转换脚本convert_exception_cb_bin_to_npy.py](https://gitee.com/ascend/amit/blob/master/amit/profile/benchmark/test/convert_exception_cb_bin_to_npy.py).  
 使用方法：python3 convert_exception_cb_bin_to_npy.py --input {bin_file_path}。支持输入bin文件或文件夹。
 
 
