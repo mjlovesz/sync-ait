@@ -4,10 +4,8 @@ import sys
 import os
 from unittest import mock
 
-sys.path.insert(0, os.path.abspath("../../../")) ##保证amit入口
-
-from debug.compare.main import main, argsAdapter, _accuracy_compare_parser
-from debug.compare.common import utils
+from compare.main import main, argsAdapter, _accuracy_compare_parser
+from compare.common import utils
 
 @pytest.fixture(scope="module", autouse=True)
 def fake_onnx_om():
