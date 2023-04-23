@@ -27,6 +27,7 @@ from compare.adapter_cli.options import (
     opt_output_nodes,
     opt_advisor
 )
+from compare.main import main
 
 
 @click.command(name="compare", short_help='one-click network-wide accuracy analysis of TensorFlow and ONNX models.')
@@ -54,7 +55,7 @@ def compare_cli_enter(
 ) -> None:
     my_agrs = MyArgs(gold_model, om_model, input, cann_path, out_path, input_shape, device,
                      output_size, output_nodes, advisor)
-    return cmp_main(my_agrs)
+    return main(my_agrs)
 
 if __name__ == '__main__':
     compare_cli_enter()
