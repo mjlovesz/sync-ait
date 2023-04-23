@@ -1,7 +1,7 @@
 import os
 import sys
 
-from common import utils
+from compare.common import utils
 
 MSACCUCMP_FILE_PATH =  "toolkit/tools/operator_cmp/compare/msaccucmp.py"
 

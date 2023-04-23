@@ -16,7 +16,7 @@ from compare.atc.atc_utils import AtcUtils
 from compare.common import utils
 from compare.common.utils import AccuracyCompareException, get_shape_to_directory_name, str2bool
 from compare.analyser import analyser
-from compare.net_compare import NetCompare
+from compare.net_compare.net_compare import NetCompare
 from compare.npu.npu_dump_data import NpuDumpData
 from compare.npu.npu_dump_data_bin2npy import data_convert
 
