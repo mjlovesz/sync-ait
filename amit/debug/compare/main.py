@@ -11,15 +11,11 @@ import argparse
 import os
 import sys
 import time
-sys.path.insert(0, os.path.abspath("../../")) ##保证amit入口和debug/compare入口
 
-from atc.atc_utils import AtcUtils
-from common import utils
-from common.utils import AccuracyCompareException, get_shape_to_directory_name, str2bool
-from compare import analyser
-from compare.net_compare import NetCompare
-from npu.npu_dump_data import NpuDumpData
-from npu.npu_dump_data_bin2npy import data_convert
+from compare.adapter_cli.args_adapter import MyArgs
+from compare.common.utils import AccuracyCompareException, get_shape_to_directory_name, str2bool
+
+from compare.__main__ import cmp_main
 
 def _accuracy_compare_parser(parser):
     parser.add_argument("-m", "--model-path", dest="model_path", default="",
@@ -54,73 +50,9 @@ def _accuracy_compare_parser(parser):
                         help="<Optional> Enable npu dump data conversion from bin to npy after compare.")
 
 
-def _generate_golden_data_model(args):
-    model_name, extension = utils.get_model_name_and_extension(args.model_path)
-    if ".pb" == extension:
-        from tf.tf_dump_data import TfDumpData
-        return TfDumpData(args)
-    elif ".onnx" == extension:
-        from debug.compare.onnx_model.onnx_dump_data import OnnxDumpData
-        return OnnxDumpData(args)
-    else:
-        utils.print_error_log("Only model files whose names end with .pb or .onnx are supported")
-        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_MODEL_TYPE_ERROR)
-
-
-def _correct_the_wrong_order(left_index, right_index, golden_net_output_info):
-    if left_index not in golden_net_output_info.keys() or right_index not in golden_net_output_info.keys():
-        return
-    if left_index != right_index:
-        tmp = golden_net_output_info[left_index]
-        golden_net_output_info[left_index] = golden_net_output_info[right_index]
-        golden_net_output_info[right_index] = tmp
-        utils.print_info_log("swap the {} and {} item in golden_net_output_info!"
-                             .format(left_index, right_index))
-
-
-def _check_output_node_name_mapping(original_net_output_node, golden_net_output_info):
-    for left_index, node_name in original_net_output_node.items():
-        match = False
-        for right_index, dump_file_path in golden_net_output_info.items():
-            dump_file_name = os.path.basename(dump_file_path)
-            if dump_file_name.startswith(node_name.replace("/", "_").replace(":", ".")):
-                match = True
-                _correct_the_wrong_order(left_index, right_index, golden_net_output_info)
-                break
-        if not match:
-            utils.print_warn_log("the original name: {} of net output maybe not correct!".format(node_name))
-            break
-
-
 def argsAdapter(args):
     return MyArgs(args.model_path, args.offline_model_path, args.input_path, args.cann_path, args.out_path, args.input_shape, args.device,
                   args.output_size, args.output_nodes, args.advisor)
-
-def cmp_main(my_args:MyArgs):
-    my_args.offline_model_path = os.path.realpath(my_args.offline_model_path)
-    my_args.cann_path = os.path.realpath(my_args.cann_path)
-    try:
-        utils.check_file_or_directory_path(args.model_path)
-        utils.check_file_or_directory_path(args.offline_model_path)
-        utils.check_device_param_valid(args.device)
-        utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
-        time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
-        original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
-        args.out_path = original_out_path
-
-        # convert the om model to json
-        output_json_path = AtcUtils(args).convert_model_to_json()
-
-        # deal with the dymShape_range param if exists
-        input_shapes = []
-        if args.dymShape_range:
-            input_shapes = utils.parse_dymshape_range(args.dymShape_range)
-        if not input_shapes:
-            input_shapes.append("")
-        for input_shape in input_shapes:
-            run(args, input_shape, output_json_path, original_out_path)
-    except utils.AccuracyCompareException as error:
-        sys.exit(error.error_info)
 
 def main():
     """

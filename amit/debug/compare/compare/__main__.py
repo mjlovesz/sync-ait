@@ -19,10 +19,13 @@ import time
 
 from compare.atc.atc_utils import AtcUtils
 from compare.common import utils
-from compare.common.utils import AccuracyCompareException
+from compare.common.utils import AccuracyCompareException, get_shape_to_directory_name
 from compare.net_compare.net_compare import NetCompare
+from compare.analyser import analyser
 from compare.npu.npu_dump_data import NpuDumpData
 from compare.adapter_cli.args_adapter import MyArgs
+from compare.npu.npu_dump_data_bin2npy import data_convert
+
 from compare.adapter_cli.options import (
     opt_gold_model,
     opt_om_model,
@@ -75,46 +78,66 @@ def _check_output_node_name_mapping(original_net_output_node, golden_net_output_
             utils.print_warn_log("the original name: {} of net output maybe not correct!".format(node_name))
             break
 
+def run(args, input_shape, output_json_path, original_out_path):
+    if input_shape:
+        args.input_shape = input_shape
+        args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
+
+    # generate dump data by the original model
+    golden_dump = _generate_golden_data_model(args)
+    golden_dump_data_path = golden_dump.generate_dump_data()
+    golden_net_output_info = golden_dump.get_net_output_info()
+
+    # compiling and running source codes
+    npu_dump = NpuDumpData(args, output_json_path)
+    npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data()
+    expect_net_output_node = npu_dump.get_expect_output_name()
+
+    # convert data from bin to npy if --convert is used
+    data_convert(npu_dump_data_path, npu_net_output_data_path, args)
+
+    # if it's dynamic batch scenario, golden data files should be renamed
+    utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
+
+    if not args.dump:
+        # only compare the final output
+        net_compare = NetCompare(npu_net_output_data_path, golden_dump_data_path, output_json_path, args)
+        net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
+    else:
+        # compare the entire network
+        net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args)
+        net_compare.accuracy_network_compare()
+    # Check and correct the mapping of net output node name.
+    if len(expect_net_output_node) == 1:
+        _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
+        net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
+    analyser.Analyser(args.out_path)()
+
 def cmp_main(my_args:MyArgs):
     my_args.offline_model_path = os.path.realpath(my_args.offline_model_path)
     my_args.cann_path = os.path.realpath(my_args.cann_path)
     try:
-        utils.check_file_or_directory_path(os.path.realpath(my_args.out_path), True)
-        time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
-        my_args.out_path = os.path.realpath(os.path.join(my_args.out_path, time_dir))
         utils.check_file_or_directory_path(my_args.model_path)
         utils.check_file_or_directory_path(my_args.offline_model_path)
         utils.check_device_param_valid(my_args.device)
-        # generate dump data by the original model
-        golden_dump = _generate_golden_data_model(my_args)
-        golden_dump_data_path = golden_dump.generate_dump_data()
-        golden_net_output_info = golden_dump.get_net_output_info()
+        utils.check_file_or_directory_path(os.path.realpath(my_args.out_path), True)
+        time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
+        original_out_path = os.path.realpath(os.path.join(my_args.out_path, time_dir))
+        my_args.out_path = original_out_path
+
         # convert the om model to json
         output_json_path = AtcUtils(my_args).convert_model_to_json()
-        # compiling and running source codes
-        npu_dump = NpuDumpData(my_args, output_json_path)
-        npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data()
-        expect_net_output_node = npu_dump.get_expect_output_name()
-        # if it's dynamic batch scenario, golden data files should be renamed
-        utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
-        # compare the entire network
-        net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, my_args)
-        net_compare.accuracy_network_compare()
-        # Check and correct the mapping of net output node name.
-        if len(expect_net_output_node) == 1:
-            _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
-            net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
-        # print the name of the first operator whose cosine similarity is less than 0.9
-        csv_object_item = net_compare.get_csv_object_by_cosine()
-        if csv_object_item is not None:
-            utils.print_info_log(
-                "{} of the first operator whose cosine similarity is less than 0.9".format(
-                    csv_object_item.get("NPUDump")))
-        else:
-            utils.print_info_log("No operator whose cosine value is less then 0.9 exists.")
+
+        # deal with the dymShape_range param if exists
+        input_shapes = []
+        if my_args.dymShape_range:
+            input_shapes = utils.parse_dymshape_range(my_args.dymShape_range)
+        if not input_shapes:
+            input_shapes.append("")
+        for input_shape in input_shapes:
+            run(my_args, input_shape, output_json_path, original_out_path)
     except utils.AccuracyCompareException as error:
         sys.exit(error.error_info)
-
 
 @click.command(name="compare", short_help='one-click network-wide accuracy analysis of TensorFlow and ONNX models.')
 @opt_gold_model
