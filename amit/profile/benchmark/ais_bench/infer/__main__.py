@@ -406,7 +406,10 @@ def multidevice_run(args):
 
     args.subprocess_count = len(device_list)
     jobs = args.subprocess_count
-    splits = seg_input_data_for_multi_process(args, args.input, jobs)
+    splits = None
+    if (args.input != None):
+        splits = seg_input_data_for_multi_process(args, args.input, jobs)
+        
     for i in range(len(device_list)):
         cur_args = copy.deepcopy(args)
         cur_args.device = int(device_list[i])
