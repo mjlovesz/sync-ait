@@ -161,7 +161,7 @@ def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_pre
     for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference tensor Processing')):
         intensors = []
         for j, files in enumerate(infiles):
-            tensor = get_tensor_from_files_list(files, session,intensors_desc[j].realsize,
+            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize,
                                                 args.pure_data_type, args.no_combine_tensor_mode)
             intensors.append(tensor)
         outputs = run_inference(session, args, intensors)

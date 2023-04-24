@@ -85,93 +85,97 @@ def set_dymdims_shape(session, inputs):
     summary.add_batchsize(inputs[0].shape[0])
 
 
-def warmup(session, args, intensors_desc, infiles):
+def warmup(session, input_args, intensors_desc, infiles):
     # prepare input data
     infeeds = []
     for j, files in enumerate(infiles):
-        if args.run_mode == "tensor":
-            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
+        if input_args.run_mode == "tensor":
+            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize,
+                                                input_args.pure_data_type, input_args.no_combine_tensor_mode)
             infeeds.append(tensor)
         else:
-            narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
+            narray = get_narray_from_files_list(files, intensors_desc[j].realsize,
+                                                input_args.pure_data_type, input_args.no_combine_tensor_mode)
             infeeds.append(narray)
     session.set_loop_count(1)
     # warmup
-    for i in range(args.warmup_count):
-        outputs = run_inference(session, args, infeeds, out_array=True)
+    for _ in range(input_args.warmup_count):
+        outputs = run_inference(session, input_args, infeeds, out_array=True)
 
-    session.set_loop_count(args.loop)
+    session.set_loop_count(input_args.loop)
 
     # reset summary info
     summary.reset()
     session.reset_sumaryinfo()
     MemorySummary.reset()
-    logger.info("warm up {} done".format(args.warmup_count))
+    logger.info("warm up {} done".format(input_args.warmup_count))
 
 
-def run_inference(session, args, inputs, out_array=False):
-    if args.auto_set_dymshape_mode == True:
+def run_inference(session, input_args, inputs, out_array=False):
+    if input_args.auto_set_dymshape_mode:
         set_dymshape_shape(session, inputs)
-    elif args.auto_set_dymdims_mode == True:
+    elif input_args.auto_set_dymdims_mode:
         set_dymdims_shape(session, inputs)
     outputs = session.run(inputs, out_array)
     return outputs
 
 
 # tensor to loop infer
-def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix):
+def infer_loop_tensor_run(session, input_args, intensors_desc, infileslist, output_prefix):
     for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference tensor Processing')):
         intensors = []
         for j, files in enumerate(infiles):
-            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
+            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize,
+                                                input_args.pure_data_type, input_args.no_combine_tensor_mode)
             intensors.append(tensor)
-        outputs = run_inference(session, args, intensors)
+        outputs = run_inference(session, input_args, intensors)
         session.convert_tensors_to_host(outputs)
         if output_prefix is not None:
-            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
+            save_tensors_to_file(outputs, output_prefix, infiles, input_args.outfmt, i, input_args.output_batchsize_axis)
 
 
 # files to loop iner
-def infer_loop_files_run(session, args, intensors_desc, infileslist, output_prefix):
+def infer_loop_files_run(session, input_args, intensors_desc, infileslist, output_prefix):
     for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference files Processing')):
         intensors = []
         for j, files in enumerate(infiles):
             real_files = convert_real_files(files)
             tensor = session.create_tensor_from_fileslist(intensors_desc[j], real_files)
             intensors.append(tensor)
-        outputs = run_inference(session, args, intensors)
+        outputs = run_inference(session, input_args, intensors)
         session.convert_tensors_to_host(outputs)
         if output_prefix is not None:
-            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
+            save_tensors_to_file(outputs, output_prefix, infiles, input_args.outfmt, i, input_args.output_batchsize_axis)
 
 
 # First prepare the data, then execute the reference, and then write the file uniformly
-def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix):
+def infer_fulltensors_run(session, input_args, intensors_desc, infileslist, output_prefix):
     outtensors = []
-    intensorslist = create_intensors_from_infileslist(infileslist, intensors_desc, session, args.pure_data_type, args.no_combine_tensor_mode)
+    intensorslist = create_intensors_from_infileslist(infileslist, intensors_desc, session,
+                                                      input_args.pure_data_type, input_args.no_combine_tensor_mode)
 
     #for inputs in intensorslist:
     for inputs in tqdm(intensorslist, file=sys.stdout, desc='Inference Processing full'):
-        outputs = run_inference(session, args, inputs)
+        outputs = run_inference(session, input_args, inputs)
         outtensors.append(outputs)
 
     for i, outputs in enumerate(outtensors):
         session.convert_tensors_to_host(outputs)
         if output_prefix is not None:
-            save_tensors_to_file(outputs, output_prefix, infileslist[i], args.outfmt, i, args.output_batchsize_axis)
+            save_tensors_to_file(outputs, output_prefix, infileslist[i], input_args.outfmt, i, input_args.output_batchsize_axis)
 
 
 # loop numpy array to infer
-def infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix):
+def infer_loop_array_run(session, input_args, intensors_desc, infileslist, output_prefix):
     for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference array Processing')):
         innarrays = []
         for j, files in enumerate(infiles):
-            narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type)
+            narray = get_narray_from_files_list(files, intensors_desc[j].realsize, input_args.pure_data_type)
             innarrays.append(narray)
-        outputs = run_inference(session, args, innarrays)
+        outputs = run_inference(session, input_args, innarrays)
         session.convert_tensors_to_host(outputs)
-        if args.output is not None:
-            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
+        if input_args.output is not None:
+            save_tensors_to_file(outputs, output_prefix, infiles, input_args.outfmt, i, input_args.output_batchsize_axis)
 
 
 def str2bool(v):
@@ -235,12 +239,13 @@ def get_args():
     parser.add_argument("--input", "-i", default=None,
                         help="input file or dir")
     parser.add_argument("--output", "-o", default=None,
-                        help="Inference data output path."
-                             " The inference results are output to the subdirectory named current date under given output path")
+                        help="Inference data output path. The inference results are output"
+                             " to the subdirectory named current date under given output path")
     parser.add_argument("--output_dirname", type=str, default=None,
                         help="actual output directory name. Used with parameter output, cannot be used alone."
                              "The inference result is output to subdirectory named by output_dirname under output path."
-                             " such as --output_dirname 'tmp', the final inference results are output to the folder of  {$output}/tmp")
+                             " such as --output_dirname 'tmp',"
+                             " the final inference results are output to the folder of  {$output}/tmp")
     parser.add_argument("--outfmt", default="BIN", choices=["NPY", "BIN", "TXT"],
                         help="Output file format (NPY or BIN or TXT)")
     parser.add_argument("--loop", "-l", type=check_positive_integer, default=1,
@@ -284,60 +289,61 @@ def get_args():
     parser.add_argument("--dymShape_range", type=str, default=None,
                         help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\"")
 
-    args = parser.parse_args()
+    input_args = parser.parse_args()
 
-    if args.profiler is True and args.dump is True:
+    if input_args.profiler is True and input_args.dump is True:
         logger.error("parameter --profiler cannot be true at the same time as parameter --dump, please check them!\n")
         raise RuntimeError('error bad parameters --profiler and --dump')
 
-    if (args.profiler is True or args.dump is True) and (args.output is None):
+    if (input_args.profiler is True or input_args.dump is True) and (input_args.output is None):
         logger.error("when dump or profiler, miss output path, please check them!")
         raise RuntimeError('miss output parameter!')
 
-    if args.auto_set_dymshape_mode == False and args.auto_set_dymdims_mode == False:
-        args.no_combine_tensor_mode = False
+    if not input_args.auto_set_dymshape_mode and not input_args.auto_set_dymdims_mode:
+        input_args.no_combine_tensor_mode = False
     else:
-        args.no_combine_tensor_mode = True
+        input_args.no_combine_tensor_mode = True
 
-    if args.profiler is True and args.warmup_count != 0 and args.input is not None:
+    if input_args.profiler is True and input_args.warmup_count != 0 and input_args.input is not None:
         logger.info("profiler mode with input change warmup_count to 0")
-        args.warmup_count = 0
+        input_args.warmup_count = 0
 
-    if args.output is None and args.output_dirname is not None:
-        logger.error("parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
+    if input_args.output is None and input_args.output_dirname is not None:
+        logger.error("parameter --output_dirname cann't be used alone."
+                     " Please use it together with the parameter --output!\n")
         raise RuntimeError('error bad parameters --output_dirname')
-    return args
+    return input_args
 
 
-def msprof_run_profiling(args):
+def msprof_run_profiling(input_args):
     cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup_count=0"
-    msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on "\
+    msprof_cmd = "{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on "\
                "--sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on "\
-               "--runtime-api=on --task-time=on --aicpu=on".format(msprof_bin, args.output, cmd)
+               "--runtime-api=on --task-time=on --aicpu=on".format(msprof_bin, input_args.output, cmd)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
     ret = os.system(msprof_cmd)
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
 
 
-def main(args, index=0, msgq=None, device_list=None):
+def main(input_args, index=0, msgq=None, device_list=None):
     # if msgq is not None,as subproces run
     if msgq is None:
         logger.info("subprocess_{} main run".format(index))
 
-    if args.debug:
+    if input_args.debug:
         logger.setLevel(logging.DEBUG)
 
-    session = init_inference_session(args)
+    session = init_inference_session(input_args)
 
     intensors_desc = session.get_inputs()
     if device_list is not None and len(device_list) > 1:
-        if args.output is not None:
-            if args.output_dirname is None:
+        if input_args.output is not None:
+            if input_args.output_dirname is None:
                 timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
-                output_prefix = os.path.join(args.output, timestr)
+                output_prefix = os.path.join(input_args.output, timestr)
                 output_prefix = os.path.join(output_prefix, "device" + str(device_list[index]) + "_" + str(index))
             else:
-                output_prefix = os.path.join(args.output, args.output_dirname)
+                output_prefix = os.path.join(input_args.output, input_args.output_dirname)
                 output_prefix = os.path.join(output_prefix, "device" + str(device_list[index]) + "_" + str(index))
             if not os.path.exists(output_prefix):
                 os.makedirs(output_prefix, 0o755)
@@ -345,28 +351,28 @@ def main(args, index=0, msgq=None, device_list=None):
         else:
             output_prefix = None
     else:
-        if args.output is not None:
-            if args.output_dirname is None:
+        if input_args.output is not None:
+            if input_args.output_dirname is None:
                 timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
-                output_prefix = os.path.join(args.output, timestr)
+                output_prefix = os.path.join(input_args.output, timestr)
             else:
-                output_prefix = os.path.join(args.output, args.output_dirname)
+                output_prefix = os.path.join(input_args.output, input_args.output_dirname)
             if not os.path.exists(output_prefix):
                 os.makedirs(output_prefix, 0o755)
             logger.info("output path:{}".format(output_prefix))
         else:
             output_prefix = None
 
-    inputs_list = [] if args.input is None else args.input.split(',')
+    inputs_list = [] if input_args.input is None else input_args.input.split(',')
 
     # create infiles list accord inputs list
     if len(inputs_list) == 0:
         # Pure reference scenario. Create input zero data
         infileslist = [[ [ pure_infer_fake_file ] for index in intensors_desc ]]
     else:
-        infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
+        infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, input_args.no_combine_tensor_mode)
 
-    warmup(session, args, intensors_desc, infileslist[0])
+    warmup(session, input_args, intensors_desc, infileslist[0])
 
     if msgq is not None:
 		# wait subprocess init ready, if time eplapsed,force ready run
@@ -374,7 +380,7 @@ def main(args, index=0, msgq=None, device_list=None):
         msgq.put(index)
         time_sec = 0
         while True:
-            if msgq.qsize() >= args.subprocess_count:
+            if msgq.qsize() >= input_args.subprocess_count:
                 break
             time_sec = time_sec + 1
             if time_sec > 10:
@@ -385,16 +391,16 @@ def main(args, index=0, msgq=None, device_list=None):
 
     start_time = time.time()
 
-    if args.run_mode == "array":
-        infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
-    elif args.run_mode == "files":
-        infer_loop_files_run(session, args, intensors_desc, infileslist, output_prefix)
-    elif args.run_mode == "full":
-        infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix)
-    elif args.run_mode == "tensor":
-        infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix)
+    if input_args.run_mode == "array":
+        infer_loop_array_run(session, input_args, intensors_desc, infileslist, output_prefix)
+    elif input_args.run_mode == "files":
+        infer_loop_files_run(session, input_args, intensors_desc, infileslist, output_prefix)
+    elif input_args.run_mode == "full":
+        infer_fulltensors_run(session, input_args, intensors_desc, infileslist, output_prefix)
+    elif input_args.run_mode == "tensor":
+        infer_loop_tensor_run(session, input_args, intensors_desc, infileslist, output_prefix)
     else:
-        raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
+        raise RuntimeError('wrong run_mode:{}'.format(input_args.run_mode))
 
     end_time = time.time()
 
@@ -403,11 +409,11 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.npu_compute_time_list = s.exec_time_list
     summary.h2d_latency_list = MemorySummary.get_H2D_time_list()
     summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
-    summary.report(args.batchsize, output_prefix, args.display_all_summary)
+    summary.report(input_args.batchsize, output_prefix, input_args.display_all_summary)
 
     if msgq is not None:
 		# put result to msgq
-        msgq.put([index, summary.infodict['throughput'], start_time, end_time])
+        msgq.put([index, summary.infodict.get('throughput'), start_time, end_time])
 
     session.finalize()
 
@@ -415,7 +421,8 @@ def main(args, index=0, msgq=None, device_list=None):
 def print_subproces_run_error(value):
     logger.error("subprocess run failed error_callback:{}".format(value))
 
-def seg_input_data_for_multi_process(args, inputs, jobs):
+
+def seg_input_data_for_multi_process(input_args, inputs, jobs):
     inputs_list = [] if inputs is None else inputs.split(',')
     if inputs_list is None:
         return inputs_list
@@ -430,13 +437,17 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
         logger.error('error {} not file or dir'.format(inputs_list[0]))
         raise RuntimeError()
 
-    args.device = 0
-    session = init_inference_session(args)
+    input_args.device = 0
+    session = init_inference_session(input_args)
     intensors_desc = session.get_inputs()
-    chunks_elements = math.ceil(len(fileslist) / len(intensors_desc))
+    try:
+        chunks_elements = math.ceil(len(fileslist) / len(intensors_desc))
+    except ZeroDivisionError as e:
+        logger.error('Incorrect model input desc.(The model input desc is 0)')
+        raise e
     chunks = list(list_split(fileslist, chunks_elements, None))
     fileslist = [ [] for e in range(jobs) ]
-    for i, chunk in enumerate(chunks):
+    for chunk in chunks:
         splits_elements = math.ceil(len(chunk) / jobs)
         splits = list(list_split(chunk, splits_elements, None))
         for j, split in enumerate(splits):
@@ -447,17 +458,17 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
     return res
 
 
-def multidevice_run(args):
-    logger.info("multidevice:{} run begin".format(args.device))
-    device_list = args.device
+def multidevice_run(input_args):
+    logger.info("multidevice:{} run begin".format(input_args.device))
+    device_list = input_args.device
     p = Pool(len(device_list))
     msgq = Manager().Queue()
 
-    args.subprocess_count = len(device_list)
-    jobs = args.subprocess_count
-    splits = seg_input_data_for_multi_process(args, args.input, jobs)
+    input_args.subprocess_count = len(device_list)
+    jobs = input_args.subprocess_count
+    splits = seg_input_data_for_multi_process(input_args, input_args.input, jobs)
     for i in range(len(device_list)):
-        cur_args = copy.deepcopy(args)
+        cur_args = copy.deepcopy(input_args)
         cur_args.device = int(device_list[i])
         cur_args.input = None if splits is None else list(splits)[i]
         p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
@@ -470,7 +481,7 @@ def multidevice_run(args):
     while msgq.qsize() != 0:
         ret = msgq.get()
         if type(ret) == list:
-            print("i:{} device_{} throughput:{} start_time:{} end_time:{}".format(
+            logger.info("i:{} device_{} throughput:{} start_time:{} end_time:{}".format(
                 ret[0], device_list[ret[0]], ret[1], ret[2], ret[3]))
             tlist.append(ret[1])
     logger.info('summary throughput:{}'.format(sum(tlist)))
@@ -482,7 +493,7 @@ if __name__ == "__main__":
 
     version_check(args)
 
-    if args.profiler == True:
+    if args.profiler:
         # try use msprof to run
         msprof_bin = shutil.which('msprof')
         if msprof_bin is None or os.getenv('GE_PROFILIGN_TO_STD_OUT') == '1':
@@ -498,7 +509,7 @@ if __name__ == "__main__":
 
     if type(args.device) == list:
         # args has multiple device, run single process for each device
-        ret = multidevice_run(args)
-        exit(ret)
+        ret_status = multidevice_run(args)
+        exit(ret_status)
 
     main(args)
