@@ -243,13 +243,10 @@ class OnnxGraph(BaseGraph):
                 ini = self.get_node(inp, Initializer)
                 if ini and ini not in initializers:
                     initializers.append(ini)
-                elif self.get_node(inp, PlaceHolder):
-                    if inp not in input_name_list:
-                        value_infos.append(self.get_node(inp, PlaceHolder))
-                else:
-                    prev_node = self.get_prev_node(inp)
-                    if prev_node not in reachable_nodes and inp not in input_name_list:
-                        input_name_list.append(inp)
+                elif self.get_prev_node(inp) not in reachable_nodes and inp not in input_name_list:
+                    input_name_list.append(inp)
+                elif self.get_node(inp, PlaceHolder) and inp not in input_name_list:
+                    value_infos.append(self.get_node(inp, PlaceHolder))
 
         # add inputs and outputs for extracted graph
         inputs = self._add_new_io_placeholder(input_name_list)
