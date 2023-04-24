@@ -61,8 +61,8 @@ def get_batchsize(session, args):
     batchsize = intensors_desc[0].shape[0]
     if args.dym_batch != 0:
         batchsize = int(args.dym_batch)
-    elif args.dym_dims !=None or args.dym_shape !=None:
-        instr = args.dym_dims if args.dym_dims !=None else args.dym_shape
+    elif args.dym_dims is not None or args.dym_shape is not None:
+        instr = args.dym_dims if args.dym_dims is not None else args.dym_shape
         elems = instr.split(';')
         for elem in elems:
             name, shapestr = elem.split(':')
