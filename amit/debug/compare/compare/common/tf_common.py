@@ -41,6 +41,7 @@ def check_tf_version(version):
     tf_version = tf.__version__
     if tf_version.startswith(version):
         return True
+    return False
 
 
 def execute_command(cmd: str):

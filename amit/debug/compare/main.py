@@ -24,7 +24,9 @@ from compare.net_compare.net_compare import NetCompare
 from compare.npu.npu_dump_data import NpuDumpData
 from compare.npu.npu_dump_data_bin2npy import data_convert
 
-def _accuracy_compare_parser(parser):
+def _accuracy_compare_parser():
+    parser = argparse.ArgumentParser()
+
     parser.add_argument("-m", "--model-path", dest="model_path", default="",
                         help="<Required> The original model (.onnx or .pb) file path", required=True)
     parser.add_argument("-om", "--offline-model-path", dest="offline_model_path", default="",
@@ -55,6 +57,8 @@ def _accuracy_compare_parser(parser):
                         help="<Optional> Whether to dump all the operations' ouput. Default True.")
     parser.add_argument("--convert", dest = "bin2npy", action="store_true",
                         help="<Optional> Enable npu dump data conversion from bin to npy after compare.")
+    args = parser.parse_args(sys.argv[1:])
+    return args
 
 
 def _generate_golden_data_model(args):
@@ -167,8 +171,5 @@ def run(args, input_shape, output_json_path, original_out_path):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    _accuracy_compare_parser(parser)
-    args = parser.parse_args(sys.argv[1:])
-
+    args = _accuracy_compare_parser()
     main(args)

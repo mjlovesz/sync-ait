@@ -165,6 +165,7 @@ class NpuDumpData(DumpData):
     """
 
     def __init__(self, arguments, output_json_path):
+        super.__init__()
         self.arguments = arguments
         self.om_parser = OmParser(output_json_path)
         self.dynamic_input = DynamicInput(self.om_parser, self.arguments)
