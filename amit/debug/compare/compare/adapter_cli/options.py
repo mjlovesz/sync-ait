@@ -99,7 +99,7 @@ opt_advisor = click.option(
 opt_dymShape_range = click.option(
     "-dr", 
     "--dymShape-range", 
-    "dymShape_range", 
+    "dym_shape_range", 
     default="",
     help="<Optional> Dynamic shape range using in dynamic model, "
          "using this means ignore input_shape"
@@ -132,7 +132,7 @@ class MyArgs:
                  output_size,
                  output_nodes,
                  advisor,
-                 dymShape_range,
+                 dym_shape_range,
                  dump,
                  bin2npy):
         self.model_path = model_path
@@ -144,7 +144,7 @@ class MyArgs:
         self.output_size = output_size
         self.output_nodes = output_nodes
         self.advisor = advisor
-        self.dymShape_range = dymShape_range
+        self.dym_shape_range = dym_shape_range
         self.dump = dump
         self.bin2npy = bin2npy
 
