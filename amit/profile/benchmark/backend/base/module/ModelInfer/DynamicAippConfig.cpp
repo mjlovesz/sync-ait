@@ -54,6 +54,11 @@ APP_ERROR DynamicAippConfig::SetMaxBatchSize(uint64_t maxBsParams)
     return APP_ERR_OK;
 }
 
+uint64_t DynamicAippConfig::GetMaxBatchSize()
+{
+    return maxBatchSize;
+}
+
 APP_ERROR DynamicAippConfig::SetInputFormat(std::string iptFmt)
 {   
     inputFormat = iptFmt;
