@@ -26,8 +26,10 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
 
 def set_session_options(session, args):
     # 增加校验
+    aipp_batchsize = -1
     if args.dymBatch != 0:
         session.set_dynamic_batchsize(args.dymBatch)
+        aipp_batchsize = session.get_max_dym_batchsize()
     elif args.dymHW !=None:
         hwstr = args.dymHW.split(",")
         session.set_dynamic_hw((int)(hwstr[0]), (int)(hwstr[1]))
@@ -41,6 +43,17 @@ def set_session_options(session, args):
     if args.batchsize == None:
         args.batchsize = get_batchsize(session, args)
         logger.info("try get model batchsize:{}".format(args.batchsize))
+    
+    if aipp_batchsize < 0:
+        aipp_batchsize = args.batchsize
+
+    # 确认模型只有一个动态 aipp input
+    if (args.aipp_config != None) and (session.get_dym_aipp_input_exsity()):
+        session.load_aipp_config_file(args.aipp_config, aipp_batchsize)
+        session.check_dym_aipp_input_exsity()
+    elif (args.aipp_config == None) and (session.get_dym_aipp_input_exsity()):
+        logger.error("can't find aipp config file for model with dym aipp input , please check it!")
+        raise RuntimeError('aipp model without aipp config!')
 
     # 设置custom out tensors size
     if args.outputSize != None:
@@ -239,7 +252,8 @@ def get_args():
     parser.add_argument("--display_all_summary", type=str2bool, default=False, help="display all summary include h2d d2h info")
     parser.add_argument("--warmup_count",  type=check_nonnegative_integer, default=1, help="warmup count before inference")
     parser.add_argument("--dymShape_range", type=str, default=None, help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\"")
-
+    parser.add_argument("--aipp_config", type=str, default=None, help="file type: xxx.config, for om model with dynamic aipp config, to set actual aipp params before infer")
+    
     args = parser.parse_args()
 
     if args.profiler is True and args.dump is True:
@@ -249,6 +263,16 @@ def get_args():
     if (args.profiler is True or args.dump is True) and (args.output is None):
         logger.error("when dump or profiler, miss output path, please check them!")
         raise RuntimeError('miss output parameter!')
+
+    # 判断--aipp_config 文件是否是存在的.config文件
+    if (args.aipp_config != None):
+        if (os.path.splitext(args.aipp_config)[-1] == ".config"):
+            if (os.path.isfile(args.aipp_config) != True):
+                logger.error("can't find the path of config file, please check it!")
+                raise RuntimeError('wrong aipp config file path!')
+        else:
+            logger.error("aipp config file is not a .config file, please check it!")
+            raise RuntimeError('wrong aipp config file type!')
 
     if args.auto_set_dymshape_mode == False and args.auto_set_dymdims_mode == False:
         args.no_combine_tensor_mode = False

@@ -33,6 +33,7 @@ namespace py = pybind11;
 
 #include "Base/ModelInfer/ModelInferenceProcessor.h"
 #include "Base/Tensor/TensorBase/TensorBase.h"
+#include "Base/ModelInfer/DynamicAippConfig.h"
 
 namespace Base {
 
@@ -69,6 +70,23 @@ public:
 
     int SetDynamicShape(std::string dymshapeStr);
     int SetCustomOutTensorsSize(std::vector<size_t> customOutSize);
+
+    uint64_t GetMaxDymBatchsize();
+    int SetDymAIPPInfoSet();
+    bool GetDymAIPPInputExsity();
+    int CheckDymAIPPInputExsity();
+
+    int AippSetMaxBatchSize(uint64_t batchSize);
+    int SetInputFormat(std::string iptFmt);
+    int SetSrcImageSize(std::vector<int> srcImageSize);
+    int SetRbuvSwapSwitch(int rsSwitch);
+    int SetAxSwapSwitch(int asSwitch);
+    int SetCscParams(std::vector<int> cscParams);
+    int SetCropParams(std::vector<int> cropParams);
+    int SetPaddingParams(std::vector<int> padParams);
+    int SetDtcPixelMean(std::vector<int> meanParams);
+    int SetDtcPixelMin(std::vector<float> minParams);
+    int SetPixelVarReci(std::vector<float> reciParams);
 
     TensorBase CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc, std::vector<std::string>& filesList);
 

@@ -20,6 +20,7 @@
 #include "utils.h"
 #include <string>
 #include "Base/Tensor/TensorBase/TensorBase.h"
+#include "Base/ModelInfer/DynamicAippConfig.h"
 
 /**
  * ModelProcess
@@ -115,6 +116,25 @@ public:
     Result SetDynamicHW(std::pair<uint64_t , uint64_t > dynamicPair);
 
     /**
+    * @brief check model the amount of dynamic aipp input  
+    */
+    Result CheckDymAIPPInputExsity();  
+
+    /**
+    * @brief set single dynamic aipp config
+    */
+    Result GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, void* &pAIPPSet, uint64_t maxBatchSize);
+
+    /**
+    * @brief set single or multiple dynamic aipp config
+    */
+    Result SetDynamicAipp();
+
+    /**
+    * @brief set gived single  dynamic aipp config
+    */
+    Result SetInputAIPP(size_t index, void* pAippDynamicSet);
+    /**
     * @brief get dynamic input dims info
     */
     void GetDimInfo(size_t gearCount, aclmdlIODims* dims);
@@ -129,6 +149,10 @@ public:
     */
     void GetDymHWInfo();
 
+    /**
+    * @brief get dynamic aipp list, just support single index
+    */
+    Result GetAIPPIndexList(std::vector<size_t> &dataNeedDynamicAipp);
     /**
     * @brief destroy desc
     */
@@ -215,5 +239,6 @@ private:
     size_t numInputs_;
     size_t numOutputs_;
     size_t g_dymindex;
+    std::map<std::string, aclAippInputFormat> str2aclAippInputFormat;
 };
 #endif
