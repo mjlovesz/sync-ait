@@ -1,9 +1,9 @@
 from multiprocessing import Pool
 from multiprocessing import Manager
 import pathlib
-import click
 import argparse
 
+import click
 
 def str2bool(ctx, param, v):
     if isinstance(v, bool):
@@ -15,11 +15,13 @@ def str2bool(ctx, param, v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
 
+
 def check_positive_integer(ctx, param, value):
     ivalue = int(value)
     if ivalue <= 0:
         raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
     return ivalue
+
 
 def check_batchsize_valid(ctx, param, value):
     # default value is None
@@ -29,11 +31,13 @@ def check_batchsize_valid(ctx, param, value):
     else:
         return check_positive_integer(value)
 
+
 def check_nonnegative_integer(ctx, param, value):
     ivalue = int(value)
     if ivalue < 0:
         raise argparse.ArgumentTypeError("%s is an invalid nonnegative int value" % value)
     return ivalue
+
 
 def check_device_range_valid(ctx, param, value):
     # if contain , split to int list
@@ -94,7 +98,8 @@ opt_output = click.option(
     type=click.Path(
         path_type=pathlib.Path
     ),
-    help='Inference data output path. The inference results are output to the subdirectory named current date under given output path'
+    help='Inference data output path. The inference results are output to '
+        'the subdirectory named current date under given output path'
 )
 
 
@@ -102,7 +107,9 @@ opt_output_dirname = click.option(
     '--output_dirname',
     'output_dirname',
     type=str,
-    help='actual output directory name. Used with parameter output, cannot be used alone. The inference result is output to  subdirectory named by output_dirname under  output path. such as --output_dirname "tmp", the final inference results are output to the folder of  {$output}/tmp'
+    help='actual output directory name. Used with parameter output, cannot be used alone. '
+        'The inference result is output to  subdirectory named by output_dirname under  output path. '
+        'such as --output_dirname "tmp", the final inference results are output to the folder of  {$output}/tmp'
 )
 
 

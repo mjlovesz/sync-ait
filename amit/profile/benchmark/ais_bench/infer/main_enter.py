@@ -1,3 +1,17 @@
+# Copyright 2023 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import logging
 import os
 import sys
@@ -30,12 +44,12 @@ def args_rule_apply(args:any):
         logger.error("when dump or profiler, miss output path, please check them!")
         raise RuntimeError('miss output parameter!')
 
-    if args.auto_set_dymshape_mode == False and args.auto_set_dymdims_mode == False:
+    if args.auto_set_dymshape_mode is False and args.auto_set_dymdims_mode is False:
         args.no_combine_tensor_mode = False
     else:
         args.no_combine_tensor_mode = True
 
-    if args.profiler is True and args.warmup_count != 0 and args.input != None:
+    if args.profiler is True and args.warmup_count != 0 and args.input is not None:
         logger.info("profiler mode with input change warmup_count to 0")
         args.warmup_count = 0
 
@@ -49,25 +63,26 @@ def set_session_options(session, args):
     # 增加校验
     if args.dymBatch != 0:
         session.set_dynamic_batchsize(args.dymBatch)
-    elif args.dymHW !=None:
+    elif args.dymHW is not None:
         hwstr = args.dymHW.split(",")
         session.set_dynamic_hw((int)(hwstr[0]), (int)(hwstr[1]))
-    elif args.dymDims !=None:
+    elif args.dymDims is not None:
         session.set_dynamic_dims(args.dymDims)
-    elif args.dymShape !=None:
+    elif args.dymShape is not None:
         session.set_dynamic_shape(args.dymShape)
     else:
         session.set_staticbatch()
 
-    if args.batchsize == None:
+    if args.batchsize is None:
         args.batchsize = get_batchsize(session, args)
         logger.info("try get model batchsize:{}".format(args.batchsize))
 
     # 设置custom out tensors size
-    if args.outputSize != None:
+    if args.outputSize is not None:
         customsizes = [int(n) for n in args.outputSize.split(',')]
         logger.debug("set customsize:{}".format(customsizes))
         session.set_custom_outsize(customsizes)
+
 
 def init_inference_session(args):
     acl_json_path = get_acl_json_path(args)
@@ -76,6 +91,7 @@ def init_inference_session(args):
     set_session_options(session, args)
     logger.debug("session info:{}".format(session.session))
     return session
+
 
 def set_dymshape_shape(session, inputs):
     l = []
@@ -89,6 +105,7 @@ def set_dymshape_shape(session, inputs):
     session.set_dynamic_shape(dyshapes)
     summary.add_batchsize(inputs[0].shape[0])
 
+
 def set_dymdims_shape(session, inputs):
     l = []
     intensors_desc = session.get_inputs()
@@ -100,6 +117,7 @@ def set_dymdims_shape(session, inputs):
     logger.debug("set dymdims shape:{}".format(dydims))
     session.set_dynamic_dims(dydims)
     summary.add_batchsize(inputs[0].shape[0])
+
 
 def warmup(session, args, intensors_desc, infiles):
     # prepare input data
@@ -124,13 +142,15 @@ def warmup(session, args, intensors_desc, infiles):
     MemorySummary.reset()
     logger.info("warm up {} done".format(args.warmup_count))
 
+
 def run_inference(session, args, inputs, out_array=False):
-    if args.auto_set_dymshape_mode == True:
+    if args.auto_set_dymshape_mode is True:
         set_dymshape_shape(session, inputs)
-    elif args.auto_set_dymdims_mode == True:
+    elif args.auto_set_dymdims_mode is True:
         set_dymdims_shape(session, inputs)
     outputs = session.run(inputs, out_array)
     return outputs
+
 
 # tensor to loop infer
 def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix):
@@ -141,8 +161,9 @@ def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_pre
             intensors.append(tensor)
         outputs = run_inference(session, args, intensors)
         session.convert_tensors_to_host(outputs)
-        if output_prefix != None:
+        if output_prefix is not None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
+
 
 # files to loop iner
 def infer_loop_files_run(session, args, intensors_desc, infileslist, output_prefix):
@@ -154,8 +175,9 @@ def infer_loop_files_run(session, args, intensors_desc, infileslist, output_pref
             intensors.append(tensor)
         outputs = run_inference(session, args, intensors)
         session.convert_tensors_to_host(outputs)
-        if output_prefix != None:
+        if output_prefix is not None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
+
 
 # First prepare the data, then execute the reference, and then write the file uniformly
 def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix):
@@ -169,8 +191,9 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_pre
 
     for i, outputs in enumerate(outtensors):
         session.convert_tensors_to_host(outputs)
-        if output_prefix != None:
+        if output_prefix is not None:
             save_tensors_to_file(outputs, output_prefix, infileslist[i], args.outfmt, i, args.output_batchsize_axis)
+
 
 # loop numpy array to infer
 def infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix):
@@ -181,7 +204,7 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             innarrays.append(narray)
         outputs = run_inference(session, args, innarrays)
         session.convert_tensors_to_host(outputs)
-        if args.output != None:
+        if args.output is not None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
 
@@ -193,19 +216,20 @@ def msprof_run_profiling(args):
     ret = os.system(msprof_cmd)
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
 
+
 def main(args, index=0, msgq=None):
     # if msgq is not None,as subproces run
-    if msgq != None:
+    if msgq is not None:
         logger.info("subprocess_{} main run".format(index))
 
-    if args.debug == True:
+    if args.debug is True:
         logger.setLevel(logging.DEBUG)
 
     session = init_inference_session(args)
 
     intensors_desc = session.get_inputs()
 
-    if args.output != None:
+    if args.output is not None:
         if args.output_dirname is None:
             timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
             output_prefix = os.path.join(args.output, timestr)
@@ -228,7 +252,7 @@ def main(args, index=0, msgq=None):
 
     warmup(session, args, intensors_desc, infileslist[0])
 
-    if msgq != None:
+    if msgq is not None:
 		# wait subprocess init ready, if time eplapsed,force ready run
         logger.info("subprocess_{} qsize:{} now waiting".format(index, msgq.qsize()))
         msgq.put(index)
@@ -265,14 +289,16 @@ def main(args, index=0, msgq=None):
     summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
 
-    if msgq != None:
+    if msgq is not None:
 		# put result to msgq
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
 
     session.finalize()
 
+
 def print_subproces_run_error(value):
     logger.error("subprocess run failed error_callback:{}".format(value))
+
 
 def multidevice_run(args):
     logger.info("multidevice:{} run begin".format(args.device))
@@ -306,7 +332,7 @@ def main_enter(args:MyArgs):
 
     version_check(args)
 
-    if args.profiler == True:
+    if args.profiler is True:
         # try use msprof to run
         msprof_bin = shutil.which('msprof')
         if msprof_bin is None or os.getenv('GE_PROFILIGN_TO_STD_OUT') == '1':
@@ -315,7 +341,7 @@ def main_enter(args:MyArgs):
             msprof_run_profiling(args)
             exit(0)
 
-    if args.dymShape_range != None and args.dymShape is None:
+    if args.dymShape_range is not None and args.dymShape is None:
         # dymshape range run,according range to run each shape infer get best shape
         dymshape_range_run(args)
         exit(0)
