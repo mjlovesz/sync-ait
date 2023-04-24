@@ -78,7 +78,7 @@ class InputShapeError(enum.Enum):
 def _print_log(level, msg):
     current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(time.time())))
     pid = os.getgid()
-    utils.print_info_log(current_time + "(" + str(pid) + ")-[" + level + "]" + msg)
+    print(current_time + "(" + str(pid) + ")-[" + level + "]" + msg)
     sys.stdout.flush()
 
 
@@ -190,7 +190,7 @@ def get_dump_data_path(dump_dir, is_net_output=False):
         print_error_log("The directory \"{}\" does not contain dump data".format(dump_dir))
         raise AccuracyCompareException(ACCURACY_COMPARISON_NO_DUMP_FILE_ERROR)
 
-    for dir_path, _, files in os.walk(dump_data_dir):
+    for dir_path, sub_paths, files in os.walk(dump_data_dir):
         if len(files) != 0:
             dump_data_path = dir_path
             file_is_exist = True
@@ -216,7 +216,7 @@ def execute_command(cmd):
         line = process.stdout.readline()
         line = line.strip()
         if line:
-            utils.print_info_log(line)
+            print(line)
     if process.returncode != 0:
         print_error_log('Failed to execute command:%s' % " ".join(cmd))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DATA_ERROR)
