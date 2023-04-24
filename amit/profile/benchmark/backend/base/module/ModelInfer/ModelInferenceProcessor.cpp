@@ -813,13 +813,13 @@ APP_ERROR ModelInferenceProcessor::SetCustomOutTensorsSize(std::vector<size_t> c
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::SetDymAIPPInfoSet(std::shared_ptr<DynamicAippConfig> config)
+APP_ERROR ModelInferenceProcessor::SetDymAIPPInfoSet()
 {
     dyAippCfg->ActivateConfig(); //config文件确定合法
     uint64_t MaxBS = dyAippCfg->maxBatchSize; //这里应该封装函数
     DEBUG_LOG("lcm debug now set aipp index list size:%d\n", int(dymAIPPIndexList_.size()));
     for (const auto& index : dymAIPPIndexList_) {
-        Result ret = processModel->GetDymAIPPConfigSet(config, dymAIPPIndexSet_[index], MaxBS);
+        Result ret = processModel->GetDymAIPPConfigSet(dyAippCfg, dymAIPPIndexSet_[index], MaxBS);
         DEBUG_LOG("lcm debug get aipp config set index:%d\n", int(index));
         if (ret != SUCCESS){
             ERROR_LOG("ModelProcess::SetDynamicAippConfig failed.index: %d ret %d", int(index), ret);

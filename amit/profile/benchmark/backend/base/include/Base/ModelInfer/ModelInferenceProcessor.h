@@ -193,7 +193,7 @@ public:
     uint64_t GetMaxDymBatchsize();
     bool GetDymAIPPInputExsity();
     APP_ERROR CheckDymAIPPInputExsity();
-    APP_ERROR SetDymAIPPInfoSet(std::shared_ptr<DynamicAippConfig> config);
+    APP_ERROR SetDymAIPPInfoSet();
 
     APP_ERROR AippSetMaxBatchSize(uint64_t batchSize);
     APP_ERROR SetInputFormat(std::string iptFmt);
@@ -207,7 +207,6 @@ public:
     APP_ERROR SetDtcPixelMin(std::vector<float> minParams);
     APP_ERROR SetPixelVarReci(std::vector<float> reciParams);
 
-    std::shared_ptr<DynamicAippConfig> dyAippCfg;
 private:
 
     APP_ERROR SetDynamicInfo();
@@ -238,6 +237,7 @@ private:
 
     InferSumaryInfo sumaryInfo_ = {};
     std::shared_ptr<ModelProcess> processModel;
+    std::shared_ptr<DynamicAippConfig> dyAippCfg;
     DynamicInfo dynamicInfo_ = {};
 
     size_t dynamicIndex_ = -1;
