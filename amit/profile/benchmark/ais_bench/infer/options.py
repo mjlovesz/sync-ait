@@ -1,9 +1,25 @@
+#
+# Copyright 2023 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from multiprocessing import Pool
 from multiprocessing import Manager
 import pathlib
 import argparse
 
 import click
+
 
 def str2bool(ctx, param, v):
     if isinstance(v, bool):
@@ -77,7 +93,7 @@ opt_model = click.option(
 opt_input = click.option(
     '-i',
     '--input',
-    'input',
+    'input_path',
     default=None,
     type=click.Path(
         exists=True,
@@ -152,7 +168,7 @@ opt_device = click.option(
 
 opt_dymBatch = click.option(
     '--dymBatch',
-    'dymBatch',
+    'dym_batch',
     default=0,
     type=int,
     help='dynamic batch size param, such as --dymBatch 2'
@@ -161,7 +177,7 @@ opt_dymBatch = click.option(
 
 opt_dymHW = click.option(
     '--dymHW',
-    'dymHW',
+    'dym_hw',
     default=None,
     type=str,
     help='dynamic image size param, such as --dymHW \"300,500\"'
@@ -170,7 +186,7 @@ opt_dymHW = click.option(
 
 opt_dymDims = click.option(
     '--dymDims',
-    'dymDims',
+    'dym_dims',
     default=None,
     type=str,
     help='dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"'
@@ -178,7 +194,7 @@ opt_dymDims = click.option(
 
 opt_dymShape = click.option(
     '--dymShape',
-    'dymShape',
+    'dym_shape',
     type=str,
     default=None,
     help='dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\"'
@@ -186,7 +202,7 @@ opt_dymShape = click.option(
 
 opt_outputSize = click.option(
     '--outputSize',
-    'outputSize',
+    'output_size',
     default=None,
     type=str,
     help='output size for dynamic shape mode'
@@ -288,7 +304,7 @@ opt_warmup_count = click.option(
 
 opt_dymShape_range = click.option(
     '--dymShape_range',
-    'dymShape_range',
+    'dym_shape_range',
     default=None,
     type=str,
     help='dynamic shape range, such as --dymShape_range "data:1,600~700;img_info:1,600-700"'

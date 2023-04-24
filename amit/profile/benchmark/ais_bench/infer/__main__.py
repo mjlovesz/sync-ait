@@ -26,15 +26,15 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
 
 def set_session_options(session, args):
     # 增加校验
-    if args.dymBatch != 0:
-        session.set_dynamic_batchsize(args.dymBatch)
-    elif args.dymHW !=None:
-        hwstr = args.dymHW.split(",")
+    if args.dym_batch != 0:
+        session.set_dynamic_batchsize(args.dym_batch)
+    elif args.dym_hw !=None:
+        hwstr = args.dym_hw.split(",")
         session.set_dynamic_hw((int)(hwstr[0]), (int)(hwstr[1]))
-    elif args.dymDims !=None:
-        session.set_dynamic_dims(args.dymDims)
-    elif args.dymShape !=None:
-        session.set_dynamic_shape(args.dymShape)
+    elif args.dym_dims !=None:
+        session.set_dynamic_dims(args.dym_dims)
+    elif args.dym_shape !=None:
+        session.set_dynamic_shape(args.dym_shape)
     else:
         session.set_staticbatch()
 
@@ -43,8 +43,8 @@ def set_session_options(session, args):
         logger.info("try get model batchsize:{}".format(args.batchsize))
 
     # 设置custom out tensors size
-    if args.outputSize != None:
-        customsizes = [int(n) for n in args.outputSize.split(',')]
+    if args.output_size != None:
+        customsizes = [int(n) for n in args.output_size.split(',')]
         logger.debug("set customsize:{}".format(customsizes))
         session.set_custom_outsize(customsizes)
 
@@ -441,7 +441,7 @@ if __name__ == "__main__":
             msprof_run_profiling(args)
             exit(0)
 
-    if args.dymShape_range != None and args.dymShape is None:
+    if args.dym_shape_range != None and args.dym_shape is None:
         # dymshape range run,according range to run each shape infer get best shape
         dymshape_range_run(args)
         exit(0)

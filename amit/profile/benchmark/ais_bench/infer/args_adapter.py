@@ -1,3 +1,4 @@
+#
 # Copyright 2023 Huawei Technologies Co., Ltd
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,25 +14,25 @@
 # limitations under the License.
 
 class MyArgs():
-    def __init__(self, model, input, output, output_dirname, outfmt, loop,
-                 debug, device, dymBatch, dymHW, dymDims,
-                 dymShape, outputSize, auto_set_dymshape_mode,
+    def __init__(self, model, input_path, output, output_dirname, outfmt, loop,
+                 debug, device, dym_batch, dym_hw, dym_dims,
+                 dym_shape, output_size, auto_set_dymshape_mode,
                  auto_set_dymdims_mode, batchsize, pure_data_type,
                  profiler, dump, acl_json_path, output_batchsize_axis,
-                 run_mode, display_all_summary, warmup_count, dymShape_range):
+                 run_mode, display_all_summary, warmup_count, dym_shape_range):
         self.model = model
-        self.input = input
+        self.input = input_path
         self.output = output
         self.output_dirname = output_dirname
         self.outfmt = outfmt
         self.loop = loop
         self.debug = debug
         self.device = device
-        self.dymBatch = dymBatch
-        self.dymHW = dymHW
-        self.dymDims = dymDims
-        self.dymShape = dymShape
-        self.outputSize = outputSize
+        self.dym_batch = dym_batch
+        self.dym_hw = dym_hw
+        self.dym_dims = dym_dims
+        self.dym_shape = dym_shape
+        self.output_size = output_size
         self.auto_set_dymshape_mode = auto_set_dymshape_mode
         self.auto_set_dymdims_mode = auto_set_dymdims_mode
         self.batchsize = batchsize
@@ -43,4 +44,4 @@ class MyArgs():
         self.run_mode = run_mode
         self.display_all_summary = display_all_summary
         self.warmup_count = warmup_count
-        self.dymShape_range = dymShape_range
+        self.dym_shape_range = dym_shape_range
