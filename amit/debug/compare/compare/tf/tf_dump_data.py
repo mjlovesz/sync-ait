@@ -1,3 +1,4 @@
+#
 # Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,7 +25,7 @@ from compare.common import utils, tf_common
 from compare.common.dump_data import DumpData
 from compare.common.utils import AccuracyCompareException
 
-
+ 
 class TfDumpData(DumpData):
     """
     This class is used to generate GUP dump data of the TensorFlow model.
