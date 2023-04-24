@@ -141,9 +141,9 @@ public:
     APP_ERROR SetDtcPixelMin(std::vector<float> minParams);
     APP_ERROR SetPixelVarReci(std::vector<float> reciParams);
     APP_ERROR SetMaxBatchSize(uint64_t maxBsParams);
-    uint64_t maxBatchSize;
-
+    uint64_t GetMaxBatchSize();
 private:
+    uint64_t maxBatchSize;
     bool isActivated; // --aipp_config文件内容读取成功
     bool modelOK; // 模型只有一个动态aipp输入
 
