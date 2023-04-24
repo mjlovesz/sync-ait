@@ -24,6 +24,7 @@ from compare.net_compare.net_compare import NetCompare
 from compare.npu.npu_dump_data import NpuDumpData
 from compare.npu.npu_dump_data_bin2npy import data_convert
 
+
 def _accuracy_compare_parser():
     parser = argparse.ArgumentParser()
 
@@ -171,5 +172,5 @@ def run(args, input_shape, output_json_path, original_out_path):
 
 
 if __name__ == '__main__':
-    args = _accuracy_compare_parser()
-    main(args)
+    parsed_args = _accuracy_compare_parser()
+    main(parsed_args)
