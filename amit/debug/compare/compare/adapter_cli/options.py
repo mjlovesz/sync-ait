@@ -144,7 +144,7 @@ class MyArgs:
         self.output_size = output_size
         self.output_nodes = output_nodes
         self.advisor = advisor
-        self.dymShape_range = dymshape_range
+        self.dymShape_range = dymShape_range
         self.dump = dump
         self.bin2npy = bin2npy
 
