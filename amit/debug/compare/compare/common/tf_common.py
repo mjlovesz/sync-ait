@@ -149,6 +149,7 @@ def get_inputs_tensor(global_graph, input_shape_str):
     utils.print_info_log("model inputs tensor:\n{}\n".format(inputs_tensor))
     return inputs_tensor
 
+
 def get_inputs_data(inputs_tensor, input_paths):
     inputs_map = {}
     input_path = input_paths.split(",")
