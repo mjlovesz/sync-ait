@@ -45,6 +45,29 @@ class TfDumpData(DumpData):
         self.net_output_name = []
         self.net_output = {}
 
+    def get_net_output_info(self):
+        """
+        Compatible with ONNX scenarios
+        """
+        return self.net_output
+
+    def generate_dump_data(self):
+        """
+        Generate TensorFlow model dump data
+        :return tensorFlow model dump data directory
+        """
+        self._load_graph()
+        self._create_dir()
+        inputs_tensor = tf_common.get_inputs_tensor(self.global_graph, self.args.input_shape)
+        self._make_inputs_data(inputs_tensor)
+        outputs_tensor = self._get_outputs_tensor()
+        if tf_common.check_tf_version(tf_common.VERSION_TF2X):
+            self._run_model_tf2x(outputs_tensor)
+        elif tf_common.check_tf_version(tf_common.VERSION_TF1X):
+            self._run_model_tf1x(outputs_tensor)
+
+        return self.important_dirs.get("dump_data_tf")
+
     def _create_dir(self):
         # create input directory
         utils.create_directory(self.important_dirs.get("input"))
@@ -59,7 +82,11 @@ class TfDumpData(DumpData):
         try:
             with tf.io.gfile.GFile(self.args.model_path, 'rb') as f:
                 global_graph_def = tf.compat.v1.GraphDef.FromString(f.read())
-            self.global_graph = tf.Graph()
+        except Exception as err:
+            utils.print_error_log("Failed to load the model %s. %s" % (self.args.model_path, err))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
+        self.global_graph = tf.Graph()
+        try:
             with self.global_graph.as_default():
                 tf.import_graph_def(global_graph_def, name='')
         except Exception as err:
@@ -147,16 +174,16 @@ class TfDumpData(DumpData):
         """Run tf debug with pexpect, should set tf debug ui_type='readline'"""
         tf_dbg = pexpect.spawn(cmd_line)
         tf_dbg.logfile = sys.stdout.buffer
+        tf_dbg.expect('tfdbg>', timeout=tf_common.TF_DEBUG_TIMEOUT)
+        utils.print_info_log("Start to run. Please wait....")
         try:
-            tf_dbg.expect('tfdbg>', timeout=tf_common.TF_DEBUG_TIMEOUT)
-            utils.print_info_log("Start to run. Please wait....")
             tf_dbg.sendline('run')
-            index = tf_dbg.expect(['An error occurred during the run', 'tfdbg>'], timeout=tf_common.TF_DEBUG_TIMEOUT)
-            if index == 0:
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
         except Exception as ex:
             tf_dbg.sendline('exit')
             utils.print_error_log("Failed to run command: %s. %s" % (cmd_line, ex))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
+        index = tf_dbg.expect(['An error occurred during the run', 'tfdbg>'], timeout=tf_common.TF_DEBUG_TIMEOUT)
+        if index == 0:
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
         tensor_name_path = os.path.join(self.important_dirs.get("tmp"), 'tf_tensor_names.txt')
         tf_dbg.sendline('lt > %s' % tensor_name_path)
@@ -225,23 +252,6 @@ class TfDumpData(DumpData):
                                       % (index, node_name, len(op.outputs)))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
-    def generate_dump_data(self):
-        """
-        Generate TensorFlow model dump data
-        :return tensorFlow model dump data directory
-        """
-        self._load_graph()
-        self._create_dir()
-        inputs_tensor = tf_common.get_inputs_tensor(self.global_graph, self.args.input_shape)
-        self._make_inputs_data(inputs_tensor)
-        outputs_tensor = self._get_outputs_tensor()
-        if tf_common.check_tf_version(tf_common.VERSION_TF2X):
-            self._run_model_tf2x(outputs_tensor)
-        elif tf_common.check_tf_version(tf_common.VERSION_TF1X):
-            self._run_model_tf1x(outputs_tensor)
-
-        return self.important_dirs.get("dump_data_tf")
-
     def _get_outputs_tensor(self):
         input_nodes, node_list = self._get_all_node_and_input_node()
         outputs_tensor = []
@@ -255,9 +265,3 @@ class TfDumpData(DumpData):
                     outputs_tensor.append(name + ":0")
         utils.print_info_log("The outputs tensor:\n{}\n".format(outputs_tensor))
         return outputs_tensor
-
-    def get_net_output_info(self):
-        """
-        Compatible with ONNX scenarios
-        """
-        return self.net_output
