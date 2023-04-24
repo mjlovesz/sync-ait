@@ -54,7 +54,7 @@ def execute_command(cmd: str):
         utils.print_error_log("Command is None.")
         return -1
     utils.print_info_log("[Run CMD]: %s" % cmd)
-    complete_process = subprocess.run(cmd, shell=True)
+    complete_process = subprocess.run(cmd, shell=False)
     return complete_process.returncode
 
 
@@ -88,8 +88,8 @@ def convert_tensor_shape(tensor_shape):
         When tensor dim is none throw exception
     """
     tensor_shape_list = tensor_shape.as_list()
-    for i in range(len(tensor_shape_list)):
-        if tensor_shape_list[i] is None:
+    for i in tensor_shape_list:
+        if i is None:
             utils.print_error_log("The dynamic shape %s are not supported. "
                                   "Please set '-s' or '--input-shape' to fix the dynamic shape." % tensor_shape)
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_NOT_SUPPORT_ERROR)
@@ -132,7 +132,7 @@ def get_inputs_tensor(global_graph, input_shape_str):
     tensor_index = {}
     operations = global_graph.get_operations()
     op_names = [op.name for op in operations if "Placeholder" == op.type]
-    print(op_names)
+    utils.print_info_log(op_names)
     for _, tensor_name in enumerate(input_shapes):
         utils.check_input_name_in_model(op_names, tensor_name)
     for op in operations:
@@ -143,12 +143,11 @@ def get_inputs_tensor(global_graph, input_shape_str):
                 tensor_index[op_name] += 1
             else:
                 tensor_index[op_name] = 0
-            tensor = global_graph.get_tensor_by_name(op.name + ":" + str(tensor_index[op_name]))
+            tensor = global_graph.get_tensor_by_name(op.name + ":" + str(tensor_index.get(op_name)))
             tensor = verify_and_adapt_dynamic_shape(input_shapes, op.name, tensor)
             inputs_tensor.append(tensor)
     utils.print_info_log("model inputs tensor:\n{}\n".format(inputs_tensor))
     return inputs_tensor
-
 
 def get_inputs_data(inputs_tensor, input_paths):
     inputs_map = {}
@@ -156,12 +155,12 @@ def get_inputs_data(inputs_tensor, input_paths):
     for index, tensor in enumerate(inputs_tensor):
         try:
             input_data = np.fromfile(input_path[index], convert_to_numpy_type(tensor.dtype))
-            if tensor.shape:
-                input_data = input_data.reshape(tensor.shape)
-            inputs_map[tensor] = input_data
-            utils.print_info_log("load file name: {}, shape: {}, dtype: {}".format(
-                os.path.basename(input_path[index]), input_data.shape, input_data.dtype))
         except Exception as err:
             utils.print_error_log("Failed to load data %s. %s" % (input_path[index], err))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
+        if tensor.shape:
+            input_data = input_data.reshape(tensor.shape)
+        inputs_map[tensor] = input_data
+        utils.print_info_log("load file name: {}, shape: {}, dtype: {}".format(
+            os.path.basename(input_path[index]), input_data.shape, input_data.dtype))
     return inputs_map
