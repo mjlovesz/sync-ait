@@ -31,6 +31,7 @@ class TfDumpData(DumpData):
     """
 
     def __init__(self, arguments):
+        super().__init__()
         self.args = arguments
         output_path = os.path.realpath(self.args.out_path)
         self.important_dirs = {
@@ -223,20 +224,6 @@ class TfDumpData(DumpData):
                                       % (index, node_name, len(op.outputs)))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
-    def _get_outputs_tensor(self):
-        input_nodes, node_list = self._get_all_node_and_input_node()
-        outputs_tensor = []
-        if self.args.output_nodes:
-            outputs_tensor = self.args.output_nodes.strip().split(';')
-            self._check_output_nodes_valid(outputs_tensor, node_list)
-        else:
-            output_nodes = list(set(node_list).difference(set(input_nodes)))
-            for name in output_nodes:
-                if self._check_node_output(name):
-                    outputs_tensor.append(name + ":0")
-        utils.print_info_log("The outputs tensor:\n{}\n".format(outputs_tensor))
-        return outputs_tensor
-
     def generate_dump_data(self):
         """
         Generate TensorFlow model dump data
@@ -253,6 +240,20 @@ class TfDumpData(DumpData):
             self._run_model_tf1x(outputs_tensor)
 
         return self.important_dirs.get("dump_data_tf")
+
+    def _get_outputs_tensor(self):
+        input_nodes, node_list = self._get_all_node_and_input_node()
+        outputs_tensor = []
+        if self.args.output_nodes:
+            outputs_tensor = self.args.output_nodes.strip().split(';')
+            self._check_output_nodes_valid(outputs_tensor, node_list)
+        else:
+            output_nodes = list(set(node_list).difference(set(input_nodes)))
+            for name in output_nodes:
+                if self._check_node_output(name):
+                    outputs_tensor.append(name + ":0")
+        utils.print_info_log("The outputs tensor:\n{}\n".format(outputs_tensor))
+        return outputs_tensor
 
     def get_net_output_info(self):
         """
