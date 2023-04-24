@@ -99,7 +99,7 @@ struct PixelVarReci {
 };
 
 class DynamicAippConfig {
-public:
+private:
     //--------动态AIPP必填参数--------
     std::string inputFormat; // 原始输入图像的格式
     int32_t srcImageSizeW; // 原始图片尺寸
@@ -117,19 +117,15 @@ public:
     std::unordered_map<uint64_t, DtcPixelMean> dtcPixelMeanParams = {}; // 通道的均值
     std::unordered_map<uint64_t, DtcPixelMin> dtcPixelMinParams = {}; // 通道的最小值
     std::unordered_map<uint64_t, PixelVarReci> pixelVarReciParams = {};// 通道的方差
-    /* 310,310P,910都不支持
-    std::unordered_map<uint64_t, ScfParams> scfParams; // 缩放的相关参数
-    */
+    // 310,310P,910都不支持 scfParams
+
     //----------多个不同 batchIndex需要设置-------- 
 
+public:
     DynamicAippConfig();
     ~DynamicAippConfig();
-    bool IsActivated();
-    bool ModelIsLegal();
-    void ActivateConfig();
-    void ActivateModel();
 
-public:
+    APP_ERROR SetMaxBatchSize(uint64_t maxBsParams);
     APP_ERROR SetInputFormat(std::string iptFmt);
     APP_ERROR SetSrcImageSize(std::vector<int> srcImageSize);
     APP_ERROR SetRbuvSwapSwitch(int rsSwitch);
@@ -140,8 +136,24 @@ public:
     APP_ERROR SetDtcPixelMean(std::vector<int> meanParams);
     APP_ERROR SetDtcPixelMin(std::vector<float> minParams);
     APP_ERROR SetPixelVarReci(std::vector<float> reciParams);
-    APP_ERROR SetMaxBatchSize(uint64_t maxBsParams);
+    
     uint64_t GetMaxBatchSize();
+    std::string GetInputFormat();
+    int32_t GetSrcImageSizeW();
+    int32_t GetSrcImageSizeH();
+    int8_t GetRbuvSwapSwitch();
+    int8_t GetAxSwapSwitch();
+    CscParams GetCscParams();
+    std::unordered_map<uint64_t, CropParams> GetCropParams();
+    std::unordered_map<uint64_t, PaddingParams> GetPaddingParams();
+    std::unordered_map<uint64_t, DtcPixelMean> GetDtcPixelMean();
+    std::unordered_map<uint64_t, DtcPixelMin> GetDtcPixelMin();
+    std::unordered_map<uint64_t, PixelVarReci> GetPixelVarReci();
+
+    bool IsActivated();
+    bool ModelIsLegal();
+    void ActivateConfig();
+    void ActivateModel();
 private:
     uint64_t maxBatchSize;
     bool isActivated; // --aipp_config文件内容读取成功
