@@ -46,6 +46,7 @@ MODEL_TYPE = ['.onnx', '.pb', '.om']
 DIM_PATTERN = r"^(-?[0-9]+)(,-?[0-9]+)*"
 DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+){0,3}"
 MAX_DEVICE_ID = 255
+MAX_SHAPE_VALUE_LEN = 256
 SEMICOLON = ";"
 COLON = ":"
 EQUAL = "="
@@ -355,6 +356,9 @@ def _check_content_split_length(content_split):
 
 
 def _check_shape_number(input_shape_value, pattern=DIM_PATTERN):
+    if len(input_shape_value) > MAX_SHAPE_VALUE_LEN:
+        print_error_log(get_shape_not_match_message(InputShapeError.VALUE_TYPE_NOT_MATCH, input_shape_value))
+        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
     dim_pattern = re.compile(pattern)
     match = dim_pattern.match(input_shape_value)
     if not match or match.group() is not input_shape_value:
