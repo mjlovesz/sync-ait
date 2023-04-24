@@ -25,7 +25,11 @@ DynamicAippConfig::DynamicAippConfig()
 
 DynamicAippConfig::~DynamicAippConfig()
 {
-
+    cropParams.clear();
+    paddingParams.clear();
+    dtcPixelMeanParams.clear();
+    dtcPixelMinParams.clear();
+    pixelVarReciParams.clear();
 }
 
 bool DynamicAippConfig::IsActivated()
@@ -52,11 +56,6 @@ APP_ERROR DynamicAippConfig::SetMaxBatchSize(uint64_t maxBsParams)
 {
     maxBatchSize = maxBsParams;
     return APP_ERR_OK;
-}
-
-uint64_t DynamicAippConfig::GetMaxBatchSize()
-{
-    return maxBatchSize;
 }
 
 APP_ERROR DynamicAippConfig::SetInputFormat(std::string iptFmt)
@@ -158,6 +157,7 @@ APP_ERROR DynamicAippConfig::SetDtcPixelMin(std::vector<float> minPrm)
     }
     return APP_ERR_OK; 
 }
+
 APP_ERROR DynamicAippConfig::SetPixelVarReci(std::vector<float> reciPrm)
 {
     PixelVarReci tmpReci;
@@ -171,9 +171,64 @@ APP_ERROR DynamicAippConfig::SetPixelVarReci(std::vector<float> reciPrm)
     return APP_ERR_OK;
 }
 
-// APP_ERROR DynamicAippConfig::DeInit()
-// {
-    
-// }
+uint64_t DynamicAippConfig::GetMaxBatchSize()
+{
+    return maxBatchSize;
+}
+
+std::string DynamicAippConfig::GetInputFormat()
+{
+    return inputFormat;
+}
+
+int32_t DynamicAippConfig::GetSrcImageSizeW()
+{
+    return srcImageSizeW;
+}
+
+int32_t DynamicAippConfig::GetSrcImageSizeH()
+{
+    return srcImageSizeH;
+}
+
+int8_t DynamicAippConfig::GetRbuvSwapSwitch()
+{
+    return rbuvSwapSwitch;
+}
+
+int8_t DynamicAippConfig::GetAxSwapSwitch()
+{
+    return axSwapSwitch;
+}
+
+CscParams DynamicAippConfig::GetCscParams()
+{
+    return cscParams;
+}
+
+std::unordered_map<uint64_t, CropParams> DynamicAippConfig::GetCropParams()
+{
+    return cropParams;
+}
+
+std::unordered_map<uint64_t, PaddingParams> DynamicAippConfig::GetPaddingParams()
+{
+    return paddingParams;
+}
+
+std::unordered_map<uint64_t, DtcPixelMean> DynamicAippConfig::GetDtcPixelMean()
+{
+    return dtcPixelMeanParams;
+}
+
+std::unordered_map<uint64_t, DtcPixelMin> DynamicAippConfig::GetDtcPixelMin()
+{
+    return dtcPixelMinParams;
+}
+
+std::unordered_map<uint64_t, PixelVarReci> DynamicAippConfig::GetPixelVarReci()
+{
+    return pixelVarReciParams;
+}
 
 }   // namespace Base
