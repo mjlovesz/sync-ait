@@ -213,6 +213,35 @@ int PyInferenceSession::SetDynamicBatchsize(int batchsize)
     return APP_ERR_OK;
 }
 
+uint64_t PyInferenceSession::GetMaxDymBatchsize()
+{
+    return modelInfer_.GetMaxDymBatchsize();
+}
+
+bool PyInferenceSession::GetDymAIPPInputExsity()
+{
+    return modelInfer_.GetDymAIPPInputExsity();
+}
+
+int PyInferenceSession::CheckDymAIPPInputExsity()
+{
+    APP_ERROR ret = modelInfer_.CheckDymAIPPInputExsity();
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }    
+    return APP_ERR_OK;    
+}
+
+int PyInferenceSession::SetDymAIPPInfoSet()
+{   
+    printf("debug: get PyInferenceSession::SetDymAIPPInfoSet\n");
+    APP_ERROR ret = modelInfer_.SetDymAIPPInfoSet(modelInfer_.dyAippCfg);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }    
+    return APP_ERR_OK; 
+}
+
 int PyInferenceSession::SetDynamicHW(int width, int height)
 {
     APP_ERROR ret = modelInfer_.SetDynamicHW(width, height);
@@ -271,6 +300,105 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
         MemoryHelper::Free(mem);
     }
     return outputs;
+}
+
+int PyInferenceSession::AippSetMaxBatchSize(uint64_t batchSize)
+{
+    APP_ERROR ret = modelInfer_.AippSetMaxBatchSize(batchSize);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    return APP_ERR_OK; 
+}
+
+int PyInferenceSession::SetInputFormat(std::string iptFmt)
+{
+    APP_ERROR ret = modelInfer_.SetInputFormat(iptFmt);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    return APP_ERR_OK;    
+}
+
+int PyInferenceSession::SetSrcImageSize(std::vector<int> srcImageSize)
+{
+    APP_ERROR ret = modelInfer_.SetSrcImageSize(srcImageSize);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    return APP_ERR_OK;
+}
+
+int PyInferenceSession::SetRbuvSwapSwitch(int rsSwitch)
+{
+    APP_ERROR ret = modelInfer_.SetRbuvSwapSwitch(rsSwitch);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    return APP_ERR_OK;
+}
+
+int PyInferenceSession::SetAxSwapSwitch(int asSwitch)
+{
+    APP_ERROR ret = modelInfer_.SetAxSwapSwitch(asSwitch);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    return APP_ERR_OK;    
+}
+
+int PyInferenceSession::SetCscParams(std::vector<int> cscParams)
+{
+    APP_ERROR ret = modelInfer_.SetCscParams(cscParams);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    return APP_ERR_OK;    
+}
+
+int PyInferenceSession::SetCropParams(std::vector<int> cropParams)
+{
+    APP_ERROR ret = modelInfer_.SetCropParams(cropParams);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    return APP_ERR_OK;    
+}
+
+int PyInferenceSession::SetPaddingParams(std::vector<int> padParams)
+{
+    APP_ERROR ret = modelInfer_.SetPaddingParams(padParams);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    return APP_ERR_OK;    
+}
+
+int PyInferenceSession::SetDtcPixelMean(std::vector<int> meanParams)
+{
+    APP_ERROR ret = modelInfer_.SetDtcPixelMean(meanParams);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    return APP_ERR_OK;    
+}
+
+int PyInferenceSession::SetDtcPixelMin(std::vector<float> minParams)
+{
+    APP_ERROR ret = modelInfer_.SetDtcPixelMin(minParams);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    return APP_ERR_OK;    
+}
+
+int PyInferenceSession::SetPixelVarReci(std::vector<float> reciParams)
+{
+    APP_ERROR ret = modelInfer_.SetPixelVarReci(reciParams);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    return APP_ERR_OK;
 }
 
 TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc, std::vector<std::string>& filesList)
@@ -350,6 +478,23 @@ void RegistInferenceSession(py::module &m)
     model.def("sumary", &Base::PyInferenceSession::GetSumaryInfo, py::return_value_policy::reference);
     model.def("get_inputs", &Base::PyInferenceSession::GetInputs, py::return_value_policy::reference);
     model.def("get_outputs", &Base::PyInferenceSession::GetOutputs, py::return_value_policy::reference);
+
+    model.def("get_max_dym_batchsize", &Base::PyInferenceSession::GetMaxDymBatchsize);
+    model.def("get_dym_aipp_input_exsity", &Base::PyInferenceSession::GetDymAIPPInputExsity);
+    model.def("check_dym_aipp_input_exsity", &Base::PyInferenceSession::CheckDymAIPPInputExsity);
+    model.def("set_dym_aipp_info_set", &Base::PyInferenceSession::SetDymAIPPInfoSet);
+
+    model.def("aipp_set_max_batch_size", &Base::PyInferenceSession::AippSetMaxBatchSize);
+    model.def("aipp_set_input_format", &Base::PyInferenceSession::SetInputFormat);
+    model.def("aipp_set_src_image_size", &Base::PyInferenceSession::SetSrcImageSize);
+    model.def("aipp_set_rbuv_swap_switch", &Base::PyInferenceSession::SetRbuvSwapSwitch);
+    model.def("aipp_set_ax_swap_switch", &Base::PyInferenceSession::SetAxSwapSwitch);
+    model.def("aipp_set_csc_params", &Base::PyInferenceSession::SetCscParams);
+    model.def("aipp_set_crop_params", &Base::PyInferenceSession::SetCropParams);
+    model.def("aipp_set_padding_params", &Base::PyInferenceSession::SetPaddingParams);
+    model.def("aipp_set_dtc_pixel_mean", &Base::PyInferenceSession::SetDtcPixelMean);
+    model.def("aipp_set_dtc_pixel_min", &Base::PyInferenceSession::SetDtcPixelMin);
+    model.def("aipp_set_pixel_var_reci", &Base::PyInferenceSession::SetPixelVarReci);
 
     model.def("reset_sumaryinfo", &Base::PyInferenceSession::ResetSumaryInfo);
     model.def("set_staticbatch", &Base::PyInferenceSession::SetStaticBatch);

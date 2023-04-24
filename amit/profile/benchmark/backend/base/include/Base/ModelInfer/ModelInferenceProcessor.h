@@ -19,11 +19,14 @@
 
 #include <memory>
 #include <vector>
+#include <string>
+#include <algorithm>
 #include "Base/ErrorCode/ErrorCode.h"
 #include "Base/Tensor/TensorBase/TensorBase.h"
 
 #include "Base/ModelInfer/SessionOptions.h"
 #include "Base/ModelInfer/model_process.h"
+#include "Base/ModelInfer/DynamicAippConfig.h"
 
 #define CHECK_RET_EQ(func, expect_value) \
 { \
@@ -186,13 +189,34 @@ public:
     APP_ERROR SetDynamicDims(std::string dymdimsStr);
     APP_ERROR SetDynamicShape(std::string dymshapeStr);
     APP_ERROR SetCustomOutTensorsSize(std::vector<size_t> customOutSize);
+    
+    uint64_t GetMaxDymBatchsize();
+    bool GetDymAIPPInputExsity();
+    APP_ERROR CheckDymAIPPInputExsity();
+    APP_ERROR SetDymAIPPInfoSet(std::shared_ptr<DynamicAippConfig> config);
+
+    APP_ERROR AippSetMaxBatchSize(uint64_t batchSize);
+    APP_ERROR SetInputFormat(std::string iptFmt);
+    APP_ERROR SetSrcImageSize(std::vector<int> srcImageSize);
+    APP_ERROR SetRbuvSwapSwitch(int rsSwitch);
+    APP_ERROR SetAxSwapSwitch(int asSwitch);
+    APP_ERROR SetCscParams(std::vector<int> cscParams);
+    APP_ERROR SetCropParams(std::vector<int> cropParams);
+    APP_ERROR SetPaddingParams(std::vector<int> padParams);
+    APP_ERROR SetDtcPixelMean(std::vector<int> meanParams);
+    APP_ERROR SetDtcPixelMin(std::vector<float> minParams);
+    APP_ERROR SetPixelVarReci(std::vector<float> reciParams);
+
+    std::shared_ptr<DynamicAippConfig> dyAippCfg;
 private:
 
     APP_ERROR SetDynamicInfo();
 
     APP_ERROR AllocDyIndexMem();
+    APP_ERROR AllocDymAIPPIndexMem();
     APP_ERROR FreeDyIndexMem();
     APP_ERROR FreeDymInfoMem();
+    APP_ERROR FreeDymAIPPMem();
 
     APP_ERROR DestroyOutMemoryData(std::vector<MemoryData>& outputs);
     APP_ERROR CreateOutMemoryData(std::vector<MemoryData>& outputs);
@@ -218,6 +242,10 @@ private:
 
     size_t dynamicIndex_ = -1;
     MemoryData dynamicIndexMemory_;
+
+    std::vector<size_t> dymAIPPIndexList_;
+    std::map<size_t, MemoryData> dymAIPPIndexMemory_;
+    std::map<size_t, void*> dymAIPPIndexSet_;
 
     size_t dym_gear_count_;
 

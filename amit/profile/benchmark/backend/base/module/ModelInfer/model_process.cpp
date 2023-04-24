@@ -26,6 +26,42 @@ bool g_is_device = true;
 bool g_is_txt = false;
 vector<int> g_output_size;
 
+int GetDynamicAippParaByBatch(size_t batchIndex, std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, std::string cfgItem)
+{
+    if (cfgItem.compare("dtcPixelMean") == 0) {
+        if (dyAippCfg->dtcPixelMeanParams.count(batchIndex) == 1) {
+            return batchIndex;
+        } else {
+            return -1;
+        }
+    } else if (cfgItem.compare("crop") == 0) {
+        if (dyAippCfg->cropParams.count(batchIndex) == 1) {
+            return batchIndex;
+        } else {
+            return -1;
+        }
+    } else if (cfgItem.compare("pad") == 0) {
+        if (dyAippCfg->paddingParams.count(batchIndex) == 1) {
+            return batchIndex;
+        } else {
+            return -1;
+        }        
+    } else if (cfgItem.compare("dtcPixelMin") == 0) {
+        if (dyAippCfg->dtcPixelMinParams.count(batchIndex) == 1) {
+            return batchIndex;
+        } else {
+            return -1;
+        }        
+    } else if (cfgItem.compare("pixelVarReci") == 0) {
+        if (dyAippCfg->pixelVarReciParams.count(batchIndex) == 1) {
+            return batchIndex;
+        } else {
+            return -1;
+        }        
+    }
+
+    return -1;
+}
 ModelProcess::ModelProcess()
     : modelId_(0)
     , loadFlag_(false)
@@ -35,6 +71,10 @@ ModelProcess::ModelProcess()
     , numInputs_(0)
     , numOutputs_(0)
 {
+    str2aclAippInputFormat["YUV420SP_U8"] = ACL_YUV420SP_U8;
+    str2aclAippInputFormat["XRGB8888_U8"] = ACL_XRGB8888_U8;
+    str2aclAippInputFormat["RGB888_U8"] = ACL_RGB888_U8;
+    str2aclAippInputFormat["YUV400_U8"] = ACL_YUV400_U8;
 }
 
 ModelProcess::~ModelProcess()
@@ -566,6 +606,7 @@ Result ModelProcess::CreateDymInput(size_t index)
         return FAILED;
     }
     ret = aclmdlAddDatasetBuffer(input_, inputData);
+    DEBUG_LOG("add input_ at CreateDymInput +1");
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("add input dataset buffer failed");
@@ -595,6 +636,7 @@ Result ModelProcess::CreateInput(void* inputDataBuffer, size_t bufferSize)
     }
 
     aclError ret = aclmdlAddDatasetBuffer(input_, inputData);
+    DEBUG_LOG("add input_ at CreateInput +1");
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("add input dataset buffer failed");
@@ -652,6 +694,7 @@ Result ModelProcess::CreateZeroInput()
             return FAILED;
         }
         ret = aclmdlAddDatasetBuffer(input_, inputData);
+        DEBUG_LOG("add input_ at CreateZeroInput +1");
         if (ret != ACL_SUCCESS) {
             cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("add input dataset buffer failed");
@@ -751,27 +794,6 @@ Result ModelProcess::CreateOutput()
     INFO_LOG("create model output success");
     return SUCCESS;
 }
-
-// void ModelProcess::OutbufTofile()
-// {
-//     void* data = nullptr;
-//     size_t len = 0;
-//     aclError ret = ACL_SUCCESS;
-//     void* outHostData = nullptr;
-//     for (size_t i = 0; i < aclmdlGetDatasetNumBuffers(output_); ++i) {
-//         aclDataBuffer* dataBuffer = aclmdlGetDatasetBuffer(output_, i);
-//         data = aclGetDataBufferAddr(dataBuffer);
-// 	    len = aclGetDataBufferSizeV2(dataBuffer);
-
-//         ret = aclrtMallocHost(&outHostData, len);
-//         ret = aclrtMemcpy(outHostData, len, data, len, ACL_MEMCPY_DEVICE_TO_HOST);
-//         ofstream outstr("./lcmdebugmsame_output_" + to_string(i) + ".bin", ios::out | ios::binary);
-//         printf("lcm debug outto buf i:%d\n");
-//         outstr.write((char*)outHostData, len);
-//         outstr.close();
-//         ret = aclrtFreeHost(outHostData);
-//     }
-// }
 
 void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std::uint64_t dymbatch_size, bool is_dymshape)
 {
@@ -1354,5 +1376,251 @@ Result ModelProcess::CreateOutput(void* outputBuffer, size_t bufferSize)
         outputData = nullptr;
         return FAILED;
     }
+    return SUCCESS;
+}
+
+Result ModelProcess::CheckDymAIPPInputExsity()
+{
+    /*
+    模型有没有动态AIPP输入，用aclmdlGetAippType 函数找找，能找到说明模型没问题
+    */
+    size_t numInputs = aclmdlGetNumInputs(modelDesc_);   
+    std::vector<size_t> dataNeedDynamicAipp = {};
+    for (size_t index = 0; index < numInputs; ++index) {
+        aclmdlInputAippType aippType;
+        size_t dynamicAttachedDataIndex;
+        aclError ret = aclmdlGetAippType(modelId_, index, &aippType, &dynamicAttachedDataIndex);
+        if (ret != ACL_SUCCESS) {
+            cout << aclGetRecentErrMsg() << endl;
+            ERROR_LOG("aclmdlGetAippType failed");
+            return FAILED;            
+        }
+        if (aippType == ACL_DATA_WITH_DYNAMIC_AIPP) {
+            dataNeedDynamicAipp.push_back(index);
+        }
+    }
+    size_t aippNum = dataNeedDynamicAipp.size();
+    if (aippNum == 0) {
+        ERROR_LOG("can't find dynamic aipp input in model, amount of aipp input is %d", int(aippNum));
+        return FAILED;
+    } else if (aippNum > 1) {
+        ERROR_LOG("don't support more than one dynamic aipp input in model, amount of aipp input is %d", int(aippNum));
+        return FAILED;
+    }
+    return SUCCESS;
+}
+
+Result ModelProcess::GetAIPPIndexList(std::vector<size_t> &dataNeedDynamicAipp)
+{
+     //3.1 获取标识动态AIPP输入的index
+    size_t index;
+    //modelDesc_为aclmdlCreateDesc表示模型描述信息，根据1中加载成功的模型的ID，获取该模型的描述信息
+    aclError ret = aclmdlGetInputIndexByName(modelDesc_, ACL_DYNAMIC_AIPP_NAME, &index);
+    if (ret != ACL_ERROR_NONE) {
+        ERROR_LOG("aclmdlGetInputIndexByName failed, maybe static batch size, ret %d", ret);
+        return FAILED;
+    }
+    dataNeedDynamicAipp.push_back(index);
+    return SUCCESS;
+
+}
+
+Result ModelProcess::SetInputAIPP(size_t index, void* pAippDynamicSet)
+{
+    // TODO: set aipp config.need to clear memory?
+    DEBUG_LOG("PREPARE aclmdlSetInputAIPP");
+    aclError ret = aclmdlSetInputAIPP(modelId_, input_, index, (aclmdlAIPP *)pAippDynamicSet);
+    if (ret != ACL_ERROR_NONE) {
+        cout << aclGetRecentErrMsg() << endl;
+        ERROR_LOG("aclmdlSetInputAIPP failed, index:%d ret %d", int(index), ret);
+        // aclmdlDestroyAIPP(pAippDynamicSet);
+        // aclrtFree(aippAddr);
+        // aclDestroyDataBuffer(aipp_data);
+        return FAILED;
+    }
+
+    return SUCCESS;
+}
+
+Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, void* &pAIPPSet, uint64_t maxBatchSize)
+{
+    aclError ret = ACL_ERROR_NONE;
+    INFO_LOG("dynamic aipp mode. batchsize:%d", int(maxBatchSize));
+
+    aclmdlAIPP *aippDynamicSet = aclmdlCreateAIPP(maxBatchSize);
+    if (aippDynamicSet == nullptr) {
+        cout << aclGetRecentErrMsg() << endl;
+        ERROR_LOG("aclmdlCreateAIPP failed");
+        return FAILED;
+    }
+
+    DEBUG_LOG("aclmdlSetAIPPSrcImageSize params: aippParmsSet: %p srcImageSizeW: %d srcImageSizeH: %d", aippDynamicSet, dyAippCfg->srcImageSizeW, dyAippCfg->srcImageSizeH);
+    ret = aclmdlSetAIPPSrcImageSize(aippDynamicSet, dyAippCfg->srcImageSizeW, dyAippCfg->srcImageSizeH);
+    if (ret != ACL_ERROR_NONE) {
+        cout << aclGetRecentErrMsg() << endl;
+        ERROR_LOG("aclmdlSetAIPPSrcImageSize failed, w: %d, h: %d, ret: %d", dyAippCfg->srcImageSizeW,
+            dyAippCfg->srcImageSizeH, ret);
+        return FAILED;
+    }
+
+    DEBUG_LOG("aclmdlSetAIPPInputFormat, params: aippParmsSet: %p inputFormat: %s", aippDynamicSet, dyAippCfg->inputFormat.c_str());
+    ret = aclmdlSetAIPPInputFormat(aippDynamicSet, str2aclAippInputFormat[dyAippCfg->inputFormat]);
+    if (ret != ACL_ERROR_NONE) {
+        cout << aclGetRecentErrMsg() << endl;
+        ERROR_LOG("aclmdlSetAIPPInputFormat failed, ret %d", ret);
+        return FAILED;
+    }
+    // 待调试
+    DEBUG_LOG("aclmdlSetAIPPCscParams, params: aippParmsSet: %p csc_switch: %d cscMatrixR0C0: %d cscMatrixR0C1: %d cscMatrixR0C2: %d\
+        cscMatrixR1C0: %d cscMatrixR1C1: %d cscMatrixR1C2: %d cscMatrixR2C0: %d cscMatrixR2C1: %d cscMatrixR2C2: %d cscOutputBias0: %d\
+        cscOutputBias1: %d cscOutputBias2: %d cscInputBias0: %d cscInputBias1: %d cscInputBias2: %d", aippDynamicSet, \
+        dyAippCfg->cscParams.cscSwitch, dyAippCfg->cscParams.cscMatrixR0C0, dyAippCfg->cscParams.cscMatrixR0C1, \
+        dyAippCfg->cscParams.cscMatrixR0C2, dyAippCfg->cscParams.cscMatrixR1C0, dyAippCfg->cscParams.cscMatrixR1C1, \
+        dyAippCfg->cscParams.cscMatrixR1C2, dyAippCfg->cscParams.cscMatrixR2C0, dyAippCfg->cscParams.cscMatrixR2C1, \
+        dyAippCfg->cscParams.cscMatrixR2C2, dyAippCfg->cscParams.cscOutputBias0, dyAippCfg->cscParams.cscOutputBias1, \
+        dyAippCfg->cscParams.cscOutputBias2, dyAippCfg->cscParams.cscInputBias0, dyAippCfg->cscParams.cscInputBias1, \
+        dyAippCfg->cscParams.cscInputBias2);
+    ret = aclmdlSetAIPPCscParams(aippDynamicSet, dyAippCfg->cscParams.cscSwitch, dyAippCfg->cscParams.cscMatrixR0C0,
+        dyAippCfg->cscParams.cscMatrixR0C1, dyAippCfg->cscParams.cscMatrixR0C2, dyAippCfg->cscParams.cscMatrixR1C0,
+        dyAippCfg->cscParams.cscMatrixR1C1, dyAippCfg->cscParams.cscMatrixR1C2, dyAippCfg->cscParams.cscMatrixR2C0,
+        dyAippCfg->cscParams.cscMatrixR2C1, dyAippCfg->cscParams.cscMatrixR2C2, dyAippCfg->cscParams.cscOutputBias0,
+        dyAippCfg->cscParams.cscOutputBias1, dyAippCfg->cscParams.cscOutputBias2, dyAippCfg->cscParams.cscInputBias0,
+        dyAippCfg->cscParams.cscInputBias1, dyAippCfg->cscParams.cscInputBias2);
+    if (ret != ACL_ERROR_NONE) {
+        cout << aclGetRecentErrMsg() << endl;
+        ERROR_LOG("aclmdlSetAIPPCscParams failed, ret %d", ret);
+        return FAILED;
+    }
+
+    DEBUG_LOG("aclmdlSetAIPPRbuvSwapSwitch paras: aippParmsSet: %p rbuvSwapSwitch: %d", aippDynamicSet, dyAippCfg->rbuvSwapSwitch);
+    ret = aclmdlSetAIPPRbuvSwapSwitch(aippDynamicSet, dyAippCfg->rbuvSwapSwitch);
+    if (ret != ACL_ERROR_NONE) {
+        cout << aclGetRecentErrMsg() << endl;
+        ERROR_LOG("aclmdlSetAIPPRbuvSwapSwitch failed rbuvSwap:%d aippset:%p ret %d", dyAippCfg->rbuvSwapSwitch, aippDynamicSet, ret);
+        return FAILED;
+    }
+
+    DEBUG_LOG("aclmdlSetAIPPAxSwapSwitch paras: aippDynamicSet: %p axSwapSwitch: %d", aippDynamicSet, dyAippCfg->axSwapSwitch);
+    ret = aclmdlSetAIPPAxSwapSwitch(aippDynamicSet, dyAippCfg->axSwapSwitch);
+    if (ret != ACL_ERROR_NONE) {
+        cout << aclGetRecentErrMsg() << endl;
+        ERROR_LOG("aclmdlSetAIPPAxSwapSwitch failed, ret %d", ret);
+        return FAILED;
+    }
+
+    for (size_t batchIndex = 0; batchIndex < maxBatchSize; batchIndex++) { //遍历设置需要以batchIndex为单位的配置
+        int dtcPixelMeanIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "dtcPixelMean");
+        if (dtcPixelMeanIndex >= 0) {
+            DEBUG_LOG("aclmdlSetAIPPDtcPixelMean params: aippDynamicSet: %p dtcPixelMeanChn0: %d dtcPixelMeanChn1: %d\
+                dtcPixelMeanChn2: %d dtcPixelMeanChn3: %d batchIndex: %d", aippDynamicSet,
+                dyAippCfg->dtcPixelMeanParams[dtcPixelMeanIndex].dtcPixelMeanChn0,
+                dyAippCfg->dtcPixelMeanParams[dtcPixelMeanIndex].dtcPixelMeanChn1,
+                dyAippCfg->dtcPixelMeanParams[dtcPixelMeanIndex].dtcPixelMeanChn2,
+                dyAippCfg->dtcPixelMeanParams[dtcPixelMeanIndex].dtcPixelMeanChn3, int(batchIndex));
+            ret = aclmdlSetAIPPDtcPixelMean(aippDynamicSet,
+                dyAippCfg->dtcPixelMeanParams[dtcPixelMeanIndex].dtcPixelMeanChn0,
+                dyAippCfg->dtcPixelMeanParams[dtcPixelMeanIndex].dtcPixelMeanChn1,
+                dyAippCfg->dtcPixelMeanParams[dtcPixelMeanIndex].dtcPixelMeanChn2,
+                dyAippCfg->dtcPixelMeanParams[dtcPixelMeanIndex].dtcPixelMeanChn3, batchIndex);
+        } else {
+            DEBUG_LOG("aclmdlSetAIPPDtcPixelMean params: aippDynamicSet: %p dtcPixelMeanChn0: %d dtcPixelMeanChn1: %d\
+                dtcPixelMeanChn2: %d dtcPixelMeanChn3: %d batchIndex: %d", aippDynamicSet, 0, 0, 0, 0, int(batchIndex));
+            ret = aclmdlSetAIPPDtcPixelMean(aippDynamicSet, 0, 0, 0, 0, batchIndex);
+        }
+        if (ret != ACL_ERROR_NONE) {
+            cout << aclGetRecentErrMsg() << endl;
+            ERROR_LOG("aclmdlSetAIPPDtcPixelMean failed, ret %d", ret);
+            return FAILED;
+        }
+
+        int dtcPixelMinIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "dtcPixelMin");
+        if (dtcPixelMinIndex >= 0) {
+            DEBUG_LOG("aclmdlSetAIPPDtcPixelMin params: %p dtcPixelMinChn0: %f dtcPixelMinChn1: %f dtcPixelMinChn2: %f \
+                dtcPixelMinChn3 %f batchIndex: %d", aippDynamicSet, dyAippCfg->dtcPixelMinParams[dtcPixelMinIndex].dtcPixelMinChn0,
+                dyAippCfg->dtcPixelMinParams[dtcPixelMinIndex].dtcPixelMinChn1, dyAippCfg->dtcPixelMinParams[dtcPixelMinIndex].dtcPixelMinChn2,
+                dyAippCfg->dtcPixelMinParams[dtcPixelMinIndex].dtcPixelMinChn3, int(batchIndex));
+            ret = aclmdlSetAIPPDtcPixelMin(aippDynamicSet,
+                dyAippCfg->dtcPixelMinParams[dtcPixelMinIndex].dtcPixelMinChn0,
+                dyAippCfg->dtcPixelMinParams[dtcPixelMinIndex].dtcPixelMinChn1,
+                dyAippCfg->dtcPixelMinParams[dtcPixelMinIndex].dtcPixelMinChn2,
+                dyAippCfg->dtcPixelMinParams[dtcPixelMinIndex].dtcPixelMinChn3, batchIndex);
+        } else {
+            DEBUG_LOG("aclmdlSetAIPPDtcPixelMin params: %p dtcPixelMinChn0: %f dtcPixelMinChn1: %f dtcPixelMinChn2: %f \
+                dtcPixelMinChn3 %f batchIndex: %d", aippDynamicSet, 0.0, 0.0, 0.0, 0.0, int(batchIndex));
+            ret = aclmdlSetAIPPDtcPixelMin(aippDynamicSet, 0.0, 0.0, 0.0, 0.0, batchIndex);
+        }
+        if (ret != ACL_ERROR_NONE) {
+            cout << aclGetRecentErrMsg() << endl;
+            ERROR_LOG("aclmdlSetAIPPDtcPixelMin failed, ret %d", ret);
+            return FAILED;
+        }
+
+        int pixelVarReciIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "pixelVarReci");
+        if (pixelVarReciIndex >= 0) {
+            DEBUG_LOG("aclmdlSetAIPPPixelVarReci params: aippDynamicSet: %p dtcPixelVarReciChn0: %f dtcPixelVarReciChn1: \
+                %f dtcPixelVarReciChn2: %f dtcPixelVarReciChn3: %f batchIndex: %d", aippDynamicSet,
+                dyAippCfg->pixelVarReciParams[pixelVarReciIndex].dtcPixelVarReciChn0,
+                dyAippCfg->pixelVarReciParams[pixelVarReciIndex].dtcPixelVarReciChn1,
+                dyAippCfg->pixelVarReciParams[pixelVarReciIndex].dtcPixelVarReciChn2,
+                dyAippCfg->pixelVarReciParams[pixelVarReciIndex].dtcPixelVarReciChn3, int(batchIndex));
+            ret = aclmdlSetAIPPPixelVarReci(aippDynamicSet,
+                dyAippCfg->pixelVarReciParams[pixelVarReciIndex].dtcPixelVarReciChn0,
+                dyAippCfg->pixelVarReciParams[pixelVarReciIndex].dtcPixelVarReciChn1,
+                dyAippCfg->pixelVarReciParams[pixelVarReciIndex].dtcPixelVarReciChn2,
+                dyAippCfg->pixelVarReciParams[pixelVarReciIndex].dtcPixelVarReciChn3, batchIndex);
+        } else {
+            DEBUG_LOG("aclmdlSetAIPPPixelVarReci params: aippDynamicSet: %p dtcPixelVarReciChn0: %f dtcPixelVarReciChn1: \
+                %f dtcPixelVarReciChn2: %f dtcPixelVarReciChn3: %f batchIndex: %d", aippDynamicSet, 0.0,
+                0.0, 0.0, 0.0, int(batchIndex));
+            ret = aclmdlSetAIPPPixelVarReci(aippDynamicSet, 0.0, 0.0, 0.0, 0.0, batchIndex);
+        }
+        
+        if (ret != ACL_ERROR_NONE) {
+            cout << aclGetRecentErrMsg() << endl;
+            ERROR_LOG("aclmdlSetAIPPPixelVarReci failed, ret %d", ret);
+            return FAILED;
+        }
+
+        int cropIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "crop");
+        if (cropIndex >= 0) {
+            DEBUG_LOG("aclmdlSetAIPPCropParams params: aippDynamicSet: %p cropSwitch: %d loadStartPosW: %d loadStartPosH: \
+            %d cropSizeW: %d cropSizeH: %d batchIndex: %d", aippDynamicSet, dyAippCfg->cropParams[cropIndex].cropSwitch,
+                dyAippCfg->cropParams[cropIndex].loadStartPosW, dyAippCfg->cropParams[cropIndex].loadStartPosH,
+                dyAippCfg->cropParams[cropIndex].cropSizeW, dyAippCfg->cropParams[cropIndex].cropSizeH, int(batchIndex));
+            ret = aclmdlSetAIPPCropParams(aippDynamicSet, dyAippCfg->cropParams[cropIndex].cropSwitch,
+                dyAippCfg->cropParams[cropIndex].loadStartPosW, dyAippCfg->cropParams[cropIndex].loadStartPosH,
+                dyAippCfg->cropParams[cropIndex].cropSizeW, dyAippCfg->cropParams[cropIndex].cropSizeH, batchIndex);
+        } else {
+            ret = aclmdlSetAIPPCropParams(aippDynamicSet, 0, 0, 0, 416, 416, batchIndex);
+        }
+        if (ret != ACL_ERROR_NONE) {
+            cout << aclGetRecentErrMsg() << endl;
+            ERROR_LOG("aclmdlSetAIPPCropParams failed, ret %d", ret);
+            return FAILED;
+        }
+
+        int padIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "pad");
+        if (padIndex >= 0) {
+            DEBUG_LOG("aclmdlSetAIPPPaddingParams params: aippDynamicSet: %p paddingSwitch: %d paddingSizeTop: %d paddingSizeBottom: %d \
+            paddingSizeLeft: %d paddingSizeRight: %d batchIndex: %d", aippDynamicSet, dyAippCfg->paddingParams[padIndex].paddingSwitch,
+                dyAippCfg->paddingParams[padIndex].paddingSizeTop, dyAippCfg->paddingParams[padIndex].paddingSizeBottom,
+                dyAippCfg->paddingParams[padIndex].paddingSizeLeft, dyAippCfg->paddingParams[padIndex].paddingSizeRight,
+                int(batchIndex));
+            ret = aclmdlSetAIPPPaddingParams(aippDynamicSet, dyAippCfg->paddingParams[padIndex].paddingSwitch,
+                dyAippCfg->paddingParams[padIndex].paddingSizeTop, dyAippCfg->paddingParams[padIndex].paddingSizeBottom,
+                dyAippCfg->paddingParams[padIndex].paddingSizeLeft, dyAippCfg->paddingParams[padIndex].paddingSizeRight,
+                batchIndex);
+        } else {
+            ret = aclmdlSetAIPPPaddingParams(aippDynamicSet, 0, 0, 0, 0, 0, batchIndex);
+        }
+        if (ret != ACL_ERROR_NONE) {
+            cout << aclGetRecentErrMsg() << endl;
+            ERROR_LOG("aclmdlSetAIPPPaddingParams failed, ret %d", ret);
+            return FAILED;
+        }
+
+    }
+    pAIPPSet = aippDynamicSet;
+    DEBUG_LOG("lcm debug now get pset :%p %p\n", pAIPPSet, aippDynamicSet);
     return SUCCESS;
 }
