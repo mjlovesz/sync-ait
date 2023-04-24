@@ -190,7 +190,7 @@ def get_dump_data_path(dump_dir, is_net_output=False):
         print_error_log("The directory \"{}\" does not contain dump data".format(dump_dir))
         raise AccuracyCompareException(ACCURACY_COMPARISON_NO_DUMP_FILE_ERROR)
 
-    for dir_path, sub_paths, files in os.walk(dump_data_dir):
+    for dir_path, _, files in os.walk(dump_data_dir):
         if len(files) != 0:
             dump_data_path = dir_path
             file_is_exist = True
@@ -321,7 +321,7 @@ def parse_dymshape_range(dymshape_range):
                 start = int(content_split[0])
                 end = int(content_split[1])
                 step = int(content_split[2]) if len(content_split) == 3 else 1
-                ranges = [str(i) for i in range(start, end+1, step)]
+                ranges = [str(i) for i in range(start, end + 1, step)]
             elif "-" in content:
                 ranges = content.split("-")
             else:
