@@ -1,9 +1,9 @@
 
 import logging
 import time
-import aclruntime
-import numpy as np
 from configparser import ConfigParser
+import numpy as np
+import aclruntime
 
 logger = logging.getLogger(__name__)
 
