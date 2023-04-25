@@ -117,7 +117,7 @@ class OmParser(object):
         for dym_arg in DynamicArgumentEnum:
             if dym_arg.value.atc_arg in atc_cmd:
                 return True, dym_arg
-        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
+        return False, None
     
     def get_net_output_data_info(self, dump_data_path):
         """
