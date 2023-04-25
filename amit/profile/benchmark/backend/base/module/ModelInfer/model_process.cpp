@@ -900,7 +900,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                     }
                 }
                 break;
-            case 1:
+            case 1: {
                 aclFloat16 * out_fp16 = reinterpret_cast<aclFloat16*>(outData);
                 float out = 0;
                 for (size_t i = 1; i <= len / sizeof(aclFloat16); i++) {
@@ -915,6 +915,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                     }
                 }
                 break;
+            }
             case 2:
                 for (size_t i = 1; i <= len / sizeof(int8_t); i++) {
                     int8_t out = *((int8_t*)outData + i - 1);
