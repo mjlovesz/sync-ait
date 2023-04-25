@@ -16,6 +16,8 @@ import json
 import os
 import re
 import sys
+import stat
+
 import numpy as np
 
 from compare.common import utils
@@ -171,7 +173,22 @@ class NpuDumpData(DumpData):
         self.om_parser = OmParser(output_json_path)
         self.dynamic_input = DynamicInput(self.om_parser, self.arguments)
         self.python_version = sys.executable or "python3"
-
+    
+    @staticmethod
+    def _try_write_content_to_acl_json(acl_json_path, load_dict):
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        modes = stat.S_IWUSR | stat.S_IRUSR
+        try:
+            with os.fdopen(os.open(acl_json_path, flags, modes), "w") as write_json:
+                try:
+                    json.dump(load_dict, write_json)
+                except ValueError as write_json_except:
+                    utils.print_error_log(str(write_json_except))
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR)
+        except IOError as acl_json_file_except:
+            utils.print_error_log('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)    
+        
     @staticmethod
     def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir):
         load_dict = {
@@ -183,25 +200,13 @@ class NpuDumpData(DumpData):
             }
         }
         if os.access(acl_json_path, os.W_OK):
-            _try_write_content_to_acl_json(acl_json_path)
-            except IOError as acl_json_file_except:
-                utils.print_error_log('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
+            _try_write_content_to_acl_json(acl_json_path, load_dict)
+
         else:
             utils.print_error_log(
                 "The path {} does not have permission to write.Please check the path permission".format(acl_json_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
-    
-    def _try_write_content_to_acl_json(acl_json_path):
-        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
-        modes = stat.S_IWUSR | stat.S_IRUSR
-        try:
-            with os.fdopen(os.open(acl_json_path, flags, modes), "w") as write_json:
-                try:
-                    json.dump(load_dict, write_json)
-                except ValueError as write_json_except:
-                    utils.print_error_log(str(write_json_except))
-                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR)        
+
 
     def generate_dump_data(self):
         """
@@ -385,7 +390,7 @@ class NpuDumpData(DumpData):
                         "The size (%d) of bin file can not match the input of the model." % bin_file_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
         elif self.dynamic_input.is_dynamic_shape_scenario():
-            if(shape_size_array_vs_bin_files_size_array(shape_size_array, bin_files_size_array))
+            if(shape_size_array_vs_bin_files_size_array(shape_size_array, bin_files_size_array)):
                 return
             utils.print_warn_log("The size of bin file can not match the input of the model.")
         else:
@@ -400,4 +405,5 @@ class NpuDumpData(DumpData):
         for shape_size in shape_size_array:
                 for bin_size in bin_files_size_array:
                     if bin_size <= shape_size:
-                        return true
+                        return True
+        return False

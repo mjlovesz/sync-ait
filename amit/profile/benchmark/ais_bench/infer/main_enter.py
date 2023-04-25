@@ -355,7 +355,7 @@ def main_enter(args:MyArgs):
 
     if type(args.device) == list:
         # args has multiple device, run single process for each device
-        RET = multidevice_run(args)
-        raise SystemExit(RET)
+        ret = multidevice_run(args)
+        raise SystemExit(ret)
 
     main(args)

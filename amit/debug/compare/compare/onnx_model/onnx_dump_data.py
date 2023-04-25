@@ -16,17 +16,18 @@ import time
 import os
 import re
 
-import onnx
-import onnxruntime
-import numpy as np
 from skl2onnx.helpers.onnx_helper import enumerate_model_node_outputs
 from skl2onnx.helpers.onnx_helper import select_model_inputs_outputs
 from skl2onnx.helpers.onnx_helper import save_onnx_model
-
 from compare.common.dump_data import DumpData
 from compare.common import utils
 from compare.common.utils import AccuracyCompareException
 from compare.common.utils import InputShapeError
+
+import numpy as np
+import onnxruntime
+import onnx
+
 
 NODE_TYPE_TO_DTYPE_MAP = {
     "tensor(int)": np.int32,
@@ -54,10 +55,25 @@ class OnnxDumpData(DumpData):
     """
 
     def __init__(self, arguments):
-        super.__init__()
+        super().__init__()
         self.args = arguments
         self.input_shapes = utils.parse_input_shape(self.args.input_shape)
         self.net_output = {}
+
+    @staticmethod
+    def _check_input_shape_fix_value(op_name, model_shape, input_shape):
+        message = "fixed input tensor dim not equal to model input dim." \
+                  "tensor_name:%s, %s vs %s" % (op_name, str(input_shape), str(model_shape))
+        if len(model_shape) != len(input_shape):
+            utils.print_error_log(message)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+        for index, value in enumerate(model_shape):
+            if value is None or isinstance(value, str):
+                continue
+            if input_shape[index] != value:
+                utils.print_error_log(message)
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+
 
     def _create_dir(self):
         # create input directory
@@ -86,7 +102,12 @@ class OnnxDumpData(DumpData):
         for index, node in enumerate(old_onnx_model.graph.node):
             if not node.name:
                 node.name = node.op_type + "_" + str(index)
-        outputs_name = [name for name in enumerate_model_node_outputs(old_onnx_model)]
+        if not self.args.dump:
+            old_onnx_model_graph_output = old_onnx_model.graph.output
+            outputs_name_list = [output_node.name for output_node in old_onnx_model_graph_output]
+            outputs_name = [name for name in enumerate_model_node_outputs(old_onnx_model) if name in outputs_name_list]
+        else:
+            outputs_name = [name for name in enumerate_model_node_outputs(old_onnx_model)]
         new_onnx_model = select_model_inputs_outputs(old_onnx_model, outputs_name)
         new_onnx_model_path = os.path.join(model_dir, "new_" + os.path.basename(self.args.model_path))
         bytes_model = new_onnx_model.SerializeToString()
@@ -192,20 +213,6 @@ class OnnxDumpData(DumpData):
             utils.print_info_log("net_output node is:{}, file path is {}".format(key, value))
         utils.print_info_log("dump data success")
 
-    @staticmethod
-    def _check_input_shape_fix_value(op_name, model_shape, input_shape):
-        message = "fixed input tensor dim not equal to model input dim." \
-                  "tensor_name:%s, %s vs %s" % (op_name, str(input_shape), str(model_shape))
-        if len(model_shape) != len(input_shape):
-            utils.print_error_log(message)
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
-        for index, value in enumerate(model_shape):
-            if value is None or isinstance(value, str):
-                continue
-            if input_shape[index] != value:
-                utils.print_error_log(message)
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
-
     def _get_net_output_node(self):
         """
         get net output name
@@ -228,12 +235,8 @@ class OnnxDumpData(DumpData):
             none
         """
         data_dir, onnx_dump_data_dir, model_dir = self._create_dir()
-        if not self.args.dump:
-            old_onnx_model = onnx.load(self.args.model_path)
-            session = self._load_session(self.args.model_path)
-        else:
-            old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
-            session = self._load_session(new_onnx_model_path)
+        old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
+        session = self._load_session(new_onnx_model_path)
         net_output_node = self._get_net_output_node()
         inputs_tensor_info = self._get_inputs_tensor_info(session)
         inputs_map = self._get_inputs_data(data_dir, inputs_tensor_info)
