@@ -189,7 +189,7 @@ public:
     APP_ERROR SetDynamicDims(std::string dymdimsStr);
     APP_ERROR SetDynamicShape(std::string dymshapeStr);
     APP_ERROR SetCustomOutTensorsSize(std::vector<size_t> customOutSize);
-    
+
     uint64_t GetMaxDymBatchsize();
     bool GetDymAIPPInputExsity();
     APP_ERROR CheckDymAIPPInputExsity();

@@ -102,7 +102,7 @@ APP_ERROR DynamicAippConfig::SetCscParams(std::vector<int> cscInputParams)
     cscParams.cscInputBias2 = cscInputParams[15];
     return APP_ERR_OK;
 }
-    
+
 APP_ERROR DynamicAippConfig::SetCropParams(std::vector<int> cropInputParams)
 {
     CropParams tmpCrop;

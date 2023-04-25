@@ -1384,7 +1384,7 @@ Result ModelProcess::CheckDymAIPPInputExsity()
     /*
     模型有没有动态AIPP输入，用aclmdlGetAippType 函数找找，能找到说明模型没问题
     */
-    size_t numInputs = aclmdlGetNumInputs(modelDesc_);   
+    size_t numInputs = aclmdlGetNumInputs(modelDesc_);
     std::vector<size_t> dataNeedDynamicAipp = {};
     for (size_t index = 0; index < numInputs; ++index) {
         aclmdlInputAippType aippType;
@@ -1393,7 +1393,7 @@ Result ModelProcess::CheckDymAIPPInputExsity()
         if (ret != ACL_SUCCESS) {
             cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("aclmdlGetAippType failed");
-            return FAILED;            
+            return FAILED;
         }
         if (aippType == ACL_DATA_WITH_DYNAMIC_AIPP) {
             dataNeedDynamicAipp.push_back(index);
@@ -1569,7 +1569,7 @@ Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig
                 0.0, 0.0, 0.0, int(batchIndex));
             ret = aclmdlSetAIPPPixelVarReci(aippDynamicSet, 0.0, 0.0, 0.0, 0.0, batchIndex);
         }
-        
+
         if (ret != ACL_ERROR_NONE) {
             cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("aclmdlSetAIPPPixelVarReci failed, ret %d", ret);

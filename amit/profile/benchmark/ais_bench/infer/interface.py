@@ -57,7 +57,7 @@ class InferSession:
 
     def set_dynamic_hw(self, w: int, h: int):
         self.session.set_dynamic_hw(w, h)
-    
+
     def get_max_dym_batchsize(self):
         return self.session.get_max_dym_batchsize()
 
@@ -88,7 +88,7 @@ class InferSession:
             # convert acltensor to numpy array
             arrays.append(np.array(tensor))
         return arrays
-    
+
     def get_dym_aipp_input_exsity(self):
         return self.session.get_dym_aipp_input_exsity()
 
@@ -117,17 +117,17 @@ class InferSession:
             raise RuntimeError('wrong aipp config file content!')
         self.session.aipp_set_max_batch_size(batchsize)
         self.aipp_set_rbuv_swap_switch(cfg, option_list)
-        self.aipp_set_ax_swap_switch(cfg, option_list) 
+        self.aipp_set_ax_swap_switch(cfg, option_list)
         self.aipp_set_csc_params(cfg, option_list)
         self.aipp_set_crop_params(cfg, option_list)
-        self.aipp_set_padding_params(cfg, option_list)    
-        self.aipp_set_dtc_pixel_mean(cfg, option_list)       
-        self.aipp_set_dtc_pixel_min(cfg, option_list)        
+        self.aipp_set_padding_params(cfg, option_list)
+        self.aipp_set_dtc_pixel_mean(cfg, option_list)
+        self.aipp_set_dtc_pixel_min(cfg, option_list)
         self.aipp_set_pixel_var_reci(cfg, option_list)
 
         ret = self.session.set_dym_aipp_info_set()
         return ret
-        
+
     def aipp_set_input_format(self, cfg):
         input_format = cfg.get('aipp_op', 'input_format')
         legal_format = ["YUV420SP_U8", "XRGB8888_U8", "RGB888_U8", "YUV400_U8"]
@@ -135,8 +135,8 @@ class InferSession:
             self.session.aipp_set_input_format(input_format)
         else:
             logger.error("input_format in config file is illegal, please check it!")
-            raise RuntimeError('wrong aipp config file content!')            
-    
+            raise RuntimeError('wrong aipp config file content!')
+
     def aipp_set_src_image_size(self, cfg):
         src_image_size = list()
         tmp_size_w = cfg.getint('aipp_op', 'src_image_size_w')
@@ -150,38 +150,38 @@ class InferSession:
             src_image_size.append(tmp_size_h)
         else:
             logger.error("src_image_size_h in config file out of range, please check it!")
-            raise RuntimeError('wrong aipp config file content!')        
-        
+            raise RuntimeError('wrong aipp config file content!')
+
         self.session.aipp_set_src_image_size(src_image_size)
-        
+
     def aipp_set_rbuv_swap_switch(self, cfg, option_list):
         if (option_list.count('rbuv_swap_switch') == 0):
             self.session.aipp_set_rbuv_swap_switch(0)
             return
-        tmp_rs_switch = cfg.getint('aipp_op', 'rbuv_swap_switch') 
+        tmp_rs_switch = cfg.getint('aipp_op', 'rbuv_swap_switch')
         if (tmp_rs_switch == 0 or tmp_rs_switch == 1):
             self.session.aipp_set_rbuv_swap_switch(tmp_rs_switch)
         else:
             logger.error("rbuv_swap_switch in config file out of range, please check it!")
             raise RuntimeError('wrong aipp config file content!')
-        
+
     def aipp_set_ax_swap_switch(self, cfg, option_list):
         if (option_list.count('ax_swap_switch') == 0):
             self.session.aipp_set_ax_swap_switch(0)
-            return        
+            return
         tmp_as_switch = cfg.getint('aipp_op', 'ax_swap_switch')
         if (tmp_as_switch == 0 or tmp_as_switch == 1):
             self.session.aipp_set_ax_swap_switch(tmp_as_switch)
         else:
             logger.error("ax_swap_switch in config file out of range, please check it!")
-            raise RuntimeError('wrong aipp config file content!')        
+            raise RuntimeError('wrong aipp config file content!')
 
     def aipp_set_csc_params(self, cfg, option_list):
         if (option_list.count('csc_switch') == 0):
             tmp_csc_switch = 0
         else:
             tmp_csc_switch = cfg.getint('aipp_op', 'csc_switch')
-        
+
         if (tmp_csc_switch == 0):
             tmp_csc_params = [0] * 16
         elif (tmp_csc_switch == 1):
@@ -201,7 +201,7 @@ class InferSession:
             )
             tmp_csc_params.append(
                 0 if option_list.count('matrix_r1c1') == 0 else cfg.getint('aipp_op', 'matrix_r1c1')
-            ) 
+            )
             tmp_csc_params.append(
                 0 if option_list.count('matrix_r1c2') == 0 else cfg.getint('aipp_op', 'matrix_r1c2')
             )
@@ -232,7 +232,7 @@ class InferSession:
             tmp_csc_params.append(
                 0 if option_list.count('input_bias_2') == 0 else cfg.getint('aipp_op', 'input_bias_2')
             )
-            
+
             range_ok = True
             for i in range (1, 9):
                 range_ok = range_ok and (-32677 <= tmp_csc_params[i] <= 32676)
@@ -243,10 +243,10 @@ class InferSession:
                 raise RuntimeError('wrong aipp config file content!')
         else:
             logger.error("csc_switch in config file out of range, please check it!")
-            raise RuntimeError('wrong aipp config file content!')     
-        
+            raise RuntimeError('wrong aipp config file content!')
+
         self.session.aipp_set_csc_params(tmp_csc_params)
-        
+
     def aipp_set_crop_params(self, cfg, option_list):
         if (option_list.count('crop') == 0):
             tmp_crop_switch = 0
@@ -282,15 +282,15 @@ class InferSession:
         else:
             logger.error("crop_switch(crop) in config file out of range, please check it!")
             raise RuntimeError('wrong aipp config file content!')
-        
+
         self.session.aipp_set_crop_params(tmp_crop_params)
-        
+
     def aipp_set_padding_params(self, cfg, option_list):
         if (option_list.count('padding') == 0):
             tmp_padding_switch = 0
         else:
             tmp_padding_switch = cfg.getint('aipp_op', 'padding')
-        
+
         if (tmp_padding_switch == 0):
             tmp_padding_params = [0] * 5
         elif (tmp_padding_switch == 1):
@@ -306,7 +306,7 @@ class InferSession:
                 0 if option_list.count('padding_size_left') == 0 else cfg.getint('aipp_op', 'padding_size_left')
             )
             tmp_padding_params.append(0 if option_list.count('padding_size_right') == 0 \
-                else cfg.getint('aipp_op', 'padding_size_right'))            
+                else cfg.getint('aipp_op', 'padding_size_right'))
 
             range_ok = True
             for i in range (1, 5):
@@ -317,9 +317,9 @@ class InferSession:
         else:
             logger.error("padding_switch in config file out of range, please check it!")
             raise RuntimeError('wrong aipp config file content!')
-        
+
         self.session.aipp_set_padding_params(tmp_padding_params)
-                        
+
     def aipp_set_dtc_pixel_mean(self, cfg, option_list):
         tmp_mean_params = list()
         tmp_mean_params.append(
@@ -334,15 +334,15 @@ class InferSession:
         tmp_mean_params.append(
             0 if option_list.count('mean_chn_3') == 0 else cfg.getint('aipp_op', 'mean_chn_3')
         )
-        
+
         range_ok = True
         for i in range (0, 4):
             range_ok = range_ok and (0 <= tmp_mean_params[i] <= 255)
         if (range_ok is False):
             logger.error("mean_chn_params in config file out of range, please check it!")
             raise RuntimeError('wrong aipp config file content!')
-        
-        self.session.aipp_set_dtc_pixel_mean(tmp_mean_params)                    
+
+        self.session.aipp_set_dtc_pixel_mean(tmp_mean_params)
 
     def aipp_set_dtc_pixel_min(self, cfg, option_list):
         tmp_min_params = list()
@@ -358,16 +358,16 @@ class InferSession:
         tmp_min_params.append(
             0 if option_list.count('min_chn_3') == 0 else cfg.getfloat('aipp_op', 'min_chn_3')
         )
-        
+
         range_ok = True
         for i in range (0, 4):
             range_ok = range_ok and (0 <= tmp_min_params[i] <= 255)
         if (range_ok is False):
             logger.error("min_chn_params in config file out of range, please check it!")
             raise RuntimeError('wrong aipp config file content!')
-        
+
         self.session.aipp_set_dtc_pixel_min(tmp_min_params)
-        
+
     def aipp_set_pixel_var_reci(self, cfg, option_list):
         tmp_reci_params = list()
         tmp_reci_params.append(
@@ -382,15 +382,15 @@ class InferSession:
         tmp_reci_params.append(
             0 if option_list.count('var_reci_chn_3') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_3')
         )
-        
+
         range_ok = True
         for i in range (0, 4):
             range_ok = range_ok and (-65504 <= tmp_reci_params[i] <= 65504)
         if (range_ok is False):
             logger.error("var_reci_chn_params in config file out of range, please check it!")
             raise RuntimeError('wrong aipp config file content!')
-        
-        self.session.aipp_set_dtc_pixel_min(tmp_reci_params)                                
+
+        self.session.aipp_set_dtc_pixel_min(tmp_reci_params)
 
     def run(self, feeds, out_array=False):
         if len(feeds) > 0 and isinstance(feeds[0], np.ndarray):
