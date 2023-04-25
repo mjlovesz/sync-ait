@@ -18,7 +18,7 @@ class TestClass:
     def teardown_class(cls):
         print('\n ---class level teardown_class')
 
-    def __init__(self):
+    def init(self):
         self.model_name = "resnet50"
 
     def get_input_tensor_name(self):
