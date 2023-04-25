@@ -74,36 +74,6 @@ class OnnxDumpData(DumpData):
                 utils.print_error_log(message)
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
-    def get_net_output_info(self):
-        """
-        get_net_output_info
-        """
-        return self.net_output
-        
-    def generate_dump_data(self):
-        """
-        Function description:
-            generate onnx model dump data
-        Parameter:
-            none
-        Return Value:
-            onnx model dump data directory
-        Exception Description:
-            none
-        """
-        data_dir, onnx_dump_data_dir, model_dir = self._create_dir()
-        if not self.args.dump:
-            old_onnx_model = onnx.load(self.args.model_path)
-            session = self._load_session(self.args.model_path)
-        else:
-            old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
-            session = self._load_session(new_onnx_model_path)
-        net_output_node = self._get_net_output_node()
-        inputs_tensor_info = self._get_inputs_tensor_info(session)
-        inputs_map = self._get_inputs_data(data_dir, inputs_tensor_info)
-        dump_bins = self._run_model(session, inputs_map)
-        self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
-        return onnx_dump_data_dir
 
     def _create_dir(self):
         # create input directory
