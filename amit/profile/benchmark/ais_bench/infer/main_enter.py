@@ -346,16 +346,16 @@ def main_enter(args:MyArgs):
             logger.info("find no msprof continue use acl.json mode")
         else:
             msprof_run_profiling(args)
-            exit(0)
+            raise SystemExit(0)
 
     if args.dym_shape_range is not None and args.dym_shape is None:
         # dymshape range run,according range to run each shape infer get best shape
         dymshape_range_run(args)
-        exit(0)
+        raise SystemExit(0)
 
     if type(args.device) == list:
         # args has multiple device, run single process for each device
-        ret = multidevice_run(args)
-        exit(ret)
+        RET = multidevice_run(args)
+        raise SystemExit(RET)
 
     main(args)
