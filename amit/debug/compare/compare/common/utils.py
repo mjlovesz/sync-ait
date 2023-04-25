@@ -43,10 +43,10 @@ ACCURACY_COMPARISON_NOT_SUPPORT_ERROR = 15
 ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
 MODEL_TYPE = ['.onnx', '.pb', '.om']
+SECURE_PATTERN = r"^-?\d+(?:,-?\d)*"
 DIM_PATTERN = r"^(-?[0-9]+)(,-?[0-9]+)*"
 DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+){0,3}"
 MAX_DEVICE_ID = 255
-MAX_SHAPE_VALUE_LEN = 256
 SEMICOLON = ";"
 COLON = ":"
 EQUAL = "="
@@ -356,7 +356,8 @@ def _check_content_split_length(content_split):
 
 
 def _check_shape_number(input_shape_value, pattern=DIM_PATTERN):
-    if len(input_shape_value) > MAX_SHAPE_VALUE_LEN:
+    secure_pattern = re.compile(SECURE_PATTERN)
+    if not secure_pattern.match(input_shape_value):
         print_error_log(get_shape_not_match_message(InputShapeError.VALUE_TYPE_NOT_MATCH, input_shape_value))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
     dim_pattern = re.compile(pattern)
