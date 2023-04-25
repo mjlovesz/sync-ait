@@ -120,6 +120,28 @@ public:
     */
     Result CheckDymAIPPInputExsity();
 
+    // ------------------分别配置具体AIPP参数-----------------
+    Result SetAIPPSrcImageSize(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet);
+
+    Result SetAIPPInputFormat(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet);
+
+    Result SetAIPPCscParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet);
+
+    Result SetAIPPRbuvSwapSwitch(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet);
+
+    Result SetAIPPAxSwapSwitch(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet);
+
+    Result SetAIPPDtcPixelMean(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+
+    Result SetAIPPDtcPixelMin(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+
+    Result SetAIPPPixelVarReci(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+
+    Result SetAIPPCropParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+
+    Result SetAIPPPaddingParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+    // ------------------分别配置具体AIPP参数-----------------
+
     /**
     * @brief set single dynamic aipp config
     */
