@@ -258,15 +258,15 @@ def get_args():
                         help="Debug switch,print model information")
     parser.add_argument("--device", "-d", type=check_device_range_valid, default=0,
                         help="the NPU device ID to use.valid value range is [0, 255]")
-    parser.add_argument("--dymBatch", type=int, default=0,
+    parser.add_argument("--dymBatch", type=int, default=0, dest="dym_batch"
                         help="dynamic batch size param，such as --dymBatch 2")
-    parser.add_argument("--dymHW", type=str, default=None,
+    parser.add_argument("--dymHW", type=str, default=None, dest="dym_hw",
                         help="dynamic image size param, such as --dymHW \"300,500\"")
-    parser.add_argument("--dymDims", type=str, default=None,
+    parser.add_argument("--dymDims", type=str, default=None, dest="dym_dims",
                         help="dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"")
-    parser.add_argument("--dymShape", type=str, default=None,
+    parser.add_argument("--dymShape", type=str, default=None, dest="dym_shape",
                         help="dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\"")
-    parser.add_argument("--outputSize", type=str, default=None,
+    parser.add_argument("--outputSize", type=str, default=None, dest="output_size",
                         help="output size for dynamic shape mode")
     parser.add_argument("--auto_set_dymshape_mode", type=str2bool, default=False,
                         help="auto_set_dymshape_mode")
@@ -290,7 +290,7 @@ def get_args():
                         help="display all summary include h2d d2h info")
     parser.add_argument("--warmup_count", type=check_nonnegative_integer, default=1,
                         help="warmup count before inference")
-    parser.add_argument("--dymShape_range", type=str, default=None,
+    parser.add_argument("--dymShape_range", type=str, default=None, dest="dym_shape_range",
                         help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\"")
 
     input_args = parser.parse_args()
@@ -479,7 +479,7 @@ def multidevice_run(input_args):
     if (input_args.input != None):
         splits = seg_input_data_for_multi_process(input_args, input_args.input, jobs)
         
-    for i, device in enumerate(device_list)):
+    for i, device in enumerate(device_list):
         cur_args = copy.deepcopy(input_args)
         cur_args.device = int(device)
         cur_args.input = None if splits == None else list(splits)[i]
