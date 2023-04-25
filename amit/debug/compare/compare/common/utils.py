@@ -216,7 +216,7 @@ def execute_command(cmd):
         line = process.stdout.readline()
         line = line.strip()
         if line:
-            print(line)
+            print_info_log(line)
     if process.returncode != 0:
         print_error_log('Failed to execute command:%s' % " ".join(cmd))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DATA_ERROR)
