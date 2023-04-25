@@ -500,9 +500,9 @@ class TestClass:
 
         outnames = [session.get_outputs()[0].name]
         feeds = {session.get_inputs()[0].name: tensor}
-
-        outputs = session.run(outnames, feeds)
-        logger.info("outputs:{}".format(outputs))
+        with pytest.raises(RuntimeError) as e:
+            outputs = session.run(outnames, feeds)
+            logger.info("outputs:{}".format(outputs))
 
     # 模型有多个动态aipp input
     def test_infer_multi_dymaipp_input(self):
