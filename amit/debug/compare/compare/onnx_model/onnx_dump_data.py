@@ -55,7 +55,7 @@ class OnnxDumpData(DumpData):
     """
 
     def __init__(self, arguments):
-        super.__init__()
+        super().__init__()
         self.args = arguments
         self.input_shapes = utils.parse_input_shape(self.args.input_shape)
         self.net_output = {}
