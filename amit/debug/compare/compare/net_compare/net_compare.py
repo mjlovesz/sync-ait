@@ -79,7 +79,7 @@ class NetCompare(object):
                         result = info_content
                     if not match and pattern_header.search(info_content[0]):
                         header = info_content
-            return result, header
+                return result, header
         except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError):
             utils.print_warn_log('Failed to parse the alg compare result!')
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR)
