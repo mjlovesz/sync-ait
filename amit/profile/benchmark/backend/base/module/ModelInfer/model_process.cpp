@@ -1448,7 +1448,7 @@ Result ModelProcess::SetAIPPSrcImageSize(std::shared_ptr<Base::DynamicAippConfig
             dyAippCfg->GetSrcImageSizeH(), ret);
         return FAILED;
     }
-    return SUCCESS；
+    return SUCCESS;
 }
 
 Result ModelProcess::SetAIPPInputFormat(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet)
@@ -1460,7 +1460,7 @@ Result ModelProcess::SetAIPPInputFormat(std::shared_ptr<Base::DynamicAippConfig>
         ERROR_LOG("aclmdlSetAIPPInputFormat failed, ret %d", ret);
         return FAILED;
     }
-    return SUCCESS；
+    return SUCCESS;
 }
 
 Result ModelProcess::SetAIPPCscParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet)
