@@ -176,10 +176,8 @@ class NpuDumpData(DumpData):
     
     @staticmethod
     def _try_write_content_to_acl_json(acl_json_path, load_dict):
-        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
-        modes = stat.S_IWUSR | stat.S_IRUSR
         try:
-            with os.fdopen(os.open(acl_json_path, flags, modes), "w") as write_json:
+            with open(acl_json_path, "w") as write_json:
                 try:
                     json.dump(load_dict, write_json)
                 except ValueError as write_json_except:
@@ -190,7 +188,7 @@ class NpuDumpData(DumpData):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)    
         
     @staticmethod
-    def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir):
+    def _write_content_to_acl_json(self, acl_json_path, model_name, npu_data_output_dir):
         load_dict = {
             "dump": {
                 "dump_list": [{"model_name": model_name}],
@@ -200,7 +198,7 @@ class NpuDumpData(DumpData):
             }
         }
         if os.access(acl_json_path, os.W_OK):
-            _try_write_content_to_acl_json(acl_json_path, load_dict)
+            self._try_write_content_to_acl_json(acl_json_path, load_dict)
 
         else:
             utils.print_error_log(
@@ -390,7 +388,7 @@ class NpuDumpData(DumpData):
                         "The size (%d) of bin file can not match the input of the model." % bin_file_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
         elif self.dynamic_input.is_dynamic_shape_scenario():
-            if(shape_size_array_vs_bin_files_size_array(shape_size_array, bin_files_size_array)):
+            if self.shape_size_array_vs_bin_files_size_array(shape_size_array, bin_files_size_array):
                 return
             utils.print_warn_log("The size of bin file can not match the input of the model.")
         else:
