@@ -256,7 +256,7 @@ host.BrowserHost = class {
                 }
                 else {
                     // swal("Error happens!", "You are kindly to create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
-                    swal("Error happens!", "You are kindly to check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
+                    swal("Error happens!", "You are kindly to check the log and create an issue on https://gitee.com/ascend/amit", "error");
                     // alert('Error happens, you can find it out or create an issue on https://github.com/ZhangGe6/onnx-modifier')
                 }
             });
@@ -282,7 +282,7 @@ host.BrowserHost = class {
                 } else if (response.status == 599){
                     swal("Error happens!", "请确认是否安装 onnxsmi", "error");
                 } else {
-                    swal("Error happens!", "You are kindly to check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
+                    swal("Error happens!", "You are kindly to check the log and create an issue on https://gitee.com/ascend/amit", "error");
                 }
             }).then((blob) => {
                 if (!blob) {
@@ -315,7 +315,7 @@ host.BrowserHost = class {
                 } else if (response.ok) {
                     return response.blob();
                 } else {
-                    swal("Error happens!", "You are kindly to check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
+                    swal("Error happens!", "You are kindly to check the log and create an issue on https://gitee.com/ascend/amit", "error");
                 }
             }).then((blob) => {
                 if (!blob) {
