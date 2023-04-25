@@ -16,7 +16,6 @@
 #include "Base/ModelInfer/DynamicAippConfig.h"
 
 namespace Base {
-
 DynamicAippConfig::DynamicAippConfig()
 {
     isActivated = false;
@@ -59,7 +58,7 @@ APP_ERROR DynamicAippConfig::SetMaxBatchSize(uint64_t maxBsParams)
 }
 
 APP_ERROR DynamicAippConfig::SetInputFormat(std::string iptFmt)
-{   
+{
     inputFormat = iptFmt;
     return APP_ERR_OK;
 }
@@ -113,7 +112,7 @@ APP_ERROR DynamicAippConfig::SetCropParams(std::vector<int> cropInputParams)
     tmpCrop.cropSizeW = cropInputParams[3];
     tmpCrop.cropSizeH = cropInputParams[4];
     for (size_t batchIndex = 0; batchIndex < maxBatchSize; batchIndex++) {
-        cropParams.insert({batchIndex, tmpCrop});
+        cropParams.insert(std::make_pair(batchIndex, tmpCrop));
     }
     return APP_ERR_OK;
 }
@@ -127,9 +126,9 @@ APP_ERROR DynamicAippConfig::SetPaddingParams(std::vector<int> padInputParams)
     tmpPad.paddingSizeLeft = padInputParams[3];
     tmpPad.paddingSizeRight = padInputParams[4];
     for (size_t batchIndex = 0; batchIndex < maxBatchSize; batchIndex++) {
-        paddingParams.insert({batchIndex, tmpPad});
+        paddingParams.insert(std::make_pair(batchIndex, tmpPad));
     }
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 APP_ERROR DynamicAippConfig::SetDtcPixelMean(std::vector<int> meanInputParams)
@@ -140,9 +139,9 @@ APP_ERROR DynamicAippConfig::SetDtcPixelMean(std::vector<int> meanInputParams)
     tmpMean.dtcPixelMeanChn2 = meanInputParams[2];
     tmpMean.dtcPixelMeanChn3 = meanInputParams[3];
     for (size_t batchIndex = 0; batchIndex < maxBatchSize; batchIndex++) {
-        dtcPixelMeanParams.insert({batchIndex, tmpMean});
+        dtcPixelMeanParams.insert(std::make_pair(batchIndex, tmpMean));
     }
-    return APP_ERR_OK;     
+    return APP_ERR_OK;
 }
 
 APP_ERROR DynamicAippConfig::SetDtcPixelMin(std::vector<float> minInputParams)
@@ -153,9 +152,9 @@ APP_ERROR DynamicAippConfig::SetDtcPixelMin(std::vector<float> minInputParams)
     tmpMin.dtcPixelMinChn2 = minInputParams[2];
     tmpMin.dtcPixelMinChn3 = minInputParams[3];
     for (size_t batchIndex = 0; batchIndex < maxBatchSize; batchIndex++) {
-        dtcPixelMinParams.insert({batchIndex, tmpMin});
+        dtcPixelMinParams.insert(std::make_pair(batchIndex, tmpMin));
     }
-    return APP_ERR_OK; 
+    return APP_ERR_OK;
 }
 
 APP_ERROR DynamicAippConfig::SetPixelVarReci(std::vector<float> reciInputParams)
@@ -166,7 +165,7 @@ APP_ERROR DynamicAippConfig::SetPixelVarReci(std::vector<float> reciInputParams)
     tmpReci.dtcPixelVarReciChn2 = reciInputParams[2];
     tmpReci.dtcPixelVarReciChn3 = reciInputParams[3];
     for (size_t batchIndex = 0; batchIndex < maxBatchSize; batchIndex++) {
-        pixelVarReciParams.insert({batchIndex, tmpReci});
+        pixelVarReciParams.insert(std::make_pair(batchIndex, tmpReci));
     }
     return APP_ERR_OK;
 }
@@ -230,5 +229,4 @@ std::unordered_map<uint64_t, PixelVarReci> DynamicAippConfig::GetPixelVarReci()
 {
     return pixelVarReciParams;
 }
-
 }   // namespace Base

@@ -67,12 +67,12 @@ APP_ERROR ModelInferenceProcessor::Init(const std::string& modelPath, std::share
     deviceId_ = deviceId;
 
     SETLOGLEVEL(options_->log_level);
-    
+
     try {
-        //make_shared必然会抛出异常
+        // make_shared必然会抛出异常
         processModel = std::make_shared<ModelProcess>();
         dyAippCfg = std::make_shared<DynamicAippConfig>();
-    } catch (...){
+    } catch (...) {
         return APP_ERR_ACL_BAD_ALLOC;
     }
 
