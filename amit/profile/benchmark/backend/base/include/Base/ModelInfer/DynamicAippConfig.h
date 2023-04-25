@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef _DYNAMIC_AIPP_CONFIG_
-#define _DYNAMIC_AIPP_CONFIG_
+#ifndef DYNAMIC_AIPP_CONFIG_H
+#define DYNAMIC_AIPP_CONFIG_H
 #include <string>
 #include <unordered_map>
 #include <vector>

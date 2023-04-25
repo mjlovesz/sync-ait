@@ -223,7 +223,7 @@ class InferSession:
                 range_ok = range_ok and (-32677 <= tmp_csc_params[i] <= 32676)
             for i in range (10, 15):
                 range_ok = range_ok and (0 <= tmp_csc_params[i] <= 255)
-            if (range_ok == False):
+            if (range_ok is False):
                 logger.error("csc_params in config file out of range, please check it!")
                 raise RuntimeError('wrong aipp config file content!')
         else:
@@ -257,7 +257,7 @@ class InferSession:
             range_ok = range_ok and (0 <= tmp_crop_params[2] <= 4095)
             range_ok = range_ok and (1 <= tmp_crop_params[3] <= 4096)
             range_ok = range_ok and (1 <= tmp_crop_params[4] <= 4096)
-            if (range_ok == False):
+            if (range_ok is False):
                 logger.error("crop_params in config file out of range, please check it!")
                 raise RuntimeError('wrong aipp config file content!')
         else:
@@ -289,7 +289,7 @@ class InferSession:
             range_ok = True
             for i in range (1, 5):
                 range_ok = range_ok and (0 <= tmp_padding_params[i] <= 32)
-            if (range_ok == False):
+            if (range_ok is False):
                 logger.error("padding_params in config file out of range, please check it!")
                 raise RuntimeError('wrong aipp config file content!')
         else:
@@ -312,7 +312,7 @@ class InferSession:
         range_ok = True
         for i in range (0, 4):
             range_ok = range_ok and (0 <= tmp_mean_params[i] <= 255)
-        if (range_ok == False):
+        if (range_ok is False):
             logger.error("mean_chn_params in config file out of range, please check it!")
             raise RuntimeError('wrong aipp config file content!')
         
@@ -332,7 +332,7 @@ class InferSession:
         range_ok = True
         for i in range (0, 4):
             range_ok = range_ok and (0 <= tmp_min_params[i] <= 255)
-        if (range_ok == False):
+        if (range_ok is False):
             logger.error("min_chn_params in config file out of range, please check it!")
             raise RuntimeError('wrong aipp config file content!')
         
@@ -352,7 +352,7 @@ class InferSession:
         range_ok = True
         for i in range (0, 4):
             range_ok = range_ok and (-65504 <= tmp_reci_params[i] <= 65504)
-        if (range_ok == False):
+        if (range_ok is False):
             logger.error("var_reci_chn_params in config file out of range, please check it!")
             raise RuntimeError('wrong aipp config file content!')
         
@@ -429,7 +429,7 @@ class InferSession:
                 self.session.set_dynamic_shape(dyshapes)
                 if isinstance(custom_sizes, int):
                     custom_sizes = [custom_sizes]*len(outdesc)
-                elif isinstance(custom_sizes, list) == False:
+                elif isinstance(custom_sizes, list) is False:
                     raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
                         custom_sizes, type(custom_sizes)))
                 self.session.set_custom_outsize(custom_sizes)
