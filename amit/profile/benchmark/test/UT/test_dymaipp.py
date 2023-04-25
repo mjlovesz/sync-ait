@@ -109,21 +109,51 @@ class TestClass:
         elif (tmp_csc_switch == 1):
             tmp_csc_params = list()
             tmp_csc_params.append(tmp_csc_switch)
-            tmp_csc_params.append(0 if option_list.count('matrix_r0c0') == 0 else cfg.getint('aipp_op', 'matrix_r0c0'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r0c1') == 0 else cfg.getint('aipp_op', 'matrix_r0c1'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r0c2') == 0 else cfg.getint('aipp_op', 'matrix_r0c2'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r1c0') == 0 else cfg.getint('aipp_op', 'matrix_r1c0'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r1c1') == 0 else cfg.getint('aipp_op', 'matrix_r1c1')) 
-            tmp_csc_params.append(0 if option_list.count('matrix_r1c2') == 0 else cfg.getint('aipp_op', 'matrix_r1c2'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r2c0') == 0 else cfg.getint('aipp_op', 'matrix_r2c0'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r2c1') == 0 else cfg.getint('aipp_op', 'matrix_r2c1'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r2c2') == 0 else cfg.getint('aipp_op', 'matrix_r2c2'))
-            tmp_csc_params.append(0 if option_list.count('output_bias_0') == 0 else cfg.getint('aipp_op', 'output_bias_0'))
-            tmp_csc_params.append(0 if option_list.count('output_bias_1') == 0 else cfg.getint('aipp_op', 'output_bias_1'))
-            tmp_csc_params.append(0 if option_list.count('output_bias_2') == 0 else cfg.getint('aipp_op', 'output_bias_2'))
-            tmp_csc_params.append(0 if option_list.count('input_bias_0') == 0 else cfg.getint('aipp_op', 'input_bias_0'))
-            tmp_csc_params.append(0 if option_list.count('input_bias_1') == 0 else cfg.getint('aipp_op', 'input_bias_1'))
-            tmp_csc_params.append(0 if option_list.count('input_bias_2') == 0 else cfg.getint('aipp_op', 'input_bias_2'))
+            tmp_csc_params.append(
+                0 if option_list.count('matrix_r0c0') == 0 else cfg.getint('aipp_op', 'matrix_r0c0')
+            )
+            tmp_csc_params.append(
+                0 if option_list.count('matrix_r0c1') == 0 else cfg.getint('aipp_op', 'matrix_r0c1')
+            )
+            tmp_csc_params.append(
+                0 if option_list.count('matrix_r0c2') == 0 else cfg.getint('aipp_op', 'matrix_r0c2')
+            )
+            tmp_csc_params.append(
+                0 if option_list.count('matrix_r1c0') == 0 else cfg.getint('aipp_op', 'matrix_r1c0')
+            )
+            tmp_csc_params.append(
+                0 if option_list.count('matrix_r1c1') == 0 else cfg.getint('aipp_op', 'matrix_r1c1')
+            ) 
+            tmp_csc_params.append(
+                0 if option_list.count('matrix_r1c2') == 0 else cfg.getint('aipp_op', 'matrix_r1c2')
+            )
+            tmp_csc_params.append(
+                0 if option_list.count('matrix_r2c0') == 0 else cfg.getint('aipp_op', 'matrix_r2c0')
+            )
+            tmp_csc_params.append(
+                0 if option_list.count('matrix_r2c1') == 0 else cfg.getint('aipp_op', 'matrix_r2c1')
+            )
+            tmp_csc_params.append(
+                0 if option_list.count('matrix_r2c2') == 0 else cfg.getint('aipp_op', 'matrix_r2c2')
+            )
+            tmp_csc_params.append(
+                0 if option_list.count('output_bias_0') == 0 else cfg.getint('aipp_op', 'output_bias_0')
+            )
+            tmp_csc_params.append(
+                0 if option_list.count('output_bias_1') == 0 else cfg.getint('aipp_op', 'output_bias_1')
+            )
+            tmp_csc_params.append(
+                0 if option_list.count('output_bias_2') == 0 else cfg.getint('aipp_op', 'output_bias_2')
+            )
+            tmp_csc_params.append(
+                0 if option_list.count('input_bias_0') == 0 else cfg.getint('aipp_op', 'input_bias_0')
+            )
+            tmp_csc_params.append(
+                0 if option_list.count('input_bias_1') == 0 else cfg.getint('aipp_op', 'input_bias_1')
+            )
+            tmp_csc_params.append(
+                0 if option_list.count('input_bias_2') == 0 else cfg.getint('aipp_op', 'input_bias_2')
+            )
             
             range_ok = True
             for i in range (1, 9):
@@ -148,10 +178,18 @@ class TestClass:
         elif (tmp_crop_switch == 1):
             tmp_crop_params = list()
             tmp_crop_params.append(tmp_crop_switch)
-            tmp_crop_params.append(0 if option_list.count('load_start_pos_w') == 0 else cfg.getint('aipp_op', 'load_start_pos_w'))
-            tmp_crop_params.append(0 if option_list.count('load_start_pos_h') == 0 else cfg.getint('aipp_op', 'load_start_pos_h'))
-            tmp_crop_params.append(0 if option_list.count('crop_size_w') == 0 else cfg.getint('aipp_op', 'crop_size_w'))
-            tmp_crop_params.append(0 if option_list.count('crop_size_h') == 0 else cfg.getint('aipp_op', 'crop_size_h'))
+            tmp_crop_params.append(
+                0 if option_list.count('load_start_pos_w') == 0 else cfg.getint('aipp_op', 'load_start_pos_w')
+            )
+            tmp_crop_params.append(
+                0 if option_list.count('load_start_pos_h') == 0 else cfg.getint('aipp_op', 'load_start_pos_h')
+            )
+            tmp_crop_params.append(
+                0 if option_list.count('crop_size_w') == 0 else cfg.getint('aipp_op', 'crop_size_w')
+            )
+            tmp_crop_params.append(
+                0 if option_list.count('crop_size_h') == 0 else cfg.getint('aipp_op', 'crop_size_h')
+            )
 
             range_ok = True
             range_ok = range_ok and (0 <= tmp_crop_params[1] <= 4095)
@@ -176,10 +214,18 @@ class TestClass:
         elif (tmp_padding_switch == 1):
             tmp_padding_params = list()
             tmp_padding_params.append(tmp_padding_switch)
-            tmp_padding_params.append(0 if option_list.count('padding_size_top') == 0 else cfg.getint('aipp_op', 'padding_size_top'))
-            tmp_padding_params.append(0 if option_list.count('padding_size_bottom') == 0 else cfg.getint('aipp_op', 'padding_size_bottom'))
-            tmp_padding_params.append(0 if option_list.count('padding_size_left') == 0 else cfg.getint('aipp_op', 'padding_size_left'))
-            tmp_padding_params.append(0 if option_list.count('padding_size_right') == 0 else cfg.getint('aipp_op', 'padding_size_right'))            
+            tmp_padding_params.append(
+                0 if option_list.count('padding_size_top') == 0 else cfg.getint('aipp_op', 'padding_size_top')
+            )
+            tmp_padding_params.append(
+                0 if option_list.count('padding_size_bottom') == 0 else cfg.getint('aipp_op', 'padding_size_bottom')
+            )
+            tmp_padding_params.append(
+                0 if option_list.count('padding_size_left') == 0 else cfg.getint('aipp_op', 'padding_size_left')
+            )
+            tmp_padding_params.append(
+                0 if option_list.count('padding_size_right') == 0 else cfg.getint('aipp_op', 'padding_size_right')
+            )            
 
             range_ok = True
             for i in range (1, 5):
@@ -193,10 +239,18 @@ class TestClass:
                         
     def aipp_set_dtc_pixel_mean(self, cfg, session, option_list):
         tmp_mean_params = list()
-        tmp_mean_params.append(0 if option_list.count('mean_chn_0') == 0 else cfg.getint('aipp_op', 'mean_chn_0'))
-        tmp_mean_params.append(0 if option_list.count('mean_chn_1') == 0 else cfg.getint('aipp_op', 'mean_chn_1'))
-        tmp_mean_params.append(0 if option_list.count('mean_chn_2') == 0 else cfg.getint('aipp_op', 'mean_chn_2'))
-        tmp_mean_params.append(0 if option_list.count('mean_chn_3') == 0 else cfg.getint('aipp_op', 'mean_chn_3'))
+        tmp_mean_params.append(
+            0 if option_list.count('mean_chn_0') == 0 else cfg.getint('aipp_op', 'mean_chn_0')
+        )
+        tmp_mean_params.append(
+            0 if option_list.count('mean_chn_1') == 0 else cfg.getint('aipp_op', 'mean_chn_1')
+        )
+        tmp_mean_params.append(
+            0 if option_list.count('mean_chn_2') == 0 else cfg.getint('aipp_op', 'mean_chn_2')
+        )
+        tmp_mean_params.append(
+            0 if option_list.count('mean_chn_3') == 0 else cfg.getint('aipp_op', 'mean_chn_3')
+        )
         
         range_ok = True
         for i in range (0, 4):
@@ -208,10 +262,18 @@ class TestClass:
 
     def aipp_set_dtc_pixel_min(self, cfg, session, option_list):
         tmp_min_params = list()
-        tmp_min_params.append(0 if option_list.count('min_chn_0') == 0 else cfg.getfloat('aipp_op', 'min_chn_0'))
-        tmp_min_params.append(0 if option_list.count('min_chn_1') == 0 else cfg.getfloat('aipp_op', 'min_chn_1'))
-        tmp_min_params.append(0 if option_list.count('min_chn_2') == 0 else cfg.getfloat('aipp_op', 'min_chn_2'))
-        tmp_min_params.append(0 if option_list.count('min_chn_3') == 0 else cfg.getfloat('aipp_op', 'min_chn_3'))
+        tmp_min_params.append(
+            0 if option_list.count('min_chn_0') == 0 else cfg.getfloat('aipp_op', 'min_chn_0')
+        )
+        tmp_min_params.append(
+            0 if option_list.count('min_chn_1') == 0 else cfg.getfloat('aipp_op', 'min_chn_1')
+        )
+        tmp_min_params.append(
+            0 if option_list.count('min_chn_2') == 0 else cfg.getfloat('aipp_op', 'min_chn_2')
+        )
+        tmp_min_params.append(
+            0 if option_list.count('min_chn_3') == 0 else cfg.getfloat('aipp_op', 'min_chn_3')
+        )
         
         range_ok = True
         for i in range (0, 4):
@@ -223,10 +285,18 @@ class TestClass:
         
     def aipp_set_pixel_var_reci(self, cfg, session, option_list):
         tmp_reci_params = list()
-        tmp_reci_params.append(0 if option_list.count('var_reci_chn_0') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_0'))
-        tmp_reci_params.append(0 if option_list.count('var_reci_chn_1') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_1'))
-        tmp_reci_params.append(0 if option_list.count('var_reci_chn_2') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_2'))
-        tmp_reci_params.append(0 if option_list.count('var_reci_chn_3') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_3'))
+        tmp_reci_params.append(
+            0 if option_list.count('var_reci_chn_0') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_0')
+        )
+        tmp_reci_params.append(
+            0 if option_list.count('var_reci_chn_1') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_1')
+        )
+        tmp_reci_params.append(
+            0 if option_list.count('var_reci_chn_2') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_2')
+        )
+        tmp_reci_params.append(
+            0 if option_list.count('var_reci_chn_3') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_3')
+        )
         
         range_ok = True
         for i in range (0, 4):
@@ -238,27 +308,45 @@ class TestClass:
 
     # 各种模型
     def get_without_dymaipp_om_path(self):
-        return os.path.join(TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_bs4.om")
+        return os.path.join(
+            TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_bs4.om"
+        )
     def get_dymaipp_staticshape_om_path(self):
-        return os.path.join(TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_bs4_dymaipp_stcbatch.om")
+        return os.path.join(
+            TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_bs4_dymaipp_stcbatch.om"
+        )
     def get_dymaipp_dymbatch_om_path(self):
-        return os.path.join(TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_dymaipp_dymbatch.om")
+        return os.path.join(
+            TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_dymaipp_dymbatch.om"
+        )
     def get_dymaipp_dymwh_om_path(self):
-        return os.path.join(TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_dymaipp_dymwh.om")
+        return os.path.join(
+            TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_dymaipp_dymwh.om"
+        )
     def get_multi_dymaipp_om_path(self):       
         return os.path.join(TestCommonClass.base_path, self.model_name, "model", "multi_dym_aipp_model.om")
 
     # 各种输入的aipp具体参数配置文件
     def get_actual_aipp_config(self):
-        return os.path.join(os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg.config")
+        return os.path.join(
+            os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg.config"
+        )
     def get_aipp_config_param_overflowed(self):
-        return os.path.join(os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_param_overflowed.config")
+        return os.path.join(
+            os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_param_overflowed.config"
+        )
     def get_aipp_config_lack_param(self):
-        return os.path.join(os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_lack_param.config")
+        return os.path.join(
+            os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_lack_param.config"
+        )
     def get_aipp_config_multi_input(self):
-        return os.path.join(os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_multi_input.config")
+        return os.path.join(
+            os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_multi_input.config"
+        )
     def get_aipp_config_lack_title(self):
-        return os.path.join(os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_lack_title.config")
+        return os.path.join(
+            os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_lack_title.config"
+        )
     
     def test_infer_dymaipp_staticshape(self):
         device_id = 0
