@@ -16,17 +16,18 @@ import time
 import os
 import re
 
-import onnx
-import onnxruntime
-import numpy as np
 from skl2onnx.helpers.onnx_helper import enumerate_model_node_outputs
 from skl2onnx.helpers.onnx_helper import select_model_inputs_outputs
 from skl2onnx.helpers.onnx_helper import save_onnx_model
-
 from compare.common.dump_data import DumpData
 from compare.common import utils
 from compare.common.utils import AccuracyCompareException
 from compare.common.utils import InputShapeError
+
+import numpy as np
+import onnxruntime
+import onnx
+
 
 NODE_TYPE_TO_DTYPE_MAP = {
     "tensor(int)": np.int32,
@@ -58,6 +59,51 @@ class OnnxDumpData(DumpData):
         self.args = arguments
         self.input_shapes = utils.parse_input_shape(self.args.input_shape)
         self.net_output = {}
+
+    @staticmethod
+    def _check_input_shape_fix_value(op_name, model_shape, input_shape):
+        message = "fixed input tensor dim not equal to model input dim." \
+                  "tensor_name:%s, %s vs %s" % (op_name, str(input_shape), str(model_shape))
+        if len(model_shape) != len(input_shape):
+            utils.print_error_log(message)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+        for index, value in enumerate(model_shape):
+            if value is None or isinstance(value, str):
+                continue
+            if input_shape[index] != value:
+                utils.print_error_log(message)
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+
+    def get_net_output_info(self):
+        """
+        get_net_output_info
+        """
+        return self.net_output
+        
+    def generate_dump_data(self):
+        """
+        Function description:
+            generate onnx model dump data
+        Parameter:
+            none
+        Return Value:
+            onnx model dump data directory
+        Exception Description:
+            none
+        """
+        data_dir, onnx_dump_data_dir, model_dir = self._create_dir()
+        if not self.args.dump:
+            old_onnx_model = onnx.load(self.args.model_path)
+            session = self._load_session(self.args.model_path)
+        else:
+            old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
+            session = self._load_session(new_onnx_model_path)
+        net_output_node = self._get_net_output_node()
+        inputs_tensor_info = self._get_inputs_tensor_info(session)
+        inputs_map = self._get_inputs_data(data_dir, inputs_tensor_info)
+        dump_bins = self._run_model(session, inputs_map)
+        self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
+        return onnx_dump_data_dir
 
     def _create_dir(self):
         # create input directory
@@ -192,20 +238,6 @@ class OnnxDumpData(DumpData):
             utils.print_info_log("net_output node is:{}, file path is {}".format(key, value))
         utils.print_info_log("dump data success")
 
-    @staticmethod
-    def _check_input_shape_fix_value(op_name, model_shape, input_shape):
-        message = "fixed input tensor dim not equal to model input dim." \
-                  "tensor_name:%s, %s vs %s" % (op_name, str(input_shape), str(model_shape))
-        if len(model_shape) != len(input_shape):
-            utils.print_error_log(message)
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
-        for index, value in enumerate(model_shape):
-            if value is None or isinstance(value, str):
-                continue
-            if input_shape[index] != value:
-                utils.print_error_log(message)
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
-
     def _get_net_output_node(self):
         """
         get net output name
@@ -215,34 +247,3 @@ class OnnxDumpData(DumpData):
         for output_item in session.get_outputs():
             net_output_node.append(output_item.name)
         return net_output_node
-
-    def generate_dump_data(self):
-        """
-        Function description:
-            generate onnx model dump data
-        Parameter:
-            none
-        Return Value:
-            onnx model dump data directory
-        Exception Description:
-            none
-        """
-        data_dir, onnx_dump_data_dir, model_dir = self._create_dir()
-        if not self.args.dump:
-            old_onnx_model = onnx.load(self.args.model_path)
-            session = self._load_session(self.args.model_path)
-        else:
-            old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
-            session = self._load_session(new_onnx_model_path)
-        net_output_node = self._get_net_output_node()
-        inputs_tensor_info = self._get_inputs_tensor_info(session)
-        inputs_map = self._get_inputs_data(data_dir, inputs_tensor_info)
-        dump_bins = self._run_model(session, inputs_map)
-        self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
-        return onnx_dump_data_dir
-
-    def get_net_output_info(self):
-        """
-        get_net_output_info
-        """
-        return self.net_output
