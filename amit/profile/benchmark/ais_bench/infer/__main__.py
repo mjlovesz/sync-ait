@@ -131,7 +131,8 @@ def infer_loop_tensor_run(session, input_args, intensors_desc, infileslist, outp
         outputs = run_inference(session, input_args, intensors)
         session.convert_tensors_to_host(outputs)
         if output_prefix is not None:
-            save_tensors_to_file(outputs, output_prefix, infiles, input_args.outfmt, i, input_args.output_batchsize_axis)
+            save_tensors_to_file(outputs, output_prefix, infiles,
+                                 input_args.outfmt, i, input_args.output_batchsize_axis)
 
 
 # files to loop iner
@@ -145,7 +146,8 @@ def infer_loop_files_run(session, input_args, intensors_desc, infileslist, outpu
         outputs = run_inference(session, input_args, intensors)
         session.convert_tensors_to_host(outputs)
         if output_prefix is not None:
-            save_tensors_to_file(outputs, output_prefix, infiles, input_args.outfmt, i, input_args.output_batchsize_axis)
+            save_tensors_to_file(outputs, output_prefix, infiles,
+                                 input_args.outfmt, i, input_args.output_batchsize_axis)
 
 
 # First prepare the data, then execute the reference, and then write the file uniformly
@@ -162,7 +164,8 @@ def infer_fulltensors_run(session, input_args, intensors_desc, infileslist, outp
     for i, outputs in enumerate(outtensors):
         session.convert_tensors_to_host(outputs)
         if output_prefix is not None:
-            save_tensors_to_file(outputs, output_prefix, infileslist[i], input_args.outfmt, i, input_args.output_batchsize_axis)
+            save_tensors_to_file(outputs, output_prefix, infileslist[i],
+                                   input_args.outfmt, i, input_args.output_batchsize_axis)
 
 
 # loop numpy array to infer
@@ -175,7 +178,8 @@ def infer_loop_array_run(session, input_args, intensors_desc, infileslist, outpu
         outputs = run_inference(session, input_args, innarrays)
         session.convert_tensors_to_host(outputs)
         if input_args.output is not None:
-            save_tensors_to_file(outputs, output_prefix, infiles, input_args.outfmt, i, input_args.output_batchsize_axis)
+            save_tensors_to_file(outputs, output_prefix, infiles,
+                                 input_args.outfmt, i, input_args.output_batchsize_axis)
 
 
 def str2bool(v):
@@ -370,7 +374,8 @@ def main(input_args, index=0, msgq=None, device_list=None):
         # Pure reference scenario. Create input zero data
         infileslist = [[ [ pure_infer_fake_file ] for index in intensors_desc ]]
     else:
-        infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, input_args.no_combine_tensor_mode)
+        infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc,
+                                                          input_args.no_combine_tensor_mode)
 
     warmup(session, input_args, intensors_desc, infileslist[0])
 
@@ -428,11 +433,11 @@ def seg_input_data_for_multi_process(input_args, inputs, jobs):
         return inputs_list
 
     fileslist = []
-    if os.path.isfile(inputs_list[0]) == True:
+    if os.path.isfile(inputs_list[0]):
         fileslist = inputs_list
     elif os.path.isdir(inputs_list[0]):
-        for dir in inputs_list:
-            fileslist.extend(get_fileslist_from_dir(dir))
+        for dir_name in inputs_list:
+            fileslist.extend(get_fileslist_from_dir(dir_name))
     else:
         logger.error('error {} not file or dir'.format(inputs_list[0]))
         raise RuntimeError()
@@ -448,7 +453,11 @@ def seg_input_data_for_multi_process(input_args, inputs, jobs):
     chunks = list(list_split(fileslist, chunks_elements, None))
     fileslist = [ [] for e in range(jobs) ]
     for chunk in chunks:
-        splits_elements = math.ceil(len(chunk) / jobs)
+        try:
+            splits_elements = math.ceil(len(chunk) / jobs)
+        except ZeroDivisionError as e:
+            logger.error('Incorrect model input desc.(The model input desc is 0)')
+            raise e
         splits = list(list_split(chunk, splits_elements, None))
         for j, split in enumerate(splits):
             fileslist[j].extend(split)
@@ -467,9 +476,9 @@ def multidevice_run(input_args):
     input_args.subprocess_count = len(device_list)
     jobs = input_args.subprocess_count
     splits = seg_input_data_for_multi_process(input_args, input_args.input, jobs)
-    for i in range(len(device_list)):
+    for i, device in enumerate(device_list):
         cur_args = copy.deepcopy(input_args)
-        cur_args.device = int(device_list[i])
+        cur_args.device = int(device)
         cur_args.input = None if splits is None else list(splits)[i]
         p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
 
@@ -509,7 +518,7 @@ if __name__ == "__main__":
 
     if type(args.device) == list:
         # args has multiple device, run single process for each device
-        ret_status = multidevice_run(args)
-        exit(ret_status)
+        RET = multidevice_run(args)
+        exit(RET)
 
     main(args)
