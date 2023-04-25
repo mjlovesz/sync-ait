@@ -18,7 +18,7 @@ class TestClass:
     def teardown_class(cls):
         print('\n ---class level teardown_class')
 
-    def init(self):
+    def __init__(self):
         self.model_name = "resnet50"
 
     def get_input_tensor_name(self):
@@ -250,7 +250,6 @@ class TestClass:
 
     # 各种输入的aipp具体参数配置文件
     def get_actual_aipp_config(self):
-        # print(os.path.join(os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg.config"))
         return os.path.join(os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg.config")
     def get_aipp_config_param_overflowed(self):
         return os.path.join(os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_param_overflowed.config")

@@ -1427,18 +1427,13 @@ Result ModelProcess::GetAIPPIndexList(std::vector<size_t> &dataNeedDynamicAipp)
 
 Result ModelProcess::SetInputAIPP(size_t index, void* pAippDynamicSet)
 {
-    // TODO: set aipp config.need to clear memory?
     DEBUG_LOG("PREPARE aclmdlSetInputAIPP");
     aclError ret = aclmdlSetInputAIPP(modelId_, input_, index, (aclmdlAIPP *)pAippDynamicSet);
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetInputAIPP failed, index:%d ret %d", int(index), ret);
-        // aclmdlDestroyAIPP(pAippDynamicSet);
-        // aclrtFree(aippAddr);
-        // aclDestroyDataBuffer(aipp_data);
         return FAILED;
     }
-
     return SUCCESS;
 }
 
@@ -1582,6 +1577,8 @@ Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig
         }
 
         int cropIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "crop");
+        int defaultCropSizeW = 416;
+        int defaultCropSizeH = 416;
         if (cropIndex >= 0) {
             DEBUG_LOG("aclmdlSetAIPPCropParams params: aippDynamicSet: %p cropSwitch: %d loadStartPosW: %d loadStartPosH: \
             %d cropSizeW: %d cropSizeH: %d batchIndex: %d", aippDynamicSet, dyAippCfg->GetCropParams()[cropIndex].cropSwitch,
@@ -1591,7 +1588,7 @@ Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig
                 dyAippCfg->GetCropParams()[cropIndex].loadStartPosW, dyAippCfg->GetCropParams()[cropIndex].loadStartPosH,
                 dyAippCfg->GetCropParams()[cropIndex].cropSizeW, dyAippCfg->GetCropParams()[cropIndex].cropSizeH, batchIndex);
         } else {
-            ret = aclmdlSetAIPPCropParams(aippDynamicSet, 0, 0, 0, 416, 416, batchIndex);
+            ret = aclmdlSetAIPPCropParams(aippDynamicSet, 0, 0, 0, defaultCropSizeW, defaultCropSizeH, batchIndex);
         }
         if (ret != ACL_ERROR_NONE) {
             cout << aclGetRecentErrMsg() << endl;
