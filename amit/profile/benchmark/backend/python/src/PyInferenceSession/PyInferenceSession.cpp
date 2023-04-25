@@ -493,7 +493,7 @@ void RegistInferenceSession(py::module &m)
     m.def("model", &CreateModelInstance, "modelPath"_a, "deviceId"_a = 0, "options"_a=py::none());
 }
 
-void RegistAippConfig(auto& model)
+void RegistAippConfig(py::class_<Base::PyInferenceSession, std::shared_ptr<Base::PyInferenceSession>>& model)
 {
     using namespace pybind11::literals;
 
