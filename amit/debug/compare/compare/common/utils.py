@@ -46,6 +46,7 @@ MODEL_TYPE = ['.onnx', '.pb', '.om']
 DIM_PATTERN = r"^(-?[0-9]+)(,-?[0-9]+)*"
 DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+){0,3}"
 MAX_DEVICE_ID = 255
+MAX_SHAPE_VALUE_LEN = 256
 SEMICOLON = ";"
 COLON = ":"
 EQUAL = "="
@@ -190,7 +191,7 @@ def get_dump_data_path(dump_dir, is_net_output=False):
         print_error_log("The directory \"{}\" does not contain dump data".format(dump_dir))
         raise AccuracyCompareException(ACCURACY_COMPARISON_NO_DUMP_FILE_ERROR)
 
-    for dir_path, sub_paths, files in os.walk(dump_data_dir):
+    for dir_path, _, files in os.walk(dump_data_dir):
         if len(files) != 0:
             dump_data_path = dir_path
             file_is_exist = True
@@ -321,7 +322,7 @@ def parse_dymshape_range(dymshape_range):
                 start = int(content_split[0])
                 end = int(content_split[1])
                 step = int(content_split[2]) if len(content_split) == 3 else 1
-                ranges = [str(i) for i in range(start, end+1, step)]
+                ranges = [str(i) for i in range(start, end + 1, step)]
             elif "-" in content:
                 ranges = content.split("-")
             else:
@@ -355,6 +356,9 @@ def _check_content_split_length(content_split):
 
 
 def _check_shape_number(input_shape_value, pattern=DIM_PATTERN):
+    if len(input_shape_value) > MAX_SHAPE_VALUE_LEN:
+        print_error_log(get_shape_not_match_message(InputShapeError.VALUE_TYPE_NOT_MATCH, input_shape_value))
+        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
     dim_pattern = re.compile(pattern)
     match = dim_pattern.match(input_shape_value)
     if not match or match.group() is not input_shape_value:
