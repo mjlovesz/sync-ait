@@ -30,17 +30,17 @@ def set_session_options(session, args):
     if args.dymBatch != 0:
         session.set_dynamic_batchsize(args.dymBatch)
         aipp_batchsize = session.get_max_dym_batchsize()
-    elif args.dymHW !=None:
+    elif args.dymHW is not None:
         hwstr = args.dymHW.split(",")
         session.set_dynamic_hw((int)(hwstr[0]), (int)(hwstr[1]))
-    elif args.dymDims !=None:
+    elif args.dymDims is not None:
         session.set_dynamic_dims(args.dymDims)
-    elif args.dymShape !=None:
+    elif args.dymShape is not None:
         session.set_dynamic_shape(args.dymShape)
     else:
         session.set_staticbatch()
 
-    if args.batchsize == None:
+    if args.batchsize is None:
         args.batchsize = get_batchsize(session, args)
         logger.info("try get model batchsize:{}".format(args.batchsize))
     
@@ -48,15 +48,15 @@ def set_session_options(session, args):
         aipp_batchsize = args.batchsize
 
     # 确认模型只有一个动态 aipp input
-    if (args.aipp_config != None) and (session.get_dym_aipp_input_exsity()):
+    if (args.aipp_config is not None) and (session.get_dym_aipp_input_exsity()):
         session.load_aipp_config_file(args.aipp_config, aipp_batchsize)
         session.check_dym_aipp_input_exsity()
-    elif (args.aipp_config == None) and (session.get_dym_aipp_input_exsity()):
+    elif (args.aipp_config is None) and (session.get_dym_aipp_input_exsity()):
         logger.error("can't find aipp config file for model with dym aipp input , please check it!")
         raise RuntimeError('aipp model without aipp config!')
 
     # 设置custom out tensors size
-    if args.outputSize != None:
+    if args.outputSize is not None:
         customsizes = [int(n) for n in args.outputSize.split(',')]
         logger.debug("set customsize:{}".format(customsizes))
         session.set_custom_outsize(customsizes)
@@ -133,7 +133,7 @@ def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_pre
             intensors.append(tensor)
         outputs = run_inference(session, args, intensors)
         session.convert_tensors_to_host(outputs)
-        if output_prefix != None:
+        if output_prefix is not None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
 # files to loop iner
@@ -146,7 +146,7 @@ def infer_loop_files_run(session, args, intensors_desc, infileslist, output_pref
             intensors.append(tensor)
         outputs = run_inference(session, args, intensors)
         session.convert_tensors_to_host(outputs)
-        if output_prefix != None:
+        if output_prefix is not None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
 # First prepare the data, then execute the reference, and then write the file uniformly
@@ -161,7 +161,7 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_pre
 
     for i, outputs in enumerate(outtensors):
         session.convert_tensors_to_host(outputs)
-        if output_prefix != None:
+        if output_prefix is not None:
             save_tensors_to_file(outputs, output_prefix, infileslist[i], args.outfmt, i, args.output_batchsize_axis)
 
 # loop numpy array to infer
@@ -173,7 +173,7 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             innarrays.append(narray)
         outputs = run_inference(session, args, innarrays)
         session.convert_tensors_to_host(outputs)
-        if args.output != None:
+        if args.output is not None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
 def str2bool(v):
@@ -265,7 +265,7 @@ def get_args():
         raise RuntimeError('miss output parameter!')
 
     # 判断--aipp_config 文件是否是存在的.config文件
-    if (args.aipp_config != None):
+    if (args.aipp_config is not None):
         if (os.path.splitext(args.aipp_config)[-1] == ".config"):
             if (os.path.isfile(args.aipp_config) != True):
                 logger.error("can't find the path of config file, please check it!")
@@ -298,7 +298,7 @@ def msprof_run_profiling(args):
 
 def main(args, index=0, msgq=None, device_list=None):
     # if msgq is not None,as subproces run
-    if msgq != None:
+    if msgq is not None:
         logger.info("subprocess_{} main run".format(index))
 
     if args.debug == True:
@@ -307,8 +307,8 @@ def main(args, index=0, msgq=None, device_list=None):
     session = init_inference_session(args)
 
     intensors_desc = session.get_inputs()
-    if device_list != None and len(device_list) > 1:
-        if args.output != None:
+    if device_list is not None and len(device_list) > 1:
+        if args.output is not None:
             if args.output_dirname is None:
                 timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
                 output_prefix = os.path.join(args.output, timestr)
@@ -322,7 +322,7 @@ def main(args, index=0, msgq=None, device_list=None):
         else:
             output_prefix = None
     else:
-        if args.output != None:
+        if args.output is not None:
             if args.output_dirname is None:
                 timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
                 output_prefix = os.path.join(args.output, timestr)
@@ -345,7 +345,7 @@ def main(args, index=0, msgq=None, device_list=None):
 
     warmup(session, args, intensors_desc, infileslist[0])
 
-    if msgq != None:
+    if msgq is not None:
 		# wait subprocess init ready, if time eplapsed,force ready run
         logger.info("subprocess_{} qsize:{} now waiting".format(index, msgq.qsize()))
         msgq.put(index)
@@ -382,7 +382,7 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
 
-    if msgq != None:
+    if msgq is not None:
 		# put result to msgq
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
 
@@ -393,7 +393,7 @@ def print_subproces_run_error(value):
 
 def seg_input_data_for_multi_process(args, inputs, jobs):
     inputs_list = [] if inputs is None else inputs.split(',')
-    if inputs_list == None:
+    if inputs_list is None:
         return inputs_list
 
     fileslist = []
@@ -434,7 +434,7 @@ def multidevice_run(args):
     for i in range(len(device_list)):
         cur_args = copy.deepcopy(args)
         cur_args.device = int(device_list[i])
-        cur_args.input = None if splits == None else list(splits)[i]
+        cur_args.input = None if splits is None else list(splits)[i]
         p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
 
     p.close()
@@ -465,7 +465,7 @@ if __name__ == "__main__":
             msprof_run_profiling(args)
             exit(0)
 
-    if args.dymShape_range != None and args.dymShape is None:
+    if args.dymShape_range is not None and args.dymShape is None:
         # dymshape range run,according range to run each shape infer get best shape
         dymshape_range_run(args)
         exit(0)
