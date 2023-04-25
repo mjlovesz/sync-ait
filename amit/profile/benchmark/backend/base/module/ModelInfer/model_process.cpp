@@ -1679,9 +1679,9 @@ Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig
         if (ret != SUCCESS) {return FAILED;}
         SetAIPPPixelVarReci(dyAippCfg, aippDynamicSet, batchIndex);
         if (ret != SUCCESS) {return FAILED;}
-        Result SetAIPPCropParams(dyAippCfg, aippDynamicSet, batchIndex);
+        SetAIPPCropParams(dyAippCfg, aippDynamicSet, batchIndex);
         if (ret != SUCCESS) {return FAILED;}
-        Result SetAIPPPaddingParams(dyAippCfg, aippDynamicSet, batchIndex);
+        SetAIPPPaddingParams(dyAippCfg, aippDynamicSet, batchIndex);
     }
 
     pAIPPSet = aippDynamicSet;
