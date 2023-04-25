@@ -1,3 +1,19 @@
+"""
+Copyright(C) 2021. Huawei Technologies Co.,Ltd. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
 import os
 from configparser import ConfigParser
 import aclruntime
@@ -160,7 +176,7 @@ class TestClass:
                 range_ok = range_ok and (-32677 <= tmp_csc_params[i] <= 32676)
             for i in range (10, 15):
                 range_ok = range_ok and (0 <= tmp_csc_params[i] <= 255)
-            if (range_ok == False):
+            if (range_ok is False):
                 raise RuntimeError('wrong aipp config file content!')
         else:
             raise RuntimeError('wrong aipp config file content!')
@@ -196,7 +212,7 @@ class TestClass:
             range_ok = range_ok and (0 <= tmp_crop_params[2] <= 4095)
             range_ok = range_ok and (1 <= tmp_crop_params[3] <= 4096)
             range_ok = range_ok and (1 <= tmp_crop_params[4] <= 4096)
-            if (range_ok == False):
+            if (range_ok is False):
                 raise RuntimeError('wrong aipp config file content!')
         else:
             raise RuntimeError('wrong aipp config file content!')
@@ -230,7 +246,7 @@ class TestClass:
             range_ok = True
             for i in range (1, 5):
                 range_ok = range_ok and (0 <= tmp_padding_params[i] <= 32)
-            if (range_ok == False):
+            if (range_ok is False):
                 raise RuntimeError('wrong aipp config file content!')
         else:
             raise RuntimeError('wrong aipp config file content!')
@@ -255,7 +271,7 @@ class TestClass:
         range_ok = True
         for i in range (0, 4):
             range_ok = range_ok and (0 <= tmp_mean_params[i] <= 255)
-        if (range_ok == False):
+        if (range_ok is False):
             raise RuntimeError('wrong aipp config file content!')
 
         session.aipp_set_dtc_pixel_mean(tmp_mean_params)
@@ -278,7 +294,7 @@ class TestClass:
         range_ok = True
         for i in range (0, 4):
             range_ok = range_ok and (0 <= tmp_min_params[i] <= 255)
-        if (range_ok == False):
+        if (range_ok is False):
             raise RuntimeError('wrong aipp config file content!')
 
         session.aipp_set_dtc_pixel_min(tmp_min_params)
@@ -301,7 +317,7 @@ class TestClass:
         range_ok = True
         for i in range (0, 4):
             range_ok = range_ok and (-65504 <= tmp_reci_params[i] <= 65504)
-        if (range_ok == False):
+        if (range_ok is False):
             raise RuntimeError('wrong aipp config file content!')
 
         session.aipp_set_dtc_pixel_min(tmp_reci_params)

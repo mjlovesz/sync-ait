@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef DYNAMIC_AIPP_CONFIG_H
 #define DYNAMIC_AIPP_CONFIG_H
 #include <string>
