@@ -187,21 +187,36 @@ class InferSession:
         elif (tmp_csc_switch == 1):
             tmp_csc_params = list()
             tmp_csc_params.append(tmp_csc_switch)
-            tmp_csc_params.append(0 if option_list.count('matrix_r0c0') == 0 else cfg.getint('aipp_op', 'matrix_r0c0'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r0c1') == 0 else cfg.getint('aipp_op', 'matrix_r0c1'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r0c2') == 0 else cfg.getint('aipp_op', 'matrix_r0c2'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r1c0') == 0 else cfg.getint('aipp_op', 'matrix_r1c0'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r1c1') == 0 else cfg.getint('aipp_op', 'matrix_r1c1')) 
-            tmp_csc_params.append(0 if option_list.count('matrix_r1c2') == 0 else cfg.getint('aipp_op', 'matrix_r1c2'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r2c0') == 0 else cfg.getint('aipp_op', 'matrix_r2c0'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r2c1') == 0 else cfg.getint('aipp_op', 'matrix_r2c1'))
-            tmp_csc_params.append(0 if option_list.count('matrix_r2c2') == 0 else cfg.getint('aipp_op', 'matrix_r2c2'))
-            tmp_csc_params.append(0 if option_list.count('output_bias_0') == 0 else cfg.getint('aipp_op', 'output_bias_0'))
-            tmp_csc_params.append(0 if option_list.count('output_bias_1') == 0 else cfg.getint('aipp_op', 'output_bias_1'))
-            tmp_csc_params.append(0 if option_list.count('output_bias_2') == 0 else cfg.getint('aipp_op', 'output_bias_2'))
-            tmp_csc_params.append(0 if option_list.count('input_bias_0') == 0 else cfg.getint('aipp_op', 'input_bias_0'))
-            tmp_csc_params.append(0 if option_list.count('input_bias_1') == 0 else cfg.getint('aipp_op', 'input_bias_1'))
-            tmp_csc_params.append(0 if option_list.count('input_bias_2') == 0 else cfg.getint('aipp_op', 'input_bias_2'))
+            tmp_csc_params.append(0 if option_list.count('matrix_r0c0') == 0 \
+                else cfg.getint('aipp_op', 'matrix_r0c0'))
+            tmp_csc_params.append(0 if option_list.count('matrix_r0c1') == 0 \
+                else cfg.getint('aipp_op', 'matrix_r0c1'))
+            tmp_csc_params.append(0 if option_list.count('matrix_r0c2') == 0 \
+                else cfg.getint('aipp_op', 'matrix_r0c2'))
+            tmp_csc_params.append(0 if option_list.count('matrix_r1c0') == 0 \
+                else cfg.getint('aipp_op', 'matrix_r1c0'))
+            tmp_csc_params.append(0 if option_list.count('matrix_r1c1') == 0 \
+                else cfg.getint('aipp_op', 'matrix_r1c1')) 
+            tmp_csc_params.append(0 if option_list.count('matrix_r1c2') == 0 \
+                else cfg.getint('aipp_op', 'matrix_r1c2'))
+            tmp_csc_params.append(0 if option_list.count('matrix_r2c0') == 0 \
+                else cfg.getint('aipp_op', 'matrix_r2c0'))
+            tmp_csc_params.append(0 if option_list.count('matrix_r2c1') == 0 \
+                else cfg.getint('aipp_op', 'matrix_r2c1'))
+            tmp_csc_params.append(0 if option_list.count('matrix_r2c2') == 0 \
+                else cfg.getint('aipp_op', 'matrix_r2c2'))
+            tmp_csc_params.append(0 if option_list.count('output_bias_0') == 0 \
+                else cfg.getint('aipp_op', 'output_bias_0'))
+            tmp_csc_params.append(0 if option_list.count('output_bias_1') == 0 \
+                else cfg.getint('aipp_op', 'output_bias_1'))
+            tmp_csc_params.append(0 if option_list.count('output_bias_2') == 0 \
+                else cfg.getint('aipp_op', 'output_bias_2'))
+            tmp_csc_params.append(0 if option_list.count('input_bias_0') == 0 \
+                else cfg.getint('aipp_op', 'input_bias_0'))
+            tmp_csc_params.append(0 if option_list.count('input_bias_1') == 0 \
+                else cfg.getint('aipp_op', 'input_bias_1'))
+            tmp_csc_params.append(0 if option_list.count('input_bias_2') == 0 \
+                else cfg.getint('aipp_op', 'input_bias_2'))
             
             range_ok = True
             for i in range (1, 9):
@@ -228,10 +243,14 @@ class InferSession:
         elif (tmp_crop_switch == 1):
             tmp_crop_params = list()
             tmp_crop_params.append(tmp_crop_switch)
-            tmp_crop_params.append(0 if option_list.count('load_start_pos_w') == 0 else cfg.getint('aipp_op', 'load_start_pos_w'))
-            tmp_crop_params.append(0 if option_list.count('load_start_pos_h') == 0 else cfg.getint('aipp_op', 'load_start_pos_h'))
-            tmp_crop_params.append(0 if option_list.count('crop_size_w') == 0 else cfg.getint('aipp_op', 'crop_size_w'))
-            tmp_crop_params.append(0 if option_list.count('crop_size_h') == 0 else cfg.getint('aipp_op', 'crop_size_h'))
+            tmp_crop_params.append(0 if option_list.count('load_start_pos_w') == 0 \
+                else cfg.getint('aipp_op', 'load_start_pos_w'))
+            tmp_crop_params.append(0 if option_list.count('load_start_pos_h') == 0 \
+                else cfg.getint('aipp_op', 'load_start_pos_h'))
+            tmp_crop_params.append(0 if option_list.count('crop_size_w') == 0 \
+                else cfg.getint('aipp_op', 'crop_size_w'))
+            tmp_crop_params.append(0 if option_list.count('crop_size_h') == 0 \
+                else cfg.getint('aipp_op', 'crop_size_h'))
 
             range_ok = True
             range_ok = range_ok and (0 <= tmp_crop_params[1] <= 4095)
@@ -258,10 +277,14 @@ class InferSession:
         elif (tmp_padding_switch == 1):
             tmp_padding_params = list()
             tmp_padding_params.append(tmp_padding_switch)
-            tmp_padding_params.append(0 if option_list.count('padding_size_top') == 0 else cfg.getint('aipp_op', 'padding_size_top'))
-            tmp_padding_params.append(0 if option_list.count('padding_size_bottom') == 0 else cfg.getint('aipp_op', 'padding_size_bottom'))
-            tmp_padding_params.append(0 if option_list.count('padding_size_left') == 0 else cfg.getint('aipp_op', 'padding_size_left'))
-            tmp_padding_params.append(0 if option_list.count('padding_size_right') == 0 else cfg.getint('aipp_op', 'padding_size_right'))            
+            tmp_padding_params.append(0 if option_list.count('padding_size_top') == 0 \
+                else cfg.getint('aipp_op', 'padding_size_top'))
+            tmp_padding_params.append(0 if option_list.count('padding_size_bottom') == 0 \
+                else cfg.getint('aipp_op', 'padding_size_bottom'))
+            tmp_padding_params.append(0 if option_list.count('padding_size_left') == 0 \
+                else cfg.getint('aipp_op', 'padding_size_left'))
+            tmp_padding_params.append(0 if option_list.count('padding_size_right') == 0 \
+                else cfg.getint('aipp_op', 'padding_size_right'))            
 
             range_ok = True
             for i in range (1, 5):
@@ -277,10 +300,14 @@ class InferSession:
                         
     def aipp_set_dtc_pixel_mean(self, cfg, option_list):
         tmp_mean_params = list()
-        tmp_mean_params.append(0 if option_list.count('mean_chn_0') == 0 else cfg.getint('aipp_op', 'mean_chn_0'))
-        tmp_mean_params.append(0 if option_list.count('mean_chn_1') == 0 else cfg.getint('aipp_op', 'mean_chn_1'))
-        tmp_mean_params.append(0 if option_list.count('mean_chn_2') == 0 else cfg.getint('aipp_op', 'mean_chn_2'))
-        tmp_mean_params.append(0 if option_list.count('mean_chn_3') == 0 else cfg.getint('aipp_op', 'mean_chn_3'))
+        tmp_mean_params.append(0 if option_list.count('mean_chn_0') == 0 \
+            else cfg.getint('aipp_op', 'mean_chn_0'))
+        tmp_mean_params.append(0 if option_list.count('mean_chn_1') == 0 \
+            else cfg.getint('aipp_op', 'mean_chn_1'))
+        tmp_mean_params.append(0 if option_list.count('mean_chn_2') == 0 \
+            else cfg.getint('aipp_op', 'mean_chn_2'))
+        tmp_mean_params.append(0 if option_list.count('mean_chn_3') == 0 \
+            else cfg.getint('aipp_op', 'mean_chn_3'))
         
         range_ok = True
         for i in range (0, 4):
@@ -293,10 +320,14 @@ class InferSession:
 
     def aipp_set_dtc_pixel_min(self, cfg, option_list):
         tmp_min_params = list()
-        tmp_min_params.append(0 if option_list.count('min_chn_0') == 0 else cfg.getfloat('aipp_op', 'min_chn_0'))
-        tmp_min_params.append(0 if option_list.count('min_chn_1') == 0 else cfg.getfloat('aipp_op', 'min_chn_1'))
-        tmp_min_params.append(0 if option_list.count('min_chn_2') == 0 else cfg.getfloat('aipp_op', 'min_chn_2'))
-        tmp_min_params.append(0 if option_list.count('min_chn_3') == 0 else cfg.getfloat('aipp_op', 'min_chn_3'))
+        tmp_min_params.append(0 if option_list.count('min_chn_0') == 0 \
+            else cfg.getfloat('aipp_op', 'min_chn_0'))
+        tmp_min_params.append(0 if option_list.count('min_chn_1') == 0 \
+            else cfg.getfloat('aipp_op', 'min_chn_1'))
+        tmp_min_params.append(0 if option_list.count('min_chn_2') == 0 \
+            else cfg.getfloat('aipp_op', 'min_chn_2'))
+        tmp_min_params.append(0 if option_list.count('min_chn_3') == 0 \
+            else cfg.getfloat('aipp_op', 'min_chn_3'))
         
         range_ok = True
         for i in range (0, 4):
@@ -309,10 +340,14 @@ class InferSession:
         
     def aipp_set_pixel_var_reci(self, cfg, option_list):
         tmp_reci_params = list()
-        tmp_reci_params.append(0 if option_list.count('var_reci_chn_0') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_0'))
-        tmp_reci_params.append(0 if option_list.count('var_reci_chn_1') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_1'))
-        tmp_reci_params.append(0 if option_list.count('var_reci_chn_2') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_2'))
-        tmp_reci_params.append(0 if option_list.count('var_reci_chn_3') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_3'))
+        tmp_reci_params.append(0 if option_list.count('var_reci_chn_0') == 0 \
+            else cfg.getfloat('aipp_op', 'var_reci_chn_0'))
+        tmp_reci_params.append(0 if option_list.count('var_reci_chn_1') == 0 \
+            else cfg.getfloat('aipp_op', 'var_reci_chn_1'))
+        tmp_reci_params.append(0 if option_list.count('var_reci_chn_2') == 0 \
+            else cfg.getfloat('aipp_op', 'var_reci_chn_2'))
+        tmp_reci_params.append(0 if option_list.count('var_reci_chn_3') == 0 \
+            else cfg.getfloat('aipp_op', 'var_reci_chn_3'))
         
         range_ok = True
         for i in range (0, 4):
