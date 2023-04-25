@@ -41,11 +41,11 @@ class TestClass:
         self.model_name = "resnet50"
 
     @classmethod
-    def get_input_tensor_name(self):
+    def get_input_tensor_name(cls):
         return "actual_input_1"
 
     @classmethod
-    def load_aipp_config_file(self, session, config_file, batchsize):
+    def load_aipp_config_file(cls, session, config_file, batchsize):
         cfg = ConfigParser()
         cfg.read(config_file, 'UTF-8')
         session_list = cfg.sections()
@@ -54,29 +54,29 @@ class TestClass:
             raise RuntimeError('wrong aipp config file content!')
         option_list = cfg.options('aipp_op')
         if (option_list.count('input_format') == 1):
-            self.aipp_set_input_format(cfg, session)
+            cls.aipp_set_input_format(cfg, session)
         else:
             raise RuntimeError('wrong aipp config file content!')
 
         if (option_list.count('src_image_size_w') == 1 and option_list.count('src_image_size_h') == 1):
-            self.aipp_set_src_image_size(cfg, session)
+            cls.aipp_set_src_image_size(cfg, session)
         else:
             raise RuntimeError('wrong aipp config file content!')
         session.aipp_set_max_batch_size(batchsize)
-        self.aipp_set_rbuv_swap_switch(cfg, session, option_list)
-        self.aipp_set_ax_swap_switch(cfg, session, option_list)
-        self.aipp_set_csc_params(cfg, session, option_list)
-        self.aipp_set_crop_params(cfg, session, option_list)
-        self.aipp_set_padding_params(cfg, session, option_list)
-        self.aipp_set_dtc_pixel_mean(cfg, session, option_list)
-        self.aipp_set_dtc_pixel_min(cfg, session, option_list)
-        self.aipp_set_pixel_var_reci(cfg, session, option_list)
+        cls.aipp_set_rbuv_swap_switch(cfg, session, option_list)
+        cls.aipp_set_ax_swap_switch(cfg, session, option_list)
+        cls.aipp_set_csc_params(cfg, session, option_list)
+        cls.aipp_set_crop_params(cfg, session, option_list)
+        cls.aipp_set_padding_params(cfg, session, option_list)
+        cls.aipp_set_dtc_pixel_mean(cfg, session, option_list)
+        cls.aipp_set_dtc_pixel_min(cfg, session, option_list)
+        cls.aipp_set_pixel_var_reci(cfg, session, option_list)
 
         ret = session.set_dym_aipp_info_set()
         return ret
 
     @classmethod
-    def aipp_set_input_format(self, cfg, session):
+    def aipp_set_input_format(cls, cfg, session):
         input_format = cfg.get('aipp_op', 'input_format')
         legal_format = ["YUV420SP_U8", "XRGB8888_U8", "RGB888_U8", "YUV400_U8"]
         if (legal_format.count(input_format) == 1):
@@ -85,7 +85,7 @@ class TestClass:
             raise RuntimeError('wrong aipp config file content!')
 
     @classmethod
-    def aipp_set_src_image_size(self, cfg, session):
+    def aipp_set_src_image_size(cls, cfg, session):
         src_image_size = list()
         tmp_size_w = cfg.getint('aipp_op', 'src_image_size_w')
         tmp_size_h = cfg.getint('aipp_op', 'src_image_size_h')
@@ -101,7 +101,7 @@ class TestClass:
         session.aipp_set_src_image_size(src_image_size)
 
     @classmethod
-    def aipp_set_rbuv_swap_switch(self, cfg, session, option_list):
+    def aipp_set_rbuv_swap_switch(cls, cfg, session, option_list):
         if (option_list.count('rbuv_swap_switch') == 0):
             session.aipp_set_rbuv_swap_switch(0)
             return
@@ -112,7 +112,7 @@ class TestClass:
             raise RuntimeError('wrong aipp config file content!')
 
     @classmethod
-    def aipp_set_ax_swap_switch(self, cfg, session, option_list):
+    def aipp_set_ax_swap_switch(cls, cfg, session, option_list):
         if (option_list.count('ax_swap_switch') == 0):
             session.aipp_set_ax_swap_switch(0)
             return
@@ -123,7 +123,7 @@ class TestClass:
             raise RuntimeError('wrong aipp config file content!')
 
     @classmethod
-    def aipp_set_csc_params(self, cfg, session, option_list):
+    def aipp_set_csc_params(cls, cfg, session, option_list):
         if (option_list.count('csc_switch') == 0):
             tmp_csc_switch = 0
         else:
@@ -193,7 +193,7 @@ class TestClass:
         session.aipp_set_csc_params(tmp_csc_params)
 
     @classmethod
-    def aipp_set_crop_params(self, cfg, session, option_list):
+    def aipp_set_crop_params(cls, cfg, session, option_list):
         if (option_list.count('crop') == 0):
             tmp_crop_switch = 0
         else:
@@ -230,7 +230,7 @@ class TestClass:
         session.aipp_set_crop_params(tmp_crop_params)
 
     @classmethod
-    def aipp_set_padding_params(self, cfg, session, option_list):
+    def aipp_set_padding_params(cls, cfg, session, option_list):
         if (option_list.count('padding') == 0):
             tmp_padding_switch = 0
         else:
@@ -265,7 +265,7 @@ class TestClass:
         session.aipp_set_padding_params(tmp_padding_params)
 
     @classmethod
-    def aipp_set_dtc_pixel_mean(self, cfg, session, option_list):
+    def aipp_set_dtc_pixel_mean(cls, cfg, session, option_list):
         tmp_mean_params = list()
         tmp_mean_params.append(
             0 if option_list.count('mean_chn_0') == 0 else cfg.getint('aipp_op', 'mean_chn_0')
@@ -289,7 +289,7 @@ class TestClass:
         session.aipp_set_dtc_pixel_mean(tmp_mean_params)
 
     @classmethod
-    def aipp_set_dtc_pixel_min(self, cfg, session, option_list):
+    def aipp_set_dtc_pixel_min(cls, cfg, session, option_list):
         tmp_min_params = list()
         tmp_min_params.append(
             0 if option_list.count('min_chn_0') == 0 else cfg.getfloat('aipp_op', 'min_chn_0')
@@ -313,7 +313,7 @@ class TestClass:
         session.aipp_set_dtc_pixel_min(tmp_min_params)
 
     @classmethod
-    def aipp_set_pixel_var_reci(self, cfg, session, option_list):
+    def aipp_set_pixel_var_reci(cls, cfg, session, option_list):
         tmp_reci_params = list()
         tmp_reci_params.append(
             0 if option_list.count('var_reci_chn_0') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_0')
@@ -338,60 +338,60 @@ class TestClass:
 
     # 各种模型
     @classmethod
-    def get_without_dymaipp_om_path(self):
+    def get_without_dymaipp_om_path(cls):
         return os.path.join(
-            TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_bs4.om"
+            TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_bs4.om"
         )
 
     @classmethod
-    def get_dymaipp_staticshape_om_path(self):
+    def get_dymaipp_staticshape_om_path(cls):
         return os.path.join(
-            TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_bs4_dymaipp_stcbatch.om"
+            TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_bs4_dymaipp_stcbatch.om"
         )
 
     @classmethod
-    def get_dymaipp_dymbatch_om_path(self):
+    def get_dymaipp_dymbatch_om_path(cls):
         return os.path.join(
-            TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_dymaipp_dymbatch.om"
+            TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_dymaipp_dymbatch.om"
         )
 
     @classmethod
-    def get_dymaipp_dymwh_om_path(self):
+    def get_dymaipp_dymwh_om_path(cls):
         return os.path.join(
-            TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_dymaipp_dymwh.om"
+            TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_dymaipp_dymwh.om"
         )
 
     @classmethod
-    def get_multi_dymaipp_om_path(self):
-        return os.path.join(TestCommonClass.base_path, self.model_name, "model", "multi_dym_aipp_model.om")
+    def get_multi_dymaipp_om_path(cls):
+        return os.path.join(TestCommonClass.base_path, cls.model_name, "model", "multi_dym_aipp_model.om")
 
     # 各种输入的aipp具体参数配置文件
     @classmethod
-    def get_actual_aipp_config(self):
+    def get_actual_aipp_config(cls):
         return os.path.join(
             os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg.config"
         )
 
     @classmethod
-    def get_aipp_config_param_overflowed(self):
+    def get_aipp_config_param_overflowed(cls):
         return os.path.join(
             os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_param_overflowed.config"
         )
 
     @classmethod
-    def get_aipp_config_lack_param(self):
+    def get_aipp_config_lack_param(cls):
         return os.path.join(
             os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_lack_param.config"
         )
 
     @classmethod
-    def get_aipp_config_multi_input(self):
+    def get_aipp_config_multi_input(cls):
         return os.path.join(
             os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_multi_input.config"
         )
 
     @classmethod
-    def get_aipp_config_lack_title(self):
+    def get_aipp_config_lack_title(cls):
         return os.path.join(
             os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_lack_title.config"
         )
