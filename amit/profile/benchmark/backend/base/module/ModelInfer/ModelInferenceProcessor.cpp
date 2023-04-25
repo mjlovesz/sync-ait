@@ -378,6 +378,12 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
         return ret;
     }
 
+    DEBUG_LOG("SetInputData successfully");
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::SetAippConfigData()
+{
     if (dyAippCfg->IsActivated() && dyAippCfg->ModelIsLegal()) {
         // 读取合法的config文件，且模型有一个动态aipp输入才进行aipp参数的具体设置
         DEBUG_LOG("SetInputAIPP start");
@@ -397,8 +403,6 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
         FreeDymAIPPMem();
         return APP_ERR_ACL_FAILURE;
     }
-    DEBUG_LOG("SetInputData successfully");
-
     return APP_ERR_OK;
 }
 
@@ -426,6 +430,11 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
     APP_ERROR ret = SetInputsData(inputs);
     if (ret != APP_ERR_OK){
         ERROR_LOG("Set InputsData failed ret:%d", ret);
+        return ret;
+    }
+    ret = SetAippConfigData();
+    if (ret != APP_ERR_OK){
+        ERROR_LOG("Set AippConfigData failed ret:%d", ret);
         return ret;
     }
     if (options_->loop > 1){
