@@ -475,11 +475,14 @@ def multidevice_run(input_args):
 
     input_args.subprocess_count = len(device_list)
     jobs = input_args.subprocess_count
-    splits = seg_input_data_for_multi_process(input_args, input_args.input, jobs)
-    for i, device in enumerate(device_list):
+    splits = None
+    if (input_args.input != None):
+        splits = seg_input_data_for_multi_process(input_args, input_args.input, jobs)
+        
+    for i, device in enumerate(device_list)):
         cur_args = copy.deepcopy(input_args)
         cur_args.device = int(device)
-        cur_args.input = None if splits is None else list(splits)[i]
+        cur_args.input = None if splits == None else list(splits)[i]
         p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
 
     p.close()
