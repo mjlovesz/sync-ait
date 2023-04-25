@@ -900,7 +900,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                     }
                 }
                 break;
-            case 1:{
+            case 1:
                 aclFloat16 * out_fp16 = reinterpret_cast<aclFloat16*>(outData);
                 float out = 0;
                 for (size_t i = 1; i <= len / sizeof(aclFloat16); i++) {
@@ -915,7 +915,6 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                     }
                 }
                 break;
-            }
             case 2:
                 for (size_t i = 1; i <= len / sizeof(int8_t); i++) {
                     int8_t out = *((int8_t*)outData + i - 1);
@@ -1412,9 +1411,9 @@ Result ModelProcess::CheckDymAIPPInputExsity()
 
 Result ModelProcess::GetAIPPIndexList(std::vector<size_t> &dataNeedDynamicAipp)
 {
-     //3.1 获取标识动态AIPP输入的index
+    // 获取标识动态AIPP输入的index
     size_t index;
-    //modelDesc_为aclmdlCreateDesc表示模型描述信息，根据1中加载成功的模型的ID，获取该模型的描述信息
+    // modelDesc_为aclmdlCreateDesc表示模型描述信息，根据1中加载成功的模型的ID，获取该模型的描述信息
     aclError ret = aclmdlGetInputIndexByName(modelDesc_, ACL_DYNAMIC_AIPP_NAME, &index);
     if (ret != ACL_ERROR_NONE) {
         ERROR_LOG("aclmdlGetInputIndexByName failed, maybe static batch size, ret %d", ret);
@@ -1503,7 +1502,7 @@ Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig
         return FAILED;
     }
 
-    for (size_t batchIndex = 0; batchIndex < maxBatchSize; batchIndex++) { //遍历设置需要以batchIndex为单位的配置
+    for (size_t batchIndex = 0; batchIndex < maxBatchSize; batchIndex++) { // 遍历设置需要以batchIndex为单位的配置
         int dtcPixelMeanIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "dtcPixelMean");
         if (dtcPixelMeanIndex >= 0) {
             DEBUG_LOG("aclmdlSetAIPPDtcPixelMean params: aippDynamicSet: %p dtcPixelMeanChn0: %d dtcPixelMeanChn1: %d\

@@ -379,7 +379,7 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
     }
 
     if (dyAippCfg->IsActivated() && dyAippCfg->ModelIsLegal()) {
-        //读取合法的config文件，且模型有一个动态aipp输入才进行aipp参数的具体设置
+        // 读取合法的config文件，且模型有一个动态aipp输入才进行aipp参数的具体设置
         DEBUG_LOG("SetInputAIPP start");
         for (auto& aippSetIt : dymAIPPIndexSet_) {
             Result result = processModel->SetInputAIPP(aippSetIt.first, aippSetIt.second);
@@ -392,7 +392,7 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
         }
         DEBUG_LOG("SetInputAIPP successfully");
     } else if ((!dyAippCfg->IsActivated()) && dyAippCfg->ModelIsLegal()) {
-        //模型有一个动态aipp输入，但是没有读取到合法的配置文件
+        // 模型有一个动态aipp输入，但是没有读取到合法的配置文件
         ERROR_LOG("model with dynamic aipp input can't find config file.");
         FreeDymAIPPMem();
         return APP_ERR_ACL_FAILURE;
@@ -515,7 +515,7 @@ APP_ERROR ModelInferenceProcessor::AllocDymAIPPIndexMem()
 APP_ERROR ModelInferenceProcessor::FreeDymAIPPMem()
 {
      for (auto& aippSetIt : dymAIPPIndexSet_) {
-        if (aippSetIt.second != nullptr){
+        if (aippSetIt.second != nullptr) {
             free(aippSetIt.second);
             aippSetIt.second = nullptr;
         }
@@ -525,7 +525,7 @@ APP_ERROR ModelInferenceProcessor::FreeDymAIPPMem()
 
 APP_ERROR ModelInferenceProcessor::AllocDyIndexMem()
 {
-    if (dynamicIndex_ == (size_t)-1 || dynamicIndexMemory_.ptrData != nullptr){
+    if (dynamicIndex_ == (size_t)-1 || dynamicIndexMemory_.ptrData != nullptr) {
         return APP_ERR_OK;
     }
 
@@ -821,13 +821,13 @@ APP_ERROR ModelInferenceProcessor::SetCustomOutTensorsSize(std::vector<size_t> c
 
 APP_ERROR ModelInferenceProcessor::SetDymAIPPInfoSet()
 {
-    dyAippCfg->ActivateConfig(); //config文件确定合法
+    dyAippCfg->ActivateConfig(); // config文件确定合法
     uint64_t MaxBS = dyAippCfg->GetMaxBatchSize();
     DEBUG_LOG("lcm debug now set aipp index list size:%d\n", int(dymAIPPIndexList_.size()));
     for (const auto& index : dymAIPPIndexList_) {
         Result ret = processModel->GetDymAIPPConfigSet(dyAippCfg, dymAIPPIndexSet_[index], MaxBS);
         DEBUG_LOG("lcm debug get aipp config set index:%d\n", int(index));
-        if (ret != SUCCESS){
+        if (ret != SUCCESS) {
             ERROR_LOG("ModelProcess::SetDynamicAippConfig failed.index: %d ret %d", int(index), ret);
             return APP_ERR_FAILURE;
         }
