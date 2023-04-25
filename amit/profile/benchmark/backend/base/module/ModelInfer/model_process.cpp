@@ -1465,7 +1465,7 @@ Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig
         ERROR_LOG("aclmdlSetAIPPInputFormat failed, ret %d", ret);
         return FAILED;
     }
-    // 待调试
+
     DEBUG_LOG("aclmdlSetAIPPCscParams, params: aippParmsSet: %p csc_switch: %d cscMatrixR0C0: %d cscMatrixR0C1: %d cscMatrixR0C2: %d\
         cscMatrixR1C0: %d cscMatrixR1C1: %d cscMatrixR1C2: %d cscMatrixR2C0: %d cscMatrixR2C1: %d cscMatrixR2C2: %d cscOutputBias0: %d\
         cscOutputBias1: %d cscOutputBias2: %d cscInputBias0: %d cscInputBias1: %d cscInputBias2: %d", aippDynamicSet, \
@@ -1580,8 +1580,8 @@ Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig
         int defaultCropSizeW = 416;
         int defaultCropSizeH = 416;
         if (cropIndex >= 0) {
-            DEBUG_LOG("aclmdlSetAIPPCropParams params: aippDynamicSet: %p cropSwitch: %d loadStartPosW: %d loadStartPosH: \
-            %d cropSizeW: %d cropSizeH: %d batchIndex: %d", aippDynamicSet, dyAippCfg->GetCropParams()[cropIndex].cropSwitch,
+            DEBUG_LOG("aclmdlSetAIPPCropParams params: aippDynamicSet: %p cropSwitch: %d loadStartPosW: %d loadStartPosH: %d \
+                cropSizeW: %d cropSizeH: %d batchIndex: %d", aippDynamicSet, dyAippCfg->GetCropParams()[cropIndex].cropSwitch,
                 dyAippCfg->GetCropParams()[cropIndex].loadStartPosW, dyAippCfg->GetCropParams()[cropIndex].loadStartPosH,
                 dyAippCfg->GetCropParams()[cropIndex].cropSizeW, dyAippCfg->GetCropParams()[cropIndex].cropSizeH, int(batchIndex));
             ret = aclmdlSetAIPPCropParams(aippDynamicSet, dyAippCfg->GetCropParams()[cropIndex].cropSwitch,
@@ -1599,7 +1599,7 @@ Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig
         int padIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "pad");
         if (padIndex >= 0) {
             DEBUG_LOG("aclmdlSetAIPPPaddingParams params: aippDynamicSet: %p paddingSwitch: %d paddingSizeTop: %d paddingSizeBottom: %d \
-            paddingSizeLeft: %d paddingSizeRight: %d batchIndex: %d", aippDynamicSet, dyAippCfg->GetPaddingParams()[padIndex].paddingSwitch,
+                paddingSizeLeft: %d paddingSizeRight: %d batchIndex: %d", aippDynamicSet, dyAippCfg->GetPaddingParams()[padIndex].paddingSwitch,
                 dyAippCfg->GetPaddingParams()[padIndex].paddingSizeTop, dyAippCfg->GetPaddingParams()[padIndex].paddingSizeBottom,
                 dyAippCfg->GetPaddingParams()[padIndex].paddingSizeLeft, dyAippCfg->GetPaddingParams()[padIndex].paddingSizeRight,
                 int(batchIndex));
