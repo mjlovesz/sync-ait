@@ -11,16 +11,19 @@ modifier.Modifier = class {
         this.namedEdges = new Map();
 
         this.addedOutputs = new Set();
+        this.addedInputs = new Set();
         this.addedNode = new Map();
         this.addNodeKey = 0;
         this.changedAttributes = new Map();
         this.initializerEditInfo = new Map();
         this.renameMap = new Map();
         this.reBatchInfo = new Map();
+        this.inputSizeInfo = new Map();
 
         this.downloadWithShapeInf = false;
         this.downloadWithCleanUp = false;
 
+        this.modelProperties = new Map();
     }
 
     loadModelGraph(model, graphs) {
@@ -30,6 +33,7 @@ modifier.Modifier = class {
         // this.analyzeModelGraph();
 
         this.updateAddNodeDropDown();
+        this.resetGraph()
     }
 
     // TODO: add filter feature like here: https://www.w3schools.com/howto/howto_js_dropdown.asp
@@ -64,10 +68,34 @@ modifier.Modifier = class {
         this.addedOutputs.add(modelNode.outputs[0].arguments[0].name);
         this.applyAndUpdateView();
     }
+    addModelInput(node_name, input_name) {
+        var modelNode = this.name2ModelNode.get(node_name);
+        // use a input argument as a proxy
+        // this.addedInputs.add(modelNode.inputs[0].arguments[0].name);
+        this.addedInputs.add(input_name)
+        this.applyAndUpdateView();
+    }
 
     deleteModelOutput(output_name) {
         this.name2NodeStates.set(output_name, 'Deleted');  // "out_" + xxx
         this.applyAndUpdateView();
+    }
+
+    deleteModelInput(input_name) {
+        this.name2NodeStates.set(input_name, 'Deleted');  // "out_" + xxx
+        this.applyAndUpdateView();
+    }
+
+    changeModelProperties(prop_name, prop_value, index) {
+        if (index !== undefined) {
+            if (!this.modelProperties.has(prop_name)) {
+                this.modelProperties.set(prop_name, [])
+            }
+            this.modelProperties.get(prop_name)[index] = prop_value
+        } else {
+            this.modelProperties.set(prop_name, prop_value)
+        }
+
     }
 
     deleteSingleNode(node_name) {
@@ -231,6 +259,10 @@ modifier.Modifier = class {
         }
     }
 
+    changeInputSize(input_name, value) {
+        this.inputSizeInfo.set(input_name, value)
+    }
+
     onOffShapeInf(turnedOn) {
         if (turnedOn)  this.downloadWithShapeInf = true;
         else this.downloadWithShapeInf = false;
@@ -286,6 +318,12 @@ modifier.Modifier = class {
         for (var output_name of this.addedOutputs) {
             this.graph.add_output(output_name);
         }
+        for (var input_name of this.addedInputs) {
+            this.graph.add_input(input_name, this.inputSizeInfo.get(input_name));
+        }
+        for (let [name, size_info] of this.inputSizeInfo) {
+            this.graph.modify_input_shape(name, size_info);
+        }
         // console.log(this.graph.outputs)
         for (var output of this.graph.outputs) {
             var output_orig_name = output.arguments[0].original_name;
@@ -326,6 +364,13 @@ modifier.Modifier = class {
             var output_orig_name = output.arguments[0].original_name;
             if (this.name2NodeStates.get('out_' + output_orig_name) == "Deleted") {
                 this.graph.delete_output(output_orig_name);
+            }
+        }
+        
+        for (var input_info of this.graph.inputs) {
+            var input_orig_name = input_info.arguments[0].original_name;
+            if (this.name2NodeStates.get(input_orig_name) == "Deleted") {
+                this.graph.delete_input(input_orig_name);
             }
         }
     }
@@ -450,12 +495,14 @@ modifier.Modifier = class {
         this.renameMap = new Map();
         this.changedAttributes = new Map();
         this.reBatchInfo = new Map();
+        this.inputSizeInfo = new Map();
         this.initializerEditInfo = new Map();
 
         // clear custom added nodes
         this.addedNode = new Map();
         this.graph.reset_custom_added_node();
-        this.addedOutputs = [];
+        this.addedOutputs = new Set();
+        this.addedInputs = new Set();
         this.graph.reset_custom_modified_outputs();
 
         // reset load location

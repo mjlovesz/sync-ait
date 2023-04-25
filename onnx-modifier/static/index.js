@@ -29,6 +29,8 @@ host.BrowserHost = class {
         this._environment = new Map();
         this._environment.set('zoom', 'scroll');
         // this._environment.set('zoom', 'drag');
+        this._ori_model_file = null
+        this._activate_model_file = null
     }
 
     get window() {
@@ -210,7 +212,11 @@ host.BrowserHost = class {
         resetButton.addEventListener('click', () => {
             // this._view._graph.resetGraph();
             // this._view._updateGraph();
-            this._view.modifier.resetGraph();
+            if (this._ori_model_file !== this._activate_model_file && this._ori_model_file != null) {
+                this.openFile(this._ori_model_file)
+            } else {
+                this._view.modifier.resetGraph();
+            }
         })
 
         const downloadWithShapeInfCheckBox = this.document.getElementById('shapeInference');
@@ -237,18 +243,7 @@ host.BrowserHost = class {
                 },
                 // Specify the method
                 method: 'POST',
-                body: JSON.stringify({
-                    'node_states' : this.mapToObjectRec(this._view.modifier.name2NodeStates),
-                    'node_renamed_io' : this.mapToObjectRec(this._view.modifier.renameMap),
-                    'node_changed_attr' : this.mapToObjectRec(this._view.modifier.changedAttributes),
-                    'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode, 
-                        this._view.modifier.initializerEditInfo)),
-                    'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs, 
-                        this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
-                    'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
-                    'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
-                    'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp}
-                })
+                body: this.build_download_data(),
             }).then(function (response) {
                 return response.text();
             }).then(function (text) {
@@ -264,6 +259,71 @@ host.BrowserHost = class {
                     swal("Error happens!", "You are kindly to check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
                     // alert('Error happens, you can find it out or create an issue on https://github.com/ZhangGe6/onnx-modifier')
                 }
+            });
+        });
+        
+        const onnxSimButton = this.document.getElementById('onnxsim-graph');
+        onnxSimButton.addEventListener('click', () => {
+
+            // console.log(this._view._graph._addedNode)
+            // console.log(this._view._graph._renameMap)
+            // // https://healeycodes.com/talking-between-languages
+            fetch('/onnxsmi', {
+                // Declare what type of data we're sending
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                // Specify the method
+                method: 'POST',
+                body: this.build_download_data(),
+            }).then(function (response) {
+                if (response.ok) {
+                    return response.blob();
+                } else if (response.status == 599){
+                    swal("Error happens!", "请确认是否安装 onnxsmi", "error");
+                } else {
+                    swal("Error happens!", "You are kindly to check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
+                }
+            }).then((blob) => {
+                if (!blob) {
+                    return 
+                }
+
+                let file = new File([blob], this.upload_filename);
+                this.openFile(file)
+
+            });
+        });
+        
+        const onnxOptimizer = this.document.getElementById('auto-optimizer-graph');
+        onnxOptimizer.addEventListener('click', () => {
+
+            // console.log(this._view._graph._addedNode)
+            // console.log(this._view._graph._renameMap)
+            // // https://healeycodes.com/talking-between-languages
+            fetch('/auto-optimizer', {
+                // Declare what type of data we're sending
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                // Specify the method
+                method: 'POST',
+                body: this.build_download_data(),
+            }).then(function (response) {
+                if (response.status == 204){
+                    swal("Nothing happens!", "auto-optimizer 没有匹配到的知识库", "info");
+                } else if (response.ok) {
+                    return response.blob();
+                } else {
+                    swal("Error happens!", "You are kindly to check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
+                }
+            }).then((blob) => {
+                if (!blob) {
+                    return 
+                }
+
+                let file = new File([blob], this.upload_filename);
+                this.openFile(file)
             });
         });
 
@@ -322,6 +382,7 @@ host.BrowserHost = class {
                     this.upload_filename = file.name;
                     var form = new FormData();
                     form.append('file', file);
+                    this._ori_model_file = file
 
                     // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
                     fetch('/open_model', {
@@ -364,6 +425,7 @@ host.BrowserHost = class {
                 this.upload_filename = file.name;
                 var form = new FormData();
                 form.append('file', file);
+                this._ori_model_file = file
 
                 // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
                 fetch('/open_model', {
@@ -415,6 +477,48 @@ host.BrowserHost = class {
         // } 
         // ============ to make webgui applications, the above code block shoud be added. ============ //
 
+    }
+
+    openFile(file) {
+        let files = [file]
+                
+        let form = new FormData();
+        form.append('file', file);
+
+        // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
+        fetch('/open_model', {
+            method: 'POST',
+            body: form
+        }).then(function (response) {
+            return response.text();
+        }).then(function (text) {
+            console.log('POST response: ');
+            // Should be 'OK' if everything was successful
+            console.log(text);
+        });
+        if (file) {
+            this._open(file, files);
+        }
+        this._activate_model_file = file
+    }
+
+    build_download_data() {
+        return JSON.stringify({
+            'node_states' : this.mapToObjectRec(this._view.modifier.name2NodeStates),
+            'node_renamed_io' : this.mapToObjectRec(this._view.modifier.renameMap),
+            'node_changed_attr' : this.mapToObjectRec(this._view.modifier.changedAttributes),
+            'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode, 
+                this._view.modifier.initializerEditInfo)),
+            'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs, 
+                this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+            'added_inputs' : this.arrayToObject(this.process_added_inputs(this._view.modifier.addedInputs, 
+                    this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+            'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
+            'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
+            'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp},
+            "model_properties" : this.mapToObjectRec(this._view.modifier.modelProperties),
+            'input_size_info' : this.mapToObjectRec(this._view.modifier.inputSizeInfo),
+        })
     }
 
     environment(name) {
@@ -721,6 +825,21 @@ host.BrowserHost = class {
         for (let i = 0; i < processed.length; ++i) {
             if (renameMap.get("out_" + processed[i])) {
                 processed[i] = renameMap.get("out_" + processed[i]).get(processed[i]);
+            }
+        }
+        return processed;
+    }
+
+    process_added_inputs(addedInputs, renameMap, modelNodeName2State) {
+        var processed = []
+        for (var in_info of addedInputs) {
+            if (modelNodeName2State.get(in_info) == "Exist") {
+                processed.push(in_info);
+            }
+        }
+        for (let i = 0; i < processed.length; ++i) {
+            if (renameMap.get(processed[i])) {
+                processed[i] = renameMap.get(processed[i]).get(processed[i]);
             }
         }
         return processed;

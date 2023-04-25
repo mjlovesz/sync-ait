@@ -758,10 +758,10 @@ view.View = class {
         }
     }
 
-    showModelProperties(clicked_output_name) {
+    showModelProperties(clicked_output_name, clicked_input_name) {
         if (this._model) {
             try {
-                const modelSidebar = new sidebar.ModelSidebar(this._host, this._model, this.activeGraph, clicked_output_name);
+                const modelSidebar = new sidebar.ModelSidebar(this._host, this._model, this.activeGraph, clicked_output_name, clicked_input_name);
                 modelSidebar.on('update-active-graph', (sender, graph) => {
                     this._updateActiveGraph(graph);
                 });
@@ -876,7 +876,8 @@ view.Graph = class extends grapher.Graph {
         if (this.modifier.renameMap.get(input.name)) {
             var show_name = this.modifier.renameMap.get(input.name).get(input.name);
         }
-        const value = new view.Input(this, input, show_name);
+        let modelNodeName = input.name;  // in case the output has the same name with the last node
+        const value = new view.Input(this, input, modelNodeName, show_name);
         // value.name = (this._nodeKey++).toString();
 
         value.name = input.name; 
@@ -1182,7 +1183,7 @@ view.Node = class extends grapher.Node {
 
 view.Input = class extends grapher.Node {
 
-    constructor(context, value, show_name) {
+    constructor(context, value, modelNodeName, show_name) {
         super();
         this.context = context;
         this.value = value;
@@ -1190,13 +1191,13 @@ view.Input = class extends grapher.Node {
         const types = value.arguments.map((argument) => argument.type || '').join('\n');
         // let name = value.name || '';
         let name = show_name
-        this.modelNodeName = value.name
+        this.modelNodeName = modelNodeName
         if (name.length > 16) {
             name = name.split('/').pop();
         }
         const header = this.header();
         const title = header.add(null, [ 'graph-item-input' ], name, types);
-        title.on('click', () => this.context.view.showModelProperties());
+        title.on('click', () => this.context.view.showModelProperties(null, modelNodeName));
         this.id = 'input-' + (name ? 'name-' + name : 'id-' + (view.Input.counter++).toString());
     }
 

@@ -46,7 +46,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .toolbar-back-button:hover { background: #000000; border-color: #000000; }
 .toolbar-name-button { float: left; background: rgba(255, 255, 255, 0.95); border-top-right-radius: 6px; border-bottom-right-radius: 6px; border: 1px solid #777; color: #777; border-left: 1px; border-left-color: #ffffff; margin: 2px 0 2px 0; padding: 0 12px 0 6px; cursor: pointer; width: auto; height: 20px; font-size: 11px; line-height: 0; transition: 0.1s; }
 .toolbar-name-button:hover { color: #000000; }
-.graph-op-button-reset {
+.graph-op-button {
     cursor: pointer;
     background-color: white;
     border: 1px solid grey;
@@ -56,7 +56,17 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     font-size: 20px;
     position:absolute;
     left: 2px;
+}
+.graph-op-button-reset {
     top: 30px;
+}
+
+.graph-op-button-onnxsim {
+    top: 170px;
+}
+
+.graph-op-button-optimizer {
+    top: 205px;
 }
 .graph-op-button-reset:active {  background: #e7e7e7; }
 .graph-op-button-download {
@@ -289,7 +299,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
         </svg>
     </button>
 
-    <button id="reset-graph" class="graph-op-button-reset">Reset</button>
+    <button id="reset-graph" class="graph-op-button graph-op-button-reset">Reset</button>
     <button id="download-graph" class="graph-op-button-download">Download</button>
     <input type="checkbox" id="shapeInference" class="download-checkbox-shapeInference"/> 
     <input type="text" value="shape inference" class="download-anno-shapeInference" readonly/> </td>
@@ -298,6 +308,8 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     <button id="add-node" class="graph-op-button-addNode">Add node</button>
     <select id="add-node-dropdown" class="graph-op-add-node-dropdown">
     </select>
+    <button id="onnxsim-graph" class="graph-op-button graph-op-button-onnxsim">OnnxSim</button>
+    <button id="auto-optimizer-graph" class="graph-op-button graph-op-button-optimizer">AutoOptimizer</button>
 
     <button id="back-button" class="toolbar-back-button" title="Back">
         &#x276E;

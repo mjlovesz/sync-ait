@@ -1,6 +1,8 @@
 #!/usr/bin/env python3.8
+import os
+import sys
 import argparse
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_file
 from onnx_modifier import onnxModifier
 
 app = Flask(__name__)
@@ -28,6 +30,52 @@ def modify_and_download_model():
     onnx_modifier.check_and_save_model()
 
     return 'OK', 200
+
+
+@app.route('/onnxsmi', methods=['POST'])
+def modify_and_onnxsmi_model():
+    try:
+        from onnxsim import simplify
+        import onnx
+        modify_info = request.get_json()
+        # print(modify_info)
+        onnx_modifier.reload()   # allow downloading for multiple times
+        onnx_modifier.modify(modify_info)
+        save_path = onnx_modifier.check_and_save_model(save_dir="modified_onnx")
+
+        # convert model
+        model_simp, check = simplify(onnx_modifier.model_proto)
+        onnx.save(model_simp, save_path)
+        return send_file(save_path)
+    except ImportError as ex:
+        return "请安装 onnxsim", 599
+
+
+@app.route('/auto-optimizer', methods=['POST'])
+def modify_and_optimizer_model():
+    try:
+        import auto_optimizer
+        import onnx
+        import subprocess
+        modify_info = request.get_json()
+        # print(modify_info)
+        onnx_modifier.reload()   # allow downloading for multiple times
+        onnx_modifier.modify(modify_info)
+        save_path = onnx_modifier.check_and_save_model(save_dir="modified_onnx")
+
+        # convert model
+        optimized_path = f"{save_path}.opti.onnx"
+        python_path = sys.executable
+        cmd = f"{python_path} -m auto_optimizer optimize {save_path} {optimized_path} "
+        out_res = subprocess.call(cmd, shell=True)
+        if  out_res != 0:
+            raise RuntimeError("auto_optimizer run error: " + out_res + " cmd: " + cmd)
+        if os.path.exists(optimized_path):
+            return send_file(optimized_path)
+        else:
+            return "OK", 204
+    except ImportError as ex:
+        return "请安装 auto-optimizer", 500
 
 def parse_args():
     parser = argparse.ArgumentParser()

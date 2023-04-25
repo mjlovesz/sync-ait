@@ -10,6 +10,7 @@ import warnings
 import numpy as np
 import onnx
 from onnx import numpy_helper
+from onnx import helper
 from utils import make_new_node, make_attr_changed_node
 from utils import parse_str2np, np2onnxdtype
 
@@ -105,6 +106,13 @@ class onnxModifier:
                     shape = bytearray(init.raw_data)
                     struct.pack_into('q', shape, 0, v)
                     init.raw_data = bytes(shape)
+    
+    
+    def change_input_size(self, input_size_info):
+        for tensor in self.graph.input:
+            if tensor.name not in input_size_info:
+                continue
+            tensor.type.CopyFrom(helper.make_tensor_type_proto(onnx.TensorProto.FLOAT, input_size_info[tensor.name]))
 
     def remove_node_by_node_states(self, node_states):
         # remove node from graph
@@ -117,6 +125,10 @@ class onnxModifier:
                     # print('removing output {} ...'.format(node_name))
                     self.graph.output.remove(self.node_name2module[node_name])
                     self.graph_output_names = [n for n in self.graph_output_names if n != node_name]
+                elif node_name in self.graph_input_names:
+                    # print('removing output {} ...'.format(node_name))
+                    self.graph.input.remove(self.node_name2module[node_name])
+                    self.graph_input_names = [n for n in self.graph_input_names if n != node_name]
                 else:
                     # print('removing node {} ...'.format(node_name))
                     self.graph.node.remove(self.node_name2module[node_name])
@@ -177,6 +189,32 @@ class onnxModifier:
             # update the node_name2module
             del self.node_name2module[node_name]
             self.node_name2module[node_name] = attr_changed_node
+    
+    def modify_model_props(self, model_properties):
+        for key,value in model_properties.items():
+            if key == "domain" and len(value) > 0:
+                self.model_proto.domain = value
+            elif key == "imports" and len(value) > 0:
+                opset_import_modify_info = value
+                opset_import_modified_info = []
+                for index, opset_import_info in enumerate(self.model_proto.opset_import):
+                    if index >= len(opset_import_modify_info) or opset_import_modify_info[index] is None:
+                        opset_import_modified_info.append(opset_import_info)
+                        continue
+                    if len(opset_import_modify_info[index]) == 0:
+                        continue
+                    elif len(opset_import_modify_info[index]) == 1:
+                        domain, version = [opset_import_modify_info[index], 0]
+                    else:
+                        domain, version = opset_import_modify_info[index][:2]
+                    
+                    opset_import_modified_info.append(helper.make_operatorsetid(domain=domain, version=version))
+
+                while (len(self.model_proto.opset_import) > 0):
+                    self.model_proto.opset_import.pop()
+                
+                for opset_info in opset_import_modified_info:
+                    self.model_proto.opset_import.append(opset_info)
 
     def add_nodes(self, nodes_info, node_states):
         for node_info in nodes_info.values():
@@ -210,7 +248,26 @@ class onnxModifier:
         for output in added_output_protoes:
             self.graph.output.append(output)
             self.graph_output_names.append("out_" + output.name)
-            self.node_name2module["out_" + output.name] = output 
+            self.node_name2module["out_" + output.name] = output
+                
+    def add_inputs(self, added_inputs):
+        # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
+        added_input_infos = added_inputs.values()
+        if len(added_input_infos) == 0: return
+        added_input_protoes = []
+        
+        for value_info in added_input_infos:
+            if isinstance(value_info, str):
+                value_name, value_dims = value_info, None
+            elif isinstance(value_info, (list, tuple)):
+                value_name, value_dims = value_info
+            
+            added_input_protoes.append(helper.make_tensor_value_info(value_name, onnx.TensorProto.FLOAT, value_dims))
+
+        for input_info in added_input_protoes:
+            self.graph.input.append(input_info)
+            self.graph_input_names.append(input_info.name)
+            self.node_name2module[input_info.name] = input_info 
 
     def modify_initializer(self, changed_initializer):
         # print(changed_initializer)
@@ -354,10 +411,13 @@ class onnxModifier:
         self.add_nodes(modify_info['added_node_info'], modify_info['node_states'])
         self.modify_initializer(modify_info['changed_initializer'])
         self.change_batch_size(modify_info['rebatch_info'])
+        self.add_inputs(modify_info['added_inputs'])
+        self.change_input_size(modify_info['input_size_info'])
         self.add_outputs(modify_info['added_outputs'])
-        self.remove_node_by_node_states(modify_info['node_states'])
         self.modify_node_io_name(modify_info['node_renamed_io'])
+        self.remove_node_by_node_states(modify_info['node_states'])
         self.modify_node_attr(modify_info['node_changed_attr'])
+        self.modify_model_props(modify_info['model_properties'])
 
         self.post_process(modify_info['postprocess_args'])
 
@@ -365,14 +425,15 @@ class onnxModifier:
         print("saving model...")
         if not os.path.exists(save_dir):
             os.mkdir(save_dir)
-        save_path = os.path.join(save_dir, 'modified_' + self.model_name)
+        save_path = os.path.abspath(os.path.join(save_dir, 'modified_' + self.model_name))
 
         # adding new node like self.add_nodes() and self.modify_node_attr() can not guarantee the nodes are topologically sorted
         # so `onnx.onnx_cpp2py_export.checker.ValidationError: Nodes in a graph must be topologically sorted` will be invoked
         # I turn off the onnx checker as a workaround.
         # onnx.checker.check_model(self.model_proto)
         onnx.save(self.model_proto, save_path)
-        print("model saved in {} !".format(save_dir))
+        print("model saved in {} !".format(save_path))
+        return save_path
 
     def inference(self, input_shape=[1, 3, 224, 224], x=None, output_names=None):
         import onnxruntime as rt
