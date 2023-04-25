@@ -1,6 +1,3 @@
-import sys
-sys.path.append("../../")
-
 from flaskwebgui import FlaskUI
 from app import app
 

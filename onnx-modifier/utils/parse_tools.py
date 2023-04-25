@@ -1,7 +1,10 @@
-import numpy as np
+import logging
 from typing import cast
+
+import numpy as np
 from onnx.mapping import NP_TYPE_TO_TENSOR_TYPE
 from onnx import TensorProto
+
 
 # parse numpy values from string
 def parse_str2np(tensor_str, tensor_type):
@@ -16,7 +19,10 @@ def parse_str2np(tensor_str, tensor_type):
 
     def extract_val():
         num_str = ""
-        while (len(stk) > 0) and (type(stk[-1]) == str and ord('0') <= ord(stk[-1]) <= ord('9') or stk[-1] in ['+', '-', '.', 'e', 'E']):
+        ord0 = ord('0')
+        ord9 = ord('9')
+        symbols = ['+', '-', '.', 'e', 'E']
+        while len(stk) > 0 and (type(stk[-1]) == str and ord0 <= ord(stk[-1]) <= ord9 or stk[-1] in symbols):
             num_str = stk.pop() + num_str
         
         if len(num_str) > 0:
@@ -35,10 +41,12 @@ def parse_str2np(tensor_str, tensor_type):
         for c in tensor_str: # '['  ','  ']' '.' '-' or value
             if c == ",":
                 ext_val = extract_val()
-                if ext_val is not None: stk.append(ext_val)
+                if ext_val is not None:
+                    stk.append(ext_val)
             elif c == "]":
                 ext_val = extract_val()
-                if ext_val is not None: stk.append(ext_val)
+                if ext_val is not None:
+                    stk.append(ext_val)
                 
                 arr = []
                 while stk[-1] != '[':
@@ -57,14 +65,15 @@ def parse_str2np(tensor_str, tensor_type):
     # wrap with numpy with the specific data type
     try:
         return np.array(val, getattr(np, tensor_type))
-    except:
+    except Exception as ex:
         raise RuntimeError("Type {} is not supported.\n \
                             You can check all supported datatypes in \
                                 https://numpy.org/doc/stable/user/basics.types.html or \
                                 https://www.tutorialspoint.com/numpy/numpy_data_types.htm . \
                             If the problem still exists, \
-                            you are kindly to report an issue. Thanks!".format(tensor_type))
-    
+                            you are kindly to report an issue. Thanks!".format(tensor_type)) from ex
+
+
 # parse Python or onnx built-in values from string
 def parse_str2val(val_str, val_type):
     def preprocess(ls_val_str):
@@ -120,55 +129,39 @@ if __name__ == "__main__":
         np_fp64 = np.array(val, dtype=np.float64)
         np_fp64_conv = np.array(np_fp32, dtype=np.float64)
 
-        print(val)
+        logging.info(val)
         np.set_printoptions(precision=20)
-        print(np_fp32)
-        print(np_fp64)
-        print(np_fp32 == np_fp64)
+        logging.info(np_fp32)
+        logging.info(np_fp64)
+        logging.info(np_fp32 == np_fp64)
         
-        print(np_fp64_conv)
+        logging.info(np_fp64_conv)
         
         pass
     # tmp_debug()
     
     def test_parse_str2np():
-        # # tensor_str = "1.223"
-        # tensor_str = "0.023"
-        # val = parse_str2np(tensor_str, "float32")
-        # print(type(val), val)
-        
-        # # tensor_str = "[1, 2, 3]"
-        # tensor_str = "[[10, 2.3, 3],[1, 2e6, 3]]"
-        # val = parse_str2np(tensor_str, "float32")
-        # print(type(val), val)
-        
-        # tensor_str = "[[10, 2, 3],[1, 2, 3]]"
-        # val = parse_str2np(tensor_str, "int64")
-        # print(type(val), val)
-        
         init_val_str = '[[[[0.0171247538316637]],[[0.0175070028011204]],[[0.0174291938997821]]]]'
         init_type = 'float32'
         init_val = parse_str2np(init_val_str, init_type)
-        # print(init_val)
         pass
-    # test_parse_str2np()
     
     def test_parse_str2val():
         val_str = "1"
         val = parse_str2val(val_str, "int")
-        print(val)
+        logging.info(val)
         
         # val_str = "1, 2, 3"
         val_str = "[1, 2, 3]"
         val = parse_str2val(val_str, "int[]")
-        print(val)
+        logging.info(val)
         val = parse_str2val(val_str, "float[]")
-        print(val)
+        logging.info(val)
         
         val_str = "int8"
         # val_str = "float"
         val = parse_str2val(val_str, "DataType")
-        print(val)
+        logging.info(val)
     # test_parse_str2val()
     
     

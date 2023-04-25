@@ -60,8 +60,9 @@ python.Parser = class {
                     }
                     if (this._tokenizer.match('dedent') || this._tokenizer.match('eof')) {
                         continue;
+                    } else {
+                        throw new python.Error('Empty statement' + this._tokenizer.location());
                     }
-                    throw new python.Error('Empty statement' + this._tokenizer.location());
                 }
             }
         }
@@ -74,8 +75,9 @@ python.Parser = class {
                 if (statement) {
                     node.statements.push(statement);
                     continue;
+                } else {
+                    throw new python.Error('Empty statement' + this._tokenizer.location());
                 }
-                throw new python.Error('Empty statement' + this._tokenizer.location());
             }
             this._tokenizer.eat('\n');
         }
@@ -1524,7 +1526,7 @@ python.Tokenizer = class {
                     break;
             }
         }
-        if (prefix.length >= 0) {
+        if (prefix.length !== undefined) {
             i += prefix.length;
             let quote = '';
             let count = 0;
@@ -2726,7 +2728,7 @@ python.Execution = class {
     parse(file) {
         const buffer = this.source(file);
         if (buffer) {
-            const debug = this.debug(file);
+            const debug = this.debug();
             const code = this._utf8Decoder.decode(buffer);
             const reader = new python.Parser(code, file, debug);
             const program = reader.parse();

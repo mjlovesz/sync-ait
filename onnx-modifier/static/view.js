@@ -288,7 +288,7 @@ view.View = class {
                         pageX: (points[1].pageX + points[0].pageX) / 2,
                         pageY: (points[1].pageY + points[0].pageY) / 2
                     };
-                    const zoom = d2 === 0 ? d1 : d1 / d2;
+                    const zoom = d1 / d2;
                     this._updateZoom(this._touchZoom * zoom, e);
                 }
             }
@@ -628,7 +628,7 @@ view.View = class {
                         this._zoom = 1;
                         this._updateZoom(this._zoom);
 
-                        if (elements && elements.length > 0) {
+                        if (elements.length > 0) {
                             // Center view based on input elements
                             const xs = [];
                             const ys = [];

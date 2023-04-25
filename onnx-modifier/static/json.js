@@ -502,7 +502,7 @@ json.BinaryReader = class {
                     break;
                 }
                 case 0x0A:
-                    value = null;
+                    // value should be null;
                     break;
                 case 0x10: {
                     const start = position;

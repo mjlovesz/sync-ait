@@ -939,7 +939,7 @@ onnx.Attribute = class {
                 this._type = metadata.type;
                 const value = this._value ? parseInt(this._value.toString(), 10) : this._value;
                 // this._value = Number.isInteger(value) ? context.createDataType(value) : value;
-                if (value != NaN && Number.isInteger(value)) {
+                if (!Number.isNaN(value) && Number.isInteger(value)) {
                     this._value = context.createDataType(value);
                 }
                 // console.log(attribute.type, attribute.value)

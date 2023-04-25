@@ -1232,7 +1232,7 @@ sidebar.ModelSidebar = class {
                     break
                 }
             }
-            this._addInput('shape', default_shape, (value) => {
+            this._addInput('shape', default_shape, (value, e) => {
                 let has_error = false
                 let dims = []
                 let input_dims = value.split(",")
@@ -1447,7 +1447,7 @@ sidebar.DocumentationSidebar = class {
                 this._append(element, 'dl', 'In domain <tt>' + type.domain + '</tt> since version <tt>' + type.version + '</tt> at support level <tt>' + type.support_level + '</tt>.');
             }
 
-            if (!this._host.type !== 'Electron') {
+            if (this._host.type == 'Electron') {
                 element.addEventListener('click', (e) => {
                     if (e.target && e.target.href) {
                         const link = e.target.href;
