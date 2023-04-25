@@ -228,18 +228,18 @@ int PyInferenceSession::CheckDymAIPPInputExsity()
     APP_ERROR ret = modelInfer_.CheckDymAIPPInputExsity();
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
-    }    
-    return APP_ERR_OK;    
+    }
+    return APP_ERR_OK;
 }
 
 int PyInferenceSession::SetDymAIPPInfoSet()
-{   
+{
     printf("debug: get PyInferenceSession::SetDymAIPPInfoSet\n");
     APP_ERROR ret = modelInfer_.SetDymAIPPInfoSet();
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
-    }    
-    return APP_ERR_OK; 
+    }
+    return APP_ERR_OK;
 }
 
 int PyInferenceSession::SetDynamicHW(int width, int height)
@@ -308,7 +308,7 @@ int PyInferenceSession::AippSetMaxBatchSize(uint64_t batchSize)
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
-    return APP_ERR_OK; 
+    return APP_ERR_OK;
 }
 
 int PyInferenceSession::SetInputFormat(std::string iptFmt)
@@ -317,7 +317,7 @@ int PyInferenceSession::SetInputFormat(std::string iptFmt)
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 int PyInferenceSession::SetSrcImageSize(std::vector<int> srcImageSize)
@@ -344,7 +344,7 @@ int PyInferenceSession::SetAxSwapSwitch(int asSwitch)
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 int PyInferenceSession::SetCscParams(std::vector<int> cscParams)
@@ -353,7 +353,7 @@ int PyInferenceSession::SetCscParams(std::vector<int> cscParams)
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 int PyInferenceSession::SetCropParams(std::vector<int> cropParams)
@@ -362,7 +362,7 @@ int PyInferenceSession::SetCropParams(std::vector<int> cropParams)
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 int PyInferenceSession::SetPaddingParams(std::vector<int> padParams)
@@ -371,7 +371,7 @@ int PyInferenceSession::SetPaddingParams(std::vector<int> padParams)
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 int PyInferenceSession::SetDtcPixelMean(std::vector<int> meanParams)
@@ -380,7 +380,7 @@ int PyInferenceSession::SetDtcPixelMean(std::vector<int> meanParams)
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 int PyInferenceSession::SetDtcPixelMin(std::vector<float> minParams)
@@ -389,7 +389,7 @@ int PyInferenceSession::SetDtcPixelMin(std::vector<float> minParams)
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 int PyInferenceSession::SetPixelVarReci(std::vector<float> reciParams)

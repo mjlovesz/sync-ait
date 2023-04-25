@@ -23,7 +23,7 @@ class TestClass:
 
     def get_input_tensor_name(self):
         return "actual_input_1"
-    
+
 
     def load_aipp_config_file(self, session, config_file, batchsize):
         cfg = ConfigParser()
@@ -44,25 +44,25 @@ class TestClass:
             raise RuntimeError('wrong aipp config file content!')
         session.aipp_set_max_batch_size(batchsize)
         self.aipp_set_rbuv_swap_switch(cfg, session, option_list)
-        self.aipp_set_ax_swap_switch(cfg, session, option_list) 
+        self.aipp_set_ax_swap_switch(cfg, session, option_list)
         self.aipp_set_csc_params(cfg, session, option_list)
         self.aipp_set_crop_params(cfg, session, option_list)
-        self.aipp_set_padding_params(cfg, session, option_list)    
-        self.aipp_set_dtc_pixel_mean(cfg, session, option_list)       
-        self.aipp_set_dtc_pixel_min(cfg, session, option_list)        
+        self.aipp_set_padding_params(cfg, session, option_list)
+        self.aipp_set_dtc_pixel_mean(cfg, session, option_list)
+        self.aipp_set_dtc_pixel_min(cfg, session, option_list)
         self.aipp_set_pixel_var_reci(cfg, session, option_list)
 
         ret = session.set_dym_aipp_info_set()
         return ret
-        
+
     def aipp_set_input_format(self, cfg, session):
         input_format = cfg.get('aipp_op', 'input_format')
         legal_format = ["YUV420SP_U8", "XRGB8888_U8", "RGB888_U8", "YUV400_U8"]
         if (legal_format.count(input_format) == 1):
             session.aipp_set_input_format(input_format)
         else:
-            raise RuntimeError('wrong aipp config file content!')            
-    
+            raise RuntimeError('wrong aipp config file content!')
+
     def aipp_set_src_image_size(self, cfg, session):
         src_image_size = list()
         tmp_size_w = cfg.getint('aipp_op', 'src_image_size_w')
@@ -74,36 +74,36 @@ class TestClass:
         if (1 <= tmp_size_h <= 4096):
             src_image_size.append(tmp_size_h)
         else:
-            raise RuntimeError('wrong aipp config file content!')        
-        
+            raise RuntimeError('wrong aipp config file content!')
+
         session.aipp_set_src_image_size(src_image_size)
-        
+
     def aipp_set_rbuv_swap_switch(self, cfg, session, option_list):
         if (option_list.count('rbuv_swap_switch') == 0):
             session.aipp_set_rbuv_swap_switch(0)
             return
-        tmp_rs_switch = cfg.getint('aipp_op', 'rbuv_swap_switch') 
+        tmp_rs_switch = cfg.getint('aipp_op', 'rbuv_swap_switch')
         if (tmp_rs_switch == 0 or tmp_rs_switch == 1):
             session.aipp_set_rbuv_swap_switch(tmp_rs_switch)
         else:
             raise RuntimeError('wrong aipp config file content!')
-        
+
     def aipp_set_ax_swap_switch(self, cfg, session, option_list):
         if (option_list.count('ax_swap_switch') == 0):
             session.aipp_set_ax_swap_switch(0)
-            return        
+            return
         tmp_as_switch = cfg.getint('aipp_op', 'ax_swap_switch')
         if (tmp_as_switch == 0 or tmp_as_switch == 1):
             session.aipp_set_ax_swap_switch(tmp_as_switch)
         else:
-            raise RuntimeError('wrong aipp config file content!')        
+            raise RuntimeError('wrong aipp config file content!')
 
     def aipp_set_csc_params(self, cfg, session, option_list):
         if (option_list.count('csc_switch') == 0):
             tmp_csc_switch = 0
         else:
             tmp_csc_switch = cfg.getint('aipp_op', 'csc_switch')
-        
+
         if (tmp_csc_switch == 0):
             tmp_csc_params = [0] * 16
         elif (tmp_csc_switch == 1):
@@ -123,7 +123,7 @@ class TestClass:
             )
             tmp_csc_params.append(
                 0 if option_list.count('matrix_r1c1') == 0 else cfg.getint('aipp_op', 'matrix_r1c1')
-            ) 
+            )
             tmp_csc_params.append(
                 0 if option_list.count('matrix_r1c2') == 0 else cfg.getint('aipp_op', 'matrix_r1c2')
             )
@@ -154,7 +154,7 @@ class TestClass:
             tmp_csc_params.append(
                 0 if option_list.count('input_bias_2') == 0 else cfg.getint('aipp_op', 'input_bias_2')
             )
-            
+
             range_ok = True
             for i in range (1, 9):
                 range_ok = range_ok and (-32677 <= tmp_csc_params[i] <= 32676)
@@ -163,10 +163,10 @@ class TestClass:
             if (range_ok == False):
                 raise RuntimeError('wrong aipp config file content!')
         else:
-            raise RuntimeError('wrong aipp config file content!')     
-        
+            raise RuntimeError('wrong aipp config file content!')
+
         session.aipp_set_csc_params(tmp_csc_params)
-        
+
     def aipp_set_crop_params(self, cfg, session, option_list):
         if (option_list.count('crop') == 0):
             tmp_crop_switch = 0
@@ -200,15 +200,15 @@ class TestClass:
                 raise RuntimeError('wrong aipp config file content!')
         else:
             raise RuntimeError('wrong aipp config file content!')
-        
+
         session.aipp_set_crop_params(tmp_crop_params)
-        
+
     def aipp_set_padding_params(self, cfg, session, option_list):
         if (option_list.count('padding') == 0):
             tmp_padding_switch = 0
         else:
             tmp_padding_switch = cfg.getint('aipp_op', 'padding')
-        
+
         if (tmp_padding_switch == 0):
             tmp_padding_params = [0] * 5
         elif (tmp_padding_switch == 1):
@@ -225,7 +225,7 @@ class TestClass:
             )
             tmp_padding_params.append(
                 0 if option_list.count('padding_size_right') == 0 else cfg.getint('aipp_op', 'padding_size_right')
-            )            
+            )
 
             range_ok = True
             for i in range (1, 5):
@@ -234,9 +234,9 @@ class TestClass:
                 raise RuntimeError('wrong aipp config file content!')
         else:
             raise RuntimeError('wrong aipp config file content!')
-        
+
         session.aipp_set_padding_params(tmp_padding_params)
-                        
+
     def aipp_set_dtc_pixel_mean(self, cfg, session, option_list):
         tmp_mean_params = list()
         tmp_mean_params.append(
@@ -251,14 +251,14 @@ class TestClass:
         tmp_mean_params.append(
             0 if option_list.count('mean_chn_3') == 0 else cfg.getint('aipp_op', 'mean_chn_3')
         )
-        
+
         range_ok = True
         for i in range (0, 4):
             range_ok = range_ok and (0 <= tmp_mean_params[i] <= 255)
         if (range_ok == False):
             raise RuntimeError('wrong aipp config file content!')
-        
-        session.aipp_set_dtc_pixel_mean(tmp_mean_params)                    
+
+        session.aipp_set_dtc_pixel_mean(tmp_mean_params)
 
     def aipp_set_dtc_pixel_min(self, cfg, session, option_list):
         tmp_min_params = list()
@@ -274,15 +274,15 @@ class TestClass:
         tmp_min_params.append(
             0 if option_list.count('min_chn_3') == 0 else cfg.getfloat('aipp_op', 'min_chn_3')
         )
-        
+
         range_ok = True
         for i in range (0, 4):
             range_ok = range_ok and (0 <= tmp_min_params[i] <= 255)
         if (range_ok == False):
             raise RuntimeError('wrong aipp config file content!')
-        
+
         session.aipp_set_dtc_pixel_min(tmp_min_params)
-        
+
     def aipp_set_pixel_var_reci(self, cfg, session, option_list):
         tmp_reci_params = list()
         tmp_reci_params.append(
@@ -297,14 +297,14 @@ class TestClass:
         tmp_reci_params.append(
             0 if option_list.count('var_reci_chn_3') == 0 else cfg.getfloat('aipp_op', 'var_reci_chn_3')
         )
-        
+
         range_ok = True
         for i in range (0, 4):
             range_ok = range_ok and (-65504 <= tmp_reci_params[i] <= 65504)
         if (range_ok == False):
             raise RuntimeError('wrong aipp config file content!')
-        
-        session.aipp_set_dtc_pixel_min(tmp_reci_params)                                
+
+        session.aipp_set_dtc_pixel_min(tmp_reci_params)
 
     # 各种模型
     def get_without_dymaipp_om_path(self):
@@ -323,7 +323,7 @@ class TestClass:
         return os.path.join(
             TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_dymaipp_dymwh.om"
         )
-    def get_multi_dymaipp_om_path(self):       
+    def get_multi_dymaipp_om_path(self):
         return os.path.join(TestCommonClass.base_path, self.model_name, "model", "multi_dym_aipp_model.om")
 
     # 各种输入的aipp具体参数配置文件
@@ -347,7 +347,7 @@ class TestClass:
         return os.path.join(
             os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_lack_title.config"
         )
-    
+
     def test_infer_dymaipp_staticshape(self):
         device_id = 0
         options = aclruntime.session_options()
@@ -439,7 +439,7 @@ class TestClass:
         # only need call this functon compare infer_simple
         self.load_aipp_config_file(session, self.get_actual_aipp_config(), 4)
         with pytest.raises(RuntimeError) as e:
-            session.check_dym_aipp_input_exsity()  
+            session.check_dym_aipp_input_exsity()
             print("get --aipp model wrong")
 
         # create new numpy data according inputs info
@@ -454,7 +454,7 @@ class TestClass:
 
         outputs = session.run(outnames, feeds)
         print("outputs:", outputs)
-    
+
     # 模型有多个动态aipp input
     def test_infer_multi_dymaipp_input(self):
         device_id = 0
@@ -464,7 +464,7 @@ class TestClass:
         # only need call this functon compare infer_simple
         self.load_aipp_config_file(session, self.get_actual_aipp_config(), 1)
         with pytest.raises(RuntimeError) as e:
-            session.check_dym_aipp_input_exsity()  
+            session.check_dym_aipp_input_exsity()
             print("get --aipp model wrong")
 
         # create new numpy data according inputs info
@@ -490,8 +490,8 @@ class TestClass:
         session.set_staticbatch()
         # only need call this functon compare infer_simple
         with pytest.raises(RuntimeError) as e:
-            self.load_aipp_config_file(session, self.get_aipp_config_lack_title(), 4)  
-            print("get --aipp_config wrong")        
+            self.load_aipp_config_file(session, self.get_aipp_config_lack_title(), 4)
+            print("get --aipp_config wrong")
             session.check_dym_aipp_input_exsity()
 
         # create new numpy data according inputs info
@@ -517,8 +517,8 @@ class TestClass:
         session.set_staticbatch()
         # only need call this functon compare infer_simple
         with pytest.raises(RuntimeError) as e:
-            self.load_aipp_config_file(session, self.get_aipp_config_lack_title(), 4)  
-            print("get --aipp_config wrong")        
+            self.load_aipp_config_file(session, self.get_aipp_config_lack_title(), 4)
+            print("get --aipp_config wrong")
             session.check_dym_aipp_input_exsity()
 
         # create new numpy data according inputs info
@@ -533,7 +533,7 @@ class TestClass:
 
         with pytest.raises(RuntimeError) as e:
             outputs = session.run(outnames, feeds)
-            print("outputs:", outputs)      
+            print("outputs:", outputs)
 
     # --aipp_config 参数超出范围限制
     def test_infer_aipp_cfg_param_overflowed(self):
@@ -544,8 +544,8 @@ class TestClass:
         session.set_staticbatch()
         # only need call this functon compare infer_simple
         with pytest.raises(RuntimeError) as e:
-            self.load_aipp_config_file(session, self.get_aipp_config_param_overflowed(), 4)  
-            print("get --aipp_config wrong")  
+            self.load_aipp_config_file(session, self.get_aipp_config_param_overflowed(), 4)
+            print("get --aipp_config wrong")
             session.check_dym_aipp_input_exsity()
 
         # create new numpy data according inputs info

@@ -43,7 +43,7 @@ def set_session_options(session, args):
     if args.batchsize is None:
         args.batchsize = get_batchsize(session, args)
         logger.info("try get model batchsize:{}".format(args.batchsize))
-    
+
     if aipp_batchsize < 0:
         aipp_batchsize = args.batchsize
 
@@ -356,7 +356,7 @@ def get_args():
         help="acl json path for profiling or dump"
     )
     parser.add_argument(
-        "--output_batchsize_axis", 
+        "--output_batchsize_axis",
         type=check_nonnegative_integer,
         default=0,
         help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 1"
@@ -392,7 +392,7 @@ def get_args():
         default=None,
         help="file type: .config, to set actual aipp params before infer"
     )
-    
+
     args = parser.parse_args()
 
     if args.profiler is True and args.dump is True:

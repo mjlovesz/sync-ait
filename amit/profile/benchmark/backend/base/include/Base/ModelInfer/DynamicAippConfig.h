@@ -101,7 +101,7 @@ public:
     APP_ERROR SetDtcPixelMean(std::vector<int> meanParams);
     APP_ERROR SetDtcPixelMin(std::vector<float> minParams);
     APP_ERROR SetPixelVarReci(std::vector<float> reciParams);
-    
+
     uint64_t GetMaxBatchSize();
     std::string GetInputFormat();
     int32_t GetSrcImageSizeW();
@@ -129,10 +129,10 @@ private:
     int32_t srcImageSizeW; // 原始图片尺寸
     int32_t srcImageSizeH; // 原始图片尺寸
     // --------动态AIPP必填参数--------
-  
+
     int8_t rbuvSwapSwitch; // 是否交换R通道与B通道、或者是否交换U通道与V通道
     int8_t axSwapSwitch; // RGBA->ARGB或者YUVA->AYUV的交换开关
-    
+
     CscParams cscParams; // CSC色域转换相关的参数
 
     // ----------多个不同 batchIndex需要设置,map的key 为batchIndex --------

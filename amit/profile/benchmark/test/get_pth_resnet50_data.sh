@@ -279,24 +279,24 @@ main()
     convert_staticbatch_om $resnet_onnx_file $SOC_VERSION "${staticbatch[*]}" $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert static om failed";return 1; }
     staticbatch="1 2 4"
     convert_dymaipp_staticbatch_om $resnet_onnx_file $SOC_VERSION "${staticbatch[*]}" $input_tensor_name $DYM_AIPPCONFIG_FILE_PATH || { echo "convert dymaipp static om failed";return 1; }
-    
+
     dymbatch="1,2,4,8,16"
     convert_dymbatch_om $resnet_onnx_file $SOC_VERSION $dymbatch $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymbatch om failed";return 1; }
     dymbatch="1,2,4"
     convert_dymaipp_dymbatch_om $resnet_onnx_file $SOC_VERSION $dymbatch $input_tensor_name $DYM_AIPPCONFIG_FILE_PATH || { echo "convert dymaipp dymbatch om failed";return 1; }
-    
+
     dymhw="224,224;448,448"
     unset AIPPCONFIG_FILE_PATH
     convert_dymhw_om $resnet_onnx_file $SOC_VERSION $dymhw $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymhw om failed";return 1; }
     dymhw="112,112;224,224"
     convert_dymaipp_dymhw_om $resnet_onnx_file $SOC_VERSION $dymhw $input_tensor_name $DYM_AIPPCONFIG_FILE_PATH || { echo "convert dymhw om failed";return 1; }
- 
+
     dymdims="1,224,224;8,448,448"
     convert_dymdim_om $resnet_onnx_file $SOC_VERSION $dymdims $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymdim om failed";return 1; }
-    
+
     convert_multi_dymaipp_om $two_dymaipp_onnx_file $SOC_VERSION $MULTI_DYM_AIPPCONFIG_FILE_PATH || { echo "convert multi dymaipp om failed";return 1; }
 
-    
+
     # dymshapes 310 不支持，310P支持
     # dymshapes="[1~16,3,200~300,200~300]"
     # convert_dymshape_om $resnet_onnx_file $SOC_VERSION $dymshapes $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymshape om failed";return 1; }

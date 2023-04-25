@@ -68,7 +68,7 @@ public:
     /**
     * @brief get dynamic index
     */
-    Result GetDynamicIndex(size_t &dymindex);    
+    Result GetDynamicIndex(size_t &dymindex);
 
     /**
     * @brief check dynamic input dims valid
@@ -84,30 +84,30 @@ public:
     * @brief check dynamic input image size valid
     */
     Result CheckDynamicHWSize(std::pair<int, int> dynamicPair, bool& is_dymHW);
- 
+
     /**
-    * @brief set dynamic input dims 
-    */    
+    * @brief set dynamic input dims
+    */
     Result SetDynamicDims(std::vector<std::string> dym_dims);
 
     /**
     * @brief check dynamic input image size valid
     */
     Result CheckDynamicShape(std::vector<std::string> dym_shape_tmp, std::map<std::string, std::vector<int64_t>> &dym_shape_map, std::vector<int64_t> &dims_num);
-    
+
     /**
-    * @brief set dynamic input dims 
-    */    
+    * @brief set dynamic input dims
+    */
     Result SetDynamicShape(std::map<std::string, std::vector<int64_t>> dym_shape_map, std::vector<int64_t> &dims_num);
 
     /**
     * @brief set dynamic batch size
-    */    
+    */
     Result SetDynamicBatchSize(uint64_t batchSize);
-    
+
     /**
     * @brief get max dynamic batch size
-    */    
+    */
     Result GetMaxBatchSize(uint64_t& maxBatchSize);
 
     /**
@@ -157,7 +157,7 @@ public:
     * @brief destroy desc
     */
     void DestroyDesc();
-    
+
     /**
     * @brief create model input
     * @return result

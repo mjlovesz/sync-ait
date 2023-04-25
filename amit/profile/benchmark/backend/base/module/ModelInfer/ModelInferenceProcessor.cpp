@@ -378,8 +378,8 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
         return ret;
     }
 
-    if (dyAippCfg->IsActivated() && dyAippCfg->ModelIsLegal()) { 
-        //读取合法的config文件，且模型有一个动态aipp输入才进行aipp参数的具体设置 
+    if (dyAippCfg->IsActivated() && dyAippCfg->ModelIsLegal()) {
+        //读取合法的config文件，且模型有一个动态aipp输入才进行aipp参数的具体设置
         DEBUG_LOG("SetInputAIPP start");
         for (auto& aippSetIt : dymAIPPIndexSet_) {
             Result result = processModel->SetInputAIPP(aippSetIt.first, aippSetIt.second);
@@ -395,7 +395,7 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
         //模型有一个动态aipp输入，但是没有读取到合法的配置文件
         ERROR_LOG("model with dynamic aipp input can't find config file.");
         FreeDymAIPPMem();
-        return APP_ERR_ACL_FAILURE;        
+        return APP_ERR_ACL_FAILURE;
     }
     DEBUG_LOG("SetInputData successfully");
 
@@ -622,7 +622,7 @@ APP_ERROR ModelInferenceProcessor::CheckDymAIPPInputExsity()
     if (ret != SUCCESS) {
         return APP_ERR_ACL_FAILURE;
     }
-    dyAippCfg->ActivateModel(); 
+    dyAippCfg->ActivateModel();
     return APP_ERR_OK;
 }
 
@@ -641,19 +641,19 @@ APP_ERROR ModelInferenceProcessor::SetInputFormat(std::string iptFmt)
 APP_ERROR ModelInferenceProcessor::SetSrcImageSize(std::vector<int> srcImageSize)
 {
     CHECK_RET_EQ(dyAippCfg->SetSrcImageSize(srcImageSize), APP_ERR_OK);
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 APP_ERROR ModelInferenceProcessor::SetRbuvSwapSwitch(int rsSwitch)
 {
     CHECK_RET_EQ(dyAippCfg->SetRbuvSwapSwitch(rsSwitch), APP_ERR_OK);
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 APP_ERROR ModelInferenceProcessor::SetAxSwapSwitch(int asSwitch)
 {
     CHECK_RET_EQ(dyAippCfg->SetAxSwapSwitch(asSwitch), APP_ERR_OK);
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 APP_ERROR ModelInferenceProcessor::SetCscParams(std::vector<int> cscParams)
@@ -665,31 +665,31 @@ APP_ERROR ModelInferenceProcessor::SetCscParams(std::vector<int> cscParams)
 APP_ERROR ModelInferenceProcessor::SetCropParams(std::vector<int> cropParams)
 {
     CHECK_RET_EQ(dyAippCfg->SetCropParams(cropParams), APP_ERR_OK);
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 APP_ERROR ModelInferenceProcessor::SetPaddingParams(std::vector<int> padParams)
 {
     CHECK_RET_EQ(dyAippCfg->SetPaddingParams(padParams), APP_ERR_OK);
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 APP_ERROR ModelInferenceProcessor::SetDtcPixelMean(std::vector<int> meanParams)
 {
     CHECK_RET_EQ(dyAippCfg->SetDtcPixelMean(meanParams), APP_ERR_OK);
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 APP_ERROR ModelInferenceProcessor::SetDtcPixelMin(std::vector<float> minParams)
 {
     CHECK_RET_EQ(dyAippCfg->SetDtcPixelMin(minParams), APP_ERR_OK);
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 APP_ERROR ModelInferenceProcessor::SetPixelVarReci(std::vector<float> reciParams)
 {
     CHECK_RET_EQ(dyAippCfg->SetPixelVarReci(reciParams), APP_ERR_OK);
-    return APP_ERR_OK;    
+    return APP_ERR_OK;
 }
 
 APP_ERROR ModelInferenceProcessor::SetDynamicHW(int width, int height)
