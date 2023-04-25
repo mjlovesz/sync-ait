@@ -133,9 +133,9 @@ def warmup(session, args, intensors_desc, infiles):
     logger.info("warm up {} done".format(args.warmup_count))
 
 def run_inference(session, args, inputs, out_array=False):
-    if args.auto_set_dymshape_mode == True:
+    if args.auto_set_dymshape_mode is True:
         set_dymshape_shape(session, inputs)
-    elif args.auto_set_dymdims_mode == True:
+    elif args.auto_set_dymdims_mode is True:
         set_dymdims_shape(session, inputs)
     outputs = session.run(inputs, out_array)
     return outputs
@@ -422,7 +422,7 @@ def get_args():
     # 判断--aipp_config 文件是否是存在的.config文件
     if (args.aipp_config is not None):
         if (os.path.splitext(args.aipp_config)[-1] == ".config"):
-            if (os.path.isfile(args.aipp_config) != True):
+            if (os.path.isfile(args.aipp_config) is not True):
                 logger.error("can't find the path of config file, please check it!")
                 raise RuntimeError('wrong aipp config file path!')
         else:
@@ -456,7 +456,7 @@ def main(args, index=0, msgq=None, device_list=None):
     if msgq is not None:
         logger.info("subprocess_{} main run".format(index))
 
-    if args.debug == True:
+    if args.debug is True:
         logger.setLevel(logging.DEBUG)
 
     session = init_inference_session(args)
@@ -552,7 +552,7 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
         return inputs_list
 
     fileslist = []
-    if os.path.isfile(inputs_list[0]) == True:
+    if os.path.isfile(inputs_list[0]) is True:
         fileslist = inputs_list
     elif os.path.isdir(inputs_list[0]):
         for dir in inputs_list:
@@ -611,7 +611,7 @@ if __name__ == "__main__":
 
     version_check(args)
 
-    if args.profiler == True:
+    if args.profiler is True:
         # try use msprof to run
         msprof_bin = shutil.which('msprof')
         if msprof_bin is None or os.getenv('GE_PROFILIGN_TO_STD_OUT') == '1':
