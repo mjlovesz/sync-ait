@@ -116,9 +116,9 @@ public:
     Result SetDynamicHW(std::pair<uint64_t , uint64_t > dynamicPair);
 
     /**
-    * @brief check model the amount of dynamic aipp input  
+    * @brief check model the amount of dynamic aipp input
     */
-    Result CheckDymAIPPInputExsity();  
+    Result CheckDymAIPPInputExsity();
 
     /**
     * @brief set single dynamic aipp config

@@ -20,10 +20,7 @@
 #include <vector>
 #include "Base/ErrorCode/ErrorCode.h"
 
-
-
 namespace Base {
-
 struct CropParams {
     int8_t cropSwitch;
     int32_t loadStartPosW;
@@ -39,16 +36,6 @@ struct PaddingParams {
     int32_t paddingSizeLeft;
     int32_t paddingSizeRight;
 };
-
-/* 310,310P,910都不支持
-struct ScfParams {
-    int8_t scfSwitch;
-    int32_t scfInputSizeW;
-    int32_t scfInputSizeH;
-    int32_t scfOutputSizeW;
-    int32_t scfOutputSizeH;
-}
-*/
 
 struct ScfParams {
     int8_t scfSwitch;
@@ -99,28 +86,6 @@ struct PixelVarReci {
 };
 
 class DynamicAippConfig {
-private:
-    //--------动态AIPP必填参数--------
-    std::string inputFormat; // 原始输入图像的格式
-    int32_t srcImageSizeW; // 原始图片尺寸
-    int32_t srcImageSizeH; // 原始图片尺寸
-    //--------动态AIPP必填参数--------
-  
-    int8_t rbuvSwapSwitch; // 是否交换R通道与B通道、或者是否交换U通道与V通道
-    int8_t axSwapSwitch; // RGBA->ARGB或者YUVA->AYUV的交换开关
-    
-    CscParams cscParams; // CSC色域转换相关的参数
-
-    //----------多个不同 batchIndex需要设置,map的key 为batchIndex -------- 
-    std::unordered_map<uint64_t, CropParams> cropParams = {}; // 抠图相关参数
-    std::unordered_map<uint64_t, PaddingParams> paddingParams = {}; // 补边相关参数
-    std::unordered_map<uint64_t, DtcPixelMean> dtcPixelMeanParams = {}; // 通道的均值
-    std::unordered_map<uint64_t, DtcPixelMin> dtcPixelMinParams = {}; // 通道的最小值
-    std::unordered_map<uint64_t, PixelVarReci> pixelVarReciParams = {};// 通道的方差
-    // 310,310P,910都不支持 scfParams
-
-    //----------多个不同 batchIndex需要设置-------- 
-
 public:
     DynamicAippConfig();
     ~DynamicAippConfig();
@@ -159,7 +124,25 @@ private:
     bool isActivated; // --aipp_config文件内容读取成功
     bool modelOK; // 模型只有一个动态aipp输入
 
-};
+    // --------动态AIPP必填参数--------
+    std::string inputFormat; // 原始输入图像的格式
+    int32_t srcImageSizeW; // 原始图片尺寸
+    int32_t srcImageSizeH; // 原始图片尺寸
+    // --------动态AIPP必填参数--------
+  
+    int8_t rbuvSwapSwitch; // 是否交换R通道与B通道、或者是否交换U通道与V通道
+    int8_t axSwapSwitch; // RGBA->ARGB或者YUVA->AYUV的交换开关
+    
+    CscParams cscParams; // CSC色域转换相关的参数
 
+    // ----------多个不同 batchIndex需要设置,map的key 为batchIndex --------
+    std::unordered_map<uint64_t, CropParams> cropParams = {}; // 抠图相关参数
+    std::unordered_map<uint64_t, PaddingParams> paddingParams = {}; // 补边相关参数
+    std::unordered_map<uint64_t, DtcPixelMean> dtcPixelMeanParams = {}; // 通道的均值
+    std::unordered_map<uint64_t, DtcPixelMin> dtcPixelMinParams = {}; // 通道的最小值
+    std::unordered_map<uint64_t, PixelVarReci> pixelVarReciParams = {}; // 通道的方差
+    // 310,310P,910都不支持 scfParams
+    // ----------多个不同 batchIndex需要设置--------
+};
 }  // namespace Base
 #endif

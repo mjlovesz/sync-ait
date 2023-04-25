@@ -45,19 +45,19 @@ int GetDynamicAippParaByBatch(size_t batchIndex, std::shared_ptr<Base::DynamicAi
             return batchIndex;
         } else {
             return -1;
-        }        
+        }
     } else if (cfgItem.compare("dtcPixelMin") == 0) {
         if (dyAippCfg->GetDtcPixelMin().count(batchIndex) == 1) {
             return batchIndex;
         } else {
             return -1;
-        }        
+        }
     } else if (cfgItem.compare("pixelVarReci") == 0) {
         if (dyAippCfg->GetPixelVarReci().count(batchIndex) == 1) {
             return batchIndex;
         } else {
             return -1;
-        }        
+        }
     }
 
     return -1;
