@@ -3,6 +3,7 @@ import sys
 import torch
 from torch import nn
 
+
 class AA(nn.Module):
 	def __init__(self):
 		super().__init__()
@@ -22,7 +23,12 @@ class AA(nn.Module):
 
 aa = AA()
 aa(torch.ones([1, 3, 32, 32]), torch.zeros([1, 3, 32, 32])).shape
-torch.onnx.export(aa, (torch.ones([1, 3, 32, 32]), torch.zeros([1, 3, 32, 32])), 'multi_dym_aipp_model.onnx', opset_version=11)
+torch.onnx.export(
+	aa,
+	(torch.ones([1, 3, 32, 32]), torch.zeros([1, 3, 32, 32])),
+	'multi_dym_aipp_model.onnx',
+	opset_version=11
+)
 
 
 
