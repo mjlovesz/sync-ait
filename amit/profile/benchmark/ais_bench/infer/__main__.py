@@ -258,7 +258,7 @@ def get_args():
                         help="Debug switch,print model information")
     parser.add_argument("--device", "-d", type=check_device_range_valid, default=0,
                         help="the NPU device ID to use.valid value range is [0, 255]")
-    parser.add_argument("--dymBatch", type=int, default=0, dest="dym_batch"
+    parser.add_argument("--dymBatch", type=int, default=0, dest="dym_batch",
                         help="dynamic batch size param，such as --dymBatch 2")
     parser.add_argument("--dymHW", type=str, default=None, dest="dym_hw",
                         help="dynamic image size param, such as --dymHW \"300,500\"")
