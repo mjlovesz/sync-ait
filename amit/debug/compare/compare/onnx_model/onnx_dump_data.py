@@ -132,7 +132,12 @@ class OnnxDumpData(DumpData):
         for index, node in enumerate(old_onnx_model.graph.node):
             if not node.name:
                 node.name = node.op_type + "_" + str(index)
-        outputs_name = [name for name in enumerate_model_node_outputs(old_onnx_model)]
+        if not self.args.dump:
+            old_onnx_model_graph_output = old_onnx_model.graph.output
+            outputs_name_list = [output_node.name for output_node in old_onnx_model_graph_output]
+            outputs_name = [name for name in enumerate_model_node_outputs(old_onnx_model) if name in outputs_name_list]
+        else:
+            outputs_name = [name for name in enumerate_model_node_outputs(old_onnx_model)]
         new_onnx_model = select_model_inputs_outputs(old_onnx_model, outputs_name)
         new_onnx_model_path = os.path.join(model_dir, "new_" + os.path.basename(self.args.model_path))
         bytes_model = new_onnx_model.SerializeToString()
@@ -247,3 +252,30 @@ class OnnxDumpData(DumpData):
         for output_item in session.get_outputs():
             net_output_node.append(output_item.name)
         return net_output_node
+
+    def generate_dump_data(self):
+        """
+        Function description:
+            generate onnx model dump data
+        Parameter:
+            none
+        Return Value:
+            onnx model dump data directory
+        Exception Description:
+            none
+        """
+        data_dir, onnx_dump_data_dir, model_dir = self._create_dir()
+        old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
+        session = self._load_session(new_onnx_model_path)
+        net_output_node = self._get_net_output_node()
+        inputs_tensor_info = self._get_inputs_tensor_info(session)
+        inputs_map = self._get_inputs_data(data_dir, inputs_tensor_info)
+        dump_bins = self._run_model(session, inputs_map)
+        self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
+        return onnx_dump_data_dir
+
+    def get_net_output_info(self):
+        """
+        get_net_output_info
+        """
+        return self.net_output
