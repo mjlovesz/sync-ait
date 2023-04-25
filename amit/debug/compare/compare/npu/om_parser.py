@@ -244,15 +244,15 @@ class OmParser(object):
 
     def _get_shape_list(self, list_list_int_object, shape_list):
         if LIST_LIST_I_OBJECT not in list_list_int_object:
-        for list_list_i in list_list_int_object.get(LIST_LIST_I_OBJECT):
-            if LIST_I_OBJECT in list_list_i:
-                list_i = list_list_i.get(LIST_I_OBJECT)
-                if -1 in list_i:
-                    self.contain_negative_1 = True
-                    return
-                if len(list_i) != 2:
-                    continue
-                shape_list.append(list(range(list_i[0], list_i[1] + 1)))
+            for list_list_i in list_list_int_object.get(LIST_LIST_I_OBJECT):
+                if LIST_I_OBJECT in list_list_i:
+                    list_i = list_list_i.get(LIST_I_OBJECT)
+                    if -1 in list_i:
+                        self.contain_negative_1 = True
+                        return
+                    if len(list_i) != 2:
+                        continue
+                    shape_list.append(list(range(list_i[0], list_i[1] + 1)))
 
     def _get_range_shape_size_list(self, input_object):
         range_shape_size_list = []

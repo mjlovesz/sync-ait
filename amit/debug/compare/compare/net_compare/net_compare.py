@@ -64,21 +64,21 @@ class NetCompare(object):
         if catch == 0:
             return
         try:
-                # get the compare result
-                info = log_line.decode().split(INFO_FLAG)
-                if len(info) > 1:
-                    info_content = info[1].strip().split(" ")
-                    info_content = [item for item in info_content if item != '']
-                    pattern_num = re.compile(r'^([0-9]+)\.?([0-9]+)?')
-                    pattern_nan = re.compile(r'NaN', re.I)
-                    pattern_header = re.compile(r'Cosine|Error|Distance|Divergence|Deviation', re.I)
-                    match = pattern_num.match(info_content[0])
-                    if match:
-                        result = info_content
-                    if not match and pattern_nan.match(info_content[0]):
-                        result = info_content
-                    if not match and pattern_header.search(info_content[0]):
-                        header = info_content
+            # get the compare result
+            info = log_line.decode().split(INFO_FLAG)
+            if len(info) > 1:
+                info_content = info[1].strip().split(" ")
+                info_content = [item for item in info_content if item != '']
+                pattern_num = re.compile(r'^([0-9]+)\.?([0-9]+)?')
+                pattern_nan = re.compile(r'NaN', re.I)
+                pattern_header = re.compile(r'Cosine|Error|Distance|Divergence|Deviation', re.I)
+                match = pattern_num.match(info_content[0])
+                if match:
+                    result = info_content
+                if not match and pattern_nan.match(info_content[0]):
+                    result = info_content
+                if not match and pattern_header.search(info_content[0]):
+                    header = info_content
             return result, header
         except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError):
             utils.print_warn_log('Failed to parse the alg compare result!')
