@@ -320,12 +320,12 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
 
     DestroyInferCacheData();
 
-    if (inputs.size() != modelDesc_.inTensorsDesc.size()){
+    if (inputs.size() != modelDesc_.inTensorsDesc.size()) {
         WARN_LOG("intensors in:%zu need:%zu not match", inputs.size(), modelDesc_.inTensorsDesc.size());
         return APP_ERR_ACL_FAILURE;
     }
 
-    if (dynamicInfo_.dynamicType != DYNAMIC_DIMS && dym_gear_count_ > 0){
+    if (dynamicInfo_.dynamicType != DYNAMIC_DIMS && dym_gear_count_ > 0) {
         WARN_LOG("check failed dym gearcount:%zu but dymtype:%d not set", dym_gear_count_, dynamicInfo_.dynamicType);
         return APP_ERR_ACL_FAILURE;
     }

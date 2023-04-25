@@ -478,6 +478,24 @@ void RegistInferenceSession(py::module &m)
     model.def("sumary", &Base::PyInferenceSession::GetSumaryInfo, py::return_value_policy::reference);
     model.def("get_inputs", &Base::PyInferenceSession::GetInputs, py::return_value_policy::reference);
     model.def("get_outputs", &Base::PyInferenceSession::GetOutputs, py::return_value_policy::reference);
+    model.def("reset_sumaryinfo", &Base::PyInferenceSession::ResetSumaryInfo);
+    model.def("set_staticbatch", &Base::PyInferenceSession::SetStaticBatch);
+    model.def("set_dynamic_batchsize", &Base::PyInferenceSession::SetDynamicBatchsize);
+    model.def("set_dynamic_hw", &Base::PyInferenceSession::SetDynamicHW);
+    model.def("set_dynamic_dims", &Base::PyInferenceSession::SetDynamicDims);
+    model.def("set_dynamic_shape", &Base::PyInferenceSession::SetDynamicShape);
+    model.def("set_custom_outsize", &Base::PyInferenceSession::SetCustomOutTensorsSize);
+
+    model.def("create_tensor_from_fileslist", &Base::PyInferenceSession::CreateTensorFromFilesList);
+    model.def("finalize", &Base::PyInferenceSession::Finalize);
+    RegistAippConfig(model);
+
+    m.def("model", &CreateModelInstance, "modelPath"_a, "deviceId"_a = 0, "options"_a=py::none());
+}
+
+void RegistAippConfig(auto& model)
+{
+    using namespace pybind11::literals;
 
     model.def("get_max_dym_batchsize", &Base::PyInferenceSession::GetMaxDymBatchsize);
     model.def("get_dym_aipp_input_exsity", &Base::PyInferenceSession::GetDymAIPPInputExsity);
@@ -495,18 +513,5 @@ void RegistInferenceSession(py::module &m)
     model.def("aipp_set_dtc_pixel_mean", &Base::PyInferenceSession::SetDtcPixelMean);
     model.def("aipp_set_dtc_pixel_min", &Base::PyInferenceSession::SetDtcPixelMin);
     model.def("aipp_set_pixel_var_reci", &Base::PyInferenceSession::SetPixelVarReci);
-
-    model.def("reset_sumaryinfo", &Base::PyInferenceSession::ResetSumaryInfo);
-    model.def("set_staticbatch", &Base::PyInferenceSession::SetStaticBatch);
-    model.def("set_dynamic_batchsize", &Base::PyInferenceSession::SetDynamicBatchsize);
-    model.def("set_dynamic_hw", &Base::PyInferenceSession::SetDynamicHW);
-    model.def("set_dynamic_dims", &Base::PyInferenceSession::SetDynamicDims);
-    model.def("set_dynamic_shape", &Base::PyInferenceSession::SetDynamicShape);
-    model.def("set_custom_outsize", &Base::PyInferenceSession::SetCustomOutTensorsSize);
-
-    model.def("create_tensor_from_fileslist", &Base::PyInferenceSession::CreateTensorFromFilesList);
-    model.def("finalize", &Base::PyInferenceSession::Finalize);
-
-    m.def("model", &CreateModelInstance, "modelPath"_a, "deviceId"_a = 0, "options"_a=py::none());
 }
 #endif
