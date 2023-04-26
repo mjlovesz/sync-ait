@@ -101,6 +101,7 @@ Available knowledges:
   12 KnowledgeGatherToSplit
   13 KnowledgeAvgPoolSplit
   14 KnowledgeBNFolding
+  15 KnowledgeModifyReflectionPad
 ```
 
 列举的知识库按照“序号”+“知识库名称”的格式展示，**evaluate**或**optimize**命令通过**knowledges**参数指定知识库时，可指定知识库序号或名称。关于具体知识库的详细信息，请参见[知识库文档](docs/knowledge_optimizer/knowledge_optimizer_rules.md)。
@@ -131,7 +132,7 @@ python3 -m auto_optimizer evaluate aasist_bs1_ori.onnx
 ```
 
 ```
-aasist_bs1_ori.onnx    KnowledgeConv1d2Conv2d,KnowledgeMergeConsecutiveSlice,KnowledgeTransposeLargeInputConv,KnowledgeTypeCast,KnowledgeMergeCasts
+2023-04-27 14:37:10,364 - auto-optimizer-logger - INFO - aasist_bs1_ori.onnx    KnowledgeConv1d2Conv2d,KnowledgeMergeConsecutiveSlice,KnowledgeTransposeLargeInputConv,KnowledgeTypeCast,KnowledgeMergeCasts
 ```
 
 ### optimize命令
@@ -159,14 +160,14 @@ python3 -m auto_optimizer optimize aasist_bs1_ori.onnx aasist_bs1_ori_out.onnx
 ```
 
 ```bash
-Optimization success
-Applied knowledges:
-  KnowledgeConv1d2Conv2d
-  KnowledgeMergeConsecutiveSlice
-  KnowledgeTransposeLargeInputConv
-  KnowledgeTypeCast
-  KnowledgeMergeCasts
-Path: aasist_bs1_ori.onnx -> aasist_bs1_ori_out.onnx
+2023-04-27 14:31:33,378 - auto-optimizer-logger - INFO - Optimization success
+2023-04-27 14:31:33,378 - auto-optimizer-logger - INFO - Applied knowledges:
+2023-04-27 14:31:33,378 - auto-optimizer-logger - INFO -   KnowledgeConv1d2Conv2d
+2023-04-27 14:31:33,378 - auto-optimizer-logger - INFO -   KnowledgeMergeConsecutiveSlice
+2023-04-27 14:31:33,378 - auto-optimizer-logger - INFO -   KnowledgeTransposeLargeInputConv
+2023-04-27 14:31:33,378 - auto-optimizer-logger - INFO -   KnowledgeTypeCast
+2023-04-27 14:31:33,378 - auto-optimizer-logger - INFO -   KnowledgeMergeCasts
+2023-04-27 14:31:33,378 - auto-optimizer-logger - INFO - Path: aasist_bs1_ori.onnx -> aasist_bs1_ori_out.onnx
 ```
 
 ### extract命令
@@ -195,7 +196,7 @@ python3 -m auto_optimizer extract origin_model.onnx sub_model.onnx node1 node2
 ```
 
 ```bash
-Extract the model completed, model was saved in sub_model.onnx
+2023-04-27 14:32:33,378 - auto-optimizer-logger - INFO - Extract the model completed, model was saved in sub_model.onnx
 ```
 ## 许可证
 

@@ -22,8 +22,9 @@ import numpy as np
 from collections import deque
 from onnx import helper, GraphProto, ModelProto, OperatorSetIdProto, version_converter
 
-from .. import BaseGraph, Initializer, PlaceHolder, Node
-from .node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
+from auto_optimizer.graph_refactor import BaseGraph, Initializer, PlaceHolder, Node
+from auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
+from auto_optimizer.tools.log import logger
 
 
 class OnnxGraph(BaseGraph):
@@ -196,7 +197,7 @@ class OnnxGraph(BaseGraph):
 
         with tempfile.TemporaryDirectory() as tmpdirname:
             self.save(os.path.join(tmpdirname, 'model.onnx'))
-            print('Begin to extract the model.')
+            logger.info('Begin to extract the model.')
             try:
                 onnx.utils.extract_model(
                     os.path.join(tmpdirname, 'model.onnx'),
@@ -206,7 +207,7 @@ class OnnxGraph(BaseGraph):
                 )
             except ValueError as e:
                 raise RuntimeError('Function extract() does not support a Large ONNX Model >2GB currently.') from e
-            print('Extract the model completed, model saved in {}.'.format(
+            logger.info('Extract the model completed, model saved in {}.'.format(
                 new_model_save_path))
         return OnnxGraph.parse(new_model_save_path)
 
@@ -259,17 +260,17 @@ class OnnxGraph(BaseGraph):
 
         subgraph_dir = os.path.dirname(os.path.abspath(subgraph_path))
         if not os.path.exists(subgraph_dir):
-            print("{} is not exist.".format(subgraph_dir))
+            logger.info("{} is not exist.".format(subgraph_dir))
         else:
             subgraph.save(subgraph_path)
-            print('Extract the model completed, model saved in {}.'.format(
+            logger.info('Extract the model completed, model saved in {}.'.format(
                         subgraph_path))
 
         if is_check_subgraph:
             try:
                 onnx.checker.check_model(subgraph.model())
             except Exception as exp:
-                print("Check subgraph failed, error is:", exp)
+                logger.info("Check subgraph failed, error is:", exp)
 
         return subgraph
 
