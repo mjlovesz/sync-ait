@@ -299,6 +299,13 @@ class NpuDumpData(DumpData):
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
         return npu_dump_data_path, npu_net_output_data_path
 
+    def shape_size_array_vs_bin_files_size_array(self, shape_size_array, bin_files_size_array):
+        for shape_size in shape_size_array:
+                for bin_size in bin_files_size_array:
+                    if bin_size <= shape_size:
+                        return True
+        return False
+
     def _make_benchmark_cmd_for_shape_range(self, benchmark_cmd):
         pattern = re.compile(r'^[0-9]+$')
         count = self.om_parser.get_net_output_count()
@@ -362,13 +369,6 @@ class NpuDumpData(DumpData):
         else:
             bin_file_path_array = utils.check_input_bin_file_path(self.arguments.input_path)
             self.arguments.benchmark_input_path = ",".join(bin_file_path_array)
-
-    def shape_size_array_vs_bin_files_size_array(self, shape_size_array, bin_files_size_array):
-        for shape_size in shape_size_array:
-                for bin_size in bin_files_size_array:
-                    if bin_size <= shape_size:
-                        return True
-        return False
 
     def _compare_shape_vs_bin_file(self):
         shape_size_array = self.om_parser.get_shape_size()
