@@ -14,7 +14,7 @@
 
 import onnx
 from onnx import AttributeProto
-from .parse_tools import parse_str2val
+from utils.parse_tools import parse_str2val
 
 
 def make_new_node(node_info):

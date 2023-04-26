@@ -602,6 +602,7 @@ xml.TextReader = class {
         const name = this._name();
         if (name === null || name === undefined) {
             this._error('Expected entity name', position);
+            return ""
         }
         if (!name.endsWith(':') && name.indexOf(':') !== -1) {
             this._error('Invalid colon in entity name', position);
