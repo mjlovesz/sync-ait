@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging
 import os
 from multiprocessing import Pool
 import pathlib
@@ -21,11 +20,14 @@ from typing import List
 
 import click
 from click_aliases import ClickAliasedGroup
+from click.exceptions import UsageError
 
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern import KnowledgeFactory
+from auto_optimizer.logger import logger
+
 from .options import (
     arg_path,
     arg_input,
@@ -47,6 +49,9 @@ from .options import (
     opt_output_size,
     opt_processes,
 )
+
+
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 def is_graph_input_static(graph: BaseGraph) -> bool:
@@ -74,8 +79,8 @@ def optimize_onnx(
         config.is_static = is_graph_input_static(graph)
         if infer_test:
             if not (config.is_static or (config.input_shape_range and config.dynamic_shape and config.output_size)):
-                logging.warning('Failed to optimize %s with inference test.', input_model.as_posix())
-                logging.warning('Didn\'t specify input_shape_range or dynamic_shape or output_size.')
+                logger.warning('Failed to optimize %s with inference test.', input_model.as_posix())
+                logger.warning('Didn\'t specify input_shape_range or dynamic_shape or output_size.')
                 return []
         optimize_action = partial(optimizer.apply_knowledges_with_infer_test, cfg=config) \
             if infer_test else optimizer.apply_knowledges
@@ -86,8 +91,8 @@ def optimize_onnx(
             graph_opt.save(output_model.as_posix())
         return applied_knowledges
     except Exception as exc:
-        logging.warning('%s optimize failed.', input_model.as_posix())
-        logging.warning('exception: %s', exc)
+        logger.warning('%s optimize failed.', input_model.as_posix())
+        logger.warning('exception: %s', exc)
         return []
 
 
@@ -99,23 +104,28 @@ def evaluate_onnx(
     '''Search knowledge pattern in a onnx model.'''
     try:
         if verbose:
-            print(f'Evaluating {model.as_posix()}')
+            logger.info(f'Evaluating {model.as_posix()}')
         graph = OnnxGraph.parse(model.as_posix(), add_name_suffix=False)
         graph, applied_knowledges = optimizer.apply_knowledges(graph)
         return applied_knowledges
     except Exception as exc:
-        logging.warning('%s match failed.', model.as_posix())
-        logging.warning('exception: %s', exc)
+        logger.warning('%s match failed.', model.as_posix())
+        logger.warning('exception: %s', exc)
         return []
 
 
-@click.group(cls=ClickAliasedGroup)
+class FormatMsg:
+    def show(self, file=None) -> None:
+        logger.error(self.format_message())
+
+
+@click.group(cls=ClickAliasedGroup, context_settings=CONTEXT_SETTINGS)
 def cli() -> None:
     '''main entrance of auto optimizer.'''
     pass
 
 
-@cli.command('list', short_help='List available Knowledges.')
+@cli.command('list', short_help='List available Knowledges.', context_settings=CONTEXT_SETTINGS)
 def command_list() -> None:
     registered_knowledges = KnowledgeFactory.get_knowledge_pool()
     print('Available knowledges:')
@@ -126,7 +136,8 @@ def command_list() -> None:
 @cli.command(
     'evaluate',
     aliases=['eva'],
-    short_help='Evaluate model matching specified knowledges.'
+    short_help='Evaluate model matching specified knowledges.',
+    context_settings=CONTEXT_SETTINGS
 )
 @arg_path
 @opt_optimizer
@@ -152,7 +163,7 @@ def command_evaluate(
             if not knowledges:
                 continue
             summary = ','.join(knowledges)
-            print(f'{file}\t{summary}')
+            logger.info(f'{file}\t{summary}')
         return
 
     for onnx_file in onnx_files:
@@ -160,13 +171,14 @@ def command_evaluate(
         if not knowledges:
             continue
         summary = ','.join(knowledges)
-        print(f'{onnx_file}\t{summary}')
+        logger.info(f'{onnx_file}\t{summary}')
 
 
 @cli.command(
     'optimize',
     aliases=['opt'],
-    short_help='Optimize model with specified knowledges.'
+    short_help='Optimize model with specified knowledges.',
+    context_settings=CONTEXT_SETTINGS
 )
 @arg_input
 @arg_output
@@ -198,7 +210,7 @@ def command_optimize(
     input_model_ = pathlib.Path(input_model.decode()) if isinstance(input_model, bytes) else input_model
     output_model_ = pathlib.Path(output_model.decode()) if isinstance(output_model, bytes) else output_model
     if input_model_ == output_model_:
-        logging.warning('output_model is input_model, refuse to overwrite origin model!')
+        logger.warning('output_model is input_model, refuse to overwrite origin model!')
         return
     config = InferTestConfig(
         converter='atc',
@@ -219,23 +231,24 @@ def command_optimize(
         config=config,
     )
     if infer_test:
-        print('\n' + '=' * 100)
+        logger.info('=' * 100)
     if applied_knowledges:
-        print('Result: Success')
-        print('Applied knowledges: ')
+        logger.info('Result: Success')
+        logger.info('Applied knowledges: ')
         for knowledge in applied_knowledges:
-            print(f'  {knowledge}')
-        print(f'Path: {input_model_} -> {output_model_}')
+            logger.info(f'  {knowledge}')
+        logger.info(f'Path: {input_model_} -> {output_model_}')
     else:
-        print('Result: Unable to optimize, no knowledges matched.')
+        logger.info('Result: Unable to optimize, no knowledges matched.')
     if infer_test:
-        print('=' * 100 + '\n')
+        logger.info('=' * 100)
 
 
 @cli.command(
     'extract',
     aliases=['ext'],
-    short_help='Extract subgraph from onnx model.'
+    short_help='Extract subgraph from onnx model.',
+    context_settings=CONTEXT_SETTINGS
 )
 @arg_input
 @arg_output
@@ -250,18 +263,19 @@ def command_extract(
     is_check_subgraph
 ) -> None:
     if input_model == output_model:
-        logging.warning('output_model is input_model, refuse to overwrite origin model!')
+        logger.warning('output_model is input_model, refuse to overwrite origin model!')
         return
     output_model_dir = os.path.dirname(os.path.abspath(output_model.as_posix()))
     if not os.path.exists(output_model_dir):
-        print("{} is not exist.".format(output_model_dir))
+        logger.error("{} is not exist.".format(output_model_dir))
         return
     onnx_graph = OnnxGraph.parse(input_model.as_posix())
     try:
         onnx_graph.extract_subgraph(output_model, start_node_name, end_node_name, is_check_subgraph)
     except ValueError as err:
-        print(err)
+        logger.error(err)
 
 
 if __name__ == "__main__":
+    UsageError.show = FormatMsg.show
     cli()

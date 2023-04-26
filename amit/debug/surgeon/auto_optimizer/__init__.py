@@ -16,3 +16,4 @@ from .common import Register
 from .common.config import Config
 from .pattern import KnowledgeFactory
 from .graph_refactor import OnnxGraph, OnnxPlaceHolder, OnnxInitializer, OnnxNode
+from .tools.log import logger
