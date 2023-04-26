@@ -125,13 +125,20 @@ output-path/timestamp
 │   ├── npu(npu的dump数据目录)
 │   │   ├── timestamp
 │   │   │   └── resnet50_output_0.bin
-│   │   └── 20210206030403
-│   │       └── 0
-│   │           └── resnet50
-│   │               └── 1
-│   │                   └── 0
-│   │                       ├── Data.inputx.1.3.1596191801455614
-│   │                       └── Cast.trans_Cast_169.62.5.1596191801355614
+│   │   ├── 20210206030403
+│   │   │   └── 0
+│   │   │       └── resnet50
+│   │   │           └── 1
+│   │   │               └── 0
+│   │   │                   ├── Data.inputx.1.3.1596191801455614
+│   │   │                   └── Cast.trans_Cast_169.62.5.1596191801355614
+│   │   └── 20210206030403_bin2npy(如果使用--convert参数,该目录存npu的dump数据bin文件转换后的npy文件)
+│   │       └── 0
+│   │           └── resnet50
+│   │               └── 1
+│   │                   └── 0
+│   │                       ├── Data.inputx.1.3.1596191801455614.input.0.npy
+│   │                       └── Cast.trans_Cast_169.62.5.1596191801355614.input.0.npy
 │   ├── onnx(如果-m模型为.onnx，onnx的dump数据目录)
 │   │     └── conv1_relu.0.1596191800668285.npy
 │   └── tf(如果-m模型为.pb，tf的dump数据目录)
