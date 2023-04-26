@@ -377,6 +377,13 @@ class NpuDumpData(DumpData):
             bin_file_size.append(os.path.getsize(item))
         return bin_file_size
 
+    def shape_size_array_vs_bin_files_size_array(self, shape_size_array, bin_files_size_array):
+        for shape_size in shape_size_array:
+                for bin_size in bin_files_size_array:
+                    if bin_size <= shape_size:
+                        return True
+        return False
+
     def _shape_size_vs_bin_file_size(self, shape_size_array, bin_files_size_array):
         if len(shape_size_array) < len(bin_files_size_array):
             utils.print_error_log("The number of input bin files is incorrect.")
@@ -398,10 +405,3 @@ class NpuDumpData(DumpData):
                 if shape_size != bin_file_size:
                     utils.print_error_log("The shape value is different from the size of the bin file.")
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
-
-    def shape_size_array_vs_bin_files_size_array(shape_size_array, bin_files_size_array):
-        for shape_size in shape_size_array:
-                for bin_size in bin_files_size_array:
-                    if bin_size <= shape_size:
-                        return True
-        return False

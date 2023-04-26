@@ -213,16 +213,6 @@ class OnnxDumpData(DumpData):
             utils.print_info_log("net_output node is:{}, file path is {}".format(key, value))
         utils.print_info_log("dump data success")
 
-    def _get_net_output_node(self):
-        """
-        get net output name
-        """
-        net_output_node = []
-        session = self._load_session(self.args.model_path)
-        for output_item in session.get_outputs():
-            net_output_node.append(output_item.name)
-        return net_output_node
-
     def generate_dump_data(self):
         """
         Function description:
@@ -244,6 +234,16 @@ class OnnxDumpData(DumpData):
         self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
         return onnx_dump_data_dir
 
+    def _get_net_output_node(self):
+        """
+        get net output name
+        """
+        net_output_node = []
+        session = self._load_session(self.args.model_path)
+        for output_item in session.get_outputs():
+            net_output_node.append(output_item.name)
+        return net_output_node
+    
     def get_net_output_info(self):
         """
         get_net_output_info
