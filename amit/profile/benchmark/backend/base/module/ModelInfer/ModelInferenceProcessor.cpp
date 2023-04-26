@@ -585,13 +585,15 @@ APP_ERROR ModelInferenceProcessor::FreeDymInfoMem()
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::SetStaticBatch(){
+APP_ERROR ModelInferenceProcessor::SetStaticBatch()
+{
     FreeDymInfoMem();
     dynamicInfo_.dynamicType = STATIC_BATCH;
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::SetDynamicBatchsize(int batchsize){
+APP_ERROR ModelInferenceProcessor::SetDynamicBatchsize(int batchsize)
+{
     bool is_dymbatch = false;
 
     FreeDymInfoMem();
@@ -600,7 +602,7 @@ APP_ERROR ModelInferenceProcessor::SetDynamicBatchsize(int batchsize){
     CHECK_RET_EQ(processModel->GetMaxBatchSize(dynamicInfo_.dyBatch.maxbatchsize), SUCCESS);
 
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
-        if (find(modelDesc_.inTensorsDesc[i].shape.begin(), modelDesc_.inTensorsDesc[i].shape.end(), -1) != modelDesc_.inTensorsDesc[i].shape.end()){
+        if (find(modelDesc_.inTensorsDesc[i].shape.begin(), modelDesc_.inTensorsDesc[i].shape.end(), -1) != modelDesc_.inTensorsDesc[i].shape.end()) {
             modelDesc_.inTensorsDesc[i].realsize = modelDesc_.inTensorsDesc[i].size * batchsize / dynamicInfo_.dyBatch.maxbatchsize;
         }
     }
