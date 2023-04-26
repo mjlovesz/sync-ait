@@ -220,7 +220,7 @@ class OmParser(object):
     def _get_data_input_desc(self):
         input_desc_list = []
         for operator in self._gen_operator_list():
-            if DATA_OBJECT == operator.get(TYPE_OBJECT) and len(operator.get(INPUT_DESC_OBJECT)):
+            if DATA_OBJECT == operator.get(TYPE_OBJECT) and operator.get(INPUT_DESC_OBJECT):
                 for item in operator.get(INPUT_DESC_OBJECT):
                     input_desc_list.append(item)
         return input_desc_list

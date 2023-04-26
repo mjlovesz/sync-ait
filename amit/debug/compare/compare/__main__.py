@@ -25,7 +25,7 @@ from compare.adapter_cli.options import (
     opt_output_size,
     opt_output_nodes,
     opt_advisor,
-    opt_dymShape_range,
+    opt_dym_shape_range,
     opt_dump,
     opt_bin2npy
 )
@@ -43,13 +43,13 @@ from main import main
 @opt_output_size
 @opt_output_nodes
 @opt_advisor
-@opt_dymShape_range
+@opt_dym_shape_range
 @opt_dump
 @opt_bin2npy
 def compare_cli_enter(
     gold_model,
     om_model,
-    input_data_path,
+    input_path,
     cann_path,
     out_path,
     input_shape,
@@ -57,12 +57,12 @@ def compare_cli_enter(
     output_size,
     output_nodes,
     advisor,
-    dymShape_range, 
+    dym_shape_range, 
     dump, 
     bin2npy
 ) -> None:
-    my_agrs = MyArgs(gold_model, om_model, input_data_path, cann_path, out_path, input_shape, device,
-                     output_size, output_nodes, advisor, dymShape_range, dump, bin2npy)
+    my_agrs = MyArgs(gold_model, om_model, input_path, cann_path, out_path, input_shape, device,
+                     output_size, output_nodes, advisor, dym_shape_range, dump, bin2npy)
     return main(my_agrs)
 
 if __name__ == '__main__':
