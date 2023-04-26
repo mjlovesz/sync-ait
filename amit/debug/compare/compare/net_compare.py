@@ -212,14 +212,14 @@ class NetCompare(object):
                 else:
                     header = []
                 with os.fdopen(os.open(result_file_path, WRITE_FLAGS, WRITE_MODES), "a+") as fp_writer:
-                    self._process_result_to_csv(fp_writer, npu_file_name, golden_file_name, result, header)
+                    self._process_result_to_csv(fp_writer, npu_file_name, golden_file_name, result, header, index)
+                    index += 1
             else:
                 # read result file and write it to backup file,update the result of compare Node_output
                 with open(result_file_path, "r") as fp_read:
                     with os.fdopen(os.open(result_file_backup_path, WRITE_FLAGS, WRITE_MODES), 'w',
                                    newline="") as fp_write:
-                        self._process_result_one_line(fp_write, fp_read, npu_file_name, golden_file_name, result, index)
-                        index += 1
+                        self._process_result_one_line(fp_write, fp_read, npu_file_name, golden_file_name, result)
                 os.remove(result_file_path)
                 os.rename(result_file_backup_path, result_file_path)
         except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError) as error:
@@ -277,12 +277,12 @@ class NetCompare(object):
     def _process_result_to_csv(self, fp_write, npu_file_name, golden_file_name, result, header, index):
         writer = csv.writer(fp_write)
         if header:
-            haeder_base_info = [
+            header_base_info = [
                 'Index', 'OpType', 'NPUDump', 'DataType', 'Address',
                 'GroundTruth', 'DataType', 'TensorIndex', 'Shape'
                 ]
             header_base_info.extend(header)
-            writer.writerow(haeder_base_info)
+            writer.writerow(header_base_info)
         new_content = [str(index), "NaN", "Node_Output", "NaN", "NaN",
                        npu_file_name, "NaN", golden_file_name, "[]"]
         new_content.extend(result)
