@@ -31,6 +31,7 @@ from utils import parse_str2np, np2onnxdtype
 
 
 class OnnxModifier:
+    ONNX_MODIFIER = None
     def __init__(self, model_name, model_proto):
         self.model_name = model_name
         self.model_proto_backup = model_proto
@@ -46,7 +47,8 @@ class OnnxModifier:
     def from_model_path(cls, model_path):
         model_name = os.path.basename(model_path)
         model_proto = onnx.load(model_path)
-        return cls(model_name, model_proto)
+        cls.ONNX_MODIFIER = cls(model_name, model_proto)
+        return cls.ONNX_MODIFIER
 
     @classmethod
     def from_name_stream(cls, name, stream):
@@ -55,7 +57,8 @@ class OnnxModifier:
         stream.seek(0)
         model_proto = onnx.load_model(stream, onnx.ModelProto, load_external_data=False)
         logging.info("load done!")
-        return cls(name, model_proto)
+        cls.ONNX_MODIFIER = cls(name, model_proto)
+        return cls.ONNX_MODIFIER
 
     def reload(self):
         self.model_proto = copy.deepcopy(self.model_proto_backup)

@@ -23,7 +23,6 @@ from onnx_modifier import OnnxModifier
 
 app = Flask(__name__)
 
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -33,9 +32,7 @@ def index():
 def open_model():
     # https://blog.miguelgrinberg.com/post/handling-file-uploads-with-flask
     onnx_file = request.files['file']
-
-    global ONNX_MODIFIER
-    ONNX_MODIFIER = OnnxModifier.from_name_stream(onnx_file.filename, onnx_file.stream)
+    OnnxModifier.from_name_stream(onnx_file.filename, onnx_file.stream)
 
     return 'OK', 200
 
@@ -44,9 +41,9 @@ def open_model():
 def modify_and_download_model():
     modify_info = request.get_json()
     
-    ONNX_MODIFIER.reload()   # allow downloading for multiple times
-    ONNX_MODIFIER.modify(modify_info)
-    ONNX_MODIFIER.check_and_save_model()
+    OnnxModifier.ONNX_MODIFIER.reload()   # allow downloading for multiple times
+    OnnxModifier.ONNX_MODIFIER.modify(modify_info)
+    OnnxModifier.ONNX_MODIFIER.check_and_save_model()
 
     return 'OK', 200
 
@@ -59,12 +56,12 @@ def modify_and_onnxsmi_model():
         return "请安装 onnxsim", 599
     modify_info = request.get_json()
     
-    ONNX_MODIFIER.reload()   # allow downloading for multiple times
-    ONNX_MODIFIER.modify(modify_info)
-    save_path = ONNX_MODIFIER.check_and_save_model(save_dir="modified_onnx")
+    OnnxModifier.ONNX_MODIFIER.reload()   # allow downloading for multiple times
+    OnnxModifier.ONNX_MODIFIER.modify(modify_info)
+    save_path = OnnxModifier.ONNX_MODIFIER.check_and_save_model(save_dir="modified_onnx")
 
     # convert model
-    model_simp, check = simplify(ONNX_MODIFIER.model_proto)
+    model_simp, check = simplify(OnnxModifier.ONNX_MODIFIER.model_proto)
     onnx.save(model_simp, save_path)
     return send_file(save_path)
 
@@ -78,9 +75,9 @@ def modify_and_optimizer_model():
     
     import subprocess
     modify_info = request.get_json()
-    ONNX_MODIFIER.reload()   # allow downloading for multiple times
-    ONNX_MODIFIER.modify(modify_info)
-    save_path = ONNX_MODIFIER.check_and_save_model(save_dir="modified_onnx")
+    OnnxModifier.ONNX_MODIFIER.reload()   # allow downloading for multiple times
+    OnnxModifier.ONNX_MODIFIER.modify(modify_info)
+    save_path = OnnxModifier.ONNX_MODIFIER.check_and_save_model(save_dir="modified_onnx")
 
     # convert model
     optimized_path = f"{save_path}.opti.onnx"
