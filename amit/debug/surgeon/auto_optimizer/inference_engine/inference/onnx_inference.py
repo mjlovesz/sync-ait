@@ -18,8 +18,8 @@ from abc import ABC
 import onnxruntime as rt
 import numpy as np
 
-from .inference_base import InferenceBase
-from ..data_process_factory import InferenceFactory
+from auto_optimizer.inference_engine.inference.inference_base import InferenceBase
+from auto_optimizer.inference_engine.data_process_factory import InferenceFactory
 
 logging = logging.getLogger("auto-optimizer")
 

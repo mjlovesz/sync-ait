@@ -14,7 +14,6 @@
 
 import logging
 import sys
-
 from logging import StreamHandler, Formatter
 from logging.handlers import RotatingFileHandler
 from typing import Union

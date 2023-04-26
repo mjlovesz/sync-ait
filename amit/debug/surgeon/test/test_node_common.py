@@ -18,7 +18,7 @@ from typing import cast
 import numpy as np
 from onnx import helper, numpy_helper
 
-from auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
 
 try:
     np_dtype_to_tensor_dtype = helper.np_dtype_to_tensor_dtype

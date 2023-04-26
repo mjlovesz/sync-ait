@@ -17,12 +17,12 @@ import unittest
 
 import numpy as np
 
-from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
-from auto_optimizer.graph_refactor.onnx.node import (
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.node import (
     OnnxPlaceHolder, OnnxInitializer, OnnxNode
 )
-from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from helper import KnowledgeTestHelper
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from debug.surgeon.test.helper import KnowledgeTestHelper
 
 
 def create_test_graph(name: str = 'test_graph') -> BaseGraph:

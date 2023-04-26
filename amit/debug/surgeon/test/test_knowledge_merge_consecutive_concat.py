@@ -21,9 +21,9 @@ from onnx import (
     TensorProto,
 )
 
-from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from auto_optimizer.pattern.knowledges.knowledge_merge_consecutive_concat import KnowledgeMergeConsecutiveConcat
-from helper import KnowledgeTestHelper, OptimizationConfig
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_merge_consecutive_concat import KnowledgeMergeConsecutiveConcat
+from debug.surgeon.test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_c2_concat_model(onnx_name, x, y, z, diff_axis=False):

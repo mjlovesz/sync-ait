@@ -18,6 +18,8 @@ from multiprocessing import Pool
 import pathlib
 from functools import partial
 from typing import List
+import sys
+import os
 
 import click
 from click_aliases import ClickAliasedGroup
@@ -109,7 +111,7 @@ def evaluate_onnx(
         return []
 
 
-@click.group(cls=ClickAliasedGroup)
+@click.group(name="surgeon", cls=ClickAliasedGroup)
 def cli() -> None:
     '''main entrance of auto optimizer.'''
     pass

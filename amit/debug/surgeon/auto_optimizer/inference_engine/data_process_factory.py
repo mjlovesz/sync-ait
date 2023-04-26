@@ -15,13 +15,13 @@
 import logging
 
 from typing import Dict, Type
-from .pre_process.pre_process_base import PreProcessBase
-from .post_process.post_process_base import PostProcessBase
-from .evaluate.evaluate_base import EvaluateBase
-from .inference.inference_base import InferenceBase
-from .datasets.dataset_base import DatasetBase
+from auto_optimizer.inference_engine.pre_process.pre_process_base import PreProcessBase
+from auto_optimizer.inference_engine.post_process.post_process_base import PostProcessBase
+from auto_optimizer.inference_engine.evaluate.evaluate_base import EvaluateBase
+from auto_optimizer.inference_engine.inference.inference_base import InferenceBase
+from auto_optimizer.inference_engine.datasets.dataset_base import DatasetBase
 
-from ..common.utils import typeassert
+from auto_optimizer.common.utils import typeassert
 
 logging = logging.getLogger("auto-optimizer")
 

@@ -14,8 +14,8 @@
 
 from typing import Dict
 
-from .register import Register
-from .utils import format_to_module
+from auto_optimizer.common.register import Register
+from auto_optimizer.common.utils import format_to_module
 
 
 class ConfigDict(Dict):

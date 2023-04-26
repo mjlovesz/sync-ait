@@ -17,11 +17,11 @@ from itertools import chain
 import unittest
 import numpy as np
 
-from auto_optimizer.graph_refactor.interface.base_node import PlaceHolder, Initializer, Node
-from auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
-from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from test_node_common import is_ph_equal, is_ini_equal, is_node_equal
-from test_graph_basic import is_graph_equal, create_graph_1
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_node import PlaceHolder, Initializer, Node
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from debug.surgeon.test.test_node_common import is_ph_equal, is_ini_equal, is_node_equal
+from debug.surgeon.test.test_graph_basic import is_graph_equal, create_graph_1
 
 
 def create_graph(name: str = 'test_graph'):

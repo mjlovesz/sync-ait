@@ -17,7 +17,7 @@ from typing import List, Dict, Optional, Sequence, Union, cast
 import numpy as np
 from onnx import NodeProto, TensorProto, ValueInfoProto, helper, numpy_helper
 
-from .. import Node, PlaceHolder, Initializer
+from auto_optimizer.graph_refactor import Node, PlaceHolder, Initializer
 
 try:
     tensor_dtype_to_np_dtype = helper.tensor_dtype_to_np_dtype

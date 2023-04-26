@@ -15,10 +15,10 @@
 import unittest
 import numpy as np
 
-from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from auto_optimizer.pattern.knowledges.knowledge_avgpool_split import KnowledgeAvgPoolSplit
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_avgpool_split import KnowledgeAvgPoolSplit
 
-from helper import KnowledgeTestHelper, OptimizationConfig
+from debug.surgeon.test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_dynamic_model(onnx_name, x, attrs):

@@ -15,12 +15,12 @@
 import os
 from typing import List
 
-from auto_optimizer.graph_refactor.interface.base_node import BaseNode
-from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
-from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
-from auto_optimizer.pattern.matcher import Matcher, MatchResult
-from auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern, MatchBase
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_node import BaseNode
+from debug.surgeon.auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
+from debug.surgeon.auto_optimizer.pattern.matcher import Matcher, MatchResult
+from debug.surgeon.auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern, MatchBase
 
 
 class D(KnowledgeBase):

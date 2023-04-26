@@ -18,8 +18,8 @@ from dataclasses import dataclass
 
 import numpy as np
 from PIL import Image
-from ..pre_process_base import PreProcessBase
-from ...data_process_factory import PreProcessFactory
+from auto_optimizer.inference_engine.pre_process.pre_process_base import PreProcessBase
+from auto_optimizer.inference_engine.data_process_factory import PreProcessFactory
 
 logging = logging.getLogger("auto-optimizer")
 

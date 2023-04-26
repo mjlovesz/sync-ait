@@ -23,9 +23,9 @@ from onnx import (
     TensorProto,
 )
 
-from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from auto_optimizer.pattern.knowledges.knowledge_conv1d2conv2d import KnowledgeConv1d2Conv2d
-from helper import KnowledgeTestHelper, OptimizationConfig
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_conv1d2conv2d import KnowledgeConv1d2Conv2d
+from debug.surgeon.test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 class TestKnowledgeConv1d2Conv2d(unittest.TestCase, KnowledgeTestHelper):

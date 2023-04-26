@@ -18,9 +18,9 @@ import os
 
 import numpy as np
 
-from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from auto_optimizer.pattern.knowledges.knowledge_transpose_large_input_conv import KnowledgeTransposeLargeInputConv
-from helper import KnowledgeTestHelper, OptimizationConfig
+from debug.surgeon.auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from debug.surgeon.auto_optimizer.pattern.knowledges.knowledge_transpose_large_input_conv import KnowledgeTransposeLargeInputConv
+from debug.surgeon.test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 class TestKnowledgeTransposeLargeInputConv(unittest.TestCase, KnowledgeTestHelper):

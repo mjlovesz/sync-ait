@@ -14,7 +14,7 @@
 
 ### 工具安装方式
 
-ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序包**的安装。
+ais_bench推理工具的安装包括**aclruntime包**和**benchmark推理程序包**的安装。
 安装方式包括：下载whl包安装、一键式编译安装和源代码编译安装。
 
 **说明**：
@@ -73,13 +73,13 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    在安装环境执行如下命令安装aclruntime包：
 
    ```bash
-   pip3 install -v 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend'
+   pip3 install -v 'git+https://gitee.com/Ascend/amit.git#egg=aclruntime&subdirectory=amit/profile/benchmark/backend'
    ```
 
    说明：若为覆盖安装，请增加“--force-reinstall”参数强制安装，例如：
 
    ```bash
-   pip3 install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend'
+   pip3 install -v --force-reinstall 'git+https://gitee.com/Ascend/amit.git#egg=aclruntime&subdirectory=amit/profile/benchmark/backend'
    ```
 
    提示如下示例信息则表示安装成功：
@@ -93,13 +93,13 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    在安装环境执行如下命令安装ais_bench推理程序包：
 
    ```bash
-   pip3 install -v 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_bench'
+   pip3 install -v 'git+https://gitee.com/Ascend/amit.git#egg=ais_bench&subdirectory=amit/profile/benchmark'
    ```
 
    说明：若为覆盖安装，请增加“--force-reinstall”参数强制安装，例如：
 
    ```bash
-   pip3 install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_bench'
+   pip3 install -v --force-reinstall 'git+https://gitee.com/Ascend/amit.git#egg=ais_bench&subdirectory=amit/profile/benchmark'
    ```
    
    提示如下示例信息则表示安装成功：
@@ -115,7 +115,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 
 2. 将工具压缩包上传并解压至安装环境。
 
-3. 从工具解压目录下进入amit/profile/benchmark/ais_bench目录下，执行如下命令进行编译：
+3. 从工具解压目录下进入amit/profile/benchmark目录下，执行如下命令进行编译：
 
    ```bash
    # 进入工具解压目录
@@ -126,7 +126,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    pip3 wheel ./ -v
    ```
 
-   其中，${HOME}为ais_bench推理工具包所在目录。
+   其中，${HOME}为amit工具包所在目录。
 
    分别提示如下信息则表示编译成功：
 
@@ -175,7 +175,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    pip3 install -r ./requirements.txt
    ```
 
-   其中，${HOME}为ais_bench推理工具包所在目录。
+   其中，${HOME}为amit工具包所在目录。
 
    说明：若依赖已安装，忽略此步骤。
 2. 设置CANN包的环境变量，执行如下命令：
@@ -648,7 +648,7 @@ ais_bench推理工具执行后，打屏输出结果示例如下：
 
 开放ais_bench推理工具推理Python接口。
 
-代码示例参考https://gitee.com/ascend/tools/blob/master/ais-bench_workload/tool/ais_bench/test/interface_sample.py
+代码示例参考[sample](https://gitee.com/ascend/amit/blob/master/amit/profile/benchmark/test/interface_sample.py)
 
 可以通过如下示例代码完成ais_bench推理工具推理操作：
 
@@ -711,7 +711,7 @@ EZ9999  The error from device(2), serial number is 17, there is an aicore error,
 -rw-r--r-- 1 root root    4 Jan  7 08:17 exception_cb_index_0_input_2_format_2_dtype_3_shape_.bin
 -rw-r--r-- 1 root root 576K Jan  7 08:17 exception_cb_index_0_output_0_format_2_dtype_1_shape_384x768.bin
 ```
-如果有需要将生成的异常bin文件转换为npy文件，请使用[转换脚本convert_exception_cb_bin_to_npy.py](https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_bench/test/convert_exception_cb_bin_to_npy.py).  
+如果有需要将生成的异常bin文件转换为npy文件，请使用[转换脚本convert_exception_cb_bin_to_npy.py](https://gitee.com/ascend/amit/blob/master/amit/profile/benchmark/test/convert_exception_cb_bin_to_npy.py).  
 使用方法：python3 convert_exception_cb_bin_to_npy.py --input {bin_file_path}。支持输入bin文件或文件夹。
 
 
