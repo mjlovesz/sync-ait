@@ -1,6 +1,7 @@
 import argparse
 
 from ais_bench.infer.utils import logger
+from ais_bench.infer.main_enter import main_enter
 
 
 def str2bool(v):
