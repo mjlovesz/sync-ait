@@ -273,7 +273,7 @@ dagre.layout = (graph, options) => {
                             }
                         }
                     }
-                    if (edge == undefined || edge == null) {
+                    if (edge == undefined) {
                         throw new Error("edge not found")
                     }
                     const delta = t.hasNode(edge.v) ? slack(g, edge) : -slack(g, edge);

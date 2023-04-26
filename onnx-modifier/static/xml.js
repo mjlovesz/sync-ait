@@ -1019,7 +1019,7 @@ xml.TextReader = class {
             if (obj.version.length > 0) {
                 const match = /^(\d)\.(\d)$/.exec(obj.version);
                 this._assert(match && match[1] === '1', "Invalid XML version '" + obj.version + "'");
-                if (match === undefined || match === null) {
+                if (match == null) {
                     throw new Error("Invalid XML version")
                 }
                 const version = Number.parseInt(match[2], 10);
