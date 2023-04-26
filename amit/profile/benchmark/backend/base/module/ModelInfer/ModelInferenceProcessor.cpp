@@ -432,13 +432,15 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
         ERROR_LOG("Set InputsData failed ret:%d", ret);
         return ret;
     }
-    ret = SetAippConfigData();
-    if (ret != APP_ERR_OK){
-        ERROR_LOG("Set AippConfigData failed ret:%d", ret);
-        return ret;
+    if (dyAippCfg->ModelIsLegal()) {
+        ret = SetAippConfigData();
+        if (ret != APP_ERR_OK){
+            ERROR_LOG("Set AippConfigData failed ret:%d", ret);
+            return ret;
+        }
+        if (options_->loop > 1){
+            printf("\n");
     }
-    if (options_->loop > 1){
-        printf("\n");
     }
     for (int i = 0; i < options_->loop; i++){
         ret = Execute();
