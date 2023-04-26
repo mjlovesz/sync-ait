@@ -48,7 +48,7 @@
 ```sh
 {output_path}/{timestamp}
 ├-- dump_data
-│   ├-- npu                           # npu dump data directory
+│   ├-- npu                          # npu dump data directory
 │   │   ├-- {timestamp}              # dump data saved time
 │   │   │   └-- 0                    # Device ID
 │   │   │       └-- {om_model_name}  # om model name
@@ -74,8 +74,8 @@
 ├-- model
 │   ├-- {om_model_name}.json
 │   └-- new_{om_model_name}.onnx             # onnx model using every node as output
-├-- result_{timestamp}.csv                    # compare result file
-└-- tmp                                       # tfdbg temp directory if -m {Tensorflow pb model}
+├-- result_{timestamp}.csv                   # compare result file
+└-- tmp                                      # tfdbg temp directory if -m {Tensorflow pb model}
 ```
 
 ### Comparison Result Analysis
@@ -136,7 +136,7 @@
 | -d，--device                              | Specify running device [0,255], default 0. | No       |
 | --output-nodes                           | Output node specified by the user. Separate multiple nodes with semicolons, for example, **node_name1:0;node_name2:1;node_name3:0**. | No       |
 | --output-size                            | Specify the output size of the model. If there are several outputs, set several values. In the dynamic shape scenario, the output size of the acquired model may be 0. The user needs to estimate a more appropriate value according to the input shape to apply for memory. Multiple output sizes are separated by English semicolons (,), such as "10000,10000,10000"。 | No       |
-| --advisor           | Whether print advisor info on the end of execution | No       |
+| --advisor           | Whether print advisor info on the end of execution | No    |
 
 ### Sample Execution
 - Obtain the original model from [AIPainting_v2.pb](https://obs-9be7.obs.cn-east-2.myhuaweicloud.com/003_Atc_Models/AE/ATC%20Model/painting/AIPainting_v2.pb).
