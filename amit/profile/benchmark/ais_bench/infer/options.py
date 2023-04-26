@@ -90,7 +90,7 @@ opt_model = click.option(
 )
 
 
-opt_input = click.option(
+opt_input_path = click.option(
     '-i',
     '--input',
     'input_path',

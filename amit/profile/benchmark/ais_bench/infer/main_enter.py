@@ -14,6 +14,7 @@
 # limitations under the License.
 
 import logging
+import math
 import os
 import sys
 import time
@@ -411,16 +412,17 @@ def main_enter(args:MyArgs):
             logger.info("find no msprof continue use acl.json mode")
         else:
             msprof_run_profiling(args)
-            raise SystemExit(0)
+            return 0
 
     if args.dym_shape_range is not None and args.dym_shape is None:
         # dymshape range run,according range to run each shape infer get best shape
         dymshape_range_run(args)
-        raise SystemExit(0)
+        return 0
 
     if type(args.device) == list:
         # args has multiple device, run single process for each device
         ret = multidevice_run(args)
-        raise SystemExit(ret)
+        return ret
 
     main(args)
+    return 0

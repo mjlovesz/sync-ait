@@ -19,6 +19,7 @@ import sys
 
 from compare.common import utils
 
+
 class L1BufferDataParser:
     """
     The class for l1 buffer data parser
@@ -55,7 +56,8 @@ class L1BufferDataParser:
                 utils.print_error_log(' The path "%s" is not a directory. Please check the path.' % path)
                 sys.exit(self.INVALID_PARAM_ERROR)
             if not os.access(path, os.W_OK):
-                utils.print_error_log('You do not have permission to write the path "%s". Please check the path.' % path)
+                utils.print_error_log(
+                    'You do not have permission to write the path "%s". Please check the path.' % path)
                 sys.exit(self.INVALID_PARAM_ERROR)
 
     def check_argument_valid(self):

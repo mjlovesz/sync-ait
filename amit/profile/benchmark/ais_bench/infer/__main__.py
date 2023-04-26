@@ -1,6 +1,5 @@
 import argparse
 
-from ais_bench.infer.utils import logger
 from ais_bench.infer.main_enter import main_enter
 
 
@@ -115,33 +114,11 @@ def get_args():
     parser.add_argument("--dymShape_range", type=str, default=None, dest="dym_shape_range",
                         help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\"")
 
-    input_args = parser.parse_args()
-
-    if input_args.profiler is True and input_args.dump is True:
-        logger.error("parameter --profiler cannot be true at the same time as parameter --dump, please check them!\n")
-        raise RuntimeError('error bad parameters --profiler and --dump')
-
-    if (input_args.profiler is True or input_args.dump is True) and (input_args.output is None):
-        logger.error("when dump or profiler, miss output path, please check them!")
-        raise RuntimeError('miss output parameter!')
-
-    if not input_args.auto_set_dymshape_mode and not input_args.auto_set_dymdims_mode:
-        input_args.no_combine_tensor_mode = False
-    else:
-        input_args.no_combine_tensor_mode = True
-
-    if input_args.profiler is True and input_args.warmup_count != 0 and input_args.input is not None:
-        logger.info("profiler mode with input change warmup_count to 0")
-        input_args.warmup_count = 0
-
-    if input_args.output is None and input_args.output_dirname is not None:
-        logger.error("parameter --output_dirname cann't be used alone."
-                     " Please use it together with the parameter --output!\n")
-        raise RuntimeError('error bad parameters --output_dirname')
-    return input_args
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = get_args()
 
     main_enter(args)
+    exit(0)

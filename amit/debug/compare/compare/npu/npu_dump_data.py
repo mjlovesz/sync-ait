@@ -363,19 +363,19 @@ class NpuDumpData(DumpData):
             bin_file_path_array = utils.check_input_bin_file_path(self.arguments.input_path)
             self.arguments.benchmark_input_path = ",".join(bin_file_path_array)
 
-    def _compare_shape_vs_bin_file(self):
-        shape_size_array = self.om_parser.get_shape_size()
-        if self.om_parser.contain_negative_1:
-            return
-        bin_files_size_array = self._get_bin_file_size()
-        self._shape_size_vs_bin_file_size(shape_size_array, bin_files_size_array)
-
     def shape_size_array_vs_bin_files_size_array(self, shape_size_array, bin_files_size_array):
         for shape_size in shape_size_array:
                 for bin_size in bin_files_size_array:
                     if bin_size <= shape_size:
                         return True
         return False
+
+    def _compare_shape_vs_bin_file(self):
+        shape_size_array = self.om_parser.get_shape_size()
+        if self.om_parser.contain_negative_1:
+            return
+        bin_files_size_array = self._get_bin_file_size()
+        self._shape_size_vs_bin_file_size(shape_size_array, bin_files_size_array)
 
     def _shape_size_vs_bin_file_size(self, shape_size_array, bin_files_size_array):
         if len(shape_size_array) < len(bin_files_size_array):
