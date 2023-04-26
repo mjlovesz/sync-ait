@@ -234,7 +234,6 @@ int PyInferenceSession::CheckDymAIPPInputExsity()
 
 int PyInferenceSession::SetDymAIPPInfoSet()
 {
-    printf("debug: get PyInferenceSession::SetDymAIPPInfoSet\n");
     APP_ERROR ret = modelInfer_.SetDymAIPPInfoSet();
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));

@@ -389,7 +389,6 @@ APP_ERROR ModelInferenceProcessor::SetAippConfigData()
         DEBUG_LOG("SetInputAIPP start");
         for (auto& aippSetIt : dymAIPPIndexSet_) {
             Result result = processModel->SetInputAIPP(aippSetIt.first, aippSetIt.second);
-            printf("lcm debug set input aipp index:%d\n", int(aippSetIt.first));
             if (result != SUCCESS) {
                 ERROR_LOG("ModelProcess::SetInputAIPP failed. index:%d result:%d ", int(aippSetIt.first), result);
                 FreeDymAIPPMem();
