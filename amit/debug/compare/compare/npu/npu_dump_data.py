@@ -370,13 +370,6 @@ class NpuDumpData(DumpData):
         bin_files_size_array = self._get_bin_file_size()
         self._shape_size_vs_bin_file_size(shape_size_array, bin_files_size_array)
 
-    def _get_bin_file_size(self):
-        bin_file_size = []
-        bin_files = self.arguments.benchmark_input_path.split(",")
-        for item in bin_files:
-            bin_file_size.append(os.path.getsize(item))
-        return bin_file_size
-
     def shape_size_array_vs_bin_files_size_array(self, shape_size_array, bin_files_size_array):
         for shape_size in shape_size_array:
                 for bin_size in bin_files_size_array:
@@ -405,3 +398,10 @@ class NpuDumpData(DumpData):
                 if shape_size != bin_file_size:
                     utils.print_error_log("The shape value is different from the size of the bin file.")
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
+    
+    def _get_bin_file_size(self):
+        bin_file_size = []
+        bin_files = self.arguments.benchmark_input_path.split(",")
+        for item in bin_files:
+            bin_file_size.append(os.path.getsize(item))
+        return bin_file_size
