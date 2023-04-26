@@ -26,7 +26,7 @@ from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestCo
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern import KnowledgeFactory
-from auto_optimizer.logger import logger
+from auto_optimizer.tools.log import logger
 
 from .options import (
     arg_path,
