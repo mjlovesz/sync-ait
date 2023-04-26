@@ -17,7 +17,7 @@ class MyArgs:
     def __init__(self,
                  gold_model, 
                  om_model, 
-                 input_path,
+                 input_data_path,
                  cann_path,
                  out_path,
                  input_shape,
@@ -27,7 +27,7 @@ class MyArgs:
                  advisor):
         self.model_path = gold_model
         self.offline_model_path = om_model
-        self.input_path = input_path
+        self.input_path = input_data_path
         self.cann_path = cann_path
         self.out_path = out_path
         self.input_shape = input_shape

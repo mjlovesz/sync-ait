@@ -35,7 +35,7 @@ opt_om_model = click.option(
 opt_input = click.option(
     "-i",
     "--input",
-    "input",
+    "input_data_path",
     default="",
     help="<Optional> The input data path of the model. Separate multiple inputs with commas(,)."
     " E.g: input_0.bin,input_1.bin"
