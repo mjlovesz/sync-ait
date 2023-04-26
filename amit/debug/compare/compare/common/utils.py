@@ -1,11 +1,16 @@
-#!/usr/bin/env python
-# coding=utf-8
-"""
-Function:
-This class mainly involves common function.
-Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
-"""
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import os
 import re
 import shutil
@@ -18,7 +23,7 @@ import argparse
 
 import numpy as np
 
-from common.dynamic_argument_bean import DynamicArgumentEnum
+from compare.common.dynamic_argument_bean import DynamicArgumentEnum
 
 ACCURACY_COMPARISON_INVALID_PARAM_ERROR = 1
 ACCURACY_COMPARISON_INVALID_DATA_ERROR = 2
@@ -38,7 +43,7 @@ ACCURACY_COMPARISON_NOT_SUPPORT_ERROR = 15
 ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
 MODEL_TYPE = ['.onnx', '.pb', '.om']
-DIM_PATTERN = r"^(-?[0-9]+)(,-?[0-9]+)*"
+DIM_PATTERN = r"^(-?[0-9]+)(,-?[0-9]+){0,20}"
 DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+){0,3}"
 MAX_DEVICE_ID = 255
 SEMICOLON = ";"
@@ -48,6 +53,7 @@ COMMA = ","
 DOT = "."
 ASCEND_BATCH_FIELD = "ascend_mbatch_batch_"
 BATCH_SCENARIO_OP_NAME = "{0}_ascend_mbatch_batch_{1}"
+
 
 class AccuracyCompareException(Exception):
     """
@@ -184,7 +190,7 @@ def get_dump_data_path(dump_dir, is_net_output=False):
         print_error_log("The directory \"{}\" does not contain dump data".format(dump_dir))
         raise AccuracyCompareException(ACCURACY_COMPARISON_NO_DUMP_FILE_ERROR)
 
-    for dir_path, sub_paths, files in os.walk(dump_data_dir):
+    for dir_path, _, files in os.walk(dump_data_dir):
         if len(files) != 0:
             dump_data_path = dir_path
             file_is_exist = True
@@ -315,7 +321,7 @@ def parse_dymshape_range(dymshape_range):
                 start = int(content_split[0])
                 end = int(content_split[1])
                 step = int(content_split[2]) if len(content_split) == 3 else 1
-                ranges = [str(i) for i in range(start, end+1, step)]
+                ranges = [str(i) for i in range(start, end + 1, step)]
             elif "-" in content:
                 ranges = content.split("-")
             else:

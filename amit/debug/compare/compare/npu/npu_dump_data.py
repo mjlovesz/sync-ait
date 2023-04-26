@@ -1,22 +1,30 @@
-#!/usr/bin/env python
-# coding=utf-8
-"""
-Function:
-This class mainly involves generate npu dump data function.
-Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
-"""
+#
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import json
 import os
 import re
-import numpy as np
 import sys
+import stat
 
-from common import utils
-from common.dump_data import DumpData
-from common.utils import AccuracyCompareException
-from common.dynamic_argument_bean import DynamicArgumentEnum
-from npu.om_parser import OmParser
+import numpy as np
+
+from compare.common import utils
+from compare.common.dump_data import DumpData
+from compare.common.utils import AccuracyCompareException
+from compare.common.dynamic_argument_bean import DynamicArgumentEnum
+from compare.npu.om_parser import OmParser
 
 BENCHMARK_DIR = "benchmark"
 BENCHMARK_BACKEND_DIR = "backend"
@@ -35,12 +43,6 @@ class DynamicInput(object):
         self.om_parser = om_parser
         self.atc_dynamic_arg, self.cur_dynamic_arg = self.get_dynamic_arg_from_om(om_parser)
         self.dynamic_arg_value = self.get_arg_value(om_parser, arguments)
-
-    def add_dynamic_arg_for_benchmark(self, benchmark_cmd: list):
-        if self.is_dynamic_shape_scenario():
-            self.check_input_dynamic_arg_valid()
-            benchmark_cmd.append(self.cur_dynamic_arg.value.benchmark_arg)
-            benchmark_cmd.append(self.dynamic_arg_value)
 
     @staticmethod
     def get_dynamic_arg_from_om(om_parser):
@@ -61,7 +63,7 @@ class DynamicInput(object):
                 atc_input_shape = atc_arg.split(utils.EQUAL)[1]
                 break
         return atc_input_shape
-
+    
     @staticmethod
     def get_arg_value(om_parser, arguments):
         is_dynamic_scenario, scenario = om_parser.get_dynamic_scenario_info()
@@ -77,8 +79,8 @@ class DynamicInput(object):
         quickcmp_input_shape_dict = utils.parse_input_shape(arguments.input_shape)
         batch_size_set = set()
         for op_name in atc_input_shape_dict.keys():
-            DynamicInput.get_dynamic_dim_values(atc_input_shape_dict[op_name],
-                                                quickcmp_input_shape_dict[op_name],
+            DynamicInput.get_dynamic_dim_values(atc_input_shape_dict.get(op_name),
+                                                quickcmp_input_shape_dict.get(op_name),
                                                 batch_size_set)
         if len(batch_size_set) == 1:
             for batch_size in batch_size_set:
@@ -96,6 +98,12 @@ class DynamicInput(object):
             else:
                 shape_values.add(cur_shape[dim])
 
+    def add_dynamic_arg_for_benchmark(self, benchmark_cmd: list):
+        if self.is_dynamic_shape_scenario():
+            self.check_input_dynamic_arg_valid()
+            benchmark_cmd.append(self.cur_dynamic_arg.value.benchmark_arg)
+            benchmark_cmd.append(self.dynamic_arg_value)
+            
     def is_dynamic_shape_scenario(self):
         """
         if atc cmdline contain dynamic argument
@@ -121,9 +129,9 @@ class DynamicInput(object):
 
     def check_dynamic_batch_valid(self, atc_dynamic_arg_values):
         dynamic_arg_values = atc_dynamic_arg_values.replace(utils.COMMA, utils.SEMICOLON)
+        atc_value_list = utils.parse_arg_value(dynamic_arg_values)
+        cur_input = utils.parse_value_by_comma(self.dynamic_arg_value)
         try:
-            atc_value_list = utils.parse_arg_value(dynamic_arg_values)
-            cur_input = utils.parse_value_by_comma(self.dynamic_arg_value)
             for value in atc_value_list:
                 if cur_input == value:
                     return
@@ -134,16 +142,16 @@ class DynamicInput(object):
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
     def check_dynamic_dims_valid(self, atc_dynamic_arg_values):
+        atc_input_shape = DynamicInput.get_input_shape_from_om(self.om_parser)
+        atc_input_shape_dict = utils.parse_input_shape(atc_input_shape)
+        quickcmp_input_shape_dict = utils.parse_input_shape(self.dynamic_arg_value)
+        dym_dims = []
+        for op_name in atc_input_shape_dict.keys():
+            DynamicInput.get_dynamic_dim_values(atc_input_shape_dict.get(op_name),
+                                                quickcmp_input_shape_dict.get(op_name),
+                                                dym_dims)
+        atc_value_list = utils.parse_arg_value(atc_dynamic_arg_values)
         try:
-            atc_input_shape = DynamicInput.get_input_shape_from_om(self.om_parser)
-            atc_input_shape_dict = utils.parse_input_shape(atc_input_shape)
-            quickcmp_input_shape_dict = utils.parse_input_shape(self.dynamic_arg_value)
-            dym_dims = []
-            for op_name in atc_input_shape_dict.keys():
-                DynamicInput.get_dynamic_dim_values(atc_input_shape_dict[op_name],
-                                                    quickcmp_input_shape_dict[op_name],
-                                                    dym_dims)
-            atc_value_list = utils.parse_arg_value(atc_dynamic_arg_values)
             for value in atc_value_list:
                 if dym_dims == value:
                     return
@@ -160,10 +168,43 @@ class NpuDumpData(DumpData):
     """
 
     def __init__(self, arguments, output_json_path):
+        super().__init__()
         self.arguments = arguments
         self.om_parser = OmParser(output_json_path)
         self.dynamic_input = DynamicInput(self.om_parser, self.arguments)
         self.python_version = sys.executable or "python3"
+    
+    @staticmethod
+    def _try_write_content_to_acl_json(acl_json_path, load_dict):
+        try:
+            with open(acl_json_path, "w") as write_json:
+                try:
+                    json.dump(load_dict, write_json)
+                except ValueError as write_json_except:
+                    utils.print_error_log(str(write_json_except))
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR)
+        except IOError as acl_json_file_except:
+            utils.print_error_log('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)    
+        
+    @staticmethod
+    def _write_content_to_acl_json(self, acl_json_path, model_name, npu_data_output_dir):
+        load_dict = {
+            "dump": {
+                "dump_list": [{"model_name": model_name}],
+                "dump_path": npu_data_output_dir,
+                "dump_mode": "all",
+                "dump_op_switch": "off"
+            }
+        }
+        if os.access(acl_json_path, os.W_OK):
+            self._try_write_content_to_acl_json(acl_json_path, load_dict)
+
+        else:
+            utils.print_error_log(
+                "The path {} does not have permission to write.Please check the path permission".format(acl_json_path))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+
 
     def generate_dump_data(self):
         """
@@ -258,6 +299,13 @@ class NpuDumpData(DumpData):
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
         return npu_dump_data_path, npu_net_output_data_path
 
+    def shape_size_array_vs_bin_files_size_array(self, shape_size_array, bin_files_size_array):
+        for shape_size in shape_size_array:
+                for bin_size in bin_files_size_array:
+                    if bin_size <= shape_size:
+                        return True
+        return False
+
     def _make_benchmark_cmd_for_shape_range(self, benchmark_cmd):
         pattern = re.compile(r'^[0-9]+$')
         count = self.om_parser.get_net_output_count()
@@ -291,7 +339,7 @@ class NpuDumpData(DumpData):
     def _convert_net_output_to_numpy(self, npu_net_output_data_path, npu_dump_data_path):
         net_output_data = None
         npu_net_output_data_info = self.om_parser.get_net_output_data_info(npu_dump_data_path)
-        for dir_path, sub_paths, files in os.walk(npu_net_output_data_path):
+        for dir_path, _, files in os.walk(npu_net_output_data_path):
             for index, each_file in enumerate(sorted(files)):
                 data_type = npu_net_output_data_info.get(index)[0]
                 shape = npu_net_output_data_info.get(index)[1]
@@ -329,13 +377,6 @@ class NpuDumpData(DumpData):
         bin_files_size_array = self._get_bin_file_size()
         self._shape_size_vs_bin_file_size(shape_size_array, bin_files_size_array)
 
-    def _get_bin_file_size(self):
-        bin_file_size = []
-        bin_files = self.arguments.benchmark_input_path.split(",")
-        for item in bin_files:
-            bin_file_size.append(os.path.getsize(item))
-        return bin_file_size
-
     def _shape_size_vs_bin_file_size(self, shape_size_array, bin_files_size_array):
         if len(shape_size_array) < len(bin_files_size_array):
             utils.print_error_log("The number of input bin files is incorrect.")
@@ -347,10 +388,8 @@ class NpuDumpData(DumpData):
                         "The size (%d) of bin file can not match the input of the model." % bin_file_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
         elif self.dynamic_input.is_dynamic_shape_scenario():
-            for shape_size in shape_size_array:
-                for bin_size in bin_files_size_array:
-                    if bin_size <= shape_size:
-                        return
+            if self.shape_size_array_vs_bin_files_size_array(shape_size_array, bin_files_size_array):
+                return
             utils.print_warn_log("The size of bin file can not match the input of the model.")
         else:
             for shape_size, bin_file_size in zip(shape_size_array, bin_files_size_array):
@@ -359,29 +398,10 @@ class NpuDumpData(DumpData):
                 if shape_size != bin_file_size:
                     utils.print_error_log("The shape value is different from the size of the bin file.")
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
-
-    @staticmethod
-    def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir):
-        load_dict = {
-            "dump": {
-                "dump_list": [{"model_name": model_name}],
-                "dump_path": npu_data_output_dir,
-                "dump_mode": "all",
-                "dump_op_switch": "off"
-            }
-        }
-        if os.access(acl_json_path, os.W_OK):
-            try:
-                with open(acl_json_path, "w") as write_json:
-                    try:
-                        json.dump(load_dict, write_json)
-                    except ValueError as write_json_except:
-                        print(str(write_json_except))
-                        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR)
-            except IOError as acl_json_file_except:
-                utils.print_error_log('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
-        else:
-            utils.print_error_log(
-                "The path {} does not have permission to write.Please check the path permission".format(acl_json_path))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+    
+    def _get_bin_file_size(self):
+        bin_file_size = []
+        bin_files = self.arguments.benchmark_input_path.split(",")
+        for item in bin_files:
+            bin_file_size.append(os.path.getsize(item))
+        return bin_file_size

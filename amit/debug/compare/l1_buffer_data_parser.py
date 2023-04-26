@@ -1,16 +1,23 @@
-#!/usr/bin/env python
-# coding=utf-8
-"""
-Function:
-This class mainly involves the main function.
-Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
-"""
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import argparse
 import os
 import stat
 import sys
+
+from compare.common import utils
 
 
 class L1BufferDataParser:
@@ -30,37 +37,38 @@ class L1BufferDataParser:
 
     def _check_path_valid(self, path, is_file):
         if not os.path.exists(path):
-            print('ERROR: The path "%s" does not exist. Please check the path.' % path)
+            utils.print_error_log('The path "%s" does not exist. Please check the path.' % path)
             sys.exit(self.INVALID_PARAM_ERROR)
         if not os.access(path, os.R_OK):
-            print('ERROR: You do not have permission to read the path "%s". Please check the path.' % path)
+            utils.print_error_log('You do not have permission to read the path "%s". Please check the path.' % path)
             sys.exit(self.INVALID_PARAM_ERROR)
         if is_file:
             if not os.path.isfile(path):
-                print('ERROR: The path "%s" is not a file. Please check the path.' % path)
+                utils.print_error_log('The path "%s" is not a file. Please check the path.' % path)
                 sys.exit(self.INVALID_PARAM_ERROR)
             file_size = os.path.getsize(path)
             if file_size != self.TWO_M:
-                print('ERROR: The l1 buffer data size (%d) is not %d for "%s". Please check the path.'
+                utils.print_error_log('The l1 buffer data size (%d) is not %d for "%s". Please check the path.'
                       % (file_size, self.TWO_M, path))
                 sys.exit(self.INVALID_PARAM_ERROR)
         else:
             if not os.path.isdir(path):
-                print('ERROR: The path "%s" is not a directory. Please check the path.' % path)
+                utils.print_error_log(' The path "%s" is not a directory. Please check the path.' % path)
                 sys.exit(self.INVALID_PARAM_ERROR)
             if not os.access(path, os.W_OK):
-                print('ERROR: You do not have permission to write the path "%s". Please check the path.' % path)
+                utils.print_error_log(
+                    'You do not have permission to write the path "%s". Please check the path.' % path)
                 sys.exit(self.INVALID_PARAM_ERROR)
 
     def check_argument_valid(self):
         self._check_path_valid(self.dump_path, is_file=True)
         self._check_path_valid(self.output_path, is_file=False)
         if self.offset < 0 or self.offset >= self.TWO_M:
-            print('ERROR: The offset (%d) is invalid, out of range [0, %d). Please check the offset.'
+            utils.print_error_log('The offset (%d) is invalid, out of range [0, %d). Please check the offset.'
                   % (self.offset, self.TWO_M))
             sys.exit(self.INVALID_PARAM_ERROR)
         if self.size <= 0 or self.size > self.TWO_M - self.offset:
-            print('ERROR: The size (%d) is invalid, out of range (0, %d). Please check the size.'
+            utils.print_error_log('The size (%d) is invalid, out of range (0, %d). Please check the size.'
                   % (self.size, self.TWO_M - self.offset))
             sys.exit(self.INVALID_PARAM_ERROR)
 
@@ -75,7 +83,7 @@ class L1BufferDataParser:
             with os.fdopen(os.open(output_file_path, os.O_WRONLY | os.O_CREAT, stat.S_IWUSR | stat.S_IRUSR),
                            "wb") as output_file:
                 output_file.write(data)
-            print("INFO: The l1 buffer data for [%d, %d) has been saved in %s."
+            utils.print_info_log("The l1 buffer data for [%d, %d) has been saved in %s."
                   % (self.offset, self.offset + self.size, output_file_path))
 
 
@@ -102,7 +110,7 @@ def main():
     try:
         L1BufferDataParser(args).parse()
     except Exception as ex:
-        print('ERROR: Failed to parse the l1 buffer data. %s' % str(ex))
+        utils.print_error_log('Failed to parse the l1 buffer data. %s' % str(ex))
         sys.exit(L1BufferDataParser.UNKNOWN_ERROR)
     sys.exit(L1BufferDataParser.NONE_ERROR)
 

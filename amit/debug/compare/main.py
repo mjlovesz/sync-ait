@@ -1,26 +1,33 @@
-#!/usr/bin/env python
-# coding=utf-8
-"""
-Function:
-This class mainly involves the main function.
-Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
-"""
-
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import argparse
 import os
 import sys
 import time
 
-from atc.atc_utils import AtcUtils
-from common import utils
-from common.utils import AccuracyCompareException, get_shape_to_directory_name, str2bool
-from compare import analyser
-from compare.net_compare import NetCompare
-from npu.npu_dump_data import NpuDumpData
-from npu.npu_dump_data_bin2npy import data_convert
+from compare.atc.atc_utils import AtcUtils
+from compare.common import utils
+from compare.common.utils import AccuracyCompareException, get_shape_to_directory_name, str2bool
+from compare.analyser import analyser
+from compare.net_compare.net_compare import NetCompare
+from compare.npu.npu_dump_data import NpuDumpData
+from compare.npu.npu_dump_data_bin2npy import data_convert
 
-def _accuracy_compare_parser(parser):
+
+def _accuracy_compare_parser():
+    parser = argparse.ArgumentParser()
+
     parser.add_argument("-m", "--model-path", dest="model_path", default="",
                         help="<Required> The original model (.onnx or .pb) file path", required=True)
     parser.add_argument("-om", "--offline-model-path", dest="offline_model_path", default="",
@@ -51,15 +58,17 @@ def _accuracy_compare_parser(parser):
                         help="<Optional> Whether to dump all the operations' ouput. Default True.")
     parser.add_argument("--convert", dest = "bin2npy", action="store_true",
                         help="<Optional> Enable npu dump data conversion from bin to npy after compare.")
+    args = parser.parse_args(sys.argv[1:])
+    return args
 
 
 def _generate_golden_data_model(args):
     model_name, extension = utils.get_model_name_and_extension(args.model_path)
     if ".pb" == extension:
-        from tf.tf_dump_data import TfDumpData
+        from compare.tf.tf_dump_data import TfDumpData
         return TfDumpData(args)
     elif ".onnx" == extension:
-        from onnx_model.onnx_dump_data import OnnxDumpData
+        from compare.onnx_model.onnx_dump_data import OnnxDumpData
         return OnnxDumpData(args)
     else:
         utils.print_error_log("Only model files whose names end with .pb or .onnx are supported")
@@ -91,19 +100,17 @@ def _check_output_node_name_mapping(original_net_output_node, golden_net_output_
             break
 
 
-def main():
+def main(args):
     """
-   Function Description:
-       main process function
-   Exception Description:
-       exit the program when an AccuracyCompare Exception  occurs
-   """
-    parser = argparse.ArgumentParser()
-    _accuracy_compare_parser(parser)
-    args = parser.parse_args(sys.argv[1:])
+    Function Description:
+        main process function
+    Exception Description:
+        exit the program when an AccuracyCompare Exception  occurs
+    """
     args.model_path = os.path.realpath(args.model_path)
     args.offline_model_path = os.path.realpath(args.offline_model_path)
     args.cann_path = os.path.realpath(args.cann_path)
+
     try:
         utils.check_file_or_directory_path(args.model_path)
         utils.check_file_or_directory_path(args.offline_model_path)
@@ -165,4 +172,5 @@ def run(args, input_shape, output_json_path, original_out_path):
 
 
 if __name__ == '__main__':
-    main()
+    parsed_args = _accuracy_compare_parser()
+    main(parsed_args)
