@@ -453,7 +453,7 @@ if __name__ == "__main__":
 
     if type(args.device) == list:
         # args has multiple device, run single process for each device
-        ret = multidevice_run(args)
-        exit(ret)
+        multidevice_ret = multidevice_run(args)
+        exit(multidevice_ret)
 
     main(args)
