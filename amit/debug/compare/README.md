@@ -47,7 +47,7 @@
 ```sh
 {output_path}/{timestamp}
 ├-- dump_data
-│   ├-- npu                           # npu dump 数据目录
+│   ├-- npu                          # npu dump 数据目录
 │   │   ├-- {timestamp}              # dump数据文件落盘的时间
 │   │   │   └-- 0                    # Device 设备 ID 号
 │   │   │       └-- {om_model_name}  # 模型名称
@@ -73,8 +73,8 @@
 ├-- model
 │   ├-- {om_model_name}.json
 │   └-- new_{om_model_name}.onnx             # 把每个算子作为输出节点后新生成的 onnx 模型
-├-- result_{timestamp}.csv                    # 比对结果文件
-└-- tmp                                       # 如果 -m 模型为 Tensorflow pb 文件, tfdbg 相关的临时目录
+├-- result_{timestamp}.csv                   # 比对结果文件
+└-- tmp                                      # 如果 -m 模型为 Tensorflow pb 文件, tfdbg 相关的临时目录
 ```
 
 ### 比对结果分析
