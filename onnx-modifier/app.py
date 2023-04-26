@@ -1,8 +1,23 @@
-#!/usr/bin/env python3.8
+# Copyright 2023 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
 import sys
 import argparse
 import logging
+
+import onnx
 from flask import Flask, render_template, request, send_file
 from onnx_modifier import OnnxModifier
 
@@ -40,52 +55,51 @@ def modify_and_download_model():
 def modify_and_onnxsmi_model():
     try:
         from onnxsim import simplify
-        import onnx
-        modify_info = request.get_json()
-        
-        ONNX_MODIFIER.reload()   # allow downloading for multiple times
-        ONNX_MODIFIER.modify(modify_info)
-        save_path = ONNX_MODIFIER.check_and_save_model(save_dir="modified_onnx")
-
-        # convert model
-        model_simp, check = simplify(ONNX_MODIFIER.model_proto)
-        onnx.save(model_simp, save_path)
-        return send_file(save_path)
     except ImportError as ex:
         return "请安装 onnxsim", 599
+    modify_info = request.get_json()
+    
+    ONNX_MODIFIER.reload()   # allow downloading for multiple times
+    ONNX_MODIFIER.modify(modify_info)
+    save_path = ONNX_MODIFIER.check_and_save_model(save_dir="modified_onnx")
+
+    # convert model
+    model_simp, check = simplify(ONNX_MODIFIER.model_proto)
+    onnx.save(model_simp, save_path)
+    return send_file(save_path)
 
 
 @app.route('/auto-optimizer', methods=['POST'])
 def modify_and_optimizer_model():
     try:
         import auto_optimizer
-        import onnx
-        import subprocess
-        modify_info = request.get_json()
-        ONNX_MODIFIER.reload()   # allow downloading for multiple times
-        ONNX_MODIFIER.modify(modify_info)
-        save_path = ONNX_MODIFIER.check_and_save_model(save_dir="modified_onnx")
-
-        # convert model
-        optimized_path = f"{save_path}.opti.onnx"
-        python_path = sys.executable
-        cmd = [
-            python_path,
-            "-m",
-            "auto_optimizer",
-            "optimize",
-            save_path,
-            optimized_path,
-        ]
-        out_res = subprocess.call(cmd, shell=False)
-        if  out_res != 0:
-            raise RuntimeError("auto_optimizer run error: " + out_res + " cmd: " + "".join(cmd))
-        if os.path.exists(optimized_path):
-            return send_file(optimized_path)
-        else:
-            return "OK", 204
     except ImportError as ex:
-        return "请安装 auto-optimizer", 500
+        return "请安装 auto-optimizer", 599
+    
+    import subprocess
+    modify_info = request.get_json()
+    ONNX_MODIFIER.reload()   # allow downloading for multiple times
+    ONNX_MODIFIER.modify(modify_info)
+    save_path = ONNX_MODIFIER.check_and_save_model(save_dir="modified_onnx")
+
+    # convert model
+    optimized_path = f"{save_path}.opti.onnx"
+    python_path = sys.executable
+    cmd = [
+        python_path,
+        "-m",
+        "auto_optimizer",
+        "optimize",
+        save_path,
+        optimized_path,
+    ]
+    out_res = subprocess.call(cmd, shell=False)
+    if  out_res != 0:
+        raise RuntimeError("auto_optimizer run error: " + out_res + " cmd: " + "".join(cmd))
+    if os.path.exists(optimized_path):
+        return send_file(optimized_path)
+    else:
+        return "Nothing changed", 204
 
 
 def parse_args():

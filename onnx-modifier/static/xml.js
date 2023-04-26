@@ -600,7 +600,7 @@ xml.TextReader = class {
     _entityName() {
         const position = this._position;
         const name = this._name();
-        if (name === null) {
+        if (name === null || name === undefined) {
             this._error('Expected entity name', position);
         }
         if (!name.endsWith(':') && name.indexOf(':') !== -1) {
@@ -1018,6 +1018,9 @@ xml.TextReader = class {
             if (obj.version.length > 0) {
                 const match = /^(\d)\.(\d)$/.exec(obj.version);
                 this._assert(match && match[1] === '1', "Invalid XML version '" + obj.version + "'");
+                if (match === undefined || match === null) {
+                    throw new Error("Invalid XML version")
+                }
                 const version = Number.parseInt(match[2], 10);
                 if (version > this._version) {
                     /* eslint-disable */

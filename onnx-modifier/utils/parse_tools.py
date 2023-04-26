@@ -1,3 +1,17 @@
+# Copyright 2023 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import logging
 from typing import cast
 
@@ -136,9 +150,6 @@ if __name__ == "__main__":
         logging.info(np_fp32 == np_fp64)
         
         logging.info(np_fp64_conv)
-        
-        pass
-    # tmp_debug()
     
     def test_parse_str2np():
         init_val_str = '[[[[0.0171247538316637]],[[0.0175070028011204]],[[0.0174291938997821]]]]'
@@ -151,7 +162,6 @@ if __name__ == "__main__":
         val = parse_str2val(val_str, "int")
         logging.info(val)
         
-        # val_str = "1, 2, 3"
         val_str = "[1, 2, 3]"
         val = parse_str2val(val_str, "int[]")
         logging.info(val)
@@ -159,9 +169,7 @@ if __name__ == "__main__":
         logging.info(val)
         
         val_str = "int8"
-        # val_str = "float"
         val = parse_str2val(val_str, "DataType")
         logging.info(val)
-    # test_parse_str2val()
     
     

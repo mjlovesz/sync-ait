@@ -531,7 +531,7 @@ json.BinaryReader = class {
                 }
                 obj.push(value);
             }
-            else {
+            else if (obj != null && obj != undefined) {
                 switch (key) {
                     case '__proto__':
                     case 'constructor':

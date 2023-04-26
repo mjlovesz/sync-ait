@@ -31,6 +31,7 @@ host.BrowserHost = class {
         // this._environment.set('zoom', 'drag');
         this._ori_model_file = null
         this._activate_model_file = null
+        window._host = this
     }
 
     get window() {
@@ -526,11 +527,31 @@ host.BrowserHost = class {
     }
 
     error(message, detail) {
-        alert((message == 'Error' ? '' : message + ' ') + detail);
+        swal(message, detail)
     }
 
     confirm(message, detail) {
-        return confirm(message + ' ' + detail);
+        return swal({
+            title: message,
+            text: detail,
+            closeOnClickOutside: false,
+            buttons: {
+                cancel: {
+                    text: "Cancel",
+                    value: false,
+                    visible: true,
+                    className: "",
+                    closeModal: true,
+                },
+                confirm: {
+                    text: "OK",
+                    value: true,
+                    visible: true,
+                    className: "",
+                    closeModal: true
+                }
+            }
+        })
     }
 
     require(id) {

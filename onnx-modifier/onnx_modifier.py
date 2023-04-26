@@ -1,3 +1,17 @@
+# Copyright 2023 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # https://leimao.github.io/blog/ONNX-Python-API/
 # https://leimao.github.io/blog/ONNX-IO-Stream/
 # https://github.com/saurabh-shandilya/onnx-utils
@@ -5,11 +19,11 @@
 
 import os
 import copy
+import logging
 import struct
 import warnings
 import numpy as np
 import onnx
-import logging
 from onnx import numpy_helper
 from onnx import helper
 from utils import make_new_node, make_attr_changed_node
@@ -307,26 +321,26 @@ class OnnxModifier:
     def post_process(self, kwargs):
         
         def get_tail_outputs():
-            def collect_backtrack(input):
-                if input not in input2nodes: # if the node has no child node
-                    tail_outputs.add(input)
+            def collect_backtrack(input_name):
+                if input_name not in input2nodes: # if the node has no child node
+                    tail_outputs.add(input_name)
                     return
                 
-                node = input2nodes[input]
+                node = input2nodes.get(input_name, None)
                 if node in traversed_nodes:
                     return  # if the node has been traversed
                 traversed_nodes.append(node)
                 
-                for node in input2nodes[input]:
+                for node in input2nodes.get(input_name, []):
                     for output in node.output:
                         collect_backtrack(output)
             
             input2nodes = dict()
             for node in self.graph.node:
-                for input in node.input:
-                    if input not in input2nodes:
-                        input2nodes[input] = []
-                    input2nodes[input].append(node)        
+                for input_name in node.input:
+                    if input_name not in input2nodes:
+                        input2nodes[input_name] = []
+                    input2nodes.get(input_name, []).append(node)        
                     
             tail_outputs = set()
             traversed_nodes = []
@@ -338,13 +352,13 @@ class OnnxModifier:
             def collect_reverse_backtrack(output):
                 if output not in output2node:
                     return # if the node has no parent node
-                node = output2node[output]
+                node = output2node.get(output, None)
                 if node in connected_nodes:
                     return # if the node has been traversed
                 connected_nodes.append(node)
                 
-                for input in node.input:
-                    collect_reverse_backtrack(input)
+                for input_name in node.input:
+                    collect_reverse_backtrack(input_name)
                 
             output2node = dict()
             for node in self.graph.node:
@@ -438,15 +452,17 @@ class OnnxModifier:
         # must be topologically sorted` will be invoked
         # I turn off the onnx checker as a workaround.
         onnx.save(self.model_proto, save_path)
-        logging.info("model saved in {} !".format(save_path))
+        logging.info("model saved in %s !", save_path)
         return save_path
 
     def inference(self, input_shape=None, x=None, output_names=None):
         if input_shape is None:
             input_shape = [1, 3, 224, 224]
         import onnxruntime as rt
-        model_proto_bytes = onnx._serialize(self.model_proto)
-        inference_session = rt.InferenceSession(model_proto_bytes)
+        import io
+        model_proto_bytes = io.BytesIO()
+        onnx.save_model(self.model_proto, model_proto_bytes)
+        inference_session = rt.InferenceSession(model_proto_bytes.getvalue())
 
         if not x:
             np.random.seed(0)

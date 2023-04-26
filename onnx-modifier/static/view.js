@@ -72,6 +72,7 @@ view.View = class {
         }).catch((err) => {
             this.error(err, null, null);
         });
+        this.confirmed = true
     }
 
     show(page) {
@@ -474,18 +475,27 @@ view.View = class {
         }
         this.lastViewGraph = this._graph; 
         const graph = this.activeGraph;
+        const nodes = graph.nodes;
         
         return this._timeout(100).then(() => {
             if (graph && graph != lastGraphs[0]) {
-                const nodes = graph.nodes;
-                // console.log(nodes);
-                if (nodes.length > 2048) {
-                    if (!this._host.confirm('Large model detected.', 'This graph contains a large number of nodes and might take a long time to render. Do you want to continue?')) {
-                        this._host.event('Graph', 'Render', 'Skip', nodes.length);
-                        this.show(null);
-                        return null;
-                    }
+                if (nodes.length > 1000) {
+                    this.confirmed = false
+                    return this._host.confirm(
+                        'Large model detected.', 
+                        'This graph contains a large number of nodes and might take a long time to render. Do you want to continue?'
+                        ).then((confirmed)=>{
+                            this.confirmed = confirmed
+                            return confirmed
+                        })
                 }
+            }
+            return Promise.resolve(this.confirmed)
+        }).then((confirmed)=> {
+            if (!confirmed) {
+                this._host.event('Graph', 'Render', 'Skip', nodes.length);
+                this.show(null);
+                return null;
             }
             const update = () => {
                 const nameButton = this._getElementById('name-button');
@@ -2078,7 +2088,7 @@ view.ModelFactoryService = class {
         if (stream) {
             let empty = true;
             let position = 0;
-            while (empty && position < stream.length) {
+            while (position < stream.length) {
                 const buffer = stream.read(Math.min(4096, stream.length - position));
                 position += buffer.length;
                 if (!buffer.every((value) => value === 0x00)) {
