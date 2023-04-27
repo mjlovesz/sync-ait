@@ -211,9 +211,10 @@ class OnnxGraph(BaseGraph):
                 new_model_save_path))
         return OnnxGraph.parse(new_model_save_path)
 
-    def extract_subgraph(self, subgraph_path: str,
+    def extract_subgraph(self,
                          start_node_name: str,
                          end_node_name: str,
+                         subgraph_path: str = None,
                          is_check_subgraph: bool = False):
         all_node_names = [node.name for node in self.nodes]
         if start_node_name not in all_node_names or end_node_name not in all_node_names:
@@ -258,13 +259,8 @@ class OnnxGraph(BaseGraph):
         subgraph = OnnxGraph('extracted graph', reachable_nodes, inputs, outputs,
                              initializers, value_infos, **self._meta)
 
-        subgraph_dir = os.path.dirname(os.path.abspath(subgraph_path))
-        if not os.path.exists(subgraph_dir):
-            logger.info("{} is not exist.".format(subgraph_dir))
-        else:
-            subgraph.save(subgraph_path)
-            logger.info('Extract the model completed, model saved in {}.'.format(
-                        subgraph_path))
+        if subgraph_path:
+            self._save_subgraph(subgraph, subgraph_path)
 
         if is_check_subgraph:
             try:
@@ -350,3 +346,16 @@ class OnnxGraph(BaseGraph):
                     )
                 )
         return ph_list
+
+    def _save_subgraph(self, subgraph, subgraph_path):
+        if os.path.isdir(subgraph_path):
+            logger.error("{} is a directory".format(subgraph_path))
+            return
+
+        subgraph_dir = os.path.dirname(os.path.abspath(subgraph_path))
+        if not os.path.exists(subgraph_dir):
+            logger.info("{} is not exist.".format(subgraph_dir))
+        else:
+            subgraph.save(subgraph_path)
+            logger.info('Extract the model completed, model saved in {}.'.format(
+                        subgraph_path))
