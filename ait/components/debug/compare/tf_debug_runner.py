@@ -1,21 +1,27 @@
-#!/usr/bin/env python
-# coding=utf-8
-"""
-Function:
-This class is used to generate GUP dump data of the TensorFlow model.
-Copyright Information:
-Huawei Technologies Co., Ltd. All Rights Reserved © 2022
-"""
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import argparse
 import sys
 import os
 import numpy as np
 import tensorflow as tf
 from tensorflow.python import debug as tf_debug
-from common import utils, tf_common
+
+from src.common import utils, tf_common
 if tf_common.check_tf_version(tf_common.VERSION_TF2X):
     import tfdbg_ascend as dbg
-from common.utils import AccuracyCompareException
+from src.common.utils import AccuracyCompareException
 
 
 class TfDebugRunner(object):
