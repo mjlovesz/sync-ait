@@ -126,7 +126,7 @@ output-path/timestamp
     │   ├── npu(npu的dump数据目录)
     │   │   ├── timestamp
     │   │   │   └── resnet50_output_0.bin
-    │   │   └── 20210206030403(模型所有npu dump的算子输出，dump False情况下没有该目录)
+    │   │   └── 20210206030403(模型所有npu dump的算子输出，dump为False情况下没有该目录)
     │   │       └── 0
     │   │           └── resnet50
     │   │               └── 1
