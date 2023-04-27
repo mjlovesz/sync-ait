@@ -13,7 +13,7 @@
 ### 使用方法
 - 通过压缩包方式或 git 命令获取本项目
   ```sh
-  git clone https://gitee.com/ascend/.git
+  git clone https://gitee.com/ascend/ait.git
   ```
 - 进入 compare 目录
   ```sh
