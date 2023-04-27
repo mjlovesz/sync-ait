@@ -259,6 +259,7 @@ class OnnxGraph(BaseGraph):
 
         subgraph = OnnxGraph('extracted graph', reachable_nodes, inputs, outputs,
                              initializers, value_infos, **self._meta)
+        subgraph.toposort()
 
         if subgraph_path and check_output_model_path(subgraph_path):
             self.save(subgraph_path)
