@@ -120,30 +120,31 @@ export NPU_HOST_LIB=${install_path}/runtime/lib64/stub
 ### 输出结果说明
 
 ```
-output-path/timestamp
-├── dump_data
-│   ├── npu(npu的dump数据目录)
-│   │   ├── timestamp
-│   │   │   └── resnet50_output_0.bin
-│   │   └── 20210206030403
-│   │       └── 0
-│   │           └── resnet50
-│   │               └── 1
-│   │                   └── 0
-│   │                       ├── Data.inputx.1.3.1596191801455614
-│   │                       └── Cast.trans_Cast_169.62.5.1596191801355614
-│   ├── onnx(如果-m模型为.onnx，onnx的dump数据目录)
-│   │     └── conv1_relu.0.1596191800668285.npy
-│   └── tf(如果-m模型为.pb，tf的dump数据目录)
-│       └── conv1_relu.0.1596191800668285.npy
-├── input
-│   ├── input_0.bin(随机生成的，若用户指定了数据，该文件不存在)
-│   └── input_1.bin(随机生成的，若用户指定了数据，该文件不存在)
-├── model
-│   ├── new_model_name.onnx(把每个算子作为输出节点后新生成的onnx模型)
-│   └── model_name.json(model_name为om的文件名)
-├── result_2021211214657.csv
-└── tmp (如果-m模型为.pb, tfdbg相关的临时目录)
+output-path/timestamp/input_name-
+├── input_name-1_3_224_224(如果指定dymShape_range，则会有该目录来区分不同的模型实际输入)
+    ├── dump_data
+    │   ├── npu(npu的dump数据目录)
+    │   │   ├── timestamp
+    │   │   │   └── resnet50_output_0.bin
+    │   │   └── 20210206030403(模型所有npu dump的算子输出，dump False情况下没有该目录)
+    │   │       └── 0
+    │   │           └── resnet50
+    │   │               └── 1
+    │   │                   └── 0
+    │   │                       ├── Data.inputx.1.3.1596191801455614
+    │   │                       └── Cast.trans_Cast_169.62.5.1596191801355614
+    │   ├── onnx(如果-m模型为.onnx，onnx的dump数据目录)
+    │   │     └── conv1_relu.0.1596191800668285.npy
+    │   └── tf(如果-m模型为.pb，tf的dump数据目录)
+    │       └── conv1_relu.0.1596191800668285.npy
+    ├── input
+    │   ├── input_0.bin(随机生成的，若用户指定了数据，该文件不存在)
+    │   └── input_1.bin(随机生成的，若用户指定了数据，该文件不存在)
+    ├── result_2021211214657.csv
+    ├── model
+        │   ├── new_model_name.onnx(把每个算子作为输出节点后新生成的onnx模型)
+        │   └── model_name.json(model_name为om的文件名)
+    └── tmp (如果-m模型为.pb, tfdbg相关的临时目录)
 ```
 
 ### 比对结果的分析
