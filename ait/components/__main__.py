@@ -17,6 +17,7 @@ from components.debug import debug_cli_group
 from components.profile import profile_cli_group
 from components.analyze import analyze_cli_group
 
+
 cli = click.Group(commands=[debug_cli_group, profile_cli_group, analyze_cli_group])
 
 if __name__ == "__main__":

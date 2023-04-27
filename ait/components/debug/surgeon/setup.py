@@ -13,6 +13,7 @@
 # limitations under the License.
 from setuptools import setup, find_packages  # type: ignore
 
+
 with open('requirements.txt', encoding='utf-8') as f:
     required = f.read().splitlines()
 
