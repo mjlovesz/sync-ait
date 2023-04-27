@@ -25,6 +25,7 @@ PYC_FILE_TO_PYTHON_VERSION = "3.7.5"
 INFO_FLAG = "[INFO]"
 WRITE_FLAGS = os.O_WRONLY | os.O_CREAT
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
+READ_WRITE_FLAGS = os.RDWR | os.O_CREAT
 # index of each member in compare result_*.csv file
 NPU_DUMP_TAG = "NPUDump"
 GROUND_TRUTH_TAG = "GroundTruth"
@@ -190,7 +191,6 @@ class NetCompare(object):
         result_file_backup_path = None
         npu_file_name = os.path.basename(npu_file)
         golden_file_name = os.path.basename(golden_file)
-        index = 0
         for dir_path, subs_paths, files in os.walk(self.arguments.out_path):
             files = [file for file in files if file.endswith("csv")]
             if files:
@@ -211,9 +211,8 @@ class NetCompare(object):
                     result_file_path = os.path.join(self.arguments.out_path, file_name)
                 else:
                     header = []
-                with os.fdopen(os.open(result_file_path, WRITE_FLAGS, WRITE_MODES), "a+") as fp_writer:
-                    self._process_result_to_csv(fp_writer, npu_file_name, golden_file_name, result, header, index)
-                    index += 1
+                with os.fdopen(os.open(result_file_path, READ_WRITE_FLAGS, WRITE_MODES), "a+") as fp_writer:
+                    self._process_result_to_csv(fp_writer, npu_file_name, golden_file_name, result, header)
             else:
                 # read result file and write it to backup file,update the result of compare Node_output
                 with open(result_file_path, "r") as fp_read:
@@ -274,7 +273,7 @@ class NetCompare(object):
                self._check_msaccucmp_compare_support_args(ADVISOR_ARGS)
 
 
-    def _process_result_to_csv(self, fp_write, npu_file_name, golden_file_name, result, header, index):
+    def _process_result_to_csv(self, fp_write, npu_file_name, golden_file_name, result, header):
         writer = csv.writer(fp_write)
         if header:
             header_base_info = [
@@ -283,6 +282,7 @@ class NetCompare(object):
                 ]
             header_base_info.extend(header)
             writer.writerow(header_base_info)
+        index = len(fp_write.readlines()) - 1
         new_content = [str(index), "NaN", "Node_Output", "NaN", "NaN",
                        npu_file_name, "NaN", golden_file_name, "[]"]
         new_content.extend(result)
