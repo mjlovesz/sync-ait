@@ -35,7 +35,7 @@ APP_ERROR ModelInferenceProcessor::GetModelDescInfo()
             continue;
         }
         // 动态AIPP输入不被录入常规输入
-        if (find(dymAIPPIndexList_.begin(), dymAIPPIndexList_.end(), i) != dymAIPPIndexList_.end()) {
+        if (dymAIPPIndexSet_.count(i) != 0) {
             continue;
         }
         CHECK_RET_EQ(processModel->GetInTensorDesc(i, info.name, datatype, info.format, info.shape, info.size), SUCCESS);
@@ -84,8 +84,6 @@ APP_ERROR ModelInferenceProcessor::Init(const std::string& modelPath, std::share
     CHECK_RET_EQ(processModel->GetDynamicGearCount(dym_gear_count_), SUCCESS);
 
     processModel->GetDynamicIndex(dynamicIndex_);
-
-    processModel->GetAIPPIndexList(dymAIPPIndexList_);
 
     CHECK_RET_EQ(AllocDymAIPPIndexMem(), APP_ERR_OK);
 
@@ -338,11 +336,11 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
         inputs.insert(inputs.begin() + dynamicIndex_, dyIndexTensor);
     }
 
-    if (dymAIPPIndexList_.size() != 0) {
-        for (const auto& index : dymAIPPIndexList_) {
+    if (dymAIPPIndexSet_.size() != 0) {
+        for (auto& aippSetIt : dymAIPPIndexSet_) {
             Base::BaseTensor dyIndexTensor = {};
-            dyIndexTensor.buf = dymAIPPIndexMemory_[index].ptrData;
-            dyIndexTensor.size = dymAIPPIndexMemory_[index].size;
+            dyIndexTensor.buf = dymAIPPIndexMemory_[aippSetIt.first].ptrData;
+            dyIndexTensor.size = dymAIPPIndexMemory_[aippSetIt.first].size;
             inputs.insert(inputs.begin() + index, dyIndexTensor);
         }
     }
@@ -495,6 +493,8 @@ const InferSumaryInfo& ModelInferenceProcessor::GetSumaryInfo()
 
 APP_ERROR ModelInferenceProcessor::AllocDymAIPPIndexMem()
 {
+    std::vector<size_t> dymAIPPIndexList_ = {};
+    processModel->GetAIPPIndexList(dymAIPPIndexList_);
     if (dymAIPPIndexList_.size() == 0) {
         return APP_ERR_OK;
     }
@@ -835,12 +835,12 @@ APP_ERROR ModelInferenceProcessor::SetDymAIPPInfoSet()
 {
     dyAippCfg->ActivateConfig(); // config文件确定合法
     uint64_t MaxBS = dyAippCfg->GetMaxBatchSize();
-    DEBUG_LOG("lcm debug now set aipp index list size:%d\n", int(dymAIPPIndexList_.size()));
-    for (const auto& index : dymAIPPIndexList_) {
-        Result ret = processModel->GetDymAIPPConfigSet(dyAippCfg, dymAIPPIndexSet_[index], MaxBS);
-        DEBUG_LOG("lcm debug get aipp config set index:%d\n", int(index));
+    DEBUG_LOG("debug now set aipp index list size:%d\n", int(dymAIPPIndexSet_.size()));
+    for (auto& aippSetIt : dymAIPPIndexSet_) {
+        Result ret = processModel->GetDymAIPPConfigSet(dyAippCfg, aippSetIt.second, MaxBS);
+        DEBUG_LOG("debug get aipp config set index:%d\n", int(aippSetIt.first));
         if (ret != SUCCESS) {
-            ERROR_LOG("ModelProcess::SetDynamicAippConfig failed.index: %d ret %d", int(index), ret);
+            ERROR_LOG("ModelProcess::SetDynamicAippConfig failed.index: %d ret %d", int(aippSetIt.first), ret);
             return APP_ERR_FAILURE;
         }
     }

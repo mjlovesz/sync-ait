@@ -244,7 +244,6 @@ private:
     size_t dynamicIndex_ = -1;
     MemoryData dynamicIndexMemory_;
 
-    std::vector<size_t> dymAIPPIndexList_;
     std::map<size_t, MemoryData> dymAIPPIndexMemory_;
     std::map<size_t, void*> dymAIPPIndexSet_;
 
