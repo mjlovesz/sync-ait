@@ -64,7 +64,7 @@ class OnnxDumpData(DumpData):
 
         # create model directory
         model_dir = ""
-        if self.args.dymShape_range:
+        if self.args.dym_shape_range:
             model_relative_name = "../model"
         else:
             model_relative_name = "model"
