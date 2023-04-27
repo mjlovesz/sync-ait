@@ -21,7 +21,7 @@ For details about the usage restrictions of the tool, please visit: https://www.
    
 4. Install benchmark tool.
 
-    For details, visit:https://gitee.com/ascend/amit/blob/master/amit/profile/benchmark/README_EN.md
+    For details, visit:https://gitee.com/ascend/ait/blob/master/ait/profile/benchmark/README_EN.md
 
 
 5. Install TensorFlow 1.15.0.
@@ -32,13 +32,13 @@ For details about the usage restrictions of the tool, please visit: https://www.
 
 - By downloading the package:
 
-   Download the script from the tools repository at https://gitee.com/ascend/amit to any directory on the server, for example, **$HOME/AscendProjects/amit**.
+   Download the script from the tools repository at https://gitee.com/ascend/ait to any directory on the server, for example, **$HOME/AscendProjects/ait**.
 
 - By running the **git** command:
 
    Run the following command in the **$HOME/AscendProjects** directory to download code:
 
-   **git clone https://gitee.com/ascend/amit.git**
+   **git clone https://gitee.com/ascend/ait.git**
 
 ### Tool Usage
 
@@ -46,7 +46,7 @@ For details about the usage restrictions of the tool, please visit: https://www.
 
 
 ```
-cd $HOME/AscendProjects/amit/amit/debug/compare
+cd $HOME/AscendProjects/ait/ait/debug/compare/msquickcmp
 ```
 
 2. Set environment variables.

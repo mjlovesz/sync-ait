@@ -21,7 +21,7 @@
    
 4. 安装benchmark工具
 
-   安装参考文档：https://gitee.com/ascend/amit/blob/master/amit/profile/benchmark/README.md
+   安装参考文档：https://gitee.com/ascend/ait/blob/master/ait/profile/benchmark/README.md
 
 
 5. 安装TensorFlow1.15.0的环境
@@ -32,15 +32,15 @@
 
 - 下载压缩包方式获取。
 
-   将 https://gitee.com/ascend/amit 仓中的脚本下载至服务器的任意目录。
+   将 https://gitee.com/ascend/ait 仓中的脚本下载至服务器的任意目录。
 
-   例如存放路径为：$HOME/AscendProjects/amit。
+   例如存放路径为：$HOME/AscendProjects/ait。
 
 - 命令行使用git命令方式获取。
 
    在命令行中：$HOME/AscendProjects目录下执行以下命令下载代码。
 
-   **git clone https://gitee.com/ascend/amit.git**
+   **git clone https://gitee.com/ascend/ait.git**
 
 ### 使用方法
 
@@ -48,7 +48,7 @@
 
 
 ```
-cd $HOME/AscendProjects/amit/amit/debug/compare
+cd $HOME/AscendProjects/ait/ait/debug/compare/msquickcmp
 ```
 
 2. 设置环境变量
