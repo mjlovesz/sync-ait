@@ -150,7 +150,7 @@ public:
     /**
     * @brief set single dynamic aipp config
     */
-    Result GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, void* &pAIPPSet, uint64_t maxBatchSize);
+    Result GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* pAIPPSet, uint64_t maxBatchSize);
 
     /**
     * @brief set single or multiple dynamic aipp config
