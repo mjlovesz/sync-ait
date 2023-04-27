@@ -15,5 +15,8 @@ setup(
     packages=find_packages(),
     keywords='ais_bench tool',
     install_requires=required,
-    python_requires='>=3.7'
+    python_requires='>=3.7',
+        entry_points={
+        'profile_sub_task': ['benchmark=ais_bench.infer.__main__:__main__']
+    }
 )
