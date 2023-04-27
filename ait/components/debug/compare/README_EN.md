@@ -140,9 +140,9 @@ Used to distinguish between different actual inputs of models in dynamic shapes,
 | --output-nodes                           | Output node specified by the user. Separate multiple nodes with semicolons, for example, **node_name1:0;node_name2:1;node_name3:0**. | No       |
 | --output-size                            | Specify the output size of the model. If there are several outputs, set several values. In the dynamic shape scenario, the output size of the acquired model may be 0. The user needs to estimate a more appropriate value according to the input shape to apply for memory. Multiple output sizes are separated by English semicolons (,), such as "10000,10000,10000"。 | No       |
 | --advisor           | Whether print advisor info on the end of execution | No    |
-| -dr，--dymShape-range     | dynamic shape range. Set for onnx model inferencing and accuracy comparing using all matched input shape. <br/>Format like `input_name1:1,3,200\~224,224-230;input_name2:1,300`, where `input_name` is the related model input name, `"\~"` means value range, `a\~b\~c` means `[a: b :c]`and `"-"` means taking among them. | No  |
-| --dump                   | boolean value if dump all model nodes and compare accuracy. Default True. Onnx model only. Turn off by `--dump False`           | No  |
-| --convert                 | Convert om dump data from `bin` to `npy` file. Generated path is `./dump_data/npu/{timestamp_bin2npy}` | No    |
+| -dr，--dymShape-range     | Dynamic shape range parameter. If this argument used, then all shapes list included in the argument will be considered into accuracy compare.（only support onnx model）<br/> For example:input_name1:1,3,200\~224,224-230;input_name2:1,300<br/> input_name must be the node name in the network model before model conversion; "\~" represents the range, a\~b\~c meaning [a: b :c]; "-" represents the exact value. | No  |
+| --dump                   | Whether compare the accuracy of all the operation nodes output. Default True.(only support onnx model)<br/> For example: --dump False           | No  |
+| --convert                 | Whether compare the accuracy of all the operation nodes output. Default True.(only support onnx model)<br/> For example: --dump False | No    |
 
 ### Sample Execution
 - Obtain the original model from [AIPainting_v2.pb](https://obs-9be7.obs.cn-east-2.myhuaweicloud.com/003_Atc_Models/AE/ATC%20Model/painting/AIPainting_v2.pb).
