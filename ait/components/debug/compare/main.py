@@ -57,4 +57,4 @@ if __name__ == '__main__':
                               args.cann_path, args.out_path, args.input_shape, 
                               args.device, args.output_size, args.output_nodes, args.advisor, 
                               args.dym_shape_range, args.dump, args.bin2npy)
-    cmp_process(cmp_args)
+    cmp_process(cmp_args, False)

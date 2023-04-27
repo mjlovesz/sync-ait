@@ -63,7 +63,7 @@ def compare_cli(
 ) -> None:
     cmp_args = CmpArgsAdapter(gold_model, om_model, input_data_path, cann_path, out_path, input_shape, device,
                               output_size, output_nodes, advisor, dym_shape_range, dump, bin2npy)
-    return cmp_process(cmp_args)
+    return cmp_process(cmp_args, True)
 
 if __name__ == '__main__':
     compare_cli()
