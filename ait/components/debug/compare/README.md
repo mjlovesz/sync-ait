@@ -55,7 +55,8 @@
 │   │   │               ├-- 0        # 针对每个Task ID执行的次数维护一个序号，从0开始计数，该Task每dump一次数据，序号递增1
 │   │   │               │   ├-- Add.8.5.1682067845380164
 │   │   │               │   ├-- ...
-│   │   │               │   └-- Transpose.4.1682148295048447
+│   │   │               │   └-- Transpose.4.16
+82148295048447
 │   │   │               └-- 1
 │   │   │                   ├-- Add.11.4.1682148323212422
 │   │   │                   ├-- ...
@@ -79,7 +80,7 @@
 
 ### 比对结果分析
 - **比对结果** 在文件 `result_{timestamp}.csv` 中，比对结果的含义与基础精度比对工具完全相同，其中每个字段的含义可参考 [CANN商用版/比对步骤（推理场景）](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/atlasaccuracy_16_0039.html)
-- **analyser 分析结果** 在调用结束后打印，在全部对比完成后，逐行分析数据，排除 nan 数据，输出各对比项中第一个差距不在阈值范围内的算子。
+- **analyser 分析结果** 在调用结束后打印，在全部对比完成后，逐行分析数据，排除 nan 数据，输出各对比项中首个差距不在阈值范围内的算子。
 
   | 对比项目                  | 阈值   |
   | ------------------------- | ------ |
@@ -109,7 +110,7 @@
   ```
   Strategy 目前支持两种
   - `FIRST_INVALID_OVERALL` 只要有一项不满足就输出该条数据，并结束遍历，默认方式
-  - `FIRST_INVALID_EACH` 输出每一个评估项第一个不满足的
+  - `FIRST_INVALID_EACH` 输出每一个评估项首个不满足的
   ```py
   from compare import analyser
   _ = analyser.Analyser('result_2021211214657.csv')(strategy=analyser.STRATEGIES.FIRST_INVALID_EACH)
