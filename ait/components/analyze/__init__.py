@@ -11,3 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import click
+import pkg_resources
+
+
+analyze_sub_task = {}
+for entry_point in pkg_resources.iter_entry_points('analyze_sub_task'):
+    analyze_sub_task[entry_point.name] = entry_point.load()
+
+analyze_cli_group = click.Group(name="analyze", commands=analyze_sub_task)
