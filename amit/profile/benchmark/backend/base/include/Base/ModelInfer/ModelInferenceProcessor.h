@@ -246,7 +246,7 @@ private:
     MemoryData dynamicIndexMemory_;
 
     std::map<size_t, MemoryData> dymAIPPIndexMemory_;
-    std::map<size_t, void*> dymAIPPIndexSet_;
+    std::map<size_t, aclmdlAIPP*> dymAIPPIndexSet_;
 
     size_t dym_gear_count_;
 
