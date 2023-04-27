@@ -1379,7 +1379,7 @@ Result ModelProcess::CreateOutput(void* outputBuffer, size_t bufferSize)
     return SUCCESS;
 }
 
-Result ModelProcess::FreeAIPP(const aclmdlAIPP* aippParmsSet)
+Result ModelProcess::FreeAIPP(aclmdlAIPP* aippParmsSet)
 {
     aclError ret = aclmdlDestroyAIPP(aippParmsSet);
     if (ret != ACL_SUCCESS) {
