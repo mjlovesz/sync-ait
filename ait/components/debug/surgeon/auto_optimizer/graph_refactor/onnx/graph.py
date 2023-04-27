@@ -25,6 +25,7 @@ from onnx import helper, GraphProto, ModelProto, OperatorSetIdProto, version_con
 from auto_optimizer.graph_refactor import BaseGraph, Initializer, PlaceHolder, Node
 from auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
 from auto_optimizer.tools.log import logger
+from auto_optimizer.common.utils import check_output_model_path
 
 
 class OnnxGraph(BaseGraph):
@@ -211,9 +212,10 @@ class OnnxGraph(BaseGraph):
                 new_model_save_path))
         return OnnxGraph.parse(new_model_save_path)
 
-    def extract_subgraph(self, subgraph_path: str,
+    def extract_subgraph(self,
                          start_node_name: str,
                          end_node_name: str,
+                         subgraph_path: str = None,
                          is_check_subgraph: bool = False):
         all_node_names = [node.name for node in self.nodes]
         if start_node_name not in all_node_names or end_node_name not in all_node_names:
@@ -257,12 +259,10 @@ class OnnxGraph(BaseGraph):
 
         subgraph = OnnxGraph('extracted graph', reachable_nodes, inputs, outputs,
                              initializers, value_infos, **self._meta)
+        subgraph.toposort()
 
-        subgraph_dir = os.path.dirname(os.path.abspath(subgraph_path))
-        if not os.path.exists(subgraph_dir):
-            logger.info("{} is not exist.".format(subgraph_dir))
-        else:
-            subgraph.save(subgraph_path)
+        if subgraph_path and check_output_model_path(subgraph_path):
+            self.save(subgraph_path)
             logger.info('Extract the model completed, model saved in {}.'.format(
                         subgraph_path))
 
