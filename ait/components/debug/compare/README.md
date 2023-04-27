@@ -45,10 +45,10 @@
 
 ### 输出结果说明
 ```sh
-{output_path}/{timestamp}
+{output_path}/{timestamp}/{input_name-input_shape}  # {input_name-input_shape} 用来区分动态shape时不同的模型实际输入，静态shape时没有该层
 ├-- dump_data
 │   ├-- npu                          # npu dump 数据目录
-│   │   ├-- {timestamp}              # dump数据文件落盘的时间
+│   │   ├-- {timestamp}              # 模型所有npu dump的算子输出，dump为False情况下没有该目录
 │   │   │   └-- 0                    # Device 设备 ID 号
 │   │   │       └-- {om_model_name}  # 模型名称
 │   │   │           └-- 1            # 模型 ID 号
