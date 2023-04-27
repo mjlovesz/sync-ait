@@ -46,10 +46,14 @@
 
 ### Analysis Result Description
 ```sh
-{output_path}/{timestamp}
+用来区分动态shape时不同的模型实际输入，静态shape时没有该层
+Used to distinguish between different actual inputs of models in dynamic shapes, but not in static shapes
+
+
+{output_path}/{timestamp}/{input_name-input_shape}  # {input_name-input_shape} is used to record actual input shape for dynamic input, not exists if static
 ├-- dump_data
 │   ├-- npu                          # npu dump data directory
-│   │   ├-- {timestamp}              # dump data saved time
+│   │   ├-- {timestamp}              # model dump data directory, not exists if dump=False
 │   │   │   └-- 0                    # Device ID
 │   │   │       └-- {om_model_name}  # om model name
 │   │   │           └-- 1            # model ID
