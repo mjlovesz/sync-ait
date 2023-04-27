@@ -1669,7 +1669,7 @@ Result ModelProcess::SetAIPPPaddingParams(std::shared_ptr<Base::DynamicAippConfi
     return SUCCESS;
 }
 
-Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, void* &pAIPPSet, uint64_t maxBatchSize)
+Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* pAIPPSet, uint64_t maxBatchSize)
 {
     Result ret = SUCCESS;
     INFO_LOG("dynamic aipp mode. batchsize:%d", int(maxBatchSize));
