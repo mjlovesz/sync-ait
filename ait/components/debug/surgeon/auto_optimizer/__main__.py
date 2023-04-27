@@ -27,6 +27,7 @@ from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern import KnowledgeFactory
 from auto_optimizer.tools.log import logger
+from auto_optimizer.common.utils import check_output_model_path
 
 from .options import (
     arg_path,
@@ -265,13 +266,13 @@ def command_extract(
     if input_model == output_model:
         logger.warning('output_model is input_model, refuse to overwrite origin model!')
         return
-    output_model_dir = os.path.dirname(os.path.abspath(output_model.as_posix()))
-    if not os.path.exists(output_model_dir):
-        logger.error("{} is not exist.".format(output_model_dir))
+    output_model_path = output_model.as_posix()
+    if not check_output_model_path(output_model_path):
         return
+
     onnx_graph = OnnxGraph.parse(input_model.as_posix())
     try:
-        onnx_graph.extract_subgraph(output_model, start_node_name, end_node_name, is_check_subgraph)
+        onnx_graph.extract_subgraph(start_node_name, end_node_name, output_model_path, is_check_subgraph)
     except ValueError as err:
         logger.error(err)
 
