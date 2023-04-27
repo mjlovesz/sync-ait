@@ -7,18 +7,18 @@
 ### Environment Setup
 - Set up an operating and development environment powered by Ascend AI Processors including driver / firmware / CANN, refering [Ascend Documentation](https://www.hiascend.com/en/document)
 - Install Python 3.7.5.
-- Install benchmark tool, refering [ais_bench](https://gitee.com/ascend/amit/blob/master/amit/profile/benchmark/README.md)
+- Install benchmark tool, refering [ais_bench](https://gitee.com/ascend/ait/tree/master/ait/components/profile/benchmark/README.md)
 - **ONNX related python packges** `pip3 install onnxruntime onnx numpy`, If the installation of dependent modules fails using the pip command, it is recommended to execute the command **pip3 install --upgrade pip** to avoid installation failure due to low pip version.
 - **TensorFlow related python packges**, refering [Centos7.6 installing tensorflow1.15.0](https://bbs.huaweicloud.com/blogs/181055).
 
 ### Usage
 - Getting this package by downloading zip package or `git clone`:
   ```sh
-  git clone https://gitee.com/ascend/amit.git
+  git clone https://gitee.com/ascend/ait.git
   ```
 - Change directory to `compare`
   ```sh
-  cd amit/amit/debug/compare
+  cd ait/ait/components/debug/compare
   ```
 - Set CANN related environ variables. Change `/usr/local/Ascend/ascend-toolkit` to your own installed CANN path.
   ```sh
@@ -140,6 +140,9 @@ Used to distinguish between different actual inputs of models in dynamic shapes,
 | --output-nodes                           | Output node specified by the user. Separate multiple nodes with semicolons, for example, **node_name1:0;node_name2:1;node_name3:0**. | No       |
 | --output-size                            | Specify the output size of the model. If there are several outputs, set several values. In the dynamic shape scenario, the output size of the acquired model may be 0. The user needs to estimate a more appropriate value according to the input shape to apply for memory. Multiple output sizes are separated by English semicolons (,), such as "10000,10000,10000"。 | No       |
 | --advisor           | Whether print advisor info on the end of execution | No    |
+| -dr，--dymShape-range     | dynamic shape range. Set for onnx model inferencing and accuracy comparing using all matched input shape. <br/>Format like `input_name1:1,3,200\~224,224-230;input_name2:1,300`, where `input_name` is the related model input name, `"\~"` means value range, `a\~b\~c` means `[a: b :c]`and `"-"` means takinf among them. | No  |
+| --dump                   | boolean value if dump all model nodes and compare accuracy. Default True. Onnx model only. Turn off by `--dump False`           | No  |
+| --convert                 | Convert om dump data from `bin` to `npy` file. Generated path is `./dump_data/npu/{timestamp_bin2npy}` | No    |
 
 ### Sample Execution
 - Obtain the original model from [AIPainting_v2.pb](https://obs-9be7.obs.cn-east-2.myhuaweicloud.com/003_Atc_Models/AE/ATC%20Model/painting/AIPainting_v2.pb).
