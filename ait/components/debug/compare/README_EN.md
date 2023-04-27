@@ -128,7 +128,7 @@ Used to distinguish between different actual inputs of models in dynamic shapes,
 
 ### Command-line Options
 
-| Option&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; | Description                              | Required |
+| Option&emsp                              | Description                              | Required |
 | ---------------------------------------- | ---------------------------------------- | -------- |
 | -m, --model-path                         | Path of the original model (.pb or .onnx). Currently, only .pb and .onnx models are supported. | Yes      |
 | -om, --offline-model-path                | Path of the offline model (.om) adapted to the Ascend AI Processor. | Yes      |
