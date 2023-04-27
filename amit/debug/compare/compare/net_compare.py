@@ -282,6 +282,7 @@ class NetCompare(object):
                 ]
             header_base_info.extend(header)
             writer.writerow(header_base_info)
+        fp_write.seek(0, 0)
         index = len(fp_write.readlines()) - 1
         new_content = [str(index), "NaN", "Node_Output", "NaN", "NaN",
                        npu_file_name, "NaN", golden_file_name, "[]"]
