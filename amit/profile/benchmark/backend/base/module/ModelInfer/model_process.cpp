@@ -1708,5 +1708,5 @@ Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig
     }
     pAIPPSet = aippDynamicSet;
     DEBUG_LOG("debug now get pset :%p %p\n", pAIPPSet, aippDynamicSet);
-    return SUCCESS;
+    return ret;
 }
