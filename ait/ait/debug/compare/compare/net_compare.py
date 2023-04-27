@@ -278,7 +278,7 @@ class NetCompare(object):
 
     def _process_result_to_csv(self, fp_write, csv_info):
         writer = csv.writer(fp_write)
-        if header:
+        if csv_info.header:
             header_base_info = [
                 'Index', 'OpType', 'NPUDump', 'DataType', 'Address',
                 'GroundTruth', 'DataType', 'TensorIndex', 'Shape'
