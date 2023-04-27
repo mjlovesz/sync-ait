@@ -123,7 +123,7 @@ public:
     /**
     * @brief free aclmdlAIPP
     */
-    Result FreeAIPP(const aclmdlAIPP* aippParmsSet);
+    Result FreeAIPP(aclmdlAIPP* aippParmsSet);
 
     // ------------------分别配置具体AIPP参数-----------------
     Result SetAIPPSrcImageSize(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet);
