@@ -15,7 +15,7 @@ def data_convert(npu_dump_data_path, npu_net_output_data_path, arguments):
     if _check_convert_bin2npy(arguments):
         if not arguments.dump:
             utils.print_error_log("Invalid Usage:arg dump isn't used")
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
         common_path = os.path.commonprefix([npu_dump_data_path, npu_net_output_data_path])
         npu_dump_data_path_diff = os.path.relpath(npu_dump_data_path, common_path)
         time_stamp_file_path = npu_dump_data_path_diff.split(os.path.sep)[1]
