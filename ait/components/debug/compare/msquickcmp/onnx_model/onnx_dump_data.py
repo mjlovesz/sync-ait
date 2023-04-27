@@ -15,14 +15,13 @@ import onnx
 import onnxruntime
 import numpy as np
 
-from common.dump_data import DumpData
-from skl2onnx.helpers.onnx_helper import enumerate_model_node_outputs
-from skl2onnx.helpers.onnx_helper import select_model_inputs_outputs
-from skl2onnx.helpers.onnx_helper import save_onnx_model
-from common import utils
-from common.utils import AccuracyCompareException
-
-from common.utils import InputShapeError
+from msquickcmp.common.dump_data import DumpData
+from msquickcmp.skl2onnx.helpers.onnx_helper import enumerate_model_node_outputs
+from msquickcmp.skl2onnx.helpers.onnx_helper import select_model_inputs_outputs
+from msquickcmp.skl2onnx.helpers.onnx_helper import save_onnx_model
+from msquickcmp.common import utils
+from msquickcmp.common.utils import AccuracyCompareException
+from msquickcmp.common.utils import InputShapeError
 
 NODE_TYPE_TO_DTYPE_MAP = {
     "tensor(int)": np.int32,
