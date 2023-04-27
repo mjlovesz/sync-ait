@@ -142,8 +142,8 @@ output-path/timestamp
     │   └── input_1.bin(随机生成的，若用户指定了数据，该文件不存在)
     ├── result_2021211214657.csv
     ├── model
-        │   ├── new_model_name.onnx(把每个算子作为输出节点后新生成的onnx模型)
-        │   └── model_name.json(model_name为om的文件名)
+    │   ├── new_model_name.onnx(把每个算子作为输出节点后新生成的onnx模型)
+    │   └── model_name.json(model_name为om的文件名)
     └── tmp (如果-m模型为.pb, tfdbg相关的临时目录)
 ```
 
