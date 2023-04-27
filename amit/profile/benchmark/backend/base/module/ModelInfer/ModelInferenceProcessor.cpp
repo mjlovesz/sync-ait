@@ -337,7 +337,7 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
     }
 
     if (dymAIPPIndexSet_.size() != 0) {
-        for (auto& aippSetIt : dymAIPPIndexSet_) {
+        for (const auto& aippSetIt : dymAIPPIndexSet_) {
             Base::BaseTensor dyIndexTensor = {};
             dyIndexTensor.buf = dymAIPPIndexMemory_[aippSetIt.first].ptrData;
             dyIndexTensor.size = dymAIPPIndexMemory_[aippSetIt.first].size;
