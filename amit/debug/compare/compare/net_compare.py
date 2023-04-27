@@ -25,7 +25,7 @@ PYC_FILE_TO_PYTHON_VERSION = "3.7.5"
 INFO_FLAG = "[INFO]"
 WRITE_FLAGS = os.O_WRONLY | os.O_CREAT
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
-READ_WRITE_FLAGS = os.RDWR | os.O_CREAT
+READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
 # index of each member in compare result_*.csv file
 NPU_DUMP_TAG = "NPUDump"
 GROUND_TRUTH_TAG = "GroundTruth"
