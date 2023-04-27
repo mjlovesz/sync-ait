@@ -22,6 +22,9 @@
 #include "Base/ErrorCode/ErrorCode.h"
 
 namespace Base {
+const int CROP_SIZE_W_DEFAULT = 416;
+const int CROP_SIZE_H_DEFAULT = 416;
+
 struct CropParams {
     int8_t cropSwitch;
     int32_t loadStartPosW;

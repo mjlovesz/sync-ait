@@ -1603,8 +1603,6 @@ Result ModelProcess::SetAIPPCropParams(std::shared_ptr<Base::DynamicAippConfig> 
 {
     aclError ret = ACL_ERROR_NONE;
     int cropIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "crop");
-    int defaultCropSizeW = 416;
-    int defaultCropSizeH = 416;
     if (cropIndex >= 0) {
         DEBUG_LOG("aclmdlSetAIPPCropParams params: aippDynamicSet: %p cropSwitch: %d loadStartPosW: %d loadStartPosH: %d \
             cropSizeW: %d cropSizeH: %d batchIndex: %d", aippDynamicSet, dyAippCfg->GetCropParams()[cropIndex].cropSwitch,
@@ -1614,7 +1612,7 @@ Result ModelProcess::SetAIPPCropParams(std::shared_ptr<Base::DynamicAippConfig> 
             dyAippCfg->GetCropParams()[cropIndex].loadStartPosW, dyAippCfg->GetCropParams()[cropIndex].loadStartPosH,
             dyAippCfg->GetCropParams()[cropIndex].cropSizeW, dyAippCfg->GetCropParams()[cropIndex].cropSizeH, batchIndex);
     } else {
-        ret = aclmdlSetAIPPCropParams(aippDynamicSet, 0, 0, 0, defaultCropSizeW, defaultCropSizeH, batchIndex);
+        ret = aclmdlSetAIPPCropParams(aippDynamicSet, 0, 0, 0, Base::CROP_SIZE_W_DEFAULT, Base::CROP_SIZE_H_DEFAULT, batchIndex);
     }
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
