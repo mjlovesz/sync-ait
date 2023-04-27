@@ -389,7 +389,6 @@ APP_ERROR ModelInferenceProcessor::SetAippConfigData()
             Result result = processModel->SetInputAIPP(aippSetIt.first, aippSetIt.second);
             if (result != SUCCESS) {
                 ERROR_LOG("ModelProcess::SetInputAIPP failed. index:%d result:%d ", int(aippSetIt.first), result);
-                FreeDymAIPPMem();
                 return APP_ERR_ACL_FAILURE;
             }
         }
@@ -397,7 +396,6 @@ APP_ERROR ModelInferenceProcessor::SetAippConfigData()
     } else if ((!dyAippCfg->IsActivated()) && dyAippCfg->ModelIsLegal()) {
         // 模型有一个动态aipp输入，但是没有读取到合法的配置文件
         ERROR_LOG("model with dynamic aipp input can't find config file.");
-        FreeDymAIPPMem();
         return APP_ERR_ACL_FAILURE;
     }
     return APP_ERR_OK;
@@ -526,7 +524,7 @@ APP_ERROR ModelInferenceProcessor::FreeDymAIPPMem()
 {
      for (auto& aippSetIt : dymAIPPIndexSet_) {
         if (aippSetIt.second != nullptr) {
-            free(aippSetIt.second);
+            processModel->FreeAIPP(aippSetIt.second);
             aippSetIt.second = nullptr;
         }
     }

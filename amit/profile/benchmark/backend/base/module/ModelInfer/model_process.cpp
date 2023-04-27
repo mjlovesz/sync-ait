@@ -1379,6 +1379,18 @@ Result ModelProcess::CreateOutput(void* outputBuffer, size_t bufferSize)
     return SUCCESS;
 }
 
+Result ModelProcess::FreeAIPP(const aclmdlAIPP* aippParmsSet)
+{
+    aclError ret = aclmdlDestroyAIPP(aippParmsSet);
+    if (ret != ACL_SUCCESS) {
+        cout << aclGetRecentErrMsg() << endl;
+        ERROR_LOG("free aclmdlAIPP failed");
+        return FAILED;
+    }
+    aippParmsSet = nullptr;
+    return SUCCESS;
+}
+
 Result ModelProcess::CheckDymAIPPInputExsity()
 {
     /*
@@ -1446,6 +1458,7 @@ Result ModelProcess::SetAIPPSrcImageSize(std::shared_ptr<Base::DynamicAippConfig
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetAIPPSrcImageSize failed, w: %d, h: %d, ret: %d", dyAippCfg->GetSrcImageSizeW(),
             dyAippCfg->GetSrcImageSizeH(), ret);
+        throw "AippData set failed!";
         return FAILED;
     }
     return SUCCESS;
@@ -1458,6 +1471,7 @@ Result ModelProcess::SetAIPPInputFormat(std::shared_ptr<Base::DynamicAippConfig>
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetAIPPInputFormat failed, ret %d", ret);
+        throw "AippData set failed!";
         return FAILED;
     }
     return SUCCESS;
@@ -1483,6 +1497,7 @@ Result ModelProcess::SetAIPPCscParams(std::shared_ptr<Base::DynamicAippConfig> d
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetAIPPCscParams failed, ret %d", ret);
+        throw "AippData set failed!";
         return FAILED;
     }
     return SUCCESS;
@@ -1495,6 +1510,7 @@ Result ModelProcess::SetAIPPRbuvSwapSwitch(std::shared_ptr<Base::DynamicAippConf
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetAIPPRbuvSwapSwitch failed rbuvSwap:%d aippset:%p ret %d", dyAippCfg->GetRbuvSwapSwitch(), aippDynamicSet, ret);
+        throw "AippData set failed!";
         return FAILED;
     }
     return SUCCESS;
@@ -1507,6 +1523,7 @@ Result ModelProcess::SetAIPPAxSwapSwitch(std::shared_ptr<Base::DynamicAippConfig
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetAIPPAxSwapSwitch failed, ret %d", ret);
+        throw "AippData set failed!";
         return FAILED;
     }
     return SUCCESS;
@@ -1536,6 +1553,7 @@ Result ModelProcess::SetAIPPDtcPixelMean(std::shared_ptr<Base::DynamicAippConfig
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetAIPPDtcPixelMean failed, ret %d", ret);
+        throw "AippData set failed!";
         return FAILED;
     }
     return SUCCESS;
@@ -1563,6 +1581,7 @@ Result ModelProcess::SetAIPPDtcPixelMin(std::shared_ptr<Base::DynamicAippConfig>
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetAIPPDtcPixelMin failed, ret %d", ret);
+        throw "AippData set failed!";
         return FAILED;
     }
     return SUCCESS;
@@ -1594,6 +1613,7 @@ Result ModelProcess::SetAIPPPixelVarReci(std::shared_ptr<Base::DynamicAippConfig
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetAIPPPixelVarReci failed, ret %d", ret);
+        throw "AippData set failed!";
         return FAILED;
     }
     return SUCCESS;
@@ -1617,6 +1637,7 @@ Result ModelProcess::SetAIPPCropParams(std::shared_ptr<Base::DynamicAippConfig> 
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetAIPPCropParams failed, ret %d", ret);
+        throw "AippData set failed!";
         return FAILED;
     }
     return SUCCESS;
@@ -1642,6 +1663,7 @@ Result ModelProcess::SetAIPPPaddingParams(std::shared_ptr<Base::DynamicAippConfi
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetAIPPPaddingParams failed, ret %d", ret);
+        throw "AippData set failed!";
         return FAILED;
     }
     return SUCCESS;
@@ -1658,31 +1680,33 @@ Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig
         ERROR_LOG("aclmdlCreateAIPP failed");
         return FAILED;
     }
-
-    ret = SetAIPPSrcImageSize(dyAippCfg, aippDynamicSet);
-    if (ret != SUCCESS) {return FAILED;}
-    ret = SetAIPPInputFormat(dyAippCfg, aippDynamicSet);
-    if (ret != SUCCESS) {return FAILED;}
-    ret = SetAIPPCscParams(dyAippCfg, aippDynamicSet);
-    if (ret != SUCCESS) {return FAILED;}
-    ret = SetAIPPRbuvSwapSwitch(dyAippCfg, aippDynamicSet);
-    if (ret != SUCCESS) {return FAILED;}
-    ret = SetAIPPAxSwapSwitch(dyAippCfg, aippDynamicSet);
-    if (ret != SUCCESS) {return FAILED;}
-
-    for (size_t batchIndex = 0; batchIndex < maxBatchSize; batchIndex++) { // 遍历设置需要以batchIndex为单位的配置
-        SetAIPPDtcPixelMean(dyAippCfg, aippDynamicSet, batchIndex);
-        if (ret != SUCCESS) {return FAILED;}
-        SetAIPPDtcPixelMin(dyAippCfg, aippDynamicSet, batchIndex);
-        if (ret != SUCCESS) {return FAILED;}
-        SetAIPPPixelVarReci(dyAippCfg, aippDynamicSet, batchIndex);
-        if (ret != SUCCESS) {return FAILED;}
-        SetAIPPCropParams(dyAippCfg, aippDynamicSet, batchIndex);
-        if (ret != SUCCESS) {return FAILED;}
-        SetAIPPPaddingParams(dyAippCfg, aippDynamicSet, batchIndex);
+    try {
+        ret = SetAIPPSrcImageSize(dyAippCfg, aippDynamicSet);
+        ret = SetAIPPInputFormat(dyAippCfg, aippDynamicSet);
+        ret = SetAIPPCscParams(dyAippCfg, aippDynamicSet);
+        ret = SetAIPPRbuvSwapSwitch(dyAippCfg, aippDynamicSet);
+        ret = SetAIPPAxSwapSwitch(dyAippCfg, aippDynamicSet);
+    } catch (...) {
+        FreeAIPP(aippDynamicSet);
+        return FAILED;
     }
 
+    for (size_t batchIndex = 0; batchIndex < maxBatchSize; batchIndex++) { // 遍历设置需要以batchIndex为单位的配置
+        try {
+            SetAIPPDtcPixelMean(dyAippCfg, aippDynamicSet, batchIndex);
+            SetAIPPDtcPixelMin(dyAippCfg, aippDynamicSet, batchIndex);
+            SetAIPPPixelVarReci(dyAippCfg, aippDynamicSet, batchIndex);
+            SetAIPPCropParams(dyAippCfg, aippDynamicSet, batchIndex);
+            SetAIPPPaddingParams(dyAippCfg, aippDynamicSet, batchIndex);
+        } catch (...) {
+            FreeAIPP(aippDynamicSet);
+            return FAILED;
+        }
+    }
+    if (pAIPPSet != nullptr) {
+        FreeAIPP(pAIPPSet);
+    }
     pAIPPSet = aippDynamicSet;
-    DEBUG_LOG("lcm debug now get pset :%p %p\n", pAIPPSet, aippDynamicSet);
+    DEBUG_LOG("debug now get pset :%p %p\n", pAIPPSet, aippDynamicSet);
     return SUCCESS;
 }
