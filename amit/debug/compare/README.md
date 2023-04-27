@@ -120,8 +120,8 @@ export NPU_HOST_LIB=${install_path}/runtime/lib64/stub
 ### 输出结果说明
 
 ```
-output-path/timestamp/input_name-
-├── input_name-1_3_224_224(如果指定dymShape_range，则会有该目录来区分不同的模型实际输入)
+output-path/timestamp
+└── input_name-1_3_224_224(如果指定dymShape_range，则会有该目录来区分不同的模型实际输入)
     ├── dump_data
     │   ├── npu(npu的dump数据目录)
     │   │   ├── timestamp
