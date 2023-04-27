@@ -31,4 +31,4 @@ def _check_data_convert_file(convert_dir_path):
         return convert_dir_path
 
 def _check_convert_bin2npy(arguments):
-    return arguments.bin2npy
+    return arguments.bin2npy and arguments.dump
