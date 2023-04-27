@@ -11,12 +11,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import os
 import stat
 import pytest
 
-from compare import analyser
+from amit.debug.compare.compare.analyser import analyser
 
 
 @pytest.fixture(scope="module", autouse=True)
