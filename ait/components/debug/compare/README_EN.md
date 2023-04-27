@@ -18,7 +18,7 @@
   ```
 - Change directory to `compare`
   ```sh
-  cd ait/ait/components/debug/compare
+  cd ait/ait/components/debug/compare/msquickcmp
   ```
 - Set CANN related environ variables. Change `/usr/local/Ascend/ascend-toolkit` to your own installed CANN path.
   ```sh
