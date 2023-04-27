@@ -173,7 +173,7 @@ class NpuDumpData(DumpData):
             npu dump data path
         """
         self._check_input_path_param()
-        benchmark_dir = os.path.join(os.path.realpath("../../profile"), BENCHMARK_DIR)
+        benchmark_dir = os.path.join(os.path.realpath("../../../profile"), BENCHMARK_DIR)
         self.benchmark_backend_compile_sh(benchmark_dir)
         return self.benchmark_run(benchmark_dir)
 

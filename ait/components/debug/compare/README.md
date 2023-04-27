@@ -17,7 +17,7 @@
   ```
 - 进入 compare 目录
   ```sh
-  cd ait/ait/components/debug/compare
+  cd ait/ait/components/debug/compare/msquickcmp
   ```
 - 配置 CANN 包相关环境变量，其中 `/usr/local/Ascend/ascend-toolkit` 需使用实际 CANN 包安装后路径
   ```sh
