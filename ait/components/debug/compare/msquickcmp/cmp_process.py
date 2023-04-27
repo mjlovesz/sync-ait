@@ -82,10 +82,10 @@ def cmp_process(args:CmpArgsAdapter):
         # convert the om model to json
         output_json_path = AtcUtils(args).convert_model_to_json()
 
-        # deal with the dymShape_range param if exists
+        # deal with the dym_shape_range param if exists
         input_shapes = []
-        if args.dymShape_range:
-            input_shapes = utils.parse_dymshape_range(args.dymShape_range)
+        if args.dym_shape_range:
+            input_shapes = utils.parse_dym_shape_range(args.dym_shape_range)
         if not input_shapes:
             input_shapes.append("")
         for input_shape in input_shapes:
