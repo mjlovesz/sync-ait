@@ -212,7 +212,7 @@ class NetCompare(object):
                     result_file_path = os.path.join(self.arguments.out_path, file_name)
                 else:
                     header = []
-                CsvInfo = namedtuple('npu_file_name', 'golden_file_name', 'result', 'header')
+                CsvInfo = namedtuple('CsvInfo', 'npu_file_name, golden_file_name, result, header')
                 csv_info = CsvInfo(npu_file_name, golden_file_name, result, header)
                 with os.fdopen(os.open(result_file_path, READ_WRITE_FLAGS, WRITE_MODES), "a+") as fp_writer:
                     self._process_result_to_csv(fp_writer, csv_info)
