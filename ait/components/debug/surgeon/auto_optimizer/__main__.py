@@ -271,7 +271,7 @@ def command_extract(
         return
     onnx_graph = OnnxGraph.parse(input_model.as_posix())
     try:
-        onnx_graph.extract_subgraph(output_model, start_node_name, end_node_name, is_check_subgraph)
+        onnx_graph.extract_subgraph(start_node_name, end_node_name, output_model, is_check_subgraph)
     except ValueError as err:
         logger.error(err)
 
