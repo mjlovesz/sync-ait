@@ -175,7 +175,7 @@ class NpuDumpData(DumpData):
         if not cli:
             benchmark_dir = os.path.join(os.path.realpath("../../profile"), BENCHMARK_DIR)
             self.benchmark_install_sh(benchmark_dir)
-        return self.benchmark_run(benchmark_dir)
+        return self.benchmark_run()
 
     def get_expect_output_name(self):
         """
@@ -207,12 +207,10 @@ class NpuDumpData(DumpData):
         os.chdir(retval)
         utils.print_info_log("Run command line: cd %s (back to the working directory)" % (retval))
 
-    def benchmark_run(self, benchmark_dir):
+    def benchmark_run(self):
         """
         Function Description:
             run benchmark project
-        Parameter:
-            benchmark_dir: benchmark project directory
         Return Value:
             npu dump data path
         Exception Description:
@@ -242,12 +240,9 @@ class NpuDumpData(DumpData):
         self.dynamic_input.add_dynamic_arg_for_benchmark(benchmark_cmd)
         self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
 
-        retval = os.getcwd()
-        os.chdir(benchmark_dir)
         # do benchmark command
-        utils.print_info_log("Run command line: cd %s && %s" % (benchmark_dir, " ".join(benchmark_cmd)))
+        utils.print_info_log("Run command line: %s" % (benchmark_cmd))
         utils.execute_command(benchmark_cmd)
-        os.chdir(retval)
 
         npu_dump_data_path = ""
         if self.arguments.dump:
