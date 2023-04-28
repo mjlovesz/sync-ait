@@ -60,7 +60,7 @@ def _check_output_node_name_mapping(original_net_output_node, golden_net_output_
             break
 
 
-def cmp_process(args:CmpArgsAdapter, cli:bool):
+def cmp_process(args:CmpArgsAdapter, use_cli:bool):
     """
     Function Description:
         main process function
@@ -89,12 +89,12 @@ def cmp_process(args:CmpArgsAdapter, cli:bool):
         if not input_shapes:
             input_shapes.append("")
         for input_shape in input_shapes:
-            run(args, input_shape, output_json_path, original_out_path, cli)
+            run(args, input_shape, output_json_path, original_out_path, use_cli)
     except utils.AccuracyCompareException as error:
         raise error
 
 
-def run(args, input_shape, output_json_path, original_out_path, cli:bool):
+def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
     if input_shape:
         args.input_shape = input_shape
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
@@ -106,7 +106,7 @@ def run(args, input_shape, output_json_path, original_out_path, cli:bool):
 
     # compiling and running source codes
     npu_dump = NpuDumpData(args, output_json_path)
-    npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(cli)
+    npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
     expect_net_output_node = npu_dump.get_expect_output_name()
 
     # convert data from bin to npy if --convert is used
