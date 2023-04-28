@@ -71,6 +71,7 @@ add_executable(ais_bench_infer
         ${BACKEND_PATH}/base/module/ModelInfer/utils.cpp
         ${BACKEND_PATH}/base/module/ModelInfer/SessionOptions.cpp
         ${BACKEND_PATH}/base/module/ModelInfer/ModelInferenceProcessor.cpp
+        ${BACKEND_PATH}/base/module/ModelInfer/DynamicAippConfig.cpp
         ${BACKEND_PATH}/python/src/PyInferenceSession/PyInferenceSession.cpp
         ais_bench_infer.cpp)
 
