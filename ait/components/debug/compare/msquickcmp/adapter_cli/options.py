@@ -119,32 +119,3 @@ opt_bin2npy = click.option(
     type=str2bool,
     help="<Optional> Enable npu dump data conversion from bin to npy after compare."
 )
-
-
-class MyArgs:
-    def __init__(self,
-                 model_path,
-                 input_path,
-                 cann_path,
-                 out_path,
-                 input_shape,
-                 device,
-                 output_size,
-                 output_nodes,
-                 advisor,
-                 dym_shape_range,
-                 dump,
-                 bin2npy):
-        self.model_path = model_path
-        self.input_path = input_path
-        self.cann_path = cann_path
-        self.out_path = out_path
-        self.input_shape = input_shape
-        self.device = device
-        self.output_size = output_size
-        self.output_nodes = output_nodes
-        self.advisor = advisor
-        self.dym_shape_range = dym_shape_range
-        self.dump = dump
-        self.bin2npy = bin2npy
-
