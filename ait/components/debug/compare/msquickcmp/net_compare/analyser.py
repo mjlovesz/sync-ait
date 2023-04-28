@@ -135,7 +135,7 @@ class Analyser:
         for row, monitors in zip(invalid_rows, invalid_monitors):
             for monitor in monitors:
                 results.setdefault("Monitor", []).append(monitor)
-                results.setdefault("Value", []).append("{:.4g}".format(float(row[monitor])))
+                results.setdefault("Value", []).append("{:.6g}".format(float(row[monitor])))
 
             for column in PRINT_COLUMNS:
                 results.setdefault(column, []).extend([row[column]] * len(monitors))

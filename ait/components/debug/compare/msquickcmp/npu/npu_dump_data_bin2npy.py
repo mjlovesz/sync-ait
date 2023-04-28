@@ -14,6 +14,9 @@ def data_convert(npu_dump_data_path, npu_net_output_data_path, arguments):
         when invalid msaccucmp command throw exception
     """
     if _check_convert_bin2npy(arguments):
+        if not arguments.dump:
+            utils.print_error_log("Invalid Usage:arg dump isn't used")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
         common_path = os.path.commonprefix([npu_dump_data_path, npu_net_output_data_path])
         npu_dump_data_path_diff = os.path.relpath(npu_dump_data_path, common_path)
         time_stamp_file_path = npu_dump_data_path_diff.split(os.path.sep)[1]
@@ -32,4 +35,4 @@ def _check_data_convert_file(convert_dir_path):
         return convert_dir_path
 
 def _check_convert_bin2npy(arguments):
-    return arguments.bin2npy and arguments.dump
+    return arguments.bin2npy
