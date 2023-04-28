@@ -262,7 +262,7 @@ class OnnxGraph(BaseGraph):
         subgraph.toposort()
 
         if subgraph_path and check_output_model_path(subgraph_path):
-            self.save(subgraph_path)
+            subgraph.save(subgraph_path)
             logger.info('Extract the model completed, model saved in {}.'.format(
                         subgraph_path))
 
