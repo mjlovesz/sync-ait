@@ -11,6 +11,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import sys
+
 import click
 
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
@@ -30,6 +32,7 @@ from msquickcmp.adapter_cli.options import (
     opt_bin2npy
 )
 from msquickcmp.cmp_process import cmp_process
+from msquickcmp.common import utils
 
 
 @click.command(name="compare", short_help='one-click network-wide accuracy analysis of TensorFlow and ONNX models.')
@@ -66,4 +69,7 @@ def compare_cli(
     return cmp_process(cmp_args, True)
 
 if __name__ == '__main__':
-    compare_cli()
+    try:
+        compare_cli()
+    except utils.AccuracyCompareException as error:
+        sys.exit(error.error_info)
