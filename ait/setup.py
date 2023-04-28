@@ -11,26 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from setuptools import setup, find_packages  # type: ignore
+from setuptools import setup, find_packages
 
-
-with open('requirements.txt', encoding='utf-8') as f:
-    required = f.read().splitlines()
-
-with open('README.md', encoding='utf-8') as f:
-    long_description = f.read()
 
 setup(
-    name='ais_bench',
-    version='0.0.2',
-    description='ais_bench tool',
-    long_description=long_description,
-    url='ais_bench url',
+    name='ait',
+    version='0.0.1',
+    description='AIT, Ascend Inference Tools',
+    long_description_content_type='text/markdown',
+    url='https://gitee.com/ascend/ait',
     packages=find_packages(),
-    keywords='ais_bench tool',
-    install_requires=required,
+    package_data={'': ['LICENSE']},
+    license='Apache-2.0',
+    keywords='ait',
     python_requires='>=3.7',
     entry_points={
-        'profile_sub_task': ['benchmark=ais_bench.infer.__main__:__main__']
-    }
+        'console_scripts': ['ait=components.__main__:cli'],
+    },
 )

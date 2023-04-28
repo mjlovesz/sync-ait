@@ -15,8 +15,8 @@ import time
 from atc.atc_utils import AtcUtils
 from common import utils
 from common.utils import AccuracyCompareException, get_shape_to_directory_name, str2bool
-from compare import analyser
-from compare.net_compare import NetCompare
+from net_compare import analyser
+from net_compare.net_compare import NetCompare
 from npu.npu_dump_data import NpuDumpData
 from npu.npu_dump_data_bin2npy import data_convert
 
