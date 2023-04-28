@@ -44,7 +44,7 @@ done
     res=`echo $?`
     if [ $res =  $ret_run_failed ]; then
         pip3 wheel ./ -v
-        pip3 install ./aclruntime-*.whl --force-reinstall
+        pip3 install ./aclruntime-*.whl
     fi
 }
 
