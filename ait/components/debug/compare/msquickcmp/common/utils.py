@@ -413,6 +413,14 @@ def check_device_param_valid(device):
             " in [0, 255], now is %s." % device)
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
 
+def check_convert_is_valid_used(dump, bin2npy):
+    """
+    check dump is True while using convert
+    """
+    if not dump and bin2npy:
+        print_error_log("Convert option is forbidden when dump is False!\
+        Please keep dump True while using convert.")
+        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
 
 def parse_arg_value(values):
     """
