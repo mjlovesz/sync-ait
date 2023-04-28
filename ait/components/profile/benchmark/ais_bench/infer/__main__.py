@@ -436,13 +436,18 @@ if __name__ == "__main__":
     version_check(args)
 
     if args.profiler == True:
-        # try use msprof to run
-        msprof_bin = shutil.which('msprof')
-        if msprof_bin is None or os.getenv('GE_PROFILIGN_TO_STD_OUT') == '1':
-            logger.info("find no msprof continue use acl.json mode")
+        # check whether client want to use msprof
+        no_msprof = os.getenv("NO_MSPROF")
+        if no_msprof:
+            logger.info("do not use msprof continue use acl.json mode")
         else:
-            msprof_run_profiling(args)
-            exit(0)
+            # try use msprof to run
+            msprof_bin = shutil.which('msprof')
+            if msprof_bin is None or os.getenv('GE_PROFILIGN_TO_STD_OUT') == '1':
+                logger.info("find no msprof continue use acl.json mode")
+            else:
+                msprof_run_profiling(args)
+                exit(0)
 
     if args.dymShape_range != None and args.dymShape is None:
         # dymshape range run,according range to run each shape infer get best shape
@@ -451,7 +456,7 @@ if __name__ == "__main__":
 
     if type(args.device) == list:
         # args has multiple device, run single process for each device
-        ret = multidevice_run(args)
-        exit(ret)
+        MULTIDEVICE_RET = multidevice_run(args)
+        exit(MULTIDEVICE_RET)
 
     main(args)
