@@ -16,7 +16,7 @@ import os
 import stat
 import pytest
 
-from net_compare import analyser
+from msquickcmp.net_compare import analyser
 
 
 @pytest.fixture(scope="module", autouse=True)

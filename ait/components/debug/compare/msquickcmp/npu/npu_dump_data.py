@@ -164,7 +164,7 @@ class NpuDumpData(DumpData):
         self.dynamic_input = DynamicInput(self.om_parser, self.arguments)
         self.python_version = sys.executable or "python3"
 
-    def generate_dump_data(self, cli:bool):
+    def generate_dump_data(self, cli):
         """
         Function Description:
             compile and rum benchmark project

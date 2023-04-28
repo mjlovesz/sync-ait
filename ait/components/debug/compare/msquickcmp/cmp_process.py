@@ -91,7 +91,7 @@ def cmp_process(args:CmpArgsAdapter, cli:bool):
         for input_shape in input_shapes:
             run(args, input_shape, output_json_path, original_out_path, cli)
     except utils.AccuracyCompareException as error:
-        sys.exit(error.error_info)
+        raise error
 
 
 def run(args, input_shape, output_json_path, original_out_path, cli:bool):

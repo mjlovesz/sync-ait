@@ -13,6 +13,7 @@ import sys
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.common.utils import str2bool
+from msquickcmp.common import utils
 
 
 def _accuracy_compare_parser(parser):
@@ -57,4 +58,8 @@ if __name__ == '__main__':
                               args.cann_path, args.out_path, args.input_shape, 
                               args.device, args.output_size, args.output_nodes, args.advisor, 
                               args.dym_shape_range, args.dump, args.bin2npy)
-    cmp_process(cmp_args, False)
+    try:
+        cmp_process(cmp_args, False)
+    except utils.AccuracyCompareException as error:
+        sys.exit(error.error_info)
+
