@@ -164,7 +164,7 @@ class NpuDumpData(DumpData):
         self.dynamic_input = DynamicInput(self.om_parser, self.arguments)
         self.python_version = sys.executable or "python3"
 
-    def generate_dump_data(self, cli):
+    def generate_dump_data(self, use_cli):
         """
         Function Description:
             compile and rum benchmark project
@@ -172,7 +172,7 @@ class NpuDumpData(DumpData):
             npu dump data path
         """
         self._check_input_path_param()
-        if not cli:
+        if not use_cli:
             benchmark_dir = os.path.join(os.path.realpath("../../profile"), BENCHMARK_DIR)
             self.benchmark_install_sh(benchmark_dir)
         return self.benchmark_run()

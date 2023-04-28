@@ -40,7 +40,7 @@ def compare_cli() -> None:
     yield cmp_args
 
 def test_args_invalid_path_err(compare_cli):
-    try:
+    with pytest.raises(utils.AccuracyCompareException) as error:
         cmp_process(compare_cli, True)
-    except utils.AccuracyCompareException as error:
-        assert error.error_info == utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR
+
+    assert error.value.error_info == utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR
