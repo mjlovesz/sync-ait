@@ -59,7 +59,8 @@ done
     check_env_valid
     res=`echo $?`
     if [ $res = $ret_run_failed ]; then
-        source ./backend/install.sh
+        pip3 wheel ./backend/ -v
+        pip3 install ./aclruntime-*.whl --force-reinstall
 
         pip3 wheel ./ -v
         pip3 install ./ais_bench-*.whl --force-reinstall
