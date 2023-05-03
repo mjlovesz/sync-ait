@@ -33,9 +33,10 @@ def pipe_run(register_interface):
                 msg_str = sys.stdin.readline()
                 # {"msg":{"file":"D:\\amit\\onnx-modifier\\modified_onnx\\resnet34-v1-7.onnx"}, "path":"/open_model"}
                 # {"msg":{"added_node_info":{},"node_states":{},"changed_initializer":{},"rebatch_info":{},"added_inputs":{},"input_size_info":{},"added_outputs":{},"node_renamed_io":{},"node_states":{},"node_changed_attr":{},"model_properties":{},"postprocess_args":{}}, "path":"/download"}
+                # {"msg":{"path":"/exit"}
                 msg_dict = json.loads(msg_str)
                 path = msg_dict.get("path", "")
-                if "exit" == path:
+                if "/exit" == path:
                     break
                 
                 if path not in self.path_amp:
@@ -44,10 +45,11 @@ def pipe_run(register_interface):
                 msg_deal_func = self.path_amp[path]
 
                 self.request.set_json(msg_dict.get("msg", dict()))
-                msg_deal_func()
+                msg_back, status = msg_deal_func()
+                print(json.dumps(dict(msg=msg_back, status=status)), flush=True)
 
-        def send_file(self):
-            pass
+        def send_file(self, file_path):
+            return dict(file=file_path), 200
         
     class Request:
         def __init__(self) -> None:
