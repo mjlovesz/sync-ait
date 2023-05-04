@@ -76,8 +76,9 @@ def check_device_range_valid(ctx, param, value):
 
 
 opt_model = click.option(
-    "-m",
-    "--model",
+    "-om",
+    "--om-model",
+    "om_model",
     required=True,
     type=click.Path(
         exists=True,
@@ -296,6 +297,7 @@ opt_warmup_count = click.option(
 
 
 opt_dym_shape_range = click.option(
+    '-dr',
     '--dym_shape_range',
     'dym_shape_range',
     default=None,
