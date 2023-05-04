@@ -19,7 +19,7 @@ class BenchMarkArgsAdapter():
                  dym_shape, output_size, auto_set_dymshape_mode,
                  auto_set_dymdims_mode, batchsize, pure_data_type,
                  profiler, dump, acl_json_path, output_batchsize_axis,
-                 run_mode, display_all_summary, warmup_count, dym_shape_range):
+                 run_mode, display_all_summary, warmup_count, dym_shape_range, aipp_config):
         self.model = model
         self.input = input_path
         self.output = output
@@ -45,3 +45,4 @@ class BenchMarkArgsAdapter():
         self.display_all_summary = display_all_summary
         self.warmup_count = warmup_count
         self.dym_shape_range = dym_shape_range
+        self.aipp_config = aipp_config
