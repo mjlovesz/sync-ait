@@ -32,7 +32,7 @@ class BenchMarkArgsAdapter():
         self.dymHW = dym_hw
         self.dymDims = dym_dims
         self.dymShape = dym_shape
-        self.output_size = output_size
+        self.outputSize = output_size
         self.auto_set_dymshape_mode = auto_set_dymshape_mode
         self.auto_set_dymdims_mode = auto_set_dymdims_mode
         self.batchsize = batchsize
