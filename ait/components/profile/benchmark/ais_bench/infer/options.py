@@ -114,7 +114,7 @@ opt_output = click.option(
 
 
 opt_output_dirname = click.option(
-    '--output_dirname',
+    '--output-dirname',
     'output_dirname',
     type=str,
     help='actual output directory name. Used with parameter output, cannot be used alone. '
@@ -160,8 +160,8 @@ opt_device = click.option(
 )
 
 
-opt_dymBatch = click.option(
-    '--dymBatch',
+opt_dym_batch = click.option(
+    '--dym-batch',
     'dym_batch',
     default=0,
     type=int,
@@ -169,8 +169,8 @@ opt_dymBatch = click.option(
 )
 
 
-opt_dymHW = click.option(
-    '--dymHW',
+opt_dym_hw = click.option(
+    '--dym-hW',
     'dym_hw',
     default=None,
     type=str,
@@ -178,24 +178,25 @@ opt_dymHW = click.option(
 )
 
 
-opt_dymDims = click.option(
-    '--dymDims',
+opt_dym_dims = click.option(
+    '--dym-dims',
     'dym_dims',
     default=None,
     type=str,
     help='dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"'
 )
 
-opt_dymShape = click.option(
-    '--dymShape',
+opt_dym_shape = click.option(
+    '--dym-shape',
     'dym_shape',
     type=str,
     default=None,
     help='dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\"'
 )
 
-opt_outputSize = click.option(
-    '--outputSize',
+opt_output_size = click.option(
+    '-outsize', 
+    '--output-size',
     'output_size',
     default=None,
     type=str,
@@ -204,7 +205,8 @@ opt_outputSize = click.option(
 
 
 opt_auto_set_dymshape_mode = click.option(
-    '--auto_set_dymshape_mode',
+    '--auto-set-dymshape_mode',
+    'auto_set_dymshape_mode',
     default=False,
     callback=str2bool,
     help='auto_set_dymshape_mode'
@@ -212,7 +214,7 @@ opt_auto_set_dymshape_mode = click.option(
 
 
 opt_auto_set_dymdims_mode = click.option(
-    '--auto_set_dymdims_mode',
+    '--auto-set-dymdims_mode',
     default=False,
     callback=str2bool,
     help='auto_set_dymdims_mode'
@@ -220,7 +222,8 @@ opt_auto_set_dymdims_mode = click.option(
 
 
 opt_batchsize = click.option(
-    '--batchsize',
+    '--batch-size',
+    'batch_size',
     default=None,
     callback=check_batchsize_valid,
     help='batch size of input tensor'
@@ -228,7 +231,8 @@ opt_batchsize = click.option(
 
 
 opt_pure_data_type = click.option(
-    '--pure_data_type',
+    '--pure-data-type',
+    'pure_data_type',
     default="zero",
     type=click.Choice(["zero", "random"]),
     help='null data type for pure inference(zero or random)'
@@ -254,7 +258,8 @@ opt_dump = click.option(
 
 
 opt_acl_json_path = click.option(
-    '--acl_json_path',
+    '--acl-json-path',
+    'acl_json_path',
     default=None,
     type=str,
     help='acl json path for profiling or dump'
@@ -262,7 +267,8 @@ opt_acl_json_path = click.option(
 
 
 opt_output_batchsize_axis = click.option(
-    '--output_batchsize_axis',
+    '--output-batchsize-axis',
+    'output_batchsize_axis',
     default=0,
     type=int,
     callback=check_nonnegative_integer,
@@ -271,7 +277,8 @@ opt_output_batchsize_axis = click.option(
 
 
 opt_run_mode = click.option(
-    '--run_mode',
+    '--run-mode',
+    'run_mode',
     default="array",
     type=click.Choice(["array", "files", "tensor", "full"]),
     help='run mode'
@@ -279,7 +286,8 @@ opt_run_mode = click.option(
 
 
 opt_display_all_summary = click.option(
-    '--display_all_summary',
+    '--display-all-summary',
+    'display_all_summary',
     default=False,
     type=str,
     callback=str2bool,
@@ -288,7 +296,8 @@ opt_display_all_summary = click.option(
 
 
 opt_warmup_count = click.option(
-    '--warmup_count',
+    '--warmup-count',
+    'warmup_count',
     default=1,
     type=int,
     callback=check_nonnegative_integer,
@@ -298,7 +307,7 @@ opt_warmup_count = click.option(
 
 opt_dym_shape_range = click.option(
     '-dr',
-    '--dym_shape_range',
+    '--dym-shape-range',
     'dym_shape_range',
     default=None,
     type=str,
@@ -307,7 +316,8 @@ opt_dym_shape_range = click.option(
 
 
 opt_aipp_config = click.option(
-    "--aipp_config",
+    '--aipp-config',
+    'aipp_config',
     type=str,
     default=None,
     help="file type: .config, to set actual aipp params before infer"
