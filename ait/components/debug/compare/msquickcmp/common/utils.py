@@ -18,7 +18,7 @@ import argparse
 
 import numpy as np
 
-from common.dynamic_argument_bean import DynamicArgumentEnum
+from msquickcmp.common.dynamic_argument_bean import DynamicArgumentEnum
 
 ACCURACY_COMPARISON_INVALID_PARAM_ERROR = 1
 ACCURACY_COMPARISON_INVALID_DATA_ERROR = 2
@@ -304,13 +304,13 @@ def parse_input_shape(input_shape):
     return input_shapes
 
 
-def parse_dymshape_range(dymshape_range):
-    _check_colon_exist(dymshape_range)
+def parse_dym_shape_range(dym_shape_range):
+    _check_colon_exist(dym_shape_range)
     input_shapes = {}
-    tensor_list = dymshape_range.split(";")
+    tensor_list = dym_shape_range.split(";")
     info_list = []
     for tensor in tensor_list:
-        _check_colon_exist(dymshape_range)
+        _check_colon_exist(dym_shape_range)
         shapes = []
         name, shapestr = tensor.split(":")
         if len(shapestr) < 50:

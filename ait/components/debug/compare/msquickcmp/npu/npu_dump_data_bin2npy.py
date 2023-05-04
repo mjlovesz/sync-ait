@@ -1,7 +1,8 @@
 import os
 import sys
 
-from common import utils
+from msquickcmp.common import utils
+
 
 MSACCUCMP_FILE_PATH =  "toolkit/tools/operator_cmp/compare/msaccucmp.py"
 
