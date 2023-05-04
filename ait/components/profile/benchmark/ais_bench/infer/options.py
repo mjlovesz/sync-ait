@@ -95,13 +95,6 @@ opt_input_path = click.option(
     '--input',
     'input_path',
     default=None,
-    type=click.Path(
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        path_type=pathlib.Path
-    ),
     help='input file or dir'
 )
 
