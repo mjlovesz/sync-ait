@@ -95,6 +95,13 @@ opt_input_path = click.option(
     '--input',
     'input_path',
     default=None,
+    type=click.Path(
+        exists=True,
+        file_okay=True,
+        dir_okay=False,
+        readable=True,
+        path_type=pathlib.Path
+    ),
     help='input file or dir'
 )
 
@@ -304,7 +311,7 @@ opt_dym_shape_range = click.option(
 )
 
 
-opt_aipp_config = click.option(
+opt_dym_shape_range = click.option(
     "--aipp_config",
     type=str,
     default=None,
