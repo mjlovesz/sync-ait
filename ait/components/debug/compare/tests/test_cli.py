@@ -39,6 +39,7 @@ def compare_cli() -> None:
                               bin2npy=False)
     yield cmp_args
 
+
 def test_args_invalid_path_err(compare_cli):
     with pytest.raises(utils.AccuracyCompareException) as error:
         cmp_process(compare_cli, True)
