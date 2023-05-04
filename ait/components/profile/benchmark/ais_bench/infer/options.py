@@ -220,6 +220,7 @@ opt_output_size = click.option(
 
 
 opt_auto_set_dymshape_mode = click.option(
+    '-asdsm',
     '--auto-set-dymshape_mode',
     'auto_set_dymshape_mode',
     default=False,
@@ -229,6 +230,7 @@ opt_auto_set_dymshape_mode = click.option(
 
 
 opt_auto_set_dymdims_mode = click.option(
+    '-asddm',
     '--auto-set-dymdims_mode',
     default=False,
     callback=str2bool,
@@ -246,6 +248,7 @@ opt_batchsize = click.option(
 
 
 opt_pure_data_type = click.option(
+    '-pdt',
     '--pure-data-type',
     'pure_data_type',
     default="zero",
@@ -255,6 +258,7 @@ opt_pure_data_type = click.option(
 
 
 opt_profiler = click.option(
+    '-pf',
     '--profiler',
     default=False,
     type=str,
@@ -283,6 +287,7 @@ opt_acl_json_path = click.option(
 
 
 opt_output_batchsize_axis = click.option(
+    '-oba',
     '--output-batchsize-axis',
     'output_batchsize_axis',
     default=0,
@@ -293,6 +298,7 @@ opt_output_batchsize_axis = click.option(
 
 
 opt_run_mode = click.option(
+    '-rm',
     '--run-mode',
     'run_mode',
     default="array",
@@ -302,6 +308,7 @@ opt_run_mode = click.option(
 
 
 opt_display_all_summary = click.option(
+    '-das',
     '--display-all-summary',
     'display_all_summary',
     default=False,
@@ -312,6 +319,7 @@ opt_display_all_summary = click.option(
 
 
 opt_warmup_count = click.option(
+    '-wcount',
     '--warmup-count',
     'warmup_count',
     default=1,
@@ -322,6 +330,7 @@ opt_warmup_count = click.option(
 
 
 opt_aipp_config = click.option(
+    '-aipp',
     '--aipp-config',
     'aipp_config',
     type=str,
