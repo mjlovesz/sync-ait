@@ -12,11 +12,11 @@ import re
 import numpy as np
 import sys
 
-from common import utils
-from common.dump_data import DumpData
-from common.utils import AccuracyCompareException
-from common.dynamic_argument_bean import DynamicArgumentEnum
-from npu.om_parser import OmParser
+from msquickcmp.common import utils
+from msquickcmp.common.dump_data import DumpData
+from msquickcmp.common.utils import AccuracyCompareException
+from msquickcmp.common.dynamic_argument_bean import DynamicArgumentEnum
+from msquickcmp.npu.om_parser import OmParser
 
 BENCHMARK_DIR = "benchmark"
 ACL_JSON_PATH = "acl.json"
@@ -164,7 +164,7 @@ class NpuDumpData(DumpData):
         self.dynamic_input = DynamicInput(self.om_parser, self.arguments)
         self.python_version = sys.executable or "python3"
 
-    def generate_dump_data(self):
+    def generate_dump_data(self, use_cli):
         """
         Function Description:
             compile and rum benchmark project
@@ -172,9 +172,10 @@ class NpuDumpData(DumpData):
             npu dump data path
         """
         self._check_input_path_param()
-        benchmark_dir = os.path.join(os.path.realpath("../../../profile"), BENCHMARK_DIR)
-        self.benchmark_install_sh(benchmark_dir)
-        return self.benchmark_run(benchmark_dir)
+        if not use_cli:
+            benchmark_dir = os.path.join(os.path.realpath("../../profile"), BENCHMARK_DIR)
+            self.benchmark_install_sh(benchmark_dir)
+        return self.benchmark_run()
 
     def get_expect_output_name(self):
         """
@@ -206,12 +207,10 @@ class NpuDumpData(DumpData):
         os.chdir(retval)
         utils.print_info_log("Run command line: cd %s (back to the working directory)" % (retval))
 
-    def benchmark_run(self, benchmark_dir):
+    def benchmark_run(self):
         """
         Function Description:
             run benchmark project
-        Parameter:
-            benchmark_dir: benchmark project directory
         Return Value:
             npu dump data path
         Exception Description:
@@ -241,12 +240,9 @@ class NpuDumpData(DumpData):
         self.dynamic_input.add_dynamic_arg_for_benchmark(benchmark_cmd)
         self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
 
-        retval = os.getcwd()
-        os.chdir(benchmark_dir)
         # do benchmark command
-        utils.print_info_log("Run command line: cd %s && %s" % (benchmark_dir, " ".join(benchmark_cmd)))
+        utils.print_info_log("Run command line: %s" % (benchmark_cmd))
         utils.execute_command(benchmark_cmd)
-        os.chdir(retval)
 
         npu_dump_data_path = ""
         if self.arguments.dump:

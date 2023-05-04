@@ -14,9 +14,10 @@ import time
 import numpy as np
 import pexpect
 import tensorflow as tf
-from common import utils, tf_common
-from common.dump_data import DumpData
-from common.utils import AccuracyCompareException
+
+from msquickcmp.common import utils, tf_common
+from msquickcmp.common.dump_data import DumpData
+from msquickcmp.common.utils import AccuracyCompareException
 
 
 class TfDumpData(DumpData):
@@ -233,7 +234,7 @@ class TfDumpData(DumpData):
 
     def generate_dump_data(self):
         """
-        Generate TensorFlow model dump data
+        Generate tensorFlow model dump data
         :return tensorFlow model dump data directory
         """
         self._load_graph()
