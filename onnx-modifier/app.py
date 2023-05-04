@@ -50,8 +50,8 @@ def register_interface(app, render_template, request, send_file):
         return 'OK', 200
 
 
-    @app.route('/onnxsmi', methods=['POST'])
-    def modify_and_onnxsmi_model():
+    @app.route('/onnxsim', methods=['POST'])
+    def modify_and_onnxsim_model():
         try:
             from onnxsim import simplify
         except ImportError as ex:

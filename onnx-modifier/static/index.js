@@ -279,10 +279,7 @@ host.BrowserHost = class {
             }
         }
         downloadButton.addEventListener('click', () => {
-
-            // console.log(this._view._graph._addedNode)
-            // console.log(this._view._graph._renameMap)
-            // // https://healeycodes.com/talking-between-languages
+            // https://healeycodes.com/talking-between-languages
             fetch('/download', {
                 // Declare what type of data we're sending
                 headers: {
@@ -312,10 +309,8 @@ host.BrowserHost = class {
         const onnxSimButton = this.document.getElementById('onnxsim-graph');
         onnxSimButton.addEventListener('click', () => {
 
-            // console.log(this._view._graph._addedNode)
-            // console.log(this._view._graph._renameMap)
             // // https://healeycodes.com/talking-between-languages
-            fetch('/onnxsmi', {
+            fetch('/onnxsim', {
                 // Declare what type of data we're sending
                 headers: {
                     'Content-Type': 'application/json'
@@ -327,7 +322,7 @@ host.BrowserHost = class {
                 if (response.ok) {
                     return response.blob();
                 } else if (response.status == 599) {
-                    swal("Error happens!", "请确认是否安装 onnxsmi", "error");
+                    swal("Error happens!", "请确认是否安装 onnxsim", "error");
                 } else {
                     swal("Error happens!", "You are kindly to check the log and create an issue on https://gitee.com/ascend/amit", "error");
                 }
@@ -492,38 +487,6 @@ host.BrowserHost = class {
         });
 
         this._view.show('welcome');
-
-
-        // informs flaskwebgui to keep server running while gui is running
-        // as illusrated in https://github.com/ClimenteA/flaskwebgui#install
-        // and here: https://stackoverflow.com/questions/39993676/code-inside-domcontentloaded-event-not-working
-        // ============ to make webgui applications, the following code block shoud be added. ============ //
-        // async function getRequest(url='') {
-        //     const response = await fetch(url, {
-        //     method: 'GET', 
-        //     cache: 'no-cache'
-        //     })
-        //     return response.json()
-        // }
-
-        // if (this.document.readyState !== 'loading') {
-        //     console.log('document is already ready, just execute code here');
-
-        //     let url = this.document.location
-        //     let route = "/flaskwebgui-keep-server-alive"
-        //     // let interval_request = 3 * 1000 //sec
-        //     let interval_request = 0.02 * 1000 //sec
-
-        //     function keep_alive_server(){
-        //         getRequest(url + route)
-        //         .then(data => {})
-        //         // .then(data => console.log(data))
-        //     }
-
-        //     setInterval(keep_alive_server, interval_request)
-        // } 
-        // ============ to make webgui applications, the above code block shoud be added. ============ //
-
     }
 
     openFile(file) {
