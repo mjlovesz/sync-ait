@@ -32,6 +32,6 @@ setup(
     python_requires='>=3.7',
     entry_points={
         'console_scripts': ['ais_bench=ais_bench.infer.__main__:__main__'],
-        'profile_sub_task': ['benchmark=ais_bench.infer.main_cli:benchmark_cli_enter']
+        'profile_sub_task': ['benchmark=ais_bench.infer.main_cli:benchmark_cli']
     }
 )
