@@ -170,7 +170,7 @@ opt_dym_batch = click.option(
 
 
 opt_dym_hw = click.option(
-    '--dym-hW',
+    '--dym-hw',
     'dym_hw',
     default=None,
     type=str,

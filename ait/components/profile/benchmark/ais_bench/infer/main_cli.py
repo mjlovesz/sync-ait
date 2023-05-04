@@ -26,8 +26,8 @@ from ais_bench.infer.options import (
     opt_loop,
     opt_debug,
     opt_device,
-    opt_dym_datch,
-    opt_dym_hW,
+    opt_dym_batch,
+    opt_dym_hw,
     opt_dym_dims,
     opt_dym_shape,
     opt_output_size,
@@ -56,8 +56,8 @@ from ais_bench.infer.options import (
 @opt_loop
 @opt_debug
 @opt_device
-@opt_dym_datch
-@opt_dym_hW
+@opt_dym_batch
+@opt_dym_hw
 @opt_dym_dims
 @opt_dym_shape
 @opt_output_size
