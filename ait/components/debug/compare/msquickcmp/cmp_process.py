@@ -111,6 +111,7 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
         net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
     analyser.Analyser(args.out_path)()
 
+
 def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     utils.check_file_or_directory_path(args.model_path)
     utils.check_file_or_directory_path(args.offline_model_path)
