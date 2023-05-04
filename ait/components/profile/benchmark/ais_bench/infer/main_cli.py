@@ -16,8 +16,8 @@
 import click
 
 from ais_bench.infer.benchmark_process import benchmark_process
-from benchmark.ais_bench.infer.args_adapter import BenchMarkArgsAdapter
-from benchmark.ais_bench.infer.options import (
+from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
+from ais_bench.infer.options import (
     opt_model,
     opt_input_path,
     opt_output,
