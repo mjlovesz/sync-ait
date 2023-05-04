@@ -311,7 +311,7 @@ opt_dym_shape_range = click.option(
 )
 
 
-opt_dym_shape_range = click.option(
+opt_aipp_config = click.option(
     "--aipp_config",
     type=str,
     default=None,
