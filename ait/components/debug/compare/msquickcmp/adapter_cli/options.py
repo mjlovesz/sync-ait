@@ -51,7 +51,7 @@ opt_cann_path = click.option(
 
 opt_out_path = click.option(
     "-o",
-    "--out-path",
+    "--output",
     "out_path",
     default="",
     help="<Optional> The output path"
@@ -82,6 +82,7 @@ opt_output_size = click.option(
 )
 
 opt_output_nodes = click.option(
+    "-n",
     "--output-nodes",
     "output_nodes",
     default="",
