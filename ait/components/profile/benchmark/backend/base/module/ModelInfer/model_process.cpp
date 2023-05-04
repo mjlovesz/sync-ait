@@ -1413,10 +1413,10 @@ Result ModelProcess::CheckDymAIPPInputExsity()
     }
     size_t aippNum = dataNeedDynamicAipp.size();
     if (aippNum == 0) {
-        ERROR_LOG("can't find dynamic aipp input in model, amount of aipp input is %d", int(aippNum));
+        INFO_LOG("can't find dynamic aipp input in model, amount of aipp input is %d", int(aippNum));
         return FAILED;
     } else if (aippNum > 1) {
-        ERROR_LOG("don't support more than one dynamic aipp input in model, amount of aipp input is %d", int(aippNum));
+        INFO_LOG("don't support more than one dynamic aipp input in model, amount of aipp input is %d", int(aippNum));
         return FAILED;
     }
     return SUCCESS;
@@ -1443,9 +1443,9 @@ Result ModelProcess::SetInputAIPP(size_t index, void* pAippDynamicSet)
     aclError ret = aclmdlSetInputAIPP(modelId_, input_, index, (aclmdlAIPP *)pAippDynamicSet);
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
-        ERROR_LOG("aclmdlSetInputAIPP failed, index:%d ret %d", int(index), ret);
         return FAILED;
     }
+    INFO_LOG("aclmdlSetInputAIPP success, index:%d ret %d", int(index), ret);
     return SUCCESS;
 }
 
