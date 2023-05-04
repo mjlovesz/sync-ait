@@ -74,13 +74,14 @@ from ais_bench.infer.options import (
 @opt_warmup_count
 @opt_dym_shape_range
 @opt_aipp_config
-def benchmark_cli(model, input_path, output, output_dirname, outfmt, loop, debug, device,
-                        dym_batch, dym_hw, dym_dims, dym_shape, output_size, auto_set_dymshape_mode,
-                        auto_set_dymdims_mode, batchsize, pure_data_type, profiler, dump,
-                        acl_json_path, output_batchsize_axis, run_mode, display_all_summary,
-                        warmup_count, dym_shape_range, aipp_config):
+def benchmark_cli(model, input_path, output, 
+                  output_dirname, outfmt, loop, debug, device,
+                  dym_batch, dym_hw, dym_dims, dym_shape, output_size, auto_set_dymshape_mode,
+                  auto_set_dymdims_mode, batchsize, pure_data_type, profiler, dump,
+                  acl_json_path, output_batchsize_axis, run_mode, display_all_summary,
+                  warmup_count, dym_shape_range, aipp_config):
 
-    args = BenchMarkArgsAdapter(model, input_path, output,
+    args = BenchMarkArgsAdapter(model.as_posix(), input_path.as_posix() if input_path else None, output.as_posix() if output else None, 
                                 output_dirname, outfmt, loop, debug, device,
                                 dym_batch, dym_hw, dym_dims, dym_shape, output_size, auto_set_dymshape_mode,
                                 auto_set_dymdims_mode, batchsize, pure_data_type, profiler, dump,
