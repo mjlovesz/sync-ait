@@ -42,7 +42,8 @@ from benchmark.ais_bench.infer.options import (
     opt_run_mode,
     opt_display_all_summary,
     opt_warmup_count,
-    opt_dym_shape_range
+    opt_dym_shape_range,
+    opt_aipp_config
 )
 
 
@@ -72,16 +73,17 @@ from benchmark.ais_bench.infer.options import (
 @opt_display_all_summary
 @opt_warmup_count
 @opt_dym_shape_range
+@opt_aipp_config
 def benchmark_cli_enter(model, input_path, output, output_dirname, outfmt, loop, debug, device,
                         dym_batch, dym_hw, dym_dims, dym_shape, output_size, auto_set_dymshape_mode,
                         auto_set_dymdims_mode, batchsize, pure_data_type, profiler, dump,
                         acl_json_path, output_batchsize_axis, run_mode, display_all_summary,
-                        warmup_count, dym_shape_range):
+                        warmup_count, dym_shape_range, aipp_config):
 
     args = BenchMarkArgsAdapter(model, input_path, output,
                                 output_dirname, outfmt, loop, debug, device,
                                 dym_batch, dym_hw, dym_dims, dym_shape, output_size, auto_set_dymshape_mode,
                                 auto_set_dymdims_mode, batchsize, pure_data_type, profiler, dump,
                                 acl_json_path, output_batchsize_axis, run_mode, display_all_summary,
-                                warmup_count, dym_shape_range)
+                                warmup_count, dym_shape_range, aipp_config)
     benchmark_process(args)
