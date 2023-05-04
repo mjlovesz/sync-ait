@@ -20,7 +20,7 @@ with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='msquickcmp',
+    name='compare',
     version='0.0.1',
     description='This tool enables one-click network-wide accuracy analysis of tensorflow and ONNX models.',
     long_description=long_description,
@@ -29,7 +29,7 @@ setup(
     packages=find_packages(),
     package_data={'': ['LICENSE']},
     license='Apache-2.0',
-    keywords='msquickcmp',
+    keywords='compare',
     install_requires=required,
     classifiers=[
         'Development Status :: Alpha',
@@ -44,7 +44,6 @@ setup(
     ],
     python_requires='>=3.7',
     entry_points={
-        'console_scripts': ['msquickcmp=msquickcmp.__main__:compare_cli'],
-        'debug_sub_task': ['msquickcmp=msquickcmp.__main__:compare_cli'],
+        'debug_sub_task': ['compare=msquickcmp.__main__:compare_cli'],
     },
 )
