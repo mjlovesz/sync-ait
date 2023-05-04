@@ -18,7 +18,7 @@
   ```
 - Change directory to `compare`
   ```sh
-  cd ait/ait/components/debug/compare/msquickcmp
+  cd ait/ait/components/debug/compare
   ```
 - Set CANN related environ variables. Change `/usr/local/Ascend/ascend-toolkit` to your own installed CANN path.
   ```sh
@@ -104,7 +104,7 @@ Used to distinguish between different actual inputs of models in dynamic shapes,
   ```
   **Python API usage**
   ```py
-  from net_compare import analyser
+  from msquickcmp.net_compare import analyser
   _ = analyser.Analyser('result_2021211214657.csv')()
   # |                   Monitor |  Value | Index | OpType | NPUDump | GroundTruth |
   # |--------------------------:|-------:|------:|-------:|--------:|------------:|
@@ -115,7 +115,7 @@ Used to distinguish between different actual inputs of models in dynamic shapes,
   - `FIRST_INVALID_OVERALL` output only the first monitor which value is not within the preset threshold. Default value.
   - `FIRST_INVALID_EACH` output the first value not in the preset threhold for each monitor.
   ```py
-  from net_compare import analyser
+  from msquickcmp.net_compare import analyser
   _ = analyser.Analyser('result_2021211214657.csv')(strategy=analyser.STRATEGIES.FIRST_INVALID_EACH)
   # |                   Monitor |   Value | Index |        OpType |                       NPUDump | GroundTruth # |
   # |--------------------------:|--------:|------:|--------------:|------------------------------:|------------:|

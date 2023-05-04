@@ -17,8 +17,8 @@ import csv
 import math
 from collections import namedtuple
 
-from common import utils
-from common.utils import AccuracyCompareException
+from msquickcmp.common import utils
+from msquickcmp.common.utils import AccuracyCompareException
 
 INVALID_ROW_VALUES = {
     "OpType": ["TransData"],
