@@ -111,7 +111,7 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
         net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
     analyser.Analyser(args.out_path)()
 
-def check_and_run(args, use_cli:bool):
+def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     utils.check_file_or_directory_path(args.model_path)
     utils.check_file_or_directory_path(args.offline_model_path)
     utils.check_device_param_valid(args.device)
@@ -126,8 +126,8 @@ def check_and_run(args, use_cli:bool):
 
     # deal with the dymShape_range param if exists
     input_shapes = []
-    if args.dymShape_range:
-        input_shapes = utils.parse_dymshape_range(args.dymShape_range)
+    if args.dym_shape_range:
+        input_shapes = utils.parse_dymshape_range(args.dym_shape_range)
     if not input_shapes:
         input_shapes.append("")
     for input_shape in input_shapes:
