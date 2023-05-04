@@ -99,7 +99,7 @@ opt_advisor = click.option(
 
 opt_dym_shape_range = click.option(
     "-dr", 
-    "--dymShape-range", 
+    "--dym-shape-range", 
     "dym_shape_range", 
     default="",
     help="<Optional> Dynamic shape range using in dynamic model, "

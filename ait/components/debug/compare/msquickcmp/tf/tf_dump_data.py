@@ -234,7 +234,7 @@ class TfDumpData(DumpData):
 
     def generate_dump_data(self):
         """
-        Generate TensorFlow model dump data
+        Generate tensorFlow model dump data
         :return tensorFlow model dump data directory
         """
         self._load_graph()

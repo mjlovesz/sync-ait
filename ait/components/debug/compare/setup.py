@@ -22,7 +22,7 @@ with open('README.md', encoding='utf-8') as f:
 setup(
     name='compare',
     version='0.0.1',
-    description='This tool enables one-click network-wide accuracy analysis of tensorflow and ONNX models.',
+    description='This tool enables one-click network-wide accuracy analysis of gold model.',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://gitee.com/ascend/ait/tree/master/ait/components/debug/compare',
