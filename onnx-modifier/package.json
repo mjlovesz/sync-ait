@@ -2,17 +2,24 @@
   "name": "onnx-modifier",
   "version": "1.0.0",
   "description": "<img src=\"./docs/onnx_modifier_logo.png\" style=\"zoom: 60%;\" />",
-  "main": "electron.js",
+  "main": "electron/electron.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
   },
   "repository": {
     "type": "git",
     "url": "https://gitee.com/mjsz/amit.git"
   },
   "author": "Ascend",
-  "license": "Apache-2.0"
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@antv/layout": "^0.3.20"
+  },
+  "devDependencies": {
+    "electron": "^24.1.3"
+  }
 }

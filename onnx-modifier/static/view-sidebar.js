@@ -1133,6 +1133,9 @@ sidebar.ModelSidebar = class {
                     this._host._view.modifier.changeModelProperties("imports", [], index)
                 }
                 else if (splited_import_value.length == 1) {
+                    if (import_value.includes(" ")) {
+                        return true
+                    }
                     this._host._view.modifier.changeModelProperties("imports", [import_value], index)
                 } else if (splited_import_value.length == 2) {
                     let [domain, version] = splited_import_value

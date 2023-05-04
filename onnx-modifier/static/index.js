@@ -232,6 +232,52 @@ host.BrowserHost = class {
         })
 
         const downloadButton = this.document.getElementById('download-graph');
+
+
+        if (this.window.is_electron && this.window.fetch_electron) {
+            class Response {
+                constructor(status, msg, file) {
+                    this._status = status
+                    this._msg = msg
+                    this._file = file
+                }
+                text() {
+                    return this._msg
+                }
+
+                blob() {
+                    return new Blob([this._file])
+                }
+
+                get status() {
+                    this._status
+                }
+
+                get ok() {
+                    return 200 <= this._status && this._status < 300
+                }
+            }
+            this.window.fetch = (path, options) => {
+                let body = options.body
+                if (body instanceof FormData) {
+                    let body_obj = {}
+                    for (const [key, value] of body.entries()) {
+                        if (value instanceof File) {
+                            body_obj[key] = value.path
+                        } else {
+                            body_obj[key] = value
+                        }
+                    }
+                    body = body_obj
+                } else if (typeof (body) == 'string') {
+                    body = JSON.parse(body)
+                }
+                return fetch_electron(path, body).then((result) => {
+                    let [status, msg, file] = result
+                    return new Response(status, msg, file)
+                })
+            }
+        }
         downloadButton.addEventListener('click', () => {
 
             // console.log(this._view._graph._addedNode)
@@ -240,7 +286,7 @@ host.BrowserHost = class {
             fetch('/download', {
                 // Declare what type of data we're sending
                 headers: {
-                  'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 // Specify the method
                 method: 'POST',
@@ -262,7 +308,7 @@ host.BrowserHost = class {
                 }
             });
         });
-        
+
         const onnxSimButton = this.document.getElementById('onnxsim-graph');
         onnxSimButton.addEventListener('click', () => {
 
@@ -272,7 +318,7 @@ host.BrowserHost = class {
             fetch('/onnxsmi', {
                 // Declare what type of data we're sending
                 headers: {
-                  'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 // Specify the method
                 method: 'POST',
@@ -280,14 +326,14 @@ host.BrowserHost = class {
             }).then(function (response) {
                 if (response.ok) {
                     return response.blob();
-                } else if (response.status == 599){
+                } else if (response.status == 599) {
                     swal("Error happens!", "请确认是否安装 onnxsmi", "error");
                 } else {
                     swal("Error happens!", "You are kindly to check the log and create an issue on https://gitee.com/ascend/amit", "error");
                 }
             }).then((blob) => {
                 if (!blob) {
-                    return 
+                    return
                 }
 
                 let file = new File([blob], this.upload_filename);
@@ -295,7 +341,7 @@ host.BrowserHost = class {
 
             });
         });
-        
+
         const onnxOptimizer = this.document.getElementById('auto-optimizer-graph');
         onnxOptimizer.addEventListener('click', () => {
 
@@ -305,13 +351,13 @@ host.BrowserHost = class {
             fetch('/auto-optimizer', {
                 // Declare what type of data we're sending
                 headers: {
-                  'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 // Specify the method
                 method: 'POST',
                 body: this.build_download_data(),
             }).then(function (response) {
-                if (response.status == 204){
+                if (response.status == 204) {
                     swal("Nothing happens!", "auto-optimizer 没有匹配到的知识库", "info");
                 } else if (response.ok) {
                     return response.blob();
@@ -320,7 +366,7 @@ host.BrowserHost = class {
                 }
             }).then((blob) => {
                 if (!blob) {
-                    return 
+                    return
                 }
 
                 let file = new File([blob], this.upload_filename);
@@ -482,7 +528,7 @@ host.BrowserHost = class {
 
     openFile(file) {
         let files = [file]
-                
+
         let form = new FormData();
         form.append('file', file);
 
@@ -505,20 +551,20 @@ host.BrowserHost = class {
 
     build_download_data() {
         return JSON.stringify({
-            'node_states' : this.mapToObjectRec(this._view.modifier.name2NodeStates),
-            'node_renamed_io' : this.mapToObjectRec(this._view.modifier.renameMap),
-            'node_changed_attr' : this.mapToObjectRec(this._view.modifier.changedAttributes),
-            'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode, 
+            'node_states': this.mapToObjectRec(this._view.modifier.name2NodeStates),
+            'node_renamed_io': this.mapToObjectRec(this._view.modifier.renameMap),
+            'node_changed_attr': this.mapToObjectRec(this._view.modifier.changedAttributes),
+            'added_node_info': this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode,
                 this._view.modifier.initializerEditInfo)),
-            'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs, 
+            'added_outputs': this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs,
                 this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
-            'added_inputs' : this.arrayToObject(this.process_added_inputs(this._view.modifier.addedInputs, 
-                    this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
-            'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
-            'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
-            'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp},
-            "model_properties" : this.mapToObjectRec(this._view.modifier.modelProperties),
-            'input_size_info' : this.mapToObjectRec(this._view.modifier.inputSizeInfo),
+            'added_inputs': this.arrayToObject(this.process_added_inputs(this._view.modifier.addedInputs,
+                this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+            'rebatch_info': this.mapToObjectRec(this._view.modifier.reBatchInfo),
+            'changed_initializer': this.mapToObjectRec(this._view.modifier.initializerEditInfo),
+            'postprocess_args': { 'shapeInf': this._view.modifier.downloadWithShapeInf, 'cleanUp': this._view.modifier.downloadWithCleanUp },
+            "model_properties": this.mapToObjectRec(this._view.modifier.modelProperties),
+            'input_size_info': this.mapToObjectRec(this._view.modifier.inputSizeInfo),
         })
     }
 
@@ -805,7 +851,7 @@ host.BrowserHost = class {
     }
 
     // https://blog.csdn.net/Crazy_SunShine/article/details/80624366
-    _strMapToObj(strMap){
+    _strMapToObj(strMap) {
         let obj = Object.create(null);
         for (let [k, v] of strMap) {
             obj[k] = v;
@@ -821,8 +867,8 @@ host.BrowserHost = class {
     // https://www.xul.fr/javascript/map-and-object.php
     mapToObjectRec(m) {
         let lo = {}
-        for(let[k,v] of m) {
-            if(v instanceof Map) {
+        for (let [k, v] of m) {
+            if (v instanceof Map) {
                 lo[k] = this.mapToObjectRec(v)
             }
             else {
@@ -831,7 +877,7 @@ host.BrowserHost = class {
         }
         return lo
     }
-    
+
     // this function does 2 things:
     // 1. rename the addedOutputs with their new names using renameMap. Because addedOutputs are stored in lists,
     //    it may be not easy to rename them while editing. (Of course there may be a better way to do this)
@@ -870,7 +916,7 @@ host.BrowserHost = class {
     arrayToObject(arr) {
         var rv = {};
         for (var i = 0; i < arr.length; ++i)
-          if (arr[i] !== undefined) rv[i] = arr[i];
+            if (arr[i] !== undefined) rv[i] = arr[i];
         return rv;
     }
 
@@ -892,7 +938,7 @@ host.BrowserHost = class {
                 var filtered_arg_list = []
                 for (var arg of arg_list) {
                     var arg_name = arg[0], arg_optional = arg[1];
-                    if (arg_optional) { 
+                    if (arg_optional) {
                         if (!initializer_info.get(arg_name) || initializer_info.get(arg_name) == "") {
                             continue;
                         }
@@ -911,7 +957,7 @@ host.BrowserHost = class {
                 var filtered_arg_list = []
                 for (var arg of arg_list) {
                     var arg_name = arg[0], arg_optional = arg[1];
-                    if (arg_optional) { 
+                    if (arg_optional) {
                         if (!initializer_info.get(arg_name) || initializer_info.get(arg_name) == "") {
                             continue;
                         }
@@ -921,9 +967,9 @@ host.BrowserHost = class {
                 if (filtered_arg_list.length > 0) {
                     outputs.set(output_name, filtered_arg_list)
                 }
-            }       
+            }
             node_info_map.set('outputs', outputs)
-            
+
             res_map.set(modelNodeName, node_info_map)
         }
         // console.log(res_map)
@@ -1156,7 +1202,7 @@ host.BrowserHost.BrowserFileContext = class {
         if (base !== undefined) {
             return this._host.request(file, encoding, base);
         }
-        const blob = this._blobs[file];        
+        const blob = this._blobs[file];
         if (!blob) {
             return Promise.reject(new Error("File not found '" + file + "'."));
         }
@@ -1169,7 +1215,7 @@ host.BrowserHost.BrowserFileContext = class {
                 e = e || this.window.event;
                 let message = '';
                 const error = e.target.error;
-                switch(error.code) {
+                switch (error.code) {
                     case error.NOT_FOUND_ERR:
                         message = "File not found '" + file + "'.";
                         break;
@@ -1264,7 +1310,7 @@ if (typeof TextDecoder === "undefined") {
             case 'utf-8':
                 while (i < length) {
                     const c = buffer[i++];
-                    switch(c >> 4) {
+                    switch (c >> 4) {
                         case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: {
                             result += String.fromCharCode(c);
                             break;
@@ -1307,7 +1353,7 @@ if (typeof TextEncoder === 'undefined') {
         const length = str.length;
         let resPos = -1;
         const resArr = typeof Uint8Array === "undefined" ? new Array(length * 2) : new Uint8Array(length * 3);
-        for (let point = 0, nextcode = 0, i = 0; i !== length; ) {
+        for (let point = 0, nextcode = 0, i = 0; i !== length;) {
             point = str.charCodeAt(i);
             i += 1;
             if (point >= 0xD800 && point <= 0xDBFF) {
@@ -1320,10 +1366,10 @@ if (typeof TextEncoder === 'undefined') {
                     point = (point - 0xD800) * 0x400 + nextcode - 0xDC00 + 0x10000;
                     i += 1;
                     if (point > 0xffff) {
-                        resArr[resPos += 1] = (0x1e<<3) | (point>>>18);
-                        resArr[resPos += 1] = (0x2<<6) | ((point>>>12)&0x3f);
-                        resArr[resPos += 1] = (0x2<<6) | ((point>>>6)&0x3f);
-                        resArr[resPos += 1] = (0x2<<6) | (point&0x3f);
+                        resArr[resPos += 1] = (0x1e << 3) | (point >>> 18);
+                        resArr[resPos += 1] = (0x2 << 6) | ((point >>> 12) & 0x3f);
+                        resArr[resPos += 1] = (0x2 << 6) | ((point >>> 6) & 0x3f);
+                        resArr[resPos += 1] = (0x2 << 6) | (point & 0x3f);
                         continue;
                     }
                 }
@@ -1333,33 +1379,33 @@ if (typeof TextEncoder === 'undefined') {
                 }
             }
             if (point <= 0x007f) {
-                resArr[resPos += 1] = (0x0<<7) | point;
+                resArr[resPos += 1] = (0x0 << 7) | point;
             }
             else if (point <= 0x07ff) {
-                resArr[resPos += 1] = (0x6<<5) | (point>>>6);
-                resArr[resPos += 1] = (0x2<<6) | (point&0x3f);
+                resArr[resPos += 1] = (0x6 << 5) | (point >>> 6);
+                resArr[resPos += 1] = (0x2 << 6) | (point & 0x3f);
             }
             else {
-                resArr[resPos += 1] = (0xe<<4) | (point>>>12);
-                resArr[resPos += 1] = (0x2<<6) | ((point>>>6)&0x3f);
-                resArr[resPos += 1] = (0x2<<6) | (point&0x3f);
+                resArr[resPos += 1] = (0xe << 4) | (point >>> 12);
+                resArr[resPos += 1] = (0x2 << 6) | ((point >>> 6) & 0x3f);
+                resArr[resPos += 1] = (0x2 << 6) | (point & 0x3f);
             }
         }
-        if (typeof Uint8Array!=="undefined") {
-            return new Uint8Array(resArr.buffer.slice(0, resPos+1));
+        if (typeof Uint8Array !== "undefined") {
+            return new Uint8Array(resArr.buffer.slice(0, resPos + 1));
         }
         else {
             return resArr.length === resPos + 1 ? resArr : resArr.slice(0, resPos + 1);
         }
     };
-    TextEncoder.prototype.toString = function() {
+    TextEncoder.prototype.toString = function () {
         return "[object TextEncoder]";
     };
     try {
-        Object.defineProperty(TextEncoder.prototype,"encoding", {
-            get:function() {
+        Object.defineProperty(TextEncoder.prototype, "encoding", {
+            get: function () {
                 if (Object.prototype.isPrototypeOf.call(TextEncoder.prototype, this)) {
-                    return"utf-8";
+                    return "utf-8";
                 }
                 else {
                     throw TypeError("Illegal invocation");
@@ -1395,29 +1441,29 @@ if (typeof URLSearchParams === 'undefined') {
             }
         }
     };
-    URLSearchParams.prototype.get = function(name) {
+    URLSearchParams.prototype.get = function (name) {
         return Object.prototype.hasOwnProperty.call(this._dict, name) ? this._dict[name][0] : null;
     };
 }
 
 if (!HTMLCanvasElement.prototype.toBlob) {
-    HTMLCanvasElement.prototype.toBlob = function(callback, type, quality) {
+    HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
         const canvas = this;
-        setTimeout(function() {
+        setTimeout(function () {
             const data = atob(canvas.toDataURL(type, quality).split(',')[1]);
             const length = data.length;
             const buffer = new Uint8Array(length);
             for (let i = 0; i < length; i++) {
                 buffer[i] = data.charCodeAt(i);
             }
-            callback(new Blob([ buffer ], { type: type || 'image/png' }));
+            callback(new Blob([buffer], { type: type || 'image/png' }));
         });
     };
 }
 
 if (!('scrollBehavior' in window.document.documentElement.style)) {
     const __scrollTo__ = Element.prototype.scrollTo;
-    Element.prototype.scrollTo = function(options) {
+    Element.prototype.scrollTo = function (options) {
         if (options === undefined) {
             return;
         }

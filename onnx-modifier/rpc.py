@@ -1,4 +1,5 @@
-
+import logging
+import os
 def rpc_run(is_electron, register_interface, args=None):
     if is_electron:
         pipe_run(register_interface)
@@ -29,24 +30,59 @@ def pipe_run(register_interface):
             return regg
         
         def run(self):
+            msg_cache = ""
+            msg_end_flag = 2
             while True:
-                msg_str = sys.stdin.readline()
-                # {"msg":{"file":"D:\\amit\\onnx-modifier\\modified_onnx\\resnet34-v1-7.onnx"}, "path":"/open_model"}
-                # {"msg":{"added_node_info":{},"node_states":{},"changed_initializer":{},"rebatch_info":{},"added_inputs":{},"input_size_info":{},"added_outputs":{},"node_renamed_io":{},"node_states":{},"node_changed_attr":{},"model_properties":{},"postprocess_args":{}}, "path":"/download"}
-                # {"msg":{"path":"/exit"}
-                msg_dict = json.loads(msg_str)
-                path = msg_dict.get("path", "")
-                if "/exit" == path:
-                    break
-                
-                if path not in self.path_amp:
-                    raise ValueError("not found path")
+                try:
+                    msg_recv = sys.stdin.readline()
+                    # {"msg":{"file":"D:\\amit\\onnx-modifier\\modified_onnx\\resnet34-v1-7.onnx"}, "path":"/open_model"}
+                    # {"msg":{"file":"C:\\需求\\amit\\amit\\modified_onnx\\res.onnx"}, "path":"/open_model"}
+                    # {"msg":{"added_node_info":{},"node_states":{},"changed_initializer":{},"rebatch_info":{},"added_inputs":{},"input_size_info":{},"added_outputs":{},"node_renamed_io":{},"node_states":{},"node_changed_attr":{},"model_properties":{},"postprocess_args":{}}, "path":"/download"}
+                    # {"path":"/exit"}
+                    msg_recv = msg_recv.strip()
+                    if msg_recv == "":
+                        if msg_cache == "":
+                            continue
+                        msg_end_flag -= 1
+                        if msg_end_flag > 0:
+                            continue
+                    else:
+                        msg_cache += msg_recv
+                        continue
 
-                msg_deal_func = self.path_amp[path]
+                    msg_str = msg_cache
+                    msg_cache = ""
+                    msg_end_flag = 2
 
-                self.request.set_json(msg_dict.get("msg", dict()))
-                msg_back, status = msg_deal_func()
-                print(json.dumps(dict(msg=msg_back, status=status)), flush=True)
+                    logging.debug(os.getpid())
+                    logging.debug(msg_str)
+
+                    msg_dict = json.loads(msg_str)
+                    path = msg_dict.get("path", "")
+                    if "/exit" == path:
+                        print("byebye", flush=True)
+                        break
+                    
+                    if path not in self.path_amp:
+                        raise ValueError("not found path")
+
+                    msg_deal_func = self.path_amp[path]
+
+                    self.request.set_json(msg_dict.get("msg", dict()))
+                    msg_back, status = msg_deal_func()
+                    file = None
+                    if isinstance(msg_back, dict) and "file" in msg_back:
+                        file = msg_back["file"]
+                        del msg_back["file"]
+
+                    return_str = json.dumps(dict(msg=msg_back, status=status, file=file))
+                    logging.debug(os.getpid())
+                    logging.debug(return_str)
+                    print(return_str, flush=True)
+                except Exception as ex:
+                    logging.debug(os.getpid())
+                    logging.debug(str(ex))
+                    print(json.dumps(dict(msg=str(ex), status=500, file=None)), flush=True)
 
         def send_file(self, file_path):
             return dict(file=file_path), 200
