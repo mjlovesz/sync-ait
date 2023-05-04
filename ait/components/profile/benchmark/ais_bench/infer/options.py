@@ -114,6 +114,7 @@ opt_output = click.option(
 
 
 opt_output_dirname = click.option(
+    '-od',
     '--output-dirname',
     'output_dirname',
     type=str,
@@ -146,7 +147,7 @@ opt_debug = click.option(
     default=False,
     type=str,
     callback=str2bool,
-    help='Debug switch,print model information'
+    help='Debug switch, print model information'
 )
 
 
@@ -161,6 +162,7 @@ opt_device = click.option(
 
 
 opt_dym_batch = click.option(
+    '-db',
     '--dym-batch',
     'dym_batch',
     default=0,
@@ -170,6 +172,7 @@ opt_dym_batch = click.option(
 
 
 opt_dym_hw = click.option(
+    '-dhw',
     '--dym-hw',
     'dym_hw',
     default=None,
@@ -179,6 +182,7 @@ opt_dym_hw = click.option(
 
 
 opt_dym_dims = click.option(
+    '-dd',
     '--dym-dims',
     'dym_dims',
     default=None,
@@ -187,11 +191,22 @@ opt_dym_dims = click.option(
 )
 
 opt_dym_shape = click.option(
+    '-ds',
     '--dym-shape',
     'dym_shape',
     type=str,
     default=None,
     help='dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\"'
+)
+
+
+opt_dym_shape_range = click.option(
+    '-dr',
+    '--dym-shape-range',
+    'dym_shape_range',
+    default=None,
+    type=str,
+    help='dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
 )
 
 opt_output_size = click.option(
@@ -258,6 +273,7 @@ opt_dump = click.option(
 
 
 opt_acl_json_path = click.option(
+    '-acl',
     '--acl-json-path',
     'acl_json_path',
     default=None,
@@ -302,16 +318,6 @@ opt_warmup_count = click.option(
     type=int,
     callback=check_nonnegative_integer,
     help='warmup count before inference'
-)
-
-
-opt_dym_shape_range = click.option(
-    '-dr',
-    '--dym-shape-range',
-    'dym_shape_range',
-    default=None,
-    type=str,
-    help='dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
 )
 
 
