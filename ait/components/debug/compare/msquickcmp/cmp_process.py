@@ -71,25 +71,7 @@ def cmp_process(args:CmpArgsAdapter, use_cli:bool):
     args.offline_model_path = os.path.realpath(args.offline_model_path)
     args.cann_path = os.path.realpath(args.cann_path)
     try:
-        utils.check_file_or_directory_path(args.model_path)
-        utils.check_file_or_directory_path(args.offline_model_path)
-        utils.check_device_param_valid(args.device)
-        utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
-        time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
-        original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
-        args.out_path = original_out_path
-
-        # convert the om model to json
-        output_json_path = AtcUtils(args).convert_model_to_json()
-
-        # deal with the dym_shape_range param if exists
-        input_shapes = []
-        if args.dym_shape_range:
-            input_shapes = utils.parse_dym_shape_range(args.dym_shape_range)
-        if not input_shapes:
-            input_shapes.append("")
-        for input_shape in input_shapes:
-            run(args, input_shape, output_json_path, original_out_path, use_cli)
+        check_and_run(args, use_cli)
     except utils.AccuracyCompareException as error:
         raise error
 
@@ -128,3 +110,25 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
         _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
         net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
     analyser.Analyser(args.out_path)()
+
+def check_and_run(args, use_cli:bool):
+    utils.check_file_or_directory_path(args.model_path)
+    utils.check_file_or_directory_path(args.offline_model_path)
+    utils.check_device_param_valid(args.device)
+    utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
+    utils.check_convert_is_valid_used(args.dump, args.bin2npy)
+    time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
+    original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
+    args.out_path = original_out_path
+
+    # convert the om model to json
+    output_json_path = AtcUtils(args).convert_model_to_json()
+
+    # deal with the dymShape_range param if exists
+    input_shapes = []
+    if args.dymShape_range:
+        input_shapes = utils.parse_dymshape_range(args.dymShape_range)
+    if not input_shapes:
+        input_shapes.append("")
+    for input_shape in input_shapes:
+        run(args, input_shape, output_json_path, original_out_path, use_cli)
