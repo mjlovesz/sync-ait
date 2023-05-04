@@ -1,3 +1,19 @@
+"""
+Copyright(C) 2021. Huawei Technologies Co.,Ltd. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
+
 import argparse
 import logging
 import math
@@ -26,24 +42,37 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
 
 def set_session_options(session, args):
     # 增加校验
+    aipp_batchsize = -1
     if args.dymBatch != 0:
         session.set_dynamic_batchsize(args.dymBatch)
-    elif args.dymHW !=None:
+        aipp_batchsize = session.get_max_dym_batchsize()
+    elif args.dymHW is not None:
         hwstr = args.dymHW.split(",")
         session.set_dynamic_hw((int)(hwstr[0]), (int)(hwstr[1]))
-    elif args.dymDims !=None:
+    elif args.dymDims is not None:
         session.set_dynamic_dims(args.dymDims)
-    elif args.dymShape !=None:
+    elif args.dymShape is not None:
         session.set_dynamic_shape(args.dymShape)
     else:
         session.set_staticbatch()
 
-    if args.batchsize == None:
+    if args.batchsize is None:
         args.batchsize = get_batchsize(session, args)
         logger.info("try get model batchsize:{}".format(args.batchsize))
 
+    if aipp_batchsize < 0:
+        aipp_batchsize = args.batchsize
+
+    # 确认模型只有一个动态 aipp input
+    if (args.aipp_config is not None) and (session.get_dym_aipp_input_exsity()):
+        session.load_aipp_config_file(args.aipp_config, aipp_batchsize)
+        session.check_dym_aipp_input_exsity()
+    elif (args.aipp_config is None) and (session.get_dym_aipp_input_exsity()):
+        logger.error("can't find aipp config file for model with dym aipp input , please check it!")
+        raise RuntimeError('aipp model without aipp config!')
+
     # 设置custom out tensors size
-    if args.outputSize != None:
+    if args.outputSize is not None:
         customsizes = [int(n) for n in args.outputSize.split(',')]
         logger.debug("set customsize:{}".format(customsizes))
         session.set_custom_outsize(customsizes)
@@ -104,9 +133,9 @@ def warmup(session, args, intensors_desc, infiles):
     logger.info("warm up {} done".format(args.warmup_count))
 
 def run_inference(session, args, inputs, out_array=False):
-    if args.auto_set_dymshape_mode == True:
+    if args.auto_set_dymshape_mode is True:
         set_dymshape_shape(session, inputs)
-    elif args.auto_set_dymdims_mode == True:
+    elif args.auto_set_dymdims_mode is True:
         set_dymdims_shape(session, inputs)
     outputs = session.run(inputs, out_array)
     return outputs
@@ -120,7 +149,7 @@ def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_pre
             intensors.append(tensor)
         outputs = run_inference(session, args, intensors)
         session.convert_tensors_to_host(outputs)
-        if output_prefix != None:
+        if output_prefix is not None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
 # files to loop iner
@@ -133,7 +162,7 @@ def infer_loop_files_run(session, args, intensors_desc, infileslist, output_pref
             intensors.append(tensor)
         outputs = run_inference(session, args, intensors)
         session.convert_tensors_to_host(outputs)
-        if output_prefix != None:
+        if output_prefix is not None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
 # First prepare the data, then execute the reference, and then write the file uniformly
@@ -148,7 +177,7 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_pre
 
     for i, outputs in enumerate(outtensors):
         session.convert_tensors_to_host(outputs)
-        if output_prefix != None:
+        if output_prefix is not None:
             save_tensors_to_file(outputs, output_prefix, infileslist[i], args.outfmt, i, args.output_batchsize_axis)
 
 # loop numpy array to infer
@@ -160,7 +189,7 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             innarrays.append(narray)
         outputs = run_inference(session, args, innarrays)
         session.convert_tensors_to_host(outputs)
-        if args.output != None:
+        if args.output is not None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
 def str2bool(v):
@@ -214,31 +243,171 @@ def check_device_range_valid(value):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", "-m", required=True, help="the path of the om model")
-    parser.add_argument("--input", "-i", default=None, help="input file or dir")
-    parser.add_argument("--output", "-o", default=None, help="Inference data output path. The inference results are output to the subdirectory named current date under given output path")
-    parser.add_argument("--output_dirname", type=str, default=None, help="actual output directory name. Used with parameter output, cannot be used alone. The inference result is output to  subdirectory named by output_dirname under  output path. such as --output_dirname 'tmp', the final inference results are output to the folder of  {$output}/tmp")
-    parser.add_argument("--outfmt", default="BIN", choices=["NPY", "BIN", "TXT"], help="Output file format (NPY or BIN or TXT)")
-    parser.add_argument("--loop", "-l", type=check_positive_integer, default=1, help="the round of the PureInfer.")
-    parser.add_argument("--debug", type=str2bool, default=False, help="Debug switch,print model information")
-    parser.add_argument("--device", "-d", type=check_device_range_valid, default=0, help="the NPU device ID to use.valid value range is [0, 255]")
-    parser.add_argument("--dymBatch", type=int, default=0, help="dynamic batch size param，such as --dymBatch 2")
-    parser.add_argument("--dymHW", type=str, default=None, help="dynamic image size param, such as --dymHW \"300,500\"")
-    parser.add_argument("--dymDims", type=str, default=None, help="dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"")
-    parser.add_argument("--dymShape", type=str, default=None, help="dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\"")
-    parser.add_argument("--outputSize", type=str, default=None, help="output size for dynamic shape mode")
-    parser.add_argument("--auto_set_dymshape_mode", type=str2bool, default=False, help="auto_set_dymshape_mode")
-    parser.add_argument("--auto_set_dymdims_mode", type=str2bool, default=False, help="auto_set_dymdims_mode")
-    parser.add_argument("--batchsize", type=check_batchsize_valid, default=None, help="batch size of input tensor")
-    parser.add_argument("--pure_data_type", type=str, default="zero", choices=["zero", "random"], help="null data type for pure inference(zero or random)")
-    parser.add_argument("--profiler", type=str2bool, default=False, help="profiler switch")
-    parser.add_argument("--dump", type=str2bool, default=False, help="dump switch")
-    parser.add_argument("--acl_json_path", type=str, default=None, help="acl json path for profiling or dump")
-    parser.add_argument("--output_batchsize_axis",  type=check_nonnegative_integer, default=0, help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 1")
-    parser.add_argument("--run_mode", type=str, default="array", choices=["array", "files", "tensor", "full"], help="run mode")
-    parser.add_argument("--display_all_summary", type=str2bool, default=False, help="display all summary include h2d d2h info")
-    parser.add_argument("--warmup_count",  type=check_nonnegative_integer, default=1, help="warmup count before inference")
-    parser.add_argument("--dymShape_range", type=str, default=None, help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\"")
+    parser.add_argument(
+        "--model",
+        "-m",
+        required=True,
+        help="the path of the om model"
+    )
+    parser.add_argument(
+        "--input",
+        "-i",
+        default=None,
+        help="input file or dir"
+    )
+    parser.add_argument(
+        "--output",
+        "-o",
+        default=None,
+        help="Inference data output path. The inference results are output to \
+             the subdirectory named current date under given output path"
+    )
+    parser.add_argument(
+        "--output_dirname",
+        type=str,
+        default=None,
+        help="actual output directory name. \
+             Used with parameter output, cannot be used alone. \
+             The inference result is output to subdirectory named by output_dirname \
+             under  output path. such as --output_dirname 'tmp', \
+             the final inference results are output to the folder of  {$output}/tmp"
+    )
+    parser.add_argument(
+        "--outfmt",
+        default="BIN",
+        choices=["NPY", "BIN", "TXT"],
+        help="Output file format (NPY or BIN or TXT)"
+    )
+    parser.add_argument(
+        "--loop",
+        "-l",
+        type=check_positive_integer,
+        default=1,
+        help="the round of the PureInfer."
+    )
+    parser.add_argument(
+        "--debug",
+        type=str2bool,
+        default=False,
+        help="Debug switch,print model information"
+    )
+    parser.add_argument(
+        "--device",
+        "-d",
+        type=check_device_range_valid,
+        default=0,
+        help="the NPU device ID to use.valid value range is [0, 255]"
+    )
+    parser.add_argument(
+        "--dymBatch",
+        type=int,
+        default=0,
+        help="dynamic batch size param，such as --dymBatch 2"
+    )
+    parser.add_argument(
+        "--dymHW",
+        type=str,
+        default=None,
+        help="dynamic image size param, such as --dymHW \"300,500\""
+    )
+    parser.add_argument(
+        "--dymDims",
+        type=str,
+        default=None,
+        help="dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\""
+    )
+    parser.add_argument(
+        "--dymShape",
+        type=str,
+        default=None,
+        help="dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\""
+    )
+    parser.add_argument(
+        "--outputSize",
+        type=str,
+        default=None,
+        help="output size for dynamic shape mode"
+    )
+    parser.add_argument(
+        "--auto_set_dymshape_mode",
+        type=str2bool,
+        default=False,
+        help="auto_set_dymshape_mode"
+    )
+    parser.add_argument(
+        "--auto_set_dymdims_mode",
+        type=str2bool,
+        default=False,
+        help="auto_set_dymdims_mode"
+    )
+    parser.add_argument(
+        "--batchsize",
+        type=check_batchsize_valid,
+        default=None,
+        help="batch size of input tensor"
+    )
+    parser.add_argument(
+        "--pure_data_type",
+        type=str,
+        default="zero",
+        choices=["zero", "random"],
+        help="null data type for pure inference(zero or random)"
+    )
+    parser.add_argument(
+        "--profiler",
+        type=str2bool,
+        default=False,
+        help="profiler switch"
+    )
+    parser.add_argument(
+        "--dump",
+        type=str2bool,
+        default=False,
+        help="dump switch"
+    )
+    parser.add_argument(
+        "--acl_json_path",
+        type=str,
+        default=None,
+        help="acl json path for profiling or dump"
+    )
+    parser.add_argument(
+        "--output_batchsize_axis",
+        type=check_nonnegative_integer,
+        default=0,
+        help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 1"
+    )
+    parser.add_argument(
+        "--run_mode",
+        type=str,
+        default="array",
+        choices=["array", "files", "tensor", "full"],
+        help="run mode"
+    )
+    parser.add_argument(
+        "--display_all_summary",
+        type=str2bool,
+        default=False,
+        help="display all summary include h2d d2h info"
+    )
+    parser.add_argument(
+        "--warmup_count",
+        type=check_nonnegative_integer,
+        default=1,
+        help="warmup count before inference"
+        )
+    parser.add_argument(
+        "--dymShape_range",
+        type=str,
+        default=None,
+        help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\""
+    )
+    parser.add_argument(
+        "--aipp_config",
+        type=str,
+        default=None,
+        help="file type: .config, to set actual aipp params before infer"
+    )
 
     args = parser.parse_args()
 
@@ -249,6 +418,16 @@ def get_args():
     if (args.profiler is True or args.dump is True) and (args.output is None):
         logger.error("when dump or profiler, miss output path, please check them!")
         raise RuntimeError('miss output parameter!')
+
+    # 判断--aipp_config 文件是否是存在的.config文件
+    if (args.aipp_config is not None):
+        if (os.path.splitext(args.aipp_config)[-1] == ".config"):
+            if (os.path.isfile(args.aipp_config) is not True):
+                logger.error("can't find the path of config file, please check it!")
+                raise RuntimeError('wrong aipp config file path!')
+        else:
+            logger.error("aipp config file is not a .config file, please check it!")
+            raise RuntimeError('wrong aipp config file type!')
 
     if args.auto_set_dymshape_mode == False and args.auto_set_dymdims_mode == False:
         args.no_combine_tensor_mode = False
@@ -274,17 +453,17 @@ def msprof_run_profiling(args):
 
 def main(args, index=0, msgq=None, device_list=None):
     # if msgq is not None,as subproces run
-    if msgq != None:
+    if msgq is not None:
         logger.info("subprocess_{} main run".format(index))
 
-    if args.debug == True:
+    if args.debug is True:
         logger.setLevel(logging.DEBUG)
 
     session = init_inference_session(args)
 
     intensors_desc = session.get_inputs()
-    if device_list != None and len(device_list) > 1:
-        if args.output != None:
+    if device_list is not None and len(device_list) > 1:
+        if args.output is not None:
             if args.output_dirname is None:
                 timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
                 output_prefix = os.path.join(args.output, timestr)
@@ -298,7 +477,7 @@ def main(args, index=0, msgq=None, device_list=None):
         else:
             output_prefix = None
     else:
-        if args.output != None:
+        if args.output is not None:
             if args.output_dirname is None:
                 timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
                 output_prefix = os.path.join(args.output, timestr)
@@ -321,7 +500,7 @@ def main(args, index=0, msgq=None, device_list=None):
 
     warmup(session, args, intensors_desc, infileslist[0])
 
-    if msgq != None:
+    if msgq is not None:
 		# wait subprocess init ready, if time eplapsed,force ready run
         logger.info("subprocess_{} qsize:{} now waiting".format(index, msgq.qsize()))
         msgq.put(index)
@@ -358,7 +537,7 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
 
-    if msgq != None:
+    if msgq is not None:
 		# put result to msgq
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
 
@@ -369,11 +548,11 @@ def print_subproces_run_error(value):
 
 def seg_input_data_for_multi_process(args, inputs, jobs):
     inputs_list = [] if inputs is None else inputs.split(',')
-    if inputs_list == None:
+    if inputs_list is None:
         return inputs_list
 
     fileslist = []
-    if os.path.isfile(inputs_list[0]) == True:
+    if os.path.isfile(inputs_list[0]) is True:
         fileslist = inputs_list
     elif os.path.isdir(inputs_list[0]):
         for dir in inputs_list:
@@ -413,7 +592,7 @@ def multidevice_run(args):
     for i in range(len(device_list)):
         cur_args = copy.deepcopy(args)
         cur_args.device = int(device_list[i])
-        cur_args.input = None if splits == None else list(splits)[i]
+        cur_args.input = None if splits is None else list(splits)[i]
         p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
 
     p.close()
@@ -435,7 +614,7 @@ if __name__ == "__main__":
 
     version_check(args)
 
-    if args.profiler == True:
+    if args.profiler is True:
         # try use msprof to run
         msprof_bin = shutil.which('msprof')
         if msprof_bin is None or os.getenv('GE_PROFILIGN_TO_STD_OUT') == '1':
@@ -444,7 +623,7 @@ if __name__ == "__main__":
             msprof_run_profiling(args)
             exit(0)
 
-    if args.dymShape_range != None and args.dymShape is None:
+    if args.dymShape_range is not None and args.dymShape is None:
         # dymshape range run,according range to run each shape infer get best shape
         dymshape_range_run(args)
         exit(0)
