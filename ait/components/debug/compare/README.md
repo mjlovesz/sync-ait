@@ -17,7 +17,7 @@
   ```
 - 进入 compare 目录
   ```sh
-  cd ait/ait/components/debug/compare/msquickcmp
+  cd ait/ait/components/debug/compare
   ```
 - 配置 CANN 包相关环境变量，其中 `/usr/local/Ascend/ascend-toolkit` 需使用实际 CANN 包安装后路径
   ```sh
@@ -100,7 +100,7 @@
   ```
   **Python API 调用示例**
   ```py
-  from net_compare import analyser
+  from msquickcmp.net_compare import analyser
   _ = analyser.Analyser('result_2021211214657.csv')()
   # |                   Monitor |  Value | Index | OpType | NPUDump | GroundTruth |
   # |--------------------------:|-------:|------:|-------:|--------:|------------:|
@@ -111,7 +111,7 @@
   - `FIRST_INVALID_OVERALL` 只要有一项不满足就输出该条数据，并结束遍历，默认方式
   - `FIRST_INVALID_EACH` 输出每一个评估项首个不满足的
   ```py
-  from net_compare import analyser
+  from msquickcmp.net_compare import analyser
   _ = analyser.Analyser('result_2021211214657.csv')(strategy=analyser.STRATEGIES.FIRST_INVALID_EACH)
   # |                   Monitor |   Value | Index |        OpType |                       NPUDump | GroundTruth # |
   # |--------------------------:|--------:|------:|--------------:|------------------------------:|------------:|
