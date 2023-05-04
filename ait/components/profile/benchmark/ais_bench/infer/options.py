@@ -309,3 +309,11 @@ opt_dym_shape_range = click.option(
     type=str,
     help='dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
 )
+
+
+opt_aipp_config = click.option(
+    "--aipp_config",
+    type=str,
+    default=None,
+    help="file type: .config, to set actual aipp params before infer"
+)
