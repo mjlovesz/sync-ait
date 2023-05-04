@@ -35,7 +35,7 @@ from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common import utils
 
 
-@click.command(name="compare", short_help='one-click network-wide accuracy analysis of TensorFlow and ONNX models.')
+@click.command(name="compare", short_help='one-click network-wide accuracy analysis of gold models.')
 @opt_gold_model
 @opt_om_model
 @opt_input
