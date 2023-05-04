@@ -26,11 +26,11 @@ from ais_bench.infer.options import (
     opt_loop,
     opt_debug,
     opt_device,
-    opt_dymBatch,
-    opt_dymHW,
-    opt_dymDims,
-    opt_dymShape,
-    opt_outputSize,
+    opt_dym_datch,
+    opt_dym_hW,
+    opt_dym_dims,
+    opt_dym_shape,
+    opt_output_size,
     opt_auto_set_dymshape_mode,
     opt_auto_set_dymdims_mode,
     opt_batchsize,
@@ -56,11 +56,11 @@ from ais_bench.infer.options import (
 @opt_loop
 @opt_debug
 @opt_device
-@opt_dymBatch
-@opt_dymHW
-@opt_dymDims
-@opt_dymShape
-@opt_outputSize
+@opt_dym_datch
+@opt_dym_hW
+@opt_dym_dims
+@opt_dym_shape
+@opt_output_size
 @opt_auto_set_dymshape_mode
 @opt_auto_set_dymdims_mode
 @opt_batchsize
