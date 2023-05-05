@@ -70,6 +70,19 @@ class NetCompare(object):
             utils.print_error_log("Failed to execute command: %s" % " ".join(msaccucmp_cmd))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
+    @staticmethod
+    def _check_msaccucmp_file(msaccucmp_command_dir_path):
+        for file_name in MSACCUCMP_FILE_NAME:
+            msaccucmp_command_file_path = os.path.join(msaccucmp_command_dir_path, file_name)
+            if os.path.exists(msaccucmp_command_file_path):
+                return msaccucmp_command_file_path
+            else:
+                utils.print_warn_log(
+                    'The path {} is not exist.Please check the file'.format(msaccucmp_command_file_path))
+        utils.print_error_log(
+            'Does not exist in {} directory msaccucmp.py and msaccucmp.pyc file'.format(msaccucmp_command_dir_path))
+        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+
     def net_output_compare(self, npu_net_output_data_path, golden_net_output_info):
         """
         net_output_compare
@@ -83,7 +96,7 @@ class NetCompare(object):
         utils.print_warn_log("The comparison of Node_output may be incorrect in certain scenarios. If the precision"
                              " is abnormal, please check whether the mapping between the comparison"
                              " data is correct.")
-        for dir_path, subs_paths, files in os.walk(npu_net_output_data_path):
+        for dir_path, _, files in os.walk(npu_net_output_data_path):
             for each_file in sorted(files):
                 if each_file.endswith(".npy"):
                     npu_dump_file[file_index] = os.path.join(dir_path, each_file)
@@ -105,25 +118,40 @@ class NetCompare(object):
         return
 
     @staticmethod
-    def _check_msaccucmp_file(msaccucmp_command_dir_path):
-        for file_name in MSACCUCMP_FILE_NAME:
-            msaccucmp_command_file_path = os.path.join(msaccucmp_command_dir_path, file_name)
-            if os.path.exists(msaccucmp_command_file_path):
-                return msaccucmp_command_file_path
-            else:
-                utils.print_warn_log(
-                    'The path {} is not exist.Please check the file'.format(msaccucmp_command_file_path))
-        utils.print_error_log(
-            'Does not exist in {} directory msaccucmp.py and msaccucmp.pyc file'.format(msaccucmp_command_dir_path))
-        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
-
-    @staticmethod
     def _check_pyc_to_python_version(msaccucmp_command_file_path, python_version):
         if msaccucmp_command_file_path.endswith(".pyc"):
             if python_version != PYC_FILE_TO_PYTHON_VERSION:
                 utils.print_error_log(
                     "The python version for executing {} must be 3.7.5".format(msaccucmp_command_file_path))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_VERSION_ERROR)
+
+    @staticmethod
+    def _catch_compare_result(log_line, catch):
+        result = []
+        header = []
+        try:
+            if catch:
+                # get the compare result
+                info = log_line.decode().split(INFO_FLAG)
+                if len(info) > 1:
+                    info_content = info[1].strip().split(" ")
+                    info_content = [item for item in info_content if item != '']
+                    pattern_num = re.compile(r'^([0-9]+)\.?([0-9]+)?')
+                    pattern_nan = re.compile(r'NaN', re.I)
+                    pattern_header = re.compile(r'Cosine|Error|Distance|Divergence|Deviation', re.I)
+                    match = pattern_num.match(info_content[0])
+                    if match:
+                        result = info_content
+                    if not match and pattern_nan.match(info_content[0]):
+                        result = info_content
+                    if not match and pattern_header.search(info_content[0]):
+                        header = info_content
+            return result, header
+        except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError):
+            utils.print_warn_log('Failed to parse the alg compare result!')
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR)
+        finally:
+            pass
 
     def _process_result_one_line(self, fp_write, fp_read, npu_file_name, golden_file_name, result):
         writer = csv.writer(fp_write)
@@ -154,36 +182,6 @@ class NetCompare(object):
                     writer.writerow(line)
         writer.writerow(new_content)
 
-
-    @staticmethod
-    def _catch_compare_result(log_line, catch):
-        result = []
-        header = []
-        try:
-            if catch:
-                # get the compare result
-                info = log_line.decode().split(INFO_FLAG)
-                if len(info) > 1:
-                    info_content = info[1].strip().split(" ")
-                    info_content = [item for item in info_content if item != '']
-                    pattern_num = re.compile(r'^([0-9]+)\.?([0-9]+)?')
-                    pattern_nan = re.compile(r'NaN', re.I)
-                    pattern_header = re.compile(r'Cosine|Error|Distance|Divergence|Deviation', re.I)
-                    match = pattern_num.match(info_content[0])
-                    if match:
-                        result = info_content
-                    if not match and pattern_nan.match(info_content[0]):
-                        result = info_content
-                    if not match and pattern_header.search(info_content[0]):
-                        header = info_content
-            return result, header
-        except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError):
-            utils.print_warn_log('Failed to parse the alg compare result!')
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR)
-        finally:
-            pass
-
-
     def save_net_output_result_to_csv(self, npu_file, golden_file, result, header):
         """
         save_net_output_result_to_csv
@@ -192,7 +190,7 @@ class NetCompare(object):
         result_file_backup_path = None
         npu_file_name = os.path.basename(npu_file)
         golden_file_name = os.path.basename(golden_file)
-        for dir_path, subs_paths, files in os.walk(self.arguments.out_path):
+        for dir_path, _, files in os.walk(self.arguments.out_path):
             files = [file for file in files if file.endswith("csv")]
             if files:
                 result_file_path = os.path.join(dir_path, files[0])
@@ -230,6 +228,11 @@ class NetCompare(object):
         finally:
             pass
 
+    @staticmethod
+    def execute_command_line(cmd):
+        utils.print_info_log('Execute command:%s' % cmd)
+        process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        return process
 
     def execute_msaccucmp_command(self, cmd, catch=False):
         """
@@ -251,12 +254,6 @@ class NetCompare(object):
                 result = compare_result if compare_result else result
                 header = header_result if header_result else header
         return process.returncode, result, header
-
-    @staticmethod
-    def execute_command_line(cmd):
-        utils.print_info_log('Execute command:%s' % cmd)
-        process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        return process
 
     def _check_msaccucmp_compare_support_args(self, compare_args):
         check_cmd = [self.python_version, self.msaccucmp_command_file_path, "compare", "-h"]
