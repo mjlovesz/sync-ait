@@ -19,4 +19,5 @@ analyze_sub_task = {}
 for entry_point in pkg_resources.iter_entry_points('analyze_sub_task'):
     analyze_sub_task[entry_point.name] = entry_point.load()
 
-analyze_cli_group = click.Group(name="analyze", commands=analyze_sub_task)
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+analyze_cli_group = click.Group(context_settings=CONTEXT_SETTINGS, name="analyze", commands=analyze_sub_task)
