@@ -28,6 +28,18 @@ class L1BufferDataParser:
         self.offset = args.offset
         self.size = args.size
 
+    def check_argument_valid(self):
+        self._check_path_valid(self.dump_path, is_file=True)
+        self._check_path_valid(self.output_path, is_file=False)
+        if self.offset < 0 or self.offset >= self.TWO_M:
+            print('ERROR: The offset (%d) is invalid, out of range [0, %d). Please check the offset.'
+                  % (self.offset, self.TWO_M))
+            sys.exit(self.INVALID_PARAM_ERROR)
+        if self.size <= 0 or self.size > self.TWO_M - self.offset:
+            print('ERROR: The size (%d) is invalid, out of range (0, %d). Please check the size.'
+                  % (self.size, self.TWO_M - self.offset))
+            sys.exit(self.INVALID_PARAM_ERROR)
+
     def _check_path_valid(self, path, is_file):
         if not os.path.exists(path):
             print('ERROR: The path "%s" does not exist. Please check the path.' % path)
@@ -51,18 +63,6 @@ class L1BufferDataParser:
             if not os.access(path, os.W_OK):
                 print('ERROR: You do not have permission to write the path "%s". Please check the path.' % path)
                 sys.exit(self.INVALID_PARAM_ERROR)
-
-    def check_argument_valid(self):
-        self._check_path_valid(self.dump_path, is_file=True)
-        self._check_path_valid(self.output_path, is_file=False)
-        if self.offset < 0 or self.offset >= self.TWO_M:
-            print('ERROR: The offset (%d) is invalid, out of range [0, %d). Please check the offset.'
-                  % (self.offset, self.TWO_M))
-            sys.exit(self.INVALID_PARAM_ERROR)
-        if self.size <= 0 or self.size > self.TWO_M - self.offset:
-            print('ERROR: The size (%d) is invalid, out of range (0, %d). Please check the size.'
-                  % (self.size, self.TWO_M - self.offset))
-            sys.exit(self.INVALID_PARAM_ERROR)
 
     def parse(self):
         self.check_argument_valid()
