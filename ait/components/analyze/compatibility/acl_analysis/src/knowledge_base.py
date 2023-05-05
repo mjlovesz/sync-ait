@@ -93,6 +93,7 @@ KnowledgeGroup.add_knowledge(Knowledge(
 
 API_INPUT_MARCO = ['ACL_MEMCPY_HOST_TO_DEVICE', 'ACL_MEMCPY_DEVICE_TO_HOST']
 
+
 def match_memcpy_type(line: str) -> bool:
     for marco in API_INPUT_MARCO:
         if marco in line:
