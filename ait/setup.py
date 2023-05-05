@@ -38,16 +38,15 @@ setup(
         ],
         'debug': [
             (
+                'compare @ git+https://gitee.com/ascend/ait.git'
+                '#egg=compare&subdirectory=ait/components/debug/compare'
+            ),            
+            (
                 'auto_optimizer @ git+https://gitee.com/ascend/ait.git'
                 '#egg=auto_optimizer&subdirectory=ait/components/debug/surgeon'
             ),
-            (
-                'compare @ git+https://gitee.com/ascend/ait.git'
-                '#egg=compare&subdirectory=ait/components/debug/compare'
-            ),
         ],
     },
-
     entry_points={
         'console_scripts': ['ait=components.__main__:cli'],
     },
