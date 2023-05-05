@@ -59,7 +59,7 @@ def analysis_310_to_310B(path: str, cfg: Dict[str, str] = {}):
     print("[info] Start analysis.")
     # 遍历该目录下的所有code文件
     result: Dict[Knowledge, List[str]] = {}
-    for root, dirs, files in os.walk(path):
+    for root, _, files in os.walk(path):
         for filename in files:
             if not check_filetype(filename):
                 continue

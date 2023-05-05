@@ -49,6 +49,7 @@ DOT = "."
 ASCEND_BATCH_FIELD = "ascend_mbatch_batch_"
 BATCH_SCENARIO_OP_NAME = "{0}_ascend_mbatch_batch_{1}"
 
+
 class AccuracyCompareException(Exception):
     """
     Class for Accuracy Compare Exception
@@ -184,7 +185,7 @@ def get_dump_data_path(dump_dir, is_net_output=False):
         print_error_log("The directory \"{}\" does not contain dump data".format(dump_dir))
         raise AccuracyCompareException(ACCURACY_COMPARISON_NO_DUMP_FILE_ERROR)
 
-    for dir_path, sub_paths, files in os.walk(dump_data_dir):
+    for dir_path, _, files in os.walk(dump_data_dir):
         if len(files) != 0:
             dump_data_path = dir_path
             file_is_exist = True
@@ -266,6 +267,7 @@ def check_dynamic_shape(shape):
             break
     return dynamic_shape
 
+
 def check_convert_is_valid_used(dump, bin2npy):
     """
     check dump is True while using convert
@@ -276,6 +278,7 @@ def check_convert_is_valid_used(dump, bin2npy):
             Please keep dump True while using convert."
         )
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
+
 
 def parse_input_shape(input_shape):
     """
