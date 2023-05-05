@@ -164,7 +164,7 @@ opt_dym_batch = click.option(
     'dym_batch',
     default=0,
     type=int,
-    help='dynamic batch size param, such as --dymBatch 2'
+    help='dynamic batch size param, such as --dym_batch 2'
 )
 
 
@@ -174,7 +174,7 @@ opt_dym_hw = click.option(
     'dym_hw',
     default=None,
     type=str,
-    help='dynamic image size param, such as --dymHW \"300,500\"'
+    help='dynamic image size param, such as --dym_hw \"300,500\"'
 )
 
 
@@ -184,7 +184,7 @@ opt_dym_dims = click.option(
     'dym_dims',
     default=None,
     type=str,
-    help='dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"'
+    help='dynamic dims param, such as --dym_dims \"data:1,600;img_info:1,600\"'
 )
 
 opt_dym_shape = click.option(
@@ -193,7 +193,7 @@ opt_dym_shape = click.option(
     'dym_shape',
     type=str,
     default=None,
-    help='dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\"'
+    help='dynamic shape param, such as --dym_shape \"data:1,600;img_info:1,600\"'
 )
 
 
@@ -218,7 +218,7 @@ opt_output_size = click.option(
 
 opt_auto_set_dymshape_mode = click.option(
     '-asdsm',
-    '--auto-set-dymshape_mode',
+    '--auto-set-dymshape-mode',
     'auto_set_dymshape_mode',
     default=False,
     callback=str2bool,
@@ -228,7 +228,8 @@ opt_auto_set_dymshape_mode = click.option(
 
 opt_auto_set_dymdims_mode = click.option(
     '-asddm',
-    '--auto-set-dymdims_mode',
+    '--auto-set-dymdims-mode',
+    'auto_set_dymdims_mode',
     default=False,
     callback=str2bool,
     help='auto_set_dymdims_mode'

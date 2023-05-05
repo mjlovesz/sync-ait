@@ -128,30 +128,35 @@ def get_args():
     )
     parser.add_argument(
         "--dymBatch",
+        "dym_batch",
         type=int,
         default=0,
         help="dynamic batch size param，such as --dymBatch 2"
     )
     parser.add_argument(
         "--dymHW",
+        "dym_hw",
         type=str,
         default=None,
         help="dynamic image size param, such as --dymHW \"300,500\""
     )
     parser.add_argument(
         "--dymDims",
+        "dym_dims",
         type=str,
         default=None,
         help="dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\""
     )
     parser.add_argument(
         "--dymShape",
+        "dym_shape",
         type=str,
         default=None,
         help="dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\""
     )
     parser.add_argument(
         "--outputSize",
+        "output_size",
         type=str,
         default=None,
         help="output size for dynamic shape mode"
@@ -226,6 +231,7 @@ def get_args():
         )
     parser.add_argument(
         "--dymShape_range",
+        "dym_shape_range",
         type=str,
         default=None,
         help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\""
@@ -247,9 +253,9 @@ if __name__ == "__main__":
 
     args = BenchMarkArgsAdapter(args.model, args.input, args.output,
                 args.output_dirname, args.outfmt, args.loop, args.debug, args.device,
-                args.dymBatch, args.dymHW, args.dymDims, args.dymShape, args.outputSize, args.auto_set_dymshape_mode,
+                args.dym_batch, args.dym_hw, args.dym_dims, args.dym_shape, args.output_size, args.auto_set_dymshape_mode,
                 args.auto_set_dymdims_mode, args.batchsize, args.pure_data_type, args.profiler, args.dump,
                 args.acl_json_path, args.output_batchsize_axis, args.run_mode, args.display_all_summary,
-                args.warmup_count, args.dymShape_range, args.aipp_config)
+                args.warmup_count, args.dym_shape_range, args.aipp_config)
     ret = benchmark_process(args)
     exit(ret)

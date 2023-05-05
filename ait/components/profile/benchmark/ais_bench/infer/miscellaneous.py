@@ -59,10 +59,10 @@ def get_acl_json_path(args):
 def get_batchsize(session, args):
     intensors_desc = session.get_inputs()
     batchsize = intensors_desc[0].shape[0]
-    if args.dymBatch != 0:
-        batchsize = int(args.dymBatch)
-    elif args.dymDims !=None or args.dymShape !=None:
-        instr = args.dymDims if args.dymDims !=None else args.dymShape
+    if args.dym_batch != 0:
+        batchsize = int(args.dym_batch)
+    elif args.dym_dims !=None or args.dym_shape !=None:
+        instr = args.dym_dims if args.dym_dims !=None else args.dym_shape
         elems = instr.split(';')
         for elem in elems:
             name, shapestr = elem.split(':')
