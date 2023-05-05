@@ -53,6 +53,20 @@ class OnnxDumpData(DumpData):
         self.input_shapes = utils.parse_input_shape(self.args.input_shape)
         self.net_output = {}
 
+    @staticmethod
+    def _check_input_shape_fix_value(op_name, model_shape, input_shape):
+        message = "fixed input tensor dim not equal to model input dim." \
+                  "tensor_name:%s, %s vs %s" % (op_name, str(input_shape), str(model_shape))
+        if len(model_shape) != len(input_shape):
+            utils.print_error_log(message)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+        for index, value in enumerate(model_shape):
+            if value is None or isinstance(value, str):
+                continue
+            if input_shape[index] != value:
+                utils.print_error_log(message)
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+
     def _create_dir(self):
         # create input directory
         data_dir = os.path.join(self.args.out_path, "input")
@@ -191,30 +205,6 @@ class OnnxDumpData(DumpData):
             utils.print_info_log("net_output node is:{}, file path is {}".format(key, value))
         utils.print_info_log("dump data success")
 
-    @staticmethod
-    def _check_input_shape_fix_value(op_name, model_shape, input_shape):
-        message = "fixed input tensor dim not equal to model input dim." \
-                  "tensor_name:%s, %s vs %s" % (op_name, str(input_shape), str(model_shape))
-        if len(model_shape) != len(input_shape):
-            utils.print_error_log(message)
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
-        for index, value in enumerate(model_shape):
-            if value is None or isinstance(value, str):
-                continue
-            if input_shape[index] != value:
-                utils.print_error_log(message)
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
-
-    def _get_net_output_node(self):
-        """
-        get net output name
-        """
-        net_output_node = []
-        session = self._load_session(self.args.model_path)
-        for output_item in session.get_outputs():
-            net_output_node.append(output_item.name)
-        return net_output_node
-
     def generate_dump_data(self):
         """
         Function description:
@@ -235,6 +225,16 @@ class OnnxDumpData(DumpData):
         dump_bins = self._run_model(session, inputs_map)
         self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
         return onnx_dump_data_dir
+
+    def _get_net_output_node(self):
+        """
+        get net output name
+        """
+        net_output_node = []
+        session = self._load_session(self.args.model_path)
+        for output_item in session.get_outputs():
+            net_output_node.append(output_item.name)
+        return net_output_node
 
     def get_net_output_info(self):
         """

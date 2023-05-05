@@ -55,13 +55,6 @@ class TfDebugRunner(object):
             outputs_tensor.append(tensor)
         return outputs_tensor
 
-    def _run_model(self, inputs_map, outputs_tensor):
-        config = tf.compat.v1.ConfigProto(log_device_placement=False, allow_soft_placement=True)
-        with tf.compat.v1.Session(graph=self.global_graph, config=config) as sess:
-            if tf_common.check_tf_version(tf_common.VERSION_TF1X):
-                sess = tf_debug.LocalCLIDebugWrapperSession(sess, ui_type="readline", dump_root=self.dump_root)
-            return sess.run(outputs_tensor, feed_dict=inputs_map)
-
     def run(self):
         """
         Function description:
@@ -74,6 +67,12 @@ class TfDebugRunner(object):
         outputs_tensor = self._get_outputs_tensor()
         self._run_model(inputs_map, outputs_tensor)
 
+    def _run_model(self, inputs_map, outputs_tensor):
+        config = tf.compat.v1.ConfigProto(log_device_placement=False, allow_soft_placement=True)
+        with tf.compat.v1.Session(graph=self.global_graph, config=config) as sess:
+            if tf_common.check_tf_version(tf_common.VERSION_TF1X):
+                sess = tf_debug.LocalCLIDebugWrapperSession(sess, ui_type="readline", dump_root=self.dump_root)
+            return sess.run(outputs_tensor, feed_dict=inputs_map)
 
 def _make_dump_data_parser(parser):
     parser.add_argument("-m", "--model-path", dest="model_path", default="",

@@ -35,12 +35,6 @@ class DynamicInput(object):
         self.atc_dynamic_arg, self.cur_dynamic_arg = self.get_dynamic_arg_from_om(om_parser)
         self.dynamic_arg_value = self.get_arg_value(om_parser, arguments)
 
-    def add_dynamic_arg_for_benchmark(self, benchmark_cmd: list):
-        if self.is_dynamic_shape_scenario():
-            self.check_input_dynamic_arg_valid()
-            benchmark_cmd.append(self.cur_dynamic_arg.value.benchmark_arg)
-            benchmark_cmd.append(self.dynamic_arg_value)
-
     @staticmethod
     def get_dynamic_arg_from_om(om_parser):
         atc_cmd_args = om_parser.get_atc_cmdline().split(" ")
@@ -94,6 +88,12 @@ class DynamicInput(object):
                 shape_values.append(int(cur_shape[dim]))
             else:
                 shape_values.add(cur_shape[dim])
+
+    def add_dynamic_arg_for_benchmark(self, benchmark_cmd: list):
+        if self.is_dynamic_shape_scenario():
+            self.check_input_dynamic_arg_valid()
+            benchmark_cmd.append(self.cur_dynamic_arg.value.benchmark_arg)
+            benchmark_cmd.append(self.dynamic_arg_value)
 
     def is_dynamic_shape_scenario(self):
         """
@@ -163,6 +163,32 @@ class NpuDumpData(DumpData):
         self.om_parser = OmParser(output_json_path)
         self.dynamic_input = DynamicInput(self.om_parser, self.arguments)
         self.python_version = sys.executable or "python3"
+
+    @staticmethod
+    def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir):
+        load_dict = {
+            "dump": {
+                "dump_list": [{"model_name": model_name}],
+                "dump_path": npu_data_output_dir,
+                "dump_mode": "all",
+                "dump_op_switch": "off"
+            }
+        }
+        if os.access(acl_json_path, os.W_OK):
+            try:
+                with open(acl_json_path, "w") as write_json:
+                    try:
+                        json.dump(load_dict, write_json)
+                    except ValueError as write_json_except:
+                        print(str(write_json_except))
+                        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR)
+            except IOError as acl_json_file_except:
+                utils.print_error_log('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
+        else:
+            utils.print_error_log(
+                "The path {} does not have permission to write.Please check the path permission".format(acl_json_path))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
     def generate_dump_data(self, use_cli):
         """
@@ -291,7 +317,7 @@ class NpuDumpData(DumpData):
     def _convert_net_output_to_numpy(self, npu_net_output_data_path, npu_dump_data_path):
         net_output_data = None
         npu_net_output_data_info = self.om_parser.get_net_output_data_info(npu_dump_data_path)
-        for dir_path, sub_paths, files in os.walk(npu_net_output_data_path):
+        for dir_path, _, files in os.walk(npu_net_output_data_path):
             for index, each_file in enumerate(sorted(files)):
                 data_type = npu_net_output_data_info.get(index)[0]
                 shape = npu_net_output_data_info.get(index)[1]
@@ -359,29 +385,3 @@ class NpuDumpData(DumpData):
                 if shape_size != bin_file_size:
                     utils.print_error_log("The shape value is different from the size of the bin file.")
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
-
-    @staticmethod
-    def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir):
-        load_dict = {
-            "dump": {
-                "dump_list": [{"model_name": model_name}],
-                "dump_path": npu_data_output_dir,
-                "dump_mode": "all",
-                "dump_op_switch": "off"
-            }
-        }
-        if os.access(acl_json_path, os.W_OK):
-            try:
-                with open(acl_json_path, "w") as write_json:
-                    try:
-                        json.dump(load_dict, write_json)
-                    except ValueError as write_json_except:
-                        print(str(write_json_except))
-                        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR)
-            except IOError as acl_json_file_except:
-                utils.print_error_log('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
-        else:
-            utils.print_error_log(
-                "The path {} does not have permission to write.Please check the path permission".format(acl_json_path))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)

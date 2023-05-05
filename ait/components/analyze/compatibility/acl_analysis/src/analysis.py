@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd
+# Copyright 2023 Huawei Technologies Co., Ltd. 2022-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import os
-import numpy as np
 from typing import Dict, List
+import numpy as np
 
 from knowledge_base import Knowledge, KnowledgeGroup
+
+logger = logging.getLogger(__name__)
 
 
 def check_filetype(filename: str):
@@ -55,8 +58,8 @@ def match_knowledge(line) -> Dict[str, List[Knowledge]]:
     return result
 
 
-def analysis_310_to_310B(path: str, cfg: Dict[str, str] = {}):
-    print("[info] Start analysis.")
+def analysis_310_to_310B(path: str):
+    logger.info("[info] Start analysis.")
     # 遍历该目录下的所有code文件
     result: Dict[Knowledge, List[str]] = {}
     for root, _, files in os.walk(path):
@@ -78,6 +81,6 @@ def analysis_310_to_310B(path: str, cfg: Dict[str, str] = {}):
                             result[knowledge].append(
                                 api + ' ' + str(filepath) + ' Line: ' + str(line_num)
                             )
-    print("[info] Analysis finished.")
+    logger.info("[info] Analysis finished.")
     return result
 

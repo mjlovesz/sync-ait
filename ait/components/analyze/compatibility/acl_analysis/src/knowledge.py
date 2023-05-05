@@ -26,6 +26,10 @@ class Knowledge(object):
         self._apis = apis
         self._match_funcs = match_funcs
 
+    @classmethod
+    def get_suggestion(cls):
+        return cls.get_suggestion
+
     def analysis(self, line: str) -> bool:
         for func in self._match_funcs:
             if not func(line):
