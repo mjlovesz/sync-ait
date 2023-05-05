@@ -1413,7 +1413,7 @@ Result ModelProcess::CheckDymAIPPInputExsity()
     }
     size_t aippNum = dataNeedDynamicAipp.size();
     if (aippNum == 0) {
-        ERROR_LOG("can't find dynamic aipp input in model, amount of aipp input is %d", int(aippNum));
+        INFO_LOG("can't find dynamic aipp input in model, amount of aipp input is %d", int(aippNum));
         return FAILED;
     } else if (aippNum > 1) {
         ERROR_LOG("don't support more than one dynamic aipp input in model, amount of aipp input is %d", int(aippNum));
@@ -1429,10 +1429,10 @@ Result ModelProcess::GetAIPPIndexList(std::vector<size_t> &dataNeedDynamicAipp)
     // modelDesc_为aclmdlCreateDesc表示模型描述信息，根据1中加载成功的模型的ID，获取该模型的描述信息
     aclError ret = aclmdlGetInputIndexByName(modelDesc_, ACL_DYNAMIC_AIPP_NAME, &index);
     if (ret != ACL_ERROR_NONE) {
-        ERROR_LOG("aclmdlGetInputIndexByName failed, maybe static batch size, ret %d", ret);
         return FAILED;
     }
     dataNeedDynamicAipp.push_back(index);
+    INFO_LOG("GetAIPPIndex success");
     return SUCCESS;
 
 }
