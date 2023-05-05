@@ -28,11 +28,11 @@ class BenchMarkArgsAdapter():
         self.loop = loop
         self.debug = debug
         self.device = device
-        self.dymBatch = dym_batch
-        self.dymHW = dym_hw
-        self.dymDims = dym_dims
-        self.dymShape = dym_shape
-        self.outputSize = output_size
+        self.dym_batch = dym_batch
+        self.dym_hw = dym_hw
+        self.dym_dims = dym_dims
+        self.dym_shape = dym_shape
+        self.output_size = output_size
         self.auto_set_dymshape_mode = auto_set_dymshape_mode
         self.auto_set_dymdims_mode = auto_set_dymdims_mode
         self.batchsize = batchsize
@@ -44,5 +44,5 @@ class BenchMarkArgsAdapter():
         self.run_mode = run_mode
         self.display_all_summary = display_all_summary
         self.warmup_count = warmup_count
-        self.dymShape_range = dym_shape_range
+        self.dym_shape_range = dym_shape_range
         self.aipp_config = aipp_config

@@ -26,16 +26,16 @@ from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 def set_session_options(session, args):
     # 增加校验
     aipp_batchsize = -1
-    if args.dymBatch != 0:
-        session.set_dynamic_batchsize(args.dymBatch)
+    if args.dym_batch != 0:
+        session.set_dynamic_batchsize(args.dym_batch)
         aipp_batchsize = session.get_max_dym_batchsize()
-    elif args.dymHW is not None:
-        hwstr = args.dymHW.split(",")
+    elif args.dym_hw is not None:
+        hwstr = args.dym_hw.split(",")
         session.set_dynamic_hw((int)(hwstr[0]), (int)(hwstr[1]))
-    elif args.dymDims is not None:
-        session.set_dynamic_dims(args.dymDims)
-    elif args.dymShape is not None:
-        session.set_dynamic_shape(args.dymShape)
+    elif args.dym_dims is not None:
+        session.set_dynamic_dims(args.dym_dims)
+    elif args.dym_shape is not None:
+        session.set_dynamic_shape(args.dym_shape)
     else:
         session.set_staticbatch()
 
@@ -55,8 +55,8 @@ def set_session_options(session, args):
         raise RuntimeError('aipp model without aipp config!')
 
     # 设置custom out tensors size
-    if args.outputSize is not None:
-        customsizes = [int(n) for n in args.outputSize.split(',')]
+    if args.output_size is not None:
+        customsizes = [int(n) for n in args.output_size.split(',')]
         logger.debug("set customsize:{}".format(customsizes))
         session.set_custom_outsize(customsizes)
 
@@ -387,7 +387,7 @@ def benchmark_process(args:BenchMarkArgsAdapter):
             msprof_run_profiling(args)
             return 0
 
-    if args.dymShape_range is not None and args.dymShape is None:
+    if args.dym_shape_range is not None and args.dym_shape is None:
         # dymshape range run,according range to run each shape infer get best shape
         dymshape_range_run(args)
         return 0
