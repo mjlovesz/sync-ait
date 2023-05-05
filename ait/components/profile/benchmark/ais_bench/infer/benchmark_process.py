@@ -9,6 +9,7 @@ from multiprocessing import Pool
 from multiprocessing import Manager
 
 from tqdm import tqdm
+
 from ais_bench.infer.interface import InferSession, MemorySummary
 from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                     create_intensors_from_infileslist,
@@ -23,6 +24,8 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                             get_fileslist_from_dir, list_split, logger,
                             save_data_to_files)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
+
+
 def set_session_options(session, args):
     # 增加校验
     aipp_batchsize = -1
@@ -60,6 +63,7 @@ def set_session_options(session, args):
         logger.debug("set customsize:{}".format(customsizes))
         session.set_custom_outsize(customsizes)
 
+
 def init_inference_session(args):
     acl_json_path = get_acl_json_path(args)
     session = InferSession(args.device, args.model, acl_json_path, args.debug, args.loop)
@@ -67,6 +71,7 @@ def init_inference_session(args):
     set_session_options(session, args)
     logger.debug("session info:{}".format(session.session))
     return session
+
 
 def set_dymshape_shape(session, inputs):
     l = []
@@ -80,6 +85,7 @@ def set_dymshape_shape(session, inputs):
     session.set_dynamic_shape(dyshapes)
     summary.add_batchsize(inputs[0].shape[0])
 
+
 def set_dymdims_shape(session, inputs):
     l = []
     intensors_desc = session.get_inputs()
@@ -91,6 +97,7 @@ def set_dymdims_shape(session, inputs):
     logger.debug("set dymdims shape:{}".format(dydims))
     session.set_dynamic_dims(dydims)
     summary.add_batchsize(inputs[0].shape[0])
+
 
 def warmup(session, args, intensors_desc, infiles):
     # prepare input data
@@ -115,6 +122,7 @@ def warmup(session, args, intensors_desc, infiles):
     MemorySummary.reset()
     logger.info("warm up {} done".format(args.warmup_count))
 
+
 def run_inference(session, args, inputs, out_array=False):
     if args.auto_set_dymshape_mode is True:
         set_dymshape_shape(session, inputs)
@@ -122,6 +130,7 @@ def run_inference(session, args, inputs, out_array=False):
         set_dymdims_shape(session, inputs)
     outputs = session.run(inputs, out_array)
     return outputs
+
 
 # tensor to loop infer
 def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix):
@@ -135,6 +144,7 @@ def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_pre
         if output_prefix is not None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
+
 # files to loop iner
 def infer_loop_files_run(session, args, intensors_desc, infileslist, output_prefix):
     for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference files Processing')):
@@ -147,6 +157,7 @@ def infer_loop_files_run(session, args, intensors_desc, infileslist, output_pref
         session.convert_tensors_to_host(outputs)
         if output_prefix is not None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
+
 
 # First prepare the data, then execute the reference, and then write the file uniformly
 def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix):
@@ -163,6 +174,7 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_pre
         if output_prefix is not None:
             save_tensors_to_file(outputs, output_prefix, infileslist[i], args.outfmt, i, args.output_batchsize_axis)
 
+
 # loop numpy array to infer
 def infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix):
     for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference array Processing')):
@@ -175,6 +187,7 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
         if args.output is not None:
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
+
 def msprof_run_profiling(args):
     cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup_count=0"
     msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
@@ -182,6 +195,7 @@ def msprof_run_profiling(args):
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
     ret = os.system(msprof_cmd)
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
+
 
 def main(args, index=0, msgq=None, device_list=None):
     # if msgq is not None,as subproces run
@@ -275,8 +289,10 @@ def main(args, index=0, msgq=None, device_list=None):
 
     session.finalize()
 
+
 def print_subproces_run_error(value):
     logger.error("subprocess run failed error_callback:{}".format(value))
+
 
 def seg_input_data_for_multi_process(args, inputs, jobs):
     inputs_list = [] if inputs is None else inputs.split(',')
@@ -308,6 +324,7 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
     for files in fileslist:
         res.append(','.join(list(filter(None, files))))
     return res
+
 
 def multidevice_run(args):
     logger.info("multidevice:{} run begin".format(args.device))
@@ -341,6 +358,7 @@ def multidevice_run(args):
     logger.info('summary throughput:{}'.format(sum(tlist)))
     return result
 
+
 def args_rules(args):
     if args.profiler is True and args.dump is True:
         logger.error("parameter --profiler cannot be true at the same time as parameter --dump, please check them!\n")
@@ -373,6 +391,7 @@ def args_rules(args):
         logger.error("parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
         raise RuntimeError('error bad parameters --output_dirname')
     return args
+
 
 def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)

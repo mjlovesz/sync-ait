@@ -30,11 +30,13 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
 
+
 def check_positive_integer(value):
     ivalue = int(value)
     if ivalue <= 0:
         raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
     return ivalue
+
 
 def check_batchsize_valid(value):
     # default value is None
@@ -44,11 +46,13 @@ def check_batchsize_valid(value):
     else:
         return check_positive_integer(value)
 
+
 def check_nonnegative_integer(value):
     ivalue = int(value)
     if ivalue < 0:
         raise argparse.ArgumentTypeError("%s is an invalid nonnegative int value" % value)
     return ivalue
+
 
 def check_device_range_valid(value):
     # if contain , split to int list
@@ -68,6 +72,7 @@ def check_device_range_valid(value):
             raise argparse.ArgumentTypeError("device:{} is invalid. valid value range is [{}, {}]".format(
                 ivalue, min_value, max_value))
         return ivalue
+
 
 def get_args():
     parser = argparse.ArgumentParser()
