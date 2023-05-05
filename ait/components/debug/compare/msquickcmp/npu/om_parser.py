@@ -59,38 +59,6 @@ class OmParser(object):
         self.contain_negative_1 = False
         self.special_op_attr = self._parse_special_op_attr()
 
-    def _get_sub_graph_name(self):
-        subgraph_name = []
-        for graph in self.json_object.get(GRAPH_OBJECT):
-            for operator in graph.get(OP_OBJECT):
-                if SUBGRAPH_NAME in operator:
-                    subgraph_name += operator.get(SUBGRAPH_NAME)
-        return subgraph_name
-
-    def _gen_operator_list(self):
-        _, scenario = self.get_dynamic_scenario_info()
-        for graph in self.json_object.get(GRAPH_OBJECT):
-            if graph.get(NAME_OBJECT) in self.subgraph_name and \
-                    scenario not in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
-                continue
-            for operator in graph.get(OP_OBJECT):
-                yield operator
-
-    def _gen_operator_list_from_subgraph(self):
-        for graph in self.json_object.get(GRAPH_OBJECT):
-            if graph.get(NAME_OBJECT) in self.subgraph_name:
-                for operator in graph.get(OP_OBJECT):
-                    yield operator
-                return
-
-    def get_shape_size(self):
-        """
-        Get shape size for input
-        """
-        input_desc_array = self._get_data_input_desc()
-        # extracts the input shape value
-        return self._process_inputs(input_desc_array)
-
     @staticmethod
     def _load_json_file(json_file_path):
         """
@@ -115,14 +83,59 @@ class OmParser(object):
             utils.print_error_log('Failed to open"' + json_file_path + '", ' + str(input_file_open_except))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
 
-    def _get_data_input_desc(self):
-        input_desc_list = []
-        for operator in self._gen_operator_list():
-            if DATA_OBJECT == operator.get(TYPE_OBJECT):
-                if len(operator.get(INPUT_DESC_OBJECT)) != 0:
-                    for item in operator.get(INPUT_DESC_OBJECT):
-                        input_desc_list.append(item)
-        return input_desc_list
+    @staticmethod
+    def _get_prefix(input_obj):
+        return input_obj.split(':')[0]
+
+    @staticmethod
+    def _parse_net_output_node_attr(operator):
+        net_output_info = {}
+        if INPUT_DESC_OBJECT in operator:
+            input_index = 0
+            for input_object in operator.get(INPUT_DESC_OBJECT):
+                shape = []
+                data_type = DTYPE_MAP.get(input_object.get(DTYPE_OBJECT))
+                if not input_object.get(SHAPE_OBJECT):
+                    # no shape info, assumed to be scalar
+                    net_output_info[input_index] = [data_type, [1]]
+                    continue
+                for num in input_object.get(SHAPE_OBJECT).get(DIM_OBJECT):
+                    shape.append(num)
+                net_output_info[input_index] = [data_type, shape]
+                input_index += 1
+        return net_output_info
+
+    def _get_sub_graph_name(self):
+        subgraph_name = []
+        for graph in self.json_object.get(GRAPH_OBJECT):
+            for operator in graph.get(OP_OBJECT):
+                if SUBGRAPH_NAME in operator:
+                    subgraph_name += operator.get(SUBGRAPH_NAME)
+        return subgraph_name
+
+    def _gen_operator_list(self):
+        _, scenario = self.get_dynamic_scenario_info()
+        for graph in self.json_object.get(GRAPH_OBJECT):
+            if graph.get(NAME_OBJECT) in self.subgraph_name and \
+                    scenario not in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
+                continue
+            for operator in graph.get(OP_OBJECT):
+                yield operator
+
+    def get_shape_size(self):
+        """
+        Get shape size for input
+        """
+        input_desc_array = self._get_data_input_desc()
+        # extracts the input shape value
+        return self._process_inputs(input_desc_array)
+
+    def _gen_operator_list_from_subgraph(self):
+        for graph in self.json_object.get(GRAPH_OBJECT):
+            if graph.get(NAME_OBJECT) in self.subgraph_name:
+                for operator in graph.get(OP_OBJECT):
+                    yield operator
+                return
 
     def get_net_output_count(self):
         """
@@ -139,23 +152,21 @@ class OmParser(object):
                 count += len(operator.get(INPUT_DESC_OBJECT))
         return count
 
+    def _get_data_input_desc(self):
+        input_desc_list = []
+        for operator in self._gen_operator_list():
+            if DATA_OBJECT == operator.get(TYPE_OBJECT):
+                if len(operator.get(INPUT_DESC_OBJECT)) != 0:
+                    for item in operator.get(INPUT_DESC_OBJECT):
+                        input_desc_list.append(item)
+        return input_desc_list
+
     def get_atc_cmdline(self):
         for attr in self.json_object.get(ATTR_OBJECT):
             if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == ATC_CMDLINE_OBJECT:
                 if VALUE_OBJECT in attr and S_OBJECT in attr.get(VALUE_OBJECT):
                     return attr.get(VALUE_OBJECT).get(S_OBJECT)
         return ''
-
-    @staticmethod
-    def _get_prefix(input_obj):
-        return input_obj.split(':')[0]
-
-    def _parse_special_op_attr(self):
-        special_op_attr = {}
-        for operator in self._gen_operator_list():
-            if operator.get(TYPE_OBJECT) in SPECIAL_OPS_TYPE:
-                special_op_attr[operator.get(NAME_OBJECT)] = operator.get(INPUT_OBJECT)
-        return special_op_attr
 
     def get_expect_net_output_name(self):
         """
@@ -177,23 +188,12 @@ class OmParser(object):
             expect_net_output_name[item] = output_name
         return expect_net_output_name
 
-    @staticmethod
-    def _parse_net_output_node_attr(operator):
-        net_output_info = {}
-        if INPUT_DESC_OBJECT in operator:
-            input_index = 0
-            for input_object in operator.get(INPUT_DESC_OBJECT):
-                shape = []
-                data_type = DTYPE_MAP.get(input_object.get(DTYPE_OBJECT))
-                if not input_object.get(SHAPE_OBJECT):
-                    # no shape info, assumed to be scalar
-                    net_output_info[input_index] = [data_type, [1]]
-                    continue
-                for num in input_object.get(SHAPE_OBJECT).get(DIM_OBJECT):
-                    shape.append(num)
-                net_output_info[input_index] = [data_type, shape]
-                input_index += 1
-        return net_output_info
+    def _parse_special_op_attr(self):
+        special_op_attr = {}
+        for operator in self._gen_operator_list():
+            if operator.get(TYPE_OBJECT) in SPECIAL_OPS_TYPE:
+                special_op_attr[operator.get(NAME_OBJECT)] = operator.get(INPUT_OBJECT)
+        return special_op_attr
 
     def get_net_output_data_info(self, dump_data_path):
         """
@@ -261,6 +261,13 @@ class OmParser(object):
             range_shape_size_list.append(item_sum)
         return range_shape_size_list
 
+    def get_dynamic_scenario_info(self):
+        atc_cmd = self.get_atc_cmdline()
+        for dym_arg in DynamicArgumentEnum:
+            if dym_arg.value.atc_arg in atc_cmd:
+                return True, dym_arg
+        return False, None
+
     def _process_inputs(self, input_desc_array):
         value = []
         for input_object in input_desc_array:
@@ -283,10 +290,3 @@ class OmParser(object):
                     item_sum *= num
                 value.append(item_sum * data_type_size)
         return value
-
-    def get_dynamic_scenario_info(self):
-        atc_cmd = self.get_atc_cmdline()
-        for dym_arg in DynamicArgumentEnum:
-            if dym_arg.value.atc_arg in atc_cmd:
-                return True, dym_arg
-        return False, None
