@@ -25,6 +25,33 @@ setup(
     license='Apache-2.0',
     keywords='ait',
     python_requires='>=3.7',
+    extras_require={
+        'benchmark': [
+            (
+                'aclruntime @ git+https://gitee.com/ascend/ait.git'
+                '#egg=aclruntime&subdirectory=ait/components/profile/benchmark/backend'
+            ),
+            (
+                'ais_bench @ git+https://gitee.com/ascend/ait.git'
+                '#egg=ais_bench&subdirectory=ait/components/profile/benchmark'
+            ),
+            'pillow >= 9.0.0',
+            'tqdm >= 4.63.0',
+        ],
+        'compare': [
+            (
+                'compare @ git+https://gitee.com/ascend/ait.git'
+                '#egg=compare&subdirectory=ait/components/debug/compare'
+            ),
+        ],
+        'surgeon': [
+            (
+                'auto_optimizer @ git+https://gitee.com/ascend/ait.git'
+                '#egg=auto_optimizer&subdirectory=ait/components/debug/surgeon'
+            ),
+        ],
+    },
+
     entry_points={
         'console_scripts': ['ait=components.__main__:cli'],
     },
