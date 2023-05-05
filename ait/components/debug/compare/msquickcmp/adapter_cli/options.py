@@ -11,15 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import argparse
+
 import click
 
-from msquickcmp.common.utils import str2bool
+
+def str2bool(ctx, param, v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
 
 
 opt_gold_model = click.option(
     '-gm',
-    '--gold-model',
-    'gold_model',
+    '--golden-model',
+    'golden_model',
     required=True,
     help="<Required> The original model (.onnx or .pb) file path",
 )
