@@ -18,6 +18,7 @@ import pkg_resources
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
+
 @click.group(name="profile", context_settings=CONTEXT_SETTINGS, invoke_without_command=True,
              no_args_is_help=True)
 def profile_cli_group():

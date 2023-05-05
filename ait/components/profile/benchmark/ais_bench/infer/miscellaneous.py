@@ -135,7 +135,7 @@ def get_throughtput_from_log(log_path):
         return "Failed", 0
 
 def dymshape_range_run(args):
-    dymshape_list = get_dymshape_list(args.dymShape_range)
+    dymshape_list = get_dymshape_list(args.dym_shape_range)
     results = []
     log_path = "./dym.log" if args.output is None else args.output + "/dym.log"
     for dymshape in dymshape_list:
