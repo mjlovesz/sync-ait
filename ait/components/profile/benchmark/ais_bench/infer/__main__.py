@@ -128,35 +128,35 @@ def get_args():
     )
     parser.add_argument(
         "--dymBatch",
-        "dym_batch",
+        dest="dym_batch",
         type=int,
         default=0,
         help="dynamic batch size param，such as --dymBatch 2"
     )
     parser.add_argument(
         "--dymHW",
-        "dym_hw",
+        dest="dym_hw",
         type=str,
         default=None,
         help="dynamic image size param, such as --dymHW \"300,500\""
     )
     parser.add_argument(
         "--dymDims",
-        "dym_dims",
+        dest="dym_dims",
         type=str,
         default=None,
         help="dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\""
     )
     parser.add_argument(
         "--dymShape",
-        "dym_shape",
+        dest="dym_shape",
         type=str,
         default=None,
         help="dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\""
     )
     parser.add_argument(
         "--outputSize",
-        "output_size",
+        dest="output_size",
         type=str,
         default=None,
         help="output size for dynamic shape mode"
@@ -231,7 +231,7 @@ def get_args():
         )
     parser.add_argument(
         "--dymShape_range",
-        "dym_shape_range",
+        dest="dym_shape_range",
         type=str,
         default=None,
         help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\""
