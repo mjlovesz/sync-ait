@@ -1,16 +1,40 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# Copyright 2022 Huawei Technologies Co., Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
 import math
 import os
 import shutil
+import logging
+import sys
 
 import aclruntime
 import pytest
 from test_common import TestCommonClass
 
+logging.basicConfig(stream=sys.stdout, level = logging.INFO,format = '[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
+
 
 class TestClass():
+    def __init__(self, model_name = "no model", model_base_path = "no model path", output_file_num = -1):
+        self.model_name = model_name
+        self.model_base_path = model_base_path
+        self.output_file_num = output_file_num
 
     @classmethod
     def setup_class(cls):
@@ -21,13 +45,14 @@ class TestClass():
 
     @classmethod
     def teardown_class(cls):
-        print('\n ---class level teardown_class')
+        logger.info('\n ---class level teardown_class')
 
     def init(self):
         self.model_name = self.get_model_name(self)
         self.model_base_path = self.get_model_base_path(self)
         self.output_file_num = 5
 
+    @staticmethod
     def get_model_name(self):
         return "bert"
 
@@ -59,7 +84,7 @@ class TestClass():
             cmd = "{} --model {} --device {}".format(
                 TestCommonClass.cmd_prefix, model_path,
                 TestCommonClass.default_device_id)
-            print("run cmd:{}".format(cmd))
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -71,7 +96,7 @@ class TestClass():
             cmd = "{} --model {} --device {} --dymBatch {}".format(
                 TestCommonClass.cmd_prefix, model_path,
                 TestCommonClass.default_device_id, dys_batch_size)
-            print("run cmd:{}".format(cmd))
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -112,7 +137,7 @@ class TestClass():
                 TestCommonClass.cmd_prefix, model_path,
                 TestCommonClass.default_device_id, input_path,
                 base_output_path, output_dirname)
-            print("run cmd:{}".format(cmd))
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
             output_paths.append(tmp_output_path)
@@ -155,7 +180,7 @@ class TestClass():
             TestCommonClass.cmd_prefix, model_path,
             TestCommonClass.default_device_id, input_path,
             output_path, output_dir_name)
-        print("run cmd:{}".format(cmd))
+        logger.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
 
@@ -166,8 +191,9 @@ class TestClass():
 
         # get msame inference  average time without first time
         msame_infer_log_path = os.path.join(output_path, output_dir_name, "msame_infer.log")
-        cmd = "{} --model {} --input {} > {}".format(TestCommonClass.msame_bin_path, model_path, input_path, msame_infer_log_path)
-        print("run cmd:{}".format(cmd))
+        cmd = "{} --model {} --input {} > {}".format(TestCommonClass.msame_bin_path, model_path, 
+                                                     input_path, msame_infer_log_path)
+        logger.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
         assert os.path.exists(msame_infer_log_path)
@@ -185,7 +211,9 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.01
-        assert math.fabs(msame_inference_time_ms - ais_bench_inference_time_ms)/msame_inference_time_ms < allowable_performance_deviation
+        assert msame_inference_time_ms != 0
+        assert math.fabs(msame_inference_time_ms - ais_bench_inference_time_ms)/msame_inference_time_ms \
+            < allowable_performance_deviation
         os.remove(msame_infer_log_path)
         shutil.rmtree(output_dir_path)
 
@@ -210,7 +238,7 @@ class TestClass():
                 TestCommonClass.cmd_prefix, model_path,
                 TestCommonClass.default_device_id,
                 output_parent_path, output_dirname, log_path)
-            print("run cmd:{}".format(cmd))
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
             output_paths.append(output_path)
@@ -250,7 +278,7 @@ class TestClass():
                 TestCommonClass.cmd_prefix, model_path,
                 TestCommonClass.default_device_id, dys_batch_size,
                 output_parent_path, output_dirname, log_path)
-            print("run cmd:{}".format(cmd))
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
             output_paths.append(output_path)
@@ -305,7 +333,7 @@ class TestClass():
         cmd = "{} --model {} --device {} --input {} ".format(
             TestCommonClass.cmd_prefix, model_path,
             TestCommonClass.default_device_id, input_path)
-        print("run cmd:{}".format(cmd))
+        logger.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret != 0
 

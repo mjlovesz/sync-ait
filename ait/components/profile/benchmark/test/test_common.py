@@ -1,3 +1,17 @@
+# Copyright 2022 Huawei Technologies Co., Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import filecmp
 import math
 import os
@@ -14,7 +28,8 @@ class TestCommonClass:
     default_device_id = 0
     EPSILON = 1e-6
     epsilon = 1e-6
-    cmd_prefix = sys.executable + " " + os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ais_bench/__main__.py")
+    cmd_prefix = sys.executable + " " + os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                                                      "../ais_bench/__main__.py")
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../test/testdata")
     msame_bin_path = os.getenv('MSAME_BIN_PATH')
 
@@ -42,6 +57,31 @@ class TestCommonClass:
         ndata = np.frombuffer(barray, dtype=np.uint8)
         ndata.tofile(file_path)
         return file_path
+    
+    @staticmethod
+    def prepare_dir(target_folder_path):
+        if os.path.exists(target_folder_path):
+            shutil.rmtree(target_folder_path)
+        os.makedirs(target_folder_path)
+
+    @staticmethod
+    def get_model_inputs_size(model_path):
+        options = aclruntime.session_options()
+        session = aclruntime.InferenceSession(model_path, TestCommonClass.default_device_id, options)
+        return [meta.realsize for meta in session.get_inputs()]
+
+    @staticmethod
+    def get_inference_execute_num(log_path):
+        if not os.path.exists(log_path) and not os.path.isfile(log_path):
+            return 0
+
+        cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
+        try:
+            outval = os.popen(cmd).read()
+        except Exception as e:
+            raise Exception("grep action raises raise an exception: {}".format(e)) from e
+
+        return int(outval.replace('\n', ''))
 
     @classmethod
     def get_inputs_path(cls, size, input_path, input_file_num, pure_data_type=random):
@@ -88,30 +128,4 @@ class TestCommonClass:
     def get_model_static_om_path(cls, batchsize, modelname):
         base_path = cls.get_basepath()
         return os.path.join(base_path, "{}/model".format(modelname), "pth_{}_bs{}.om".format(modelname, batchsize))
-
-    @staticmethod
-    def prepare_dir(target_folder_path):
-        if os.path.exists(target_folder_path):
-            shutil.rmtree(target_folder_path)
-        os.makedirs(target_folder_path)
-
-    @staticmethod
-    def get_model_inputs_size(model_path):
-        options = aclruntime.session_options()
-        session = aclruntime.InferenceSession(model_path, TestCommonClass.default_device_id, options)
-        return [meta.realsize for meta in session.get_inputs()]
-
-    @staticmethod
-    def get_inference_execute_num(log_path):
-        if not os.path.exists(log_path) and not os.path.isfile(log_path):
-            return 0
-
-        try:
-            cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
-            outval = os.popen(cmd).read()
-        except Exception as e:
-            raise Exception("grep action raises raise an exception: {}".format(e))
-            return 0
-
-        return int(outval.replace('\n', ''))
 
