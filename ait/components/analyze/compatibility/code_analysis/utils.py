@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,10 +34,14 @@ def check_profiling_data(datapath):
             profiling_nums += 1
     if profiling_nums == 0:
         raise Exception(
-            f"profiling data do not in {datapath},or the file name is incorrect. Use the original name, such as PROF_xxxxx")
+            f"profiling data do not in {datapath},or the file name is incorrect." \
+                "Use the original name, such as PROF_xxxxx"
+        )
     elif profiling_nums > 1:
         raise Exception(
-            "The number of profiling data is greater than 1,Please enter only one profiling data")
+            "The number of profiling data is greater than 1, " \
+                "Please enter only one profiling data"
+        )
     datapath = datapath + '/' + os.listdir(datapath)[0]
     filename_is_correct = 1
     for file in os.listdir(datapath):
@@ -45,7 +49,8 @@ def check_profiling_data(datapath):
             filename_is_correct = 0
     if filename_is_correct:
         raise ValueError(
-            f'{datapath} is not a correct profiling file, correct profiling file is PROF_xxxxxxxx and it includes device_*')
+            f'{datapath} is not a correct profiling file, \
+                correct profiling file is PROF_xxxxxxxx and it includes device_*')
     return datapath
 
 

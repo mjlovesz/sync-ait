@@ -1,15 +1,26 @@
 #!/usr/bin/env python
 # coding=utf-8
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Function:
 This class mainly involves tf common function.
-Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2022
 """
 import os
+import subprocess
 import numpy as np
 import tensorflow as tf
-import subprocess
 
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException
@@ -37,6 +48,7 @@ def check_tf_version(version):
     tf_version = tf.__version__
     if tf_version.startswith(version):
         return True
+    return False
 
 
 def execute_command(cmd: str):
@@ -82,7 +94,7 @@ def convert_tensor_shape(tensor_shape):
         When tensor dim is none throw exception
     """
     tensor_shape_list = tensor_shape.as_list()
-    for i in range(len(tensor_shape_list)):
+    for i, _ in enumerate(tensor_shape_list):
         if tensor_shape_list[i] is None:
             utils.print_error_log("The dynamic shape %s are not supported. "
                                   "Please set '-s' or '--input-shape' to fix the dynamic shape." % tensor_shape)
@@ -126,7 +138,7 @@ def get_inputs_tensor(global_graph, input_shape_str):
     tensor_index = {}
     operations = global_graph.get_operations()
     op_names = [op.name for op in operations if "Placeholder" == op.type]
-    print(op_names)
+    utils.print_info_log(op_names)
     for _, tensor_name in enumerate(input_shapes):
         utils.check_input_name_in_model(op_names, tensor_name)
     for op in operations:
@@ -153,9 +165,9 @@ def get_inputs_data(inputs_tensor, input_paths):
             if tensor.shape:
                 input_data = input_data.reshape(tensor.shape)
             inputs_map[tensor] = input_data
-            utils.print_info_log("load file name: {}, shape: {}, dtype: {}".format(
-                os.path.basename(input_path[index]), input_data.shape, input_data.dtype))
         except Exception as err:
             utils.print_error_log("Failed to load data %s. %s" % (input_path[index], err))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR) from err
+        utils.print_info_log("load file name: {}, shape: {}, dtype: {}".format(
+            os.path.basename(input_path[index]), input_data.shape, input_data.dtype))
     return inputs_map
