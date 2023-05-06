@@ -292,7 +292,7 @@ Result ModelProcess::CheckDynamicHWSize(pair<int, int> dynamicPair, bool &is_dym
                 break;
             }
         }
-        if (! if_same){
+        if (! if_same) {
             ERROR_LOG("the dymHW parameter is not correct");
             return FAILED;
         }
@@ -411,7 +411,7 @@ Result ModelProcess::CheckDynamicDims(vector<string> dym_dims, size_t gearCount,
     bool if_same = false;
     for (size_t i = 0; i < gearCount; i++)
     {
-        if ((size_t)dym_dims.size() != dims[i].dimCount){
+        if ((size_t)dym_dims.size() != dims[i].dimCount) {
             ERROR_LOG("the dymDims parameter is not correct i:%zu dysize:%zu dimcount:%zu", i, dym_dims.size(), dims[i].dimCount);
             GetDimInfo(gearCount, dims);
             return FAILED;
@@ -892,7 +892,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                     float out = *((float*)outData + i - 1);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
-                    for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++){
+                    for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
                         if ((i != 0) && (i % *it == 0)){
                             outstr << "\n";
                             break;
@@ -908,7 +908,7 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
                     for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++){
-                        if ((i != 0) && (i % *it == 0)){
+                        if ((i != 0) && (i % *it == 0)) {
                             outstr << "\n";
                             break;
                         }
@@ -1038,8 +1038,8 @@ void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std
                     int out = *((bool*)outData + i - 1);
                     outstr << out << " ";
                     vector<int64_t>::iterator it;
-                    for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++){
-                        if ((i != 0) && (i % *it == 0)){
+                    for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
+                        if ((i != 0) && (i % *it == 0)) {
                             outstr << "\n";
                             break;
                         }
@@ -1279,7 +1279,6 @@ Result ModelProcess::GetCurOutputShape(size_t index, bool is_dymshape, std::vect
     } else {
         ret = aclmdlGetCurOutputDims(modelDesc_, index, &ioDims);
         if (ret != ACL_SUCCESS) {
-            // cout << aclGetRecentErrMsg() << endl;
             DEBUG_LOG("aclmdlGetCurOutputDims get not success, maybe the modle has dynamic shape.ret=%d", ret);
             return FAILED;
         }
