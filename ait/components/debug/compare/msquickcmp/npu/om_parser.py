@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Function:
 This class is used to om fusion parser.
-Copyright Information:
-Huawei Technologies Co., Ltd. All Rights Reserved © 2021
 """
 import itertools
 import json
@@ -78,10 +89,10 @@ class OmParser(object):
                 except Exception as load_input_file_except:
                     utils.print_error_log('Load Json {} failed, {}'.format(
                         json_file_path, str(load_input_file_except)))
-                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR)
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR) from load_input_file_except
         except IOError as input_file_open_except:
             utils.print_error_log('Failed to open"' + json_file_path + '", ' + str(input_file_open_except))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from input_file_open_except
 
     @staticmethod
     def _get_prefix(input_obj):
@@ -240,6 +251,7 @@ class OmParser(object):
                     if len(list_i) != 2:
                         continue
                     shape_list.append(list(range(list_i[0], list_i[1] + 1)))
+        return
 
     def _get_range_shape_size_list(self, input_object):
         range_shape_size_list = []

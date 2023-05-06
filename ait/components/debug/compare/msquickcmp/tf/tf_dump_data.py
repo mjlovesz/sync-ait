@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Function:
 This class is used to generate GUP dump data of the TensorFlow model.
-Copyright Information:
-Huawei Technologies Co., Ltd. All Rights Reserved © 2022
 """
 import os
 import re
@@ -26,6 +37,7 @@ class TfDumpData(DumpData):
     """
 
     def __init__(self, arguments):
+        super().__init__()
         self.args = arguments
         output_path = os.path.realpath(self.args.out_path)
         self.important_dirs = {
@@ -57,7 +69,7 @@ class TfDumpData(DumpData):
                 tf.import_graph_def(global_graph_def, name='')
         except Exception as err:
             utils.print_error_log("Failed to load the model %s. %s" % (self.args.model_path, err))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from err
         utils.print_info_log("Load the model %s successfully." % self.args.model_path)
 
     def _make_inputs_data(self, inputs_tensor):
@@ -76,7 +88,7 @@ class TfDumpData(DumpData):
                     input_data.tofile(input_path)
                 except Exception as err:
                     utils.print_error_log("Failed to generate data %s. %s" % (input_path, err))
-                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR) from err
                 utils.print_info_log("file name: {}, shape: {}, dtype: {}".format(
                     input_path, input_data.shape, input_data.dtype))
                 self.input_path = ','.join(input_path_list)
@@ -140,17 +152,17 @@ class TfDumpData(DumpData):
         """Run tf debug with pexpect, should set tf debug ui_type='readline'"""
         tf_dbg = pexpect.spawn(cmd_line)
         tf_dbg.logfile = sys.stdout.buffer
+        tf_dbg.expect('tfdbg>', timeout=tf_common.TF_DEBUG_TIMEOUT)
+        utils.print_info_log("Start to run. Please wait....")
+        tf_dbg.sendline('run')
+        index = tf_dbg.expect(['An error occurred during the run', 'tfdbg>'], timeout=tf_common.TF_DEBUG_TIMEOUT)
         try:
-            tf_dbg.expect('tfdbg>', timeout=tf_common.TF_DEBUG_TIMEOUT)
-            utils.print_info_log("Start to run. Please wait....")
-            tf_dbg.sendline('run')
-            index = tf_dbg.expect(['An error occurred during the run', 'tfdbg>'], timeout=tf_common.TF_DEBUG_TIMEOUT)
             if index == 0:
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
         except Exception as ex:
             tf_dbg.sendline('exit')
             utils.print_error_log("Failed to run command: %s. %s" % (cmd_line, ex))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_COMMAND_ERROR) from ex
         tensor_name_path = os.path.join(self.important_dirs.get("tmp"), 'tf_tensor_names.txt')
         tf_dbg.sendline('lt > %s' % tensor_name_path)
         tf_dbg.expect('tfdbg>', timeout=tf_common.TF_DEBUG_TIMEOUT)

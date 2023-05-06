@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Function:
 This class is used to generate GUP dump data of the ONNX model.
-Copyright Information:
-Huawei Technologies Co., Ltd. All Rights Reserved © 2021
 """
 import sys
 import time
@@ -49,6 +60,7 @@ class OnnxDumpData(DumpData):
     """
 
     def __init__(self, arguments):
+        super().__init__()
         self.args = arguments
         self.input_shapes = utils.parse_input_shape(self.args.input_shape)
         self.net_output = {}
@@ -133,10 +145,10 @@ class OnnxDumpData(DumpData):
                 input_shape = self.input_shapes.get(tensor_name)
                 try:
                     number_shape = [int(dim) for dim in input_shape]
-                except (ValueError, TypeError):
+                except (ValueError, TypeError) as error:
                     utils.print_error_log(utils.get_shape_not_match_message(
                         InputShapeError.FORMAT_NOT_MATCH, self.args.input_shape))
-                    raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+                    raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR) from error
                 self._check_input_shape_fix_value(tensor_name, tensor_shape, number_shape)
                 tensor_info = {"name": tensor_name, "shape": tuple(number_shape), "type": tensor_type}
                 utils.print_info_log("Fix dynamic input shape of %s to %s" % (tensor_name, number_shape))
