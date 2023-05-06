@@ -1,13 +1,25 @@
 #!/usr/bin/env python
 # coding=utf-8
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Function:
 This class mainly involves generate npu dump data function.
-Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
 """
 import json
 import os
+import stat
 import re
 import numpy as np
 import sys
@@ -176,11 +188,11 @@ class NpuDumpData(DumpData):
         }
         if os.access(acl_json_path, os.W_OK):
             try:
-                with open(acl_json_path, "w") as write_json:
+                with os.fdopen(os.open(acl_json_path, os.O_WRONLY, stat.S_IWUSR), "w") as write_json:
                     try:
                         json.dump(load_dict, write_json)
                     except ValueError as write_json_except:
-                        print(str(write_json_except))
+                        utils.print_info_log(str(write_json_except))
                         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR)
             except IOError as acl_json_file_except:
                 utils.print_error_log('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
