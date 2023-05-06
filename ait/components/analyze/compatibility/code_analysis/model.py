@@ -66,6 +66,7 @@ def analyze_dvpp_vpc(profiling_path, api):
     count_crop_paste = 0
     count_crop_resize_paste = 0
     count_make_border = 0
+    has_suggestion = 0
     for line in data.itertuples():
         if (line[1] == api["Crop"]):
             count_crop = line[5]
@@ -79,8 +80,13 @@ def analyze_dvpp_vpc(profiling_path, api):
             count_crop_resize_paste = line[5]
         if (line[1] == api["MakeBorder"]):
             count_make_border = line[5]
-    if (count_crop != 0 or count_resize != 0 or count_crop_resize !=
-            0 or count_crop_paste != 0 or count_crop_resize_paste != 0 or count_make_border != 0):
+    if (count_crop != 0 or count_resize != 0):
+        has_suggestion = 1
+    elif (count_crop_resize != 0 or count_crop_paste != 0):
+        has_suggestion = 1
+    elif (count_crop_resize_paste != 0 or count_make_border != 0):
+        has_suggestion = 1
+    if (has_suggestion != 0):
         if (count_crop >= 2):
             logger.info(f'检测到使用{api["Crop"]}接口，循环处理图片，建议使用{api["CropBatch"]}接口。')
         if (count_crop >= 2 and count_resize >= 2 and count_crop == count_resize):
