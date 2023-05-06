@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -132,8 +132,11 @@ class TypeConstraintQuery(object):
         """
         if op_type not in self._constraint_map:
             return set()
-        return self._constraint_map[op_type].get_constraint(io_type, io_index)
-    
+        if self._constraint_map.get(op_type):
+            return self._constraint_map[op_type].get_constraint(io_type, io_index)
+        else:
+            raise KeyError(f'{op_type} does not exist')
+
     def _str_to_elem_type(self, type_str: str) -> ElemType:
         """ 将类型字符串转换为 ElemType
         :param type_str : 类型字符串

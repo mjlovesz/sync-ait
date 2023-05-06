@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -128,7 +128,8 @@ class KnowledgeMergeConsecutiveSlice(KnowledgeBase):
         # get slice operators here, we only kept the last slice operator after optimization
         slice_to_keep = graph.get_node(matchinfo['Slice_to_keep'][0].name, node_type=Node)
         slices_to_remove = [
-            graph.get_node(v[0].name, node_type=Node) for k, v in matchinfo.items() if k != 'Slice_to_keep'
+            graph.get_node(v[0].name, node_type=Node)
+            for k, v in matchinfo.items() if k != 'Slice_to_keep'
         ]
         slices_total = [*slices_to_remove, slice_to_keep]
         # in case previous apply functions modified the graph and removed/renamed any node of current matching subgraph
@@ -138,7 +139,8 @@ class KnowledgeMergeConsecutiveSlice(KnowledgeBase):
 
         input_initializers: List[List[Optional[Initializer]]] = [
             [
-                graph.get_node(inp, node_type=Initializer) for inp in node.inputs[1:]
+                graph.get_node(inp, node_type=Initializer)
+                for inp in node.inputs[1:]
             ] for node in slices_total
         ]
         if any(inp is None for lst in input_initializers for inp in lst):
@@ -147,7 +149,10 @@ class KnowledgeMergeConsecutiveSlice(KnowledgeBase):
         input_values = [[inp.value for inp in lst] for lst in input_initializers]
         # add optional steps input, input_values should look like this now
         # for example: [[start0, end0, axes0, step0], [start1, end1, axes1, step1], ...]
-        input_values = [lst if len(lst) > 3 else lst + [np.array([1])] for lst in input_values]
+        input_values = [
+            lst if len(lst) > 3 else lst + [np.array([1])]
+            for lst in input_values
+        ]
         # after transposed -> [[start0, start1, ...], [end0, end1, ...], [axes0, axes1, ...], [step0, step1, ...]]
         input_values = list(zip(*input_values))
 

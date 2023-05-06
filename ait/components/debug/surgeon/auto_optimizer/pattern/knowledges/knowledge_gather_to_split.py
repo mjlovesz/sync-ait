@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -100,7 +100,7 @@ class KnowledgeGatherToSplit(KnowledgeBase):
         # we iterate over gather indices and place them on dims
         # None means not occupied by any indices
         dims: List[Optional[Indices]] = [None for _ in range(dim)]
-        for i, gidx in enumerate(gidx_lst):
+        for _, gidx in enumerate(gidx_lst):
             indices_ = (gidx, ) if isinstance(gidx, int) else gidx
             for idx in indices_:
                 # already occupied by other indices, this means overlap, abort

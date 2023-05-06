@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -74,6 +74,8 @@ class KnowledgeBNFolding(KnowledgeBase):
     def _constant_folding(self, scale: NDArray, bias: NDArray, mean: NDArray,
                           var: NDArray, epsilon: float,) -> Tuple[NDArray, NDArray]:
         common_divisor = np.sqrt(var + epsilon)
+        if common_divisor == 0:
+            raise ValueError('ZeroDivision Error: common divisor == 0')
         mul_init = scale / common_divisor
         add_init = bias - scale * mean / common_divisor
         return mul_init, add_init

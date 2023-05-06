@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -47,15 +47,16 @@ class UnionFind(object):
 class KnowledgeBase(object):
     def __init__(self) -> None:
         self._pattern_apply_dict: Dict[Pattern, ApplyFuncs] = defaultdict(list)
-        self.reset()
-
-    def reset(self) -> None:
-        self._pattern_idx = -1
         self._apply_idx = -1
+        self.reset()
 
     @property
     def _patterns(self) -> List[Pattern]:
         return [*self._pattern_apply_dict]
+
+    def reset(self) -> None:
+        self._pattern_idx = -1
+        self._apply_idx = -1
 
     def _register_apply_funcs(self, pattern: Pattern, apply_funcs: ApplyFuncs) -> bool:
         '''
@@ -69,15 +70,6 @@ class KnowledgeBase(object):
         self._pattern_apply_dict[pattern].extend(apply_funcs)
         return True
 
-    def __get_current_pattern(self) -> Optional[Pattern]:
-        if len(self._patterns) == 0:
-            return None
-        if self._pattern_idx == -1:
-            return self._patterns[0]
-        if self._pattern_idx < len(self._patterns):
-            return self._patterns[self._pattern_idx]
-        return None
-
     def has_next_pattern(self) -> bool:
         if len(self._patterns) == 0:
             return False
@@ -87,25 +79,21 @@ class KnowledgeBase(object):
             return True
         return False
 
+    def __get_current_pattern(self) -> Optional[Pattern]:
+        if len(self._patterns) == 0:
+            return None
+        if self._pattern_idx == -1:
+            return self._patterns[0]
+        if self._pattern_idx < len(self._patterns):
+            return self._patterns[self._pattern_idx]
+        return None
+
     def next_pattern(self) -> Optional[Pattern]:
         if not self.has_next_pattern():
             return None
         self._pattern_idx += 1
         self._apply_idx = -1
         return self._patterns[self._pattern_idx]
-
-    def __get_current_apply_method(self) -> Optional[ApplyFunc]:
-        pattern = self.__get_current_pattern()
-        if pattern is None:
-            return None
-        apply_methods = self._pattern_apply_dict[pattern]
-        if len(apply_methods) == 0:
-            return None
-        if self._apply_idx == -1:
-            return apply_methods[0]
-        if self._apply_idx < len(apply_methods):
-            return apply_methods[self._apply_idx]
-        return None
 
     def has_next_apply(self) -> bool:
         pattern = self.__get_current_pattern()
@@ -119,6 +107,19 @@ class KnowledgeBase(object):
         if self._apply_idx + 1 < len(apply_methods):
             return True
         return False
+
+    def __get_current_apply_method(self) -> Optional[ApplyFunc]:
+        pattern = self.__get_current_pattern()
+        if pattern is None:
+            return None
+        apply_methods = self._pattern_apply_dict[pattern]
+        if len(apply_methods) == 0:
+            return None
+        if self._apply_idx == -1:
+            return apply_methods[0]
+        if self._apply_idx < len(apply_methods):
+            return apply_methods[self._apply_idx]
+        return None
 
     def next_apply(self) -> None:
         if not self.has_next_apply():
