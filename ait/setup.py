@@ -26,7 +26,7 @@ setup(
     keywords='ait',
     python_requires='>=3.7',
     extras_require={
-        'benchmark': [
+        'profile': [
             (
                 'aclruntime @ git+https://gitee.com/ascend/ait.git'
                 '#egg=aclruntime&subdirectory=ait/components/profile/benchmark/backend'
@@ -35,16 +35,12 @@ setup(
                 'ais_bench @ git+https://gitee.com/ascend/ait.git'
                 '#egg=ais_bench&subdirectory=ait/components/profile/benchmark'
             ),
-            'pillow >= 9.0.0',
-            'tqdm >= 4.63.0',
         ],
-        'compare': [
+        'debug': [
             (
                 'compare @ git+https://gitee.com/ascend/ait.git'
                 '#egg=compare&subdirectory=ait/components/debug/compare'
-            ),
-        ],
-        'surgeon': [
+            ),            
             (
                 'auto_optimizer @ git+https://gitee.com/ascend/ait.git'
                 '#egg=auto_optimizer&subdirectory=ait/components/debug/surgeon'
