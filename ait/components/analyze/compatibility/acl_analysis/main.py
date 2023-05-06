@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import logging
+import sys
 import pathlib
 from typing import Dict, List
 import click
@@ -20,6 +21,7 @@ import click
 from src import analysis
 from src.knowledge import Knowledge
 
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 

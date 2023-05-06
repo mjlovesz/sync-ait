@@ -13,12 +13,14 @@
 # limitations under the License.
 
 import logging
+import sys
 import os
 import re
 import math
 import pandas as pd
 import utils
 
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 analysis_apis = {
