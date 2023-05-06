@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Function:
 This class mainly involves the main function.
-Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
 """
 
 import argparse
@@ -54,9 +65,9 @@ if __name__ == '__main__':
     _accuracy_compare_parser(parser)
     args = parser.parse_args(sys.argv[1:])
 
-    cmp_args = CmpArgsAdapter(args.model_path, args.offline_model_path, args.input_path, 
-                              args.cann_path, args.out_path, args.input_shape, 
-                              args.device, args.output_size, args.output_nodes, args.advisor, 
+    cmp_args = CmpArgsAdapter(args.model_path, args.offline_model_path, args.input_path,
+                              args.cann_path, args.out_path, args.input_shape,
+                              args.device, args.output_size, args.output_nodes, args.advisor,
                               args.dym_shape_range, args.dump, args.bin2npy)
     try:
         cmp_process(cmp_args, False)
