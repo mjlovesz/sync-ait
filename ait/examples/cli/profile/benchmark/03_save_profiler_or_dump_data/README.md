@@ -67,9 +67,10 @@ profiler，采集性能数据；dump，保存全部算子输出。支持以--acl
 
   + profiler和dump可以分别使用，但不能同时启用。
 
-示例命令如下：
-
-```bash
-ait profile benchmark --model ./resnet50_v1_bs1_fp32.om --acl_json_path ./acl.json
-ait profile benchmark --model /home/model/resnet50_v1.om --output ./ --dump 1
-ait profile benchmark --model /home/model/resnet50_v1.om --output ./ --profiler 1
+  示例命令如下：
+  
+  ```bash
+  ait profile benchmark --model ./resnet50_v1_bs1_fp32.om --acl_json_path ./acl.json
+  ait profile benchmark --model /home/model/resnet50_v1.om --output ./ --dump 1
+  ait profile benchmark --model /home/model/resnet50_v1.om --output ./ --profiler 1
+  ```
