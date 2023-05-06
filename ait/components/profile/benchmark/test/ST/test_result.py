@@ -21,7 +21,7 @@ import logging
 import pytest
 from test_common import TestCommonClass
 
-logging.basicConfig(stream=sys.stdout, level = logging.INFO,format = '[%(levelname)s] %(message)s')
+logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -87,8 +87,10 @@ class TestClass:
 
             # inference times should be  fit to given rule
             real_execute_num = TestCommonClass.get_inference_execute_num(log_path)
-            assert batch_size != 0
-            exacute_num = math.ceil(output_file_num/batch_size)
+            try:
+                exacute_num = math.ceil(output_file_num/batch_size)
+            except ZeroDivisionError:
+                logger.error("zero division!")
             assert real_execute_num == warmup_num + exacute_num
 
             # bin file num is equal to output_file_num
@@ -141,8 +143,10 @@ class TestClass:
 
             # inference times should be  fit to given rule
             real_execute_num = TestCommonClass.get_inference_execute_num(log_path)
-            assert dys_batch_size != 0
-            exacute_num = math.ceil(output_file_num/dys_batch_size)
+            try:
+                exacute_num = math.ceil(output_file_num/dys_batch_size)
+            except ZeroDivisionError:
+                logger.error("zero division!")
             assert real_execute_num == warmup_num + exacute_num
 
             # bin file num is equal to output_file_num

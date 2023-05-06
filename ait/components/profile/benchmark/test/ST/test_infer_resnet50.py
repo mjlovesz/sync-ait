@@ -19,6 +19,7 @@ import os
 import shutil
 import sys
 import logging
+import stat
 import torch
 import acl
 import aclruntime
@@ -27,7 +28,7 @@ import pytest
 from test_common import TestCommonClass
 from ais_bench.infer.interface import InferSession
 
-logging.basicConfig(stream=sys.stdout, level = logging.INFO,format = '[%(levelname)s] %(message)s')
+logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -193,9 +194,9 @@ class TestClass():
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
         os.makedirs(output_path)
-        cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output {}  --output_dirname {} " \
-            .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
-                     output_size, file_paths, output_parent_path, output_dirname)
+        cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output {}" \
+            "--output_dirname {} ".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+                                           output_size, file_paths, output_parent_path, output_dirname)
 
         ret = os.system(cmd)
         assert ret == 0
@@ -510,8 +511,10 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.03
-        assert msame_inference_time_ms != 0
-        reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
+        try:
+            reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
+        except ZeroDivisionError:
+            logger.error("zero division!")
         logger.info("static batch msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms,
                                                                              ais_bench_inference_time_ms,
                                                                                reference_deviation))
@@ -573,8 +576,10 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.04
-        assert msame_inference_time_ms != 0
-        reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
+        try:
+            reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
+        except ZeroDivisionError:
+            logger.error("zero division!")
         logger.info("dymshape msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms,
                                                                          ais_bench_inference_time_ms,
                                                                            reference_deviation))
@@ -878,7 +883,9 @@ class TestClass():
     def test_pure_inference_normal_dynamic_shape_range_mode_3(self):
         range_file_parent_path = os.path.join(self.model_base_path, "input")
         dymshape_range_file = os.path.join(range_file_parent_path, "dymshape_range.info")
-        with os.fdopen(os.open(dymshape_range_file, os.O_WRONLY), 'w') as f:
+        flags = os.O_WRONLY | os.O_CREAT
+        modes = stat.S_IWUSR | stat.S_IRUSR
+        with os.fdopen(os.open(dymshape_range_file, flags, modes), 'w') as f:
             f.write("actual_input_1:1,3,224-300,224-225\n")
             f.write("actual_input_1:8-9,3,224-300,260-300")
 
