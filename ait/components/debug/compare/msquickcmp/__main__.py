@@ -17,7 +17,7 @@ import click
 
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.adapter_cli.options import (
-    opt_gold_model,
+    opt_golden_model,
     opt_om_model,
     opt_input,
     opt_cann_path,
@@ -37,7 +37,7 @@ from msquickcmp.common import utils
 
 @click.command(name="compare", short_help='one-click network-wide accuracy analysis of golden models.',
                no_args_is_help=True)
-@opt_gold_model
+@opt_golden_model
 @opt_om_model
 @opt_input
 @opt_cann_path
