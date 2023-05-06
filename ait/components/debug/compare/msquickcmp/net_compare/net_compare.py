@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Function:
 This class mainly involves the accuracy_network_compare function.
-Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
 """
 import csv
 import os
@@ -91,9 +102,9 @@ class NetCompare(object):
                     if not match and pattern_header.search(info_content[0]):
                         header = info_content
             return result, header
-        except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError):
+        except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError) as error:
             utils.print_warn_log('Failed to parse the alg compare result!')
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR) from error
         finally:
             pass
 
@@ -230,7 +241,7 @@ class NetCompare(object):
                 os.rename(result_file_backup_path, result_file_path)
         except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError) as error:
             utils.print_error_log('Failed to write Net_output compare result')
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR) from error
         finally:
             pass
 
@@ -249,7 +260,7 @@ class NetCompare(object):
         while process.poll() is None:
             line = process.stdout.readline().strip()
             if line:
-                print(line)
+                utils.print_info_log(line)
                 compare_result, header_result = self._catch_compare_result(line, catch)
                 result = compare_result if compare_result else result
                 header = header_result if header_result else header
