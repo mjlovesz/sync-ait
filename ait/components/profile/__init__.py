@@ -11,12 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import click
 import pkg_resources
 
 
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+
+@click.group(name="profile", context_settings=CONTEXT_SETTINGS, invoke_without_command=True,
+             no_args_is_help=True)
+def profile_cli_group():
+    pass
+
+## add other sub task [benchmark .ed]
 profile_sub_task = {}
 for entry_point in pkg_resources.iter_entry_points('profile_sub_task'):
     profile_sub_task[entry_point.name] = entry_point.load()
-
-profile_cli_group = click.Group(name="profile", commands=profile_sub_task)
+    profile_cli_group.add_command(entry_point.load(), entry_point.name)

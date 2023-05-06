@@ -100,8 +100,8 @@ class InferSession:
     def set_staticbatch(self):
         self.session.set_staticbatch()
 
-    def set_dynamic_batchsize(self, dymBatch: str):
-        self.session.set_dynamic_batchsize(dymBatch)
+    def set_dynamic_batchsize(self, dym_batch: str):
+        self.session.set_dynamic_batchsize(dym_batch)
 
     def set_dynamic_hw(self, w: int, h: int):
         self.session.set_dynamic_hw(w, h)
