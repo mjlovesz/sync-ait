@@ -34,11 +34,6 @@
 
 #include "Base/Log/Log.h"
 
-// #define INFO_LOG(fmt, args...) fprintf(stdout, "[INFO] " fmt "\n", ##args)
-// #define DEBUG_LOG(fmt, args...) fprintf(stdout, "[DEBUG] " fmt "\n", ##args)
-// #define WARN_LOG(fmt, args...) fprintf(stdout, "[WARN] " fmt "\n", ##args)
-// #define ERROR_LOG(fmt, args...) fprintf(stdout, "[ERROR] " fmt "\n", ##args)
-
 typedef enum Result {
     SUCCESS = 0,
     FAILED = 1
@@ -100,8 +95,7 @@ public:
     static int ToInt(std::string &str);
 
     static Result ReadBinFileToMemory(const std::string fileName,  char *ptr, const size_t size, size_t &offset);
-    static Result FillFileContentToMemory(const std::string file, char* ptr,const size_t size, size_t &offset);
-
+    static Result FillFileContentToMemory(const std::string file, char* ptr, const size_t size, size_t &offset);
 };
 
 #endif

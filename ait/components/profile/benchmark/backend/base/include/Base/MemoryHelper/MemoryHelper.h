@@ -47,6 +47,7 @@ struct MemoryData {
 class MemoryHelper {
 public:
     // malloc memory
+    static APP_ERROR specificMalloc(MemoryData& data);
     static APP_ERROR Malloc(MemoryData& data);
     static APP_ERROR Free(MemoryData& data);
     static APP_ERROR Memset(MemoryData& data, int32_t value, size_t count);
@@ -68,13 +69,12 @@ private:
 struct MemorySummary {
     std::vector<float> H2DTimeList;
     std::vector<float> D2HTimeList;
-    void Reset(){
+    void Reset() {
         H2DTimeList.clear();
         D2HTimeList.clear();
     }
 };
 
 struct MemorySummary* GetMemorySummaryPtr();
-
 }  // namespace Base
 #endif

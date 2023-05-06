@@ -5,8 +5,7 @@
 #include "Base/ModelInfer/utils.h"
 
 namespace Base {
-
-class SessionOptions{
+class SessionOptions {
 public:
 
     int log_level = LOG_INFO_LEVEL;

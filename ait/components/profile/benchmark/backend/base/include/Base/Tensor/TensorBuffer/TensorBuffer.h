@@ -25,7 +25,6 @@
 #include "Base/ErrorCode/ErrorCode.h"
 
 namespace Base {
-
 enum TensorBufferCopyType {
     HOST_AND_HOST = 0,
     HOST_AND_DEVICE,
@@ -76,8 +75,6 @@ public:
     int32_t deviceId = -1;
     std::shared_ptr<void> data = nullptr;
 };
-
-
 }
 
 #endif
