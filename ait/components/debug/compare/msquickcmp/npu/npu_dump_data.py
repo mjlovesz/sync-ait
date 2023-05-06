@@ -18,11 +18,12 @@ Function:
 This class mainly involves generate npu dump data function.
 """
 import json
+import sys
 import os
 import stat
 import re
 import numpy as np
-import sys
+
 
 from msquickcmp.common import utils
 from msquickcmp.common.dump_data import DumpData
@@ -82,8 +83,8 @@ class DynamicInput(object):
         quickcmp_input_shape_dict = utils.parse_input_shape(arguments.input_shape)
         batch_size_set = set()
         for op_name in atc_input_shape_dict.keys():
-            DynamicInput.get_dynamic_dim_values(atc_input_shape_dict[op_name],
-                                                quickcmp_input_shape_dict[op_name],
+            DynamicInput.get_dynamic_dim_values(atc_input_shape_dict.get(op_name),
+                                                quickcmp_input_shape_dict.get(op_name),
                                                 batch_size_set)
         if len(batch_size_set) == 1:
             for batch_size in batch_size_set:
@@ -132,34 +133,34 @@ class DynamicInput(object):
 
     def check_dynamic_batch_valid(self, atc_dynamic_arg_values):
         dynamic_arg_values = atc_dynamic_arg_values.replace(utils.COMMA, utils.SEMICOLON)
+        atc_value_list = utils.parse_arg_value(dynamic_arg_values)
         try:
-            atc_value_list = utils.parse_arg_value(dynamic_arg_values)
             cur_input = utils.parse_value_by_comma(self.dynamic_arg_value)
-            for value in atc_value_list:
-                if cur_input == value:
-                    return
         except AccuracyCompareException:
             pass
+        for value in atc_value_list:
+            if cur_input == value:
+                return
         utils.print_error_log("Please input the valid shape, "
                               "the valid dynamic value range are {}".format(dynamic_arg_values))
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
     def check_dynamic_dims_valid(self, atc_dynamic_arg_values):
+        atc_input_shape = DynamicInput.get_input_shape_from_om(self.om_parser)
         try:
-            atc_input_shape = DynamicInput.get_input_shape_from_om(self.om_parser)
             atc_input_shape_dict = utils.parse_input_shape(atc_input_shape)
             quickcmp_input_shape_dict = utils.parse_input_shape(self.dynamic_arg_value)
             dym_dims = []
             for op_name in atc_input_shape_dict.keys():
-                DynamicInput.get_dynamic_dim_values(atc_input_shape_dict[op_name],
-                                                    quickcmp_input_shape_dict[op_name],
+                DynamicInput.get_dynamic_dim_values(atc_input_shape_dict.get(op_name),
+                                                    quickcmp_input_shape_dict.get(op_name),
                                                     dym_dims)
             atc_value_list = utils.parse_arg_value(atc_dynamic_arg_values)
-            for value in atc_value_list:
-                if dym_dims == value:
-                    return
         except AccuracyCompareException:
             pass
+        for value in atc_value_list:
+            if dym_dims == value:
+                return
         utils.print_error_log("Please input the valid shape, "
                               "the valid dynamic value range are {}".format(atc_dynamic_arg_values))
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
@@ -171,6 +172,7 @@ class NpuDumpData(DumpData):
     """
 
     def __init__(self, arguments, output_json_path):
+        super().__init__()
         self.arguments = arguments
         self.om_parser = OmParser(output_json_path)
         self.dynamic_input = DynamicInput(self.om_parser, self.arguments)
@@ -193,10 +195,10 @@ class NpuDumpData(DumpData):
                         json.dump(load_dict, write_json)
                     except ValueError as write_json_except:
                         utils.print_info_log(str(write_json_except))
-                        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR)
+                        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR) from write_json_except
             except IOError as acl_json_file_except:
                 utils.print_error_log('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from acl_json_file_except
         else:
             utils.print_error_log(
                 "The path {} does not have permission to write.Please check the path permission".format(acl_json_path))
