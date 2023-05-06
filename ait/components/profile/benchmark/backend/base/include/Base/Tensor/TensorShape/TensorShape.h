@@ -17,7 +17,6 @@
 #define TENSOR_SHAPE_H
 
 namespace Base {
-
 class TensorShape
 {
 public:
@@ -28,7 +27,7 @@ public:
     TensorShape(std::vector<T> shape)
     {
         shape_.clear();
-        for(auto s:shape) {
+        for(auto s : shape) {
             shape_.push_back((size_t)s);
         }
     }

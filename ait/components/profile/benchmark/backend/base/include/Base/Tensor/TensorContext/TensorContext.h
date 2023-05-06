@@ -23,8 +23,6 @@
 #include "Base/ErrorCode/ErrorCode.h"
 
 namespace Base {
-
-
 enum ContextMode {
     CONTEXT_IDEL = 0,
     CONTEXT_USING

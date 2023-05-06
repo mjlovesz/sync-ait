@@ -42,13 +42,9 @@ struct MemorySummary* GetMemorySummaryPtr()
     return &g_MemorySummary;
 }
 
-APP_ERROR MemoryHelper::Malloc(MemoryData& data)
+APP_ERROR MemoryHelper::specificMalloc(MemoryData& data)
 {
     APP_ERROR ret = APP_ERR_OK;
-    if (data.size == 0) {
-        data.ptrData = nullptr;
-        return APP_ERR_OK;
-    }
     switch (data.type) {
         case MemoryData::MEMORY_HOST:
             ret = aclrtMallocHost(&(data.ptrData), data.size);
@@ -94,6 +90,17 @@ APP_ERROR MemoryHelper::Malloc(MemoryData& data)
                      << "The module type is not defined.";
             return APP_ERR_ACL_BAD_ALLOC;
     }
+    return ret;
+}
+
+APP_ERROR MemoryHelper::Malloc(MemoryData& data)
+{
+    APP_ERROR ret = APP_ERR_OK;
+    if (data.size == 0) {
+        data.ptrData = nullptr;
+        return APP_ERR_OK;
+    }
+    ret = specificMalloc(data);
     if (ret != APP_ERR_OK) {
         LogError << GetError(ret) << "Malloc ptrData failed.";
         data.ptrData = nullptr;
@@ -184,11 +191,12 @@ APP_ERROR MemoryHelper::Memcpy(MemoryData& dest, const MemoryData& src, size_t c
     struct timeval start = { 0 };
     struct timeval end = { 0 };
     float costTime;
+    const float sec_to_usec = 1000.0;
     if (IsDeviceToHost(dest, src)) {
         gettimeofday(&start, nullptr);
         ret = aclrtMemcpy(dest.ptrData, dest.size, src.ptrData, count, ACL_MEMCPY_DEVICE_TO_HOST);
         gettimeofday(&end, nullptr);
-        costTime = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000.000;
+        costTime = sec_to_usec * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / sec_to_usec;
         g_MemorySummary.D2HTimeList.push_back(costTime);
     } else if (IsHostToHost(dest, src)) {
         ret = aclrtMemcpy(dest.ptrData, dest.size, src.ptrData, count, ACL_MEMCPY_HOST_TO_HOST);
@@ -198,7 +206,7 @@ APP_ERROR MemoryHelper::Memcpy(MemoryData& dest, const MemoryData& src, size_t c
         gettimeofday(&start, nullptr);
         ret = aclrtMemcpy(dest.ptrData, dest.size, src.ptrData, count, ACL_MEMCPY_HOST_TO_DEVICE);
         gettimeofday(&end, nullptr);
-        costTime = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000.000;
+        costTime = sec_to_usec * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / sec_to_usec;
         g_MemorySummary.H2DTimeList.push_back(costTime);
     }
     if (ret != APP_ERR_OK) {
@@ -239,7 +247,7 @@ APP_ERROR MemoryHelper::MxbsMallocAndCopy(MemoryData& dest, const MemoryData& sr
 bool MemoryHelper::IsHostToDevice(const MemoryData& dest, const MemoryData& src)
 {
     return (dest.type == MemoryData::MEMORY_DEVICE || dest.type == MemoryData::MEMORY_DVPP) &&
-        (src.type == MemoryData::MEMORY_HOST || src.type == MemoryData::MEMORY_HOST_MALLOC || 
+        (src.type == MemoryData::MEMORY_HOST || src.type == MemoryData::MEMORY_HOST_MALLOC ||
         src.type == MemoryData::MEMORY_HOST_NEW);
 }
 
@@ -251,15 +259,15 @@ bool MemoryHelper::IsDeviceToDevice(const MemoryData& dest, const MemoryData& sr
 
 bool MemoryHelper::IsHostToHost(const MemoryData& dest, const MemoryData& src)
 {
-    return (dest.type == MemoryData::MEMORY_HOST || dest.type == MemoryData::MEMORY_HOST_MALLOC || 
-        dest.type == MemoryData::MEMORY_HOST_NEW) && 
-        (src.type == MemoryData::MEMORY_HOST || src.type == MemoryData::MEMORY_HOST_MALLOC || 
+    return (dest.type == MemoryData::MEMORY_HOST || dest.type == MemoryData::MEMORY_HOST_MALLOC ||
+        dest.type == MemoryData::MEMORY_HOST_NEW) &&
+        (src.type == MemoryData::MEMORY_HOST || src.type == MemoryData::MEMORY_HOST_MALLOC ||
         src.type == MemoryData::MEMORY_HOST_NEW);
 }
 
 bool MemoryHelper::IsDeviceToHost(const MemoryData& dest, const MemoryData& src)
 {
-    return (dest.type == MemoryData::MEMORY_HOST || dest.type == MemoryData::MEMORY_HOST_MALLOC || 
+    return (dest.type == MemoryData::MEMORY_HOST || dest.type == MemoryData::MEMORY_HOST_MALLOC ||
         dest.type == MemoryData::MEMORY_HOST_NEW) &&
         (src.type == MemoryData::MEMORY_DEVICE || src.type == MemoryData::MEMORY_DVPP);
 }
