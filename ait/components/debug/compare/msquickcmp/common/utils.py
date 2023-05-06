@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Function:
 This class mainly involves common function.
-Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
 """
 import os
 import re
@@ -38,7 +49,7 @@ ACCURACY_COMPARISON_NOT_SUPPORT_ERROR = 15
 ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
 MODEL_TYPE = ['.onnx', '.pb', '.om']
-DIM_PATTERN = r"^(-?[0-9]+)(,-?[0-9]+)*"
+DIM_PATTERN = r"^(-?[0-9]+)(,-?[0-9]+)*{0,100}"
 DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+){0,3}"
 MAX_DEVICE_ID = 255
 SEMICOLON = ";"
@@ -73,7 +84,7 @@ class InputShapeError(enum.Enum):
 def _print_log(level, msg):
     current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(time.time())))
     pid = os.getgid()
-    print(current_time + "(" + str(pid) + ")-[" + level + "]" + msg)
+    print_info_log(current_time + "(" + str(pid) + ")-[" + level + "]" + msg)
     sys.stdout.flush()
 
 
@@ -211,7 +222,7 @@ def execute_command(cmd):
         line = process.stdout.readline()
         line = line.strip()
         if line:
-            print(line)
+            print_info_log(line)
     if process.returncode != 0:
         print_error_log('Failed to execute command:%s' % " ".join(cmd))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DATA_ERROR)
@@ -232,7 +243,7 @@ def create_directory(dir_path):
         except OSError as ex:
             print_error_log(
                 'Failed to create {}.Please check the path permission or disk space .{}'.format(dir_path, str(ex)))
-            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR) from ex
 
 
 def check_input_bin_file_path(input_path):
