@@ -1,7 +1,7 @@
 #  AIT
 
 #### 介绍
-AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体化开发工具，支持一站式调试调优，包括debug、profile、anlyze等组件，每个组件都有不同功能。
+AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体化开发工具，支持一站式调试调优，当前包括debug、profile、anlyze等组件。
 
 ## 工具安装
 
@@ -68,3 +68,130 @@ pip3 install ./aclruntime-{version}-{python_version}-linux_{arch}.whl
 # 4.3 安装ais_bench推理程序
 pip3 install ./ais_bench-{version}-py3-none-any.whl
 ```
+
+## 工具使用
+
+### 命令格式说明
+
+ait工具可通过ait可执行文件方式启动，若安装工具时未提示Python的HATH变量问题，或手动将Python安装可执行文件的目录加入PATH变量，则可以直接使用如下命令格式：
+
+```bash
+ait <TASK> <SUB_TASK> [OPT] [ARGS]
+```
+
+
+其中，```<TASK>```为任务类型，当前支持debug、profile，后续可能会新增其他任务类型，可以通过如下方式查看当前支持的任务列表：
+
+```bash
+
+ait -h
+Usage: ait [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  -h, --help  Show this message and exit.
+
+Commands:
+  analyze
+  debug
+  profile
+```
+
+```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare，在profile任务下面，有benchmark。后续每个任务下面的子任务类型，也会新增，可以通过如下方式查看每个任务支持的子类任务列表：
+
+1、debug任务支持的功能示例：
+
+```bash
+ait debug -h
+Usage: ait debug [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  -h, --help  Show this message and exit.
+
+Commands:
+  compare  one-click network-wide accuracy analysis of gold models.
+  surgeon  main entrance of auto optimizer.
+```
+
+2、profile任务支持的功能示例：
+
+```bash
+ait profile -h
+Usage: ait profile [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  -h, --help  Show this message and exit.
+
+Commands:
+  benchmark  Inference tool to get performance data including latency and
+             throughput
+```
+
+
+```[OPT]```和```[ARGS]```为可选项以及参数，每个任务下面的可选项和参数都不同，以debug任务下面的compare子任务为例，可以通过如下方式获取
+
+
+```bash
+ait debug compare -h
+Usage: ait debug compare [OPTIONS]
+
+Options:
+  -gm, --golden-model TEXT     <Required> The original model (.onnx or .pb)
+                               file path  [required]
+  -om, --om-model TEXT         <Required> The offline model (.om) file path
+                               [required]
+  -i, --input TEXT             <Optional> The input data path of the model.
+                               Separate multiple inputs with commas(,). E.g:
+                               input_0.bin,input_1.bin
+  -c, --cann-path TEXT         <Optional> The CANN installation path
+  -o, --output TEXT            <Optional> The output path
+  -s, --input-shape TEXT       <Optional> Shape of input shape. Separate
+                               multiple nodes with semicolons(;). E.g:
+                               input_name1:1,224,224,3;input_name2:3,300
+  -d, --device TEXT            <Optional> Input device ID [0, 255], default is
+                               0.
+  --output-size TEXT           <Optional> The size of output. Separate
+                               multiple sizes with commas(,). E.g: 10200,34000
+  -n, --output-nodes TEXT      <Optional> Output nodes designated by user.
+                               Separate multiple nodes with semicolons(;).
+                               E.g: node_name1:0;node_name2:1;node_name3:0
+  --advisor                    <Optional> Enable advisor after compare.
+  -dr, --dym-shape-range TEXT  <Optional> Dynamic shape range using in dynamic
+                               model, using this means ignore input_shape
+  --dump STR2BOOL              <Optional> Whether to dump all the operations'
+                               ouput. Default True.
+  --convert STR2BOOL           <Optional> Enable npu dump data conversion from
+                               bin to npy after compare.
+  -h, --help                   Show this message and exit.
+
+```
+
+### debug任务使用说明
+
+#### 1. compare子任务简单使用示例
+```bash
+ait debug compare -h
+```
+更多使用方式和示例请参考：
+
+#### 2. surgeon子任务使用说明
+```bash
+ait debug surgeon -h
+```
+
+更多使用方式和示例请参考：
+
+### profile任务使用说明
+#### 1. benchmark子任务使用说明
+
+
+## 许可证
+
+[Apache License 2.0](LICENSE)
+
+## 免责声明
+
+ait仅提供在昇腾设备上的一体化开发工具，支持一站式调试调优，不对其质量或维护负责。
+如果您遇到了问题，Gitee/Ascend/ait提交issue，我们将根据您的issue跟踪解决。
+衷心感谢您对我们社区的理解和贡献。
+
+
