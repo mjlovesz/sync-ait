@@ -51,7 +51,7 @@ from msquickcmp.common import utils
 @opt_dump
 @opt_bin2npy
 def compare_cli(
-    gold_model,
+    golden_model,
     om_model,
     input_data_path,
     cann_path,
@@ -65,7 +65,7 @@ def compare_cli(
     dump, 
     bin2npy
 ) -> None:
-    cmp_args = CmpArgsAdapter(gold_model, om_model, input_data_path, cann_path, out_path, input_shape, device,
+    cmp_args = CmpArgsAdapter(golden_model, om_model, input_data_path, cann_path, out_path, input_shape, device,
                               output_size, output_nodes, advisor, dym_shape_range, dump, bin2npy)
     return cmp_process(cmp_args, True)
 

@@ -16,7 +16,7 @@ import argparse
 import click
 
 
-def str2bool(ctx, param, v):
+def str2bool(v):
     if isinstance(v, bool):
         return v
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
@@ -27,7 +27,7 @@ def str2bool(ctx, param, v):
         raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
 
 
-opt_gold_model = click.option(
+opt_golden_model = click.option(
     '-gm',
     '--golden-model',
     'golden_model',
