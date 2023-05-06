@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd. 2022-2023. All rights reserved.
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ from src import analysis
 from src.knowledge import Knowledge
 
 logger = logging.getLogger(__name__)
+
 
 def print_result(result: Dict[Knowledge, List[str]]):
     if len(result) == 0:
@@ -67,7 +68,7 @@ def analysis_acl_api(path, scene):
         logger.info(f'[error] not support scene: {scene}.')
         return
 
-    result = analysis.analysis_310_to_310B(path)
+    result = analysis.analysis_310_to_310b(path)
     print_result(result)
 
 

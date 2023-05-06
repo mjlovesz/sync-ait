@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd. 2022-2023. All rights reserved.
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ def match_knowledge(line) -> Dict[str, List[Knowledge]]:
     return result
 
 
-def analysis_310_to_310B(path: str):
+def analysis_310_to_310b(path: str):
     logger.info("[info] Start analysis.")
     # 遍历该目录下的所有code文件
     result: Dict[Knowledge, List[str]] = {}
