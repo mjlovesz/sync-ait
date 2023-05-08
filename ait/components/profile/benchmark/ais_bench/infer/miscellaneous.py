@@ -139,12 +139,8 @@ def dymshape_range_run(args):
     results = []
     log_path = "./dym.log" if args.output is None else args.output + "/dym.log"
     for dymshape in dymshape_list:
-        if 'ait' in sys.argv[0]:
-            cmd = "rm -rf {};{} {} {}".format(log_path, sys.executable, ' '.join(sys.argv),
-                "--dym-shape={}  | tee {}".format(dymshape,  log_path))
-        else:
-            cmd = "rm -rf {};{} {} {}".format(log_path, sys.executable, ' '.join(sys.argv),
-                "--dymShape={}  | tee {}".format(dymshape,  log_path))
+        cmd = "rm -rf {};{} {} {}".format(log_path, sys.executable, ' '.join(sys.argv),
+            "--dym-shape={}  | tee {}".format(dymshape,  log_path))
         result = { "dymshape" : dymshape, "cmd": cmd, "result": "Failed", "throughput" : 0 }
         logger.debug("cmd:{}".format(cmd))
         os.system(cmd)
