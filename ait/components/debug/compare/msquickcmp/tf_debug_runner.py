@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Function:
-This class is used to generate GUP dump data of the TensorFlow model.
-Copyright Information:
-Huawei Technologies Co., Ltd. All Rights Reserved © 2022
+This class is used to generate GUP dump data of the tensorflow model.
 """
 import argparse
 import sys
@@ -21,7 +32,7 @@ from msquickcmp.common.utils import AccuracyCompareException
 
 class TfDebugRunner(object):
     """
-    This class is used to generate GUP dump data of the TensorFlow model.
+    This class is used to generate GUP dump data of the tensorflow model.
     """
 
     def __init__(self, arguments):
@@ -45,7 +56,7 @@ class TfDebugRunner(object):
                 tf.import_graph_def(global_graph_def, name='')
         except Exception as err:
             utils.print_error_log("Failed to load the model %s. %s" % (self.args.model_path, err))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from err
         utils.print_info_log("Load the model %s successfully." % self.args.model_path)
 
     def _get_outputs_tensor(self):
@@ -58,7 +69,7 @@ class TfDebugRunner(object):
     def run(self):
         """
         Function description:
-            run TensorFlow model
+            run tensorflow model
         """
         self._dump_control()
         self._load_graph()
@@ -91,11 +102,11 @@ def _make_dump_data_parser(parser):
 
 def main():
     """
-   Function Description:
-       main process function
-   Exception Description:
-       exit the program when an AccuracyCompare Exception  occurs
-   """
+    Function Description:
+        main process function
+    Exception Description:
+        exit the program when an AccuracyCompare Exception  occurs
+    """
     parser = argparse.ArgumentParser()
     _make_dump_data_parser(parser)
     args = parser.parse_args(sys.argv[1:])
