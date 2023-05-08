@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+# Copyright (c) 2023 Huawei Device Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 # limitations under the License.
 """
 Function:
-This class is used to generate GUP dump data of the tensorflow model.
+This class is used to generate GUP dump data of the tf model.
 """
 import argparse
 import sys
@@ -32,7 +32,7 @@ from msquickcmp.common.utils import AccuracyCompareException
 
 class TfDebugRunner(object):
     """
-    This class is used to generate GUP dump data of the tensorflow model.
+    This class is used to generate GUP dump data of the tf model.
     """
 
     def __init__(self, arguments):
@@ -69,7 +69,7 @@ class TfDebugRunner(object):
     def run(self):
         """
         Function description:
-            run tensorflow model
+            run tf model
         """
         self._dump_control()
         self._load_graph()

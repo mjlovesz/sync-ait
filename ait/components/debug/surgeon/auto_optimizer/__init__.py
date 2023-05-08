@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .common import Register
-from .common.config import Config
-from .pattern import KnowledgeFactory
-from .graph_refactor import OnnxGraph, OnnxPlaceHolder, OnnxInitializer, OnnxNode
+from auto_optimizer.common import Register
+from auto_optimizer.common.config import Config
+from auto_optimizer.pattern import KnowledgeFactory
+from auto_optimizer.graph_refactor import OnnxGraph, OnnxPlaceHolder, OnnxInitializer, OnnxNode
