@@ -318,7 +318,7 @@ opt_display_all_summary = click.option(
 
 opt_warmup_count = click.option(
     '-wcount',
-    '--warmup-count',
+    '--warmup_count',
     'warmup_count',
     default=1,
     type=int,
