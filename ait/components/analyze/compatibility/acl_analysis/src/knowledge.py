@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ class Knowledge(object):
         self._apis = apis
         self._match_funcs = match_funcs
 
-    @classmethod
-    def get_suggestion(cls):
-        return cls.get_suggestion
+    @property
+    def suggestion(self):
+        return self._suggestion
 
     def analysis(self, line: str) -> bool:
         for func in self._match_funcs:
