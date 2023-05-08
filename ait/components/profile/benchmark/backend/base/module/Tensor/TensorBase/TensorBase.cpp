@@ -112,7 +112,7 @@ TensorBase::TensorBase(const MemoryData &memoryData, const bool &isBorrowed, con
 }
 
 TensorBase::TensorBase(const std::vector<uint32_t> &shape, const TensorDataType &type,
-        const MemoryData::MemoryType &bufferType, const int32_t &deviceId) : dataType_(type)
+                       const MemoryData::MemoryType &bufferType, const int32_t &deviceId) : dataType_(type)
 {
     shape_ = std::make_shared<TensorShape>(shape);
     uint32_t bytes = 0;
@@ -374,7 +374,7 @@ APP_ERROR TensorBase::CheckBatchTensors(const std::vector<TensorBase> &inputs, c
     };
     for (uint32_t i = 1; i < inputs.size(); i++) {
         if (!checkFunc(inputs[0], inputs[i])) {
-            return APP_ERR_COMM_INVALID_PARAM;;
+            return APP_ERR_COMM_INVALID_PARAM;
         }
     }
     return APP_ERR_OK;

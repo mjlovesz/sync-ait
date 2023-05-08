@@ -36,8 +36,6 @@ namespace py = pybind11;
 #include "Base/ModelInfer/DynamicAippConfig.h"
 
 namespace Base {
-
-
 class PyInferenceSession
 {
 public:

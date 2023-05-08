@@ -55,6 +55,7 @@ acl_type_to_numpy_type = {
 
 EXCEPTION_FILE_NAME_KEY_WORD = "exception_cb"
 
+
 def get_format_dtype_shape(file_path):
     """
     bin file name like:
@@ -86,10 +87,10 @@ def parse_bin_file(bin_file):
     format_num, dtype_num, shape = get_format_dtype_shape(bin_file_name)
 
     print("bin_file:{} format: {} dtype: {} shape: {}".format(bin_file,
-        num_to_aclFormat[format_num], num_to_aclDataType[dtype_num], shape))
+        num_to_aclFormat.get(format_num), num_to_aclDataType.get(dtype_num), shape))
     # 输出npy文件
     file_name = bin_file_name.strip(".bin")
-    np_dtype = acl_type_to_numpy_type[num_to_aclDataType[dtype_num]]
+    np_dtype = acl_type_to_numpy_type.get(num_to_aclDataType.get(dtype_num))
     data = np.fromfile(bin_file, dtype=np_dtype)
     if len(shape) == 0:
         print("warning get shape failed convert [-1]")
@@ -100,12 +101,13 @@ def parse_bin_file(bin_file):
     np.save(npy_file, ndata)
     print("out npy dtype: {} shape: {} out_file: {}\n".format(np_dtype, ndata.shape, npy_file))
 
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", "-i", help="exception cb bin file path.Support single file and folder path.")
 
-    args = parser.parse_args()
-    return args
+    input_args = parser.parse_args()
+    return input_args
 
 if __name__ == '__main__':
     args = get_args()
@@ -129,6 +131,6 @@ if __name__ == '__main__':
         print("bad parameters. No suitable exception file")
         sys.exit(1)
 
-    for bin_file in bin_files:
-        parse_bin_file(bin_file)
+    for _bin_file in bin_files:
+        parse_bin_file(_bin_file)
 

@@ -5,6 +5,7 @@ import numpy as np
 
 model_path = sys.argv[1]
 
+
 # 最短运行样例
 def infer_simple():
     device_id = 0
@@ -33,6 +34,7 @@ def infer_simple():
     # summary inference throughput
     print("infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
+
 # 获取模型信息
 def get_model_info():
     device_id = 0
@@ -54,6 +56,7 @@ def get_model_info():
     for i, info in enumerate(intensors_desc):
         print("outputs info i:{} shape:{} type:{} val:{} realsize:{} size:{}".format(
             i, info.shape, info.datatype, int(info.datatype), info.realsize, info.size))
+
 
 def infer_dynamicshape():
     device_id = 0
@@ -93,6 +96,7 @@ def acljson_run():
     options = aclruntime.session_options()
     options.acl_json_path = "./acl.json"
     session = aclruntime.InferenceSession(model_path, device_id, options)
+
 
 # 并行运行样例
 def infer_run_simultaneous():
@@ -149,6 +153,7 @@ def infer_run_simultaneous():
     # summary inference throughput
     print("infer avg:{} ms".format(np.mean(session1.sumary().exec_time_list)))
 
+
 def infer_dynamic_dims():
     device_id = 0
     options = aclruntime.session_options()
@@ -179,13 +184,14 @@ def infer_dynamic_dims():
     # summary inference throughput
     print("infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
+
 def infer_dynamics_hw():
     device_id = 0
     options = aclruntime.session_options()
     session = aclruntime.InferenceSession(model_path, device_id, options)
 
     # only need call this functon compare infer_simple
-    session.set_dynamic_hw(224,224)
+    session.set_dynamic_hw(224, 224)
 
     # create new numpy data according inputs info
     barray = bytearray(session.get_inputs()[0].realsize)
@@ -208,6 +214,7 @@ def infer_dynamics_hw():
         outarray.append(np.array(out))
     # summary inference throughput
     print("infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
+
 
 def infer_dynamic_batchsize():
     device_id = 0
@@ -241,10 +248,4 @@ def infer_dynamic_batchsize():
     print("infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
 infer_simple()
-#infer_run_simultaneous()
-#infer_dynamicshape()
-#infer_dynamic_dims()
-#infer_dynamics_hw()
-#infer_dynamic_batchsize()
-#get_model_info()
-#acljson_run()
+

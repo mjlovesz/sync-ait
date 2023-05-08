@@ -32,7 +32,6 @@ namespace py = pybind11;
     (Module).attr((EnumValueName)) = (EnumValue)
 
 namespace Base {
-
 void TensorToHost(TensorBase &tensor);
 void TensorToDevice(TensorBase &tensor, const int32_t deviceId);
 void TensorToDvpp(TensorBase &tensor, const int32_t deviceId);

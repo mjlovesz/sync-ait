@@ -18,18 +18,19 @@ class TestClass:
     def teardown_class(cls):
         print('\n ---class level teardown_class')
 
-    def init(self):
+    def __init__(self):
         self.model_name = "resnet50"
 
     def test_args_invalid_device_id(self):
         invalid_device_ids = [-2, 100]
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        for i, device_id in enumerate(invalid_device_ids):
+        for _, device_id in enumerate(invalid_device_ids):
             cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path, device_id)
             print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret != 0
 
+    @staticmethod
     def test_args_invalid_model_path(self):
         model_path = "xxx_invalid.om"
         cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
@@ -99,9 +100,9 @@ class TestClass:
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
+            cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
 
             try:
-                cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
                 outval = os.popen(cmd).read()
             except Exception as e:
                 raise Exception("raise an exception: {}".format(e))
@@ -119,9 +120,9 @@ class TestClass:
         print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
+        cmd = "cat {} |grep '[DEBUG]' | wc -l".format(log_path)
 
         try:
-            cmd = "cat {} |grep '[DEBUG]' | wc -l".format(log_path)
             outval = os.popen(cmd).read()
         except Exception as e:
             raise Exception("raise an exception: {}".format(e))
@@ -139,7 +140,6 @@ class TestClass:
                                                                         TestCommonClass.default_device_id, output_path)
         print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
-        #assert ret == 139
 
         assert os.path.exists(profiler_path)
 
@@ -192,9 +192,9 @@ class TestClass:
         print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
+        cmd = "cat {} |grep 'output path'".format(log_path)
 
         try:
-            cmd = "cat {} |grep 'output path'".format(log_path)
             outval = os.popen(cmd).read()
         except Exception as e:
             raise Exception("grep action raises an exception: {}".format(e))
@@ -212,7 +212,11 @@ class TestClass:
         profiler_path = os.path.join(output_path, "profiler")
         TestCommonClass.prepare_dir(profiler_path)
         output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "", "aic_metrics": ""}}
-        output_json_dict["profiler"]["output"] = profiler_path
+
+        try:
+            output_json_dict["profiler"]["output"] = profiler_path
+        except Exception as e:
+            raise Exception("Visit dict failed".format(e))
         out_json_file_path = os.path.join(TestCommonClass.base_path, "acl.json")
 
         with open(out_json_file_path, "w") as f:
@@ -246,9 +250,9 @@ class TestClass:
         print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
+        cmd = "cat {} |grep 'output path'".format(log_path)
 
         try:
-            cmd = "cat {} |grep 'output path'".format(log_path)
             outval = os.popen(cmd).read()
         except Exception as e:
             raise Exception("grep action raises an exception: {}".format(e))
@@ -281,9 +285,9 @@ class TestClass:
             print("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
+            cmd = "cat {} |grep 'output path'".format(log_path)
 
             try:
-                cmd = "cat {} |grep 'output path'".format(log_path)
                 outval = os.popen(cmd).read()
             except Exception as e:
                 raise Exception("grep action raises an exception: {}".format(e))
