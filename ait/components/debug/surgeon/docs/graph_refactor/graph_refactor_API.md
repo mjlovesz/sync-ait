@@ -251,13 +251,13 @@ g.save('model_fix.onnx')
 
 ### 实用功能
 
-**infershape()**
+**infershape()**s
 
 - 对 [onnx.shape_inference.infer_shapes](https://github.com/onnx/onnx/blob/main/onnx/shape_inference.py#L14) 的封装，用于维度推断。
 
 **simplify(\*\*kwargs) -> BaseGraph**
 
-- 对 [onnxsim.simplify](https://github.com/daquexian/onnx-simplifier/blob/master/onnxsim/onnx_simplifier.py#L91) 的封装，用于模型简化。
+- 对 [onnxsim.simplify](https://github.com/daquexian/onnx-simplifier) 的封装，用于模型简化。
 
 **extract_subgraph(start_node_name, end_node_name, subgraph_path=None, is_check_subgraph=False) -> BaseGraph**
 
