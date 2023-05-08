@@ -7,7 +7,7 @@
 ## 运行示例
 
 ```bash
-ait debug compare list
+ait debug surgeon list
 ```
 
 输出示例如下：

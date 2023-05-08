@@ -4,7 +4,7 @@
 使用指定的知识库来优化指定的ONNX模型。
 
 ```bash
-ait debug compare optimize [OPTIONS] INPUT_MODEL OUTPUT_MODEL
+ait debug surgeon optimize [OPTIONS] INPUT_MODEL OUTPUT_MODEL
 ```
 
 optimize可简写为opt。
@@ -21,7 +21,7 @@ optimize可简写为opt。
 ## 运行示例
 
 ```bash
-ait debug compare optimize aasist_bs1_ori.onnx aasist_bs1_ori_out.onnx
+ait debug surgeon optimize aasist_bs1_ori.onnx aasist_bs1_ori_out.onnx
 ```
 
 输出示例如下：

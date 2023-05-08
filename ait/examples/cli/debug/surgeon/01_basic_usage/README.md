@@ -2,20 +2,20 @@
 
 
 ## 介绍
-compare工具可通过ait命令行形式启动。
+surgeon工具可通过ait命令行形式启动。
 
 
 ## 运行示例
 
 ```bash
-ait debug compare <COMMAND> [OPTIONS] [ARGS]
+ait debug surgeon <COMMAND> [OPTIONS] [ARGS]
 ```
 
-其中<COMMAND>为compare执行模式参数，取值为list、evaluate、optimize和extract；[OPTIONS]和[ARGS]为evaluate和optimize命令的额外参数。
+其中<COMMAND>为surgeon执行模式参数，取值为list、evaluate、optimize和extract；[OPTIONS]和[ARGS]为evaluate和optimize命令的额外参数。
 
 ## 使用流程
 
-compare工具建议按照list、evaluate和optimize的顺序执行。如需切分子图，可使用extract命令导出子图。
+surgeon工具建议按照list、evaluate和optimize的顺序执行。如需切分子图，可使用extract命令导出子图。
 
 操作流程如下：
 
