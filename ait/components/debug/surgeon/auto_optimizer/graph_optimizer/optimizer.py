@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,9 +29,8 @@ from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer import KnowledgeFactory
 
-
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger('GraphOptimizer')
-
 
 # This should be implemented in KnowledgeFactory or KnowledgeManager
 NONEQUIVALENT_KNOWLEDGES = [
@@ -79,9 +78,6 @@ class GraphOptimizer:
         if len(knowledge_dict) == 0:
             raise ValueError('No valid knowledge provided.')
         self.knowledges: Dict[str, KnowledgeBase] = knowledge_dict
-
-    def load_config(self):
-        pass
 
     @staticmethod
     def _effective(om_ori: str, om_opt: str, cfg: InferTestConfig, check_precision: bool,
@@ -137,13 +133,16 @@ class GraphOptimizer:
                 return
 
         color_s = COLOR_SUCCESS if time_opt < time_ori else COLOR_FAIL
-        speed_impr = time_ori / time_opt - 1
-        print('\n' + '=' * 100)
-        print(f'{knowledge_name} performance stats:')
-        print(f'Inference time before modification: {time_ori:.2f} ms')
-        print(f'Inference time after modification: {time_opt:.2f} ms')
-        print(f'Inference speed improved: {color_s}{speed_impr * 100:.2f}%{COLOR_END}')
-        print('=' * 100 + '\n')
+        try:
+            speed_impr = time_ori / time_opt - 1
+        except ZeroDivisionError as err:
+            raise RuntimeError('time_ori is divided by zero') from err
+        logger.info('\n' + '=' * 100)
+        logger.info(f'{knowledge_name} performance stats:')
+        logger.info(f'Inference time before modification: {time_ori:.2f} ms')
+        logger.info(f'Inference time after modification: {time_opt:.2f} ms')
+        logger.info(f'Inference speed improved: {color_s}{speed_impr * 100:.2f}%{COLOR_END}')
+        logger.info('=' * 100 + '\n')
 
         if speed_impr < cfg.threshold:
             logger.warning(
@@ -170,6 +169,15 @@ class GraphOptimizer:
                     res |= knowledge.apply(graph, match_result)
         return knowledge.post_process(graph) and res
 
+    def load_config(self):
+        pass
+
+    def apply_knowledges(self, graph: BaseGraph) -> Tuple[BaseGraph, List[str]]:
+        '''
+        Optimize graph using optimizer.
+        '''
+        return self._exec_action(graph, GraphOptimizer._optimize)
+
     def _exec_action(
         self,
         graph: BaseGraph,
@@ -188,17 +196,15 @@ class GraphOptimizer:
                 logger.warning(exc)
         return graph, applied_knowledges
 
-    def apply_knowledges(self, graph: BaseGraph) -> Tuple[BaseGraph, List[str]]:
-        '''Optimize graph using optimizer.'''
-        return self._exec_action(graph, GraphOptimizer._optimize)
-
     def apply_knowledges_with_infer_test(
         self,
         graph: BaseGraph,
         cfg: InferTestConfig
     ) -> Tuple[BaseGraph, List[str]]:
-        '''Optimize graph using optimizer, eliminate negative knowledges with
-        inference testing.'''
+        '''
+        Optimize graph using optimizer, eliminate negative knowledges with
+        inference testing.
+        '''
         from auto_optimizer.inference_engine.model_convert import onnx2om
         applied_knowledges = []
         tmp_dir = tempfile.gettempdir()
@@ -215,23 +221,23 @@ class GraphOptimizer:
         )
         om_ori, om_opt = None, None
         for name, knowledge in self.knowledges.items():
-            print(f'Applying {name}...')
+            logger.info(f'Applying {name}...')
             graph_opt = deepcopy(graph)
             knowledge.reset()
             try:
                 if not self._optimize(graph_opt, knowledge):
-                    print(f'No match found for {name}, skipping...\n')
+                    logger.warning(f'No match found for {name}, skipping...\n')
                     continue
                 graph_opt.save(onnx_opt.as_posix())
                 if om_ori is None:
-                    print('Converting origin onnx to om...\n')
+                    logger.info('Converting origin onnx to om...\n')
                     om_ori = onnx_to_om_converter(path_onnx=onnx_ori.as_posix())
-                print(f'Converting onnx optimized with {name} to om...\n')
+                logger.info(f'Converting onnx optimized with {name} to om...\n')
                 om_opt = onnx_to_om_converter(path_onnx=onnx_opt.as_posix())
                 ctx = multiprocessing.get_context('spawn')
                 queue = ctx.Queue()
                 check_precision = name not in NONEQUIVALENT_KNOWLEDGES
-                print('Inferencing origin and optimized om...\n')
+                logger.info('Inferencing origin and optimized om...\n')
                 if cfg.process_run_infer:
                     proc = ctx.Process(
                         target=self._effective,

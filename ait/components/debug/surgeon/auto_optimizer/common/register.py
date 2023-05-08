@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import os
 import importlib
 import logging
 
-from .utils import format_to_module
+from auto_optimizer.common.utils import format_to_module
 
 logging = logging.getLogger("auto-optimizer")
 
@@ -29,9 +29,9 @@ class Register:
         """
         try:
             real_path = os.path.realpath(path_name)
-            self.path_name = real_path
         except Exception as err:
-            raise RuntimeError("Invalid file error={}".format(err))
+            raise RuntimeError("Invalid file error={}".format(err)) from err
+        self.path_name = real_path
 
     @staticmethod
     def _handle_errors(errors):
@@ -40,28 +40,6 @@ class Register:
 
         for name, err in errors:
             raise RuntimeError("Module {} import failed: {}".format(name, err))
-
-    def _add_modules(self, modules: list):
-        pwd_dir = os.getcwd()
-
-        for root, dirs, files in os.walk(self.path_name, topdown=False):
-            modules += [
-                format_to_module(os.path.join(root.split(pwd_dir)[1], file)) for file in files
-            ]
-
-    def import_modules(self):
-        modules = []
-        try:
-            self._add_modules(modules)
-        except Exception as error:
-            logging.error("add_modules failed, {}".format(error))
-            raise RuntimeError("add_modules {} import failed: {}".format(error))
-
-        for module in modules:
-            if not module:
-                continue
-
-            Register.import_module(module)
 
     @staticmethod
     def import_module(module):
@@ -72,3 +50,26 @@ class Register:
             errors.append((module, error))
 
         Register._handle_errors(errors)
+        return
+
+    def import_modules(self):
+        modules = []
+        try:
+            self._add_modules(modules)
+        except Exception as error:
+            logging.error("add_modules failed, {}".format(error))
+            raise RuntimeError("add_modules {} import failed: {}".format(error)) from error
+
+        for module in modules:
+            if not module:
+                continue
+
+            Register.import_module(module)
+
+    def _add_modules(self, modules: list):
+        pwd_dir = os.getcwd()
+
+        for root, _, files in os.walk(self.path_name, topdown=False):
+            modules += [
+                format_to_module(os.path.join(root.split(pwd_dir)[1], file)) for file in files
+            ]

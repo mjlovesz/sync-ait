@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Huawei Device Co., Ltd.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ def print_result(result: Dict[Knowledge, List[str]]):
     logger.info('============= Analysis Result =============')
     logger.info()
     for knowledge, match_infos in result.items():
-        logger.info(f'{knowledge.get_suggestion}')
+        logger.info(f'{knowledge._suggestion}')
         logger.info('查询和匹配到的接口、文件路径和行号如下：')
         for match_info in match_infos:
             logger.info(f'  {match_info}')
