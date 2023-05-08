@@ -139,7 +139,7 @@ def dymshape_range_run(args):
     results = []
     log_path = "./dym.log" if args.output is None else args.output + "/dym.log"
     for dymshape in dymshape_list:
-        if ('ait profile benchmark' in sys.executable):
+        if 'ait profile benchmark' in sys.executable:
             cmd = "rm -rf {};{} {} {}".format(log_path, sys.executable, ' '.join(sys.argv),
                 "--dym-shape={}  | tee {}".format(dymshape,  log_path))
         else:
