@@ -7,7 +7,6 @@
 namespace Base {
 class SessionOptions {
 public:
-
     int log_level = LOG_INFO_LEVEL;
     int loop = 1;
     std::string aclJsonPath = "";

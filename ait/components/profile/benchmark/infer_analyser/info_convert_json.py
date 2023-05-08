@@ -3,14 +3,16 @@ import os
 import sys
 import json
 
+
 def get_times_list(file):
-    l = []
+    time_list = []
     with open(file, 'rb') as f:
         for line in f.readlines():
             s = line[0:-3]
             value = float(s)
-            l.append(value)
-    return l
+            time_list.append(value)
+    return time_list
+
 
 def get_pid(file):
     pid = None
@@ -21,14 +23,15 @@ def get_pid(file):
             pid = int(fd.read())
     return pid
 
+
 if __name__ == '__main__':
     times_file = sys.argv[1]
     pid_file = sys.argv[2]
     out_file = sys.argv[3]
 
     times = get_times_list(times_file)
-    pid = get_pid(pid_file)
-    info = {"pid": pid, "npu_compute_time_list": times}
-    with open(os.path.join(out_file), 'w') as f:
-        json.dump(info, f)
+    t_pid = get_pid(pid_file)
+    info = {"pid": t_pid, "npu_compute_time_list": times}
+    with open(os.path.join(out_file), 'w') as ff:
+        json.dump(info, ff)
 

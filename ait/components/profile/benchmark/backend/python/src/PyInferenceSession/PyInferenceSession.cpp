@@ -91,7 +91,6 @@ void PyInferenceSession::Init(const std::string &modelPath, std::shared_ptr<Sess
         throw std::runtime_error(GetError(ret));
     }
     InitFlag_ = true;
-
 }
 
 std::vector<TensorBase> PyInferenceSession::InferMap(std::vector<std::string>& output_names, std::map<std::string, TensorBase>& feeds)
@@ -146,7 +145,6 @@ uint32_t PyInferenceSession::GetDeviceId() const
 const std::vector<Base::TensorDesc>& PyInferenceSession::GetInputs()
 {
     return modelInfer_.GetInputs();
-
 }
 
 const std::vector<Base::TensorDesc>& PyInferenceSession::GetOutputs()
@@ -426,8 +424,6 @@ TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTe
     }
     dstTensor.ToDevice(deviceId_);
     return dstTensor;
-}
-
 }
 
 std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<Base::SessionOptions> options)
