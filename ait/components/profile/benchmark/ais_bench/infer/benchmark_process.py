@@ -189,7 +189,10 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
 
 
 def msprof_run_profiling(args, msprof_bin):
-    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup_count=0"
+    if ('ait profile benchmark' in sys.executable):
+        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
+    else:
+        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup_count=0"
     msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
         msprof_bin, args.output, cmd)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
