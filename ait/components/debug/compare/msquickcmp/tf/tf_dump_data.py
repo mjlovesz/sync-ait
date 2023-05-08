@@ -15,7 +15,7 @@
 # limitations under the License.
 """
 Function:
-This class is used to generate GUP dump data of the TensorFlow model.
+This class is used to generate GUP dump data of the tensorflow model.
 """
 import os
 import re
@@ -33,7 +33,7 @@ from msquickcmp.common.utils import AccuracyCompareException
 
 class TfDumpData(DumpData):
     """
-    This class is used to generate GUP dump data of the TensorFlow model.
+    This class is used to generate GUP dump data of the tensorflow model.
     """
 
     def __init__(self, arguments):
@@ -232,8 +232,8 @@ class TfDumpData(DumpData):
 
     def generate_dump_data(self):
         """
-        Generate tensorFlow model dump data
-        :return tensorFlow model dump data directory
+        Generate tensorflow model dump data
+        :return tensorflow model dump data directory
         """
         self._load_graph()
         self._create_dir()
