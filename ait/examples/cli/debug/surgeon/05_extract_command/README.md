@@ -5,7 +5,7 @@
 对模型进行子图切分。
 
 ```bash
-python3 -m auto_optimizer extract [OPTIONS] INPUT_MODEL OUTPUT_MODEL START_NODE_NAME END_NODE_NAME
+ait debug surgeon extract [OPTIONS] INPUT_MODEL OUTPUT_MODEL START_NODE_NAME END_NODE_NAME
 ```
 
 extract 可简写为ext
@@ -23,7 +23,7 @@ extract 可简写为ext
 ## 运行示例
 
 ```bash
-python3 -m auto_optimizer extract origin_model.onnx sub_model.onnx node1 node2
+ait debug surgeon extract origin_model.onnx sub_model.onnx node1 node2
 ```
 
 输出示例如下：

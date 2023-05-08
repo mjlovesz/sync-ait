@@ -4,7 +4,7 @@
 搜索可以被指定知识库优化的ONNX模型。
 
 ```bash
-ait debug compare evaluate [OPTIONS] PATH
+ait debug surgeon evaluate [OPTIONS] PATH
 ```
 
 evaluate可简写为eva。
@@ -19,7 +19,7 @@ evaluate可简写为eva。
 ## 运行示例
 
 ```bash
-ait debug compare evaluate aasist_bs1_ori.onnx
+ait debug surgeon evaluate aasist_bs1_ori.onnx
 ```
 
 输出示例如下：
