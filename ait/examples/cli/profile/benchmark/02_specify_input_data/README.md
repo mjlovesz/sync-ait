@@ -12,7 +12,7 @@
     本场景会根据文件输入size和模型实际输入size进行对比，若缺少数据则会自动构造数据补全，称为组Batch。
 
     ```bash
-    ait profile benchmark --model ./resnet50_v1_bs1_fp32.om --input "./1.bin,./2.bin,./3.bin,./4.bin,./5.bin"
+    ait profile benchmark --om-model ./resnet50_v1_bs1_fp32.om --input ./1.bin,./2.bin,./3.bin,./4.bin,./5.bin
     ```
    
 2. 文件夹输入场景。
@@ -22,7 +22,7 @@
     本场景会根据文件输入size和模型实际输入size进行组Batch。
     
     ```bash
-    ait profile benchmark --model ./resnet50_v1_bs1_fp32.om --input "./"
+    ait profile benchmark --om-model ./resnet50_v1_bs1_fp32.om --input ./
     ```
     
     模型输入需要与传入文件夹的个数一致。
@@ -35,5 +35,5 @@
     - 第三个文件夹"./data/SQuAD1.1/segment_ids"，对应第三个输入"segment_ids"的输入
     
     ```bash
-    ait profile benchmark --model ./save/model/BERT_Base_SQuAD_BatchSize_1.om --input ./data/SQuAD1.1/input_ids,./data/SQuAD1.1/input_mask,./data/SQuAD1.1/segment_ids
+    ait profile benchmark --om-model ./save/model/BERT_Base_SQuAD_BatchSize_1.om --input ./data/SQuAD1.1/input_ids,./data/SQuAD1.1/input_mask,./data/SQuAD1.1/segment_ids
     ```
