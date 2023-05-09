@@ -5,7 +5,7 @@
 
 ## 工具安装
 - 工具安装请见 [ait一体化工具使用指南](../../../README.md)
-- 单独安装benchmark工具请见[ais_bench工具使用指南](../../profile/benchmark/README.md)
+  - 单独安装benchmark工具请见[ais_bench工具使用指南](../../../components/profile/benchmark/README.md)
 
 ## 使用方法
 ### 工具介绍
