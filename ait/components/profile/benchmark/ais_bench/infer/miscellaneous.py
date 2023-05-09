@@ -29,7 +29,7 @@ def get_model_name(model):
     return path_list[-1][:-3]
 
 def check_valid_acljson(acl_json_path, model):
-    with open(acl_json_path, 'r') as f:
+    with open(acl_json_path, 'r') as f: 
         acl_json_dict = json.load(f)
     model_name_correct = get_model_name(model)
     if acl_json_dict.get("dump") is not None:
@@ -37,11 +37,7 @@ def check_valid_acljson(acl_json_path, model):
         dump_list_val = acl_json_dict["dump"].get("dump_list")
         if dump_list_val is not None:
             if dump_list_val == [] or dump_list_val[0].get("model_name") != model_name_correct:
-                print("correct is {}".format(model_name_correct))
-                print("incorrect is {}".format(dump_list_val[0].get("model_name")))
-            # model_name_val = acl_json_dict["dump"]["dump_list"][0].get("model_name")
-            # if model_name_val != model_name_correct:
-                logger.warning("dump failed, 'model_name' is not set or set incorrectly")
+                logger.warning("dump failed, 'model_name' is not set or set incorrectly. correct 'model_name' should be {}".foramt(model_name_correct))
         else:
             logger.warning("dump failed, acl.json need to set 'dump_list' attribute")
         
@@ -51,15 +47,15 @@ def check_valid_acljson(acl_json_path, model):
             if os.path.isdir(dump_path_val) and os.access(dump_path_val, os.R_OK) and os.access(dump_path_val, os.W_OK):
                 pass
             else:
-                logger.warning("dump failed, dump_path not exists or has no read/write permission")
+                logger.warning("dump failed, 'dump_path' not exists or has no read/write permission")
         else:
             logger.warning("dump failed, acl.json need to set 'dump_path' attribute")
         dump_op_switch_val = acl_json_dict["dump"].get("dump_op_switch")
         if dump_op_switch_val is not None and dump_op_switch_val not in {"on", "off"}:
-            logger.warning("dump failed, dump_op_switch need to be set as 'on' or 'off'")
+            logger.warning("dump failed, 'dump_op_switch' need to be set as 'on' or 'off'")
         dump_mode_val = acl_json_dict["dump"].get("dump_mode")
         if dump_mode_val is not None and dump_mode_val not in {"input", "output", "all"}:
-            logger.warning("dump failed, dump_mode need to be set as 'input', 'output' or 'all'")
+            logger.warning("dump failed, 'dump_mode' need to be set as 'input', 'output' or 'all'")
     else:
         logger.warning("dump failed, acl.json need to set 'dump' attribute")
     
