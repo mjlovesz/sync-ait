@@ -1,3 +1,16 @@
+# Copyright 2023 Huawei Technologies Co., Ltd
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 """
 Possible methods:
 1. libclang: https://github.com/JonathanPierce/PyTokenize
@@ -425,14 +438,11 @@ def member_ref_expr(c):
     if c0.kind == CursorKind.DECL_REF_EXPR:
         c0.scanned = True
         cls, obj, _, _, _ = decl_ref_expr(c0)  # 对象名的source在声明/实例化对象的地方，不在加速库里
-        print(f"cls 1{cls}")
     else:
         if c0.kind.name not in whole_dict:
             cls, obj, _, _, _ = default(c0)
-            print(f"cls 2{cls}")
         else:
             cls, obj, _, _, _ = whole_dict[c0.kind.name](c0)
-            print(f"cls 3{cls}")
 
     cls = cls.replace('const ', '')  # 去除const
     return type_x, f'{obj}.{api}', f'{cls}.{api}', definition, source
