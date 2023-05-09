@@ -157,7 +157,7 @@ Options:
   --advisor                    <Optional> Enable advisor after compare.
   -dr, --dym-shape-range TEXT  <Optional> Dynamic shape range using in dynamic
                                model, using this means ignore input_shape
-  --dump STR2BOOL              <Optional> Whether to dump all the operations'
+  --dump STR2BOOL              <Optional> Whether to dump all the operations
                                ouput. Default True.
   --convert STR2BOOL           <Optional> Enable npu dump data conversion from
                                bin to npy after compare.
