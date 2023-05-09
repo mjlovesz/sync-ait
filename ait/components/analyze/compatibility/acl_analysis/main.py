@@ -32,7 +32,7 @@ def print_result(result: Dict[Knowledge, List[str]]):
     logger.info('============= Analysis Result =============')
     logger.info()
     for knowledge, match_infos in result.items():
-        logger.info(f'{knowledge._suggestion}')
+        logger.info(f'{knowledge.suggestion}')
         logger.info('查询和匹配到的接口、文件路径和行号如下：')
         for match_info in match_infos:
             logger.info(f'  {match_info}')
