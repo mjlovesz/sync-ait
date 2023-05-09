@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,10 +16,10 @@ import tempfile
 import warnings
 import os
 from typing import List, Dict, Union, Sequence, Optional
+from collections import deque
 
 import onnx
 import numpy as np
-from collections import deque
 from onnx import helper, GraphProto, ModelProto, OperatorSetIdProto, version_converter
 
 from auto_optimizer.graph_refactor import BaseGraph, Initializer, PlaceHolder, Node
@@ -84,7 +84,7 @@ class OnnxGraph(BaseGraph):
             }
 
         inputs = [OnnxPlaceHolder.parse(i) for i in onnx_graph.input]
-        outputs = [OnnxPlaceHolder.parse(o) for o in onnx_graph.output]
+        outputs = [OnnxPlaceHolder.parse(opt) for opt in onnx_graph.output]
         initializers = [OnnxInitializer.parse(i) for i in onnx_graph.initializer]
 
         nodes = []
@@ -173,11 +173,11 @@ class OnnxGraph(BaseGraph):
                     save_as_external_data=True
                     )
                 onnx.shape_inference.infer_shapes_path(
-                    os.path.join(tmpdirname, 'model.onnx'), 
+                    os.path.join(tmpdirname, 'model.onnx'),
                     os.path.join(tmpdirname, 'inferred_model.onnx')
                     )
                 inferred_model = onnx.load(os.path.join(tmpdirname, 'inferred_model.onnx'))
-       
+
        # update value_infos
         graph = inferred_model.graph
         self._value_infos = [OnnxPlaceHolder.parse(v) for v in graph.value_info]
@@ -236,7 +236,8 @@ class OnnxGraph(BaseGraph):
         reachable_nodes = self.get_reachable_nodes(start_node, end_node)
 
         if not reachable_nodes:
-            raise ValueError("The start node {} has no path to reach the end node {}".format(start_node_name, end_node_name))
+            raise ValueError("The start node {} has no path to reach the end node {}" \
+                                .format(start_node_name, end_node_name))
 
         # collect reachable initializers and value_infos
         initializers = []
@@ -284,8 +285,8 @@ class OnnxGraph(BaseGraph):
     def simplify(self, **kwargs) -> 'OnnxGraph':
         try:
             from onnxsim import simplify
-        except ImportError:
-            raise RuntimeError("No module named 'onnxsim'")
+        except ImportError as err:
+            raise RuntimeError("No module named 'onnxsim'") from err
 
         model = self.model()
         model_sim, check = simplify(model, **kwargs)
@@ -296,7 +297,7 @@ class OnnxGraph(BaseGraph):
 
     @property
     def opset_imports(self) -> Optional[Sequence[OperatorSetIdProto]]:
-        return self._meta['opset_imports']
+        return self._meta.get('opset_imports')
 
     @opset_imports.setter
     def opset_imports(self, opset: Union[int, None]) -> None:
