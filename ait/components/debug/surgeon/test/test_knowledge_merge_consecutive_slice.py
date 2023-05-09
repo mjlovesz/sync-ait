@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,8 +27,8 @@ from helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_c2_slice_model(onnx_name, x):
-    X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-    Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+    input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+    input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
     start0 = helper.make_tensor("start0", TensorProto.INT64, [1], np.array([0], dtype=np.int64))
     end0 = helper.make_tensor("end0", TensorProto.INT64, [1], np.array([2], dtype=np.int64))
@@ -44,7 +44,7 @@ def make_c2_slice_model(onnx_name, x):
     node_slice1 = helper.make_node("Slice", ["X_S", "start1", "end1", "axes1", "step1"], ["Z"], "Slice1")
 
     graph = helper.make_graph([node_slice0, node_slice1], "continue_slice_test",
-                              [X], [Z], [start0, end0, axes0, step0, start1, end1, axes1, step1],)
+                              [input_x], [input_z], [start0, end0, axes0, step0, start1, end1, axes1, step1],)
     model = helper.make_model(graph)
 
     del model.opset_import[:]
@@ -55,8 +55,8 @@ def make_c2_slice_model(onnx_name, x):
 
 
 def make_c2_slice_optional_args_model(onnx_name, x):
-    X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-    Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+    input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+    input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
     start0 = helper.make_tensor("start0", TensorProto.INT64, [1], np.array([0], dtype=np.int64))
     end0 = helper.make_tensor("end0", TensorProto.INT64, [1], np.array([2], dtype=np.int64))
@@ -68,7 +68,7 @@ def make_c2_slice_optional_args_model(onnx_name, x):
     node_slice1 = helper.make_node("Slice", ["X_S", "start1", "end1"], ["Z"], "Slice1")
 
     graph = helper.make_graph([node_slice0, node_slice1], "continue_slice_test",
-                              [X], [Z], [start0, end0, start1, end1],)
+                              [input_x], [input_z], [start0, end0, start1, end1],)
     model = helper.make_model(graph)
 
     del model.opset_import[:]
@@ -79,8 +79,8 @@ def make_c2_slice_optional_args_model(onnx_name, x):
 
 
 def make_c2_slice_2dim_1dims_model(onnx_name, x, same_axis=False):
-    X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-    Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+    input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+    input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
     start0 = helper.make_tensor("start0", TensorProto.INT64, [1], np.array([0], dtype=np.int64))
     end0 = helper.make_tensor("end0", TensorProto.INT64, [1], np.array([2], dtype=np.int64))
@@ -100,7 +100,7 @@ def make_c2_slice_2dim_1dims_model(onnx_name, x, same_axis=False):
     node_slice1 = helper.make_node("Slice", ["X_S", "start1", "end1", "axes1", "step1"], ["Z"], "Slice1")
 
     graph = helper.make_graph([node_slice0, node_slice1], "continue_slice_test",
-                              [X], [Z], [start0, end0, axes0, step0, start1, end1, axes1, step1],)
+                              [input_x], [input_z], [start0, end0, axes0, step0, start1, end1, axes1, step1],)
     model = helper.make_model(graph)
 
     del model.opset_import[:]
@@ -111,8 +111,8 @@ def make_c2_slice_2dim_1dims_model(onnx_name, x, same_axis=False):
 
 
 def make_c2_slice_2dim_model(onnx_name, x, same_axis=False):
-    X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-    Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+    input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+    input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
     start0 = helper.make_tensor("start0", TensorProto.INT64, [2], np.array([0, 1], dtype=np.int64))
     end0 = helper.make_tensor("end0", TensorProto.INT64, [2], np.array([2, 4], dtype=np.int64))
@@ -132,7 +132,7 @@ def make_c2_slice_2dim_model(onnx_name, x, same_axis=False):
     node_slice1 = helper.make_node("Slice", ["X_S", "start1", "end1", "axes1", "step1"], ["Z"], "Slice1")
 
     graph = helper.make_graph([node_slice0, node_slice1], "continue_slice_test",
-                              [X], [Z], [start0, end0, axes0, step0, start1, end1, axes1, step1],)
+                              [input_x], [input_z], [start0, end0, axes0, step0, start1, end1, axes1, step1],)
     model = helper.make_model(graph)
 
     del model.opset_import[:]
@@ -143,8 +143,8 @@ def make_c2_slice_2dim_model(onnx_name, x, same_axis=False):
 
 
 def make_c3_slice_model(onnx_name, x):
-    X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-    Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+    input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+    input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
     start0 = helper.make_tensor("start0", TensorProto.INT64, [1], np.array([0], dtype=np.int64))
     end0 = helper.make_tensor("end0", TensorProto.INT64, [1], np.array([2], dtype=np.int64))
@@ -168,8 +168,8 @@ def make_c3_slice_model(onnx_name, x):
     graph = helper.make_graph(
         nodes=[node_slice0, node_slice1, node_slice2],
         name="continue3_slice_test",
-        inputs=[X],
-        outputs=[Z],
+        inputs=[input_x],
+        outputs=[input_z],
         initializer=[start0, end0, axes0, step0, start1, end1, axes1, step1, start2, end2, axes2, step2],
     )
     model = helper.make_model(graph)
@@ -182,8 +182,8 @@ def make_c3_slice_model(onnx_name, x):
 
 
 def make_c4_slice_model(onnx_name, x, same_axis=False):
-    X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-    Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+    input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+    input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
     inits = []
     starts = [0, 1, 0, 5]
@@ -202,7 +202,7 @@ def make_c4_slice_model(onnx_name, x, same_axis=False):
     node_slice3 = helper.make_node("Slice", ["X_S_S_S", "start3", "end3", "axes3", "step3"], ["Z"], "Slice3")
 
     graph = helper.make_graph([node_slice0, node_slice1, node_slice2, node_slice3],
-                              "continue4_slice_test", [X], [Z], inits)
+                              "continue4_slice_test", [input_x], [input_z], inits)
     model = helper.make_model(graph)
 
     del model.opset_import[:]

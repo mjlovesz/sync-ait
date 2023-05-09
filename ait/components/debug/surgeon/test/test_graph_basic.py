@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -80,13 +80,13 @@ def is_graph_equal(g1, g2, msg=None):
     if not is_list_equal(g1.value_infos, g2.value_infos):
         msg = 'graph value_infos are not equal!'
         raise unittest.TestCase.failureException(msg)
-    if not is_map_equal(g1._node_map, g2._node_map):
+    if not is_map_equal(g1.node_map, g2.node_map):
         msg = 'graph node_map are not equal!'
         raise unittest.TestCase.failureException(msg)
-    if not is_map_equal(g1._prev_map, g2._prev_map):
+    if not is_map_equal(g1.prev_map, g2.prev_map):
         msg = 'graph prev_map are not equal!'
         raise unittest.TestCase.failureException(msg)
-    if not is_map_equal(g1._next_map, g2._next_map):
+    if not is_map_equal(g1.next_map, g2.next_map):
         msg = 'graph next_map are not equal!'
         raise unittest.TestCase.failureException(msg)
     return True
@@ -106,7 +106,13 @@ def create_graph():
         attrs={'mode': b'constant'},
         domain=''
     )
-    return OnnxGraph(name='test_graph', nodes=[node_0], inputs=[input_0], outputs=[output_0], initializers=[ini_0, ini_1, ini_2])
+    return OnnxGraph(
+        name='test_graph',
+        nodes=[node_0],
+        inputs=[input_0],
+        outputs=[output_0],
+        initializers=[ini_0, ini_1, ini_2]
+    )
 
 
 def create_graph_1():
@@ -118,7 +124,13 @@ def create_graph_1():
     node_1 = OnnxNode('Node_1', 'Sqrt', inputs=['input_0'], outputs=['1_out_0'], attrs={})
     node_2 = OnnxNode('Node_2', 'Add', inputs=['0_out_0', 'ini_0'], outputs=['2_out_0'], attrs={})
     node_3 = OnnxNode('Node_3', 'Add', inputs=['2_out_0', '1_out_0'], outputs=['3_out_0'], attrs={})
-    return OnnxGraph(name='graph_1', nodes=[node_0, node_1, node_2, node_3], inputs=[input_0], outputs=[output_0, output_1], initializers=[ini_0])
+    return OnnxGraph(
+        name='graph_1',
+        nodes=[node_0, node_1, node_2, node_3],
+        inputs=[input_0],
+        outputs=[output_0, output_1],
+        initializers=[ini_0]
+    )
 
 
 class TestGraphBasic(unittest.TestCase):
@@ -142,11 +154,11 @@ class TestGraphBasic(unittest.TestCase):
             domain=''
         )
 
-        self.assertTrue(is_list_equal(self.graph._nodes, [node_0]))
-        self.assertTrue(is_list_equal(self.graph._inputs, [input_0]))
-        self.assertTrue(is_list_equal(self.graph._outputs, [output_0]))
-        self.assertTrue(is_list_equal(self.graph._initializers, [ini_0, ini_1, ini_2]))
-        self.assertTrue(is_map_equal(self.graph._node_map, {
+        self.assertTrue(is_list_equal(self.graph.nodes, [node_0]))
+        self.assertTrue(is_list_equal(self.graph.inputs, [input_0]))
+        self.assertTrue(is_list_equal(self.graph.outputs, [output_0]))
+        self.assertTrue(is_list_equal(self.graph.initializers, [ini_0, ini_1, ini_2]))
+        self.assertTrue(is_map_equal(self.graph.node_map, {
             'input_0': input_0,
             'output_0': output_0,
             'ini_0': ini_0,
@@ -154,8 +166,8 @@ class TestGraphBasic(unittest.TestCase):
             'const_0': ini_2,
             'Node_0': node_0
         }))
-        self.assertTrue(is_map_equal(self.graph._prev_map, {'output_0': node_0}))
-        self.assertTrue(is_map_equal(self.graph._next_map, {
+        self.assertTrue(is_map_equal(self.graph.prev_map, {'output_0': node_0}))
+        self.assertTrue(is_map_equal(self.graph.next_map, {
             'input_0': [node_0],
             'ini_0': [node_0],
             'ini_1': [node_0],
@@ -202,9 +214,9 @@ class TestGraphBasic(unittest.TestCase):
         os.remove('test.onnx')
 
     def test_toposort(self):
-        random.shuffle(self.graph_1._nodes)
+        random.shuffle(self.graph_1.nodes)
         self.graph_1.toposort()
-        sorted_order = [n.name for n in self.graph_1._nodes]
+        sorted_order = [n.name for n in self.graph_1.nodes]
         possible_orders = [
             ['Node_0', 'Node_1', 'Node_2', 'Node_3'],
             ['Node_1', 'Node_0', 'Node_2', 'Node_3']
@@ -213,7 +225,7 @@ class TestGraphBasic(unittest.TestCase):
 
     def test_toposort_with_cycle(self):
         self.graph_1['Node_2'].inputs[1] = '3_out_0'
-        self.graph_1._next_map['3_out_0'] = self.graph_1['Node_2']
+        self.graph_1.next_map['3_out_0'] = self.graph_1['Node_2']
         with self.assertRaisesRegex(RuntimeError, "Cycle detected in graph!"):
             self.graph_1.toposort()
 

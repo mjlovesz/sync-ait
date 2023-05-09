@@ -112,6 +112,15 @@ class Pattern(object):
     def node_dict(self) -> Dict[str, PatternNode]:
         return self._nodes
 
+    @property
+    def inputs(self):
+        return self._inputs
+
+    @property
+    def outputs(self):
+        return self._inputs
+
+
     def add_node(
         self,
         op_name: str,

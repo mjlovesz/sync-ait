@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,13 +45,13 @@ def make_resize_model(onnx_name, x: np.ndarray, y: np.ndarray, value_type: np.dt
 class TestKnowledgeResizeModeToNearest(unittest.TestCase, KnowledgeTestHelper):
     def test_basic_resize_mode(self):
         for value_type in [np.int64]:
-            X = np.random.randn(10, 10).astype(value_type)
-            Y = np.random.randn(10, 10).astype(value_type)
+            input_x = np.random.randn(10, 10).astype(value_type)
+            input_y = np.random.randn(10, 10).astype(value_type)
 
             onnx_name = 'resize_mode_test'
             onnx_ori = f'onnx/{onnx_name}1.onnx'
             onnx_opt = f'onnx/{onnx_name}_optimize1.onnx'
-            graph = make_resize_model(onnx_name, X, Y, value_type)
+            graph = make_resize_model(onnx_name, input_x, input_y, value_type)
             cfg = OptimizationConfig(
                 graph=graph,
                 knowledge=KnowledgeResizeModeToNearest(),

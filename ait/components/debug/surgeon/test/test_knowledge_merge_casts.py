@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         self.assertTrue(self.check_precision(cfg.onnx_ori, cfg.onnx_opt, feeds))
         graph_opt = OnnxGraph.parse(cfg.onnx_opt)
         next_nodes = graph_opt.get_next_nodes('Add_O')
-        self.assertTrue(len(next_nodes) == 2)
+        self.assertEqual(len(next_nodes), 2)
 
     def test_transfer_cast_to_root(self):
         onnx_name = 'merge_casts_test_transfer_cast_to_root'
@@ -85,11 +85,11 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph_opt = OnnxGraph.parse(cfg.onnx_opt)
 
         next_nodes = graph_opt.get_next_nodes('Add_O1')
-        self.assertTrue(len(next_nodes) == 2)
+        self.assertEqual(len(next_nodes), 2)
         self.assertTrue(all(map(lambda n: n.op_type == 'Cast', next_nodes)))
         next_nodes = graph_opt.get_next_nodes('Cast_O1')
-        self.assertTrue(len(next_nodes) == 1)
-        self.assertTrue(next_nodes[0].op_type == 'Add')
+        self.assertEqual(len(next_nodes), 1)
+        self.assertEqual(next_nodes[0].op_type, 'Add')
 
     def test_remove_parent_cast(self):
         onnx_name = 'merge_casts_test_remove_parent_cast'
@@ -116,8 +116,8 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph_opt = OnnxGraph.parse(cfg.onnx_opt)
 
         next_nodes = graph_opt.get_next_nodes('Add_O1')
-        self.assertTrue(len(next_nodes) == 1)
-        self.assertTrue(next_nodes[0].name == 'Cast2')
+        self.assertEqual(len(next_nodes), 1)
+        self.assertEqual(next_nodes[0].name, 'Cast2')
 
     def test_remove_cast_after_root(self):
         onnx_name = 'merge_casts_test_remove_cast_after_root'
@@ -149,8 +149,8 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph_opt = OnnxGraph.parse(cfg.onnx_opt)
 
         next_nodes = graph_opt.get_next_nodes('Add_O1')
-        self.assertTrue(len(next_nodes) == 2)
-        self.assertTrue({'Cast1', 'Add2'} == set(n.name for n in next_nodes))
+        self.assertEqual(len(next_nodes), 2)
+        self.assertSetEqual({'Cast1', 'Add2'}, set(n.name for n in next_nodes))
 
 
 if __name__ == '__main__':

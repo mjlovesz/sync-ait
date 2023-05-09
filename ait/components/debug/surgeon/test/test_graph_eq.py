@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -91,8 +91,12 @@ class TestGraphEq(unittest.TestCase):
         node7 = OnnxNode(name='n', op_type='Add', inputs=['i0', 'p0'], outputs=['o'], attrs={}, domain='')
         self.assertNotEqual(node0, node7)
 
-        node8 = OnnxNode(name='n', op_type='Split', inputs=['i0'], outputs=['o0', 'o1'], attrs={'axis': 0, 'split': [1, 1]})
-        node9 = OnnxNode(name='n', op_type='Split', inputs=['i0'], outputs=['o1', 'o0'], attrs={'axis': 0, 'split': [1, 1]})
+        node8 = OnnxNode(
+            name='n', op_type='Split', inputs=['i0'], outputs=['o0', 'o1'], attrs={'axis': 0, 'split': [1, 1]}
+        )
+        node9 = OnnxNode(
+            name='n', op_type='Split', inputs=['i0'], outputs=['o1', 'o0'], attrs={'axis': 0, 'split': [1, 1]}
+        )
         self.assertNotEqual(node8, node9)
 
     def test_graph_eq(self):

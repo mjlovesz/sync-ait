@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -108,7 +108,8 @@ class TestKnowledgeBNFolding(unittest.TestCase, KnowledgeTestHelper):
             ('10x12x14_021_t0_e6_c1_f32', True, [10, 12, 14], [0, 2, 1], {'epsilon': 1e-6}, True, np.float32),
             ('2x3x4x5_0132_t0_e4_c1_f32', True, [2, 3, 4, 5], [0, 1, 3, 2], {'epsilon': 1e-4}, True, np.float32),
             ('2x3x4x5_0132_t0_e0_c1_f32', True, [2, 3, 4, 5], [0, 1, 3, 2], {'epsilon': 1.0}, True, np.float32),
-            ('2x3x4x5x6_04231_t0_e2_c1_f32', True, [2, 3, 4, 5, 6], [0, 4, 2, 3, 1], {'epsilon': 1e-2}, True, np.float32),
+            ('2x3x4x5x6_04231_t0_e2_c1_f32', True, [2, 3, 4, 5, 6], [0, 4, 2, 3, 1], {'epsilon': 1e-2},
+             True, np.float32),
 
             # 非常数输入，无法优化
             ('2x3x4_021_t0_e5_c0_f32', False, [2, 3, 4], [0, 2, 1], {}, False, np.float32),

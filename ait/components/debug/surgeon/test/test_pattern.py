@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,20 +26,23 @@ class TestPattern(unittest.TestCase):
         pattern.add_node('Conv_1', ['Conv'], None)
 
         self.assertEqual(len(pattern.node_dict), 2)
-        self.assertTrue(pattern.node_dict.get('Conv_0') is not None)
-        self.assertTrue(pattern.node_dict.get('Conv_1') is not None)
+        self.assertNotEqual(pattern.node_dict.get('Conv_0'), None)
+        self.assertNotEqual(pattern.node_dict.get('Conv_1'), None)
 
     def test_add_node_func_1(self):
         pattern = Pattern()
 
         try:
             pattern.add_node('Conv', ['Conv'], None)
+        except RuntimeError as e:
+            pass
+        try:
             pattern.add_node('Conv', ['Conv'], None)
         except RuntimeError as e:
             pass
 
         self.assertEqual(len(pattern.node_dict), 1)
-        self.assertTrue(pattern.node_dict.get('Conv') is not None)
+        self.assertNotEqual(pattern.node_dict.get('Conv'), None)
 
     def test_node_can_match_more_func(self):
         pattern = Pattern() \
