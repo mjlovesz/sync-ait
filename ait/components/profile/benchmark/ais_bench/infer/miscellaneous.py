@@ -24,13 +24,19 @@ def version_check(args):
         # set old run mode to run ok
         args.run_mode = "tensor"
 
-def check_valid_acljson(acl_json_path):
-    with open(acl_json_path) as f:
-        acl_json_dict = json.load(acl_json_path)
-    
+def check_valid_acljson(acl_json_path, model):
+    with open(acl_json_path, 'r') as f:
+        acl_json_dict = json.load(f)
+    model_name_correct = model[:-3]
     if acl_json_dict.get("dump") is not None:
         # check validity of dump_list (model_name, layer)
-
+        dump_list_val = acl_json_dict["dump"].get("dump_list")
+        if dump_list_val is not None:
+            model_name_val = acl_json_dict["dump"][0].get("model_name")
+            if model_name_val != model_name_correct:
+                logger.warning("dump failed, 'model_name' is not set or set incorrectly")
+        else:
+            logger.warning("dump failed, acl.json need to set 'dump_list' attribute")
         
 
         dump_path_val = acl_json_dict["dump"].get("dump_path")
@@ -40,7 +46,7 @@ def check_valid_acljson(acl_json_path):
             else:
                 logger.warning("dump failed, dump_path not exists or has no read/write permission")
         else:
-            logger.warning("dump failed, acl_json need to set 'dump_path' attribute")
+            logger.warning("dump failed, acl.json need to set 'dump_path' attribute")
         dump_op_switch_val = acl_json_dict["dump"].get("dump_op_switch")
         if dump_op_switch_val is not None and dump_op_switch_val not in {"on", "off"}:
             logger.warning("dump failed, dump_op_switch need to be set as 'on' or 'off'")
@@ -48,7 +54,7 @@ def check_valid_acljson(acl_json_path):
         if dump_mode_val is not None and dump_mode_val not in {"input", "output", "all"}:
             logger.warning("dump failed, dump_mode need to be set as 'input', 'output' or 'all'")
     else:
-        logger.warning("dump failed, acl_json need to set 'dump' attribute")
+        logger.warning("dump failed, acl.json need to set 'dump' attribute")
     
     return
 
@@ -57,7 +63,8 @@ def get_acl_json_path(args):
     get acl json path. when args.profiler is true or args.dump is True, create relative acl.json , default current folder
     """
     if args.acl_json_path is not None:
-        check_valid_acljson(args.acl_json_path)
+
+        check_valid_acljson(args.acl_json_path, args.model)
         return args.acl_json_path
     if not args.profiler and not args.dump:
         return None
