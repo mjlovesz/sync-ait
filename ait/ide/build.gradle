@@ -9,6 +9,7 @@ version = '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+    maven{ url 'https://maven.aliyun.com/repository/public/'}
 }
 intellij {
     version = "2022.3.2"
