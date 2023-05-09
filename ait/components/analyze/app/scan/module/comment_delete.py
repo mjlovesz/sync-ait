@@ -22,29 +22,6 @@ class CommentDelete:
         self.multi_start_flag = False
         self.multi_end_flag = True
 
-    def _multi_comment_pattern(self):
-        pattern = r''
-        if "*" in self.multi_comment[0]:
-            pattern = r'(%s)|(%s)|(%s)' % (
-                self.multi_comment[0].replace('*', r'\*'),
-                self.multi_comment[1].replace('*', r'\*'),
-                self.single_comment)
-        if "#" in self.multi_comment[0]:
-            pattern = r'(%s)|(%s)|(%s)' % (
-                self.multi_comment[0].replace('[', r'\['),
-                self.multi_comment[1].replace(']', r'\]'),
-                self.single_comment)
-        return pattern
-
-    def _single_comment_pattern(self):
-        if self.single_comment == '!':
-            # ' !DEC$ ' 和'!=' 后的内容不为注释，其余场景都是注释
-            return r'(?=\s|'')(%s)(?!=|DEC\$ )' % self.single_comment
-        elif self.single_comment == CommentDelete.SINGLE_COMMENT_f:
-            return r'(?:^)(%s)(?=.*)' % 'C|c|\*'
-
-        return r'(?=\s|'')(%s)' % self.single_comment
-
     def get_pattern(self):
         """
         获取匹配的字符串表达式
@@ -143,3 +120,26 @@ class CommentDelete:
         # 转换为字符串
         exclude_comments = ''.join(self.exclude_comments)
         return exclude_comments
+
+    def _multi_comment_pattern(self):
+        pattern = r''
+        if "*" in self.multi_comment[0]:
+            pattern = r'(%s)|(%s)|(%s)' % (
+                self.multi_comment[0].replace('*', r'\*'),
+                self.multi_comment[1].replace('*', r'\*'),
+                self.single_comment)
+        if "#" in self.multi_comment[0]:
+            pattern = r'(%s)|(%s)|(%s)' % (
+                self.multi_comment[0].replace('[', r'\['),
+                self.multi_comment[1].replace(']', r'\]'),
+                self.single_comment)
+        return pattern
+
+    def _single_comment_pattern(self):
+        if self.single_comment == '!':
+            # ' !DEC$ ' 和'!=' 后的内容不为注释，其余场景都是注释
+            return r'(?=\s|'')(%s)(?!=|DEC\$ )' % self.single_comment
+        elif self.single_comment == CommentDelete.SINGLE_COMMENT_f:
+            return r'(?:^)(%s)(?=.*)' % 'C|c|\*'
+
+        return r'(?=\s|'')(%s)' % self.single_comment

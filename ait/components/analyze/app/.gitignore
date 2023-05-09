@@ -145,4 +145,3 @@ dmypy.json
 
 # Special for current project
 temp/
-*.xlsx

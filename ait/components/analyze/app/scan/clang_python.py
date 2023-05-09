@@ -11,7 +11,8 @@ libclang(mirrored LLVM python bindings): https://readthedocs.org/projects/libcla
 clang(mirrored LLVM python bindings): https://pypi.org/project/clang/
 libclang case: https://eli.thegreenplace.net/2011/07/03/parsing-c-in-python-with-clang/
 
-Note that the library is named libclang, the package clang on PyPi is another package and doesn't bundle the prebuilt shared library.
+Note that the library is named libclang,
+the package clang on PyPi is another package and doesn't bundle the prebuilt shared library.
 """
 
 import os
@@ -19,9 +20,9 @@ import json
 import re
 import time
 import linecache
+from pprint import pprint
 
 from clang.cindex import Index, LinkageKind, CursorKind, TypeKind, TranslationUnit, Config
-from pprint import pprint
 
 from common.kit_config import KitConfig
 from utils.log_util import logger
@@ -42,19 +43,6 @@ def get_diag_info(diag):
             'spelling': diag.spelling,
             'ranges': diag.ranges,
             'fixits': diag.fixits}
-
-
-def get_cursor_id(cursor, cursor_list=[]):
-    if cursor is None:
-        return None
-
-    # FIXME: This is really slow. It would be nice if the index API exposed
-    # something that let us hash cursors.
-    for i, c in enumerate(cursor_list):
-        if cursor == c:
-            return i
-    cursor_list.append(cursor)
-    return len(cursor_list) - 1
 
 
 def cuda_enabled(file, include, namespace=None):
@@ -130,7 +118,7 @@ def add_namespace(cursor, namespaces):
     index = usr.find(cursor.referenced.spelling)
     if index == -1:
         return ''
-    nsc = re.findall('(?:@N@\w+)+', usr[:index])
+    nsc = re.findall('(?:@N@\w+){1,1000}', usr[:index])
     nss = ['::'.join(x[3:].split('@N@')) for x in nsc]
     for namespace in namespaces:
         for ns in reversed(nss):
@@ -258,7 +246,7 @@ capture >> image;
 # # Adaptor class for mixing declarations with statements and expressions.
 # CursorKind.DECL_STMT
 
-def DEFAULT(c):
+def default(c):
     if c.referenced:
         definition = c.referenced.displayname
         source = get_attr(c.referenced, 'location.file.name')
@@ -268,7 +256,7 @@ def DEFAULT(c):
     return c.type.spelling, c.spelling, c.spelling, definition, source
 
 
-def VAR_DECL(c):
+def var_decl(c):
     """变量声明，不包括赋值。
 
     通常TypeKind为：TYPEDEF，RECORD
@@ -289,10 +277,10 @@ def VAR_DECL(c):
                 definition = get_attr(child, 'referenced.displayname')
                 source = get_attr(child, 'referenced.location.file.name')
                 if i + 1 < len(children) and children[i + 1].kind == CursorKind.CALL_EXPR:
-                    definition = CALL_EXPR(children[i + 1])[3]
+                    definition = call_expr(children[i + 1])[3]
                 break
         else:  # 原生类型变量声明 = 加速库调用
-            return DEFAULT(c)
+            return default(c)
     else:  # 原生类型变量声明
         source = get_attr(c, 'location.file.name')
         definition = c.get_definition().displayname
@@ -300,7 +288,7 @@ def VAR_DECL(c):
     return api, f'{c.type.spelling} {c.spelling}', api, definition, source
 
 
-def PARM_DECL(c):
+def parm_decl(c):
     """参数声明，不包括赋值。
 
     extent包含类型和变量名，无需修改。
@@ -318,10 +306,10 @@ def PARM_DECL(c):
                 definition = get_attr(child, 'referenced.displayname')
                 source = get_attr(child, 'referenced.location.file.name')
                 if i + 1 < len(children) and children[i + 1].kind == CursorKind.CALL_EXPR:
-                    definition = CALL_EXPR(children[i + 1])[3]
+                    definition = call_expr(children[i + 1])[3]
                 break
         else:  # 原生类型变量声明 = 加速库调用
-            return DEFAULT(c)
+            return default(c)
     else:  # 原生类型变量声明
         source = get_attr(c, 'location.file.name')
         definition = c.get_definition().displayname
@@ -332,7 +320,7 @@ def PARM_DECL(c):
     return api, f'{c.type.spelling} {c.spelling}', api, definition, source
 
 
-def CALL_EXPR(c):
+def call_expr(c):
     """
     重载运算：operator=, a=b
         1. 对象引用：DECL_REF_EXPR
@@ -375,10 +363,10 @@ def CALL_EXPR(c):
     c.implicit = True
     children = get_children(c)
     if not children:
-        return DEFAULT(c)
+        return default(c)
     c0 = skip_cast(children[0])
     if not c0:
-        return DEFAULT(c)
+        return default(c)
 
     op_overload = 'operator' in c.spelling  # TODO(dyh)：需要判断的更加准确
     for i, child in enumerate(children):
@@ -391,13 +379,13 @@ def CALL_EXPR(c):
             if i > 0:
                 child.scanned = True  # 用于标识是否已被扫描
 
-    type_x, spelling, api, definition, source =  DEFAULT(c)
+    type_x, spelling, api, definition, source =  default(c)
     if op_overload:
         c.implicit = False
         if c0.kind.name in whole_dict:
-            name, _, attr, _, _ = whole_dict[c0.kind.name](c0)
+            name, _, attr, _, _ = whole_dict.get(c0.kind.name)(c0)
         else:
-            name, _, attr, _, _ = DEFAULT(c0)
+            name, _, attr, _, _ = default(c0)
         if c0.kind == CursorKind.MEMBER_REF_EXPR:
             # 运算符重载，且最近子节点为MEMBER_REF_EXPR，则必为属性引用，而非方法引用，否则最近子节点为CALL_EXPR。
             api = f"{attr}{c.spelling[8:]}"  # 例如呈现cv::Mat.size()，实际为cv::MatSize()
@@ -409,7 +397,7 @@ def CALL_EXPR(c):
     return type_x, spelling, api, definition, source
 
 
-def MEMBER_REF_EXPR(c):
+def member_ref_expr(c):
     """
     extent包含对象名、方法名，不包括()、参数，需修改。
 
@@ -430,24 +418,27 @@ def MEMBER_REF_EXPR(c):
         source = None
     children = get_children(c)
     if not children:
-        return DEFAULT(c)
+        return default(c)
     c0 = skip_cast(children[0])
     if not c0:
-        return DEFAULT(c)
+        return default(c)
     if c0.kind == CursorKind.DECL_REF_EXPR:
         c0.scanned = True
-        cls, obj, _, _, _ = DECL_REF_EXPR(c0)  # 对象名的source在声明/实例化对象的地方，不在加速库里
+        cls, obj, _, _, _ = decl_ref_expr(c0)  # 对象名的source在声明/实例化对象的地方，不在加速库里
+        print(f"cls 1{cls}")
     else:
         if c0.kind.name not in whole_dict:
-            cls, obj, _, _, _ = DEFAULT(c0)
+            cls, obj, _, _, _ = default(c0)
+            print(f"cls 2{cls}")
         else:
             cls, obj, _, _, _ = whole_dict[c0.kind.name](c0)
+            print(f"cls 3{cls}")
 
     cls = cls.replace('const ', '')  # 去除const
     return type_x, f'{obj}.{api}', f'{cls}.{api}', definition, source
 
 
-def DECL_REF_EXPR(c):
+def decl_ref_expr(c):
     """
     Returns:
         type_extension, spelling, api, definition, source_location
@@ -458,8 +449,9 @@ def DECL_REF_EXPR(c):
     definition = c.referenced.displayname if c.referenced else None
     if c.type.kind == TypeKind.OVERLOAD:
         children = get_children(c)
-        assert len(children) >= 1, f'DECL_REF_EXPR of Typekind OVERLOAD {c.spelling} {c.location} 应有后继节点：' \
-                                   f'命名空间NAMESPACE_REF（可选） 函数名OVERLOADED_DECL_REF'
+        if len(children) < 1:
+            raise RuntimeError(f'DECL_REF_EXPR of Typekind OVERLOAD {c.spelling} {c.location} 应有后继节点：' \
+                                   f'命名空间NAMESPACE_REF（可选） 函数名OVERLOADED_DECL_REF')
         spelling = get_namespace(children) + children[-1].spelling
         api = spelling
         type_x = get_attr(children[-1], 'referenced.result_type.spelling')  # 函数返回值类型
@@ -475,21 +467,21 @@ def DECL_REF_EXPR(c):
     # 若为对象引用，可从type获取类型归属，ELABORATED/RECORD/CONSTANTARRAY/TYPEDEF/ENUM
     # extent包含对象名，无需修改。
     elif c.type.kind == TypeKind.ENUM:
-        type_x, spelling, api, definition, source = DEFAULT(c)
+        type_x, spelling, api, definition, source = default(c)
         if 'anonymous enum' not in c.type.spelling:
             api = f'{c.type.spelling}.{api}'
         set_attr_children(c, 'scanned', True)
     else:
-        return DEFAULT(c)
+        return default(c)
 
     return type_x, spelling, api, definition, source
 
 
-def OVERLOADED_DECL_REF(c):
-    return DEFAULT(c)
+def overloaded_decl_ref(c):
+    return default(c)
 
 
-def ARRAY_SUBSCRIPT_EXPR(c):
+def array_subscript_expr(c):
     """
     对应TypeKind.CONSTANTARRAY
 
@@ -504,14 +496,14 @@ def ARRAY_SUBSCRIPT_EXPR(c):
     Returns:
         type_extension, spelling, api, definition, source_location
     """
-    return DEFAULT(c)
+    return default(c)
 
 
-def TEMPLATE_REF(c):
-    return DEFAULT(c)
+def template_ref(c):
+    return default(c)
 
 
-def TYPE_REF(c):
+def type_ref(c):
     """
     Args:
         c: cursor.
@@ -524,7 +516,7 @@ def TYPE_REF(c):
     return c.type.spelling, c.spelling, c.type.spelling, definition, source
 
 
-def NAMESPACE_REF(c):
+def namespace_ref(c):
     """
     Args:
         c: cursor.
@@ -535,27 +527,27 @@ def NAMESPACE_REF(c):
     return None, c.spelling, None, None, get_attr(c, 'referenced.location.file.name')
 
 
-def INCLUSION_DIRECTIVE(c):
+def inclusion_directive(c):
     prefix = '' if c.spelling.startswith('/') else '/'
     return None, c.spelling, None, None, prefix + c.spelling  # c.get_included_file().name会遇到Assert错误
 
 
 # 小粒度分析CursorKind
 small_dict = {
-    'MEMBER_REF_EXPR': MEMBER_REF_EXPR, 'DECL_REF_EXPR': DECL_REF_EXPR, 'OVERLOADED_DECL_REF': OVERLOADED_DECL_REF,
-    'TYPE_REF': TYPE_REF, 'TEMPLATE_REF': TEMPLATE_REF, 'NAMESPACE_REF': NAMESPACE_REF,
-    'INCLUSION_DIRECTIVE': INCLUSION_DIRECTIVE,
-    'CALL_EXPR': CALL_EXPR
+    'MEMBER_REF_EXPR': member_ref_expr, 'DECL_REF_EXPR': decl_ref_expr, 'OVERLOADED_DECL_REF': overloaded_decl_ref,
+    'TYPE_REF': type_ref, 'TEMPLATE_REF': template_ref, 'NAMESPACE_REF': namespace_ref,
+    'INCLUSION_DIRECTIVE': inclusion_directive,
+    'CALL_EXPR': call_expr
 }
 
 # 大粒度分析CursorKind
 large_dict = {
-    'VAR_DECL': VAR_DECL, 'PARM_DECL': PARM_DECL,
+    'VAR_DECL': var_decl, 'PARM_DECL': parm_decl,
 }
 
 # 工具性分析CursorKind
 other_dict = {
-    'ARRAY_SUBSCRIPT_EXPR': ARRAY_SUBSCRIPT_EXPR
+    'ARRAY_SUBSCRIPT_EXPR': array_subscript_expr
 }
 
 whole_dict = {**small_dict, **large_dict, **other_dict}
@@ -569,9 +561,9 @@ if KitConfig.level == 'large':
 
 def matcher(c):
     if c.kind.name in whole_dict:
-        return whole_dict[c.kind.name](c)
+        return whole_dict.get(c.kind.name)(c)
     else:
-        return DEFAULT(c)
+        return default(c)
 
 
 def filter_acc(cursor):
@@ -667,35 +659,19 @@ def get_info(node, cwd=None):
     info = {
         'kind': node.kind.name,
         'type_kind': node.type.kind.name,
-        # 'usr': node.get_usr(),
         'displayname': node.displayname,
         'spelling': node.spelling,
         'type': node.type.spelling,
         'hash': node.hash,
         'args': args,
-        # 'api': api,
-        # 'type_x': type_x,
         'location': location,
-        # 'source': source,
         'ref_def': get_ref_def(node),
-        # 'definition': definition,
         'children': children
     }
 
     if hit:
         loc = f"{get_attr(node, 'extent.start.file.name')}, {get_attr(node, 'extent.start.line')}:" \
               f"{get_attr(node, 'extent.start.column')}"
-        # args = dict()
-        # for x in node.get_arguments():
-        #     start = get_attr(x, 'referenced.extent.start.offset')
-        #     end = get_attr(x, 'referenced.extent.end.offset')
-        #     x = skip_cast(x)
-        #     name = x.spelling or read_code(x.translation_unit.spelling, start, end)
-        #     if is_usr_code(get_attr(x, 'referenced.location.file.name')):
-        #         line = get_attr(x, 'referenced.location.line')
-        #         args[name] = linecache.getline(x.translation_unit.spelling, line)
-        #     else:
-        #         args[name] = x.spelling
         item = {
             'api': api,
             'cuda_en': cuda_en,
@@ -711,7 +687,7 @@ class Parser:
     def __init__(self, path):
         logger.info(f'Scanning file: {path}')
         self.index = Index.create()  # TODO(dyh):若为单例模型，是否有加速作用
-        # args=['-Xclang', '-ast-dump', '-fsyntax-only', '-std=c++17', "-I/path/to/include"]
+        # args: ['-Xclang', '-ast-dump', '-fsyntax-only', '-std=c++17', "-I/path/to/include"]
         # TranslationUnit.PARSE_PRECOMPILED_PREAMBLE, TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
         self.tu = self.index.parse(path,
                                    args=[f'-I{KitConfig.opencv_include_path}'],
