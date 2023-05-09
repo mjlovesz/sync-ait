@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Copyright 2022 Huawei Technologies Co., Ltd. All rights reserved.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -179,7 +179,7 @@ class TestClass():
         ret = os.system(cmd)
         assert ret == 0
 
-        with open(summary_json_path,'r',encoding='utf8') as fp:
+        with open(summary_json_path, 'r', encoding='utf8') as fp:
             json_data = json.load(fp)
             ais_bench_inference_time_ms = json_data["NPU_compute_time"]["mean"]
         assert math.fabs(ais_bench_inference_time_ms) > TestCommonClass.EPSILON

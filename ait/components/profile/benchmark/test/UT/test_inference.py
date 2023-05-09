@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd. All rights reserved.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -28,10 +28,6 @@ class TestClass:
     def __init__(self, model_name = "no model"):
         self.model_name = model_name
 
-    @staticmethod
-    def init(self):
-        self.model_name = "resnet50"
-
     @classmethod
     def setup_class(cls):
         """
@@ -42,6 +38,9 @@ class TestClass:
     @classmethod
     def teardown_class(cls):
         logger.info('\n ---class level teardown_class')
+
+    def init(self):
+        self.model_name = "resnet50"
 
     def get_input_tensor_name(self):
         return "actual_input_1"
