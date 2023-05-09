@@ -13,6 +13,18 @@ class CxxScanner(Scanner):
     def __init__(self, files):
         super().__init__(files)
 
+    @staticmethod
+    def eval_thread(files, rp_idx, tid):
+        result = {}
+        for idx in range(rp_idx[tid], rp_idx[tid + 1]):
+            cxx_f = files[idx]
+
+            p = Parser(cxx_f)
+            rst_vals = p.parse(log=KitConfig.print_detail)
+
+            result[cxx_f] = pd.DataFrame.from_dict(rst_vals)
+        return result
+
     def do_scan(self):
         start_time = time.time()
         result = self.exec_without_threads()
@@ -44,16 +56,4 @@ class CxxScanner(Scanner):
             obj_apis = thread.get_result()
             result.update(obj_apis)
 
-        return result
-
-    @staticmethod
-    def eval_thread(files, rp_idx, tid):
-        result = {}
-        for idx in range(rp_idx[tid], rp_idx[tid + 1]):
-            cxx_f = files[idx]
-
-            p = Parser(cxx_f)
-            rst_vals = p.parse(log=KitConfig.print_detail)
-
-            result[cxx_f] = pd.DataFrame.from_dict(rst_vals)
         return result

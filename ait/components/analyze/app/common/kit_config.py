@@ -37,6 +37,14 @@ class InputType(Enum):
 
 
 class KitConfig:
+    MACRO_PATTERN = re.compile(r'(OpenCV|CUDA|NVJPEG|DALI|CVCUDA)')
+    LIBRARY_PATTERN = re.compile(
+        r'nvjpeg_static|nvjpeg2k_static|avdevice|avfilter|avformat|avcodec|swresample|swscale|avutil|postproc|'
+        r'libnvjpeg_static|libnvjpeg2k_static|libavdevice|libavfilter|libavformat|libavcodec|libswresample|libswscale|'
+        r'libavutil|libpostproc|libnvcuvid|libnvidia-encode|libcvcuda|libnvcv_types|libnvcv_types')
+    FILE_PATTERN = re.compile(r'opencv.hpp|opencv2')
+    UNKNOWN_PATTERN = re.compile(r'opencv|cuda|dali|nvjpeg|ffmpeg')
+
     thread_num = 3
 
     arch = platform.machine()
@@ -90,14 +98,6 @@ class KitConfig:
     }
     level = 'small'  # 'large'
     print_detail = False
-
-    MACRO_PATTERN = re.compile(r'(OpenCV|CUDA|NVJPEG|DALI|CVCUDA)')
-    LIBRARY_PATTERN = re.compile(
-        r'nvjpeg_static|nvjpeg2k_static|avdevice|avfilter|avformat|avcodec|swresample|swscale|avutil|postproc|'
-        r'libnvjpeg_static|libnvjpeg2k_static|libavdevice|libavfilter|libavformat|libavcodec|libswresample|libswscale|'
-        r'libavutil|libpostproc|libnvcuvid|libnvidia-encode|libcvcuda|libnvcv_types|libnvcv_types')
-    FILE_PATTERN = re.compile(r'opencv.hpp|opencv2')
-    UNKNOWN_PATTERN = re.compile(r'opencv|cuda|dali|nvjpeg|ffmpeg')
 
 
 @unique
