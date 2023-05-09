@@ -152,8 +152,9 @@ def get_args():
         default=None,
         help="dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\""
     )
-    parser.add_argument(
+    parser.add_argument(        
         "--dymShape",
+        "--dym-shape",
         dest="dym_shape",
         type=str,
         default=None,
@@ -230,6 +231,7 @@ def get_args():
     )
     parser.add_argument(
         "--warmup_count",
+        "--warmup-count",
         type=check_nonnegative_integer,
         default=1,
         help="warmup count before inference"
