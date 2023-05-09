@@ -11,7 +11,7 @@ surgeon主要通过graph_optimizer、graph_refactor接口提供ONNX模型自动�
 
 接口详细介绍请参见如下手册：
 
-- [x]  graph_optimizer：基于知识库的自动改图优化。同时支持自定义知识库，详细接口请参考[knowledge](../../../components/debug/surgeon/docs/docs/knowledge_optimizer/knowledge_optimizer_framework.md)
+- [x]  graph_optimizer：基于知识库的自动改图优化。同时支持自定义知识库，详细接口请参考[knowledge](../../../components/debug/surgeon/docs/knowledge_optimizer/knowledge_optimizer_framework.md)
 - [x]  graph_refactor：改图API。[graph_refactor](../../../components/debug/surgeon/auto_optimizer/graph_refactor/README.md)
 
 ## 工具安装
