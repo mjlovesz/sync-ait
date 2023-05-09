@@ -178,7 +178,7 @@ def dymshape_range_run(args):
     log_path = "./dym.log" if args.output is None else args.output + "/dym.log"
     for dymshape in dymshape_list:
         cmd = "rm -rf {};{} {} {}".format(log_path, sys.executable, ' '.join(sys.argv),
-            "--dymShape={}  | tee {}".format(dymshape,  log_path))
+            "--dym-shape={}  | tee {}".format(dymshape,  log_path))
         result = { "dymshape" : dymshape, "cmd": cmd, "result": "Failed", "throughput" : 0 }
         logger.debug("cmd:{}".format(cmd))
         os.system(cmd)
