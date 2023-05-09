@@ -31,14 +31,10 @@ logger = logging.getLogger(__name__)
 
 
 class TestClass():
-    def __init__(self, model_name = "no model", model_base_path = "no model path", output_file_num = -1):
+    def __init__(self, model_name = "yolov3", model_base_path = "no model path", output_file_num = -1):
         self.model_name = model_name
         self.model_base_path = model_base_path
         self.output_file_num = output_file_num
-
-    @staticmethod
-    def get_model_name(self):
-        return "yolov3"
     
     @classmethod
     def setup_class(cls):
@@ -52,7 +48,6 @@ class TestClass():
         logger.info('\n ---class level teardown_class')
 
     def init(self):
-        self.model_name = self.get_model_name(self)
         self.model_base_path = self.get_model_base_path(self)
         self.output_file_num = 5
 
@@ -236,7 +231,8 @@ class TestClass():
         # compare
         allowable_performance_deviation = 0.01
         try:
-            actual_performance_deviation = math.fabs(msame_inference_time_ms - ais_bench_inference_time_ms)/msame_inference_time_ms
+            actual_performance_deviation = math.fabs(msame_inference_time_ms - \
+                                                     ais_bench_inference_time_ms)/msame_inference_time_ms
         except ZeroDivisionError:
             logger.error("zero division!")
         assert actual_performance_deviation < allowable_performance_deviation

@@ -212,7 +212,8 @@ class TestClass():
         # compare
         allowable_performance_deviation = 0.01
         try:
-            actual_performance_deviation = math.fabs(msame_inference_time_ms - ais_bench_inference_time_ms)/msame_inference_time_ms
+            actual_performance_deviation = math.fabs(msame_inference_time_ms - \
+                                                     ais_bench_inference_time_ms)/msame_inference_time_ms
         except ZeroDivisionError:
             logger.error("zero division!")
         assert actual_performance_deviation < allowable_performance_deviation
