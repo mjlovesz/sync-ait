@@ -34,7 +34,7 @@ def check_valid_acljson(acl_json_path, model):
         if dump_list_val is not None:
             if dump_list_val == [] or dump_list_val[0].get("model_name") != model_name_correct:
                 print("correct is {}".format(model_name_correct))
-                print("incorrect is {}"/format(dump_list_val[0].get("model_name")))
+                print("incorrect is {}".format(dump_list_val[0].get("model_name")))
             # model_name_val = acl_json_dict["dump"]["dump_list"][0].get("model_name")
             # if model_name_val != model_name_correct:
                 logger.warning("dump failed, 'model_name' is not set or set incorrectly")
