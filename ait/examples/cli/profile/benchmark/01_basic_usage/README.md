@@ -9,14 +9,14 @@ benchmark推理工具可以通过ait命令行方式启动模型测试。
 1. 纯推理场景。默认情况下，构造全为0的数据送入模型推理，输出信息仅打屏显示。
 
     ```bash
-    ait profile benchmark --model *.om
+    ait profile benchmark --om-model *.om
     ```
     其中，*为OM离线模型文件名。
 
 2. 调试模式。开启debug调试模式。
 
     ```bash
-    ait profile benchmark --model /home/model/resnet50_v1.om --output ./ --debug 1
+    ait profile benchmark --om-model /home/model/resnet50_v1.om --output ./ --debug 1
     ```
    
     调试模式开启后会增加更多的打印信息，包括：

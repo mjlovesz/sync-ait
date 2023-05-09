@@ -3,11 +3,11 @@
 
 ## 介绍
 
-profiler，采集性能数据；dump，保存全部算子输出。支持以--acl_json_path、--profiler、--dump参数形式实现。
+profiler，采集性能数据；dump，保存全部算子输出。支持以--acl-json-path、--profiler、--dump参数形式实现。
 
 ## 运行示例
 
-+ acl_json_path参数指定acl.json文件，可以在该文件中对应的profiler或dump参数。示例代码如下：
++ acl-json-path参数指定acl.json文件，可以在该文件中对应的profiler或dump参数。示例代码如下：
 
   + profiler
 
@@ -44,7 +44,7 @@ profiler，采集性能数据；dump，保存全部算子输出。支持以--acl
 
   + profiler为固化到程序中的一组性能数据采集配置，生成的性能数据保存在--output参数指定的目录下的profiler文件夹内。
 
-    该参数是通过调用ait/profiler/benchmark/infer/__main__.py中的msprof_run_profiling函数来拉起msprof命令进行性能数据采集的。若需要修改性能数据采集参数，可根据实际情况修改msprof_run_profiling函数中的msprof_cmd参数。示例如下：
+    该参数是通过调用ait/profiler/benchmark/infer/benchmark_process.py中的msprof_run_profiling函数来拉起msprof命令进行性能数据采集的。若需要修改性能数据采集参数，可根据实际情况修改msprof_run_profiling函数中的msprof_cmd参数。示例如下：
 
     ```bash
     msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
@@ -61,7 +61,7 @@ profiler，采集性能数据；dump，保存全部算子输出。支持以--acl
 
     更多性能数据采集参数介绍请参见《[CANN 开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/auxiliarydevtool_0002.html)》中的“性能分析工具>高级功能>性能数据采集（msprof命令行方式）”章节。
 
-  + acl_json_path优先级高于profiler和dump，同时设置时以acl_json_path为准。
+  + acl-json-path优先级高于profiler和dump，同时设置时以acl-json-path为准。
 
   + profiler参数和dump参数，必须要增加output参数，指示输出路径。
 
@@ -70,7 +70,7 @@ profiler，采集性能数据；dump，保存全部算子输出。支持以--acl
   示例命令如下：
   
   ```bash
-  ait profile benchmark --model ./resnet50_v1_bs1_fp32.om --acl_json_path ./acl.json
-  ait profile benchmark --model /home/model/resnet50_v1.om --output ./ --dump 1
-  ait profile benchmark --model /home/model/resnet50_v1.om --output ./ --profiler 1
+  ait profile benchmark --om-model ./resnet50_v1_bs1_fp32.om --acl-json-path ./acl.json
+  ait profile benchmark --om-model /home/model/resnet50_v1.om --output ./ --dump 1
+  ait profile benchmark --om-model /home/model/resnet50_v1.om --output ./ --profiler 1
   ```
