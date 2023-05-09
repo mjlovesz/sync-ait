@@ -5,12 +5,12 @@
 
 ## 工具安装
 - 工具安装请见 [ait一体化工具使用指南](../../../README.md)
-  - 单独安装benchmark工具请见[ais_bench工具使用指南](../../../components/profile/benchmark/README.md)
+- 单独安装benchmark工具请见[ais_bench工具使用指南](../../../components/profile/benchmark/README.md)
 
 ## 使用方法
 ### 工具介绍
 #### 使用入口
-benchmark推理工具可以直接通过amit命令行形式启动模型测试。启动方式如下：
+benchmark推理工具可以直接通过ait命令行形式启动模型测试。启动方式如下：
 ```bash
 ait profile benchmark --om-model *.om
 ```
