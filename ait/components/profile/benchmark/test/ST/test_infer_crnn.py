@@ -30,7 +30,7 @@ logger = logging.getLogger(__name__)
 
 
 class TestClass():
-    def __init__(self, model_name = "no model", model_base_path = "no model path", output_file_num = -1):
+    def __init__(self, model_name = "crnn", model_base_path = "no model path", output_file_num = -1):
         self.model_name = model_name
         self.model_base_path = model_base_path
         self.output_file_num = output_file_num
@@ -47,13 +47,8 @@ class TestClass():
         logger.info('\n ---class level teardown_class')
 
     def init(self):
-        self.model_name = self.get_model_name(self)
         self.model_base_path = self.get_model_base_path(self)
         self.output_file_num = 5
-
-    @staticmethod
-    def get_model_name(self):
-        return "crnn"
 
     def get_model_base_path(self):
         """

@@ -33,42 +33,10 @@ logger = logging.getLogger(__name__)
 
 
 class TestClass():
-    def __init__(self, model_name = "no model", model_base_path = "no model path", output_file_num = -1):
+    def __init__(self, model_name = "resnet50", model_base_path = "no model path", output_file_num = -1):
         self.model_name = model_name
         self.model_base_path = model_base_path
         self.output_file_num = output_file_num
- 
-
-    @classmethod
-    def setup_class(cls):
-        """
-        class level setup_class
-        """
-        cls.init(TestClass)
-
-    @classmethod
-    def teardown_class(cls):
-        logger.info('\n ---class level teardown_class')
-
-    def init(self):
-        self.model_name = self.get_model_name(self)
-        self.model_base_path = self.get_model_base_path(self)
-        self.output_file_num = 5
-
-    @staticmethod
-    def get_model_name(self):
-        return "resnet50"
-
-    def get_model_base_path(self):
-        """
-        supported model names as resnet50, resnet101,...。folder struct as follows
-        testdata
-         └── resnet50   # model base
-            ├── input
-            ├── model
-            └── output
-        """
-        return os.path.join(TestCommonClass.base_path, self.model_name)
 
     @staticmethod
     def get_dynamic_batch_om_path(self):
@@ -85,6 +53,32 @@ class TestClass():
     @staticmethod
     def get_dynamic_shape_om_path(self):
         return os.path.join(self.model_base_path, "model", "pth_resnet50_dymshape.om")
+
+    @classmethod
+    def setup_class(cls):
+        """
+        class level setup_class
+        """
+        cls.init(TestClass)
+
+    @classmethod
+    def teardown_class(cls):
+        logger.info('\n ---class level teardown_class')
+
+    def init(self):
+        self.model_base_path = self.get_model_base_path(self)
+        self.output_file_num = 5
+
+    def get_model_base_path(self):
+        """
+        supported model names as resnet50, resnet101,...。folder struct as follows
+        testdata
+         └── resnet50   # model base
+            ├── input
+            ├── model
+            └── output
+        """
+        return os.path.join(TestCommonClass.base_path, self.model_name)
 
     def create_npy_files_in_auto_set_dymshape_mode_input(self, dirname, shapes):
         if os.path.exists(dirname):
