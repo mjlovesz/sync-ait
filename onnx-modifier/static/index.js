@@ -31,6 +31,7 @@ host.BrowserHost = class {
         // this._environment.set('zoom', 'drag');
         this._ori_model_file = null
         this._activate_model_file = null
+        this._modify_info = []
         window._host = this
     }
 
@@ -177,6 +178,26 @@ host.BrowserHost = class {
             accelerator: 'CmdOrCtrl+Alt+E',
             click: () => this._view.export(document.title + '.svg')
         });
+        this._menu.add({});
+        this._menu.add({
+            label: 'Export Modify Info',
+            accelerator: 'CmdOrCtrl+Shift+M',
+            click: () => {
+                let export_name = "modify_info.json"
+                if (this._ori_model_file) {
+                    export_name = `${this._ori_model_file.name}.${export_name}`
+                }
+                let modify_info = [...this._modify_info, { path: "/download", data_body: this.build_download_data(true) }]
+                this.export(export_name, new Blob([JSON.stringify(modify_info)], { type: 'text/plain' }))
+            }
+        });
+        this._menu.add({
+            label: 'Import Modify Info',
+            accelerator: 'CmdOrCtrl+Alt+I',
+            click: () => {
+                this.document.getElementById('open-modify-json-dialog').click();
+            }
+        });
         this.document.getElementById('menu-button').addEventListener('click', (e) => {
             this._menu.toggle();
             e.preventDefault();
@@ -192,6 +213,24 @@ host.BrowserHost = class {
         //     this._view._updateGraph();
         // })
 
+
+        const openJsonFileDialog = this.document.getElementById('open-modify-json-dialog');
+
+        openJsonFileDialog.addEventListener('change', (e) => {
+            if (e.target && e.target.files && e.target.files.length > 0) {
+                const files = Array.from(e.target.files);
+                const file = files[0];
+                let reader = new FileReader()
+                reader.onload = async () => {
+                    let json_modify_info = JSON.parse(reader.result)
+
+                    this.take_effect_modify("/load-json", json_modify_info)
+                }
+                reader.readAsText(file)
+                openJsonFileDialog.value = null
+            }
+        });
+
         const resetButton = this.document.getElementById('reset-graph');
         resetButton.addEventListener('click', () => {
             // this._view._graph.resetGraph();
@@ -201,6 +240,7 @@ host.BrowserHost = class {
             } else {
                 this._view.modifier.resetGraph();
             }
+            this._modify_info = []
         })
 
         const downloadWithShapeInfCheckBox = this.document.getElementById('shapeInference');
@@ -270,7 +310,7 @@ host.BrowserHost = class {
                 },
                 // Specify the method
                 method: 'POST',
-                body: this.build_download_data(),
+                body: JSON.stringify(this.build_download_data()),
             }).then(function (response) {
                 return response.text();
             }).then(function (text) {
@@ -291,67 +331,12 @@ host.BrowserHost = class {
 
         const onnxSimButton = this.document.getElementById('onnxsim-graph');
         onnxSimButton.addEventListener('click', () => {
-
-            // // https://healeycodes.com/talking-between-languages
-            fetch('/onnxsim', {
-                // Declare what type of data we're sending
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                // Specify the method
-                method: 'POST',
-                body: this.build_download_data(),
-            }).then(function (response) {
-                if (response.ok) {
-                    return response.blob();
-                } else if (response.status == 599) {
-                    swal("Error happens!", "请确认是否安装 onnxsim", "error");
-                } else {
-                    swal("Error happens!", "You are kindly to check the log and create an issue on https://gitee.com/ascend/amit", "error");
-                }
-            }).then((blob) => {
-                if (!blob) {
-                    return
-                }
-
-                let file = new File([blob], this.upload_filename);
-                file.filepath = this.upload_filepath
-                this.openFile(file)
-
-            });
+            this.take_effect_modify("/onnxsim", this.build_download_data(true))
         });
 
         const onnxOptimizer = this.document.getElementById('auto-optimizer-graph');
         onnxOptimizer.addEventListener('click', () => {
-
-            // console.log(this._view._graph._addedNode)
-            // console.log(this._view._graph._renameMap)
-            // // https://healeycodes.com/talking-between-languages
-            fetch('/auto-optimizer', {
-                // Declare what type of data we're sending
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                // Specify the method
-                method: 'POST',
-                body: this.build_download_data(),
-            }).then(function (response) {
-                if (response.status == 204) {
-                    swal("Nothing happens!", "auto-optimizer 没有匹配到的知识库", "info");
-                } else if (response.ok) {
-                    return response.blob();
-                } else {
-                    swal("Error happens!", "You are kindly to check the log and create an issue on https://gitee.com/ascend/amit", "error");
-                }
-            }).then((blob) => {
-                if (!blob) {
-                    return
-                }
-
-                let file = new File([blob], this.upload_filename);
-                file.filepath = this.upload_filepath
-                this.openFile(file)
-            });
+            this.take_effect_modify("/auto-optimizer", this.build_download_data(true))
         });
 
         const addNodeButton = this.document.getElementById('add-node');
@@ -476,6 +461,44 @@ host.BrowserHost = class {
         this._view.show('welcome');
     }
 
+    take_effect_modify(path, data_body) {
+        // // https://healeycodes.com/talking-between-languages
+        return fetch(path, {
+            // Declare what type of data we're sending
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            // Specify the method
+            method: 'POST',
+            body: typeof (data_body) == "string" ? data_body : JSON.stringify(data_body),
+        }).then((response) => {
+            if (response.status == 204) {
+                response.text().then(text => {
+                    swal("Nothing happens!", text, "info");
+                })
+            } else if (response.ok) {
+                this._modify_info.push({
+                    path, data_body
+                })
+                return response.blob();
+            } else if (response.status == 599) {
+                response.text().then(text => {
+                    swal("Error happens!", text, "error");
+                })
+            } else {
+                swal("Error happens!", "You are kindly to check the log and create an issue on https://gitee.com/ascend/amit", "error");
+            }
+        }).then((blob) => {
+            if (!blob) {
+                return
+            }
+
+            let file = new File([blob], this.upload_filename);
+            file.filepath = this.upload_filepath
+            return this.openFile(file)
+        });
+    }
+
     openFile(file) {
         let files = [file]
 
@@ -494,13 +517,13 @@ host.BrowserHost = class {
             console.log(text);
         });
         if (file) {
-            this._open(file, files);
+            this._activate_model_file = file
+            return this._open(file, files);
         }
-        this._activate_model_file = file
     }
 
-    build_download_data() {
-        return JSON.stringify({
+    build_download_data(return_modified_file) {
+        return {
             'node_states': this.mapToObjectRec(this._view.modifier.name2NodeStates),
             'node_renamed_io': this.mapToObjectRec(this._view.modifier.renameMap),
             'node_changed_attr': this.mapToObjectRec(this._view.modifier.changedAttributes),
@@ -515,7 +538,8 @@ host.BrowserHost = class {
             'postprocess_args': { 'shapeInf': this._view.modifier.downloadWithShapeInf, 'cleanUp': this._view.modifier.downloadWithCleanUp },
             "model_properties": this.mapToObjectRec(this._view.modifier.modelProperties),
             'input_size_info': this.mapToObjectRec(this._view.modifier.inputSizeInfo),
-        })
+            'return_modified_file': Boolean(return_modified_file)
+        }
     }
 
     environment(name) {

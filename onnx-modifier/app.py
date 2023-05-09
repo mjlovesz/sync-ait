@@ -21,6 +21,89 @@ import onnx
 from onnx_modifier import OnnxModifier
 from rpc import rpc_run
 
+
+class ServerError(Exception):
+    def __init__(self, msg, status) -> None:
+        self._status = status
+        self._msg = msg
+    
+    @property
+    def status(self):
+        return self._status
+    @property
+    def msg(self):
+        return self._msg
+
+
+def modify_model(modify_info):
+    OnnxModifier.ONNX_MODIFIER.modify(modify_info)
+    return OnnxModifier.ONNX_MODIFIER.check_and_save_model()
+
+
+def onnxsim_model(modify_info):
+    try:
+        from onnxsim import simplify
+    except ImportError as ex:
+        raise ServerError("请安装 onnxsim", 599)
+        
+    save_path = modify_model(modify_info)
+
+    # convert model
+    model_simp, check = simplify(OnnxModifier.ONNX_MODIFIER.model_proto)
+    onnx.save(model_simp, save_path)
+    return save_path
+
+
+def optimizer_model(modify_info):
+    try:
+        import auto_optimizer
+    except ImportError as ex:
+        raise ServerError( "请安装 auto-optimizer", 599)
+    
+    import subprocess
+    OnnxModifier.ONNX_MODIFIER.modify(modify_info)
+    save_path = OnnxModifier.ONNX_MODIFIER.check_and_save_model(save_dir="modified_onnx")
+
+    # convert model
+    optimized_path = f"{save_path}.opti.onnx"
+    python_path = sys.executable
+    cmd = [
+        python_path,
+        "-m",
+        "auto_optimizer",
+        "optimize",
+        save_path,
+        optimized_path,
+    ]
+    out_res = subprocess.call(cmd, shell=False)
+    if  out_res != 0:
+        raise RuntimeError("auto_optimizer run error: " + out_res + " cmd: " + "".join(cmd))
+    return optimized_path
+
+def json_modify_model(modify_infos):
+    model_name = OnnxModifier.ONNX_MODIFIER.model_name
+    for modify_info in modify_infos:
+        path = modify_info.get("path")
+        modify_info = modify_info.get("data_body")
+        if path == "/download":
+            save_path = modify_model(modify_info)
+        elif path == '/onnxsim':
+            save_path = onnxsim_model(modify_info)
+            if os.path.exists(save_path):
+                OnnxModifier.from_model_path(save_path, model_name)
+        elif path == '/auto-optimizer':
+            optimized_path = optimizer_model(modify_info)
+            if os.path.exists(optimized_path):
+                OnnxModifier.from_model_path(optimized_path, model_name)
+                save_path = optimized_path
+        elif path == '/load-json':
+            save_path = json_modify_model(modify_info)
+        else:
+            raise ServerError(500, "unknown path")
+    
+    return save_path
+    
+
 def register_interface(app, render_template, request, send_file):
     @app.route('/')
     def index():
@@ -44,62 +127,59 @@ def register_interface(app, render_template, request, send_file):
         modify_info = request.get_json()
         
         OnnxModifier.ONNX_MODIFIER.reload()   # allow downloading for multiple times
-        OnnxModifier.ONNX_MODIFIER.modify(modify_info)
-        OnnxModifier.ONNX_MODIFIER.check_and_save_model()
-
-        return 'OK', 200
+        save_path = modify_model(modify_info)
+        if isinstance(save_path, tuple):
+            return save_path
+        if modify_info.get("return_modified_file"):
+            return send_file(save_path)
+        else:
+            return 'OK', 200
 
 
     @app.route('/onnxsim', methods=['POST'])
     def modify_and_onnxsim_model():
-        try:
-            from onnxsim import simplify
-        except ImportError as ex:
-            return "请安装 onnxsim", 599
         modify_info = request.get_json()
         
         OnnxModifier.ONNX_MODIFIER.reload()   # allow downloading for multiple times
-        OnnxModifier.ONNX_MODIFIER.modify(modify_info)
-        save_path = OnnxModifier.ONNX_MODIFIER.check_and_save_model(save_dir="modified_onnx")
-
-        # convert model
-        model_simp, check = simplify(OnnxModifier.ONNX_MODIFIER.model_proto)
-        onnx.save(model_simp, save_path)
-        return send_file(save_path)
+        try:
+            save_path = onnxsim_model(modify_info)
+        except ServerError as error:
+            return error.status, error.msg
+        
+        if modify_info.get("return_modified_file"):
+            return send_file(save_path)
+        else:
+            return 'OK', 200
 
 
     @app.route('/auto-optimizer', methods=['POST'])
     def modify_and_optimizer_model():
-        try:
-            import auto_optimizer
-        except ImportError as ex:
-            return "请安装 auto-optimizer", 599
-        
-        import subprocess
         modify_info = request.get_json()
-        OnnxModifier.ONNX_MODIFIER.reload()   # allow downloading for multiple times
-        OnnxModifier.ONNX_MODIFIER.modify(modify_info)
-        save_path = OnnxModifier.ONNX_MODIFIER.check_and_save_model(save_dir="modified_onnx")
-
-        # convert model
-        optimized_path = f"{save_path}.opti.onnx"
-        python_path = sys.executable
-        cmd = [
-            python_path,
-            "-m",
-            "auto_optimizer",
-            "optimize",
-            save_path,
-            optimized_path,
-        ]
-        out_res = subprocess.call(cmd, shell=False)
-        if  out_res != 0:
-            raise RuntimeError("auto_optimizer run error: " + out_res + " cmd: " + "".join(cmd))
-        if os.path.exists(optimized_path):
+        OnnxModifier.ONNX_MODIFIER.reload()
+        
+        try:
+            optimized_path = optimizer_model(modify_info)
+        except ServerError as error:
+            return error.status, error.msg
+        
+        if not os.path.exists(optimized_path):
+            raise ServerError( "auto-optimizer 没有匹配到的知识库", 204)
+        if modify_info.get("return_modified_file"):
             return send_file(optimized_path)
         else:
-            return "Nothing changed", 204
+            return 'OK', 200
 
+    @app.route('/load-json', methods=['POST'])
+    def load_json_and_modify__model():
+        modify_infos = request.get_json()
+        OnnxModifier.ONNX_MODIFIER.reload()
+
+        try:
+            save_path = json_modify_model(modify_infos)
+        except ServerError as error:
+            return error.status, error.msg
+        
+        return send_file(save_path)
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -115,7 +195,7 @@ def parse_args():
 def main():
     args = parse_args()
     logging.getLogger().setLevel(logging.WARNING)
-    rpc_run(args.flask, register_interface, args)
+    rpc_run(True, register_interface, args)
 
 
 if __name__ == '__main__':

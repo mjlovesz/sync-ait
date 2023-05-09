@@ -46,8 +46,8 @@ class OnnxModifier:
         self.reload()
 
     @classmethod
-    def from_model_path(cls, model_path):
-        model_name = os.path.basename(model_path)
+    def from_model_path(cls, model_path, name=None):
+        model_name = os.path.basename(model_path) if name is None else name
         model_proto = onnx.load(model_path)
         cls.ONNX_MODIFIER = cls(model_name, model_proto)
         return cls.ONNX_MODIFIER
