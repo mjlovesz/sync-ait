@@ -195,7 +195,7 @@ def parse_args():
 def main():
     args = parse_args()
     logging.getLogger().setLevel(logging.WARNING)
-    rpc_run(True, register_interface, args)
+    rpc_run(args.flask, register_interface, args)
 
 
 if __name__ == '__main__':
