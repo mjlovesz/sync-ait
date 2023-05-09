@@ -53,7 +53,8 @@ app.on('window-all-closed', () => {
 
 class PythonIPC {
     constructor() {
-        this.process = spawn('python', ['app.py'])
+        let app_path = path.join(__dirname, "..", "app.py")
+        this.process = spawn('python', [app_path])
     }
 
     send(path, msg_send) {

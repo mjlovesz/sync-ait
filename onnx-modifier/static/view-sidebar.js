@@ -311,6 +311,7 @@ sidebar.NodeSidebar = class {
         if (title === 'Enter') {
             buttonElement.addEventListener('click', () => {
                 this._host._view.modifier.deleteEnter();
+                this._raise("close-sidebar")
             });
         }
         if (title === 'Add Output') {

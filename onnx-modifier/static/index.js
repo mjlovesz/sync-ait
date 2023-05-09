@@ -97,24 +97,7 @@ host.BrowserHost = class {
                 accept();
             }
             else {
-                this._request('https://ipinfo.io/json', { 'Content-Type': 'application/json' }, 'utf-8', 2000).then((text) => {
-                    try {
-                        const json = JSON.parse(text);
-                        const countries = ['AT', 'BE', 'BG', 'HR', 'CZ', 'CY', 'DK', 'EE', 'FI', 'FR', 'DE', 'EL', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'SK', 'ES', 'SE', 'GB', 'UK', 'GR', 'EU', 'RO'];
-                        if (json && json.country && !countries.indexOf(json.country) !== -1) {
-                            this._setCookie('consent', Date.now(), 30);
-                            accept();
-                        }
-                        else {
-                            request();
-                        }
-                    }
-                    catch (err) {
-                        request();
-                    }
-                }).catch(() => {
-                    request();
-                });
+                accept();
             }
         });
     }
@@ -250,7 +233,7 @@ host.BrowserHost = class {
                 }
 
                 get status() {
-                    this._status
+                    return this._status
                 }
 
                 get ok() {
@@ -263,7 +246,7 @@ host.BrowserHost = class {
                     let body_obj = {}
                     for (const [key, value] of body.entries()) {
                         if (value instanceof File) {
-                            body_obj[key] = value.path
+                            body_obj[key] = value.path || value.filepath
                         } else {
                             body_obj[key] = value
                         }
@@ -332,6 +315,7 @@ host.BrowserHost = class {
                 }
 
                 let file = new File([blob], this.upload_filename);
+                file.filepath = this.upload_filepath
                 this.openFile(file)
 
             });
@@ -365,6 +349,7 @@ host.BrowserHost = class {
                 }
 
                 let file = new File([blob], this.upload_filename);
+                file.filepath = this.upload_filepath
                 this.openFile(file)
             });
         });
@@ -422,6 +407,7 @@ host.BrowserHost = class {
                     const file = files.find((file) => this._view.accept(file.name));
                     // console.log(file)
                     this.upload_filename = file.name;
+                    this.upload_filepath = file.path;
                     var form = new FormData();
                     form.append('file', file);
                     this._ori_model_file = file
@@ -465,6 +451,7 @@ host.BrowserHost = class {
                 const files = Array.from(e.dataTransfer.files);
                 const file = files.find((file) => this._view.accept(file.name));
                 this.upload_filename = file.name;
+                this.upload_filepath = file.path;
                 var form = new FormData();
                 form.append('file', file);
                 this._ori_model_file = file

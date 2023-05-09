@@ -1,10 +1,27 @@
+# Copyright 2023 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import logging
 import os
-def rpc_run(is_electron, register_interface, args=None):
-    if is_electron:
-        pipe_run(register_interface)
-    else:
+import sys
+import json
+
+def rpc_run(is_flask, register_interface, args=None):
+    if is_flask:
         flask_run(register_interface, args)
+    else:
+        pipe_run(register_interface)
 
 
 def flask_run(register_interface, args):
@@ -15,12 +32,15 @@ def flask_run(register_interface, args):
     app.run(host=args.host, port=args.port, debug=args.debug)
 
 def pipe_run(register_interface):
-    import sys
-    import json
+
     class PipeApp:
         def __init__(self, request) -> None:
             self.path_amp = dict()
             self.request = request
+
+        @staticmethod
+        def send_file(file_path):
+            return dict(file=file_path), 200
 
         def route(self, path, **kwargs):
             def regg(func): 
@@ -37,7 +57,10 @@ def pipe_run(register_interface):
                     msg_recv = sys.stdin.readline()
                     # {"msg":{"file":"D:\\amit\\onnx-modifier\\modified_onnx\\resnet34-v1-7.onnx"}, "path":"/open_model"}
                     # {"msg":{"file":"C:\\需求\\amit\\amit\\modified_onnx\\res.onnx"}, "path":"/open_model"}
-                    # {"msg":{"added_node_info":{},"node_states":{},"changed_initializer":{},"rebatch_info":{},"added_inputs":{},"input_size_info":{},"added_outputs":{},"node_renamed_io":{},"node_states":{},"node_changed_attr":{},"model_properties":{},"postprocess_args":{}}, "path":"/download"}
+                    # {"msg":{"added_node_info":{},"node_states":{},"changed_initializer":{},"rebatch_info":{},
+                    #           "added_inputs":{},"input_size_info":{},"added_outputs":{},"node_renamed_io":{},
+                    #           "node_states":{},"node_changed_attr":{},"model_properties":{},"postprocess_args":{}}, 
+                    #   "path":"/download"}
                     # {"path":"/exit"}
                     msg_recv = msg_recv.strip()
                     if msg_recv == "":
@@ -66,7 +89,9 @@ def pipe_run(register_interface):
                     if path not in self.path_amp:
                         raise ValueError("not found path")
 
-                    msg_deal_func = self.path_amp[path]
+                    msg_deal_func = self.path_amp.get(path)
+                    if msg_deal_func is None:
+                        raise ValueError("invalid path")
 
                     self.request.set_json(msg_dict.get("msg", dict()))
                     msg_back, status = msg_deal_func()
@@ -82,23 +107,20 @@ def pipe_run(register_interface):
                 except Exception as ex:
                     logging.debug(os.getpid())
                     logging.debug(str(ex))
-                    print(json.dumps(dict(msg=str(ex), status=500, file=None)), flush=True)
-
-        def send_file(self, file_path):
-            return dict(file=file_path), 200
+                    print(json.dumps(dict(msg="exception:" + str(ex) + "\n" + msg_str, status=500, file=None)), flush=True)
         
     class Request:
         def __init__(self) -> None:
             self._json = dict()
+        
+        @property
+        def files(self):
+            return self._json
 
         def set_json(self, json_msg):
             self._json = json_msg
 
         def get_json(self):
-            return self._json
-        
-        @property
-        def files(self):
             return self._json
     
 

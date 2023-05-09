@@ -79,24 +79,7 @@ host.ElectronHost = class {
                 accept();
             }
             else {
-                this._request('https://ipinfo.io/json', { 'Content-Type': 'application/json' }, 2000).then((text) => {
-                    try {
-                        const json = JSON.parse(text);
-                        const countries = ['AT', 'BE', 'BG', 'HR', 'CZ', 'CY', 'DK', 'EE', 'FI', 'FR', 'DE', 'EL', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'SK', 'ES', 'SE', 'GB', 'UK', 'GR', 'EU', 'RO'];
-                        if (json && json.country && !countries.indexOf(json.country) !== -1) {
-                            this._setConfiguration('consent', Date.now());
-                            accept();
-                        }
-                        else {
-                            request();
-                        }
-                    }
-                    catch (err) {
-                        request();
-                    }
-                }).catch(() => {
-                    request();
-                });
+                accept();
             }
         });
     }

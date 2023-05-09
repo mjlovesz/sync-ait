@@ -106,7 +106,7 @@ def parse_args():
     parser.add_argument('--host', type=str, default='localhost')
     parser.add_argument('--port', type=int, default=5000, help='the port of the webserver. Defaults to 5000.')
     parser.add_argument('--debug', type=bool, default=False, help='enable or disable debug mode.')
-    parser.add_argument('--electron', type=bool, default=True, help='enable or disable electron mode.')
+    parser.add_argument('--flask', action="store_true", help='enable or disable electron mode.')
     
     args = parser.parse_args()
     return args
@@ -115,7 +115,7 @@ def parse_args():
 def main():
     args = parse_args()
     logging.getLogger().setLevel(logging.WARNING)
-    rpc_run(args.electron, register_interface, args)
+    rpc_run(args.flask, register_interface, args)
 
 
 if __name__ == '__main__':

@@ -827,6 +827,11 @@ view.View = class {
                     }
                     this.error(error, null, null);
                 });
+                nodeSidebar.on('close-sidebar', () => {
+                    if (this._sidebar) {
+                        this._sidebar.close()
+                    }
+                });
                 if (input) {
                     nodeSidebar.toggleInput(input.name);
                 }
