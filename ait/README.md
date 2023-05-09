@@ -3,7 +3,7 @@
 ## 目录
 - [介绍](#介绍)
 - [安装](#工具安装)
-- [AIT工具使用](#AIT工具使用)
+- [AIT工具使用](#工具使用)
 - [参考](#参考)
 - [许可证](#许可证)
 - [免责声明](#免责声明)
@@ -82,7 +82,7 @@ pip3 install ./aclruntime-{version}-{python_version}-linux_{arch}.whl
 pip3 install ./ais_bench-{version}-py3-none-any.whl
 ```
 
-## AIT工具使用
+## 工具使用
 
 ### 命令格式说明
 
