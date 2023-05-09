@@ -97,15 +97,12 @@ class GraphOptimizer:
             out_opt = sess_opt.infer(input_)
         else:
             custom_sizes = int(cfg.output_size)
-            dyn_shape = {
-                k: [int(n) for n in v.split(',')]
-                for k, v in [
-                    inp.split(':') for inp in cfg.dynamic_shape.split(';')
-                ]
-            }
+            dyn_shape = {}
+            for k, v in [inp.split(':') for inp in cfg.dynamic_shape.split(';')]:
+                dyn_shape[k] = [int(n) for n in v.split(',')]
             input_ = [
-                np.random.randn(*dyn_shape[inp.name])
-                         .astype(tensor_type_to_numpy_type[inp.datatype])
+                np.random.randn(*dyn_shape.get(inp.name))
+                         .astype(tensor_type_to_numpy_type.get(inp.datatype))
                 for inp in sess_ori.get_inputs()
             ]
             out_ori = sess_ori.infer(input_, mode='dymshape', custom_sizes=custom_sizes)
@@ -224,20 +221,23 @@ class GraphOptimizer:
             logger.info(f'Applying {name}...')
             graph_opt = deepcopy(graph)
             knowledge.reset()
+            if not self._optimize(graph_opt, knowledge):
+                logger.warning(f'No match found for {name}, skipping...\n')
+                continue
+            graph_opt.save(onnx_opt.as_posix())
+            if om_ori is None:
+                logger.info('Converting origin onnx to om...\n')
+                om_ori = onnx_to_om_converter(path_onnx=onnx_ori.as_posix())
+            logger.info(f'Converting onnx optimized with {name} to om...\n')
+            om_opt = onnx_to_om_converter(path_onnx=onnx_opt.as_posix())
             try:
-                if not self._optimize(graph_opt, knowledge):
-                    logger.warning(f'No match found for {name}, skipping...\n')
-                    continue
-                graph_opt.save(onnx_opt.as_posix())
-                if om_ori is None:
-                    logger.info('Converting origin onnx to om...\n')
-                    om_ori = onnx_to_om_converter(path_onnx=onnx_ori.as_posix())
-                logger.info(f'Converting onnx optimized with {name} to om...\n')
-                om_opt = onnx_to_om_converter(path_onnx=onnx_opt.as_posix())
                 ctx = multiprocessing.get_context('spawn')
-                queue = ctx.Queue()
-                check_precision = name not in NONEQUIVALENT_KNOWLEDGES
-                logger.info('Inferencing origin and optimized om...\n')
+            except ValueError:
+                pass
+            queue = ctx.Queue()
+            check_precision = name not in NONEQUIVALENT_KNOWLEDGES
+            logger.info('Inferencing origin and optimized om...\n')
+            try:
                 if cfg.process_run_infer:
                     proc = ctx.Process(
                         target=self._effective,
