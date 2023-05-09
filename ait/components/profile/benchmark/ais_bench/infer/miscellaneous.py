@@ -24,10 +24,14 @@ def version_check(args):
         # set old run mode to run ok
         args.run_mode = "tensor"
 
+def get_model_name(model):
+    path_list = model.split('/')
+    return path_list[-1][:-3]
+
 def check_valid_acljson(acl_json_path, model):
     with open(acl_json_path, 'r') as f:
         acl_json_dict = json.load(f)
-    model_name_correct = model[:-3]
+    model_name_correct = get_model_name(model)
     if acl_json_dict.get("dump") is not None:
         # check validity of dump_list (model_name, layer)
         dump_list_val = acl_json_dict["dump"].get("dump_list")
