@@ -210,6 +210,7 @@ ait profile benchmark -h
 * [AIT profile benchmark 快速入门指南](docs/profile/benchmark/README.md)
 * [AIT debug surgeon 快速入门指南](docs/debug/surgeon/README.md)
 * [AIT debug compare 快速入门指南](docs/debug/compare/README.md)
+* [TensorRT 结构参考](https://github.com/NVIDIA/TensorRT/tree/release/8.6/tools/Polygraphy)
 
 
 ## 许可证
