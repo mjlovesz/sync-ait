@@ -32,8 +32,9 @@ def check_valid_acljson(acl_json_path, model):
         # check validity of dump_list (model_name, layer)
         dump_list_val = acl_json_dict["dump"].get("dump_list")
         if dump_list_val is not None:
-            model_name_val = acl_json_dict["dump"][0].get("model_name")
-            if model_name_val != model_name_correct:
+            if dump_list_val == [] or dump_list_val[0].get("model_name") != model_name_correct:
+            # model_name_val = acl_json_dict["dump"]["dump_list"][0].get("model_name")
+            # if model_name_val != model_name_correct:
                 logger.warning("dump failed, 'model_name' is not set or set incorrectly")
         else:
             logger.warning("dump failed, acl.json need to set 'dump_list' attribute")
