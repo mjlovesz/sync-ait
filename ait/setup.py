@@ -46,6 +46,12 @@ setup(
                 '#egg=auto_optimizer&subdirectory=ait/components/debug/surgeon'
             ),
         ],
+        'analyze': [
+            (
+                'migration_analysis @ git+https://gitee.com/ascend/ait.git'
+                '#egg=migration_analysis&subdirectory=ait/components/analyze'
+            )
+        ]
     },
     entry_points={
         'console_scripts': ['ait=components.__main__:cli'],
