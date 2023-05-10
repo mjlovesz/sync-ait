@@ -173,7 +173,7 @@ class BaseGraph(ABC):
                          Default 0.
             mode: insert the node before or after the reference node. Default 'after'.
         """
-        # parameter checking with decorator
+        # TODO: parameter checking with decorator
         # single input and output
         # the value for mode argument
 
