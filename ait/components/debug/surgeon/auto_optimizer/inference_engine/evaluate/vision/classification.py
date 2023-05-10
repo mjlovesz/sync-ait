@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import sys
 import logging
 from abc import ABC
 
@@ -66,7 +67,7 @@ class ClassificationEvaluate(EvaluateBase, ABC):
                 count += 1
 
         for idx, k in enumerate(topk):
-            if count:
+            if count != 0:
                 top_k_accuracy = np.count_nonzero(count_hit[idx]) / count
                 logger.info("top_{}_accuracy={}".format(k, top_k_accuracy))
 
