@@ -1,7 +1,7 @@
 # ait debug surgeon功能使用指南
 
 ## 简介
-surgeon（自动调优工具）使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能。
+surgeon（自动调优）使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能。
 
 **软件架构**
 
@@ -20,7 +20,7 @@ surgeon主要通过graph_optimizer、graph_refactor接口提供ONNX模型自动�
 ## 使用方法
 ### 功能介绍
 #### 使用入口
-surgeon工具可以直接通过ait命令行形式启动模型测试。启动方式如下：
+surgeon功能可以直接通过ait命令行形式启动模型测试。启动方式如下：
 ```bash
 ait debug surgeon [OPTIONS] COMMAND [ARGS]...
 ```
