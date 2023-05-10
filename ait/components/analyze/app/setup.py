@@ -45,6 +45,6 @@ setup(
     ],
     python_requires='>=3.7',
     entry_points={
-        'analyze_sub_task': ['app=app.porting_advisor:start_analyze'],
+        'analyze_sub_task': ['app=porting_advisor:start_analyze'],
     },
 )

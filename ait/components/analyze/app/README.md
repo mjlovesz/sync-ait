@@ -1,12 +1,11 @@
-# porting acl
+# App Porting
 
 ## 安装
 
 依赖LLVM clang，需安装[clang工具](https://releases.llvm.org/)。以Ubuntu为例：
 
 ```shell
-sudo apt-get install libclang-dev
-sudo apt-get install clang
+sudo apt-get install libclang-dev clang
 ```
 
 依赖[LLVM clang python bindings](https://github.com/llvm/llvm-project/tree/main/clang/bindings/python)，已在requirements中。
