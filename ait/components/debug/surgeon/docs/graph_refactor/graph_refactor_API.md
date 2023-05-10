@@ -259,12 +259,12 @@ g.save('model_fix.onnx')
 
 - 对 [onnxsim.simplify](https://github.com/daquexian/onnx-simplifier/blob/master/onnxsim/onnx_simplifier.py#L91) 的封装，用于模型简化。
 
-**extract_subgraph(subgraph_path, start_node_name, end_node_name, is_check_subgraph=False) -> BaseGraph**
+**extract_subgraph(start_node_name, end_node_name, subgraph_path=None, is_check_subgraph=False) -> BaseGraph**
 
 - 选定起始节点和结束节点，进行子图切分。自定义子图切分能力，支持对含有自定义算子的模型进行切分子图。
-- `subgraph_path` - 切分后的子图 onnx 文件保存路径
 - `start_node_name` - 起始节点名称
 - `end_node_name` - 结束节点名称
+- `subgraph_path` - 切分后的子图 onnx 文件保存路径。默认为None，不保存子图。
 - `is_check_subgraph` - 默认为False，是否校验切分后的子图。
 
 **extract(save_path, input_name_list, output_name_list) -> BaseGraph**

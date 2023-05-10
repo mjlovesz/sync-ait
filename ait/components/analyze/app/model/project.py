@@ -1,3 +1,16 @@
+# Copyright 2023 Huawei Technologies Co., Ltd
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import time
 import os
 from utils.log_util import logger
@@ -76,15 +89,15 @@ class Project:
         值失败的异常情况。要特别小心。后续可以考虑将参数包装成类进行传递。
         :return: NA
         """
-        makefiles = self.file_matrix.files['makefiles']
-        cmake_files = self.file_matrix.files["cmakefiles"]
+        makefiles = self.file_matrix.files.get('makefiles')
+        cmake_files = self.file_matrix.files.get("cmakefiles")
 
         scanner_params = {
             'makefiles': makefiles,
             'cpp_files': {
-                "cpp": self.file_matrix.files['cpp_sources'],
-                "hpp": self.file_matrix.files['hpp_sources'],
-                'include_path': self.file_matrix.files['include_path'],
+                "cpp": self.file_matrix.files.get('cpp_sources'),
+                "hpp": self.file_matrix.files.get('hpp_sources'),
+                'include_path': self.file_matrix.files.get('include_path'),
             },
             'cmake_files': cmake_files,
         }

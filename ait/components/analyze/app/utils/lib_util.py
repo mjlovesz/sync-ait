@@ -1,3 +1,16 @@
+# Copyright 2023 Huawei Technologies Co., Ltd
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
 from common.kit_config import KitConfig
 
@@ -14,9 +27,9 @@ def get_sys_path():
 
 
 def _cmake_prefix_path(sys_paths):
-    CMAKE_PREFIX_PATH = os.environ.get('CMAKE_PREFIX_PATH')
-    if CMAKE_PREFIX_PATH:
-        cmake_prefix_path = filter(bool, CMAKE_PREFIX_PATH.split(':'))  # 去空字符穿
+    cmake_prefix_path = os.environ.get('CMAKE_PREFIX_PATH')
+    if cmake_prefix_path:
+        cmake_prefix_path = filter(bool, cmake_prefix_path.split(':'))  # 去空字符穿
         for p in cmake_prefix_path:
             if not p.startswith('/usr/'):
                 sys_paths.append(p)
@@ -24,16 +37,16 @@ def _cmake_prefix_path(sys_paths):
 
 def _opencv_dir_path(sys_paths):
     # //The directory containing a CMake configuration file for OpenCV.
-    OpenCV_DIR = os.environ.get('OpenCV_DIR')
-    if OpenCV_DIR and not OpenCV_DIR.startswith('/usr/'):
-        opencv_dir = os.path.normpath(OpenCV_DIR + '/../../../')
+    opencv_dir = os.environ.get('OpenCV_DIR')
+    if opencv_dir and not opencv_dir.startswith('/usr/'):
+        opencv_dir = os.path.normpath(opencv_dir + '/../../../')
         sys_paths.append(opencv_dir)
 
 
 def _cuda_path(sys_paths):
-    CUDA_HOME = os.environ.get('CUDA_HOME', '/usr/local/cuda')
-    if not CUDA_HOME.startswith('/usr/'):
-        sys_paths.append(CUDA_HOME)
+    cuda_home = os.environ.get('CUDA_HOME', '/usr/local/cuda')
+    if not cuda_home.startswith('/usr/'):
+        sys_paths.append(cuda_home)
 
 
 def _opencv_include_path(sys_paths):
