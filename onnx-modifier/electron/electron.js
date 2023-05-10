@@ -1,7 +1,8 @@
 
 // electron 模块可以用来控制应用的生命周期和创建原生浏览窗口
-const { app, BrowserWindow ,ipcMain } = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron')
 const { spawn } = require("node:child_process")
+const { EventEmitter } = require('events')
 var fs = require('fs')
 const path = require('path')
 
@@ -32,7 +33,7 @@ app.whenReady().then(() => {
     })
 
     let handle_msg = new ElectronMsgHandelManager()
-    ipcMain.handle('message', (event, path, msg_send)=> {
+    ipcMain.handle('message', (event, path, msg_send) => {
         return handle_msg.handleMessage(event, path, msg_send)
     })
 })
@@ -52,12 +53,28 @@ class PythonIPC {
     constructor() {
         let app_path = path.join(__dirname, "..", "app.py")
         this.process = spawn('python', [app_path])
+        this.msg_event = new EventEmitter()
+
+        this.process.stdout.on("data", (data_text) => {
+            data_text = data_text.toString()
+            console.debug(`${data_text}`)
+            let data_array = data_text.split(/\r?\n/)
+            if (data_array.length < 6) {
+                return
+            }
+            data_array = data_array.slice(-6)
+
+            if (data_array[0] == "" && data_array[1] == "" && data_array[2] == ">>" && data_array[4] == "" && data_array[5] == "") {
+                let data = data_array[3]
+                this.msg_event.emit('data', data)
+            }
+        })
     }
 
     send(path, msg_send) {
         console.log(this.process.pid)
         return new Promise((resolve) => {
-            this.process.stdout.once("data", (data) => {
+            this.msg_event.once("data", (data) => {
                 console.debug("recv", `${data}`)
                 let { msg, status, file } = JSON.parse(data)
                 if (file) {
@@ -65,11 +82,10 @@ class PythonIPC {
                 }
                 resolve([status, msg, file])
             })
-            
-            let send_obj_data = {path, msg:msg_send}
+            let send_obj_data = { path, msg: msg_send }
             let send_obj_str = JSON.stringify(send_obj_data, null, 1)
-            
-            console.debug("send", `${send_obj_str}\n`)
+
+            console.debug("send", `\n${send_obj_str}\n`)
             this.process.stdin.write(`${send_obj_str}\n`)
             this.process.stdin.write(`\n\n`)
         })
@@ -84,7 +100,7 @@ class ElectronMsgHandelManager {
     handleMessage(event, path, msg_send) {
         let senderId = event.processId
         if (!this.map_ipc.has(senderId)) {
-            this.map_ipc.set(senderId , new PythonIPC())
+            this.map_ipc.set(senderId, new PythonIPC())
         }
 
         let python_ipc = this.map_ipc.get(senderId)
