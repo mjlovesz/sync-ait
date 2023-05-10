@@ -195,9 +195,9 @@ class NpuDumpData(DumpData):
                 with os.fdopen(os.open(acl_json_path, flags, modes), "w") as write_json:
                     try:
                         json.dump(load_dict, write_json)
-                    except ValueError as write_json_except:
-                        utils.print_info_log(str(write_json_except))
-                        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR) from write_json_except
+                    except ValueError as exc:
+                        utils.print_info_log(str(exc))
+                        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR) from exc
             except IOError as acl_json_file_except:
                 utils.print_error_log('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from acl_json_file_except

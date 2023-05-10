@@ -50,6 +50,29 @@ class TfDumpData(DumpData):
         self.net_output_name = []
         self.net_output = {}
 
+    def generate_dump_data(self):
+        """
+        Generate tf model dump data
+        :return tf model dump data directory
+        """
+        self._load_graph()
+        self._create_dir()
+        inputs_tensor = tf_common.get_inputs_tensor(self.global_graph, self.args.input_shape)
+        self._make_inputs_data(inputs_tensor)
+        outputs_tensor = self._get_outputs_tensor()
+        if tf_common.check_tf_version(tf_common.VERSION_TF2X):
+            self._run_model_tf2x(outputs_tensor)
+        elif tf_common.check_tf_version(tf_common.VERSION_TF1X):
+            self._run_model_tf1x(outputs_tensor)
+
+        return self.important_dirs.get("dump_data_tf")
+
+    def get_net_output_info(self):
+        """
+        Compatible with ONNX scenarios
+        """
+        return self.net_output
+
     def _create_dir(self):
         # create input directory
         utils.create_directory(self.important_dirs.get("input"))
@@ -234,23 +257,6 @@ class TfDumpData(DumpData):
                                       % (index, node_name, len(op.outputs)))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
-    def generate_dump_data(self):
-        """
-        Generate tf model dump data
-        :return tf model dump data directory
-        """
-        self._load_graph()
-        self._create_dir()
-        inputs_tensor = tf_common.get_inputs_tensor(self.global_graph, self.args.input_shape)
-        self._make_inputs_data(inputs_tensor)
-        outputs_tensor = self._get_outputs_tensor()
-        if tf_common.check_tf_version(tf_common.VERSION_TF2X):
-            self._run_model_tf2x(outputs_tensor)
-        elif tf_common.check_tf_version(tf_common.VERSION_TF1X):
-            self._run_model_tf1x(outputs_tensor)
-
-        return self.important_dirs.get("dump_data_tf")
-
     def _get_outputs_tensor(self):
         input_nodes, node_list = self._get_all_node_and_input_node()
         outputs_tensor = []
@@ -264,9 +270,3 @@ class TfDumpData(DumpData):
                     outputs_tensor.append(name + ":0")
         utils.print_info_log("The outputs tensor:\n{}\n".format(outputs_tensor))
         return outputs_tensor
-
-    def get_net_output_info(self):
-        """
-        Compatible with ONNX scenarios
-        """
-        return self.net_output

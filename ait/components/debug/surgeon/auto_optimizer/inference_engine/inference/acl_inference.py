@@ -23,9 +23,6 @@ import numpy as np
 from auto_optimizer.inference_engine.inference.inference_base import InferenceBase
 from auto_optimizer.inference_engine.data_process_factory import InferenceFactory
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
-logger = logging.getLogger("auto-optimizer")
-
 try:
     from ais_bench.infer.interface import InferSession
 except ImportError as exc:
@@ -46,6 +43,8 @@ tensor_type_to_numpy_type = {
     aclruntime.dtype.bool: np.bool_,
 }
 
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger("auto-optimizer")
 
 
 @InferenceFactory.register("acl")
