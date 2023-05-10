@@ -68,6 +68,7 @@ def check_file_exist(file, msg='file "{}" does not exist'):
 
 def dump_op_outputs(graph, input_data, dump_path, outputs=None):
     outputs = outputs or []
+
     def _run(model, input_data):
         sess = rt.InferenceSession(model)
         inputs = [ipt.name for ipt in sess.get_inputs()]
@@ -81,7 +82,8 @@ def dump_op_outputs(graph, input_data, dump_path, outputs=None):
     ori_model = graph.model()
     if len(outputs) == 0:
         outputs = [
-            name for name in enumerate_model_node_outputs(ori_model)]
+            name for name in enumerate_model_node_outputs(ori_model)
+        ]
     new_model = select_model_inputs_outputs(ori_model, outputs)
     new_model_byte = new_model.SerializeToString()
     arrs = _run(new_model_byte, input_data)
@@ -98,6 +100,9 @@ def dump_op_outputs(graph, input_data, dump_path, outputs=None):
 def cosine_similarity(mat0: NDArray, mat1: NDArray) -> float:
     try:
         m0 = np.ndarray.flatten(mat0) / norm(mat0)
+    except ZeroDivisionError as err:
+        raise RuntimeError("get ZeroDivisionError when calc cosine_similarity") from err
+    try:
         m1 = np.ndarray.flatten(mat1) / norm(mat1)
     except ZeroDivisionError as err:
         raise RuntimeError("get ZeroDivisionError when calc cosine_similarity") from err
@@ -120,6 +125,7 @@ def meet_precision(lmat: NDArray, rmat: NDArray, cos_th: float, atol: float, rto
             and bool(np.isclose(rnorm, lnorm, atol=atol, rtol=rtol))
     except RuntimeError as err:
         raise RuntimeError("Failed to calc meet_precision") from err
+
 
 def check_output_model_path(output_model_path):
     if os.path.isdir(output_model_path):

@@ -60,6 +60,12 @@ class NetCompare(object):
         self.python_version = sys.executable.split('/')[-1]
 
     @staticmethod
+    def execute_command_line(cmd):
+        utils.print_info_log('Execute command:%s' % cmd)
+        process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        return process
+
+    @staticmethod
     def _check_msaccucmp_file(msaccucmp_command_dir_path):
         for file_name in MSACCUCMP_FILE_NAME:
             msaccucmp_command_file_path = os.path.join(msaccucmp_command_dir_path, file_name)
@@ -107,12 +113,6 @@ class NetCompare(object):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR) from error
         finally:
             pass
-
-    @staticmethod
-    def execute_command_line(cmd):
-        utils.print_info_log('Execute command:%s' % cmd)
-        process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        return process
 
     def accuracy_network_compare(self):
         """
@@ -169,35 +169,6 @@ class NetCompare(object):
                         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
                     file_index += 1
         return
-
-    def _process_result_one_line(self, fp_write, fp_read, npu_file_name, golden_file_name, result):
-        writer = csv.writer(fp_write)
-        # write header to file
-        table_header_info = next(fp_read)
-        header_list = table_header_info.strip().split(',')
-        writer.writerow(header_list)
-        npu_dump_index = header_list.index(NPU_DUMP_TAG)
-        ground_truth_index = header_list.index(GROUND_TRUTH_TAG)
-
-        result_reader = csv.reader(fp_read)
-        # update result data
-        new_content = []
-        for line in result_reader:
-            if len(line) < MIN_ELEMENT_NUM:
-                utils.print_warn_log('The content of line is {}'.format(line))
-                continue
-            if line[npu_dump_index] != "Node_Output":
-                writer.writerow(line)
-            else:
-                new_content = [line[0], "NaN", "Node_Output", "NaN", "NaN",
-                               npu_file_name, "NaN", golden_file_name, "[]"]
-                if self._check_msaccucmp_compare_support_advisor():
-                    new_content.append("NaN")
-                new_content.extend(result)
-                new_content.extend([""])
-                if line[ground_truth_index] != "*":
-                    writer.writerow(line)
-        writer.writerow(new_content)
 
     def save_net_output_result_to_csv(self, npu_file, golden_file, result, header):
         """
@@ -265,6 +236,35 @@ class NetCompare(object):
                 result = compare_result if compare_result else result
                 header = header_result if header_result else header
         return process.returncode, result, header
+
+    def _process_result_one_line(self, fp_write, fp_read, npu_file_name, golden_file_name, result):
+        writer = csv.writer(fp_write)
+        # write header to file
+        table_header_info = next(fp_read)
+        header_list = table_header_info.strip().split(',')
+        writer.writerow(header_list)
+        npu_dump_index = header_list.index(NPU_DUMP_TAG)
+        ground_truth_index = header_list.index(GROUND_TRUTH_TAG)
+
+        result_reader = csv.reader(fp_read)
+        # update result data
+        new_content = []
+        for line in result_reader:
+            if len(line) < MIN_ELEMENT_NUM:
+                utils.print_warn_log('The content of line is {}'.format(line))
+                continue
+            if line[npu_dump_index] != "Node_Output":
+                writer.writerow(line)
+            else:
+                new_content = [line[0], "NaN", "Node_Output", "NaN", "NaN",
+                               npu_file_name, "NaN", golden_file_name, "[]"]
+                if self._check_msaccucmp_compare_support_advisor():
+                    new_content.append("NaN")
+                new_content.extend(result)
+                new_content.extend([""])
+                if line[ground_truth_index] != "*":
+                    writer.writerow(line)
+        writer.writerow(new_content)
 
     def _check_msaccucmp_compare_support_args(self, compare_args):
         check_cmd = [self.python_version, self.msaccucmp_command_file_path, "compare", "-h"]

@@ -86,10 +86,10 @@ class OmParser(object):
             with open(json_file_path, "r") as input_file:
                 try:
                     return json.load(input_file)
-                except Exception as load_input_file_except:
+                except Exception as exc:
                     utils.print_error_log('Load Json {} failed, {}'.format(
-                        json_file_path, str(load_input_file_except)))
-                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR) from load_input_file_except
+                        json_file_path, str(exc)))
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR) from exc
         except IOError as input_file_open_except:
             utils.print_error_log('Failed to open"' + json_file_path + '", ' + str(input_file_open_except))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from input_file_open_except
@@ -116,23 +116,6 @@ class OmParser(object):
                 input_index += 1
         return net_output_info
 
-    def _get_sub_graph_name(self):
-        subgraph_name = []
-        for graph in self.json_object.get(GRAPH_OBJECT):
-            for operator in graph.get(OP_OBJECT):
-                if SUBGRAPH_NAME in operator:
-                    subgraph_name += operator.get(SUBGRAPH_NAME)
-        return subgraph_name
-
-    def _gen_operator_list(self):
-        _, scenario = self.get_dynamic_scenario_info()
-        for graph in self.json_object.get(GRAPH_OBJECT):
-            if graph.get(NAME_OBJECT) in self.subgraph_name and \
-                    scenario not in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
-                continue
-            for operator in graph.get(OP_OBJECT):
-                yield operator
-
     def get_shape_size(self):
         """
         Get shape size for input
@@ -140,13 +123,6 @@ class OmParser(object):
         input_desc_array = self._get_data_input_desc()
         # extracts the input shape value
         return self._process_inputs(input_desc_array)
-
-    def _gen_operator_list_from_subgraph(self):
-        for graph in self.json_object.get(GRAPH_OBJECT):
-            if graph.get(NAME_OBJECT) in self.subgraph_name:
-                for operator in graph.get(OP_OBJECT):
-                    yield operator
-                return
 
     def get_net_output_count(self):
         """
@@ -162,15 +138,6 @@ class OmParser(object):
             if NET_OUTPUT_OBJECT == operator.get(TYPE_OBJECT) and INPUT_DESC_OBJECT in operator:
                 count += len(operator.get(INPUT_DESC_OBJECT))
         return count
-
-    def _get_data_input_desc(self):
-        input_desc_list = []
-        for operator in self._gen_operator_list():
-            if DATA_OBJECT == operator.get(TYPE_OBJECT):
-                if len(operator.get(INPUT_DESC_OBJECT)) != 0:
-                    for item in operator.get(INPUT_DESC_OBJECT):
-                        input_desc_list.append(item)
-        return input_desc_list
 
     def get_atc_cmdline(self):
         for attr in self.json_object.get(ATTR_OBJECT):
@@ -199,13 +166,6 @@ class OmParser(object):
             expect_net_output_name[item] = output_name
         return expect_net_output_name
 
-    def _parse_special_op_attr(self):
-        special_op_attr = {}
-        for operator in self._gen_operator_list():
-            if operator.get(TYPE_OBJECT) in SPECIAL_OPS_TYPE:
-                special_op_attr[operator.get(NAME_OBJECT)] = operator.get(INPUT_OBJECT)
-        return special_op_attr
-
     def get_net_output_data_info(self, dump_data_path):
         """
         get_net_output_data_info
@@ -229,6 +189,53 @@ class OmParser(object):
                     return self._parse_net_output_node_attr(operator)
         utils.print_error_log("get npu output node info failed.")
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR)
+
+    def get_dynamic_scenario_info(self):
+        atc_cmd = self.get_atc_cmdline()
+        for dym_arg in DynamicArgumentEnum:
+            if dym_arg.value.atc_arg in atc_cmd:
+                return True, dym_arg
+        return False, None
+
+    def _get_sub_graph_name(self):
+        subgraph_name = []
+        for graph in self.json_object.get(GRAPH_OBJECT):
+            for operator in graph.get(OP_OBJECT):
+                if SUBGRAPH_NAME in operator:
+                    subgraph_name += operator.get(SUBGRAPH_NAME)
+        return subgraph_name
+
+    def _gen_operator_list(self):
+        _, scenario = self.get_dynamic_scenario_info()
+        for graph in self.json_object.get(GRAPH_OBJECT):
+            if graph.get(NAME_OBJECT) in self.subgraph_name and \
+                    scenario not in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
+                continue
+            for operator in graph.get(OP_OBJECT):
+                yield operator
+
+    def _gen_operator_list_from_subgraph(self):
+        for graph in self.json_object.get(GRAPH_OBJECT):
+            if graph.get(NAME_OBJECT) in self.subgraph_name:
+                for operator in graph.get(OP_OBJECT):
+                    yield operator
+                return
+
+    def _get_data_input_desc(self):
+        input_desc_list = []
+        for operator in self._gen_operator_list():
+            if DATA_OBJECT == operator.get(TYPE_OBJECT):
+                if len(operator.get(INPUT_DESC_OBJECT)) != 0:
+                    for item in operator.get(INPUT_DESC_OBJECT):
+                        input_desc_list.append(item)
+        return input_desc_list
+
+    def _parse_special_op_attr(self):
+        special_op_attr = {}
+        for operator in self._gen_operator_list():
+            if operator.get(TYPE_OBJECT) in SPECIAL_OPS_TYPE:
+                special_op_attr[operator.get(NAME_OBJECT)] = operator.get(INPUT_OBJECT)
+        return special_op_attr
 
     def _is_input_shape_range(self):
         if ATTR_OBJECT not in self.json_object:
@@ -272,13 +279,6 @@ class OmParser(object):
                 item_sum *= num
             range_shape_size_list.append(item_sum)
         return range_shape_size_list
-
-    def get_dynamic_scenario_info(self):
-        atc_cmd = self.get_atc_cmdline()
-        for dym_arg in DynamicArgumentEnum:
-            if dym_arg.value.atc_arg in atc_cmd:
-                return True, dym_arg
-        return False, None
 
     def _process_inputs(self, input_desc_array):
         value = []
