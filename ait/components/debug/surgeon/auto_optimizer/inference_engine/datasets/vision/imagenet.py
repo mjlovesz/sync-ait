@@ -20,7 +20,6 @@ from abc import ABC
 from auto_optimizer.inference_engine.datasets.dataset_base import DatasetBase
 from auto_optimizer.inference_engine.data_process_factory import DatasetFactory
 
-logging.basicConfig(stream=sys.stdout, level=logging.ERROR, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger("auto-optimizer")
 
 
