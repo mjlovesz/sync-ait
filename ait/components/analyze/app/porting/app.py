@@ -33,10 +33,10 @@ def init_args():
 
     # 添加日志级别开关，默认级别是INFO，只有添加-d后才能输出ERR级别日志
     parser.add_argument('-l', '--log-level', dest='log_level',
-                        choices=['DEBUG', 'INFO', 'WARN', 'ERR'],
+                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'],
                         default='INFO',
                         help='specify log level. default is '
-                             'INFO. choices from: DEBUG, INFO, WARN, ERR')
+                             'INFO. choices from: DEBUG, INFO, WARNING, ERROR')
 
     parser.add_argument('-t', '--tools', dest='tools',
                         choices=KitConfig.valid_construct_tools,
