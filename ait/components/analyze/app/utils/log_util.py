@@ -11,24 +11,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
-
 import sys
 import os
 import logging.handlers
 
 IS_PYTHON3 = sys.version_info > (3,)
-logger = logging.getLogger('porting_advisor')
+logger = logging.getLogger('porting analysis')
 
-if os.path.exists("porting_advisor.log"):
-    os.remove("porting_advisor.log")
+if os.path.exists("porting_analysis.log"):
+    os.remove("porting_analysis.log")
 
 # create console handler and formatter for logger
 console = logging.StreamHandler()
-fh = logging.handlers.TimedRotatingFileHandler("porting_advisor.log", when='midnight', interval=1, backupCount=7)
+fh = logging.handlers.TimedRotatingFileHandler("porting_analysis.log", when='midnight', interval=1, backupCount=7)
 
 formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s[%(lineno)d] - %(message)s")
 

@@ -64,9 +64,9 @@ class KitConfig:
     lib_clang_path = f'/usr/lib/{arch}-linux-gnu/libclang-6.0.so'
     opencv_include_path = '/home/opencv-4.5.4/include/opencv4'
 
-    # TODO: 'make', 'automake'
+    # 'make', 'automake'
     valid_construct_tools = ['cmake']
-    porting_content = """porting-advisor
+    porting_content = """ait analyze app
             [-h] [-s source] 
             [-t tools] 
             [-l {DEBUG,INFO,WARN,ERR}] 

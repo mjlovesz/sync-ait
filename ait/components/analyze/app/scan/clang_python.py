@@ -27,13 +27,11 @@ libclang case: https://eli.thegreenplace.net/2011/07/03/parsing-c-in-python-with
 Note that the library is named libclang,
 the package clang on PyPi is another package and doesn't bundle the prebuilt shared library.
 """
-
+import logging
 import os
 import json
 import re
 import time
-import linecache
-from pprint import pprint
 
 from clang.cindex import Index, LinkageKind, CursorKind, TypeKind, TranslationUnit, Config
 
@@ -297,7 +295,6 @@ def var_decl(c):
     else:  # 原生类型变量声明
         source = get_attr(c, 'location.file.name')
         definition = c.get_definition().displayname
-    # TODO(dyh)：是否去除api的namespace
     return api, f'{c.type.spelling} {c.spelling}', api, definition, source
 
 
@@ -381,7 +378,7 @@ def call_expr(c):
     if not c0:
         return default(c)
 
-    op_overload = 'operator' in c.spelling  # TODO(dyh)：需要判断的更加准确
+    op_overload = 'operator' in c.spelling
     for i, child in enumerate(children):
         child = skip_cast(child)
         if not child:
@@ -459,8 +456,8 @@ def decl_ref_expr(c):
     if c.type.kind == TypeKind.OVERLOAD:
         children = get_children(c)
         if len(children) < 1:
-            raise RuntimeError(f'DECL_REF_EXPR of Typekind OVERLOAD {c.spelling} {c.location} 应有后继节点：' \
-                                   f'命名空间NAMESPACE_REF（可选） 函数名OVERLOADED_DECL_REF')
+            raise RuntimeError(f'DECL_REF_EXPR of Typekind OVERLOAD {c.spelling} {c.location} 应有后继节点：'
+                               f'命名空间NAMESPACE_REF（可选） 函数名OVERLOADED_DECL_REF')
         spelling = get_namespace(children) + children[-1].spelling
         api = spelling
         type_x = get_attr(children[-1], 'referenced.result_type.spelling')  # 函数返回值类型
@@ -615,12 +612,6 @@ def get_includes(tu):
     return srcs
 
 
-def read_code(file_path, start, end):
-    with open(file_path, 'r') as f:
-        f.seek(start)
-        return f.read(end - start)
-
-
 def is_usr_code(file):
     usr_code = True
     if not file or any(file.startswith(p) for p in SYS_PATH):
@@ -695,7 +686,7 @@ class Parser:
     # creates the object, does the inital parse
     def __init__(self, path):
         logger.info(f'Scanning file: {path}')
-        self.index = Index.create()  # TODO(dyh):若为单例模型，是否有加速作用
+        self.index = Index.create()
         # args: ['-Xclang', '-ast-dump', '-fsyntax-only', '-std=c++17', "-I/path/to/include"]
         # TranslationUnit.PARSE_PRECOMPILED_PREAMBLE, TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
         self.tu = self.index.parse(path,
@@ -714,11 +705,12 @@ class Parser:
         logger.debug(f'Time elapsed： {time.time() - start:.3f}s')
         dump = self.tu.spelling.replace('/', '.')
         os.makedirs('temp/', exist_ok=True)
-        with open(f'temp/{dump}.json', 'w') as f:
-            json.dump(info, f, indent=4)
-        logger.debug(f'语法树临时文件已保存到：temp/{dump}.json')
+        if logger.level == logging.DEBUG:
+            with open(f'temp/{dump}.json', 'w') as f:
+                json.dump(info, f, indent=4)
+            logger.debug(f'语法树临时文件已保存到：temp/{dump}.json')
         if log:
-            pprint(RESULTS)
+            logging.info(RESULTS)
         return RESULTS
 
     def filter(self):
