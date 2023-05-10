@@ -2,8 +2,8 @@
 
 ## 目录
 - [介绍](#介绍)
-- [安装](#工具安装)
-- [AIT工具使用](#工具使用)
+- [工具安装](#工具安装)
+- [工具使用](#工具使用)
 - [参考](#参考)
 - [许可证](#许可证)
 - [免责声明](#免责声明)
@@ -210,12 +210,12 @@ ait profile benchmark -h
 * [AIT profile benchmark 快速入门指南](docs/profile/benchmark/README.md)
 * [AIT debug surgeon 快速入门指南](docs/debug/surgeon/README.md)
 * [AIT debug compare 快速入门指南](docs/debug/compare/README.md)
-* [TensorRT 结构参考](https://github.com/NVIDIA/TensorRT/tree/release/8.6/tools/Polygraphy)
 
 
 ## 许可证
 
 [Apache License 2.0](LICENSE)
+
 
 ## 免责声明
 
