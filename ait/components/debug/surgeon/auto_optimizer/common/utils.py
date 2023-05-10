@@ -81,9 +81,7 @@ def dump_op_outputs(graph, input_data, dump_path, outputs=None):
 
     ori_model = graph.model()
     if len(outputs) == 0:
-        outputs = [
-            name for name in enumerate_model_node_outputs(ori_model)
-        ]
+        outputs = [name for name in enumerate_model_node_outputs(ori_model)]
     new_model = select_model_inputs_outputs(ori_model, outputs)
     new_model_byte = new_model.SerializeToString()
     arrs = _run(new_model_byte, input_data)

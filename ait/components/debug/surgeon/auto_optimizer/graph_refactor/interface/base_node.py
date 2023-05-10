@@ -154,6 +154,7 @@ class Node(BaseNode):
                 f'Name of output should be one of {self._outputs}')
         return self._outputs.index(output)
 
+
 class Initializer(BaseNode):
     def __init__(
         self,

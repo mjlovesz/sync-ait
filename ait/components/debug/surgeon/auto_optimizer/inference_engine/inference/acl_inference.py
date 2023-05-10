@@ -26,7 +26,7 @@ from auto_optimizer.inference_engine.data_process_factory import InferenceFactor
 try:
     from ais_bench.infer.interface import InferSession
 except ImportError as exc:
-    logger.warning('Failed to import InferSession, please install extra [inference] feature.')
+    logging.warning('Failed to import InferSession, please install extra [inference] feature.')
 import aclruntime
 tensor_type_to_numpy_type = {
     aclruntime.dtype.int8: np.int8,
