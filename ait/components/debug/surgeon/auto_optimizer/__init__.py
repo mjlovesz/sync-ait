@@ -14,5 +14,5 @@
 
 from auto_optimizer.common import Register
 from auto_optimizer.common.config import Config
-from auto_optimizer.pattern import KnowledgeFactory
+from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.graph_refactor import OnnxGraph, OnnxPlaceHolder, OnnxInitializer, OnnxNode
