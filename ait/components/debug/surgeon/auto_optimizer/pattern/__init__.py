@@ -32,6 +32,6 @@ from auto_optimizer.pattern.knowledges import knowledge_avgpool_split
 from auto_optimizer.pattern.knowledges import knowledge_bn_folding
 from auto_optimizer.pattern.knowledges import knowledge_modify_reflection_pad
 
-from auto_optimizer.pattern import Pattern
+from auto_optimizer.pattern.pattern import Pattern
 
 __all__ = ["KnowledgeBase", "KnowledgeFactory", "Pattern"]
