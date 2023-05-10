@@ -36,7 +36,7 @@ class CMakeScanner(Scanner):
     def __init__(self, files):
         super().__init__(files)
         self.name = 'CMakelists.txt'
-        self.var_rel_commands = ['set', 'find_file', 'find_libray', 'find_path', 'aux_source_directory',
+        self.var_rel_commands = ['set', 'find_file', 'find_library', 'find_path', 'aux_source_directory',
                                  'pkg_check_modules']
         self.marco_pattern = r'\$\{(.*?)\}'
         self.pkg_pattern = r'PkgConfig::([0-9a-zA-Z]+)'

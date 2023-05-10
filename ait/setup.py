@@ -48,7 +48,7 @@ setup(
         ],
         'analyze': [
             (
-                'app_analysis @ git+https://gitee.com/ascend/ait.git'
+                'app_analysis @ git+https://gitee.com/jinfaz/ait.git'
                 '#egg=app_analysis&subdirectory=ait/components/analyze/app'
             )
         ]
