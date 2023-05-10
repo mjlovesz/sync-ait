@@ -26,11 +26,24 @@ API映射表位于`config/DVPP_API_MAP.xlsx`。可及时更新，注意格式。
 
 ### 1. 文件夹扫描 porting_advisor.py
 
-**python3 porting_advisor.py [-h] [-s source] [-f report-type] [-t tools] [-l log_level]**
+**python3 porting_advisor.py [-h] [-s source] [-f report-type] [-t tools] [-l log_level]**  
 
-cxx源文件扫描模式：clang-python
-
-eg: python porting-advisor -s examples/opencv
+命令示例: python3 porting_advisor.py -s examples/opencv
 
 ### 2. 扫描结果
 扫描完成后会在被扫描的工程目录下创建`output.xslx`
+各页签对应各个文件扫描结果
+
+其中：
+
+api：cpp文件中的三方库API
+
+cuda_en：是否cuda使能
+
+location：api在源文件中的位置
+
+mxBase_API：对应的可加速的mxBase API
+
+Description： mxBase API的简介
+
+Workload： 预估迁移人力
