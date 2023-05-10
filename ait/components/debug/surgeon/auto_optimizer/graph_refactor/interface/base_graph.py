@@ -90,7 +90,7 @@ class BaseGraph(ABC):
                 if not self._prev_map.get(o):
                     self._prev_map[o] = n
                 else:
-                    # TODO: ERROR: duplicate output names
+                    # ERROR: duplicate output names
                     pass
             # update next node info
             for i in set(n.inputs):
@@ -173,7 +173,7 @@ class BaseGraph(ABC):
                          Default 0.
             mode: insert the node before or after the reference node. Default 'after'.
         """
-        # TODO: parameter checking with decorator
+        # parameter checking with decorator
         # single input and output
         # the value for mode argument
 
