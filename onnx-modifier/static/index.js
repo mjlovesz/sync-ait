@@ -265,7 +265,7 @@ host.BrowserHost = class {
                     this._file = file
                 }
                 text() {
-                    return this._msg
+                    return Promise.resolve(this._msg)
                 }
 
                 blob() {

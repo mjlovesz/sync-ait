@@ -33,6 +33,12 @@ def flask_run(register_interface, args):
 
 def pipe_run(register_interface):
 
+    def send_message(msg, status, file):
+        return_str = json.dumps(dict(msg=msg, status=status, file=file))
+        sys.stdout.write("\n\n>>\n" + return_str + "\n\n") ## 格式固定，\n\n>>\n msg \n\n
+        sys.stdout.flush()
+        return return_str
+
     class PipeApp:
         def __init__(self, request) -> None:
             self.path_amp = dict()
@@ -78,12 +84,12 @@ def pipe_run(register_interface):
                     msg_end_flag = 2
 
                     logging.debug(os.getpid())
-                    logging.debug(msg_str)
+                    logging.debug(msg_str.replace("\n", " "))
 
                     msg_dict = json.loads(msg_str)
                     path = msg_dict.get("path", "")
                     if "/exit" == path:
-                        print("byebye", flush=True)
+                        send_message("byebye", 200, None)
                         break
                     
                     if path not in self.path_amp:
@@ -100,14 +106,13 @@ def pipe_run(register_interface):
                         file = msg_back["file"]
                         del msg_back["file"]
 
-                    return_str = json.dumps(dict(msg=msg_back, status=status, file=file))
+                    return_str = send_message(msg=msg_back, status=status, file=file)
                     logging.debug(os.getpid())
                     logging.debug(return_str)
-                    print(return_str, flush=True)
                 except Exception as ex:
                     logging.debug(os.getpid())
                     logging.debug(str(ex))
-                    print(json.dumps(dict(msg="exception:" + str(ex) + "\n" + msg_str, status=500, file=None)), flush=True)
+                    send_message(msg="exception:" + str(ex) + "\n" + msg_str, status=500, file=None)
         
     class Request:
         def __init__(self) -> None:

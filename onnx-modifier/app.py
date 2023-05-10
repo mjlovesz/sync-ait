@@ -155,19 +155,21 @@ def register_interface(app, render_template, request, send_file):
     @app.route('/auto-optimizer', methods=['POST'])
     def modify_and_optimizer_model():
         modify_info = request.get_json()
-        OnnxModifier.ONNX_MODIFIER.reload()
         
+        OnnxModifier.ONNX_MODIFIER.reload()   # allow downloading for multiple times
         try:
-            optimized_path = optimizer_model(modify_info)
+            save_path = optimizer_model(modify_info)
         except ServerError as error:
             return error.status, error.msg
         
-        if not os.path.exists(optimized_path):
-            raise ServerError( "auto-optimizer 没有匹配到的知识库", 204)
+        if not os.path.exists(save_path):
+            return "auto-optimizer 没有匹配到的知识库", 204
+        
         if modify_info.get("return_modified_file"):
-            return send_file(optimized_path)
+            return send_file(save_path)
         else:
             return 'OK', 200
+        
 
     @app.route('/load-json', methods=['POST'])
     def load_json_and_modify__model():
@@ -194,7 +196,6 @@ def parse_args():
 
 def main():
     args = parse_args()
-    logging.getLogger().setLevel(logging.WARNING)
     rpc_run(args.flask, register_interface, args)
 
 
