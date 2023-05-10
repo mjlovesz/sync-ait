@@ -54,14 +54,14 @@ def _lock_nb_mode(file_desc):
     else:
         try:
             msvcrt.locking(file_desc.fileno(), msvcrt.LK_NBLCK, NBYTES)
-            file_desc.seek(0)
         except OSError:
             return False
+        file_desc.seek(0)
 
     return True
 
 
-def _non_lock_nb_mode(file_desc):
+def _lock_ex_mode(file_desc):
     if IS_UNIX:
         fcntl.flock(file_desc, fcntl.LOCK_EX)
     else:
@@ -75,7 +75,7 @@ def lock(file_desc, mode=LOCK_EX):
     if mode == LOCK_NB:
         return _lock_nb_mode(file_desc)
     else:
-        return _non_lock_nb_mode(file_desc)
+        return _lock_ex_mode(file_desc)
 
 
 def unlock(file_desc):

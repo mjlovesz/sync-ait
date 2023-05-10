@@ -12,10 +12,12 @@
 # limitations under the License.
 
 import os.path
+import numpy as np
 
 import pandas as pd
 from utils.excel import read_excel, write_excel
 from utils.log_util import logger
+from common.kit_config import KitConfig
 
 
 class Advisor:
@@ -29,12 +31,12 @@ class Advisor:
         df_dict = read_excel(api_path)
         # 将它们合并到一个DataFrame中
         apis = pd.concat([v for k, v in df_dict.items() if k.endswith('APIMap')], axis=0)
-        cols = ['昇腾API', '说明', 'Opencv 4.5.4', '迁移预估人力（人/天）']
+        cols = ['昇腾API', '说明', 'NV_API', '迁移预估人力（人/天）']
         drop_cols = [c for c in apis.columns if c not in cols]
         logger.debug(f'drop:{drop_cols}')
         apis = apis.drop(drop_cols, axis=1)
         apis['迁移预估人力（人/天）'].fillna(0.1, inplace=True)
-        apis['Opencv 4.5.4'].fillna('', inplace=True)
+        apis['NV_API'].fillna('', inplace=True)
         return apis
 
     @staticmethod
@@ -61,11 +63,11 @@ class Advisor:
             df['Workload'] = 0.0
             # 遍历每一行，并进行修改
             for index, row in df.iterrows():
-                if not row['api']:
+                if row['API'] in KitConfig.except_api:
                     continue
                 # 1. 使用Series.str.contains()做字符串检索
                 # 2. 自定义字符串检索
-                query = self._sort(row['api'], self.api_df, 'Opencv 4.5.4')
+                query = self._sort(row['API'], self.api_df, 'NV_API')
 
                 if query:
                     best = query[0]
@@ -78,16 +80,25 @@ class Advisor:
 
         return self.results
 
+    @staticmethod
+    def _workload_model(x):
+        """工作量评估模型。"""
+        # 或采用tanh模型：np.tanh(x / 15) * 15
+        # 将定义域[0,30)缩放到[0,2)，对应的值域[0,0.5)
+        y = (1 / (1 + np.exp(-x / 15)) - 0.5) * 2 * 15
+        return np.ceil(y)
+
     def workload(self):
         wl = list()
         for file_name, df in self.results.items():
             if df.empty:
                 continue
             workload = df['Workload'].sum()
-            wl.append({'File': file_name, 'Workload': workload})
+            wl.append({'File': file_name, 'Workload': workload, 'Rectified': self._workload_model(workload)})
         wldf = pd.DataFrame(wl)
         total = wldf['Workload'].sum()
-        wldf = pd.concat([wldf, pd.DataFrame({'File': ['Project'], 'Workload': [total]})], ignore_index=True)
+        ttdf = pd.DataFrame({'File': ['Project'], 'Workload': [total], 'Rectified': self._workload_model(total)})
+        wldf = pd.concat([wldf, ttdf], ignore_index=True)
         self.results['Workload'] = wldf
         return wldf
 
@@ -95,10 +106,10 @@ class Advisor:
         cu_list = list()
         for file_name, df in self.results.items():
             if not df.empty and file_name != 'Workload':
-                cu_list.append(df[df['cuda_en'] == True])
+                cu_list.append(df[df['CUDAEnable'] == True])
         cu_df = pd.concat(cu_list, ignore_index=True)
-        cu_gp = cu_df.groupby('api').size()
-        self.results['CUDA_APIS'] = pd.DataFrame({'api': cu_gp.index, 'count': cu_gp.values})
+        cu_gp = cu_df.groupby('API').size()
+        self.results['CUDA_APIs'] = pd.DataFrame({'API': cu_gp.index, 'Count': cu_gp.values})
         return cu_gp
 
     def to_excel(self):

@@ -19,7 +19,7 @@ from utils.thread_helper import alloc_configs_for_subprocess, MyThread
 from utils.log_util import logger
 from common.kit_config import KitConfig
 from scan.scanner import Scanner
-from scan.clang_python import Parser
+from scan.clang_parser import Parser
 
 
 class CxxScanner(Scanner):
