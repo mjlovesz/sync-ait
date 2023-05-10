@@ -59,6 +59,68 @@ class BaseGraph(ABC):
 
         self.update_map()
 
+    def __getitem__(self, key: str) -> NodeType:
+        if not self._node_map.get(key, None):
+            raise KeyError("node '{}' not in graph!".format(key))
+        return self._node_map.get(key)
+
+    def __setitem__(self, key: str, value: NodeType) -> None:
+        src_node = self._node_map.pop(key, None)
+        if not src_node:
+            raise KeyError("You are trying to replace node '{}', which does not exist!".format(key))
+
+        if isinstance(src_node, Node):
+            self._nodes.remove(src_node)
+            # op -> op
+            if isinstance(value, Node):
+                value.inputs = src_node.inputs
+                value.outputs = src_node.outputs
+                for i in src_node.inputs:
+                    self._next_map.get(i).append(value)
+                    self._next_map.get(i).remove(src_node)
+                for opt in src_node.outputs:
+                    self._prev_map[opt] = value
+            # op -> input
+            elif value in self._inputs:
+                for i in src_node.inputs:
+                    self._next_map.get(i).remove(src_node)
+                opt = src_node.outputs[0]
+                for n in self.get_next_nodes(opt):
+                    n.inputs[n.get_input_id(opt)] = value.name
+                    self._next_map[value.name] = [n]
+                self._prev_map.pop(opt, None)
+                self._next_map.pop(opt, None)
+        elif isinstance(src_node, Initializer):
+            self._initializers.remove(src_node)
+            # ini -> input
+            if value in self._inputs:
+                for n in self.get_next_nodes(src_node.name):
+                    n.inputs[n.get_input_id(src_node.name)] = value.name
+                    self._next_map[value.name] = [n]
+                self._next_map.pop(src_node.name, None)
+        else:
+            raise RuntimeError("Unsupported!")
+
+    @property
+    def inputs(self) -> List[PlaceHolder]:
+        return self._inputs
+
+    @property
+    def outputs(self) -> List[PlaceHolder]:
+        return self._outputs
+
+    @property
+    def nodes(self) -> List[Node]:
+        return self._nodes
+
+    @property
+    def initializers(self) -> List[Initializer]:
+        return self._initializers
+
+    @property
+    def value_infos(self) -> List[PlaceHolder]:
+        return self._value_infos
+
     @classmethod
     @abstractmethod
     def parse(cls, model) -> 'BaseGraph':
@@ -86,6 +148,28 @@ class BaseGraph(ABC):
         attrs: Optional[Dict[str, object]] = None,
         domain: str = ''
     ) -> Node:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def save(self, path: str) -> None:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def extract(
+        self,
+        new_model_save_path: str,
+        input_name_list: List[str],
+        output_name_list: List[str],
+        enable_model_check: bool = True
+    ) -> 'BaseGraph':
+        raise NotImplementedError()
+
+    @abstractmethod
+    def simplify(self, **kwargs) -> 'BaseGraph':
+        raise NotImplementedError()
+
+    @abstractmethod
+    def infershape(self) -> None:
         raise NotImplementedError()
 
     def update_map(self) -> None:
@@ -494,68 +578,6 @@ class BaseGraph(ABC):
             return True
         return False
 
-    def __getitem__(self, key: str) -> NodeType:
-        if not self._node_map.get(key, None):
-            raise KeyError("node '{}' not in graph!".format(key))
-        return self._node_map.get(key)
-
-    def __setitem__(self, key: str, value: NodeType) -> None:
-        src_node = self._node_map.pop(key, None)
-        if not src_node:
-            raise KeyError("You are trying to replace node '{}', which does not exist!".format(key))
-
-        if isinstance(src_node, Node):
-            self._nodes.remove(src_node)
-            # op -> op
-            if isinstance(value, Node):
-                value.inputs = src_node.inputs
-                value.outputs = src_node.outputs
-                for i in src_node.inputs:
-                    self._next_map.get(i).append(value)
-                    self._next_map.get(i).remove(src_node)
-                for opt in src_node.outputs:
-                    self._prev_map[opt] = value
-            # op -> input
-            elif value in self._inputs:
-                for i in src_node.inputs:
-                    self._next_map.get(i).remove(src_node)
-                opt = src_node.outputs[0]
-                for n in self.get_next_nodes(opt):
-                    n.inputs[n.get_input_id(opt)] = value.name
-                    self._next_map[value.name] = [n]
-                self._prev_map.pop(opt, None)
-                self._next_map.pop(opt, None)
-        elif isinstance(src_node, Initializer):
-            self._initializers.remove(src_node)
-            # ini -> input
-            if value in self._inputs:
-                for n in self.get_next_nodes(src_node.name):
-                    n.inputs[n.get_input_id(src_node.name)] = value.name
-                    self._next_map[value.name] = [n]
-                self._next_map.pop(src_node.name, None)
-        else:
-            raise RuntimeError("Unsupported!")
-
-    @property
-    def inputs(self) -> List[PlaceHolder]:
-        return self._inputs
-
-    @property
-    def outputs(self) -> List[PlaceHolder]:
-        return self._outputs
-
-    @property
-    def nodes(self) -> List[Node]:
-        return self._nodes
-
-    @property
-    def initializers(self) -> List[Initializer]:
-        return self._initializers
-
-    @property
-    def value_infos(self) -> List[PlaceHolder]:
-        return self._value_infos
-
     def get_prev_node(self, input_name: str) -> Optional[Node]:
         return self._prev_map.get(input_name, None)
 
@@ -630,25 +652,3 @@ class BaseGraph(ABC):
         self._initializers = list(filter(lambda x: x.name in inputs, self._initializers))
 
         self.update_map()
-
-    @abstractmethod
-    def save(self, path: str) -> None:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def extract(
-        self,
-        new_model_save_path: str,
-        input_name_list: List[str],
-        output_name_list: List[str],
-        enable_model_check: bool = True
-    ) -> 'BaseGraph':
-        raise NotImplementedError()
-
-    @abstractmethod
-    def simplify(self, **kwargs) -> 'BaseGraph':
-        raise NotImplementedError()
-
-    @abstractmethod
-    def infershape(self) -> None:
-        raise NotImplementedError()

@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import re
+import sys
 import logging
 from abc import ABC
 import subprocess
