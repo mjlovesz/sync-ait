@@ -1,7 +1,20 @@
+# Copyright 2023 Huawei Technologies Co., Ltd
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import re
 import os
 import time
-from collections import OrderedDict
+from collections import namedtuple, OrderedDict
 
 import pandas as pd
 import numpy as np
@@ -18,6 +31,7 @@ class CMakeScanner(Scanner):
     cmake扫描器的具体子类
     """
     PATTERN = r'(?:(?P<data>(?P<key_word>(.*?))(?P<data_inner>((?:\s*\()([^\)]+)))\)))'
+    SAVE_VAR_INFO_INPUT = namedtuple('save_var_info_input', ['func_name', 'body', 'start_line', 'match_flag', 'var_def_dict'])
 
     def __init__(self, files):
         super().__init__(files)
@@ -84,7 +98,8 @@ class CMakeScanner(Scanner):
                 rst = {'lineno': start_line, 'content': content, 'command': func_name, 'suggestion': 'uncertain'}
                 rst_dict[start_line] = rst
             # save variable definition
-            self._save_var_info(func_name, body, start_line, match_flag, var_def_dict)
+            save_var_info_input = CMakeScanner.SAVE_VAR_INFO_INPUT(func_name, body, start_line, match_flag, var_def_dict)
+            self._save_var_info(save_var_info_input)
 
         return list(rst_dict.values())
 
@@ -105,7 +120,8 @@ class CMakeScanner(Scanner):
 
         return False
 
-    def _save_var_info(self, func_name, body, start_line, match_flag, var_def_dict):
+    def _save_var_info(self, save_var_info_input):
+        func_name, body, start_line, match_flag, var_def_dict = save_var_info_input
         if func_name in self.var_rel_commands:
             # var define
             words = body.replace('(', '').strip().split(' ')
