@@ -433,6 +433,13 @@ modifier.Modifier = class {
             this.name2NodeStates.set(name, 'Exist');
         }
 
+        for (const name of this.addedInputs) {
+            this.name2NodeStates.delete(name)
+        }
+        for (const name of this.addedOutputs) {
+            this.name2NodeStates.delete('out_' + name)
+        }
+
         // console.log(this.modifier.renameMap)
         // reset node inputs/outputs
         for (const changed_node_name of this.renameMap.keys()) {

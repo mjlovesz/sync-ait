@@ -1244,7 +1244,7 @@ sidebar.ModelSidebar = class {
                     let dim = dim_str.trim()
                     if (dim.match("^-?[1-9][0-9]{0,10}$")) {
                         dims.push(parseInt(dim))
-                    } else if (dim.match("^[a-zA-Z\\-_\\\\/\\.]{1,64}$")){
+                    } else if (dim.match("^[a-zA-Z\\-_\\\\/\\.0-9]{1,64}$")) {
                         dims.push(dim)
                     } else {
                         has_error = true
