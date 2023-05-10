@@ -442,8 +442,7 @@ def member_ref_expr(c):
         if c0.kind.name not in whole_dict:
             cls, obj, _, _, _ = default(c0)
         else:
-            cls, obj, _, _, _ = whole_dict[c0.kind.name](c0)
-
+            cls, obj, _, _, _ = whole_dict.get(c0.kind.name)(c0)
     cls = cls.replace('const ', '')  # 去除const
     return type_x, f'{obj}.{api}', f'{cls}.{api}', definition, source
 
