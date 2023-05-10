@@ -19,7 +19,7 @@ import logging
 
 from auto_optimizer.common.utils import format_to_module
 
-logging = logging.getLogger("auto-optimizer")
+logger = logging.getLogger("auto-optimizer")
 
 
 class Register:
@@ -57,7 +57,7 @@ class Register:
         try:
             self._add_modules(modules)
         except Exception as error:
-            logging.error("add_modules failed, {}".format(error))
+            logger.error("add_modules failed, {}".format(error))
             raise RuntimeError("add_modules {} import failed: {}".format(error)) from error
 
         for module in modules:
