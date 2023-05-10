@@ -35,7 +35,8 @@ def _accuracy_compare_parser(compare_parser):
     compare_parser.add_argument("-i", "--input-path", dest="input_path", default="",
                         help="<Optional> The input data path of the model."
                              " Separate multiple inputs with commas(,). E.g: input_0.bin,input_1.bin")
-    compare_parser.add_argument("-c", "--cann-path", dest="cann_path", default="/usr/local/Ascend/ascend-toolkit/latest/",
+    compare_parser.add_argument("-c", "--cann-path", dest="cann_path",
+                        default="/usr/local/Ascend/ascend-toolkit/latest/",
                         help="<Optional> The CANN installation path")
     compare_parser.add_argument("-o", "--out-path", dest="out_path", default="", help="<Optional> The output path")
     compare_parser.add_argument("-s", "--input-shape", dest="input_shape", default="",

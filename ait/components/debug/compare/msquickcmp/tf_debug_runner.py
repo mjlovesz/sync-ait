@@ -42,6 +42,18 @@ class TfDebugRunner(object):
         self.input_path = self.args.input_path
         self.dump_root = os.path.realpath(self.args.out_path)
 
+    def run(self):
+        """
+        Function description:
+            run tf model
+        """
+        self._dump_control()
+        self._load_graph()
+        inputs_tensor = tf_common.get_inputs_tensor(self.global_graph, self.args.input_shape)
+        inputs_map = tf_common.get_inputs_data(inputs_tensor, self.args.input_path)
+        outputs_tensor = self._get_outputs_tensor()
+        self._run_model(inputs_map, outputs_tensor)
+
     def _dump_control(self):
         if tf_common.check_tf_version(tf_common.VERSION_TF2X):
             dbg.enable()
@@ -62,18 +74,6 @@ class TfDebugRunner(object):
             utils.print_error_log("Failed to load the model %s. %s" % (self.args.model_path, err))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from err
         utils.print_info_log("Load the model %s successfully." % self.args.model_path)
-
-    def run(self):
-        """
-        Function description:
-            run tf model
-        """
-        self._dump_control()
-        self._load_graph()
-        inputs_tensor = tf_common.get_inputs_tensor(self.global_graph, self.args.input_shape)
-        inputs_map = tf_common.get_inputs_data(inputs_tensor, self.args.input_path)
-        outputs_tensor = self._get_outputs_tensor()
-        self._run_model(inputs_map, outputs_tensor)
 
     def _get_outputs_tensor(self):
         outputs_tensor = []
