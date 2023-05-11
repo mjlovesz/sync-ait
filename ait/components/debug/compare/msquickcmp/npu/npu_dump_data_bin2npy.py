@@ -1,7 +1,8 @@
 import os
 import sys
 
-from common import utils
+from msquickcmp.common import utils
+
 
 MSACCUCMP_FILE_PATH =  "toolkit/tools/operator_cmp/compare/msaccucmp.py"
 
@@ -31,4 +32,4 @@ def _check_data_convert_file(convert_dir_path):
         return convert_dir_path
 
 def _check_convert_bin2npy(arguments):
-    return arguments.bin2npy and arguments.dump
+    return arguments.bin2npy

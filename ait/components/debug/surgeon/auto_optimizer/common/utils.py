@@ -21,6 +21,9 @@ from numpy.typing import NDArray
 from numpy.linalg import norm
 import onnxruntime as rt
 
+from auto_optimizer.tools.log import logger
+
+
 def typeassert(*ty_args, **ty_kwargs):
     def decorate(func):
         # Map function argument names to supplied types
@@ -110,3 +113,16 @@ def meet_precision(lmat: NDArray, rmat: NDArray, cos_th: float, atol: float, rto
     # normal cases we check cosine distance and norm closeness
     return 1 - cosine_similarity(lmat, rmat) <= cos_th \
         and bool(np.isclose(rnorm, lnorm, atol=atol, rtol=rtol))
+
+
+def check_output_model_path(output_model_path):
+    if os.path.isdir(output_model_path):
+        logger.error("{} is a directory".format(output_model_path))
+        return False
+
+    model_dir = os.path.dirname(os.path.abspath(output_model_path))
+    if not os.path.exists(model_dir):
+        logger.error("{} is not exist.".format(model_dir))
+        return False
+
+    return True
