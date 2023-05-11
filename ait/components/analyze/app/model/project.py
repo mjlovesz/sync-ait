@@ -13,6 +13,7 @@
 
 import time
 import os
+import pandas as pd
 from utils.log_util import logger
 from common.kit_config import KitConfig
 from report.report_factory import ReporterFactory
@@ -106,6 +107,40 @@ class Project:
         for s_type in self.inputs.scanner_type:
             self.scanners.append(scanner_factory.get_scanner(s_type))
 
+    @staticmethod
+    def _dedup(val_dict):
+        rst_dict = {}
+        for f, df in val_dict.items():
+            vals = df.to_dict()
+            if not vals:
+                continue
+            print()
+            for idx, loc_str in vals['Location'].items():
+                loc_info = loc_str.split(',')
+                new_f = loc_info[0]
+                loc = loc_info[1]
+
+                if rst_dict.get(new_f) is None:
+                    rst_dict[new_f] = {loc: {'API': vals['API'][idx],
+                                             'CUDAEnable': vals['CUDAEnable'][idx],
+                                             'Location': vals['Location'][idx],
+                                             'Context(形参 | 实参 | 来源代码 | 来源位置)':
+                                                 vals['Context(形参 | 实参 | 来源代码 | 来源位置)'][idx]}}
+                else:
+                    pre_val = rst_dict[new_f]
+                    if pre_val.get(loc) is None:
+                        rst_dict[new_f][loc] = {'API': vals['API'][idx],
+                                                'CUDAEnable': vals['CUDAEnable'][idx],
+                                                'Location': vals['Location'][idx],
+                                                'Context(形参 | 实参 | 来源代码 | 来源位置)':
+                                                    vals['Context(形参 | 实参 | 来源代码 | 来源位置)'][idx]}
+
+        val_dict = {}
+        for f, loc_dict in rst_dict.items():
+            val_dict[f] = pd.DataFrame.from_dict(list(loc_dict.values()))
+
+        return val_dict
+
     def scan(self):
         """
         调用定义的所有扫描器的scan函数进行扫描任务，核心并行扫描处理框架
@@ -126,7 +161,8 @@ class Project:
                 if not val_dict:
                     continue
 
-                ad = Advisor(val_dict, os.path.abspath(os.path.dirname(__file__)) + '/' + KitConfig.api_map)
+                rst_dict = self._dedup(val_dict)
+                ad = Advisor(rst_dict, os.path.abspath(os.path.dirname(__file__)) + '/' + KitConfig.api_map)
                 ad.recommend()
                 workloads = ad.workload()
                 logger.info(f'Workloads:\n', workloads)
