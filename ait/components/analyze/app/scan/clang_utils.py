@@ -94,11 +94,11 @@ def get_diag_info(diag):
             'fixits': diag.fixits}
 
 
-def get_attr(obj, attr=None, default=None):
+def get_attr(obj, attr=None, default_val=None):
     """"""
     attrs = attr.split('.')
     for a in attrs:
-        obj = getattr(obj, a, default)
+        obj = getattr(obj, a, default_val)
         if not obj:
             return obj
     return obj
@@ -311,7 +311,7 @@ def call_expr(c):
     if not c0:
         return default(c)
 
-    op_overload = 'operator' in c.spelling  # TODO(dyh)：需要判断的更加准确
+    op_overload = 'operator' in c.spelling  # 需要判断的更加准确
     for i, child in enumerate(children):
         child = skip_implicit(child)
         if not child:
@@ -521,7 +521,7 @@ if KitConfig.level == 'large':
 
 def auto_match(c):
     if c.kind.name in whole_dict:
-        return whole_dict[c.kind.name](c)
+        return whole_dict.get(c.kind.name)(c)
     elif c.kind.name.endswith('LITERAL'):
         return literal(c)
     elif c.kind.name.endswith('OPERATOR'):

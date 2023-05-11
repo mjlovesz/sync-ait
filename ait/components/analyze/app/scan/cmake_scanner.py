@@ -31,7 +31,8 @@ class CMakeScanner(Scanner):
     cmake扫描器的具体子类
     """
     PATTERN = r'(?:(?P<data>(?P<key_word>(.*?))(?P<data_inner>((?:\s*\()([^\)]+)))\)))'
-    SAVE_VAR_INFO_INPUT = namedtuple('save_var_info_input', ['func_name', 'body', 'start_line', 'match_flag', 'var_def_dict'])
+    SAVE_VAR_INFO_INPUT = namedtuple('save_var_info_input',
+                                     ['func_name', 'body', 'start_line', 'match_flag', 'var_def_dict'])
 
     def __init__(self, files):
         super().__init__(files)
@@ -49,6 +50,31 @@ class CMakeScanner(Scanner):
 
         if result:
             logger.info(f'Total time for scanning cmake files is {eval_time}s')
+
+    @staticmethod
+    def _check_var_info(val, start_line, var_def_dict):
+        locs = var_def_dict[val]
+        lines = list(locs.keys())
+        idx = np.searchsorted(lines, start_line)
+        flag = locs[lines[idx - 1]]
+        return flag
+
+    @staticmethod
+    def _read_cmake_file_content(filepath):
+        """
+        功能：读取CMakelists.txt文件内容，并删除注释
+        :param filepath:文件路径
+        :return:去掉注释后的文件内容
+        """
+        with open(filepath, errors='ignore') as file_desc:
+            try:
+                contents = file_desc.read()
+            except UnicodeDecodeError as err:
+                logger.error('%s decode error. Only the utf-8 format is '
+                             'supported. Except:%s.', filepath, err)
+                contents = ""
+        contents = CommentDelete(contents, '#', CommentDelete.MULTI_COMMENT_CMAKE).delete_comment()
+        return contents
 
     def _do_cmake_scan_with_file(self):
         """
@@ -98,7 +124,8 @@ class CMakeScanner(Scanner):
                 rst = {'lineno': start_line, 'content': content, 'command': func_name, 'suggestion': 'uncertain'}
                 rst_dict[start_line] = rst
             # save variable definition
-            save_var_info_input = CMakeScanner.SAVE_VAR_INFO_INPUT(func_name, body, start_line, match_flag, var_def_dict)
+            save_var_info_input = CMakeScanner.SAVE_VAR_INFO_INPUT(
+                func_name, body, start_line, match_flag, var_def_dict)
             self._save_var_info(save_var_info_input)
 
         return list(rst_dict.values())
@@ -134,28 +161,3 @@ class CMakeScanner(Scanner):
                 var_def_dict[var_name] = {start_line: match_flag}
             else:
                 var_def_dict[var_name][start_line] = match_flag
-
-    @staticmethod
-    def _check_var_info(val, start_line, var_def_dict):
-        locs = var_def_dict[val]
-        lines = list(locs.keys())
-        idx = np.searchsorted(lines, start_line)
-        flag = locs[lines[idx - 1]]
-        return flag
-
-    @staticmethod
-    def _read_cmake_file_content(filepath):
-        """
-        功能：读取CMakelists.txt文件内容，并删除注释
-        :param filepath:文件路径
-        :return:去掉注释后的文件内容
-        """
-        with open(filepath, errors='ignore') as file_desc:
-            try:
-                contents = file_desc.read()
-            except UnicodeDecodeError as err:
-                logger.error('%s decode error. Only the utf-8 format is '
-                             'supported. Except:%s.', filepath, err)
-                contents = ""
-        contents = CommentDelete(contents, '#', CommentDelete.MULTI_COMMENT_CMAKE).delete_comment()
-        return contents

@@ -15,6 +15,7 @@ import json
 
 from report.report import Report
 from utils.log_util import logger
+from utils.io_util import IOUtil
 from common.kit_config import KitConfig
 
 
@@ -41,8 +42,7 @@ class JsonReport(Report):
 
         for k, v in self.report_content.items():
             self.report_content[k] = v.to_dict(orient='records')  # 将dataframe转换为dict
-        with open(self.report_path, 'w') as f:
-            json.dump(self.report_content, f, indent=4, ensure_ascii=False)
+        IOUtil.json_safe_dump(self.report_content, self.report_path)
 
     def generate_abnormal(self, message):
         logger.info(message)
