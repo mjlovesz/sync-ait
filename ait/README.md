@@ -1,7 +1,20 @@
 #  AIT
 
-#### 介绍
-AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体化开发工具，支持一站式调试调优，当前包括debug、profile、anlyze等组件。
+## 目录
+- [介绍](#介绍)
+- [工具安装](#工具安装)
+- [工具使用](#工具使用)
+- [参考](#参考)
+- [许可证](#许可证)
+- [免责声明](#免责声明)
+
+## 介绍
+AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体化开发工具，支持一站式调试调优，当前包括debug、profile、analyze等组件。
+
+### ATI各子功能介绍
+- ait profile benchmark: 用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延）。（[快速入门指南](docs/profile/benchmark/README.md)）
+- ait debug surgeon: 使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能。（[快速入门指南](docs/debug/surgeon/README.md)）
+- ait debug compare: 提供自动化的推理场景精度比对，用来定位问题算子。（[快速入门指南](docs/debug/compare/README.md)）
 
 ## 工具安装
 
@@ -171,22 +184,38 @@ Options:
 ```bash
 ait debug compare -h
 ```
-更多使用方式和示例请参考：
+
+更多使用方式和示例请参考：[compare examples](examples/cli/debug/compare/)
 
 #### 2. surgeon子任务使用说明
 ```bash
 ait debug surgeon -h
 ```
 
-更多使用方式和示例请参考：
+更多使用方式和示例请参考：[surgeon examples](examples/cli/debug/surgeon/)
 
 ### profile任务使用说明
 #### 1. benchmark子任务使用说明
+```bash
+ait profile benchmark -h
+```
+
+更多使用方式和示例请参考：[benchmark examples](examples/cli/profile/benchmark/)
+
+
+## 参考
+
+### AIT资源
+
+* [AIT profile benchmark 快速入门指南](docs/profile/benchmark/README.md)
+* [AIT debug surgeon 快速入门指南](docs/debug/surgeon/README.md)
+* [AIT debug compare 快速入门指南](docs/debug/compare/README.md)
 
 
 ## 许可证
 
 [Apache License 2.0](LICENSE)
+
 
 ## 免责声明
 
