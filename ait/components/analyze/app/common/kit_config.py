@@ -62,7 +62,11 @@ class KitConfig:
 
     arch = platform.machine()
     lib_clang_path = f'/usr/lib/{arch}-linux-gnu/libclang-6.0.so'
-    opencv_include_path = '/home/opencv-4.5.4/include/opencv4'
+    includes = {
+        'cuda': '',
+        'opencv': f'{os.path.dirname(__file__)}../headers/opencv/include/opencv4',
+        'tensorrt': '',
+    }
 
     # 'make', 'automake'
     valid_construct_tools = ['cmake']
@@ -75,8 +79,9 @@ class KitConfig:
     source_directory = ''
     project_time = ''
 
-    valid_report_type = ['csv']
+    valid_report_type = ['csv', 'json']
     api_map = '../config/mxBase_API_MAP.xlsx'
+    except_api = ['', 'NAMESPACE_REF']
 
     cuda_home = os.environ.get('CUDA_HOME', '/usr/local/cuda')
     # lib_name: [namespace, cuda_include, cuda_namespace]，后两者用于分析基于CUDA加速的接口

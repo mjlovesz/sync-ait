@@ -50,5 +50,6 @@ def _cuda_path(sys_paths):
 
 
 def _opencv_include_path(sys_paths):
-    if not KitConfig.opencv_include_path.startswith('/usr/'):
-        sys_paths.append(KitConfig.opencv_include_path)
+    for include in KitConfig.includes.values():
+        if not include.startswith('/usr/'):
+            sys_paths.append(include)
