@@ -34,6 +34,43 @@ class OmParser:
         if os.path.isfile(self._om_json):
             os.remove(self._om_json)
 
+    @staticmethod
+    def _parse_fusion_op(attr_dict: Dict[str, Dict]) -> List[str]:
+        attr = attr_dict.get('_datadump_original_op_names')
+        if attr is None:
+            return []
+        try:
+            ori_ops = attr.get('value').get('list').get('s')
+        except AttributeError:
+            return []
+        if not isinstance(ori_ops, list):
+            return []
+        return ori_ops
+
+    @staticmethod
+    def _parse_op_engine(attr_dict: Dict[str, Dict]) -> str:
+        attr = attr_dict.get('_ge_attr_op_kernel_lib_name')
+        if attr is None:
+            return Engine.UNKNOWN
+        try:
+            engine = attr.get('value').get('s')
+        except AttributeError:
+            return Engine.UNKNOWN
+        if not isinstance(engine, str):
+            return Engine.UNKNOWN
+
+        engine_map = {
+            'aicore': Engine.AICORE,
+            'aicpu': Engine.AICPU,
+            'dvpp': Engine.DVPP,
+            'cpu': Engine.HOST_CPU
+        }
+        engine = engine.lower()
+        for key, value in engine_map.items():
+            if key in engine:
+                return value
+        return Engine.UNKNOWN
+
     def parse_all_ops(self, convert = False) -> List[OpInnerInfo]:
         ''' parse all op info from om json
         '''
@@ -135,38 +172,3 @@ class OmParser:
             op_info.op_engine = engine
 
         return op_info
-
-    def _parse_fusion_op(self, attr_dict: Dict[str, Dict]) -> List[str]:
-        attr = attr_dict.get('_datadump_original_op_names')
-        if attr is None:
-            return []
-        try:
-            ori_ops = attr.get('value').get('list').get('s')
-        except AttributeError:
-            return []
-        if not isinstance(ori_ops, list):
-            return []
-        return ori_ops
-
-    def _parse_op_engine(self, attr_dict: Dict[str, Dict]) -> str:
-        attr = attr_dict.get('_ge_attr_op_kernel_lib_name')
-        if attr is None:
-            return Engine.UNKNOWN
-        try:
-            engine = attr.get('value').get('s')
-        except AttributeError:
-            return Engine.UNKNOWN
-        if not isinstance(engine, str):
-            return Engine.UNKNOWN
-
-        engine_map = {
-            'aicore': Engine.AICORE,
-            'aicpu': Engine.AICPU,
-            'dvpp': Engine.DVPP,
-            'cpu': Engine.HOST_CPU
-        }
-        engine = engine.lower()
-        for key, value in engine_map.items():
-            if key in engine:
-                return value
-        return Engine.UNKNOWN

@@ -20,6 +20,7 @@ from components.profile import profile_cli_group
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
+
 def load_analyze_sub_task():
     sub_tasks = {}
     for entry_point in pkg_resources.iter_entry_points('analyze_sub_task'):

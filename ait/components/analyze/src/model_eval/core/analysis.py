@@ -129,6 +129,7 @@ class Analyze:
 
         if self._config.framework == Framework.ONNX:
             opset_version = self._graph.opset_version()
+
             def map_op(op_type):
                 return op_map.map_onnx_op(op_type, opset_version)
         else:
