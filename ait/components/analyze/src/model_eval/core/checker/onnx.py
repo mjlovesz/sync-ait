@@ -21,27 +21,8 @@ class OnnxChecker:
     def __init__(self, graph: OnnxGraph) -> None:
         self._graph = graph
 
-    def check_ops(self) -> Dict[str, List[str]]:
-        if self._graph is None:
-            return {}
-
-        graph = self._graph.graph
-
-        err_map: Dict[str, List[str]] = {}
-        self._check_op_validation_by_onnx_checker(graph, err_map)
-        self._check_op_input(graph, err_map)
-        return err_map
-
-    def _check_op_validation_by_onnx_checker(self, graph, err_map):
-        for node in graph.node:
-            errinfo = self._graph.check_node(node)
-            if not isinstance(errinfo, str):
-                errinfo = str(errinfo)
-            if len(errinfo) == 0:
-                continue
-            err_map.setdefault(node.name, []).append(errinfo)
-
-    def _check_op_input(self, graph, err_map):
+    @staticmethod
+    def _check_op_input(graph, err_map):
         nodes_outputs: Set[str] = set()
         for node in graph.node:
             nodes_outputs = nodes_outputs.union(node.output)
@@ -70,3 +51,23 @@ class OnnxChecker:
             s = ','.join(empty_input)
             err_map.setdefault(node.name, []) \
                 .append(f'input {s} is empty.')
+
+    def check_ops(self) -> Dict[str, List[str]]:
+        if self._graph is None:
+            return {}
+
+        graph = self._graph.graph
+
+        err_map: Dict[str, List[str]] = {}
+        self._check_op_validation_by_onnx_checker(graph, err_map)
+        self._check_op_input(graph, err_map)
+        return err_map
+
+    def _check_op_validation_by_onnx_checker(self, graph, err_map):
+        for node in graph.node:
+            errinfo = self._graph.check_node(node)
+            if not isinstance(errinfo, str):
+                errinfo = str(errinfo)
+            if len(errinfo) == 0:
+                continue
+            err_map.setdefault(node.name, []).append(errinfo)

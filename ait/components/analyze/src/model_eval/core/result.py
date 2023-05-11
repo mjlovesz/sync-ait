@@ -41,10 +41,10 @@ class OpResult:
     def __setattr__(self, __name: str, __value: Any) -> None:
         if __name == 'is_supported':
             if not isinstance(__value, bool) or __value:
-                return
+                return super().__setattr__(__name, self.is_supported)
         if __name == 'op_type':
             if self.op_type != '':
-                return
+                return super().__setattr__(__name, self.op_type)
         return super().__setattr__(__name, __value)
 
     def set_details(self, err_detail: str) -> None:

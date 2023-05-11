@@ -17,17 +17,17 @@ import logging
 from logging import StreamHandler
 
 
-def get_logger(name="model_analysis_logger"):
-    logger = logging.getLogger(name)
-    logger.propagate = False
-    logger.setLevel(logging.INFO)
+def get_logger():
+    mylogger = logging.getLogger('analyze_tool_logger')
+    mylogger.propagate = False
+    mylogger.setLevel(logging.INFO)
 
     fmt = '%(asctime)s %(levelname)s : %(message)s'
     formatter = logging.Formatter(fmt)
     console_handler = StreamHandler(stream=sys.stdout)
     console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
+    mylogger.addHandler(console_handler)
 
-    return logger
+    return mylogger
 
 logger = get_logger()
