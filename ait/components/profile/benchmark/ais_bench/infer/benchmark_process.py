@@ -50,12 +50,18 @@ def set_session_options(session, args):
         aipp_batchsize = args.batchsize
 
     # 确认模型只有一个动态 aipp input
-    if (args.aipp_config is not None) and (session.get_dym_aipp_input_exsity()):
+    aipp_input_exsity = session.get_dym_aipp_input_exsity()
+    if (args.aipp_config is not None) and (aipp_input_exsity == 1):
         session.load_aipp_config_file(args.aipp_config, aipp_batchsize)
         session.check_dym_aipp_input_exsity()
-    elif (args.aipp_config is None) and (session.get_dym_aipp_input_exsity()):
+    elif (args.aipp_config is None) and (aipp_input_exsity == 1):
         logger.error("can't find aipp config file for model with dym aipp input , please check it!")
         raise RuntimeError('aipp model without aipp config!')
+    elif (aipp_input_exsity > 1):
+        logger.error("don't support more than one dynamic aipp input in model, amount of aipp input is {}".format(aipp_input_exsity))
+        raise RuntimeError('aipp model has more than 1 aipp input!')
+    elif (aipp_input_exsity == -1):
+        raise RuntimeError('aclmdlGetAippType failed!')
 
     # 设置custom out tensors size
     if args.output_size is not None:
@@ -337,7 +343,7 @@ def multidevice_run(args):
     splits = None
     if (args.input != None):
         splits = seg_input_data_for_multi_process(args, args.input, jobs)
-        
+
     for i in range(len(device_list)):
         cur_args = copy.deepcopy(args)
         cur_args.device = int(device_list[i])
@@ -415,6 +421,6 @@ def benchmark_process(args:BenchMarkArgsAdapter):
         # args has multiple device, run single process for each device
         ret = multidevice_run(args)
         return ret
-    
+
     main(args)
     return 0
