@@ -1,0 +1,75 @@
+# Basic Usage
+
+
+## 介绍
+compare精度对比工具可以通过ait命令行方式启动精度对比。
+
+
+## 运行示例
+**不指定模型输入** 命令示例，**其中路径需使用绝对路径**
+  ```sh
+  ait debug compare -gm /home/HwHiAiUser/onnx_prouce_data/resnet_offical.onnx -om /home/HwHiAiUser/onnx_prouce_data/model/resnet50.om \
+  -c /usr/local/Ascend/ascend-toolkit/latest -o /home/HwHiAiUser/result/test
+  ```
+  - `-om, –om-model` 指定昇腾AI处理器的离线模型（.om）路径
+  - `-gm, --golden-model` 指定模型文件（.pb或.onnx）路径
+  - `-c，–-cann-path` (可选) 指定 `CANN` 包安装完后路径，默认为 `/usr/local/Ascend/ascend-toolkit/latest`
+  - `-o, –-output` (可选) 输出文件路径，默认为当前路径
+
+
+### 输出结果说明
+
+```sh
+{output_path}/{timestamp}/{input_name-input_shape}  # {input_name-input_shape} 用来区分动态shape时不同的模型实际输入，静态shape时没有该层
+├-- dump_data
+│   ├-- npu                          # npu dump 数据目录
+│   │   ├-- {timestamp}              # 模型所有npu dump的算子输出，dump为False情况下没有该目录
+│   │   │   └-- 0                    # Device 设备 ID 号
+│   │   │       └-- {om_model_name}  # 模型名称
+│   │   │           └-- 1            # 模型 ID 号
+│   │   │               ├-- 0        # 针对每个Task ID执行的次数维护一个序号，从0开始计数，该Task每dump一次数据，序号递增1
+│   │   │               │   ├-- Add.8.5.1682067845380164
+│   │   │               │   ├-- ...
+│   │   │               │   └-- Transpose.4.1682148295048447
+│   │   │               └-- 1
+│   │   │                   ├-- Add.11.4.1682148323212422
+│   │   │                   ├-- ...
+│   │   │                   └-- Transpose.4.1682148327390978
+│   │   ├-- {time_stamp}
+│   │   │   ├-- input_0_0.bin
+│   │   │   └-- input_0_0.npy
+│   │   └-- {time_stamp}_summary.json
+│   └-- {onnx or tf}                         # -m 模型为 .onnx 时，onnx dump 数据目录，Tensorflow 模型为 tf
+│       ├-- Add_100.0.1682148256368588.npy
+│       ├-- ...
+│       └-- Where_22.0.1682148253575249.npy
+├-- input
+│   └-- input_0.bin                          # 随机输入数据，若指定了输入数据，则该文件不存在
+├-- model
+│   ├-- {om_model_name}.json
+│   └-- new_{om_model_name}.onnx             # 把每个算子作为输出节点后新生成的 onnx 模型
+├-- result_{timestamp}.csv                   # 比对结果文件
+└-- tmp                                      # 如果 -m 模型为 Tensorflow pb 文件, tfdbg 相关的临时目录
+```
+
+### 比对结果分析
+- **比对结果** 在文件 `result_{timestamp}.csv` 中，比对结果的含义与基础精度比对工具完全相同，其中每个字段的含义可参考 [CANN商用版/比对步骤（推理场景）](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/atlasaccuracy_16_0039.html)
+- **analyser 分析结果** 在调用结束后打印，在全部对比完成后，逐行分析数据，排除 nan 数据，输出各对比项中首个差距不在阈值范围内的算子。
+
+  | 对比项目                  | 阈值   |
+  | ------------------------- | ------ |
+  | CosineSimilarity          | <0.99  |
+  | RelativeEuclideanDistance | >0.05  |
+  | KullbackLeiblerDivergence | >0.005 |
+  | RootMeanSquareError       | >1.0   |
+  | MeanRelativeError         | >1.0   |
+
+  输出结果使用 markdown 表格显示
+  ```sh
+  2023-04-19 13:54:10(1005)-[INFO]Operators may lead to inaccuracy:
+
+  |                   Monitor |  Value | Index | OpType | NPUDump | GroundTruth |
+  |--------------------------:|-------:|------:|-------:|--------:|------------:|
+  |          CosineSimilarity | 0.6722 |   214 |    Mul |   Mul_6 |       Mul_6 |
+  | RelativeEuclideanDistance |      1 |   214 |    Mul |   Mul_6 |       Mul_6 |
+  ```
