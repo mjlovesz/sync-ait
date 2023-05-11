@@ -29,7 +29,7 @@ def init_args():
 
     # 添加输出格式选项，当前默认和仅支持xlsx
     parser.add_argument('-f', '--report-type', dest='report_type', default='csv',
-                        help='specify output report type. Only xlsx is supported.')
+                        help='specify output report type. Only CSV(XLSX)/JSON is supported.')
 
     # 添加日志级别开关，默认级别是INFO，只有添加-d后才能输出ERR级别日志
     parser.add_argument('-l', '--log-level', dest='log_level',
