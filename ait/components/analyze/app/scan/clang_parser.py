@@ -323,7 +323,7 @@ class Parser:
             dump = self.tu.spelling.replace('/', '.')
             os.makedirs('temp/', exist_ok=True)
             IOUtil.json_safe_dump(info, f'temp/{dump}.json')
-        logger.debug(f'Ast saved in：temp/{dump}.json')
+            logger.debug(f'Ast saved in：temp/{dump}.json')
         if log:
             pprint(RESULTS)
         return RESULTS
