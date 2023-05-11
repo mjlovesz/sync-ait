@@ -13,6 +13,7 @@
 
 from common.kit_config import ReporterType
 from report.csv_report import CsvReport
+from report.json_report import JsonReport
 from utils.log_util import logger
 
 
@@ -34,8 +35,10 @@ class ReporterFactory:
         """
         if report_type == ReporterType.CSV_REPORTER:
             return CsvReport(self.report_params)
+        if report_type == ReporterType.JSON_REPORTER:
+            return JsonReport(self.report_params)
 
-        raise Exception('only support Csv report format.')
+        raise Exception('only support Csv/JSON report format.')
 
     def dump(self):
         """

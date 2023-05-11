@@ -17,7 +17,7 @@ pip3 install -r requirements.txt
 
 配置**common/kit_config.py**中的**lib_clang_path**为`libclang.so`的路径
 
-配置**common/kit_config.py**中的**opencv_include_path**为opencv的inlucde路径如`/home/headers/opencv/include/opencv4`
+配置**common/kit_config.py**中的**includes**，如opencv的inlucde路径`/home/headers/opencv/include/opencv4`
 
 ## 使用
 
