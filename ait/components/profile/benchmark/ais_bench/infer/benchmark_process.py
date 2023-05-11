@@ -58,7 +58,8 @@ def set_session_options(session, args):
         logger.error("can't find aipp config file for model with dym aipp input , please check it!")
         raise RuntimeError('aipp model without aipp config!')
     elif (aipp_input_exsity > 1):
-        logger.error("don't support more than one dynamic aipp input in model, amount of aipp input is {}".format(aipp_input_exsity))
+        logger.error("don't support more than one dynamic aipp input in model, amount of aipp input is {}"
+                        .format(aipp_input_exsity))
         raise RuntimeError('aipp model has more than 1 aipp input!')
     elif (aipp_input_exsity == -1):
         raise RuntimeError('aclmdlGetAippType failed!')
