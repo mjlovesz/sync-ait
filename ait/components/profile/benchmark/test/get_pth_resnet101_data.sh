@@ -18,7 +18,7 @@ function get_convert_file()
 {
     rm -rf "$1"
     local convert_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet101_Pytorch_Infer/resnet101_pth2onnx.py"
-    wget $convert_url -O $1
+    wget $convert_url -O $1 --no-check-certificate
 }
 
 function get_aippConfig_file()
@@ -26,7 +26,7 @@ function get_aippConfig_file()
     rm -rf "$1"
     local aipp_config_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/aipp_resnet50.aippconfig"
     #local aipp_config_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet101_Pytorch_Infer/aipp.config"
-    wget $aipp_config_url -O $1
+    wget $aipp_config_url -O $1 --no-check-certificate
 }
 
 convert_staticbatch_om()
