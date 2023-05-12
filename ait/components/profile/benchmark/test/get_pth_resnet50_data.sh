@@ -141,7 +141,7 @@ convert_dymshape_om()
     if [ ! -f $_om_path ]; then
         local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
             --input_shape_range=$_input_tensor_name:$_dymshapes --soc_version=$_soc_version \
-            --input_format=NCHW --enable_small_channel=1"
+            --input_format=NCHW"
         [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
         $_cmd || { echo "atc run $_cmd failed"; return 1; }
     fi
@@ -165,7 +165,7 @@ convert_dymaipp_staticbatch_om()
         if [ ! -f $_om_path ]; then
             local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
                 --input_shape=$_input_shape --soc_version=$_soc_version \
-                --input_format=NCHW --enable_small_channel=1"
+                --input_format=NCHW"
             [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
             $_cmd || { echo "atc run $_cmd failed"; return 1; }
         fi
@@ -189,7 +189,7 @@ convert_dymaipp_dymbatch_om()
     if [ ! -f $_om_path ]; then
         local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
         --input_shape=$_input_shape --soc_version=$_soc_version --dynamic_batch_size=$_dymbatch \
-        --input_format=NCHW --enable_small_channel=1"
+        --input_format=NCHW"
         [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
         $_cmd || { echo "atc run $_cmd failed"; return 1; }
     fi
@@ -212,7 +212,7 @@ convert_dymaipp_dymhw_om()
     if [ ! -f $_om_path ]; then
         local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
         --input_shape=$_input_shape --soc_version=$_soc_version --dynamic_image_size=$_dymhw
-        --input_format=NCHW --enable_small_channel=1"
+        --input_format=NCHW"
         [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
         $_cmd || { echo "atc run $_cmd failed"; return 1; }
     fi
