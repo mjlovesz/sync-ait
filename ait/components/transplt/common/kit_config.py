@@ -64,7 +64,7 @@ class KitConfig:
     lib_clang_path = f'/usr/lib/{arch}-linux-gnu/libclang-14.so'
     includes = {
         'cuda': '',
-        'opencv':'/home/zhujinfa/porting_dev/headers/opencv/include/opencv4/',
+        'opencv': f'{os.path.dirname(__file__)}/../headers/opencv/include/opencv4',
         'tensorrt': '',
     }
 
