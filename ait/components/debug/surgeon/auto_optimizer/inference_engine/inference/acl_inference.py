@@ -27,7 +27,10 @@ try:
     from ais_bench.infer.interface import InferSession
 except ImportError as exc:
     logging.warning('Failed to import InferSession, please install extra [inference] feature.')
-import aclruntime
+try:
+    import aclruntime
+except ImportError as exc:
+    logging.warning('Failed to import aclruntime.')
 tensor_type_to_numpy_type = {
     aclruntime.dtype.int8: np.int8,
     aclruntime.dtype.uint8: np.uint8,
