@@ -19,6 +19,7 @@ fi
 
 if [ ! -z ${arg_force_reinstall} ]; then
   pip uninstall ait compare aclruntime ais_bench
+fi
 
 pip install ${CURRENT_DIR}
 
