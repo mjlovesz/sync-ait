@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -55,14 +55,14 @@ class IOUtil:
 
     @staticmethod
     def file_safe_write(obj, file):
-        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
         modes = stat.S_IWUSR | stat.S_IRUSR  # 600
         with os.fdopen(os.open(file, flags, modes), 'w') as fout:
             fout.write(obj)
 
     @staticmethod
     def json_safe_dump(obj, file):
-        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
         modes = stat.S_IWUSR | stat.S_IRUSR  # 600
         with os.fdopen(os.open(file, flags, modes), 'w') as fout:
             json.dump(obj, fout, indent=4)
