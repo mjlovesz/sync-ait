@@ -214,7 +214,10 @@ def var_decl(c):
             return default(c)
     else:  # 原生类型变量声明
         source = get_attr(c, 'location.file.name')
-        definition = c.get_definition().displayname
+        if c.get_definition():
+            definition = c.get_definition().displayname
+        else:
+            definition = None
     c.info = Info(api, f'{c.type.spelling} {c.spelling}', api, definition, source)
     return c.info
 

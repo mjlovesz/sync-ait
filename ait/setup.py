@@ -49,7 +49,7 @@ setup(
         'analyze': [
             (
                 'app_analysis @ git+https://gitee.com/ascend/ait.git'
-                '#egg=app_analysis&subdirectory=ait/components/analyze/app'
+                '#egg=app_analysis&subdirectory=ait/components/analyze/transplt'
             )
         ]
     },

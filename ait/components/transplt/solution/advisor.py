@@ -109,7 +109,10 @@ class Advisor:
         cu_list = list()
         for file_name, df in self.results.items():
             if not df.empty and file_name != 'Workload':
-                cu_list.append(df[df['CUDAEnable'] is True])
+                print(f'columns {df.columns}')
+                if 'CUDAEnable' not in df.columns:
+                    continue
+                cu_list.append(df[df['CUDAEnable'] == True])
         cu_df = pd.concat(cu_list, ignore_index=True)
         cu_gp = cu_df.groupby('API').size()
         self.results['CUDA_APIs'] = pd.DataFrame({'API': cu_gp.index, 'Count': cu_gp.values})
