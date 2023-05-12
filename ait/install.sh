@@ -17,12 +17,15 @@ if [ "$arg_help" -eq "1" ]; then
   exit;
 fi
 
-pip install ${CURRENT_DIR} ${arg_force_reinstall}
+if [ ! -z ${arg_force_reinstall} ]; then
+  pip uninstall ait compare aclruntime ais_bench
 
-pip install ${CURRENT_DIR}/components/debug/compare ${arg_force_reinstall}
+pip install ${CURRENT_DIR}
 
-pip install ${CURRENT_DIR}/components/debug/surgeon ${arg_force_reinstall}
+pip install ${CURRENT_DIR}/components/debug/compare
 
-pip install -v ${CURRENT_DIR}/components/profile/benchmark/backend ${arg_force_reinstall}
+pip install ${CURRENT_DIR}/components/debug/surgeon
 
-pip install ${CURRENT_DIR}/components/profile/benchmark ${arg_force_reinstall}
+pip install -v ${CURRENT_DIR}/components/profile/benchmark/backend
+
+pip install ${CURRENT_DIR}/components/profile/benchmark
