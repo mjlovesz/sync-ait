@@ -31,6 +31,7 @@ try:
     import aclruntime
 except ImportError as exc:
     logging.warning('Failed to import aclruntime.')
+    raise ImportError('Import aclruntime failed')
 tensor_type_to_numpy_type = {
     aclruntime.dtype.int8: np.int8,
     aclruntime.dtype.uint8: np.uint8,
