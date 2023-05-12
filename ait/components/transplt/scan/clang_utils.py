@@ -148,7 +148,8 @@ def skip_implicit(cursor):
         if children:
             return skip_implicit(children[0])
         else:
-            return None
+            ret = None
+            return ret
     return cursor
 
 
