@@ -33,28 +33,28 @@ class CommandLineInput(IInput):
     @staticmethod
     def _check_path(folder):
         if not os.path.exists(folder):
-            raise ValueError("{} porting-advisor: error: {}".
+            raise ValueError("{} ait transplt: error: {}".
                              format(KitConfig.porting_content,
                                     'The path %s does not exist or you do not '
                                     'have the permission to access the path. '
                                     % folder))
         elif not os.path.isdir(folder):
-            raise ValueError("{} porting-advisor: error: {}".
+            raise ValueError("{} ait transplt: error: {}".
                              format(KitConfig.porting_content,
                                     'The path %s is '
                                     'not directory. ' % folder))
         elif not os.access(folder, os.R_OK):
-            raise ValueError("{} porting-advisor: error: {}".
+            raise ValueError("{} ait transplt: error: {}".
                              format(KitConfig.porting_content,
                                     "Cannot access the file "
                                     "or directory: %s" % folder))
         elif Path(folder).is_dir() and not os.access(folder, os.X_OK):
-            raise ValueError("{} porting-advisor: error: {}".
+            raise ValueError("{} ait transplt: error: {}".
                              format(KitConfig.porting_content,
                                     "Cannot access the "
                                     "directory: %s" % folder))
         elif IOUtil.check_path_is_empty(folder):
-            raise ValueError("{} porting-advisor: error: {}".
+            raise ValueError("{} ait transplt: error: {}".
                              format(KitConfig.porting_content,
                                     'The directory %s '
                                     'is empty' % folder))
@@ -69,7 +69,7 @@ class CommandLineInput(IInput):
 
     def _get_source_directories(self):
         if not self.args.source:
-            raise ValueError('porting-advisor: error: '
+            raise ValueError('ait transplt: error: '
                              'the following arguments are '
                              'required: s/--source')
         if self.args.source:
@@ -92,7 +92,7 @@ class CommandLineInput(IInput):
         if not self.args.tools:
             self.args.tools = 'make'
         if self.args.tools not in KitConfig.valid_construct_tools:
-            raise ValueError('{} porting-advisor: error: construct '
+            raise ValueError('{} ait transplt: error: construct '
                              'tool {} is not supported. supported '
                              'input are '
                              '{}.'.format(KitConfig.porting_content,
@@ -109,7 +109,7 @@ class CommandLineInput(IInput):
         """获取输出报告格式"""
         out_format = self.args.report_type.lower()
         if out_format not in KitConfig.valid_report_type:
-            raise ValueError('porting-advisor: error: output type {} is not '
+            raise ValueError('ait transplt: error: output type {} is not '
                              'supported. supported input '
                              'is csv/JSON.'.format(self.args.report_type))
 

@@ -45,6 +45,6 @@ setup(
     ],
     python_requires='>=3.7',
     entry_points={
-        'transplt': ['transplt=porting_advisor:start_analyze'],
+        'transplt_sub_task': ['transplt=porting_advisor:start_analyze'],
     },
 )
