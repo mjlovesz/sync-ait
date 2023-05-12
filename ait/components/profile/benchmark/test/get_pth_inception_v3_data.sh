@@ -18,7 +18,7 @@ function get_aippConfig_file()
 {
     rm -rf "$1"
     aipp_config_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/InceptionV3_for_Pytorch/aipp_inceptionv3_pth.config"
-    wget $aipp_config_url -O $1
+    wget $aipp_config_url -O $1 --no-check-certificate
 }
 
 convert_staticbatch_om()
