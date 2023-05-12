@@ -14,6 +14,8 @@ if [ "$arg_help" -eq "1" ]; then
   echo "Usage: $0 [options]"
   echo " --help or -h      : Print help menu"
   echo " --force-reinstall : reinstall"
+  exit;
+fi
 
 pip install ${CURRENT_DIR} ${arg_force_reinstall}
 
