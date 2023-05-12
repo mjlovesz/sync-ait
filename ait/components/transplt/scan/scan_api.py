@@ -70,19 +70,19 @@ class ScanApi:
         try:
             self._scan_source(inputs, info)
         except AutomakeExecuteFailedException as err:
-            raise ValueError("{} porting-advisor: error: {}".
+            raise ValueError("{} ait transplt: error: {}".
                              format(KitConfig.porting_content,
                                     err.get_info())) from err
         except MakefileExecuteFailException as err:
-            raise ValueError("{} porting-advisor: error: {}".
+            raise ValueError("{} ait transplt: error: {}".
                              format(KitConfig.porting_content,
                                     err.get_error_info())) from err
         except SourceScanNoResultException as err:
-            raise ValueError("{} porting-advisor: info: {}".
+            raise ValueError("{} ait transplt: info: {}".
                              format(KitConfig.porting_content,
                                     err.get_error_info())) from err
         except SourceFileNotFoundError as err:
-            raise ValueError("{} porting-advisor: info: {}".
+            raise ValueError("{} ait transplt: info: {}".
                              format(KitConfig.porting_content,
                                     err.get_error_info())) from err
         except Exception as ex:

@@ -11,12 +11,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from collections import namedtuple
+
+import click
+
 from utils.log_util import logger
-from porting.app import init_args, start_scan_kit
+from porting.app import start_scan_kit, opt_source, opt_tools, opt_log_level, opt_report_type
 
 
-def start_analyze():
-    args = init_args()
+class Args:
+    def __init__(self, source, report_type, log_level, tools):
+        self.source = source
+        self.report_type = report_type
+        self.log_level = log_level
+        self.tools = tools
+
+
+@click.command()
+@opt_source
+@opt_report_type
+@opt_log_level
+@opt_tools
+def start_analyze(source, report_type, log_level, tools):
+    args = Args(source, report_type, log_level, tools)
     logger.setLevel(args.log_level)
     start_scan_kit(args)
 
