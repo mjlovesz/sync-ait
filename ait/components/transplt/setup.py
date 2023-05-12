@@ -22,7 +22,7 @@ with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='transplt_analysis',
+    name='transplt',
     version='0.1.0',
     description='transplt analysis for cpu and gpu projects',
     long_description=long_description,
@@ -30,7 +30,7 @@ setup(
     url='https://gitee.com/ascend/ait',
     packages=find_packages(),
     license='Apache-2.0',
-    keywords='transplt analysis',
+    keywords='transplt',
     install_requires=required,
     classifiers=[
         'Development Status :: Alpha',
