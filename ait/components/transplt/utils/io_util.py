@@ -10,8 +10,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import json
 import os
+import stat
 
 TIMEOUT = 60 * 60 * 24
 
@@ -51,3 +52,17 @@ class IOUtil:
                     return False
             return True
         return not os.path.isfile(real_path)
+
+    @staticmethod
+    def file_safe_write(obj, file):
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        modes = stat.S_IWUSR | stat.S_IRUSR  # 600
+        with os.fdopen(os.open(file, flags, modes), 'w') as fout:
+            fout.write(obj)
+
+    @staticmethod
+    def json_safe_dump(obj, file):
+        flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+        modes = stat.S_IWUSR | stat.S_IRUSR  # 600
+        with os.fdopen(os.open(file, flags, modes), 'w') as fout:
+            json.dump(obj, fout, indent=4)

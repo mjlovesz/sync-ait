@@ -16,14 +16,14 @@ import os
 import logging.handlers
 
 IS_PYTHON3 = sys.version_info > (3,)
-logger = logging.getLogger('porting analysis')
+logger = logging.getLogger('transplt analysis')
 
-if os.path.exists("porting_analysis.log"):
-    os.remove("porting_analysis.log")
+if os.path.exists("transplt_analysis.log"):
+    os.remove("transplt_analysis.log")
 
 # create console handler and formatter for logger
 console = logging.StreamHandler()
-fh = logging.handlers.TimedRotatingFileHandler("porting_analysis.log", when='midnight', interval=1, backupCount=7)
+fh = logging.handlers.TimedRotatingFileHandler("transplt_analysis.log", when='midnight', interval=1, backupCount=7)
 
 formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s[%(lineno)d] - %(message)s")
 
