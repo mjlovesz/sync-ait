@@ -36,7 +36,7 @@ def _cmake_prefix_path(sys_paths):
 
 
 def _opencv_dir_path(sys_paths):
-    # //The directory containing a CMake configuration file for OpenCV.
+    # The directory containing a CMake configuration file for OpenCV.
     opencv_dir = os.environ.get('OpenCV_DIR')
     if opencv_dir and not opencv_dir.startswith('/usr/'):
         opencv_dir = os.path.normpath(opencv_dir + '/../../../')
@@ -51,5 +51,5 @@ def _cuda_path(sys_paths):
 
 def _opencv_include_path(sys_paths):
     for include in KitConfig.includes.values():
-        if not include.startswith('/usr/'):
+        if include and not include.startswith('/usr/'):
             sys_paths.append(include)

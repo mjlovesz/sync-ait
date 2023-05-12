@@ -30,7 +30,7 @@ pip3 install -r requirements.txt
 命令示例: python3 porting_advisor.py -s examples/opencv
 
 ### 2. 扫描结果
-扫描完成后会在被扫描的工程目录下创建`output.xslx`
+扫描完成后会在被扫描的工程目录下创建`output.xlsx`
 各页签对应各个文件扫描结果
 
 其中：

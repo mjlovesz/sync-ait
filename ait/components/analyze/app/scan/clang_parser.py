@@ -300,7 +300,7 @@ class Parser:
     # creates the object, does the inital parse
     def __init__(self, path):
         logger.info(f'Scanning file: {path}')
-        self.index = Index.create()  #若为单例模型，是否有加速作用
+        self.index = Index.create()  # 若为单例模型，是否有加速作用
         # args: '-Xclang', '-ast-dump', '-fsyntax-only', '-std=c++17', "-I/path/to/include"
         # option: TranslationUnit.PARSE_PRECOMPILED_PREAMBLE, TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
         includes = [f'-I{x}' for x in KitConfig.includes.values() if x]
