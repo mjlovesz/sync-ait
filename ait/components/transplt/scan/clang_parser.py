@@ -276,7 +276,8 @@ def parse_info(node, cwd=None):
             children.append(c_info)
 
     if not usr_code:
-        return None
+        info = None
+        return info
     location = f"{get_attr(node, 'extent.start.file.name')}, {get_attr(node, 'extent.start.line')}:" \
                f"{get_attr(node, 'extent.start.column')}-{get_attr(node, 'extent.end.column')}"
 

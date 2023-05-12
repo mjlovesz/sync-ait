@@ -42,15 +42,6 @@ class CMakeScanner(Scanner):
         self.marco_pattern = r'\$\{(.*?)\}'
         self.pkg_pattern = r'PkgConfig::([0-9a-zA-Z]+)'
 
-    def do_scan(self):
-        start_time = time.time()
-        result = self._do_cmake_scan_with_file()
-        self.porting_results['cmake'] = result
-        eval_time = time.time() - start_time
-
-        if result:
-            logger.info(f'Total time for scanning cmake files is {eval_time}s')
-
     @staticmethod
     def _check_var_info(val, start_line, var_def_dict):
         locs = var_def_dict[val]
@@ -75,6 +66,15 @@ class CMakeScanner(Scanner):
                 contents = ""
         contents = CommentDelete(contents, '#', CommentDelete.MULTI_COMMENT_CMAKE).delete_comment()
         return contents
+
+    def do_scan(self):
+        start_time = time.time()
+        result = self._do_cmake_scan_with_file()
+        self.porting_results['cmake'] = result
+        eval_time = time.time() - start_time
+
+        if result:
+            logger.info(f'Total time for scanning cmake files is {eval_time}s')
 
     def _do_cmake_scan_with_file(self):
         """
