@@ -184,7 +184,8 @@ def actual_arg(cursor):
         if children:
             cursor = children[0]
         else:
-            return root
+            break
+    return root
 
 
 def parent_stmt(cursor):
@@ -198,7 +199,8 @@ def parent_stmt(cursor):
         if parent:
             cursor = parent
         else:
-            return root
+            break
+    return root
 
 
 def parse_args(node):
