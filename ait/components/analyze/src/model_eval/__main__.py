@@ -22,14 +22,14 @@ from model_eval.core import Analyze
 from .options import (
     opt_model,
     opt_out_path,
-    opt_soc_version,
+    opt_soc,
     opt_weight,
     opt_framework
 )
 
 
 def parse_input_param(model: str,
-    framework: str, weight: str, soc_version: str
+    framework: str, weight: str, soc: str
 ) -> ConvertConfig:
     if framework is None:
         framework = utils.get_framework(model)
@@ -42,13 +42,13 @@ def parse_input_param(model: str,
             raise ValueError('framework is illegal, use --help.')
         framework = Framework(int(framework))
 
-    if soc_version is None:
-        soc_version = utils.get_soc_type()
+    if soc is None:
+        soc = utils.get_soc_type()
 
     return ConvertConfig(
         framework=framework,
         weight=weight,
-        soc_type=soc_version
+        soc_type=soc
     )
 
 
@@ -56,11 +56,11 @@ def parse_input_param(model: str,
 @opt_model
 @opt_framework
 @opt_weight
-@opt_soc_version
+@opt_soc
 @opt_out_path
 def cli(
     input_model: str, framework: str, weight: str,
-    soc_version: str, output: str
+    soc: str, output: str
 ) -> None:
     if not os.path.isfile(input_model):
         logger.error('input model is not file.')
@@ -68,7 +68,7 @@ def cli(
 
     try:
         config = parse_input_param(
-            input_model, framework, weight, soc_version
+            input_model, framework, weight, soc
         )
     except ValueError as e:
         logger.error(f'{e}')
@@ -76,7 +76,7 @@ def cli(
 
     analyzer = Analyze(input_model, output, config)
     if analyzer is None:
-        logger.error('Analyze object create failed.')
+        logger.error('the object of \'Analyze\' create failed.')
         return
 
     analyzer.analyze_model()

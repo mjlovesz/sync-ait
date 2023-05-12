@@ -38,9 +38,10 @@ opt_weight = click.option(
     help='Weight file. Required when framework is Caffe.'
 )
 
-opt_soc_version = click.option(
-    '--soc_version',
-    'soc_version',
+opt_soc = click.option(
+    '-s',
+    '--soc',
+    'soc',
     type=str,
     help='The soc version.'
 )

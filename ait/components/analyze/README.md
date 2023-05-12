@@ -2,7 +2,7 @@
 
 ## 介绍
 
-模型支持度分析工具提供算子支持情况分析、算子输入类型一致性校验和输入为空校验。
+模型支持度分析工具提供算子支持情况分析、算子定义是否符合约束条件和算子输入是否为空。
 
 ### 软件架构
 
@@ -17,12 +17,12 @@ git clone https://gitee.com/ascend/ait.git
 cd ait/ait
 
 # 一键式安装方式
-python3 -m pip install .[analyze] --force-reinstall
+python3 -m pip install .[analyze] -force-reinstall
 
 # 独立安装方式
-python3 -m pip install . --force-reinstall
+python3 -m pip install . -force-reinstall
 cd components/analyze
-python3 -m pip install . --force-reinstall
+python3 -m pip install . -force-reinstall
 ```
 ## 工具使用
 
@@ -38,9 +38,9 @@ OPTIONS参数说明如下：
 | ------------------- | ------------------------------------------------------------ | -------- |
 | -gm, --golden_model | 标杆模型输入路径，支持onnx、caffe、tensorflow模型            | 是       |
 | -o, --output        | 输出路径，在该路径下会生成分析结果**result.csv**             | 是       |
-| --framework         | 模型类型，和[atc](https://www.hiascend.com/document/detail/zh/canncommercial/601/inferapplicationdev/atctool/atctool_0050.html)参数一致，0：caffe，3：tensorflow，5：onnx | 否       |
+| --framework         | 模型类型，和[atc](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/inferapplicationdev/atctool/atctool_000041.html)参数一致，0：caffe，3：tensorflow，5：onnx | 否       |
 | --weight            | 权重文件，输入模型是caffe时，需要传入该文件                  | 否       |
-| --soc_version       | 芯片类型，不指定则会通过[acl](https://www.hiascend.com/document/detail/zh/canncommercial/601/inferapplicationdev/aclpythondevg/aclpythondevg_01_0008.html)接口获取 | 否       |
+| -s, --soc           | 芯片类型，不指定则会通过[acl](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/inferapplicationdev/aclpythondevg/aclpythondevg_01_0008.html)接口获取 | 否       |
 
 命令示例及输出如下：
 
@@ -53,7 +53,7 @@ ait analyze -gm /tmp/test.onnx -o /tmp/out
 2023-05-11 11:23:28,210 INFO : convert model to json finished.
 2023-05-11 11:23:29,997 INFO : try to convert model to om, please wait...
 2023-05-11 11:23:35,127 INFO : try to convert model to om finished.
-2023-05-11 11:23:36,321 INFO : Analysis result has bean writted in /tmp/result.csv
+2023-05-11 11:23:36,321 INFO : analysis result has bean writted in /tmp/result.csv
 2023-05-11 11:23:36,321 INFO : analyze model finished.
 ```
 

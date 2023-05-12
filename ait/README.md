@@ -15,12 +15,13 @@ AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体�
 - ait profile benchmark: 用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延）。（[快速入门指南](docs/profile/benchmark/README.md)）
 - ait debug surgeon: 使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能。（[快速入门指南](docs/debug/surgeon/README.md)）
 - ait debug compare: 提供自动化的推理场景精度比对，用来定位问题算子。（[快速入门指南](docs/debug/compare/README.md)）
+- ait analyze：提供推理模型支持度分析功能。（[快速入门指南](components/analyze/README.md)）
 
 ## 工具安装
 
 ### 环境和依赖
 
-- 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit或nnrt软件包。
+- 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit或nnrt软件包。
 - 安装Python3。
 
 ### 工具安装方式
@@ -42,11 +43,12 @@ git clone https://gitee.com/ascend/ait.git
 cd ait
 
 # 安装ait，包括debug、profile组件
-pip3 install .[debug,profile] --force-reinstall
+pip3 install .[debug,profile,analyze] --force-reinstall
 
 # 或者可以安装指定的组件包
 pip3 install .[debug] --force-reinstall
 pip3 install .[profile] --force-reinstall
+pip3 install .[analyze] --force-reinstall
 
 ```
 
@@ -80,6 +82,10 @@ pip3 wheel ./ -v
 pip3 install ./aclruntime-{version}-{python_version}-linux_{arch}.whl
 # 4.3 安装ais_bench推理程序
 pip3 install ./ais_bench-{version}-py3-none-any.whl
+
+# 5. install analyze pkg
+cd ../../analyze
+pip3 install . --force-reinstall
 ```
 
 ## 工具使用
@@ -89,11 +95,15 @@ pip3 install ./ais_bench-{version}-py3-none-any.whl
 ait工具可通过ait可执行文件方式启动，若安装工具时未提示Python的HATH变量问题，或手动将Python安装可执行文件的目录加入PATH变量，则可以直接使用如下命令格式：
 
 ```bash
+# debug, profile
 ait <TASK> <SUB_TASK> [OPT] [ARGS]
+
+# analyze
+ait <TASK> [OPT] [ARGS]
 ```
 
 
-其中，```<TASK>```为任务类型，当前支持debug、profile，后续可能会新增其他任务类型，可以通过如下方式查看当前支持的任务列表：
+其中，```<TASK>```为任务类型，当前支持debug、profile、analyze，后续可能会新增其他任务类型，可以通过如下方式查看当前支持的任务列表：
 
 ```bash
 
@@ -109,7 +119,7 @@ Commands:
   profile
 ```
 
-```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare，在profile任务下面，有benchmark。后续每个任务下面的子任务类型，也会新增，可以通过如下方式查看每个任务支持的子类任务列表：
+```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare，在profile任务下面，有benchmark，analyze任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子类任务列表：
 
 1、debug任务支持的功能示例：
 
@@ -138,7 +148,6 @@ Commands:
   benchmark  Inference tool to get performance data including latency and
              throughput
 ```
-
 
 ```[OPT]```和```[ARGS]```为可选项以及参数，每个任务下面的可选项和参数都不同，以debug任务下面的compare子任务为例，可以通过如下方式获取
 
@@ -202,6 +211,14 @@ ait profile benchmark -h
 
 更多使用方式和示例请参考：[benchmark examples](examples/cli/profile/benchmark/)
 
+### analyze任务使用说明
+
+```shell
+ait analyze -h
+```
+
+更多使用方式和示例待补充
+
 
 ## 参考
 
@@ -210,6 +227,7 @@ ait profile benchmark -h
 * [AIT profile benchmark 快速入门指南](docs/profile/benchmark/README.md)
 * [AIT debug surgeon 快速入门指南](docs/debug/surgeon/README.md)
 * [AIT debug compare 快速入门指南](docs/debug/compare/README.md)
+* [AIT analyze 快速入门指南](components/analyze/README.md)
 
 
 ## 许可证
@@ -222,5 +240,4 @@ ait profile benchmark -h
 ait仅提供在昇腾设备上的一体化开发工具，支持一站式调试调优，不对其质量或维护负责。
 如果您遇到了问题，Gitee/Ascend/ait提交issue，我们将根据您的issue跟踪解决。
 衷心感谢您对我们社区的理解和贡献。
-
 
