@@ -63,15 +63,17 @@ class TestClass:
         else:
             raise RuntimeError('wrong aipp config file content!')
         session.aipp_set_max_batch_size(batchsize)
-        cls.aipp_set_rbuv_swap_switch(cfg, session, option_list)
-        cls.aipp_set_ax_swap_switch(cfg, session, option_list)
-        cls.aipp_set_csc_params(cfg, session, option_list)
-        cls.aipp_set_crop_params(cfg, session, option_list)
-        cls.aipp_set_padding_params(cfg, session, option_list)
-        cls.aipp_set_dtc_pixel_mean(cfg, session, option_list)
-        cls.aipp_set_dtc_pixel_min(cfg, session, option_list)
-        cls.aipp_set_pixel_var_reci(cfg, session, option_list)
-
+        try:
+            cls.aipp_set_rbuv_swap_switch(cfg, session, option_list)
+            cls.aipp_set_ax_swap_switch(cfg, session, option_list)
+            cls.aipp_set_csc_params(cfg, session, option_list)
+            cls.aipp_set_crop_params(cfg, session, option_list)
+            cls.aipp_set_padding_params(cfg, session, option_list)
+            cls.aipp_set_dtc_pixel_mean(cfg, session, option_list)
+            cls.aipp_set_dtc_pixel_min(cfg, session, option_list)
+            cls.aipp_set_pixel_var_reci(cfg, session, option_list)
+        except RuntimeError as err:
+            raise RuntimeError("params illegal") from err
         ret = session.set_dym_aipp_info_set()
         return ret
 
@@ -488,8 +490,10 @@ class TestClass:
         # only need call this functon compare infer_simple
         self.load_aipp_config_file(session, self.get_actual_aipp_config(), 4)
         with pytest.raises(RuntimeError) as e:
-            session.check_dym_aipp_input_exsity()
-            logger.info("get --aipp model wrong")
+            if (session.get_dym_aipp_input_exsity() == 0):
+                raise RuntimeError("can't find aipp input")
+        session.check_dym_aipp_input_exsity()
+        logger.info("get --aipp model wrong")
 
         # create new numpy data according inputs info
         barray = bytearray(session.get_inputs()[0].realsize)
@@ -541,7 +545,7 @@ class TestClass:
         with pytest.raises(RuntimeError) as e:
             self.load_aipp_config_file(session, self.get_aipp_config_lack_title(), 4)
             logger.info("get --aipp_config wrong")
-            session.check_dym_aipp_input_exsity()
+        session.check_dym_aipp_input_exsity()
 
         # create new numpy data according inputs info
         barray = bytearray(session.get_inputs()[0].realsize)
