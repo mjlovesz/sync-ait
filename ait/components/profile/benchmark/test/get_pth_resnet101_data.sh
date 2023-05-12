@@ -169,7 +169,7 @@ main()
         # generate convert_pth_to_onnx.py
         CONVERT_FILE_PATH=$TESTDATA_PATH/resnet101_convert_pth_to_onnx.py
         get_convert_file $CONVERT_FILE_PATH || { echo "get convert file failed";return 1; }
-        $PYTHON_COMMAND $CONVERT_FILE_PATH $resnet_pth_file  $resnet_onnx_file || { echo "convert pth to onnx failed";return 1; }
+        $PYTHON_COMMAND $CONVERT_FILE_PATH $resnet_pth_file  --checkpoint=$resnet_onnx_file || { echo "convert pth to onnx failed";return 1; }
     fi
 
     AIPPCONFIG_FILE_PATH=$TESTDATA_PATH/aipp_resnet101.aippconfig
