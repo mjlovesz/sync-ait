@@ -26,6 +26,10 @@ from auto_optimizer.inference_engine.data_process_factory import InferenceFactor
 try:
     from ais_bench.infer.interface import InferSession
     import aclruntime
+except ImportError as exc:
+    logging.warning('Failed to import benchmark module, please install extra [inference] feature.')
+
+if 'aclruntime' in sys.modules:
     tensor_type_to_numpy_type = {
         aclruntime.dtype.int8: np.int8,
         aclruntime.dtype.uint8: np.uint8,
@@ -40,8 +44,6 @@ try:
         aclruntime.dtype.double: np.double,
         aclruntime.dtype.bool: np.bool_,
     }
-except ImportError as exc:
-    logging.warning('Failed to import benchmark module, please install extra [inference] feature.')
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger("auto-optimizer")
