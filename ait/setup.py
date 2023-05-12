@@ -48,8 +48,8 @@ setup(
         ],
         'analyze': [
             (
-                'migration_analysis @ git+https://gitee.com/ascend/ait.git'
-                '#egg=migration_analysis&subdirectory=ait/components/analyze'
+                'analyze_tool @ git+https://gitee.com/ascend/ait.git'
+                '#egg=analyze_tool&subdirectory=ait/components/analyze'
             )
         ]
     },
