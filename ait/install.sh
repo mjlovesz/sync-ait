@@ -14,7 +14,7 @@ pip install ${CURRENT_DIR} ${arg_force_reinstall}
 
 pip install ${CURRENT_DIR}/components/debug/compare ${arg_force_reinstall}
 
-pip install ${CURRENT_DIR}/components/debug ${arg_force_reinstall}
+pip install ${CURRENT_DIR}/components/debug/surgeon ${arg_force_reinstall}
 
 pip install ${CURRENT_DIR}/components/profile/benchmark/backend ${arg_force_reinstall}
 
