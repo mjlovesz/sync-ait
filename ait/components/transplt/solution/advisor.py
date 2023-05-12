@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -61,8 +61,8 @@ class Advisor:
         # 将定义域[0,30)缩放到[0,2)，对应的值域[0,0.5)
         try:
             y = (1 / (1 + np.exp(-x / 15)) - 0.5) * 2 * 15
-        except ZeroDivisionError:
-            raise ValueError("workload_model encounters zero division error")
+        except ZeroDivisionError as ex:
+            raise ValueError("workload_model encounters zero division error") from ex
         return np.ceil(y)
 
     def recommend(self):
@@ -109,7 +109,6 @@ class Advisor:
         cu_list = list()
         for file_name, df in self.results.items():
             if not df.empty and file_name != 'Workload':
-                print(f'columns {df.columns}')
                 if 'CUDAEnable' not in df.columns:
                     continue
                 cu_list.append(df[df['CUDAEnable'] == True])

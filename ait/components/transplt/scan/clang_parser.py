@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -184,7 +184,8 @@ def actual_arg(cursor):
         if children:
             cursor = children[0]
         else:
-            return root
+            break
+    return root
 
 
 def parent_stmt(cursor):
@@ -198,7 +199,8 @@ def parent_stmt(cursor):
         if parent:
             cursor = parent
         else:
-            return root
+            break
+    return root
 
 
 def parse_args(node):
@@ -276,7 +278,8 @@ def parse_info(node, cwd=None):
             children.append(c_info)
 
     if not usr_code:
-        return None
+        info = None
+        return info
     location = f"{get_attr(node, 'extent.start.file.name')}, {get_attr(node, 'extent.start.line')}:" \
                f"{get_attr(node, 'extent.start.column')}-{get_attr(node, 'extent.end.column')}"
 
