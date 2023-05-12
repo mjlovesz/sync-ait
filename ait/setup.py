@@ -46,10 +46,10 @@ setup(
                 '#egg=auto_optimizer&subdirectory=ait/components/debug/surgeon'
             ),
         ],
-        'analyze': [
+        'transplt': [
             (
-                'app_analysis @ git+https://gitee.com/ascend/ait.git'
-                '#egg=app_analysis&subdirectory=ait/components/analyze/transplt'
+                'transplt @ git+https://gitee.com/ascend/ait.git'
+                '#egg=transplt&subdirectory=ait/components/transplt'
             )
         ]
     },
