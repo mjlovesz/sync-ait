@@ -10,12 +10,12 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   *) echo "Unknown parameter: $1";
 esac; shift; done
 
-pip install $CURRENT_DIR arg_force_reinstall
+pip install ${CURRENT_DIR} ${arg_force_reinstall}
 
-pip install ${CURRENT_DIR}/components/debug/compare arg_force_reinstall
+pip install ${CURRENT_DIR}/components/debug/compare ${arg_force_reinstall}
 
-pip install ${CURRENT_DIR}/components/debug arg_force_reinstall
+pip install ${CURRENT_DIR}/components/debug ${arg_force_reinstall}
 
-pip install ${CURRENT_DIR}/components/profile/benchmark/backend arg_force_reinstall
+pip install ${CURRENT_DIR}/components/profile/benchmark/backend ${arg_force_reinstall}
 
-pip install ${CURRENT_DIR}/components/profile/benchmark arg_force_reinstall
+pip install ${CURRENT_DIR}/components/profile/benchmark ${arg_force_reinstall}
