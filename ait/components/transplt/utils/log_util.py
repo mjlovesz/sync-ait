@@ -16,7 +16,7 @@ import os
 import logging.handlers
 
 IS_PYTHON3 = sys.version_info > (3,)
-logger = logging.getLogger('transplt analysis')
+logger = logging.getLogger('ait transplt analysis')
 
 if os.path.exists("transplt_analysis.log"):
     os.remove("transplt_analysis.log")
