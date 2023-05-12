@@ -18,7 +18,7 @@ if [ "$arg_help" -eq "1" ]; then
 fi
 
 if [ ! -z ${arg_force_reinstall} ]; then
-  pip uninstall ait compare aclruntime ais_bench
+  pip uninstall ait compare aclruntime ais_bench auto-optimizer
 fi
 
 pip install ${CURRENT_DIR}
