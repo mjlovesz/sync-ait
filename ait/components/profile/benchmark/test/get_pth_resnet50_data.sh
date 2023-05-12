@@ -298,9 +298,9 @@ main()
 
 
     # dymshapes 310 不支持，310P支持
-    # dymshapes="[1~16,3,200~300,200~300]"
-    # convert_dymshape_om $resnet_onnx_file $SOC_VERSION $dymshapes $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymshape om failed";return 1; }
-    }
+    dymshapes="[1~16,3,200~300,200~300]"
+    convert_dymshape_om $resnet_onnx_file $SOC_VERSION $dymshapes $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymshape om failed";return 1; }
+}
 
 main "$@"
 exit $?

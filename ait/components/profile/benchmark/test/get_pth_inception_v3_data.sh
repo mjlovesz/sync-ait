@@ -159,16 +159,16 @@ main()
     AIPPCONFIG_FILE_PATH=$TESTDATA_PATH/aipp_inceptionsv3.aippconfig
     get_aippConfig_file $AIPPCONFIG_FILE_PATH || { echo "get aipp file failed";return 1; }
 
-    # staticbatch="1 2 4 8"
-    # convert_staticbatch_om $onnx_file $SOC_VERSION "${staticbatch[*]}" $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert static om failed";return 1; }
+    staticbatch="1 2 4 8"
+    convert_staticbatch_om $onnx_file $SOC_VERSION "${staticbatch[*]}" $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert static om failed";return 1; }
     dymbatch="1,2,4,8"
     convert_dymbatch_om $onnx_file $SOC_VERSION $dymbatch $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymbatch om failed";return 1; }
     dymhw="299,299"
     convert_dymhw_om $onnx_file $SOC_VERSION $dymhw $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymhw om failed";return 1; }
-    # dymdims="1,224,224;8,448,448"
-    # convert_dymdim_om $onnx_file $SOC_VERSION $dymdims $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymdim om failed";return 1; }
-    # dymshapes="[1~16,3,200~300,200~300]"
-    # convert_dymshape_om $onnx_file $SOC_VERSION $dymshapes $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymshape om failed";return 1; }
+    dymdims="1,224,224;8,448,448"
+    convert_dymdim_om $onnx_file $SOC_VERSION $dymdims $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymdim om failed";return 1; }
+    dymshapes="[1~16,3,200~300,200~300]"
+    convert_dymshape_om $onnx_file $SOC_VERSION $dymshapes $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymshape om failed";return 1; }
 }
 
 main "$@"
