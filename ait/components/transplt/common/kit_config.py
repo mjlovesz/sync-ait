@@ -61,16 +61,16 @@ class KitConfig:
     thread_num = 3
 
     arch = platform.machine()
-    lib_clang_path = f'/usr/lib/{arch}-linux-gnu/libclang-6.0.so'
+    lib_clang_path = f'/usr/lib/{arch}-linux-gnu/libclang-14.so'
     includes = {
         'cuda': '',
-        'opencv': f'{os.path.dirname(__file__)}../headers/opencv/include/opencv4',
+        'opencv': f'{os.path.dirname(__file__)}/../headers/opencv/include/opencv4',
         'tensorrt': '',
     }
 
     # 'make', 'automake'
     valid_construct_tools = ['cmake']
-    porting_content = """ait analyze app
+    porting_content = """ait transplt
             [-h] [-s source] 
             [-t tools] 
             [-l {DEBUG,INFO,WARN,ERR}] 

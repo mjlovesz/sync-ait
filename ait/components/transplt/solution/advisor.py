@@ -54,6 +54,17 @@ class Advisor:
         rows.sort(key=lambda x: scores.get(id(x)))
         return rows
 
+    @staticmethod
+    def _workload_model(x):
+        """工作量评估模型。"""
+        # 或采用tanh模型：np.tanh(x / 15) * 15
+        # 将定义域[0,30)缩放到[0,2)，对应的值域[0,0.5)
+        try:
+            y = (1 / (1 + np.exp(-x / 15)) - 0.5) * 2 * 15
+        except ZeroDivisionError:
+            raise ValueError("workload_model encounters zero division error")
+        return np.ceil(y)
+
     def recommend(self):
         for _, df in self.results.items():
             if df.empty:
@@ -80,14 +91,6 @@ class Advisor:
 
         return self.results
 
-    @staticmethod
-    def _workload_model(x):
-        """工作量评估模型。"""
-        # 或采用tanh模型：np.tanh(x / 15) * 15
-        # 将定义域[0,30)缩放到[0,2)，对应的值域[0,0.5)
-        y = (1 / (1 + np.exp(-x / 15)) - 0.5) * 2 * 15
-        return np.ceil(y)
-
     def workload(self):
         wl = list()
         for file_name, df in self.results.items():
@@ -106,6 +109,9 @@ class Advisor:
         cu_list = list()
         for file_name, df in self.results.items():
             if not df.empty and file_name != 'Workload':
+                print(f'columns {df.columns}')
+                if 'CUDAEnable' not in df.columns:
+                    continue
                 cu_list.append(df[df['CUDAEnable'] == True])
         cu_df = pd.concat(cu_list, ignore_index=True)
         cu_gp = cu_df.groupby('API').size()

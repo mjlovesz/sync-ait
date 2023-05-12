@@ -20,18 +20,6 @@ class FileMatrix:
         self.excluded_dir_list = ['cmake-build-debug']
         self.excluded_head_file_list = []  # 需要排除的头文件列表
 
-    def setup_file_matrix(self):
-        """
-        根据传入的源文件目录先做一次文件的查找
-        :return: 源代码文件列表和makefile文件列表
-        """
-        # 如果需要执行全量扫描，或者成功执行了makefile的外部扫描，
-        # 则需要遍历所有文件添加对应的文件
-        self._do_global_scan_files()
-
-    def get_files(self):
-        return self.files
-
     @staticmethod
     def _walk_error(message):
         """
@@ -58,6 +46,18 @@ class FileMatrix:
         if is_makefile or is_non_standard_makefile:
             return True
         return False
+
+    def setup_file_matrix(self):
+        """
+        根据传入的源文件目录先做一次文件的查找
+        :return: 源代码文件列表和makefile文件列表
+        """
+        # 如果需要执行全量扫描，或者成功执行了makefile的外部扫描，
+        # 则需要遍历所有文件添加对应的文件
+        self._do_global_scan_files()
+
+    def get_files(self):
+        return self.files
 
     def _do_global_scan_files(self):
         """

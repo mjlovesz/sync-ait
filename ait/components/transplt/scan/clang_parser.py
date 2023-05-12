@@ -23,7 +23,7 @@ libclang case: https://eli.thegreenplace.net/2011/07/03/parsing-c-in-python-with
 Note that the package libclang on PyPi bundles the prebuilt shared library, but may be incompatible with the system.
 The package clang on PyPi doesn't bundle the prebuilt shared library, and the clang tool should be installed.
 """
-
+import logging
 import re
 import os
 import json
@@ -33,6 +33,7 @@ from pprint import pprint
 from clang.cindex import Index, CursorKind, TranslationUnit, Config
 
 from common.kit_config import KitConfig
+from utils.io_util import IOUtil
 from utils.log_util import logger
 from utils.lib_util import get_sys_path
 from scan.clang_utils import helper_dict, filter_dict, Info, get_attr, get_children, skip_implicit, auto_match
@@ -151,7 +152,6 @@ def get_includes(tu):
     return srcs
 
 
-
 def is_usr_code(file):
     usr_code = True
     if not file or any(file.startswith(p) for p in SYS_PATH):
@@ -186,6 +186,7 @@ def actual_arg(cursor):
         else:
             return root
 
+
 def parent_stmt(cursor):
     """获取所属Statement对应的代码"""
     root = cursor
@@ -198,6 +199,7 @@ def parent_stmt(cursor):
             cursor = parent
         else:
             return root
+
 
 def parse_args(node):
     args = list()
@@ -215,7 +217,7 @@ def parse_args(node):
                     break
             arguments = children[ref_end + 1:]
 
-        for p, x in zip(parameters, arguments):
+        for param, x in zip(parameters, arguments):
             x = skip_implicit(x)
             if not x:  # 有默认值的Keyword参数，如果实参未传，则为None
                 continue
@@ -230,7 +232,7 @@ def parse_args(node):
             else:
                 src_loc = 'NO_REF'
                 src_code = 'NO_REF'
-            args.append(f'{p} | {spelling} | {src_code} | {src_loc}')
+            args.append(f'{param} | {spelling} | {src_code} | {src_loc}')
     return args
 
 
@@ -298,8 +300,8 @@ class Parser:
     # creates the object, does the inital parse
     def __init__(self, path):
         logger.info(f'Scanning file: {path}')
-        self.index = Index.create()  # TODO(dyh):若为单例模型，是否有加速作用
-        # args: ['-Xclang', '-ast-dump', '-fsyntax-only', '-std=c++17', "-I/path/to/include"]
+        self.index = Index.create()  # 若为单例模型，是否有加速作用
+        # args: '-Xclang', '-ast-dump', '-fsyntax-only', '-std=c++17', "-I/path/to/include"
         # option: TranslationUnit.PARSE_PRECOMPILED_PREAMBLE, TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
         includes = [f'-I{x}' for x in KitConfig.includes.values() if x]
         self.tu = self.index.parse(path,
@@ -317,11 +319,11 @@ class Parser:
         start = time.time()
         info = parse_info(self.tu.cursor, cwd=cwd)
         logger.debug(f'Time elapsed： {time.time() - start:.3f}s')
-        dump = self.tu.spelling.replace('/', '.')
-        os.makedirs('temp/', exist_ok=True)
-        with open(f'temp/{dump}.json', 'w') as f:
-            json.dump(info, f, indent=4)
-        logger.debug(f'Ast saved in：temp/{dump}.json')
+        if logger.level == logging.DEBUG:
+            dump = self.tu.spelling.replace('/', '.')
+            os.makedirs('temp/', exist_ok=True)
+            IOUtil.json_safe_dump(info, f'temp/{dump}.json')
+            logger.debug(f'Ast saved in：temp/{dump}.json')
         if log:
             pprint(RESULTS)
         return RESULTS
