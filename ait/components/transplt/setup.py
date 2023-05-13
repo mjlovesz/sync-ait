@@ -44,6 +44,6 @@ setup(
     ],
     python_requires='>=3.7',
     entry_points={
-        'transplt_sub_task': ['transplt=transplt_advisor:cli'],
+        'transplt_sub_task': ['transplt=transplt_advisor.__main__:cli'],
     },
 )
