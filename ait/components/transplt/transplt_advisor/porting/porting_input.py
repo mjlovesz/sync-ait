@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from common.kit_config import ReporterType, ScannerType
+from transplt_advisor.common.kit_config import ReporterType, ScannerType
 
 
 class IInput(ABC):

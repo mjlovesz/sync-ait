@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from exception.exception_information import SourceScanErrorCode, SourceScanErrorInfo
+from transplt_advisor.exception.exception_information import SourceScanErrorCode, SourceScanErrorInfo
 
 
 class SourceScanException(Exception):

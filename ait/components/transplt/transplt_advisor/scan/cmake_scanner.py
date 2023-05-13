@@ -19,11 +19,11 @@ from collections import namedtuple, OrderedDict
 import pandas as pd
 import numpy as np
 
-from common.kit_config import KitConfig
-from scan.scanner import Scanner
-from scan import scanner_utils
-from scan.module.comment_delete import CommentDelete
-from utils.log_util import logger
+from transplt_advisor.common.kit_config import KitConfig
+from transplt_advisor.scan.scanner import Scanner
+from transplt_advisor.scan import scanner_utils
+from transplt_advisor.scan.module.comment_delete import CommentDelete
+from transplt_advisor.utils.log_util import logger
 
 
 class CMakeScanner(Scanner):

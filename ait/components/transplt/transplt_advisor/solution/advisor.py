@@ -15,9 +15,9 @@ import os.path
 import numpy as np
 
 import pandas as pd
-from utils.excel import read_excel, write_excel
-from utils.log_util import logger
-from common.kit_config import KitConfig
+from transplt_advisor.utils.excel import read_excel, write_excel
+from transplt_advisor.utils.log_util import logger
+from transplt_advisor.common.kit_config import KitConfig
 
 
 class Advisor:

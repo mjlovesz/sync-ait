@@ -13,7 +13,7 @@
 
 import os
 import re
-from utils.log_util import logger
+from transplt_advisor.utils.log_util import logger
 
 HPP_EXT = ('.h', '.hxx', '.hpp')
 

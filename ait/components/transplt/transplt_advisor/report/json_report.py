@@ -13,10 +13,10 @@
 
 import json
 
-from report.report import Report
-from utils.log_util import logger
-from utils.io_util import IOUtil
-from common.kit_config import KitConfig
+from transplt_advisor.transplt_advisor.transplt_advisor.transplt_advisor.report.report import Report
+from transplt_advisor.transplt_advisor.transplt_advisor.utils.log_util import logger
+from transplt_advisor.transplt_advisor.utils.io_util import IOUtil
+from transplt_advisor.common.kit_config import KitConfig
 
 
 class JsonReport(Report):

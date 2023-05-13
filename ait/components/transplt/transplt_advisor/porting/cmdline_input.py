@@ -14,9 +14,9 @@
 import os
 from pathlib import Path
 
-from porting.porting_input import IInput
-from common.kit_config import KitConfig, ReporterType
-from utils.io_util import IOUtil
+from transplt_advisor.transplt_advisor.transplt_advisor.porting.porting_input import IInput
+from transplt_advisor.transplt_advisor.common.kit_config import KitConfig, ReporterType
+from transplt_advisor.utils.io_util import IOUtil
 
 
 class CommandLineInput(IInput):
