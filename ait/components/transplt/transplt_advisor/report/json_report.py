@@ -13,9 +13,9 @@
 
 import json
 
-from transplt_advisor.transplt_advisor.transplt_advisor.transplt_advisor.report.report import Report
-from transplt_advisor.transplt_advisor.transplt_advisor.utils.log_util import logger
-from transplt_advisor.transplt_advisor.utils.io_util import IOUtil
+from transplt_advisor.report.report import Report
+from transplt_advisor.utils.log_util import logger
+from transplt_advisor.utils.io_util import IOUtil
 from transplt_advisor.common.kit_config import KitConfig
 
 

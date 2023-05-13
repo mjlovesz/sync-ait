@@ -13,11 +13,11 @@
 
 import time
 import os
-from transplt_advisor.transplt_advisor.transplt_advisor.transplt_advisor.transplt_advisor.transplt_advisor.utils.log_util import logger
-from transplt_advisor.transplt_advisor.transplt_advisor.transplt_advisor.transplt_advisor.common.kit_config import KitConfig
-from transplt_advisor.transplt_advisor.transplt_advisor.transplt_advisor.report.report_factory import ReporterFactory
-from transplt_advisor.transplt_advisor.transplt_advisor.scan.scanner_factory import ScannerFactory
-from transplt_advisor.transplt_advisor.scan.module.file_matrix import FileMatrix
+from transplt_advisor.utils.log_util import logger
+from transplt_advisor.common.kit_config import KitConfig
+from transplt_advisor.report.report_factory import ReporterFactory
+from transplt_advisor.scan.scanner_factory import ScannerFactory
+from transplt_advisor.scan.module.file_matrix import FileMatrix
 from transplt_advisor.solution.advisor import Advisor
 
 

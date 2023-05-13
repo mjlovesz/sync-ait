@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from transplt_advisor.transplt_advisor.report.report import Report
+from transplt_advisor.report.report import Report
 from transplt_advisor.utils.excel import write_excel
 from transplt_advisor.utils.log_util import logger
 from transplt_advisor.common.kit_config import KitConfig
