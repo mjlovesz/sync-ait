@@ -15,10 +15,10 @@ import time
 
 import pandas as pd
 
-from utils.log_util import logger
-from common.kit_config import KitConfig
-from scan.scanner import Scanner
-from scan.clang_parser import Parser
+from transplt_advisor.utils.log_util import logger
+from transplt_advisor.common.kit_config import KitConfig
+from transplt_advisor.scan.scanner import Scanner
+from transplt_advisor.scan.clang_parser import Parser
 
 
 class CxxScanner(Scanner):

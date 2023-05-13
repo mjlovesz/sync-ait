@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from common.kit_config import FileType
+from transplt_advisor.common.kit_config import FileType
 
 
 class Report:
