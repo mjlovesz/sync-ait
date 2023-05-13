@@ -15,7 +15,7 @@ import os
 
 import click
 
-from transplt_advisor.transplt_advisor.common.kit_config import KitConfig
+from transplt_advisor.common.kit_config import KitConfig
 from transplt_advisor.scan.scan_api import ScanApi
 
 
