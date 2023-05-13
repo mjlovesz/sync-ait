@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from collections import namedtuple
 
 import click
 
@@ -32,7 +31,7 @@ class Args:
 @opt_report_type
 @opt_log_level
 @opt_tools
-def start_analyze(source, report_type, log_level, tools):
+def cli(source, report_type, log_level, tools):
     args = Args(source, report_type, log_level, tools)
     logger.setLevel(args.log_level)
     start_scan_kit(args)
@@ -40,4 +39,4 @@ def start_analyze(source, report_type, log_level, tools):
 
 # 按间距中的绿色按钮以运行脚本。
 if __name__ == '__main__':
-    start_analyze()
+    cli()

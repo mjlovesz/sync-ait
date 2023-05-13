@@ -26,9 +26,7 @@ The package clang on PyPi doesn't bundle the prebuilt shared library, and the cl
 import logging
 import re
 import os
-import json
 import time
-from pprint import pprint
 
 from clang.cindex import Index, CursorKind, TranslationUnit, Config
 
@@ -328,7 +326,7 @@ class Parser:
             IOUtil.json_safe_dump(info, f'temp/{dump}.json')
             logger.debug(f'Ast saved in：temp/{dump}.json')
         if log:
-            pprint(RESULTS)
+            logger.info(RESULTS)
         return RESULTS
 
 
