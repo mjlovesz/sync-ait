@@ -53,6 +53,12 @@ setup(
                 '#egg=auto_optimizer&subdirectory=ait/components/debug/surgeon'
             ),
         ],
+        'analyze': [
+            (
+                'analyze_tool @ git+https://gitee.com/ascend/ait.git'
+                '#egg=analyze_tool&subdirectory=ait/components/analyze'
+            )
+        ]
     },
     entry_points={
         'console_scripts': ['ait=components.__main__:cli'],
