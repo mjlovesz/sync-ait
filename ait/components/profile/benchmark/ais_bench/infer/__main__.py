@@ -249,7 +249,18 @@ def get_args():
         default=None,
         help="file type: .config, to set actual aipp params before infer"
     )
-
+    parser.add_argument(
+        "--energy_consumption",
+        type=str,
+        default=None,
+        help="obtain power consumption data for model inference"
+    )
+    parser.add_argument(
+        "--npu_id",
+        type=check_device_range_valid,
+        default=0,
+        help="the NPU ID to use.valid value range is [0, 255]"
+    )
     args = parser.parse_args()
 
     return args
@@ -263,6 +274,6 @@ if __name__ == "__main__":
                 args.dym_batch, args.dym_hw, args.dym_dims, args.dym_shape, args.output_size, args.auto_set_dymshape_mode,
                 args.auto_set_dymdims_mode, args.batchsize, args.pure_data_type, args.profiler, args.dump,
                 args.acl_json_path, args.output_batchsize_axis, args.run_mode, args.display_all_summary,
-                args.warmup_count, args.dym_shape_range, args.aipp_config)
+                args.warmup_count, args.dym_shape_range, args.aipp_config, args.energy_consumption)
     ret = benchmark_process(args)
     exit(ret)
