@@ -16,14 +16,14 @@ import os
 import logging.handlers
 
 IS_PYTHON3 = sys.version_info > (3,)
-logger = logging.getLogger('ait transplt analysis')
+logger = logging.getLogger('ait transplt')
 
-if os.path.exists("transplt_analysis.log"):
-    os.remove("transplt_analysis.log")
+if os.path.exists("ait_transplt.log"):
+    os.remove("ait_transplt.log")
 
 # create console handler and formatter for logger
 console = logging.StreamHandler()
-fh = logging.handlers.TimedRotatingFileHandler("transplt_analysis.log", when='midnight', interval=1, backupCount=7)
+fh = logging.handlers.TimedRotatingFileHandler("ait_transplt.log", when='midnight', interval=1, backupCount=7)
 
 formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s[%(lineno)d] - %(message)s")
 

@@ -144,12 +144,12 @@ class ScanApi:
         except TimeoutError as err:
             self.produce_report(project, False)
             logger.warning(err)
-            logger.info('**** porting project terminated <<<')
+            logger.info('**** transplt project terminated <<<')
             logger.info('**** no error detected.')
         except KeyboardInterrupt as exp:
             logger.error('Keyboard Interrupted detected. Except:%s.', exp)
-            logger.error('**** porting project interrupted <<<')
+            logger.error('**** transplt project interrupted <<<')
         except Exception as ex:
             traceback.print_exc()
             logger.error(ex)
-            logger.error('**** porting project stopped <<<')
+            logger.error('**** transplt project stopped <<<')

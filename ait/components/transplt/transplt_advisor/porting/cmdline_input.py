@@ -111,7 +111,7 @@ class CommandLineInput(IInput):
         if out_format not in KitConfig.valid_report_type:
             raise ValueError('ait transplt: error: output type {} is not '
                              'supported. supported input '
-                             'is csv/JSON.'.format(self.args.report_type))
+                             'is csv/json.'.format(self.args.report_type))
 
         if out_format == 'csv':
             self.report_type.append(ReporterType.CSV_REPORTER)

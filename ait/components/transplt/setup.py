@@ -14,7 +14,6 @@
 
 from setuptools import setup, find_packages  # type: ignore
 
-
 with open('requirements.txt', encoding='utf-8') as f:
     required = f.read().splitlines()
 
@@ -45,6 +44,6 @@ setup(
     ],
     python_requires='>=3.7',
     entry_points={
-        'transplt_sub_task': ['transplt=porting_advisor:start_analyze'],
+        'transplt_sub_task': ['transplt=transplt_advisor:cli'],
     },
 )

@@ -44,11 +44,12 @@ opt_report_type = click.option(
     '-f',
     '--report-type',
     'report_type',
+    type=click.Choice(['csv', 'json']),
     default='csv',
-    help='specify output report type. Only CSV(XLSX)/JSON is supported.'
+    help='specify output report type. Only csv(xlsx)/json is supported.'
 )
 
-# 添加日志级别开关，默认级别是INFO，只有添加-d后才能输出ERR级别日志
+# 添加日志级别开关，默认级别是INFO，只有添加ERROR后才能输出ERR级别日志
 opt_log_level = click.option(
     '-l',
     '--log-level',
