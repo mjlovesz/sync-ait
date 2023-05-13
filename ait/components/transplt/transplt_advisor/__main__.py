@@ -14,8 +14,8 @@
 
 import click
 
-from utils.log_util import logger
-from porting.app import start_scan_kit, opt_source, opt_tools, opt_log_level, opt_report_type
+from transplt_advisor.utils.log_util import logger
+from transplt_advisor.porting.app import start_scan_kit, opt_source, opt_tools, opt_log_level, opt_report_type
 
 
 class Args:
