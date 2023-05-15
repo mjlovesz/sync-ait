@@ -58,11 +58,11 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 def is_graph_input_static(graph: BaseGraph) -> bool:
     for input_ in graph.inputs:
         for dim in input_.shape:
-            dim = int(dim)
             try:
-                if dim <= 0:
-                    return False
+                dim = int(dim)
             except ValueError:
+                return False
+            if dim <= 0:
                 return False
     return True
 
