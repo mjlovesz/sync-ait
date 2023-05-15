@@ -63,6 +63,7 @@ class KitConfig:
     arch = platform.machine()
     lib_clang_path = f'/usr/lib/{arch}-linux-gnu/libclang-14.so'
     headers_folder = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'headers'))
+    print(f'headers_folder {headers_folder}')
     includes = {
         'cuda': '',
         'opencv': f'{headers_folder}/opencv/include/opencv4',

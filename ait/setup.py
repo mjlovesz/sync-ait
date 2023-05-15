@@ -61,7 +61,7 @@ setup(
         ],
         'transplt': [
             (
-                'transplt @ git+https://gitee.com/jinfaz/ait.git@revert_zjf'
+                'transplt @ git+https://gitee.com/ascend/ait.git'
                 '#egg=transplt&subdirectory=ait/components/transplt'
             )
         ]
