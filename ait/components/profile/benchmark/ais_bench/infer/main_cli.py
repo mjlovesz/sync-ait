@@ -43,7 +43,9 @@ from ais_bench.infer.options import (
     opt_display_all_summary,
     opt_warmup_count,
     opt_dym_shape_range,
-    opt_aipp_config
+    opt_aipp_config,
+    opt_backend,
+    opt_perf
 )
 
 
