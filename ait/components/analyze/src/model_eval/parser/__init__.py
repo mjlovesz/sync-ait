@@ -1,3 +1,3 @@
-from .model import ModelParser
-from .om import OmParser
-from .atc import AtcErrParser
+from model_eval.parser.model import ModelParser
+from model_eval.parser.om import OmParser
+from model_eval.parser.atc import AtcErrParser
