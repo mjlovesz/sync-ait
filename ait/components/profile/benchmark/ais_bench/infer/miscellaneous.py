@@ -61,6 +61,7 @@ def get_acl_json_path(args):
     get acl json path. when args.profiler is true or args.dump is True, create relative acl.json , default current folder
     """
     if args.acl_json_path is not None:
+        check_valid_acljson_for_dump(args.acl_json_path, args.model)
         return args.acl_json_path
     if not args.profiler and not args.dump:
         raise RuntimeError(f'Invalid args.profiler ({args.profiler}) and args.dump ({args.dump})')

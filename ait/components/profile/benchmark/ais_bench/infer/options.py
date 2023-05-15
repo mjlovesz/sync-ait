@@ -84,7 +84,7 @@ opt_model = click.option(
         readable=True,
         path_type=pathlib.Path
     ),
-    help="the path of the om model"
+    help="The path of the om model"
 )
 
 
@@ -93,7 +93,7 @@ opt_input_path = click.option(
     '--input',
     'input_path',
     default=None,
-    help='input file or dir'
+    help='Input file or dir'
 )
 
 
@@ -115,7 +115,7 @@ opt_output_dirname = click.option(
     '--output-dirname',
     'output_dirname',
     type=str,
-    help='actual output directory name. Used with parameter output, cannot be used alone. '
+    help='Actual output directory name. Used with parameter output, cannot be used alone. '
         'The inference result is output to  subdirectory named by output_dirname under  output path. '
         'such as --output_dirname "tmp", the final inference results are output to the folder of  {$output}/tmp'
 )
@@ -135,7 +135,7 @@ opt_loop = click.option(
     default=1,
     type=int,
     callback=check_positive_integer,
-    help='the round of the PureInfer.'
+    help='The round of the PureInfer.'
 )
 
 
@@ -154,7 +154,7 @@ opt_device = click.option(
     default=0,
     type=str,
     callback=check_device_range_valid,
-    help='the NPU device ID to use.valid value range is [0, 255]'
+    help='The NPU device ID to use.valid value range is [0, 255]'
 )
 
 
@@ -164,7 +164,7 @@ opt_dym_batch = click.option(
     'dym_batch',
     default=0,
     type=int,
-    help='dynamic batch size param, such as --dym_batch 2'
+    help='Dynamic batch size param, such as --dym_batch 2'
 )
 
 
@@ -174,7 +174,7 @@ opt_dym_hw = click.option(
     'dym_hw',
     default=None,
     type=str,
-    help='dynamic image size param, such as --dym_hw \"300,500\"'
+    help='Dynamic image size param, such as --dym_hw \"300,500\"'
 )
 
 
@@ -184,7 +184,7 @@ opt_dym_dims = click.option(
     'dym_dims',
     default=None,
     type=str,
-    help='dynamic dims param, such as --dym_dims \"data:1,600;img_info:1,600\"'
+    help='Dynamic dims param, such as --dym_dims \"data:1,600;img_info:1,600\"'
 )
 
 opt_dym_shape = click.option(
@@ -193,7 +193,7 @@ opt_dym_shape = click.option(
     'dym_shape',
     type=str,
     default=None,
-    help='dynamic shape param, such as --dym_shape \"data:1,600;img_info:1,600\"'
+    help='Dynamic shape param, such as --dym_shape \"data:1,600;img_info:1,600\"'
 )
 
 
@@ -203,7 +203,7 @@ opt_dym_shape_range = click.option(
     'dym_shape_range',
     default=None,
     type=str,
-    help='dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
+    help='Dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
 )
 
 opt_output_size = click.option(
@@ -212,7 +212,7 @@ opt_output_size = click.option(
     'output_size',
     default=None,
     type=str,
-    help='output size for dynamic shape mode'
+    help='Output size for dynamic shape mode'
 )
 
 
@@ -222,7 +222,7 @@ opt_auto_set_dymshape_mode = click.option(
     'auto_set_dymshape_mode',
     default=False,
     callback=str2bool,
-    help='auto_set_dymshape_mode'
+    help='Auto_set_dymshape_mode'
 )
 
 
@@ -232,7 +232,7 @@ opt_auto_set_dymdims_mode = click.option(
     'auto_set_dymdims_mode',
     default=False,
     callback=str2bool,
-    help='auto_set_dymdims_mode'
+    help='Auto_set_dymdims_mode'
 )
 
 
@@ -241,7 +241,7 @@ opt_batchsize = click.option(
     'batch_size',
     default=None,
     callback=check_batchsize_valid,
-    help='batch size of input tensor'
+    help='Batch size of input tensor'
 )
 
 
@@ -251,7 +251,7 @@ opt_pure_data_type = click.option(
     'pure_data_type',
     default="zero",
     type=click.Choice(["zero", "random"]),
-    help='null data type for pure inference(zero or random)'
+    help='Null data type for pure inference(zero or random)'
 )
 
 
@@ -261,7 +261,7 @@ opt_profiler = click.option(
     default=False,
     type=str,
     callback=str2bool,
-    help='profiler switch'
+    help='Profiler switch'
 )
 
 
@@ -270,7 +270,7 @@ opt_dump = click.option(
     default=False,
     type=str,
     callback=str2bool,
-    help='dump switch'
+    help='Dump switch'
 )
 
 
@@ -280,7 +280,7 @@ opt_acl_json_path = click.option(
     'acl_json_path',
     default=None,
     type=str,
-    help='acl json path for profiling or dump'
+    help='Acl json path for profiling or dump'
 )
 
 
@@ -291,7 +291,7 @@ opt_output_batchsize_axis = click.option(
     default=0,
     type=int,
     callback=check_nonnegative_integer,
-    help='splitting axis number when outputing tensor results, such as --output_batchsize_axis 1'
+    help='Splitting axis number when outputing tensor results, such as --output_batchsize_axis 1'
 )
 
 
@@ -301,7 +301,7 @@ opt_run_mode = click.option(
     'run_mode',
     default="array",
     type=click.Choice(["array", "files", "tensor", "full"]),
-    help='run mode'
+    help='Run mode'
 )
 
 
@@ -312,7 +312,7 @@ opt_display_all_summary = click.option(
     default=False,
     type=str,
     callback=str2bool,
-    help='display all summary include h2d d2h info'
+    help='Display all summary include h2d d2h info'
 )
 
 
@@ -323,7 +323,7 @@ opt_warmup_count = click.option(
     default=1,
     type=int,
     callback=check_nonnegative_integer,
-    help='warmup count before inference'
+    help='Warmup count before inference'
 )
 
 
@@ -333,5 +333,5 @@ opt_aipp_config = click.option(
     'aipp_config',
     type=str,
     default=None,
-    help="file type: .config, to set actual aipp params before infer"
+    help="File type: .config, to set actual aipp params before infer"
 )
