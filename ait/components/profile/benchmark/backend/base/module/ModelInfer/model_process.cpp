@@ -209,7 +209,7 @@ Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, s
         vector<int64_t> shape_array_tmp;
 
 	    dims_num.push_back(shape_tmp_size);
-        for(size_t index = 0; index < shape_tmp_size; ++index) {
+        for (size_t index = 0; index < shape_tmp_size; ++index) {
             num_tmp = atoi(shape_tmp[index].c_str());
             shape_array_tmp.push_back(num_tmp);
         }

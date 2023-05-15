@@ -22,6 +22,18 @@ from test_common import TestCommonClass
 
 
 class TestClass:
+    def __init__(self):
+        self.model_name = "resnet50"
+    
+    @staticmethod
+    def test_args_invalid_model_path(self):
+        model_path = "xxx_invalid.om"
+        cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                 TestCommonClass.default_device_id)
+        logging.info("run cmd:{cmd}")
+        ret = os.system(cmd)
+        assert ret != 0
+    
     @classmethod
     def setup_class(cls):
         """
@@ -33,24 +45,12 @@ class TestClass:
     def teardown_class(cls):
         logging.info('\n ---class level teardown_class')
 
-    def __init__(self):
-        self.model_name = "resnet50"
-
     def test_args_invalid_device_id(self):
         invalid_device_ids = [-2, 100]
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         for _, device_id in enumerate(invalid_device_ids):
             cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path, device_id)
             logging.info("run cmd:{cmd}")
-        ret = os.system(cmd)
-        assert ret != 0
-
-    @staticmethod
-    def test_args_invalid_model_path(self):
-        model_path = "xxx_invalid.om"
-        cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
-                                                 TestCommonClass.default_device_id)
-        logging.info("run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret != 0
 
@@ -120,7 +120,7 @@ class TestClass:
             try:
                 outval = os.popen(cmd).read()
             except Exception as e:
-                raise Exception("raise an exception: {e}".format())
+                raise Exception("raise an exception: {}".format(e))
 
             assert int(outval) == (loop_num + warmup_num)
 

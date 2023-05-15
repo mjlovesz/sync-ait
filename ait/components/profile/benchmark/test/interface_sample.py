@@ -101,11 +101,13 @@ def get_model_info():
     # 方法3 也可以直接通过get接口去获取
     intensors_desc = session.get_inputs()
     for i, info in enumerate(intensors_desc):
-        logging.info("input info i:{i} shape:{info.shape} type:{info.datatype} val:{int(info.datatype)} realsize:{info.realsize} size:{info.size}")
+        logging.info("input info i:{i} shape:{info.shape} type:{info.datatype} val:
+                     {int(info.datatype)} realsize:{info.realsize} size:{info.size}")
 
     intensors_desc = session.get_outputs()
     for i, info in enumerate(intensors_desc):
-        logging.info("outputs info i:{i} shape:{info.shape} type:{info.datatype} val:{int(info.datatype)} realsize:{info.realsize} size:{info.size}")
+        logging.info("outputs info i:{i} shape:{info.shape} type:{info.datatype} val:
+                     {int(info.datatype)} realsize:{info.realsize} size:{info.size}")
 
 infer_simple()
 
