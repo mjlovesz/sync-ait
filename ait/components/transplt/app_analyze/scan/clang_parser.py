@@ -104,7 +104,7 @@ def in_acc_lib(file, cursor):
     """判断该文件是否为加速库文件。"""
     if not file:
         return False, False, ''
-    for lib, v in KitConfig.acc_libs.items():
+    for lib, v in KitConfig.ACC_LIBS.items():
         if lib in file:
             if not v:
                 cuda_en = False
