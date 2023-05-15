@@ -22,11 +22,11 @@ class SourceScanException(Exception):
 
     def __init__(self, error_info=''):
         super().__init__(error_info)
-        self.error_code = '9991'
+        self.error_code = '9991'  # 初始化的未知错误码
         self.error_info = error_info
 
     def __str__(self):
-        return self.error_code + self.error_info
+        return f'{self.error_code} : {self.error_info}'
 
 
 class CmakeExecuteFailedException(SourceScanException):
@@ -48,11 +48,10 @@ class MakefileExecuteFailException(SourceScanException):
     定义源码扫描Makefile执行失败异常
     """
 
-    def __init__(self, error_info='', error_key=None):
+    def __init__(self, error_info=''):
         super().__init__()
         self.error_code = SourceScanErrorCode.makefile_execute_failed.value
         self.error_info = error_info
-        self.error_key = error_key
 
     def __str__(self):
         return self.error_code + self.error_info
@@ -66,11 +65,10 @@ class AutomakeExecuteFailedException(SourceScanException):
     定义源码扫描Cmake解析失败异常
     """
 
-    def __init__(self, error_info='', am_err_key=None):
+    def __init__(self, error_info=''):
         super().__init__()
         self.error_code = SourceScanErrorCode.automake_execute_failed.value
         self.error_info = error_info
-        self.am_err_key = am_err_key
 
     def __str__(self):
         return self.error_code + self.error_info
@@ -85,7 +83,7 @@ class SourceScanNoResultException(SourceScanException):
     """
 
     def __init__(self, error_key, error_info=''):
-        super().__init__(self)
+        super().__init__()
         self.error_code = SourceScanErrorCode.source_scan_no_result.value
         self.error_key = error_key
         self.error_info = error_info
@@ -104,7 +102,7 @@ class SourceFileNotFoundError(SourceScanException):
     """
 
     def __init__(self, error_key, error_info=''):
-        super().__init__(self)
+        super().__init__()
         self.error_code = SourceScanErrorCode.source_file_not_found.value
         self.error_key = error_key
         self.error_info = error_info

@@ -35,9 +35,8 @@ class ReporterType(Enum):
     迁移报告格式枚举类型
     """
     INVALID_REPORTER = -1  # 无效的报告种类
-    CSV_REPORTER = 0  # csv报告
+    CSV_REPORTER = 0  # csv(xlsx)报告
     JSON_REPORTER = 1  # json格式供Django读取
-    HTML_REPORTER = 2  # html报告
 
 
 @unique
@@ -128,46 +127,7 @@ class FileType(Enum):
     PURE_ASSEMBLE = 2
     CMAKE_LISTS = 3
     AUTOMAKE_FILE = 4
-    FORTRAN_FILE = 5
-    PYTHON_FILE = 6
-    GOLANG_FILE = 7
-    JAVA_FILE = 8
-    SCALA_FILE = 9
-
-
-@unique
-class PortingCategory(Enum):
-    """
-    扫描出的迁移项的类型.
-    NOTE: AarchSpecific这个值必须放在scanner_factory
-    self.pattern构造的最后一个位置，
-    并根据那个位置索引修正这个枚举的位置, 非常重要！！！
-    """
-    INVALID_CATEGORY = -1  # 无效的迁移项类型
-    INTRINSICS = 0  # intrinsics内联函数
-    COMPILER_MACRO = 1  # 编译器宏
-    ATTRIBUTE = 2  # 编译器attribute
-    COMPILER_BUILTIN = 3  # 编译器内建函数
-    COMPILER_OPTION = 4  # 编译器选项
-    BUILTIN_ASSEMBLES = 5  # 嵌入式汇编
-    LIBS = 6  # 扫描出动态链接库
-    COMPILER_OPTION_SPECIAL = 7  # 特殊编译器选项
-    MODULE_FUNCTION = 8  # modulefuntion
-    AARCH_SPECIFIC = 9  # aarch平台独有，根据keep-going的值来判断是否提前结束扫描
-    PURE_ASSEMBLES = 10  # 纯汇编文件
-    AUTOMAKE_FILE = 11  # automake文件
-    FORTRAN_COMPILER_OPTION = 12  # gfortran的编译选项
-    FORTRAN_BUILTIN = 13  # Fortran的内建函数
-    FORTRAN_GRAMMAR = 14  # Fortran的语法
-    PRECOMPILED_MACRO = 15  # 预编译宏
-    PYTHON_LIBRARY = 16  # python文件扫描出的so
-    PYTHON_LOAD_LIBRARY = 17  # python文件扫描出加载so所在行
-    JAVA_LIBRARY = 18  # java文件扫描出的so
-    JAVA_LOAD_LIBRARY = 19  # java文件扫描出加载so所在行
-    SCALA_LIBRARY = 20  # scala文件扫描出的so
-    SCALA_LOAD_LIBRARY = 21  # scala文件扫描出加载so所在行
-    FORTRAN_MODULE_FILE = 22  # Fortran module文件编译出的.mod文件
-    MIX_FUNCTION_NOT_MATCH = 23  # C和Fortran函数互调参数和返回值不匹配
+    PYTHON_FILE = 5
 
 
 # 定义源码迁移的返回结果的数据结构
