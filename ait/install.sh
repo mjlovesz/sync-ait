@@ -11,7 +11,7 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
 
-python_version=$(python -V 2>&1 | awk "{print $2}" | awk -F '.' python_version)
+python_version=$(python -V 2>&1 | awk "{print $2}" | awk -F '.' '{print $1}')
 
 if [ $python_version -eq 2 ]
 then
