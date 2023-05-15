@@ -12,14 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 import sys
-import logging
-import os
 import sys
 import json
-from unittest.mock import patch
 from io import StringIO
+
+import pytest
+from unittest.mock import patch
 
 sys.path.append("..")
 from server import RequestInfo, RpcServer, ServerError
@@ -93,9 +92,10 @@ class TestRpcServer:
             "",
             "{\"path\":\"/exit\"}",
         ])
+
         def stdin_fake():
-            stdin_fake_info["index"] = stdin_fake_info["index"] + 1
-            return stdin_fake_info["strs"][stdin_fake_info["index"] % len(stdin_fake_info["strs"])]
+            stdin_fake_info["index"] = stdin_fake_info.get("index") + 1
+            return stdin_fake_info.get("strs").get(stdin_fake_info.get("index") % len(stdin_fake_info.get("strs")))
 
         with patch('sys.stdin.readline', new=stdin_fake) as fake_out:
             server.run()
@@ -108,9 +108,10 @@ class TestRpcServer:
         
         server = RpcServer()
         stdin_fake_info = dict(index=-1, strs=strs)
+
         def stdin_fake():
-            stdin_fake_info["index"] = stdin_fake_info["index"] + 1
-            return stdin_fake_info["strs"][stdin_fake_info["index"] % len(stdin_fake_info["strs"])]
+            stdin_fake_info["index"] = stdin_fake_info.get("index") + 1
+            return stdin_fake_info.get("strs").get(stdin_fake_info.get("index") % len(stdin_fake_info.get("strs")))
 
         with patch('sys.stdin.readline', new=stdin_fake) as fake_out:
             msg_recv = ""
@@ -123,9 +124,10 @@ class TestRpcServer:
         server = RpcServer()
         server.max_msg_len_recv = 100
         stdin_fake_info = dict(index=-1, strs=["large_msg"])
+
         def stdin_fake():
-            stdin_fake_info["index"] = stdin_fake_info["index"] + 1
-            return stdin_fake_info["strs"][stdin_fake_info["index"] % len(stdin_fake_info["strs"])]
+            stdin_fake_info["index"] = stdin_fake_info.get("index") + 1
+            return stdin_fake_info.get("strs").get(stdin_fake_info.get("index") % len(stdin_fake_info.get("strs")))
 
         with patch('sys.stdin.readline', new=stdin_fake) as fake_out:
             with pytest.raises(ValueError):
@@ -137,8 +139,8 @@ class TestRpcServer:
                              [(dict(path="/exit"), dict(), True),
                               (dict(path="test", msg=123), 123, False),])
     def test_deal_msg_given_any_when_any_pass(self, msg_pkg, msg, except_exit):
-        
         server = RpcServer()
+
         def route_test():
             return dict(file="OK"), 200
 
