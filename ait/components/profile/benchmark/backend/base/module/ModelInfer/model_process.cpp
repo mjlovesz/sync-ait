@@ -64,12 +64,12 @@ int GetDynamicAippParaByBatch(size_t batchIndex, std::shared_ptr<Base::DynamicAi
 }
 ModelProcess::ModelProcess()
     : modelId_(0)
-    ,loadFlag_(false)
-    ,modelDesc_(nullptr)
-    ,input_(nullptr)
-    ,output_(nullptr)
-    ,numInputs_(0)
-    ,numOutputs_(0)
+    , loadFlag_(false)
+    , modelDesc_(nullptr)
+    , input_(nullptr)
+    , output_(nullptr)
+    , numInputs_(0)
+    , numOutputs_(0)
 {
     str2aclAippInputFormat["YUV420SP_U8"] = ACL_YUV420SP_U8;
     str2aclAippInputFormat["XRGB8888_U8"] = ACL_XRGB8888_U8;
@@ -655,7 +655,7 @@ Result ModelProcess::check_ret(aclError ret, size_t buffer_size_zero)
         ERROR_LOG("malloc device buffer failed. size is %zu", buffer_size_zero);
         return FAILED;
     }
-    return SUCCESS;    
+    return SUCCESS; 
 }
 
 Result ModelProcess::check_create_buffer(aclDataBuffer* inputData, void* inBufferDev)
@@ -819,7 +819,7 @@ Result ModelProcess::CreateOutput()
 }
 
 void* ModelProcess::get_out_data(aclDataType datatype, void* outHostData)
-{   
+{
     void* outData;
     switch (datatype) {
         case normal_datatype::type_float:
@@ -892,7 +892,7 @@ void ModelProcess::print_aclFloat16_info(size_t len, ofstream outstr, void* outD
         out = aclFloat16ToFloat(out_fp16[i-1]);
         outstr << out << " ";
         vector<int64_t>::iterator it;
-        for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++)
+        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++)
         {
             if ((i != 0) && (i % *it == 0)) {
                 outstr << "\n";
@@ -910,7 +910,7 @@ void ModelProcess::print_int8_info(size_t len, ofstream outstr, void* outData, v
         int8_t out = *((int8_t*)outData + i - 1);
         outstr << out << " ";
         vector<int64_t>::iterator it;
-        for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++)
+        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++)
         {
             if ((i != 0) && (i % *it == 0)) {
             outstr << "\n";
@@ -927,7 +927,7 @@ void ModelProcess::print_int_info(size_t len, ofstream outstr, void* outData, ve
         int out = *((int*)outData + i - 1);
         outstr << out << " ";
         vector<int64_t>::iterator it;
-        for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
+        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
             if ((i != 0) && (i % *it == 0)) {
                 outstr << "\n";
                 break;
@@ -943,7 +943,7 @@ void ModelProcess::print_uint8_info(size_t len, ofstream outstr, void* outData, 
         uint8_t out = *((uint8_t*)outData + i - 1);
         outstr << out << " ";
         vector<int64_t>::iterator it;
-        for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
+        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
             if ((i != 0) && (i % *it == 0)) {
                 outstr << "\n";
                 break;
@@ -959,7 +959,7 @@ void ModelProcess::print_int16_info(size_t len, ofstream outstr, void* outData, 
         int16_t out = *((int16_t*)outData + i - 1);
         outstr << out << " ";
         vector<int64_t>::iterator it;
-        for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
+        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
             if ((i != 0) && (i % *it == 0)) {
                 outstr << "\n";
                 break;
@@ -975,7 +975,7 @@ void ModelProcess::print_uint16_info(size_t len, ofstream outstr, void* outData,
         uint16_t out = *((uint16_t*)outData + i - 1);
         outstr << out << " ";
         vector<int64_t>::iterator it;
-        for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
+        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
             if ((i != 0) && (i % *it == 0)) {
                 outstr << "\n";
                 break;
@@ -991,7 +991,7 @@ void ModelProcess::print_uint32_info(size_t len, ofstream outstr, void* outData,
         uint32_t out = *((uint32_t*)outData + i - 1);
         outstr << out << " ";
         vector<int64_t>::iterator it;
-        for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
+        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
             if ((i != 0) && (i % *it == 0)) {
                 outstr << "\n";
                 break;
@@ -1007,7 +1007,7 @@ void ModelProcess::print_int64_info(size_t len, ofstream outstr, void* outData, 
         int64_t out = *((int64_t*)outData + i - 1);
         outstr << out << " ";
         vector<int64_t>::iterator it;
-        for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
+        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
             if ((i != 0) && (i % *it == 0)) {
                 outstr << "\n";
                 break;
@@ -1023,7 +1023,7 @@ void ModelProcess::print_uint64_info(size_t len, ofstream outstr, void* outData,
         uint64_t out = *((uint64_t*)outData + i - 1);
         outstr << out << " ";
         vector<int64_t>::iterator it;
-        for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
+        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
             if ((i != 0) && (i % *it == 0)) {
                 outstr << "\n";
                 break;
@@ -1039,7 +1039,7 @@ void ModelProcess::print_double_info(size_t len, ofstream outstr, void* outData,
         double out = *((double*)outData + i - 1);
         outstr << out << " ";
         vector<int64_t>::iterator it;
-        for(it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
+        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
             if ((i != 0) && (i % *it == 0)) {
                 outstr << "\n";
                 break;
