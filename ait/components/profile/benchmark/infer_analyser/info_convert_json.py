@@ -31,7 +31,7 @@ def get_times_list(file):
 def get_pid(file):
     pid = None
     if not os.path.exists(file):
-        logging.info("{} file not exist".format(file))
+        logging.info("{file} file not exist")
     else:
         with open(file, 'rb') as fd:
             pid = int(fd.read())
@@ -46,6 +46,6 @@ if __name__ == '__main__':
     times = get_times_list(times_file)
     t_pid = get_pid(pid_file)
     info = {"pid": t_pid, "npu_compute_time_list": times}
-    with open(os.path.join(out_file), 'w') as ff:
+    with open(os.path.join(out_file), 0640) as ff:
         json.dump(info, ff)
 
