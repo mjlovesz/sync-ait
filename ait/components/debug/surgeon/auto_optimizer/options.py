@@ -58,7 +58,7 @@ opt_processes = click.option(
     'processes',
     default=1,
     type=click.IntRange(1, 64),
-    help='use multiprocessing in evaluate mode, determine how many processes should be spawned. Default to 1'
+    help='Use multiprocessing in evaluate mode, determine how many processes should be spawned. Default to 1'
 )
 
 
@@ -68,7 +68,7 @@ opt_verbose = click.option(
     'verbose',
     is_flag=True,
     default=False,
-    help='show progress in evaluate mode. Default to false.'
+    help='Show progress in evaluate mode. Default to false.'
 )
 
 
@@ -145,7 +145,7 @@ opt_device = click.option(
     'device',
     default=0,
     type=click.IntRange(min=0),
-    help='device_id, default to 0.'
+    help='Device_id, default to 0.'
 )
 
 
@@ -155,7 +155,7 @@ opt_loop = click.option(
     'loop',
     default=100,
     type=click.IntRange(min=1),
-    help='how many times to run the test inference, default to 100.'
+    help='How many times to run the test inference, default to 100.'
 )
 
 
@@ -165,7 +165,7 @@ opt_soc = click.option(
     'soc',
     default='Ascend310P3',
     type=str,
-    help='soc_version, default to Ascend310P3.'
+    help='Soc_version, default to Ascend310P3.'
 )
 
 
