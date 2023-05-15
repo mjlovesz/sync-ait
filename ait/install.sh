@@ -11,6 +11,15 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
 
+python_version=$(python -V 2>&1 | awk "{print $2}" | awk -F '.' python_version)
+
+if (( $python_version == 2 ))
+then
+  echo "Your python version is 2" >&2
+elif (( $python_version == 3 ))
+  echo "Your python version is 3"
+fi
+
 if [ "$arg_help" -eq "1" ]; then
   echo "Usage: $0 [options]"
   echo " --help or -h      : Print help menu"
@@ -18,7 +27,12 @@ if [ "$arg_help" -eq "1" ]; then
   exit;
 fi
 
-python3 -m pip install ${CURRENT_DIR} \
+if [ ! "$(command -v pip)" ]; then
+  echo "pip 没有安装" >&2
+  exit 1;
+fi
+
+pip install ${CURRENT_DIR} \
 ${CURRENT_DIR}/components/debug/compare \
 ${CURRENT_DIR}/components/debug/surgeon \
 ${CURRENT_DIR}/components/profile/benchmark/backend \
