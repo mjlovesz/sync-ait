@@ -99,6 +99,8 @@ class Advisor:
             workload = df['Workload'].sum()
             wl.append({'File': file_name, 'Workload': workload, 'Rectified': self._workload_model(workload)})
         wldf = pd.DataFrame(wl)
+        if wldf.empty:
+            return wldf
         total = wldf['Workload'].sum()
         ttdf = pd.DataFrame({'File': ['Project'], 'Workload': [total], 'Rectified': self._workload_model(total)})
         wldf = pd.concat([wldf, ttdf], ignore_index=True)
@@ -112,6 +114,8 @@ class Advisor:
                 if 'CUDAEnable' not in df.columns:
                     continue
                 cu_list.append(df[df['CUDAEnable'] == True])
+        if not cu_list:
+            return pd.DataFrame()
         cu_df = pd.concat(cu_list, ignore_index=True)
         cu_gp = cu_df.groupby('API').size()
         self.results['CUDA_APIs'] = pd.DataFrame({'API': cu_gp.index, 'Count': cu_gp.values})
