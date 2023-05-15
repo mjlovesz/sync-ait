@@ -63,13 +63,13 @@ int GetDynamicAippParaByBatch(size_t batchIndex, std::shared_ptr<Base::DynamicAi
     return -1;
 }
 ModelProcess::ModelProcess()
-    : modelId_(0)
-    , loadFlag_(false)
-    , modelDesc_(nullptr)
-    , input_(nullptr)
-    , output_(nullptr)
-    , numInputs_(0)
-    , numOutputs_(0)
+:modelId_(0)
+, loadFlag_(false)
+, modelDesc_(nullptr)
+, input_(nullptr)
+, output_(nullptr)
+, numInputs_(0)
+, numOutputs_(0)
 {
     str2aclAippInputFormat["YUV420SP_U8"] = ACL_YUV420SP_U8;
     str2aclAippInputFormat["XRGB8888_U8"] = ACL_XRGB8888_U8;
@@ -822,40 +822,40 @@ void* ModelProcess::get_out_data(aclDataType datatype, void* outHostData)
 {
     void* outData;
     switch (datatype) {
-        case normal_datatype::type_float:
+        case NORMAL_DATATYPE::TYPE_FLOAT:
             outData = reinterpret_cast<float*>(outHostData);
             break;
-        case normal_datatype::type_aclFloat16:
+        case NORMAL_DATATYPE::TYPE_ACLFLOAT16:
             outData = reinterpret_cast<aclFloat16*>(outHostData);
             break;
-        case normal_datatype::type_int8_t:
+        case NORMAL_DATATYPE::TYPE_INT8_T:
             outData = reinterpret_cast<int8_t*>(outHostData);
             break;
-        case normal_datatype::type_int:
+        case NORMAL_DATATYPE::TYPE_INT:
             outData = reinterpret_cast<int*>(outHostData);
             break;
-        case normal_datatype::type_uint8_t:
+        case NORMAL_DATATYPE::TYPE_UINT8_T:
             outData = reinterpret_cast<uint8_t*>(outHostData);
             break;
-        case normal_datatype::type_int16_t:
+        case NORMAL_DATATYPE::TYPE_INT16_T:
             outData = reinterpret_cast<int16_t*>(outHostData);
             break;
-        case normal_datatype::type_uint16_t:
+        case NORMAL_DATATYPE::TYPE_UINT16_T:
             outData = reinterpret_cast<uint16_t*>(outHostData);
             break;
-        case normal_datatype::type_uint32_t:
+        case NORMAL_DATATYPE::TYPE_UINT32_T:
             outData = reinterpret_cast<uint32_t*>(outHostData);
             break;
-        case normal_datatype::type_int64_t:
+        case NORMAL_DATATYPE::TYPE_INT64_T:
             outData = reinterpret_cast<int64_t*>(outHostData);
             break;
-        case normal_datatype::type_uint64_t:
+        case NORMAL_DATATYPE::TYPE_UINT64_T:
             outData = reinterpret_cast<uint64_t*>(outHostData);
             break;
-        case normal_datatype::type_double:
+        case NORMAL_DATATYPE::TYPE_DOUBLE:
             outData = reinterpret_cast<double*>(outHostData);
             break;
-        case normal_datatype::type_bool:
+        case NORMAL_DATATYPE::TYPE_BOOL:
             outData = reinterpret_cast<bool*>(outHostData);
             break;
         default:
@@ -1068,40 +1068,40 @@ void ModelProcess::print_bool_info(size_t len, ofstream outstr, void* outData, v
 void ModelProcess::print_data_log(aclDataType datatype, size_t len, ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     switch (datatype) {
-        case normal_datatype::type_float:
+        case NORMAL_DATATYPE::TYPE_FLOAT:
             print_float_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case normal_datatype::type_aclFloat16:
+        case NORMAL_DATATYPE::TYPE_ACLFLOAT16:
             print_aclFloat16_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case normal_datatype::type_int8_t:
+        case NORMAL_DATATYPE::TYPE_INT8_T:
             print_int8_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case normal_datatype::type_int:
+        case NORMAL_DATATYPE::TYPE_INT:
             print_int_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case normal_datatype::type_uint8_t:
+        case NORMAL_DATATYPE::TYPE_UINT8_T:
             print_uint8_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case normal_datatype::type_int16_t:
+        case NORMAL_DATATYPE::TYPE_INT16_T:
             print_int16_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case normal_datatype::type_uint16_t:
+        case NORMAL_DATATYPE::TYPE_UINT16_T:
             print_uint16_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case normal_datatype::type_uint32_t:
+        case NORMAL_DATATYPE::TYPE_UINT32_T:
             print_uint32_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case normal_datatype::type_int64_t:
+        case NORMAL_DATATYPE::TYPE_INT64_T:
             print_int64_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case normal_datatype::type_uint64_t:
+        case NORMAL_DATATYPE::TYPE_UINT64_T:
             print_uint64_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case normal_datatype::type_double:
+        case NORMAL_DATATYPE::TYPE_DOUBLE:
             print_double_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case normal_datatype::type_bool:
+        case NORMAL_DATATYPE::TYPE_BOOL:
             print_bool_info(len, outstr, outData, curOutputDimsMul);
             break;
         default:
