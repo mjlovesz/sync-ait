@@ -93,7 +93,7 @@ class KitConfig:
     # "opencv2/core/cuda_types.hpp", "opencv2/core/cuda_stream_accessor.hpp", "opencv2/core/cuda.inl.hpp"
     # FFmpeg-CUDA
     # "libavcodec/nvenc.h"
-    acc_libs = {
+    ACC_LIBS = {
         # OpenCV
         '/opencv2/': ['cv', '/cuda', ['cuda', 'gpu']],
         # FFMPEG: https://github.com/FFmpeg/FFmpeg
