@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -63,7 +63,6 @@ class KitConfig:
     arch = platform.machine()
     lib_clang_path = f'/usr/lib/{arch}-linux-gnu/libclang-14.so'
     headers_folder = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'headers'))
-    print(f'headers_folder {headers_folder}')
     includes = {
         'cuda': '',
         'opencv': f'{headers_folder}/opencv/include/opencv4',
