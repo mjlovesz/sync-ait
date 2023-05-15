@@ -89,6 +89,7 @@ class Result:
         ]
         writer = csv.DictWriter(f, fieldnames = fields)
         writer.writeheader()
+        err_op_num = 0
         for op_result in self._op_results.values():
             if op_result.ori_op_type in OP_FILTER_LIST:
                 continue
@@ -103,7 +104,10 @@ class Result:
                 'details': op_result.details
             }
             writer.writerow(row)
+            if not op_result.is_supported:
+                err_op_num += 1
         f.flush()
         f.close()
         os.chmod(out_csv, Const.ONLY_READ)
-        logger.info(f'analysis result has bean writted in {out_csv}')
+        logger.info(f'analysis result has bean writted in {out_csv}.')
+        logger.info(f'number of abnormal operators: {err_op_num}.')
