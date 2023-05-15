@@ -69,7 +69,7 @@ def import_all_modules_for_register(module_paths, base_model_name):
     import os
     import importlib
 
-    global import_errors
+    #global import_errors
 
     modules = []
     for root, dirs, files in os.walk(module_paths):
@@ -87,7 +87,7 @@ def import_all_modules_for_register(module_paths, base_model_name):
             importlib.import_module(module)
         except ImportError as e:
             errors.append((module, e))
-            import_errors.append(f"import {module} error: {e}")
+            #import_errors.append(f"import {module} error: {e}")
             print(f"import {module} error: {e}")
 
     return errors
