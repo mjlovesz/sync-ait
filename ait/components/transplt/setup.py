@@ -21,7 +21,7 @@ with open('README.md', encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='app_analyze',
+    name='transplt',
     version='0.1.0',
     description='app analysis for cpu and gpu projects',
     long_description=long_description,
