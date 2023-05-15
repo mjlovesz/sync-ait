@@ -87,10 +87,9 @@ class TestClass:
 
             # inference times should be  fit to given rule
             real_execute_num = TestCommonClass.get_inference_execute_num(log_path)
-            try:
-                exacute_num = math.ceil(output_file_num/batch_size)
-            except ZeroDivisionError:
-                logger.error("zero division!")
+            if batch_size == 0:
+                raise ZeroDivisionError
+            exacute_num = math.ceil(output_file_num/batch_size)
             assert real_execute_num == warmup_num + exacute_num
 
             # bin file num is equal to output_file_num
@@ -143,10 +142,9 @@ class TestClass:
 
             # inference times should be  fit to given rule
             real_execute_num = TestCommonClass.get_inference_execute_num(log_path)
-            try:
-                exacute_num = math.ceil(output_file_num/dys_batch_size)
-            except ZeroDivisionError:
-                logger.error("zero division!")
+            if dys_batch_size == 0:
+                raise ZeroDivisionError
+            exacute_num = math.ceil(output_file_num/dys_batch_size)
             assert real_execute_num == warmup_num + exacute_num
 
             # bin file num is equal to output_file_num
