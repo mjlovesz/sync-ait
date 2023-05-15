@@ -11,9 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
 
 from setuptools import setup, find_packages
 
+
+abs_path = os.path.dirname(os.path.realpath(__file__))
+with open(os.path.join(abs_path, "requirements.txt")) as f:
+    required = f.read().splitlines()
 
 setup(
     name='ait',
@@ -26,6 +31,7 @@ setup(
     license='Apache-2.0',
     keywords='ait',
     python_requires='>=3.7',
+    install_requires=required,
     extras_require={
         'profile': [
             (
@@ -47,6 +53,12 @@ setup(
                 '#egg=auto_optimizer&subdirectory=ait/components/debug/surgeon'
             ),
         ],
+        'analyze': [
+            (
+                'analyze_tool @ git+https://gitee.com/ascend/ait.git'
+                '#egg=analyze_tool&subdirectory=ait/components/analyze'
+            )
+        ]
     },
     entry_points={
         'console_scripts': ['ait=components.__main__:cli'],
