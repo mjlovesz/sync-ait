@@ -23,8 +23,8 @@ from model_eval.common.enum import Framework, AtcErr
 from model_eval.parser import AtcErrParser, OmParser, ModelParser
 from model_eval.bean import OpInfo, OpInnerInfo, ConvertConfig
 from model_eval.data import Opp, OpMap
-from .result import OpResult, Result
-from .rule import Rule
+from model_eval.core.result import OpResult, Result
+from model_eval.core.rule import Rule
 
 
 class Analyze:
@@ -191,7 +191,7 @@ class Analyze:
             return
 
         if self._config.framework == Framework.ONNX:
-            from .checker import OnnxChecker
+            from model_eval.core.checker import OnnxChecker
             from model_eval.graph.onnx import OnnxGraph
 
             if not isinstance(self._graph, OnnxGraph):
