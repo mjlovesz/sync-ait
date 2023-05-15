@@ -15,7 +15,7 @@ main() {
     export SOC_VERSION=${1:-"Ascend310P3"}
     export PYTHON_COMMAND=${2:-"python3"}
 
-    export MSAME_BIN_PATH=$CUR_PATH/../../../../msame/out/msame
+    export MSAME_BIN_PATH=$CUR_PATH/../../../../../../tools/msame/out/msame
     [ -f $MSAME_BIN_PATH ] || { echo "not find msame:$MSAME_BIN_PATH please check"; return $ret_invalid_args; }
 
     check_python_package_is_install $PYTHON_COMMAND "aclruntime" || {
