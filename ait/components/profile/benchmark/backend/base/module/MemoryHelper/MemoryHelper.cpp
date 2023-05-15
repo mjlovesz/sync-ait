@@ -1,5 +1,5 @@
 /*
- * Copyright(C) 2020. Huawei Technologies Co.,Ltd. All rights reserved.
+ * Copyright(C) 2023. Huawei Technologies Co.,Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,12 @@ static MemorySummary g_MemorySummary;
 struct MemorySummary* GetMemorySummaryPtr()
 {
     return &g_MemorySummary;
+}
+
+void MemoryHelper::LogErrorInfo()
+{
+    LogError << GetError(APP_ERR_ACL_BAD_ALLOC)<< "The module type is not defined.";
+    return;
 }
 
 APP_ERROR MemoryHelper::specificMalloc(MemoryData& data)
@@ -86,8 +92,7 @@ APP_ERROR MemoryHelper::specificMalloc(MemoryData& data)
             data.free = (MemeoryDataFreeFuncPointer)FreeFuncDelete;
             break;
         default:
-            LogError << GetError(APP_ERR_ACL_BAD_ALLOC)
-                     << "The module type is not defined.";
+            LogErrorInfo();
             return APP_ERR_ACL_BAD_ALLOC;
     }
     return ret;

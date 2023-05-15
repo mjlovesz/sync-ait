@@ -1,5 +1,20 @@
+# Copyright 2023 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import json
 import os
+import logging
 import shutil
 
 import pytest
@@ -12,11 +27,11 @@ class TestClass:
         """
         class level setup_class
         """
-        cls.init(TestClass)
+        cls.__init__(TestClass)
 
     @classmethod
     def teardown_class(cls):
-        print('\n ---class level teardown_class')
+        logging.info('\n ---class level teardown_class')
 
     def __init__(self):
         self.model_name = "resnet50"
@@ -26,7 +41,7 @@ class TestClass:
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         for _, device_id in enumerate(invalid_device_ids):
             cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path, device_id)
-            print("run cmd:{}".format(cmd))
+            logging.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret != 0
 
@@ -35,7 +50,7 @@ class TestClass:
         model_path = "xxx_invalid.om"
         cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
                                                  TestCommonClass.default_device_id)
-        print("run cmd:{}".format(cmd))
+        logging.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret != 0
 
@@ -47,7 +62,7 @@ class TestClass:
         acl_json_path = "xxx_invalid.json"
         cmd = "{} --model {} --device {} --acl_json_path {} ".format(TestCommonClass.cmd_prefix, model_path,
                                                                      TestCommonClass.default_device_id, acl_json_path)
-        print("run cmd:{}".format(cmd))
+        logging.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret != 0
 
@@ -63,7 +78,7 @@ class TestClass:
             json.dump(json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
         cmd = "{} --model {} --device {} --acl_json_path {} ".format(TestCommonClass.cmd_prefix, model_path,
                                                                      TestCommonClass.default_device_id, acl_json_path)
-        print("run cmd:{}".format(cmd))
+        logging.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
 
@@ -71,7 +86,7 @@ class TestClass:
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
                                                  TestCommonClass.default_device_id)
-        print("run cmd:{}".format(cmd))
+        logging.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
 
@@ -81,7 +96,7 @@ class TestClass:
         for _, loop_num in enumerate(loops):
             cmd = "{} --model {} --device {} --loop {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                TestCommonClass.default_device_id, loop_num)
-            print("run cmd:{}".format(cmd))
+            logging.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret != 0
 
@@ -97,7 +112,7 @@ class TestClass:
             cmd = "{} --model {} --device {} --loop {} --debug True > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                                  TestCommonClass.default_device_id,
                                                                                  loop_num, log_path)
-            print("run cmd:{}".format(cmd))
+            logging.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
             cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
@@ -117,7 +132,7 @@ class TestClass:
         log_path = os.path.join(TestCommonClass.base_path, "log.txt")
         cmd = "{} --model {} --device {} --debug True > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                    TestCommonClass.default_device_id, log_path)
-        print("run cmd:{}".format(cmd))
+        logging.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
         cmd = "cat {} |grep '[DEBUG]' | wc -l".format(log_path)
@@ -138,7 +153,7 @@ class TestClass:
 
         cmd = "{} --model {} --device {} --profiler true --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                         TestCommonClass.default_device_id, output_path)
-        print("run cmd:{}".format(cmd))
+        logging.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
 
         assert os.path.exists(profiler_path)
@@ -171,7 +186,7 @@ class TestClass:
 
         cmd = "{} --model {} --device {} --dump true --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                     TestCommonClass.default_device_id, output_path)
-        print("run cmd:{}".format(cmd))
+        logging.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
         assert os.path.exists(dump_path)
@@ -189,7 +204,7 @@ class TestClass:
         TestCommonClass.prepare_dir(output_path)
         cmd = "{} --model {} --device {}  --output {} > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                TestCommonClass.default_device_id, output_path, log_path)
-        print("run cmd:{}".format(cmd))
+        logging.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
         cmd = "cat {} |grep 'output path'".format(log_path)
@@ -224,7 +239,7 @@ class TestClass:
         cmd = "{} --model {} --device {} --acl_json_path {} --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                                 TestCommonClass.default_device_id,
                                                                                 out_json_file_path, output_path)
-        print("run cmd:{}".format(cmd))
+        logging.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert os.path.exists(profiler_path)
 
@@ -247,7 +262,7 @@ class TestClass:
         cmd = "{} --model {} --device {} --output {} > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                              TestCommonClass.default_device_id,
                                                              output_path, log_path)
-        print("run cmd:{}".format(cmd))
+        logging.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
         cmd = "cat {} |grep 'output path'".format(log_path)
@@ -282,7 +297,7 @@ class TestClass:
                                                                              model_path,
                                                                              TestCommonClass.default_device_id,
                                                                              output_path, output_file_suffix, log_path)
-            print("run cmd:{}".format(cmd))
+            logging.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
             cmd = "cat {} |grep 'output path'".format(log_path)

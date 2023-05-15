@@ -1,5 +1,5 @@
 /*
- * Copyright(C) 2020. Huawei Technologies Co.,Ltd. All rights reserved.
+ * Copyright(C) 2023. Huawei Technologies Co.,Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,14 +32,13 @@
 #define CHECK_RET_EQ(func, expect_value) \
 { \
 auto ret = (func); \
-if (ret != expect_value) { \
+if (ret != (expect_value)) { \
     WARN_LOG("Check failed:%s, ret:%d\n", #func, ret); \
     return ret; \
 } \
 }
 
 namespace Base {
-
 struct BaseTensor {
     void* buf;
     std::vector<int64_t> shape;
@@ -108,7 +107,7 @@ struct DyShapeInfo {
 
 struct DynamicInfo {
     DynamicType dynamicType = STATIC_BATCH;
-    union{
+    union {
         struct {
             uint64_t batchSize;
         }staticBatch;
@@ -130,7 +129,6 @@ struct DynamicInfo {
 };
 
 struct ModelDesc {
-
     std::vector<Base::TensorDesc> inTensorsDesc;   // 所有 intensors信息 不包括dynamic index
     std::vector<Base::TensorDesc> outTensorsDesc;  // 所有out tensors信息
 
