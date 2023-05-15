@@ -50,7 +50,7 @@ class PatternNode(object):
         self._op_matchs: List[MatchBase] = [] if op_matchs is None else op_matchs
         self._inputs: List['PatternNode'] = []
         self._outputs: List['PatternNode'] = []
-        self._MatchPattern: MatchPattern = MatchPattern.MATCH_ONCE
+        self._match_pattern: MatchPattern = MatchPattern.MATCH_ONCE
 
     @property
     def op_name(self) -> str:
@@ -88,16 +88,16 @@ class PatternNode(object):
     def add_child(self, child: 'PatternNode') -> None:
         self._outputs.append(child)
 
-    def set_MatchPattern(self, MatchPattern: MatchPattern) -> None:
+    def set_match_pattern(self, MatchPattern: MatchPattern) -> None:
         if isinstance(MatchPattern, MatchPattern):
-            self._MatchPattern = MatchPattern
+            self._match_pattern = MatchPattern
 
     def can_match_more_time(self) -> bool:
-        return self._MatchPattern == MatchPattern.MATCH_ONCE_OR_MORE or \
-            self._MatchPattern == MatchPattern.MATCH_ZERO_OR_MORE
+        return self._match_pattern == MatchPattern.MATCH_ONCE_OR_MORE or \
+            self._match_pattern == MatchPattern.MATCH_ZERO_OR_MORE
 
     def can_match_zero_time(self) -> bool:
-        return self._MatchPattern == MatchPattern.MATCH_ZERO_OR_MORE
+        return self._match_pattern == MatchPattern.MATCH_ZERO_OR_MORE
 
 
 class Pattern(object):
@@ -105,7 +105,7 @@ class Pattern(object):
         self._nodes: Dict[str, PatternNode] = {}
         self._inputs: List[PatternNode] = []
         self._outputs: List[PatternNode] = []
-        self._MatchPattern = MatchPattern.MATCH_ONCE
+        self._match_pattern = MatchPattern.MATCH_ONCE
         self._root: PatternNode = None
 
     @property
@@ -173,7 +173,7 @@ class Pattern(object):
         if node is None:
             raise RuntimeError(f'Operator({op_name}) not exists.')
         if isinstance(MatchPattern, MatchPattern):
-            node.set_MatchPattern(MatchPattern)
+            node.set_match_pattern(MatchPattern)
         return self
 
     def set_loop(self, MatchPattern: MatchPattern) -> 'Pattern':
@@ -184,7 +184,7 @@ class Pattern(object):
         :return: 返回实例
         """
         if isinstance(MatchPattern, MatchPattern):
-            self._MatchPattern = MatchPattern
+            self._match_pattern = MatchPattern
         return self
 
     def get_start_node(self) -> Optional[PatternNode]:
@@ -225,5 +225,5 @@ class Pattern(object):
         判断子图是否可以循环匹配
         :return: 能匹配则返回True，否则返回False
         """
-        return self._MatchPattern == MatchPattern.MATCH_ONCE_OR_MORE or \
-            self._MatchPattern == MatchPattern.MATCH_ZERO_OR_MORE
+        return self._match_pattern == MatchPattern.MATCH_ONCE_OR_MORE or \
+            self._match_pattern == MatchPattern.MATCH_ZERO_OR_MORE

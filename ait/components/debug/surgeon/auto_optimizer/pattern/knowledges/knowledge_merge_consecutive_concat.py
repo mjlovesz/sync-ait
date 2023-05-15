@@ -120,7 +120,8 @@ class KnowledgeMergeConsecutiveConcat(KnowledgeBase):
         concat_to_keep = graph.get_node(matchinfo['Concat_to_keep'][0].name, node_type=Node)
         concats_to_remove = [
             graph.get_node(v[0].name, node_type=Node)
-            for k, v in matchinfo.items() if k != 'Concat_to_keep'
+            for k, v in matchinfo.items()
+            if k != 'Concat_to_keep'
         ]
         concats_total = [*concats_to_remove, concat_to_keep]
         # in case previous apply functions modified the graph and removed/renamed any node of current matching subgraph
@@ -138,7 +139,8 @@ class KnowledgeMergeConsecutiveConcat(KnowledgeBase):
         outputs_of_concats_to_remove = [node.outputs[0] for node in concats_to_remove]
         new_inputs = [
             inp for node in concats_total
-            for inp in node.inputs if inp not in outputs_of_concats_to_remove
+            for inp in node.inputs
+            if inp not in outputs_of_concats_to_remove
         ]
 
         # we start modify the graph from here, as all validations are finished so we can make sure optimize will success

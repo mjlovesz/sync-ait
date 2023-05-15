@@ -122,15 +122,15 @@ class InferSession:
     def create_tensor_from_fileslist(self, desc, files):
         return self.session.create_tensor_from_fileslist(desc, files)
 
-    def create_tensor_from_arrays_to_device(self, arrays):
-        tensor = aclruntime.Tensor(arrays)
-        tensor.to_device(self.device_id)
-        return tensor
-
     @staticmethod
     def convert_tensors_to_host(self, tensors):
         for tensor in tensors:
             tensor.to_host()
+
+    def create_tensor_from_arrays_to_device(self, arrays):
+        tensor = aclruntime.Tensor(arrays)
+        tensor.to_device(self.device_id)
+        return tensor
 
     @staticmethod
     def convert_tensors_to_arrays(self, tensors):

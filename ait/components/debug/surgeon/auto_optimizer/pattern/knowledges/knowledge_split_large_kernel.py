@@ -210,7 +210,8 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
             ksizes = [sum(_16s[i:i+each]) for i in range(0, len(_16s), each)]
             indices = list(accumulate([0, *ksizes[:-1]]))
             kslices = [
-                [*slc, (i, i + s)] for i, s in zip(indices, ksizes)
+                [*slc, (i, i + s)]
+                for i, s in zip(indices, ksizes)
                 for slc in kslices
             ]
         return kslices

@@ -46,6 +46,19 @@ class InferEngine():
         self.inference_pool = None
         self.evaluate_pool = None
 
+    @staticmethod
+    def _get_engine(engine):
+        try:
+            dataset = DatasetFactory.get_dataset(engine["dataset"]["type"])
+            pre_process = PreProcessFactory.get_pre_process(engine["pre_process"]["type"])
+            post_process = PostProcessFactory.get_post_process(engine["post_process"]["type"])
+            inference = InferenceFactory.get_inference(engine["inference"]["type"])
+            evaluate = EvaluateFactory.get_evaluate(engine["evaluate"]["type"])
+        except Exception as err:
+            raise RuntimeError("get params failed error=%s", err) from err
+
+        return dataset, pre_process, post_process, inference, evaluate
+
     def inference(self, cfg):
         if "batch_size" not in cfg:
             raise KeyError("'batch_size' is not a key in cfg")
@@ -83,19 +96,6 @@ class InferEngine():
             self._thread(loop, worker, batch_size, engine_cfg)
         except Exception as err:
             raise RuntimeError("inference failed error=%s", err) from err
-
-    @staticmethod
-    def _get_engine(engine):
-        try:
-            dataset = DatasetFactory.get_dataset(engine["dataset"]["type"])
-            pre_process = PreProcessFactory.get_pre_process(engine["pre_process"]["type"])
-            post_process = PostProcessFactory.get_post_process(engine["post_process"]["type"])
-            inference = InferenceFactory.get_inference(engine["inference"]["type"])
-            evaluate = EvaluateFactory.get_evaluate(engine["evaluate"]["type"])
-        except Exception as err:
-            raise RuntimeError("get params failed error=%s", err) from err
-
-        return dataset, pre_process, post_process, inference, evaluate
 
     def _thread(self, loop, worker, batch_size, engine_cfg):
         dataset, pre_process, post_process, inference, evaluate = \
