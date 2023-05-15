@@ -57,11 +57,19 @@ class SourceScanErrorInfo(Enum):
     @staticmethod
     def get_en_info(error_code):
         """ 获取源码扫描错误信息 """
-        return SourceScanErrorInfo.source_scan_error_info.get(
-            error_code).get('en')
+        error_info = SourceScanErrorInfo.source_scan_error_info.get(
+            error_code)
+        if error_info:
+            return error_info.get('en')
+        else:
+            return 'error not specified'
 
     @staticmethod
     def get_cn_info(error_code):
         """ 获取源码扫描错误信息 """
-        return SourceScanErrorInfo.source_scan_error_info.get(
-            error_code).get('en')
+        error_info = SourceScanErrorInfo.source_scan_error_info.get(
+            error_code)
+        if error_info:
+            return error_info.get('cn')
+        else:
+            return 'error not specified'
