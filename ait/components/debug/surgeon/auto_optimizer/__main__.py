@@ -128,7 +128,9 @@ class FormatMsg:
         logger.error(self.format_message())
 
 
-@click.group(cls=ClickAliasedGroup, context_settings=CONTEXT_SETTINGS)
+@click.group(cls=ClickAliasedGroup, context_settings=CONTEXT_SETTINGS, 
+             short_help='Modify ONNX models, and auto optimizer onnx models.',
+             no_args_is_help=True)
 def cli() -> None:
     '''main entrance of auto optimizer.'''
     pass
