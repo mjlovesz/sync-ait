@@ -34,7 +34,8 @@ from app_analyze.common.kit_config import KitConfig
 from app_analyze.utils.io_util import IOUtil
 from app_analyze.utils.log_util import logger
 from app_analyze.utils.lib_util import get_sys_path
-from app_analyze.scan.clang_utils import helper_dict, filter_dict, Info, get_attr, get_children, skip_implicit, auto_match
+from app_analyze.scan.clang_utils import helper_dict, filter_dict, Info,\
+    get_attr, get_children, skip_implicit, auto_match
 from app_analyze.scan.clang_utils import read_cursor
 
 SYS_PATH = get_sys_path()
