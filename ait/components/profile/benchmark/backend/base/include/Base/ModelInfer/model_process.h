@@ -22,20 +22,20 @@
 #include "Base/Tensor/TensorBase/TensorBase.h"
 #include "Base/ModelInfer/DynamicAippConfig.h"
 
-enum normal_datatype{
+enum normal_datatype {
     type_float
-    ,type_aclFloat16
-    ,type_int8_t
-    ,type_int
-    ,type_uint8_t
-    ,not_used
-    ,type_int16_t
-    ,type_uint16_t
-    ,type_uint32_t
-    ,type_int64_t
-    ,type_uint64_t
-    ,type_double
-    ,type_bool
+    , type_aclFloat16
+    , type_int8_t
+    , type_int
+    , type_uint8_t
+    , not_used
+    , type_int16_t
+    , type_uint16_t
+    , type_uint32_t
+    , type_int64_t
+    , type_uint64_t
+    , type_double
+    , type_bool
 };
 
 /**
@@ -225,12 +225,6 @@ public:
     * @brief destroy input resource
     */
     void DestroyInput(bool free_memory_flag);
-
-    // ------------------检验内存分配执行结果-----------------
-    Result check_ret(aclError ret, size_t buffer_size_zero);
-    Result check_create_buffer(aclDataBuffer* inputData, void* inBufferDev);
-    Result check_add_buffer(aclError ret, void* inBufferDev, aclDataBuffer* inputData);
-    // ------------------检验内存分配执行结果-----------------
 
     /**
     * @brief create output buffer
