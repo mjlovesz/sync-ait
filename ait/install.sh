@@ -18,21 +18,10 @@ if [ "$arg_help" -eq "1" ]; then
   exit;
 fi
 
-if [ ! -z ${arg_force_reinstall} ]; then
-  python3 -m pip uninstall ${CURRENT_DIR}/ait \
-  ${CURRENT_DIR}/components/debug/compare \
-  ${CURRENT_DIR}/components/debug/surgeon \
-  ${CURRENT_DIR}/components/profile/benchmark/backend \
-  ${CURRENT_DIR}/components/profile/benchmark \
-  --force-reinstall
-fi
+python3 -m pip install ${CURRENT_DIR} \
+${CURRENT_DIR}/components/debug/compare \
+${CURRENT_DIR}/components/debug/surgeon \
+${CURRENT_DIR}/components/profile/benchmark/backend \
+${CURRENT_DIR}/components/profile/benchmark \
+${arg_force_reinstall}
 
-pip install ${CURRENT_DIR}
-
-pip install ${CURRENT_DIR}/components/debug/compare
-
-pip install ${CURRENT_DIR}/components/debug/surgeon
-
-pip install -v ${CURRENT_DIR}/components/profile/benchmark/backend
-
-pip install ${CURRENT_DIR}/components/profile/benchmark
