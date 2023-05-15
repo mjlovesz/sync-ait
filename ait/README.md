@@ -11,11 +11,12 @@
 ## 介绍
 AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体化开发工具，支持一站式调试调优，当前包括debug、profile、analyze等组件。
 
-### ATI各子功能介绍
+### AIT各子功能介绍
 - ait profile benchmark: 用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延）。（[快速入门指南](docs/profile/benchmark/README.md)）
 - ait debug surgeon: 使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能。（[快速入门指南](docs/debug/surgeon/README.md)）
 - ait debug compare: 提供自动化的推理场景精度比对，用来定位问题算子。（[快速入门指南](docs/debug/compare/README.md)）
 - ait analyze：提供推理模型支持度分析功能。（[快速入门指南](components/analyze/README.md)）
+- ait transplt：提供推理应用迁移分析功能。（[快速入门指南](components/transplt/README.md)）
 
 ## 工具安装
 
@@ -45,12 +46,13 @@ git clone https://gitee.com/ascend/ait.git
 cd ait
 
 # 安装ait，包括debug、profile组件
-pip3 install .[debug,profile,analyze] --force-reinstall
+pip3 install .[debug,profile,analyze,transplt] --force-reinstall
 
 # 或者可以安装指定的组件包
 pip3 install .[debug] --force-reinstall
 pip3 install .[profile] --force-reinstall
 pip3 install .[analyze] --force-reinstall
+pip3 install .[transplt] --force-reinstall
 
 ```
 
@@ -88,6 +90,10 @@ pip3 install ./ais_bench-{version}-py3-none-any.whl
 # 5. install analyze pkg
 cd ../../analyze
 pip3 install . --force-reinstall
+
+# 6. install transplt pkg
+cd ../transplt
+pip3 install . --force-reinstall
 ```
 
 ## 工具使用
@@ -119,9 +125,10 @@ Commands:
   analyze
   debug
   profile
+  transplt
 ```
 
-```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare，在profile任务下面，有benchmark，analyze任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子类任务列表：
+```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare，在profile任务下面，有benchmark，analyze、transplt任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子类任务列表：
 
 1、debug任务支持的功能示例：
 
@@ -219,6 +226,12 @@ ait profile benchmark -h
 ait analyze -h
 ```
 
+### transplt任务使用说明
+
+```shell
+ait transplt -h
+```
+
 更多使用方式和示例待补充
 
 
@@ -230,6 +243,7 @@ ait analyze -h
 * [AIT debug surgeon 快速入门指南](docs/debug/surgeon/README.md)
 * [AIT debug compare 快速入门指南](docs/debug/compare/README.md)
 * [AIT analyze 快速入门指南](components/analyze/README.md)
+* [AIT transplt 快速入门指南](components/transplt/README.md)
 
 
 ## 许可证
