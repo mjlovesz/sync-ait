@@ -131,6 +131,7 @@ class RpcServer:
 
 class ServerError(Exception):
     def __init__(self, msg, status) -> None:
+        super().__init__()
         self._status = status
         self._msg = msg
 
@@ -152,7 +153,7 @@ def onnxsim_model(modify_info):
     try:
         from onnxsim import simplify
     except ImportError as ex:
-        raise ServerError("请安装 onnxsim", 599)
+        raise ServerError("请安装 onnxsim", 599) from ex
 
     save_path = modify_model(modify_info)
 
@@ -166,7 +167,7 @@ def optimizer_model(modify_info):
     try:
         import auto_optimizer
     except ImportError as ex:
-        raise ServerError("请安装 auto-optimizer", 599)
+        raise ServerError("请安装 auto-optimizer", 599) from ex
 
     import subprocess
     OnnxModifier.ONNX_MODIFIER.modify(modify_info)

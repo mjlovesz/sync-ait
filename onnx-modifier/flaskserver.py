@@ -17,6 +17,7 @@ import argparse
 from flask import Flask, render_template, request, send_file
 from server import register_interface
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=5000, help='the port of the webserver. Defaults to 5000.')
@@ -26,7 +27,7 @@ def parse_args():
     return args
 
 
-if __name__ == '__main__':
+def main():
     args = parse_args()
     app = Flask(__name__, template_folder="static", static_url_path="/")
     
@@ -36,3 +37,6 @@ if __name__ == '__main__':
 
     register_interface(app, request, send_file)
     app.run(host='localhost', port=args.port, debug=args.debug)
+
+if __name__ == '__main__':
+    main()

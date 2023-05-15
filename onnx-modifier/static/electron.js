@@ -74,13 +74,7 @@ host.ElectronHost = class {
                     });
                 }
             };
-            const time = this._getConfiguration('consent');
-            if (time && (Date.now() - time) < 30 * 24 * 60 * 60 * 1000) {
-                accept();
-            }
-            else {
-                accept();
-            }
+            accept();
         });
     }
 

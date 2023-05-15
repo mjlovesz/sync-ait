@@ -94,12 +94,7 @@ host.BrowserHost = class {
                     });
                 }
             };
-            if (this._getCookie('consent')) {
-                accept();
-            }
-            else {
-                accept();
-            }
+            accept();
         });
     }
 
