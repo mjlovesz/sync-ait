@@ -23,7 +23,7 @@ with open('README.md', encoding='utf-8') as f:
 setup(
     name='transplt',
     version='0.1.0',
-    description='app analysis for cpu and gpu projects',
+    description='app analyze for cpu and gpu projects',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://gitee.com/ascend/ait',
