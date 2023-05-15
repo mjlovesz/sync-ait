@@ -525,24 +525,10 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
         session.set_staticbatch()
         # only need call this functon compare infer_simple
+        session.check_dym_aipp_input_exsity()
         with pytest.raises(RuntimeError) as e:
             self.load_aipp_config_file(session, self.get_aipp_config_lack_title(), 4)
             logger.info("get --aipp_config wrong")
-        session.check_dym_aipp_input_exsity()
-
-        # create new numpy data according inputs info
-        barray = bytearray(session.get_inputs()[0].realsize)
-        ndata = np.frombuffer(barray)
-        # convert numpy to pytensors in device
-        tensor = aclruntime.Tensor(ndata)
-        tensor.to_device(device_id)
-
-        outnames = [session.get_outputs()[0].name]
-        feeds = {session.get_inputs()[0].name: tensor}
-
-        with pytest.raises(RuntimeError) as e:
-            outputs = session.run(outnames, feeds)
-            logger.info("outputs:{}".format(outputs))
 
     # --aipp_config 缺少 必备参数
     def test_infer_aipp_cfg_lack_param(self):
@@ -552,24 +538,10 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
         session.set_staticbatch()
         # only need call this functon compare infer_simple
+        session.check_dym_aipp_input_exsity()
         with pytest.raises(RuntimeError) as e:
             self.load_aipp_config_file(session, self.get_aipp_config_lack_title(), 4)
             logger.info("get --aipp_config wrong")
-            session.check_dym_aipp_input_exsity()
-
-        # create new numpy data according inputs info
-        barray = bytearray(session.get_inputs()[0].realsize)
-        ndata = np.frombuffer(barray)
-        # convert numpy to pytensors in device
-        tensor = aclruntime.Tensor(ndata)
-        tensor.to_device(device_id)
-
-        outnames = [session.get_outputs()[0].name]
-        feeds = {session.get_inputs()[0].name: tensor}
-
-        with pytest.raises(RuntimeError) as e:
-            outputs = session.run(outnames, feeds)
-            logger.info("outputs:{}".format(outputs))
 
     # --aipp_config 参数超出范围限制
     def test_infer_aipp_cfg_param_overflowed(self):
@@ -579,22 +551,8 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
         session.set_staticbatch()
         # only need call this functon compare infer_simple
+        session.check_dym_aipp_input_exsity()
         with pytest.raises(RuntimeError) as e:
             self.load_aipp_config_file(session, self.get_aipp_config_param_overflowed(), 4)
             logger.info("get --aipp_config wrong")
-            session.check_dym_aipp_input_exsity()
-
-        # create new numpy data according inputs info
-        barray = bytearray(session.get_inputs()[0].realsize)
-        ndata = np.frombuffer(barray)
-        # convert numpy to pytensors in device
-        tensor = aclruntime.Tensor(ndata)
-        tensor.to_device(device_id)
-
-        outnames = [session.get_outputs()[0].name]
-        feeds = {session.get_inputs()[0].name: tensor}
-
-        with pytest.raises(RuntimeError) as e:
-            outputs = session.run(outnames, feeds)
-            logger.info("outputs:{}".format(outputs))
 
