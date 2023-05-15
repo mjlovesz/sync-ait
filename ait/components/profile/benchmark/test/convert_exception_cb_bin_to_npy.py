@@ -100,8 +100,8 @@ def parse_bin_file(bin_file):
     bin_file_name = os.path.basename(bin_file)
     format_num, dtype_num, shape = get_format_dtype_shape(bin_file_name)
 
-    logging.info("bin_file:{} format: {} dtype: {} shape: {}".format(bin_file,
-        num_to_aclFormat.get(format_num), num_to_aclDataType.get(dtype_num), shape))
+    logging.info("bin_file:{bin_file} format: {num_to_aclFormat.get(format_num)} dtype:
+                 {num_to_aclDataType.get(dtype_num)} shape: {shape}")
     # 输出npy文件
     file_name = bin_file_name.strip(".bin")
     np_dtype = acl_type_to_numpy_type.get(num_to_aclDataType.get(dtype_num))
@@ -113,7 +113,7 @@ def parse_bin_file(bin_file):
     npy_file_name = file_name + ".npy"
     npy_file = os.path.join(bin_file_path, npy_file_name)
     np.save(npy_file, ndata)
-    logging.info("out npy dtype: {} shape: {} out_file: {}\n".format(np_dtype, ndata.shape, npy_file))
+    logging.info("out npy dtype: {np_dtype} shape: {ndata.shape} out_file: {npy_file}\n")
 
 
 def get_args():
