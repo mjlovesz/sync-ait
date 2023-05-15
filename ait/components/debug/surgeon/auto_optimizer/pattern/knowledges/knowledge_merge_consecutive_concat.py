@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -119,7 +119,9 @@ class KnowledgeMergeConsecutiveConcat(KnowledgeBase):
         # get concats operators here, we only kept the last concat operator after optimization
         concat_to_keep = graph.get_node(matchinfo['Concat_to_keep'][0].name, node_type=Node)
         concats_to_remove = [
-            graph.get_node(v[0].name, node_type=Node) for k, v in matchinfo.items() if k != 'Concat_to_keep'
+            graph.get_node(v[0].name, node_type=Node)
+            for k, v in matchinfo.items()
+            if k != 'Concat_to_keep'
         ]
         concats_total = [*concats_to_remove, concat_to_keep]
         # in case previous apply functions modified the graph and removed/renamed any node of current matching subgraph
@@ -135,7 +137,11 @@ class KnowledgeMergeConsecutiveConcat(KnowledgeBase):
         # these output should be removed if they are in the new input list
         # since their corresponding node are about to be removed, all other inputs should be kept
         outputs_of_concats_to_remove = [node.outputs[0] for node in concats_to_remove]
-        new_inputs = [inp for node in concats_total for inp in node.inputs if inp not in outputs_of_concats_to_remove]
+        new_inputs = [
+            inp for node in concats_total
+            for inp in node.inputs
+            if inp not in outputs_of_concats_to_remove
+        ]
 
         # we start modify the graph from here, as all validations are finished so we can make sure optimize will success
         # remove all the nodes except the last one, and give all input to the last concat node

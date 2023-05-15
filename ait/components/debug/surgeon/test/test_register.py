@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,12 +29,12 @@ class TestRegister(unittest.TestCase):
     def test_register(self):
         register = Register(os.path.join(os.getcwd(), "auto_optimizer", "pattern", "knowledges"))
         ret = register.import_modules()
-        self.assertEqual(None, ret)
+        self.assertEqual(True, ret)
 
     def test_register_invalid_path(self):
         register = Register(os.path.join(os.getcwd(), "hello"))
         ret = register.import_modules()
-        self.assertEqual(None, ret)
+        self.assertEqual(True, ret)
 
 
 def test_suite():

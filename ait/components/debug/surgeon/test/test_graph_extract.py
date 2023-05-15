@@ -1,3 +1,18 @@
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 from itertools import chain
 
 import unittest
@@ -10,7 +25,7 @@ from test_graph_basic import is_graph_equal
 
 
 def create_graph(name: str = 'test_graph'):
-    input = OnnxPlaceHolder('input', np.dtype('float32'), [1, 3, 224, 224])
+    input_ = OnnxPlaceHolder('input', np.dtype('float32'), [1, 3, 224, 224])
     output = OnnxPlaceHolder('output', np.dtype('float32'), [1, 3, 224, 224])
     node_0 = OnnxNode('sqrt0', 'Sqrt', inputs=['input'], outputs=['sqrt0_output'], attrs={})
     node_1 = OnnxNode('relu1', 'Relu', inputs=['sqrt0_output'], outputs=['relu1_output'], attrs={})
@@ -20,13 +35,13 @@ def create_graph(name: str = 'test_graph'):
     return OnnxGraph(
         name=name,
         nodes=[node_0, node_1, node_2, node_3, node_4],
-        inputs=[input],
+        inputs=[input_],
         outputs=[output],
     )
 
 
 def create_subgraph(name: str = "test_subgraph"):
-    input = OnnxPlaceHolder('sqrt0_output', np.dtype('float32'))
+    input_ = OnnxPlaceHolder('sqrt0_output', np.dtype('float32'))
     output = OnnxPlaceHolder('relu3_output', np.dtype('float32'))
     node_1 = OnnxNode('relu1', 'Relu', inputs=['sqrt0_output'], outputs=['relu1_output'], attrs={})
     node_2 = OnnxNode('sqrt2', 'Sqrt', inputs=['relu1_output'], outputs=['sqrt2_output'], attrs={})
@@ -34,7 +49,7 @@ def create_subgraph(name: str = "test_subgraph"):
     return OnnxGraph(
         name=name,
         nodes=[node_1, node_2, node_3],
-        inputs=[input],
+        inputs=[input_],
         outputs=[output],
     )
 

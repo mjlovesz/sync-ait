@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -59,8 +59,8 @@ pattern = Pattern() \
 class TestMatcher(unittest.TestCase):
 
     def make_single_conv1d_model(self, onnx_name, x):
-        X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-        Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+        input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+        input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
         weight_0 = helper.make_tensor('weight_0', TensorProto.FLOAT, (64, 3, 1),
                                       np.random.randn(64, 3, 1).astype(np.float32))
@@ -72,7 +72,7 @@ class TestMatcher(unittest.TestCase):
                                   pads=np.array([0, 0], dtype=np.int64),
                                   strides=np.array([1], dtype=np.int64))
 
-        graph = helper.make_graph([conv_0], "conv1d_test", [X], [Z], [weight_0])
+        graph = helper.make_graph([conv_0], "conv1d_test", [input_x], [input_z], [weight_0])
         model = helper.make_model(graph)
 
         del model.opset_import[:]
@@ -82,8 +82,8 @@ class TestMatcher(unittest.TestCase):
         onnx.save(model, onnx_name)
 
     def make_twice_conv1d_model(self, onnx_name, x):
-        X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-        Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+        input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+        input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
         weight_0 = helper.make_tensor('weight_0', TensorProto.FLOAT, (64, 3, 1),
                                       np.random.randn(64, 3, 1).astype(np.float32))
@@ -104,7 +104,7 @@ class TestMatcher(unittest.TestCase):
                                   pads=np.array([0, 0], dtype=np.int64),
                                   strides=np.array([1], dtype=np.int64))
 
-        graph = helper.make_graph([conv_0, conv_1], "conv1d_test", [X], [Z], [weight_0, weight_1])
+        graph = helper.make_graph([conv_0, conv_1], "conv1d_test", [input_x], [input_z], [weight_0, weight_1])
         model = helper.make_model(graph)
 
         del model.opset_import[:]
@@ -114,8 +114,8 @@ class TestMatcher(unittest.TestCase):
         onnx.save(model, onnx_name)
 
     def make_single_conv1d_and_relu_model(self, onnx_name, x):
-        X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-        Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+        input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+        input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
         weight_0 = helper.make_tensor('weight_0', TensorProto.FLOAT, (64, 3, 1),
                                       np.random.randn(64, 3, 1).astype(np.float32))
@@ -128,7 +128,7 @@ class TestMatcher(unittest.TestCase):
                                   strides=np.array([1], dtype=np.int64))
         relu_0 = helper.make_node('Relu', ['out_0'], ['Z'], 'Relu_0', None, None)
 
-        graph = helper.make_graph([conv_0, relu_0], "conv1d_test", [X], [Z], [weight_0])
+        graph = helper.make_graph([conv_0, relu_0], "conv1d_test", [input_x], [input_z], [weight_0])
         model = helper.make_model(graph)
 
         del model.opset_import[:]
@@ -138,8 +138,8 @@ class TestMatcher(unittest.TestCase):
         onnx.save(model, onnx_name)
 
     def make_single_conv1d_and_twice_relu_model(self, onnx_name, x):
-        X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-        Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+        input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+        input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
         weight_0 = helper.make_tensor('weight_0', TensorProto.FLOAT, (64, 3, 1),
                                       np.random.randn(64, 3, 1).astype(np.float32))
@@ -153,7 +153,7 @@ class TestMatcher(unittest.TestCase):
         relu_0 = helper.make_node('Relu', ['out_0'], ['out_1'], 'Relu_0', None, None)
         relu_1 = helper.make_node('Relu', ['out_1'], ['Z'], 'Relu_1', None, None)
 
-        graph = helper.make_graph([conv_0, relu_0, relu_1], "conv1d_test", [X], [Z], [weight_0])
+        graph = helper.make_graph([conv_0, relu_0, relu_1], "conv1d_test", [input_x], [input_z], [weight_0])
         model = helper.make_model(graph)
 
         del model.opset_import[:]
@@ -163,8 +163,8 @@ class TestMatcher(unittest.TestCase):
         onnx.save(model, onnx_name)
 
     def make_single_conv1d_and_relu_and_shape_model(self, onnx_name, x):
-        X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-        Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+        input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+        input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
         weight_0 = helper.make_tensor('weight_0', TensorProto.FLOAT, (64, 3, 1),
                                       np.random.randn(64, 3, 1).astype(np.float32))
@@ -179,7 +179,7 @@ class TestMatcher(unittest.TestCase):
         shape = helper.make_node('Shape', ['out_1'], ['out_2'], 'Shape_0', None, None)
         relu_1 = helper.make_node('Relu', ['out_2'], ['Z'], 'Relu_1', None, None)
 
-        graph = helper.make_graph([conv_0, relu_0, shape, relu_1], "conv1d_test", [X], [Z], [weight_0])
+        graph = helper.make_graph([conv_0, relu_0, shape, relu_1], "conv1d_test", [input_x], [input_z], [weight_0])
         model = helper.make_model(graph)
 
         del model.opset_import[:]
@@ -189,8 +189,8 @@ class TestMatcher(unittest.TestCase):
         onnx.save(model, onnx_name)
 
     def make_single_conv1d_and_split_relu_model(self, onnx_name, x):
-        X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-        Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+        input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+        input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
         weight_0 = helper.make_tensor('weight_0', TensorProto.FLOAT, (64, 3, 1),
                                       np.random.randn(64, 3, 1).astype(np.float32))
@@ -205,7 +205,7 @@ class TestMatcher(unittest.TestCase):
         relu_1 = helper.make_node('Relu', ['out_1'], ['Z'], 'Relu_1', None, None)
         relu_2 = helper.make_node('Relu', ['out_1'], ['Z'], 'Relu_2', None, None)
 
-        graph = helper.make_graph([conv_0, relu_0, relu_1, relu_2], "conv1d_test", [X], [Z], [weight_0])
+        graph = helper.make_graph([conv_0, relu_0, relu_1, relu_2], "conv1d_test", [input_x], [input_z], [weight_0])
         model = helper.make_model(graph)
 
         del model.opset_import[:]

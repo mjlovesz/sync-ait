@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -46,25 +46,56 @@ class InferEngine():
         self.inference_pool = None
         self.evaluate_pool = None
 
-    def inference(self, cfg):
+    @staticmethod
+    def _get_engine(engine):
         try:
-            batch_size = cfg["batch_size"]
-            engine_cfg = cfg["engine"]
+            dataset = DatasetFactory.get_dataset(engine["dataset"]["type"])
+            pre_process = PreProcessFactory.get_pre_process(engine["pre_process"]["type"])
+            post_process = PostProcessFactory.get_post_process(engine["post_process"]["type"])
+            inference = InferenceFactory.get_inference(engine["inference"]["type"])
+            evaluate = EvaluateFactory.get_evaluate(engine["evaluate"]["type"])
+        except Exception as err:
+            raise RuntimeError("get params failed error=%s", err) from err
 
-            worker = engine_cfg["pre_process"]["worker"]
-            dataset_path = engine_cfg["dataset"]["dataset_path"]
-            file_len = len(os.listdir(dataset_path))
+        return dataset, pre_process, post_process, inference, evaluate
 
-            # 计算inference等进程循环次数，数据考虑对齐
-            if file_len % batch_size == 0:
-                loop = file_len // batch_size
-            else:
-                loop = file_len // batch_size + 1
-            logging.info("engine process loop count={}".format(loop))
+    def inference(self, cfg):
+        if "batch_size" not in cfg:
+            raise KeyError("'batch_size' is not a key in cfg")
+        if "engine" not in cfg:
+            raise KeyError("'engine' is not a key in cfg")
 
+        batch_size = cfg["batch_size"]
+        engine_cfg = cfg["engine"]
+
+        if "pre_process" not in engine_cfg:
+            raise KeyError("'pre_process' is not a key in engine_cfg")
+        if "dataset" not in engine_cfg:
+            raise KeyError("'dataset' is not a key in engine_cfg")
+
+        worker = engine_cfg["pre_process"].get("worker")
+        dataset_path = engine_cfg["dataset"].get("dataset_path")
+
+        if worker is None:
+            raise KeyError("'worker' is not a key in engine_cfg['pre_process']")
+        if dataset_path is None:
+            raise KeyError("'dataset_path' is not a key in engine_cfg['dataset']")
+
+        file_len = len(os.listdir(dataset_path))
+
+        # 计算inference等进程循环次数，数据考虑对齐
+        if batch_size <= 0:
+            raise ValueError(f'Invalid batch_size: {batch_size}')
+        if file_len % batch_size == 0:
+            loop = file_len // batch_size
+        else:
+            loop = file_len // batch_size + 1
+        logging.info("engine process loop count={}".format(loop))
+
+        try:
             self._thread(loop, worker, batch_size, engine_cfg)
         except Exception as err:
-            raise RuntimeError("inference failed error={}".format(err))
+            raise RuntimeError("inference failed error=%s", err) from err
 
     def _thread(self, loop, worker, batch_size, engine_cfg):
         dataset, pre_process, post_process, inference, evaluate = \
@@ -108,19 +139,6 @@ class InferEngine():
         self.inference_pool.join()
         self.post_process_pool.join()
         self.evaluate_pool.join()
-
-    @staticmethod
-    def _get_engine(engine):
-        try:
-            dataset = DatasetFactory.get_dataset(engine["dataset"]["type"])
-            pre_process = PreProcessFactory.get_pre_process(engine["pre_process"]["type"])
-            post_process = PostProcessFactory.get_post_process(engine["post_process"]["type"])
-            inference = InferenceFactory.get_inference(engine["inference"]["type"])
-            evaluate = EvaluateFactory.get_evaluate(engine["evaluate"]["type"])
-        except Exception as err:
-            raise RuntimeError("get params failed error={}".format(err))
-
-        return dataset, pre_process, post_process, inference, evaluate
 
 
 def parse_args():

@@ -654,3 +654,15 @@ class BaseGraph(ABC):
     @abstractmethod
     def infershape(self) -> None:
         raise NotImplementedError()
+
+    @property
+    def node_map(self):
+        return self._node_map
+
+    @property
+    def prev_map(self):
+        return self._prev_map
+
+    @property
+    def next_map(self):
+        return self._next_map

@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ def make_gather_to_split_graph(
     graph = OnnxGraph(name=name, opset_imports=version)
     graph.add_input('input', np.float32, input_shape)
     output_shape = list(input_shape)
-    output_shape[0] = sum(1 if isinstance((idx := g['indices']), int) else len(idx) for g in gathers)
+    output_shape[0] = sum(1 if isinstance(g['indices'], int) else len(g['indices']) for g in gathers)
     if extra_node:
         output_shape[0] += input_shape[0]
     graph.add_output('output', np.float32, output_shape)
@@ -63,8 +63,6 @@ def make_gather_to_split_graph(
         )
 
         if extra_output and idx == 0:
-            # extra_shape = list(input_shape)
-            # extra_shape[axis] = 1 if isinstance(indices, int) else len(indices)
             graph.add_output(f'{gather_name}_out', np.float32, None)
 
         if isinstance(indices, int):
@@ -137,63 +135,78 @@ class TestKnowledgeGatherToSplit(unittest.TestCase, KnowledgeTestHelper):
         tests = [
             # normal case
             (10, True, (10, 10, 10), [
-                {'axis': 0, 'indices': [i]} for i in range(10)
+                {'axis': 0, 'indices': [i]}
+                for i in range(10)
             ], False, False, 13),
             # lower version
             (10, True, (10, 10, 10), [
-                {'axis': 0, 'indices': [i]} for i in range(10)
+                {'axis': 0, 'indices': [i]}
+                for i in range(10)
             ], False, False, 11),
             # add extra node should fail
             (10, False, (10, 10, 10), [
-                {'axis': 0, 'indices': [i]} for i in range(10)
+                {'axis': 0, 'indices': [i]}
+                for i in range(10)
             ], True, False, 13),
             # add extra outputs should fail
             (10, False, (10, 10, 10), [
-                {'axis': 0, 'indices': [i]} for i in range(10)
+                {'axis': 0, 'indices': [i]}
+                for i in range(10)
             ], False, True, 13),
             # add both extra node and output should fail
             (10, False, (10, 10, 10), [
-                {'axis': 0, 'indices': [i]} for i in range(10)
+                {'axis': 0, 'indices': [i]}
+                for i in range(10)
             ], True, True, 13),
             # shuffle order should be ok
             (10, True, (10, 10, 10), [
-                {'axis': 0, 'indices': [i]} for i in random.sample(list(range(10)), 10)
+                {'axis': 0, 'indices': [i]}
+                for i in random.sample(list(range(10)), 10)
             ], False, False, 13),
             # 0-d indices in lower version should be ok
             (10, True, (3, 10, 10), [
-                {'axis': 0, 'indices': i} for i in range(3)
+                {'axis': 0, 'indices': i}
+                for i in range(3)
             ], False, False, 11),
             # 0-d indices in higher version should be ok
             (10, True, (3, 10, 10), [
-                {'axis': 0, 'indices': i} for i in range(3)
+                {'axis': 0, 'indices': i}
+                for i in range(3)
             ], False, False, 15),
             # mix and match 0-d and 1-d indices should also be ok
             (10, True, (6, 10, 10), [
-                {'axis': 0, 'indices': slice_} for slice_ in [[1, 2], [3], 5]
+                {'axis': 0, 'indices': slice_}
+                for slice_ in [[1, 2], [3], 5]
             ], False, False, 11),
             # gather from different axes should fail
             (10, False, (10, 10, 10), [
-                {'axis': 0 if i != 1 else 1, 'indices': [i]} for i in range(10)
+                {'axis': 0 if i != 1 else 1, 'indices': [i]}
+                for i in range(10)
             ], False, False, 13),
             # gather multiple indices should be ok
             (10, True, (3, 10, 10), [
-                {'axis': 0, 'indices': slice_} for slice_ in [[0, 1], [2]]
+                {'axis': 0, 'indices': slice_}
+                for slice_ in [[0, 1], [2]]
             ], False, False, 15),
             # gather overlap should fail
             (10, False, (5, 10, 10), [
-                {'axis': 0, 'indices': slice_} for slice_ in [[1, 2], [2, 3]]
+                {'axis': 0, 'indices': slice_}
+                for slice_ in [[1, 2], [2, 3]]
             ], False, False, 15),
             # gather only part of input should be ok
             (10, True, (5, 10, 10), [
-                {'axis': 0, 'indices': slice_} for slice_ in [[1, 2], [3]]
+                {'axis': 0, 'indices': slice_}
+                for slice_ in [[1, 2], [3]]
             ], False, False, 15),
             # non-continuous gather is not supported, should fail
             (10, False, (5, 10, 10), [
-                {'axis': 0, 'indices': slice_} for slice_ in [[1, 3], [2]]
+                {'axis': 0, 'indices': slice_}
+                for slice_ in [[1, 3], [2]]
             ], False, False, 15),
             # only 1 gather should fail
             (10, False, (5, 10, 10), [
-                {'axis': 0, 'indices': slice_} for slice_ in [[1, 2]]
+                {'axis': 0, 'indices': slice_}
+                for slice_ in [[1, 2]]
             ], False, False, 15),
             # gather indices of rank r > 1 is not supported
             # however this is not tested because make_gather_to_split_graph
@@ -202,7 +215,12 @@ class TestKnowledgeGatherToSplit(unittest.TestCase, KnowledgeTestHelper):
         for i, (count, expect, ishape, gathers, enode, eout, version) in enumerate(tests):
             ishape_s = 'x'.join(str(x) for x in ishape)
             axis_s = 1 if len(set(g['axis'] for g in gathers)) == 1 else 0
-            indices_s = '_'.join(str(idx) if isinstance((idx := g['indices']), int) else 'x'.join(str(x) for x in idx) for g in gathers)
+            indices_s = '_'.join(
+                str(idx) if isinstance((idx := g['indices']), int)
+                else 'x'.join(str(x) for x in idx)
+                for g in gathers
+            )
+
             name_ = f'test_gather_to_split_{i}_i{ishape_s}_a{axis_s}_idx{indices_s}_n{int(enode)}_o{int(eout)}_v{version}'
             with self.subTest(name=name_):
                 onnx_ori = f'onnx/{name_}.onnx'
