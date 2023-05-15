@@ -505,10 +505,9 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.03
-        try:
-            reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
-        except ZeroDivisionError:
-            logger.error("zero division!")
+        if msame_inference_time_ms == 0:
+            raise ZeroDivisionError
+        reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
         logger.info("static batch msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms,
                                                                              ais_bench_inference_time_ms,
                                                                                reference_deviation))
@@ -570,10 +569,9 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.04
-        try:
-            reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
-        except ZeroDivisionError:
-            logger.error("zero division!")
+        if msame_inference_time_ms == 0:
+            raise ZeroDivisionError
+        reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
         logger.info("dymshape msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms,
                                                                          ais_bench_inference_time_ms,
                                                                            reference_deviation))
@@ -1238,8 +1236,8 @@ class TestClass():
         batch_size = 1
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
         for i in range(loop):
-            session = InferSession(device_id, model_path)
             try:
+                session = InferSession(device_id, model_path)
                 del session
             except Exception as e:
                 logger.info("session finalize {} time, exception: {}".format(i + 1, e))
