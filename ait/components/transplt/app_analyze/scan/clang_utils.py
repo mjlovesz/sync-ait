@@ -64,7 +64,7 @@ TRANSLATION_UNIT：无referenced
 ## definition
 
 C++标准/内置的Node：无referenced和definition
-- 如UNEXPOSED_EXPR/XXX_LITERAL/XXX_OPERATOR/XXX_STMT/PAREM_EXPR，部分CALL_EXPR。
+- 如UNEXPOSED_EXPR/XXX_LITERAL/XXX_OPERATOR/XXX_STMT/PAREN_EXPR，部分CALL_EXPR。
 
 方法/函数调用（CALL_EXPR）：无definition
 
@@ -84,14 +84,6 @@ from app_analyze.common.kit_config import KitConfig
 
 
 Info = namedtuple('Info', ['result_type', 'spelling', 'api', 'definition', 'source'])
-
-
-def get_diag_info(diag):
-    return {'severity': diag.severity,
-            'location': diag.location,
-            'spelling': diag.spelling,
-            'ranges': diag.ranges,
-            'fixits': diag.fixits}
 
 
 def get_attr(obj, attr=None, default_val=None):
@@ -248,7 +240,10 @@ def parm_decl(c):
             return default(c)
     else:  # 原生类型变量声明
         source = get_attr(c, 'location.file.name')
-        definition = c.get_definition().displayname
+        if c.get_definition():
+            definition = c.get_definition().displayname
+        else:
+            definition = None
     if c.type.kind in (TypeKind.RVALUEREFERENCE, TypeKind.LVALUEREFERENCE):
         api = c.type.get_pointee().spelling
     else:

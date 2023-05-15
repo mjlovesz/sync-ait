@@ -35,7 +35,7 @@ from app_analyze.utils.io_util import IOUtil
 from app_analyze.utils.log_util import logger
 from app_analyze.utils.lib_util import get_sys_path
 from app_analyze.scan.clang_utils import helper_dict, filter_dict, Info, get_attr, get_children, skip_implicit, auto_match
-from app_analyze.scan.clang_utils import read_cursor, get_diag_info
+from app_analyze.scan.clang_utils import read_cursor
 
 SYS_PATH = get_sys_path()
 SCANNED_FILES = list()
@@ -45,6 +45,11 @@ MACRO_MAP = dict()
 if not Config.loaded:
     # 或指定目录：Config.set_library_path("/usr/lib/x86_64-linux-gnu")
     Config.set_library_file(KitConfig.lib_clang_path)
+
+
+def get_diag_info(diag):
+    return {'info': diag.format(),
+            'fixits': list(diag.fixits)}
 
 
 def get_ref_def(cursor):
@@ -313,9 +318,13 @@ class Parser:
         global RESULTS, SCANNED_FILES, MACRO_MAP
         RESULTS.clear()
         MACRO_MAP.clear()
-        diag_info = [get_diag_info(d) for d in self.tu.diagnostics]
-        if diag_info:
-            logger.warning(f'Code diagnose：{diag_info}')
+
+        for d in self.tu.diagnostics:
+            logger.warning(f'Code diagnose：{get_diag_info(d)}')
+            if d.severity > KitConfig.tolerance:
+                logger.warning(f'Diagnostic severity {d.severity} > tolerance {KitConfig.tolerance}, skip this file.')
+                return dict()
+
         cwd = os.path.dirname(self.tu.spelling)  # os.path.abspath(os.path.normpath(tu.spelling))
         start = time.time()
         info = parse_info(self.tu.cursor, cwd=cwd)
