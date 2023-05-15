@@ -488,11 +488,10 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
         session.set_staticbatch()
         # only need call this functon compare infer_simple
+        with pytest.raises(RuntimeError) as e:
+            session.check_dym_aipp_input_exsity()
         self.load_aipp_config_file(session, self.get_actual_aipp_config(), 4)
-        with pytest.raises(Exception) as e:
-            if (session.get_dym_aipp_input_exsity() == 0):
-                raise RuntimeError("can't find aipp input")
-        session.check_dym_aipp_input_exsity()
+
         logger.info("get --aipp model wrong")
 
         # create new numpy data according inputs info
