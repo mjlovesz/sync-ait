@@ -182,7 +182,8 @@ Options:
   --dump STR2BOOL              <Optional> Whether to dump all the operations
                                ouput. Default True.
   --convert STR2BOOL           <Optional> Enable npu dump data conversion from
-                               bin to npy after compare.
+                               bin to npy after compare.Clarify --convert True
+                               when using
   -h, --help                   Show this message and exit.
 
 ```
