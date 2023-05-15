@@ -507,7 +507,8 @@ class TestClass():
         allowable_performance_deviation = 0.03
         if msame_inference_time_ms == 0:
             raise ZeroDivisionError
-        reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
+        else:
+            reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
         logger.info("static batch msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms,
                                                                              ais_bench_inference_time_ms,
                                                                                reference_deviation))
@@ -571,7 +572,8 @@ class TestClass():
         allowable_performance_deviation = 0.04
         if msame_inference_time_ms == 0:
             raise ZeroDivisionError
-        reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
+        else:
+            reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
         logger.info("dymshape msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms,
                                                                          ais_bench_inference_time_ms,
                                                                            reference_deviation))

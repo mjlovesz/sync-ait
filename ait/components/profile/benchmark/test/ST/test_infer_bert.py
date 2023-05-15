@@ -208,8 +208,9 @@ class TestClass():
         allowable_performance_deviation = 0.01
         if msame_inference_time_ms == 0:
             raise ZeroDivisionError
-        assert math.fabs(msame_inference_time_ms - ais_bench_inference_time_ms)/msame_inference_time_ms \
-            < allowable_performance_deviation
+        else:
+            assert math.fabs(msame_inference_time_ms - ais_bench_inference_time_ms)/msame_inference_time_ms \
+                    < allowable_performance_deviation
         os.remove(msame_infer_log_path)
         shutil.rmtree(output_dir_path)
 

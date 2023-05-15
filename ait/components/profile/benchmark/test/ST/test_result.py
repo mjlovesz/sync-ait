@@ -89,7 +89,8 @@ class TestClass:
             real_execute_num = TestCommonClass.get_inference_execute_num(log_path)
             if batch_size == 0:
                 raise ZeroDivisionError
-            exacute_num = math.ceil(output_file_num/batch_size)
+            else:
+                exacute_num = math.ceil(output_file_num/batch_size)
             assert real_execute_num == warmup_num + exacute_num
 
             # bin file num is equal to output_file_num
@@ -144,7 +145,8 @@ class TestClass:
             real_execute_num = TestCommonClass.get_inference_execute_num(log_path)
             if dys_batch_size == 0:
                 raise ZeroDivisionError
-            exacute_num = math.ceil(output_file_num/dys_batch_size)
+            else:
+                exacute_num = math.ceil(output_file_num/dys_batch_size)
             assert real_execute_num == warmup_num + exacute_num
 
             # bin file num is equal to output_file_num
