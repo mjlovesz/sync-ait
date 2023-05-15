@@ -1,6 +1,20 @@
+# Copyright 2023 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
 import sys
+import logging
 import json
 import argparse
 import numpy as np
@@ -10,7 +24,7 @@ def get_topk_list(k, origin_list):
     temp = sorted(origin_list)[-k:]
     temp.reverse()
     res = []
-    print("temp:", temp)
+    logging.info("temp:", temp)
     for ele in temp:
         res.append((origin_list.index(ele), ele))
     return res
@@ -33,14 +47,14 @@ def analyse_topk_times(args):
     times = info["npu_compute_time_list"]
     k = 5
     topk_list = get_topk_list(k, times)
-    print("k Maximum with indices : " + str(topk_list))
-    print("infer count:{} mean:{} max:{} min:{}".format(len(times), np.mean(times), np.max(times), np.min(times)))
+    logging.info("k Maximum with indices : " + str(topk_list))
+    logging.info("infer count:{} mean:{} max:{} min:{}".format(len(times), np.mean(times), np.max(times), np.min(times)))
     if np.min(times) > 0:
-        print("max-min  rate:{}% ".format((np.max(times) - np.min(times)) * 100.0 / np.min(times)))
+        logging.info("max-min  rate:{}% ".format((np.max(times) - np.min(times)) * 100.0 / np.min(times)))
     if np.mean(times) > 0:
-        print("max-mean rate:{}%".format((np.max(times) - np.mean(times)) * 100.0 / np.mean(times)))
+        logging.info("max-mean rate:{}%".format((np.max(times) - np.mean(times)) * 100.0 / np.mean(times)))
     topk_index = [ i[0] for i in topk_list ]
-    print(topk_index)
+    logging.info(topk_index)
     if args.output is not None:
         with open("{}/topk_index.json".format(args.output), "w") as f:
             f.write(json.dumps(topk_index))
@@ -63,5 +77,5 @@ if __name__ == '__main__':
     elif input_args.mode == "plog":
         analyse_plog(input_args)
     else:
-        print("error mode:{}".format(input_args.mode))
+        logging.info("error mode:{}".format(input_args.mode))
         sys.exit(-1)

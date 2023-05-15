@@ -1,7 +1,21 @@
+# Copyright 2023 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
 import re
 import sys
+import logging
 import argparse
 import numpy as np
 
@@ -86,20 +100,20 @@ def parse_bin_file(bin_file):
     bin_file_name = os.path.basename(bin_file)
     format_num, dtype_num, shape = get_format_dtype_shape(bin_file_name)
 
-    print("bin_file:{} format: {} dtype: {} shape: {}".format(bin_file,
+    logging.info("bin_file:{} format: {} dtype: {} shape: {}".format(bin_file,
         num_to_aclFormat.get(format_num), num_to_aclDataType.get(dtype_num), shape))
     # 输出npy文件
     file_name = bin_file_name.strip(".bin")
     np_dtype = acl_type_to_numpy_type.get(num_to_aclDataType.get(dtype_num))
     data = np.fromfile(bin_file, dtype=np_dtype)
     if len(shape) == 0:
-        print("warning get shape failed convert [-1]")
+        logging.info("warning get shape failed convert [-1]")
         shape = [ -1 ]
     ndata = data.reshape(shape)
     npy_file_name = file_name + ".npy"
     npy_file = os.path.join(bin_file_path, npy_file_name)
     np.save(npy_file, ndata)
-    print("out npy dtype: {} shape: {} out_file: {}\n".format(np_dtype, ndata.shape, npy_file))
+    logging.info("out npy dtype: {} shape: {} out_file: {}\n".format(np_dtype, ndata.shape, npy_file))
 
 
 def get_args():
@@ -112,7 +126,7 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
     if args.input is  None or not os.path.exists(args.input):
-        print("bad parameters. lack of input parameter or bin file is not exist.")
+        logging.info("bad parameters. lack of input parameter or bin file is not exist.")
         sys.exit(1)
 
     bin_files = []
@@ -128,9 +142,9 @@ if __name__ == '__main__':
             bin_files.append(args.input)
 
     if len(bin_files) == 0:
-        print("bad parameters. No suitable exception file")
+        logging.info("bad parameters. No suitable exception file")
         sys.exit(1)
 
-    for _bin_file in bin_files:
-        parse_bin_file(_bin_file)
+    for each_bin_file in bin_files:
+        parse_bin_file(each_bin_file)
 
