@@ -11,22 +11,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json
-
-from transplt_advisor.report.report import Report
-from transplt_advisor.utils.log_util import logger
-from transplt_advisor.utils.io_util import IOUtil
-from transplt_advisor.common.kit_config import KitConfig
+from app_analyze.report.report import Report
+from app_analyze.utils.excel import write_excel
+from app_analyze.utils.log_util import logger
+from app_analyze.common.kit_config import KitConfig
 
 
-class JsonReport(Report):
+class CsvReport(Report):
     """
-    JsonReport代表输出格式为csv的报告文件对象
+    CsvReport代表输出格式为csv的报告文件对象
     """
 
     def __init__(self, report_param):
-        """实例化JSON报告对象"""
-        super(JsonReport, self).__init__(report_param)
+        """实例化Csv报告对象"""
+        super(CsvReport, self).__init__(report_param)
         self.report_content = {}
 
     def __repr__(self):
@@ -42,9 +40,7 @@ class JsonReport(Report):
 
     def generate(self):
         if self.report_path == '':
-            self.report_path = KitConfig.source_directory + '/' + 'output.json'
+            self.report_path = KitConfig.source_directory + '/' + 'output.xlsx'
 
-        for k, v in self.report_content.items():
-            self.report_content[k] = v.to_dict(orient='records')  # 将dataframe转换为dict
-        IOUtil.json_safe_dump(self.report_content, self.report_path)
+        write_excel(self.report_content, self.report_path)
         logger.info(f'Report generated at: {self.report_path}')

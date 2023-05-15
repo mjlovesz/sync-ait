@@ -15,8 +15,8 @@ import os
 
 import click
 
-from transplt_advisor.common.kit_config import KitConfig
-from transplt_advisor.scan.scan_api import ScanApi
+from app_analyze.common.kit_config import KitConfig
+from app_analyze.scan.scan_api import ScanApi
 
 
 def start_scan_kit(args):

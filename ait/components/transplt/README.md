@@ -1,6 +1,12 @@
-# App Transplt
+# 工具使用指南
 
-## 安装
+## 介绍
+
+本文介绍应用迁移分析工具，提供NV C++推理应用工程迁移分析以及昇腾API推荐
+
+## 工具安装
+
+### 环境和依赖
 
 依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。以Ubuntu为例：
 
@@ -8,41 +14,72 @@
 sudo apt-get install libclang-dev clang
 ```
 
-依赖[LLVM Clang python bindings](https://github.com/llvm/llvm-project/tree/main/clang/bindings/python)，已在requirements中。
+依赖[加速库头文件](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip)，下载后解压至`headers/`
+
+依赖[API映射表](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip)，下载后解压至`config/`。可及时更新，注意格式。
+
+
+
+
+### 一站式ait工具安装方式
+
 ```shell
-pip3 install -r requirements.txt
+git clone https://gitee.com/ascend/ait.git
+cd ait/ait
+
+# 一键式安装方式
+python3 -m pip install .[transplt] --force-reinstall
+
+# 独立安装方式
+python3 -m pip install . --force-reinstall
+cd components/transplt
+python3 -m pip install . --force-reinstall
 ```
-
-依赖加速库头文件，下载后解压至`headers/`
-
-依赖API映射表，下载后解压至`config/`。可及时更新，注意格式。
 
 ## 配置
 
 配置**common/kit_config.py**中的**lib_clang_path**为`libclang.so`的路径
 
-## 使用
+## 工具使用
 
-### 1. 文件夹扫描 porting_advisor.py
+一站式ait工具使用命令格式说明如下：
 
-**python3 porting_advisor.py [-h] [-s source] [-f report-type] [-t tools] [-l log_level]**  
+```shell
+ait transplt [OPTIONS]
+```
+OPTIONS参数说明如下：
 
-命令示例: python3 porting_advisor.py -s examples/opencv
+| 参数                | 说明                                  | 是否必选 |
+|-------------------|-------------------------------------|------|
+| -s, --source      | 待扫描的工程路径                            | 是    |
+| -f, --report-type | 输出报告类型，支持csv（xlsx），json             | 否    |
+| -t, --tools       | 构建工具类型，目前支持cmake                    | 否    |
+| -l, --log_level   | 日志级别，支持INFO（默认），DEBUG，WARNING，ERROR | 否    |
 
-### 2. 扫描结果
-扫描完成后会在被扫描的工程目录下创建`output.xlsx`
-各页签对应各个文件扫描结果
+命令示例如下：
 
-其中：
+```shell
+ait transplt -s /data/examples/simple/
+```
 
-api：cpp文件中的三方库API
+```shell
+2023-05-13 10:30:35,346 - INFO - scan_api.py[123] - Scan source files...
+2023-05-13 10:30:35,347 - INFO - clang_parser.py[303] - Scanning file: /data/examples/simple/exmaple_02-03.cpp
+2023-05-13 10:30:49,625 - INFO - cxx_scanner.py[46] - Total time for scanning cxx files is 14.278300523757935s
+2023-05-13 10:30:49,791 - INFO - json_report.py[50] - Report generated at: /data/examples/simple/output.json
+2023-05-13 10:30:49,791 - INFO - scan_api.py[113] - **** Project analysis finished <<<
 
-cuda_en：是否cuda使能
+```
 
-location：api在源文件中的位置
+在待扫描的工程目录下输出output.xlsx，会呈现工程中每个支持的加速库API的信息和支持情况，结果如下：
 
-mxBase_API：对应的可加速的mxBase API
+输出数据说明：
 
-Description： mxBase API的简介
-
-Workload： 预估迁移人力
+| 标题          | 说明                |
+|:------------|-------------------|
+| api         | cpp文件中的三方库API     |
+| cuda_en     | 是否cuda使能          |
+| location    | api在源文件中的位置       |
+| mxBase_API  | 对应的可加速的mxBase API |
+| Description | mxBase API的简介     |
+| Workload    | 预估迁移人力            |

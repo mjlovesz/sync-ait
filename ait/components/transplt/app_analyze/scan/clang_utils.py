@@ -80,7 +80,7 @@ from collections import namedtuple
 
 from clang.cindex import CursorKind, TypeKind
 
-from transplt_advisor.common.kit_config import KitConfig
+from app_analyze.common.kit_config import KitConfig
 
 
 Info = namedtuple('Info', ['result_type', 'spelling', 'api', 'definition', 'source'])
