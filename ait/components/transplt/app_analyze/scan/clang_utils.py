@@ -97,7 +97,12 @@ def get_attr(obj, attr=None, default_val=None):
 
 
 def get_namespace(children):
-    """例如cv::cudacodec::VideoReader"""
+    """例如cv::cudacodec::VideoReader
+
+    特殊示例：OpenCV FileStorage::READ，需将TYPE_REF作为namespace处理。
+    {"kind": "DECL_REF_EXPR","type_kind": "ENUM","spelling": "READ","type": "cv::FileStorage::Mode"}
+        {"kind": "TYPE_REF","type_kind": "RECORD","spelling": "class cv::FileStorage","type": "cv::FileStorage"}
+    """
     namespace = ''
     for child in children:
         if child.kind in [CursorKind.NAMESPACE_REF, CursorKind.TEMPLATE_REF]:
@@ -109,7 +114,9 @@ def get_namespace(children):
                 namespace = child.type.spelling + '::'
             else:
                 namespace += child.type.spelling + '::'
-    return namespace
+        else:  # 应该不会出现，用作保险
+            break
+    return namespace[:-2]  # 空字符串不会报错
 
 
 def get_children(cursor):
@@ -323,6 +330,12 @@ def call_expr(c):
 
     result_type, spelling, api, definition, source = default(c)
     if op_overload:
+        for i, child in enumerate(children):
+            child = skip_implicit(child)
+            if not child:
+                continue
+            if c.spelling == child.spelling and i > 0:  # 重载的运算符节点
+                    child.scanned = True  # 用于标识是否已被扫描
         name, _, attr, _, _ = auto_match(c0)
         if c0.kind == CursorKind.MEMBER_REF_EXPR:
             # 运算符重载，且最近子节点为MEMBER_REF_EXPR，则必为属性引用，而非方法引用，否则最近子节点为CALL_EXPR。
@@ -335,9 +348,12 @@ def call_expr(c):
             if c0.kind == CursorKind.DECL_REF_EXPR:
                 c0.scanned = True
     else:
-        if c0.kind in [CursorKind.MEMBER_REF_EXPR, CursorKind.DECL_REF_EXPR, CursorKind.TYPE_REF]:
+        if c0.kind == CursorKind.MEMBER_REF_EXPR:
+            api = auto_match(c0).api
             c0.scanned = True
-        if c0.kind == CursorKind.NAMESPACE_REF:  # 类调用，如cv::Size(w, h)
+        elif c0.kind in [CursorKind.MEMBER_REF_EXPR, CursorKind.DECL_REF_EXPR, CursorKind.TYPE_REF]:
+            c0.scanned = True
+        elif c0.kind == CursorKind.NAMESPACE_REF:  # 类调用，如cv::Size(w, h)
             for ci in children:
                 if ci.kind in [CursorKind.NAMESPACE_REF, CursorKind.TEMPLATE_REF, CursorKind.TYPE_REF]:
                     ci.scanned = True
@@ -375,6 +391,7 @@ def member_ref_expr(c):
 
     if cls:
         cls = cls.replace('const ', '')  # 去除const
+        cls = cls.strip(' *')  # 去除末尾指针符号*
     c.info = Info(result_type, f'{obj}.{api}', f'{cls}.{api}', definition, source)
     return c.info
 
@@ -394,14 +411,14 @@ def decl_ref_expr(c):
         if len(children) < 1:
             raise RuntimeError(f'DECL_REF_EXPR of Typekind OVERLOAD {c.spelling} {c.location} 应有后继节点：' \
                                f'命名空间NAMESPACE_REF（可选） 函数名OVERLOADED_DECL_REF')
-        spelling = get_namespace(children) + children[-1].spelling
+        spelling = get_namespace(children) + '::' + children[-1].spelling
         api = spelling
         result_type = get_attr(children[-1], 'referenced.result_type.spelling')  # 函数返回值类型
         source = get_attr(children[0], 'referenced.location.file.name')
     # extent包含对象名、方法名，不包括()、参数，需修改。
     elif c.type.kind == TypeKind.FUNCTIONPROTO:
         # DECL_REF_EXPR of Typekind FUNCTIONPROTO 有后继节点：命名空间NAMESPACE_REF（可选），类型TYPE_REF（可选）
-        spelling = get_namespace(children) + c.spelling
+        spelling = get_namespace(children) + '::' + c.spelling
         api = spelling
         result_type = get_attr(c, 'referenced.result_type.spelling')  # 函数返回值类型
         source = get_attr(c, 'referenced.location.file.name')
@@ -410,7 +427,7 @@ def decl_ref_expr(c):
     else:
         result_type, spelling, api, definition, source = default(c)
         # get_namespace会设置scanned属性，set_attr_children(c, 'scanned', True)
-        spelling = get_namespace(children) + spelling
+        spelling = get_namespace(children) + '::' + spelling
         if c.type.kind == TypeKind.ENUM:
             if 'anonymous enum' not in c.type.spelling:
                 api = f'{c.type.spelling}.{api}'
@@ -465,7 +482,9 @@ def namespace_ref(c):
     Returns:
         Info
     """
-    c.info = Info(None, c.spelling, 'NAMESPACE_REF', None, get_attr(c, 'referenced.location.file.name'))
+    # 将连续的namespace合并
+    api = get_namespace(get_children(c.parent))
+    c.info = Info(None, c.spelling, api, None, get_attr(c, 'referenced.location.file.name'))
     return c.info
 
 
