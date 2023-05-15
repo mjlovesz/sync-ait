@@ -20,7 +20,7 @@ from pybind11 import get_cmake_dir
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
-static_version = "0.0.2"
+Static_version = "0.0.2"
 
 # The main interface is through Pybind11Extension.
 # * You can add cxx_std=11/14/17, and then build_ext can be removed.
@@ -107,7 +107,7 @@ ext_modules = [
 
 setup(
     name = "aclruntime",
-    version = static_version,
+    version = Static_version,
     author = "ais_bench",
     author_email = "aclruntime",
     url = "https://xxxxx",
