@@ -42,7 +42,7 @@ class JsonReport(Report):
 
     def generate(self):
         if self.report_path == '':
-            self.report_path = KitConfig.source_directory + '/' + 'output.json'
+            self.report_path = KitConfig.SOURCE_DIRECTORY + '/' + 'output.json'
 
         for k, v in self.report_content.items():
             self.report_content[k] = v.to_dict(orient='records')  # 将dataframe转换为dict
