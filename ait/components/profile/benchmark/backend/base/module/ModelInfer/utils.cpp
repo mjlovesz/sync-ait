@@ -223,7 +223,7 @@ double Utils::InferenceTimeAverage(double* x, int len)
     double sum = 0;
     for (int i = 0; i < len; i++)
         sum += x[i];
-    if (len) {
+    if (len != 0) {
         return sum / len;
     }
     printf("Inference Time Can't divide zero!");
