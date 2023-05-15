@@ -1,8 +1,24 @@
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import json
 import os
 
 import numpy as np
 from ais_bench.infer.utils import logger
+
 
 class ListInfo(object):
     def __init__(self):
@@ -24,9 +40,6 @@ class Summary(object):
         self.npu_compute_time_list = []
         self._batchsizes = []
 
-    def add_batchsize(self, n: int):
-        self._batchsizes.append(n)
-
     @staticmethod
     def get_list_info(work_list, percentile_scale):
         list_info = ListInfo()
@@ -39,15 +52,18 @@ class Summary(object):
 
         return list_info
 
+    def add_batchsize(self, n: int):
+        self._batchsizes.append(n)
+
     def add_sample_id_infiles(self, sample_id, infiles):
-        if self.infodict["filesinfo"].get(sample_id) == None:
+        if self.infodict["filesinfo"].get(sample_id) is None:
             self.infodict["filesinfo"][sample_id] = {"infiles": [], "outfiles": []}
         if len(self.infodict["filesinfo"][sample_id]["infiles"]) == 0:
             for files in infiles:
                 self.infodict["filesinfo"][sample_id]["infiles"].append(files)
 
     def append_sample_id_outfile(self, sample_id, outfile):
-        if self.infodict["filesinfo"].get(sample_id) == None:
+        if self.infodict["filesinfo"].get(sample_id) is None:
             self.infodict["filesinfo"][sample_id] = {"infiles": [], "outfiles": []}
         self.infodict["filesinfo"][sample_id]["outfiles"].append(outfile)
 
@@ -82,14 +98,14 @@ class Summary(object):
 
         # logger.debug("infer finish (ms) summary:{}".format(self.infodict))
         logger.info("-----------------Performance Summary------------------")
-        if display_all_summary == True:
+        if display_all_summary is True:
             logger.info("H2D_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
                         .format(h2d_latency.min, h2d_latency.max, h2d_latency.mean, h2d_latency.median, scale,
                                 h2d_latency.percentile))
         logger.info("NPU_compute_time (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
                     .format(npu_compute_time.min, npu_compute_time.max, npu_compute_time.mean, npu_compute_time.median,
                             scale, npu_compute_time.percentile))
-        if display_all_summary == True:
+        if display_all_summary is True:
             logger.info("D2H_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
                         .format(d2h_latency.min, d2h_latency.max, d2h_latency.mean, d2h_latency.median, scale,
                                 d2h_latency.percentile))
