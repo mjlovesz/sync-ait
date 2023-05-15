@@ -48,7 +48,8 @@ def analyse_topk_times(args):
     k = 5
     topk_list = get_topk_list(k, times)
     logging.info("k Maximum with indices : " + str(topk_list))
-    logging.info("infer count:{} mean:{} max:{} min:{}".format(len(times), np.mean(times), np.max(times), np.min(times)))
+    logging.info("infer count:{} mean:{} max:{} min:{}".format(len(times),\
+                 np.mean(times), np.max(times), np.min(times)))
     if np.min(times) > 0:
         logging.info("max-min  rate:{}% ".format((np.max(times) - np.min(times)) * 100.0 / np.min(times)))
     if np.mean(times) > 0:
