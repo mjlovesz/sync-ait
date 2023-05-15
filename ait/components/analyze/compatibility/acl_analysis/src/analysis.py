@@ -56,7 +56,7 @@ def match_knowledge(line) -> Dict[str, List[Knowledge]]:
                     continue
                 if acl_api not in result:
                     result[acl_api] = []
-                result[acl_api].append(knowledge)
+                result.get(acl_api).append(knowledge)
     return result
 
 
@@ -80,7 +80,7 @@ def analysis_310_to_310b(path: str):
                         for knowledge in knowledges:
                             if knowledge not in result:
                                 result[knowledge] = []
-                            result[knowledge].append(
+                            result.get(knowledge).append(
                                 api + ' ' + str(filepath) + ' Line: ' + str(line_num)
                             )
     logger.info("[info] Analysis finished.")
