@@ -58,33 +58,33 @@ class KitConfig:
     FILE_PATTERN = re.compile(r'opencv.hpp|opencv2')
     UNKNOWN_PATTERN = re.compile(r'opencv|cuda|dali|nvjpeg|ffmpeg')
 
-    thread_num = 3
+    THREAD_NUM = 3
 
-    arch = platform.machine()
-    lib_clang_path = f'/usr/lib/{arch}-linux-gnu/libclang-14.so'
-    headers_folder = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'headers'))
-    includes = {
+    ARCH = platform.machine()
+    LIB_CLANG_PATH = f'/usr/lib/{ARCH}-linux-gnu/libclang-14.so'
+    HEADERS_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'headers'))
+    INCLUDES = {
         'cuda': '',
-        'opencv': f'{headers_folder}/opencv/include/opencv4',
+        'opencv': f'{HEADERS_FOLDER}/opencv/include/opencv4',
         'tensorrt': '',
     }
 
     # 'make', 'automake'
-    valid_construct_tools = ['cmake']
-    porting_content = """ait transplt
+    VALID_CONSTRUCT_TOOLS = ['cmake']
+    PORTING_CONTENT = """ait transplt
             [-h] [-s source] 
             [-t tools] 
             [-l {DEBUG,INFO,WARN,ERR}] 
             [-f report_type]\n"""
 
-    source_directory = ''
-    project_time = ''
+    SOURCE_DIRECTORY = ''
+    PROJECT_TIME = ''
 
-    valid_report_type = ['csv', 'json']
-    api_map = '../config/mxBase_API_MAP.xlsx'
-    except_api = ['', 'NAMESPACE_REF']
+    VALID_REPORT_TYPE = ['csv', 'json']
+    API_MAP = '../config/mxBase_API_MAP.xlsx'
+    EXCEPT_API = ['', 'NAMESPACE_REF']
 
-    cuda_home = os.environ.get('CUDA_HOME', '/usr/local/cuda')
+    CUDA_HOME = os.environ.get('CUDA_HOME', '/usr/local/cuda')
     # lib_name: [namespace, cuda_include, cuda_namespace]，后两者用于分析基于CUDA加速的接口
     # cuda_include参考示例：
     # OpenCV-CUDA
@@ -107,7 +107,7 @@ class KitConfig:
         '/libpostproc/': '',
         '/libswscale/': '',
         # CUDA samples: https://github.com/NVIDIA/CUDALibrarySamples
-        cuda_home: ['', 1, ''],
+        CUDA_HOME: ['', 1, ''],
         # nvJPEG samples: https://github.com/NVIDIA/CUDALibrarySamples/tree/master/nvJPEG
         'nvjpeg': ['', 1, ''],
         # DALI: https://github.com/NVIDIA/DALI
@@ -115,9 +115,9 @@ class KitConfig:
         # CV-CUDA
         '/cvcuda': ['cvcuda', 1, '']
     }
-    level = 'small'  # 'large'
-    print_detail = False
-    tolerance = 4  # {'ignored':0, 'info':1, 'warning':2, 'error':3, 'fatal':4}
+    LEVEL = 'small'  # parse level: 'large'
+    PRINT_DETAIL = False
+    TOLERANCE = 4  # code diag level: {'ignored':0, 'info':1, 'warning':2, 'error':3, 'fatal':4}
 
 
 @unique

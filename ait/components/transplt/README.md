@@ -8,15 +8,15 @@
 
 ### 环境和依赖
 
-依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。以Ubuntu为例：
+依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。以Ubuntu22.04为例：
 
 ```shell
-sudo apt-get install libclang-dev clang
+sudo apt-get install libclang-14-dev clang-14
 ```
 
-依赖[加速库头文件](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip)，下载后解压至`headers/`
+依赖[加速库头文件](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip)，依赖[API映射表](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip)，下载后解压至安装目录，例如`/usr/local/site-packages/app_analyze`
 
-依赖[API映射表](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip)，下载后解压至`config/`。可及时更新，注意格式。
+加速库头文件和API映射表可及时更新，注意格式。
 
 
 
@@ -35,10 +35,6 @@ python3 -m pip install . --force-reinstall
 cd components/transplt
 python3 -m pip install . --force-reinstall
 ```
-
-## 配置
-
-配置**common/kit_config.py**中的**lib_clang_path**为`libclang.so`的路径
 
 ## 工具使用
 

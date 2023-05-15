@@ -74,7 +74,7 @@ class Advisor:
             df['Workload'] = 0.0
             # 遍历每一行，并进行修改
             for index, row in df.iterrows():
-                if row['API'] in KitConfig.except_api:
+                if row['API'] in KitConfig.EXCEPT_API:
                     continue
                 # 1. 使用Series.str.contains()做字符串检索
                 # 2. 自定义字符串检索

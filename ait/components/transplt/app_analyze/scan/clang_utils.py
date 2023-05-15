@@ -513,7 +513,7 @@ whole_dict = {**small_dict, **large_dict, **other_dict}
 
 filter_dict = small_dict
 helper_dict = large_dict  # 用于提前对节点进行处理，比如VAR_DECL的命名空间、FUNCTIONPROTO的参数等
-if KitConfig.level == 'large':
+if KitConfig.LEVEL == 'large':
     filter_dict = whole_dict
     helper_dict = dict()
 
