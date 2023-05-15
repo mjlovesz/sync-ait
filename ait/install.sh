@@ -13,10 +13,11 @@ esac; shift; done
 
 python_version=$(python -V 2>&1 | awk "{print $2}" | awk -F '.' python_version)
 
-if (( $python_version == 2 ))
+if [ $python_version -eq 2 ]
 then
   echo "Your python version is 2" >&2
-elif (( $python_version == 3 ))
+elif [ $python_version -eq 3 ]
+then
   echo "Your python version is 3"
 fi
 
