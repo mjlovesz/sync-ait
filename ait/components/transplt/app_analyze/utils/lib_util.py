@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import os
-from transplt_advisor.common.kit_config import KitConfig
+from app_analyze.common.kit_config import KitConfig
 
 
 def get_sys_path():

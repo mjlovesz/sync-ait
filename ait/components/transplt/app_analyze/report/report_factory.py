@@ -11,10 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from transplt_advisor.common.kit_config import ReporterType
-from transplt_advisor.report.csv_report import CsvReport
-from transplt_advisor.report.json_report import JsonReport
-from transplt_advisor.utils.log_util import logger
+from app_analyze.common.kit_config import ReporterType
+from app_analyze.report.csv_report import CsvReport
+from app_analyze.report.json_report import JsonReport
+from app_analyze.utils.log_util import logger
 
 
 class ReporterFactory:

@@ -11,9 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from transplt_advisor.common.kit_config import ScannerType
-from transplt_advisor.scan.cxx_scanner import CxxScanner
-from transplt_advisor.scan.cmake_scanner import CMakeScanner
+from app_analyze.common.kit_config import ScannerType
+from app_analyze.scan.cxx_scanner import CxxScanner
+from app_analyze.scan.cmake_scanner import CMakeScanner
 
 
 def merge_dicts(*dict_args):

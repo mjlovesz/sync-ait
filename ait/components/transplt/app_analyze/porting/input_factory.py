@@ -11,8 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from transplt_advisor.common.kit_config import InputType
-from transplt_advisor.porting.cmdline_input import CommandLineInput
+from app_analyze.common.kit_config import InputType
+from app_analyze.porting.cmdline_input import CommandLineInput
 
 
 class InputFactory:

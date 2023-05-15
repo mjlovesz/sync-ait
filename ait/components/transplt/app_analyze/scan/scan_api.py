@@ -13,13 +13,13 @@
 
 import traceback
 
-from transplt_advisor.exception.source_scan_exception import \
+from app_analyze.exception.source_scan_exception import \
     AutomakeExecuteFailedException, MakefileExecuteFailException, \
     SourceScanNoResultException, SourceFileNotFoundError
-from transplt_advisor.common.kit_config import KitConfig, InputType
-from transplt_advisor.model.project import Project
-from transplt_advisor.porting.input_factory import InputFactory
-from transplt_advisor.utils.log_util import logger
+from app_analyze.common.kit_config import KitConfig, InputType
+from app_analyze.model.project import Project
+from app_analyze.porting.input_factory import InputFactory
+from app_analyze.utils.log_util import logger
 
 
 class ScanApi:

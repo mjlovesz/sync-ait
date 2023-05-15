@@ -30,12 +30,12 @@ import time
 
 from clang.cindex import Index, CursorKind, TranslationUnit, Config
 
-from transplt_advisor.common.kit_config import KitConfig
-from transplt_advisor.utils.io_util import IOUtil
-from transplt_advisor.utils.log_util import logger
-from transplt_advisor.utils.lib_util import get_sys_path
-from transplt_advisor.scan.clang_utils import helper_dict, filter_dict, Info, get_attr, get_children, skip_implicit, auto_match
-from transplt_advisor.scan.clang_utils import read_cursor, get_diag_info
+from app_analyze.common.kit_config import KitConfig
+from app_analyze.utils.io_util import IOUtil
+from app_analyze.utils.log_util import logger
+from app_analyze.utils.lib_util import get_sys_path
+from app_analyze.scan.clang_utils import helper_dict, filter_dict, Info, get_attr, get_children, skip_implicit, auto_match
+from app_analyze.scan.clang_utils import read_cursor, get_diag_info
 
 SYS_PATH = get_sys_path()
 SCANNED_FILES = list()

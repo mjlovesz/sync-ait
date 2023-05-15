@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import pandas as pd
-from transplt_advisor.utils.log_util import logger
+from app_analyze.utils.log_util import logger
 
 
 def read_excel(path=""):
