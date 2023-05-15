@@ -117,6 +117,7 @@ class KitConfig:
     }
     level = 'small'  # 'large'
     print_detail = False
+    tolerance = 4  # {'ignored':0, 'info':1, 'warning':2, 'error':3, 'fatal':4}
 
 
 @unique
