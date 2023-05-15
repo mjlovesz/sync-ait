@@ -40,7 +40,7 @@ class CsvReport(Report):
 
     def generate(self):
         if self.report_path == '':
-            self.report_path = KitConfig.source_directory + '/' + 'output.xlsx'
+            self.report_path = KitConfig.SOURCE_DIRECTORY + '/' + 'output.xlsx'
 
         write_excel(self.report_content, self.report_path)
         logger.info(f'Report generated at: {self.report_path}')

@@ -71,19 +71,19 @@ class ScanApi:
             self._scan_source(inputs, info)
         except AutomakeExecuteFailedException as err:
             raise ValueError("{} ait transplt: error: {}".
-                             format(KitConfig.porting_content,
+                             format(KitConfig.PORTING_CONTENT,
                                     err.get_info())) from err
         except MakefileExecuteFailException as err:
             raise ValueError("{} ait transplt: error: {}".
-                             format(KitConfig.porting_content,
+                             format(KitConfig.PORTING_CONTENT,
                                     err.get_error_info())) from err
         except SourceScanNoResultException as err:
             raise ValueError("{} ait transplt: info: {}".
-                             format(KitConfig.porting_content,
+                             format(KitConfig.PORTING_CONTENT,
                                     err.get_error_info())) from err
         except SourceFileNotFoundError as err:
             raise ValueError("{} ait transplt: info: {}".
-                             format(KitConfig.porting_content,
+                             format(KitConfig.PORTING_CONTENT,
                                     err.get_error_info())) from err
         except Exception as ex:
             logger.exception("The Scan task ended with error: %s.", ex)

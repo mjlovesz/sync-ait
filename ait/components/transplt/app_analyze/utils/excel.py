@@ -45,4 +45,3 @@ def write_excel(df_dict, path='output.xlsx'):
 
     # 保存 Excel 文件
     excel.save()
-    logger.info(f'Analysis result saved in {path}')

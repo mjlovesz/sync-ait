@@ -24,7 +24,7 @@ def start_scan_kit(args):
         raise Exception("Source directory is not existed!")
     args.source = os.path.abspath(args.source)
 
-    KitConfig.source_directory = args.source
+    KitConfig.SOURCE_DIRECTORY = args.source
     scan_api = ScanApi()
     scan_api.scan_source(args)
 
@@ -64,7 +64,7 @@ opt_tools = click.option(
     '-t',
     '--tools',
     'tools',
-    type=click.Choice(KitConfig.valid_construct_tools),
+    type=click.Choice(KitConfig.VALID_CONSTRUCT_TOOLS),
     default='cmake',
     help='specify construction. default is cmake.'
 )

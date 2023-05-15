@@ -55,7 +55,7 @@ class Project:
         logger.debug('[Scan Directories]: %s', self.inputs.directories)
         logger.debug('[ReportType]: %s', self.inputs.report_type)
         logger.debug('[ConstructTool]: %s', self.inputs.construct_tool)
-        logger.debug('[ProjectTime]: %s', KitConfig.project_time)
+        logger.debug('[ProjectTime]: %s', KitConfig.PROJECT_TIME)
 
     def setup_file_matrix(self):
         """
@@ -127,7 +127,7 @@ class Project:
                 if not val_dict:
                     continue
 
-                ad = Advisor(val_dict, os.path.abspath(os.path.dirname(__file__)) + '/' + KitConfig.api_map)
+                ad = Advisor(val_dict, os.path.abspath(os.path.dirname(__file__)) + '/' + KitConfig.API_MAP)
                 ad.recommend()
                 workloads = ad.workload()
                 logger.info(f'Workloads:\n', workloads)
@@ -137,7 +137,7 @@ class Project:
                 self.report_results.update(val_dict)
 
         eval_time = time.time() - start_time
-        KitConfig.project_time = eval_time
+        KitConfig.PROJECT_TIME = eval_time
 
     def get_results(self):
         return self.report_results

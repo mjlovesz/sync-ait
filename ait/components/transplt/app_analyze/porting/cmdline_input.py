@@ -34,28 +34,28 @@ class CommandLineInput(IInput):
     def _check_path(folder):
         if not os.path.exists(folder):
             raise ValueError("{} ait transplt: error: {}".
-                             format(KitConfig.porting_content,
+                             format(KitConfig.PORTING_CONTENT,
                                     'The path %s does not exist or you do not '
                                     'have the permission to access the path. '
                                     % folder))
         elif not os.path.isdir(folder):
             raise ValueError("{} ait transplt: error: {}".
-                             format(KitConfig.porting_content,
+                             format(KitConfig.PORTING_CONTENT,
                                     'The path %s is '
                                     'not directory. ' % folder))
         elif not os.access(folder, os.R_OK):
             raise ValueError("{} ait transplt: error: {}".
-                             format(KitConfig.porting_content,
+                             format(KitConfig.PORTING_CONTENT,
                                     "Cannot access the file "
                                     "or directory: %s" % folder))
         elif Path(folder).is_dir() and not os.access(folder, os.X_OK):
             raise ValueError("{} ait transplt: error: {}".
-                             format(KitConfig.porting_content,
+                             format(KitConfig.PORTING_CONTENT,
                                     "Cannot access the "
                                     "directory: %s" % folder))
         elif IOUtil.check_path_is_empty(folder):
             raise ValueError("{} ait transplt: error: {}".
-                             format(KitConfig.porting_content,
+                             format(KitConfig.PORTING_CONTENT,
                                     'The directory %s '
                                     'is empty' % folder))
 
@@ -91,14 +91,14 @@ class CommandLineInput(IInput):
         """获取构建工具类型"""
         if not self.args.tools:
             self.args.tools = 'make'
-        if self.args.tools not in KitConfig.valid_construct_tools:
+        if self.args.tools not in KitConfig.VALID_CONSTRUCT_TOOLS:
             raise ValueError('{} ait transplt: error: construct '
                              'tool {} is not supported. supported '
                              'input are '
-                             '{}.'.format(KitConfig.porting_content,
+                             '{}.'.format(KitConfig.PORTING_CONTENT,
                                           self.args.tools,
                                           ' or '.join(KitConfig.
-                                                      valid_construct_tools)))
+                                                      VALID_CONSTRUCT_TOOLS)))
         self.construct_tool = self.args.tools
 
     def _get_debug_switch(self):
@@ -108,7 +108,7 @@ class CommandLineInput(IInput):
     def _get_output_type(self):
         """获取输出报告格式"""
         out_format = self.args.report_type.lower()
-        if out_format not in KitConfig.valid_report_type:
+        if out_format not in KitConfig.VALID_REPORT_TYPE:
             raise ValueError('ait transplt: error: output type {} is not '
                              'supported. supported input '
                              'is csv/json.'.format(self.args.report_type))

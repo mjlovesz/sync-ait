@@ -32,7 +32,7 @@ class CxxScanner(Scanner):
             cxx_f = files[idx]
 
             parser = Parser(cxx_f)
-            rst_vals = parser.parse(log=KitConfig.print_detail)
+            rst_vals = parser.parse(log=KitConfig.PRINT_DETAIL)
 
             result[cxx_f] = pd.DataFrame.from_dict(rst_vals)
         return result
@@ -49,7 +49,7 @@ class CxxScanner(Scanner):
         result = {}
         for file in self.files:
             p = Parser(file)
-            rst_vals = p.parse(log=KitConfig.print_detail)
+            rst_vals = p.parse(log=KitConfig.PRINT_DETAIL)
             result[file] = pd.DataFrame.from_dict(rst_vals)
 
         return result
