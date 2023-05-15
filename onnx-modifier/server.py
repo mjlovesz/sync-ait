@@ -21,10 +21,11 @@ import json
 import onnx
 from onnx_modifier import OnnxModifier
 
+
 class RequestInfo:
     def __init__(self) -> None:
         self._json = dict()
-    
+
     @property
     def files(self):
         return self._json
@@ -35,17 +36,20 @@ class RequestInfo:
     def get_json(self):
         return self._json
 
+
 class RpcServer:
     def __init__(self) -> None:
         self.path_amp = dict()
         self.request = RequestInfo()
         self.msg_cache = ""
         self.msg_end_flag = 2
+        self.max_msg_len_recv = 500 * 1024 * 1024
 
     @staticmethod
     def send_message(msg, status, file):
         return_str = json.dumps(dict(msg=msg, status=status, file=file))
-        sys.stdout.write("\n\n>>\n" + return_str + "\n\n") ## 格式固定，\n\n>>\n msg \n\n
+        # 格式固定，\n\n>>\n msg \n\n
+        sys.stdout.write("\n\n>>\n" + return_str + "\n\n")
         sys.stdout.flush()
         return return_str
 
@@ -54,22 +58,16 @@ class RpcServer:
         return dict(file=file_path), 200
 
     def route(self, path, **kwargs):
-        def regg(func): 
+        def regg(func):
             self.path_amp[path] = func
             return func
-        
+
         return regg
-    
+
     def run(self):
         is_exit = False
+        return_str = ""
         while not is_exit:
-            # {"msg":{"file":"D:\\amit\\onnx-modifier\\modified_onnx\\resnet34-v1-7.onnx"}, "path":"/open_model"}
-            # {"msg":{"file":"C:\\需求\\amit\\amit\\modified_onnx\\res.onnx"}, "path":"/open_model"}
-            # {"msg":{"added_node_info":{},"node_states":{},"changed_initializer":{},"rebatch_info":{},
-            #           "added_inputs":{},"input_size_info":{},"added_outputs":{},"node_renamed_io":{},
-            #           "node_states":{},"node_changed_attr":{},"model_properties":{},"postprocess_args":{}}, 
-            #   "path":"/download"}
-            # {"path":"/exit"}
             msg_str = self._get_std_in()
             if not msg_str:
                 continue
@@ -82,11 +80,11 @@ class RpcServer:
             except Exception as ex:
                 logging.debug(os.getpid())
                 logging.debug(str(ex))
-                self.send_message(msg="exception:" + str(ex) + "\n" + msg_str, status=500, file=None)
-        
+                self.send_message(msg="exception:" + str(ex) +
+                                  "\n" + msg_str, status=500, file=None)
+
             logging.debug(os.getpid())
             logging.debug(return_str)
-
 
     def _get_std_in(self):
         msg_recv = sys.stdin.readline()
@@ -99,8 +97,10 @@ class RpcServer:
                 return ""
         else:
             self.msg_cache += msg_recv
+            if len(self.msg_cache) > self.max_msg_len_recv:
+                raise ValueError("msg is too long to recv")
             return ""
-        
+
         msg_str = self.msg_cache
         self.msg_cache = ""
         self.msg_end_flag = 2
@@ -111,7 +111,7 @@ class RpcServer:
         path = msg_dict.get("path", "")
         if "/exit" == path:
             return self.send_message("byebye", 200, None), True
-        
+
         if path not in self.path_amp:
             raise ValueError("not found path")
 
@@ -129,16 +129,15 @@ class RpcServer:
         return self.send_message(msg=msg_back, status=status, file=file), False
 
 
-
-
 class ServerError(Exception):
     def __init__(self, msg, status) -> None:
         self._status = status
         self._msg = msg
-    
+
     @property
     def status(self):
         return self._status
+
     @property
     def msg(self):
         return self._msg
@@ -154,7 +153,7 @@ def onnxsim_model(modify_info):
         from onnxsim import simplify
     except ImportError as ex:
         raise ServerError("请安装 onnxsim", 599)
-        
+
     save_path = modify_model(modify_info)
 
     # convert model
@@ -167,11 +166,12 @@ def optimizer_model(modify_info):
     try:
         import auto_optimizer
     except ImportError as ex:
-        raise ServerError( "请安装 auto-optimizer", 599)
-    
+        raise ServerError("请安装 auto-optimizer", 599)
+
     import subprocess
     OnnxModifier.ONNX_MODIFIER.modify(modify_info)
-    save_path = OnnxModifier.ONNX_MODIFIER.check_and_save_model(save_dir="modified_onnx")
+    save_path = OnnxModifier.ONNX_MODIFIER.check_and_save_model(
+        save_dir="modified_onnx")
 
     # convert model
     optimized_path = f"{save_path}.opti.onnx"
@@ -185,9 +185,11 @@ def optimizer_model(modify_info):
         optimized_path,
     ]
     out_res = subprocess.call(cmd, shell=False)
-    if  out_res != 0:
-        raise RuntimeError("auto_optimizer run error: " + out_res + " cmd: " + "".join(cmd))
+    if out_res != 0:
+        raise RuntimeError("auto_optimizer run error: " +
+                           out_res + " cmd: " + "".join(cmd))
     return optimized_path
+
 
 def json_modify_model(modify_infos):
     model_name = OnnxModifier.ONNX_MODIFIER.model_name
@@ -209,16 +211,15 @@ def json_modify_model(modify_infos):
             save_path = json_modify_model(modify_info)
         else:
             raise ServerError(500, "unknown path")
-    
+
     return save_path
-    
+
 
 def register_interface(app, request, send_file):
 
-
     @app.route('/open_model', methods=['POST'])
     def open_model():
-        onnx_file = request.files['file']
+        onnx_file = request.files.get("file")
         if isinstance(onnx_file, str):
             OnnxModifier.from_model_path(onnx_file)
         else:
@@ -226,11 +227,10 @@ def register_interface(app, request, send_file):
 
         return 'OK', 200
 
-
     @app.route('/download', methods=['POST'])
     def modify_and_download_model():
         modify_info = request.get_json()
-        
+
         OnnxModifier.ONNX_MODIFIER.reload()   # allow downloading for multiple times
         save_path = modify_model(modify_info)
         if isinstance(save_path, tuple):
@@ -240,41 +240,38 @@ def register_interface(app, request, send_file):
         else:
             return 'OK', 200
 
-
     @app.route('/onnxsim', methods=['POST'])
     def modify_and_onnxsim_model():
         modify_info = request.get_json()
-        
+
         OnnxModifier.ONNX_MODIFIER.reload()   # allow downloading for multiple times
         try:
             save_path = onnxsim_model(modify_info)
         except ServerError as error:
             return error.status, error.msg
-        
+
         if modify_info.get("return_modified_file"):
             return send_file(save_path)
         else:
             return 'OK', 200
 
-
     @app.route('/auto-optimizer', methods=['POST'])
     def modify_and_optimizer_model():
         modify_info = request.get_json()
-        
+
         OnnxModifier.ONNX_MODIFIER.reload()   # allow downloading for multiple times
         try:
             save_path = optimizer_model(modify_info)
         except ServerError as error:
             return error.status, error.msg
-        
+
         if not os.path.exists(save_path):
             return "auto-optimizer 没有匹配到的知识库", 204
-        
+
         if modify_info.get("return_modified_file"):
             return send_file(save_path)
         else:
             return 'OK', 200
-        
 
     @app.route('/load-json', methods=['POST'])
     def load_json_and_modify__model():
@@ -285,14 +282,11 @@ def register_interface(app, request, send_file):
             save_path = json_modify_model(modify_infos)
         except ServerError as error:
             return error.status, error.msg
-        
+
         return send_file(save_path)
-
-
 
 
 if __name__ == '__main__':
     server = RpcServer()
     register_interface(server, server.request, server.send_file)
     server.run()
-

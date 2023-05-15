@@ -19,7 +19,6 @@ from server import register_interface
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--host', type=str, default='localhost')
     parser.add_argument('--port', type=int, default=5000, help='the port of the webserver. Defaults to 5000.')
     parser.add_argument('--debug', type=bool, default=False, help='enable or disable debug mode.')
     
@@ -36,4 +35,4 @@ if __name__ == '__main__':
         return render_template('electron.html')
 
     register_interface(app, request, send_file)
-    app.run(host=args.host, port=args.port, debug=args.debug)
+    app.run(host='localhost', port=args.port, debug=args.debug)

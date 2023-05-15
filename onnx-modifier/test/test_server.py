@@ -12,6 +12,156 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pytest
+import sys
+import logging
+import os
+import sys
+import json
+from unittest.mock import patch
+from io import StringIO
 
-def test_demo():
-    assert 100 == 100
+sys.path.append("..")
+from server import RequestInfo, RpcServer, ServerError
+
+
+class TestRequestInfo:
+    def test_files_given_files_when_has_file_pass(self):
+        request_info = RequestInfo()
+        request_info.set_json(dict(file=123))
+        assert request_info.files["file"] == 123
+    
+    def test_files_given_files_when_not_has_file_pass(self):
+        request_info = RequestInfo()
+        request_info.set_json(dict())
+
+        assert request_info.files.get("file") is None
+
+    def test_set_json_given_none_dict_when_any_pass(self):
+        request_info = RequestInfo()
+        dict_value = dict()
+        request_info.set_json(dict_value)
+        assert request_info.get_json() == dict_value
+
+    def test_set_json_given_any_dict_when_any_pass(self):
+        request_info = RequestInfo()
+        dict_value = dict(test=123)
+        request_info.set_json(dict_value)
+        assert request_info.get_json() == dict_value
+
+    def test_get_json_given_any_when_any_pass(self):
+        request_info = RequestInfo()
+        assert request_info.get_json() is not None
+
+
+class TestRpcServer:
+
+    @pytest.mark.parametrize("msg, status, file, except_out", 
+                             [("msg123", 200, None, dict(msg="msg123", status=200, file=None)),
+                                 ("OK", 200, "/home/test/xxx.onnx", dict(msg="OK", status=200, file="/home/test/xxx.onnx")),
+                                 ("msg", 440, None, dict(msg="msg", status=440, file=None))])
+    def test_send_message_given_any_when_any_pass(self, msg, status, file, except_out):
+        with patch('sys.stdout', new=StringIO()) as fake_out:
+            RpcServer.send_message(msg, status, file)
+            assert json.loads(fake_out.getvalue().replace(">>", "")) == except_out
+
+    def test_send_message_given_line_break_when_any_pass(self):
+        with patch('sys.stdout', new=StringIO()) as fake_out:
+            RpcServer.send_message("OK\n\n\n", 200, None)
+            assert len(fake_out.getvalue().split("\n")) == 6
+            assert json.loads(fake_out.getvalue().replace(">>", "")) == dict(msg="OK\n\n\n", status=200, file=None)
+
+    def test_send_file_given_any_when_any_pass(self):
+        file_msg = RpcServer.send_file("/path/")
+        assert file_msg[0]["file"] == "/path/"
+        assert file_msg[1] == 200
+
+    def test_route_given_any_when_any_pass(self):
+        server = RpcServer()
+
+        def route_test():
+            pass
+
+        server.route("test_route")(route_test)
+        assert server.path_amp["test_route"] == route_test
+        
+
+    def test_run_given_any_when_any_pass(self):
+        server = RpcServer()
+        stdin_fake_info = dict(index=-1, strs=[
+            "",
+            "",
+            "{\"path\":\"/exit\"}",
+        ])
+        def stdin_fake():
+            stdin_fake_info["index"] = stdin_fake_info["index"] + 1
+            return stdin_fake_info["strs"][stdin_fake_info["index"] % len(stdin_fake_info["strs"])]
+
+        with patch('sys.stdin.readline', new=stdin_fake) as fake_out:
+            server.run()
+        
+    @pytest.mark.parametrize("strs, msg", 
+                             [(["", "", "msg_str", "", ""], "msg_str"),
+                              (["msg_str", "", ""], "msg_str"),
+                              (["", "", "msg_str", "_and_", "msg_str2", "", ""], "msg_str_and_msg_str2"),])
+    def test_get_std_in_given_any_when_any_pass(self, strs, msg):
+        
+        server = RpcServer()
+        stdin_fake_info = dict(index=-1, strs=strs)
+        def stdin_fake():
+            stdin_fake_info["index"] = stdin_fake_info["index"] + 1
+            return stdin_fake_info["strs"][stdin_fake_info["index"] % len(stdin_fake_info["strs"])]
+
+        with patch('sys.stdin.readline', new=stdin_fake) as fake_out:
+            msg_recv = ""
+            while not msg_recv:
+                msg_recv = server._get_std_in()
+            assert  msg_recv == msg
+
+
+    def test_run_given_large_msg_when_any_pass(self):
+        server = RpcServer()
+        server.max_msg_len_recv = 100
+        stdin_fake_info = dict(index=-1, strs=["large_msg"])
+        def stdin_fake():
+            stdin_fake_info["index"] = stdin_fake_info["index"] + 1
+            return stdin_fake_info["strs"][stdin_fake_info["index"] % len(stdin_fake_info["strs"])]
+
+        with patch('sys.stdin.readline', new=stdin_fake) as fake_out:
+            with pytest.raises(ValueError):
+                msg_recv = ""
+                while not msg_recv:
+                    msg_recv = server._get_std_in()
+
+    @pytest.mark.parametrize("msg_pkg, msg, except_exit", 
+                             [(dict(path="/exit"), dict(), True),
+                              (dict(path="test", msg=123), 123, False),])
+    def test_deal_msg_given_any_when_any_pass(self, msg_pkg, msg, except_exit):
+        
+        server = RpcServer()
+        def route_test():
+            return dict(file="OK"), 200
+
+        server.route("test")(route_test)
+
+        _, will_exit = server._deal_msg(json.dumps(msg_pkg))
+        assert will_exit == except_exit
+        assert server.request.get_json() == msg
+
+    @pytest.mark.parametrize("msg_pkg", 
+                             [(dict(path_not_exists="/exit")),
+                              (dict(path="path_not_exists", msg=123)),])
+    def test_deal_msg_given_error_msg_when_any_pass(self, msg_pkg):
+        server = RpcServer()
+
+        with pytest.raises(ValueError):
+            server._deal_msg(json.dumps(msg_pkg))
+
+class TestServerError:
+    def test_status_given_any_when_any_pass(self):
+        error = ServerError("msg", 404)
+        assert error.status == 404
+    
+    def test_msg_given_any_when_any_pass(self):
+        error = ServerError("msg", 404)
+        assert error.msg == "msg"
