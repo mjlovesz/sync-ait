@@ -128,7 +128,7 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     # deal with the dymShape_range param if exists
     input_shapes = []
     if args.dym_shape_range:
-        input_shapes = utils.parse_dymshape_range(args.dym_shape_range)
+        input_shapes = utils.parse_dym_shape_range(args.dym_shape_range)
     if not input_shapes:
         input_shapes.append("")
     for input_shape in input_shapes:
