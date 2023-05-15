@@ -53,6 +53,7 @@ PIXEL_VAR_RECI_CHN_MAX = 65504
 
 logger = logging.getLogger(__name__)
 
+
 class InferSession:
     def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
         """
