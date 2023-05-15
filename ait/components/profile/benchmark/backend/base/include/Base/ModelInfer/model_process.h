@@ -24,18 +24,18 @@
 
 enum normal_datatype {
     type_float
-    , type_aclFloat16
-    , type_int8_t
-    , type_int
-    , type_uint8_t
-    , not_used
-    , type_int16_t
-    , type_uint16_t
-    , type_uint32_t
-    , type_int64_t
-    , type_uint64_t
-    , type_double
-    , type_bool
+    ,type_aclFloat16 
+    ,type_int8_t 
+    ,type_int 
+    ,type_uint8_t 
+    ,not_used 
+    ,type_int16_t 
+    ,type_uint16_t 
+    ,type_uint32_t 
+    ,type_int64_t 
+    ,type_uint64_t 
+    ,type_double 
+    ,type_bool 
 };
 
 /**
