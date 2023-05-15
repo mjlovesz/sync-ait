@@ -46,13 +46,10 @@ git clone https://gitee.com/ascend/ait.git
 cd ait
 
 # 安装ait，包括debug、profile组件
-pip3 install .[debug,profile,analyze,transplt] --force-reinstall
+./install.sh
 
-# 或者可以安装指定的组件包
-pip3 install .[debug] --force-reinstall
-pip3 install .[profile] --force-reinstall
-pip3 install .[analyze] --force-reinstall
-pip3 install .[transplt] --force-reinstall
+# 重新安装ait及其debug、profile组件
+./install.sh --force-reinstall
 
 ```
 

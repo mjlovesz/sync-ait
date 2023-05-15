@@ -45,7 +45,7 @@ MACRO_MAP = dict()
 # set the config
 if not Config.loaded:
     # 或指定目录：Config.set_library_path("/usr/lib/x86_64-linux-gnu")
-    Config.set_library_file(KitConfig.lib_clang_path)
+    Config.set_library_file(KitConfig.LIB_CLANG_PATH)
 
 
 def get_diag_info(diag):
@@ -310,7 +310,7 @@ class Parser:
         self.index = Index.create()  # 若为单例模型，是否有加速作用
         # args: '-Xclang', '-ast-dump', '-fsyntax-only', '-std=c++17', "-I/path/to/include"
         # option: TranslationUnit.PARSE_PRECOMPILED_PREAMBLE, TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
-        includes = [f'-I{x}' for x in KitConfig.includes.values() if x]
+        includes = [f'-I{x}' for x in KitConfig.INCLUDES.values() if x]
         self.tu = self.index.parse(path,
                                    args=includes,
                                    options=TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
@@ -322,8 +322,8 @@ class Parser:
 
         for d in self.tu.diagnostics:
             logger.warning(f'Code diagnose：{get_diag_info(d)}')
-            if d.severity > KitConfig.tolerance:
-                logger.warning(f'Diagnostic severity {d.severity} > tolerance {KitConfig.tolerance}, skip this file.')
+            if d.severity > KitConfig.TOLERANCE:
+                logger.warning(f'Diagnostic severity {d.severity} > tolerance {KitConfig.TOLERANCE}, skip this file.')
                 return dict()
 
         cwd = os.path.dirname(self.tu.spelling)  # os.path.abspath(os.path.normpath(tu.spelling))
