@@ -12,14 +12,38 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import click
+import pkg_resources
 
 from components.debug import debug_cli_group
 from components.profile import profile_cli_group
-from components.analyze import analyze_cli_group
+from components.transplt import transplt_cli
 
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-cli = click.Group(context_settings=CONTEXT_SETTINGS, commands=[debug_cli_group, profile_cli_group, analyze_cli_group],
+
+
+def load_analyze_sub_task():
+    sub_tasks = {}
+    for entry_point in pkg_resources.iter_entry_points('analyze_sub_task'):
+        sub_tasks[entry_point.name] = entry_point.load()
+
+    if len(sub_tasks) > 1:
+        return click.Group(name='analyze',
+            context_settings=CONTEXT_SETTINGS,
+            commands=sub_tasks
+        )
+    elif len(sub_tasks) == 1:
+        sub_task = list(sub_tasks.values())[0]
+        sub_task.name = 'analyze'
+        return sub_task
+    else:
+        return click.Group(name='analyze',
+            context_settings=CONTEXT_SETTINGS
+        )
+
+analyze_cli = load_analyze_sub_task()
+
+cli = click.Group(context_settings=CONTEXT_SETTINGS, commands=[debug_cli_group, profile_cli_group, analyze_cli, transplt_cli],
                   no_args_is_help=True,
                   help="ait(Ascend Inference Tools), "
                   "provides one-site debugging and optimization toolkit for inference use Ascend Devices")
