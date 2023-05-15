@@ -32,40 +32,6 @@ setup(
     keywords='ait',
     python_requires='>=3.7',
     install_requires=required,
-    extras_require={
-        'profile': [
-            (
-                'aclruntime @ git+https://gitee.com/ascend/ait.git'
-                '#egg=aclruntime&subdirectory=ait/components/profile/benchmark/backend'
-            ),
-            (
-                'ais_bench @ git+https://gitee.com/ascend/ait.git'
-                '#egg=ais_bench&subdirectory=ait/components/profile/benchmark'
-            ),
-        ],
-        'debug': [
-            (
-                'compare @ git+https://gitee.com/ascend/ait.git'
-                '#egg=compare&subdirectory=ait/components/debug/compare'
-            ),            
-            (
-                'auto_optimizer @ git+https://gitee.com/ascend/ait.git'
-                '#egg=auto_optimizer&subdirectory=ait/components/debug/surgeon'
-            ),
-        ],
-        'analyze': [
-            (
-                'analyze_tool @ git+https://gitee.com/ascend/ait.git'
-                '#egg=analyze_tool&subdirectory=ait/components/analyze'
-            )
-        ],
-        'transplt': [
-            (
-                'transplt @ git+https://gitee.com/ascend/ait.git'
-                '#egg=transplt&subdirectory=ait/components/transplt'
-            )
-        ]
-    },
     entry_points={
         'console_scripts': ['ait=components.__main__:cli'],
     },
