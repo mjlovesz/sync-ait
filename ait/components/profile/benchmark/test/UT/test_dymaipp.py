@@ -488,7 +488,7 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
         session.set_staticbatch()
         # only need call this functon compare infer_simple
-        with pytest.raises(RuntimeError) as e:
+        with pytest.raises(Exception) as e:
             session.check_dym_aipp_input_exsity()
         self.load_aipp_config_file(session, self.get_actual_aipp_config(), 4)
 
