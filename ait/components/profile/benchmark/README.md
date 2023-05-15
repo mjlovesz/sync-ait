@@ -64,7 +64,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    Successfully installed ais_bench-{version}
    ```
 
-   
+
 
 #### 一键式编译安装
 
@@ -101,9 +101,9 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    ```bash
    pip3 install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=ais_bench&subdirectory=ais-bench_workload/tool/ais_bench'
    ```
-   
+
    提示如下示例信息则表示安装成功：
-   
+
    ```bash
    Successfully installed ais_bench-{version}
    ```
@@ -154,7 +154,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    pip3 install ./aclruntime-{version}-{python_version}-linux_{arch}.whl --force-reinstall
    pip3 install ./ais_bench-{version}-py3-none-any.whl --force-reinstall
    ```
-   
+
    分别提示如下信息则表示安装成功：
 
    ```bash
@@ -163,8 +163,8 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    # 成功安装ais_bench推理程序
    Successfully installed ais_bench-{version}
    ```
-   
-   
+
+
 
 ### 运行准备
 完成ais_bench推理工具安装后，需要执行如下操作，确保工具能够正确运行：
@@ -248,6 +248,7 @@ ais_bench推理工具可以通过配置不同的参数，来应对各种测试�
 | --acl_json_path          | acl.json文件路径，须指定一个有效的json文件。该文件内可配置profiler或者dump。当配置该参数时，--dump和--profiler参数无效。 | 否       |
 | --batchsize              | 模型batchsize。不输入该值将自动推导。当前推理模块根据模型输入和文件输出自动进行组Batch。参数传递的batchszie有且只用于结果吞吐率计算。自动推导逻辑为尝试获取模型的batchsize时，首先获取第一个参数的最高维作为batchsize； 如果是动态Batch的话，更新为动态Batch的值；如果是动态dims和动态Shape更新为设置的第一个参数的最高维。如果自动推导逻辑不满足要求，请务必传入准确的batchsize值，以计算出正确的吞吐率。 | 否       |
 | --output_batchsize_axis  | 输出tensor的batchsize轴，默认值为0。输出结果保存文件时，根据哪个轴进行切割推理结果，比如batchsize为2，表示2个输入文件组batch进行推理，那输出结果的batch维度是在哪个轴。默认为0轴，按照0轴进行切割为2份，但是部分模型的输出batch为1轴，所以要设置该值为1。 | 否       |
+| --aipp_config|带有动态aipp配置的om模型在推理前需要配置的AIPP具体参数，以.config文件路径形式传入。当om模型带有动态aipp配置时，此参数为必填参数；当om模型不带有动态aipp配置时，配置此参数不影响正常推理。|否|
 
 ### 使用场景
 
@@ -433,7 +434,74 @@ python3 -m ais_bench --model ./pth_resnet50_dymshape.om  --outputSize 100000 --a
 python3 -m ais_bench --model ./pth_resnet50_dymshape.om  --outputSize 100000 --dymShape_range actual_input_1:1,3,224,224~226
 ```
 
+#### 动态AIPP场景
+- 动态AIPP的介绍参考[ATC模型转换](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/download)中"6.1 AIPP使能"章节。
+- 目前benchmark工具只支持单个input的带有动态AIPP配置的模型，只支持静态shape、动态batch、动态宽高三种场景，不支持动态shape场景。
+##### --aipp_config 输入的.config文件模板
+以resnet18模型所对应的一种aipp具体配置为例(actual_aipp_conf.config)：
+```cfg
+[aipp_op]
+    input_format : RGB888_U8
+    src_image_size_w : 256
+    src_image_size_h : 256
 
+    crop : 1
+    load_start_pos_h : 16
+    load_start_pos_w : 16
+    crop_size_w : 224
+    crop_size_h : 224
+
+    padding : 0
+    csc_switch : 0
+    rbuv_swap_switch : 0
+    ax_swap_switch : 0
+    csc_switch : 0
+
+	  min_chn_0 : 123.675
+	  min_chn_1 : 116.28
+	  min_chn_2 : 103.53
+	  var_reci_chn_0 : 0.0171247538316637
+	  var_reci_chn_1 : 0.0175070028011204
+	  var_reci_chn_2 : 0.0174291938997821
+```
+- .config文件`[aipp_op]`下的各字段名称及其取值范围参考[ATC模型转换](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/download)中"6.1.9 配置文件模板"章节中"静态AIPP需设置，动态AIPP无需设置"部分，其中字段取值为为true、false的字段，在.config文件中取值对应为1、0。
+- .config文件`[aipp_op]`下的`input_format`、`src_image_size_w`、`src_image_size_h`字段是必填字段。
+- .config文件中字段的具体取值是否适配对应的模型，benchmark本身不会检测，在推理时acl接口报错不属于benchmark的问题
+##### 静态shape场景示例，以resnet18模型为例
+###### atc命令转换出带动态aipp配置的静态shape模型
+```
+atc --framework=5 --model=./resnet18.onnx --output=resnet18_bs4_dym_aipp --input_format=NCHW --input_shape="image:4,3,224,224" --soc_version=Ascend310 --insert_op_conf=dym_aipp_conf.aippconfig --enable_small_channel=1
+```
+- dym_aipp_conf.aippconfig的内容(下同)为：
+```
+aipp_op{
+    related_input_rank ： 0
+    aipp_mode : dynamic
+    max_src_image_size : 4000000
+}
+```
+###### benchmark命令
+```
+python3 -m ais_bench --model resnet18_bs4_dym_aipp.om --aipp_config actual_aipp_conf.config
+```
+##### 动态batch场景示例，以resnet18模型为例
+###### atc命令转换出带动态aipp配置的动态batch模型
+```
+atc --framework=5 --model=./resnet18.onnx --output=resnet18_dym_batch_aipp --input_format=NCHW --input_shape="image:-1,3,224,224" --dynamic_batch_size "1,2" --soc_version=Ascend310 --insert_op_conf=dym_aipp_conf.aippconfig --enable_small_channel=1
+```
+###### benchmark命令
+```
+python3 -m ais_bench --model resnet18_dym_batch_aipp.om --aipp_config actual_aipp_conf.config --dymBatch 1
+```
+##### 动态宽高场景示例，以resnet18模型为例
+###### atc命令转换出带动态aipp配置的动态宽高模型
+```
+atc --framework=5 --model=./resnet18.onnx --output=resnet18_dym_image_aipp --input_format=NCHW --input_shape="image:4,3,-1,-1" --dynamic_image_size "112,112;224,224" --soc_version=Ascend310 --insert_op_conf=dym_aipp_conf.aippconfig --enable_small_channel=1
+```
+###### benchmark命令
+```
+python3 -m ais_bench --model resnet18_dym_image_aipp.om --aipp_config actual_aipp_conf.config --dymHW 112,112
+```
 
 #### profiler或dump场景
 
@@ -576,7 +644,7 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
   ```bash
   python3 -m ais_bench --model ./pth_resnet50_bs1.om --output ./result --dump 1
   ```
-  
+
   ```bash
   result
   |-- 2022_12_17-07_37_18
@@ -584,7 +652,7 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
   |-- dump
   `-- 2022_12_17-07_37_18_summary.json
   ```
-  
+
 - 设置--profiler参数。示例命令及结果如下：
 
   ```bash
@@ -663,7 +731,7 @@ def infer_simple():
 
   outputs = session.infer([ndata])
   print("outputs:{} type:{}".format(outputs, type(outputs)))
-    
+
   print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 ```
 
@@ -704,16 +772,16 @@ python3 -m ais_bench --model ./test/testdata/bert/model/pth_bert_bs1.om --input 
 [INFO] exception_cb hostaddr:0x124040753000 devaddr:0x12400db20400 len:589824 write to filename:exception_cb_index_0_output_0_format_2_dtype_1_shape_384x768.bin
 EZ9999: Inner Error!
 EZ9999  The error from device(2), serial number is 17, there is an aicore error, core id is 0, error code = 0x800000, dump info: pc start: 0x800124080041000, current: 0x124080041100, vec error info: 0x1ff1d3ae, mte error info: 0x3022733, ifu error info: 0x7d1f3266f700, ccu error info: 0xd510fef0003608cf, cube error info: 0xfc, biu error info: 0, aic error mask: 0x65000200d000288, para base: 0x124080017040, errorStr: The DDR address of the MTE instruction is out of range.[FUNC:PrintCoreErrorInfo]
-      
+
 # ls exception_cb_index_0_* -lh
 -rw-r--r-- 1 root root  45M Jan  7 08:17 exception_cb_index_0_input_0_format_2_dtype_1_shape_30522x768.bin
 -rw-r--r-- 1 root root 1.5K Jan  7 08:17 exception_cb_index_0_input_1_format_2_dtype_3_shape_384.bin
 -rw-r--r-- 1 root root    4 Jan  7 08:17 exception_cb_index_0_input_2_format_2_dtype_3_shape_.bin
 -rw-r--r-- 1 root root 576K Jan  7 08:17 exception_cb_index_0_output_0_format_2_dtype_1_shape_384x768.bin
 ```
-如果有需要将生成的异常bin文件转换为npy文件，请使用[转换脚本convert_exception_cb_bin_to_npy.py](https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_bench/test/convert_exception_cb_bin_to_npy.py).  
+如果有需要将生成的异常bin文件转换为npy文件，请使用[转换脚本convert_exception_cb_bin_to_npy.py](https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_bench/test/convert_exception_cb_bin_to_npy.py).
 使用方法：python3 convert_exception_cb_bin_to_npy.py --input {bin_file_path}。支持输入bin文件或文件夹。
 
 
 ## FAQ
-[FAQ](FAQ.md) 
+[FAQ](FAQ.md)
