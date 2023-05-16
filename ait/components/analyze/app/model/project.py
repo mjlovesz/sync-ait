@@ -161,8 +161,8 @@ class Project:
                 if not val_dict:
                     continue
 
-                # rst_dict = self._dedup(val_dict)
-                rst_dict = val_dict
+                rst_dict = self._dedup(val_dict)
+                # rst_dict = val_dict
                 ad = Advisor(rst_dict, os.path.abspath(os.path.dirname(__file__)) + '/' + KitConfig.api_map)
                 ad.recommend()
                 workloads = ad.workload()
