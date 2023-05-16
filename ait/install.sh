@@ -7,10 +7,10 @@ only_profile=
 arg_help=0
 
 while [[ "$#" -gt 0 ]]; do case $1 in
-  --force-reinstall) arg_force_reinstall=--force-reinstall; shift;;
-  -f) arg_force_reinstall=--force-reinstall; shift;;
-  --debug) only_debug=true; shift;;
-  --profile) only_profile=true; shift;;
+  --force-reinstall) arg_force_reinstall=--force-reinstall;;
+  -f) arg_force_reinstall=--force-reinstall;;
+  --debug) only_debug=true;;
+  --profile) only_profile=true;;
   -h|--help) arg_help=1;;
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
