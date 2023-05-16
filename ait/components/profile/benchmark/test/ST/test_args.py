@@ -231,7 +231,7 @@ class TestClass:
         try:
             output_json_dict["profiler"]["output"] = profiler_path
         except Exception as e:
-            raise Exception("Visit dict failed".format(e))
+            raise Exception("Visit dict failed".format(e)) from e
         out_json_file_path = os.path.join(TestCommonClass.base_path, "acl.json")
 
         with open(out_json_file_path, "w") as f:
