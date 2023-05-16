@@ -98,6 +98,7 @@ class AclInference(InferenceBase, ABC):
                     outputs, exe_time = net(data[1])
                 except Exception as err:
                     logger.error("acl infer failed! error message: {}".format(err))
+                    raise RuntimeError("acl infer error len={}".format(len(data))) from err
                 out_queue.put([data[0], outputs])
                 time += exe_time
         logger.debug("inference end")

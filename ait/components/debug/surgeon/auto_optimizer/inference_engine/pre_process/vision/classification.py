@@ -44,14 +44,13 @@ class ImageNetPreProcess(PreProcessBase, ABC):
             image_param = ImageNetPreProcess._get_params(cfg)
         except Exception as err:
             logger.error("pre_process failed error={}".format(err))
+            raise RuntimeError("pre_process error") from err
+
         output = []
         for _ in range(loop):
             in_data = in_queue.get()
-            try:
-                if len(in_data) < 2:  # include lable and data
-                    raise RuntimeError("input params error len={}".format(len(in_data)))
-            except Exception as err:
-                logger.error("pre_process failed error={}".format(err))
+            if len(in_data) < 2:  # include lable and data
+                raise RuntimeError("input params error len={}".format(len(in_data)))
             label, datas = in_data[0], in_data[1]
             for data in datas:
                 img = ImageNetPreProcess.image_process(data, image_param)

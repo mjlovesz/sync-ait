@@ -61,7 +61,7 @@ class NetCompare(object):
 
     @staticmethod
     def execute_command_line(cmd):
-        utils.print_info_log('Execute command:%s' % cmd)
+        utils.logger.info('Execute command:%s' % cmd)
         process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         return process
 
@@ -72,9 +72,9 @@ class NetCompare(object):
             if os.path.exists(msaccucmp_command_file_path):
                 return msaccucmp_command_file_path
             else:
-                utils.print_warn_log(
+                utils.logger.warning(
                     'The path {} is not exist.Please check the file'.format(msaccucmp_command_file_path))
-        utils.print_error_log(
+        utils.logger.error(
             'Does not exist in {} directory msaccucmp.py and msaccucmp.pyc file'.format(msaccucmp_command_dir_path))
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
@@ -82,7 +82,7 @@ class NetCompare(object):
     def _check_pyc_to_python_version(msaccucmp_command_file_path, python_version):
         if msaccucmp_command_file_path.endswith(".pyc"):
             if python_version != PYC_FILE_TO_PYTHON_VERSION:
-                utils.print_error_log(
+                utils.logger.error(
                     "The python version for executing {} must be 3.7.5".format(msaccucmp_command_file_path))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PYTHON_VERSION_ERROR)
 
@@ -109,7 +109,7 @@ class NetCompare(object):
                         header = info_content
             return result, header
         except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError) as error:
-            utils.print_warn_log('Failed to parse the alg compare result!')
+            utils.logger.warning('Failed to parse the alg compare result!')
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR) from error
         finally:
             pass
@@ -127,13 +127,13 @@ class NetCompare(object):
                          self.cpu_dump_data_path, "-f", self.output_json_path, "-out", self.arguments.out_path]
         if self._check_msaccucmp_compare_support_advisor():
             msaccucmp_cmd.append(ADVISOR_ARGS)
-        utils.print_info_log("msaccucmp command line: %s " % " ".join(msaccucmp_cmd))
+        utils.logger.info("msaccucmp command line: %s " % " ".join(msaccucmp_cmd))
         status_code, _, _ = self.execute_msaccucmp_command(msaccucmp_cmd)
         if status_code == 2 or status_code == 0:
-            utils.print_info_log("Finish compare the files in directory %s with those in directory %s." % (
+            utils.logger.info("Finish compare the files in directory %s with those in directory %s." % (
                 self.npu_dump_data_path, self.cpu_dump_data_path))
         else:
-            utils.print_error_log("Failed to execute command: %s" % " ".join(msaccucmp_cmd))
+            utils.logger.error("Failed to execute command: %s" % " ".join(msaccucmp_cmd))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
     def net_output_compare(self, npu_net_output_data_path, golden_net_output_info):
@@ -144,9 +144,9 @@ class NetCompare(object):
             return
         npu_dump_file = {}
         file_index = 0
-        utils.print_info_log("=================================compare Node_output=================================")
-        utils.print_info_log("start to compare the Node_output at now, compare result is:")
-        utils.print_warn_log("The comparison of Node_output may be incorrect in certain scenarios. If the precision"
+        utils.logger.info("=================================compare Node_output=================================")
+        utils.logger.info("start to compare the Node_output at now, compare result is:")
+        utils.logger.warning("The comparison of Node_output may be incorrect in certain scenarios. If the precision"
                              " is abnormal, please check whether the mapping between the comparison"
                              " data is correct.")
         for dir_path, _, files in os.walk(npu_net_output_data_path):
@@ -163,9 +163,9 @@ class NetCompare(object):
                         self.save_net_output_result_to_csv(npu_dump_file.get(file_index),
                                                            golden_net_output_info.get(file_index),
                                                            compare_result, header)
-                        utils.print_info_log("Compare Node_output:{} completely.".format(file_index))
+                        utils.logger.info("Compare Node_output:{} completely.".format(file_index))
                     else:
-                        utils.print_error_log("Failed to execute command: %s" % " ".join(msaccucmp_cmd))
+                        utils.logger.error("Failed to execute command: %s" % " ".join(msaccucmp_cmd))
                         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
                     file_index += 1
         return
@@ -211,7 +211,7 @@ class NetCompare(object):
                 os.remove(result_file_path)
                 os.rename(result_file_backup_path, result_file_path)
         except (OSError, SystemError, ValueError, TypeError, RuntimeError, MemoryError) as error:
-            utils.print_error_log('Failed to write Net_output compare result')
+            utils.logger.error('Failed to write Net_output compare result')
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_NET_OUTPUT_ERROR) from error
         finally:
             pass
@@ -231,7 +231,7 @@ class NetCompare(object):
         while process.poll() is None:
             line = process.stdout.readline().strip()
             if line:
-                utils.print_info_log(line)
+                utils.logger.info(line)
                 compare_result, header_result = self._catch_compare_result(line, catch)
                 result = compare_result if compare_result else result
                 header = header_result if header_result else header
@@ -251,7 +251,7 @@ class NetCompare(object):
         new_content = []
         for line in result_reader:
             if len(line) < MIN_ELEMENT_NUM:
-                utils.print_warn_log('The content of line is {}'.format(line))
+                utils.logger.warning('The content of line is {}'.format(line))
                 continue
             if line[npu_dump_index] != "Node_Output":
                 writer.writerow(line)
@@ -276,7 +276,7 @@ class NetCompare(object):
                 if compare_args in line_decode:
                     return True
         else:
-            utils.print_warn_log(f'Current version does not support {compare_args} function')
+            utils.logger.warning(f'Current version does not support {compare_args} function')
             return False
 
     def _check_msaccucmp_compare_support_advisor(self):

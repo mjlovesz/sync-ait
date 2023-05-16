@@ -39,13 +39,11 @@ class ONNXInference(InferenceBase, ABC):
             session, input_name, output_name = self._session_init(model)
         except Exception as err:
             logger.error("inference failed error={}".format(err))
+            raise RuntimeError("inference failed error") from err
         for _ in range(loop):
             data = in_queue.get()
-            try:
-                if len(data) < 2:   # include file_name and data
-                    raise RuntimeError("input params error len={}".format(len(data)))
-            except Exception as err:
-                logger.error("inference failed error={}".format(err))
+            if len(data) < 2:   # include file_name and data
+                raise RuntimeError("input params error len={}".format(len(data)))
             out_data = self._session_run(session, input_name, [data[1]])
 
             out_queue.put([data[0], out_data])

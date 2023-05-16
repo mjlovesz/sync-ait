@@ -39,24 +39,18 @@ class ClassificationEvaluate(EvaluateBase, ABC):
             topk = ClassificationEvaluate._get_params(cfg)
         except Exception as err:
             logger.error("evaluate failed error={}".format(err))
-
+            raise RuntimeError("evaluate failed error") from err
         count = 0
         count_hit = np.zeros([len(topk), loop * batch_size])
         for _ in tqdm(range(loop), desc="Evaluating"):
             in_data = in_queue.get()
-            try:
-                if len(in_data) < 2:  # include lable and data
-                    raise RuntimeError("input params error len={}".format(len(in_data)))
-            except Exception as err:
-                logger.error("evaluate failed error={}".format(err))
+            if len(in_data) < 2:  # include lable and data
+                raise RuntimeError("input params error len={}".format(len(in_data)))
             labels, data = in_data[0], in_data[1]
 
             # 多batch下，按batch取出对应的数据，先判断文件名称和模型输出数据大小是否一致
-            try:
-                if len(data[0]) != len(labels):
-                    raise RuntimeError("input params error len={}".format(len(data[0])))
-            except Exception as err:
-                logger.error("evaluate failed error={}".format(err))
+            if len(data[0]) != len(labels):
+                raise RuntimeError("input params error len={}".format(len(data[0])))
 
             for index, label in enumerate(labels):
                 for idx, k in enumerate(topk):

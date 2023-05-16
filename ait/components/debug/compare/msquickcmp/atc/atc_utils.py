@@ -45,7 +45,7 @@ class AtcUtils(object):
         """
         model_name, extension = utils.get_model_name_and_extension(self.arguments.offline_model_path)
         if ".om" != extension:
-            utils.print_error_log('The offline model file ends with an .om file.Please check {} file.'.format(
+            utils.logger.error('The offline model file ends with an .om file.Please check {} file.'.format(
                 self.arguments.offline_model_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_MODEL_TYPE_ERROR)
         utils.check_file_or_directory_path((os.path.realpath(self.arguments.cann_path)), True)
@@ -53,12 +53,12 @@ class AtcUtils(object):
         utils.check_file_or_directory_path(atc_command_file_path)
         output_json_path = os.path.join(self.arguments.out_path, "model", model_name + ".json")
         # do the atc command to convert om to json
-        utils.print_info_log('Start to converting the model to json')
+        utils.logger.info('Start to converting the model to json')
         atc_cmd = [atc_command_file_path, "--mode=1", "--om=" + self.arguments.offline_model_path,
                    "--json=" + output_json_path]
-        utils.print_info_log("ATC command line %s" % " ".join(atc_cmd))
+        utils.logger.info("ATC command line %s" % " ".join(atc_cmd))
         utils.execute_command(atc_cmd)
-        utils.print_info_log("Complete model conversion to json %s." % output_json_path)
+        utils.logger.info("Complete model conversion to json %s." % output_json_path)
         return output_json_path
 
     def get_atc_path(self):

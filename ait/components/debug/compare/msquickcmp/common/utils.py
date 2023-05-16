@@ -18,6 +18,7 @@ Function:
 This class mainly involves common function.
 """
 import os
+import logging
 import re
 import shutil
 import subprocess
@@ -30,6 +31,9 @@ import argparse
 import numpy as np
 
 from msquickcmp.common.dynamic_argument_bean import DynamicArgumentEnum
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 ACCURACY_COMPARISON_INVALID_PARAM_ERROR = 1
 ACCURACY_COMPARISON_INVALID_DATA_ERROR = 2
@@ -81,43 +85,6 @@ class InputShapeError(enum.Enum):
     TOO_LONG_PARAMS = 3
 
 
-def _print_log(level, msg):
-    current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(int(time.time())))
-    pid = os.getgid()
-    print_info_log(current_time + "(" + str(pid) + ")-[" + level + "]" + msg)
-    sys.stdout.flush()
-
-
-def print_info_log(info_msg):
-    """
-    Function Description:
-        print info log.
-    Parameter:
-        info_msg: the info message.
-    """
-    _print_log("INFO", info_msg)
-
-
-def print_error_log(error_msg):
-    """
-    Function Description:
-        print error log.
-    Parameter:
-        error_msg: the error message.
-    """
-    _print_log("ERROR", error_msg)
-
-
-def print_warn_log(warn_msg):
-    """
-    Function Description:
-        print warn log.
-    Parameter:
-        warn_msg: the warn message.
-    """
-    _print_log("WARNING", warn_msg)
-
-
 def check_file_or_directory_path(path, isdir=False):
     """
     Function Description:
@@ -131,18 +98,18 @@ def check_file_or_directory_path(path, isdir=False):
 
     if isdir:
         if not os.path.isdir(path):
-            print_error_log('The path {} is not a directory.Please check the path'.format(path))
+            logger.error('The path {} is not a directory.Please check the path'.format(path))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         if not os.access(path, os.W_OK):
-            print_error_log(
+            logger.error(
                 'The path{} does not have permission to write.Please check the path permission'.format(path))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR)
     else:
         if not os.path.isfile(path):
-            print_error_log('The path {} is not a file.Please check the path'.format(path))
+            logger.error('The path {} is not a file.Please check the path'.format(path))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         if not os.access(path, os.R_OK):
-            print_error_log(
+            logger.error(
                 'The path{} does not have permission to read.Please check the path permission'.format(path))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
@@ -161,7 +128,7 @@ def get_model_name_and_extension(offline_model_path):
     file_name = os.path.basename(offline_model_path)
     model_name, extension = os.path.splitext(file_name)
     if extension not in MODEL_TYPE:
-        print_error_log('Only model files whose names end with .pb or .onnx are supported.Please check {}'.format(
+        logger.error('Only model files whose names end with .pb or .onnx are supported.Please check {}'.format(
             offline_model_path))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR)
     return model_name, extension
@@ -193,7 +160,7 @@ def get_dump_data_path(dump_dir, is_net_output=False):
             break
 
     if not dump_data_dir:
-        print_error_log("The directory \"{}\" does not contain dump data".format(dump_dir))
+        logger.error("The directory \"{}\" does not contain dump data".format(dump_dir))
         raise AccuracyCompareException(ACCURACY_COMPARISON_NO_DUMP_FILE_ERROR)
 
     for dir_path, _, files in os.walk(dump_data_dir):
@@ -216,15 +183,15 @@ def execute_command(cmd):
     Exception Description:
         when invalid command throw exception
     """
-    print_info_log('Execute command:%s' % cmd)
+    logger.info('Execute command:%s' % cmd)
     process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while process.poll() is None:
         line = process.stdout.readline()
         line = line.strip()
         if line:
-            print_info_log(line)
+            logger.info(line)
     if process.returncode != 0:
-        print_error_log('Failed to execute command:%s' % " ".join(cmd))
+        logger.error('Failed to execute command:%s' % " ".join(cmd))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
 
@@ -241,7 +208,7 @@ def create_directory(dir_path):
         try:
             os.makedirs(dir_path, mode=0o700)
         except OSError as ex:
-            print_error_log(
+            logger.error(
                 'Failed to create {}.Please check the path permission or disk space .{}'.format(dir_path, str(ex)))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR) from ex
 
@@ -284,7 +251,7 @@ def check_convert_is_valid_used(dump, bin2npy):
     check dump is True while using convert
     """
     if not dump and bin2npy:
-        print_error_log(
+        logger.error(
             "Convert option is forbidden when dump is False!\
             Please keep dump True while using convert."
         )
@@ -313,7 +280,7 @@ def parse_input_shape(input_shape):
             input_shapes[tensor_shape_list[0]] = shape.split(',')
             _check_shape_number(shape)
         else:
-            print_error_log(get_shape_not_match_message(InputShapeError.FORMAT_NOT_MATCH, input_shape))
+            logger.error(get_shape_not_match_message(InputShapeError.FORMAT_NOT_MATCH, input_shape))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
     return input_shapes
 
@@ -330,7 +297,7 @@ def parse_dym_shape_range(dym_shape_range):
         if len(shapestr) < 50:
             _check_shape_number(shapestr, DYNAMIC_DIM_PATTERN)
         else:
-            print_error_log(get_shape_not_match_message(InputShapeError.TOO_LONG_PARAMS, input_shape))
+            logger.error(get_shape_not_match_message(InputShapeError.TOO_LONG_PARAMS, input_shape))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
         for content in shapestr.split(","):
             if "~" in content:
@@ -350,7 +317,7 @@ def parse_dym_shape_range(dym_shape_range):
         info = ["{}:{}".format(name, s) for s in shape_list]
         info_list.append(info)
     res = [";".join(s) for s in list(itertools.product(*info_list))]
-    print_info_log("shape_list:" + str(res))
+    logger.info("shape_list:" + str(res))
     return res
 
 
@@ -362,13 +329,13 @@ def get_shape_to_directory_name(input_shape):
 
 def _check_colon_exist(input_shape):
     if ":" not in input_shape:
-        print_error_log(get_shape_not_match_message(InputShapeError.FORMAT_NOT_MATCH, input_shape))
+        logger.error(get_shape_not_match_message(InputShapeError.FORMAT_NOT_MATCH, input_shape))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
 def _check_content_split_length(content_split):
     if not content_split[1]:
-        print_error_log(get_shape_not_match_message(InputShapeError.VALUE_TYPE_NOT_MATCH, content_split[1]))
+        logger.error(get_shape_not_match_message(InputShapeError.VALUE_TYPE_NOT_MATCH, content_split[1]))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
@@ -376,7 +343,7 @@ def _check_shape_number(input_shape_value, pattern=DIM_PATTERN):
     dim_pattern = re.compile(pattern)
     match = dim_pattern.match(input_shape_value)
     if not match or match.group() is not input_shape_value:
-        print_error_log(get_shape_not_match_message(InputShapeError.VALUE_TYPE_NOT_MATCH, input_shape_value))
+        logger.error(get_shape_not_match_message(InputShapeError.VALUE_TYPE_NOT_MATCH, input_shape_value))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
@@ -414,7 +381,7 @@ def check_input_name_in_model(tensor_name_list, input_name):
         When input name not in tensor name list throw exception
     """
     if input_name not in tensor_name_list:
-        print_error_log(get_shape_not_match_message(InputShapeError.NAME_NOT_MATCH, input_name))
+        logger.error(get_shape_not_match_message(InputShapeError.NAME_NOT_MATCH, input_name))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
@@ -432,7 +399,7 @@ def check_device_param_valid(device):
     check device param valid.
     """
     if not device.isdigit() or int(device) > MAX_DEVICE_ID:
-        print_error_log(
+        logger.error(
             "Please enter a valid number for device, the device id should be"
             " in [0, 255], now is %s." % device)
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
@@ -459,7 +426,7 @@ def parse_value_by_comma(value):
         if value_str.isdigit() or value_str == '-1':
             value_list.append(int(value_str))
         else:
-            print_error_log("please check your input shape.")
+            logger.error("please check your input shape.")
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
     return value_list
 
@@ -498,7 +465,7 @@ def get_data_len_by_shape(shape):
     data_len = 1
     for item in shape:
         if item is -1:
-            print_error_log("please check your input shape, one dim in shape is -1.")
+            logger.error("please check your input shape, one dim in shape is -1.")
             return -1
         data_len = data_len * item
     return data_len

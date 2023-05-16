@@ -87,11 +87,11 @@ class OmParser(object):
                 try:
                     return json.load(input_file)
                 except Exception as exc:
-                    utils.print_error_log('Load Json {} failed, {}'.format(
+                    utils.logger.error('Load Json {} failed, {}'.format(
                         json_file_path, str(exc)))
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR) from exc
         except IOError as input_file_open_except:
-            utils.print_error_log('Failed to open"' + json_file_path + '", ' + str(input_file_open_except))
+            utils.logger.error('Failed to open"' + json_file_path + '", ' + str(input_file_open_except))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from input_file_open_except
 
     @staticmethod
@@ -187,7 +187,7 @@ class OmParser(object):
                 batch_index_in_operator = utils.get_batch_index_from_name(operator.get(NAME_OBJECT))
                 if cur_batch_index == batch_index_in_operator:
                     return self._parse_net_output_node_attr(operator)
-        utils.print_error_log("get npu output node info failed.")
+        utils.logger.error("get npu output node info failed.")
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR)
 
     def get_dynamic_scenario_info(self):
@@ -288,7 +288,7 @@ class OmParser(object):
                 continue
             data_type = DTYPE_MAP.get(input_object.get(DTYPE_OBJECT))
             if not data_type:
-                utils.print_error_log(
+                utils.logger.error(
                     "The dtype attribute does not support {} value.".format(input_object[DTYPE_OBJECT]))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_KEY_ERROR)
             data_type_size = np.dtype(data_type).itemsize
