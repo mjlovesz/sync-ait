@@ -83,7 +83,8 @@ class KitConfig:
     api_map = '../config/mxBase_API_MAP.xlsx'
     except_api = ['', 'NAMESPACE_REF']
 
-    cuda_home = os.environ.get('CUDA_HOME', '/usr/local/cuda')
+    # cuda_home = os.environ.get('CUDA_HOME', '/usr/local/cuda')
+    cuda_home = os.environ.get('CUDA_HOME', includes['cuda'])
     # lib_name: [namespace, cuda_include, cuda_namespace]，后两者用于分析基于CUDA加速的接口
     # cuda_include参考示例：
     # OpenCV-CUDA

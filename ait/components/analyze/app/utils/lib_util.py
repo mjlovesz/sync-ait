@@ -15,6 +15,14 @@ import os
 from common.kit_config import KitConfig
 
 
+def is_acc_path(file):
+    flag = False
+    acc_paths = list(KitConfig.includes.values())
+    if any(file.startswith(p) for p in acc_paths):
+        flag = True
+    return flag
+
+
 def get_sys_path():
     sys_paths = ['/usr/']
 

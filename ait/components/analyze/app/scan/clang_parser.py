@@ -34,7 +34,7 @@ from clang.cindex import Index, CursorKind, TranslationUnit, Config
 
 from common.kit_config import KitConfig
 from utils.log_util import logger
-from utils.lib_util import get_sys_path
+from utils.lib_util import get_sys_path, is_acc_path
 from scan.clang_utils import helper_dict, filter_dict, Info, get_attr, get_children, skip_implicit, auto_match
 from scan.clang_utils import read_cursor, get_diag_info
 
@@ -100,7 +100,7 @@ def in_acc_lib(file, cursor):
     if not file:
         return False, False, ''
     for lib, v in KitConfig.acc_libs.items():
-        if lib in file:
+        if lib in file or file.startswith(lib):
             if not v:
                 cuda_en = False
                 add_ns = ''
@@ -151,7 +151,6 @@ def get_includes(tu):
     return srcs
 
 
-
 def is_usr_code(file):
     usr_code = True
     if not file or any(file.startswith(p) for p in SYS_PATH):
@@ -159,7 +158,7 @@ def is_usr_code(file):
     return usr_code
 
 
-def macro_map(cursor):
+def macro_map(cursor, file=None):
     """过滤并保存宏定义到字典中，主要用于标识符重命名场景。
 
     如：#define cublasCreate         cublasCreate_v2
@@ -167,6 +166,12 @@ def macro_map(cursor):
     TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD需打开。
     """
     if cursor.kind == CursorKind.MACRO_DEFINITION:
+        if not file:
+            return
+
+        if not is_acc_path(file):
+            return
+
         tk = list(cursor.get_tokens())
         if len(tk) == 2 and not tk[0].spelling.startswith('_') and tk[1].kind.name == 'IDENTIFIER':
             MACRO_MAP[tk[1].spelling] = tk[0].spelling
@@ -186,6 +191,7 @@ def actual_arg(cursor):
         else:
             return root
 
+
 def parent_stmt(cursor):
     """获取所属Statement对应的代码"""
     root = cursor
@@ -198,6 +204,7 @@ def parent_stmt(cursor):
             cursor = parent
         else:
             return root
+
 
 def parse_args(node):
     args = list()
@@ -243,7 +250,7 @@ def parse_info(node, cwd=None):
         else:
             file = os.path.normpath(node.location.file.name)
 
-    macro_map(node)
+    macro_map(node, file)
     # 如果对于系统库直接返回None，可能会导致部分类型无法解析，但是解析系统库会导致性能下降。
     usr_code = is_usr_code(file)
 
@@ -252,6 +259,8 @@ def parse_info(node, cwd=None):
         hit = False
         if not getattr(node, 'scanned', False):
             hit, (result_type, spelling, api, definition, source), cuda_en = filter_acc(node)
+            if cuda_en:
+                print()
         hit = hit and not getattr(node, 'implicit', False)
 
         if hit:
@@ -301,7 +310,7 @@ class Parser:
         self.index = Index.create()  # TODO(dyh):若为单例模型，是否有加速作用
         # args: ['-Xclang', '-ast-dump', '-fsyntax-only', '-std=c++17', "-I/path/to/include"]
         # option: TranslationUnit.PARSE_PRECOMPILED_PREAMBLE, TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
-        includes = [f'-I{x}' for x in KitConfig.includes.values()]
+        includes = [f'-I{x}' for x in KitConfig.includes.values()] + ['--cuda-gpu-arch=sm_70']
         self.tu = self.index.parse(path,
                                    args=includes,
                                    options=TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
