@@ -24,6 +24,9 @@ modifier.Modifier = class {
         this.downloadWithCleanUp = false;
 
         this.modelProperties = new Map();
+        this.extract_start = null;
+        this.extract_end = null;
+        this.extract_highlight_nodes = [];
     }
 
     loadModelGraph(model, graphs) {
@@ -105,6 +108,98 @@ modifier.Modifier = class {
             this.modelProperties.set(prop_name, prop_value)
         }
 
+    }
+    
+    setExtractStart(node_name) {
+        this.extract_start = node_name
+        this.highLightExtractNodes()
+    }
+    
+    setExtractEnd(node_name) {
+        this.extract_end = node_name
+        this.highLightExtractNodes()
+    }
+    
+    getExtractStart() {
+        return this.extract_start
+    }
+
+    getExtractEnd() {
+        return this.extract_end
+    }
+
+    highLightExtractNodes() {
+        let start_node = this.getExtractStart()
+        let end_node = this.getExtractEnd()
+
+        let inside_nodes = this.getInsideNodes(start_node, end_node)
+
+        for (const ori_node of this.extract_highlight_nodes) {
+            this.name2ViewNode.get(ori_node).element.getElementsByClassName("node border")[0].style.stroke = null
+            this.name2ViewNode.get(ori_node).element.getElementsByClassName("node border")[0].style.strokeWidth = null
+        }
+        this.extract_highlight_nodes = []
+
+        for (const inside_node of inside_nodes) {
+            this.name2ViewNode.get(inside_node).element.getElementsByClassName("node border")[0].style.stroke = "orange"
+            this.name2ViewNode.get(inside_node).element.getElementsByClassName("node border")[0].style.strokeWidth = "6px"
+            
+            this.extract_highlight_nodes.push(inside_node)
+        }
+        
+        if (start_node) {
+            this.name2ViewNode.get(start_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-start)";
+            this.name2ViewNode.get(start_node).element.getElementsByClassName("node border")[0].style.strokeWidth = "6px"
+            this.extract_highlight_nodes.push(start_node)
+        }
+        if (end_node) {
+            this.name2ViewNode.get(end_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-end)";
+            this.name2ViewNode.get(end_node).element.getElementsByClassName("node border")[0].style.strokeWidth = "6px"
+            this.extract_highlight_nodes.push(end_node)
+        }
+
+        if (start_node == end_node && start_node) {
+            this.name2ViewNode.get(end_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-start-end)";
+        }
+    }
+
+    getInsideNodes(start_node, end_node) {
+        if (!start_node || !end_node) {
+            return []
+        }
+        if (start_node == end_node) {
+            return []
+        }
+
+        let cached_node = new Map()
+        let reach_node = new Set()
+
+        this.is_reach_end_node(start_node, end_node, cached_node, reach_node)
+
+        return [...reach_node]
+    }
+
+    is_reach_end_node(this_node_name, end_node, cached_node, reach_node) {
+        if (cached_node.has(this_node_name)) {
+            return cached_node.get(this_node_name)
+        }
+
+        if (this_node_name == end_node) {
+            return true
+        }
+
+        if (!this.namedEdges.has(this_node_name)) {
+            return false
+        }
+
+        for (const next_node of this.namedEdges.get(this_node_name)) {
+            let is_next_reach = this.is_reach_end_node(next_node, end_node, cached_node, reach_node)
+            cached_node.set(next_node, is_next_reach)
+            if (is_next_reach) {
+                reach_node.add(this_node_name)
+            }
+        }
+        return reach_node.has(this_node_name)
     }
 
     deleteSingleNode(node_name) {
@@ -492,6 +587,11 @@ modifier.Modifier = class {
         container.scrollLeft = 0;
         container.scrollTop = 0;
         this.view._zoom = 1;
+
+        this.extract_start = null;
+        this.extract_end = null;
+        this.highLightExtractNodes()
+        this.extract_highlight_nodes = [];
 
         this.applyAndUpdateView();
     }

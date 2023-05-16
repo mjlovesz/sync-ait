@@ -550,9 +550,11 @@ view.View = class {
             this._graph = null;
 
             const canvas = this._getElementById('canvas');
+            const linecolor = this._getElementById('linecolor');
             while (canvas.lastChild) {
                 canvas.removeChild(canvas.lastChild);
             }
+            canvas.appendChild(linecolor)
             if (!graph) {
                 return Promise.resolve();
             }
