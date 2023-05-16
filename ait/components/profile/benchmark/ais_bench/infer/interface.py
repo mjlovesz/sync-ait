@@ -119,13 +119,13 @@ class InferSession:
     def set_custom_outsize(self, custom_sizes):
         self.session.set_custom_outsize(custom_sizes)
 
-    def create_tensor_from_fileslist(self, desc, files):
-        return self.session.create_tensor_from_fileslist(desc, files)
-
     @staticmethod
     def convert_tensors_to_host(self, tensors):
         for tensor in tensors:
             tensor.to_host()
+
+    def create_tensor_from_fileslist(self, desc, files):
+        return self.session.create_tensor_from_fileslist(desc, files)
 
     @staticmethod
     def convert_tensors_to_arrays(self, tensors):

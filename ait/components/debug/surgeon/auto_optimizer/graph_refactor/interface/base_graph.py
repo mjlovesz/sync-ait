@@ -651,13 +651,13 @@ class BaseGraph(ABC):
     def simplify(self, **kwargs) -> 'BaseGraph':
         raise NotImplementedError()
 
-    @abstractmethod
-    def infer_shape(self) -> None:
-        raise NotImplementedError()
-
     @property
     def node_map(self):
         return self._node_map
+
+    @abstractmethod
+    def infer_shape(self) -> None:
+        raise NotImplementedError()
 
     @property
     def prev_map(self):

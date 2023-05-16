@@ -215,12 +215,14 @@ class TestKnowledgeGatherToSplit(unittest.TestCase, KnowledgeTestHelper):
         for i, (count, expect, ishape, gathers, enode, eout, version) in enumerate(tests):
             ishape_s = 'x'.join(str(x) for x in ishape)
             axis_s = 1 if len(set(g['axis'] for g in gathers)) == 1 else 0
-            indices_s = '_'.join(
-                str(idx)
-                if isinstance((idx := g['indices']), int)
-                else 'x'.join(str(x) for x in idx)
-                for g in gathers
-            )
+            indices_s0 = []
+            for g in gathers:
+                idx = g['indices']
+                if isinstance(idx, int):
+                    indices_s0.append(str(idx))
+                else:
+                    indices_s0.append('x'.join(str(x) for x in idx))
+            indices_s = '_'.join(indices_s0)
 
             name_ = f'test_gather_to_split_{i}_i{ishape_s}_a{axis_s}_idx{indices_s}_n{int(enode)}_o{int(eout)}_v{version}'
             with self.subTest(name=name_):

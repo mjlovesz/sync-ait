@@ -137,12 +137,11 @@ class KnowledgeMergeConsecutiveConcat(KnowledgeBase):
         # these output should be removed if they are in the new input list
         # since their corresponding node are about to be removed, all other inputs should be kept
         outputs_of_concats_to_remove = [node.outputs[0] for node in concats_to_remove]
-        new_inputs = [
-            inp
-            for node in concats_total
-            for inp in node.inputs
-            if inp not in outputs_of_concats_to_remove
-        ]
+        new_inputs = []
+        for node in concats_total:
+            for inp in node.inputs:
+                if inp not in outputs_of_concats_to_remove:
+                    new_inputs.append(inp)
 
         # we start modify the graph from here, as all validations are finished so we can make sure optimize will success
         # remove all the nodes except the last one, and give all input to the last concat node
