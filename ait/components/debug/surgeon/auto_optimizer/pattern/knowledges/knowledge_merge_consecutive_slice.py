@@ -129,7 +129,8 @@ class KnowledgeMergeConsecutiveSlice(KnowledgeBase):
         slice_to_keep = graph.get_node(matchinfo['Slice_to_keep'][0].name, node_type=Node)
         slices_to_remove = [
             graph.get_node(v[0].name, node_type=Node)
-            for k, v in matchinfo.items() if k != 'Slice_to_keep'
+            for k, v in matchinfo.items()
+            if k != 'Slice_to_keep'
         ]
         slices_total = [*slices_to_remove, slice_to_keep]
         # in case previous apply functions modified the graph and removed/renamed any node of current matching subgraph
