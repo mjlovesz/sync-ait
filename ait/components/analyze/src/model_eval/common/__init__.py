@@ -1,2 +1,2 @@
-from .log import logger
-from .const import Const
+from model_eval.common.log import logger
+from model_eval.common.const import Const

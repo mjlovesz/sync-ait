@@ -20,9 +20,9 @@ cd ait/ait
 ./install.sh --analyze
 
 # 独立安装方式
-python3 -m pip install . -force-reinstall
+python3 -m pip install . --force-reinstall
 cd components/analyze
-python3 -m pip install . -force-reinstall
+python3 -m pip install . --force-reinstall
 ```
 ## 工具使用
 
