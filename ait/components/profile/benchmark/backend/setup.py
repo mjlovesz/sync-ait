@@ -93,7 +93,7 @@ ext_modules = [
             'python/include/',
             'base/include/',
             'base/include/Base/ModelInfer/',
-            os.path.join(cann_base_path, '/runtime/include'),
+            "".join([cann_base_path, '/runtime/include']),
         ],
         library_dirs = os.path.join(cann_base_path, '/runtime/lib64/stub/'),
 

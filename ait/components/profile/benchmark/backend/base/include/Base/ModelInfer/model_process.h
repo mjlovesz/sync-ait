@@ -302,7 +302,7 @@ private:
     void print_double_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
     void print_bool_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
     void print_data_log(aclDataType datatype, size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
-    Result Free_Host_Try(aclError ret);
+    Result Free_Host_Try(aclError ret, void*& outData);
     void print_error_log(aclError ret);
 };
 #endif
