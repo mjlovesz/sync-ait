@@ -655,7 +655,7 @@ Result ModelProcess::check_ret(aclError ret, size_t buffer_size_zero)
         ERROR_LOG("malloc device buffer failed. size is %zu", buffer_size_zero);
         return FAILED;
     }
-    return SUCCESS; 
+    return SUCCESS;
 }
 
 Result ModelProcess::check_create_buffer(aclDataBuffer* inputData, void* inBufferDev)
