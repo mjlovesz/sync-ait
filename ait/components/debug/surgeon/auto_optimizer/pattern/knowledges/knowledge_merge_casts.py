@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -82,7 +82,7 @@ class KnowledgeMergeCasts(KnowledgeBase):
 
     def pre_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except InferenceError as e:
             return False
         return True
@@ -108,7 +108,7 @@ class KnowledgeMergeCasts(KnowledgeBase):
             if root_output not in edge_type_dict:
                 continue
             # 设法移除根节点下方的 Cast 节点
-            output_type = NP_TYPE_TO_TENSOR_TYPE.get(edge_type_dict[root_output], 0)
+            output_type = NP_TYPE_TO_TENSOR_TYPE.get(edge_type_dict.get(root_output), 0)
             self._remove_cast_after_root(graph, root_output, output_type)
         return True
 
@@ -154,7 +154,7 @@ class KnowledgeMergeCasts(KnowledgeBase):
         """
         # node_output 后续的 Cast 节点中，每个类型的 Cast 节点都记录一个唯一的实例
         cast_node_map = {}
-        graph_output_names = [o.name for o in graph.outputs]
+        graph_output_names = [output.name for output in graph.outputs]
         for cast_node in filter(self._is_cast_node, graph.get_next_nodes(node_output)):
             to_type = cast_node['to']
             # 如果当前 Cast 节点的输出也是图输出则不处理
@@ -164,7 +164,10 @@ class KnowledgeMergeCasts(KnowledgeBase):
             if to_type in cast_node_map:
                 for next_node in graph.get_next_nodes(cast_node.outputs[0]):
                     input_index = next_node.inputs.index(cast_node._outputs[0])
-                    next_node.inputs[input_index] = cast_node_map[to_type].outputs[0]
+                    if cast_node_map.get(to_type):
+                        next_node.inputs[input_index] = cast_node_map[to_type].outputs[0]
+                    else:
+                        raise KeyError(f'{to_type} not in dict')
                 graph.update_map()
                 graph.remove(cast_node.name)
             else:
@@ -195,7 +198,7 @@ class KnowledgeMergeCasts(KnowledgeBase):
         :param node : Cast 节点
         """
         # 如果父 Cast 节点的输出也是图输出则不能合并
-        if node.outputs[0] in [o.name for o in graph.outputs]:
+        if node.outputs[0] in [output.name for output in graph.outputs]:
             return
         next_nodes = graph.get_next_nodes(node.outputs[0])
         # 如果当前 Cast 节点的输出也是图输出则不处理
@@ -208,7 +211,7 @@ class KnowledgeMergeCasts(KnowledgeBase):
         :param root_output: 根节点输出
         :param output_type: 输出类型
         """
-        graph_output_names = [o.name for o in graph.outputs]
+        graph_output_names = [output.name for output in graph.outputs]
         for next_node in graph.get_next_nodes(root_output):
             # 如果后续节点的输出是图输出则不能进行消除
             if next_node.outputs[0] in graph_output_names:

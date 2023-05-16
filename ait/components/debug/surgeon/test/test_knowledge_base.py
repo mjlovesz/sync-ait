@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ pattern = Pattern() \
     .set_loop(MATCH_PATTERN.MATCH_ONCE_OR_MORE)
 
 
-class Knowledge_Example(KnowledgeBase):
+class KnowledgeExample(KnowledgeBase):
     def __init__(self):
         super().__init__()
         self._register_apply_funcs(pattern, [self._example_apply])
@@ -68,14 +68,14 @@ class Knowledge_Example(KnowledgeBase):
 
 class TestKnowledgeBase(unittest.TestCase):
     def make_twice_conv1d_model(self, onnx_name, x):
-        X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-        Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+        input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+        input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
         weight_0 = helper.make_tensor('weight_0', TensorProto.FLOAT, (64, 3, 1),
                                       np.random.randn(64, 3, 1).astype(np.float32))
         weight_1 = helper.make_tensor('weight_1', TensorProto.FLOAT, (128, 64, 1),
                                       np.random.randn(128, 64, 1).astype(np.float32))
-
+  
         conv_0 = helper.make_node("Conv", ['X', 'weight_0'], ['out_0'], 'Conv_0', None, None,
                                   dilations=np.array([1], dtype=np.int64),
                                   group=1,
@@ -90,7 +90,7 @@ class TestKnowledgeBase(unittest.TestCase):
                                   pads=np.array([0, 0], dtype=np.int64),
                                   strides=np.array([1], dtype=np.int64))
 
-        graph = helper.make_graph([conv_0, conv_1], "conv1d_test", [X], [Z], [weight_0, weight_1])
+        graph = helper.make_graph([conv_0, conv_1], "conv1d_test", [input_x], [input_z], [weight_0, weight_1])
         model = helper.make_model(graph)
 
         del model.opset_import[:]
@@ -100,8 +100,8 @@ class TestKnowledgeBase(unittest.TestCase):
         onnx.save(model, onnx_name)
 
     def make_multi_conv1d_and_split_graph_model(self, onnx_name, x):
-        X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-        Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+        input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+        input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
         weight_0 = helper.make_tensor('weight_0', TensorProto.FLOAT, (64, 3, 1),
                                       np.random.randn(64, 3, 1).astype(np.float32))
@@ -138,7 +138,7 @@ class TestKnowledgeBase(unittest.TestCase):
         add = helper.make_node('Add', ['relu_2_out', 'relu_3_out'], ['Z'], 'Add_0', None, None)
 
         graph = helper.make_graph([conv_0, relu_0, relu_1, conv_1, relu_2, relu_3, conv_2, add], "conv1d_test",
-                                  [X], [Z], [weight_0, weight_1, weight_2])
+                                  [input_x], [input_z], [weight_0, weight_1, weight_2])
         model = helper.make_model(graph)
 
         del model.opset_import[:]
@@ -148,8 +148,8 @@ class TestKnowledgeBase(unittest.TestCase):
         onnx.save(model, onnx_name)
 
     def make_multi_conv1d_and_split_graph_and_shape_model(self, onnx_name, x):
-        X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-        Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
+        input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+        input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, None)
 
         weight_0 = helper.make_tensor('weight_0', TensorProto.FLOAT, (64, 3, 1),
                                       np.random.randn(64, 3, 1).astype(np.float32))
@@ -188,7 +188,7 @@ class TestKnowledgeBase(unittest.TestCase):
         add = helper.make_node('Add', ['relu_2_out', 'relu_3_out'], ['Z'], 'Add_0', None, None)
 
         graph = helper.make_graph([conv_0, relu_0, relu_1, conv_1, relu_2, relu_3, conv_2, add, shape],
-                                  "conv1d_test", [X], [Z], [weight_0, weight_1, weight_2])
+                                  "conv1d_test", [input_x], [input_z], [weight_0, weight_1, weight_2])
         model = helper.make_model(graph)
 
         del model.opset_import[:]
@@ -198,7 +198,7 @@ class TestKnowledgeBase(unittest.TestCase):
         onnx.save(model, onnx_name)
 
     def test_knowledge_iterator_func(self):
-        knowledge_example = Knowledge_Example()
+        knowledge_example = KnowledgeExample()
 
         self.assertTrue(knowledge_example.has_next_pattern())
         knowledge_example.next_pattern()
@@ -216,7 +216,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.make_twice_conv1d_model(onnx_path, x)
 
         graph = OnnxGraph.parse(onnx_path)
-        knowledge_example = Knowledge_Example()
+        knowledge_example = KnowledgeExample()
 
         result = knowledge_example.match_pattern(graph)
         self.assertEqual(len(result), 1)
@@ -233,7 +233,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.make_multi_conv1d_and_split_graph_model(onnx_path, x)
 
         graph = OnnxGraph.parse(onnx_path)
-        knowledge_example = Knowledge_Example()
+        knowledge_example = KnowledgeExample()
 
         result = knowledge_example.match_pattern(graph)
         self.assertEqual(len(result), 1)
@@ -251,7 +251,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.make_multi_conv1d_and_split_graph_and_shape_model(onnx_path, x)
 
         graph = OnnxGraph.parse(onnx_path)
-        knowledge_example = Knowledge_Example()
+        knowledge_example = KnowledgeExample()
 
         results = knowledge_example.match_pattern(graph)
         self.assertEqual(len(results), 2)
@@ -269,7 +269,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.make_twice_conv1d_model(onnx_path, x)
 
         graph = OnnxGraph.parse(onnx_path)
-        knowledge_example = Knowledge_Example()
+        knowledge_example = KnowledgeExample()
 
         match_result = knowledge_example.match_pattern(graph)
         self.assertEqual(len(match_result), 1)
@@ -278,14 +278,14 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertTrue(res)
 
     def test_get_apply_ids(self):
-        knowledge_example = Knowledge_Example()
+        knowledge_example = KnowledgeExample()
         apply_ids = knowledge_example.get_apply_ids()
 
-        self.assertTrue(len(apply_ids) == 1)
+        self.assertEqual(len(apply_ids), 1)
         self.assertEqual(apply_ids[0], 0)
 
     def test_set_apply_id(self):
-        knowledge_example = Knowledge_Example()
+        knowledge_example = KnowledgeExample()
 
         res = knowledge_example.set_apply_id(-1)
         self.assertFalse(res)

@@ -1,4 +1,4 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2022. All rights reserved.
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -247,21 +247,14 @@ class KnowledgeDynamicReshape(KnowledgeBase):
                 in_dim = tmp_dim
                 continue
             if dim == in_dim:
-                # the dim has no change
-                #                (-1, 0, 32)
-                # (bs, len, 256) -----------> (8*bs, len, 32)
                 shape[dim] = 0
             elif dim < in_dim:
-                #                  (-1, 1, 0, 32)                     Squeeze
-                # (bs, 8, len, 32) --------------> (8*bs, 1, len, 32) -------> (8*bs, len, 32)
                 shape[dim] = 0
                 while dim < in_dim:
                     shape.insert(dim, 1)
                     insert.get('squeeze').append(dim)
                     dim += 1
             else:
-                #                 Unsqueeze                     (-1, 8, 0, 32)
-                # (8*bs, len, 32) ---------> (8*bs, 1, len, 32) --------------> (bs, 8, len, 32)
                 shape[dim] = 0
                 insert.get('unsqueeze').append(in_dim)
             # compute next dimension

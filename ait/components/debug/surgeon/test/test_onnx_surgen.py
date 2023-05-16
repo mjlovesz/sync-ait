@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 import os
 from typing import List
 
+import logging
+
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
@@ -23,12 +25,12 @@ from auto_optimizer.pattern.matcher import Matcher, MatchResult
 from auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern, MatchBase
 
 
-class D(KnowledgeBase):
+class DummyKnowledge(KnowledgeBase):
 
     def __init__(self) -> None:
         super().__init__()
         res = self._register_apply_funcs(pattern, [self._apply])
-        print(f'register result {res}')
+        logging.info(f'register result : %s', res)
 
     def _apply(self):
         pass
@@ -46,45 +48,45 @@ class ConvMatch(MatchBase):
 # get subgraph inputs by pattern
 def get_input_op_name_list(pattern: Pattern) -> List[str]:
     input_op_name_list: List[str] = []
-    for PatternNode in pattern._inputs:
-        input_op_name_list.append(PatternNode._op_name)
+    for pattern_node in pattern.inputs:
+        input_op_name_list.append(pattern_node.op_name)
     return input_op_name_list
 
 
 # get subgraph outputs by pattern
 def get_output_op_name_list(pattern: Pattern) -> List[str]:
     output_op_name_list: List[str] = []
-    for PatternNode in pattern._outputs:
-        output_op_name_list.append(PatternNode._op_name)
+    for pattern_node in pattern.outputs:
+        output_op_name_list.append(pattern_node.op_name)
     return output_op_name_list
 
 
-def get_subgraph(onnxpath: str, pattern: Pattern) -> None:
-    d = D()
+def get_subgraph(onnxpath: str, pattern_: Pattern) -> None:
+    d = DummyKnowledge()
     graph = OnnxGraph.parse(onnxpath)
     # 根据定义的子图，在graph中查找匹配，返回一组MatchResult实例
     match_results = d.match_pattern(graph)
     if match_results is None or len(match_results) == 0:
-        print('No subgraph is matched.')
+        logging.info('No subgraph is matched.')
         return
 
-    input_op_name_list = get_input_op_name_list(pattern)
-    output_op_name_list = get_output_op_name_list(pattern)
+    input_op_name_list = get_input_op_name_list(pattern_)
+    output_op_name_list = get_output_op_name_list(pattern_)
 
     for i, match_result in enumerate(match_results):
+        # 指定截取后模型onnx文件的保存路径
+        new_model_path = f'{os.path.splitext(onnxpath)[0]}_subgraph_{i}.onnx'
+        # 模型截取的输入边
+        input_name_list: List[str] = []
+        for input_op_name in input_op_name_list:
+            input_name_list.append(match_result.node_dicts[0]
+                                   .get(input_op_name)[0].inputs[0])
+        # 模型截取的输出边
+        output_name_list: List[str] = []
+        for output_op_name in output_op_name_list:
+            output_name_list.append(match_result.node_dicts[0]
+                                    .get(output_op_name)[0].outputs[0])
         try:
-            # 指定截取后模型onnx文件的保存路径
-            new_model_path = f'{os.path.splitext(onnxpath)[0]}_subgraph_{i}.onnx'
-            # 模型截取的输入边
-            input_name_list: List[str] = []
-            for input_op_name in input_op_name_list:
-                input_name_list.append(match_result.node_dicts[0]
-                                       .get(input_op_name)[0].inputs[0])
-            # 模型截取的输出边
-            output_name_list: List[str] = []
-            for output_op_name in output_op_name_list:
-                output_name_list.append(match_result.node_dicts[0]
-                                        .get(output_op_name)[0].outputs[0])
             # 模型截断后导出
             graph.extract(new_model_path, input_name_list, output_name_list)
         except Exception as err:
@@ -111,5 +113,5 @@ if __name__ == '__main__':
         .set_loop(MATCH_PATTERN.MATCH_ONCE)
 
     # 源onnx路径
-    onnx_path = './onnx/aasist_bs1_ori.onnx'
-    get_subgraph(onnx_path, pattern)
+    ONNX_PATH = './onnx/aasist_bs1_ori.onnx'
+    get_subgraph(ONNX_PATH, pattern)

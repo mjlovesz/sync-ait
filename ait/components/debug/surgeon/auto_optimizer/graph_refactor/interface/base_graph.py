@@ -58,6 +58,131 @@ class BaseGraph(ABC):
 
         self.update_map()
 
+    def __getitem__(self, key: str) -> NodeType:
+        if not self._node_map.get(key, None):
+            raise KeyError("node '{}' not in graph!".format(key))
+        return self._node_map[key]
+
+    def __setitem__(self, key: str, value: NodeType) -> None:
+        src_node = self._node_map.pop(key, None)
+        if not src_node:
+            raise KeyError("You are trying to replace node '{}', which does not exist!".format(key))
+
+        if isinstance(src_node, Node):
+            self._nodes.remove(src_node)
+            # op -> op
+            if isinstance(value, Node):
+                value.inputs = src_node.inputs
+                value.outputs = src_node.outputs
+                for i in src_node.inputs:
+                    self._next_map[i].append(value)
+                    self._next_map[i].remove(src_node)
+                for o in src_node.outputs:
+                    self._prev_map[o] = value
+            # op -> input
+            elif value in self._inputs:
+                for i in src_node.inputs:
+                    self._next_map[i].remove(src_node)
+                o = src_node.outputs[0]
+                for n in self.get_next_nodes(o):
+                    n.inputs[n.get_input_id(o)] = value.name
+                    self._next_map[value.name] = [n]
+                self._prev_map.pop(o, None)
+                self._next_map.pop(o, None)
+        elif isinstance(src_node, Initializer):
+            self._initializers.remove(src_node)
+            # ini -> input
+            if value in self._inputs:
+                for n in self.get_next_nodes(src_node.name):
+                    n.inputs[n.get_input_id(src_node.name)] = value.name
+                    self._next_map[value.name] = [n]
+                self._next_map.pop(src_node.name, None)
+        else:
+            raise RuntimeError("Unsupported!")
+
+    @property
+    def inputs(self) -> List[PlaceHolder]:
+        return self._inputs
+
+    @property
+    def outputs(self) -> List[PlaceHolder]:
+        return self._outputs
+
+    @property
+    def nodes(self) -> List[Node]:
+        return self._nodes
+
+    @property
+    def initializers(self) -> List[Initializer]:
+        return self._initializers
+
+    @property
+    def value_infos(self) -> List[PlaceHolder]:
+        return self._value_infos
+
+    @property
+    def node_map(self):
+        return self._node_map
+
+    @property
+    def prev_map(self):
+        return self._prev_map
+
+    @property
+    def next_map(self):
+        return self._next_map
+
+    @classmethod
+    @abstractmethod
+    def parse(cls, model) -> 'BaseGraph':
+        raise NotImplementedError()
+
+    @abstractmethod
+    def add_input(self, name: str, dtype: np.dtype, shape: Sequence[Union[int, str]]) -> PlaceHolder:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def add_output(self, name: str, dtype: np.dtype, shape: Sequence[Union[int, str]]) -> PlaceHolder:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def add_initializer(self, name: str, value: np.ndarray) -> Initializer:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def simplify(self, **kwargs) -> 'BaseGraph':
+        raise NotImplementedError()
+
+    @abstractmethod
+    def infer_shape(self) -> None:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def add_node(
+        self,
+        name: str,
+        op_type: str,
+        inputs: Optional[List[str]] = None,
+        outputs: Optional[List[str]] = None,
+        attrs: Optional[Dict[str, object]] = None,
+        domain: str = ''
+    ) -> Node:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def save(self, path: str) -> None:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def extract(
+        self,
+        new_model_save_path: str,
+        input_name_list: List[str],
+        output_name_list: List[str],
+        enable_model_check: bool = True
+    ) -> 'BaseGraph':
+        raise NotImplementedError()
+
     def update_map(self) -> None:
         # clear map first
         self._node_map.clear()
@@ -99,63 +224,6 @@ class BaseGraph(ABC):
                 else:
                     self._next_map[i].append(n)
 
-    @classmethod
-    @abstractmethod
-    def parse(cls, model) -> 'BaseGraph':
-        raise NotImplementedError()
-
-    @abstractmethod
-    def add_input(self, name: str, dtype: np.dtype, shape: Sequence[Union[int, str]]) -> PlaceHolder:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def add_output(self, name: str, dtype: np.dtype, shape: Sequence[Union[int, str]]) -> PlaceHolder:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def add_initializer(self, name: str, value: np.ndarray) -> Initializer:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def add_node(
-        self,
-        name: str,
-        op_type: str,
-        inputs: Optional[List[str]] = None,
-        outputs: Optional[List[str]] = None,
-        attrs: Optional[Dict[str, object]] = None,
-        domain: str = ''
-    ) -> Node:
-        raise NotImplementedError()
-
-    def _add_input(self, graph_input: PlaceHolder) -> PlaceHolder:
-        if self._node_map.get(graph_input.name, None):
-            raise ValueError("node name '{}' already exists!".format(graph_input.name))
-        self._node_map[graph_input.name] = graph_input
-        self._inputs.append(graph_input)
-        return graph_input
-
-    def _add_output(self, graph_output: PlaceHolder) -> PlaceHolder:
-        if self._node_map.get(graph_output.name, None):
-            raise ValueError("node name '{}' already exists!".format(graph_output.name))
-        self._node_map[graph_output.name] = graph_output
-        self._outputs.append(graph_output)
-        return graph_output
-
-    def _add_initializer(self, initializer: Initializer) -> Initializer:
-        if self._node_map.get(initializer.name, None):
-            raise ValueError("node name '{}' already exists!".format(initializer.name))
-        self._node_map[initializer.name] = initializer
-        self._initializers.append(initializer)
-        return initializer
-
-    def _add_node(self, node: Node) -> Node:
-        if self._node_map.get(node.name, None):
-            raise ValueError("node name '{}' already exists!".format(node.name))
-        self._node_map[node.name] = node
-        self._nodes.append(node)
-        return node
-
     def insert_node(
         self,
         refer_name: str,
@@ -190,6 +258,8 @@ class BaseGraph(ABC):
                 raise RuntimeError(
                     f'Can not insert node before {refer_node.name}.')
             name = refer_node.name
+            if name not in self._next_map:
+                raise KeyError(f'{name} not a key in next_map')
             refer_node = self._next_map[name][0]
             refer_index = refer_node.inputs.index(name)
             mode = 'before'
@@ -244,6 +314,8 @@ class BaseGraph(ABC):
                     if node.name != insert_node.name:
                         index = node.get_input_id(refer_in_name)
                         node.inputs[index] = new_in_name
+                        if new_in_name not in self._next_map:
+                            raise KeyError(f'{new_in_name} not a key of next map')
                         self._next_map[new_in_name].append(node)
                 self._next_map[refer_in_name] = [insert_node]
 
@@ -255,13 +327,13 @@ class BaseGraph(ABC):
         prev_nodes_info: List[str],
         next_nodes_info: List[str]
     ) -> None:
-        """Insert a node with multiple inputs and outputs, 
+        """Insert a node with multiple inputs and outputs,
         connect the input and output of insert_node automatically.
 
         Example:
             g.connect_node(
                 Split_0,
-                ['Add_0:0', 'split_ini'], 
+                ['Add_0:0', 'split_ini'],
                 ['Transpose_0', 'Transpose_1', 'Transpose_2']
             )
         """
@@ -310,99 +382,6 @@ class BaseGraph(ABC):
             else:
                 # the next node is operator
                 self._set_input_of_node(node, insert_node.outputs[out_idx], input_index=in_idx, prev_node=insert_node)
-
-    def _parse_nodes_info(
-        self,
-        prev_nodes_info: List[str],
-        next_nodes_info: List[str]
-    ) -> Tuple[List[Dict[str, Union[int, str]]], List[Dict[str, Union[int, str]]]]:
-        """Parse information of prev_nodes_info and next_nodes_info
-
-        Example:
-            prev_info_list = [
-                {'prev_node_name': 'Add_0', 'prev_node_output_idx': 0}, 
-                {'prev_node_name': 'split_ini', 'prev_node_output_idx': 0}
-                ]
-            next_info_list = [
-                {'next_node_name': 'Transpose_0', 'next_node_input_idx': 0, 'insert_node_output_idx': 0}, 
-                {'next_node_name': 'Transpose_1', 'next_node_input_idx': 0, 'insert_node_output_idx': 1}, 
-                {'next_node_name': 'Transpose_2', 'next_node_input_idx': 0, 'insert_node_output_idx': 2}
-                ]
-        """
-        prev_info_list: List[Dict[str, Union[int, str]]] = []
-        next_info_list: List[Dict[str, Union[int, str]]] = []
-
-        for idx, node_info in enumerate(prev_nodes_info):
-            info: Dict[str, Union[int, str]] = {}
-            info_splits = node_info.split(':')
-            info['prev_node_name'] = info_splits[0]
-            if len(info_splits) == 1:
-                info['prev_node_output_idx'] = 0
-            else:
-                info['prev_node_output_idx'] = int(info_splits[1])
-            info['insert_node_input_idx'] = idx
-            prev_info_list.append(info)
-
-        for idx, str_info in enumerate(next_nodes_info):
-            nodes_info = str_info.split(';')
-            if len(nodes_info) > 1:
-                for i, node_info in enumerate(nodes_info):
-                    next_node_name = node_info.split(':')[0]
-                    if self._node_map[next_node_name] in self._outputs:
-                        # when next node share the same edge with graph output, deal with graph output first
-                        nodes_info[0], nodes_info[i] = nodes_info[i], nodes_info[0]
-            for node_info in nodes_info:
-                info_splits = node_info.split(':')
-                if len(info_splits) == 1:
-                    info = {}
-                    info['next_node_name'] = info_splits[0]
-                    info['next_node_input_idx'] = 0
-                    info['insert_node_output_idx'] = idx
-                    next_info_list.append(info)
-                else:
-                    for elem in info_splits[1].split(','):
-                        info = {}
-                        info['next_node_name'] = info_splits[0]
-                        info['next_node_input_idx'] = int(elem)
-                        info['insert_node_output_idx'] = idx
-                        next_info_list.append(info)
-        return prev_info_list, next_info_list
-
-    def _set_input_of_node(self, node, new_input_name, input_index, prev_node=None) -> None:
-        """Change one input edge of the node
-        """
-        old_input_name = node.inputs[input_index]
-        node.inputs[input_index] = new_input_name
-        # update map for old_input
-        if self.get_next_nodes(old_input_name) and node in self._next_map[old_input_name]:
-            self._next_map[old_input_name].remove(node)
-        # update map for new_input
-        if not self.get_next_nodes(new_input_name):
-            self._next_map[new_input_name] = [node]
-        elif node not in self._next_map[new_input_name]:
-            self._next_map[new_input_name].append(node)
-        if prev_node is not None:
-            self._prev_map[new_input_name] = prev_node
-
-    def _set_output_of_node(self, node, new_output_name, output_index, next_node=None) -> None:
-        """Change one output edge of the node
-        """
-        old_output_name = node.outputs[output_index]
-        node.outputs[output_index] = new_output_name
-        # update map for new_output
-        self._prev_map[new_output_name] = node
-        for n in self.get_next_nodes(old_output_name):
-            index = n.get_input_id(old_output_name)
-            n.inputs[index] = new_output_name
-            if not self.get_next_nodes(new_output_name):
-                self._next_map[new_output_name] = [n]
-            else:
-                self._next_map[new_output_name].append(n)
-        if next_node is not None:
-            self._next_map[new_output_name] = [next_node]
-        # update map for old_output
-        self._prev_map.pop(old_output_name, None)
-        self._next_map.pop(old_output_name, None)
 
     def get_node(self, name: str, node_type: Type[N]) -> Optional[N]:
         """Return node with specificed type and name.
@@ -496,68 +475,6 @@ class BaseGraph(ABC):
             return True
         return False
 
-    def __getitem__(self, key: str) -> NodeType:
-        if not self._node_map.get(key, None):
-            raise KeyError("node '{}' not in graph!".format(key))
-        return self._node_map[key]
-
-    def __setitem__(self, key: str, value: NodeType) -> None:
-        src_node = self._node_map.pop(key, None)
-        if not src_node:
-            raise KeyError("You are trying to replace node '{}', which does not exist!".format(key))
-
-        if isinstance(src_node, Node):
-            self._nodes.remove(src_node)
-            # op -> op
-            if isinstance(value, Node):
-                value.inputs = src_node.inputs
-                value.outputs = src_node.outputs
-                for i in src_node.inputs:
-                    self._next_map[i].append(value)
-                    self._next_map[i].remove(src_node)
-                for o in src_node.outputs:
-                    self._prev_map[o] = value
-            # op -> input
-            elif value in self._inputs:
-                for i in src_node.inputs:
-                    self._next_map[i].remove(src_node)
-                o = src_node.outputs[0]
-                for n in self.get_next_nodes(o):
-                    n.inputs[n.get_input_id(o)] = value.name
-                    self._next_map[value.name] = [n]
-                self._prev_map.pop(o, None)
-                self._next_map.pop(o, None)
-        elif isinstance(src_node, Initializer):
-            self._initializers.remove(src_node)
-            # ini -> input
-            if value in self._inputs:
-                for n in self.get_next_nodes(src_node.name):
-                    n.inputs[n.get_input_id(src_node.name)] = value.name
-                    self._next_map[value.name] = [n]
-                self._next_map.pop(src_node.name, None)
-        else:
-            raise RuntimeError("Unsupported!")
-
-    @property
-    def inputs(self) -> List[PlaceHolder]:
-        return self._inputs
-
-    @property
-    def outputs(self) -> List[PlaceHolder]:
-        return self._outputs
-
-    @property
-    def nodes(self) -> List[Node]:
-        return self._nodes
-
-    @property
-    def initializers(self) -> List[Initializer]:
-        return self._initializers
-
-    @property
-    def value_infos(self) -> List[PlaceHolder]:
-        return self._value_infos
-
     def get_prev_node(self, input_name: str) -> Optional[Node]:
         return self._prev_map.get(input_name, None)
 
@@ -633,24 +550,316 @@ class BaseGraph(ABC):
 
         self.update_map()
 
-    @abstractmethod
-    def save(self, path: str) -> None:
-        raise NotImplementedError()
+    def _add_input(self, graph_input: PlaceHolder) -> PlaceHolder:
+        if self._node_map.get(graph_input.name, None):
+            raise ValueError("node name '{}' already exists!".format(graph_input.name))
+        self._node_map[graph_input.name] = graph_input
+        self._inputs.append(graph_input)
+        return graph_input
 
-    @abstractmethod
-    def extract(
+    def _parse_nodes_info(
         self,
-        new_model_save_path: str,
-        input_name_list: List[str],
-        output_name_list: List[str],
-        enable_model_check: bool = True
-    ) -> 'BaseGraph':
-        raise NotImplementedError()
+        prev_nodes_info: List[str],
+        next_nodes_info: List[str]
+    ) -> Tuple[List[Dict[str, Union[int, str]]], List[Dict[str, Union[int, str]]]]:
+        """Parse information of prev_nodes_info and next_nodes_info
 
-    @abstractmethod
-    def simplify(self, **kwargs) -> 'BaseGraph':
-        raise NotImplementedError()
+        Example:
+            prev_info_list = [
+                {'prev_node_name': 'Add_0', 'prev_node_output_idx': 0},
+                {'prev_node_name': 'split_ini', 'prev_node_output_idx': 0}
+                ]
+            next_info_list = [
+                {'next_node_name': 'Transpose_0', 'next_node_input_idx': 0, 'insert_node_output_idx': 0},
+                {'next_node_name': 'Transpose_1', 'next_node_input_idx': 0, 'insert_node_output_idx': 1},
+                {'next_node_name': 'Transpose_2', 'next_node_input_idx': 0, 'insert_node_output_idx': 2}
+                ]
+        """
+        prev_info_list: List[Dict[str, Union[int, str]]] = []
+        next_info_list: List[Dict[str, Union[int, str]]] = []
 
-    @abstractmethod
-    def infershape(self) -> None:
-        raise NotImplementedError()
+        for idx, node_info in enumerate(prev_nodes_info):
+            info: Dict[str, Union[int, str]] = {}
+            info_splits = node_info.split(':')
+            info['prev_node_name'] = info_splits[0]
+            if len(info_splits) == 1:
+                info['prev_node_output_idx'] = 0
+            else:
+                info['prev_node_output_idx'] = int(info_splits[1])
+            info['insert_node_input_idx'] = idx
+            prev_info_list.append(info)
+
+        for idx, str_info in enumerate(next_nodes_info):
+            nodes_info = str_info.split(';')
+            if len(nodes_info) > 1:
+                for i, node_info in enumerate(nodes_info):
+                    next_node_name = node_info.split(':')[0]
+                    if self._node_map[next_node_name] in self._outputs:
+                        # when next node share the same edge with graph output, deal with graph output first
+                        nodes_info[0], nodes_info[i] = nodes_info[i], nodes_info[0]
+            for node_info in nodes_info:
+                info_splits = node_info.split(':')
+                if len(info_splits) == 1:
+                    info = {}
+                    info['next_node_name'] = info_splits[0]
+                    info['next_node_input_idx'] = 0
+                    info['insert_node_output_idx'] = idx
+                    next_info_list.append(info)
+                else:
+                    for elem in info_splits[1].split(','):
+                        info = {}
+                        info['next_node_name'] = info_splits[0]
+                        info['next_node_input_idx'] = int(elem)
+                        info['insert_node_output_idx'] = idx
+                        next_info_list.append(info)
+        return prev_info_list, next_info_list
+
+    def _set_input_of_node(self, node, new_input_name, input_index, prev_node=None) -> None:
+        """Change one input edge of the node
+        """
+        old_input_name = node.inputs[input_index]
+        node.inputs[input_index] = new_input_name
+        # update map for old_input
+        if self.get_next_nodes(old_input_name) and node in self._next_map[old_input_name]:
+            self._next_map[old_input_name].remove(node)
+        # update map for new_input
+        if not self.get_next_nodes(new_input_name):
+            self._next_map[new_input_name] = [node]
+        elif node not in self._next_map[new_input_name]:
+            self._next_map[new_input_name].append(node)
+        if prev_node is not None:
+            self._prev_map[new_input_name] = prev_node
+
+    def _set_output_of_node(self, node, new_output_name, output_index, next_node=None) -> None:
+        """Change one output edge of the node
+        """
+        old_output_name = node.outputs[output_index]
+        node.outputs[output_index] = new_output_name
+        # update map for new_output
+        self._prev_map[new_output_name] = node
+        for n in self.get_next_nodes(old_output_name):
+            index = n.get_input_id(old_output_name)
+            n.inputs[index] = new_output_name
+            if not self.get_next_nodes(new_output_name):
+                self._next_map[new_output_name] = [n]
+            else:
+                self._next_map[new_output_name].append(n)
+        if next_node is not None:
+            self._next_map[new_output_name] = [next_node]
+        # update map for old_output
+        self._prev_map.pop(old_output_name, None)
+        self._next_map.pop(old_output_name, None)
+
+    def _add_output(self, graph_output: PlaceHolder) -> PlaceHolder:
+        if self._node_map.get(graph_output.name, None):
+            raise ValueError("node name '{}' already exists!".format(graph_output.name))
+        self._node_map[graph_output.name] = graph_output
+        self._outputs.append(graph_output)
+        return graph_output
+
+    def _add_initializer(self, initializer: Initializer) -> Initializer:
+        if self._node_map.get(initializer.name, None):
+            raise ValueError("node name '{}' already exists!".format(initializer.name))
+        self._node_map[initializer.name] = initializer
+        self._initializers.append(initializer)
+        return initializer
+
+    def _add_node(self, node: Node) -> Node:
+        if self._node_map.get(node.name, None):
+            raise ValueError("node name '{}' already exists!".format(node.name))
+        self._node_map[node.name] = node
+        self._nodes.append(node)
+        return node
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
