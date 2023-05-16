@@ -95,7 +95,7 @@ ext_modules = [
             'base/include/Base/ModelInfer/',
             "".join([cann_base_path, '/runtime/include']),
         ],
-        library_dirs = os.path.join(cann_base_path, '/runtime/lib64/stub/'),
+        library_dirs = ["".join([cann_base_path, '/runtime/lib64/stub/']), ],
 
         extra_compile_args = ['--std=c++11', '-g3'],
 
