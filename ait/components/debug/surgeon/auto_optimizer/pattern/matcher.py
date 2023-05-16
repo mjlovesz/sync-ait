@@ -178,6 +178,33 @@ class Matcher(object):
         """
         return pattern_node.outputs
 
+    def get_match_map(self, node: Node) -> MatchResult:
+        """
+        获取匹配的节点列表
+        :param node: 子图遍历起始节点
+        :return: 匹配结果
+        """
+        result = MatchResult(self._pattern)
+
+        start_pattern_node = self._pattern.get_start_node()
+        if not start_pattern_node.match(node, self._graph):
+            return result
+
+        match_nodes: Dict[str, List[Node]] = {}
+        if len(start_pattern_node.inputs) != 0:
+            # visit from down to up
+            self._visit_direction = 1
+            if not self.__graph_bfs(node, start_pattern_node, match_nodes):
+                return result
+            for nodes in match_nodes.values():
+                nodes.reverse()
+        # visit from up to down
+        self._visit_direction = 0
+        if not self.__graph_bfs(node, start_pattern_node, match_nodes):
+            return result
+        result.add_node_dict(match_nodes)
+        return result
+
     def __nodes_group_dfs(
         self,
         nodes: List[Node],
@@ -235,33 +262,6 @@ class Matcher(object):
                 nodes_map.pop(pattern_node)
                 for nd in new_pattern_nodes:
                     pattern_nodes.remove(nd)
-
-    def get_match_map(self, node: Node) -> MatchResult:
-        """
-        获取匹配的节点列表
-        :param node: 子图遍历起始节点
-        :return: 匹配结果
-        """
-        result = MatchResult(self._pattern)
-
-        start_pattern_node = self._pattern.get_start_node()
-        if not start_pattern_node.match(node, self._graph):
-            return result
-
-        match_nodes: Dict[str, List[Node]] = {}
-        if len(start_pattern_node.inputs) != 0:
-            # visit from down to up
-            self._visit_direction = 1
-            if not self.__graph_bfs(node, start_pattern_node, match_nodes):
-                return result
-            for nodes in match_nodes.values():
-                nodes.reverse()
-        # visit from up to down
-        self._visit_direction = 0
-        if not self.__graph_bfs(node, start_pattern_node, match_nodes):
-            return result
-        result.add_node_dict(match_nodes)
-        return result
 
     def __match_nodes(
         self,

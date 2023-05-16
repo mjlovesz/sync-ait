@@ -7,9 +7,7 @@
     <list default="true" id="585904a7-242f-4baa-aa65-d04f3581d038" name="Changes" comment="cleancode: resolve residual problems">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/graph_refactor/interface/base_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/graph_refactor/interface/base_graph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_consecutive_concat.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_consecutive_concat.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/matcher.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/matcher.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_gather_to_split.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_gather_to_split.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/interface.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -114,7 +112,14 @@
       <option name="project" value="LOCAL" />
       <updated>1684220482413</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="cleancode: resolve residual problems">
+      <created>1684223128339</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1684223128339</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
