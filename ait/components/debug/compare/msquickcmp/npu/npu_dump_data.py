@@ -197,7 +197,7 @@ class NpuDumpData(DumpData):
                         utils.logger.info(str(exc))
                         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR) from exc
             except IOError as acl_json_file_except:
-                utils.logger.error('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
+                # utils.logger.error('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from acl_json_file_except
         else:
             utils.logger.error(
