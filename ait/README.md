@@ -50,10 +50,15 @@ cd ait
 # 重新安装ait及其debug、profile组件
 ./install.sh --force-reinstall
 
-# 限定只安装debug或profile组件
+```
+
+#### install.sh按需安装不同组件
+```shell
 ./install.sh --debug
 ./install.sh --profile
+./install.sh --analyze
 ```
+
 
 #### 按需手动安装不同组件
 
