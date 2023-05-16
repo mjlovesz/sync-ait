@@ -11,8 +11,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os
+
 from setuptools import setup, find_packages
 
+
+abs_path = os.path.dirname(os.path.realpath(__file__))
+with open(os.path.join(abs_path, "requirements.txt")) as f:
+    required = f.read().splitlines()
 
 setup(
     name='ait',
@@ -25,32 +31,7 @@ setup(
     license='Apache-2.0',
     keywords='ait',
     python_requires='>=3.7',
-    extras_require={
-        'benchmark': [
-            (
-                'aclruntime @ git+https://gitee.com/ascend/ait.git'
-                '#egg=aclruntime&subdirectory=ait/components/profile/benchmark/backend'
-            ),
-            (
-                'ais_bench @ git+https://gitee.com/ascend/ait.git'
-                '#egg=ais_bench&subdirectory=ait/components/profile/benchmark'
-            ),
-            'pillow >= 9.0.0',
-            'tqdm >= 4.63.0',
-        ],
-        'compare': [
-            (
-                'compare @ git+https://gitee.com/ascend/ait.git'
-                '#egg=compare&subdirectory=ait/components/debug/compare'
-            ),
-        ],
-        'surgeon': [
-            (
-                'auto_optimizer @ git+https://gitee.com/ascend/ait.git'
-                '#egg=auto_optimizer&subdirectory=ait/components/debug/surgeon'
-            ),
-        ],
-    },
+    install_requires=required,
     entry_points={
         'console_scripts': ['ait=components.__main__:cli'],
     },

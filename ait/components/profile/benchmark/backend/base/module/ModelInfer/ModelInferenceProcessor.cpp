@@ -616,19 +616,15 @@ uint64_t ModelInferenceProcessor::GetMaxDymBatchsize()
     return maxBatchSize;
 }
 
-bool ModelInferenceProcessor::GetDymAIPPInputExsity()
+int ModelInferenceProcessor::GetDymAIPPInputExsity()
 {
-    if (processModel->CheckDymAIPPInputExsity() == SUCCESS) {
-        return true;
-    } else {
-        return false;
-    }
+    return processModel->CheckDymAIPPInputExsity();
 }
 
 APP_ERROR ModelInferenceProcessor::CheckDymAIPPInputExsity()
 {
-    Result ret = processModel->CheckDymAIPPInputExsity();
-    if (ret != SUCCESS) {
+    int ret = processModel->CheckDymAIPPInputExsity();
+    if (ret != 1) {
         return APP_ERR_ACL_FAILURE;
     }
     dyAippCfg->ActivateModel();
