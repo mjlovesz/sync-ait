@@ -500,7 +500,7 @@ void ModelProcess::GetDimInfo(size_t gearCount, aclmdlIODims *dims)
     }
 }
 
-void ModelProcess::model_description(size_t& numInputs, size_t& numOutputs, aclmdlIODims& dimsInput, aclmdlIODims& dimsOutput)
+void ModelProcess::model_description(aclError ret, size_t& numInputs, size_t& numOutputs, aclmdlIODims& dimsInput, aclmdlIODims& dimsOutput)
 {
     for (size_t i = 0; i < numInputs; i++) {
         DEBUG_LOG("the size of %zu input: %zu", i, aclmdlGetInputSizeByIndex(modelDesc_, i));
@@ -541,7 +541,7 @@ Result ModelProcess::PrintDesc()
 
     aclmdlIODims dimsInput;
     aclmdlIODims dimsOutput;
-    model_description(numInputs, numOutputs, dimsInput, dimsOutput);
+    model_description(ret, numInputs, numOutputs, dimsInput, dimsOutput);
     aclmdlBatch batch_info;
     ret = aclmdlGetDynamicBatch(modelDesc_, &batch_info);
     if (ret != ACL_SUCCESS) {
@@ -822,40 +822,40 @@ void* ModelProcess::get_out_data(aclDataType datatype, void* outHostData)
 {
     void* outData;
     switch (datatype) {
-        case NORMAL_DATATYPE::TYPE_FLOAT:
+        case TYPE_FLOAT:
             outData = reinterpret_cast<float*>(outHostData);
             break;
-        case NORMAL_DATATYPE::TYPE_ACLFLOAT16:
+        case TYPE_ACLFLOAT16:
             outData = reinterpret_cast<aclFloat16*>(outHostData);
             break;
-        case NORMAL_DATATYPE::TYPE_INT8_T:
+        case TYPE_INT8_T:
             outData = reinterpret_cast<int8_t*>(outHostData);
             break;
-        case NORMAL_DATATYPE::TYPE_INT:
+        case TYPE_INT:
             outData = reinterpret_cast<int*>(outHostData);
             break;
-        case NORMAL_DATATYPE::TYPE_UINT8_T:
+        case TYPE_UINT8_T:
             outData = reinterpret_cast<uint8_t*>(outHostData);
             break;
-        case NORMAL_DATATYPE::TYPE_INT16_T:
+        case TYPE_INT16_T:
             outData = reinterpret_cast<int16_t*>(outHostData);
             break;
-        case NORMAL_DATATYPE::TYPE_UINT16_T:
+        case TYPE_UINT16_T:
             outData = reinterpret_cast<uint16_t*>(outHostData);
             break;
-        case NORMAL_DATATYPE::TYPE_UINT32_T:
+        case TYPE_UINT32_T:
             outData = reinterpret_cast<uint32_t*>(outHostData);
             break;
-        case NORMAL_DATATYPE::TYPE_INT64_T:
+        case TYPE_INT64_T:
             outData = reinterpret_cast<int64_t*>(outHostData);
             break;
-        case NORMAL_DATATYPE::TYPE_UINT64_T:
+        case TYPE_UINT64_T:
             outData = reinterpret_cast<uint64_t*>(outHostData);
             break;
-        case NORMAL_DATATYPE::TYPE_DOUBLE:
+        case TYPE_DOUBLE:
             outData = reinterpret_cast<double*>(outHostData);
             break;
-        case NORMAL_DATATYPE::TYPE_BOOL:
+        case TYPE_BOOL:
             outData = reinterpret_cast<bool*>(outHostData);
             break;
         default:
@@ -865,7 +865,7 @@ void* ModelProcess::get_out_data(aclDataType datatype, void* outHostData)
     return outData;
 }
 
-void ModelProcess::print_float_info(size_t len, ofstream outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_float_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     for (size_t i = 1; i <= len / sizeof(float); i++)
     {
@@ -883,7 +883,7 @@ void ModelProcess::print_float_info(size_t len, ofstream outstr, void* outData, 
     return;
 }
 
-void ModelProcess::print_aclFloat16_info(size_t len, ofstream outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_aclFloat16_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     aclFloat16 * out_fp16 = reinterpret_cast<aclFloat16*>(outData);
     float out = 0;
@@ -903,7 +903,7 @@ void ModelProcess::print_aclFloat16_info(size_t len, ofstream outstr, void* outD
     return;
 }
 
-void ModelProcess::print_int8_info(size_t len, ofstream outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_int8_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     for (size_t i = 1; i <= len / sizeof(int8_t); i++)
     {
@@ -921,7 +921,7 @@ void ModelProcess::print_int8_info(size_t len, ofstream outstr, void* outData, v
     return;
 }
 
-void ModelProcess::print_int_info(size_t len, ofstream outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_int_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     for (size_t i = 1; i <= len / sizeof(int); i++) {
         int out = *((int*)outData + i - 1);
@@ -937,7 +937,7 @@ void ModelProcess::print_int_info(size_t len, ofstream outstr, void* outData, ve
     return;
 }
 
-void ModelProcess::print_uint8_info(size_t len, ofstream outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_uint8_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     for (size_t i = 1; i <= len / sizeof(uint8_t); i++) {
         uint8_t out = *((uint8_t*)outData + i - 1);
@@ -953,7 +953,7 @@ void ModelProcess::print_uint8_info(size_t len, ofstream outstr, void* outData, 
     return;
 }
 
-void ModelProcess::print_int16_info(size_t len, ofstream outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_int16_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     for (size_t i = 1; i <= len / sizeof(int16_t); i++) {
         int16_t out = *((int16_t*)outData + i - 1);
@@ -969,7 +969,7 @@ void ModelProcess::print_int16_info(size_t len, ofstream outstr, void* outData, 
     return;
 }
 
-void ModelProcess::print_uint16_info(size_t len, ofstream outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_uint16_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     for (size_t i = 1; i <= len / sizeof(uint16_t); i++) {
         uint16_t out = *((uint16_t*)outData + i - 1);
@@ -985,7 +985,7 @@ void ModelProcess::print_uint16_info(size_t len, ofstream outstr, void* outData,
     return;
 }
 
-void ModelProcess::print_uint32_info(size_t len, ofstream outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_uint32_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     for (size_t i = 1; i <= len / sizeof(uint32_t); i++) {
         uint32_t out = *((uint32_t*)outData + i - 1);
@@ -1001,7 +1001,7 @@ void ModelProcess::print_uint32_info(size_t len, ofstream outstr, void* outData,
     return;
 }
 
-void ModelProcess::print_int64_info(size_t len, ofstream outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_int64_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     for (size_t i = 1; i <= len / sizeof(int64_t); i++) {
         int64_t out = *((int64_t*)outData + i - 1);
@@ -1017,7 +1017,7 @@ void ModelProcess::print_int64_info(size_t len, ofstream outstr, void* outData, 
     return;
 }
 
-void ModelProcess::print_uint64_info(size_t len, ofstream outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_uint64_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     for (size_t i = 1; i <= len / sizeof(uint64_t); i++) {
         uint64_t out = *((uint64_t*)outData + i - 1);
@@ -1033,7 +1033,7 @@ void ModelProcess::print_uint64_info(size_t len, ofstream outstr, void* outData,
     return;
 }
 
-void ModelProcess::print_double_info(size_t len, ofstream outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_double_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     for (size_t i = 1; i <= len / sizeof(double); i++) {
         double out = *((double*)outData + i - 1);
@@ -1049,7 +1049,7 @@ void ModelProcess::print_double_info(size_t len, ofstream outstr, void* outData,
     return;
 }
 
-void ModelProcess::print_bool_info(size_t len, ofstream outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_bool_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     for (size_t i = 1; i <= len / sizeof(bool); i++) {
         int out = *((bool*)outData + i - 1);
@@ -1065,43 +1065,43 @@ void ModelProcess::print_bool_info(size_t len, ofstream outstr, void* outData, v
     return;
 }
 
-void ModelProcess::print_data_log(aclDataType datatype, size_t len, ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_data_log(aclDataType datatype, size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     switch (datatype) {
-        case NORMAL_DATATYPE::TYPE_FLOAT:
+        case TYPE_FLOAT:
             print_float_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case NORMAL_DATATYPE::TYPE_ACLFLOAT16:
+        case TYPE_ACLFLOAT16:
             print_aclFloat16_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case NORMAL_DATATYPE::TYPE_INT8_T:
+        case TYPE_INT8_T:
             print_int8_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case NORMAL_DATATYPE::TYPE_INT:
+        case TYPE_INT:
             print_int_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case NORMAL_DATATYPE::TYPE_UINT8_T:
+        case TYPE_UINT8_T:
             print_uint8_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case NORMAL_DATATYPE::TYPE_INT16_T:
+        case TYPE_INT16_T:
             print_int16_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case NORMAL_DATATYPE::TYPE_UINT16_T:
+        case TYPE_UINT16_T:
             print_uint16_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case NORMAL_DATATYPE::TYPE_UINT32_T:
+        case TYPE_UINT32_T:
             print_uint32_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case NORMAL_DATATYPE::TYPE_INT64_T:
+        case TYPE_INT64_T:
             print_int64_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case NORMAL_DATATYPE::TYPE_UINT64_T:
+        case TYPE_UINT64_T:
             print_uint64_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case NORMAL_DATATYPE::TYPE_DOUBLE:
+        case TYPE_DOUBLE:
             print_double_info(len, outstr, outData, curOutputDimsMul);
             break;
-        case NORMAL_DATATYPE::TYPE_BOOL:
+        case TYPE_BOOL:
             print_bool_info(len, outstr, outData, curOutputDimsMul);
             break;
         default:
@@ -1111,7 +1111,7 @@ void ModelProcess::print_data_log(aclDataType datatype, size_t len, ofstream& ou
     return;
 }
 
-Result Free_Host_Try(aclError ret, void* outHostData)
+Result ModelProcess::Free_Host_Try(aclError ret, void*& outHostData)
 {
     if (!g_is_device) {
         ret = aclrtFreeHost(outHostData);
@@ -1124,7 +1124,7 @@ Result Free_Host_Try(aclError ret, void* outHostData)
     return SUCCESS;
 }
 
-void print_error_log(aclError ret)
+void ModelProcess::print_error_log(aclError ret)
 {
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
