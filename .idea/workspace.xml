@@ -4,9 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="585904a7-242f-4baa-aa65-d04f3581d038" name="Changes" comment="cleancode: resolve residual copyrights head problems">
+    <list default="true" id="585904a7-242f-4baa-aa65-d04f3581d038" name="Changes" comment="cleancode: resolve residual redundant spaces">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/backend/base/include/Base/DeviceManager/DeviceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/backend/base/include/Base/DeviceManager/DeviceManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/matcher.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/matcher.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/tools/inference.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/tools/inference.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_inference_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_inference_example.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/interface.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/summary.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/summary.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,7 +73,14 @@
       <option name="project" value="LOCAL" />
       <updated>1684208143309</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="cleancode: resolve residual redundant spaces">
+      <created>1684208351027</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1684208351027</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -86,6 +98,7 @@
     <MESSAGE value="cleancode: create new branch for cleancode" />
     <MESSAGE value="cleancode: resolve residual problems" />
     <MESSAGE value="cleancode: resolve residual copyrights head problems" />
-    <option name="LAST_COMMIT_MESSAGE" value="cleancode: resolve residual copyrights head problems" />
+    <MESSAGE value="cleancode: resolve residual redundant spaces" />
+    <option name="LAST_COMMIT_MESSAGE" value="cleancode: resolve residual redundant spaces" />
   </component>
 </project>

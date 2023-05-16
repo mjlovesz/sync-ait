@@ -58,6 +58,15 @@ class KnowledgeBase(object):
         self._pattern_idx = -1
         self._apply_idx = -1
 
+    def has_next_pattern(self) -> bool:
+        if len(self._patterns) == 0:
+            return False
+        if self._pattern_idx == -1:
+            return True
+        if self._pattern_idx + 1 < len(self._patterns):
+            return True
+        return False
+
     def _register_apply_funcs(self, pattern: Pattern, apply_funcs: ApplyFuncs) -> bool:
         '''
         注册pattern的apply方法
@@ -69,15 +78,6 @@ class KnowledgeBase(object):
             return False
         self._pattern_apply_dict[pattern].extend(apply_funcs)
         return True
-
-    def has_next_pattern(self) -> bool:
-        if len(self._patterns) == 0:
-            return False
-        if self._pattern_idx == -1:
-            return True
-        if self._pattern_idx + 1 < len(self._patterns):
-            return True
-        return False
 
     def __get_current_pattern(self) -> Optional[Pattern]:
         if len(self._patterns) == 0:

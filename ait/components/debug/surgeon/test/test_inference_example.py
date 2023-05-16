@@ -98,6 +98,9 @@ class TestResnet(unittest.TestCase):
         except Exception as err:
             raise RuntimeError("inference failed error=%s", err) from err
 
+    def test_resnet_inference(self):
+        self.inference(self.cfg)
+
     def _thread(self, loop, worker, batch_size, engine_cfg):
         dataset, pre_process, post_process, inference, evaluate = \
             self._get_engine(engine_cfg)
@@ -137,9 +140,6 @@ class TestResnet(unittest.TestCase):
         self.inference_pool.join()
         self.post_process_pool.join()
         self.evaluate_pool.join()
-
-    def test_resnet_inference(self):
-        self.inference(self.cfg)
 
     def _get_engine(self, engine):
         try:

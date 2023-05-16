@@ -34,12 +34,6 @@ class Summary(object):
         self.reset()
         self.infodict = {"filesinfo": {}}
 
-    def reset(self):
-        self.h2d_latency_list = []
-        self.d2h_latency_list = []
-        self.npu_compute_time_list = []
-        self._batchsizes = []
-
     @staticmethod
     def get_list_info(work_list, percentile_scale):
         list_info = ListInfo()
@@ -51,6 +45,12 @@ class Summary(object):
             list_info.percentile = np.percentile(work_list, percentile_scale)
 
         return list_info
+
+    def reset(self):
+        self.h2d_latency_list = []
+        self.d2h_latency_list = []
+        self.npu_compute_time_list = []
+        self._batchsizes = []
 
     def add_batchsize(self, n: int):
         self._batchsizes.append(n)
