@@ -50,12 +50,19 @@ def set_session_options(session, args):
         aipp_batchsize = args.batchsize
 
     # 确认模型只有一个动态 aipp input
-    if (args.aipp_config is not None) and (session.get_dym_aipp_input_exsity()):
+    aipp_input_exsity = session.get_dym_aipp_input_exsity()
+    if (args.aipp_config is not None) and (aipp_input_exsity == 1):
         session.load_aipp_config_file(args.aipp_config, aipp_batchsize)
         session.check_dym_aipp_input_exsity()
-    elif (args.aipp_config is None) and (session.get_dym_aipp_input_exsity()):
+    elif (args.aipp_config is None) and (aipp_input_exsity == 1):
         logger.error("can't find aipp config file for model with dym aipp input , please check it!")
         raise RuntimeError('aipp model without aipp config!')
+    elif (aipp_input_exsity > 1):
+        logger.error("don't support more than one dynamic aipp input in model, amount of aipp input is {}"
+                        .format(aipp_input_exsity))
+        raise RuntimeError('aipp model has more than 1 aipp input!')
+    elif (aipp_input_exsity == -1):
+        raise RuntimeError('aclmdlGetAippType failed!')
 
     # 设置custom out tensors size
     if args.output_size is not None:
@@ -188,8 +195,8 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
 
 
-def msprof_run_profiling(args):
-    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup_count=0"
+def msprof_run_profiling(args, msprof_bin):
+    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
     msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
         msprof_bin, args.output, cmd)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
@@ -337,7 +344,7 @@ def multidevice_run(args):
     splits = None
     if (args.input != None):
         splits = seg_input_data_for_multi_process(args, args.input, jobs)
-        
+
     for i in range(len(device_list)):
         cur_args = copy.deepcopy(args)
         cur_args.device = int(device_list[i])
@@ -403,7 +410,7 @@ def benchmark_process(args:BenchMarkArgsAdapter):
         if msprof_bin is None or os.getenv('GE_PROFILIGN_TO_STD_OUT') == '1':
             logger.info("find no msprof continue use acl.json mode")
         else:
-            msprof_run_profiling(args)
+            msprof_run_profiling(args, msprof_bin)
             return 0
 
     if args.dym_shape_range is not None and args.dym_shape is None:
@@ -415,6 +422,6 @@ def benchmark_process(args:BenchMarkArgsAdapter):
         # args has multiple device, run single process for each device
         ret = multidevice_run(args)
         return ret
-    
+
     main(args)
     return 0
