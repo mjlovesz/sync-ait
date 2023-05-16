@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -84,14 +84,14 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
 
     def pre_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except onnx.onnx_cpp2py_export.shape_inference.InferenceError:
             return False
         return super().pre_process(graph)
 
     def post_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except onnx.onnx_cpp2py_export.shape_inference.InferenceError:
             return False
         return super().post_process(graph)
@@ -209,7 +209,11 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
             each = ((len(_16s) - 1) // num) + 1
             ksizes = [sum(_16s[i:i+each]) for i in range(0, len(_16s), each)]
             indices = list(accumulate([0, *ksizes[:-1]]))
-            kslices = [[*slc, (i, i + s)] for i, s in zip(indices, ksizes) for slc in kslices]
+            kslices = [
+                [*slc, (i, i + s)]
+                for i, s in zip(indices, ksizes)
+                for slc in kslices
+            ]
         return kslices
 
     def _split_large_kernel(self, graph: BaseGraph, matchinfo: Dict[str, List[Node]]) -> bool:

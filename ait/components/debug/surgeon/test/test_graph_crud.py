@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -251,7 +251,7 @@ class TestGraphCrud(unittest.TestCase):
         node_5 = OnnxNode('Node_5', 'Mul', inputs=['1_out_0', '4_out_0', '2_out_1'], outputs=['output_0'], attrs={})
         target = OnnxGraph(name='test_graph_remove_ini_node', nodes=[
                            node_0, node_1, node_2, node_4, node_5], inputs=[input_0], outputs=[output_0])
-        target._next_map.pop('ini_0')
+        target.next_map.pop('ini_0')
 
         self.graph.remove('ini_0')
         self.graph.remove('Node_3')

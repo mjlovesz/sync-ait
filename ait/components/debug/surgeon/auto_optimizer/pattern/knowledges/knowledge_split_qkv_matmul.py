@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -225,7 +225,11 @@ class KnowledgeSplitQKVMatmul(KnowledgeBase):
         :param matchinfo: 匹配到的子图信息
         :return: 返回是否修改成功
         """
-        if any(graph.get_node(node.name, node_type=Node) is None for nodes in matchinfo.values() for node in nodes):
+        if any(
+            graph.get_node(node.name, node_type=Node) is None
+            for nodes in matchinfo.values()
+            for node in nodes
+        ):
             logging.info("Some matching node have been removed or renamed, failed to optimizd.")
             return False
 

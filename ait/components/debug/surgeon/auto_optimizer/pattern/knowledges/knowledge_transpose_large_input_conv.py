@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -106,14 +106,14 @@ class KnowledgeTransposeLargeInputConv(KnowledgeBase):
 
     def pre_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except onnx.onnx_cpp2py_export.shape_inference.InferenceError:
             return False
         return super().pre_process(graph)
 
     def post_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except onnx.onnx_cpp2py_export.shape_inference.InferenceError:
             return False
         return super().post_process(graph)
@@ -148,7 +148,11 @@ class KnowledgeTransposeLargeInputConv(KnowledgeBase):
 
     def _aasist_match_apply(self, graph: BaseGraph, matchinfo: Dict[str, List[Node]]) -> bool:
         # make sure nodes of matching subgraph still exist in case some previous apply functions modified graph
-        if any(graph.get_node(node.name, node_type=Node) is None for nodes in matchinfo.values() for node in nodes):
+        if any(
+            graph.get_node(node.name, node_type=Node) is None
+            for nodes in matchinfo.values()
+            for node in nodes
+        ):
             logging.info("Some matching node have been removed or renamed, failed to optimizd.")
             return False
 
