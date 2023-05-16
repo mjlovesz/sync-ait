@@ -1,1 +1,1 @@
-from .analysis import Analyze
+from model_eval.core.analysis import Analyze

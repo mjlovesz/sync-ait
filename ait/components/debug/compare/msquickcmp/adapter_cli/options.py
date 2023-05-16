@@ -72,9 +72,10 @@ opt_input_shape = click.option(
     "-s",
     "--input-shape",
     "input_shape",
+    type=str,
     default="",
     help="Shape of input shape. Separate multiple nodes with semicolons(;)."
-         " E.g: input_name1:1,224,224,3;input_name2:3,300"
+         " E.g: \"input_name1:1,224,224,3;input_name2:3,300\""
 )
 
 opt_device = click.option(
@@ -96,9 +97,10 @@ opt_output_nodes = click.option(
     "-n",
     "--output-nodes",
     "output_nodes",
+    type=str,
     default="",
     help="Output nodes designated by user. Separate multiple nodes with semicolons(;)."
-         " E.g: node_name1:0;node_name2:1;node_name3:0"
+         " E.g: \"node_name1:0;node_name2:1;node_name3:0\""
 )
 
 opt_advisor = click.option(
@@ -112,9 +114,11 @@ opt_dym_shape_range = click.option(
     "-dr", 
     "--dym-shape-range", 
     "dym_shape_range", 
+    type=str,
     default="",
     help="Dynamic shape range using in dynamic model, "
          "using this means ignore input_shape"
+         " E.g: \"input_name1:1,3,200\~224,224-230;input_name2:1,300\""
 )
 
 opt_dump = click.option(
