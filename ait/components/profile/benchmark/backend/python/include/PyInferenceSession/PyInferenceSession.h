@@ -71,7 +71,7 @@ public:
 
     uint64_t GetMaxDymBatchsize();
     int SetDymAIPPInfoSet();
-    bool GetDymAIPPInputExsity();
+    int GetDymAIPPInputExsity();
     int CheckDymAIPPInputExsity();
 
     int AippSetMaxBatchSize(uint64_t batchSize);

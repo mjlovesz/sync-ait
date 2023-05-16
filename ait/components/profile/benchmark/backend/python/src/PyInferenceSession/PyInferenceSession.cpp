@@ -217,7 +217,7 @@ uint64_t PyInferenceSession::GetMaxDymBatchsize()
     return modelInfer_.GetMaxDymBatchsize();
 }
 
-bool PyInferenceSession::GetDymAIPPInputExsity()
+int PyInferenceSession::GetDymAIPPInputExsity()
 {
     return modelInfer_.GetDymAIPPInputExsity();
 }

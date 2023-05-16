@@ -1502,7 +1502,7 @@ Result ModelProcess::FreeAIPP(aclmdlAIPP* aippParmsSet)
     return SUCCESS;
 }
 
-Result ModelProcess::CheckDymAIPPInputExsity()
+int ModelProcess::CheckDymAIPPInputExsity()
 {
     /*
     模型有没有动态AIPP输入，用aclmdlGetAippType 函数找找，能找到说明模型没问题
@@ -1516,21 +1516,14 @@ Result ModelProcess::CheckDymAIPPInputExsity()
         if (ret != ACL_SUCCESS) {
             cout << aclGetRecentErrMsg() << endl;
             ERROR_LOG("aclmdlGetAippType failed");
-            return FAILED;
+            return -1;
         }
         if (aippType == ACL_DATA_WITH_DYNAMIC_AIPP) {
             dataNeedDynamicAipp.push_back(index);
         }
     }
-    size_t aippNum = dataNeedDynamicAipp.size();
-    if (aippNum == 0) {
-        INFO_LOG("can't find dynamic aipp input in model, amount of aipp input is %d", int(aippNum));
-        return FAILED;
-    } else if (aippNum > 1) {
-        ERROR_LOG("don't support more than one dynamic aipp input in model, amount of aipp input is %d", int(aippNum));
-        return FAILED;
-    }
-    return SUCCESS;
+    int aippNum = dataNeedDynamicAipp.size();
+    return aippNum;
 }
 
 Result ModelProcess::GetAIPPIndexList(std::vector<size_t> &dataNeedDynamicAipp)
