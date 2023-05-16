@@ -4,9 +4,66 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="585904a7-242f-4baa-aa65-d04f3581d038" name="Changes" comment="cleancode: create new branch for cleancode">
+    <list default="true" id="585904a7-242f-4baa-aa65-d04f3581d038" name="Changes" comment="cleancode: resolve residual problems">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledge_factory.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledge_factory.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_bn_folding.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_bn_folding.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_conv1d2conv2d.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_conv1d2conv2d.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_empty_slice_fix.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_empty_slice_fix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_gather_to_split.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_gather_to_split.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_casts.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_casts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_consecutive_concat.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_consecutive_concat.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_modify_reflection_pad.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_modify_reflection_pad.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_resize_mode_to_nearest.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_resize_mode_to_nearest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_split_large_kernel.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_split_large_kernel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_split_qkv_matmul.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_split_qkv_matmul.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_topk_fix.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_topk_fix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_transpose_large_input_conv.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_transpose_large_input_conv.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_type_cast.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_type_cast.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/matcher.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/matcher.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/pattern.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/pattern.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/tools/inference.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/tools/inference.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/tools/log.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/tools/log.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/helper.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/helper.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test.sh" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_advanced.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_advanced.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_basic.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_basic.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_crud.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_crud.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_eq.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_eq.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_extract.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_extract.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_inference_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_inference_example.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_initializer.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_initializer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knolwdge_modify_reflection_pad.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knolwdge_modify_reflection_pad.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_bn_folding.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_bn_folding.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_conv1d2conv2d.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_conv1d2conv2d.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_empty_slice_fix.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_empty_slice_fix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_factory.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_factory.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_gather_to_split.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_gather_to_split.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_merge_casts.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_merge_casts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_merge_consecutive_concat.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_merge_consecutive_concat.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_merge_consecutive_slice.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_merge_consecutive_slice.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_resize_mode_to_nearest.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_resize_mode_to_nearest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_split_large_kernel.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_split_large_kernel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_split_qkv_matmul.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_split_qkv_matmul.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_topk_fix.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_topk_fix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_transpose_large_input_conv.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_transpose_large_input_conv.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_type_cast.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_type_cast.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_matcher.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_matcher.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_node.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_node.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_node_common.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_node_common.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_onnx_surgen.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_onnx_surgen.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_pattern.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_pattern.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_placeholder.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_placeholder.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_register.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_register.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/__main__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/__main__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/io_oprations.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/io_oprations.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/miscellaneous.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/miscellaneous.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/summary.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/summary.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_infer.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_infer.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -54,11 +111,30 @@
       <option name="presentableId" value="Default" />
       <updated>1684206636776</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="cleancode: resolve residual problems">
+      <created>1684206802056</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1684206802056</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="cleancode: create new branch for cleancode" />
-    <option name="LAST_COMMIT_MESSAGE" value="cleancode: create new branch for cleancode" />
+    <MESSAGE value="cleancode: resolve residual problems" />
+    <option name="LAST_COMMIT_MESSAGE" value="cleancode: resolve residual problems" />
   </component>
 </project>
