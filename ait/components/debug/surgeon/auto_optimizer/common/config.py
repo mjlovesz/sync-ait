@@ -62,13 +62,14 @@ class Config:
         """
         读取模型配置文件，返回模型相关配置参数及推理流程
         """
-        format_path = format_to_module(file_name)
-        model_dict = Register.import_module(format_path)
         try:
-            if not isinstance(model_dict.model, Dict):
-                raise RuntimeError("config is not Dict")
+            format_path = format_to_module(file_name)
+            model_dict = Register.import_module(format_path)
         except Exception as err:
             raise RuntimeError("invalid read file error={}".format(err)) from err
+        if not isinstance(model_dict.model, Dict):
+            raise RuntimeError("config is not Dict")
+
         config_dict = model_dict.model
 
         return Config(config_dict)

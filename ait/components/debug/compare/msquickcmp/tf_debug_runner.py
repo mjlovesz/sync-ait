@@ -64,16 +64,16 @@ class TfDebugRunner(object):
             with tf.io.gfile.GFile(self.args.model_path, 'rb') as f:
                 global_graph_def = tf.compat.v1.GraphDef.FromString(f.read())
         except Exception as err:
-            utils.print_error_log("Failed to load the model %s. %s" % (self.args.model_path, err))
+            utils.logger.error("Failed to load the model %s. %s" % (self.args.model_path, err))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from err
         self.global_graph = tf.Graph()
         try:
             with self.global_graph.as_default():
                 tf.import_graph_def(global_graph_def, name='')
         except Exception as err:
-            utils.print_error_log("Failed to load the model %s. %s" % (self.args.model_path, err))
+            utils.logger.error("Failed to load the model %s. %s" % (self.args.model_path, err))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from err
-        utils.print_info_log("Load the model %s successfully." % self.args.model_path)
+        utils.logger.info("Load the model %s successfully." % self.args.model_path)
 
     def _get_outputs_tensor(self):
         outputs_tensor = []
