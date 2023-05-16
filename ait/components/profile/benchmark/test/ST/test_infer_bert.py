@@ -206,9 +206,11 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.01
-        assert msame_inference_time_ms != 0
-        assert math.fabs(msame_inference_time_ms - ais_bench_inference_time_ms)/msame_inference_time_ms \
-                    < allowable_performance_deviation
+        if msame_inference_time_ms != 0:
+            assert math.fabs(msame_inference_time_ms - ais_bench_inference_time_ms)/msame_inference_time_ms \
+                        < allowable_performance_deviation
+        else:
+            logger.warning("zero division!")
         os.remove(msame_infer_log_path)
         shutil.rmtree(output_dir_path)
 

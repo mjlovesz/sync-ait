@@ -505,13 +505,14 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.03
-        assert msame_inference_time_ms != 0
-        reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
-        logger.info("static batch msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms,
-                                                                             ais_bench_inference_time_ms,
-                                                                               reference_deviation))
-
-        assert reference_deviation < allowable_performance_deviation
+        if msame_inference_time_ms != 0:
+            reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
+            logger.info("static batch msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms,
+                                                                                ais_bench_inference_time_ms,
+                                                                                reference_deviation))
+            assert reference_deviation < allowable_performance_deviation
+        else:
+            logger.warning("zero division!")
         os.remove(msame_infer_log_path)
         shutil.rmtree(output_dir_path)
 
@@ -568,12 +569,14 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.04
-        assert msame_inference_time_ms != 0
-        reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
-        logger.info("dymshape msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms,
-                                                                         ais_bench_inference_time_ms,
-                                                                           reference_deviation))
-        assert reference_deviation < allowable_performance_deviation
+        if msame_inference_time_ms != 0:
+            reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
+            logger.info("dymshape msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms,
+                                                                            ais_bench_inference_time_ms,
+                                                                            reference_deviation))
+            assert reference_deviation < allowable_performance_deviation
+        else:
+            logger.warning("zero divisoin!")
         os.remove(msame_infer_log_path)
         shutil.rmtree(output_dir_path)
 
