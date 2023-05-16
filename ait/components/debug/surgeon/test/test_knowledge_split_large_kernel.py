@@ -74,7 +74,7 @@ def make_graph(
         )
 
     graph.update_map()
-    graph.infershape()
+    graph.infer_shape()
     return graph
 
 

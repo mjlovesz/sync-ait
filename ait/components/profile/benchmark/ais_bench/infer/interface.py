@@ -127,11 +127,6 @@ class InferSession:
         for tensor in tensors:
             tensor.to_host()
 
-    def create_tensor_from_arrays_to_device(self, arrays):
-        tensor = aclruntime.Tensor(arrays)
-        tensor.to_device(self.device_id)
-        return tensor
-
     @staticmethod
     def convert_tensors_to_arrays(self, tensors):
         arrays = []
@@ -139,6 +134,11 @@ class InferSession:
             # convert acltensor to numpy array
             arrays.append(np.array(tensor))
         return arrays
+
+    def create_tensor_from_arrays_to_device(self, arrays):
+        tensor = aclruntime.Tensor(arrays)
+        tensor.to_device(self.device_id)
+        return tensor
 
     def get_dym_aipp_input_exsity(self):
         return self.session.get_dym_aipp_input_exsity()

@@ -6,9 +6,27 @@
   <component name="ChangeListManager">
     <list default="true" id="585904a7-242f-4baa-aa65-d04f3581d038" name="Changes" comment="cleancode: resolve residual change too-long lines">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/graph_refactor/interface/base_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/graph_refactor/interface/base_graph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_gather_to_split.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_gather_to_split.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_casts.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_casts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_consecutive_concat.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_consecutive_concat.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_consecutive_slice.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_consecutive_slice.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_split_large_kernel.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_split_large_kernel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_transpose_large_input_conv.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_transpose_large_input_conv.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_type_cast.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_type_cast.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/matcher.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/matcher.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/docs/graph_refactor/graph_refactor_API.md" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/docs/graph_refactor/graph_refactor_API.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_advanced.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_advanced.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_eq.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_graph_eq.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_bn_folding.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_bn_folding.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_empty_slice_fix.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_empty_slice_fix.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_gather_to_split.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_gather_to_split.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_node_common.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_node_common.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/backend/base/include/Base/DeviceManager/DeviceManager.h" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/backend/base/include/Base/DeviceManager/DeviceManager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_merge_casts.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_merge_casts.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_resize_mode_to_nearest.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_resize_mode_to_nearest.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_split_large_kernel.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_split_large_kernel.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_topk_fix.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_topk_fix.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_type_cast.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_type_cast.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/interface.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -98,7 +116,14 @@
       <option name="project" value="LOCAL" />
       <updated>1684209317918</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="cleancode: resolve residual change too-long lines">
+      <created>1684217915665</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1684217915665</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

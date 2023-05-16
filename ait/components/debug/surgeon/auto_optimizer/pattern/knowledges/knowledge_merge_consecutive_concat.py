@@ -138,7 +138,8 @@ class KnowledgeMergeConsecutiveConcat(KnowledgeBase):
         # since their corresponding node are about to be removed, all other inputs should be kept
         outputs_of_concats_to_remove = [node.outputs[0] for node in concats_to_remove]
         new_inputs = [
-            inp for node in concats_total
+            inp
+            for node in concats_total
             for inp in node.inputs
             if inp not in outputs_of_concats_to_remove
         ]

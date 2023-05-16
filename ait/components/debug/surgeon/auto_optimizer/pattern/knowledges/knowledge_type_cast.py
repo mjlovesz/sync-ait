@@ -587,7 +587,7 @@ class KnowledgeTypeCast(KnowledgeBase):
 
     def pre_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except InferenceError:
             return False
         return True

@@ -278,7 +278,7 @@ g.save('model_fix.onnx')
 
 ```python
 # 维度推断并保存
-g.infershape()
+g.infer_shape()
 g.save('inferred_model.onnx')
 
 # 模型简化并保存

@@ -113,7 +113,7 @@ class TestGraphEq(unittest.TestCase):
         self.assertTrue(KnowledgeTestHelper.graph_equal(graph0, graph1))
         graph1.nodes.reverse()
         self.assertTrue(KnowledgeTestHelper.graph_equal(graph0, graph1))
-        graph1.infershape()
+        graph1.infer_shape()
         self.assertTrue(KnowledgeTestHelper.graph_equal(graph0, graph1))
 
         # reverse operator input order should count as difference

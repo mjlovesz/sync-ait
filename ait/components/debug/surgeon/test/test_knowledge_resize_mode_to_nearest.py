@@ -38,7 +38,7 @@ def make_resize_model(onnx_name, x: np.ndarray, y: np.ndarray, value_type: np.dt
     })
     graph.update_map()
 
-    graph.infershape()
+    graph.infer_shape()
     return graph
 
 

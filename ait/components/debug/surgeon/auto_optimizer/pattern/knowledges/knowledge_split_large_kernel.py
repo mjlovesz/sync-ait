@@ -84,14 +84,14 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
 
     def pre_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except onnx.onnx_cpp2py_export.shape_inference.InferenceError:
             return False
         return super().pre_process(graph)
 
     def post_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except onnx.onnx_cpp2py_export.shape_inference.InferenceError:
             return False
         return super().post_process(graph)

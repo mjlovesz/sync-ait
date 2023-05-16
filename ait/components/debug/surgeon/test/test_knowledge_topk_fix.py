@@ -69,7 +69,7 @@ def make_topk_model(onnx_name, x: np.ndarray):
     )
 
     graph.update_map()
-    graph.infershape()
+    graph.infer_shape()
     return graph
 
 

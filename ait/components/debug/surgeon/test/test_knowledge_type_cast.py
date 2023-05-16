@@ -41,7 +41,7 @@ def make_type_cast_model(onnx_name, x: np.ndarray, y: np.ndarray, value_type: np
     graph.add_node('Concat0', 'Concat', ['Concat_value_0', 'Concat_value_1', 'Add_O'], ['O_1'], attrs={'axis': 0})
     graph.update_map()
 
-    graph.infershape()
+    graph.infer_shape()
     return graph
 
 

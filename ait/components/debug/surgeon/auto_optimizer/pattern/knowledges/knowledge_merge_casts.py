@@ -82,7 +82,7 @@ class KnowledgeMergeCasts(KnowledgeBase):
 
     def pre_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except InferenceError as e:
             return False
         return True

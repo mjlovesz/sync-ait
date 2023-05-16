@@ -95,7 +95,7 @@ def make_bn_folding_graph(name, input_: NDArray, perm, attrs, const) -> OnnxGrap
     )
 
     graph.update_map()
-    graph.infershape()
+    graph.infer_shape()
     return graph
 
 

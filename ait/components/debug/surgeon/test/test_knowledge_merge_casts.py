@@ -38,7 +38,7 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph.add_node('Add1', 'Add', ['Cast_O1', 'Cast_O2'], ['Y'])
         graph.add_node('Add2', 'Add', ['Cast_O3', 'init0'], ['Z'])
         graph.update_map()
-        graph.infershape()
+        graph.infer_shape()
 
         cfg = OptimizationConfig(
             graph=graph,
@@ -71,7 +71,7 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph.add_node('Add2', 'Add', ['Cast_O2', 'Add_value0'], ['Add_O2'])
         graph.add_node('Add3', 'Add', ['Add_O2', 'Cast_O3'], ['Z'])
         graph.update_map()
-        graph.infershape()
+        graph.infer_shape()
 
         cfg = OptimizationConfig(
             graph=graph,
@@ -102,7 +102,7 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph.add_node('Cast1', 'Cast', ['Add_O1'], ['Cast_O1'], attrs={'to': TensorProto.INT64})
         graph.add_node('Cast2', 'Cast', ['Cast_O1'], ['Cast_O2'], attrs={'to': TensorProto.INT32})
         graph.update_map()
-        graph.infershape()
+        graph.infer_shape()
 
         cfg = OptimizationConfig(
             graph=graph,
@@ -135,7 +135,7 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph.add_node('Add1', 'Add', ['Cast_O1', 'Add_value0'], ['Y'])
         graph.add_node('Add2', 'Add', ['Cast_O2', 'Add_value1'], ['Z'])
         graph.update_map()
-        graph.infershape()
+        graph.infer_shape()
 
         cfg = OptimizationConfig(
             graph=graph,
