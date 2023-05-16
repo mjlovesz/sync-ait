@@ -79,6 +79,19 @@ class InferSession:
         self.intensors_desc = None
         self.outtensors_desc = None
 
+    @staticmethod
+    def convert_tensors_to_host(self, tensors):
+        for tensor in tensors:
+            tensor.to_host()
+
+    @staticmethod
+    def convert_tensors_to_arrays(self, tensors):
+        arrays = []
+        for tensor in tensors:
+            # convert acltensor to numpy array
+            arrays.append(np.array(tensor))
+        return arrays
+
     def get_inputs(self):
         """
         get inputs info of model
@@ -96,8 +109,8 @@ class InferSession:
     def set_loop_count(self, loop):
         options = self.session.options()
         options.loop = loop
-
     # 默认设置为静态batch
+
     def set_staticbatch(self):
         self.session.set_staticbatch()
 
@@ -118,19 +131,6 @@ class InferSession:
 
     def set_custom_outsize(self, custom_sizes):
         self.session.set_custom_outsize(custom_sizes)
-
-    @staticmethod
-    def convert_tensors_to_host(self, tensors):
-        for tensor in tensors:
-            tensor.to_host()
-
-    @staticmethod
-    def convert_tensors_to_arrays(self, tensors):
-        arrays = []
-        for tensor in tensors:
-            # convert acltensor to numpy array
-            arrays.append(np.array(tensor))
-        return arrays
 
     def create_tensor_from_fileslist(self, desc, files):
         return self.session.create_tensor_from_fileslist(desc, files)
@@ -467,6 +467,7 @@ class InferSession:
 
     def sumary(self):
         return self.session.sumary()
+
     def finalize(self):
         if hasattr(self.session, 'finalize'):
             self.session.finalize()

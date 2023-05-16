@@ -58,6 +58,48 @@ class BaseGraph(ABC):
 
         self.update_map()
 
+    def __getitem__(self, key: str) -> NodeType:
+        if not self._node_map.get(key, None):
+            raise KeyError("node '{}' not in graph!".format(key))
+        return self._node_map[key]
+
+    def __setitem__(self, key: str, value: NodeType) -> None:
+        src_node = self._node_map.pop(key, None)
+        if not src_node:
+            raise KeyError("You are trying to replace node '{}', which does not exist!".format(key))
+
+        if isinstance(src_node, Node):
+            self._nodes.remove(src_node)
+            # op -> op
+            if isinstance(value, Node):
+                value.inputs = src_node.inputs
+                value.outputs = src_node.outputs
+                for i in src_node.inputs:
+                    self._next_map[i].append(value)
+                    self._next_map[i].remove(src_node)
+                for o in src_node.outputs:
+                    self._prev_map[o] = value
+            # op -> input
+            elif value in self._inputs:
+                for i in src_node.inputs:
+                    self._next_map[i].remove(src_node)
+                o = src_node.outputs[0]
+                for n in self.get_next_nodes(o):
+                    n.inputs[n.get_input_id(o)] = value.name
+                    self._next_map[value.name] = [n]
+                self._prev_map.pop(o, None)
+                self._next_map.pop(o, None)
+        elif isinstance(src_node, Initializer):
+            self._initializers.remove(src_node)
+            # ini -> input
+            if value in self._inputs:
+                for n in self.get_next_nodes(src_node.name):
+                    n.inputs[n.get_input_id(src_node.name)] = value.name
+                    self._next_map[value.name] = [n]
+                self._next_map.pop(src_node.name, None)
+        else:
+            raise RuntimeError("Unsupported!")
+
     @property
     def inputs(self) -> List[PlaceHolder]:
         return self._inputs
@@ -141,13 +183,6 @@ class BaseGraph(ABC):
     ) -> 'BaseGraph':
         raise NotImplementedError()
 
-    def _add_input(self, graph_input: PlaceHolder) -> PlaceHolder:
-        if self._node_map.get(graph_input.name, None):
-            raise ValueError("node name '{}' already exists!".format(graph_input.name))
-        self._node_map[graph_input.name] = graph_input
-        self._inputs.append(graph_input)
-        return graph_input
-
     def update_map(self) -> None:
         # clear map first
         self._node_map.clear()
@@ -189,27 +224,6 @@ class BaseGraph(ABC):
                 else:
                     self._next_map[i].append(n)
 
-    def _add_output(self, graph_output: PlaceHolder) -> PlaceHolder:
-        if self._node_map.get(graph_output.name, None):
-            raise ValueError("node name '{}' already exists!".format(graph_output.name))
-        self._node_map[graph_output.name] = graph_output
-        self._outputs.append(graph_output)
-        return graph_output
-
-    def _add_initializer(self, initializer: Initializer) -> Initializer:
-        if self._node_map.get(initializer.name, None):
-            raise ValueError("node name '{}' already exists!".format(initializer.name))
-        self._node_map[initializer.name] = initializer
-        self._initializers.append(initializer)
-        return initializer
-
-    def _add_node(self, node: Node) -> Node:
-        if self._node_map.get(node.name, None):
-            raise ValueError("node name '{}' already exists!".format(node.name))
-        self._node_map[node.name] = node
-        self._nodes.append(node)
-        return node
-
     def insert_node(
         self,
         refer_name: str,
@@ -244,6 +258,8 @@ class BaseGraph(ABC):
                 raise RuntimeError(
                     f'Can not insert node before {refer_node.name}.')
             name = refer_node.name
+            if name not in self._next_map:
+                raise KeyError(f'{name} not a key in next_map')
             refer_node = self._next_map[name][0]
             refer_index = refer_node.inputs.index(name)
             mode = 'before'
@@ -298,6 +314,8 @@ class BaseGraph(ABC):
                     if node.name != insert_node.name:
                         index = node.get_input_id(refer_in_name)
                         node.inputs[index] = new_in_name
+                        if new_in_name not in self._next_map:
+                            raise KeyError(f'{new_in_name} not a key of next map')
                         self._next_map[new_in_name].append(node)
                 self._next_map[refer_in_name] = [insert_node]
 
@@ -364,6 +382,180 @@ class BaseGraph(ABC):
             else:
                 # the next node is operator
                 self._set_input_of_node(node, insert_node.outputs[out_idx], input_index=in_idx, prev_node=insert_node)
+
+    def get_node(self, name: str, node_type: Type[N]) -> Optional[N]:
+        """Return node with specificed type and name.
+        If the node does not exist, return None.
+        """
+        # try get initializer/operator/input/output from _node_map
+        node: Optional[NodeType] = self._node_map.get(name)
+        if node and isinstance(node, node_type):
+            return node
+        # fallback to value_info from _value_map
+        if node_type == PlaceHolder:
+            ph = self._value_map.get(name)
+            if ph and isinstance(ph, node_type):
+                return ph
+        return None
+
+    def get_nodes(self, op_type: str) -> List[NodeType]:
+        nodes = [node for node in self._node_map.values() if node.op_type == op_type]
+        return nodes
+
+    def get_value_info(self, io_name: str) -> PlaceHolder:
+        if not self._value_map.get(io_name, None):
+            raise KeyError("'{}' does not have value_info or does not exist!".format(io_name))
+        return self._value_map[io_name]
+
+    def remove(self, name: str, mapping: Optional[Dict[int, int]] = None) -> bool:
+        """Remove a specific node from graph
+        If map is not provided, it will simply connect the previous node of first input and next nodes of first output.
+
+        Args:
+            name: name of the node to be removed
+            maps: auto connection map, Default = {0:0}. Keys should be input ids of current node and values should
+                  be output ids of current node.
+
+        Return:
+            True if remove succeeds, otherwise False
+        """
+        maps: Dict[int, int] = {0: 0} if mapping is None else mapping
+        node = self._node_map.get(name, None)
+        if not node:
+            raise KeyError("You are trying to remove node '{}', which does not exist!".format(name))
+        self._node_map.pop(name, None)
+        if node in self._inputs:
+            self._inputs.remove(node)
+            self._next_map.pop(name, None)
+            return True
+        if node in self._outputs:
+            self._outputs.remove(node)
+            self._prev_map.pop(name, None)
+            return True
+        if isinstance(node, Initializer):
+            self._initializers.remove(node)
+            self._next_map.pop(name, None)
+            return True
+        if isinstance(node, Node):
+            self._nodes.remove(node)
+            for in_id, in_name in enumerate(node.inputs):
+                # update next map, node is no longer a next node
+                if self._next_map.get(in_name, None):
+                    if node in self._next_map[in_name]:
+                        self._next_map[in_name].remove(node)
+                    if not self._next_map[in_name]:
+                        self._next_map.pop(in_name, None)
+                out_id = maps.get(in_id, None)
+                # out_id exists, do connection
+                if out_id is not None:
+                    out_name = node.outputs[out_id]
+                    next_nodes = self.get_next_nodes(out_name)
+                    if next_nodes:
+                        for next_node in next_nodes:
+                            for next_node_in_id in next_node.get_input_ids(out_name):
+                                next_node.inputs[next_node_in_id] = in_name
+                            # update next map, prev node has new next node
+                            if self._next_map.get(in_name) is None:
+                                self._next_map[in_name] = [next_node]
+                            else:
+                                self._next_map[in_name].append(next_node)
+                    elif self._node_map.get(out_name, None):
+                        # prev_node -> node -> placeholder
+                        prev_node = self._prev_map.get(in_name, None)
+                        if prev_node:
+                            for prev_next_node in self._next_map.get(in_name, []):
+                                prev_next_node_in_id = prev_next_node.get_input_id(in_name)
+                                prev_next_node.inputs[prev_next_node_in_id] = out_name
+                            prev_node.outputs[prev_node.get_output_id(in_name)] = out_name
+                            node.outputs.remove(out_name)
+            # update prev and next map, outputs of node no long exist
+            for out_name in node.outputs:
+                self._prev_map.pop(out_name, None)
+                self._next_map.pop(out_name, None)
+            return True
+        return False
+
+    def get_prev_node(self, input_name: str) -> Optional[Node]:
+        return self._prev_map.get(input_name, None)
+
+    def get_next_nodes(self, output_name: str) -> List[Node]:
+        return self._next_map.get(output_name, [])
+
+    def toposort(self) -> None:
+        def visited_all_prev_nodes(node: Node, visited: Set[Node]) -> bool:
+            for input_name in node.inputs:
+                prev_node = self.get_prev_node(input_name)
+                if prev_node not in visited and prev_node:
+                    return False
+            return True
+
+        self.update_map()
+
+        queue: Deque[Node] = deque()
+        visited: Set[Node] = set()
+        for node in self._nodes:
+            if visited_all_prev_nodes(node, visited):
+                queue.append(node)
+
+        sorted_nodes: List[Node] = []
+        while queue:
+            node = queue.popleft()
+            if visited_all_prev_nodes(node, visited):
+                sorted_nodes.append(node)
+                visited.add(node)
+                for output_name in node.outputs:
+                    for next_node in self.get_next_nodes(output_name):
+                        if next_node not in queue \
+                                and next_node not in visited \
+                                and visited_all_prev_nodes(next_node, visited):
+                            queue.append(next_node)
+
+        if len(self._nodes) != len(sorted_nodes):
+            raise RuntimeError('Cycle detected in graph!')
+        else:
+            self._nodes = sorted_nodes
+
+    def remove_unused_nodes(self) -> None:
+        self.update_map()
+
+        # Initialize out_degree dict
+        out_degree: Dict[Node, int] = dict()
+        for node in self._nodes:
+            out_degree[node] = 0
+            next_nodes = []
+            for output_name in node.outputs:
+                if output_name in [output.name for output in self.outputs]:
+                    next_nodes.append(self._node_map[output_name])
+                next_nodes.extend(self.get_next_nodes(output_name))
+            out_degree[node] = len(set(next_nodes))
+
+        # remove unused operator nodes
+        removed: Set[Node] = set()
+        queue: Deque[Node] = deque([n for n in out_degree.keys() if out_degree[n] == 0])
+        while queue:
+            node = queue.popleft()
+            self._nodes.remove(node)
+            removed.add(node)
+            for input_name in node.inputs:
+                prev_node = self.get_prev_node(input_name)
+                if prev_node and prev_node not in queue and prev_node not in removed:
+                    out_degree[prev_node] -= 1
+                    if out_degree[prev_node] == 0:
+                        queue.append(prev_node)
+
+        # remove unused graph inputs and initializers
+        inputs = [inp for n in self._nodes for inp in n.inputs]
+        self._inputs = list(filter(lambda x: x.name in inputs, self._inputs))
+        self._initializers = list(filter(lambda x: x.name in inputs, self._initializers))
+
+        self.update_map()
+
+    def _add_input(self, graph_input: PlaceHolder) -> PlaceHolder:
+        if self._node_map.get(graph_input.name, None):
+            raise ValueError("node name '{}' already exists!".format(graph_input.name))
+        self._node_map[graph_input.name] = graph_input
+        self._inputs.append(graph_input)
+        return graph_input
 
     def _parse_nodes_info(
         self,
@@ -458,211 +650,216 @@ class BaseGraph(ABC):
         self._prev_map.pop(old_output_name, None)
         self._next_map.pop(old_output_name, None)
 
-    def get_node(self, name: str, node_type: Type[N]) -> Optional[N]:
-        """Return node with specificed type and name.
-        If the node does not exist, return None.
-        """
-        # try get initializer/operator/input/output from _node_map
-        node: Optional[NodeType] = self._node_map.get(name)
-        if node and isinstance(node, node_type):
-            return node
-        # fallback to value_info from _value_map
-        if node_type == PlaceHolder:
-            ph = self._value_map.get(name)
-            if ph and isinstance(ph, node_type):
-                return ph
-        return None
+    def _add_output(self, graph_output: PlaceHolder) -> PlaceHolder:
+        if self._node_map.get(graph_output.name, None):
+            raise ValueError("node name '{}' already exists!".format(graph_output.name))
+        self._node_map[graph_output.name] = graph_output
+        self._outputs.append(graph_output)
+        return graph_output
 
-    def get_nodes(self, op_type: str) -> List[NodeType]:
-        nodes = [node for node in self._node_map.values() if node.op_type == op_type]
-        return nodes
+    def _add_initializer(self, initializer: Initializer) -> Initializer:
+        if self._node_map.get(initializer.name, None):
+            raise ValueError("node name '{}' already exists!".format(initializer.name))
+        self._node_map[initializer.name] = initializer
+        self._initializers.append(initializer)
+        return initializer
 
-    def get_value_info(self, io_name: str) -> PlaceHolder:
-        if not self._value_map.get(io_name, None):
-            raise KeyError("'{}' does not have value_info or does not exist!".format(io_name))
-        return self._value_map[io_name]
+    def _add_node(self, node: Node) -> Node:
+        if self._node_map.get(node.name, None):
+            raise ValueError("node name '{}' already exists!".format(node.name))
+        self._node_map[node.name] = node
+        self._nodes.append(node)
+        return node
 
-    def remove(self, name: str, mapping: Optional[Dict[int, int]] = None) -> bool:
-        """Remove a specific node from graph
-        If map is not provided, it will simply connect the previous node of first input and next nodes of first output.
 
-        Args:
-            name: name of the node to be removed
-            maps: auto connection map, Default = {0:0}. Keys should be input ids of current node and values should
-                  be output ids of current node.
 
-        Return:
-            True if remove succeeds, otherwise False
-        """
-        maps: Dict[int, int] = {0: 0} if mapping is None else mapping
-        node = self._node_map.get(name, None)
-        if not node:
-            raise KeyError("You are trying to remove node '{}', which does not exist!".format(name))
-        self._node_map.pop(name, None)
-        if node in self._inputs:
-            self._inputs.remove(node)
-            self._next_map.pop(name, None)
-            return True
-        if node in self._outputs:
-            self._outputs.remove(node)
-            self._prev_map.pop(name, None)
-            return True
-        if isinstance(node, Initializer):
-            self._initializers.remove(node)
-            self._next_map.pop(name, None)
-            return True
-        if isinstance(node, Node):
-            self._nodes.remove(node)
-            for in_id, in_name in enumerate(node.inputs):
-                # update next map, node is no longer a next node
-                if self._next_map.get(in_name, None):
-                    if node in self._next_map[in_name]:
-                        self._next_map[in_name].remove(node)
-                    if not self._next_map[in_name]:
-                        self._next_map.pop(in_name, None)
-                out_id = maps.get(in_id, None)
-                # out_id exists, do connection
-                if out_id is not None:
-                    out_name = node.outputs[out_id]
-                    next_nodes = self.get_next_nodes(out_name)
-                    if next_nodes:
-                        for next_node in next_nodes:
-                            for next_node_in_id in next_node.get_input_ids(out_name):
-                                next_node.inputs[next_node_in_id] = in_name
-                            # update next map, prev node has new next node
-                            if self._next_map.get(in_name) is None:
-                                self._next_map[in_name] = [next_node]
-                            else:
-                                self._next_map[in_name].append(next_node)
-                    elif self._node_map.get(out_name, None):
-                        # prev_node -> node -> placeholder
-                        prev_node = self._prev_map.get(in_name, None)
-                        if prev_node:
-                            for prev_next_node in self._next_map.get(in_name, []):
-                                prev_next_node_in_id = prev_next_node.get_input_id(in_name)
-                                prev_next_node.inputs[prev_next_node_in_id] = out_name
-                            prev_node.outputs[prev_node.get_output_id(in_name)] = out_name
-                            node.outputs.remove(out_name)
-            # update prev and next map, outputs of node no long exist
-            for out_name in node.outputs:
-                self._prev_map.pop(out_name, None)
-                self._next_map.pop(out_name, None)
-            return True
-        return False
 
-    def __getitem__(self, key: str) -> NodeType:
-        if not self._node_map.get(key, None):
-            raise KeyError("node '{}' not in graph!".format(key))
-        return self._node_map[key]
 
-    def __setitem__(self, key: str, value: NodeType) -> None:
-        src_node = self._node_map.pop(key, None)
-        if not src_node:
-            raise KeyError("You are trying to replace node '{}', which does not exist!".format(key))
 
-        if isinstance(src_node, Node):
-            self._nodes.remove(src_node)
-            # op -> op
-            if isinstance(value, Node):
-                value.inputs = src_node.inputs
-                value.outputs = src_node.outputs
-                for i in src_node.inputs:
-                    self._next_map[i].append(value)
-                    self._next_map[i].remove(src_node)
-                for o in src_node.outputs:
-                    self._prev_map[o] = value
-            # op -> input
-            elif value in self._inputs:
-                for i in src_node.inputs:
-                    self._next_map[i].remove(src_node)
-                o = src_node.outputs[0]
-                for n in self.get_next_nodes(o):
-                    n.inputs[n.get_input_id(o)] = value.name
-                    self._next_map[value.name] = [n]
-                self._prev_map.pop(o, None)
-                self._next_map.pop(o, None)
-        elif isinstance(src_node, Initializer):
-            self._initializers.remove(src_node)
-            # ini -> input
-            if value in self._inputs:
-                for n in self.get_next_nodes(src_node.name):
-                    n.inputs[n.get_input_id(src_node.name)] = value.name
-                    self._next_map[value.name] = [n]
-                self._next_map.pop(src_node.name, None)
-        else:
-            raise RuntimeError("Unsupported!")
 
-    def get_prev_node(self, input_name: str) -> Optional[Node]:
-        return self._prev_map.get(input_name, None)
 
-    def get_next_nodes(self, output_name: str) -> List[Node]:
-        return self._next_map.get(output_name, [])
 
-    def toposort(self) -> None:
-        def visited_all_prev_nodes(node: Node, visited: Set[Node]) -> bool:
-            for input_name in node.inputs:
-                prev_node = self.get_prev_node(input_name)
-                if prev_node not in visited and prev_node:
-                    return False
-            return True
 
-        self.update_map()
 
-        queue: Deque[Node] = deque()
-        visited: Set[Node] = set()
-        for node in self._nodes:
-            if visited_all_prev_nodes(node, visited):
-                queue.append(node)
 
-        sorted_nodes: List[Node] = []
-        while queue:
-            node = queue.popleft()
-            if visited_all_prev_nodes(node, visited):
-                sorted_nodes.append(node)
-                visited.add(node)
-                for output_name in node.outputs:
-                    for next_node in self.get_next_nodes(output_name):
-                        if next_node not in queue \
-                                and next_node not in visited \
-                                and visited_all_prev_nodes(next_node, visited):
-                            queue.append(next_node)
 
-        if len(self._nodes) != len(sorted_nodes):
-            raise RuntimeError('Cycle detected in graph!')
-        else:
-            self._nodes = sorted_nodes
 
-    def remove_unused_nodes(self) -> None:
-        self.update_map()
 
-        # Initialize out_degree dict
-        out_degree: Dict[Node, int] = dict()
-        for node in self._nodes:
-            out_degree[node] = 0
-            next_nodes = []
-            for output_name in node.outputs:
-                if output_name in [output.name for output in self.outputs]:
-                    next_nodes.append(self._node_map[output_name])
-                next_nodes.extend(self.get_next_nodes(output_name))
-            out_degree[node] = len(set(next_nodes))
 
-        # remove unused operator nodes
-        removed: Set[Node] = set()
-        queue: Deque[Node] = deque([n for n in out_degree.keys() if out_degree[n] == 0])
-        while queue:
-            node = queue.popleft()
-            self._nodes.remove(node)
-            removed.add(node)
-            for input_name in node.inputs:
-                prev_node = self.get_prev_node(input_name)
-                if prev_node and prev_node not in queue and prev_node not in removed:
-                    out_degree[prev_node] -= 1
-                    if out_degree[prev_node] == 0:
-                        queue.append(prev_node)
 
-        # remove unused graph inputs and initializers
-        inputs = [inp for n in self._nodes for inp in n.inputs]
-        self._inputs = list(filter(lambda x: x.name in inputs, self._inputs))
-        self._initializers = list(filter(lambda x: x.name in inputs, self._initializers))
 
-        self.update_map()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

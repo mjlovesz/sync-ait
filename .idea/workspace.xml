@@ -7,7 +7,7 @@
     <list default="true" id="585904a7-242f-4baa-aa65-d04f3581d038" name="Changes" comment="cleancode: resolve residual problems">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/graph_refactor/interface/base_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/graph_refactor/interface/base_graph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/matcher.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/matcher.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/interface.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -125,7 +125,14 @@
       <option name="project" value="LOCAL" />
       <updated>1684223783894</updated>
     </task>
-    <option name="localTasksCounter" value="13" />
+    <task id="LOCAL-00013" summary="cleancode: resolve residual problems">
+      <created>1684225350088</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1684225350088</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
