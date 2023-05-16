@@ -217,6 +217,27 @@ sidebar.NodeSidebar = class {
         let input_select = this._addComboBox(`${node.name}_input_select`, node.inputs.map(i=> i.arguments[0].name))
         this.add_span()
         this._addButton('Add Input', input_select);
+        
+        this._addHeader('Extract helper');
+
+        let is_extract_start = this._host._view.modifier.getExtractStart() == this._modelNodeName
+        
+        let get_start_btn_text = () => is_extract_start ? 'Unset Extract Net Start' : 'Extract Net Start'
+        let buttonStartElement = this._addButton(get_start_btn_text(), null, () => {
+            is_extract_start = !is_extract_start
+            this._host._view.modifier.setExtractStart(is_extract_start ? this._modelNodeName: null)
+            buttonStartElement.innerText  = get_start_btn_text()
+        });
+        
+        let is_extract_end = this._host._view.modifier.getExtractEnd() == this._modelNodeName
+        
+        this.add_span()
+        let get_btn_text = () => is_extract_end ? 'Unset Extract Net End' : 'Extract Net End'
+        let buttonElement = this._addButton(get_btn_text(), null, () => {
+            is_extract_end = !is_extract_end
+            this._host._view.modifier.setExtractEnd(is_extract_end ? this._modelNodeName: null)
+            buttonElement.innerText  = get_btn_text()
+        });
     }
 
     add_separator(elment, className) {
@@ -286,7 +307,7 @@ sidebar.NodeSidebar = class {
     }
 
     // My code
-    _addButton(title, input_select) {
+    _addButton(title, input_select, click_callback) {
         const buttonElement = this._host.document.createElement('button');
         buttonElement.className = 'sidebar-view-button';
         if (title == "Enter") {buttonElement.className = "sidebar-view-button-bold"}
@@ -324,6 +345,10 @@ sidebar.NodeSidebar = class {
                 this._host._view.modifier.addModelInput(this._modelNodeName, input_select.options[input_select.selectedIndex].value);
             });   
         }
+        if (click_callback) {
+            buttonElement.addEventListener('click', click_callback);  
+        }
+        return buttonElement
     }
 
     _addComboBox(id, options) {
