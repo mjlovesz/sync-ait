@@ -100,7 +100,7 @@ def in_acc_lib(file, cursor):
     if not file:
         return False, False, ''
     for lib, v in KitConfig.acc_libs.items():
-        if lib in file or file.startswith(lib):
+        if lib in file:
             if not v:
                 cuda_en = False
                 add_ns = ''
@@ -310,7 +310,7 @@ class Parser:
         self.index = Index.create()  # TODO(dyh):若为单例模型，是否有加速作用
         # args: ['-Xclang', '-ast-dump', '-fsyntax-only', '-std=c++17', "-I/path/to/include"]
         # option: TranslationUnit.PARSE_PRECOMPILED_PREAMBLE, TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
-        includes = [f'-I{x}' for x in KitConfig.includes.values()] + ['--cuda-gpu-arch=sm_70']
+        includes = [f'-I{x}' for x in KitConfig.includes.values()]
         self.tu = self.index.parse(path,
                                    args=includes,
                                    options=TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)

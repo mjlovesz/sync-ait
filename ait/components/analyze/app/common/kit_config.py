@@ -81,6 +81,7 @@ class KitConfig:
 
     valid_report_type = ['csv', 'json']
     api_map = '../config/mxBase_API_MAP.xlsx'
+    # api_map = '../config/ACL_API_MAP.xlsx'
     except_api = ['', 'NAMESPACE_REF']
 
     # cuda_home = os.environ.get('CUDA_HOME', '/usr/local/cuda')
