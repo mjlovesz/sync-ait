@@ -32,6 +32,10 @@ class TestClass:
         """
         cls.__init__(TestClass)
 
+    @classmethod
+    def teardown_class(cls):
+        logging.info('\n ---class level teardown_class')
+
     @staticmethod
     def test_args_invalid_model_path(self):
         model_path = "xxx_invalid.om"
@@ -40,10 +44,6 @@ class TestClass:
         logging.info("run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret != 0
-
-    @classmethod
-    def teardown_class(cls):
-        logging.info('\n ---class level teardown_class')
 
     def test_args_invalid_device_id(self):
         invalid_device_ids = [-2, 100]
