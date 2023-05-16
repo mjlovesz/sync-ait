@@ -43,6 +43,7 @@ class OnnxModifier:
         self.initializer_name2module = []
         self.graph_output_names = []
         self.graph_input_names = []
+        self._cache_msg = ""
         self.reload()
 
     @classmethod
@@ -481,3 +482,8 @@ class OnnxModifier:
         input_name = inference_session.get_inputs()[0].name
         out = inference_session.run(output_names, {input_name: x})[0]
         logging.info(out.shape, out.dtype)
+
+    def cache_message(self, new_msg=""):
+        old_msg = self._cache_msg
+        self._cache_msg = new_msg
+        return old_msg

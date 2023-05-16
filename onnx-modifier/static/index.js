@@ -230,12 +230,17 @@ host.BrowserHost = class {
         resetButton.addEventListener('click', () => {
             // this._view._graph.resetGraph();
             // this._view._updateGraph();
-            if (this._ori_model_file !== this._activate_model_file && this._ori_model_file != null) {
-                this.openFile(this._ori_model_file)
-            } else {
-                this._view.modifier.resetGraph();
-            }
-            this._modify_info = []
+            this.confirm("Comfirm", "are you sure to reset? All modifications cannot be reverted").then((confirmed)=>{
+                if (!confirmed) {
+                    return
+                }
+                if (this._ori_model_file !== this._activate_model_file && this._ori_model_file != null) {
+                    this.openFile(this._ori_model_file)
+                } else {
+                    this._view.modifier.resetGraph();
+                }
+                this._modify_info = []
+            })
         })
 
         const downloadWithShapeInfCheckBox = this.document.getElementById('shapeInference');
@@ -472,9 +477,11 @@ host.BrowserHost = class {
                     swal("Nothing happens!", text, "info");
                 })
             } else if (response.ok) {
-                this._modify_info.push({
-                    path, data_body
-                })
+                if (path == "/onnxsim" || path == "/load-json" || path == "/auto-optimizer" ) {
+                    this._modify_info.push({
+                        path, data_body
+                    })
+                }
                 return response.blob();
             } else if (response.status == 599) {
                 response.text().then(text => {
@@ -491,7 +498,15 @@ host.BrowserHost = class {
             let file = new File([blob], this.upload_filename);
             file.filepath = this.upload_filepath
             return this.openFile(file)
-        });
+        }).then(()=>{
+            fetch("/get_output_message", {body:"{}"}).then((response) => {
+                response.text().then((text) => {
+                    if (text) {
+                        swal("messages", text, "info");
+                    }
+                })
+            })
+        })
     }
 
     openFile(file) {

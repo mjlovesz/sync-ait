@@ -65,7 +65,7 @@ class PythonIPC {
             data_array = data_array.slice(-6)
 
             if (data_array[0] == "" && data_array[1] == "" && data_array[2] == ">>" && data_array[4] == "" && data_array[5] == "") {
-                let data = data_array[3]
+                let data = decodeURIComponent(data_array[3])
                 this.msg_event.emit('data', data)
             }
         })
@@ -86,7 +86,7 @@ class PythonIPC {
             let send_obj_str = JSON.stringify(send_obj_data, null, 1)
 
             console.debug("send", `\n${send_obj_str}\n`)
-            this.process.stdin.write(`${send_obj_str}\n`)
+            this.process.stdin.write(`${encodeURI(send_obj_str)}\n`)
             this.process.stdin.write(`\n\n`)
         })
     }

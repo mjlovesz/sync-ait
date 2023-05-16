@@ -17,6 +17,7 @@ import logging
 import os
 import sys
 import json
+from urllib import parse
 
 import onnx
 from onnx_modifier import OnnxModifier
@@ -49,7 +50,7 @@ class RpcServer:
     def send_message(msg, status, file):
         return_str = json.dumps(dict(msg=msg, status=status, file=file))
         # 格式固定，\n\n>>\n msg \n\n
-        sys.stdout.write("\n\n>>\n" + return_str + "\n\n")
+        sys.stdout.write("\n\n>>\n" + parse.quote(return_str) + "\n\n")
         sys.stdout.flush()
         return return_str
 
@@ -104,7 +105,7 @@ class RpcServer:
         msg_str = self.msg_cache
         self.msg_cache = ""
         self.msg_end_flag = 2
-        return msg_str
+        return parse.unquote(msg_str)
 
     def _deal_msg(self, msg_str):
         msg_dict = json.loads(msg_str)
@@ -185,11 +186,11 @@ def optimizer_model(modify_info):
         save_path,
         optimized_path,
     ]
-    out_res = subprocess.call(cmd, shell=False)
-    if out_res != 0:
+    out_res = subprocess.run(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    if out_res.returncode != 0:
         raise RuntimeError("auto_optimizer run error: " +
                            out_res + " cmd: " + "".join(cmd))
-    return optimized_path
+    return optimized_path, out_res.stdout.decode()
 
 
 def json_modify_model(modify_infos):
@@ -204,7 +205,7 @@ def json_modify_model(modify_infos):
             if os.path.exists(save_path):
                 OnnxModifier.from_model_path(save_path, model_name)
         elif path == '/auto-optimizer':
-            optimized_path = optimizer_model(modify_info)
+            optimized_path, _ = optimizer_model(modify_info)
             if os.path.exists(optimized_path):
                 OnnxModifier.from_model_path(optimized_path, model_name)
                 save_path = optimized_path
@@ -262,9 +263,11 @@ def register_interface(app, request, send_file):
 
         OnnxModifier.ONNX_MODIFIER.reload()   # allow downloading for multiple times
         try:
-            save_path = optimizer_model(modify_info)
+            save_path, out_message = optimizer_model(modify_info)
         except ServerError as error:
             return error.status, error.msg
+        
+        OnnxModifier.ONNX_MODIFIER.cache_message(out_message)
 
         if not os.path.exists(save_path):
             return "auto-optimizer 没有匹配到的知识库", 204
@@ -275,7 +278,7 @@ def register_interface(app, request, send_file):
             return 'OK', 200
 
     @app.route('/load-json', methods=['POST'])
-    def load_json_and_modify__model():
+    def load_json_and_modify_model():
         modify_infos = request.get_json()
         OnnxModifier.ONNX_MODIFIER.reload()
 
@@ -285,6 +288,10 @@ def register_interface(app, request, send_file):
             return error.status, error.msg
 
         return send_file(save_path)
+
+    @app.route('/get_output_message', methods=['POST'])
+    def get_out_message():
+        return OnnxModifier.ONNX_MODIFIER.cache_message(), 200
 
 
 if __name__ == '__main__':
