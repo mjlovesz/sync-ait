@@ -58,6 +58,96 @@ class BaseGraph(ABC):
 
         self.update_map()
 
+    @property
+    def inputs(self) -> List[PlaceHolder]:
+        return self._inputs
+
+    @property
+    def outputs(self) -> List[PlaceHolder]:
+        return self._outputs
+
+    @property
+    def nodes(self) -> List[Node]:
+        return self._nodes
+
+    @property
+    def initializers(self) -> List[Initializer]:
+        return self._initializers
+
+    @property
+    def value_infos(self) -> List[PlaceHolder]:
+        return self._value_infos
+
+    @property
+    def node_map(self):
+        return self._node_map
+
+    @property
+    def prev_map(self):
+        return self._prev_map
+
+    @property
+    def next_map(self):
+        return self._next_map
+
+    @classmethod
+    @abstractmethod
+    def parse(cls, model) -> 'BaseGraph':
+        raise NotImplementedError()
+
+    @abstractmethod
+    def add_input(self, name: str, dtype: np.dtype, shape: Sequence[Union[int, str]]) -> PlaceHolder:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def add_output(self, name: str, dtype: np.dtype, shape: Sequence[Union[int, str]]) -> PlaceHolder:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def add_initializer(self, name: str, value: np.ndarray) -> Initializer:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def simplify(self, **kwargs) -> 'BaseGraph':
+        raise NotImplementedError()
+
+    @abstractmethod
+    def infer_shape(self) -> None:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def add_node(
+        self,
+        name: str,
+        op_type: str,
+        inputs: Optional[List[str]] = None,
+        outputs: Optional[List[str]] = None,
+        attrs: Optional[Dict[str, object]] = None,
+        domain: str = ''
+    ) -> Node:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def save(self, path: str) -> None:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def extract(
+        self,
+        new_model_save_path: str,
+        input_name_list: List[str],
+        output_name_list: List[str],
+        enable_model_check: bool = True
+    ) -> 'BaseGraph':
+        raise NotImplementedError()
+
+    def _add_input(self, graph_input: PlaceHolder) -> PlaceHolder:
+        if self._node_map.get(graph_input.name, None):
+            raise ValueError("node name '{}' already exists!".format(graph_input.name))
+        self._node_map[graph_input.name] = graph_input
+        self._inputs.append(graph_input)
+        return graph_input
+
     def update_map(self) -> None:
         # clear map first
         self._node_map.clear()
@@ -98,42 +188,6 @@ class BaseGraph(ABC):
                     self._next_map[i] = [n]
                 else:
                     self._next_map[i].append(n)
-
-    @classmethod
-    @abstractmethod
-    def parse(cls, model) -> 'BaseGraph':
-        raise NotImplementedError()
-
-    @abstractmethod
-    def add_input(self, name: str, dtype: np.dtype, shape: Sequence[Union[int, str]]) -> PlaceHolder:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def add_output(self, name: str, dtype: np.dtype, shape: Sequence[Union[int, str]]) -> PlaceHolder:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def add_initializer(self, name: str, value: np.ndarray) -> Initializer:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def add_node(
-        self,
-        name: str,
-        op_type: str,
-        inputs: Optional[List[str]] = None,
-        outputs: Optional[List[str]] = None,
-        attrs: Optional[Dict[str, object]] = None,
-        domain: str = ''
-    ) -> Node:
-        raise NotImplementedError()
-
-    def _add_input(self, graph_input: PlaceHolder) -> PlaceHolder:
-        if self._node_map.get(graph_input.name, None):
-            raise ValueError("node name '{}' already exists!".format(graph_input.name))
-        self._node_map[graph_input.name] = graph_input
-        self._inputs.append(graph_input)
-        return graph_input
 
     def _add_output(self, graph_output: PlaceHolder) -> PlaceHolder:
         if self._node_map.get(graph_output.name, None):
@@ -255,13 +309,13 @@ class BaseGraph(ABC):
         prev_nodes_info: List[str],
         next_nodes_info: List[str]
     ) -> None:
-        """Insert a node with multiple inputs and outputs, 
+        """Insert a node with multiple inputs and outputs,
         connect the input and output of insert_node automatically.
 
         Example:
             g.connect_node(
                 Split_0,
-                ['Add_0:0', 'split_ini'], 
+                ['Add_0:0', 'split_ini'],
                 ['Transpose_0', 'Transpose_1', 'Transpose_2']
             )
         """
@@ -320,12 +374,12 @@ class BaseGraph(ABC):
 
         Example:
             prev_info_list = [
-                {'prev_node_name': 'Add_0', 'prev_node_output_idx': 0}, 
+                {'prev_node_name': 'Add_0', 'prev_node_output_idx': 0},
                 {'prev_node_name': 'split_ini', 'prev_node_output_idx': 0}
                 ]
             next_info_list = [
-                {'next_node_name': 'Transpose_0', 'next_node_input_idx': 0, 'insert_node_output_idx': 0}, 
-                {'next_node_name': 'Transpose_1', 'next_node_input_idx': 0, 'insert_node_output_idx': 1}, 
+                {'next_node_name': 'Transpose_0', 'next_node_input_idx': 0, 'insert_node_output_idx': 0},
+                {'next_node_name': 'Transpose_1', 'next_node_input_idx': 0, 'insert_node_output_idx': 1},
                 {'next_node_name': 'Transpose_2', 'next_node_input_idx': 0, 'insert_node_output_idx': 2}
                 ]
         """
@@ -538,26 +592,6 @@ class BaseGraph(ABC):
         else:
             raise RuntimeError("Unsupported!")
 
-    @property
-    def inputs(self) -> List[PlaceHolder]:
-        return self._inputs
-
-    @property
-    def outputs(self) -> List[PlaceHolder]:
-        return self._outputs
-
-    @property
-    def nodes(self) -> List[Node]:
-        return self._nodes
-
-    @property
-    def initializers(self) -> List[Initializer]:
-        return self._initializers
-
-    @property
-    def value_infos(self) -> List[PlaceHolder]:
-        return self._value_infos
-
     def get_prev_node(self, input_name: str) -> Optional[Node]:
         return self._prev_map.get(input_name, None)
 
@@ -632,37 +666,3 @@ class BaseGraph(ABC):
         self._initializers = list(filter(lambda x: x.name in inputs, self._initializers))
 
         self.update_map()
-
-    @abstractmethod
-    def save(self, path: str) -> None:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def extract(
-        self,
-        new_model_save_path: str,
-        input_name_list: List[str],
-        output_name_list: List[str],
-        enable_model_check: bool = True
-    ) -> 'BaseGraph':
-        raise NotImplementedError()
-
-    @property
-    def node_map(self):
-        return self._node_map
-
-    @abstractmethod
-    def simplify(self, **kwargs) -> 'BaseGraph':
-        raise NotImplementedError()
-
-    @property
-    def prev_map(self):
-        return self._prev_map
-
-    @abstractmethod
-    def infer_shape(self) -> None:
-        raise NotImplementedError()
-
-    @property
-    def next_map(self):
-        return self._next_map
