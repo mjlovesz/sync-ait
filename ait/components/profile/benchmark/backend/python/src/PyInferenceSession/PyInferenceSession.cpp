@@ -426,6 +426,7 @@ TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTe
     dstTensor.ToDevice(deviceId_);
     return dstTensor;
 }
+}
 
 std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<Base::SessionOptions> options)
 {
