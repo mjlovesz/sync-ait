@@ -2,11 +2,15 @@
 
 CURRENT_DIR=$(dirname $(readlink -f $0))
 arg_force_reinstall=
+only_debug=
+only_profile=
 arg_help=0
 
 while [[ "$#" -gt 0 ]]; do case $1 in
-  --force-reinstall) arg_force_reinstall=--force-reinstall;;
-  -f) arg_force_reinstall=--force-reinstall;;
+  --force-reinstall) arg_force_reinstall=--force-reinstall; shift;;
+  -f) arg_force_reinstall=--force-reinstall; shift;;
+  --debug) only_debug=true; shift;;
+  --profile) only_profile=true; shift;;
   -h|--help) arg_help=1;;
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
@@ -31,6 +35,24 @@ fi
 if [ ! "$(command -v pip)" ]; then
   echo "pip 没有安装" >&2
   exit 1;
+fi
+
+if [ ! -z $only_debug ]
+then
+  pip install ${CURRENT_DIR} \
+  ${CURRENT_DIR}/components/debug/compare \
+  ${CURRENT_DIR}/components/debug/surgeon \
+  ${arg_force_reinstall}
+  exit;
+fi
+
+if [ ! -z $only_profile ]
+then
+  pip install ${CURRENT_DIR} \
+  ${CURRENT_DIR}/components/profile/benchmark/backend \
+  ${CURRENT_DIR}/components/profile/benchmark \
+  ${arg_force_reinstall}
+  exit;
 fi
 
 pip install ${CURRENT_DIR} \
