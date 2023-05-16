@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="585904a7-242f-4baa-aa65-d04f3581d038" name="Changes" comment="cleancode: resolve residual problems">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/graph_refactor/interface/base_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/graph_refactor/interface/base_graph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/interface.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/profile/benchmark/ais_bench/infer/interface.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2PrE7vWNT3kJF1RPnBH860aOxKn" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "last_opened_file_path": "D:/AscendProjects/ait"
+  }
+}]]></component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task id="LOCAL-00001" summary="cleancode: create new branch for cleancode">
+      <created>1684203017987</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1684203017987</updated>
+    </task>
+    <task id="LOCAL-00002" summary="cleancode: create new branch for cleancode">
+      <created>1684203135050</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1684203135050</updated>
+    </task>
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="585904a7-242f-4baa-aa65-d04f3581d038" name="Changes" comment="cleancode: create new branch for cleancode" />
+      <created>1684206636776</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1684206636776</updated>
+    </task>
+    <task id="LOCAL-00003" summary="cleancode: resolve residual problems">
+      <created>1684206802056</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1684206802056</updated>
+    </task>
+    <task id="LOCAL-00004" summary="cleancode: resolve residual copyrights head problems">
+      <created>1684208143309</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1684208143309</updated>
+    </task>
+    <task id="LOCAL-00005" summary="cleancode: resolve residual redundant spaces">
+      <created>1684208351027</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1684208351027</updated>
+    </task>
+    <task id="LOCAL-00006" summary="cleancode: resolve residual change orders">
+      <created>1684208747726</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1684208747726</updated>
+    </task>
+    <task id="LOCAL-00007" summary="cleancode: resolve residual change names">
+      <created>1684209167665</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1684209167665</updated>
+    </task>
+    <task id="LOCAL-00008" summary="cleancode: resolve residual change too-long lines">
+      <created>1684209317918</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1684209317918</updated>
+    </task>
+    <task id="LOCAL-00009" summary="cleancode: resolve residual change too-long lines">
+      <created>1684217915665</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1684217915665</updated>
+    </task>
+    <task id="LOCAL-00010" summary="cleancode: resolve residual problems">
+      <created>1684220482413</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1684220482413</updated>
+    </task>
+    <task id="LOCAL-00011" summary="cleancode: resolve residual problems">
+      <created>1684223128339</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1684223128339</updated>
+    </task>
+    <task id="LOCAL-00012" summary="cleancode: resolve residual problems">
+      <created>1684223783894</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1684223783894</updated>
+    </task>
+    <task id="LOCAL-00013" summary="cleancode: resolve residual problems">
+      <created>1684225350088</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1684225350088</updated>
+    </task>
+    <option name="localTasksCounter" value="14" />
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="cleancode: create new branch for cleancode" />
+    <MESSAGE value="cleancode: resolve residual copyrights head problems" />
+    <MESSAGE value="cleancode: resolve residual redundant spaces" />
+    <MESSAGE value="cleancode: resolve residual change orders" />
+    <MESSAGE value="cleancode: resolve residual change names" />
+    <MESSAGE value="cleancode: resolve residual change too-long lines" />
+    <MESSAGE value="cleancode: resolve residual problems" />
+    <option name="LAST_COMMIT_MESSAGE" value="cleancode: resolve residual problems" />
+  </component>
+</project>

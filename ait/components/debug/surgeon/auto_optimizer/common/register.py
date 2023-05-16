@@ -62,6 +62,8 @@ class Register:
                 continue
 
             Register.import_module(module)
+        return True
+
 
     @staticmethod
     def import_module(module):
