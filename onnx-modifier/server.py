@@ -187,10 +187,39 @@ def optimizer_model(modify_info):
     ]
     out_res = subprocess.call(cmd, shell=False)
     if out_res != 0:
-        raise RuntimeError("auto_optimizer run error: " +
+        raise RuntimeError("auto_optimizer optimize run error: " +
                            out_res + " cmd: " + "".join(cmd))
     return optimized_path
 
+def extract_model(modify_info, start_node_name, end_node_name):
+    try:
+        import auto_optimizer
+    except ImportError as ex:
+        raise ServerError("请安装 auto-optimizer", 599) from ex
+
+    import subprocess
+    OnnxModifier.ONNX_MODIFIER.modify(modify_info)
+    save_path = OnnxModifier.ONNX_MODIFIER.check_and_save_model(
+        save_dir="modified_onnx")
+
+    # convert model
+    extract_path = f"{save_path}.extract.onnx"
+    python_path = sys.executable
+    cmd = [
+        python_path,
+        "-m",
+        "auto_optimizer",
+        "extract",
+        save_path,
+        extract_path,
+        start_node_name,
+        end_node_name
+    ]
+    out_res = subprocess.call(cmd, shell=False)
+    if out_res != 0:
+        raise RuntimeError("auto_optimizer extract run error: " +
+                           out_res + " cmd: " + "".join(cmd))
+    return extract_path
 
 def json_modify_model(modify_infos):
     model_name = OnnxModifier.ONNX_MODIFIER.model_name
@@ -273,6 +302,25 @@ def register_interface(app, request, send_file):
             return send_file(save_path)
         else:
             return 'OK', 200
+    
+    
+    @app.route('/extract', methods=['POST'])
+    def modify_and_extract_model():
+        modify_info = request.get_json()
+
+        OnnxModifier.ONNX_MODIFIER.reload()   # allow downloading for multiple times
+        try:
+            save_path = extract_model(modify_info, modify_info.get("extract_start"), modify_info.get("extract_end"))
+        except ServerError as error:
+            return error.status, error.msg
+
+        if not os.path.exists(save_path):
+            return "未正常生成子网", 204
+
+        if modify_info.get("return_modified_file"):
+            return send_file(save_path)
+        else:
+            return 'OK', 200
 
     @app.route('/load-json', methods=['POST'])
     def load_json_and_modify__model():
@@ -285,6 +333,9 @@ def register_interface(app, request, send_file):
             return error.status, error.msg
 
         return send_file(save_path)
+    
+
+
 
 
 if __name__ == '__main__':
