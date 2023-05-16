@@ -70,7 +70,7 @@ def create_node(node_type):
         return OnnxPlaceHolder('test_ph', np.dtype('float32'), [1, 3, 224, 224])
     if node_type == 'OnnxInitializer':
         return OnnxInitializer('test_ini', np.array([[1, 2, 3, 4, 5]], dtype='int32'))
-    return None
+    raise NotImplementedError(f'Unsupported node_type : {node_type}')
 
 
 class TestNodeCommon(unittest.TestCase):

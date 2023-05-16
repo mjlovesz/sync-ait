@@ -216,7 +216,8 @@ class TestKnowledgeGatherToSplit(unittest.TestCase, KnowledgeTestHelper):
             ishape_s = 'x'.join(str(x) for x in ishape)
             axis_s = 1 if len(set(g['axis'] for g in gathers)) == 1 else 0
             indices_s = '_'.join(
-                str(idx) if isinstance((idx := g['indices']), int)
+                str(idx)
+                if isinstance((idx := g['indices']), int)
                 else 'x'.join(str(x) for x in idx)
                 for g in gathers
             )
