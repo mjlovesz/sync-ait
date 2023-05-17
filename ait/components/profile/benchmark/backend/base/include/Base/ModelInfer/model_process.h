@@ -1,18 +1,18 @@
-/**
-* Copyright 2020 Huawei Technologies Co., Ltd
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-
-* http://www.apache.org/licenses/LICENSE-2.0
-
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+/*
+ * Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #ifndef _MODEL_PROCESS_H_
 #define _MODEL_PROCESS_H_
@@ -21,6 +21,22 @@
 #include <string>
 #include "Base/Tensor/TensorBase/TensorBase.h"
 #include "Base/ModelInfer/DynamicAippConfig.h"
+
+enum NORMAL_DATA_TYPE {
+    TYPE_FLOAT,
+    TYPE_ACLFLOAT16,
+    TYPE_INT8_T,
+    TYPE_INT,
+    TYPE_UINT8_T,
+    NOT_USED,
+    TYPE_INT16_T,
+    TYPE_UINT16_T,
+    TYPE_UINT32_T,
+    TYPE_INT64_T,
+    TYPE_UINT64_T,
+    TYPE_DOUBLE,
+    TYPE_BOOL
+};
 
 /**
  * ModelProcess
@@ -113,7 +129,7 @@ public:
     /**
     * @brief set dynamic image size
     */
-    Result SetDynamicHW(std::pair<uint64_t , uint64_t > dynamicPair);
+    Result SetDynamicHW(std::pair<uint64_t, uint64_t > dynamicPair);
 
     /**
     * @brief check model the amount of dynamic aipp input
@@ -267,5 +283,25 @@ private:
     size_t numOutputs_;
     size_t g_dymindex;
     std::map<std::string, aclAippInputFormat> str2aclAippInputFormat;
+    void model_description(aclError ret, size_t& numInputs, size_t& numOutputs, aclmdlIODims& dimsInput, aclmdlIODims& dimsOutput);
+    Result check_ret(aclError ret, size_t buffer_size_zero);
+    Result check_create_buffer(aclDataBuffer* inputData, void* inBufferDev);
+    Result check_add_buffer(aclError ret, void* inBufferDev, aclDataBuffer* inputData);
+    void* get_out_data(aclDataType datatype, void* outHostData);
+    void print_aclFloat16_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    void print_float_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    void print_int8_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    void print_int_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    void print_uint8_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    void print_int16_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    void print_uint16_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    void print_uint32_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    void print_int64_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    void print_uint64_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    void print_double_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    void print_bool_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    void print_data_log(aclDataType datatype, size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    Result Free_Host_Try(aclError ret, void*& outHostData);
+    void print_error_log(aclError ret);
 };
 #endif
