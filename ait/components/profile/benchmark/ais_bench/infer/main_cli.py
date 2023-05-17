@@ -47,7 +47,9 @@ from ais_bench.infer.options import (
 )
 
 
-@click.command(name="benchmark", short_help = "Inference tool to get performance data including latency and throughput")
+@click.command(name="benchmark", 
+               short_help = "benchmark tool to get performance data including latency and throughput",
+               no_args_is_help=True)
 @opt_model
 @opt_input_path
 @opt_output

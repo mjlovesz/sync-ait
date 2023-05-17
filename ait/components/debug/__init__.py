@@ -20,4 +20,6 @@ for entry_point in pkg_resources.iter_entry_points('debug_sub_task'):
     debug_sub_task[entry_point.name] = entry_point.load()
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-debug_cli_group = click.Group(context_settings=CONTEXT_SETTINGS, name="debug", commands=debug_sub_task)
+debug_cli_group = click.Group(context_settings=CONTEXT_SETTINGS, name="debug", 
+                              commands=debug_sub_task, no_args_is_help=True,
+                              short_help="Debug a wide variety of model issues")

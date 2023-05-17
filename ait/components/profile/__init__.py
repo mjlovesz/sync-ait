@@ -20,7 +20,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 @click.group(name="profile", context_settings=CONTEXT_SETTINGS, invoke_without_command=True,
-             no_args_is_help=True)
+             no_args_is_help=True, short_help="Profile tools to get .om model performance data")
 def profile_cli_group():
     pass
 

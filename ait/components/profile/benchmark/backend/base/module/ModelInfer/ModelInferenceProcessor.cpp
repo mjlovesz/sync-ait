@@ -423,7 +423,7 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
     std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors)
 {
     APP_ERROR ret = SetInputsData(inputs);
-    if (ret != APP_ERR_OK){
+    if (ret != APP_ERR_OK) {
         ERROR_LOG("Set InputsData failed ret:%d", ret);
         return ret;
     }
@@ -437,7 +437,7 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
             printf("\n");
     }
     }
-    for (int i = 0; i < options_->loop; i++){
+    for (int i = 0; i < options_->loop; i++) {
         ret = Execute();
         if (ret != APP_ERR_OK){
             ERROR_LOG("Execute Infer failed ret:%d", ret);
@@ -448,11 +448,11 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
             fflush(stdout);
         }
     }
-    if (options_->loop > 1){
+    if (options_->loop > 1) {
         printf("\n");
     }
     ret = GetOutputs(outputNames, outputTensors);
-    if (ret != APP_ERR_OK){
+    if (ret != APP_ERR_OK) {
         ERROR_LOG("Get OutTensors failed ret:%d", ret);
         return ret;
     }
@@ -617,19 +617,15 @@ uint64_t ModelInferenceProcessor::GetMaxDymBatchsize()
     return maxBatchSize;
 }
 
-bool ModelInferenceProcessor::GetDymAIPPInputExsity()
+int ModelInferenceProcessor::GetDymAIPPInputExsity()
 {
-    if (processModel->CheckDymAIPPInputExsity() == SUCCESS) {
-        return true;
-    } else {
-        return false;
-    }
+    return processModel->CheckDymAIPPInputExsity();
 }
 
 APP_ERROR ModelInferenceProcessor::CheckDymAIPPInputExsity()
 {
-    Result ret = processModel->CheckDymAIPPInputExsity();
-    if (ret != SUCCESS) {
+    int ret = processModel->CheckDymAIPPInputExsity();
+    if (ret != 1) {
         return APP_ERR_ACL_FAILURE;
     }
     dyAippCfg->ActivateModel();
