@@ -155,7 +155,8 @@ std::string Utils::modelName(string& s)
     if (position1 == s.npos) {
         position1 = 0;
     }
-    else {position1 = position1 + 1;
+    else {
+        position1 = position1 + 1;
     }
     position2 = s.find_last_of(".");
     std::string modelName = s.substr(position1, position2 - position1);
@@ -243,7 +244,7 @@ double Utils::InferenceTimeAverageWithoutFirst(double* x, int len)
 
 void Utils::ProfilerJson(bool isprof, map<char, string>& params)
 {
-    mode_t mod = 0775;
+    mode_t mod = 0750;
     if (isprof) {
         std::string out_path = params['o'].c_str();
         std::string out_profiler_path = out_path + "/profiler";

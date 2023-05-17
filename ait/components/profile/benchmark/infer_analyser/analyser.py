@@ -48,15 +48,15 @@ def analyse_topk_times(args):
     k = 5
     topk_list = get_topk_list(k, times)
     logging.info("k Maximum with indices : ", str(topk_list))
-    logging.info("infer count:{len(times)} mean:{np.mean(times)} max:{np.max(times)} min:{np.min(times)}")
+    logging.info(f"infer count:{len(times)} mean:{np.mean(times)} max:{np.max(times)} min:{np.min(times)}")
     if np.min(times) != 0:
-        logging.info("max-min  rate:{(np.max(times) - np.min(times)) * 100.0 / np.min(times)}% ")
+        logging.info(f"max-min  rate:{(np.max(times) - np.min(times)) * 100.0 / np.min(times)}% ")
     if np.mean(times) != 0:
-        logging.info("max-mean rate:{(np.max(times) - np.mean(times)) * 100.0 / np.mean(times)}%")
+        logging.info(f"max-mean rate:{(np.max(times) - np.mean(times)) * 100.0 / np.mean(times)}%")
     topk_index = [ i[0] for i in topk_list ]
     logging.info(topk_index)
     if args.output is not None:
-        with open("{args.output}/topk_index.json", 0640) as f:
+        with open(os.path.join(args.output, "topk_index.json"), 0750) as f:
             f.write(json.dumps(topk_index))
 
 
@@ -77,5 +77,5 @@ if __name__ == '__main__':
     elif input_args.mode == "plog":
         analyse_plog(input_args)
     else:
-        logging.info("error mode:{input_args.mode}")
+        logging.info(f"error mode:{input_args.mode}")
         sys.exit(-1)
