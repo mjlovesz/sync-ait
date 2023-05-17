@@ -269,7 +269,7 @@ void Utils::ProfilerJson(bool isprof, map<char, string>& params)
 
 void Utils::DumpJson(bool isdump, map<char, string>& params)
 {
-    mode_t mod = 0775;
+    mode_t mod = 0750;
     if (isdump) {
         std::string modelPath = params['m'].c_str();
         std::string modelName = Utils::modelName(modelPath);
