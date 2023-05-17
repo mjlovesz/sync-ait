@@ -1,0 +1,46 @@
+# Copyright 2023 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+from flaskwebgui import FlaskUI
+from app import app
+
+FlaskUI(app, maximized=True, idle_interval=3).run()
+
+'''
+This script is used for generating excutable files. 
+The following are some notes about How I worked for it.
+
+1. How to make flaskwebgui work as expected:
+    a. install flaskwebgui: `pip install flaskwebgui`
+        - flaskwebgui github repo: https://github.com/ClimenteA/flaskwebgui
+    b. add some scripts to keep server running while gui is running
+        - see here: https://github.com/ClimenteA/flaskwebgui#install
+        - I added the code in the static/index.js (around line 355)
+    c. Then run: `python app_desktop.py`, the web browser will be automatically lauched for onnx-modifier
+
+2. How to generate excutable files:
+    a. For Windows:
+        - Run `pyinstaller -F -n onnx-modifier -i ./static/favicon.png \
+            --add-data "templates;templates" --add-data "static;static" app_desktop.py`
+            - see here: https://stackoverflow.com/a/48976223/10096987
+        - Then we can find the our target `.exe` file in the ./dist folder.
+            - The icon will not show until we change it in another directory due to Windows Explorer caching.
+                - see here: https://stackoverflow.com/a/35783199/10096987
+                
+    b. For Ubuntu (not done):
+        - Run `pyinstaller -F -n onnx-modifier -i ./static/favicon.png \
+            --add-data "templates:templates" --add-data "static:static" app_desktop.py`
+            - However, I get a file with size of 400+MB
+
+'''
