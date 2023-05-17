@@ -22,7 +22,7 @@ from test_common import TestCommonClass
 
 
 class TestClass:
-    def __init__(self):
+    def init(self):
         self.model_name = "resnet50"
     
     @classmethod
@@ -30,7 +30,7 @@ class TestClass:
         """
         class level setup_class
         """
-        cls.__init__(TestClass)
+        cls.init(TestClass)
 
     @classmethod
     def teardown_class(cls):
