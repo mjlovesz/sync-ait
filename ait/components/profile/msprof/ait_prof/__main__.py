@@ -139,9 +139,9 @@ def get_args():
         choices=["on", "off"],
         help="Control aicpu performance data collection switch"
     )
-    args = parser.parse_args()
+    args_ret = parser.parse_args()
 
-    return args
+    return args_ret
 
 
 if __name__ == "__main__":
