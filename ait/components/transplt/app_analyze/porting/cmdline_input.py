@@ -48,7 +48,7 @@ class CommandLineInput(IInput):
                              format(KitConfig.PORTING_CONTENT,
                                     "Cannot access the file "
                                     "or directory: %s" % folder))
-        elif Path(folder).is_dir() and not os.access(folder, os.X_OK):
+        elif not os.access(folder, os.X_OK):
             raise ValueError("{} ait transplt: error: {}".
                              format(KitConfig.PORTING_CONTENT,
                                     "Cannot access the "
@@ -63,7 +63,7 @@ class CommandLineInput(IInput):
         """解析来自命令行的用户输入"""
         self._get_source_directories()
         self._get_construct_tool()
-        self._get_debug_switch()
+        self._set_debug_switch()
         self._get_output_type()
         self.set_scanner_type()
 
@@ -72,7 +72,7 @@ class CommandLineInput(IInput):
             raise ValueError('ait transplt: error: '
                              'the following arguments are '
                              'required: s/--source')
-        if self.args.source:
+        else:
             for folder in self.args.source.split(','):
                 folder = folder.strip()
                 folder.replace('\\', '/')
@@ -101,7 +101,7 @@ class CommandLineInput(IInput):
                                                       VALID_CONSTRUCT_TOOLS)))
         self.construct_tool = self.args.tools
 
-    def _get_debug_switch(self):
+    def _set_debug_switch(self):
         """动态修改日志级别"""
         self.debug_switch = self.args.log_level
 
