@@ -42,6 +42,7 @@ SYS_PATH = get_sys_path()
 SCANNED_FILES = list()
 RESULTS = list()
 MACRO_MAP = dict()
+TYPEDEF_MAP = dict()
 # set the config
 if not Config.loaded:
     # 或指定目录：Config.set_library_path("/usr/lib/x86_64-linux-gnu")
@@ -112,6 +113,7 @@ def in_acc_lib(file, cursor):
             else:
                 cuda_en = cuda_enabled(file, v[1])
                 add_ns = add_namespace(cursor, v[0])
+                cursor.lib = v[3]
             return True, cuda_en, add_ns
     return False, False, ''
 
@@ -176,6 +178,20 @@ def macro_map(cursor):
             MACRO_MAP[tk[1].spelling] = tk[0].spelling
 
 
+def typedef_map(cursor, file):
+    """过滤并保存typedef到字典中，主要用于标识符重命名场景。
+
+    typedef Rect_<int> Rect2i; typedef Rect2i Rect;
+    c.type.get_canonical(): cv::Rect_<int>
+    c.type.get_typedef_name(): Rect2i
+    """
+    if not file or not in_acc_lib(file, cursor)[0]:
+        return
+    if cursor.kind == CursorKind.TYPEDEF_DECL:
+        TYPEDEF_MAP[cursor.type.get_canonical().spelling] = cursor.type.get_typedef_name()
+    return
+
+
 def actual_arg(cursor):
     """获取调用时传递的实参，忽略隐式类型转换/实例化。Cursor.kind应为CALL_EXPR。
     """
@@ -217,8 +233,10 @@ def parse_args(node):
             ref_end = -1
             # 隐式调用（通常为构造函数调用）子节点均为参数，显式(构造函数)调用子节点包含命名空间+（类型）引用+参数。
             children = get_children(node)
-            for i, child in enumerate(children):
-                if child.kind == CursorKind.TYPE_REF:
+            for i, ci in enumerate(children):
+                if ci.kind not in [CursorKind.NAMESPACE_REF, CursorKind.TEMPLATE_REF, CursorKind.TYPE_REF]:
+                    break
+                elif ci.kind == CursorKind.TYPE_REF:
                     ref_end = i
                     break
             arguments = children[ref_end + 1:]
@@ -252,6 +270,7 @@ def parse_info(node, cwd=None):
             file = os.path.normpath(node.location.file.name)
 
     macro_map(node)
+    typedef_map(node, file)
     # 如果对于系统库直接返回None，可能会导致部分类型无法解析，但是解析系统库会导致性能下降。
     usr_code = is_usr_code(file)
 
@@ -272,6 +291,7 @@ def parse_info(node, cwd=None):
                 'CUDAEnable': cuda_en,
                 'Location': loc,
                 'Context(形参 | 实参 | 来源代码 | 来源位置)': args,
+                'AccLib': get_attr(node, 'lib'),
             }
             RESULTS.append(item)
 
@@ -315,10 +335,11 @@ class Parser:
                                    args=includes,
                                    options=TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
 
-    def parse(self, log=False):
+    def parse(self):
         global RESULTS, SCANNED_FILES, MACRO_MAP
         RESULTS.clear()
         MACRO_MAP.clear()
+        TYPEDEF_MAP.clear()
 
         for d in self.tu.diagnostics:
             logger.warning(f'Code diagnose：{get_diag_info(d)}')
@@ -335,11 +356,10 @@ class Parser:
             os.makedirs('temp/', exist_ok=True)
             IOUtil.json_safe_dump(info, f'temp/{dump}.json')
             logger.debug(f'Ast saved in：temp/{dump}.json')
-        if log:
-            logger.info(RESULTS)
+
         return RESULTS
 
 
 if __name__ == '__main__':
     p = Parser('../examples/classify.cpp')
-    p.parse(log=True)
+    p.parse()
