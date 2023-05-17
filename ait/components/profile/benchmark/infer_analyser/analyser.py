@@ -15,6 +15,7 @@
 import os
 import sys
 import logging
+import stat
 import json
 import argparse
 import numpy as np
@@ -55,10 +56,12 @@ def analyse_topk_times(args):
         logging.info(f"max-mean rate:{(np.max(times) - np.mean(times)) * 100.0 / np.mean(times)}%")
     topk_index = [ i[0] for i in topk_list ]
     logging.info(topk_index)
+    flag = os.O_WRONLY | os.O_CREAT
+    modes = stat.S_IWUSRv | stat.S_IRUSR 
     if args.output is not None:
-        with open(os.path.join(args.output, "topk_index.json"), 0750) as f:
+        with os.fdopen(os.open(os.path.join(args.output, "topk_index.json"), flag, modes), 'w') as f:
             f.write(json.dumps(topk_index))
-
+        os.chmod(os.path.join(args.output, "topk_index.json"), 0o440)
 
 def get_args():
     parser = argparse.ArgumentParser()
