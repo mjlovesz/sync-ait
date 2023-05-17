@@ -31,6 +31,6 @@ setup(
     install_requires=required,
     python_requires='>=3.7',
     entry_points={
-        'profile_sub_task': ['benchmark=ais_bench.infer.main_cli:benchmark_cli']
+        'benchmark_sub_task': ['benchmark=ais_bench.infer.main_cli:benchmark_cli']
     }
 )
