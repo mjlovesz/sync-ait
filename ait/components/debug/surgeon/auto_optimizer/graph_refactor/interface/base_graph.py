@@ -90,7 +90,7 @@ class BaseGraph(ABC):
                 if not self._prev_map.get(o):
                     self._prev_map[o] = n
                 else:
-                    # TODO: ERROR: duplicate output names
+                    # ERROR: duplicate output names
                     pass
             # update next node info
             for i in set(n.inputs):
