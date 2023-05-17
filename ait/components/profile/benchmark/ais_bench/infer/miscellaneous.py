@@ -19,11 +19,11 @@ def get_modules_version(name):
 def version_check(args):
     aclruntime_version = get_modules_version('aclruntime')
     if aclruntime_version is None or aclruntime_version == "0.0.1":
+        url = 'https://gitee.com/ascend/tools.git'
         logger.warning("aclruntime version:{} is lower please update aclruntime follow any one method"
                        .format(aclruntime_version))
-        logger.warning("1. visit https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_bench"
+        logger.warning(f"1. visit {url} to install ais_bench"
                        "to install")
-        url = 'https://gitee.com/ascend/tools.git'
         logger.warning(f"2. or run cmd: pip3  install -v --force-reinstall 'git+{url}' to install ais_bench")
         # set old run mode to run ok
         args.run_mode = "tensor"
