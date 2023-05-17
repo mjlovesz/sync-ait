@@ -311,8 +311,8 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
     if args.energy_consumption == True:
-        logger.info("npu_id {} energy_consumption {}".format(args.npu_id, (float(end_energy_consumption) - float(start_energy_consumption)) *
-                                               (end_time - start_time)))
+        logger.info("npu_id {} energy_consumption {}".format(args.npu_id, (float(end_energy_consumption) -
+                    float(start_energy_consumption)) * (end_time - start_time)))
     if msgq is not None:
 		# put result to msgq
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
