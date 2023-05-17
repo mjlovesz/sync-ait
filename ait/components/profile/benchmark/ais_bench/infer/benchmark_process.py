@@ -219,6 +219,7 @@ def get_energy_consumption(npu_id):
 
     return power
 
+
 def main(args, index=0, msgq=None, device_list=None):
     # if msgq is not None,as subproces run
     if msgq is not None:
