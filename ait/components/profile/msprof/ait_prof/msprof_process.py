@@ -46,10 +46,6 @@ def args_rules(args):
 
 
 def msprof_process(args:MsProfArgsAdapter):
-    #args = args_rules(args)
-
-    #if args.profiler is True:
-    # try use msprof to run
     msprof_bin = shutil.which('msprof')
     if msprof_bin is None or os.getenv('GE_PROFILIGN_TO_STD_OUT') == '1':
         logger.info("find no msprof continue use acl.json mode")
