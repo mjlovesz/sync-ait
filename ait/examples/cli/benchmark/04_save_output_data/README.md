@@ -15,7 +15,7 @@
 1. 仅设置--output参数。示例命令及结果如下：
 
   ```bash
-  ait profile benchmark --om-model ./pth_resnet50_bs1.om --output ./result
+  ait benchmark --om-model ./pth_resnet50_bs1.om --output ./result
   ```
 
   ```bash
@@ -34,7 +34,7 @@
   ```
 
   ```bash
-  ait profile benchmark --om-model ./pth_resnet50_bs1.om --input ./data --output ./result
+  ait benchmark --om-model ./pth_resnet50_bs1.om --input ./data --output ./result
   ```
 
   ```bash
@@ -56,7 +56,7 @@
 3. 设置--output_dirname参数。示例命令及结果如下：
 
   ```bash
-  ait profile benchmark --om-model ./pth_resnet50_bs1.om --output ./result --output-dirname subdir
+  ait benchmark --om-model ./pth_resnet50_bs1.om --output ./result --output-dirname subdir
   ```
 
   ```bash
@@ -69,7 +69,7 @@
 4. 设置--dump参数。示例命令及结果如下：
 
   ```bash
-  ait profile benchmark --om-model ./pth_resnet50_bs1.om --output ./result --dump 1
+  ait benchmark --om-model ./pth_resnet50_bs1.om --output ./result --dump 1
   ```
   
   ```bash
@@ -83,7 +83,7 @@
 5. 设置--profiler参数。示例命令及结果如下：
 
   ```bash
-  ait profile benchmark --om-model ./pth_resnet50_bs1.om --output ./result --profiler 1
+  ait benchmark --om-model ./pth_resnet50_bs1.om --output ./result --profiler 1
   ```
 
   ```bash
