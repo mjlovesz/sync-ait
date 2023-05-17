@@ -65,4 +65,4 @@ class IOUtil:
         flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
         modes = stat.S_IWUSR | stat.S_IRUSR  # 600
         with os.fdopen(os.open(file, flags, modes), 'w') as fout:
-            json.dump(obj, fout, indent=4)
+            json.dump(obj, fout, indent=4, ensure_ascii=False)
