@@ -12,7 +12,7 @@
     以档位1 2 4 8档为例，设置档位为2，本程序将获取实际模型输入组Batch，每2个输入为一组，进行组Batch。
     
     ```bash
-    ait profile benchmark --om-model ./resnet50_v1_dynamicbatchsize_fp32.om --input=./data/ --dym-batch 2
+    ait benchmark --om-model ./resnet50_v1_dynamicbatchsize_fp32.om --input=./data/ --dym-batch 2
     ```
    
 2. 动态HW宽高。
@@ -20,7 +20,7 @@
     以档位224,224;448,448档为例，设置档位为224,224，本程序将获取实际模型输入组Batch。
 
     ```bash
-    ait profile benchmark --om-model ./resnet50_v1_dynamichw_fp32.om --input=./data/ --dym-hw 224,224
+    ait benchmark --om-model ./resnet50_v1_dynamichw_fp32.om --input=./data/ --dym-hw 224,224
     ```
 
 3. 动态Dims。
@@ -28,7 +28,7 @@
    以设置档位1,3,224,224为例，本程序将获取实际模型输入组Batch。
 
    ```bash
-   ait profile benchmark --om-model resnet50_v1_dynamicshape_fp32.om --input=./data/ --dym-dims actual_input_1:1,3,224,224
+   ait benchmark --om-model resnet50_v1_dynamicshape_fp32.om --input=./data/ --dym-dims actual_input_1:1,3,224,224
    ```
    
 4. 自动设置Dims模式（动态Dims模型）。
@@ -36,7 +36,7 @@
     动态Dims模型输入数据的Shape可能是不固定的，比如一个输入文件Shape为1,3,224,224，另一个输入文件Shape为 1,3,300,300。若两个文件同时推理，则需要设置两次动态Shape参数，当前不支持该操作。针对该场景，增加auto-set-dymdims-mode模式，可以根据输入文件的Shape信息，自动设置模型的Shape参数。
     
     ```bash
-    ait profile benchmark --om-model resnet50_v1_dynamicshape_fp32.om --input=./data/ --auto-set-dymdims-mode 1
+    ait benchmark --om-model resnet50_v1_dynamicshape_fp32.om --input=./data/ --auto-set-dymdims-mode 1
     ```
    
 5. 动态Shape场景。
@@ -46,7 +46,7 @@
     动态Shape的输出大小通常为0，建议通过output-size参数设置对应输出的内存大小。
     
     ```bash
-    ait profile benchmark --om-model resnet50_v1_dynamicshape_fp32.om --dym-shape actual_input_1:1,3,224,224 --output-size 10000
+    ait benchmark --om-model resnet50_v1_dynamicshape_fp32.om --dym-shape actual_input_1:1,3,224,224 --output-size 10000
     ```
    
 6. 自动设置Shape模式（动态Shape模型）。
@@ -54,7 +54,7 @@
     动态Shape模型输入数据的Shape可能是不固定的，比如一个输入文件Shape为1,3,224,224 另一个输入文件Shape为 1,3,300,300。若两个文件同时推理，则需要设置两次动态Shape参数，当前不支持该操作。针对该场景，增加auto-set-dymshape-mode模式，可以根据输入文件的Shape信息，自动设置模型的Shape参数。
     
     ```bash
-    ait profile benchmark --om-model ./pth_resnet50_dymshape.om  --output-size 100000 --auto-set-dymshape-mode 1  --input ./dymdata
+    ait benchmark --om-model ./pth_resnet50_dymshape.om  --output-size 100000 --auto-set-dymshape-mode 1  --input ./dymdata
     ```
     
     **注意该场景下的输入文件必须为npy格式，如果是bin文件将获取不到真实的Shape信息。**
@@ -66,5 +66,5 @@
     以对1,3,224,224 1,3,224,225 1,3,224,226进行分别推理为例，命令如下：
     
     ```bash
-    ait profile benchmark --om-model ./pth_resnet50_dymshape.om  --output-size 100000 --dym-shape-range actual_input_1:1,3,224,224~226
+    ait benchmark --om-model ./pth_resnet50_dymshape.om  --output-size 100000 --dym-shape-range actual_input_1:1,3,224,224~226
     ```

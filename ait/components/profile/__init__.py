@@ -25,7 +25,9 @@ def profile_cli_group():
     pass
 
 ## add other sub task [benchmark .ed]
+
+# benchmark 已经被调到二级目录下
 profile_sub_task = {}
 for entry_point in pkg_resources.iter_entry_points('profile_sub_task'):
     profile_sub_task[entry_point.name] = entry_point.load()
-    profile_cli_group.add_command(entry_point.load(), entry_point.name)
+    # profile_cli_group.add_command(entry_point.load(), entry_point.name)

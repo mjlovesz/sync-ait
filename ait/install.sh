@@ -36,7 +36,7 @@ fi
 pip install ${CURRENT_DIR} \
 ${CURRENT_DIR}/components/debug/compare \
 ${CURRENT_DIR}/components/debug/surgeon \
-${CURRENT_DIR}/components/profile/benchmark/backend \
-${CURRENT_DIR}/components/profile/benchmark \
+${CURRENT_DIR}/components/benchmark/backend \
+${CURRENT_DIR}/components/benchmark \
 ${arg_force_reinstall}
 
