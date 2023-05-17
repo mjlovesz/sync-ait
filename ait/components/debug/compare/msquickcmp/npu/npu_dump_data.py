@@ -187,17 +187,18 @@ class NpuDumpData(DumpData):
             }
         }
         if os.access(acl_json_path, os.W_OK):
-            flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
-            modes = stat.S_IWUSR | stat.S_IRUSR
+            # flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
+            # modes = stat.S_IWUSR | stat.S_IRUSR
             try:
-                with os.fdopen(os.open(acl_json_path, flags, modes), "w") as write_json:
+                # with os.fdopen(os.open(acl_json_path, flags, modes), "w") as write_json:
+                with open(acl_json_path, "w") as write_json
                     try:
                         json.dump(load_dict, write_json)
                     except ValueError as exc:
                         utils.logger.info(str(exc))
                         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR) from exc
             except IOError as acl_json_file_except:
-                # utils.logger.error('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
+                utils.logger.error('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from acl_json_file_except
         else:
             utils.logger.error(
