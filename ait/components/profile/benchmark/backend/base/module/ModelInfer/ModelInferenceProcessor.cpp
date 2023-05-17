@@ -34,6 +34,10 @@ APP_ERROR ModelInferenceProcessor::GetModelDescInfo()
         if (i == dynamicIndex_){
             continue;
         }
+        // 动态AIPP输入不被录入常规输入
+        if (dymAIPPIndexSet_.count(i) != 0) {
+            continue;
+        }
         CHECK_RET_EQ(processModel->GetInTensorDesc(i, info.name, datatype, info.format, info.shape, info.size), SUCCESS);
         info.realsize = info.size;
         info.datatype = (TensorDataType)datatype;
@@ -64,7 +68,13 @@ APP_ERROR ModelInferenceProcessor::Init(const std::string& modelPath, std::share
 
     SETLOGLEVEL(options_->log_level);
 
-    processModel = std::make_shared<ModelProcess>();
+    try {
+        // make_shared必然会抛出异常
+        processModel = std::make_shared<ModelProcess>();
+        dyAippCfg = std::make_shared<DynamicAippConfig>();
+    } catch (...) {
+        return APP_ERR_ACL_BAD_ALLOC;
+    }
 
     // initResource
     CHECK_RET_EQ(processModel->LoadModelFromFile(modelPath), SUCCESS);
@@ -74,6 +84,8 @@ APP_ERROR ModelInferenceProcessor::Init(const std::string& modelPath, std::share
     CHECK_RET_EQ(processModel->GetDynamicGearCount(dym_gear_count_), SUCCESS);
 
     processModel->GetDynamicIndex(dynamicIndex_);
+
+    CHECK_RET_EQ(AllocDymAIPPIndexMem(), APP_ERR_OK);
 
     CHECK_RET_EQ(GetModelDescInfo(), APP_ERR_OK);
 
@@ -97,6 +109,8 @@ APP_ERROR ModelInferenceProcessor::DeInit(void)
     FreeDymInfoMem();
     DestroyInferCacheData();
     processModel.reset();
+    dyAippCfg.reset();
+    FreeDymAIPPMem();
     return APP_ERR_OK;
 }
 
@@ -304,12 +318,12 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
 
     DestroyInferCacheData();
 
-    if (inputs.size() != modelDesc_.inTensorsDesc.size()){
+    if (inputs.size() != modelDesc_.inTensorsDesc.size()) {
         WARN_LOG("intensors in:%zu need:%zu not match", inputs.size(), modelDesc_.inTensorsDesc.size());
         return APP_ERR_ACL_FAILURE;
     }
 
-    if (dynamicInfo_.dynamicType != DYNAMIC_DIMS && dym_gear_count_ > 0){
+    if (dynamicInfo_.dynamicType != DYNAMIC_DIMS && dym_gear_count_ > 0) {
         WARN_LOG("check failed dym gearcount:%zu but dymtype:%d not set", dym_gear_count_, dynamicInfo_.dynamicType);
         return APP_ERR_ACL_FAILURE;
     }
@@ -320,6 +334,15 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
         dyIndexTensor.buf = dynamicIndexMemory_.ptrData;
         dyIndexTensor.size = dynamicIndexMemory_.size;
         inputs.insert(inputs.begin() + dynamicIndex_, dyIndexTensor);
+    }
+
+    if (dymAIPPIndexSet_.size() != 0) {
+        for (const auto& aippSetIt : dymAIPPIndexSet_) {
+            Base::BaseTensor dyIndexTensor = {};
+            dyIndexTensor.buf = dymAIPPIndexMemory_[aippSetIt.first].ptrData;
+            dyIndexTensor.size = dymAIPPIndexMemory_[aippSetIt.first].size;
+            inputs.insert(inputs.begin() + aippSetIt.first, dyIndexTensor);
+        }
     }
 
     // create output memdata
@@ -353,6 +376,28 @@ APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs
         return ret;
     }
 
+    DEBUG_LOG("SetInputData successfully");
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::SetAippConfigData()
+{
+    if (dyAippCfg->IsActivated() && dyAippCfg->ModelIsLegal()) {
+        // 读取合法的config文件，且模型有一个动态aipp输入才进行aipp参数的具体设置
+        DEBUG_LOG("SetInputAIPP start");
+        for (auto& aippSetIt : dymAIPPIndexSet_) {
+            Result result = processModel->SetInputAIPP(aippSetIt.first, aippSetIt.second);
+            if (result != SUCCESS) {
+                ERROR_LOG("ModelProcess::SetInputAIPP failed. index:%d result:%d ", int(aippSetIt.first), result);
+                return APP_ERR_ACL_FAILURE;
+            }
+        }
+        DEBUG_LOG("SetInputAIPP successfully");
+    } else if ((!dyAippCfg->IsActivated()) && dyAippCfg->ModelIsLegal()) {
+        // 模型有一个动态aipp输入，但是没有读取到合法的配置文件
+        ERROR_LOG("model with dynamic aipp input can't find config file.");
+        return APP_ERR_ACL_FAILURE;
+    }
     return APP_ERR_OK;
 }
 
@@ -378,14 +423,21 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
     std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors)
 {
     APP_ERROR ret = SetInputsData(inputs);
-    if (ret != APP_ERR_OK){
+    if (ret != APP_ERR_OK) {
         ERROR_LOG("Set InputsData failed ret:%d", ret);
         return ret;
     }
-    if (options_->loop > 1){
-        printf("\n");
+    if (dyAippCfg->ModelIsLegal()) {
+        ret = SetAippConfigData();
+        if (ret != APP_ERR_OK){
+            ERROR_LOG("Set AippConfigData failed ret:%d", ret);
+            return ret;
+        }
+        if (options_->loop > 1){
+            printf("\n");
     }
-    for (int i = 0; i < options_->loop; i++){
+    }
+    for (int i = 0; i < options_->loop; i++) {
         ret = Execute();
         if (ret != APP_ERR_OK){
             ERROR_LOG("Execute Infer failed ret:%d", ret);
@@ -396,11 +448,11 @@ APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> 
             fflush(stdout);
         }
     }
-    if (options_->loop > 1){
+    if (options_->loop > 1) {
         printf("\n");
     }
     ret = GetOutputs(outputNames, outputTensors);
-    if (ret != APP_ERR_OK){
+    if (ret != APP_ERR_OK) {
         ERROR_LOG("Get OutTensors failed ret:%d", ret);
         return ret;
     }
@@ -437,9 +489,51 @@ const InferSumaryInfo& ModelInferenceProcessor::GetSumaryInfo()
     return sumaryInfo_;
 }
 
+APP_ERROR ModelInferenceProcessor::AllocDymAIPPIndexMem()
+{
+    std::vector<size_t> dymAIPPIndexList_ = {};
+    processModel->GetAIPPIndexList(dymAIPPIndexList_);
+    if (dymAIPPIndexList_.size() == 0) {
+        return APP_ERR_OK;
+    }
+    if (dymAIPPIndexList_.size() != 0 && dymAIPPIndexMemory_.size() != 0) {
+        return APP_ERR_OK;
+    }
+
+    for (const auto& index : dymAIPPIndexList_) {
+        TensorDesc info;
+        int datatype;
+        CHECK_RET_EQ(processModel->GetInTensorDesc(index, info.name, datatype, info.format, info.shape, info.size), SUCCESS);
+        MemoryData memdata;
+        memdata.size = info.size;
+        memdata.type = MemoryData::MemoryType::MEMORY_DEVICE;
+        memdata.deviceId = deviceId_;
+        DEBUG_LOG("lcm debug aipp config index:%d allow size:%d\n", int(index), int(info.size));
+        auto ret = MemoryHelper::MxbsMalloc(memdata);
+        if (ret != APP_ERR_OK) {
+            ERROR_LOG("MemoryHelper::MxbsMalloc failed. ret=%d", ret);
+            return ret;
+        }
+        dymAIPPIndexMemory_[index] = memdata;
+        dymAIPPIndexSet_[index] = nullptr;
+    }
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::FreeDymAIPPMem()
+{
+     for (auto& aippSetIt : dymAIPPIndexSet_) {
+        if (aippSetIt.second != nullptr) {
+            processModel->FreeAIPP(aippSetIt.second);
+            aippSetIt.second = nullptr;
+        }
+    }
+    return APP_ERR_OK;
+}
+
 APP_ERROR ModelInferenceProcessor::AllocDyIndexMem()
 {
-    if (dynamicIndex_ == (size_t)-1 || dynamicIndexMemory_.ptrData != nullptr){
+    if (dynamicIndex_ == (size_t)-1 || dynamicIndexMemory_.ptrData != nullptr) {
         return APP_ERR_OK;
     }
 
@@ -489,13 +583,15 @@ APP_ERROR ModelInferenceProcessor::FreeDymInfoMem()
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::SetStaticBatch(){
+APP_ERROR ModelInferenceProcessor::SetStaticBatch()
+{
     FreeDymInfoMem();
     dynamicInfo_.dynamicType = STATIC_BATCH;
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::SetDynamicBatchsize(int batchsize){
+APP_ERROR ModelInferenceProcessor::SetDynamicBatchsize(int batchsize)
+{
     bool is_dymbatch = false;
 
     FreeDymInfoMem();
@@ -504,13 +600,101 @@ APP_ERROR ModelInferenceProcessor::SetDynamicBatchsize(int batchsize){
     CHECK_RET_EQ(processModel->GetMaxBatchSize(dynamicInfo_.dyBatch.maxbatchsize), SUCCESS);
 
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
-        if (find(modelDesc_.inTensorsDesc[i].shape.begin(), modelDesc_.inTensorsDesc[i].shape.end(), -1) != modelDesc_.inTensorsDesc[i].shape.end()){
+        if (find(modelDesc_.inTensorsDesc[i].shape.begin(), modelDesc_.inTensorsDesc[i].shape.end(), -1) != modelDesc_.inTensorsDesc[i].shape.end()) {
             modelDesc_.inTensorsDesc[i].realsize = modelDesc_.inTensorsDesc[i].size * batchsize / dynamicInfo_.dyBatch.maxbatchsize;
         }
     }
 
     dynamicInfo_.dyBatch.batchSize = batchsize;
     dynamicInfo_.dynamicType = DYNAMIC_BATCH;
+    return APP_ERR_OK;
+}
+
+uint64_t ModelInferenceProcessor::GetMaxDymBatchsize()
+{
+    uint64_t maxBatchSize = 0;
+    CHECK_RET_EQ(processModel->GetMaxBatchSize(maxBatchSize), SUCCESS);
+    return maxBatchSize;
+}
+
+int ModelInferenceProcessor::GetDymAIPPInputExsity()
+{
+    return processModel->CheckDymAIPPInputExsity();
+}
+
+APP_ERROR ModelInferenceProcessor::CheckDymAIPPInputExsity()
+{
+    int ret = processModel->CheckDymAIPPInputExsity();
+    if (ret != 1) {
+        return APP_ERR_ACL_FAILURE;
+    }
+    dyAippCfg->ActivateModel();
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::AippSetMaxBatchSize(uint64_t batchSize)
+{
+    CHECK_RET_EQ(dyAippCfg->SetMaxBatchSize(batchSize), APP_ERR_OK);
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::SetInputFormat(std::string iptFmt)
+{
+    CHECK_RET_EQ(dyAippCfg->SetInputFormat(iptFmt), APP_ERR_OK);
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::SetSrcImageSize(std::vector<int> srcImageSize)
+{
+    CHECK_RET_EQ(dyAippCfg->SetSrcImageSize(srcImageSize), APP_ERR_OK);
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::SetRbuvSwapSwitch(int rsSwitch)
+{
+    CHECK_RET_EQ(dyAippCfg->SetRbuvSwapSwitch(rsSwitch), APP_ERR_OK);
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::SetAxSwapSwitch(int asSwitch)
+{
+    CHECK_RET_EQ(dyAippCfg->SetAxSwapSwitch(asSwitch), APP_ERR_OK);
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::SetCscParams(std::vector<int> cscParams)
+{
+    CHECK_RET_EQ(dyAippCfg->SetCscParams(cscParams), APP_ERR_OK);
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::SetCropParams(std::vector<int> cropParams)
+{
+    CHECK_RET_EQ(dyAippCfg->SetCropParams(cropParams), APP_ERR_OK);
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::SetPaddingParams(std::vector<int> padParams)
+{
+    CHECK_RET_EQ(dyAippCfg->SetPaddingParams(padParams), APP_ERR_OK);
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::SetDtcPixelMean(std::vector<int> meanParams)
+{
+    CHECK_RET_EQ(dyAippCfg->SetDtcPixelMean(meanParams), APP_ERR_OK);
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::SetDtcPixelMin(std::vector<float> minParams)
+{
+    CHECK_RET_EQ(dyAippCfg->SetDtcPixelMin(minParams), APP_ERR_OK);
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::SetPixelVarReci(std::vector<float> reciParams)
+{
+    CHECK_RET_EQ(dyAippCfg->SetPixelVarReci(reciParams), APP_ERR_OK);
     return APP_ERR_OK;
 }
 
@@ -638,6 +822,22 @@ APP_ERROR ModelInferenceProcessor::SetDynamicShape(std::string dymshapeStr)
 APP_ERROR ModelInferenceProcessor::SetCustomOutTensorsSize(std::vector<size_t> customOutSize)
 {
     customOutTensorSize_ = customOutSize;
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::SetDymAIPPInfoSet()
+{
+    dyAippCfg->ActivateConfig(); // config文件确定合法
+    uint64_t MaxBS = dyAippCfg->GetMaxBatchSize();
+    DEBUG_LOG("debug now set aipp index list size:%d\n", int(dymAIPPIndexSet_.size()));
+    for (auto& aippSetIt : dymAIPPIndexSet_) {
+        Result ret = processModel->GetDymAIPPConfigSet(dyAippCfg, aippSetIt.second, MaxBS);
+        DEBUG_LOG("debug get aipp config set index:%d\n", int(aippSetIt.first));
+        if (ret != SUCCESS) {
+            ERROR_LOG("ModelProcess::SetDynamicAippConfig failed.index: %d ret %d", int(aippSetIt.first), ret);
+            return APP_ERR_FAILURE;
+        }
+    }
     return APP_ERR_OK;
 }
 

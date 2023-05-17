@@ -17,17 +17,60 @@ def get_modules_version(name):
 def version_check(args):
     aclruntime_version = get_modules_version('aclruntime')
     if aclruntime_version is None or aclruntime_version == "0.0.1":
-        logger.warning("aclruntime version:{} is lower please update aclruntime follow any one method".format(aclruntime_version))
-        logger.warning("1. visit https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_bench to install")
-        logger.warning("2. or run cmd: pip3  install -v --force-reinstall 'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend' to install")
+        logger.warning("aclruntime version:{} is lower please update aclruntime follow any one method" \
+                       .format(aclruntime_version))
+        logger.warning("1. visit https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_bench" \
+                       "to install")
+        logger.warning("2. or run cmd: pip3  install -v --force-reinstall" \
+    "'git+https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend'" \
+    "to install")
         # set old run mode to run ok
         args.run_mode = "tensor"
+
+
+def get_model_name(model):
+    path_list = model.split('/')
+    return path_list[-1][:-3]
+
+
+def check_valid_acljson_for_dump(acl_json_path, model):
+    with open(acl_json_path, 'r') as f: 
+        acl_json_dict = json.load(f)
+    model_name_correct = get_model_name(model)
+    if acl_json_dict.get("dump") is not None:
+        # check validity of dump_list (model_name)
+        dump_list_val = acl_json_dict["dump"].get("dump_list")
+        if dump_list_val is not None:
+            if dump_list_val == [] or dump_list_val[0].get("model_name") != model_name_correct:
+                logger.warning("dump failed, 'model_name' is not set or set incorrectly. correct" \
+                               "'model_name' should be {}".format(model_name_correct))
+        else:
+            logger.warning("dump failed, acl.json need to set 'dump_list' attribute")
+        # check validity of dump_path
+        dump_path_val = acl_json_dict["dump"].get("dump_path")
+        if dump_path_val is not None:
+            if os.path.isdir(dump_path_val) and os.access(dump_path_val, os.R_OK) and os.access(dump_path_val, os.W_OK):
+                pass
+            else:
+                logger.warning("dump failed, 'dump_path' not exists or has no read/write permission")
+        else:
+            logger.warning("dump failed, acl.json need to set 'dump_path' attribute")
+        # check validity of dump_op_switch
+        dump_op_switch_val = acl_json_dict["dump"].get("dump_op_switch")
+        if dump_op_switch_val is not None and dump_op_switch_val not in {"on", "off"}:
+            logger.warning("dump failed, 'dump_op_switch' need to be set as 'on' or 'off'")
+        # check validity of dump_mode
+        dump_mode_val = acl_json_dict["dump"].get("dump_mode")
+        if dump_mode_val is not None and dump_mode_val not in {"input", "output", "all"}:
+            logger.warning("dump failed, 'dump_mode' need to be set as 'input', 'output' or 'all'")
+    return
 
 def get_acl_json_path(args):
     """
     get acl json path. when args.profiler is true or args.dump is True, create relative acl.json , default current folder
     """
     if args.acl_json_path is not None:
+        check_valid_acljson_for_dump(args.acl_json_path, args.model)
         return args.acl_json_path
     if not args.profiler and not args.dump:
         return None
@@ -59,10 +102,10 @@ def get_acl_json_path(args):
 def get_batchsize(session, args):
     intensors_desc = session.get_inputs()
     batchsize = intensors_desc[0].shape[0]
-    if args.dymBatch != 0:
-        batchsize = int(args.dymBatch)
-    elif args.dymDims !=None or args.dymShape !=None:
-        instr = args.dymDims if args.dymDims !=None else args.dymShape
+    if args.dym_batch != 0:
+        batchsize = int(args.dym_batch)
+    elif args.dym_dims !=None or args.dym_shape !=None:
+        instr = args.dym_dims if args.dym_dims !=None else args.dym_shape
         elems = instr.split(';')
         for elem in elems:
             name, shapestr = elem.split(':')
@@ -135,12 +178,12 @@ def get_throughtput_from_log(log_path):
         return "Failed", 0
 
 def dymshape_range_run(args):
-    dymshape_list = get_dymshape_list(args.dymShape_range)
+    dymshape_list = get_dymshape_list(args.dym_shape_range)
     results = []
     log_path = "./dym.log" if args.output is None else args.output + "/dym.log"
     for dymshape in dymshape_list:
         cmd = "rm -rf {};{} {} {}".format(log_path, sys.executable, ' '.join(sys.argv),
-            "--dymShape={}  | tee {}".format(dymshape,  log_path))
+            "--dym-shape={}  | tee {}".format(dymshape,  log_path))
         result = { "dymshape" : dymshape, "cmd": cmd, "result": "Failed", "throughput" : 0 }
         logger.debug("cmd:{}".format(cmd))
         os.system(cmd)

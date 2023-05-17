@@ -49,8 +49,7 @@ class TestGraphExtract(unittest.TestCase):
         self.subgraph = create_subgraph()
 
     def test_extract_subgraph(self):
-        sub_graph = self.graph.extract_subgraph(subgraph_path="sub.onnx",
-                                                start_node_name="relu1",
+        sub_graph = self.graph.extract_subgraph(start_node_name="relu1",
                                                 end_node_name="relu3")
         self.assertEqual(sub_graph, self.subgraph)
 

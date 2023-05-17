@@ -19,11 +19,15 @@
 
 #include <memory>
 #include <vector>
+#include <string>
+#include <algorithm>
+#include "acl/acl.h"
 #include "Base/ErrorCode/ErrorCode.h"
 #include "Base/Tensor/TensorBase/TensorBase.h"
 
 #include "Base/ModelInfer/SessionOptions.h"
 #include "Base/ModelInfer/model_process.h"
+#include "Base/ModelInfer/DynamicAippConfig.h"
 
 #define CHECK_RET_EQ(func, expect_value) \
 { \
@@ -186,13 +190,33 @@ public:
     APP_ERROR SetDynamicDims(std::string dymdimsStr);
     APP_ERROR SetDynamicShape(std::string dymshapeStr);
     APP_ERROR SetCustomOutTensorsSize(std::vector<size_t> customOutSize);
+
+    uint64_t GetMaxDymBatchsize();
+    int GetDymAIPPInputExsity();
+    APP_ERROR CheckDymAIPPInputExsity();
+    APP_ERROR SetDymAIPPInfoSet();
+
+    APP_ERROR AippSetMaxBatchSize(uint64_t batchSize);
+    APP_ERROR SetInputFormat(std::string iptFmt);
+    APP_ERROR SetSrcImageSize(std::vector<int> srcImageSize);
+    APP_ERROR SetRbuvSwapSwitch(int rsSwitch);
+    APP_ERROR SetAxSwapSwitch(int asSwitch);
+    APP_ERROR SetCscParams(std::vector<int> cscParams);
+    APP_ERROR SetCropParams(std::vector<int> cropParams);
+    APP_ERROR SetPaddingParams(std::vector<int> padParams);
+    APP_ERROR SetDtcPixelMean(std::vector<int> meanParams);
+    APP_ERROR SetDtcPixelMin(std::vector<float> minParams);
+    APP_ERROR SetPixelVarReci(std::vector<float> reciParams);
+
 private:
 
     APP_ERROR SetDynamicInfo();
 
     APP_ERROR AllocDyIndexMem();
+    APP_ERROR AllocDymAIPPIndexMem();
     APP_ERROR FreeDyIndexMem();
     APP_ERROR FreeDymInfoMem();
+    APP_ERROR FreeDymAIPPMem();
 
     APP_ERROR DestroyOutMemoryData(std::vector<MemoryData>& outputs);
     APP_ERROR CreateOutMemoryData(std::vector<MemoryData>& outputs);
@@ -202,6 +226,7 @@ private:
     APP_ERROR DestroyInferCacheData();
 
     APP_ERROR SetInputsData(std::vector<BaseTensor> &inputs);
+    APP_ERROR SetAippConfigData();
     APP_ERROR Execute();
     APP_ERROR GetOutputs(std::vector<std::string> outputNames, std::vector<TensorBase> &outputTensors);
 
@@ -214,10 +239,14 @@ private:
 
     InferSumaryInfo sumaryInfo_ = {};
     std::shared_ptr<ModelProcess> processModel;
+    std::shared_ptr<DynamicAippConfig> dyAippCfg;
     DynamicInfo dynamicInfo_ = {};
 
     size_t dynamicIndex_ = -1;
     MemoryData dynamicIndexMemory_;
+
+    std::map<size_t, MemoryData> dymAIPPIndexMemory_;
+    std::map<size_t, aclmdlAIPP*> dymAIPPIndexSet_;
 
     size_t dym_gear_count_;
 
