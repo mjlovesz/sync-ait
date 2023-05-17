@@ -46,6 +46,6 @@ if __name__ == '__main__':
     times = get_times_list(times_file)
     t_pid = get_pid(pid_file)
     info = {"pid": t_pid, "npu_compute_time_list": times}
-    with open(os.path.join(out_file), 0750) as ff:
+    with open(out_file, 0750) as ff:
         json.dump(info, ff)
 
