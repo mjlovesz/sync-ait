@@ -26,9 +26,6 @@ logger = logging.getLogger(__name__)
 
 
 class TestClass:
-    def __init__(self, model_name = "no model"):
-        self.model_name = model_name
-        
     @classmethod
     def setup_class(cls):
         """
