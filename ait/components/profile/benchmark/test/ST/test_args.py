@@ -41,7 +41,7 @@ class TestClass:
         model_path = "xxx_invalid.om"
         cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
                                                  TestCommonClass.default_device_id)
-        logging.info("run cmd:{cmd}")
+        logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret != 0
 
@@ -50,7 +50,7 @@ class TestClass:
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         for _, device_id in enumerate(invalid_device_ids):
             cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path, device_id)
-            logging.info("run cmd:{cmd}")
+            logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret != 0
 
@@ -62,7 +62,7 @@ class TestClass:
         acl_json_path = "xxx_invalid.json"
         cmd = "{} --model {} --device {} --acl_json_path {} ".format(TestCommonClass.cmd_prefix, model_path,
                                                                      TestCommonClass.default_device_id, acl_json_path)
-        logging.info("run cmd:{cmd}")
+        logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret != 0
 
@@ -78,7 +78,7 @@ class TestClass:
             json.dump(json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
         cmd = "{} --model {} --device {} --acl_json_path {} ".format(TestCommonClass.cmd_prefix, model_path,
                                                                      TestCommonClass.default_device_id, acl_json_path)
-        logging.info("run cmd:{cmd}")
+        logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret == 0
 
@@ -86,7 +86,7 @@ class TestClass:
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
                                                  TestCommonClass.default_device_id)
-        logging.info("run cmd:{cmd}")
+        logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret == 0
 
@@ -96,7 +96,7 @@ class TestClass:
         for _, loop_num in enumerate(loops):
             cmd = "{} --model {} --device {} --loop {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                TestCommonClass.default_device_id, loop_num)
-            logging.info("run cmd:{cmd}")
+            logging.info(f"run cmd:{cmd}")
             ret = os.system(cmd)
             assert ret != 0
 
@@ -112,7 +112,7 @@ class TestClass:
             cmd = "{} --model {} --device {} --loop {} --debug True > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                                  TestCommonClass.default_device_id,
                                                                                  loop_num, log_path)
-            logging.info("run cmd:{cmd}")
+            logging.info(f"run cmd:{cmd}")
             ret = os.system(cmd)
             assert ret == 0
             cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
@@ -132,7 +132,7 @@ class TestClass:
         log_path = os.path.join(TestCommonClass.base_path, "log.txt")
         cmd = "{} --model {} --device {} --debug True > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                    TestCommonClass.default_device_id, log_path)
-        logging.info("run cmd:{cmd}")
+        logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret == 0
         cmd = "cat {} |grep '[DEBUG]' | wc -l".format(log_path)
@@ -153,7 +153,7 @@ class TestClass:
 
         cmd = "{} --model {} --device {} --profiler true --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                         TestCommonClass.default_device_id, output_path)
-        logging.info("run cmd:{cmd}")
+        logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
 
         assert os.path.exists(profiler_path)
@@ -186,7 +186,7 @@ class TestClass:
 
         cmd = "{} --model {} --device {} --dump true --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                     TestCommonClass.default_device_id, output_path)
-        logging.info("run cmd:{cmd}")
+        logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret == 0
         assert os.path.exists(dump_path)
@@ -204,7 +204,7 @@ class TestClass:
         TestCommonClass.prepare_dir(output_path)
         cmd = "{} --model {} --device {}  --output {} > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                TestCommonClass.default_device_id, output_path, log_path)
-        logging.info("run cmd:{cmd}")
+        logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret == 0
         cmd = "cat {} |grep 'output path'".format(log_path)
@@ -239,7 +239,7 @@ class TestClass:
         cmd = "{} --model {} --device {} --acl_json_path {} --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                                 TestCommonClass.default_device_id,
                                                                                 out_json_file_path, output_path)
-        logging.info("run cmd:{cmd}")
+        logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert os.path.exists(profiler_path)
 
@@ -262,7 +262,7 @@ class TestClass:
         cmd = "{} --model {} --device {} --output {} > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                              TestCommonClass.default_device_id,
                                                              output_path, log_path)
-        logging.info("run cmd:{cmd}")
+        logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret == 0
         cmd = "cat {} |grep 'output path'".format(log_path)
@@ -297,7 +297,7 @@ class TestClass:
                                                                              model_path,
                                                                              TestCommonClass.default_device_id,
                                                                              output_path, output_file_suffix, log_path)
-            logging.info("run cmd:{cmd}")
+            logging.info(f"run cmd:{cmd}")
             ret = os.system(cmd)
             assert ret == 0
             cmd = "cat {} |grep 'output path'".format(log_path)

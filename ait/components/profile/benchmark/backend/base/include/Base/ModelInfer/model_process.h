@@ -22,21 +22,20 @@
 #include "Base/Tensor/TensorBase/TensorBase.h"
 #include "Base/ModelInfer/DynamicAippConfig.h"
 
-enum normal_datatype
-{
-TYPE_FLOAT
-, TYPE_ACLFLOAT16
-, TYPE_INT8_T
-, TYPE_INT
-, TYPE_UINT8_T
-, NOT_USED
-, TYPE_INT16_T
-, TYPE_UINT16_T
-, TYPE_UINT32_T
-, TYPE_INT64_T
-, TYPE_UINT64_T
-, TYPE_DOUBLE
-, TYPE_BOOL
+enum NORMAL_DATA_TYPE {
+    TYPE_FLOAT,
+    TYPE_ACLFLOAT16,
+    TYPE_INT8_T,
+    TYPE_INT,
+    TYPE_UINT8_T,
+    NOT_USED,
+    TYPE_INT16_T,
+    TYPE_UINT16_T,
+    TYPE_UINT32_T,
+    TYPE_INT64_T,
+    TYPE_UINT64_T,
+    TYPE_DOUBLE,
+    TYPE_BOOL
 };
 
 /**

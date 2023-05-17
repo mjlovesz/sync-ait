@@ -65,12 +65,12 @@ int str2num(char* str)
 
 
 int main(int argc, char **argv) {
-    const int inputindex = 3;
+    const int inputIndex = 3;
     std::string modelPath = argv[1];
     int loop = str2num(argv[2]);
     std::string input;
-    if (argc > inputindex) {
-        input = argv[inputindex];
+    if (argc > inputIndex) {
+        input = argv[inputIndex];
     }
 
     std::shared_ptr<Base::SessionOptions> options = std::make_shared<Base::SessionOptions>();
