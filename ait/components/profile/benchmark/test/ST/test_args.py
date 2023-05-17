@@ -7,15 +7,6 @@ from test_common import TestCommonClass
 
 
 class TestClass:
-    @staticmethod
-    def test_args_invalid_model_path(self):
-        model_path = "xxx_invalid.om"
-        cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
-                                                 TestCommonClass.default_device_id)
-        print("run cmd:{}".format(cmd))
-        ret = os.system(cmd)
-        assert ret != 0
-
     @classmethod
     def setup_class(cls):
         """
@@ -36,6 +27,14 @@ class TestClass:
         for i, device_id in enumerate(invalid_device_ids):
             cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path, device_id)
             print("run cmd:{}".format(cmd))
+        ret = os.system(cmd)
+        assert ret != 0
+
+    def test_args_invalid_model_path(self):
+        model_path = "xxx_invalid.om"
+        cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                 TestCommonClass.default_device_id)
+        print("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret != 0
 
@@ -294,6 +293,7 @@ class TestClass:
             suffix_file_path = os.path.join(result_path, "pure_infer_data_0.{}".format(output_file_suffix.lower()))
             assert os.path.exists(suffix_file_path)
             shutil.rmtree(result_path)
+
 
 if __name__ == '__main__':
     pytest.main(['test_args.py', '-vs'])
