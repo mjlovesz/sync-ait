@@ -22,6 +22,7 @@ import copy
 from .utils import logger
 from .args_adapter import MsProfArgsAdapter
 
+
 def msprof_run_profiling(args, msprof_bin):
     cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
     msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution={}" \
