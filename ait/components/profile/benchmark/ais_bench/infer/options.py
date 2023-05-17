@@ -343,7 +343,7 @@ opt_energy_consumption = click.option(
     default=False,
     type=str,
     callback=str2bool,
-    help="obtain power consumption data for model inference"
+    help="Obtain power consumption data for model inference"
 )
 
 opt_npu_id = click.option(
