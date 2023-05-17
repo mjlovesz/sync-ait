@@ -34,20 +34,75 @@ logger = logging.getLogger(__name__)
 
 class TestClass():
     @staticmethod
-    def get_dynamic_batch_om_path(self):
-        return os.path.join(self.model_base_path, "model", "pth_resnet50_dymbatch.om")
+    def get_dynamic_shape_range_mode_inference_result_info(log_path):
+        run_count = 0
+        result_ok_num = 0
+        shape_status = dict()
+        with open(log_path) as f:
+            for line in f:
+                if 'run_count' in line:
+                    str_list = line.split()
+                    tmp_str = str_list[1]
+                    num_str = tmp_str[(tmp_str.rfind(':') + 1):]
+                    num_str = num_str.replace('\n', '')
+                    run_count = int(num_str)
+                if "result:OK throughput" in line:
+                    result_ok_num += 1
+                    str_list = line.split()
+                    tmp_str = str_list[2]
+                    shape_str = tmp_str[(tmp_str.find(':') + 1):]
+                    shape_str = shape_str.replace('\n', '')
+                    shape_status[shape_str] = True
+
+        return run_count, result_ok_num,  shape_status
 
     @staticmethod
-    def get_dynamic_hw_om_path(self):
-        return os.path.join(self.model_base_path, "model", "pth_resnet50_dymwh.om")
+    def get_model_batchsize_from_inference_result(log_path):
+        batch_size = 0
+        if os.path.exists(log_path) is False:
+            return batch_size
+
+        key_words = "1000*batchsize"
+        with open(log_path) as f:
+            for line in f:
+                if key_words not in line:
+                    continue
+
+                sub_str = line.split('/')[0].split('(')[1].strip(')')
+                cur_batchsize = int(sub_str)
+                batch_size = int(cur_batchsize)
+                break
+        return batch_size
 
     @staticmethod
-    def get_dynamic_dim_om_path(self):
-        return os.path.join(self.model_base_path, "model", "pth_resnet50_dymdim.om")
+    def get_dynamic_shape_om_file_size(shape):
+        """"
+        dym_shape = "actual_input_1:1,3,224,224"
+        """
+        if len(shape) == 0:
+            return 0
+
+        sub_str = shape[(shape.rfind(':') + 1):]
+        sub_str = sub_str.replace('\n', '')
+        num_arr = sub_str.split(',')
+        fix_num = 4
+        size = int(num_arr[0]) * int(num_arr[1]) * int(num_arr[2]) * int(num_arr[3]) * fix_num
+        return size
 
     @staticmethod
-    def get_dynamic_shape_om_path(self):
-        return os.path.join(self.model_base_path, "model", "pth_resnet50_dymshape.om")
+    def create_npy_files_in_auto_set_dymshape_mode_input(dirname, shapes):
+        if os.path.exists(dirname):
+            shutil.rmtree(dirname)
+
+        os.makedirs(dirname)
+
+        i = 1
+        for shape in shapes:
+            x = np.zeros(shape, dtype=np.int32)
+            file_name = 'input_shape_{}'.format(i)
+            file = os.path.join(dirname, "{}.npy".format(file_name))
+            np.save(file, x)
+            i += 1
 
     @classmethod
     def setup_class(cls):
@@ -59,6 +114,18 @@ class TestClass():
     @classmethod
     def teardown_class(cls):
         logger.info('\n ---class level teardown_class')
+
+    def get_dynamic_batch_om_path(self):
+        return os.path.join(self.model_base_path, "model", "pth_resnet50_dymbatch.om")
+
+    def get_dynamic_hw_om_path(self):
+        return os.path.join(self.model_base_path, "model", "pth_resnet50_dymwh.om")
+
+    def get_dynamic_dim_om_path(self):
+        return os.path.join(self.model_base_path, "model", "pth_resnet50_dymdim.om")
+
+    def get_dynamic_shape_om_path(self):
+        return os.path.join(self.model_base_path, "model", "pth_resnet50_dymshape.om")
 
     def init(self):
         self.model_name = "resnet50"
@@ -75,34 +142,6 @@ class TestClass():
             └── output
         """
         return os.path.join(TestCommonClass.base_path, self.model_name)
-
-    def create_npy_files_in_auto_set_dymshape_mode_input(self, dirname, shapes):
-        if os.path.exists(dirname):
-            shutil.rmtree(dirname)
-
-        os.makedirs(dirname)
-
-        i = 1
-        for shape in shapes:
-            x = np.zeros(shape, dtype=np.int32)
-            file_name = 'input_shape_{}'.format(i)
-            file = os.path.join(dirname, "{}.npy".format(file_name))
-            np.save(file, x)
-            i += 1
-
-    def get_dynamic_shape_om_file_size(self, shape):
-        """"
-        dym_shape = "actual_input_1:1,3,224,224"
-        """
-        if len(shape) == 0:
-            return 0
-
-        sub_str = shape[(shape.rfind(':') + 1):]
-        sub_str = sub_str.replace('\n', '')
-        num_arr = sub_str.split(',')
-        fix_num = 4
-        size = int(num_arr[0]) * int(num_arr[1]) * int(num_arr[2]) * int(num_arr[3]) * fix_num
-        return size
 
     def test_pure_inference_normal_static_batch(self):
         """
@@ -217,7 +256,6 @@ class TestClass():
 
         assert int(bin_num2) == num_shape
         shutil.rmtree(output_path)
-
 
     def test_general_inference_normal_static_batch(self):
         batch_size = 1
@@ -576,7 +614,6 @@ class TestClass():
         os.remove(msame_infer_log_path)
         shutil.rmtree(output_dir_path)
 
-
     def test_pure_inference_batchsize_is_none_normal_static_batch(self):
         """
         batch size 1,2,4,8,16
@@ -780,28 +817,6 @@ class TestClass():
         for summary_path in summary_paths:
             os.remove(summary_path)
 
-    def get_dynamic_shape_range_mode_inference_result_info(self, log_path):
-        run_count = 0
-        result_ok_num = 0
-        shape_status = dict()
-        with open(log_path) as f:
-            for line in f:
-                if 'run_count' in line:
-                    str_list = line.split()
-                    tmp_str = str_list[1]
-                    num_str = tmp_str[(tmp_str.rfind(':') + 1):]
-                    num_str = num_str.replace('\n', '')
-                    run_count = int(num_str)
-                if "result:OK throughput" in line:
-                    result_ok_num += 1
-                    str_list = line.split()
-                    tmp_str = str_list[2]
-                    shape_str = tmp_str[(tmp_str.find(':') + 1):]
-                    shape_str = shape_str.replace('\n', '')
-                    shape_status[shape_str] = True
-
-        return run_count, result_ok_num,  shape_status
-
     def test_pure_inference_normal_dynamic_shape_range_mode(self):
         dymshape_range = "actual_input_1:1,3,224,224~226"
         dymshapes = ["actual_input_1:1,3,224,224", "actual_input_1:1,3,224,225", "actual_input_1:1,3,224,226"]
@@ -946,23 +961,6 @@ class TestClass():
 
         shutil.rmtree(output_path)
         os.remove(summary_json_path)
-
-    def get_model_batchsize_from_inference_result(self, log_path):
-        batch_size = 0
-        if os.path.exists(log_path) is False:
-            return batch_size
-
-        key_words = "1000*batchsize"
-        with open(log_path) as f:
-            for line in f:
-                if key_words not in line:
-                    continue
-
-                sub_str = line.split('/')[0].split('(')[1].strip(')')
-                cur_batchsize = int(sub_str)
-                batch_size = int(cur_batchsize)
-                break
-        return batch_size
 
     def test_pure_inference_batchsize(self):
         batch_sizes = [1, 2, 4, 8, 16]
@@ -1173,7 +1171,6 @@ class TestClass():
         shutil.rmtree(output_path)
         shutil.rmtree(bak_output_path)
         os.remove(summary_path)
-
 
     def test_general_inference_interface_dyshape_compare_tensor_npy(self):
         model_path = self.get_dynamic_shape_om_path()

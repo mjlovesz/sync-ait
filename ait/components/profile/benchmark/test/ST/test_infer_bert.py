@@ -62,7 +62,6 @@ class TestClass():
         return os.path.join(self.model_base_path, "model",
                             "pth_bert_dymbatch.om")
 
-
     def test_pure_inference_normal_static_batch(self):
         """
         batch size 1,2,4,8
@@ -78,7 +77,6 @@ class TestClass():
             logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
-
 
     def test_pure_inference_normal_dynamic_batch(self):
         batch_list = [1, 2, 4, 8, 16]

@@ -281,9 +281,4 @@ class TestClass():
 
 if __name__ == '__main__':
     pytest.main(['test_infer_crnn.py', '-vs'])
-
-
-
-
-
-
+    
