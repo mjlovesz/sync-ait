@@ -80,13 +80,13 @@ def get_args():
         "--model",
         "-m",
         required=True,
-        help="the path of the om model"
+        help="The path of the om model"
     )
     parser.add_argument(
         "--input",
         "-i",
         default=None,
-        help="input file or dir"
+        help="Input file or dir"
     )
     parser.add_argument(
         "--output",
@@ -99,7 +99,7 @@ def get_args():
         "--output_dirname",
         type=str,
         default=None,
-        help="actual output directory name. \
+        help="Actual output directory name. \
              Used with parameter output, cannot be used alone. \
              The inference result is output to subdirectory named by output_dirname \
              under  output path. such as --output_dirname 'tmp', \
@@ -116,7 +116,7 @@ def get_args():
         "-l",
         type=check_positive_integer,
         default=1,
-        help="the round of the PureInfer."
+        help="The round of the PureInfer."
     )
     parser.add_argument(
         "--debug",
@@ -129,28 +129,28 @@ def get_args():
         "-d",
         type=check_device_range_valid,
         default=0,
-        help="the NPU device ID to use.valid value range is [0, 255]"
+        help="The NPU device ID to use.valid value range is [0, 255]"
     )
     parser.add_argument(
         "--dymBatch",
         dest="dym_batch",
         type=int,
         default=0,
-        help="dynamic batch size param，such as --dymBatch 2"
+        help="Dynamic batch size param，such as --dymBatch 2"
     )
     parser.add_argument(
         "--dymHW",
         dest="dym_hw",
         type=str,
         default=None,
-        help="dynamic image size param, such as --dymHW \"300,500\""
+        help="Dynamic image size param, such as --dymHW \"300,500\""
     )
     parser.add_argument(
         "--dymDims",
         dest="dym_dims",
         type=str,
         default=None,
-        help="dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\""
+        help="Dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\""
     )
     parser.add_argument(
         "--dymShape",
@@ -158,108 +158,108 @@ def get_args():
         dest="dym_shape",
         type=str,
         default=None,
-        help="dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\""
+        help="Dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\""
     )
     parser.add_argument(
         "--outputSize",
         dest="output_size",
         type=str,
         default=None,
-        help="output size for dynamic shape mode"
+        help="Output size for dynamic shape mode"
     )
     parser.add_argument(
         "--auto_set_dymshape_mode",
         type=str2bool,
         default=False,
-        help="auto_set_dymshape_mode"
+        help="Auto_set_dymshape_mode"
     )
     parser.add_argument(
         "--auto_set_dymdims_mode",
         type=str2bool,
         default=False,
-        help="auto_set_dymdims_mode"
+        help="Auto_set_dymdims_mode"
     )
     parser.add_argument(
         "--batchsize",
         type=check_batchsize_valid,
         default=None,
-        help="batch size of input tensor"
+        help="Batch size of input tensor"
     )
     parser.add_argument(
         "--pure_data_type",
         type=str,
         default="zero",
         choices=["zero", "random"],
-        help="null data type for pure inference(zero or random)"
+        help="Null data type for pure inference(zero or random)"
     )
     parser.add_argument(
         "--profiler",
         type=str2bool,
         default=False,
-        help="profiler switch"
+        help="Profiler switch"
     )
     parser.add_argument(
         "--dump",
         type=str2bool,
         default=False,
-        help="dump switch"
+        help="Dump switch"
     )
     parser.add_argument(
         "--acl_json_path",
         type=str,
         default=None,
-        help="acl json path for profiling or dump"
+        help="Acl json path for profiling or dump"
     )
     parser.add_argument(
         "--output_batchsize_axis",
         type=check_nonnegative_integer,
         default=0,
-        help="splitting axis number when outputing tensor results, such as --output_batchsize_axis 1"
+        help="Splitting axis number when outputing tensor results, such as --output_batchsize_axis 1"
     )
     parser.add_argument(
         "--run_mode",
         type=str,
         default="array",
         choices=["array", "files", "tensor", "full"],
-        help="run mode"
+        help="Run mode"
     )
     parser.add_argument(
         "--display_all_summary",
         type=str2bool,
         default=False,
-        help="display all summary include h2d d2h info"
+        help="Display all summary include h2d d2h info"
     )
     parser.add_argument(
         "--warmup_count",
         "--warmup-count",
         type=check_nonnegative_integer,
         default=1,
-        help="warmup count before inference"
+        help="Warmup count before inference"
         )
     parser.add_argument(
         "--dymShape_range",
         dest="dym_shape_range",
         type=str,
         default=None,
-        help="dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\""
+        help="Dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\""
     )
     parser.add_argument(
         "--aipp_config",
         type=str,
         default=None,
-        help="file type: .config, to set actual aipp params before infer"
+        help="File type: .config, to set actual aipp params before infer"
     )
     parser.add_argument(
         "--energy_consumption",
         type=str,
         default=None,
-        help="obtain power consumption data for model inference"
+        help="Obtain power consumption data for model inference"
     )
     parser.add_argument(
         "--npu_id",
         type=check_device_range_valid,
         default=0,
-        help="the NPU ID to use.valid value range is [0, 255]"
+        help="The NPU ID to use.valid value range is [0, 255]"
     )
     args = parser.parse_args()
 
