@@ -30,7 +30,5 @@ class InputFactory:
         """
         if input_type == InputType.CMD_LINE:
             return CommandLineInput(args)
-        elif input_type == InputType.RESTFUL:
-            raise Exception('Not support yet!')
         else:
-            return CommandLineInput(args)
+            raise Exception('Not support yet!')
