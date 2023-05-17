@@ -42,7 +42,7 @@ def load_analyze_sub_task():
 
 analyze_cli = load_analyze_sub_task()
 
-cli = click.Group(context_settings=CONTEXT_SETTINGS, commands=[debug_cli_group, profile_cli_group, analyze_cli,benchmark_cli],
+cli = click.Group(context_settings=CONTEXT_SETTINGS, commands=[debug_cli_group, profile_cli_group, analyze_cli, benchmark_cli],
                   no_args_is_help=True,
                   help="ait(Ascend Inference Tools), "
                   "provides one-site debugging and optimization toolkit for inference use Ascend Devices")
