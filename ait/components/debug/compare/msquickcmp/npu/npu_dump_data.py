@@ -191,7 +191,7 @@ class NpuDumpData(DumpData):
             # modes = stat.S_IWUSR | stat.S_IRUSR
             try:
                 # with os.fdopen(os.open(acl_json_path, flags, modes), "w") as write_json:
-                with open(acl_json_path, "w") as write_json
+                with open(acl_json_path, "w") as write_json:
                     try:
                         json.dump(load_dict, write_json)
                     except ValueError as exc:
