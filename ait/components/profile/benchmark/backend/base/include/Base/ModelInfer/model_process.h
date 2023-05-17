@@ -20,6 +20,7 @@
 #include "utils.h"
 #include <string>
 #include "Base/Tensor/TensorBase/TensorBase.h"
+#include "Base/ModelInfer/DynamicAippConfig.h"
 
 /**
  * ModelProcess
@@ -67,7 +68,7 @@ public:
     /**
     * @brief get dynamic index
     */
-    Result GetDynamicIndex(size_t &dymindex);    
+    Result GetDynamicIndex(size_t &dymindex);
 
     /**
     * @brief check dynamic input dims valid
@@ -83,30 +84,30 @@ public:
     * @brief check dynamic input image size valid
     */
     Result CheckDynamicHWSize(std::pair<int, int> dynamicPair, bool& is_dymHW);
- 
+
     /**
-    * @brief set dynamic input dims 
-    */    
+    * @brief set dynamic input dims
+    */
     Result SetDynamicDims(std::vector<std::string> dym_dims);
 
     /**
     * @brief check dynamic input image size valid
     */
     Result CheckDynamicShape(std::vector<std::string> dym_shape_tmp, std::map<std::string, std::vector<int64_t>> &dym_shape_map, std::vector<int64_t> &dims_num);
-    
+
     /**
-    * @brief set dynamic input dims 
-    */    
+    * @brief set dynamic input dims
+    */
     Result SetDynamicShape(std::map<std::string, std::vector<int64_t>> dym_shape_map, std::vector<int64_t> &dims_num);
 
     /**
     * @brief set dynamic batch size
-    */    
+    */
     Result SetDynamicBatchSize(uint64_t batchSize);
-    
+
     /**
     * @brief get max dynamic batch size
-    */    
+    */
     Result GetMaxBatchSize(uint64_t& maxBatchSize);
 
     /**
@@ -114,6 +115,52 @@ public:
     */
     Result SetDynamicHW(std::pair<uint64_t , uint64_t > dynamicPair);
 
+    /**
+    * @brief check model the amount of dynamic aipp input
+    */
+    int CheckDymAIPPInputExsity();
+
+    /**
+    * @brief free aclmdlAIPP
+    */
+    Result FreeAIPP(aclmdlAIPP* aippParmsSet);
+
+    // ------------------分别配置具体AIPP参数-----------------
+    Result SetAIPPSrcImageSize(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet);
+
+    Result SetAIPPInputFormat(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet);
+
+    Result SetAIPPCscParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet);
+
+    Result SetAIPPRbuvSwapSwitch(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet);
+
+    Result SetAIPPAxSwapSwitch(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet);
+
+    Result SetAIPPDtcPixelMean(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+
+    Result SetAIPPDtcPixelMin(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+
+    Result SetAIPPPixelVarReci(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+
+    Result SetAIPPCropParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+
+    Result SetAIPPPaddingParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+    // ------------------分别配置具体AIPP参数-----------------
+
+    /**
+    * @brief set single dynamic aipp config
+    */
+    Result GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* &pAIPPSet, uint64_t maxBatchSize);
+
+    /**
+    * @brief set single or multiple dynamic aipp config
+    */
+    Result SetDynamicAipp();
+
+    /**
+    * @brief set gived single  dynamic aipp config
+    */
+    Result SetInputAIPP(size_t index, void* pAippDynamicSet);
     /**
     * @brief get dynamic input dims info
     */
@@ -130,10 +177,14 @@ public:
     void GetDymHWInfo();
 
     /**
+    * @brief get dynamic aipp list, just support single index
+    */
+    Result GetAIPPIndexList(std::vector<size_t> &dataNeedDynamicAipp);
+    /**
     * @brief destroy desc
     */
     void DestroyDesc();
-    
+
     /**
     * @brief create model input
     * @return result
@@ -215,5 +266,6 @@ private:
     size_t numInputs_;
     size_t numOutputs_;
     size_t g_dymindex;
+    std::map<std::string, aclAippInputFormat> str2aclAippInputFormat;
 };
 #endif

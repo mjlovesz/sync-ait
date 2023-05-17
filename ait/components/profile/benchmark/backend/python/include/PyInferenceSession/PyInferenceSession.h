@@ -33,6 +33,7 @@ namespace py = pybind11;
 
 #include "Base/ModelInfer/ModelInferenceProcessor.h"
 #include "Base/Tensor/TensorBase/TensorBase.h"
+#include "Base/ModelInfer/DynamicAippConfig.h"
 
 namespace Base {
 
@@ -42,7 +43,7 @@ class PyInferenceSession
 public:
     PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<SessionOptions> options);
     ~PyInferenceSession();
-    
+
     std::vector<TensorBase> InferMap(std::vector<std::string>& output_names, std::map<std::string, TensorBase>& feeds);
     std::vector<TensorBase> InferVector(std::vector<std::string>& output_names, std::vector<TensorBase>& feeds);
 
@@ -70,6 +71,23 @@ public:
     int SetDynamicShape(std::string dymshapeStr);
     int SetCustomOutTensorsSize(std::vector<size_t> customOutSize);
 
+    uint64_t GetMaxDymBatchsize();
+    int SetDymAIPPInfoSet();
+    int GetDymAIPPInputExsity();
+    int CheckDymAIPPInputExsity();
+
+    int AippSetMaxBatchSize(uint64_t batchSize);
+    int SetInputFormat(std::string iptFmt);
+    int SetSrcImageSize(std::vector<int> srcImageSize);
+    int SetRbuvSwapSwitch(int rsSwitch);
+    int SetAxSwapSwitch(int asSwitch);
+    int SetCscParams(std::vector<int> cscParams);
+    int SetCropParams(std::vector<int> cropParams);
+    int SetPaddingParams(std::vector<int> padParams);
+    int SetDtcPixelMean(std::vector<int> meanParams);
+    int SetDtcPixelMin(std::vector<float> minParams);
+    int SetPixelVarReci(std::vector<float> reciParams);
+
     TensorBase CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc, std::vector<std::string>& filesList);
 
     int Finalize();
@@ -89,6 +107,7 @@ private:
 
 #ifdef COMPILE_PYTHON_MODULE
     void RegistInferenceSession(py::module &m);
+    void RegistAippConfig(py::class_<Base::PyInferenceSession, std::shared_ptr<Base::PyInferenceSession>>& model);
 #endif
 
 #endif
