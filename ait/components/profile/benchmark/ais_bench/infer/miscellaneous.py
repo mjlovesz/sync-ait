@@ -1,23 +1,8 @@
-# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-
 import os
 import sys
 import json
-import itertools
 import numpy as np
+import itertools
 
 from ais_bench.infer.utils import logger
 
@@ -25,35 +10,61 @@ from ais_bench.infer.utils import logger
 def get_modules_version(name):
     try:
         import pkg_resources
-    except ImportError as err:
-        logger.info(f'Fail to import pkg_resources from {err}')
-
+    except ImportError:
+        return None
     pkg = pkg_resources.get_distribution(name)
-
-    try:
-        pkg_version = pkg.version
-    except AttributeError as err:
-        logger.info(f'Package does not have attribute `version` from {err}')
-    return pkg_version
+    return pkg.version
 
 
 def version_check(args):
     aclruntime_version = get_modules_version('aclruntime')
     if aclruntime_version is None or aclruntime_version == "0.0.1":
-        logger.warning(
-            "aclruntime version:{} is lower please update aclruntime follow any one method".format(aclruntime_version)
-        )
-        logger.warning(
-            "1. visit https://gitee.com/ascend/tools to install ais_bench"
-        )
-        url = 'https://gitee.com/ascend/tools.git#egg=aclruntime&subdirectory=ais-bench_workload/tool/ais_bench/backend'
-        logger.warning(
-            "2. or run cmd: pip3  install -v --force-reinstall "
-            f"'git+{url}'"
-            " to install"
-        )
+        logger.warning("aclruntime version:{} is lower please update aclruntime follow any one method"
+                       .format(aclruntime_version))
+        logger.warning("1. visit https://gitee.com/ascend/tools/tree/master/ais-bench_workload/tool/ais_bench"
+                       "to install")
+        url = 'https://gitee.com/ascend/tools.git'
+        logger.warning(f"2. or run cmd: pip3  install -v --force-reinstall 'git+{url}' to install ais_bench")
         # set old run mode to run ok
         args.run_mode = "tensor"
+
+
+def get_model_name(model):
+    path_list = model.split('/')
+    return path_list[-1][:-3]
+
+
+def check_valid_acl_json_for_dump(acl_json_path, model):
+    with open(acl_json_path, 'r') as f:
+        acl_json_dict = json.load(f)
+    model_name_correct = get_model_name(model)
+    if acl_json_dict.get("dump") is not None:
+        # check validity of dump_list (model_name)
+        dump_list_val = acl_json_dict["dump"].get("dump_list")
+        if dump_list_val is not None:
+            if dump_list_val == [] or dump_list_val[0].get("model_name") != model_name_correct:
+                logger.warning("dump failed, 'model_name' is not set or set incorrectly. correct"
+                               "'model_name' should be {}".format(model_name_correct))
+        else:
+            logger.warning("dump failed, acl.json need to set 'dump_list' attribute")
+        # check validity of dump_path
+        dump_path_val = acl_json_dict["dump"].get("dump_path")
+        if dump_path_val is not None:
+            if os.path.isdir(dump_path_val) and os.access(dump_path_val, os.R_OK) and os.access(dump_path_val, os.W_OK):
+                pass
+            else:
+                logger.warning("dump failed, 'dump_path' not exists or has no read/write permission")
+        else:
+            logger.warning("dump failed, acl.json need to set 'dump_path' attribute")
+        # check validity of dump_op_switch
+        dump_op_switch_val = acl_json_dict["dump"].get("dump_op_switch")
+        if dump_op_switch_val is not None and dump_op_switch_val not in {"on", "off"}:
+            logger.warning("dump failed, 'dump_op_switch' need to be set as 'on' or 'off'")
+        # check validity of dump_mode
+        dump_mode_val = acl_json_dict["dump"].get("dump_mode")
+        if dump_mode_val is not None and dump_mode_val not in {"input", "output", "all"}:
+            logger.warning("dump failed, 'dump_mode' need to be set as 'input', 'output' or 'all'")
+    return
 
 
 def get_acl_json_path(args):
@@ -61,7 +72,7 @@ def get_acl_json_path(args):
     get acl json path. when args.profiler is true or args.dump is True, create relative acl.json , default current folder
     """
     if args.acl_json_path is not None:
-        check_valid_acljson_for_dump(args.acl_json_path, args.model)
+        check_valid_acl_json_for_dump(args.acl_json_path, args.model)
         return args.acl_json_path
     if not args.profiler and not args.dump:
         raise RuntimeError(f'Invalid args.profiler ({args.profiler}) and args.dump ({args.dump})')
@@ -96,8 +107,8 @@ def get_batchsize(session, args):
     batchsize = intensors_desc[0].shape[0]
     if args.dym_batch != 0:
         batchsize = int(args.dym_batch)
-    elif args.dym_dims is not None or args.dym_shape is not None:
-        instr = args.dym_dims if args.dym_dims is not None else args.dym_shape
+    elif args.dym_dims !=None or args.dym_shape !=None:
+        instr = args.dym_dims if args.dym_dims !=None else args.dym_shape
         elems = instr.split(';')
         for elem in elems:
             name, shapestr = elem.split(':')
@@ -118,20 +129,20 @@ def get_range_list(ranges):
                 start = int(content.split('~')[0])
                 end = int(content.split('~')[1])
                 step = int(content.split('~')[2]) if len(content.split('~')) == 3 else 1
-                ranges = [str(i) for i in range(start, end + 1, step)]
-            elif '-' in content:
+                ranges = [ str(i) for i in range(start, end+1, step)]
+            elif '-' in content :
                 ranges = content.split('-')
             else:
                 start = int(content)
-                ranges = [str(start)]
+                ranges = [ str(start) ]
             shapes.append(ranges)
             logger.debug("content:{} get range{}".format(content, ranges))
-        shape_list = [','.join(s) for s in list(itertools.product(*shapes))]
-        info = ["{}:{}".format(name, s) for s in shape_list]
+        shape_list = [ ','.join(s) for s in list(itertools.product(*shapes)) ]
+        info = [ "{}:{}".format(name, s) for s in shape_list ]
         info_list.append(info)
         logger.debug("name:{} shapes:{} info:{}".format(name, shapes, info))
 
-    res = [';'.join(s) for s in list(itertools.product(*info_list))]
+    res = [ ';'.join(s) for s in list(itertools.product(*info_list)) ]
     logger.debug("range list:{}".format(res))
     return res
 
@@ -158,40 +169,36 @@ def get_dymshape_list(input_ranges):
 
 # get throughput from out log
 def get_throughtput_from_log(log_path):
-    if os.path.exists(log_path) is False:
+    if os.path.exists(log_path) == False:
         return "Failed", 0
-
-    cmd = "cat {} | grep throughput".format(log_path)
-    cmd = cmd + " | awk '{print $NF}'"
     try:
+        cmd = "cat {} | grep throughput".format(log_path)
+        cmd = cmd + " | awk '{print $NF}'"
         outval = os.popen(cmd).read()
-    except Exception as e:
-        logger.warning("get throughtput failed e:{}".format(e))
-        return "Failed", 0
-    if outval == "":
-        return "Failed", 0
-    try:
+        if outval == "":
+            return "Failed", 0
         throughtput = float(outval)
+        return "OK", throughtput
     except Exception as e:
         logger.warning("get throughtput failed e:{}".format(e))
-    return "OK", throughtput
+        return "Failed", 0
 
 
 def dymshape_range_run(args):
     dymshape_list = get_dymshape_list(args.dym_shape_range)
     results = []
-    log_path = "./dym.log" if args.output is None else os.path.join(args.output, "/dym.log")
+    log_path = "./dym.log" if args.output is None else args.output + "/dym.log"
     for dymshape in dymshape_list:
         cmd = "rm -rf {};{} {} {}".format(log_path, sys.executable, ' '.join(sys.argv),
-                                          "--dymShape={}  | tee {}".format(dymshape, log_path))
-        result = {"dymshape": dymshape, "cmd": cmd, "result": "Failed", "throughput": 0}
+            "--dym-shape={}  | tee {}".format(dymshape,  log_path))
+        result = { "dymshape" : dymshape, "cmd": cmd, "result": "Failed", "throughput" : 0 }
         logger.debug("cmd:{}".format(cmd))
         os.system(cmd)
         result["result"], result["throughput"] = get_throughtput_from_log(log_path)
         logger.info("dymshape:{} end run result:{}".format(dymshape, result["result"]))
         results.append(result)
 
-    tlist = [result["throughput"] for result in results if result["result"] == "OK"]
+    tlist = [ result["throughput"] for result in results if result["result"] == "OK" ]
     logger.info("-----------------dyshape_range Performance Summary------------------")
     logger.info("run_count:{} success_count:{} avg_throughput:{}".format(
         len(results), len(tlist), np.mean(tlist)))
