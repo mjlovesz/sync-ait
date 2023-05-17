@@ -25,6 +25,15 @@ logger = logging.getLogger(__name__)
 
 
 class TestClass:
+    @staticmethod
+    def test_args_invalid_model_path():
+        device_id = 0
+        model_path = "xxx_invalid.om"
+        options = aclruntime.session_options()
+        with pytest.raises(RuntimeError) as e:
+            aclruntime.InferenceSession(model_path, device_id, options)
+            logger.info("when om_path invalid error msg is %s", e)
+
     @classmethod
     def setup_class(cls):
         """
@@ -46,14 +55,6 @@ class TestClass:
         with pytest.raises(RuntimeError) as e:
             aclruntime.InferenceSession(model_path, device_id, options)
             logger.info("when device_id invalid error msg is %s", e)
-
-    def test_args_invalid_model_path(self):
-        device_id = 0
-        model_path = "xxx_invalid.om"
-        options = aclruntime.session_options()
-        with pytest.raises(RuntimeError) as e:
-            aclruntime.InferenceSession(model_path, device_id, options)
-            logger.info("when om_path invalid error msg is %s", e)
 
     ## 待完善 增加 loopo 和 log_level的校验和判断 当前不完善
 

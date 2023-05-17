@@ -26,6 +26,10 @@ logger = logging.getLogger(__name__)
 
 
 class TestClass:
+    @staticmethod
+    def get_input_tensor_name():
+        return "actual_input_1"
+
     @classmethod
     def setup_class(cls):
         """
@@ -39,9 +43,6 @@ class TestClass:
 
     def init(self):
         self.model_name = "resnet50"
-
-    def get_input_tensor_name(self):
-        return "actual_input_1"
 
     def get_resnet_dymshape_om_path(self):
         return os.path.join(TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_dymshape.om")
