@@ -187,10 +187,10 @@ class NpuDumpData(DumpData):
             }
         }
         if os.access(acl_json_path, os.W_OK):
-            json_flags =os.O_RDONLY | os.O_WRONLY | os.O_CREAT | os.O_EXCL
+            json_flags =os.O_WRONLY | os.O_CREAT | os.O_EXCL
             json_modes = stat.S_IWUSR | stat.S_IRUSR |stat.S_IRGRP | stat.S_IROTH
             try:
-                with os.fdopen(os.open(acl_json_path, json_flags, json_modes), "w") as write_json:
+                with os.fdopen(os.open(acl_json_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, stat.S_IWUSR | stat.S_IRUSR), "w") as write_json:
                 # with open(acl_json_path, "w") as write_json:
                     try:
                         json.dump(load_dict, write_json)
