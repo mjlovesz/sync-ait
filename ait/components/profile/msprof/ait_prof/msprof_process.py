@@ -25,7 +25,7 @@ from .args_adapter import MsProfArgsAdapter
 
 def msprof_run_profiling(args, msprof_bin):
     cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
-    msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution={}" \
+    msprof_cmd = "{} --output={}/profiler --application=\"{}\" --model-execution={}" \
                " --sys-hardware-mem={} --sys-cpu-profiling={}" \
                " --sys-profiling={} --sys-pid-profiling={} --dvpp-profiling={} " \
                "--runtime-api={} --task-time={} --aicpu={}".format(msprof_bin, args.output, args.application,
