@@ -22,7 +22,7 @@ from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.matcher import Matcher, MatchResult
-from auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern, MatchBase
+from auto_optimizer.pattern.pattern import MatchPattern, Pattern, MatchBase
 
 
 class DummyKnowledge(KnowledgeBase):
@@ -110,7 +110,7 @@ if __name__ == '__main__':
         .add_edge('Transpose_0', 'Mul_0') \
         .add_edge('Mul_0', 'MatMul_0') \
         .add_edge('MatMul_0', 'Add_0') \
-        .set_loop(MATCH_PATTERN.MATCH_ONCE)
+        .set_loop(MatchPattern.MATCH_ONCE)
 
     # 源onnx路径
     ONNX_PATH = './onnx/aasist_bs1_ori.onnx'
