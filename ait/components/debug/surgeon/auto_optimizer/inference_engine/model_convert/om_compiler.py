@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,20 +15,12 @@
 import subprocess
 import logging
 
-from .compiler import Compiler
+from auto_optimizer.inference_engine.model_convert.compiler import Compiler
 
 logger = logging.getLogger("auto-optimizer")
 
 
 class OmCompiler(Compiler):
-
-    @staticmethod
-    def _check_required_params(cfg):
-        required_params = ('type', 'framework', 'model', 'output', 'soc_version')
-        params = cfg.keys()
-        for param in required_params:
-            if param not in params:
-                raise RuntimeError("Parameter missing! '{}' is required in om convert!".format(param))
 
     def __init__(self, cfg):
         OmCompiler._check_required_params(cfg)
@@ -43,6 +35,14 @@ class OmCompiler(Compiler):
             self.atc_cmd.append('aoe')
         else:
             raise RuntimeError("Invalid cmd type! Only support 'atc', 'aoe', but got '{}'.".format(cmd_type))
+
+    @staticmethod
+    def _check_required_params(cfg):
+        required_params = ('type', 'framework', 'model', 'output', 'soc_version')
+        params = cfg.keys()
+        for param in required_params:
+            if param not in params:
+                raise RuntimeError("Parameter missing! '{}' is required in om convert!".format(param))
 
     def build_model(self):
         logger.debug(self.atc_cmd)

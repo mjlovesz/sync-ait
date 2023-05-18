@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 
 from typing import Dict
 
-from .register import Register
-from .utils import format_to_module
+from auto_optimizer.common.register import Register
+from auto_optimizer.common.utils import format_to_module
 
 
 class ConfigDict(Dict):
@@ -26,35 +26,18 @@ class ConfigDict(Dict):
         try:
             value = super().__getattr__(item)
         except Exception as err:
-            raise RuntimeError("invalid dict error={}".format(err))
+            raise RuntimeError("invalid dict error={}".format(err)) from err
 
         return value
 
 
 class Config:
-    def __init__(self, config_dict={}):
+    def __init__(self, config_dict=None):
+        config_dict = config_dict or {}
         if not isinstance(config_dict, dict):
             raise TypeError('config_dict must be dict')
 
         super().__setattr__('_config_dict', ConfigDict(config_dict))
-
-    @staticmethod
-    def read_by_file(file_name):
-        """
-        读取模型配置文件，返回模型相关配置参数及推理流程
-        """
-        try:
-            format_path = format_to_module(file_name)
-            model_dict = Register.import_module(format_path)
-
-            if not isinstance(model_dict.model, Dict):
-                raise RuntimeError("config is not Dict")
-
-            config_dict = model_dict.model
-        except Exception as err:
-            raise RuntimeError("invalid read file error={}".format(err))
-
-        return Config(config_dict)
 
     def __repr__(self):
         return f'{self._config_dict.__repr__()}'
@@ -73,3 +56,20 @@ class Config:
 
     def __getstate__(self):
         return self._config_dict
+
+    @staticmethod
+    def read_by_file(file_name):
+        """
+        读取模型配置文件，返回模型相关配置参数及推理流程
+        """
+        try:
+            format_path = format_to_module(file_name)
+            model_dict = Register.import_module(format_path)
+        except Exception as err:
+            raise RuntimeError("invalid read file error={}".format(err)) from err
+        if not isinstance(model_dict.model, Dict):
+            raise RuntimeError("config is not Dict")
+
+        config_dict = model_dict.model
+
+        return Config(config_dict)

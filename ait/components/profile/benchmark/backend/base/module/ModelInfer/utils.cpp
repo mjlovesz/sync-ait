@@ -1,18 +1,18 @@
-/**
-* Copyright 2020 Huawei Technologies Co., Ltd
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-
-* http://www.apache.org/licenses/LICENSE-2.0
-
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+/*
+ * Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include "utils.h"
 #include "acl/acl.h"
@@ -137,8 +137,9 @@ int Utils::str2num(char* str)
 {
     int n = 0;
     int flag = 0;
+    const int decimal = 10;
     while (*str >= '0' && *str <= '9') {
-        n = n * 10 + (*str - '0');
+        n = n * decimal + (*str - '0');
         str++;
     }
     if (flag == 1) {
@@ -153,7 +154,9 @@ std::string Utils::modelName(string& s)
     position1 = s.find_last_of("/");
     if (position1 == s.npos) {
         position1 = 0;
-    }else{position1 = position1 + 1;
+    }
+    else {
+        position1 = position1 + 1;
     }
     position2 = s.find_last_of(".");
     std::string modelName = s.substr(position1, position2 - position1);
@@ -211,8 +214,9 @@ void Utils::printHelpLetter()
 double Utils::printDiffTime(time_t begin, time_t end)
 {
     double diffT = difftime(begin, end);
-    printf("The inference time is: %f millisecond\n", 1000 * diffT);
-    return diffT * 1000;
+    const double sec_to_msec = 1000;
+    printf("The inference time is: %f millisecond\n", sec_to_msec * diffT);
+    return diffT * sec_to_msec;
 }
 
 double Utils::InferenceTimeAverage(double* x, int len)
@@ -220,7 +224,11 @@ double Utils::InferenceTimeAverage(double* x, int len)
     double sum = 0;
     for (int i = 0; i < len; i++)
         sum += x[i];
-    return sum / len;
+    if (len != 0) {
+        return sum / len;
+    }
+    printf("Inference Time Can't divide zero!");
+    return -1;
 }
 
 double Utils::InferenceTimeAverageWithoutFirst(double* x, int len)
@@ -236,6 +244,7 @@ double Utils::InferenceTimeAverageWithoutFirst(double* x, int len)
 
 void Utils::ProfilerJson(bool isprof, map<char, string>& params)
 {
+    mode_t mod = 0750;
     if (isprof) {
         std::string out_path = params['o'].c_str();
         std::string out_profiler_path = out_path + "/profiler";
@@ -246,20 +255,21 @@ void Utils::ProfilerJson(bool isprof, map<char, string>& params)
         outstr << "\"aic_metrics\": \"\"}\n}";
         outstr.close();
 
-        //mkdir profiler output dir
+        // mkdir profiler output dir
         const char* temp_s = out_path.c_str();
         if (NULL == opendir(temp_s)) {
-            mkdir(temp_s, 0775);
+            mkdir(temp_s, mod);
         }
         const char* temp_s1 = out_profiler_path.c_str();
         if (NULL == opendir(temp_s1)) {
-            mkdir(temp_s1, 0775);
+            mkdir(temp_s1, mod);
         }
     }
 }
 
 void Utils::DumpJson(bool isdump, map<char, string>& params)
 {
+    mode_t mod = 0750;
     if (isdump) {
         std::string modelPath = params['m'].c_str();
         std::string modelName = Utils::modelName(modelPath);
@@ -273,24 +283,24 @@ void Utils::DumpJson(bool isdump, map<char, string>& params)
         outstr << "    }\n}";
         outstr.close();
 
-        //mkdir dump output dir
+        // mkdir dump output dir
         const char* temp_s = out_path.c_str();
         if (NULL == opendir(temp_s)) {
-            mkdir(temp_s, 0775);
+            mkdir(temp_s, mod);
         }
         const char* temp_s1 = out_dump_path.c_str();
         if (NULL == opendir(temp_s1)) {
-            mkdir(temp_s1, 0775);
+            mkdir(temp_s1, mod);
         }
     }
 }
 
 int Utils::ScanFiles(std::vector<std::string> &fileList, std::string inputDirectory)
 {
-    const char* str= inputDirectory.c_str();
-    DIR* dir= opendir(str);
-    struct dirent* p= NULL;
-    while((p= readdir(dir)) != NULL )
+    const char* str = inputDirectory.c_str();
+    DIR* dir = opendir(str);
+    struct dirent* p = NULL;
+    while((p= readdir(dir)) != NULL)
     {
         if (p->d_name[0] != '.')
         {
@@ -318,15 +328,15 @@ void Utils::SplitStringSimple(string str, vector<string> &out, char split1, char
         split1_out.push_back(cell);
     }
 
-    //find the last split2 because split2 only once
-    for (auto var : split1_out){
+    // find the last split2 because split2 only once
+    for (auto var : split1_out) {
         size_t pos = var.rfind(split2);
-        if(pos != var.npos){
+        if(pos != var.npos) {
             split2_out.push_back(var.substr(pos + 1, var.size()-pos-1));
         }
     }
 
-    for (size_t i = 0; i < split2_out.size(); ++i){
+    for (size_t i = 0; i < split2_out.size(); ++i) {
         istringstream block_tmp1(split2_out[i]);
         while (getline(block_tmp1, cell2, split3)) {
             out.push_back(cell2);
@@ -344,11 +354,11 @@ void Utils::SplitStringWithSemicolonsAndColons(string str, vector<string> &out, 
     while (getline(block, cell, split1)) {
         split1_out.push_back(cell);
     }
-    for (size_t i = 0; i < split1_out.size(); ++i){
+    for (size_t i = 0; i < split1_out.size(); ++i) {
         istringstream block_tmp(split1_out[i]);
         int index = 0;
         while (getline(block_tmp, cell1, split2)) {
-            if (index == 1){
+            if (index == 1) {
                 out.push_back(cell1);
             }
             index += 1;
@@ -375,9 +385,9 @@ Result Utils::SplitStingGetNameDimsMulMap(std::vector<std::string> in_dym_shape_
     string name;
     string shape_str;
 
-    for (size_t i = 0; i < in_dym_shape_str.size(); ++i){
+    for (size_t i = 0; i < in_dym_shape_str.size(); ++i) {
         size_t pos = in_dym_shape_str[i].rfind(':');
-        if(pos == in_dym_shape_str[i].npos){
+        if (pos == in_dym_shape_str[i].npos) {
             ERROR_LOG("find no : split i:%zu str:%s\n", i, in_dym_shape_str[i].c_str());
             return FAILED;
         }
@@ -387,7 +397,7 @@ Result Utils::SplitStingGetNameDimsMulMap(std::vector<std::string> in_dym_shape_
         vector<string> shape_tmp;
         Utils::SplitStringWithPunctuation(shape_str, shape_tmp, ',');
         int64_t DimsMul = 1;
-        for(size_t j = 0; j < shape_tmp.size(); ++j){
+        for(size_t j = 0; j < shape_tmp.size(); ++j) {
 	        DimsMul = DimsMul * atoi(shape_tmp[j].c_str());
         }
         out_namedimsmul_map[name] = DimsMul;

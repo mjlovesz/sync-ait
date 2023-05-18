@@ -29,7 +29,7 @@ from auto_optimizer.pattern import KnowledgeFactory
 from auto_optimizer.tools.log import logger
 from auto_optimizer.common.utils import check_output_model_path
 
-from .options import (
+from auto_optimizer.options import (
     arg_path,
     arg_input,
     arg_output,
@@ -60,9 +60,9 @@ def is_graph_input_static(graph: BaseGraph) -> bool:
         for dim in input_.shape:
             try:
                 dim = int(dim)
-                if dim <= 0:
-                    return False
             except ValueError:
+                return False
+            if dim <= 0:
                 return False
     return True
 
@@ -77,24 +77,32 @@ def optimize_onnx(
     '''Optimize a onnx file and save as a new file.'''
     try:
         graph = OnnxGraph.parse(input_model.as_posix(), add_name_suffix=False)
-        config.is_static = is_graph_input_static(graph)
-        if infer_test:
-            if not (config.is_static or (config.input_shape_range and config.dynamic_shape and config.output_size)):
-                logger.warning('Failed to optimize %s with inference test.', input_model.as_posix())
-                logger.warning('Didn\'t specify input_shape_range or dynamic_shape or output_size.')
-                return []
-        optimize_action = partial(optimizer.apply_knowledges_with_infer_test, cfg=config) \
-            if infer_test else optimizer.apply_knowledges
+    except Exception as exc:
+        logger.warning('%s model parse failed.', input_model.as_posix())
+        logger.warning('exception: %s', exc)
+        return []
+
+    config.is_static = is_graph_input_static(graph)
+    if infer_test:
+        if not (config.is_static or (config.input_shape_range and config.dynamic_shape and config.output_size)):
+            logger.warning('Failed to optimize %s with inference test.', input_model.as_posix())
+            logger.warning('Didn\'t specify input_shape_range or dynamic_shape or output_size.')
+            return []
+    optimize_action = partial(optimizer.apply_knowledges_with_infer_test, cfg=config) \
+        if infer_test else optimizer.apply_knowledges
+
+    try:
         graph_opt, applied_knowledges = optimize_action(graph=graph)
-        if applied_knowledges:
-            if not output_model.parent.exists():
-                output_model.parent.mkdir(parents=True)
-            graph_opt.save(output_model.as_posix())
-        return applied_knowledges
     except Exception as exc:
         logger.warning('%s optimize failed.', input_model.as_posix())
         logger.warning('exception: %s', exc)
         return []
+    
+    if applied_knowledges:
+        if not output_model.parent.exists():
+            output_model.parent.mkdir(parents=True)
+        graph_opt.save(output_model.as_posix())
+    return applied_knowledges
 
 
 def evaluate_onnx(
@@ -103,9 +111,9 @@ def evaluate_onnx(
     verbose: bool,
 ) -> List[str]:
     '''Search knowledge pattern in a onnx model.'''
+    if verbose:
+        logger.info(f'Evaluating {model.as_posix()}')
     try:
-        if verbose:
-            logger.info(f'Evaluating {model.as_posix()}')
         graph = OnnxGraph.parse(model.as_posix(), add_name_suffix=False)
         graph, applied_knowledges = optimizer.apply_knowledges(graph)
         return applied_knowledges
@@ -131,9 +139,9 @@ def cli() -> None:
 @cli.command('list', short_help='List available Knowledges.', context_settings=CONTEXT_SETTINGS)
 def command_list() -> None:
     registered_knowledges = KnowledgeFactory.get_knowledge_pool()
-    print('Available knowledges:')
+    logger.info('Available knowledges:')
     for idx, name in enumerate(registered_knowledges):
-        print(f'  {idx:2d} {name}')
+        logger.info(f'  {idx:2d} {name}')
 
 
 @cli.command(
