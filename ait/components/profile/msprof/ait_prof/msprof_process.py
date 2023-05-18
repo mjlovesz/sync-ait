@@ -40,7 +40,8 @@ def msprof_run_profiling(args, msprof_bin):
 
 def args_rules(args):
     if args.output is None and args.output_dirname is not None:
-        logger.error("parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
+        logger.error("parameter --output_dirname cann't be used alone. "
+                     "Please use it together with the parameter --output!\n")
         raise RuntimeError('error bad parameters --output_dirname')
     return args
 
