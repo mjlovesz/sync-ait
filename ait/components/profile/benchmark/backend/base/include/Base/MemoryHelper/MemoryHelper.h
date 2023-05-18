@@ -1,5 +1,5 @@
 /*
- * Copyright(C) 2020. Huawei Technologies Co.,Ltd. All rights reserved.
+ * Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,7 @@ struct MemoryData {
 class MemoryHelper {
 public:
     // malloc memory
+    static APP_ERROR specificMalloc(MemoryData& data);
     static APP_ERROR Malloc(MemoryData& data);
     static APP_ERROR Free(MemoryData& data);
     static APP_ERROR Memset(MemoryData& data, int32_t value, size_t count);
@@ -63,18 +64,18 @@ private:
     static bool IsHostToHost(const MemoryData& dest, const MemoryData& src);
     static bool IsDeviceToDevice(const MemoryData& dest, const MemoryData& src);
     static bool IsHostToDevice(const MemoryData& dest, const MemoryData& src);
+    static void LogErrorInfo();
 };
 
 struct MemorySummary {
     std::vector<float> H2DTimeList;
     std::vector<float> D2HTimeList;
-    void Reset(){
+    void Reset() {
         H2DTimeList.clear();
         D2HTimeList.clear();
     }
 };
 
 struct MemorySummary* GetMemorySummaryPtr();
-
 }  // namespace Base
 #endif
