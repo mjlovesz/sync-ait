@@ -7,7 +7,7 @@
 ## 运行示例
 
 ```bash
-ait profile benchmark --om-model ./pth_resnet50_bs1.om --input ./data/ --device 1,2
+ait benchmark --om-model ./pth_resnet50_bs1.om --input ./data/ --device 1,2
 ```
 
 输出结果依次展示每个Device的推理测试结果，示例如下：

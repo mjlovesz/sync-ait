@@ -70,7 +70,7 @@ profiler，采集性能数据；dump，保存全部算子输出。支持以--acl
   示例命令如下：
   
   ```bash
-  ait profile benchmark --om-model ./resnet50_v1_bs1_fp32.om --acl-json-path ./acl.json
-  ait profile benchmark --om-model /home/model/resnet50_v1.om --output ./ --dump 1
-  ait profile benchmark --om-model /home/model/resnet50_v1.om --output ./ --profiler 1
+  ait benchmark --om-model ./resnet50_v1_bs1_fp32.om --acl-json-path ./acl.json
+  ait benchmark --om-model /home/model/resnet50_v1.om --output ./ --dump 1
+  ait benchmark --om-model /home/model/resnet50_v1.om --output ./ --profiler 1
   ```
