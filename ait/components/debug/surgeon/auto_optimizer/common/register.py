@@ -44,20 +44,6 @@ class Register:
         Register._handle_errors(errors)
         return
 
-    def import_modules(self):
-        modules = []
-        try:
-            self._add_modules(modules)
-        except Exception as error:
-            logger.error("add_modules failed, {}".format(error))
-            raise RuntimeError("add_modules {} import failed: {}".format(error)) from error
-
-        for module in modules:
-            if not module:
-                continue
-
-            Register.import_module(module)
-
     @staticmethod
     def _handle_errors(errors):
         if not errors:
@@ -73,3 +59,17 @@ class Register:
             modules += [
                 format_to_module(os.path.join(root.split(pwd_dir)[1], file)) for file in files
             ]
+
+    def import_modules(self):
+        modules = []
+        try:
+            self._add_modules(modules)
+        except Exception as error:
+            logger.error("add_modules failed, {}".format(error))
+            raise RuntimeError("add_modules {} import failed: {}".format(error)) from error
+
+        for module in modules:
+            if not module:
+                continue
+
+            Register.import_module(module)
