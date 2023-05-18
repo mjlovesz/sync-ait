@@ -58,14 +58,6 @@ class Register:
 
             Register.import_module(module)
 
-    def _add_modules(self, modules: list):
-        pwd_dir = os.getcwd()
-
-        for root, _, files in os.walk(self.path_name, topdown=False):
-            modules += [
-                format_to_module(os.path.join(root.split(pwd_dir)[1], file)) for file in files
-            ]
-
     @staticmethod
     def _handle_errors(errors):
         if not errors:
@@ -73,3 +65,11 @@ class Register:
 
         for name, err in errors:
             raise RuntimeError("Module {} import failed: {}".format(name, err))
+
+    def _add_modules(self, modules: list):
+        pwd_dir = os.getcwd()
+
+        for root, _, files in os.walk(self.path_name, topdown=False):
+            modules += [
+                format_to_module(os.path.join(root.split(pwd_dir)[1], file)) for file in files
+            ]
