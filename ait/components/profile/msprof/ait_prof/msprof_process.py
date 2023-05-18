@@ -19,8 +19,8 @@ import time
 import shutil
 import copy
 
-from .utils import logger
-from .args_adapter import MsProfArgsAdapter
+from ait_prof.utils import logger
+from ait_prof.args_adapter import MsProfArgsAdapter
 
 
 def msprof_run_profiling(args, msprof_bin):
