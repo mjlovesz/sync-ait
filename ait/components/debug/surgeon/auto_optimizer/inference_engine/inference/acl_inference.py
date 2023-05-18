@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,18 +13,23 @@
 # limitations under the License.
 
 import re
+import sys
 import logging
 from abc import ABC
 import subprocess
 
 import numpy as np
 
-from .inference_base import InferenceBase
-from ..data_process_factory import InferenceFactory
+from auto_optimizer.inference_engine.inference.inference_base import InferenceBase
+from auto_optimizer.inference_engine.data_process_factory import InferenceFactory
 
 try:
     from ais_bench.infer.interface import InferSession
     import aclruntime
+except ImportError as exc:
+    logging.warning('Failed to import benchmark module, please install extra [inference] feature.')
+
+if 'aclruntime' in sys.modules:
     tensor_type_to_numpy_type = {
         aclruntime.dtype.int8: np.int8,
         aclruntime.dtype.uint8: np.uint8,
@@ -39,10 +44,9 @@ try:
         aclruntime.dtype.double: np.double,
         aclruntime.dtype.bool: np.bool_,
     }
-except ImportError as exc:
-    logging.warning('Failed to import InferSession, please install extra [inference] feature.')
 
-logging = logging.getLogger("auto-optimizer")
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger("auto-optimizer")
 
 
 @InferenceFactory.register("acl")
@@ -50,10 +54,11 @@ class AclInference(InferenceBase, ABC):
 
     def __init__(self):
         # support msame and pyacl
+        super().__init__()
         self.tool = 'pyacl'
 
     def __call__(self, loop, cfg, in_queue, out_queue):
-        logging.debug("inference start")
+        logger.debug("inference start")
 
         if self.tool == 'msame':
             msame_cmd = [
@@ -76,24 +81,25 @@ class AclInference(InferenceBase, ABC):
             try:
                 init_acl(device_id)
             except Exception as err:
-                logging.error("acl init failed! error message: {}".format(err))
-                raise RuntimeError("acl init failed! {}".format(err))
+                logger.error("acl init failed! error message: {}".format(err))
+                raise RuntimeError("acl init failed! {}".format(err)) from err
             try:
                 net = AclNet(model_path=cfg['model'], device_id=device_id)
             except Exception as err:
-                logging.error("load model failed! error message: {}".format(err))
-                raise RuntimeError("load model failed! {}".format(err))
+                logger.error("load model failed! error message: {}".format(err))
+                raise RuntimeError("load model failed! {}".format(err)) from err
             time = 0
-            for i in range(loop):
+            for _ in range(loop):
                 data = in_queue.get()
                 if len(data) < 2:   # include file_name and data
-                    logging.error("data len less than 2! data should include label and data!")
+                    logger.error("data len less than 2! data should include label and data!")
                     raise RuntimeError("input params error len={}".format(len(data)))
                 try:
                     outputs, exe_time = net(data[1])
                 except Exception as err:
-                    logging.error("acl infer failed! error message: {}".format(err))
+                    logger.error("acl infer failed! error message: {}".format(err))
+                    raise RuntimeError("acl infer error len={}".format(len(data))) from err
                 out_queue.put([data[0], outputs])
                 time += exe_time
-        logging.debug("inference end")
+        logger.debug("inference end")
         return time

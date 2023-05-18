@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,12 +19,18 @@ MatchFunc = Callable[[str], bool]
 
 class Knowledge(object):
 
-    def __init__(self, suggestion: str, apis: List[str] = [],
-        match_funcs: List[MatchFunc] = []
+    def __init__(self, suggestion: str, apis: List[str] = None,
+        match_funcs: List[MatchFunc] = None
     ) -> None:
+        apis = apis or []
+        match_funcs = match_funcs or []
         self._suggestion: str = suggestion
         self._apis = apis
         self._match_funcs = match_funcs
+
+    @property
+    def suggestion(self):
+        return self._suggestion
 
     def analysis(self, line: str) -> bool:
         for func in self._match_funcs:

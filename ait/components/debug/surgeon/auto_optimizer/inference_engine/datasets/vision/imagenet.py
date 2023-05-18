@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ import re
 import logging
 from abc import ABC
 
-from ..dataset_base import DatasetBase
-from ...data_process_factory import DatasetFactory
+from auto_optimizer.inference_engine.datasets.dataset_base import DatasetBase
+from auto_optimizer.inference_engine.data_process_factory import DatasetFactory
 
-logging = logging.getLogger("auto-optimizer")
+logger = logging.getLogger("auto-optimizer")
 
 
 @DatasetFactory.register("imagenet")
@@ -30,11 +30,11 @@ class ImageNetDataset(DatasetBase, ABC):
         和基类的参数顺序和个数需要一致
         """
         logging.debug("dataset start")
-        try:
-            dataset_path, label_path = super()._get_params(cfg)
+        dataset_path, label_path = super()._get_params(cfg)
 
-            data = []
-            labels = []
+        data = []
+        labels = []
+        try:
             with open(label_path, 'r') as f:
                 for label_file in f:
                     image_name, label = re.split(r"\s+", label_file.strip())
@@ -48,12 +48,12 @@ class ImageNetDataset(DatasetBase, ABC):
                         labels.clear()
                         data.clear()
 
-                while len(data) and len(data) < batch_size:
+                while data and len(data) < batch_size:
                     labels.append(labels[0])     # 数据补齐
                     data.append(data[0])
                     out_queue.put([labels, data])
 
         except Exception as err:
-            logging.error("pre_process failed error={}".format(err))
+            logger.error("pre_process failed error={}".format(err))
 
-        logging.debug("dataset end")
+        logger.debug("dataset end")
