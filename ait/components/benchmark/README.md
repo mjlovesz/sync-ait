@@ -115,11 +115,11 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 
 2. 将工具压缩包上传并解压至安装环境。
 
-3. 从工具解压目录下进入/ait/ait/benchmark/ais_bench目录下，执行如下命令进行编译：
+3. 从工具解压目录下进入/ait/ait/components/benchmark/ais_bench目录下，执行如下命令进行编译：
 
    ```bash
    # 进入工具解压目录
-   cd ${HOME}/ait/ait/benchmark
+   cd ${HOME}/ait/ait/components/benchmark
    # 构建aclruntime包
    pip3 wheel ./backend/ -v
    # 构建ais_bench推理程序包
@@ -171,9 +171,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
 1. 执行requirements.txt文件中的依赖安装，执行如下命令：
 
    ```bash
-   cd ${HOME}/ait/ait/benchmark/
-
-
+   cd ${HOME}ait/ait/components/benchmark/
    pip3 install -r ./requirements.txt
    ```
 
