@@ -6,28 +6,26 @@
 <meta http-equiv="Content-Security-Policy" content="script-src 'self' www.google-analytics.com;">
 <meta name="version" content="0.0.0">
 <title>onnx-modifier</title>
-<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='view-grapher.css')}}">
-<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='view-sidebar.css')}}">
-<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='sweetalert.css')}}">
-<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='sweetalert.css')}}">
-<link rel="shortcut icon" type="image/x-icon" href="{{url_for('static', filename='favicon.ico')}}">
-<script src="{{url_for('static', filename='sweetalert.min.js')}}"></script>
-<script src="{{url_for('static', filename='dagre.js')}}"></script>
-<script src="{{url_for('static', filename='base.js')}}"></script>
-<script src="{{url_for('static', filename='text.js')}}"></script>
-<script src="{{url_for('static', filename='json.js')}}"></script>
-<script src="{{url_for('static', filename='xml.js')}}"></script>
-<script src="{{url_for('static', filename='python.js')}}"></script>
-<script src="{{url_for('static', filename='protobuf.js')}}"></script>
-<script src="{{url_for('static', filename='flatbuffers.js')}}"></script>
-<script src="{{url_for('static', filename='zip.js')}}"></script>
-<script src="{{url_for('static', filename='gzip.js')}}"></script>
-<script src="{{url_for('static', filename='tar.js')}}"></script>
-<script src="{{url_for('static', filename='view-grapher.js')}}"></script>
-<script src="{{url_for('static', filename='view-sidebar.js')}}"></script>
-<script src="{{url_for('static', filename='view.js')}}"></script>
-<script src="{{url_for('static', filename='index.js')}}"></script>
-<script src="{{url_for('static', filename='modifier.js')}}"></script>
+<link rel="stylesheet" type="text/css" href="view-grapher.css">
+<link rel="stylesheet" type="text/css" href="view-sidebar.css">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.png">
+<script src="sweetalert.min.js"></script>
+<script src="dagre.js"></script>
+<script src="base.js"></script>
+<script src="text.js"></script>
+<script src="json.js"></script>
+<script src="xml.js"></script>
+<script src="python.js"></script>
+<script src="protobuf.js"></script>
+<script src="flatbuffers.js"></script>
+<script src="zip.js"></script>
+<script src="gzip.js"></script>
+<script src="tar.js"></script>
+<script src="view-grapher.js"></script>
+<script src="view-sidebar.js"></script>
+<script src="view.js"></script>
+<script src="index.js"></script>
+<script src="modifier.js"></script>
 <style>
 html { touch-action: none; overflow: hidden; width: 100%; height: 100%; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; text-rendering: optimizeLegibility; -webkit-text-rendering: optimizeLegibility; -moz-text-rendering: optimizeLegibility; -ms-text-rendering: optimizeLegibility; -o-text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-font-smoothing: antialiased; -ms-font-smoothing: antialiased; -o-font-smoothing: antialiased; }
 body { touch-action: none; overflow: hidden; width: 100%; height: 100%; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "PingFang SC"; font-size: 12px; text-rendering: geometricPrecision; }
@@ -46,7 +44,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .toolbar-back-button:hover { background: #000000; border-color: #000000; }
 .toolbar-name-button { float: left; background: rgba(255, 255, 255, 0.95); border-top-right-radius: 6px; border-bottom-right-radius: 6px; border: 1px solid #777; color: #777; border-left: 1px; border-left-color: #ffffff; margin: 2px 0 2px 0; padding: 0 12px 0 6px; cursor: pointer; width: auto; height: 20px; font-size: 11px; line-height: 0; transition: 0.1s; }
 .toolbar-name-button:hover { color: #000000; }
-.graph-op-button-reset {
+.graph-op-button {
     cursor: pointer;
     background-color: white;
     border: 1px solid grey;
@@ -56,7 +54,17 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     font-size: 20px;
     position:absolute;
     left: 2px;
+}
+.graph-op-button-reset {
     top: 30px;
+}
+
+.graph-op-button-onnxsim {
+    top: 170px;
+}
+
+.graph-op-button-optimizer {
+    top: 205px;
 }
 .graph-op-button-reset:active {  background: #e7e7e7; }
 .graph-op-button-download {
@@ -132,23 +140,23 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .dropdown .separator { margin-top: 2px; margin-bottom: 2px; border-top: 1px; border-bottom: 0; border-style: solid; border-color: #e5e5e5; }
 .about { background-color: #ffffff; }
 .about { overflow: hidden; }
-.about .logo { background-color: #ececec; color: #242424; width: 320px; height: 170px; padding: 40px; opacity: 1.0; border-radius: 5px; border: 0.5px solid #cccccc; box-shadow: 0 0 30px #ddd; }
+.about .logo { background-color: #ececec; color: #242424; width: 700px; height: 210px; padding: 40px; opacity: 1.0; border-radius: 5px; border: 0.5px solid #cccccc; box-shadow: 0 0 30px #ddd; }
 .about.desktop .logo { border: None; border-radius: 0px; }
 .about.desktop .graph { display: none; opacity: 0; }
 .about.desktop .transparent { display: none; opacity: 0; }
 .about.desktop .toolbar { display: none; opacity: 0; }
-.about .logo-name { opacity: 0; }
+.about .logo-name { opacity: 1; bottom: 220px; }
 .about .logo-text { top: -130px; width: 320px; }
 .about .logo-icon { left: 136px; top: -108px; width: 60px; height: 60px; }
 .about .logo-stroke { stroke: #242424; }
 .about .logo-fill { fill: #242424; }
 .about .logo-border { stroke: #242424; }
 .about .logo-glyph { fill: #242424; }
-.about .logo-message { top: 112px; padding-left: 40px; padding-right: 40px; }
+.about .logo-message { top: 212px; padding-left: 40px; padding-right: 40px; }
 .about a { text-decoration: none; color: #242424; }
 .about a:visited { color: inherit; }
 .about a:hover { color: #242424; }
-.about .logo-github { top: 130px; width: 24px; height: 24px; }
+.about .logo-github { top: 130px; width: 24px; height: 24px; opacity: 0;}
 .about .open-file-button { display: none; }
 .about .github-button { display: none; }
 .about .consent-message { display: none; }
@@ -289,7 +297,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
         </svg>
     </button>
 
-    <button id="reset-graph" class="graph-op-button-reset">Reset</button>
+    <button id="reset-graph" class="graph-op-button graph-op-button-reset">Reset</button>
     <button id="download-graph" class="graph-op-button-download">Download</button>
     <input type="checkbox" id="shapeInference" class="download-checkbox-shapeInference"/> 
     <input type="text" value="shape inference" class="download-anno-shapeInference" readonly/> </td>
@@ -298,6 +306,8 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     <button id="add-node" class="graph-op-button-addNode">Add node</button>
     <select id="add-node-dropdown" class="graph-op-add-node-dropdown">
     </select>
+    <button id="onnxsim-graph" class="graph-op-button graph-op-button-onnxsim">OnnxSim</button>
+    <button id="auto-optimizer-graph" class="graph-op-button graph-op-button-optimizer">AutoOptimizer</button>
 
     <button id="back-button" class="toolbar-back-button" title="Back">
         &#x276E;
@@ -308,17 +318,25 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 </div>
 <div id="transparent" class="transparent"></div>
 <div class="center logo">
-    <a href="https://github.com/ZhangGe6/onnx-modifier" target="blank_">
-        <img src="../static/logo.svg"
+    <a href="https://gitee.com/ascend/ait" target="blank_">
+        <svg class="center logo-name" viewbox="0 0 5120 300">
+           <g style="font-size:240pt" >
+               <text class="logo-fill" x=200 y=260 textLength="2560">Ascend's</text>
+           </g>        
+       </svg>
+   </a>
+    <a href="https://gitee.com/ascend/ait/tree/master/onnx-modifier" target="blank_">
+        <img src="./logo.svg"
              title="onnx-modifier is a tool to modify onnx models in a visualization fashion. It is built based on Netron and flask."
              height="130">
     </a>
 
     <div class="center logo-message">
         <div style="height: 30px; text-align: center;">Version <span id="version" class="select">{version}</span></div>
-        <div style="height: 30px; text-align: center;">Copyright &copy; <a href="https://github.com/ZhangGe6" target="blank_">ZhangGe6</a></div>
+        <div style="height: 30px; text-align: center;">Copyright &copy; <a href="https://gitee.com/ascend/ait/tree/master/onnx-modifier" target="blank_">Ascend</a></div>
+        <div style="height: 30px; text-align: center;">Thanks <a href="https://github.com/ZhangGe6" target="blank_">ZhangGe6</a></div>
     </div>
-    <a id="logo-github" class="center logo-github" href="https://github.com/ZhangGe6/onnx-modifier" target="blank_">
+    <a id="logo-github" class="center logo-github" href="https://gitee.com/ascend/ait/tree/master/onnx-modifier" target="blank_">
         <svg viewbox="0 0 438.549 438.549">
             <path class="logo-fill" d="M409.132,114.573c-19.608-33.596-46.205-60.194-79.798-79.8C295.736,15.166,259.057,5.365,219.271,5.365
                 c-39.781,0-76.472,9.804-110.063,29.408c-33.596,19.605-60.192,46.204-79.8,79.8C9.803,148.168,0,184.854,0,224.63
@@ -345,8 +363,9 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     <span class="center consent-message">This app uses cookies to report errors and anonymous usage information.</span>
     <button id="consent-accept-button" class="center consent-accept-button">Accept</button>
     <button id="open-file-button" class="center open-file-button">Open Model&hellip;</button>
-    <button id="github-button" class="center github-button">Github repo</button>
-    <input type="file" id="open-file-dialog" class="open-file-dialog" multiple="false" accept=".onnx, .ort, .pb, .meta, .tflite, .lite, .tfl, .keras, .h5, .hd5, .hdf5, .json, .model, .mar, .params, .param, .armnn, .mnn, .ncnn, .tnnproto, .tmfile, .ms, .om, .nn, .uff, .rknn, .xmodel, .kmodel, .paddle, .pdmodel, .pdparams, .nb, .dnn, .cmf, .mlmodel, .mlpackage, .caffemodel, .pbtxt, .prototxt, .pkl, .pt, .pth, .ptl, .t7, .joblib, .cfg, .xml, .zip, .tar">
+    <button id="github-button" class="center github-button">Gitee repo</button>
+    <input type="file" id="open-file-dialog" class="open-file-dialog" multiple="false" accept=".onnx, .ort, .pb, .meta, .tflite, .lite, .tfl, .keras, .h5, .hd5, .hdf5, .json, .model, .mar, .params, .param, .armnn, .mnn, .ncnn, .tnnproto, .tmfile, .ms, .nn, .uff, .rknn, .xmodel, .kmodel, .paddle, .pdmodel, .pdparams, .nb, .dnn, .cmf, .mlmodel, .mlpackage, .caffemodel, .pbtxt, .prototxt, .pkl, .pt, .pth, .ptl, .t7, .joblib, .cfg, .xml, .zip, .tar">
+    <input type="file" id="open-modify-json-dialog" class="open-file-dialog" multiple="false" accept=".json">
     <!-- Preload fonts to workaround Chrome SVG layout issue -->
     <div style="font-weight: normal; color: rgba(0, 0, 0, 0.01); user-select: none;">.</div>
     <div style="font-weight: bold; color: rgba(0, 0, 0, 0.01); user-select: none;">.</div>

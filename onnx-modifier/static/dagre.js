@@ -273,6 +273,9 @@ dagre.layout = (graph, options) => {
                             }
                         }
                     }
+                    if (edge == undefined) {
+                        throw new Error("edge not found")
+                    }
                     const delta = t.hasNode(edge.v) ? slack(g, edge) : -slack(g, edge);
                     for (const v of t.nodes.keys()) {
                         g.node(v).label.rank += delta;
@@ -828,7 +831,8 @@ dagre.layout = (graph, options) => {
                 while ((parent = g.parent(parent)) !== lca) {
                     wPath.push(parent);
                 }
-                return { path: vPath.concat(wPath.reverse()), lca: lca };
+                wPath.reverse()
+                return { path: vPath.concat(wPath), lca: lca };
             };
             const postorder = (g) => {
                 const result = {};
@@ -1542,7 +1546,7 @@ dagre.layout = (graph, options) => {
                     for (const v of layer) {
                         let ws = neighborFn(v);
                         if (ws.length > 0) {
-                            ws = ws.sort((a, b) => pos[a] - pos[b]);
+                            ws.sort((a, b) => pos[a] - pos[b]);
                             const mp = (ws.length - 1) / 2.0;
                             const il = Math.ceil(mp);
                             for (let i = Math.floor(mp); i <= il; i++) {
