@@ -21,13 +21,14 @@ from app_analyze.common.kit_config import KitConfig
 
 
 class Advisor:
-    def __init__(self, results, api_path):
-        self.results = self._dedup(results)
-        self.api_df = self._api_map(api_path)
-        self.api_key = os.path.basename(api_path)[:-9]
+
+    def __init__(self, results):
+        self.results = self._dedup_results(results)
+        self.api_dfs = self._api_dfs(KitConfig.API_MAP)
 
     @staticmethod
-    def _dedup(val_dict):
+    def _dedup_results(val_dict):
+        """deduplicate scanning results caused by same include files in different source files"""
         rst_dict = {}
         df = pd.concat(list(val_dict.values()), ignore_index=True)
         df.drop_duplicates(subset=['Location'], keep='first', inplace=True)
@@ -80,30 +81,56 @@ class Advisor:
             raise ValueError("workload_model encounters zero division error") from ex
         return np.ceil(y)
 
+    def _api_dfs(self, api_map):
+        api_dfs = dict()
+        for k, v in api_map.items():
+            lib_name = os.path.basename(v).split('_')[0]
+            api_dfs[k] = [lib_name, self._api_map(v)]
+        return api_dfs
+
     def recommend(self):
         for _, df in self.results.items():
             if df.empty:
                 continue
-            df[self.api_key] = ''
+            # 增加表格列
+            df['AscendAPI'] = ''
             df['Description'] = ''
             df['Workload'] = 0.0
+            df['AscendLib'] = ''
+            df['Params(Ascend:Acc)'] = ''
+            df['AscendAPI Link'] = ''
+            df['AccAPI Link'] = ''
             # 遍历每一行，并进行修改
             for index, row in df.iterrows():
                 if row['API'] in KitConfig.EXCEPT_API:
                     continue
                 # 1. 使用Series.str.contains()做字符串检索
                 # 2. 自定义字符串检索
-                query = self._sort(row['API'], self.api_df, 'NV_API')
+                lib_name, api_df = self.api_dfs[row['AccLib']]
+                query = self._sort(row['API'], api_df, 'NV_API')
 
                 if query:
                     best = query[0]
-                    row[self.api_key] = best['昇腾API']
+                    row['AscendAPI'] = best['昇腾API']
                     row['Description'] = best['说明']
                     row['Workload'] = best['迁移预估人力（人/天）']
+                    row['AscendLib'] = lib_name
+                    row['Params(Ascend:Acc)'] = best.get('参数对应关系(昇腾:NV)', '')
+                    row['AscendAPI Link'] = best.get('昇腾API链接', '')
+                    row['AccAPI Link'] = best.get('NV_API链接', '')
                 else:
                     row['Workload'] = 0.1
                 df.iloc[index] = row
 
+            drop_cols = list()
+            for c in df.columns:
+                k = c
+                if c.startswith('Context'):
+                    k = 'Context'
+                if not KitConfig.OPTIONAL_REPORT_KEY.get(k, True):
+                    drop_cols.append(c)
+            logger.debug(f'drop:{drop_cols}')
+            df.drop(drop_cols, axis=1, inplace=True)
         return self.results
 
     def workload(self):
