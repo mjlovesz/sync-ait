@@ -96,20 +96,27 @@ def get_attr(obj, attr=None, default_val=None):
     return obj
 
 
-def get_namespace(children):
-    """例如cv::cudacodec::VideoReader"""
+def get_namespace(children, suffix=True):
+    """例如cv::cudacodec::VideoReader
+
+    特殊示例：OpenCV FileStorage::READ，DECL_REF_EXPR，将子节点TYPE_REF作为namespace处理。
+    {"kind": "DECL_REF_EXPR","type_kind": "ENUM","spelling": "READ","type": "cv::FileStorage::Mode"}
+        {"kind": "TYPE_REF","type_kind": "RECORD","spelling": "class cv::FileStorage","type": "cv::FileStorage"}
+    """
     namespace = ''
     for child in children:
         if child.kind in [CursorKind.NAMESPACE_REF, CursorKind.TEMPLATE_REF]:
             child.scanned = True
             namespace += child.spelling + '::'
-        if child.kind == CursorKind.TYPE_REF:
+        elif child.kind == CursorKind.TYPE_REF:  # 特殊示例
             child.scanned = True
             if namespace in child.type.spelling:
                 namespace = child.type.spelling + '::'
             else:
                 namespace += child.type.spelling + '::'
-    return namespace
+        else:  # 应该不会出现，用作保险
+            break
+    return namespace if suffix else namespace[:-2]  # 空字符串不会报错
 
 
 def get_children(cursor):
@@ -145,6 +152,15 @@ def skip_implicit(cursor):
     return cursor
 
 
+def strip_implicit(type_str):
+    """消去CALL_EXPR result_type中的const或指针符号。"""
+    if not type_str:
+        return type_str
+    type_str = type_str.replace('const ', '')  # 去除const
+    type_str = type_str.strip(' *')  # 去除末尾指针符号*
+    return type_str
+
+
 def read_code(file_path, start, end):
     with open(file_path, 'r') as f:
         f.seek(start)
@@ -161,6 +177,18 @@ def read_cursor(cursor):
 ##### Cursor解析函数（开始），每个函数匹配一个/一类CursorKind
 def default(c):
     """
+    特殊示例：
+    OpenCV代码：types.hpp
+        typedef Rect_<int> Rect2i; typedef Rect2i Rect;
+    用户代码：cascadeclassifier.cpp
+        vector < Rect > faces;
+        faces[i];
+
+    c.type: __gnu_cxx::__alloc_traits<std::allocator<cv::Rect_<int> > >::value_type
+    c.reference.result_type: std::vector<cv::Rect_<int>, std::allocator<cv::Rect_<int> > >::reference
+    c.type.get_canonical(): cv::Rect_<int>
+    c.type.get_typedef_name(): value_type
+
     Returns:
         Info
     """
@@ -176,7 +204,11 @@ def default(c):
         api = c.type.spelling
     else:
         api = c.spelling
-    c.info = Info(c.type.spelling, c.spelling, api, definition, source)
+
+    canonical_type = c.type
+    if 'std::' in c.type.spelling:  # 针对容器类型索引后的返回类型做处理
+        canonical_type = c.type.get_canonical() or c.type
+    c.info = Info(canonical_type.spelling, c.spelling, api, definition, source)
     return c.info
 
 
@@ -310,39 +342,47 @@ def call_expr(c):
     if not c0:
         return default(c)
 
-    op_overload = 'operator' in c.spelling  # 需要判断的更加准确
-    for i, child in enumerate(children):
-        child = skip_implicit(child)
-        if not child:
-            continue
-        if child.kind in [CursorKind.NAMESPACE_REF, CursorKind.TEMPLATE_REF]:
-            child.scanned = True  # 用于标识是否已被扫描
-        if op_overload and c.spelling == child.spelling:
-            if i > 0:
-                child.scanned = True  # 用于标识是否已被扫描
-
     result_type, spelling, api, definition, source = default(c)
+    op_overload = 'operator' in c.spelling  # 需要判断的更加准确
     if op_overload:
+        for i, child in enumerate(children):
+            child = skip_implicit(child)
+            if not child:
+                continue
+            if c.spelling == child.spelling and i > 0:  # 重载的运算符节点
+                    child.scanned = True  # 用于标识是否已被扫描
         name, _, attr, _, _ = auto_match(c0)
         if c0.kind == CursorKind.MEMBER_REF_EXPR:
             # 运算符重载，且最近子节点为MEMBER_REF_EXPR，则必为属性引用，而非方法引用，否则最近子节点为CALL_EXPR。
             api = f"{attr}{c.spelling[8:]}"  # 例如呈现cv::Mat.size()，实际为cv::MatSize()
             c0.scanned = True
         else:
-            if c0.kind == CursorKind.CALL_EXPR and name:  # 可能返回const xxx类型
-                name = name.replace('const ', '')  # 去除const
+            if c0.kind == CursorKind.CALL_EXPR:  # 可能返回const xxx类型
+                name = strip_implicit(name)  # 去除const和末尾指针符号*
             api = f"{name}{c.spelling[8:]}"  # 例如呈现cv::FileStorage[]
             if c0.kind == CursorKind.DECL_REF_EXPR:
                 c0.scanned = True
     else:
-        if c0.kind in [CursorKind.MEMBER_REF_EXPR, CursorKind.DECL_REF_EXPR, CursorKind.TYPE_REF]:
-            c0.scanned = True
-        if c0.kind == CursorKind.NAMESPACE_REF:  # 类调用，如cv::Size(w, h)
-            for ci in children:
-                if ci.kind in [CursorKind.NAMESPACE_REF, CursorKind.TEMPLATE_REF, CursorKind.TYPE_REF]:
-                    ci.scanned = True
-                else:
+        # 1. c0 spelling、ref_kind和c一致，则c0为方法/函数引用，CursorKind为REF。
+        if c0.spelling == c.spelling and get_attr(c0, 'referenced.kind') == get_attr(c, 'referenced.kind'):
+            if c0.kind == CursorKind.MEMBER_REF_EXPR:
+                api = auto_match(c0).api
+                c0.scanned = True
+            elif c0.kind in [CursorKind.DECL_REF_EXPR, CursorKind.TYPE_REF]:
+                c0.scanned = True
+        # 2. 类/构造函数调用，如cv::Size(w, h)，不满足1。隐式调用子节点均为参数，显式调用子节点包含命名空间+（类型）引用+参数。
+        # 如：{"kind": "CALL_EXPR","ref_kind": "CONSTRUCTOR","spelling": "Size_"}
+        #        {"kind": "TYPE_REF","ref_kind": "TYPEDEF_DECL","spelling": "cv::Size"}
+        elif get_attr(c, 'referenced.kind') == CursorKind.CONSTRUCTOR:
+            ref_end = -1
+            for i, ci in enumerate(children):
+                if ci.kind not in [CursorKind.NAMESPACE_REF, CursorKind.TEMPLATE_REF, CursorKind.TYPE_REF]:
                     break
+                elif ci.kind == CursorKind.TYPE_REF:
+                    ref_end = i
+                    break
+            for ci in children[:ref_end + 1]:
+                ci.scanned = True
     c.info = Info(result_type, spelling, api, definition, source)
     return c.info
 
@@ -373,8 +413,7 @@ def member_ref_expr(c):
     else:
         cls, obj = auto_match(c0)[:2]
 
-    if cls:
-        cls = cls.replace('const ', '')  # 去除const
+    cls = strip_implicit(cls)  # 去除CALL_EXPR返回类型中的const和末尾指针符号*
     c.info = Info(result_type, f'{obj}.{api}', f'{cls}.{api}', definition, source)
     return c.info
 
@@ -465,7 +504,9 @@ def namespace_ref(c):
     Returns:
         Info
     """
-    c.info = Info(None, c.spelling, 'NAMESPACE_REF', None, get_attr(c, 'referenced.location.file.name'))
+    # 将连续的namespace合并
+    api = get_namespace(get_children(c.parent), suffix=False)
+    c.info = Info(None, c.spelling, api, None, get_attr(c, 'referenced.location.file.name'))
     return c.info
 
 
