@@ -169,7 +169,7 @@ class BaseGraph(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def infer_shape(self) -> None:
+    def infershape(self) -> None:
         raise NotImplementedError()
 
     def update_map(self) -> None:
