@@ -49,6 +49,15 @@ class InputType(Enum):
 
 
 class KitConfig:
+    # 加速库名
+    OPENCV = 'OpenCV'
+    FFMPEG = 'FFmpeg'
+    CUDA = 'CUDA'
+    DALI = 'DALI'
+    CVCUDA = 'CVCUDA'
+    TENSORRT = 'TensorRT'
+
+    # CMake加速库模式匹配
     MACRO_PATTERN = re.compile(r'(OpenCV|CUDA|NVJPEG|DALI|CVCUDA)')
     LIBRARY_PATTERN = re.compile(
         r'nvjpeg_static|nvjpeg2k_static|avdevice|avfilter|avformat|avcodec|swresample|swscale|avutil|postproc|'
@@ -61,9 +70,9 @@ class KitConfig:
     LIB_CLANG_PATH = f'/usr/lib/{ARCH}-linux-gnu/libclang-14.so'
     HEADERS_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'headers'))
     INCLUDES = {
-        'cuda': f'{HEADERS_FOLDER}/cuda/include',
-        'opencv': f'{HEADERS_FOLDER}/opencv/include/opencv4',
-        'tensorrt': '',
+        CUDA: f'{HEADERS_FOLDER}/cuda/include',
+        OPENCV: f'{HEADERS_FOLDER}/opencv/include/opencv4',
+        TENSORRT: '',
     }
 
     # 'make', 'automake'
@@ -78,44 +87,58 @@ class KitConfig:
     PROJECT_TIME = ''
 
     VALID_REPORT_TYPE = ['csv', 'json']
-    API_MAP = '../config/mxBase_API_MAP.xlsx'
-    # API_MAP = '../config/ACL_API_MAP.xlsx'
-    EXCEPT_API = ['', 'NAMESPACE_REF']
 
-    CUDA_HOME = os.environ.get('CUDA_HOME', INCLUDES['cuda'])
+    OPTIONAL_REPORT_KEY = {
+        'Context': False,  # API参数及上下文
+        'AccLib': False,  # API所属三方加速库
+        'AscendLib': True,  # 推荐的昇腾API所属库
+        'Params(Ascend:Acc)': True,  # 昇腾API和三方加速库API形参对应关系
+        'AscendAPI Link': False,  # 昇腾API文档链接
+        'AccAPI Link': False,  # 三方加速库API文档链接
+    }
+    EXCEPT_API = ['']
 
-    # lib_name: [namespace, cuda_include, cuda_namespace]，后两者用于分析基于CUDA加速的接口
-    # cuda_include参考示例：
-    # OpenCV-CUDA
+    # API映射表，文件名第一个'_'前为加速库名；内部工作表/Sheet名以'-APIMap'结尾，其他工作表会被忽略。
+    API_MAP = {
+        OPENCV: './config/mxBase_API_MAP.xlsx',
+        CUDA: './config/ACL_API_MAP.xlsx',
+
+    }
+
+    CUDA_HOME = os.environ.get('CUDA_HOME', INCLUDES[CUDA])
+    # C++加速库模式匹配:
+    # 格式如下，第0/1/2可为list，第1/2用于分析基于CUDA加速的接口。
+    # [namespace, cuda_include, cuda_namespace, lib_name]
+    #
+    # cuda使能头文件示例：
+    # OpenCV-CUDA：
     # "opencv2/core/cuda.hpp", "opencv2/cudaarithm.hpp", "opencv2/cudaimgproc.hpp", "opencv2/cudabgsegm.hpp",
     # "opencv2/cudawarping.hpp", "opencv2/cudaobjdetect.hpp", "opencv2/cudafilters.hpp", "opencv2/cudastereo.hpp",
     # "opencv2/cudafeatures2d.hpp", "opencv2/xfeatures2d/cuda.hpp", "opencv2/cudacodec.hpp",
     # "opencv2/core/cuda_types.hpp", "opencv2/core/cuda_stream_accessor.hpp", "opencv2/core/cuda.inl.hpp"
-    # FFmpeg-CUDA
+    # FFmpeg-CUDA：
     # "libavcodec/nvenc.h"
     ACC_LIBS = {
         # OpenCV
-        '/opencv2/': ['cv', '/cuda', ['cuda', 'gpu']],
-        # FFMPEG: https://github.com/FFmpeg/FFmpeg
-        '/libavcodec/': ['', '/nv', None],
-        '/libavfilter/': ['', ['/cuda/', '_cuda'], None],
-        'libavformat': '',
-        '/libavdevice/': '',
-        '/libavutil/': ['', ['/cuda_', '_cuda/', '_cuda_'], None],
-        '/libswresample/': '',
-        '/libpostproc/': '',
-        '/libswscale/': '',
+        '/opencv2/': ['cv', '/cuda', ['cuda', 'gpu'], OPENCV],
+        # FFmpeg: https://github.com/FFmpeg/FFmpeg
+        '/libavcodec/': ['', '/nv', '', FFMPEG],
+        '/libavfilter/': ['', ['/cuda/', '_cuda'], '', FFMPEG],
+        'libavformat': ['', '', '', FFMPEG],
+        '/libavdevice/': ['', '', '', FFMPEG],
+        '/libavutil/': ['', ['/cuda_', '_cuda/', '_cuda_'], '', FFMPEG],
+        '/libswresample/': ['', '', '', FFMPEG],
+        '/libpostproc/': ['', '', '', FFMPEG],
+        '/libswscale/': ['', '', '', FFMPEG],
         # CUDA samples: https://github.com/NVIDIA/CUDALibrarySamples
-        CUDA_HOME: ['', 1, ''],
         # nvJPEG samples: https://github.com/NVIDIA/CUDALibrarySamples/tree/master/nvJPEG
-        'nvjpeg': ['', 1, ''],
+        CUDA_HOME: ['', 1, '', CUDA],  # 含nvJPEG等
         # DALI: https://github.com/NVIDIA/DALI
-        'dali': ['dali', 1, ''],
+        'dali': ['dali', 1, '', DALI],
         # CV-CUDA
-        '/cvcuda': ['cvcuda', 1, '']
+        '/cvcuda': ['cvcuda', 1, '', CVCUDA]
     }
     LEVEL = 'small'  # parse level: 'large'
-    PRINT_DETAIL = False
     TOLERANCE = 4  # code diag level: {'ignored':0, 'info':1, 'warning':2, 'error':3, 'fatal':4}
 
 
