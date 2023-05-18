@@ -130,8 +130,8 @@ class BaseGraph(ABC):
         return self._next_map
 
     @property
-    def prev_maps(self):
-        return self._prev_maps
+    def prev_map(self):
+        return self._prev_map
 
     @classmethod
     @abstractmethod
