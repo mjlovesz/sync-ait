@@ -129,6 +129,10 @@ class BaseGraph(ABC):
     def next_map(self):
         return self._next_map
 
+    @property
+    def prev_map(self):
+        return self._prev_maps
+
     @classmethod
     @abstractmethod
     def parse(cls, model) -> 'BaseGraph':
