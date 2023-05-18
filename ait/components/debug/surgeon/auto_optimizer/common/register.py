@@ -34,6 +34,14 @@ class Register:
         self.path_name = real_path
 
     @staticmethod
+    def _handle_errors(errors):
+        if not errors:
+            return
+
+        for name, err in errors:
+            raise RuntimeError("Module {} import failed: {}".format(name, err))
+
+    @staticmethod
     def import_module(module):
         errors = []
         try:
@@ -43,22 +51,6 @@ class Register:
 
         Register._handle_errors(errors)
         return
-
-    @staticmethod
-    def _handle_errors(errors):
-        if not errors:
-            return
-
-        for name, err in errors:
-            raise RuntimeError("Module {} import failed: {}".format(name, err))
-
-    def _add_modules(self, modules: list):
-        pwd_dir = os.getcwd()
-
-        for root, _, files in os.walk(self.path_name, topdown=False):
-            modules += [
-                format_to_module(os.path.join(root.split(pwd_dir)[1], file)) for file in files
-            ]
 
     def import_modules(self):
         modules = []
@@ -71,5 +63,13 @@ class Register:
         for module in modules:
             if not module:
                 continue
-
             Register.import_module(module)
+        return True
+
+    def _add_modules(self, modules: list):
+        pwd_dir = os.getcwd()
+
+        for root, _, files in os.walk(self.path_name, topdown=False):
+            modules += [
+                format_to_module(os.path.join(root.split(pwd_dir)[1], file)) for file in files
+            ]
