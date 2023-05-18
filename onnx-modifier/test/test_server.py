@@ -17,11 +17,9 @@ import sys
 import json
 from io import StringIO
 from urllib import parse
-
-import pytest
 from unittest.mock import patch
 
-sys.path.append("..")
+import pytest
 from server import RequestInfo, RpcServer, ServerError
 
 
@@ -106,7 +104,7 @@ class TestRpcServer:
     @pytest.mark.parametrize("strs, msg", 
                              [(["", "", "msg_str", "", ""], "msg_str"),
                               (["msg_str", "", ""], "msg_str"),
-                              (["", "", "msg_str", "_and_", "msg_str2", "", ""], "msg_str_and_msg_str2"),])
+                              (["", "", "msg_str", "_and_", "msg_str2", "", ""], "msg_str_and_msg_str2")])
     def test_get_std_in_given_any_when_any_pass(self, strs, msg):
         
         server = RpcServer()
@@ -153,7 +151,7 @@ class TestRpcServer:
 
     @pytest.mark.parametrize("msg_pkg", 
                              [(dict(path_not_exists="/exit")),
-                              (dict(path="path_not_exists", msg=123)),])
+                              (dict(path="path_not_exists", msg=123))])
     def test_deal_msg_given_error_msg_when_any_pass(self, msg_pkg):
         server = RpcServer()
 

@@ -109,6 +109,7 @@ class RpcServer:
             if self.msg_end_flag > 0:
                 return ""
         else:
+            self.msg_end_flag = 2
             self.msg_cache += msg_recv
             if len(self.msg_cache) > self.max_msg_len_recv:
                 raise ValueError("msg is too long to recv")

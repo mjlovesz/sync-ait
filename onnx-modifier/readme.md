@@ -59,6 +59,21 @@
 - 安装运行
   编译之后，可以在out中看到打包的程序，点击运行即可
 
+## web服务器启动（不推荐使用）
+- 运行，默认端口为5000（常用于调试开发）
+  ```bash
+  python flaskserver.py
+  ```
+- 支持指定端口，参数为： --port [端口号]
+- 支持debug 模式，会打印更多日志，参数为： --debug
+- 安全风险
+  * web服务器方式运行，会开启端口，如果在不可信任的多用户服务器中，可能端口被监听
+  * 仅支持绑定localhost。如果在服务器中启动，在开发者本地是无法访问到的，建议使用ssh端口转发功能
+    ```bash
+    # ssh -L [本地绑定端口]:localhost:[服务器端口] username@serverhost
+    ssh -L 5000:localhost:5000 username@serverhost
+    ```
+
 # 用法
 
 图结构层级的操作按钮放置在可视化页面的左上角，目前有五个：`Reset`，`Download`，`Add node`，`OnnxSim`， `AutOptimizer`. 它们的功能分别为：
