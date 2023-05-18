@@ -24,7 +24,7 @@ from test_common import TestCommonClass
 class TestClass:
     def init(self):
         self.model_name = "resnet50"
-    
+
     @classmethod
     def setup_class(cls):
         """
@@ -37,7 +37,7 @@ class TestClass:
         logging.info('\n ---class level teardown_class')
 
     @staticmethod
-    def test_args_invalid_model_path(self):
+    def test_args_invalid_model_path():
         model_path = "xxx_invalid.om"
         cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
                                                  TestCommonClass.default_device_id)
