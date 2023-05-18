@@ -14,7 +14,7 @@
 
 import unittest
 
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
+from auto_optimizer.pattern.pattern import MatchPattern
 from auto_optimizer.pattern.pattern import Pattern
 
 
@@ -49,8 +49,8 @@ class TestPattern(unittest.TestCase):
             .add_node('Conv', ['Conv'], None) \
             .add_node('Relu', ['Relu'], None) \
             .add_edge('Conv', 'Relu') \
-            .set_node_loop('Conv', MATCH_PATTERN.MATCH_ONCE_OR_MORE) \
-            .set_node_loop('Relu', MATCH_PATTERN.MATCH_ZERO_OR_MORE)
+            .set_node_loop('Conv', MatchPattern.MATCH_ONCE_OR_MORE) \
+            .set_node_loop('Relu', MatchPattern.MATCH_ZERO_OR_MORE)
 
         self.assertTrue(pattern.node_dict['Conv'].can_match_more_time())
         self.assertTrue(pattern.node_dict['Relu'].can_match_more_time())
@@ -60,8 +60,8 @@ class TestPattern(unittest.TestCase):
             .add_node('Conv', ['Conv'], None) \
             .add_node('Relu', ['Relu'], None) \
             .add_edge('Conv', 'Relu') \
-            .set_node_loop('Conv', MATCH_PATTERN.MATCH_ONCE_OR_MORE) \
-            .set_node_loop('Relu', MATCH_PATTERN.MATCH_ZERO_OR_MORE)
+            .set_node_loop('Conv', MatchPattern.MATCH_ONCE_OR_MORE) \
+            .set_node_loop('Relu', MatchPattern.MATCH_ZERO_OR_MORE)
 
         self.assertFalse(pattern.node_dict['Conv'].can_match_zero_time())
         self.assertTrue(pattern.node_dict['Relu'].can_match_zero_time())
@@ -71,7 +71,7 @@ class TestPattern(unittest.TestCase):
             .add_node('Conv', ['Conv'], None) \
             .add_node('Relu', ['Relu'], None) \
             .add_edge('Conv', 'Relu') \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE_OR_MORE)
+            .set_loop(MatchPattern.MATCH_ONCE_OR_MORE)
 
         self.assertTrue(pattern.can_match_more())
 
