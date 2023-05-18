@@ -17,6 +17,8 @@ import pkg_resources
 from components.debug import debug_cli_group
 from components.profile import profile_cli_group
 from components.benchmark.ais_bench.infer.main_cli import benchmark_cli
+from components.transplt import transplt_cli
+
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -36,13 +38,14 @@ def load_analyze_sub_task():
         sub_task.name = 'analyze'
         return sub_task
     else:
-        return click.Group(name='analyze', 
+        return click.Group(name='analyze',
             context_settings=CONTEXT_SETTINGS
         )
 
 analyze_cli = load_analyze_sub_task()
 
-cli = click.Group(context_settings=CONTEXT_SETTINGS, commands=[debug_cli_group, profile_cli_group, analyze_cli, benchmark_cli],
+
+cli = click.Group(context_settings=CONTEXT_SETTINGS, commands=[debug_cli_group, profile_cli_group, analyze_cli, benchmark_cli, transplt_cli],
                   no_args_is_help=True,
                   help="ait(Ascend Inference Tools), "
                   "provides one-site debugging and optimization toolkit for inference use Ascend Devices")
