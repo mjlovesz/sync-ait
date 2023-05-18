@@ -218,7 +218,7 @@ xml.TextReader = class {
                             const elementType = documentType ? documentType.elements.getNamedItem(name) : null;
                             if (namespaceURI !== null) {
                                 this._assert(name === ':' || (!name.endsWith(':') && !name.startsWith(':')));
-                                if (prefix && (namespaceURI === '' || namespaceURI === null)) {
+                                if (prefix && namespaceURI === '') {
                                     this._error("Invalid namespace prefix '" + prefix + "'", this._start);
                                 }
                                 element = document.createElementNS(namespaceURI, name);
@@ -600,8 +600,9 @@ xml.TextReader = class {
     _entityName() {
         const position = this._position;
         const name = this._name();
-        if (name === null) {
+        if (name === null || name === undefined) {
             this._error('Expected entity name', position);
+            return ""
         }
         if (!name.endsWith(':') && name.indexOf(':') !== -1) {
             this._error('Invalid colon in entity name', position);
@@ -1018,6 +1019,9 @@ xml.TextReader = class {
             if (obj.version.length > 0) {
                 const match = /^(\d)\.(\d)$/.exec(obj.version);
                 this._assert(match && match[1] === '1', "Invalid XML version '" + obj.version + "'");
+                if (match == null) {
+                    throw new Error("Invalid XML version")
+                }
                 const version = Number.parseInt(match[2], 10);
                 if (version > this._version) {
                     /* eslint-disable */
@@ -1060,7 +1064,7 @@ xml.TextReader = class {
     _pushBuffer(data, base, entity, stop) {
         const signature = text.Decoder.open(data);
         const decoder = signature.encoding === 'utf-8' ? text.Decoder.open(data, 'utf-8') : signature;
-        this._pushContext(decoder, data, base, entity, stop, false);
+        this._pushContext(decoder, data, base, entity, stop);
         this._data = data;
     }
 
