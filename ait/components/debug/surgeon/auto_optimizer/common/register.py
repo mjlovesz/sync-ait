@@ -34,14 +34,6 @@ class Register:
         self.path_name = real_path
 
     @staticmethod
-    def _handle_errors(errors):
-        if not errors:
-            return
-
-        for name, err in errors:
-            raise RuntimeError("Module {} import failed: {}".format(name, err))
-
-    @staticmethod
     def import_module(module):
         errors = []
         try:
@@ -51,6 +43,14 @@ class Register:
 
         Register._handle_errors(errors)
         return
+
+    @staticmethod
+    def _handle_errors(errors):
+        if not errors:
+            return
+
+        for name, err in errors:
+            raise RuntimeError("Module {} import failed: {}".format(name, err))
 
     def import_modules(self):
         modules = []
