@@ -22,7 +22,7 @@ from onnx.defs import OpSchema, get_all_schemas
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.pattern import MatchBase
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
+from auto_optimizer.pattern.pattern import MatchPattern
 from auto_optimizer.pattern.pattern import Pattern
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
@@ -289,8 +289,8 @@ class TypeCastPattern(Pattern):
     def __init__(self, strategy: TypeCastStrategy):
         super().__init__()
         self.add_node('generic_operator', None, [GenericOpMatch(strategy)]) \
-            .set_node_loop('generic_operator', MATCH_PATTERN.MATCH_ONCE_OR_MORE) \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE_OR_MORE)
+            .set_node_loop('generic_operator', MatchPattern.MATCH_ONCE_OR_MORE) \
+            .set_loop(MatchPattern.MATCH_ONCE_OR_MORE)
 
 
 class TypeCastApply(object):
@@ -531,8 +531,8 @@ class ConstantOfShapePattern(Pattern):
     def __init__(self, strategy: TypeCastStrategy):
         super().__init__()
         self.add_node('ConstantOfShape_operator', ['ConstantOfShape'], [ConstantOfShapeMatch(strategy)]) \
-            .set_node_loop('ConstantOfShape_operator', MATCH_PATTERN.MATCH_ONCE_OR_MORE) \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE_OR_MORE)
+            .set_node_loop('ConstantOfShape_operator', MatchPattern.MATCH_ONCE_OR_MORE) \
+            .set_loop(MatchPattern.MATCH_ONCE_OR_MORE)
 
 
 class ConstantOfShapeApply(object):

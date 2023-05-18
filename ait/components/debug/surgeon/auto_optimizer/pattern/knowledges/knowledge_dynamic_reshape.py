@@ -17,7 +17,7 @@ import numpy as np
 import logging
 
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from auto_optimizer.pattern.pattern import Pattern, MATCH_PATTERN, MatchBase
+from auto_optimizer.pattern.pattern import Pattern, MatchPattern, MatchBase
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.graph_refactor.interface.base_graph import (BaseGraph, Initializer, Node)
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode
@@ -55,7 +55,7 @@ class KnowledgeDynamicReshape(KnowledgeBase):
 
         pattern = Pattern() \
             .add_node('Reshape', ['Reshape'], [DynamicReshapeMatch()]) \
-            .set_node_loop('Reshape', MATCH_PATTERN.MATCH_ONCE)
+            .set_node_loop('Reshape', MatchPattern.MATCH_ONCE)
         self._register_apply_funcs(pattern, [self._optimize_apply])
 
         # inference config

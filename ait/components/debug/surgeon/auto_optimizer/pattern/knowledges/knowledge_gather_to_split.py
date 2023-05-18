@@ -24,7 +24,7 @@ from auto_optimizer.graph_refactor.interface.base_node import Initializer, Node,
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.matcher import MatchResult
-from auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern
+from auto_optimizer.pattern.pattern import MatchPattern, Pattern
 from auto_optimizer.pattern.utils import AllNextnodesAreGather, is_lower_onnx_version
 
 r"""
@@ -53,7 +53,7 @@ class KnowledgeGatherToSplit(KnowledgeBase):
         # 注册pattern的apply方法
         self.pattern_ = Pattern() \
             .add_node("PreNode", None, [AllNextnodesAreGather()]) \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE)
+            .set_loop(MatchPattern.MATCH_ONCE)
         self._register_apply_funcs(self.pattern_, [self._pattern_apply])
 
     def pre_process(self, graph: BaseGraph) -> bool:

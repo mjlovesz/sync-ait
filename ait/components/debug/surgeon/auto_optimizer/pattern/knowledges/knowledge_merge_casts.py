@@ -18,7 +18,7 @@ from onnx.onnx_cpp2py_export.shape_inference import InferenceError
 
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
+from auto_optimizer.pattern.pattern import MatchPattern
 from auto_optimizer.pattern.pattern import Pattern
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
@@ -69,9 +69,9 @@ class MergeCastsPattern(Pattern):
         self.add_node('root_node', None) \
             .add_node('cast_node', ['Cast']) \
             .add_edge('root_node', 'cast_node') \
-            .set_node_loop('root_node', MATCH_PATTERN.MATCH_ONCE) \
-            .set_node_loop('cast_node', MATCH_PATTERN.MATCH_ONCE_OR_MORE) \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE)
+            .set_node_loop('root_node', MatchPattern.MATCH_ONCE) \
+            .set_node_loop('cast_node', MatchPattern.MATCH_ONCE_OR_MORE) \
+            .set_loop(MatchPattern.MATCH_ONCE)
 
 
 @KnowledgeFactory.register()
