@@ -5,6 +5,7 @@ arg_force_reinstall=
 only_debug=
 only_profile=
 only_analyze=
+only_transplt=
 arg_help=0
 
 while [[ "$#" -gt 0 ]]; do case $1 in
@@ -13,6 +14,7 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --debug) only_debug=true;;
   --profile) only_profile=true;;
   --analyze) only_analyze=true;;
+  --analyze) only_transplt=true;;
   -h|--help) arg_help=1;;
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
@@ -40,6 +42,7 @@ if [ ! "$(command -v pip)" ]; then
   exit 1;
 fi
 
+<<<<<<< HEAD
 pip install ${CURRENT_DIR} ${arg_force_reinstall}
 
 if [ ! -z $only_debug ]
@@ -62,13 +65,19 @@ then
   ${arg_force_reinstall}
 fi
 
-if [ -z $only_debug ] && [ -z $only_profile ] && [ -z $only_analyze ]
+if [ ! -z $only_transplt ]
+then
+  pip install ${CURRENT_DIR}/components/transplt/ \
+  ${arg_force_reinstall}
+fi
+
+if [ -z $only_debug ] && [ -z $only_profile ] && [ -z $only_analyze ] && [ ! -z $only_transplt ]
 then
   pip install ${CURRENT_DIR}/components/debug/compare \
   ${CURRENT_DIR}/components/debug/surgeon \
   ${CURRENT_DIR}/components/profile/benchmark/backend \
   ${CURRENT_DIR}/components/profile/benchmark \
   ${CURRENT_DIR}/components/analyze \
+  ${CURRENT_DIR}/components/transplt/ \
   ${arg_force_reinstall}
 fi
-
