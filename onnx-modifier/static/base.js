@@ -356,7 +356,7 @@ base.Utility = class {
                 }
             }
             else if (b.equals(base.Int64.min)) {
-                return unsigned ? base.Uint64.zero : base.Int64.zero;
+                return base.Int64.zero;
             }
             if (a.isNegative) {
                 if (b.isNegative) {
