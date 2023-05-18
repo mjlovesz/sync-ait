@@ -201,6 +201,7 @@ def optimizer_model(modify_info):
                            out_res + " cmd: " + "".join(cmd))
     return optimized_path, out_res.stdout.decode()
 
+
 def extract_model(modify_info, start_node_name, end_node_name):
     try:
         import auto_optimizer
@@ -230,6 +231,7 @@ def extract_model(modify_info, start_node_name, end_node_name):
         raise RuntimeError("auto_optimizer extract run error: " +
                            out_res + " cmd: " + "".join(cmd))
     return extract_path
+
 
 def json_modify_model(modify_infos):
     model_name = OnnxModifier.ONNX_MODIFIER.model_name
