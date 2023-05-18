@@ -36,8 +36,7 @@ class TestClass:
     def teardown_class(cls):
         logging.info('\n ---class level teardown_class')
 
-    @staticmethod
-    def test_args_invalid_model_path():
+    def test_args_invalid_model_path(self):
         model_path = "xxx_invalid.om"
         cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
                                                  TestCommonClass.default_device_id)
