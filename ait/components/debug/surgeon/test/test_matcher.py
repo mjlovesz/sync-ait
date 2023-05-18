@@ -27,7 +27,7 @@ from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.pattern import MatchBase
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
+from auto_optimizer.pattern.pattern import MatchPattern
 from auto_optimizer.pattern.pattern import Pattern
 from auto_optimizer.pattern.matcher import Matcher
 
@@ -52,8 +52,8 @@ pattern = Pattern() \
     .add_node('Conv', ['Conv'], [Conv1dMatch()]) \
     .add_node('element_wise', ['Mul', 'Add', 'Sub', 'Div', 'BatchNormalization', 'LeakyRelu', 'Relu']) \
     .add_edge('Conv', 'element_wise') \
-    .set_node_loop('element_wise', MATCH_PATTERN.MATCH_ZERO_OR_MORE) \
-    .set_loop(MATCH_PATTERN.MATCH_ONCE_OR_MORE)
+    .set_node_loop('element_wise', MatchPattern.MATCH_ZERO_OR_MORE) \
+    .set_loop(MatchPattern.MATCH_ONCE_OR_MORE)
 
 
 class TestMatcher(unittest.TestCase):
