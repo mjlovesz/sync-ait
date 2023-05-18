@@ -134,8 +134,8 @@ class Project:
             elif key == 'cmake':
                 self.report_results.update(val_dict)
 
-            eval_time = time.time() - start_time
-            KitConfig.PROJECT_TIME = eval_time
+        eval_time = time.time() - start_time
+        KitConfig.PROJECT_TIME = eval_time
 
     def get_results(self):
         return self.report_results
