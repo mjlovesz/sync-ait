@@ -14,7 +14,7 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --debug) only_debug=true;;
   --profile) only_profile=true;;
   --analyze) only_analyze=true;;
-  --analyze) only_transplt=true;;
+  --transplt) only_transplt=true;;
   -h|--help) arg_help=1;;
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
@@ -33,7 +33,10 @@ fi
 if [ "$arg_help" -eq "1" ]; then
   echo "Usage: $0 [options]"
   echo " --help or -h      : Print help menu"
-  echo " --force-reinstall : reinstall"
+  echo " --debug : only install debug component"
+  echo " --profile : only install profile component"
+  echo " --analyze : only install analyze component"
+  echo " --transplt : only install transplt component"
   exit;
 fi
 
