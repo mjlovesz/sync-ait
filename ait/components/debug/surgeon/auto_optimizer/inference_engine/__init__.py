@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .pre_process.pre_process_base import PreProcessBase
-from .post_process.post_process_base import PostProcessBase
-from .evaluate.evaluate_base import EvaluateBase
-from .inference.inference_base import InferenceBase
+from auto_optimizer.inference_engine.pre_process.pre_process_base import PreProcessBase
+from auto_optimizer.inference_engine.post_process.post_process_base import PostProcessBase
+from auto_optimizer.inference_engine.evaluate.evaluate_base import EvaluateBase
+from auto_optimizer.inference_engine.inference.inference_base import InferenceBase
 
 
 __all__ = ["PreProcessBase", "PostProcessBase", "EvaluateBase", "InferenceBase"]

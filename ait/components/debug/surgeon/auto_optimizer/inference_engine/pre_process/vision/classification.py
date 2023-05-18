@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,10 +18,10 @@ from dataclasses import dataclass
 
 import numpy as np
 from PIL import Image
-from ..pre_process_base import PreProcessBase
-from ...data_process_factory import PreProcessFactory
+from auto_optimizer.inference_engine.pre_process.pre_process_base import PreProcessBase
+from auto_optimizer.inference_engine.data_process_factory import PreProcessFactory
 
-logging = logging.getLogger("auto-optimizer")
+logger = logging.getLogger("auto-optimizer")
 
 
 @dataclass
@@ -39,27 +39,27 @@ class ImageNetPreProcess(PreProcessBase, ABC):
         """
         和基类的参数顺序和个数需要一致
         """
-        logging.debug("pre_process start")
+        logger.debug("pre_process start")
         try:
             image_param = ImageNetPreProcess._get_params(cfg)
-
-            output = []
-            for i in range(loop):
-                in_data = in_queue.get()
-                if len(in_data) < 2:  # include lable and data
-                    raise RuntimeError("input params error len={}".format(len(in_data)))
-
-                label, datas = in_data[0], in_data[1]
-                for data in datas:
-                    img = ImageNetPreProcess.image_process(data, image_param)
-                    output.append(img)
-
-                out_queue.put([label, output])
-                output.clear()
         except Exception as err:
-            logging.error("pre_process failed error={}".format(err))
+            logger.error("pre_process failed error={}".format(err))
+            raise RuntimeError("pre_process error") from err
 
-        logging.debug("pre_process end")
+        output = []
+        for _ in range(loop):
+            in_data = in_queue.get()
+            if len(in_data) < 2:  # include lable and data
+                raise RuntimeError("input params error len={}".format(len(in_data)))
+            label, datas = in_data[0], in_data[1]
+            for data in datas:
+                img = ImageNetPreProcess.image_process(data, image_param)
+                output.append(img)
+
+            out_queue.put([label, output])
+            output.clear()
+
+        logger.debug("pre_process end")
 
     @staticmethod
     def image_process(file_path, image_param):
@@ -69,7 +69,7 @@ class ImageNetPreProcess(PreProcessBase, ABC):
         image = ImageNetPreProcess.center_crop(image, image_param.center_crop)
         if image_param.dtype == "fp32":
             img = np.array(image, dtype=np.float32)
-            img = img.transpose(2, 0, 1)  # HWC -> CHW
+            img = img.transpose(2, 0, 1)
             img = img / 255.    # ToTensor: div 255
             img -= np.array(image_param.mean, dtype=np.float32)[:, None, None]
             img /= np.array(image_param.std, dtype=np.float32)[:, None, None]
@@ -102,7 +102,10 @@ class ImageNetPreProcess(PreProcessBase, ABC):
                 return img.resize((o_w, o_h), interpolation)
             else:
                 o_h = size
-                o_w = int(size * w / h)
+                try:
+                    o_w = int(size * w / h)
+                except ZeroDivisionError as err:
+                    raise RuntimeError('img.w is divided by zero') from err
                 return img.resize((o_w, o_h), interpolation)
         else:
             return img.resize(size[::-1], interpolation)
@@ -120,16 +123,16 @@ class ImageNetPreProcess(PreProcessBase, ABC):
 
     @staticmethod
     def _get_params(cfg):
+        mean = cfg["mean"]
+        std = cfg["std"]
+        center_crop = cfg["center_crop"]
+        resize = cfg["resize"]
+        dtype = cfg["dtype"]
+
+        image_param = ImageParam(mean, std, center_crop, resize, dtype)
         try:
-            mean = cfg["mean"]
-            std = cfg["std"]
-            center_crop = cfg["center_crop"]
-            resize = cfg["resize"]
-            dtype = cfg["dtype"]
-
-            image_param = ImageParam(mean, std, center_crop, resize, dtype)
             ImageNetPreProcess._check_params(image_param)
-
-            return image_param
         except Exception as err:
-            raise RuntimeError("get params failed error={}".format(err))
+            raise RuntimeError("get params failed error={}".format(err)) from err
+        return image_param
+
