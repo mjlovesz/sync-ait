@@ -20,8 +20,8 @@ auto-optimizer主要通过graph_optimizer、graph_refactor接口提供ONNX模型
 ## 工具安装
 
 ```shell
-git clone https://gitee.com/ascend/amit.git
-cd amit/amit/debug/surgeon
+git clone https://gitee.com/ascend/ait.git
+cd ait/ait/debug/surgeon
 
 # it's recommended to upgrade pip and install wheel
 

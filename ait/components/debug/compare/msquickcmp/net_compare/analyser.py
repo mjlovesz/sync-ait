@@ -78,7 +78,7 @@ class Analyser:
             raise ValueError(f"csv_path={csv_path} not endswith csv")
         if not os.path.exists(csv_path):
             raise IOError(f"csv_path={csv_path} not exists")
-        utils.print_info_log(f"Analyser init parameter csv_path={csv_path}")
+        utils.logger.info(f"Analyser init parameter csv_path={csv_path}")
 
         self.csv_path = csv_path
         self.monitor_threshold = {}
@@ -108,9 +108,9 @@ class Analyser:
             with open(self.csv_path, "r") as csv_file:
                 csv_rows = [row for row in csv.DictReader(csv_file) if self._is_valid_row(row)]
         except IOError as csv_file_except:
-            utils.print_error_log('Failed to open"' + self.csv_path + '", ' + str(csv_file_except))
+            utils.logger.error('Failed to open"' + self.csv_path + '", ' + str(csv_file_except))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from csv_file_except
-        utils.print_info_log(f"Analyser call parameter strategy={strategy}, max_column_len={max_column_len}")
+        utils.logger.info(f"Analyser call parameter strategy={strategy}, max_column_len={max_column_len}")
 
         invalid_rows, invalid_monitors = self._strategy_func_dict.get(strategy, self._first_invalid_overall)(csv_rows)
 
@@ -127,10 +127,10 @@ class Analyser:
     @staticmethod
     def _show_result(invalid_rows, invalid_monitors, max_column_len=30):
         if len(invalid_rows) == 0:
-            utils.print_info_log("None operator with accuracy issue reported")
+            utils.logger.info("None operator with accuracy issue reported")
             return
 
-        utils.print_info_log("Operators may lead to inaccuracy:")
+        utils.logger.info("Operators may lead to inaccuracy:")
         results = {}
         for row, monitors in zip(invalid_rows, invalid_monitors):
             for monitor in monitors:
@@ -241,4 +241,4 @@ def print_in_markdown_table(input_dict, max_column_len=30):
             body.append(" " * (max_len - len(cur_value)) + cur_value)
         print_str +=  "|" + " |".join(body) + " |\n"
 
-    utils.print_info_log(print_str)
+    utils.logger.info(print_str)

@@ -17,12 +17,12 @@ git clone https://gitee.com/ascend/ait.git
 cd ait/ait
 
 # 一键式安装方式
-python3 -m pip install .[analyze] -force-reinstall
+python3 -m pip install .[analyze] --force-reinstall
 
 # 独立安装方式
-python3 -m pip install . -force-reinstall
+python3 -m pip install . --force-reinstall
 cd components/analyze
-python3 -m pip install . -force-reinstall
+python3 -m pip install . --force-reinstall
 ```
 ## 工具使用
 

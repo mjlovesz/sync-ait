@@ -6,7 +6,7 @@
 ### 环境准备
 - 已安装开发运行环境的昇腾 AI 推理相关驱动、固件、CANN 包，参照 [昇腾文档](https://www.hiascend.com/zh/document)
 - 安装 `python3.7.5` 环境
-- **安装benchmark工具**，安装参考文档：[ais_bench推理工具使用指南](https://gitee.com/ascend/ait/tree/master/ait/components/profile/benchmark/README.md)
+- **安装benchmark工具**，安装参考文档：[ais_bench推理工具使用指南](https://gitee.com/ascend/ait/tree/master/ait/components/benchmark/README.md)
 - **`ONNX` 相关 python 依赖包** `pip3 install onnxruntime onnx numpy`，若 pip 安装依赖失败，建议执行命令 `pip3 install --upgrade pip` 进行升级，避免因 pip 版本过低导致安装失败
 - **`TensorFlow` 相关 python 依赖包**，参考 [Centos7.6上tensorflow1.15.0 环境安装](https://bbs.huaweicloud.com/blogs/181055) 安装 TensorFlow1.15.0 环境
 
