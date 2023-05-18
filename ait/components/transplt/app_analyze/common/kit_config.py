@@ -102,7 +102,6 @@ class KitConfig:
     API_MAP = {
         OPENCV: './config/mxBase_API_MAP.xlsx',
         CUDA: './config/ACL_API_MAP.xlsx',
-
     }
 
     CUDA_HOME = os.environ.get('CUDA_HOME', INCLUDES[CUDA])

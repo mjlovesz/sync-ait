@@ -12,8 +12,6 @@
 # limitations under the License.
 
 import time
-import os
-import pandas as pd
 
 from app_analyze.utils.log_util import logger
 from app_analyze.common.kit_config import KitConfig
