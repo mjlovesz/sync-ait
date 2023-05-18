@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-import sys
 import json
 from io import StringIO
 from urllib import parse
@@ -27,7 +25,7 @@ class TestRequestInfo:
     def test_files_given_files_when_has_file_pass(self):
         request_info = RequestInfo()
         request_info.set_json(dict(file=123))
-        assert request_info.files["file"] == 123
+        assert request_info.files.get("file") == 123
     
     def test_files_given_files_when_not_has_file_pass(self):
         request_info = RequestInfo()
@@ -73,7 +71,7 @@ class TestRpcServer:
 
     def test_send_file_given_any_when_any_pass(self):
         file_msg = RpcServer.send_file("/path/")
-        assert file_msg[0]["file"] == "/path/"
+        assert file_msg[0].get("file") == "/path/"
         assert file_msg[1] == 200
 
     def test_route_given_any_when_any_pass(self):
@@ -83,7 +81,7 @@ class TestRpcServer:
             pass
 
         server.route("test_route")(route_test)
-        assert server.path_amp["test_route"] == route_test
+        assert server.path_amp.get("test_route") == route_test
         
 
     def test_run_given_any_when_any_pass(self):
@@ -137,7 +135,7 @@ class TestRpcServer:
                     msg_recv = server._get_std_in()
 
     @pytest.mark.parametrize("msg_pkg, msg", 
-                             [(dict(path="test", msg=123), 123),])
+                             [(dict(path="test", msg=123), 123)])
     def test_deal_msg_given_any_when_any_pass(self, msg_pkg, msg):
         server = RpcServer()
 
@@ -157,6 +155,7 @@ class TestRpcServer:
 
         with pytest.raises(ValueError):
             server._deal_msg(msg_pkg, 1)
+
 
 class TestServerError:
     def test_status_given_any_when_any_pass(self):
