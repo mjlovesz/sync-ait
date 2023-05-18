@@ -31,7 +31,7 @@
 
 ## 源码拉取及第三方库安装
 
-- 拉取`ait`，并切换到 onnx-modifier目录，安装所需要的Python库, nodejs库
+- 拉取`ait`，并切换到 onnx-modifier目录，安装所需要的Python, node
 
   ```bash
   git clone https://gitee.com/ascend/ait.git
