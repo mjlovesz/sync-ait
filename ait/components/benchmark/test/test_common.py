@@ -29,7 +29,7 @@ class TestCommonClass:
     EPSILON = 1e-6
     epsilon = 1e-6
     cmd_prefix = sys.executable + " " + os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                      "../ais_bench/__main__.py")
+                                                     "../ais_bench/__main__.py")
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../test/testdata")
     msame_bin_path = os.getenv('MSAME_BIN_PATH')
 
