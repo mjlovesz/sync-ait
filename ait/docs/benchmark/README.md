@@ -1,17 +1,17 @@
-# ait profile benchmark功能使用指南
+# ait benchmark功能使用指南
 
 ## 简介
 本文介绍benchmark功能，用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延）。
 
 ## 工具安装
-- 工具安装请见 [ait一体化工具使用指南](../../../README.md)
+- 工具安装请见 [ait一体化工具使用指南](../../README.md)
 
 ## 使用方法
 ### 功能介绍
 #### 使用入口
 benchmark推理功能可以直接通过ait命令行形式启动模型测试。启动方式如下：
 ```bash
-ait profile benchmark --om-model *.om
+ait benchmark --om-model *.om
 ```
 其中，*为OM离线模型文件名。
 
@@ -62,4 +62,4 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
 
 ### 使用场景
 
-请移步[benchmark使用示例](../../../examples/cli/profile/benchmark/)
+请移步[benchmark使用示例](../../../examples/cli/benchmark/)
