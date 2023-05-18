@@ -45,7 +45,6 @@ if [ ! "$(command -v pip)" ]; then
   exit 1;
 fi
 
-<<<<<<< HEAD
 pip install ${CURRENT_DIR} ${arg_force_reinstall}
 
 if [ ! -z $only_debug ]
