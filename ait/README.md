@@ -12,7 +12,7 @@
 AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体化开发工具，支持一站式调试调优，当前包括debug、profile、analyze等组件。
 
 ### AIT各子功能介绍
-- ait profile benchmark: 用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延）。（[快速入门指南](docs/profile/benchmark/README.md)）
+- ait benchmark: 用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延）。（[快速入门指南](docs/benchmark/README.md)）
 - ait debug surgeon: 使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能。（[快速入门指南](docs/debug/surgeon/README.md)）
 - ait debug compare: 提供自动化的推理场景精度比对，用来定位问题算子。（[快速入门指南](docs/debug/compare/README.md)）
 - ait analyze：提供推理模型支持度分析功能。（[快速入门指南](components/analyze/README.md)）
@@ -71,7 +71,7 @@ cd ../surgeon
 pip3 install . --force-reinstall
 
 # 4. install benchmark pkg
-cd ../../profile/benchmark
+cd ../../benchmark
 
 # 4.1 构建aclruntime包
 pip3 wheel ./backend/ -v
@@ -212,10 +212,10 @@ ait debug surgeon -h
 ### profile任务使用说明
 #### 1. benchmark子任务使用说明
 ```bash
-ait profile benchmark -h
+ait benchmark -h
 ```
 
-更多使用方式和示例请参考：[benchmark examples](examples/cli/profile/benchmark/)
+更多使用方式和示例请参考：[benchmark examples](examples/cli/benchmark/)
 
 ### analyze任务使用说明
 
@@ -236,7 +236,7 @@ ait transplt -h
 
 ### AIT资源
 
-* [AIT profile benchmark 快速入门指南](docs/profile/benchmark/README.md)
+* [AIT benchmark 快速入门指南](docs/benchmark/README.md)
 * [AIT debug surgeon 快速入门指南](docs/debug/surgeon/README.md)
 * [AIT debug compare 快速入门指南](docs/debug/compare/README.md)
 * [AIT analyze 快速入门指南](components/analyze/README.md)
