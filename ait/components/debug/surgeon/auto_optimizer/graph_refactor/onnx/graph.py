@@ -157,7 +157,7 @@ class OnnxGraph(BaseGraph):
                 location=os.path.basename(path) + '.data'
             )
 
-    def infer_shape(self) -> None:
+    def infershape(self) -> None:
         # clear value_infos
         self._value_infos = []
         self._value_map = {}
