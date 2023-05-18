@@ -121,6 +121,14 @@ class BaseGraph(ABC):
     def value_infos(self) -> List[PlaceHolder]:
         return self._value_infos
 
+    @property
+    def node_map(self):
+        return self._node_map
+
+    @property
+    def next_map(self):
+        return self._next_map
+
     @classmethod
     @abstractmethod
     def parse(cls, model) -> 'BaseGraph':
