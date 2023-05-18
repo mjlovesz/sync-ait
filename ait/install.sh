@@ -70,7 +70,7 @@ fi
 
 if [ ! -z $only_transplt ]
 then
-  pip install ${CURRENT_DIR}/components/transplt/ \
+  pip install ${CURRENT_DIR}/components/transplt \
   ${arg_force_reinstall}
 fi
 
@@ -81,6 +81,6 @@ then
   ${CURRENT_DIR}/components/profile/benchmark/backend \
   ${CURRENT_DIR}/components/profile/benchmark \
   ${CURRENT_DIR}/components/analyze \
-  ${CURRENT_DIR}/components/transplt/ \
+  ${CURRENT_DIR}/components/transplt \
   ${arg_force_reinstall}
 fi
