@@ -1,16 +1,35 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 import os
 import shutil
+import logging
+import sys
 
 import aclruntime
 import pytest
 from test_common import TestCommonClass
 
+logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
+
 
 class TestClass():
-
     @classmethod
     def setup_class(cls):
         """
@@ -20,15 +39,12 @@ class TestClass():
 
     @classmethod
     def teardown_class(cls):
-        print('\n ---class level teardown_class')
+        logger.info('\n ---class level teardown_class')
 
     def init(self):
-        self.model_name = self.get_model_name(self)
+        self.model_name = "crnn"
         self.model_base_path = self.get_model_base_path(self)
         self.output_file_num = 5
-
-    def get_model_name(self):
-        return "crnn"
 
     def get_model_base_path(self):
         """
@@ -56,7 +72,7 @@ class TestClass():
             cmd = "{} --model {} --device {}".format(
                 TestCommonClass.cmd_prefix, model_path,
                 TestCommonClass.default_device_id)
-            print("run cmd:{}".format(cmd))
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -67,7 +83,7 @@ class TestClass():
             cmd = "{} --model {} --device {} --dymBatch {}".format(
                 TestCommonClass.cmd_prefix, model_path,
                 TestCommonClass.default_device_id, dys_batch_size)
-            print("run cmd:{}".format(cmd))
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -89,9 +105,10 @@ class TestClass():
                 shutil.rmtree(tmp_output_path)
             os.makedirs(tmp_output_path)
             output_batchsize_axis = 1
-            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {}".format(TestCommonClass.cmd_prefix, model_path,
-                                                                TestCommonClass.default_device_id, input_path, base_output_path, output_dirname, output_batchsize_axis)
-            print("run cmd:{}".format(cmd))
+            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {}" \
+                .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, 
+                        input_path, base_output_path, output_dirname, output_batchsize_axis)
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
             output_bin_file_num = len(os.listdir(tmp_output_path))
@@ -129,9 +146,11 @@ class TestClass():
                 shutil.rmtree(tmp_output_path)
             os.makedirs(tmp_output_path)
             output_batchsize_axis = 1
-            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {} --dymBatch {}".format(TestCommonClass.cmd_prefix, model_path,
-                                                                TestCommonClass.default_device_id, input_path, base_output_path, output_dirname, output_batchsize_axis, dys_batch_size)
-            print("run cmd:{}".format(cmd))
+            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {}" \
+                "--dymBatch {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+                                         input_path, base_output_path, output_dirname,
+                                          output_batchsize_axis, dys_batch_size)
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
             output_bin_file_num = len(os.listdir(tmp_output_path))
@@ -168,9 +187,10 @@ class TestClass():
             shutil.rmtree(tmp_output_path)
         os.makedirs(tmp_output_path)
         output_batchsize_axis = 2
-        cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {} --dymBatch {}".format(TestCommonClass.cmd_prefix, model_path,
-                                                            TestCommonClass.default_device_id, input_path, base_output_path, output_dirname, output_batchsize_axis, dys_batch_size)
-        print("run cmd:{}".format(cmd))
+        cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {}" \
+            "--dymBatch {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+                                    input_path, base_output_path, output_dirname, output_batchsize_axis, dys_batch_size)
+        logger.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret != 0
         shutil.rmtree(tmp_output_path)
@@ -191,9 +211,10 @@ class TestClass():
             os.makedirs(output_path)
             output_batchsize_axis = 1
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
-            cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {} > {}".format(TestCommonClass.cmd_prefix, model_path,
-                TestCommonClass.default_device_id,  output_parent_path, output_dirname, output_batchsize_axis, log_path)
-            print("run cmd:{}".format(cmd))
+            cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {} > {}" \
+                .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, 
+                        output_parent_path, output_dirname, output_batchsize_axis, log_path)
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
             output_paths.append(output_path)
@@ -232,9 +253,11 @@ class TestClass():
             os.makedirs(output_path)
             output_batchsize_axis = 1
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
-            cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {} --dymBatch {} > {}".format(TestCommonClass.cmd_prefix, model_path,
-                TestCommonClass.default_device_id,  output_parent_path, output_dirname, output_batchsize_axis, dys_batch_size, log_path)
-            print("run cmd:{}".format(cmd))
+            cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {}" \
+                "--dymBatch {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+                                             output_parent_path, output_dirname, output_batchsize_axis,
+                                               dys_batch_size, log_path)
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -258,9 +281,4 @@ class TestClass():
 
 if __name__ == '__main__':
     pytest.main(['test_infer_crnn.py', '-vs'])
-
-
-
-
-
-
+    
