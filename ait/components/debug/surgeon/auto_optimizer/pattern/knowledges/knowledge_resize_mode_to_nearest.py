@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
+from auto_optimizer.pattern.pattern import MatchPattern
 from auto_optimizer.pattern.pattern import MatchBase
 from auto_optimizer.pattern.pattern import Pattern
 from auto_optimizer.pattern.matcher import MatchResult
@@ -56,8 +56,8 @@ class KnowledgeResizeModeToNearest(KnowledgeBase):
         super().__init__()
         self.resize_op_pattern = Pattern() \
             .add_node("resize_operator", ["Resize"], [ResizeOpMatch()]) \
-            .set_node_loop('resize_operator', MATCH_PATTERN.MATCH_ONCE) \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE)
+            .set_node_loop('resize_operator', MatchPattern.MATCH_ONCE) \
+            .set_loop(MatchPattern.MATCH_ONCE)
         self._register_apply_funcs(self.resize_op_pattern, [self._resize_mode_apply])
 
     def _resize_mode_apply(self, graph: BaseGraph, match_result: MatchResult) -> bool:

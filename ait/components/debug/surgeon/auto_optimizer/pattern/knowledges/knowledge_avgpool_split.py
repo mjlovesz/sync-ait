@@ -16,7 +16,7 @@ import copy
 import numpy as np
 
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from auto_optimizer.pattern.pattern import Pattern, MATCH_PATTERN, MatchBase
+from auto_optimizer.pattern.pattern import Pattern, MatchPattern, MatchBase
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.graph_refactor.interface.base_graph import (BaseGraph, Node)
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode
@@ -57,7 +57,7 @@ class KnowledgeAvgPoolSplit(KnowledgeBase):
 
         pattern = Pattern() \
             .add_node('AvgPool', ['AveragePool'], [OpMatch()]) \
-            .set_node_loop('AvgPool', MATCH_PATTERN.MATCH_ONCE)
+            .set_node_loop('AvgPool', MatchPattern.MATCH_ONCE)
         self._register_apply_funcs(pattern, [self._optimize_apply])
 
     def _calculate_mini_factor(self, n):

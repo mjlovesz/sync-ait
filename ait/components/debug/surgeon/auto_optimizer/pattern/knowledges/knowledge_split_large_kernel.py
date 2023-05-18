@@ -23,7 +23,7 @@ import onnx
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode, Node, Initializer
-from auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern, MatchBase
+from auto_optimizer.pattern.pattern import MatchPattern, Pattern, MatchBase
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 
@@ -79,7 +79,7 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
         self.large_kernel_match = LargeKernelConv(self.threshold)
         self.large_kernel_pattern = Pattern() \
             .add_node("LargeKernelConv", ["Conv"], [self.large_kernel_match]) \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE)
+            .set_loop(MatchPattern.MATCH_ONCE)
         self._register_apply_funcs(self.large_kernel_pattern, [self._large_kernel_pattern_apply])
 
     def pre_process(self, graph: BaseGraph) -> bool:

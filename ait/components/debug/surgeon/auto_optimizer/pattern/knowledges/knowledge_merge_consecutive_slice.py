@@ -19,7 +19,7 @@ import numpy as np
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode, Node, Initializer
-from auto_optimizer.pattern.pattern import MATCH_PATTERN, MatchBase, Pattern
+from auto_optimizer.pattern.pattern import MatchPattern, MatchBase, Pattern
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.utils import NextNodeCount
@@ -68,7 +68,7 @@ pattern0 = Pattern() \
     .add_edge("Slice_0", "Slice_1") \
     .add_edge("Slice_1", "Slice_2") \
     .add_edge("Slice_2", "Slice_to_keep") \
-    .set_loop(MATCH_PATTERN.MATCH_ONCE)
+    .set_loop(MatchPattern.MATCH_ONCE)
 
 # continue 3 slice op
 r"""
@@ -92,7 +92,7 @@ pattern1 = Pattern() \
     .add_node("Slice_to_keep", ["Slice"], [NonNegetiveAxes()]) \
     .add_edge("Slice_0", "Slice_1") \
     .add_edge("Slice_1", "Slice_to_keep") \
-    .set_loop(MATCH_PATTERN.MATCH_ONCE)
+    .set_loop(MatchPattern.MATCH_ONCE)
 
 # continue 2 slice op
 r"""
@@ -110,7 +110,7 @@ pattern2 = Pattern() \
     .add_node("Slice_0", ["Slice"], [NonNegetiveAxes(), NextNodeCount(1)]) \
     .add_node("Slice_to_keep", ["Slice"], [NonNegetiveAxes()]) \
     .add_edge("Slice_0", "Slice_to_keep") \
-    .set_loop(MATCH_PATTERN.MATCH_ONCE)
+    .set_loop(MatchPattern.MATCH_ONCE)
 
 
 @KnowledgeFactory.register()

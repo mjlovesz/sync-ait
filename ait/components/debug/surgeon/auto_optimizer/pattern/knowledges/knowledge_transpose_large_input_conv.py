@@ -22,7 +22,7 @@ import onnx
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode, Initializer, Node, PlaceHolder
-from auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern, MatchBase
+from auto_optimizer.pattern.pattern import MatchPattern, Pattern, MatchBase
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.utils import NextNodeCount
@@ -92,7 +92,7 @@ pattern_aasist = Pattern() \
     .add_edge("Conv_0", "Add_0") \
     .add_edge("Conv_2", "Add_0") \
     .add_edge("Add_0", "MaxPool_0") \
-    .set_loop(MATCH_PATTERN.MATCH_ONCE)
+    .set_loop(MatchPattern.MATCH_ONCE)
 
 
 @KnowledgeFactory.register()

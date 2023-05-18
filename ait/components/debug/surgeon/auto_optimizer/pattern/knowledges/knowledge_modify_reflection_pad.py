@@ -16,7 +16,7 @@ import copy
 import numpy as np
 
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
+from auto_optimizer.pattern.pattern import MatchPattern
 from auto_optimizer.pattern.pattern import MatchBase
 from auto_optimizer.pattern.pattern import Pattern
 from auto_optimizer.pattern.matcher import MatchResult
@@ -55,8 +55,8 @@ class KnowledgeModifyReflectionPad(KnowledgeBase):
         super().__init__()
         self.reflection_pad_op_pattern = Pattern() \
             .add_node('reflection_operator', ['Pad'], [ReflectionPadOpMatch()]) \
-            .set_node_loop('reflection_operator', MATCH_PATTERN.MATCH_ONCE) \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE)
+            .set_node_loop('reflection_operator', MatchPattern.MATCH_ONCE) \
+            .set_loop(MatchPattern.MATCH_ONCE)
 
         self._register_apply_funcs(self.reflection_pad_op_pattern, [self._modify_reflection_pad_apply])
 

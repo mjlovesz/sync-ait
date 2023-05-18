@@ -21,7 +21,7 @@ import numpy as np
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.interface.base_node import Node, Initializer
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
+from auto_optimizer.pattern.pattern import MatchPattern
 from auto_optimizer.pattern.pattern import Pattern
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
@@ -56,13 +56,13 @@ from auto_optimizer.pattern.utils import HasInputValue, NextNodeCount, AllNextno
 pattern0 = Pattern() \
     .add_node("MatMul_0", ["MatMul"], [NextNodeCount(1), HasInputValue(1)]) \
     .add_node('ElementWise_0', ['Mul', 'Add', 'Sub', 'Div'], [NextNodeCount(1)]) \
-    .set_node_loop('ElementWise_0', MATCH_PATTERN.MATCH_ZERO_OR_MORE) \
+    .set_node_loop('ElementWise_0', MatchPattern.MATCH_ZERO_OR_MORE) \
     .add_edge("MatMul_0", "ElementWise_0") \
     .add_node("Reshape_0", ["Reshape"], [NextNodeCount(1), HasInputValue(1)]) \
     .add_edge("ElementWise_0", "Reshape_0") \
     .add_node("Transpose_0", ["Transpose"], [AllNextnodesAreGather()]) \
     .add_edge("Reshape_0", "Transpose_0") \
-    .set_loop(MATCH_PATTERN.MATCH_ONCE)
+    .set_loop(MatchPattern.MATCH_ONCE)
 
 
 @KnowledgeFactory.register()

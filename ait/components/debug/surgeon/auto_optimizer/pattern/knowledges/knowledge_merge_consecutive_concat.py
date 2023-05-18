@@ -18,7 +18,7 @@ import logging
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.interface.base_node import Node
-from auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern
+from auto_optimizer.pattern.pattern import MatchPattern, Pattern
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.utils import NextNodeCount
@@ -54,7 +54,7 @@ pattern0 = Pattern() \
     .add_edge("Concat_0", "Concat_1") \
     .add_edge("Concat_1", "Concat_2") \
     .add_edge("Concat_2", "Concat_to_keep") \
-    .set_loop(MATCH_PATTERN.MATCH_ONCE)
+    .set_loop(MatchPattern.MATCH_ONCE)
 
 # continue 3 Concat op
 r"""
@@ -80,7 +80,7 @@ pattern1 = Pattern() \
     .add_node("Concat_to_keep", ["Concat"]) \
     .add_edge("Concat_0", "Concat_1") \
     .add_edge("Concat_1", "Concat_to_keep") \
-    .set_loop(MATCH_PATTERN.MATCH_ONCE)
+    .set_loop(MatchPattern.MATCH_ONCE)
 
 # continue 2 Concat op
 r"""
@@ -100,7 +100,7 @@ pattern2 = Pattern() \
     .add_node("Concat_0", ["Concat"], [NextNodeCount(1)]) \
     .add_node("Concat_to_keep", ["Concat"]) \
     .add_edge("Concat_0", "Concat_to_keep") \
-    .set_loop(MATCH_PATTERN.MATCH_ONCE)
+    .set_loop(MatchPattern.MATCH_ONCE)
 
 
 @KnowledgeFactory.register()

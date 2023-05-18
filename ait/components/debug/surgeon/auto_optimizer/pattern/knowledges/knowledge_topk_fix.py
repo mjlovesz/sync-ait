@@ -23,7 +23,7 @@ from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.interface.base_node import (
     Initializer, Node, PlaceHolder
 )
-from auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern
+from auto_optimizer.pattern.pattern import MatchPattern, Pattern
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 
@@ -45,7 +45,7 @@ r"""
 """
 pattern_topk = Pattern() \
     .add_node("TopK_0", ["TopK"]) \
-    .set_loop(MATCH_PATTERN.MATCH_ONCE)
+    .set_loop(MatchPattern.MATCH_ONCE)
 
 
 @KnowledgeFactory.register()

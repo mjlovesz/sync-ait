@@ -24,7 +24,7 @@ from auto_optimizer.graph_refactor.interface.base_node import BaseNode
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.matcher import MatchResult
-from auto_optimizer.pattern.pattern import MATCH_PATTERN, MatchBase, Pattern
+from auto_optimizer.pattern.pattern import MatchPattern, MatchBase, Pattern
 from auto_optimizer.pattern.utils import NextNodeCount
 
 # when certain conditions are met, tr/bn/tr structure
@@ -68,7 +68,7 @@ class KnowledgeBNFolding(KnowledgeBase):
             .add_node('tr1', ['Transpose']) \
             .add_edge('tr0', 'bn0') \
             .add_edge('bn0', 'tr1') \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE)
+            .set_loop(MatchPattern.MATCH_ONCE)
         self._register_apply_funcs(self.pattern_, [self._apply])
 
     def _constant_folding(self, scale: NDArray, bias: NDArray, mean: NDArray,
