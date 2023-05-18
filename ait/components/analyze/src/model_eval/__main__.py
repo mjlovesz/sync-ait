@@ -19,7 +19,7 @@ from model_eval.common import utils, logger
 from model_eval.common.enum import Framework
 from model_eval.bean import ConvertConfig
 from model_eval.core import Analyze
-from .options import (
+from model_eval.options import (
     opt_model,
     opt_out_path,
     opt_soc,

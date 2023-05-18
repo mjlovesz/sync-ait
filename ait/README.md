@@ -11,11 +11,12 @@
 ## 介绍
 AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体化开发工具，支持一站式调试调优，当前包括debug、profile、analyze等组件。
 
-### ATI各子功能介绍
-- ait profile benchmark: 用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延）。（[快速入门指南](docs/profile/benchmark/README.md)）
+### AIT各子功能介绍
+- ait benchmark: 用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延）。（[快速入门指南](docs/benchmark/README.md)）
 - ait debug surgeon: 使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能。（[快速入门指南](docs/debug/surgeon/README.md)）
 - ait debug compare: 提供自动化的推理场景精度比对，用来定位问题算子。（[快速入门指南](docs/debug/compare/README.md)）
 - ait analyze：提供推理模型支持度分析功能。（[快速入门指南](components/analyze/README.md)）
+- ait transplt：提供推理应用迁移分析功能。（[快速入门指南](components/transplt/README.md)）
 
 ## 工具安装
 
@@ -35,7 +36,7 @@ ait推理工具的安装包括**ait包**和**依赖的组件包**的安装，其
 - 安装 `python3.7.5` 环境
 - centos平台默认为gcc 4.8编译器，可能无法安装本工具，建议更新gcc编译器后再安装。
 - 安装开发运行环境的昇腾 AI 推理相关驱动、固件、CANN 包，参照 [昇腾文档](https://www.hiascend.com/zh/document)。安装后用户可通过设置CANN_PATH环境变量，指定安装的CANN版本路径，例如：export CANN_PATH=/xxx/nnrt/latest/。若不设置，工具默认会从/usr/local/Ascend/nnrt/latest/和/usr/local/Ascend/ascend-toolkit/latest路径分别尝试获取CANN版本。
-- `TensorFlow` 相关 python 依赖包，参考 [Centos7.6上tensorflow1.15.0 环境安装](https://bbs.huaweicloud.com/blogs/181055) 安装 TensorFlow1.15.0 环境。(**如不使用tensorflow模型的精度对比功能则不需要安装**)
+- `TensorFlow` 相关 python 依赖包，参考 [Centos7.6上TensorFlow1.15.0 环境安装](https://bbs.huaweicloud.com/blogs/181055) 安装 TensorFlow1.15.0 环境。(**如不使用TensorFlow模型的精度对比功能则不需要安装**)
 
 
 #### 源代码一键式安装
@@ -45,12 +46,10 @@ git clone https://gitee.com/ascend/ait.git
 cd ait
 
 # 安装ait，包括debug、profile组件
-pip3 install .[debug,profile,analyze] --force-reinstall
+./install.sh
 
-# 或者可以安装指定的组件包
-pip3 install .[debug] --force-reinstall
-pip3 install .[profile] --force-reinstall
-pip3 install .[analyze] --force-reinstall
+# 重新安装ait及其debug、profile组件
+./install.sh --force-reinstall
 
 ```
 
@@ -72,7 +71,7 @@ cd ../surgeon
 pip3 install . --force-reinstall
 
 # 4. install benchmark pkg
-cd ../../profile/benchmark
+cd ../../benchmark
 
 # 4.1 构建aclruntime包
 pip3 wheel ./backend/ -v
@@ -87,6 +86,10 @@ pip3 install ./ais_bench-{version}-py3-none-any.whl
 
 # 5. install analyze pkg
 cd ../../analyze
+pip3 install . --force-reinstall
+
+# 6. install transplt pkg
+cd ../transplt
 pip3 install . --force-reinstall
 ```
 
@@ -119,9 +122,10 @@ Commands:
   analyze
   debug
   profile
+  transplt
 ```
 
-```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare，在profile任务下面，有benchmark，analyze任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子类任务列表：
+```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare，在profile任务下面，有benchmark，analyze、transplt任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子类任务列表：
 
 1、debug任务支持的功能示例：
 
@@ -208,15 +212,21 @@ ait debug surgeon -h
 ### profile任务使用说明
 #### 1. benchmark子任务使用说明
 ```bash
-ait profile benchmark -h
+ait benchmark -h
 ```
 
-更多使用方式和示例请参考：[benchmark examples](examples/cli/profile/benchmark/)
+更多使用方式和示例请参考：[benchmark examples](examples/cli/benchmark/)
 
 ### analyze任务使用说明
 
 ```shell
 ait analyze -h
+```
+
+### transplt任务使用说明
+
+```shell
+ait transplt -h
 ```
 
 更多使用方式和示例待补充
@@ -226,10 +236,11 @@ ait analyze -h
 
 ### AIT资源
 
-* [AIT profile benchmark 快速入门指南](docs/profile/benchmark/README.md)
+* [AIT benchmark 快速入门指南](docs/benchmark/README.md)
 * [AIT debug surgeon 快速入门指南](docs/debug/surgeon/README.md)
 * [AIT debug compare 快速入门指南](docs/debug/compare/README.md)
 * [AIT analyze 快速入门指南](components/analyze/README.md)
+* [AIT transplt 快速入门指南](components/transplt/README.md)
 
 
 ## 许可证
