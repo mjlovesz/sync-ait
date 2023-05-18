@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include <iostream>
 #include <random>
 #include <memory>
@@ -36,8 +52,9 @@ int str2num(char* str)
 {
     int n = 0;
     int flag = 0;
+    const int decimal = 10;
     while (*str >= '0' && *str <= '9') {
-        n = n * 10 + (*str - '0');
+        n = n * decimal + (*str - '0');
         str++;
     }
     if (flag == 1) {
@@ -48,11 +65,12 @@ int str2num(char* str)
 
 
 int main(int argc, char **argv) {
+    const int inputIndex = 3;
     std::string modelPath = argv[1];
     int loop = str2num(argv[2]);
     std::string input;
-    if (argc > 3) {
-        input = argv[3];
+    if (argc > inputIndex) {
+        input = argv[inputIndex];
     }
 
     std::shared_ptr<Base::SessionOptions> options = std::make_shared<Base::SessionOptions>();
@@ -72,33 +90,25 @@ int main(int argc, char **argv) {
 
     create_pure_input_tensors(indescs, deviceId, intensors);
     for (const auto& tensor : intensors) {
-        printf("in tensor type:%d size:%lld isDevice:%d\n", 
+        printf("in tensor type:%d size:%lld isDevice:%d\n",
             tensor.GetTensorType(), tensor.GetSize(), tensor.IsDevice());
     }
-    if (input.size() != 0){
+    if (input.size() != 0) {
         std::vector<std::string> fileName_vec;
         std::vector<std::vector<std::vector<std::string>>> infilesList;
         printf("lcm debug ignore\n");
-        // Utils::ScanFiles(fileName_vec, input);
-        // for (auto &filename : fileName_vec){
-        //     std::vector<std::string> file;
-        //     file.push_back(input + filename);
-        //     std::vector<std::vector<std::string>> files;
-        //     files.push_back(file);
-        //     infilesList.push_back(files);
-        // }
-        // session->Infer_InFilesLists_msame(infilesList);
-    }else{
+    }
+    else {
         std::vector<Base::TensorBase> outtensors = session->InferVector(output_names, intensors);
         for (const auto& tensor : outtensors) {
-            printf("out tensor type:%d size:%lld isDevice:%d\n", 
+            printf("out tensor type:%d size:%lld isDevice:%d\n",
                 tensor.GetTensorType(), tensor.GetSize(), tensor.IsDevice());
         }
     }
 
     Base::InferSumaryInfo sumary = session->GetSumaryInfo();
-    float sum = std::accumulate(std::begin(sumary.execTimeList), std::end(sumary.execTimeList), 0.0);  
-    float mean =  sum / sumary.execTimeList.size(); //均值  
+    float sum = std::accumulate(std::begin(sumary.execTimeList), std::end(sumary.execTimeList), 0.0);
+    float mean =  sum / sumary.execTimeList.size(); // 均值
     printf("lcm debug avg:%f count:%d\n", mean, sumary.execTimeList.size());
     return 0;
 }

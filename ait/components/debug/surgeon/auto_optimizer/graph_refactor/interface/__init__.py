@@ -12,5 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .base_graph import BaseGraph
-from .base_node import Node, Initializer, PlaceHolder
+from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from auto_optimizer.graph_refactor.interface.base_node import Node, Initializer, PlaceHolder

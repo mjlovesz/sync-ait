@@ -1,9 +1,28 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import math
 import os
 import shutil
+import sys
+import logging
 
 import pytest
 from test_common import TestCommonClass
+
+logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 
 class TestClass:
@@ -16,7 +35,7 @@ class TestClass:
 
     @classmethod
     def teardown_class(cls):
-        print('\n ---class level teardown_class')
+        logger.info('\n ---class level teardown_class')
 
     def init(self):
         self.model_name = "resnet50"
@@ -31,7 +50,7 @@ class TestClass:
         cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
                                                  TestCommonClass.default_device_id)
         cmd = "{} --output {}".format(cmd, output_path)
-        print("run cmd:{}".format(cmd))
+        logger.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
 
@@ -54,26 +73,29 @@ class TestClass:
                                                                                            self.model_name), "input"),
                                                      output_file_num)
 
-        for i, batch_size in enumerate(batch_list):
+        for _, batch_size in enumerate(batch_list):
             model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
             cmd = "{} --model {} --device {} --output {} --debug True \
                 --input {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                         output_path, input_path, log_path)
-            print("run cmd:{}".format(cmd))
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
             # inference times should be  fit to given rule
             real_execute_num = TestCommonClass.get_inference_execute_num(log_path)
-            exacute_num = math.ceil(output_file_num/batch_size)
-            assert real_execute_num == warmup_num + exacute_num
+            if batch_size != 0:
+                exacute_num = math.ceil(output_file_num/batch_size)
+                assert real_execute_num == warmup_num + exacute_num
+            else:
+                logger.warning("zero division!")
 
             # bin file num is equal to output_file_num
+            cmd = "cat {} |grep 'output path'".format(log_path)
             try:
-                cmd = "cat {} |grep 'output path'".format(log_path)
                 outval = os.popen(cmd).read()
             except Exception as e:
-                raise Exception("grep action raises an exception: {}".format(e))
+                raise Exception("grep action raises an exception: {}".format(e)) from e
 
             result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
             result_paths.append(result_path)
@@ -83,7 +105,7 @@ class TestClass:
         # bin file compare for batch size [1, 2,4,8], should be same
         for _, result_path in enumerate(result_paths[1:]):
             cmd = "diff  {}  {}".format(result_paths[0], result_path)
-            print("run cmd:{}".format(cmd))
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
         for output_dir_path in result_paths:
@@ -112,21 +134,24 @@ class TestClass:
             cmd = "{0} --model {1} --device {2} --debug True --dymBatch {3} --input {4} \
                 --output {5} > {6}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                            dys_batch_size, input_path, output_path, log_path)
-            print("run cmd:{}".format(cmd))
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
             # inference times should be  fit to given rule
             real_execute_num = TestCommonClass.get_inference_execute_num(log_path)
-            exacute_num = math.ceil(output_file_num/dys_batch_size)
-            assert real_execute_num == warmup_num + exacute_num
+            if dys_batch_size != 0: 
+                exacute_num = math.ceil(output_file_num/dys_batch_size)
+                assert real_execute_num == warmup_num + exacute_num
+            else:
+                logger.warning("zero division!")
 
             # bin file num is equal to output_file_num
+            cmd = "cat {} |grep 'output path'".format(log_path)
             try:
-                cmd = "cat {} |grep 'output path'".format(log_path)
                 outval = os.popen(cmd).read()
             except Exception as e:
-                raise Exception("grep action raises an exception: {}".format(e))
+                raise Exception("grep action raises an exception: {}".format(e)) from e
 
             result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
             result_paths.append(result_path)
@@ -136,7 +161,7 @@ class TestClass:
         # bin file compare for batch size [1, 2,4,8], should be same
         for _, result_path in enumerate(result_paths[1:]):
             cmd = "diff {}  {}".format(result_paths[0], result_path)
-            print("run cmd:{}".format(cmd))
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 

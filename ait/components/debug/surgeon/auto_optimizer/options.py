@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,8 +24,8 @@ def convert_to_graph_optimizer(ctx: click.Context, param: click.Option, value: s
     '''Process and validate knowledges option.'''
     try:
         return GraphOptimizer([v.strip() for v in value.split(',')])
-    except Exception:
-        raise click.BadParameter('No valid knowledge provided!')
+    except Exception as err:
+        raise click.BadParameter('No valid knowledge provided!') from err
 
 
 default_off_knowledges = [
