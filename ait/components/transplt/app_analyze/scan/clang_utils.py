@@ -82,7 +82,6 @@ from clang.cindex import CursorKind, TypeKind
 
 from app_analyze.common.kit_config import KitConfig
 
-
 Info = namedtuple('Info', ['result_type', 'spelling', 'api', 'definition', 'source'])
 
 
@@ -243,6 +242,7 @@ def var_decl(c):
             definition = c.get_definition().displayname
         else:
             definition = None
+
     c.info = Info(api, f'{c.type.spelling} {c.spelling}', api, definition, source)
     return c.info
 
@@ -282,7 +282,6 @@ def parm_decl(c):
         api = c.type.spelling
     c.info = Info(api, f'{c.type.spelling} {c.spelling}', api, definition, source)
     return c.info
-
 
 
 def call_expr(c):
@@ -418,7 +417,6 @@ def member_ref_expr(c):
     return c.info
 
 
-
 def decl_ref_expr(c):
     """
     Returns:
@@ -511,9 +509,14 @@ def namespace_ref(c):
 
 
 def inclusion_directive(c):
-    prefix = '' if c.spelling.startswith('/') else '/'
-    # 使用c.get_included_file().name会遇到Assert错误
-    c.info = Info(None, c.spelling, c.spelling, None, prefix + c.spelling)
+    try:
+        file = c.get_included_file()
+    except AssertionError as e:
+        prefix = '' if c.spelling.startswith('/') else '/'
+        c.info = Info(None, c.spelling, c.spelling, None, prefix + c.spelling)
+    else:
+        c.info = Info(None, c.spelling, c.spelling, None, file.name)
+
     return c.info
 
 
@@ -529,9 +532,9 @@ def operator(c):
     spelling = read_cursor(c)
     c.info = Info(c.spelling, spelling, None, None, None)
     return c.info
+
+
 ##### Cursor解析函数（结束）
-
-
 # 小粒度分析CursorKind
 small_dict = {
     'MEMBER_REF_EXPR': member_ref_expr, 'DECL_REF_EXPR': decl_ref_expr, 'OVERLOADED_DECL_REF': overloaded_decl_ref,
