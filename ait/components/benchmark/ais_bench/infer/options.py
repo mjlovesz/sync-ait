@@ -335,3 +335,22 @@ opt_aipp_config = click.option(
     default=None,
     help="File type: .config, to set actual aipp params before infer"
 )
+
+opt_energy_consumption = click.option(
+    '-ec',
+    '--energy_consumption',
+    'energy_consumption',
+    default=False,
+    type=str,
+    callback=str2bool,
+    help="Obtain power consumption data for model inference"
+)
+
+opt_npu_id = click.option(
+    '--npu_id',
+    'npu_id',
+    default=0,
+    type=str,
+    callback=check_device_range_valid,
+    help="The NPU ID to use.valid value range is [0, 255]"
+)
