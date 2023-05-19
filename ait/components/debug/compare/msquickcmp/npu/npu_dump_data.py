@@ -213,7 +213,7 @@ class NpuDumpData(DumpData):
         """
         self._check_input_path_param()
         if not use_cli:
-            benchmark_dir = os.path.join(os.path.realpath("../../profile"), BENCHMARK_DIR)
+            benchmark_dir = os.path.join(os.path.realpath("../../"), BENCHMARK_DIR)
             self.benchmark_install_sh(benchmark_dir)
         return self.benchmark_run()
 
