@@ -125,7 +125,7 @@ Commands:
   benchmark
 ```
 
-```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare;benchmark，analyze、transplt任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子类任务列表：
+```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare。benchmark，analyze、transplt任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子类任务列表：
 
 1、debug任务支持的功能示例：
 
@@ -141,8 +141,7 @@ Commands:
   surgeon  main entrance of auto optimizer.
 ```
 
-  
-```
+
 
 ```[OPT]```和```[ARGS]```为可选项以及参数，每个任务下面的可选项和参数都不同，以debug任务下面的compare子任务为例，可以通过如下方式获取
 
