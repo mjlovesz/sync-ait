@@ -505,7 +505,7 @@ class TestClass():
         os.makedirs(output_dir_path)
         summary_json_path = os.path.join(output_path,  "{}_summary.json".format(output_dir_name))
 
-        cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {}" \
+        cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {}"\
             .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                      input_path, output_path, output_dir_name)
         logger.info("run cmd:{}".format(cmd))
@@ -519,7 +519,8 @@ class TestClass():
         assert math.fabs(ais_bench_inference_time_ms) > TestCommonClass.EPSILON
         # get msame inference  average time without first time
         msame_infer_log_path = os.path.join(output_path,  "msame_infer.log")
-        cmd = "{} --model {} --input {} --output {}> {}".format(TestCommonClass.msame_bin_path, model_path, input_path, output_path, msame_infer_log_path)
+        cmd = "{} --model {} --input {} --output {}> {}".format(TestCommonClass.msame_bin_path, model_path,
+                                                                 input_path, output_path, msame_infer_log_path)
         logger.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
