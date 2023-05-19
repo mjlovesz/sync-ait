@@ -253,8 +253,8 @@ class TestClass():
             os.makedirs(output_path)
             output_batchsize_axis = 1
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
-            cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {}" \
-                "--dymBatch {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+            cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {} \
+                --dymBatch {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                              output_parent_path, output_dirname, output_batchsize_axis,
                                                dys_batch_size, log_path)
             logger.info("run cmd:{}".format(cmd))
