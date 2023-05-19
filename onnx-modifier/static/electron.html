@@ -55,6 +55,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     position:absolute;
     left: 2px;
 }
+
 .graph-op-button-reset {
     top: 30px;
 }
@@ -65,6 +66,10 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 
 .graph-op-button-optimizer {
     top: 205px;
+}
+
+.graph-op-button-extract {
+    top: 240px;
 }
 .graph-op-button-reset:active {  background: #e7e7e7; }
 .graph-op-button-download {
@@ -257,7 +262,25 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 </head>
 <body class="welcome spinner">
 <div id="graph" class="graph" tabindex="0">
-    <svg id="canvas" class="canvas" preserveaspectratio="xMidYMid meet" width="100%" height="100%"></svg>
+    <svg id="canvas" class="canvas" preserveaspectratio="xMidYMid meet" width="100%" height="100%">   
+        <g id="linecolor">
+            <linearGradient id="gradient-start">
+                <stop stop-color="red"></stop>
+                <stop stop-color="red" offset="0.7"></stop>
+                <stop stop-color="orange" offset="1"></stop>
+            </linearGradient>
+            <linearGradient id="gradient-end">
+                <stop stop-color="orange"></stop>
+                <stop stop-color="purple" offset="0.4"></stop>
+                <stop stop-color="purple" offset="1"></stop>
+            </linearGradient>
+            <linearGradient id="gradient-start-end">
+                <stop stop-color="red"></stop>
+                <stop stop-color="orange" offset="0.5"></stop>
+                <stop stop-color="purple" offset="1"></stop>
+            </linearGradient>
+        </g>
+    </svg>
 </div>
 <div id="sidebar" class="sidebar"></div>
 <div id="toolbar" class="toolbar">
@@ -308,6 +331,8 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     </select>
     <button id="onnxsim-graph" class="graph-op-button graph-op-button-onnxsim">OnnxSim</button>
     <button id="auto-optimizer-graph" class="graph-op-button graph-op-button-optimizer">AutoOptimizer</button>
+    
+    <button id="extract-graph" class="graph-op-button graph-op-button-extract">Extract</button>
 
     <button id="back-button" class="toolbar-back-button" title="Back">
         &#x276E;

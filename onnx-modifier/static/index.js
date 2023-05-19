@@ -339,6 +339,22 @@ host.BrowserHost = class {
             this.take_effect_modify("/auto-optimizer", this.build_download_data(true))
         });
 
+        const extract = this.document.getElementById('extract-graph');
+        extract.addEventListener('click', () => {
+            if (!(this._view.modifier.getExtractStart() && this._view.modifier.getExtractEnd())) {
+                swal("Select Extract Net Start And End", "Select the start node and end node for the subnet export", "info");
+                return 
+            }
+            let download_data = this.build_download_data(true)
+            download_data["extract_start"] = this._view.modifier.getExtractStart()
+            download_data["extract_end"] = this._view.modifier.getExtractEnd()
+            this.take_effect_modify("/extract", download_data, (blob) => {
+                swal("Success!", "Extract model has been successfuly saved in ./modified_onnx/", "success");
+                this._view.modifier.setExtractStart(null)
+                this._view.modifier.setExtractEnd(null)
+            })
+        });
+
         const addNodeButton = this.document.getElementById('add-node');
         addNodeButton.addEventListener('click', () => {
             // this._view._graph.resetGraph();
@@ -461,7 +477,7 @@ host.BrowserHost = class {
         this._view.show('welcome');
     }
 
-    take_effect_modify(path, data_body) {
+    take_effect_modify(path, data_body, callback) {
         // // https://healeycodes.com/talking-between-languages
         return fetch(path, {
             // Declare what type of data we're sending
@@ -494,6 +510,9 @@ host.BrowserHost = class {
         }).then((blob) => {
             if (!blob) {
                 return
+            }
+            if (callback) {
+                return callback(blob)
             }
 
             let file = new File([blob], this.upload_filename);
