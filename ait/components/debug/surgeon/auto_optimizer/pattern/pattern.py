@@ -20,7 +20,7 @@ from auto_optimizer.graph_refactor.interface.base_node import BaseNode
 
 
 @unique
-class MatchPattern(Enum):
+class MATCH_PATTERN(Enum):
     # 不循环，只匹配一次
     MATCH_ONCE = 1
     # 循环无上限，匹配一次或者多次
@@ -50,7 +50,7 @@ class PatternNode(object):
         self._op_matchs: List[MatchBase] = [] if op_matchs is None else op_matchs
         self._inputs: List['PatternNode'] = []
         self._outputs: List['PatternNode'] = []
-        self._match_pattern: MatchPattern = MatchPattern.MATCH_ONCE
+        self._match_pattern: MATCH_PATTERN = MATCH_PATTERN.MATCH_ONCE
 
     @property
     def op_name(self) -> str:
@@ -88,16 +88,16 @@ class PatternNode(object):
     def add_child(self, child: 'PatternNode') -> None:
         self._outputs.append(child)
 
-    def set_match_pattern(self, match_pattern: MatchPattern) -> None:
-        if isinstance(match_pattern, MatchPattern):
+    def set_match_pattern(self, match_pattern: MATCH_PATTERN) -> None:
+        if isinstance(match_pattern, MATCH_PATTERN):
             self._match_pattern = match_pattern
 
     def can_match_more_time(self) -> bool:
-        return self._match_pattern == MatchPattern.MATCH_ONCE_OR_MORE or \
-            self._match_pattern == MatchPattern.MATCH_ZERO_OR_MORE
+        return self._match_pattern == MATCH_PATTERN.MATCH_ONCE_OR_MORE or \
+            self._match_pattern == MATCH_PATTERN.MATCH_ZERO_OR_MORE
 
     def can_match_zero_time(self) -> bool:
-        return self._match_pattern == MatchPattern.MATCH_ZERO_OR_MORE
+        return self._match_pattern == MATCH_PATTERN.MATCH_ZERO_OR_MORE
 
 
 class Pattern(object):
@@ -105,7 +105,7 @@ class Pattern(object):
         self._nodes: Dict[str, PatternNode] = {}
         self._inputs: List[PatternNode] = []
         self._outputs: List[PatternNode] = []
-        self._match_pattern = MatchPattern.MATCH_ONCE
+        self._match_pattern = MATCH_PATTERN.MATCH_ONCE
         self._root: PatternNode = None
 
     @property
@@ -161,29 +161,29 @@ class Pattern(object):
     def set_node_loop(
         self,
         op_name: str,
-        match_pattern: MatchPattern
+        match_pattern: MATCH_PATTERN
     ) -> 'Pattern':
         """
         设置算子节点匹配模式
         :param op_name: 算子节点名称
-        :param MatchPattern: 匹配模式
+        :param MATCH_PATTERN: 匹配模式
         :return: 返回实例
         """
         node = self._nodes.get(op_name)
         if node is None:
             raise RuntimeError(f'Operator({op_name}) not exists.')
-        if isinstance(match_pattern, MatchPattern):
+        if isinstance(match_pattern, MATCH_PATTERN):
             node.set_match_pattern(match_pattern)
         return self
 
-    def set_loop(self, match_pattern: MatchPattern) -> 'Pattern':
+    def set_loop(self, match_pattern: MATCH_PATTERN) -> 'Pattern':
         """
         设置子图循环模式
         单输入多输出、多输入单输出、多输入多输出不支持子图循环匹配
-        :param MatchPattern: 子图匹配模式
+        :param MATCH_PATTERN: 子图匹配模式
         :return: 返回实例
         """
-        if isinstance(match_pattern, MatchPattern):
+        if isinstance(match_pattern, MATCH_PATTERN):
             self._match_pattern = match_pattern
         return self
 
@@ -225,5 +225,5 @@ class Pattern(object):
         判断子图是否可以循环匹配
         :return: 能匹配则返回True，否则返回False
         """
-        return self._match_pattern == MatchPattern.MATCH_ONCE_OR_MORE or \
-            self._match_pattern == MatchPattern.MATCH_ZERO_OR_MORE
+        return self._match_pattern == MATCH_PATTERN.MATCH_ONCE_OR_MORE or \
+            self._match_pattern == MATCH_PATTERN.MATCH_ZERO_OR_MORE
