@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -81,7 +81,8 @@ KnowledgeGroup.add_knowledge(Knowledge(
 
 KnowledgeGroup.add_knowledge(Knowledge(
     "接口在新版本依赖python>=3.8及numpy>=1.22.0，若不想修改代码，则需要升级python和numpy，若要修改代码，接口的numpy输入可以替换成list输入。",
-    ['acl.util.set_attr_list_int', 'acl.util.set_attr_list_bool', 'acl.util.set_attr_list_float', 'acl.util.set_attr_list_list_int']
+    ['acl.util.set_attr_list_int', 'acl.util.set_attr_list_bool',
+     'acl.util.set_attr_list_float', 'acl.util.set_attr_list_list_int']
 ))
 
 
@@ -92,6 +93,7 @@ KnowledgeGroup.add_knowledge(Knowledge(
 
 
 API_INPUT_MARCO = ['ACL_MEMCPY_HOST_TO_DEVICE', 'ACL_MEMCPY_DEVICE_TO_HOST']
+
 
 def match_memcpy_type(line: str) -> bool:
     for marco in API_INPUT_MARCO:

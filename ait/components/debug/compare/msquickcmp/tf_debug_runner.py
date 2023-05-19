@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Function:
-This class is used to generate GUP dump data of the TensorFlow model.
-Copyright Information:
-Huawei Technologies Co., Ltd. All Rights Reserved © 2022
+This class is used to generate GUP dump data of the tf model.
 """
 import argparse
 import sys
@@ -21,7 +32,7 @@ from msquickcmp.common.utils import AccuracyCompareException
 
 class TfDebugRunner(object):
     """
-    This class is used to generate GUP dump data of the TensorFlow model.
+    This class is used to generate GUP dump data of the tf model.
     """
 
     def __init__(self, arguments):
@@ -30,6 +41,18 @@ class TfDebugRunner(object):
         self.input_shapes = utils.parse_input_shape(self.args.input_shape)
         self.input_path = self.args.input_path
         self.dump_root = os.path.realpath(self.args.out_path)
+
+    def run(self):
+        """
+        Function description:
+            run tf model
+        """
+        self._dump_control()
+        self._load_graph()
+        inputs_tensor = tf_common.get_inputs_tensor(self.global_graph, self.args.input_shape)
+        inputs_map = tf_common.get_inputs_data(inputs_tensor, self.args.input_path)
+        outputs_tensor = self._get_outputs_tensor()
+        self._run_model(inputs_map, outputs_tensor)
 
     def _dump_control(self):
         if tf_common.check_tf_version(tf_common.VERSION_TF2X):
@@ -40,13 +63,17 @@ class TfDebugRunner(object):
         try:
             with tf.io.gfile.GFile(self.args.model_path, 'rb') as f:
                 global_graph_def = tf.compat.v1.GraphDef.FromString(f.read())
-            self.global_graph = tf.Graph()
+        except Exception as err:
+            utils.logger.error("Failed to load the model %s. %s" % (self.args.model_path, err))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from err
+        self.global_graph = tf.Graph()
+        try:
             with self.global_graph.as_default():
                 tf.import_graph_def(global_graph_def, name='')
         except Exception as err:
-            utils.print_error_log("Failed to load the model %s. %s" % (self.args.model_path, err))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
-        utils.print_info_log("Load the model %s successfully." % self.args.model_path)
+            utils.logger.error("Failed to load the model %s. %s" % (self.args.model_path, err))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from err
+        utils.logger.info("Load the model %s successfully." % self.args.model_path)
 
     def _get_outputs_tensor(self):
         outputs_tensor = []
@@ -61,18 +88,6 @@ class TfDebugRunner(object):
             if tf_common.check_tf_version(tf_common.VERSION_TF1X):
                 sess = tf_debug.LocalCLIDebugWrapperSession(sess, ui_type="readline", dump_root=self.dump_root)
             return sess.run(outputs_tensor, feed_dict=inputs_map)
-
-    def run(self):
-        """
-        Function description:
-            run TensorFlow model
-        """
-        self._dump_control()
-        self._load_graph()
-        inputs_tensor = tf_common.get_inputs_tensor(self.global_graph, self.args.input_shape)
-        inputs_map = tf_common.get_inputs_data(inputs_tensor, self.args.input_path)
-        outputs_tensor = self._get_outputs_tensor()
-        self._run_model(inputs_map, outputs_tensor)
 
 
 def _make_dump_data_parser(parser):
@@ -92,11 +107,11 @@ def _make_dump_data_parser(parser):
 
 def main():
     """
-   Function Description:
-       main process function
-   Exception Description:
-       exit the program when an AccuracyCompare Exception  occurs
-   """
+    Function Description:
+        main process function
+    Exception Description:
+        exit the program when an AccuracyCompare Exception  occurs
+    """
     parser = argparse.ArgumentParser()
     _make_dump_data_parser(parser)
     args = parser.parse_args(sys.argv[1:])

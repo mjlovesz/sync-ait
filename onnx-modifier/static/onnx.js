@@ -440,6 +440,9 @@ onnx.Graph = class {
         this._custom_added_node = []
         this._custom_added_outputs = []
         this._custom_deleted_outputs = []
+        this._custom_added_inputs = [];
+        this._custom_deleted_inputs = [];
+        this._custom_inputs_shape = new Map();
         
         // model parameter assignment here!
         // console.log(graph)
@@ -503,7 +506,23 @@ onnx.Graph = class {
     }
 
     get inputs() {
-        return this._inputs;
+        //return this._inputs;
+        var all_inputs = this._inputs.concat(this._custom_added_inputs);
+        var filtered_inputs = [];
+        for (const in_info of all_inputs) {
+            if (this._custom_deleted_inputs.includes(in_info.name)) continue;
+            filtered_inputs.push(in_info);
+        }
+
+        for (const in_index in filtered_inputs) {
+            const in_info = filtered_inputs[in_index]
+            if (!this._custom_inputs_shape.has(in_info.name)) continue;
+            let shape_info = this._custom_inputs_shape.get(in_info.name)
+            filtered_inputs[in_index].arguments[0] = new onnx.Argument(in_info.name, this._context.createTensorType(1, shape_info))
+        }
+        
+        
+        return filtered_inputs;
     }
 
     get outputs() {
@@ -669,6 +688,9 @@ onnx.Graph = class {
     reset_custom_modified_outputs() {
         this._custom_added_outputs = [];
         this._custom_deleted_outputs = [];
+        this._custom_added_inputs = [];
+        this._custom_deleted_inputs = [];
+        this._custom_inputs_shape = new Map();
     }
 
     add_output(name) {
@@ -678,6 +700,23 @@ onnx.Graph = class {
 
     delete_output(name) {
         this._custom_deleted_outputs.push(name);
+    }
+
+    add_input(name, shape) {
+        if (shape) {
+            const tensor = this._context.tensor(name);
+            tensor.type = this._context.createTensorType(1, shape)
+        }
+        const argument = this._context.argument(name);
+        this._custom_added_inputs.push(new onnx.Parameter(name, [ argument ]));
+    }
+
+    delete_input(name) {
+        this._custom_deleted_inputs.push(name);
+    }
+
+    modify_input_shape(name, shape) {
+        this._custom_inputs_shape.set(name, shape)
     }
 };
 
@@ -900,7 +939,7 @@ onnx.Attribute = class {
                 this._type = metadata.type;
                 const value = this._value ? parseInt(this._value.toString(), 10) : this._value;
                 // this._value = Number.isInteger(value) ? context.createDataType(value) : value;
-                if (value != NaN && Number.isInteger(value)) {
+                if (!Number.isNaN(value) && Number.isInteger(value)) {
                     this._value = context.createDataType(value);
                 }
                 // console.log(attribute.type, attribute.value)
@@ -1569,7 +1608,7 @@ onnx.Metadata = class {
             return Promise.resolve(onnx.Metadata._metadata);
         }
         // return context.request('onnx-metadata.json', 'utf-8', null).then((data) => {
-        return context.request('../static/onnx-metadata.json', 'utf-8', null).then((data) => {
+        return context.request('./onnx-metadata.json', 'utf-8', null).then((data) => {
             onnx.Metadata._metadata = new onnx.Metadata(data);
             return onnx.Metadata._metadata;
         }).catch(() => {

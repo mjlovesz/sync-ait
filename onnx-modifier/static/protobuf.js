@@ -655,7 +655,7 @@ protobuf.TextReader = class {
         const tags = new Map();
         this.reset();
         try {
-            this.start(false);
+            this.start();
             while (!this.end()) {
                 const tag = this.tag();
                 if (this.token() === '{') {
@@ -742,7 +742,7 @@ protobuf.TextReader = class {
         let value = NaN;
         let token = this._token;
         switch (token) {
-            case 'nan': value = NaN; break;
+            case 'nan': break; //value is NaN; 
             case 'inf': value = Infinity; break;
             case '-inf': value = -Infinity; break;
             default:
@@ -892,7 +892,7 @@ protobuf.TextReader = class {
                         message.value = this.bytes();
                         break;
                     default:
-                        this.field(tag, message);
+                        this.field(tag);
                         break;
                 }
             }
@@ -929,7 +929,7 @@ protobuf.TextReader = class {
                         message.value = this.bytes();
                         break;
                     default:
-                        this.field(tag, message);
+                        this.field(tag);
                         break;
                 }
             }

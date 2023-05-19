@@ -31,7 +31,7 @@ def _generate_golden_data_model(args):
         from msquickcmp.onnx_model.onnx_dump_data import OnnxDumpData
         return OnnxDumpData(args)
     else:
-        utils.print_error_log("Only model files whose names end with .pb or .onnx are supported")
+        utils.logger.error("Only model files whose names end with .pb or .onnx are supported")
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_MODEL_TYPE_ERROR)
 
 
@@ -42,7 +42,7 @@ def _correct_the_wrong_order(left_index, right_index, golden_net_output_info):
         tmp = golden_net_output_info[left_index]
         golden_net_output_info[left_index] = golden_net_output_info[right_index]
         golden_net_output_info[right_index] = tmp
-        utils.print_info_log("swap the {} and {} item in golden_net_output_info!"
+        utils.logger.info("swap the {} and {} item in golden_net_output_info!"
                              .format(left_index, right_index))
 
 
@@ -56,7 +56,7 @@ def _check_output_node_name_mapping(original_net_output_node, golden_net_output_
                 _correct_the_wrong_order(left_index, right_index, golden_net_output_info)
                 break
         if not match:
-            utils.print_warn_log("the original name: {} of net output maybe not correct!".format(node_name))
+            utils.logger.warning("the original name: {} of net output maybe not correct!".format(node_name))
             break
 
 
