@@ -29,6 +29,10 @@ host.BrowserHost = class {
         this._environment = new Map();
         this._environment.set('zoom', 'scroll');
         // this._environment.set('zoom', 'drag');
+        this._ori_model_file = null
+        this._activate_model_file = null
+        this._modify_info = []
+        window._host = this
     }
 
     get window() {
@@ -90,29 +94,7 @@ host.BrowserHost = class {
                     });
                 }
             };
-            if (this._getCookie('consent')) {
-                accept();
-            }
-            else {
-                this._request('https://ipinfo.io/json', { 'Content-Type': 'application/json' }, 'utf-8', 2000).then((text) => {
-                    try {
-                        const json = JSON.parse(text);
-                        const countries = ['AT', 'BE', 'BG', 'HR', 'CZ', 'CY', 'DK', 'EE', 'FI', 'FR', 'DE', 'EL', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'NO', 'PL', 'PT', 'SK', 'ES', 'SE', 'GB', 'UK', 'GR', 'EU', 'RO'];
-                        if (json && json.country && !countries.indexOf(json.country) !== -1) {
-                            this._setCookie('consent', Date.now(), 30);
-                            accept();
-                        }
-                        else {
-                            request();
-                        }
-                    }
-                    catch (err) {
-                        request();
-                    }
-                }).catch(() => {
-                    request();
-                });
-            }
+            accept();
         });
     }
 
@@ -191,6 +173,26 @@ host.BrowserHost = class {
             accelerator: 'CmdOrCtrl+Alt+E',
             click: () => this._view.export(document.title + '.svg')
         });
+        this._menu.add({});
+        this._menu.add({
+            label: 'Export Modify Info',
+            accelerator: 'CmdOrCtrl+Shift+M',
+            click: () => {
+                let export_name = "modify_info.json"
+                if (this._ori_model_file) {
+                    export_name = `${this._ori_model_file.name}.${export_name}`
+                }
+                let modify_info = [...this._modify_info, { path: "/download", data_body: this.build_download_data(true) }]
+                this.export(export_name, new Blob([JSON.stringify(modify_info)], { type: 'text/plain' }))
+            }
+        });
+        this._menu.add({
+            label: 'Import Modify Info',
+            accelerator: 'CmdOrCtrl+Alt+I',
+            click: () => {
+                this.document.getElementById('open-modify-json-dialog').click();
+            }
+        });
         this.document.getElementById('menu-button').addEventListener('click', (e) => {
             this._menu.toggle();
             e.preventDefault();
@@ -206,11 +208,39 @@ host.BrowserHost = class {
         //     this._view._updateGraph();
         // })
 
+
+        const openJsonFileDialog = this.document.getElementById('open-modify-json-dialog');
+
+        openJsonFileDialog.addEventListener('change', (e) => {
+            if (e.target && e.target.files && e.target.files.length > 0) {
+                const files = Array.from(e.target.files);
+                const file = files[0];
+                let reader = new FileReader()
+                reader.onload = async () => {
+                    let json_modify_info = JSON.parse(reader.result)
+
+                    this.take_effect_modify("/load-json", json_modify_info)
+                }
+                reader.readAsText(file)
+                openJsonFileDialog.value = null
+            }
+        });
+
         const resetButton = this.document.getElementById('reset-graph');
         resetButton.addEventListener('click', () => {
             // this._view._graph.resetGraph();
             // this._view._updateGraph();
-            this._view.modifier.resetGraph();
+            this.confirm("Comfirm", "are you sure to reset? All modifications cannot be reverted").then((confirmed)=>{
+                if (!confirmed) {
+                    return
+                }
+                if (this._ori_model_file !== this._activate_model_file && this._ori_model_file != null) {
+                    this.openFile(this._ori_model_file)
+                } else {
+                    this._view.modifier.resetGraph();
+                }
+                this._modify_info = []
+            })
         })
 
         const downloadWithShapeInfCheckBox = this.document.getElementById('shapeInference');
@@ -225,30 +255,62 @@ host.BrowserHost = class {
         })
 
         const downloadButton = this.document.getElementById('download-graph');
-        downloadButton.addEventListener('click', () => {
 
-            // console.log(this._view._graph._addedNode)
-            // console.log(this._view._graph._renameMap)
-            // // https://healeycodes.com/talking-between-languages
+
+        if (this.window.is_electron && this.window.fetch_electron) {
+            class Response {
+                constructor(status, msg, file) {
+                    this._status = status
+                    this._msg = msg
+                    this._file = file
+                }
+                text() {
+                    return Promise.resolve(this._msg)
+                }
+
+                blob() {
+                    return new Blob([this._file])
+                }
+
+                get status() {
+                    return this._status
+                }
+
+                get ok() {
+                    return 200 <= this._status && this._status < 300
+                }
+            }
+            this.window.fetch = (path, options) => {
+                let body = options.body
+                if (body instanceof FormData) {
+                    let body_obj = {}
+                    for (const [key, value] of body.entries()) {
+                        if (value instanceof File) {
+                            body_obj[key] = value.path || value.filepath
+                        } else {
+                            body_obj[key] = value
+                        }
+                    }
+                    body = body_obj
+                } else if (typeof (body) == 'string') {
+                    body = JSON.parse(body)
+                }
+                return fetch_electron(path, body).then((result) => {
+                    let [status, msg, file] = result
+                    return new Response(status, msg, file)
+                })
+            }
+        }
+        downloadButton.addEventListener('click', () => {
+            // https://healeycodes.com/talking-between-languages
             fetch('/download', {
                 // Declare what type of data we're sending
                 headers: {
-                  'Content-Type': 'application/json'
+                    'Content-Type': 'application/json'
                 },
                 // Specify the method
                 method: 'POST',
-                body: JSON.stringify({
-                    'node_states' : this.mapToObjectRec(this._view.modifier.name2NodeStates),
-                    'node_renamed_io' : this.mapToObjectRec(this._view.modifier.renameMap),
-                    'node_changed_attr' : this.mapToObjectRec(this._view.modifier.changedAttributes),
-                    'added_node_info' : this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode, 
-                        this._view.modifier.initializerEditInfo)),
-                    'added_outputs' : this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs, 
-                        this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
-                    'rebatch_info' : this.mapToObjectRec(this._view.modifier.reBatchInfo),
-                    'changed_initializer' : this.mapToObjectRec(this._view.modifier.initializerEditInfo),
-                    'postprocess_args' : {'shapeInf' : this._view.modifier.downloadWithShapeInf, 'cleanUp' : this._view.modifier.downloadWithCleanUp}
-                })
+                body: JSON.stringify(this.build_download_data()),
             }).then(function (response) {
                 return response.text();
             }).then(function (text) {
@@ -261,10 +323,36 @@ host.BrowserHost = class {
                 }
                 else {
                     // swal("Error happens!", "You are kindly to create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
-                    swal("Error happens!", "You are kindly to check the log and create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
+                    swal("Error happens!", "You are kindly to check the log and create an issue on https://gitee.com/ascend/ait", "error");
                     // alert('Error happens, you can find it out or create an issue on https://github.com/ZhangGe6/onnx-modifier')
                 }
             });
+        });
+
+        const onnxSimButton = this.document.getElementById('onnxsim-graph');
+        onnxSimButton.addEventListener('click', () => {
+            this.take_effect_modify("/onnxsim", this.build_download_data(true))
+        });
+
+        const onnxOptimizer = this.document.getElementById('auto-optimizer-graph');
+        onnxOptimizer.addEventListener('click', () => {
+            this.take_effect_modify("/auto-optimizer", this.build_download_data(true))
+        });
+
+        const extract = this.document.getElementById('extract-graph');
+        extract.addEventListener('click', () => {
+            if (!(this._view.modifier.getExtractStart() && this._view.modifier.getExtractEnd())) {
+                swal("Select Extract Net Start And End", "Select the start node and end node for the subnet export", "info");
+                return 
+            }
+            let download_data = this.build_download_data(true)
+            download_data["extract_start"] = this._view.modifier.getExtractStart()
+            download_data["extract_end"] = this._view.modifier.getExtractEnd()
+            this.take_effect_modify("/extract", download_data, (blob) => {
+                swal("Success!", "Extract model has been successfuly saved in ./modified_onnx/", "success");
+                this._view.modifier.setExtractStart(null)
+                this._view.modifier.setExtractEnd(null)
+            })
         });
 
         const addNodeButton = this.document.getElementById('add-node');
@@ -320,8 +408,10 @@ host.BrowserHost = class {
                     const file = files.find((file) => this._view.accept(file.name));
                     // console.log(file)
                     this.upload_filename = file.name;
+                    this.upload_filepath = file.path;
                     var form = new FormData();
                     form.append('file', file);
+                    this._ori_model_file = file
 
                     // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
                     fetch('/open_model', {
@@ -362,8 +452,10 @@ host.BrowserHost = class {
                 const files = Array.from(e.dataTransfer.files);
                 const file = files.find((file) => this._view.accept(file.name));
                 this.upload_filename = file.name;
+                this.upload_filepath = file.path;
                 var form = new FormData();
                 form.append('file', file);
+                this._ori_model_file = file
 
                 // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
                 fetch('/open_model', {
@@ -383,38 +475,101 @@ host.BrowserHost = class {
         });
 
         this._view.show('welcome');
+    }
 
+    take_effect_modify(path, data_body, callback) {
+        // // https://healeycodes.com/talking-between-languages
+        return fetch(path, {
+            // Declare what type of data we're sending
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            // Specify the method
+            method: 'POST',
+            body: typeof (data_body) == "string" ? data_body : JSON.stringify(data_body),
+        }).then((response) => {
+            if (response.status == 204) {
+                response.text().then(text => {
+                    swal("Nothing happens!", text, "info");
+                })
+            } else if (response.ok) {
+                if (path == "/onnxsim" || path == "/load-json" || path == "/auto-optimizer" ) {
+                    this._modify_info.push({
+                        path, data_body
+                    })
+                }
+                return response.blob();
+            } else {
+                response.text().then(text => {
+                    swal("Error happens!", 
+                        `You are kindly to check the log and create an issue on https://gitee.com/ascend/ait\n${text}`,
+                        "error");
+                })
+                
+            }
+        }).then((blob) => {
+            if (!blob) {
+                return
+            }
+            if (callback) {
+                return callback(blob)
+            }
 
-        // informs flaskwebgui to keep server running while gui is running
-        // as illusrated in https://github.com/ClimenteA/flaskwebgui#install
-        // and here: https://stackoverflow.com/questions/39993676/code-inside-domcontentloaded-event-not-working
-        // ============ to make webgui applications, the following code block shoud be added. ============ //
-        // async function getRequest(url='') {
-        //     const response = await fetch(url, {
-        //     method: 'GET', 
-        //     cache: 'no-cache'
-        //     })
-        //     return response.json()
-        // }
+            let file = new File([blob], this.upload_filename);
+            file.filepath = this.upload_filepath
+            return this.openFile(file)
+        }).then(()=>{
+            fetch("/get_output_message", {body:"{}"}).then((response) => {
+                response.text().then((text) => {
+                    if (text) {
+                        swal("messages", text, "info");
+                    }
+                })
+            })
+        })
+    }
 
-        // if (this.document.readyState !== 'loading') {
-        //     console.log('document is already ready, just execute code here');
+    openFile(file) {
+        let files = [file]
 
-        //     let url = this.document.location
-        //     let route = "/flaskwebgui-keep-server-alive"
-        //     // let interval_request = 3 * 1000 //sec
-        //     let interval_request = 0.02 * 1000 //sec
+        let form = new FormData();
+        form.append('file', file);
 
-        //     function keep_alive_server(){
-        //         getRequest(url + route)
-        //         .then(data => {})
-        //         // .then(data => console.log(data))
-        //     }
+        // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
+        fetch('/open_model', {
+            method: 'POST',
+            body: form
+        }).then(function (response) {
+            return response.text();
+        }).then(function (text) {
+            console.log('POST response: ');
+            // Should be 'OK' if everything was successful
+            console.log(text);
+        });
+        if (file) {
+            this._activate_model_file = file
+            return this._open(file, files);
+        }
+    }
 
-        //     setInterval(keep_alive_server, interval_request)
-        // } 
-        // ============ to make webgui applications, the above code block shoud be added. ============ //
-
+    build_download_data(return_modified_file) {
+        return {
+            'node_states': this.mapToObjectRec(this._view.modifier.name2NodeStates),
+            'node_renamed_io': this.mapToObjectRec(this._view.modifier.renameMap),
+            'node_changed_attr': this.mapToObjectRec(this._view.modifier.changedAttributes),
+            'added_node_info': this.mapToObjectRec(this.parseAddedLightNodeInfo2Map(this._view.modifier.addedNode,
+                this._view.modifier.initializerEditInfo)),
+            'added_outputs': this.arrayToObject(this.process_added_outputs(this._view.modifier.addedOutputs,
+                this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+            'added_inputs': this.arrayToObject(this.process_added_inputs(this._view.modifier.addedInputs,
+                this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
+            'rebatch_info': this.mapToObjectRec(this._view.modifier.reBatchInfo),
+            'changed_initializer': this.mapToObjectRec(this._view.modifier.initializerEditInfo),
+            'postprocess_args': { 'shapeInf': this._view.modifier.downloadWithShapeInf, 'cleanUp': this._view.modifier.downloadWithCleanUp },
+            "model_properties": this.mapToObjectRec(this._view.modifier.modelProperties),
+            'input_size_info': this.mapToObjectRec(this._view.modifier.inputSizeInfo),
+            'return_modified_file': Boolean(return_modified_file)
+        }
     }
 
     environment(name) {
@@ -422,15 +577,35 @@ host.BrowserHost = class {
     }
 
     error(message, detail) {
-        alert((message == 'Error' ? '' : message + ' ') + detail);
+        swal(message, detail)
     }
 
     confirm(message, detail) {
-        return confirm(message + ' ' + detail);
+        return swal({
+            title: message,
+            text: detail,
+            closeOnClickOutside: false,
+            buttons: {
+                cancel: {
+                    text: "Cancel",
+                    value: false,
+                    visible: true,
+                    className: "",
+                    closeModal: true,
+                },
+                confirm: {
+                    text: "OK",
+                    value: true,
+                    visible: true,
+                    className: "",
+                    closeModal: true
+                }
+            }
+        })
     }
 
     require(id) {
-        const url = this._url('../static/' + id + '.js');
+        const url = this._url('./' + id + '.js');
         this.window.__modules__ = this.window.__modules__ || {};
         if (this.window.__modules__[url]) {
             return Promise.resolve(this.window.__exports__[url]);
@@ -479,7 +654,7 @@ host.BrowserHost = class {
     }
 
     openURL(url) {
-        this.window.location = url;
+        this.window.open(url)
     }
 
     exception(error, fatal) {
@@ -680,7 +855,7 @@ host.BrowserHost = class {
     }
 
     // https://blog.csdn.net/Crazy_SunShine/article/details/80624366
-    _strMapToObj(strMap){
+    _strMapToObj(strMap) {
         let obj = Object.create(null);
         for (let [k, v] of strMap) {
             obj[k] = v;
@@ -696,8 +871,8 @@ host.BrowserHost = class {
     // https://www.xul.fr/javascript/map-and-object.php
     mapToObjectRec(m) {
         let lo = {}
-        for(let[k,v] of m) {
-            if(v instanceof Map) {
+        for (let [k, v] of m) {
+            if (v instanceof Map) {
                 lo[k] = this.mapToObjectRec(v)
             }
             else {
@@ -706,7 +881,7 @@ host.BrowserHost = class {
         }
         return lo
     }
-    
+
     // this function does 2 things:
     // 1. rename the addedOutputs with their new names using renameMap. Because addedOutputs are stored in lists,
     //    it may be not easy to rename them while editing. (Of course there may be a better way to do this)
@@ -726,11 +901,26 @@ host.BrowserHost = class {
         return processed;
     }
 
+    process_added_inputs(addedInputs, renameMap, modelNodeName2State) {
+        var processed = []
+        for (var in_info of addedInputs) {
+            if (modelNodeName2State.get(in_info) == "Exist") {
+                processed.push(in_info);
+            }
+        }
+        for (let i = 0; i < processed.length; ++i) {
+            if (renameMap.get(processed[i])) {
+                processed[i] = renameMap.get(processed[i]).get(processed[i]);
+            }
+        }
+        return processed;
+    }
+
     // https://stackoverflow.com/a/4215753/10096987
     arrayToObject(arr) {
         var rv = {};
         for (var i = 0; i < arr.length; ++i)
-          if (arr[i] !== undefined) rv[i] = arr[i];
+            if (arr[i] !== undefined) rv[i] = arr[i];
         return rv;
     }
 
@@ -752,7 +942,7 @@ host.BrowserHost = class {
                 var filtered_arg_list = []
                 for (var arg of arg_list) {
                     var arg_name = arg[0], arg_optional = arg[1];
-                    if (arg_optional) { 
+                    if (arg_optional) {
                         if (!initializer_info.get(arg_name) || initializer_info.get(arg_name) == "") {
                             continue;
                         }
@@ -771,7 +961,7 @@ host.BrowserHost = class {
                 var filtered_arg_list = []
                 for (var arg of arg_list) {
                     var arg_name = arg[0], arg_optional = arg[1];
-                    if (arg_optional) { 
+                    if (arg_optional) {
                         if (!initializer_info.get(arg_name) || initializer_info.get(arg_name) == "") {
                             continue;
                         }
@@ -781,9 +971,9 @@ host.BrowserHost = class {
                 if (filtered_arg_list.length > 0) {
                     outputs.set(output_name, filtered_arg_list)
                 }
-            }       
+            }
             node_info_map.set('outputs', outputs)
-            
+
             res_map.set(modelNodeName, node_info_map)
         }
         // console.log(res_map)
@@ -1016,7 +1206,7 @@ host.BrowserHost.BrowserFileContext = class {
         if (base !== undefined) {
             return this._host.request(file, encoding, base);
         }
-        const blob = this._blobs[file];        
+        const blob = this._blobs[file];
         if (!blob) {
             return Promise.reject(new Error("File not found '" + file + "'."));
         }
@@ -1029,7 +1219,7 @@ host.BrowserHost.BrowserFileContext = class {
                 e = e || this.window.event;
                 let message = '';
                 const error = e.target.error;
-                switch(error.code) {
+                switch (error.code) {
                     case error.NOT_FOUND_ERR:
                         message = "File not found '" + file + "'.";
                         break;
@@ -1124,7 +1314,7 @@ if (typeof TextDecoder === "undefined") {
             case 'utf-8':
                 while (i < length) {
                     const c = buffer[i++];
-                    switch(c >> 4) {
+                    switch (c >> 4) {
                         case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: {
                             result += String.fromCharCode(c);
                             break;
@@ -1167,7 +1357,7 @@ if (typeof TextEncoder === 'undefined') {
         const length = str.length;
         let resPos = -1;
         const resArr = typeof Uint8Array === "undefined" ? new Array(length * 2) : new Uint8Array(length * 3);
-        for (let point = 0, nextcode = 0, i = 0; i !== length; ) {
+        for (let point = 0, nextcode = 0, i = 0; i !== length;) {
             point = str.charCodeAt(i);
             i += 1;
             if (point >= 0xD800 && point <= 0xDBFF) {
@@ -1180,10 +1370,10 @@ if (typeof TextEncoder === 'undefined') {
                     point = (point - 0xD800) * 0x400 + nextcode - 0xDC00 + 0x10000;
                     i += 1;
                     if (point > 0xffff) {
-                        resArr[resPos += 1] = (0x1e<<3) | (point>>>18);
-                        resArr[resPos += 1] = (0x2<<6) | ((point>>>12)&0x3f);
-                        resArr[resPos += 1] = (0x2<<6) | ((point>>>6)&0x3f);
-                        resArr[resPos += 1] = (0x2<<6) | (point&0x3f);
+                        resArr[resPos += 1] = (0x1e << 3) | (point >>> 18);
+                        resArr[resPos += 1] = (0x2 << 6) | ((point >>> 12) & 0x3f);
+                        resArr[resPos += 1] = (0x2 << 6) | ((point >>> 6) & 0x3f);
+                        resArr[resPos += 1] = (0x2 << 6) | (point & 0x3f);
                         continue;
                     }
                 }
@@ -1193,33 +1383,33 @@ if (typeof TextEncoder === 'undefined') {
                 }
             }
             if (point <= 0x007f) {
-                resArr[resPos += 1] = (0x0<<7) | point;
+                resArr[resPos += 1] = (0x0 << 7) | point;
             }
             else if (point <= 0x07ff) {
-                resArr[resPos += 1] = (0x6<<5) | (point>>>6);
-                resArr[resPos += 1] = (0x2<<6) | (point&0x3f);
+                resArr[resPos += 1] = (0x6 << 5) | (point >>> 6);
+                resArr[resPos += 1] = (0x2 << 6) | (point & 0x3f);
             }
             else {
-                resArr[resPos += 1] = (0xe<<4) | (point>>>12);
-                resArr[resPos += 1] = (0x2<<6) | ((point>>>6)&0x3f);
-                resArr[resPos += 1] = (0x2<<6) | (point&0x3f);
+                resArr[resPos += 1] = (0xe << 4) | (point >>> 12);
+                resArr[resPos += 1] = (0x2 << 6) | ((point >>> 6) & 0x3f);
+                resArr[resPos += 1] = (0x2 << 6) | (point & 0x3f);
             }
         }
-        if (typeof Uint8Array!=="undefined") {
-            return new Uint8Array(resArr.buffer.slice(0, resPos+1));
+        if (typeof Uint8Array !== "undefined") {
+            return new Uint8Array(resArr.buffer.slice(0, resPos + 1));
         }
         else {
             return resArr.length === resPos + 1 ? resArr : resArr.slice(0, resPos + 1);
         }
     };
-    TextEncoder.prototype.toString = function() {
+    TextEncoder.prototype.toString = function () {
         return "[object TextEncoder]";
     };
     try {
-        Object.defineProperty(TextEncoder.prototype,"encoding", {
-            get:function() {
+        Object.defineProperty(TextEncoder.prototype, "encoding", {
+            get: function () {
                 if (Object.prototype.isPrototypeOf.call(TextEncoder.prototype, this)) {
-                    return"utf-8";
+                    return "utf-8";
                 }
                 else {
                     throw TypeError("Illegal invocation");
@@ -1255,29 +1445,29 @@ if (typeof URLSearchParams === 'undefined') {
             }
         }
     };
-    URLSearchParams.prototype.get = function(name) {
+    URLSearchParams.prototype.get = function (name) {
         return Object.prototype.hasOwnProperty.call(this._dict, name) ? this._dict[name][0] : null;
     };
 }
 
 if (!HTMLCanvasElement.prototype.toBlob) {
-    HTMLCanvasElement.prototype.toBlob = function(callback, type, quality) {
+    HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
         const canvas = this;
-        setTimeout(function() {
+        setTimeout(function () {
             const data = atob(canvas.toDataURL(type, quality).split(',')[1]);
             const length = data.length;
             const buffer = new Uint8Array(length);
             for (let i = 0; i < length; i++) {
                 buffer[i] = data.charCodeAt(i);
             }
-            callback(new Blob([ buffer ], { type: type || 'image/png' }));
+            callback(new Blob([buffer], { type: type || 'image/png' }));
         });
     };
 }
 
 if (!('scrollBehavior' in window.document.documentElement.style)) {
     const __scrollTo__ = Element.prototype.scrollTo;
-    Element.prototype.scrollTo = function(options) {
+    Element.prototype.scrollTo = function (options) {
         if (options === undefined) {
             return;
         }
