@@ -48,8 +48,8 @@ main() {
 
     get_msame_file $MSAME_PATH || { echo "get msame bin file failed";return 1; }
     chmod 750 $MSAME_PATH
-    # export MSAME_BIN_PATH=$CUR_PATH/../../../../../../tools/msame/out/msame
-    export MSAME_BIN_PATH=$MSAME_PATH
+    export MSAME_BIN_PATH=$CUR_PATH/../../../../../../tools/msame/out/msame
+    # export MSAME_BIN_PATH=$MSAME_PATH
     [ -f $MSAME_BIN_PATH ] || { echo "not find msame:$MSAME_BIN_PATH please check"; return $ret_invalid_args; }
 
     check_python_package_is_install $PYTHON_COMMAND "aclruntime" || {
