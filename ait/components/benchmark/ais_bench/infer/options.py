@@ -335,3 +335,17 @@ opt_aipp_config = click.option(
     default=None,
     help="File type: .config, to set actual aipp params before infer"
 )
+
+parser.add_argument(
+    "--backend",
+    type=str,
+    default=None,
+    help="backend trtexec"
+)
+
+parser.add_argument(
+    "--perf",
+    type=str2bool,
+    default=False,
+    help="perf switch"
+)
