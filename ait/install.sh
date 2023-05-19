@@ -73,7 +73,7 @@ then
   ${arg_force_reinstall}
 fi
 
-if [ -z $only_debug ] && [ -z $only_profile ] && [ -z $only_analyze ] && [ ! -z $only_transplt ]
+if [ -z $only_debug ] && [ -z $only_profile ] && [ -z $only_analyze ] && [ -z $only_transplt ]
 then
   pip install ${CURRENT_DIR}/components/debug/compare \
   ${CURRENT_DIR}/components/debug/surgeon \
