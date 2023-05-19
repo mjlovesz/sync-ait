@@ -18,7 +18,7 @@
 3. 对此，用户需要获取迁移过程中产生的profiling数据，可以通过登录运行环境并进入“msprof”文件所在目录执行以下命令。
 ./msprof--application = /home/HwHiAiUser/HIAI_PROJECTS/MyAppname/out/main --output = /home/HwHiAiUser
 此处application存放的是用户可执行文件所在的路径，output则是用户存放profiling数据所在的路径
-详情可见: https://support.huawei.com/enterprise/zh/doc/EDOC1100234052/d3a5b861 下的profiling使用指南
+详情可见profiling使用指南
 4. 用户只需将获取的progiling数据置于知识库的../../data/profiling路径下即可通过知识库对该方向上可能出现的问题进行分析获取相应的反馈意见
 
 # DVPP VDEC解码抽帧
