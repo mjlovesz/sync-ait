@@ -33,8 +33,8 @@ from clang.cindex import Index, CursorKind, TranslationUnit, Config
 from app_analyze.common.kit_config import KitConfig
 from app_analyze.utils.io_util import IOUtil
 from app_analyze.utils.log_util import logger
-from app_analyze.utils.lib_util import get_sys_path
-from app_analyze.scan.clang_utils import helper_dict, filter_dict, Info,\
+from app_analyze.utils.lib_util import get_sys_path, is_acc_path
+from app_analyze.scan.clang_utils import helper_dict, filter_dict, Info, \
     get_attr, get_children, skip_implicit, auto_match
 from app_analyze.scan.clang_utils import read_cursor
 
@@ -165,7 +165,7 @@ def is_usr_code(file):
     return usr_code
 
 
-def macro_map(cursor):
+def macro_map(cursor, file=None):
     """过滤并保存宏定义到字典中，主要用于标识符重命名场景。
 
     如：#define cublasCreate         cublasCreate_v2
@@ -173,6 +173,12 @@ def macro_map(cursor):
     TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD需打开。
     """
     if cursor.kind == CursorKind.MACRO_DEFINITION:
+        if not file:
+            return
+
+        if not is_acc_path(file):
+            return
+
         tk = list(cursor.get_tokens())
         if len(tk) == 2 and not tk[0].spelling.startswith('_') and tk[1].kind.name == 'IDENTIFIER':
             MACRO_MAP[tk[1].spelling] = tk[0].spelling
@@ -269,8 +275,9 @@ def parse_info(node, cwd=None):
         else:
             file = os.path.normpath(node.location.file.name)
 
-    macro_map(node)
+    macro_map(node, file)
     typedef_map(node, file)
+
     # 如果对于系统库直接返回None，可能会导致部分类型无法解析，但是解析系统库会导致性能下降。
     usr_code = is_usr_code(file)
 

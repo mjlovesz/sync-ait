@@ -21,9 +21,26 @@ from app_analyze.common.kit_config import KitConfig
 
 
 class Advisor:
+
     def __init__(self, results):
-        self.results = results
+        self.results = self._dedup_results(results)
         self.api_dfs = self._api_dfs(KitConfig.API_MAP)
+
+    @staticmethod
+    def _dedup_results(val_dict):
+        """deduplicate scanning results caused by same include files in different source files"""
+        rst_dict = {}
+        df = pd.concat(list(val_dict.values()), ignore_index=True)
+        df.drop_duplicates(subset=['API', 'Location'], keep='first', inplace=True)
+        df['file'] = df['Location'].str.split(',', expand=True)[0]
+
+        files = df['file'].unique()
+        for f in files:
+            tmp_df = df[df['file'].isin([f])]
+            tmp_df = tmp_df.drop(columns='file')
+            tmp_df.reset_index(drop=True, inplace=True)
+            rst_dict[f] = tmp_df
+        return rst_dict
 
     @staticmethod
     def _api_map(api_path):
