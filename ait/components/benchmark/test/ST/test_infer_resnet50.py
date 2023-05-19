@@ -519,8 +519,7 @@ class TestClass():
         assert math.fabs(ais_bench_inference_time_ms) > TestCommonClass.EPSILON
         # get msame inference  average time without first time
         msame_infer_log_path = os.path.join(output_path,  "msame_infer.log")
-        cmd = "{} --model {} --input {} --output {}> {}".format(TestCommonClass.msame_bin_path, model_path,
-                                                                 input_path, output_path, msame_infer_log_path)
+        cmd = "{} --model {} --input {} --output {}> {}".format(TestCommonClass.msame_bin_path, model_path, input_path, output_path, msame_infer_log_path)
         logger.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
         assert ret == 0
