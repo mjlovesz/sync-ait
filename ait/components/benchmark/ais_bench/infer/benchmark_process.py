@@ -372,7 +372,8 @@ def multidevice_run(args):
     for i in range(len(device_list)):
         cur_args = copy.deepcopy(args)
         cur_args.device = int(device_list[i])
-        cur_args.npu_id = int(npu_id_list[i])
+        if args.energy_consumption:
+            cur_args.npu_id = int(npu_id_list[i])
         cur_args.input = None if splits is None else list(splits)[i]
         p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
 
