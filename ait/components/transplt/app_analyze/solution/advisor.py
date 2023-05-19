@@ -31,15 +31,15 @@ class Advisor:
         """deduplicate scanning results caused by same include files in different source files"""
         rst_dict = {}
         df = pd.concat(list(val_dict.values()), ignore_index=True)
-        df.drop_duplicates(subset=['Location'], keep='first', inplace=True)
+        df.drop_duplicates(subset=['API', 'Location'], keep='first', inplace=True)
         df['file'] = df['Location'].str.split(',', expand=True)[0]
 
-        cols = df['file'].unique()
-        for col in cols:
-            tmp_df = df[df['file'].isin([col])]
+        files = df['file'].unique()
+        for f in files:
+            tmp_df = df[df['file'].isin([f])]
             tmp_df = tmp_df.drop(columns='file')
             tmp_df.reset_index(drop=True, inplace=True)
-            rst_dict[col] = tmp_df
+            rst_dict[f] = tmp_df
         return rst_dict
 
     @staticmethod
