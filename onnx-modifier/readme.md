@@ -201,6 +201,11 @@
 
 <img src="./docs/onnxsim.gif" style="zoom:75%;" />
 
+## 子网导出
+
+
+<img src="./docs/extract.gif" style="zoom:75%;" />
+
 # 参考资料
 
 - [Netron](https://github.com/lutzroeder/netron)
