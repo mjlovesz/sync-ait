@@ -60,8 +60,9 @@ python.Parser = class {
                     }
                     if (this._tokenizer.match('dedent') || this._tokenizer.match('eof')) {
                         continue;
+                    } else {
+                        throw new python.Error('Empty statement' + this._tokenizer.location());
                     }
-                    throw new python.Error('Empty statement' + this._tokenizer.location());
                 }
             }
         }
@@ -74,8 +75,9 @@ python.Parser = class {
                 if (statement) {
                     node.statements.push(statement);
                     continue;
+                } else {
+                    throw new python.Error('Empty statement' + this._tokenizer.location());
                 }
-                throw new python.Error('Empty statement' + this._tokenizer.location());
             }
             this._tokenizer.eat('\n');
         }
@@ -1524,7 +1526,7 @@ python.Tokenizer = class {
                     break;
             }
         }
-        if (prefix.length >= 0) {
+        if (prefix.length !== undefined) {
             i += prefix.length;
             let quote = '';
             let count = 0;
@@ -1925,12 +1927,12 @@ python.Execution = class {
                 this.feature_names = list('feature_names', this.max_feature_idx + 1);
                 this.feature_infos = list('feature_infos', this.max_feature_idx + 1);
                 if (key_vals.has('monotone_constraints')) {
-                    this.monotone_constraints = list('monotone_constraints', this.max_feature_idx + 1, true);
+                    this.monotone_constraints = list('monotone_constraints', this.max_feature_idx + 1);
                 }
                 if (key_vals.has('objective')) {
                     this.objective = key_vals.get('objective');
                 }
-                let tree = null;
+                let tree = {};
                 // let lineNumber = 0;
                 while (lines.length > 0) {
                     // lineNumber++;
@@ -2726,7 +2728,7 @@ python.Execution = class {
     parse(file) {
         const buffer = this.source(file);
         if (buffer) {
-            const debug = this.debug(file);
+            const debug = this.debug();
             const code = this._utf8Decoder.decode(buffer);
             const reader = new python.Parser(code, file, debug);
             const program = reader.parse();
@@ -3607,7 +3609,7 @@ python.Unpickler = class {
                     const data = reader.read(reader.byte());
                     let number = 0;
                     switch (data.length) {
-                        case 0: number = 0; break;
+                        case 0: break; // number = 0; 
                         case 1: number = data[0]; break;
                         case 2: number = data[1] << 8 | data[0]; break;
                         case 3: number = data[2] << 16 | data[1] << 8 | data[0]; break;
@@ -3709,7 +3711,7 @@ python.Unpickler = class {
                         for (let xi = 0; xi < 2; xi++) {
                             if (i >= length) {
                                 i = xsi;
-                                o = xso;
+                                // o is xso;
                                 a[o] = 0x5c;
                                 break;
                             }
@@ -3717,7 +3719,7 @@ python.Unpickler = class {
                             xd = xd >= 65 && xd <= 70 ? xd - 55 : xd >= 97 && xd <= 102 ? xd - 87 : xd >= 48 && xd <= 57 ? xd - 48 : -1;
                             if (xd === -1) {
                                 i = xsi;
-                                o = xso;
+                                // o is xso;
                                 a[o] = 0x5c;
                                 break;
                             }
@@ -3738,14 +3740,14 @@ python.Unpickler = class {
                             for (let oi = 0; oi < 3; oi++) {
                                 if (i >= length) {
                                     i = osi;
-                                    o = oso;
+                                    //o is oso;
                                     a[o] = 0x5c;
                                     break;
                                 }
                                 const od = token.charCodeAt(i++);
                                 if (od < 48 || od > 57) {
                                     i = osi;
-                                    o = oso;
+                                    // o is oso;
                                     a[o] = 0x5c;
                                     break;
                                 }

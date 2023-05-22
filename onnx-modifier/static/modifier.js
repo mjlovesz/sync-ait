@@ -11,16 +11,22 @@ modifier.Modifier = class {
         this.namedEdges = new Map();
 
         this.addedOutputs = new Set();
+        this.addedInputs = new Set();
         this.addedNode = new Map();
         this.addNodeKey = 0;
         this.changedAttributes = new Map();
         this.initializerEditInfo = new Map();
         this.renameMap = new Map();
         this.reBatchInfo = new Map();
+        this.inputSizeInfo = new Map();
 
         this.downloadWithShapeInf = false;
         this.downloadWithCleanUp = false;
 
+        this.modelProperties = new Map();
+        this.extract_start = null;
+        this.extract_end = null;
+        this.extract_highlight_nodes = [];
     }
 
     loadModelGraph(model, graphs) {
@@ -30,6 +36,7 @@ modifier.Modifier = class {
         // this.analyzeModelGraph();
 
         this.updateAddNodeDropDown();
+        this.resetGraph()
     }
 
     // TODO: add filter feature like here: https://www.w3schools.com/howto/howto_js_dropdown.asp
@@ -61,13 +68,138 @@ modifier.Modifier = class {
     addModelOutput(node_name) {
         var modelNode = this.name2ModelNode.get(node_name);
         // use a output argument as a proxy
-        this.addedOutputs.add(modelNode.outputs[0].arguments[0].name);
+        let name2NodeOutput = 'out_' + modelNode.outputs[0].arguments[0].name
+        if (this.name2NodeStates.has(name2NodeOutput)) {
+            this.name2NodeStates.set(name2NodeOutput, 'Exist');
+        } else {
+            this.addedOutputs.add(modelNode.outputs[0].arguments[0].name);
+        }
+        this.applyAndUpdateView();
+    }
+    addModelInput(node_name, input_name) {
+        var modelNode = this.name2ModelNode.get(node_name);
+        // use a input argument as a proxy
+        // this.addedInputs.add(modelNode.inputs[0].arguments[0].name);
+        if (this.name2NodeStates.has(input_name)) {
+            this.name2NodeStates.set(input_name, 'Exist');
+        } else {
+            this.addedInputs.add(input_name)
+        }
         this.applyAndUpdateView();
     }
 
     deleteModelOutput(output_name) {
         this.name2NodeStates.set(output_name, 'Deleted');  // "out_" + xxx
         this.applyAndUpdateView();
+    }
+
+    deleteModelInput(input_name) {
+        this.name2NodeStates.set(input_name, 'Deleted');  // "out_" + xxx
+        this.applyAndUpdateView();
+    }
+
+    changeModelProperties(prop_name, prop_value, index) {
+        if (index !== undefined) {
+            if (!this.modelProperties.has(prop_name)) {
+                this.modelProperties.set(prop_name, [])
+            }
+            this.modelProperties.get(prop_name)[index] = prop_value
+        } else {
+            this.modelProperties.set(prop_name, prop_value)
+        }
+
+    }
+    
+    setExtractStart(node_name) {
+        this.extract_start = node_name
+        this.highLightExtractNodes()
+    }
+    
+    setExtractEnd(node_name) {
+        this.extract_end = node_name
+        this.highLightExtractNodes()
+    }
+    
+    getExtractStart() {
+        return this.extract_start
+    }
+
+    getExtractEnd() {
+        return this.extract_end
+    }
+
+    highLightExtractNodes() {
+        let start_node = this.getExtractStart()
+        let end_node = this.getExtractEnd()
+
+        let inside_nodes = this.getInsideNodes(start_node, end_node)
+
+        for (const ori_node of this.extract_highlight_nodes) {
+            this.name2ViewNode.get(ori_node).element.getElementsByClassName("node border")[0].style.stroke = null
+            this.name2ViewNode.get(ori_node).element.getElementsByClassName("node border")[0].style.strokeWidth = null
+        }
+        this.extract_highlight_nodes = []
+
+        for (const inside_node of inside_nodes) {
+            this.name2ViewNode.get(inside_node).element.getElementsByClassName("node border")[0].style.stroke = "orange"
+            this.name2ViewNode.get(inside_node).element.getElementsByClassName("node border")[0].style.strokeWidth = "6px"
+            
+            this.extract_highlight_nodes.push(inside_node)
+        }
+        
+        if (start_node) {
+            this.name2ViewNode.get(start_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-start)";
+            this.name2ViewNode.get(start_node).element.getElementsByClassName("node border")[0].style.strokeWidth = "6px"
+            this.extract_highlight_nodes.push(start_node)
+        }
+        if (end_node) {
+            this.name2ViewNode.get(end_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-end)";
+            this.name2ViewNode.get(end_node).element.getElementsByClassName("node border")[0].style.strokeWidth = "6px"
+            this.extract_highlight_nodes.push(end_node)
+        }
+
+        if (start_node == end_node && start_node) {
+            this.name2ViewNode.get(end_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-start-end)";
+        }
+    }
+
+    getInsideNodes(start_node, end_node) {
+        if (!start_node || !end_node) {
+            return []
+        }
+        if (start_node == end_node) {
+            return []
+        }
+
+        let cached_node = new Map()
+        let reach_node = new Set()
+
+        this.is_reach_end_node(start_node, end_node, cached_node, reach_node)
+
+        return [...reach_node]
+    }
+
+    is_reach_end_node(this_node_name, end_node, cached_node, reach_node) {
+        if (cached_node.has(this_node_name)) {
+            return cached_node.get(this_node_name)
+        }
+
+        if (this_node_name == end_node) {
+            return true
+        }
+
+        if (!this.namedEdges.has(this_node_name)) {
+            return false
+        }
+
+        for (const next_node of this.namedEdges.get(this_node_name)) {
+            let is_next_reach = this.is_reach_end_node(next_node, end_node, cached_node, reach_node)
+            cached_node.set(next_node, is_next_reach)
+            if (is_next_reach) {
+                reach_node.add(this_node_name)
+            }
+        }
+        return reach_node.has(this_node_name)
     }
 
     deleteSingleNode(node_name) {
@@ -126,6 +258,7 @@ modifier.Modifier = class {
 
         this.applyAndUpdateView();
     }
+    
 
     getOriginalName(param_type, modelNodeName, param_index, arg_index) {
         if (param_type == 'model_input') {
@@ -149,41 +282,6 @@ modifier.Modifier = class {
         }
 
         return orig_arg_name;
-    }
-
-    changeNodeInputOutput(modelNodeName, parameterName, param_type, param_index, arg_index, targetValue) {
-        if (this.addedNode.has(modelNodeName)) {  // for custom added node 
-            if (this.addedNode.get(modelNodeName).inputs.has(parameterName)) {
-                var arg_name = this.addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index][0];  // [arg.name, arg.is_optional]
-                // update the corresponding initializer name
-                if (this.initializerEditInfo.has(arg_name)) {
-                    var init_val = this.initializerEditInfo.get(arg_name);
-                    this.initializerEditInfo.set(targetValue, init_val);
-                    this.initializerEditInfo.delete(arg_name);
-                }
-                this.addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index][0] = targetValue;
-            }
-            // console.log(this.initializerEditInfo)
-
-            if (this.addedNode.get(modelNodeName).outputs.has(parameterName)) {
-                this.addedNode.get(modelNodeName).outputs.get(parameterName)[arg_index][0] = targetValue;
-            }
-        }
-        // console.log(this.addedNode)
-
-        else {    // for the nodes in the original model
-            var orig_arg_name = this.getOriginalName(param_type, modelNodeName, param_index, arg_index);
-            // console.log(orig_arg_name)
-
-            if (!this.renameMap.get(modelNodeName)) {
-                this.renameMap.set(modelNodeName, new Map());
-            }
-            this.renameMap.get(modelNodeName).set(orig_arg_name, targetValue);
-            // console.log(this._renameMap)
-        }
-        // this.view._updateGraph()
-
-        this.applyAndUpdateView();
     }
 
     changeInitializer(modelNodeName, parameterName, param_type, param_index, arg_index, type, targetValue) {
@@ -229,6 +327,10 @@ modifier.Modifier = class {
             this.reBatchInfo.set("type", "dynamic");
             this.reBatchInfo.set("value", "dynamic");
         }
+    }
+
+    changeInputSize(input_name, value) {
+        this.inputSizeInfo.set(input_name, value)
     }
 
     onOffShapeInf(turnedOn) {
@@ -286,6 +388,12 @@ modifier.Modifier = class {
         for (var output_name of this.addedOutputs) {
             this.graph.add_output(output_name);
         }
+        for (var input_name of this.addedInputs) {
+            this.graph.add_input(input_name, this.inputSizeInfo.get(input_name));
+        }
+        for (let [name, size_info] of this.inputSizeInfo) {
+            this.graph.modify_input_shape(name, size_info);
+        }
         // console.log(this.graph.outputs)
         for (var output of this.graph.outputs) {
             var output_orig_name = output.arguments[0].original_name;
@@ -326,6 +434,13 @@ modifier.Modifier = class {
             var output_orig_name = output.arguments[0].original_name;
             if (this.name2NodeStates.get('out_' + output_orig_name) == "Deleted") {
                 this.graph.delete_output(output_orig_name);
+            }
+        }
+        
+        for (var input_info of this.graph.inputs) {
+            var input_orig_name = input_info.arguments[0].original_name;
+            if (this.name2NodeStates.get(input_orig_name) == "Deleted") {
+                this.graph.delete_input(input_orig_name);
             }
         }
     }
@@ -413,6 +528,13 @@ modifier.Modifier = class {
             this.name2NodeStates.set(name, 'Exist');
         }
 
+        for (const name of this.addedInputs) {
+            this.name2NodeStates.delete(name)
+        }
+        for (const name of this.addedOutputs) {
+            this.name2NodeStates.delete('out_' + name)
+        }
+
         // console.log(this.modifier.renameMap)
         // reset node inputs/outputs
         for (const changed_node_name of this.renameMap.keys()) {
@@ -450,12 +572,14 @@ modifier.Modifier = class {
         this.renameMap = new Map();
         this.changedAttributes = new Map();
         this.reBatchInfo = new Map();
+        this.inputSizeInfo = new Map();
         this.initializerEditInfo = new Map();
 
         // clear custom added nodes
         this.addedNode = new Map();
         this.graph.reset_custom_added_node();
         this.addedOutputs = new Set();
+        this.addedInputs = new Set();
         this.graph.reset_custom_modified_outputs();
 
         // reset load location
@@ -463,6 +587,11 @@ modifier.Modifier = class {
         container.scrollLeft = 0;
         container.scrollTop = 0;
         this.view._zoom = 1;
+
+        this.extract_start = null;
+        this.extract_end = null;
+        this.highLightExtractNodes()
+        this.extract_highlight_nodes = [];
 
         this.applyAndUpdateView();
     }
