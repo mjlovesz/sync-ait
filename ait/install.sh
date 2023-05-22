@@ -19,11 +19,9 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
 
-python_version=$(python3 -V)
-
-if [ -z $python_version ]
+if [ ! "$(command -v python3)" ]
 then
-  echo "ERROR: python3 -V shows that you do not have python3" >&2
+  echo "错误: python3 没有安装" >&2
   exit 1;
 fi
 
@@ -38,7 +36,7 @@ if [ "$arg_help" -eq "1" ]; then
 fi
 
 if [ ! "$(command -v pip3)" ]; then
-  echo "pip3 没有安装" >&2
+  echo "错误: pip3 没有安装" >&2
   exit 1;
 fi
 
