@@ -1,16 +1,18 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+Copyright(C) 2021. Huawei Technologies Co.,Ltd. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+"""
 
 import logging
 import time
@@ -53,7 +55,6 @@ PIXEL_VAR_RECI_CHN_MAX = 65504
 
 logger = logging.getLogger(__name__)
 
-
 class InferSession:
     def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
         """
@@ -72,25 +73,10 @@ class InferSession:
         options = aclruntime.session_options()
         if acl_json_path is not None:
             options.acl_json_path = acl_json_path
-        options.log_level = 1 if debug is True else 2
+        options.log_level = 1 if debug == True else 2
         options.loop = self.loop
         self.session = aclruntime.InferenceSession(self.model_path, self.device_id, options)
         self.outputs_names = [meta.name for meta in self.session.get_outputs()]
-        self.intensors_desc = None
-        self.outtensors_desc = None
-
-    @staticmethod
-    def convert_tensors_to_host(self, tensors):
-        for tensor in tensors:
-            tensor.to_host()
-
-    @staticmethod
-    def convert_tensors_to_arrays(self, tensors):
-        arrays = []
-        for tensor in tensors:
-            # convert acltensor to numpy array
-            arrays.append(np.array(tensor))
-        return arrays
 
     def get_inputs(self):
         """
@@ -109,8 +95,8 @@ class InferSession:
     def set_loop_count(self, loop):
         options = self.session.options()
         options.loop = loop
-    # 默认设置为静态batch
 
+    # 默认设置为静态batch
     def set_staticbatch(self):
         self.session.set_staticbatch()
 
@@ -139,6 +125,17 @@ class InferSession:
         tensor = aclruntime.Tensor(arrays)
         tensor.to_device(self.device_id)
         return tensor
+
+    def convert_tensors_to_host(self, tensors):
+        for tensor in tensors:
+            tensor.to_host()
+
+    def convert_tensors_to_arrays(self, tensors):
+        arrays = []
+        for tensor in tensors:
+            # convert acltensor to numpy array
+            arrays.append(np.array(tensor))
+        return arrays
 
     def get_dym_aipp_input_exsity(self):
         return self.session.get_dym_aipp_input_exsity()
@@ -454,7 +451,7 @@ class InferSession:
         else:
             inputs = feeds
         outputs = self.session.run(self.outputs_names, inputs)
-        if out_array is True:
+        if out_array == True:
             # convert to host tensor
             self.convert_tensors_to_host(outputs)
             # convert tensor to narray
@@ -467,7 +464,6 @@ class InferSession:
 
     def sumary(self):
         return self.session.sumary()
-
     def finalize(self):
         if hasattr(self.session, 'finalize'):
             self.session.finalize()
@@ -480,43 +476,38 @@ class InferSession:
         '''
         inputs = []
         shapes = []
-        torch_tensor_list = [
-            'torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor',
+        torchTensorlist = ['torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor',
             'torch.BFloat16Tensor', 'torch.ByteTensor', 'torch.CharTensor', 'torch.ShortTensor',
-            'torch.LongTensor', 'torch.BoolTensor', 'torch.IntTensor'
-        ]
-        np_type_list = [
-            np.int8, np.int16, np.int32, np.int64, np.uint8,
-            np.uint16, np.uint32, np.float16, np.float32, np.float64
-        ]
+            'torch.LongTensor', 'torch.BoolTensor', 'torch.IntTensor' ]
+        npTypelist = [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64]
         for feed in feeds:
             if type(feed) is np.ndarray:
-                input_ = feed
-                shapes.append(input_.shape)
-            elif type(feed) in np_type_list:
-                input_ = np.array(feed)
+                input = feed
+                shapes.append(input.shape)
+            elif type(feed) in npTypelist:
+                input = np.array(feed)
                 shapes.append([feed.size])
             elif type(feed) is aclruntime.Tensor:
-                input_ = feed
-                shapes.append(input_.shape)
-            elif hasattr(feed, 'type') and feed.type() in torch_tensor_list:
-                input_ = feed.numpy()
+                input = feed
+                shapes.append(input.shape)
+            elif hasattr(feed, 'type') and feed.type() in torchTensorlist:
+                input = feed.numpy()
                 if not feed.is_contiguous():
-                    input_ = np.ascontiguousarray(input_)
-                shapes.append(input_.shape)
+                    input = np.ascontiguousarray(input)
+                shapes.append(input.shape)
             else:
                 raise RuntimeError('type:{} invalid'.format(type(feed)))
-            inputs.append(input_)
+            inputs.append(input)
 
         if mode == 'dymshape' or mode == 'dymdims':
-            lst = []
+            l = []
             indesc = self.get_inputs()
             outdesc = self.get_outputs()
             for i, shape in enumerate(shapes):
                 str_shape = [ str(val) for val in shape ]
                 dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
-                lst.append(dyshape)
-            dyshapes = ';'.join(lst)
+                l.append(dyshape)
+            dyshapes = ';'.join(l)
             if mode == 'dymshape':
                 self.session.set_dynamic_shape(dyshapes)
                 if isinstance(custom_sizes, int):
@@ -529,16 +520,15 @@ class InferSession:
                 self.session.set_dynamic_dims(dyshapes)
         return self.run(inputs, out_array=True)
 
-
 class MemorySummary:
     @staticmethod
-    def get_h2d_time_list():
+    def get_H2D_time_list():
         if hasattr(aclruntime, 'MemorySummary'):
             return aclruntime.MemorySummary().H2D_time_list
         else:
             return []
     @staticmethod
-    def get_d2h_time_list():
+    def get_D2H_time_list():
         if hasattr(aclruntime, 'MemorySummary'):
             return aclruntime.MemorySummary().D2H_time_list
         else:
