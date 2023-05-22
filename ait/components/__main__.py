@@ -21,7 +21,7 @@ from components.transplt import transplt_cli
 from components.benchmark import benchmark_cli
 from components.analyze import analyze_cli
 
-# CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 
