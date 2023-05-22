@@ -23,7 +23,7 @@ from components.benchmark import benchmark_cli
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-# 修改到analyze中
+
 def load_analyze_sub_task():
     sub_tasks = {}
     for entry_point in pkg_resources.iter_entry_points('analyze_sub_task'):
