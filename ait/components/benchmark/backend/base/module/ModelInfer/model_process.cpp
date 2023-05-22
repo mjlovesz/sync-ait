@@ -1510,7 +1510,7 @@ int ModelProcess::CheckDymAIPPInputExsity()
     size_t numInputs = aclmdlGetNumInputs(modelDesc_);
     std::vector<size_t> dataNeedDynamicAipp = {};
     DEBUG_LOG("Input nums: %d", int(numInputs));
-    DEBUG_LOG("Model id: %d", int(modelId));
+    DEBUG_LOG("Model id: %d", int(modelId_));
     for (size_t index = 0; index < numInputs; ++index) {
         aclmdlInputAippType aippType;
         size_t dynamicAttachedDataIndex;
