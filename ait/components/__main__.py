@@ -17,7 +17,6 @@ import pkg_resources
 
 from components.debug import debug_cli_group
 from components.profile import profile_cli_group
-# from components.benchmark.ais_bench.infer.main_cli import benchmark_cli
 from components.transplt import transplt_cli
 from components.benchmark import benchmark_cli
 
