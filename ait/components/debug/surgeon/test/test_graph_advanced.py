@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ class TestGraphAdvanced(unittest.TestCase):
         graph = OnnxGraph(name='test', nodes=[node_0, node_1, node_2], inputs=[
                           input_0], outputs=[output_0], initializers=[ini_0, ini_1, ini_2])
 
-        graph.infershape()
+        graph.infer_shape()
         self.assertEqual(graph.get_value_info('0_out_0'), OnnxPlaceHolder('0_out_0', np.dtype('float32'), [2, 5000]))
         self.assertEqual(graph.get_value_info('1_out_0'), OnnxPlaceHolder('1_out_0', np.dtype('float32'), [4, 2500]))
 

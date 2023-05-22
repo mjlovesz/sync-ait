@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,7 +41,8 @@ class KnowledgeTestHelper:
     @staticmethod
     def graph_equal(lhs: BaseGraph, rhs: BaseGraph) -> bool:
         '''检查两个图是否等价，检查图的inputs/outputs/initializers/nodes的相对关系是否相同。
-        比如如果只是做infershape，则认为前后的图仍是同一个。'''
+        比如如果只是做infershape，则认为前后的图仍是同一个。
+        '''
         if not (isinstance(rhs, BaseGraph) and isinstance(lhs, BaseGraph)):
             return False
         if lhs.name != rhs.name:
@@ -79,25 +80,12 @@ class KnowledgeTestHelper:
         res = GraphOptimizer._optimize(graph_opt, knowledge)
         return res, graph_opt
 
-    def _check_optimization_failure(self, cfg: OptimizationConfig) -> bool:
-        success, graph_opt = self.optimize(cfg.graph, cfg.knowledge)
-        return not success and self.graph_equal(cfg.graph, graph_opt)
-
     def check_optimization(self, cfg: OptimizationConfig, expect: bool) -> bool:
         '''Perferm optimization with the provided config, check if the result is as expected.'''
-        return self._check_optimization_success(cfg) if expect \
-            else self._check_optimization_failure(cfg)
-
-    def _check_optimization_success(self, cfg: OptimizationConfig) -> bool:
-        success, graph_opt = self.optimize(cfg.graph, cfg.knowledge)
-        if not success or self.graph_equal(cfg.graph, graph_opt):
-            return False
-        success, graph_opt_2 = self.optimize(graph_opt, cfg.knowledge)
-        if success or not self.graph_equal(graph_opt, graph_opt_2):
-            return False
-        cfg.graph.save(cfg.onnx_ori)
-        graph_opt.save(cfg.onnx_opt)
-        return True
+        if expect:
+            return self._check_optimization_success(cfg)
+        else:
+            return self._check_optimization_failure(cfg)
 
     def check_precision(
         self,
@@ -120,3 +108,18 @@ class KnowledgeTestHelper:
             ):
                 return False
         return True
+
+    def _check_optimization_success(self, cfg: OptimizationConfig) -> bool:
+        success, graph_opt = self.optimize(cfg.graph, cfg.knowledge)
+        if not success or self.graph_equal(cfg.graph, graph_opt):
+            return False
+        success, graph_opt_2 = self.optimize(graph_opt, cfg.knowledge)
+        if success or not self.graph_equal(graph_opt, graph_opt_2):
+            return False
+        cfg.graph.save(cfg.onnx_ori)
+        graph_opt.save(cfg.onnx_opt)
+        return True
+
+    def _check_optimization_failure(self, cfg: OptimizationConfig) -> bool:
+        success, graph_opt = self.optimize(cfg.graph, cfg.knowledge)
+        return not success and self.graph_equal(cfg.graph, graph_opt)

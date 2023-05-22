@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ def make_multi_concat_empty_slice_model(onnx_name, x: np.ndarray):
     )
 
     graph.update_map()
-    graph.infershape()
+    graph.infer_shape()
     return graph
 
 
@@ -105,7 +105,7 @@ def make_empty_slice_model(onnx_name, x: np.ndarray, add_slice=True, add_cast=Tr
         )
 
     graph.update_map()
-    graph.infershape()
+    graph.infer_shape()
     return graph
 
 
@@ -153,7 +153,7 @@ def make_two_outputs_empty_slice_model(onnx_name, x: np.ndarray, add_slice=True)
     )
 
     graph.update_map()
-    graph.infershape()
+    graph.infer_shape()
     return graph
 
 

@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import numpy as np
 import onnx
 
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
+from auto_optimizer.pattern.pattern import MatchPattern
 from auto_optimizer.pattern.pattern import MatchBase
 from auto_optimizer.pattern.pattern import Pattern
 from auto_optimizer.pattern.matcher import MatchResult
@@ -51,8 +51,8 @@ pattern = Pattern() \
     .add_node('element_wise',
         ['Mul', 'Add', 'Sub', 'Div', 'Abs', 'Tanh', 'BatchNormalization', 'LeakyRelu', 'Relu', 'Concat', 'Split']) \
     .add_edge('Conv', 'element_wise') \
-    .set_node_loop('element_wise', MATCH_PATTERN.MATCH_ZERO_OR_MORE) \
-    .set_loop(MATCH_PATTERN.MATCH_ONCE_OR_MORE)
+    .set_node_loop('element_wise', MatchPattern.MATCH_ZERO_OR_MORE) \
+    .set_loop(MatchPattern.MATCH_ONCE_OR_MORE)
 
 
 @KnowledgeFactory.register()

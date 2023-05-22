@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -70,6 +70,7 @@ def create_node(node_type):
         return OnnxPlaceHolder('test_ph', np.dtype('float32'), [1, 3, 224, 224])
     if node_type == 'OnnxInitializer':
         return OnnxInitializer('test_ini', np.array([[1, 2, 3, 4, 5]], dtype='int32'))
+    raise NotImplementedError(f'Unsupported node_type : {node_type}')
 
 
 class TestNodeCommon(unittest.TestCase):
