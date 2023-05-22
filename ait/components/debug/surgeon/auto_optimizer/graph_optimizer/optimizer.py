@@ -273,6 +273,8 @@ class GraphOptimizer:
         return graph, applied_knowledges
 
 
+
+
 if __name__ == "__main__":
     knowledges = KnowledgeFactory.get_knowledge_pool()
     optimizer = GraphOptimizer(list(knowledges.keys()))
