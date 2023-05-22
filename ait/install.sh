@@ -19,15 +19,10 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
 
-python_version=$(python -V 2>&1 | awk '{print $2}' | awk -F '.' '{print $1}')
-
-if [ $python_version -eq 2 ]
+if [ ! "$(command -v python3)" ]
 then
-  echo "Your python version is 2" >&2
+  echo "错误: python3 没有安装" >&2
   exit 1;
-elif [ $python_version -eq 3 ]
-then
-  echo "Your python version is 3"
 fi
 
 if [ "$arg_help" -eq "1" ]; then
@@ -40,42 +35,42 @@ if [ "$arg_help" -eq "1" ]; then
   exit;
 fi
 
-if [ ! "$(command -v pip)" ]; then
-  echo "pip 没有安装" >&2
+if [ ! "$(command -v pip3)" ]; then
+  echo "错误: pip3 没有安装" >&2
   exit 1;
 fi
 
-pip install ${CURRENT_DIR} ${arg_force_reinstall}
+pip3 install ${CURRENT_DIR} ${arg_force_reinstall}
 
 if [ ! -z $only_debug ]
 then
-  pip install ${CURRENT_DIR}/components/debug/compare \
+  pip3 install ${CURRENT_DIR}/components/debug/compare \
   ${CURRENT_DIR}/components/debug/surgeon \
   ${arg_force_reinstall}
 fi
 
 if [ ! -z $only_benchmark ]
 then
-  pip install ${CURRENT_DIR}/components/benchmark/backend \
+  pip3 install ${CURRENT_DIR}/components/benchmark/backend \
   ${CURRENT_DIR}/components/benchmark \
   ${arg_force_reinstall}
 fi
 
 if [ ! -z $only_analyze ]
 then
-  pip install ${CURRENT_DIR}/components/analyze \
+  pip3 install ${CURRENT_DIR}/components/analyze \
   ${arg_force_reinstall}
 fi
 
 if [ ! -z $only_transplt ]
 then
-  pip install ${CURRENT_DIR}/components/transplt \
+  pip3 install ${CURRENT_DIR}/components/transplt \
   ${arg_force_reinstall}
 fi
 
 if [ -z $only_debug ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_transplt ]
 then
-  pip install ${CURRENT_DIR}/components/debug/compare \
+  pip3 install ${CURRENT_DIR}/components/debug/compare \
   ${CURRENT_DIR}/components/debug/surgeon \
   ${CURRENT_DIR}/components/benchmark/backend \
   ${CURRENT_DIR}/components/benchmark \
