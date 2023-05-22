@@ -50,7 +50,10 @@ def set_session_options(session, args):
         aipp_batchsize = args.batchsize
 
     # 确认模型只有一个动态 aipp input
-    aipp_input_exsity = session.get_dym_aipp_input_exsity()
+    if args.dym_shape is None:
+        aipp_input_exsity = session.get_dym_aipp_input_exsity()
+    else:
+        aipp_input_exsity = 0
     logger.debug("aipp_input_exsity: {}".format(aipp_input_exsity))
     if (args.aipp_config is not None) and (aipp_input_exsity == 1):
         session.load_aipp_config_file(args.aipp_config, aipp_batchsize)
