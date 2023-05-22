@@ -30,36 +30,57 @@
 目前支持两种方法运行`onnx-modifier`：
 
 ## 源码拉取及第三方库安装
+## 源码拉取及第三方库安装
 
 - 拉取`ait`，并切换到 onnx-modifier目录，安装所需要的Python, node
 
+1. 安装python 
+2. 安装node(使用electron 启动时需要)
+3. 拉取源码：
   ```bash
   git clone https://gitee.com/ascend/ait.git
+  ```
+4. 安装 ait 
+  ```bash
   cd ait/ait
   pip install . # 安装 ait 推理工具包
   cd -
+  cd - # 安装完成之后返回仓库根目录
+  ```
+5. 安装 python 需要库
+  ```bash
   cd ait/onnx-modifier
   pip install -r requirements.txt
   npm install  # 如果electron 下载较慢，建议使用国内代理
   ```
 
 ## 命令行启动
+- 安装
+    1. 下载electron: https://registry.npmmirror.com/binary.html?path=electron/24.3.1/
+    2. zip解压之后，将解压路径配置到环境变量的PATH中 
 - 运行（常用于调试开发）
 
   ```bash
+  cd ait/onnx-modifier
   electron .
   ```
 
 ## 编译成可执行程序启动
 
+- 安装
+  npm install  # 如果electron 下载较慢，建议使用国内代理
 - 编译
   ```bash
+  cd ait/onnx-modifier
   npm run make
   ```
 - 安装运行
   编译之后，可以在out中看到打包的程序，点击运行即可
 
 ## web服务器启动（不推荐使用）
+- 安装
+    1. 安装flask： pip install flask 
+    2. 如果运行报错，建议升级flask。建议版本2.2.2
 - 运行，默认端口为5000（常用于调试开发）
   ```bash
   python flaskserver.py
@@ -69,10 +90,12 @@
 - 安全风险
   * web服务器方式运行，会开启端口，如果在不可信任的多用户服务器中，可能端口被监听
   * 仅支持绑定localhost。如果在服务器中启动，在开发者本地是无法访问到的，建议使用ssh端口转发功能
+    * 开启端口转发：比如将服务器的 loacalhost:5000 端口转发到本地的 8080 端口
     ```bash
-    # ssh -L [本地绑定端口]:localhost:[服务器端口] username@serverhost
-    ssh -L 5000:localhost:5000 username@serverhost
+    # ssh -L [本地绑定端口8080]:localhost:[服务器端口5000] [用户名username]@[服务器地址serverhost]
+    ssh -L 8080:localhost:5000 username@serverhost
     ```
+    * 本地浏览器打开 localhost:8080 端口即可访问到 onnx-modifier 服务
 
 # 用法
 
