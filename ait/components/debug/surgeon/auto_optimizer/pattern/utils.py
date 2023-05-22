@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
 
 from functools import wraps
 import time
+import logging
 from typing import Callable
 import operator as op
 
@@ -30,7 +31,7 @@ def timing(func: Callable):
         ts = time.time()
         res = func(*args, **kwargs)
         te = time.time()
-        print(f'func:{func.__name__} args:[{args}, {kwargs}] took: {te - ts: 0.3f}s')
+        logging.info(f'func:{func.__name__} args:[{args}, {kwargs}] took: {te - ts: 0.3f}s')
         return res
     return wrapper
 

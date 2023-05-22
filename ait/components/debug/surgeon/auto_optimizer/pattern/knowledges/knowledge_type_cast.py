@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ from onnx.defs import OpSchema, get_all_schemas
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.pattern import MatchBase
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
+from auto_optimizer.pattern.pattern import MatchPattern
 from auto_optimizer.pattern.pattern import Pattern
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
@@ -132,8 +132,11 @@ class TypeConstraintQuery(object):
         """
         if op_type not in self._constraint_map:
             return set()
-        return self._constraint_map[op_type].get_constraint(io_type, io_index)
-    
+        if self._constraint_map.get(op_type):
+            return self._constraint_map[op_type].get_constraint(io_type, io_index)
+        else:
+            raise KeyError(f'{op_type} does not exist')
+
     def _str_to_elem_type(self, type_str: str) -> ElemType:
         """ 将类型字符串转换为 ElemType
         :param type_str : 类型字符串
@@ -286,8 +289,8 @@ class TypeCastPattern(Pattern):
     def __init__(self, strategy: TypeCastStrategy):
         super().__init__()
         self.add_node('generic_operator', None, [GenericOpMatch(strategy)]) \
-            .set_node_loop('generic_operator', MATCH_PATTERN.MATCH_ONCE_OR_MORE) \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE_OR_MORE)
+            .set_node_loop('generic_operator', MatchPattern.MATCH_ONCE_OR_MORE) \
+            .set_loop(MatchPattern.MATCH_ONCE_OR_MORE)
 
 
 class TypeCastApply(object):
@@ -528,8 +531,8 @@ class ConstantOfShapePattern(Pattern):
     def __init__(self, strategy: TypeCastStrategy):
         super().__init__()
         self.add_node('ConstantOfShape_operator', ['ConstantOfShape'], [ConstantOfShapeMatch(strategy)]) \
-            .set_node_loop('ConstantOfShape_operator', MATCH_PATTERN.MATCH_ONCE_OR_MORE) \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE_OR_MORE)
+            .set_node_loop('ConstantOfShape_operator', MatchPattern.MATCH_ONCE_OR_MORE) \
+            .set_loop(MatchPattern.MATCH_ONCE_OR_MORE)
 
 
 class ConstantOfShapeApply(object):
@@ -584,7 +587,7 @@ class KnowledgeTypeCast(KnowledgeBase):
 
     def pre_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except InferenceError:
             return False
         return True

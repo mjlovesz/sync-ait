@@ -63,8 +63,8 @@ class Register:
         for module in modules:
             if not module:
                 continue
-
             Register.import_module(module)
+        return True
 
     def _add_modules(self, modules: list):
         pwd_dir = os.getcwd()

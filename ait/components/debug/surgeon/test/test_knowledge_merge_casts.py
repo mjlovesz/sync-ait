@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph.add_node('Add1', 'Add', ['Cast_O1', 'Cast_O2'], ['Y'])
         graph.add_node('Add2', 'Add', ['Cast_O3', 'init0'], ['Z'])
         graph.update_map()
-        graph.infershape()
+        graph.infer_shape()
 
         cfg = OptimizationConfig(
             graph=graph,
@@ -51,7 +51,7 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         self.assertTrue(self.check_precision(cfg.onnx_ori, cfg.onnx_opt, feeds))
         graph_opt = OnnxGraph.parse(cfg.onnx_opt)
         next_nodes = graph_opt.get_next_nodes('Add_O')
-        self.assertTrue(len(next_nodes) == 2)
+        self.assertEqual(len(next_nodes), 2)
 
     def test_transfer_cast_to_root(self):
         onnx_name = 'merge_casts_test_transfer_cast_to_root'
@@ -71,7 +71,7 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph.add_node('Add2', 'Add', ['Cast_O2', 'Add_value0'], ['Add_O2'])
         graph.add_node('Add3', 'Add', ['Add_O2', 'Cast_O3'], ['Z'])
         graph.update_map()
-        graph.infershape()
+        graph.infer_shape()
 
         cfg = OptimizationConfig(
             graph=graph,
@@ -85,11 +85,11 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph_opt = OnnxGraph.parse(cfg.onnx_opt)
 
         next_nodes = graph_opt.get_next_nodes('Add_O1')
-        self.assertTrue(len(next_nodes) == 2)
+        self.assertEqual(len(next_nodes), 2)
         self.assertTrue(all(map(lambda n: n.op_type == 'Cast', next_nodes)))
         next_nodes = graph_opt.get_next_nodes('Cast_O1')
-        self.assertTrue(len(next_nodes) == 1)
-        self.assertTrue(next_nodes[0].op_type == 'Add')
+        self.assertEqual(len(next_nodes), 1)
+        self.assertEqual(next_nodes[0].op_type, 'Add')
 
     def test_remove_parent_cast(self):
         onnx_name = 'merge_casts_test_remove_parent_cast'
@@ -102,7 +102,7 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph.add_node('Cast1', 'Cast', ['Add_O1'], ['Cast_O1'], attrs={'to': TensorProto.INT64})
         graph.add_node('Cast2', 'Cast', ['Cast_O1'], ['Cast_O2'], attrs={'to': TensorProto.INT32})
         graph.update_map()
-        graph.infershape()
+        graph.infer_shape()
 
         cfg = OptimizationConfig(
             graph=graph,
@@ -116,8 +116,8 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph_opt = OnnxGraph.parse(cfg.onnx_opt)
 
         next_nodes = graph_opt.get_next_nodes('Add_O1')
-        self.assertTrue(len(next_nodes) == 1)
-        self.assertTrue(next_nodes[0].name == 'Cast2')
+        self.assertEqual(len(next_nodes), 1)
+        self.assertEqual(next_nodes[0].name, 'Cast2')
 
     def test_remove_cast_after_root(self):
         onnx_name = 'merge_casts_test_remove_cast_after_root'
@@ -135,7 +135,7 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph.add_node('Add1', 'Add', ['Cast_O1', 'Add_value0'], ['Y'])
         graph.add_node('Add2', 'Add', ['Cast_O2', 'Add_value1'], ['Z'])
         graph.update_map()
-        graph.infershape()
+        graph.infer_shape()
 
         cfg = OptimizationConfig(
             graph=graph,
@@ -149,8 +149,8 @@ class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
         graph_opt = OnnxGraph.parse(cfg.onnx_opt)
 
         next_nodes = graph_opt.get_next_nodes('Add_O1')
-        self.assertTrue(len(next_nodes) == 2)
-        self.assertTrue({'Cast1', 'Add2'} == set(n.name for n in next_nodes))
+        self.assertEqual(len(next_nodes), 2)
+        self.assertSetEqual({'Cast1', 'Add2'}, set(n.name for n in next_nodes))
 
 
 if __name__ == '__main__':

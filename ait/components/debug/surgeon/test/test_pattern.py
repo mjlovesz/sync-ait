@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
 
 import unittest
 
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
+from auto_optimizer.pattern.pattern import MatchPattern
 from auto_optimizer.pattern.pattern import Pattern
 
 
@@ -26,28 +26,31 @@ class TestPattern(unittest.TestCase):
         pattern.add_node('Conv_1', ['Conv'], None)
 
         self.assertEqual(len(pattern.node_dict), 2)
-        self.assertTrue(pattern.node_dict.get('Conv_0') is not None)
-        self.assertTrue(pattern.node_dict.get('Conv_1') is not None)
+        self.assertNotEqual(pattern.node_dict.get('Conv_0'), None)
+        self.assertNotEqual(pattern.node_dict.get('Conv_1'), None)
 
     def test_add_node_func_1(self):
         pattern = Pattern()
 
         try:
             pattern.add_node('Conv', ['Conv'], None)
+        except RuntimeError as e:
+            pass
+        try:
             pattern.add_node('Conv', ['Conv'], None)
         except RuntimeError as e:
             pass
 
         self.assertEqual(len(pattern.node_dict), 1)
-        self.assertTrue(pattern.node_dict.get('Conv') is not None)
+        self.assertNotEqual(pattern.node_dict.get('Conv'), None)
 
     def test_node_can_match_more_func(self):
         pattern = Pattern() \
             .add_node('Conv', ['Conv'], None) \
             .add_node('Relu', ['Relu'], None) \
             .add_edge('Conv', 'Relu') \
-            .set_node_loop('Conv', MATCH_PATTERN.MATCH_ONCE_OR_MORE) \
-            .set_node_loop('Relu', MATCH_PATTERN.MATCH_ZERO_OR_MORE)
+            .set_node_loop('Conv', MatchPattern.MATCH_ONCE_OR_MORE) \
+            .set_node_loop('Relu', MatchPattern.MATCH_ZERO_OR_MORE)
 
         self.assertTrue(pattern.node_dict['Conv'].can_match_more_time())
         self.assertTrue(pattern.node_dict['Relu'].can_match_more_time())
@@ -57,8 +60,8 @@ class TestPattern(unittest.TestCase):
             .add_node('Conv', ['Conv'], None) \
             .add_node('Relu', ['Relu'], None) \
             .add_edge('Conv', 'Relu') \
-            .set_node_loop('Conv', MATCH_PATTERN.MATCH_ONCE_OR_MORE) \
-            .set_node_loop('Relu', MATCH_PATTERN.MATCH_ZERO_OR_MORE)
+            .set_node_loop('Conv', MatchPattern.MATCH_ONCE_OR_MORE) \
+            .set_node_loop('Relu', MatchPattern.MATCH_ZERO_OR_MORE)
 
         self.assertFalse(pattern.node_dict['Conv'].can_match_zero_time())
         self.assertTrue(pattern.node_dict['Relu'].can_match_zero_time())
@@ -68,7 +71,7 @@ class TestPattern(unittest.TestCase):
             .add_node('Conv', ['Conv'], None) \
             .add_node('Relu', ['Relu'], None) \
             .add_edge('Conv', 'Relu') \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE_OR_MORE)
+            .set_loop(MatchPattern.MATCH_ONCE_OR_MORE)
 
         self.assertTrue(pattern.can_match_more())
 
