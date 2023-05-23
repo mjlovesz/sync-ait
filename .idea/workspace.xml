@@ -6,11 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="3863cbb3-304e-4dd2-b94a-df23f7fdf109" name="Changes" comment="#cleancode">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/graph_optimizer/optimizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/graph_optimizer/optimizer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/graph_refactor/interface/base_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/graph_refactor/interface/base_graph.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/inference_engine/datasets/dataset_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/inference_engine/datasets/dataset_base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_casts.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/pattern/knowledges/knowledge_merge_casts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/tools/inference.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/tools/inference.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_inference_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_inference_example.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_gather_to_split.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_gather_to_split.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_onnx_surgen.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_onnx_surgen.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -224,7 +224,8 @@ class TestKnowledgeGatherToSplit(unittest.TestCase, KnowledgeTestHelper):
                     indices_s0.append('x'.join(str(x) for x in idx))
             indices_s = '_'.join(indices_s0)
 
-            name_ = f'test_gather_to_split_{i}_i{ishape_s}_a{axis_s}_idx{indices_s}_n{int(enode)}_o{int(eout)}_v{version}'
+            name_ = f'test_gather_to_split_{i}_i{ishape_s}_a{axis_s}_idx{indices_s}' \
+                    f'_n{int(enode)}_o{int(eout)}_v{version}'
             with self.subTest(name=name_):
                 onnx_ori = f'onnx/{name_}.onnx'
                 graph = make_gather_to_split_graph(
