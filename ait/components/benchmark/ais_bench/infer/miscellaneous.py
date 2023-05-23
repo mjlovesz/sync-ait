@@ -69,7 +69,8 @@ def check_valid_acl_json_for_dump(acl_json_path, model):
 
 def get_acl_json_path(args):
     """
-    get acl json path. when args.profiler is true or args.dump is True, create relative acl.json , default current folder
+    get acl json path. when args.profiler is true or args.dump is True, create relative acl.json ,
+    default current folder
     """
     if args.acl_json_path is not None:
         check_valid_acl_json_for_dump(args.acl_json_path, args.model)
@@ -107,8 +108,8 @@ def get_batchsize(session, args):
     batchsize = intensors_desc[0].shape[0]
     if args.dym_batch != 0:
         batchsize = int(args.dym_batch)
-    elif args.dym_dims !=None or args.dym_shape !=None:
-        instr = args.dym_dims if args.dym_dims !=None else args.dym_shape
+    elif args.dym_dims is not None or args.dym_shape is not None:
+        instr = args.dym_dims if args.dym_dims is not None else args.dym_shape
         elems = instr.split(';')
         for elem in elems:
             name, shapestr = elem.split(':')
@@ -169,19 +170,19 @@ def get_dymshape_list(input_ranges):
 
 # get throughput from out log
 def get_throughtput_from_log(log_path):
-    if os.path.exists(log_path) == False:
+    if os.path.exists(log_path) is False:
         return "Failed", 0
+    cmd = "cat {} | grep throughput".format(log_path)
+    cmd = cmd + " | awk '{print $NF}'"
     try:
-        cmd = "cat {} | grep throughput".format(log_path)
-        cmd = cmd + " | awk '{print $NF}'"
         outval = os.popen(cmd).read()
-        if outval == "":
-            return "Failed", 0
-        throughtput = float(outval)
-        return "OK", throughtput
     except Exception as e:
         logger.warning("get throughtput failed e:{}".format(e))
         return "Failed", 0
+    if outval == "":
+        return "Failed", 0
+    throughtput = float(outval)
+    return "OK", throughtput
 
 
 def dymshape_range_run(args):
