@@ -42,13 +42,13 @@ def infer_torch_tensor():
     device_id = 0
     session = InferSession(device_id, model_path)
     # create continuous torch tensor
-    torchtensor = torch.zeros([1,3,256,256], out = None, dtype=torch.uint8)
+    torchtensor = torch.zeros([1, 3, 256, 256], out = None, dtype=torch.uint8)
     # in is torch tensor and ouput is numpy list
     outputs = session.infer([torchtensor])
     logging.info(f"in torch tensor outputs[0].shape:{outputs[0].shape} type:{type(outputs)}")
 
     # create discontinuous torch tensor
-    torchtensor = torch.zeros([1,256,3,256], out = None, dtype = torch.uint8)
+    torchtensor = torch.zeros([1, 256, 3, 256], out = None, dtype = torch.uint8)
     torchtensor_discontinue = torchtensor.permute(0, 2, 1, 3)
 
     # in is discontinuous tensor list and ouput is numpy list
@@ -62,7 +62,7 @@ def infer_dymshape():
     device_id = 0
     session = InferSession(device_id, model_path)
 
-    ndata = np.zeros([1,3,224,224], dtype = np.float32)
+    ndata = np.zeros([1, 3, 224, 224], dtype = np.float32)
 
     mode = "dymshape"
     # input args custom_sizes is int
@@ -81,7 +81,7 @@ def infer_dymdims():
     device_id = 0
     session = InferSession(device_id, model_path)
 
-    ndata = np.zeros([1,3,224,224], dtype = np.float32)
+    ndata = np.zeros([1, 3, 224, 224], dtype = np.float32)
 
     mode = "dymdims"
     outputs = session.infer([ndata], mode)
