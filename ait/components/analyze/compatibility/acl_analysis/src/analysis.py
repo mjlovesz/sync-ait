@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+import sys
 import os
-import numpy as np
 from typing import Dict, List
+import numpy as np
 
 from knowledge_base import Knowledge, KnowledgeGroup
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 
 def check_filetype(filename: str):
@@ -51,15 +56,15 @@ def match_knowledge(line) -> Dict[str, List[Knowledge]]:
                     continue
                 if acl_api not in result:
                     result[acl_api] = []
-                result[acl_api].append(knowledge)
+                result.get(acl_api).append(knowledge)
     return result
 
 
-def analysis_310_to_310B(path: str, cfg: Dict[str, str] = {}):
-    print("[info] Start analysis.")
+def analysis_310_to_310b(path: str):
+    logger.info("[info] Start analysis.")
     # 遍历该目录下的所有code文件
     result: Dict[Knowledge, List[str]] = {}
-    for root, dirs, files in os.walk(path):
+    for root, _, files in os.walk(path):
         for filename in files:
             if not check_filetype(filename):
                 continue
@@ -75,9 +80,9 @@ def analysis_310_to_310B(path: str, cfg: Dict[str, str] = {}):
                         for knowledge in knowledges:
                             if knowledge not in result:
                                 result[knowledge] = []
-                            result[knowledge].append(
+                            result.get(knowledge).append(
                                 api + ' ' + str(filepath) + ' Line: ' + str(line_num)
                             )
-    print("[info] Analysis finished.")
+    logger.info("[info] Analysis finished.")
     return result
 

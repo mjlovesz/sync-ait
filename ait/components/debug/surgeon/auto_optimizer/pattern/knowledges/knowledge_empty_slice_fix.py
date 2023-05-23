@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import operator as op
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode, Node, Initializer
-from auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern, MatchBase
+from auto_optimizer.pattern.pattern import MatchPattern, Pattern, MatchBase
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 
@@ -56,7 +56,7 @@ pattern_empty_slice = Pattern() \
     .add_node("Slice_0", ["Slice"], [EmptySlice()]) \
     .add_node("Concat_0", ["Concat"]) \
     .add_edge("Slice_0", "Concat_0") \
-    .set_loop(MATCH_PATTERN.MATCH_ONCE)
+    .set_loop(MatchPattern.MATCH_ONCE)
 
 
 @KnowledgeFactory.register()

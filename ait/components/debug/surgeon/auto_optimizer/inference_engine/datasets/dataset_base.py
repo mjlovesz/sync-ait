@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -34,13 +34,13 @@ class DatasetBase(object):
         pass
 
     def _get_params(self, cfg):
+        dataset_path = cfg["dataset_path"]
+        label_path = cfg["label_path"]
         try:
-            dataset_path = cfg["dataset_path"]
-            label_path = cfg["label_path"]
             real_dataset = os.path.realpath(dataset_path)
 
             real_label = os.path.realpath(label_path)
 
             return real_dataset, real_label
         except Exception as err:
-            raise RuntimeError("get params failed error={}".format(err))
+            raise RuntimeError("get params failed error={}".format(err)) from err
