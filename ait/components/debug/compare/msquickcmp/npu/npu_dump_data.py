@@ -213,7 +213,7 @@ class NpuDumpData(DumpData):
         """
         self._check_input_path_param()
         if not use_cli:
-            benchmark_dir = os.path.join(os.path.realpath("../../profile"), BENCHMARK_DIR)
+            benchmark_dir = os.path.join(os.path.realpath("../../"), BENCHMARK_DIR)
             self.benchmark_install_sh(benchmark_dir)
         return self.benchmark_run()
 
@@ -265,7 +265,7 @@ class NpuDumpData(DumpData):
         npu_data_output_dir = os.path.join(self.arguments.out_path, NPU_DUMP_DATA_BASE_PATH)
         utils.create_directory(npu_data_output_dir)
         model_name, extension = utils.get_model_name_and_extension(self.arguments.offline_model_path)
-        acl_json_path = ACL_JSON_PATH
+        acl_json_path = os.path.join(npu_data_output_dir, ACL_JSON_PATH)
         if not os.path.exists(acl_json_path):
             os.mknod(acl_json_path, mode=0o600)
         benchmark_cmd = [self.python_version, "-m", "ais_bench", "--model", self.arguments.offline_model_path,

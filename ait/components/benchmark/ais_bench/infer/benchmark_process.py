@@ -5,6 +5,8 @@ import sys
 import time
 import shutil
 import copy
+import re
+import subprocess
 from multiprocessing import Pool
 from multiprocessing import Manager
 
@@ -208,6 +210,20 @@ def msprof_run_profiling(args, msprof_bin):
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
 
 
+def get_energy_consumption(npu_id):
+    cmd = "npu-smi info -t power -i {}".format(npu_id)
+    get_npu_id = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    npu_id = get_npu_id.stdout.decode('gb2312')
+    power = []
+    npu_id = npu_id.split("\n")
+    for key in npu_id:
+        if key.find("Power Dissipation(W)", 0, len(key)) != -1:
+            power = key[34:len(key)]
+            break
+
+    return power
+
+
 def main(args, index=0, msgq=None, device_list=None):
     # if msgq is not None,as subproces run
     if msgq is not None:
@@ -273,6 +289,10 @@ def main(args, index=0, msgq=None, device_list=None):
         logger.info("subprocess_{} qsize:{} ready to infer run".format(index, msgq.qsize()))
 
     start_time = time.time()
+    start_energy_consumption = 0
+    end_energy_consumption = 0
+    if args.energy_consumption:
+        start_energy_consumption = get_energy_consumption(args.npu_id)
 
     if args.run_mode == "array":
         infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
@@ -284,7 +304,8 @@ def main(args, index=0, msgq=None, device_list=None):
         infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix)
     else:
         raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
-
+    if args.energy_consumption:
+        end_energy_consumption = get_energy_consumption(args.npu_id)
     end_time = time.time()
 
     summary.add_args(sys.argv)
@@ -293,7 +314,9 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.h2d_latency_list = MemorySummary.get_H2D_time_list()
     summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
-
+    if args.energy_consumption:
+        logger.info("npu_id {} energy_consumption {}".format(args.npu_id, (float(end_energy_consumption) -
+                    float(start_energy_consumption)) * (end_time - start_time)))
     if msgq is not None:
 		# put result to msgq
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
@@ -340,6 +363,7 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
 def multidevice_run(args):
     logger.info("multidevice:{} run begin".format(args.device))
     device_list = args.device
+    npu_id_list = args.npu_id
     p = Pool(len(device_list))
     msgq = Manager().Queue()
 
@@ -352,6 +376,8 @@ def multidevice_run(args):
     for i in range(len(device_list)):
         cur_args = copy.deepcopy(args)
         cur_args.device = int(device_list[i])
+        if args.energy_consumption:
+            cur_args.npu_id = int(npu_id_list[i])
         cur_args.input = None if splits is None else list(splits)[i]
         p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
 

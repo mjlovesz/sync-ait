@@ -72,6 +72,7 @@ view.View = class {
         }).catch((err) => {
             this.error(err, null, null);
         });
+        this.confirmed = true
     }
 
     show(page) {
@@ -288,7 +289,7 @@ view.View = class {
                         pageX: (points[1].pageX + points[0].pageX) / 2,
                         pageY: (points[1].pageY + points[0].pageY) / 2
                     };
-                    const zoom = d2 === 0 ? d1 : d1 / d2;
+                    const zoom = d1 / d2;
                     this._updateZoom(this._touchZoom * zoom, e);
                 }
             }
@@ -474,18 +475,27 @@ view.View = class {
         }
         this.lastViewGraph = this._graph; 
         const graph = this.activeGraph;
+        const nodes = graph.nodes;
         
         return this._timeout(100).then(() => {
             if (graph && graph != lastGraphs[0]) {
-                const nodes = graph.nodes;
-                // console.log(nodes);
-                if (nodes.length > 2048) {
-                    if (!this._host.confirm('Large model detected.', 'This graph contains a large number of nodes and might take a long time to render. Do you want to continue?')) {
-                        this._host.event('Graph', 'Render', 'Skip', nodes.length);
-                        this.show(null);
-                        return null;
-                    }
+                if (nodes.length > 1000) {
+                    this.confirmed = false
+                    return this._host.confirm(
+                        'Large model detected.', 
+                        'This graph contains a large number of nodes and might take a long time to render. Do you want to continue?'
+                        ).then((confirmed)=>{
+                            this.confirmed = confirmed
+                            return confirmed
+                        })
                 }
+            }
+            return Promise.resolve(this.confirmed)
+        }).then((confirmed)=> {
+            if (!confirmed) {
+                this._host.event('Graph', 'Render', 'Skip', nodes.length);
+                this.show(null);
+                return null;
             }
             const update = () => {
                 const nameButton = this._getElementById('name-button');
@@ -540,9 +550,11 @@ view.View = class {
             this._graph = null;
 
             const canvas = this._getElementById('canvas');
+            const linecolor = this._getElementById('linecolor');
             while (canvas.lastChild) {
                 canvas.removeChild(canvas.lastChild);
             }
+            canvas.appendChild(linecolor)
             if (!graph) {
                 return Promise.resolve();
             }
@@ -628,7 +640,7 @@ view.View = class {
                         this._zoom = 1;
                         this._updateZoom(this._zoom);
 
-                        if (elements && elements.length > 0) {
+                        if (elements.length > 0) {
                             // Center view based on input elements
                             const xs = [];
                             const ys = [];
@@ -758,10 +770,10 @@ view.View = class {
         }
     }
 
-    showModelProperties(clicked_output_name) {
+    showModelProperties(clicked_output_name, clicked_input_name) {
         if (this._model) {
             try {
-                const modelSidebar = new sidebar.ModelSidebar(this._host, this._model, this.activeGraph, clicked_output_name);
+                const modelSidebar = new sidebar.ModelSidebar(this._host, this._model, this.activeGraph, clicked_output_name, clicked_input_name);
                 modelSidebar.on('update-active-graph', (sender, graph) => {
                     this._updateActiveGraph(graph);
                 });
@@ -816,6 +828,11 @@ view.View = class {
                         error.message = error.message.replace(/\.$/, '') + " in '" + this._model.identifier + "'.";
                     }
                     this.error(error, null, null);
+                });
+                nodeSidebar.on('close-sidebar', () => {
+                    if (this._sidebar) {
+                        this._sidebar.close()
+                    }
                 });
                 if (input) {
                     nodeSidebar.toggleInput(input.name);
@@ -876,7 +893,8 @@ view.Graph = class extends grapher.Graph {
         if (this.modifier.renameMap.get(input.name)) {
             var show_name = this.modifier.renameMap.get(input.name).get(input.name);
         }
-        const value = new view.Input(this, input, show_name);
+        let modelNodeName = input.name;  // in case the output has the same name with the last node
+        const value = new view.Input(this, input, modelNodeName, show_name);
         // value.name = (this._nodeKey++).toString();
 
         value.name = input.name; 
@@ -1182,7 +1200,7 @@ view.Node = class extends grapher.Node {
 
 view.Input = class extends grapher.Node {
 
-    constructor(context, value, show_name) {
+    constructor(context, value, modelNodeName, show_name) {
         super();
         this.context = context;
         this.value = value;
@@ -1190,13 +1208,13 @@ view.Input = class extends grapher.Node {
         const types = value.arguments.map((argument) => argument.type || '').join('\n');
         // let name = value.name || '';
         let name = show_name
-        this.modelNodeName = value.name
+        this.modelNodeName = modelNodeName
         if (name.length > 16) {
             name = name.split('/').pop();
         }
         const header = this.header();
         const title = header.add(null, [ 'graph-item-input' ], name, types);
-        title.on('click', () => this.context.view.showModelProperties());
+        title.on('click', () => this.context.view.showModelProperties(null, modelNodeName));
         this.id = 'input-' + (name ? 'name-' + name : 'id-' + (view.Input.counter++).toString());
     }
 
@@ -2077,7 +2095,7 @@ view.ModelFactoryService = class {
         if (stream) {
             let empty = true;
             let position = 0;
-            while (empty && position < stream.length) {
+            while (position < stream.length) {
                 const buffer = stream.read(Math.min(4096, stream.length - position));
                 position += buffer.length;
                 if (!buffer.every((value) => value === 0x00)) {

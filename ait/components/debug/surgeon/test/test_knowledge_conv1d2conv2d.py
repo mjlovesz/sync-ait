@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,8 +30,8 @@ from helper import KnowledgeTestHelper, OptimizationConfig
 
 class TestKnowledgeConv1d2Conv2d(unittest.TestCase, KnowledgeTestHelper):
     def make_twice_conv1d_model(self, onnx_name, x):
-        X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-        Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, [1, 128, 2500])
+        input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+        input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, [1, 128, 2500])
 
         weight_0 = helper.make_tensor('weight_0', TensorProto.FLOAT, (64, 3, 1),
                                       np.random.randn(64, 3, 1).astype(np.float32))
@@ -52,7 +52,7 @@ class TestKnowledgeConv1d2Conv2d(unittest.TestCase, KnowledgeTestHelper):
                                   pads=[0, 0],
                                   strides=[1])
 
-        graph = helper.make_graph([conv_0, conv_1], "conv1d_test", [X], [Z], [weight_0, weight_1])
+        graph = helper.make_graph([conv_0, conv_1], "conv1d_test", [input_x], [input_z], [weight_0, weight_1])
         model = helper.make_model(graph)
 
         del model.opset_import[:]
@@ -62,8 +62,8 @@ class TestKnowledgeConv1d2Conv2d(unittest.TestCase, KnowledgeTestHelper):
         onnx.save(model, onnx_name)
 
     def make_multi_conv1d_and_split_graph_model(self, onnx_name, x):
-        X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-        Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, [1, 128, 2500])
+        input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+        input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, [1, 128, 2500])
 
         weight_0 = helper.make_tensor('weight_0', TensorProto.FLOAT, (64, 3, 1),
                                       np.random.randn(64, 3, 1).astype(np.float32))
@@ -100,7 +100,7 @@ class TestKnowledgeConv1d2Conv2d(unittest.TestCase, KnowledgeTestHelper):
         add = helper.make_node('Add', ['relu_2_out', 'relu_3_out'], ['Z'], 'Add_0', None, None)
 
         graph = helper.make_graph([conv_0, relu_0, relu_1, conv_1, relu_2, relu_3, conv_2, add], "conv1d_test",
-                                  [X], [Z], [weight_0, weight_1, weight_2])
+                                  [input_x], [input_z], [weight_0, weight_1, weight_2])
         model = helper.make_model(graph)
 
         del model.opset_import[:]
