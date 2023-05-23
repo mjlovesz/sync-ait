@@ -82,9 +82,10 @@ def get_files_count_per_batch(intensors_desc, fileslist, no_combine_tensor_mode=
         if filesize == 0 or tensorsize % filesize != 0:
             logger.error('arg0 tensorsize: {} filesize: {} not match'.format(tensorsize, filesize))
             raise RuntimeError()
-        files_count_per_batch = (int)(tensorsize/filesize)
+        else:
+            files_count_per_batch = (int)(tensorsize/filesize)
+            runcount = math.ceil(len(fileslist[0]) / files_count_per_batch)
 
-    runcount = math.ceil(len(fileslist[0]) / files_count_per_batch)
     #runcount = len(fileslist[0]) // files_count_per_batch
     logger.info("get filesperbatch files0 size:{} tensor0size:{} filesperbatch:{} runcount:{}".format(
         filesize, tensorsize, files_count_per_batch, runcount))

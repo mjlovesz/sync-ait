@@ -15,6 +15,7 @@
 import os
 import sys
 import logging
+import stat
 import json
 
 
@@ -47,7 +48,7 @@ if __name__ == '__main__':
     t_pid = get_pid(pid_file)
     info = {"pid": t_pid, "npu_compute_time_list": times}
     flag = os.O_WRONLY | os.O_CREAT
-    modes = stat.S_IWUSRv | stat.S_IRUSR
+    modes = stat.S_IWUSR | stat.S_IRUSR
     with os.fdopen(os.open(out_file, flag, modes), 'w') as ff:
         json.dump(info, ff)
 
