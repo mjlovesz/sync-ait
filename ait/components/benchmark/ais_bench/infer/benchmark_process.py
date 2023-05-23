@@ -1,3 +1,17 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import logging
 import math
 import os
@@ -120,7 +134,7 @@ def warmup(session, args, intensors_desc, infiles):
             infeeds.append(narray)
     session.set_loop_count(1)
     # warmup
-    for i in range(args.warmup_count):
+    for _ in range(args.warmup_count):
         outputs = run_inference(session, args, infeeds, out_array=True)
 
     session.set_loop_count(args.loop)
@@ -199,8 +213,9 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
 
 def msprof_run_profiling(args, msprof_bin):
     cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
-    msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
-        msprof_bin, args.output, cmd)
+    msprof_cmd = "{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on \
+    --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on \
+    --task-time=on --aicpu=on".format(msprof_bin, args.output, cmd)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
     ret = os.system(msprof_cmd)
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
@@ -344,8 +359,8 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
     intensors_desc = session.get_inputs()
     chunks_elements = math.ceil(len(fileslist) / len(intensors_desc))
     chunks = list(list_split(fileslist, chunks_elements, None))
-    fileslist = [ [] for e in range(jobs) ]
-    for i, chunk in enumerate(chunks):
+    fileslist = [ [] for _ in range(jobs) ]
+    for _, chunk in enumerate(chunks):
         splits_elements = math.ceil(len(chunk) / jobs)
         splits = list(list_split(chunk, splits_elements, None))
         for j, split in enumerate(splits):

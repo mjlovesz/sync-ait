@@ -63,6 +63,7 @@ def analyse_topk_times(args):
             f.write(json.dumps(topk_index))
         os.chmod(os.path.join(args.output, "topk_index.json"), 0o440)
 
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--summary_path", help="the sumary path")
