@@ -23,12 +23,13 @@ from components.analyze import analyze_cli
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-
-
-cli = click.Group(context_settings=CONTEXT_SETTINGS, commands=[debug_cli_group, profile_cli_group, analyze_cli, benchmark_cli, transplt_cli],
-                  no_args_is_help=True,
-                  help="ait(Ascend Inference Tools), "
-                  "provides one-site debugging and optimization toolkit for inference use Ascend Devices")
+cli = click.Group(
+    context_settings=CONTEXT_SETTINGS,
+    commands=[debug_cli_group, profile_cli_group, analyze_cli, benchmark_cli, transplt_cli],
+    no_args_is_help=True,
+    help="ait(Ascend Inference Tools), "
+        "provides one-site debugging and optimization toolkit for inference use Ascend Devices"
+)
 
 if __name__ == "__main__":
     cli()
