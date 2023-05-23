@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ from typing import List, Dict, Optional, Sequence, Union, cast
 import numpy as np
 from onnx import NodeProto, TensorProto, ValueInfoProto, helper, numpy_helper
 
-from .. import Node, PlaceHolder, Initializer
+from auto_optimizer.graph_refactor.interface import Node, PlaceHolder, Initializer
 
 try:
     tensor_dtype_to_np_dtype = helper.tensor_dtype_to_np_dtype

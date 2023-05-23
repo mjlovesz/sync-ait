@@ -1,4 +1,4 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2022. All rights reserved.
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ def make_dynamic_model(onnx_name, x, attrs):
 
     graph.update_map()
     return graph
+
 
 class TestKnowledgeAvgPoolSplit(unittest.TestCase, KnowledgeTestHelper):
     def test_basic_avgpool_split(self):

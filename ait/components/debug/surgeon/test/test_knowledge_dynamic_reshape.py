@@ -1,4 +1,4 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2022. All rights reserved.
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -77,11 +77,11 @@ class TestKnowledgeDynamicReshape(unittest.TestCase, KnowledgeTestHelper):
             self.assertTrue(self.check_optimization(cfg=cfg, expect=True))
 
             var = {'bs': 8, 'len': 128}
-            shape_ = [var[x] if x in var else x for x in in_shape]
+            shape_ = [var.get(x, x) for x in in_shape]
             feeds = [
                 {
-                    'X': np.random.randn(*shape_).astype(x['dtype']),
-                    'Y': np.random.randn(*shape_).astype(y['dtype']),
+                    'X': np.random.randn(*shape_).astype(x.get('dtype', np.float16)),
+                    'Y': np.random.randn(*shape_).astype(y.get('dtype', np.float16)),
                 } for _ in range(10)
             ]
             self.assertTrue(self.check_precision(onnx_ori, onnx_opt, feeds))
@@ -112,11 +112,11 @@ class TestKnowledgeDynamicReshape(unittest.TestCase, KnowledgeTestHelper):
             self.assertTrue(self.check_optimization(cfg=cfg, expect=True))
 
             var = {'bs': 8, 'len': 128}
-            shape_ = [var[x] if x in var else x for x in in_shape]
+            shape_ = [var.get(x, x) for x in in_shape]
             feeds = [
                 {
-                    'X': np.random.randn(*shape_).astype(x['dtype']),
-                    'Y': np.random.randn(*shape_).astype(y['dtype']),
+                    'X': np.random.randn(*shape_).astype(x.get('dtype', np.float16)),
+                    'Y': np.random.randn(*shape_).astype(y.get('dtype', np.float16)),
                 } for _ in range(10)
             ]
             self.assertTrue(self.check_precision(onnx_ori, onnx_opt, feeds))

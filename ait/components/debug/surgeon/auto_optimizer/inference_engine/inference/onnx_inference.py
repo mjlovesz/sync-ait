@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +13,42 @@
 # limitations under the License.
 
 import logging
+import sys
 from abc import ABC
 
 import onnxruntime as rt
 import numpy as np
 
-from .inference_base import InferenceBase
-from ..data_process_factory import InferenceFactory
+from auto_optimizer.inference_engine.inference.inference_base import InferenceBase
+from auto_optimizer.inference_engine.data_process_factory import InferenceFactory
 
-logging = logging.getLogger("auto-optimizer")
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger("auto-optimizer")
 
 
 @InferenceFactory.register("onnx")
 class ONNXInference(InferenceBase, ABC):
+
+    def __call__(self, loop, cfg, in_queue, out_queue):
+        """
+        和基类的参数顺序和个数需要一致
+        """
+        logger.debug("inference start")
+        try:
+            model = super()._get_params(cfg)
+            session, input_name, output_name = self._session_init(model)
+        except Exception as err:
+            logger.error("inference failed error={}".format(err))
+            raise RuntimeError("inference failed error") from err
+        for _ in range(loop):
+            data = in_queue.get()
+            if len(data) < 2:   # include file_name and data
+                raise RuntimeError("input params error len={}".format(len(data)))
+            out_data = self._session_run(session, input_name, [data[1]])
+
+            out_queue.put([data[0], out_data])
+
+        logging.debug("inference end")
 
     def _session_init(self, model):
         session = rt.InferenceSession(model)
@@ -42,30 +65,8 @@ class ONNXInference(InferenceBase, ABC):
         res_buff = []
 
         res = session.run(None, {input_name[i]: input_data[i] for i in range(len(input_name))})
-        for i, x in enumerate(res):
+        for _, x in enumerate(res):
             out = np.array(x)
             res_buff.append(out)
 
         return res_buff
-
-    def __call__(self, loop, cfg, in_queue, out_queue):
-        """
-        和基类的参数顺序和个数需要一致
-        """
-        logging.debug("inference start")
-        try:
-            model = super()._get_params(cfg)
-            session, input_name, output_name = self._session_init(model)
-
-            for i in range(loop):
-                data = in_queue.get()
-                if len(data) < 2:   # include file_name and data
-                    raise RuntimeError("input params error len={}".format(len(data)))
-
-                out_data = self._session_run(session, input_name, [data[1]])
-
-                out_queue.put([data[0], out_data])
-        except Exception as err:
-            logging.error("inference failed error={}".format(err))
-
-        logging.debug("inference end")

@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from auto_optimizer.graph_refactor.interface.base_node import Initializer, Node,
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.matcher import MatchResult
-from auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern
+from auto_optimizer.pattern.pattern import MatchPattern, Pattern
 from auto_optimizer.pattern.utils import AllNextnodesAreGather, is_lower_onnx_version
 
 r"""
@@ -53,19 +53,19 @@ class KnowledgeGatherToSplit(KnowledgeBase):
         # 注册pattern的apply方法
         self.pattern_ = Pattern() \
             .add_node("PreNode", None, [AllNextnodesAreGather()]) \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE)
+            .set_loop(MatchPattern.MATCH_ONCE)
         self._register_apply_funcs(self.pattern_, [self._pattern_apply])
 
     def pre_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except onnx.onnx_cpp2py_export.shape_inference.InferenceError:
             return False
         return super().pre_process(graph)
 
     def post_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except onnx.onnx_cpp2py_export.shape_inference.InferenceError:
             return False
         return super().post_process(graph)
@@ -100,7 +100,7 @@ class KnowledgeGatherToSplit(KnowledgeBase):
         # we iterate over gather indices and place them on dims
         # None means not occupied by any indices
         dims: List[Optional[Indices]] = [None for _ in range(dim)]
-        for i, gidx in enumerate(gidx_lst):
+        for _, gidx in enumerate(gidx_lst):
             indices_ = (gidx, ) if isinstance(gidx, int) else gidx
             for idx in indices_:
                 # already occupied by other indices, this means overlap, abort
