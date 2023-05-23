@@ -91,7 +91,7 @@ class GraphOptimizer:
         if cfg.is_static:
             input_ = [
                 np.random.randn(*inp.shape)
-                         .astype(tensor_type_to_numpy_type[inp.datatype])
+                         .astype(tensor_type_to_numpy_type.get(inp.datatype))
                 for inp in sess_ori.get_inputs()
             ]
             out_ori = sess_ori.infer(input_)
@@ -176,24 +176,6 @@ class GraphOptimizer:
         '''
         return self._exec_action(graph, GraphOptimizer._optimize)
 
-    def _exec_action(
-        self,
-        graph: BaseGraph,
-        action: Callable[[BaseGraph, KnowledgeBase], bool]
-    ) -> Tuple[BaseGraph, List[str]]:
-        applied_knowledges = []
-        for name, knowledge in self.knowledges.items():
-            knowledge.reset()
-            graph_copy = deepcopy(graph)
-            try:
-                if action(graph_copy, knowledge):
-                    graph = graph_copy
-                    applied_knowledges.append(name)
-            except Exception as exc:
-                logger.warning('Error applying knowledge: %s!', name)
-                logger.warning(exc)
-        return graph, applied_knowledges
-
     def apply_knowledges_with_infer_test(
         self,
         graph: BaseGraph,
@@ -272,7 +254,23 @@ class GraphOptimizer:
             pass
         return graph, applied_knowledges
 
-
+    def _exec_action(
+        self,
+        graph: BaseGraph,
+        action: Callable[[BaseGraph, KnowledgeBase], bool]
+    ) -> Tuple[BaseGraph, List[str]]:
+        applied_knowledges = []
+        for name, knowledge in self.knowledges.items():
+            knowledge.reset()
+            graph_copy = deepcopy(graph)
+            try:
+                if action(graph_copy, knowledge):
+                    graph = graph_copy
+                    applied_knowledges.append(name)
+            except Exception as exc:
+                logger.warning('Error applying knowledge: %s!', name)
+                logger.warning(exc)
+        return graph, applied_knowledges
 
 
 if __name__ == "__main__":

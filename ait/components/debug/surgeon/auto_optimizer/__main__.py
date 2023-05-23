@@ -88,8 +88,9 @@ def optimize_onnx(
             logger.warning('Failed to optimize %s with inference test.', input_model.as_posix())
             logger.warning('Didn\'t specify input_shape_range or dynamic_shape or output_size.')
             return []
-    optimize_action = partial(optimizer.apply_knowledges_with_infer_test, cfg=config) \
-        if infer_test else optimizer.apply_knowledges
+        optimize_action = partial(optimizer.apply_knowledges_with_infer_test, cfg=config)
+    else:
+        optimize_action = optimizer.apply_knowledges
 
     try:
         graph_opt, applied_knowledges = optimize_action(graph=graph)
@@ -97,7 +98,7 @@ def optimize_onnx(
         logger.warning('%s optimize failed.', input_model.as_posix())
         logger.warning('exception: %s', exc)
         return []
-    
+
     if applied_knowledges:
         if not output_model.parent.exists():
             output_model.parent.mkdir(parents=True)
@@ -116,19 +117,18 @@ def evaluate_onnx(
     try:
         graph = OnnxGraph.parse(model.as_posix(), add_name_suffix=False)
         graph, applied_knowledges = optimizer.apply_knowledges(graph)
-        return applied_knowledges
     except Exception as exc:
         logger.warning('%s match failed.', model.as_posix())
         logger.warning('exception: %s', exc)
         return []
-
+    return applied_knowledges
 
 class FormatMsg:
     def show(self, file=None) -> None:
         logger.error(self.format_message())
 
 
-@click.group(cls=ClickAliasedGroup, context_settings=CONTEXT_SETTINGS, 
+@click.group(cls=ClickAliasedGroup, context_settings=CONTEXT_SETTINGS,
              short_help='Modify ONNX models, and auto optimizer onnx models.',
              no_args_is_help=True)
 def cli() -> None:
@@ -163,8 +163,7 @@ def command_evaluate(
     processes: int,
 ) -> None:
     path_ = pathlib.Path(path.decode()) if isinstance(path, bytes) else path
-    onnx_files = list(path_.rglob('*.onnx') if recursive else path_.glob('*.onnx')) \
-        if path_.is_dir() else [path_]
+    onnx_files = list(path_.rglob('*.onnx') if recursive else path_.glob('*.onnx')) if path_.is_dir() else [path_]
 
     if processes > 1:
         evaluate = partial(evaluate_onnx, optimizer=optimizer, verbose=verbose)

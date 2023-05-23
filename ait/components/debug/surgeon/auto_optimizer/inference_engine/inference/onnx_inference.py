@@ -36,10 +36,10 @@ class ONNXInference(InferenceBase, ABC):
         logger.debug("inference start")
         try:
             model = super()._get_params(cfg)
-            session, input_name, output_name = self._session_init(model)
         except Exception as err:
             logger.error("inference failed error={}".format(err))
             raise RuntimeError("inference failed error") from err
+        session, input_name, output_name = self._session_init(model)
         for _ in range(loop):
             data = in_queue.get()
             if len(data) < 2:   # include file_name and data
