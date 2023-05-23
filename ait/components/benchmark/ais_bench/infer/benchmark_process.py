@@ -444,7 +444,7 @@ def args_rules(args):
     else:
         args.no_combine_tensor_mode = True
 
-    if args.profiler is True and args.warmup_count != 0 and args.input != None:
+    if args.profiler is True and args.warmup_count != 0 and args.input is not None:
         logger.info("profiler mode with input change warmup_count to 0")
         args.warmup_count = 0
 
