@@ -115,12 +115,17 @@ def evaluate_onnx(
         logger.info(f'Evaluating {model.as_posix()}')
     try:
         graph = OnnxGraph.parse(model.as_posix(), add_name_suffix=False)
-        graph, applied_knowledges = optimizer.apply_knowledges(graph)
-        return applied_knowledges
     except Exception as exc:
         logger.warning('%s match failed.', model.as_posix())
         logger.warning('exception: %s', exc)
         return []
+    try:
+        graph, applied_knowledges = optimizer.apply_knowledges(graph)
+    except Exception as exc:
+        logger.warning('%s match failed.', model.as_posix())
+        logger.warning('exception: %s', exc)
+        return []
+    return applied_knowledges
 
 
 class FormatMsg:
