@@ -121,6 +121,18 @@ class BaseGraph(ABC):
     def value_infos(self) -> List[PlaceHolder]:
         return self._value_infos
 
+    @property
+    def node_map(self):
+        return self._node_map
+
+    @property
+    def next_map(self):
+        return self._next_map
+
+    @property
+    def prev_map(self):
+        return self._prev_map
+
     @classmethod
     @abstractmethod
     def parse(cls, model) -> 'BaseGraph':
@@ -169,7 +181,7 @@ class BaseGraph(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def infershape(self) -> None:
+    def infer_shape(self) -> None:
         raise NotImplementedError()
 
     def update_map(self) -> None:

@@ -142,7 +142,7 @@ Used to distinguish between different actual inputs of models in dynamic shapes,
 | --advisor           | Whether print advisor info on the end of execution | No    |
 | -dr，--dymShape-range     | Dynamic shape range parameter. If this argument used, then all shapes list included in the argument will be considered into accuracy compare.（only support onnx model）<br/> For example:input_name1:1,3,200\~224,224-230;input_name2:1,300<br/> input_name must be the node name in the network model before model conversion; "\~" represents the range, a\~b\~c meaning [a: b :c]; "-" represents the exact value. | No  |
 | --dump                   | Whether compare the accuracy of all the operation nodes output. Default True.(only support onnx model)<br/> For example: --dump False           | No  |
-| --convert                 | Support om comparison result file data format from bin file to npy file, the generated npy file directory is ./dump_data/npu/{timestamp_bin2npy} folder | No    |
+| --convert                 | Support om comparison result file data format from bin file to npy file, the generated npy file directory is ./dump_data/npu/{timestamp_bin2npy} folder. For example: --convert True | No    |
 
 ### Sample Execution
 - Obtain the original model from [AIPainting_v2.pb](https://obs-9be7.obs.cn-east-2.myhuaweicloud.com/003_Atc_Models/AE/ATC%20Model/painting/AIPainting_v2.pb).
