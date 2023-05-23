@@ -26,6 +26,10 @@ logger = logging.getLogger(__name__)
 
 
 class TestClass:
+    @staticmethod
+    def get_input_tensor_name():
+        return "actual_input_1"
+    
     @classmethod
     def setup_class(cls):
         """
@@ -36,13 +40,6 @@ class TestClass:
     @classmethod
     def teardown_class(cls):
         logger.info('\n ---class level teardown_class')
-
-    def init(self):
-        self.model_name = "resnet50"
-
-    @classmethod
-    def get_input_tensor_name(cls):
-        return "actual_input_1"
 
     @classmethod
     def load_aipp_config_file(cls, session, config_file, batchsize):
@@ -395,6 +392,9 @@ class TestClass:
         return os.path.join(
             os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_lack_title.config"
         )
+    
+    def init(self):
+        self.model_name = "resnet50"
 
     # 各种测试场景
     def test_infer_dymaipp_staticshape(self):
