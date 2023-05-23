@@ -4,7 +4,7 @@
 Function:
 This class mainly involves the main function.
 Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
+Huawei Technologies Co.,Ltd. All Rights Reserved © 2021
 """
 
 import argparse
