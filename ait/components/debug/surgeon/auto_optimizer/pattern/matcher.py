@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -135,6 +135,33 @@ class Matcher(object):
             ret.append(node)
             hash_set.add(node.name)
         return ret
+
+    def get_match_map(self, node: Node) -> MatchResult:
+        """
+        获取匹配的节点列表
+        :param node: 子图遍历起始节点
+        :return: 匹配结果
+        """
+        result = MatchResult(self._pattern)
+
+        start_pattern_node = self._pattern.get_start_node()
+        if not start_pattern_node.match(node, self._graph):
+            return result
+
+        match_nodes: Dict[str, List[Node]] = {}
+        if len(start_pattern_node.inputs) != 0:
+            # visit from down to up
+            self._visit_direction = 1
+            if not self.__graph_bfs(node, start_pattern_node, match_nodes):
+                return result
+            for nodes in match_nodes.values():
+                nodes.reverse()
+        # visit from up to down
+        self._visit_direction = 0
+        if not self.__graph_bfs(node, start_pattern_node, match_nodes):
+            return result
+        result.add_node_dict(match_nodes)
+        return result
 
     def __get_prev_nodes(self, cur_node: Node) -> List[Node]:
         """
@@ -417,30 +444,3 @@ class Matcher(object):
                 result.pop(pattern_node.op_name)
                 return False
         return True
-
-    def get_match_map(self, node: Node) -> MatchResult:
-        """
-        获取匹配的节点列表
-        :param node: 子图遍历起始节点
-        :return: 匹配结果
-        """
-        result = MatchResult(self._pattern)
-
-        start_pattern_node = self._pattern.get_start_node()
-        if not start_pattern_node.match(node, self._graph):
-            return result
-
-        match_nodes: Dict[str, List[Node]] = {}
-        if len(start_pattern_node.inputs) != 0:
-            # visit from down to up
-            self._visit_direction = 1
-            if not self.__graph_bfs(node, start_pattern_node, match_nodes):
-                return result
-            for nodes in match_nodes.values():
-                nodes.reverse()
-        # visit from up to down
-        self._visit_direction = 0
-        if not self.__graph_bfs(node, start_pattern_node, match_nodes):
-            return result
-        result.add_node_dict(match_nodes)
-        return result

@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ def make_type_cast_model(onnx_name, x: np.ndarray, y: np.ndarray, value_type: np
     graph.add_node('Concat0', 'Concat', ['Concat_value_0', 'Concat_value_1', 'Add_O'], ['O_1'], attrs={'axis': 0})
     graph.update_map()
 
-    graph.infershape()
+    graph.infer_shape()
     return graph
 
 

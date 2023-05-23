@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import click
 import pathlib
+import click
 
 import utils
 import model
@@ -34,7 +34,7 @@ opt_path = click.argument(
 @click.command()
 @opt_path
 def code_analysis(path):
-    model.Evaluate(path)
+    model.evaluate(path)
 
 
 if __name__ == '__main__':

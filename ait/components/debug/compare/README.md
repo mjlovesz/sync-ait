@@ -6,7 +6,7 @@
 ### 环境准备
 - 已安装开发运行环境的昇腾 AI 推理相关驱动、固件、CANN 包，参照 [昇腾文档](https://www.hiascend.com/zh/document)
 - 安装 `python3.7.5` 环境
-- **安装benchmark工具**，安装参考文档：[ais_bench推理工具使用指南](https://gitee.com/ascend/ait/tree/master/ait/components/profile/benchmark/README.md)
+- **安装benchmark工具**，安装参考文档：[ais_bench推理工具使用指南](https://gitee.com/ascend/ait/tree/master/ait/components/benchmark/README.md)
 - **`ONNX` 相关 python 依赖包** `pip3 install onnxruntime onnx numpy`，若 pip 安装依赖失败，建议执行命令 `pip3 install --upgrade pip` 进行升级，避免因 pip 版本过低导致安装失败
 - **`TensorFlow` 相关 python 依赖包**，参考 [Centos7.6上tensorflow1.15.0 环境安装](https://bbs.huaweicloud.com/blogs/181055) 安装 TensorFlow1.15.0 环境
 
@@ -138,7 +138,7 @@
   | --advisor           | 在比对结束后，针对比对结果进行数据分析，给出专家建议 | 否    |
   | -dr，--dymShape-range     | 动态Shape的阈值范围。如果设置该参数，那么将根据参数中所有的Shape列表进行依次推理和精度比对。(仅支持onnx模型)<br/>配置格式为：input_name1:1,3,200\~224,224-230;input_name2:1,300。<br/>其中，input_name必须是转换前的网络模型中的节点名称；"\~"表示范围，a\~b\~c含义为[a: b :c]；"-"表示某一位的取值。 <br/> | 否  |
   | --dump                   | 是否dump所有算子的输出并进行精度对比。默认是True，即开启全部算子输出的比对。(仅支持onnx模型)<br/>使用方式：--dump False            | 否  |
-  | --convert                 | 支持om比对结果文件数据格式由bin文件转为npy文件，生成的npy文件目录为./dump_data/npu/{时间戳_bin2npy} 文件夹 | 否    |
+  | --convert                 | 支持om比对结果文件数据格式由bin文件转为npy文件，生成的npy文件目录为./dump_data/npu/{时间戳_bin2npy} 文件夹。使用方式：--convert True | 否    |
 
 ### 执行案例
 - 获取 Tensorflow pb 原始模型 [AIPainting_v2.pb](https://obs-9be7.obs.cn-east-2.myhuaweicloud.com/003_Atc_Models/AE/ATC%20Model/painting/AIPainting_v2.pb)

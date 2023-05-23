@@ -371,7 +371,7 @@ def call_expr(c):
                 c0.scanned = True
         # 2. 类/构造函数调用，如cv::Size(w, h)，不满足1。隐式调用子节点均为参数，显式调用子节点包含命名空间+（类型）引用+参数。
         # 如：{"kind": "CALL_EXPR","ref_kind": "CONSTRUCTOR","spelling": "Size_"}
-        #        {"kind": "TYPE_REF","ref_kind": "TYPEDEF_DECL","spelling": "cv::Size"}
+        #        "kind": "TYPE_REF","ref_kind": "TYPEDEF_DECL","spelling": "cv::Size"
         elif get_attr(c, 'referenced.kind') == CursorKind.CONSTRUCTOR:
             ref_end = -1
             for i, ci in enumerate(children):

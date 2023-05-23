@@ -81,13 +81,6 @@ class Advisor:
             raise ValueError("workload_model encounters zero division error") from ex
         return np.ceil(y)
 
-    def _api_dfs(self, api_map):
-        api_dfs = dict()
-        for k, v in api_map.items():
-            lib_name = os.path.basename(v).split('_')[0]
-            api_dfs[k] = [lib_name, self._api_map(v)]
-        return api_dfs
-
     def recommend(self):
         for _, df in self.results.items():
             if df.empty:
@@ -165,3 +158,10 @@ class Advisor:
 
     def to_excel(self):
         write_excel(self.results)
+
+    def _api_dfs(self, api_map):
+        api_dfs = dict()
+        for k, v in api_map.items():
+            lib_name = os.path.basename(v).split('_')[0]
+            api_dfs[k] = [lib_name, self._api_map(v)]
+        return api_dfs

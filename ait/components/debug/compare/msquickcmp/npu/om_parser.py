@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Function:
 This class is used to om fusion parser.
-Copyright Information:
-Huawei Technologies Co., Ltd. All Rights Reserved © 2021
 """
 import itertools
 import json
@@ -59,6 +70,133 @@ class OmParser(object):
         self.contain_negative_1 = False
         self.special_op_attr = self._parse_special_op_attr()
 
+    @staticmethod
+    def _load_json_file(json_file_path):
+        """
+        Function Description:
+            load json file
+        Parameter:
+            json_file_path: json file path
+        Return Value:
+            json object
+        Exception Description:
+            when invalid json file path throw exception
+        """
+        try:
+            with open(json_file_path, "r") as input_file:
+                try:
+                    return json.load(input_file)
+                except Exception as exc:
+                    utils.logger.error('Load Json {} failed, {}'.format(
+                        json_file_path, str(exc)))
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR) from exc
+        except IOError as input_file_open_except:
+            utils.logger.error('Failed to open"' + json_file_path + '", ' + str(input_file_open_except))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from input_file_open_except
+
+    @staticmethod
+    def _get_prefix(input_obj):
+        return input_obj.split(':')[0]
+
+    @staticmethod
+    def _parse_net_output_node_attr(operator):
+        net_output_info = {}
+        if INPUT_DESC_OBJECT in operator:
+            input_index = 0
+            for input_object in operator.get(INPUT_DESC_OBJECT):
+                shape = []
+                data_type = DTYPE_MAP.get(input_object.get(DTYPE_OBJECT))
+                if not input_object.get(SHAPE_OBJECT):
+                    # no shape info, assumed to be scalar
+                    net_output_info[input_index] = [data_type, [1]]
+                    continue
+                for num in input_object.get(SHAPE_OBJECT).get(DIM_OBJECT):
+                    shape.append(num)
+                net_output_info[input_index] = [data_type, shape]
+                input_index += 1
+        return net_output_info
+
+    def get_shape_size(self):
+        """
+        Get shape size for input
+        """
+        input_desc_array = self._get_data_input_desc()
+        # extracts the input shape value
+        return self._process_inputs(input_desc_array)
+
+    def get_net_output_count(self):
+        """
+        Get net output count
+        """
+        count = 0
+        is_dynamic_scenario, dym_arg = self.get_dynamic_scenario_info()
+        if not is_dynamic_scenario or dym_arg is DynamicArgumentEnum.DYM_SHAPE:
+            op_iterator = self._gen_operator_list()
+        else:
+            op_iterator = self._gen_operator_list_from_subgraph()
+        for operator in op_iterator:
+            if NET_OUTPUT_OBJECT == operator.get(TYPE_OBJECT) and INPUT_DESC_OBJECT in operator:
+                count += len(operator.get(INPUT_DESC_OBJECT))
+        return count
+
+    def get_atc_cmdline(self):
+        for attr in self.json_object.get(ATTR_OBJECT):
+            if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == ATC_CMDLINE_OBJECT:
+                if VALUE_OBJECT in attr and S_OBJECT in attr.get(VALUE_OBJECT):
+                    return attr.get(VALUE_OBJECT).get(S_OBJECT)
+        return ''
+
+    def get_expect_net_output_name(self):
+        """
+        Get the expected output tensor corresponding to Net_output.
+        """
+        expect_net_output_name = {}
+        net_output_names = []
+        if ATTR_OBJECT not in self.json_object:
+            return expect_net_output_name
+        for attr in self.json_object.get(ATTR_OBJECT):
+            if not (KEY_OBJECT in attr and attr.get(KEY_OBJECT) == OUT_NODES_NAME):
+                continue
+            if not (VALUE_OBJECT in attr and LIST_OBJECT in attr.get(VALUE_OBJECT)):
+                continue
+            list_object = attr.get(VALUE_OBJECT).get(LIST_OBJECT)
+            if S_OBJECT in list_object:
+                net_output_names = list_object.get(S_OBJECT)
+        for item, output_name in enumerate(net_output_names):
+            expect_net_output_name[item] = output_name
+        return expect_net_output_name
+
+    def get_net_output_data_info(self, dump_data_path):
+        """
+        get_net_output_data_info
+        """
+        net_output_list = []
+        for operator in self._gen_operator_list():
+            if NET_OUTPUT_OBJECT == operator.get(TYPE_OBJECT):
+                net_output_list.append(operator)
+        if len(net_output_list) == 1:
+            return self._parse_net_output_node_attr(net_output_list[0])
+        # if it's dynamic batch scenario, the net output node should be identified by batch index
+        _, scenario = self.get_dynamic_scenario_info()
+        if scenario in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
+            if not dump_data_path:
+                for operator in net_output_list:
+                    return  self._parse_net_output_node_attr(operator)
+            cur_batch_index = utils.get_batch_index(dump_data_path)
+            for operator in net_output_list:
+                batch_index_in_operator = utils.get_batch_index_from_name(operator.get(NAME_OBJECT))
+                if cur_batch_index == batch_index_in_operator:
+                    return self._parse_net_output_node_attr(operator)
+        utils.logger.error("get npu output node info failed.")
+        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR)
+
+    def get_dynamic_scenario_info(self):
+        atc_cmd = self.get_atc_cmdline()
+        for dym_arg in DynamicArgumentEnum:
+            if dym_arg.value.atc_arg in atc_cmd:
+                return True, dym_arg
+        return False, None
+
     def _get_sub_graph_name(self):
         subgraph_name = []
         for graph in self.json_object.get(GRAPH_OBJECT):
@@ -83,38 +221,6 @@ class OmParser(object):
                     yield operator
                 return
 
-    def get_shape_size(self):
-        """
-        Get shape size for input
-        """
-        input_desc_array = self._get_data_input_desc()
-        # extracts the input shape value
-        return self._process_inputs(input_desc_array)
-
-    @staticmethod
-    def _load_json_file(json_file_path):
-        """
-        Function Description:
-            load json file
-        Parameter:
-            json_file_path: json file path
-        Return Value:
-            json object
-        Exception Description:
-            when invalid json file path throw exception
-        """
-        try:
-            with open(json_file_path, "r") as input_file:
-                try:
-                    return json.load(input_file)
-                except Exception as load_input_file_except:
-                    utils.print_error_log('Load Json {} failed, {}'.format(
-                        json_file_path, str(load_input_file_except)))
-                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR)
-        except IOError as input_file_open_except:
-            utils.print_error_log('Failed to open"' + json_file_path + '", ' + str(input_file_open_except))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
-
     def _get_data_input_desc(self):
         input_desc_list = []
         for operator in self._gen_operator_list():
@@ -124,100 +230,12 @@ class OmParser(object):
                         input_desc_list.append(item)
         return input_desc_list
 
-    def get_net_output_count(self):
-        """
-        Get net output count
-        """
-        count = 0
-        is_dynamic_scenario, dym_arg = self.get_dynamic_scenario_info()
-        if not is_dynamic_scenario or dym_arg is DynamicArgumentEnum.DYM_SHAPE:
-            op_iterator = self._gen_operator_list()
-        else:
-            op_iterator = self._gen_operator_list_from_subgraph()
-        for operator in op_iterator:
-            if NET_OUTPUT_OBJECT == operator.get(TYPE_OBJECT) and INPUT_DESC_OBJECT in operator:
-                count += len(operator.get(INPUT_DESC_OBJECT))
-        return count
-
-    def get_atc_cmdline(self):
-        for attr in self.json_object.get(ATTR_OBJECT):
-            if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == ATC_CMDLINE_OBJECT:
-                if VALUE_OBJECT in attr and S_OBJECT in attr.get(VALUE_OBJECT):
-                    return attr.get(VALUE_OBJECT).get(S_OBJECT)
-        return ''
-
-    @staticmethod
-    def _get_prefix(input_obj):
-        return input_obj.split(':')[0]
-
     def _parse_special_op_attr(self):
         special_op_attr = {}
         for operator in self._gen_operator_list():
             if operator.get(TYPE_OBJECT) in SPECIAL_OPS_TYPE:
                 special_op_attr[operator.get(NAME_OBJECT)] = operator.get(INPUT_OBJECT)
         return special_op_attr
-
-    def get_expect_net_output_name(self):
-        """
-        Get the expected output tensor corresponding to Net_output.
-        """
-        expect_net_output_name = {}
-        net_output_names = []
-        if ATTR_OBJECT not in self.json_object:
-            return expect_net_output_name
-        for attr in self.json_object.get(ATTR_OBJECT):
-            if not (KEY_OBJECT in attr and attr.get(KEY_OBJECT) == OUT_NODES_NAME):
-                continue
-            if not (VALUE_OBJECT in attr and LIST_OBJECT in attr.get(VALUE_OBJECT)):
-                continue
-            list_object = attr.get(VALUE_OBJECT).get(LIST_OBJECT)
-            if S_OBJECT in list_object:
-                net_output_names = list_object.get(S_OBJECT)
-        for item, output_name in enumerate(net_output_names):
-            expect_net_output_name[item] = output_name
-        return expect_net_output_name
-
-    @staticmethod
-    def _parse_net_output_node_attr(operator):
-        net_output_info = {}
-        if INPUT_DESC_OBJECT in operator:
-            input_index = 0
-            for input_object in operator.get(INPUT_DESC_OBJECT):
-                shape = []
-                data_type = DTYPE_MAP.get(input_object.get(DTYPE_OBJECT))
-                if not input_object.get(SHAPE_OBJECT):
-                    # no shape info, assumed to be scalar
-                    net_output_info[input_index] = [data_type, [1]]
-                    continue
-                for num in input_object.get(SHAPE_OBJECT).get(DIM_OBJECT):
-                    shape.append(num)
-                net_output_info[input_index] = [data_type, shape]
-                input_index += 1
-        return net_output_info
-
-    def get_net_output_data_info(self, dump_data_path):
-        """
-        get_net_output_data_info
-        """
-        net_output_list = []
-        for operator in self._gen_operator_list():
-            if NET_OUTPUT_OBJECT == operator.get(TYPE_OBJECT):
-                net_output_list.append(operator)
-        if len(net_output_list) == 1:
-            return self._parse_net_output_node_attr(net_output_list[0])
-        # if it's dynamic batch scenario, the net output node should be identified by batch index
-        _, scenario = self.get_dynamic_scenario_info()
-        if scenario in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
-            if not dump_data_path:
-                for operator in net_output_list:
-                    return  self._parse_net_output_node_attr(operator)
-            cur_batch_index = utils.get_batch_index(dump_data_path)
-            for operator in net_output_list:
-                batch_index_in_operator = utils.get_batch_index_from_name(operator.get(NAME_OBJECT))
-                if cur_batch_index == batch_index_in_operator:
-                    return self._parse_net_output_node_attr(operator)
-        utils.print_error_log("get npu output node info failed.")
-        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR)
 
     def _is_input_shape_range(self):
         if ATTR_OBJECT not in self.json_object:
@@ -240,6 +258,7 @@ class OmParser(object):
                     if len(list_i) != 2:
                         continue
                     shape_list.append(list(range(list_i[0], list_i[1] + 1)))
+        return
 
     def _get_range_shape_size_list(self, input_object):
         range_shape_size_list = []
@@ -269,7 +288,7 @@ class OmParser(object):
                 continue
             data_type = DTYPE_MAP.get(input_object.get(DTYPE_OBJECT))
             if not data_type:
-                utils.print_error_log(
+                utils.logger.error(
                     "The dtype attribute does not support {} value.".format(input_object[DTYPE_OBJECT]))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_KEY_ERROR)
             data_type_size = np.dtype(data_type).itemsize
@@ -283,10 +302,3 @@ class OmParser(object):
                     item_sum *= num
                 value.append(item_sum * data_type_size)
         return value
-
-    def get_dynamic_scenario_info(self):
-        atc_cmd = self.get_atc_cmdline()
-        for dym_arg in DynamicArgumentEnum:
-            if dym_arg.value.atc_arg in atc_cmd:
-                return True, dym_arg
-        return False, None
