@@ -42,28 +42,28 @@ class BuildExt(build_ext):
             self.compiler.compiler_so.remove('-Wstrict-prototypes')
         super().build_extensions()
 
-cann_base_path = None
+CANN_BASE_PATH = None
 
 
 def get_cann_path():
-    global cann_base_path
+    global CANN_BASE_PATH
     set_env_path = os.getenv("CANN_PATH", "")
     atlas_nnae_path = "/usr/local/Ascend/nnae/latest/"
     atlas_toolkit_path = "/usr/local/Ascend/ascend-toolkit/latest/"
     hisi_fwk_path = "/usr/local/Ascend/"
     check_file_path = "runtime/lib64/stub/libascendcl.so"
     if os.path.exists(os.path.join(set_env_path, check_file_path)):
-        cann_base_path = set_env_path
+        CANN_BASE_PATH = set_env_path
     elif os.path.exists(atlas_nnae_path+check_file_path):
-        cann_base_path = atlas_nnae_path
+        CANN_BASE_PATH = atlas_nnae_path
     elif os.path.exists(atlas_toolkit_path+check_file_path):
-        cann_base_path = atlas_toolkit_path
+        CANN_BASE_PATH = atlas_toolkit_path
     elif os.path.exists(hisi_fwk_path+check_file_path):
-        cann_base_path = hisi_fwk_path
+        CANN_BASE_PATH = hisi_fwk_path
 
-    if cann_base_path is None:
+    if CANN_BASE_PATH is None:
         raise RuntimeError('error find no cann path')
-    print("find cann path:", cann_base_path)
+    print("find cann path:", CANN_BASE_PATH)
 
 get_cann_path()
 
@@ -93,9 +93,9 @@ ext_modules = [
             'python/include/',
             'base/include/',
             'base/include/Base/ModelInfer/',
-            f'{cann_base_path}/runtime/include',
+            f'{CANN_BASE_PATH}/runtime/include',
         ],
-        library_dirs = [f'{cann_base_path}/runtime/lib64/stub/', ],
+        library_dirs = [f'{CANN_BASE_PATH}/runtime/lib64/stub/', ],
 
         extra_compile_args = ['--std=c++11', '-g3'],
 
