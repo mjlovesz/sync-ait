@@ -123,10 +123,10 @@ Options:
 
 Commands:
   analyze
+  benchmark
   debug
   profile
   transplt
-  benchmark
 ```
 
 ```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare;benchmark、analyze、transplt任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子类任务列表：
