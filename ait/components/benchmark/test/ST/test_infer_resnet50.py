@@ -951,9 +951,9 @@ class TestClass():
 
         try:
             ret = os.system(cmd)
-            assert ret != 0
         except Exception as e:
             logger.info("some case run failure")
+        assert ret != 0
 
         run_count, result_ok_num, shape_status = self.get_dynamic_shape_range_mode_inference_result_info(log_path)
         assert run_count == len(dymshapes)
@@ -1232,10 +1232,10 @@ class TestClass():
         for i in range(loop):
             try:
                 session = InferSession(device_id, model_path)
-                del session
             except Exception as e:
                 logger.info("session finalize {} time, exception: {}".format(i + 1, e))
                 exception_num += 1
+            del session
 
         assert exception_num == 0
 
