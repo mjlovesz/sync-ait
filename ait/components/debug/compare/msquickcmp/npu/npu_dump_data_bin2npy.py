@@ -48,6 +48,7 @@ def _check_data_convert_file(convert_dir_path):
     if not os.path.exists(convert_dir_path):
         os.makedirs(convert_dir_path)
         return convert_dir_path
+    return
 
 
 def _check_convert_bin2npy(arguments):
