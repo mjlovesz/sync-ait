@@ -27,13 +27,12 @@
 
 #include <iostream>
 
-using namespace std;
 #define FILELINE __FILE__, __FUNCTION__, __LINE__
-#define LogDebug  cout  // LOG(INFO)   // VLOG_EVERY_N(Base::LOG_LEVEL_DEBUG, Base::Log::logFlowControlFrequency_)
-#define LogInfo   cout       // LOG(INFO)        //LOG_EVERY_N(INFO, Base::Log::logFlowControlFrequency_)
-#define LogWarn   cout  // LOG(WARNING)    //LOG_EVERY_N(WARNING, Base::Log::logFlowControlFrequency_)
-#define LogError  cout     // LOG(ERROR)    // LOG_EVERY_N(ERROR, Base::Log::logFlowControlFrequency_)
-#define LogFatal  cout      // LOG(FATAL)    //LOG_EVERY_N(FATAL, Base::Log::logFlowControlFrequency_)
+#define LogDebug  std::cout  // LOG(INFO)   // VLOG_EVERY_N(Base::LOG_LEVEL_DEBUG, Base::Log::logFlowControlFrequency_)
+#define LogInfo   std::cout       // LOG(INFO)        //LOG_EVERY_N(INFO, Base::Log::logFlowControlFrequency_)
+#define LogWarn   std::cout  // LOG(WARNING)    //LOG_EVERY_N(WARNING, Base::Log::logFlowControlFrequency_)
+#define LogError  std::cout     // LOG(ERROR)    // LOG_EVERY_N(ERROR, Base::Log::logFlowControlFrequency_)
+#define LogFatal  std::cout      // LOG(FATAL)    //LOG_EVERY_N(FATAL, Base::Log::logFlowControlFrequency_)
 
 #define LOG_DEBUG_LEVEL 1
 #define LOG_INFO_LEVEL 2

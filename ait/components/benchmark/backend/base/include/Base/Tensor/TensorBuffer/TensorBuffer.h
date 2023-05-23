@@ -36,9 +36,9 @@ enum TensorBufferCopyType {
 class TensorBuffer {
 public:
     TensorBuffer() {}
-    TensorBuffer(uint32_t size, MemoryData::MemoryType type, int32_t deviceId) 
+    TensorBuffer(uint32_t size, MemoryData::MemoryType type, int32_t deviceId)
         : size(size), type(type), deviceId(deviceId) {}
-    TensorBuffer(uint32_t size, int32_t deviceId) 
+    TensorBuffer(uint32_t size, int32_t deviceId)
         : size(size), deviceId(deviceId) {}
     TensorBuffer(uint32_t size) : size(size) {}
     TensorBuffer(void *ptr, uint32_t size) : size(size)

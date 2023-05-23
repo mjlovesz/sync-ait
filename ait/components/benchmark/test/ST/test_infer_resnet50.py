@@ -1350,7 +1350,7 @@ class TestClass():
         log_path = os.path.join(output_path, "profiler.log")
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
 
-        # GE_PROFILIGN_TO_STD_OUT=0
+        # when GE_PROFILIGN_TO_STD_OUT=0
         env_label = os.getenv('GE_PROFILIGN_TO_STD_OUT', 'null')
         if env_label != 'null':
             del os.environ['GE_PROFILIGN_TO_STD_OUT']
@@ -1373,7 +1373,7 @@ class TestClass():
         else:
             assert label_is_exist is False
 
-        # GE_PROFILIGN_TO_STD_OUT=1
+        # when GE_PROFILIGN_TO_STD_OUT=1
         os.environ['GE_PROFILIGN_TO_STD_OUT'] = "1"
         label_is_exist = False
         os.remove(log_path)
