@@ -67,18 +67,6 @@ class KnowledgeBase(object):
             return True
         return False
 
-    def _register_apply_funcs(self, pattern: Pattern, apply_funcs: ApplyFuncs) -> bool:
-        '''
-        注册pattern的apply方法
-        '''
-        if not isinstance(pattern, Pattern) or \
-                not isinstance(apply_funcs, List):
-            return False
-        if not all(callable(func) for func in apply_funcs):
-            return False
-        self._pattern_apply_dict[pattern].extend(apply_funcs)
-        return True
-
     def next_pattern(self) -> Optional[Pattern]:
         if not self.has_next_pattern():
             return None
@@ -229,3 +217,15 @@ class KnowledgeBase(object):
         if self._apply_idx < len(apply_methods):
             return apply_methods[self._apply_idx]
         return None
+    
+    def _register_apply_funcs(self, pattern: Pattern, apply_funcs: ApplyFuncs) -> bool:
+        '''
+        注册pattern的apply方法
+        '''
+        if not isinstance(pattern, Pattern) or \
+                not isinstance(apply_funcs, List):
+            return False
+        if not all(callable(func) for func in apply_funcs):
+            return False
+        self._pattern_apply_dict[pattern].extend(apply_funcs)
+        return True
