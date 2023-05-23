@@ -3,7 +3,11 @@ package com.ascend.ait.ide.optimizie.ui.step;
 import com.ascend.ait.ide.Icons;
 import com.ascend.ait.ide.util.LocalExectorService;
 import com.ascend.ait.ide.util.FileChooseWithBrows;
+import com.huawei.mindstudio.exception.CommandInjectException;
+import com.huawei.mindstudio.output.OutputService;
+import com.huawei.mindstudio.util.safe.CmdExec;
 import com.huawei.mindstudio.util.safe.CmdStrBuffer;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
@@ -213,7 +217,27 @@ public class ais_bench_basic extends DialogWrapper {
     @Override
     protected void doOKAction() {
         LocalExectorService localExectorService = new LocalExectorService(project);
+        OutputService.getInstance(project).print("testeeee");
+        OutputService.getInstance(project).print(modelFileTextField.getText());
+        OutputService.getInstance(project).print(textField1.getText());
 
+        CmdStrBuffer cmdStrBuffer = new CmdStrBuffer();
+        cmdStrBuffer.append("dir");
+        OutputService.getInstance(project).print(cmdStrBuffer.toString());
+        CmdExec exec = new CmdExec();
+        try {
+            exec.bashStart(cmdStrBuffer);
+            OutputService.getInstance(project).print("TEST", ConsoleViewContentType.LOG_INFO_OUTPUT);
+            String execRec = exec.getResult();
+            if (execRec != null) {
+                OutputService.getInstance(project).print(execRec, ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+            }
+            OutputService.getInstance(project).print("error", ConsoleViewContentType.LOG_ERROR_OUTPUT);
+        } catch (CommandInjectException | IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return;
     }
 
 }

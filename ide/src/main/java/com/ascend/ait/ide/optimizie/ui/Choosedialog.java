@@ -2,6 +2,8 @@ package com.ascend.ait.ide.optimizie.ui;
 
 import com.ascend.ait.ide.optimizie.ui.step.aisStepController;
 import com.ascend.ait.ide.optimizie.ui.step.ais_bench_basic;
+import com.huawei.mindstudio.output.OutputFactory;
+import com.huawei.mindstudio.output.OutputService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.IconLoader;
 
@@ -45,6 +47,8 @@ public class Choosedialog extends JFrame {
         ModelTest.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                OutputService.getInstance(project).active();
+                OutputFactory.show(project);
                 ais_bench_basic basic = new ais_bench_basic(project);
                 basic.show();
             }
