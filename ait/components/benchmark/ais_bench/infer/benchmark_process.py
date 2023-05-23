@@ -396,9 +396,9 @@ def multidevice_run(args):
     if (args.input is not None):
         splits = seg_input_data_for_multi_process(args, args.input, jobs)
 
-    for i, _ in enumerate(len(device_list)):
+    for i, device in enumerate(device_list):
         cur_args = copy.deepcopy(args)
-        cur_args.device = int(device_list[i])
+        cur_args.device = int(device)
         if args.energy_consumption:
             cur_args.npu_id = int(npu_id_list[i])
         cur_args.input = None if splits is None else list(splits)[i]
