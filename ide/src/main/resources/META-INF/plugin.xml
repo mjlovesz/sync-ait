@@ -27,8 +27,9 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.ascend.ait.ide.filetype.AitFileEditorProvider"/>
+        <projectService serviceImplementation="com.huawei.mindstudio.output.OutputService"/>
+        <toolWindow factoryClass="com.huawei.mindstudio.output.OutputFactory" id="Output" order="first" doNotActivateOnStart="true"/>
     </extensions>
-
 
     <actions>
         <action id="HelloWorld" class="com.ascend.ait.ide.action.AitAction" text="HelloWorld"

@@ -60,7 +60,9 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
     private static final String DARCULA = "Darcula";
 
     private static final String DARK = "Dark";
+    private static final String Output_NORMAL = "Normal";
 
+    private static final String Output_Detail = "Detail";
     private static ConsoleView console;
 
     private static ConsoleView details;
@@ -187,7 +189,7 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
         JComponent component = console.getComponent();
         DefaultActionGroup consoleActions = new DefaultActionGroup();
         for (AnAction anAction : console.createConsoleActions()) {
-            consoleActions.add(getConsoleAction(consoleActions));
+            consoleActions.add(getConsoleAction(anAction));
         }
 
         ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar(ActionPlaces.TOOLBAR,
@@ -196,6 +198,22 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
 
         JPanel consolePanel = new JPanel(new BorderLayout());
         consolePanel.add(actionToolbar.getComponent(), BorderLayout.WEST);
+        consolePanel.add(component, BorderLayout.CENTER);
+
+        final ContentManager contentManager = toolWindow.getContentManager();
+        consoleContent = contentManager.getFactory().createContent(consolePanel, Output_NORMAL, true);
+        consoleContent.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
+        setContentTheme(consoleContent);
+        contentManager.addContent(consoleContent);
+        normalConsoleViewmap.put(project, console);
+
+
+        details = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
+        detailsContent = contentManager.getFactory().createContent(consolePanel, Output_Detail, true);
+        detailsContent.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
+        setContentTheme(detailsContent);
+        contentManager.addContent(detailsContent);
+        detailConsoleViewmap.put(project, details);
 
     }
 
