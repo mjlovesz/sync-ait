@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ from auto_optimizer.graph_refactor.interface.base_node import BaseNode
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.matcher import MatchResult
-from auto_optimizer.pattern.pattern import MATCH_PATTERN, MatchBase, Pattern
+from auto_optimizer.pattern.pattern import MatchPattern, MatchBase, Pattern
 from auto_optimizer.pattern.utils import NextNodeCount
 
 # when certain conditions are met, tr/bn/tr structure
@@ -68,12 +68,14 @@ class KnowledgeBNFolding(KnowledgeBase):
             .add_node('tr1', ['Transpose']) \
             .add_edge('tr0', 'bn0') \
             .add_edge('bn0', 'tr1') \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE)
+            .set_loop(MatchPattern.MATCH_ONCE)
         self._register_apply_funcs(self.pattern_, [self._apply])
 
     def _constant_folding(self, scale: NDArray, bias: NDArray, mean: NDArray,
                           var: NDArray, epsilon: float,) -> Tuple[NDArray, NDArray]:
         common_divisor = np.sqrt(var + epsilon)
+        if common_divisor.any() == 0:
+            raise ValueError('ZeroDivision Error: common divisor == 0')
         mul_init = scale / common_divisor
         add_init = bias - scale * mean / common_divisor
         return mul_init, add_init

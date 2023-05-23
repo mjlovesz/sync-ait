@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -27,17 +27,20 @@ from helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_c2_concat_model(onnx_name, x, y, z, diff_axis=False):
-    X = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
-    Y = helper.make_tensor_value_info("Y", TensorProto.FLOAT, y.shape)
-    Z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, z.shape)
+    input_x = helper.make_tensor_value_info("X", TensorProto.FLOAT, x.shape)
+    input_y = helper.make_tensor_value_info("Y", TensorProto.FLOAT, y.shape)
+    input_z = helper.make_tensor_value_info("Z", TensorProto.FLOAT, z.shape)
 
-    O = helper.make_tensor_value_info("O", TensorProto.FLOAT, None)
+    input_o = helper.make_tensor_value_info("O", TensorProto.FLOAT, None)
 
     axis = 1 if diff_axis else 0
     node_concat0 = helper.make_node("Concat", ["X", "Y"], ["X_S"], "Concat0", axis=0)
     node_concat1 = helper.make_node("Concat", ["X_S", "Z"], ["O"], "Concat1", axis=axis)
 
-    graph = helper.make_graph([node_concat0, node_concat1], "continue_concat_test", [X, Y, Z], [O])
+    graph = helper.make_graph(
+        [node_concat0, node_concat1], "continue_concat_test",
+        [input_x, input_y, input_z], [input_o]
+    )
     model = helper.make_model(graph)
 
     del model.opset_import[:]

@@ -1,10 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Function:
 This class is used to generate GUP dump data of the ONNX model.
-Copyright Information:
-Huawei Technologies Co., Ltd. All Rights Reserved © 2021
 """
 import sys
 import time
@@ -49,9 +60,24 @@ class OnnxDumpData(DumpData):
     """
 
     def __init__(self, arguments):
+        super().__init__()
         self.args = arguments
         self.input_shapes = utils.parse_input_shape(self.args.input_shape)
         self.net_output = {}
+
+    @staticmethod
+    def _check_input_shape_fix_value(op_name, model_shape, input_shape):
+        message = "fixed input tensor dim not equal to model input dim." \
+                  "tensor_name:%s, %s vs %s" % (op_name, str(input_shape), str(model_shape))
+        if len(model_shape) != len(input_shape):
+            utils.logger.error(message)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+        for index, value in enumerate(model_shape):
+            if value is None or isinstance(value, str):
+                continue
+            if input_shape[index] != value:
+                utils.logger.error(message)
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
     def _create_dir(self):
         # create input directory
@@ -76,7 +102,7 @@ class OnnxDumpData(DumpData):
 
     def _modify_model_add_outputs_nodes(self, model_dir):
         old_onnx_model = onnx.load(self.args.model_path)
-        utils.print_info_log("load model success")
+        utils.logger.info("load model success")
         for index, node in enumerate(old_onnx_model.graph.node):
             if not node.name:
                 node.name = node.op_type + "_" + str(index)
@@ -94,7 +120,7 @@ class OnnxDumpData(DumpData):
                         new_onnx_model_path,
                         save_as_external_data=save_as_external_data_switch,
                         location=model_dir if save_as_external_data_switch else None)
-        utils.print_info_log("modify model outputs success")
+        utils.logger.info("modify model outputs success")
 
         return old_onnx_model, new_onnx_model_path
 
@@ -111,7 +137,7 @@ class OnnxDumpData(DumpData):
             tensor_shape = tuple(input_item.shape)
             if utils.check_dynamic_shape(tensor_shape):
                 if not self.input_shapes:
-                    utils.print_error_log(
+                    utils.logger.error(
                         "The dynamic shape {} are not supported. Please "
                         "set '-s' or '--input-shape' to fix the dynamic shape.".format(tensor_shape))
                     raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
@@ -119,17 +145,17 @@ class OnnxDumpData(DumpData):
                 input_shape = self.input_shapes.get(tensor_name)
                 try:
                     number_shape = [int(dim) for dim in input_shape]
-                except (ValueError, TypeError):
-                    utils.print_error_log(utils.get_shape_not_match_message(
+                except (ValueError, TypeError) as error:
+                    utils.logger.error(utils.get_shape_not_match_message(
                         InputShapeError.FORMAT_NOT_MATCH, self.args.input_shape))
-                    raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+                    raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR) from error
                 self._check_input_shape_fix_value(tensor_name, tensor_shape, number_shape)
                 tensor_info = {"name": tensor_name, "shape": tuple(number_shape), "type": tensor_type}
-                utils.print_info_log("Fix dynamic input shape of %s to %s" % (tensor_name, number_shape))
+                utils.logger.info("Fix dynamic input shape of %s to %s" % (tensor_name, number_shape))
             else:
                 tensor_info = {"name": tensor_name, "shape": tensor_shape, "type": tensor_type}
             inputs_tensor_info.append(tensor_info)
-        utils.print_info_log("model inputs tensor info:\n{}\n".format(inputs_tensor_info))
+        utils.logger.info("model inputs tensor info:\n{}\n".format(inputs_tensor_info))
         return inputs_tensor_info
 
     def _get_inputs_data(self, data_dir, inputs_tensor_info):
@@ -141,12 +167,12 @@ class OnnxDumpData(DumpData):
                 inputs_map[tensor_info["name"]] = input_data
                 file_name = "input_" + str(i) + ".bin"
                 input_data.tofile(os.path.join(data_dir, file_name))
-                utils.print_info_log("save input file name: {}, shape: {}, dtype: {}".format(
+                utils.logger.info("save input file name: {}, shape: {}, dtype: {}".format(
                     file_name, input_data.shape, input_data.dtype))
         else:
             input_path = self.args.input_path.split(",")
             if len(inputs_tensor_info) != len(input_path):
-                utils.print_error_log("the number of model inputs tensor_info is not equal the number of "
+                utils.logger.error("the number of model inputs tensor_info is not equal the number of "
                                       "inputs data, inputs tensor_info is: {}, inputs data is: {}".format(
                     len(inputs_tensor_info), len(input_path)))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
@@ -154,7 +180,7 @@ class OnnxDumpData(DumpData):
                 input_data = np.fromfile(input_path[i], self._convert_to_numpy_type(tensor_info["type"])).reshape(
                     tensor_info["shape"])
                 inputs_map[tensor_info["name"]] = input_data
-                utils.print_info_log("load input file name: {}, shape: {}, dtype: {}".format(
+                utils.logger.info("load input file name: {}, shape: {}, dtype: {}".format(
                     os.path.basename(input_path[i]), input_data.shape, input_data.dtype))
         return inputs_map
 
@@ -163,7 +189,7 @@ class OnnxDumpData(DumpData):
         if numpy_data_type:
             return numpy_data_type
         else:
-            utils.print_error_log(
+            utils.logger.error(
                 "unsupported tensor type: {}".format(tensor_type))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_TENSOR_TYPE_ERROR)
 
@@ -188,32 +214,8 @@ class OnnxDumpData(DumpData):
                 np.save(file_path, dump_bins[res_idx])
                 res_idx += 1
         for key, value in self.net_output.items():
-            utils.print_info_log("net_output node is:{}, file path is {}".format(key, value))
-        utils.print_info_log("dump data success")
-
-    @staticmethod
-    def _check_input_shape_fix_value(op_name, model_shape, input_shape):
-        message = "fixed input tensor dim not equal to model input dim." \
-                  "tensor_name:%s, %s vs %s" % (op_name, str(input_shape), str(model_shape))
-        if len(model_shape) != len(input_shape):
-            utils.print_error_log(message)
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
-        for index, value in enumerate(model_shape):
-            if value is None or isinstance(value, str):
-                continue
-            if input_shape[index] != value:
-                utils.print_error_log(message)
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
-
-    def _get_net_output_node(self):
-        """
-        get net output name
-        """
-        net_output_node = []
-        session = self._load_session(self.args.model_path)
-        for output_item in session.get_outputs():
-            net_output_node.append(output_item.name)
-        return net_output_node
+            utils.logger.info("net_output node is:{}, file path is {}".format(key, value))
+        utils.logger.info("dump data success")
 
     def generate_dump_data(self):
         """
@@ -235,6 +237,16 @@ class OnnxDumpData(DumpData):
         dump_bins = self._run_model(session, inputs_map)
         self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
         return onnx_dump_data_dir
+
+    def _get_net_output_node(self):
+        """
+        get net output name
+        """
+        net_output_node = []
+        session = self._load_session(self.args.model_path)
+        for output_item in session.get_outputs():
+            net_output_node.append(output_item.name)
+        return net_output_node
 
     def get_net_output_info(self):
         """
