@@ -38,9 +38,10 @@ class DatasetBase(object):
         label_path = cfg["label_path"]
         try:
             real_dataset = os.path.realpath(dataset_path)
-
-            real_label = os.path.realpath(label_path)
-
-            return real_dataset, real_label
         except Exception as err:
             raise RuntimeError("get params failed error={}".format(err)) from err
+        try:
+            real_label = os.path.realpath(label_path)
+        except Exception as err:
+            raise RuntimeError("get params failed error={}".format(err)) from err
+        return real_dataset, real_label
