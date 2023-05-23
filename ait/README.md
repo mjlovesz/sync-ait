@@ -9,7 +9,7 @@
 - [免责声明](#免责声明)
 
 ## 介绍
-AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体化开发工具，支持一站式调试调优，当前包括debug、profile、analyze等组件。
+AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体化开发工具，支持一站式调试调优，当前包括debug、profile、benchmark、transplt、analyze等组件。
 
 ### AIT各子功能介绍
 - ait benchmark: 用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延）。（[快速入门指南](docs/benchmark/README.md)）
@@ -43,15 +43,15 @@ ait推理工具的安装包括**ait包**和**依赖的组件包**的安装，其
 
 ```shell
 git clone https://gitee.com/ascend/ait.git
-cd ait
+cd ait/ait
 
 # 添加执行权限
 chmod u+x install.sh
 
-# 安装ait，包括debug、profile组件
+# 安装ait，包括debug、profile、benchmark、transplt、analyze组件
 ./install.sh
 
-# 重新安装ait及其debug、profile组件
+# 重新安装ait及其debug、profile、benchmark、transplt、analyze组件
 ./install.sh --force-reinstall
 
 ```
@@ -60,13 +60,13 @@ chmod u+x install.sh
 
 ```shell
 git clone https://gitee.com/ascend/ait.git
-cd ait
+cd ait/ait
 
 # 1. install ait pkg
 pip3 install . --force-reinstall
 
 # 2. install compare pkg
-cd ait/components/debug/compare
+cd components/debug/compare
 pip3 install . --force-reinstall
 
 # 3. install surgeon pkg
@@ -78,17 +78,17 @@ cd ../../benchmark
 
 # 4.1 构建aclruntime包
 pip3 wheel ./backend/ -v
-# 4.3 构建ais_bench推理程序包
+# 4.2 构建ais_bench推理程序包
 pip3 wheel ./ -v
 
 
-# 4.2 安装aclruntime
-pip3 install ./aclruntime-{version}-{python_version}-linux_{arch}.whl
-# 4.3 安装ais_bench推理程序
-pip3 install ./ais_bench-{version}-py3-none-any.whl
+# 4.3 安装aclruntime
+pip3 install ./aclruntime-*.whl
+# 4.4 安装ais_bench推理程序
+pip3 install ./ais_bench-*-py3-none-any.whl
 
 # 5. install analyze pkg
-cd ../../analyze
+cd ../analyze
 pip3 install . --force-reinstall
 
 # 6. install transplt pkg
@@ -103,7 +103,7 @@ pip3 install . --force-reinstall
 ait工具可通过ait可执行文件方式启动，若安装工具时未提示Python的HATH变量问题，或手动将Python安装可执行文件的目录加入PATH变量，则可以直接使用如下命令格式：
 
 ```bash
-# debug, profile
+# debug, benchmark
 ait <TASK> <SUB_TASK> [OPT] [ARGS]
 
 # analyze
@@ -111,7 +111,7 @@ ait <TASK> [OPT] [ARGS]
 ```
 
 
-其中，```<TASK>```为任务类型，当前支持debug、profile、analyze，后续可能会新增其他任务类型，可以通过如下方式查看当前支持的任务列表：
+其中，```<TASK>```为任务类型，当前支持debug、profile、benchmark、transplt、analyze，后续可能会新增其他任务类型，可以通过如下方式查看当前支持的任务列表：
 
 ```bash
 
@@ -123,12 +123,13 @@ Options:
 
 Commands:
   analyze
+  benchmark
   debug
   profile
   transplt
 ```
 
-```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare，在profile任务下面，有benchmark，analyze、transplt任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子类任务列表：
+```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare;benchmark、analyze、transplt任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子类任务列表：
 
 1、debug任务支持的功能示例：
 
@@ -144,19 +145,6 @@ Commands:
   surgeon  main entrance of auto optimizer.
 ```
 
-2、profile任务支持的功能示例：
-
-```bash
-ait profile -h
-Usage: ait profile [OPTIONS] COMMAND [ARGS]...
-
-Options:
-  -h, --help  Show this message and exit.
-
-Commands:
-  benchmark  Inference tool to get performance data including latency and
-             throughput
-```
 
 ```[OPT]```和```[ARGS]```为可选项以及参数，每个任务下面的可选项和参数都不同，以debug任务下面的compare子任务为例，可以通过如下方式获取
 
@@ -191,7 +179,8 @@ Options:
   --dump STR2BOOL              <Optional> Whether to dump all the operations
                                ouput. Default True.
   --convert STR2BOOL           <Optional> Enable npu dump data conversion from
-                               bin to npy after compare.
+                               bin to npy after compare.Clarify --convert True
+                               when using
   -h, --help                   Show this message and exit.
 
 ```
@@ -212,8 +201,8 @@ ait debug surgeon -h
 
 更多使用方式和示例请参考：[surgeon examples](examples/cli/debug/surgeon/)
 
-### profile任务使用说明
-#### 1. benchmark子任务使用说明
+
+### benchmark任务使用说明
 ```bash
 ait benchmark -h
 ```

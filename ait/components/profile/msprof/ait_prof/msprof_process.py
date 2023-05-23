@@ -35,7 +35,7 @@ def msprof_run_profiling(args, msprof_bin):
                                                                    args.sys_pid_profiling, args.dvpp_profiling,
                                                                    args.runtime_api, args.task_time, args.aicpu)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
-    ret = subprocess.run(msprof_cmd)
+    ret = os.system(msprof_cmd)
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
 
 
