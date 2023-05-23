@@ -17,9 +17,9 @@ import stat
 import pytest
 import click
 
-from compare.msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
-from compare.msquickcmp.cmp_process import cmp_process
-from compare.msquickcmp.common import utils
+from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
+from msquickcmp.cmp_process import cmp_process
+from msquickcmp.common import utils
 
 
 @pytest.fixture(scope="module", autouse=True)
