@@ -17,25 +17,25 @@ import stat
 import pytest
 import click
 
-from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
-from msquickcmp.cmp_process import cmp_process
-from msquickcmp.common import utils
+from compare.msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
+from compare.msquickcmp.cmp_process import cmp_process
+from compare.msquickcmp.common import utils
 
 
 @pytest.fixture(scope="module", autouse=True)
 def compare_cli() -> None:
-    cmp_args = CmpArgsAdapter(gold_model="tmp/fake.onnx", 
+    cmp_args = CmpArgsAdapter(gold_model="tmp/fake.onnx",
                               om_model="tmp/fake.onnx",
-                              input_data_path = "", 
-                              cann_path="/usr/local/Ascend/ascend-toolkit/latest/", 
-                              out_path="", 
+                              input_data_path = "",
+                              cann_path="/usr/local/Ascend/ascend-toolkit/latest/",
+                              out_path="",
                               input_shape="",
                               device=0,
-                              output_size="", 
-                              output_nodes="", 
-                              advisor=False, 
-                              dym_shape_range="", 
-                              dump=True, 
+                              output_size="",
+                              output_nodes="",
+                              advisor=False,
+                              dym_shape_range="",
+                              dump=True,
                               bin2npy=False)
     yield cmp_args
 
