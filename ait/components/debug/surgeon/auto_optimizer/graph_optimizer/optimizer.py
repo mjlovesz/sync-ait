@@ -91,7 +91,7 @@ class GraphOptimizer:
         if cfg.is_static:
             input_ = [
                 np.random.randn(*inp.shape)
-                         .astype(tensor_type_to_numpy_type[inp.datatype])
+                         .astype(tensor_type_to_numpy_type.get(inp.datatype, np.float32))
                 for inp in sess_ori.get_inputs()
             ]
             out_ori = sess_ori.infer(input_)

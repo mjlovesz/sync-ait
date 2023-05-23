@@ -50,13 +50,24 @@ class InferEngine():
     def _get_engine(engine):
         try:
             dataset = DatasetFactory.get_dataset(engine["dataset"]["type"])
+        except Exception as err:
+            raise RuntimeError("get params failed error=%s", err) from err
+        try:
             pre_process = PreProcessFactory.get_pre_process(engine["pre_process"]["type"])
+        except Exception as err:
+            raise RuntimeError("get params failed error=%s", err) from err
+        try:
             post_process = PostProcessFactory.get_post_process(engine["post_process"]["type"])
+        except Exception as err:
+            raise RuntimeError("get params failed error=%s", err) from err
+        try:
             inference = InferenceFactory.get_inference(engine["inference"]["type"])
+        except Exception as err:
+            raise RuntimeError("get params failed error=%s", err) from err
+        try:
             evaluate = EvaluateFactory.get_evaluate(engine["evaluate"]["type"])
         except Exception as err:
             raise RuntimeError("get params failed error=%s", err) from err
-
         return dataset, pre_process, post_process, inference, evaluate
 
     def inference(self, cfg):
