@@ -54,10 +54,13 @@
 
 ## 启动方式一：命令行启动
 - 安装
-    1. 下载electron: https://registry.npmmirror.com/binary.html?path=electron/24.3.1/
-        * linux 下载 electron-v24.3.1-linux-x64.zip 或 electron-v24.3.1-linux-arm64.zip
-        * windows 下载 electron-v24.3.1-win32-x64.zip 或 electron-v24.3.1-win32-arm64.zip
-    2. zip解压之后，将解压路径配置到环境变量的PATH中 
+    1. 方式1：
+        1. 下载electron: https://registry.npmmirror.com/binary.html?path=electron/24.1.3/
+            * linux 下载 electron-v24.1.3-linux-x64.zip 或 electron-v24.1.3-linux-arm64.zip
+            * windows 下载 electron-v24.1.3-win32-x64.zip 或 electron-v24.1.3-win32-arm64.zip
+        2. zip解压之后，将解压路径配置到环境变量的PATH中 
+    2. 方式2：
+        直接 `npm install` , npm是NodeJS的包管理器。如果遇到electron 无法安装失败问题，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85) 
 - 运行（常用于调试开发）
   ```bash
   cd ait/onnx-modifier
@@ -67,9 +70,9 @@
 ## 启动方式二：编译成可执行程序启动
 
 - 安装
-  编译环境对网络要求较高
+  编译环境对网络要求较高, 如果遇到electron 无法安装失败问题，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85) 
   ```bash
-  npm install  # npm是node的包管理器；如果electron 下载较慢，建议使用国内代理
+  npm install  # npm是NodeJS的包管理器；
   ```
 - 编译
   ```bash
