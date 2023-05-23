@@ -64,6 +64,9 @@ class Config:
         """
         try:
             format_path = format_to_module(file_name)
+        except Exception as err:
+            raise RuntimeError("invalid read file error={}".format(err)) from err
+        try:
             model_dict = Register.import_module(format_path)
         except Exception as err:
             raise RuntimeError("invalid read file error={}".format(err)) from err
