@@ -16,7 +16,7 @@ from app_analyze.common.kit_config import KitConfig
 
 
 def is_acc_path(file):
-    acc_paths = list(KitConfig.INCLUDES.values())
+    acc_paths = KitConfig.INCLUDES.values()
     return any(file.startswith(p) for p in acc_paths)
 
 
