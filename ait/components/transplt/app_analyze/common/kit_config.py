@@ -99,9 +99,10 @@ class KitConfig:
     EXCEPT_API = ['']
 
     # API映射表，文件名第一个'_'前为加速库名；内部工作表/Sheet名以'-APIMap'结尾，其他工作表会被忽略。
+    API_MAP_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'config'))
     API_MAP = {
-        OPENCV: '../config/mxBase_API_MAP.xlsx',
-        CUDA: '../config/ACL_API_MAP.xlsx',
+        OPENCV: f'{API_MAP_FOLDER}/mxBase_API_MAP.xlsx',
+        CUDA: f'{API_MAP_FOLDER}/ACL_API_MAP.xlsx',
     }
 
     CUDA_HOME = os.environ.get('CUDA_HOME', INCLUDES.get(CUDA, None))
