@@ -12,6 +12,7 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
 pure_infer_fake_file = "pure_infer_data"
 padding_infer_fake_file = "padding_infer_fake_file"
 
+
 def convert_real_files(files):
     real_files = [ ]
     for file in files:
@@ -25,6 +26,7 @@ def convert_real_files(files):
             real_files.append(file)
     return real_files
 
+
 def get_pure_infer_data(size, pure_data_type):
     lst = []
     if pure_data_type == "random":
@@ -37,6 +39,7 @@ def get_pure_infer_data(size, pure_data_type):
     barray = bytearray(lst)
     ndata = np.frombuffer(barray, dtype=np.uint8)
     return ndata
+
 
 # get numpy array from files list combile all files
 def get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tensor_mode=False):
@@ -63,11 +66,13 @@ def get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tens
             raise RuntimeError()
         return ndata
 
+
 # get tensors from files list combile all files
 def get_tensor_from_files_list(files_list, session, size, pure_data_type, no_combine_tensor_mode=False):
     ndata = get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tensor_mode)
     tensor = session.create_tensor_from_arrays_to_device(ndata)
     return tensor
+
 
 # Obtain filesperbatch runcount information according to file information and input description information
 # The strategy is as follows:  Judge according to the realsize and file size of input 0. If the judgment fails,
@@ -91,6 +96,7 @@ def get_files_count_per_batch(intensors_desc, fileslist, no_combine_tensor_mode=
         filesize, tensorsize, files_count_per_batch, runcount))
     return files_count_per_batch, runcount
 
+
 # Obtain tensor information and files information according to the input filelist. Create intensor form files list
 # len(files_list) should equal len(intensors_desc)
 def create_infileslist_from_fileslist(fileslist, intensors_desc, no_combine_tensor_mode=False):
@@ -111,6 +117,7 @@ def create_infileslist_from_fileslist(fileslist, intensors_desc, no_combine_tens
         infileslist.append(infiles)
     return infileslist
 
+
 #  outapi. Obtain tensor information and files information according to the input filelist.
 #  Create intensor form files list
 def create_intensors_from_infileslist(infileslist, intensors_desc, session,
@@ -123,6 +130,7 @@ def create_intensors_from_infileslist(infileslist, intensors_desc, session,
             intensors.append(tensor)
         intensorslist.append(intensors)
     return intensorslist
+
 
 def check_input_parameter(inputs_list, intensors_desc):
     if len(inputs_list) == 0:
@@ -175,6 +183,7 @@ def create_infileslist_from_inputs_list(inputs_list, intensors_desc, no_combine_
         raise RuntimeError()
 
     return infileslist
+
 
 def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index, output_batchsize_axis):
     files_count_perbatch = len(infiles_paths[0])
