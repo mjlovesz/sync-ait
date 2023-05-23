@@ -105,13 +105,16 @@ def create_infileslist_from_fileslist(fileslist, intensors_desc, no_combine_tens
     for i in range(runcount):
         infiles = []
         for j in range(len(intensors_desc)):
-            logger.debug("create infileslist i:{} j:{} runcount:{} lists:{} filesPerPatch:{}".format(i, j, runcount, files_perbatch_list[j][i], files_count_per_batch))
+            logger.debug("create infileslist i:{} j:{} runcount:{} lists:{} filesPerPatch:{}" \
+                         .format(i, j, runcount, files_perbatch_list[j][i], files_count_per_batch))
             infiles.append(files_perbatch_list[j][i])
         infileslist.append(infiles)
     return infileslist
 
-#  outapi. Obtain tensor information and files information according to the input filelist. Create intensor form files list
-def create_intensors_from_infileslist(infileslist, intensors_desc, session, pure_data_type, no_combine_tensor_mode=False):
+#  outapi. Obtain tensor information and files information according to the input filelist.
+#  Create intensor form files list
+def create_intensors_from_infileslist(infileslist, intensors_desc, session,
+                                      pure_data_type, no_combine_tensor_mode=False):
     intensorslist = []
     for i, infiles in enumerate(infileslist):
         intensors = []

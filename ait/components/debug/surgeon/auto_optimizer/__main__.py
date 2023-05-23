@@ -123,6 +123,7 @@ def evaluate_onnx(
         return []
     return applied_knowledges
 
+
 class FormatMsg:
     def show(self, file=None) -> None:
         logger.error(self.format_message())
