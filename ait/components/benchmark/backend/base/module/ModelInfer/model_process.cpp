@@ -427,7 +427,7 @@ Result ModelProcess::CheckDynamicDims(vector<string> dym_dims, size_t gearCount,
         }
     }
 
-    if(! if_same) {
+    if (!if_same) {
         ERROR_LOG("the dynamic_dims parameter is not correct");
         GetDimInfo(gearCount, dims);
         return FAILED;
