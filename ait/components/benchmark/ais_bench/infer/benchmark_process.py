@@ -14,17 +14,17 @@ from tqdm import tqdm
 
 from ais_bench.infer.interface import InferSession, MemorySummary
 from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
-                                    create_intensors_from_infileslist,
-                                    get_narray_from_files_list,
-                                    get_tensor_from_files_list,
-                                    convert_real_files,
-                                    pure_infer_fake_file, save_tensors_to_file)
+                                          create_intensors_from_infileslist,
+                                          get_narray_from_files_list,
+                                          get_tensor_from_files_list,
+                                          convert_real_files,
+                                          pure_infer_fake_file, save_tensors_to_file)
 from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
 from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
 from ais_bench.infer.utils import (get_file_content, get_file_datasize,
-                            get_fileslist_from_dir, list_split, logger,
-                            save_data_to_files)
+                                   get_fileslist_from_dir, list_split, logger,
+                                   save_data_to_files)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 
 
@@ -61,7 +61,7 @@ def set_session_options(session, args):
         raise RuntimeError('aipp model without aipp config!')
     elif (aipp_input_exsity > 1):
         logger.error("don't support more than one dynamic aipp input in model, amount of aipp input is {}"
-                        .format(aipp_input_exsity))
+                     .format(aipp_input_exsity))
         raise RuntimeError('aipp model has more than 1 aipp input!')
     elif (aipp_input_exsity == -1):
         raise RuntimeError('aclmdlGetAippType failed!')
@@ -83,26 +83,26 @@ def init_inference_session(args):
 
 
 def set_dymshape_shape(session, inputs):
-    l = []
+    lst = []
     intensors_desc = session.get_inputs()
-    for i, input in enumerate(inputs):
-        str_shape = [ str(shape) for shape in input.shape ]
+    for i, input_ in enumerate(inputs):
+        str_shape = [str(shape) for shape in input_.shape]
         dyshape = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
-        l.append(dyshape)
-    dyshapes = ';'.join(l)
+        lst.append(dyshape)
+    dyshapes = ';'.join(lst)
     logger.debug("set dymshape shape:{}".format(dyshapes))
     session.set_dynamic_shape(dyshapes)
     summary.add_batchsize(inputs[0].shape[0])
 
 
 def set_dymdims_shape(session, inputs):
-    l = []
+    lst = []
     intensors_desc = session.get_inputs()
-    for i, input in enumerate(inputs):
-        str_shape = [ str(shape) for shape in input.shape ]
+    for i, input_ in enumerate(inputs):
+        str_shape = [str(shape) for shape in input_.shape]
         dydim = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
-        l.append(dydim)
-    dydims = ';'.join(l)
+        lst.append(dydim)
+    dydims = ';'.join(lst)
     logger.debug("set dymdims shape:{}".format(dydims))
     session.set_dynamic_dims(dydims)
     summary.add_batchsize(inputs[0].shape[0])
@@ -113,10 +113,16 @@ def warmup(session, args, intensors_desc, infiles):
     infeeds = []
     for j, files in enumerate(infiles):
         if args.run_mode == "tensor":
-            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
+            tensor = get_tensor_from_files_list(
+                files, session, intensors_desc[j].realsize,
+                args.pure_data_type, args.no_combine_tensor_mode
+            )
             infeeds.append(tensor)
         else:
-            narray = get_narray_from_files_list(files, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
+            narray = get_narray_from_files_list(
+                files, intensors_desc[j].realsize,
+                args.pure_data_type, args.no_combine_tensor_mode
+            )
             infeeds.append(narray)
     session.set_loop_count(1)
     # warmup
@@ -146,12 +152,18 @@ def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_pre
     for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference tensor Processing')):
         intensors = []
         for j, files in enumerate(infiles):
-            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize, args.pure_data_type, args.no_combine_tensor_mode)
+            tensor = get_tensor_from_files_list(
+                files, session, intensors_desc[j].realsize,
+                args.pure_data_type, args.no_combine_tensor_mode
+            )
             intensors.append(tensor)
         outputs = run_inference(session, args, intensors)
         session.convert_tensors_to_host(outputs)
         if output_prefix is not None:
-            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
+            save_tensors_to_file(
+                outputs, output_prefix, infiles,
+                args.outfmt, i, args.output_batchsize_axis
+            )
 
 
 # files to loop iner
@@ -165,15 +177,21 @@ def infer_loop_files_run(session, args, intensors_desc, infileslist, output_pref
         outputs = run_inference(session, args, intensors)
         session.convert_tensors_to_host(outputs)
         if output_prefix is not None:
-            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
+            save_tensors_to_file(
+                outputs, output_prefix, infiles,
+                args.outfmt, i, args.output_batchsize_axis
+            )
 
 
 # First prepare the data, then execute the reference, and then write the file uniformly
 def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix):
     outtensors = []
-    intensorslist = create_intensors_from_infileslist(infileslist, intensors_desc, session, args.pure_data_type, args.no_combine_tensor_mode)
+    intensorslist = create_intensors_from_infileslist(
+        infileslist, intensors_desc, session,
+        args.pure_data_type, args.no_combine_tensor_mode
+    )
 
-    #for inputs in intensorslist:
+    # for inputs in intensorslist:
     for inputs in tqdm(intensorslist, file=sys.stdout, desc='Inference Processing full'):
         outputs = run_inference(session, args, inputs)
         outtensors.append(outputs)
@@ -181,7 +199,10 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_pre
     for i, outputs in enumerate(outtensors):
         session.convert_tensors_to_host(outputs)
         if output_prefix is not None:
-            save_tensors_to_file(outputs, output_prefix, infileslist[i], args.outfmt, i, args.output_batchsize_axis)
+            save_tensors_to_file(
+                outputs, output_prefix, infileslist[i],
+                args.outfmt, i, args.output_batchsize_axis
+            )
 
 
 # loop numpy array to infer
@@ -194,13 +215,19 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
         outputs = run_inference(session, args, innarrays)
         session.convert_tensors_to_host(outputs)
         if args.output is not None:
-            save_tensors_to_file(outputs, output_prefix, infiles, args.outfmt, i, args.output_batchsize_axis)
+            save_tensors_to_file(
+                outputs, output_prefix, infiles,
+                args.outfmt, i, args.output_batchsize_axis
+            )
 
 
 def msprof_run_profiling(args, msprof_bin):
     cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
-    msprof_cmd="{} --output={}/profiler --application=\"{}\" --model-execution=on --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
-        msprof_bin, args.output, cmd)
+    msprof_cmd = "{} --output={}/profiler --application=\"{}\" --model-execution=on " \
+                 "--sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off " \
+                 "--sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on".format(
+                    msprof_bin, args.output, cmd
+    )
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
     ret = os.system(msprof_cmd)
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
@@ -263,14 +290,14 @@ def main(args, index=0, msgq=None, device_list=None):
     # create infiles list accord inputs list
     if len(inputs_list) == 0:
         # Pure reference scenario. Create input zero data
-        infileslist = [[ [ pure_infer_fake_file ] for index in intensors_desc ]]
+        infileslist = [[[pure_infer_fake_file] for index in intensors_desc]]
     else:
         infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
 
     warmup(session, args, intensors_desc, infileslist[0])
 
     if msgq is not None:
-		# wait subprocess init ready, if time eplapsed,force ready run
+        # wait subprocess init ready, if time eplapsed,force ready run
         logger.info("subprocess_{} qsize:{} now waiting".format(index, msgq.qsize()))
         msgq.put(index)
         time_sec = 0
@@ -312,9 +339,10 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
     if args.energy_consumption:
         logger.info("npu_id {} energy_consumption {}".format(args.npu_id, (float(end_energy_consumption) -
-                    float(start_energy_consumption)) * (end_time - start_time)))
+                                                                           float(start_energy_consumption)) * (
+                                                                         end_time - start_time)))
     if msgq is not None:
-		# put result to msgq
+        # put result to msgq
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
 
     session.finalize()
@@ -333,8 +361,8 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
     if os.path.isfile(inputs_list[0]) is True:
         fileslist = inputs_list
     elif os.path.isdir(inputs_list[0]):
-        for dir in inputs_list:
-            fileslist.extend(get_fileslist_from_dir(dir))
+        for dir_ in inputs_list:
+            fileslist.extend(get_fileslist_from_dir(dir_))
     else:
         logger.error('error {} not file or dir'.format(inputs_list[0]))
         raise RuntimeError()
@@ -344,7 +372,7 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
     intensors_desc = session.get_inputs()
     chunks_elements = math.ceil(len(fileslist) / len(intensors_desc))
     chunks = list(list_split(fileslist, chunks_elements, None))
-    fileslist = [ [] for e in range(jobs) ]
+    fileslist = [[] for e in range(jobs)]
     for i, chunk in enumerate(chunks):
         splits_elements = math.ceil(len(chunk) / jobs)
         splits = list(list_split(chunk, splits_elements, None))
@@ -366,10 +394,10 @@ def multidevice_run(args):
     args.subprocess_count = len(device_list)
     jobs = args.subprocess_count
     splits = None
-    if (args.input != None):
+    if args.input is not None:
         splits = seg_input_data_for_multi_process(args, args.input, jobs)
 
-    for i in range(len(device_list)):
+    for i, _ in enumerate(device_list):
         cur_args = copy.deepcopy(args)
         cur_args.device = int(device_list[i])
         if args.energy_consumption:
@@ -379,7 +407,7 @@ def multidevice_run(args):
 
     p.close()
     p.join()
-    result  = 0 if 2 * len(device_list) == msgq.qsize() else 1
+    result = 0 if 2 * len(device_list) == msgq.qsize() else 1
     logger.info("multidevice run end qsize:{} result:{}".format(msgq.qsize(), result))
     tlist = []
     while msgq.qsize() != 0:
@@ -402,7 +430,7 @@ def args_rules(args):
         raise RuntimeError('miss output parameter!')
 
     # 判断--aipp_config 文件是否是存在的.config文件
-    if (args.aipp_config is not None):
+    if args.aipp_config is not None:
         if (os.path.splitext(args.aipp_config)[-1] == ".config"):
             if (os.path.isfile(args.aipp_config) is not True):
                 logger.error("can't find the path of config file, please check it!")
@@ -421,12 +449,13 @@ def args_rules(args):
         args.warmup_count = 0
 
     if args.output is None and args.output_dirname is not None:
-        logger.error("parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
+        logger.error(
+            "parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
         raise RuntimeError('error bad parameters --output_dirname')
     return args
 
 
-def benchmark_process(args:BenchMarkArgsAdapter):
+def benchmark_process(args: BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
 

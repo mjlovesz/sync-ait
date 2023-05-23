@@ -1,8 +1,8 @@
 import os
 import sys
 import json
-import numpy as np
 import itertools
+import numpy as np
 
 from ais_bench.infer.utils import logger
 

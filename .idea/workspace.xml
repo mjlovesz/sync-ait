@@ -5,9 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="3863cbb3-304e-4dd2-b94a-df23f7fdf109" name="Changes" comment="#cleancode">
-      <change beforePath="$PROJECT_DIR$/ait/components/__main__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/__main__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/analyze/compatibility/acl_analysis/src/analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/analyze/compatibility/acl_analysis/src/analysis.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/analyze/compatibility/acl_analysis/src/knowledge.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/analyze/compatibility/acl_analysis/src/knowledge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/benchmark/ais_bench/infer/__main__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/benchmark/ais_bench/infer/__main__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/benchmark/ais_bench/infer/benchmark_process.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/benchmark/ais_bench/infer/benchmark_process.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/benchmark/ais_bench/infer/miscellaneous.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/benchmark/ais_bench/infer/miscellaneous.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
