@@ -41,6 +41,6 @@ class DatasetBase(object):
 
             real_label = os.path.realpath(label_path)
 
-            return real_dataset, real_label
         except Exception as err:
             raise RuntimeError("get params failed error={}".format(err)) from err
+        return real_dataset, real_label
