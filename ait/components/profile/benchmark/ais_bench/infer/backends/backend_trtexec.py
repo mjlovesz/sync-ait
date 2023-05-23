@@ -1,3 +1,18 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+
 from __future__ import annotations
 
 import os
@@ -14,7 +29,7 @@ from ais_bench.infer.backends.backend import AccuracyResult, PerformanceStats, P
 class TrtexecConfig(object):
     def __init__(self):
         self.iterations = None
-        self.warmUp = None
+        self.warmup = None
         self.duration = None
         self.batch = None
         self.device = None
@@ -42,13 +57,13 @@ class BackendTRTExec(backend.Backend):
         return "plan"
 
     def convert_config(self, config):
-        if config.loop != None:
+        if config.loop is not None:
             self.config.iterations = config.loop
-        if config.warmup_count != None:
+        if config.warmup_count is not None:
             self.config.warmup_count = config.warmup_count
-        if config.batchsize != None:
+        if config.batchsize is not None:
             self.config.batch = config.batchsize
-        if config.device != None:
+        if config.device is not None:
             self.config.device = config.device
 
     def load(
@@ -111,15 +126,15 @@ class BackendTRTExec(backend.Backend):
             f"--onnx={self.model_path}",
             f"--fp16",
         ]
-        if self.config.duration != None:
+        if self.config.duration is not None:
             command.append(f"--duration={self.config.duration}")
-        if self.config.device != None:
+        if self.config.device is not None:
             command.append(f"--device={self.config.device}")
-        if self.config.iterations != None:
+        if self.config.iterations is not None:
             command.append(f"--iterations={self.config.iterations}")
-        if self.config.warmUp != None:
-            command.append(f"--warmUp={self.config.warmUp}")
-        if self.config.batch != None:
+        if self.config.warmup is not None:
+            command.append(f"--warmUp={self.config.warmup}")
+        if self.config.batch is not None:
             command.append(f"--batch={self.config.batch}")
 
         logger.info("Trtexec Build command: " + " ".join(command))

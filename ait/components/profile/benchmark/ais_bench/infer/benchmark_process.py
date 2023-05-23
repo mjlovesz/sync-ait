@@ -400,6 +400,7 @@ def args_rules(args):
         raise RuntimeError('error bad parameters --output_dirname')
     return args
 
+
 def backend_run(args):
     backend_class = BackendFactory.create_backend(args.backend)
     backend = backend_class(args)
@@ -408,13 +409,14 @@ def backend_run(args):
     perf = backend.get_perf()
     logger.info("perf info:{}".format(perf))
 
+
 def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
 
-    if args.perf == True:
+    if args.perf is True:
         backend_run(args)
-        exit(0)
+        return 0
 
     if args.profiler is True:
         # try use msprof to run
