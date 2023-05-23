@@ -1,22 +1,22 @@
-# Copyright 2023 Huawei Technologies Co. Ltd.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
-# Licensed under Apache Licenses, version 2.0 (the "License")
-# you may not use the file except in compliance with the License
-# you may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-# https://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for specific language governing permissions and
+# See the License for the specific language governing permissions and
 # limitations under the License.
 
 import copy
 import numpy as np
 
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from auto_optimizer.pattern.pattern import MATCH_PATTERN
+from auto_optimizer.pattern.pattern import MatchPattern
 from auto_optimizer.pattern.pattern import MatchBase
 from auto_optimizer.pattern.pattern import Pattern
 from auto_optimizer.pattern.matcher import MatchResult
@@ -55,8 +55,8 @@ class KnowledgeModifyReflectionPad(KnowledgeBase):
         super().__init__()
         self.reflection_pad_op_pattern = Pattern() \
             .add_node('reflection_operator', ['Pad'], [ReflectionPadOpMatch()]) \
-            .set_node_loop('reflection_operator', MATCH_PATTERN.MATCH_ONCE) \
-            .set_loop(MATCH_PATTERN.MATCH_ONCE)
+            .set_node_loop('reflection_operator', MatchPattern.MATCH_ONCE) \
+            .set_loop(MatchPattern.MATCH_ONCE)
 
         self._register_apply_funcs(self.reflection_pad_op_pattern, [self._modify_reflection_pad_apply])
 
@@ -77,7 +77,6 @@ class KnowledgeModifyReflectionPad(KnowledgeBase):
 
         if func_option == 0:  # slice op params
             slice_params = [
-                # [start, end, axes, step]
                 [1, 1 + padding, 2, 1], [-1 - padding, -1, 2, 1],
                 [1, 1 + padding, 3, 1], [-1 - padding, -1, 3, 1]
             ]

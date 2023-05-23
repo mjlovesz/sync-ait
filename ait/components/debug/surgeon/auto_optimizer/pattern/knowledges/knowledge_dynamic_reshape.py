@@ -1,4 +1,4 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2022. All rights reserved.
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ import numpy as np
 import logging
 
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from auto_optimizer.pattern.pattern import Pattern, MATCH_PATTERN, MatchBase
+from auto_optimizer.pattern.pattern import Pattern, MatchPattern, MatchBase
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.graph_refactor.interface.base_graph import (BaseGraph, Initializer, Node)
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode
@@ -55,7 +55,7 @@ class KnowledgeDynamicReshape(KnowledgeBase):
 
         pattern = Pattern() \
             .add_node('Reshape', ['Reshape'], [DynamicReshapeMatch()]) \
-            .set_node_loop('Reshape', MATCH_PATTERN.MATCH_ONCE)
+            .set_node_loop('Reshape', MatchPattern.MATCH_ONCE)
         self._register_apply_funcs(pattern, [self._optimize_apply])
 
         # inference config
@@ -247,21 +247,14 @@ class KnowledgeDynamicReshape(KnowledgeBase):
                 in_dim = tmp_dim
                 continue
             if dim == in_dim:
-                # the dim has no change
-                #                (-1, 0, 32)
-                # (bs, len, 256) -----------> (8*bs, len, 32)
                 shape[dim] = 0
             elif dim < in_dim:
-                #                  (-1, 1, 0, 32)                     Squeeze
-                # (bs, 8, len, 32) --------------> (8*bs, 1, len, 32) -------> (8*bs, len, 32)
                 shape[dim] = 0
                 while dim < in_dim:
                     shape.insert(dim, 1)
                     insert.get('squeeze').append(dim)
                     dim += 1
             else:
-                #                 Unsqueeze                     (-1, 8, 0, 32)
-                # (8*bs, len, 32) ---------> (8*bs, 1, len, 32) --------------> (bs, 8, len, 32)
                 shape[dim] = 0
                 insert.get('unsqueeze').append(in_dim)
             # compute next dimension

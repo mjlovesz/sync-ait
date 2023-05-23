@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -89,13 +89,47 @@ class Node(BaseNode):
     def __hash__(self) -> int:
         return super().__hash__()
 
-    @classmethod
-    def parse(cls, _) -> 'Node':
-        raise NotImplementedError()
+    def __getitem__(self, key: str) -> object:
+        if key not in self._attrs:
+            raise KeyError(
+                f'Node({self.name}) do not have {key} attribute.')
+        return self._attrs.get(key)
+
+    def __setitem__(self, key: str, value: object) -> None:
+        if key not in self._attrs:
+            warnings.warn(
+                f'Node({self.name}) do not have {key} attribute.')
+        self._attrs[key] = value
+
+    def __str__(self) -> str:
+        return f'Node({self.name}): \n\tinputs={self.inputs}\n\toutputs={self.outputs}\n\tattrs = {self.attrs}\n'
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
     @property
     def inputs(self) -> List[str]:
         return self._inputs
+
+    @property
+    def outputs(self) -> List[str]:
+        return self._outputs
+
+    @property
+    def attrs(self) -> Dict[str, object]:
+        return self._attrs
+
+    @property
+    def domain(self) -> str:
+        return self._domain
+
+    @classmethod
+    def parse(cls, _) -> 'Node':
+        raise NotImplementedError()
+
+    @domain.setter
+    def domain(self, domain: str) -> None:
+        self._domain = domain
 
     @inputs.setter
     def inputs(self, inputs: List[str]) -> None:
@@ -110,10 +144,6 @@ class Node(BaseNode):
     def get_input_ids(self, node_input: str) -> List[int]:
         return [idx for idx, name in enumerate(self._inputs) if name == node_input]
 
-    @property
-    def outputs(self) -> List[str]:
-        return self._outputs
-
     @outputs.setter
     def outputs(self, outputs: List[str]) -> None:
         self._outputs = outputs
@@ -123,36 +153,6 @@ class Node(BaseNode):
             raise RuntimeError(
                 f'Name of output should be one of {self._outputs}')
         return self._outputs.index(output)
-
-    @property
-    def attrs(self) -> Dict[str, object]:
-        return self._attrs
-
-    def __getitem__(self, key: str) -> object:
-        if key not in self._attrs:
-            raise KeyError(
-                f'Node({self.name}) do not have {key} attribute.')
-        return self._attrs[key]
-
-    def __setitem__(self, key: str, value: object) -> None:
-        if key not in self._attrs:
-            warnings.warn(
-                f'Node({self.name}) do not have {key} attribute.')
-        self._attrs[key] = value
-
-    @property
-    def domain(self) -> str:
-        return self._domain
-    
-    @domain.setter
-    def domain(self, domain: str) -> None:
-        self._domain = domain
-
-    def __str__(self) -> str:
-        return f'Node({self.name}): \n\tinputs={self.inputs}\n\toutputs={self.outputs}\n\tattrs = {self.attrs}\n'
-
-    def __repr__(self) -> str:
-        return self.__str__()
 
 
 class Initializer(BaseNode):
@@ -181,23 +181,23 @@ class Initializer(BaseNode):
     def __hash__(self) -> int:
         return super().__hash__()
 
-    @classmethod
-    def parse(cls, _) -> 'Initializer':
-        raise NotImplementedError()
-
-    @property
-    def value(self) -> np.ndarray:
-        return self._value
-
-    @value.setter
-    def value(self, value: np.ndarray) -> None:
-        self._value = value
-
     def __str__(self) -> str:
         return f'{self.op_type}({self.name}): (shape={self._value.shape}, dtype={self._value.dtype})\n'
 
     def __repr__(self) -> str:
         return self.__str__()
+
+    @property
+    def value(self) -> np.ndarray:
+        return self._value
+
+    @classmethod
+    def parse(cls, _) -> 'Initializer':
+        raise NotImplementedError()
+
+    @value.setter
+    def value(self, value: np.ndarray) -> None:
+        self._value = value
 
 
 class PlaceHolder(BaseNode):
@@ -229,30 +229,30 @@ class PlaceHolder(BaseNode):
     def __hash__(self) -> int:
         return super().__hash__()
 
-    @classmethod
-    def parse(cls, _) -> 'PlaceHolder':
-        raise NotImplementedError()
+    def __str__(self) -> str:
+        return f'{self.op_type}({self.name}): (shape={self.shape}, dtype={self.dtype})\n'
+
+    def __repr__(self) -> str:
+        return self.__str__()
 
     @property
     def dtype(self) -> np.dtype:
         return self._dtype
 
-    @dtype.setter
-    def dtype(self, dtype: np.dtype) -> None:
-        self._dtype = dtype
-
     @property
     def shape(self) -> Sequence[Union[str, int]]:
         return self._shape
+
+    @classmethod
+    def parse(cls, _) -> 'PlaceHolder':
+        raise NotImplementedError()
+
+    @dtype.setter
+    def dtype(self, dtype: np.dtype) -> None:
+        self._dtype = dtype
 
     @shape.setter
     def shape(self, shape: Sequence[Union[str, int]]) -> None:
         if -1 in shape:
             warnings.warn('To represent the dynamic dimension int -1 is converted to str "-1".')
         self._shape = ['-1' if dim == -1 else dim for dim in shape]
-
-    def __str__(self) -> str:
-        return f'{self.op_type}({self.name}): (shape={self.shape}, dtype={self.dtype})\n'
-
-    def __repr__(self) -> str:
-        return self.__str__()

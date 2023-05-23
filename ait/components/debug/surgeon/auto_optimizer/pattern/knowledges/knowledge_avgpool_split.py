@@ -1,4 +1,4 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2022. All rights reserved.
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@ import copy
 import numpy as np
 
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from auto_optimizer.pattern.pattern import Pattern, MATCH_PATTERN, MatchBase
+from auto_optimizer.pattern.pattern import Pattern, MatchPattern, MatchBase
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.graph_refactor.interface.base_graph import (BaseGraph, Node)
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode
@@ -57,7 +57,7 @@ class KnowledgeAvgPoolSplit(KnowledgeBase):
 
         pattern = Pattern() \
             .add_node('AvgPool', ['AveragePool'], [OpMatch()]) \
-            .set_node_loop('AvgPool', MATCH_PATTERN.MATCH_ONCE)
+            .set_node_loop('AvgPool', MatchPattern.MATCH_ONCE)
         self._register_apply_funcs(pattern, [self._optimize_apply])
 
     def _calculate_mini_factor(self, n):

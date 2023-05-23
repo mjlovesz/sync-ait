@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -66,7 +66,9 @@ def check_file_exist(file, msg='file "{}" does not exist'):
         raise FileNotFoundError(msg.format(file))
 
 
-def dump_op_outputs(graph, input_data, dump_path, outputs=[]):
+def dump_op_outputs(graph, input_data, dump_path, outputs=None):
+    outputs = outputs or []
+
     def _run(model, input_data):
         sess = rt.InferenceSession(model)
         inputs = [ipt.name for ipt in sess.get_inputs()]
@@ -79,8 +81,7 @@ def dump_op_outputs(graph, input_data, dump_path, outputs=[]):
 
     ori_model = graph.model()
     if len(outputs) == 0:
-        outputs = [
-            name for name in enumerate_model_node_outputs(ori_model)]
+        outputs = [name for name in enumerate_model_node_outputs(ori_model)]
     new_model = select_model_inputs_outputs(ori_model, outputs)
     new_model_byte = new_model.SerializeToString()
     arrs = _run(new_model_byte, input_data)
@@ -88,15 +89,21 @@ def dump_op_outputs(graph, input_data, dump_path, outputs=[]):
     if not os.path.exists(dump_path):
         os.makedirs(dump_path, mode=0o700)
     for node in ori_model.graph.node:
-        for i, output in enumerate(node.output):
+        for i, _ in enumerate(node.output):
             fname = f'{node.name}_{i}.npy'
             np.save(os.path.join(dump_path, fname), arrs[idx])
             idx += 1
 
 
 def cosine_similarity(mat0: NDArray, mat1: NDArray) -> float:
-    m0 = np.ndarray.flatten(mat0) / norm(mat0)
-    m1 = np.ndarray.flatten(mat1) / norm(mat1)
+    try:
+        m0 = np.ndarray.flatten(mat0) / norm(mat0)
+    except ZeroDivisionError as err:
+        raise RuntimeError("get ZeroDivisionError when calc cosine_similarity") from err
+    try:
+        m1 = np.ndarray.flatten(mat1) / norm(mat1)
+    except ZeroDivisionError as err:
+        raise RuntimeError("get ZeroDivisionError when calc cosine_similarity") from err
     return np.dot(m0, m1)
 
 
@@ -111,8 +118,11 @@ def meet_precision(lmat: NDArray, rmat: NDArray, cos_th: float, atol: float, rto
         rmat /= 2
     lnorm, rnorm = norm(lmat), norm(rmat)
     # normal cases we check cosine distance and norm closeness
-    return 1 - cosine_similarity(lmat, rmat) <= cos_th \
-        and bool(np.isclose(rnorm, lnorm, atol=atol, rtol=rtol))
+    try:
+        return 1 - cosine_similarity(lmat, rmat) <= cos_th \
+            and bool(np.isclose(rnorm, lnorm, atol=atol, rtol=rtol))
+    except RuntimeError as err:
+        raise RuntimeError("Failed to calc meet_precision") from err
 
 
 def check_output_model_path(output_model_path):
