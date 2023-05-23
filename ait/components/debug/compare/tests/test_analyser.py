@@ -54,12 +54,12 @@ def fake_csv():
         os.remove(test_csv_file_name)
 
 
-def test_analyser_init_given_valid_file_when_any_then_pass(fake_csv):
-    aa = analyser.Analyser(fake_csv)
+def test_analyser_init_given_valid_file_when_any_then_pass(fake_csv_file):
+    aa = analyser.Analyser(fake_csv_file)
 
 
-def test_analyser_init_given_valid_folder_when_any_then_pass(fake_csv):
-    aa = analyser.Analyser(os.path.dirname(fake_csv))
+def test_analyser_init_given_valid_folder_when_any_then_pass(fake_csv_file):
+    aa = analyser.Analyser(os.path.dirname(fake_csv_file))
 
 
 def test_analyser_init_given_invalid_when_any_then_fail():
@@ -73,8 +73,8 @@ def test_analyser_init_given_invalid_when_any_then_fail():
         aa = analyser.Analyser("not_exists_test_csv.csv")
 
 
-def test_analyser_call_given_valid_when_overall_then_pass(fake_csv):
-    aa = analyser.Analyser(fake_csv)
+def test_analyser_call_given_valid_when_overall_then_pass(fake_csv_file):
+    aa = analyser.Analyser(fake_csv_file)
     results, monitors = aa()
 
     assert len(results) == 1
@@ -82,8 +82,8 @@ def test_analyser_call_given_valid_when_overall_then_pass(fake_csv):
     assert monitors == [["CosineSimilarity", "RelativeEuclideanDistance"]]
 
 
-def test_analyser_call_given_valid_when_eash_then_pass(fake_csv):
-    aa = analyser.Analyser(fake_csv)
+def test_analyser_call_given_valid_when_eash_then_pass(fake_csv_file):
+    aa = analyser.Analyser(fake_csv_file)
     results, monitors = aa(strategy=analyser.STRATEGIES.FIRST_INVALID_EACH)
 
     assert len(results) == 3
@@ -94,14 +94,14 @@ def test_analyser_call_given_valid_when_eash_then_pass(fake_csv):
     assert monitors[2] == ["KullbackLeiblerDivergence"]
 
 
-def test_analyser_call_strategy_given_invalid_when_any_then_fail(fake_csv):
-    aa = analyser.Analyser(fake_csv)
+def test_analyser_call_strategy_given_invalid_when_any_then_fail(fake_csv_file):
+    aa = analyser.Analyser(fake_csv_file)
     with pytest.raises(ValueError):
         aa(strategy=42)
 
 
-def test_analyser_call_max_column_len_given_invalid_when_any_then_fail(fake_csv):
-    aa = analyser.Analyser(fake_csv)
+def test_analyser_call_max_column_len_given_invalid_when_any_then_fail(fake_csv_file):
+    aa = analyser.Analyser(fake_csv_file)
     with pytest.raises(TypeError):
         aa(max_column_len="foo")
 

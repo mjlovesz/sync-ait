@@ -99,15 +99,16 @@ class KitConfig:
     EXCEPT_API = ['']
 
     # API映射表，文件名第一个'_'前为加速库名；内部工作表/Sheet名以'-APIMap'结尾，其他工作表会被忽略。
+    API_MAP_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'config'))
     API_MAP = {
-        OPENCV: './config/mxBase_API_MAP.xlsx',
-        CUDA: './config/ACL_API_MAP.xlsx',
+        OPENCV: f'{API_MAP_FOLDER}/mxBase_API_MAP.xlsx',
+        CUDA: f'{API_MAP_FOLDER}/ACL_API_MAP.xlsx',
     }
 
-    CUDA_HOME = os.environ.get('CUDA_HOME', INCLUDES[CUDA])
+    CUDA_HOME = os.environ.get('CUDA_HOME', INCLUDES.get(CUDA, None))
     # C++加速库模式匹配:
     # 格式如下，第0/1/2可为list，第1/2用于分析基于CUDA加速的接口。
-    # [namespace, cuda_include, cuda_namespace, lib_name]
+    # namespace, cuda_include, cuda_namespace, lib_name
     #
     # cuda使能头文件示例：
     # OpenCV-CUDA：

@@ -1,16 +1,29 @@
 #!/usr/bin/env python
 # coding=utf-8
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 """
 Function:
 This class mainly involves generate npu dump data function.
-Copyright Information:
-HuaWei Technologies Co.,Ltd. All Rights Reserved © 2021
 """
 import json
+import sys
 import os
+import stat
 import re
 import numpy as np
-import sys
+
 
 from msquickcmp.common import utils
 from msquickcmp.common.dump_data import DumpData
@@ -34,12 +47,6 @@ class DynamicInput(object):
         self.om_parser = om_parser
         self.atc_dynamic_arg, self.cur_dynamic_arg = self.get_dynamic_arg_from_om(om_parser)
         self.dynamic_arg_value = self.get_arg_value(om_parser, arguments)
-
-    def add_dynamic_arg_for_benchmark(self, benchmark_cmd: list):
-        if self.is_dynamic_shape_scenario():
-            self.check_input_dynamic_arg_valid()
-            benchmark_cmd.append(self.cur_dynamic_arg.value.benchmark_arg)
-            benchmark_cmd.append(self.dynamic_arg_value)
 
     @staticmethod
     def get_dynamic_arg_from_om(om_parser):
@@ -65,7 +72,7 @@ class DynamicInput(object):
     def get_arg_value(om_parser, arguments):
         is_dynamic_scenario, scenario = om_parser.get_dynamic_scenario_info()
         if not is_dynamic_scenario:
-            utils.print_info_log("The input of model is not dynamic.")
+            utils.logger.info("The input of model is not dynamic.")
             return ""
         if om_parser.shape_range or scenario == DynamicArgumentEnum.DYM_DIMS:
             return getattr(arguments, DynamicArgumentEnum.DYM_SHAPE.value.msquickcmp_arg)
@@ -76,13 +83,13 @@ class DynamicInput(object):
         quickcmp_input_shape_dict = utils.parse_input_shape(arguments.input_shape)
         batch_size_set = set()
         for op_name in atc_input_shape_dict.keys():
-            DynamicInput.get_dynamic_dim_values(atc_input_shape_dict[op_name],
-                                                quickcmp_input_shape_dict[op_name],
+            DynamicInput.get_dynamic_dim_values(atc_input_shape_dict.get(op_name),
+                                                quickcmp_input_shape_dict.get(op_name),
                                                 batch_size_set)
         if len(batch_size_set) == 1:
             for batch_size in batch_size_set:
                 return str(batch_size)
-        utils.print_error_log("Please check your input_shape arg is valid.")
+        utils.logger.error("Please check your input_shape arg is valid.")
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
     @staticmethod
@@ -94,6 +101,12 @@ class DynamicInput(object):
                 shape_values.append(int(cur_shape[dim]))
             else:
                 shape_values.add(cur_shape[dim])
+
+    def add_dynamic_arg_for_benchmark(self, benchmark_cmd: list):
+        if self.is_dynamic_shape_scenario():
+            self.check_input_dynamic_arg_valid()
+            benchmark_cmd.append(self.cur_dynamic_arg.value.benchmark_arg)
+            benchmark_cmd.append(self.dynamic_arg_value)
 
     def is_dynamic_shape_scenario(self):
         """
@@ -123,34 +136,32 @@ class DynamicInput(object):
         try:
             atc_value_list = utils.parse_arg_value(dynamic_arg_values)
             cur_input = utils.parse_value_by_comma(self.dynamic_arg_value)
-            for value in atc_value_list:
-                if cur_input == value:
-                    return
-        except AccuracyCompareException:
-            pass
-        utils.print_error_log("Please input the valid shape, "
-                              "the valid dynamic value range are {}".format(dynamic_arg_values))
-        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+        except AccuracyCompareException as err:
+            utils.logger.error("Please input the valid shape, "
+                                "the valid dynamic value range are {}".format(dynamic_arg_values))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR) from err
+        for value in atc_value_list:
+            if cur_input == value:
+                return
 
     def check_dynamic_dims_valid(self, atc_dynamic_arg_values):
+        atc_input_shape = DynamicInput.get_input_shape_from_om(self.om_parser)
         try:
-            atc_input_shape = DynamicInput.get_input_shape_from_om(self.om_parser)
             atc_input_shape_dict = utils.parse_input_shape(atc_input_shape)
             quickcmp_input_shape_dict = utils.parse_input_shape(self.dynamic_arg_value)
             dym_dims = []
             for op_name in atc_input_shape_dict.keys():
-                DynamicInput.get_dynamic_dim_values(atc_input_shape_dict[op_name],
-                                                    quickcmp_input_shape_dict[op_name],
+                DynamicInput.get_dynamic_dim_values(atc_input_shape_dict.get(op_name),
+                                                    quickcmp_input_shape_dict.get(op_name),
                                                     dym_dims)
             atc_value_list = utils.parse_arg_value(atc_dynamic_arg_values)
-            for value in atc_value_list:
-                if dym_dims == value:
-                    return
-        except AccuracyCompareException:
-            pass
-        utils.print_error_log("Please input the valid shape, "
-                              "the valid dynamic value range are {}".format(atc_dynamic_arg_values))
-        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+        except AccuracyCompareException as err:
+            utils.logger.error("Please input the valid shape, "
+                                "the valid dynamic value range are {}".format(atc_dynamic_arg_values))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR) from err
+        for value in atc_value_list:
+            if dym_dims == value:
+                return
 
 
 class NpuDumpData(DumpData):
@@ -159,10 +170,39 @@ class NpuDumpData(DumpData):
     """
 
     def __init__(self, arguments, output_json_path):
+        super().__init__()
         self.arguments = arguments
         self.om_parser = OmParser(output_json_path)
         self.dynamic_input = DynamicInput(self.om_parser, self.arguments)
         self.python_version = sys.executable or "python3"
+
+    @staticmethod
+    def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir):
+        load_dict = {
+            "dump": {
+                "dump_list": [{"model_name": model_name}],
+                "dump_path": npu_data_output_dir,
+                "dump_mode": "all",
+                "dump_op_switch": "off"
+            }
+        }
+        if os.access(acl_json_path, os.W_OK):
+            json_flags = os.O_WRONLY | os.O_CREAT
+            json_modes = stat.S_IWUSR | stat.S_IRUSR
+            try:
+                with os.fdopen(os.open(acl_json_path, json_flags, json_modes), "w") as write_json:
+                    try:
+                        json.dump(load_dict, write_json)
+                    except ValueError as exc:
+                        utils.logger.info(str(exc))
+                        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR) from exc
+            except IOError as acl_json_file_except:
+                utils.logger.error('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from acl_json_file_except
+        else:
+            utils.logger.error(
+                "The path {} does not have permission to write.Please check the path permission".format(acl_json_path))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
     def generate_dump_data(self, use_cli):
         """
@@ -173,7 +213,7 @@ class NpuDumpData(DumpData):
         """
         self._check_input_path_param()
         if not use_cli:
-            benchmark_dir = os.path.join(os.path.realpath("../../profile"), BENCHMARK_DIR)
+            benchmark_dir = os.path.join(os.path.realpath("../../"), BENCHMARK_DIR)
             self.benchmark_install_sh(benchmark_dir)
         return self.benchmark_run()
 
@@ -194,18 +234,18 @@ class NpuDumpData(DumpData):
             benchmark_dir: benchmark project directory
         """
         execute_path = benchmark_dir
-        utils.print_info_log("Start to install benchmark backend execute_path: %s" % execute_path)
+        utils.logger.info("Start to install benchmark backend execute_path: %s" % execute_path)
         install_sh_cmd = ["sh", "install.sh", "-p", self.python_version]
 
         retval = os.getcwd()
         os.chdir(execute_path)
 
         # do install.sh command
-        utils.print_info_log("Run command line: cd %s && %s" % (execute_path, " ".join(install_sh_cmd)))
+        utils.logger.info("Run command line: cd %s && %s" % (execute_path, " ".join(install_sh_cmd)))
         utils.execute_command(install_sh_cmd)
-        utils.print_info_log("Finish to install benchmark backend execute_path: %s." % benchmark_dir)
+        utils.logger.info("Finish to install benchmark backend execute_path: %s." % benchmark_dir)
         os.chdir(retval)
-        utils.print_info_log("Run command line: cd %s (back to the working directory)" % (retval))
+        utils.logger.info("Run command line: cd %s (back to the working directory)" % (retval))
 
     def benchmark_run(self):
         """
@@ -225,7 +265,7 @@ class NpuDumpData(DumpData):
         npu_data_output_dir = os.path.join(self.arguments.out_path, NPU_DUMP_DATA_BASE_PATH)
         utils.create_directory(npu_data_output_dir)
         model_name, extension = utils.get_model_name_and_extension(self.arguments.offline_model_path)
-        acl_json_path = ACL_JSON_PATH
+        acl_json_path = os.path.join(npu_data_output_dir, ACL_JSON_PATH)
         if not os.path.exists(acl_json_path):
             os.mknod(acl_json_path, mode=0o600)
         benchmark_cmd = [self.python_version, "-m", "ais_bench", "--model", self.arguments.offline_model_path,
@@ -241,19 +281,19 @@ class NpuDumpData(DumpData):
         self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
 
         # do benchmark command
-        utils.print_info_log("Run command line: %s" % (benchmark_cmd))
+        utils.logger.info("Run command line: %s" % (benchmark_cmd))
         utils.execute_command(benchmark_cmd)
 
         npu_dump_data_path = ""
         if self.arguments.dump:
             npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
             if not file_is_exist:
-                utils.print_error_log("The path {} dump data is not exist.".format(npu_dump_data_path))
+                utils.logger.error("The path {} dump data is not exist.".format(npu_dump_data_path))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         # net output data path
         npu_net_output_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir, True)
         if not file_is_exist:
-            utils.print_error_log("The path {} net output data is not exist.".format(npu_net_output_data_path))
+            utils.logger.error("The path {} net output data is not exist.".format(npu_net_output_data_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
         return npu_dump_data_path, npu_net_output_data_path
@@ -270,7 +310,7 @@ class NpuDumpData(DumpData):
         if self.arguments.output_size:
             output_size_list = self.arguments.output_size.split(',')
             if len(output_size_list) != count:
-                utils.print_error_log(
+                utils.logger.error(
                     'The output size (%d) is not equal %d in model. Please check the "--output-size" argument.'
                     % (len(output_size_list), count))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
@@ -278,11 +318,11 @@ class NpuDumpData(DumpData):
                 item = item.strip()
                 match = pattern.match(item)
                 if match is None:
-                    utils.print_error_log("The size (%s) is invalid. Please check the output size."
+                    utils.logger.error("The size (%s) is invalid. Please check the output size."
                                           % self.arguments.output_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
                 if int(item) <= 0:
-                    utils.print_error_log("The size (%s) must be large than zero. Please check the output size."
+                    utils.logger.error("The size (%s) must be large than zero. Please check the output size."
                                           % self.arguments.output_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             benchmark_cmd.append(OUTPUT_SIZE)
@@ -291,7 +331,7 @@ class NpuDumpData(DumpData):
     def _convert_net_output_to_numpy(self, npu_net_output_data_path, npu_dump_data_path):
         net_output_data = None
         npu_net_output_data_info = self.om_parser.get_net_output_data_info(npu_dump_data_path)
-        for dir_path, sub_paths, files in os.walk(npu_net_output_data_path):
+        for dir_path, _, files in os.walk(npu_net_output_data_path):
             for index, each_file in enumerate(sorted(files)):
                 data_type = npu_net_output_data_info.get(index)[0]
                 shape = npu_net_output_data_info.get(index)[1]
@@ -300,7 +340,7 @@ class NpuDumpData(DumpData):
                 try:
                     net_output_data = original_net_output_data.reshape(shape)
                 except ValueError:
-                    utils.print_warn_log(
+                    utils.logger.warning(
                         "The shape of net_output data from file {} is {}.".format(
                             each_file, shape))
                     net_output_data = original_net_output_data
@@ -338,12 +378,12 @@ class NpuDumpData(DumpData):
 
     def _shape_size_vs_bin_file_size(self, shape_size_array, bin_files_size_array):
         if len(shape_size_array) < len(bin_files_size_array):
-            utils.print_error_log("The number of input bin files is incorrect.")
+            utils.logger.error("The number of input bin files is incorrect.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
         if self.om_parser.shape_range:
             for bin_file_size in bin_files_size_array:
                 if bin_file_size not in shape_size_array:
-                    utils.print_error_log(
+                    utils.logger.error(
                         "The size (%d) of bin file can not match the input of the model." % bin_file_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
         elif self.dynamic_input.is_dynamic_shape_scenario():
@@ -351,37 +391,11 @@ class NpuDumpData(DumpData):
                 for bin_size in bin_files_size_array:
                     if bin_size <= shape_size:
                         return
-            utils.print_warn_log("The size of bin file can not match the input of the model.")
+            utils.logger.warning("The size of bin file can not match the input of the model.")
         else:
             for shape_size, bin_file_size in zip(shape_size_array, bin_files_size_array):
                 if shape_size == 0:
                     continue
                 if shape_size != bin_file_size:
-                    utils.print_error_log("The shape value is different from the size of the bin file.")
+                    utils.logger.error("The shape value is different from the size of the bin file.")
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
-
-    @staticmethod
-    def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir):
-        load_dict = {
-            "dump": {
-                "dump_list": [{"model_name": model_name}],
-                "dump_path": npu_data_output_dir,
-                "dump_mode": "all",
-                "dump_op_switch": "off"
-            }
-        }
-        if os.access(acl_json_path, os.W_OK):
-            try:
-                with open(acl_json_path, "w") as write_json:
-                    try:
-                        json.dump(load_dict, write_json)
-                    except ValueError as write_json_except:
-                        print(str(write_json_except))
-                        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_WRITE_JSON_FILE_ERROR)
-            except IOError as acl_json_file_except:
-                utils.print_error_log('Failed to open"' + acl_json_path + '", ' + str(acl_json_file_except))
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR)
-        else:
-            utils.print_error_log(
-                "The path {} does not have permission to write.Please check the path permission".format(acl_json_path))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)

@@ -1,4 +1,4 @@
-# Copyright 2023 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
+import sys
 import os
-import utils
 import re
 import math
 import pandas as pd
+import utils
 
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 analysis_apis = {
     "Crop": "acldvppVpcCropAsync",
@@ -41,10 +45,10 @@ analysis_apis = {
 }
 
 
-def Evaluate(path):
+def evaluate(path):
     prof_path = os.path.join(path, 'profiling')
     if not os.path.isdir(prof_path):
-        print('[error] profiling path not exist, {prof_path}.')
+        logger.info('[error] profiling path not exist, {prof_path}.')
         return
     prof_path = utils.check_profiling_data(prof_path)
 
@@ -55,83 +59,89 @@ def Evaluate(path):
     analyze_dvpp_vdec(prof_path, analysis_apis)
 
 
-def analyze_dvpp_vpc(profiling_path, API):
+def analyze_dvpp_vpc(profiling_path, api):
     acl_statistic_data = utils.get_statistic_profile_data(profiling_path)
     data = pd.read_csv(acl_statistic_data)
-    countCrop = 0
-    countResize = 0
-    countCropResize = 0
-    countCropPaste = 0
-    countCropResizePaste = 0
-    countMakeBorder = 0
+    count_crop = 0
+    count_resize = 0
+    count_crop_resize = 0
+    count_crop_paste = 0
+    count_crop_resize_paste = 0
+    count_make_border = 0
+    has_suggestion = 0
     for line in data.itertuples():
-        if (line[1] == API["Crop"]):
-            countCrop = line[5]
-        if (line[1] == API["Resize"]):
-            countResize = line[5]
-        if (line[1] == API["CropResize"]):
-            countCropResize = line[5]
-        if (line[1] == API["CropPaste"]):
-            countCropPaste = line[5]
-        if (line[1] == API["CropResizePaste"]):
-            countCropResizePaste = line[5]
-        if (line[1] == API["MakeBorder"]):
-            countMakeBorder = line[5]
-    if (countCrop != 0 or countResize != 0 or countCropResize !=
-            0 or countCropPaste != 0 or countCropResizePaste != 0 or countMakeBorder != 0):
-        if (countCrop >= 2):
-            print(f'检测到使用{API["Crop"]}接口，循环处理图片，建议使用{API["CropBatch"]}接口。')
-        if (countCrop >= 2 and countResize >= 2 and countCrop == countResize):
-            print(f'检测到连续调用{API["Crop"]}和{API["Resize"]}接口，同时循环处理多张图，建议使用{API["CropResizeBatch"]}接口。')
-        if (countCropResize >= 2):
-            print(f'检测到连续调用{API["CropResize"]}接口，建议使用{API["CropResizeBatch"]}接口。')
-        if (countCropPaste >= 2):
-            print(f'检测到循环调用{API["CropPaste"]}接口，建议使用{API["CropPasteBatch"]}接口。')
-        if (countCropResizePaste >= 2):
-            print(f'检测到循环调用{API["CropResizePaste"]}接口，建议使用{API["CropResizePasteBatch"]}接口。')
-        if (countMakeBorder >= 2 and (countCrop != 0 or countResize != 0) and \
-            (countMakeBorder == countCrop or countMakeBorder == countResize)):
-            print(f'检测到循环调用{API["Crop"]}和{API["Resize"]}和{API["MakeBorder"]}接口，建议使用{API["MakeBorderBatch"]}接口。')
+        if (line[1] == api["Crop"]):
+            count_crop = line[5]
+        if (line[1] == api["Resize"]):
+            count_resize = line[5]
+        if (line[1] == api["CropResize"]):
+            count_crop_resize = line[5]
+        if (line[1] == api["CropPaste"]):
+            count_crop_paste = line[5]
+        if (line[1] == api["CropResizePaste"]):
+            count_crop_resize_paste = line[5]
+        if (line[1] == api["MakeBorder"]):
+            count_make_border = line[5]
+    if (count_crop != 0 or count_resize != 0):
+        has_suggestion = 1
+    elif (count_crop_resize != 0 or count_crop_paste != 0):
+        has_suggestion = 1
+    elif (count_crop_resize_paste != 0 or count_make_border != 0):
+        has_suggestion = 1
+    if (has_suggestion != 0):
+        if (count_crop >= 2):
+            logger.info(f'检测到使用{api["Crop"]}接口，循环处理图片，建议使用{api["CropBatch"]}接口。')
+        if (count_crop >= 2 and count_resize >= 2 and count_crop == count_resize):
+            logger.info(f'检测到连续调用{api["Crop"]}和{api["Resize"]}接口，同时循环处理多张图，建议使用{api["CropResizeBatch"]}接口。')
+        if (count_crop_resize >= 2):
+            logger.info(f'检测到连续调用{api["CropResize"]}接口，建议使用{api["CropResizeBatch"]}接口。')
+        if (count_crop_paste >= 2):
+            logger.info(f'检测到循环调用{api["CropPaste"]}接口，建议使用{api["CropPasteBatch"]}接口。')
+        if (count_crop_resize_paste >= 2):
+            logger.info(f'检测到循环调用{api["CropResizePaste"]}接口，建议使用{api["CropResizePasteBatch"]}接口。')
+        if (count_make_border >= 2 and (count_crop != 0 or count_resize != 0) and \
+            (count_make_border == count_crop or count_make_border == count_resize)):
+            logger.info(f'检测到循环调用{api["Crop"]}和{api["Resize"]}和{api["MakeBorder"]}接口，建议使用{api["MakeBorderBatch"]}接口。')
     else:
-        print("在这个AI处理器上，可能没有使用VPCAPI接口，因而在这个方向上，知识库暂时没有调优建议。")
+        logger.info("在这个AI处理器上，可能没有使用VPCAPI接口，因而在这个方向上，知识库暂时没有调优建议。")
 
 
-def analyze_dvpp_vdec(profiling_path, API):
+def analyze_dvpp_vdec(profiling_path, api):
     acl_statistic_data = utils.get_statistic_profile_data(profiling_path)
     data = pd.read_csv(acl_statistic_data)
-    countVpcCCA = 0
-    countVdecSF = 0
+    count_vpc_cca = 0
+    count_vdec_sf = 0
     for line in data.itertuples():
-        if (line[1] == API["VdecCCA"]):
-            countVpcCCA = line[5]
-        if (line[1] == API["VdecSF"]):
-            countVdecSF = line[5]
-    if (countVpcCCA != 0 or countVdecSF != 0):
-        if (countVpcCCA >= 1 & countVdecSF == 0):
-            print(f'检测使用了{API["VdecCCA"]}接口。')
-            print(f'如果您使用的是昇腾710 AI处理器，该处理器视频解码接口{API["VdecSF"]}' \
+        if (line[1] == api["VdecCCA"]):
+            count_vpc_cca = line[5]
+        if (line[1] == api["VdecSF"]):
+            count_vdec_sf = line[5]
+    if (count_vpc_cca != 0 or count_vdec_sf != 0):
+        if (count_vpc_cca >= 1 & count_vdec_sf == 0):
+            logger.info(f'检测使用了{api["VdecCCA"]}接口。')
+            logger.info(f'如果您使用的是昇腾710 AI处理器，该处理器视频解码接口{api["VdecSF"]}' \
                 '支持输出YUV420SP格式或RGB888格式，可设置接口参数输出不同的格式，' \
-                '建议省去调用{API["VdecCCA"]}进行格式转换的步骤，减少接口调用。')
-            print(
+                '建议省去调用{api["VdecCCA"]}进行格式转换的步骤，减少接口调用。')
+            logger.info(
                 f'同时，在视频解码+模型推理的场景下，若视频的帧数比较多，且不是每一帧都需要进行推理，对于不需要推理的帧，' \
-                '推荐您使用{API["VdecSkip"]}接口进行解码，不输出解码结果。')
-        if (countVdecSF >= 1 & countVpcCCA == 0):
-            print(f'检测使用了{API["VdecSF"]}接口。')
-            print('在昇腾710 AI处理器上，VPC图像处理功能支持输出YUV400格式（灰度图像）,' \
+                '推荐您使用{api["VdecSkip"]}接口进行解码，不输出解码结果。')
+        if (count_vdec_sf >= 1 & count_vpc_cca == 0):
+            logger.info(f'检测使用了{api["VdecSF"]}接口。')
+            logger.info('在昇腾710 AI处理器上，VPC图像处理功能支持输出YUV400格式（灰度图像）,' \
                 '如果模型推理的输入图像是灰度图像，建议您直接使用VPC功能，无需再使用AIPP色域转换功能。')
-            print(
+            logger.info(
                 '同时，在视频解码+模型推理的场景下，若视频的帧数比较多，且不是每一帧都需要进行推理，对于不需要推理的帧，' \
-                '推荐您使用{API["VdecSkip"]}接口进行解码，不输出解码结果。')
-        if (countVpcCCA >= 1 & countVdecSF >= 1):
-            print(f'检测同时使用了{API["VdecCCA"]}接口以及{API["VdecSF"]}接口。')
-            print(f'在昇腾710 AI处理器上，视频解码接口{API["VdecSF"]}' \
+                '推荐您使用{api["VdecSkip"]}接口进行解码，不输出解码结果。')
+        if (count_vpc_cca >= 1 & count_vdec_sf >= 1):
+            logger.info(f'检测同时使用了{api["VdecCCA"]}接口以及{api["VdecSF"]}接口。')
+            logger.info(f'在昇腾710 AI处理器上，视频解码接口{api["VdecSF"]}' \
                 '支持输出YUV420SP格式或RGB888格式，可设置接口参数输出不同的格式，' \
-                '建议省去调用{API["VdecCCA"]}进行格式转换的步骤，减少接口调用。')
-            print(
+                '建议省去调用{api["VdecCCA"]}进行格式转换的步骤，减少接口调用。')
+            logger.info(
                 f'同时，在视频解码+模型推理的场景下，若视频的帧数比较多，且不是每一帧都需要进行推理，对于不需要推理的帧，' \
-                '推荐您使用{API["VdecSkip"]}接口进行解码，不输出解码结果。')
+                '推荐您使用{api["VdecSkip"]}接口进行解码，不输出解码结果。')
     else:
-        print('在此 AI 处理器上，并没有使用到 VDECAPI接口。所以在这个方向上，知识库并没有调优建议。')
-        print(f'但是在视频解码+模型推理的场景下，如果用户视频的帧数很大并且不是每一帧都需要推断，' \
-            '建议您使用{API["VdecSkip"]}接口以提升使用体验。')
+        logger.info('在此 AI 处理器上，并没有使用到 VDECAPI接口。所以在这个方向上，知识库并没有调优建议。')
+        logger.info(f'但是在视频解码+模型推理的场景下，如果用户视频的帧数很大并且不是每一帧都需要推断，' \
+            '建议您使用{api["VdecSkip"]}接口以提升使用体验。')
 

@@ -1,4 +1,4 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -61,8 +61,8 @@ def compare_cli(
     output_size,
     output_nodes,
     advisor,
-    dym_shape_range, 
-    dump, 
+    dym_shape_range,
+    dump,
     bin2npy
 ) -> None:
     cmp_args = CmpArgsAdapter(golden_model, om_model, input_data_path, cann_path, out_path, input_shape, device,

@@ -1,4 +1,4 @@
-# Copyright 2022 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import onnx
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode, Initializer, Node, PlaceHolder
-from auto_optimizer.pattern.pattern import MATCH_PATTERN, Pattern, MatchBase
+from auto_optimizer.pattern.pattern import MatchPattern, Pattern, MatchBase
 from auto_optimizer.pattern.matcher import MatchResult
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.utils import NextNodeCount
@@ -92,7 +92,7 @@ pattern_aasist = Pattern() \
     .add_edge("Conv_0", "Add_0") \
     .add_edge("Conv_2", "Add_0") \
     .add_edge("Add_0", "MaxPool_0") \
-    .set_loop(MATCH_PATTERN.MATCH_ONCE)
+    .set_loop(MatchPattern.MATCH_ONCE)
 
 
 @KnowledgeFactory.register()
@@ -106,14 +106,14 @@ class KnowledgeTransposeLargeInputConv(KnowledgeBase):
 
     def pre_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except onnx.onnx_cpp2py_export.shape_inference.InferenceError:
             return False
         return super().pre_process(graph)
 
     def post_process(self, graph: BaseGraph) -> bool:
         try:
-            graph.infershape()
+            graph.infer_shape()
         except onnx.onnx_cpp2py_export.shape_inference.InferenceError:
             return False
         return super().post_process(graph)
@@ -148,7 +148,11 @@ class KnowledgeTransposeLargeInputConv(KnowledgeBase):
 
     def _aasist_match_apply(self, graph: BaseGraph, matchinfo: Dict[str, List[Node]]) -> bool:
         # make sure nodes of matching subgraph still exist in case some previous apply functions modified graph
-        if any(graph.get_node(node.name, node_type=Node) is None for nodes in matchinfo.values() for node in nodes):
+        if any(
+            graph.get_node(node.name, node_type=Node) is None
+            for nodes in matchinfo.values()
+            for node in nodes
+        ):
             logging.info("Some matching node have been removed or renamed, failed to optimizd.")
             return False
 

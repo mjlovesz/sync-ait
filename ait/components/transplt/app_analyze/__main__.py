@@ -26,7 +26,7 @@ class Args:
         self.tools = tools
 
 
-@click.command()
+@click.command(short_help='Transplant tool to analyze inference applications')
 @opt_source
 @opt_report_type
 @opt_log_level
