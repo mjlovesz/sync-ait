@@ -40,7 +40,7 @@ def get_file_info(file):
 
 def analyse_plog(args):
     info = get_file_info(args.summary_path)
-    
+
 
 def analyse_topk_times(args):
     info = get_file_info(args.summary_path)
@@ -57,7 +57,7 @@ def analyse_topk_times(args):
     topk_index = [ i[0] for i in topk_list ]
     logging.info(topk_index)
     flag = os.O_WRONLY | os.O_CREAT
-    modes = stat.S_IWUSRv | stat.S_IRUSR 
+    modes = stat.S_IWUSR | stat.S_IRUSR
     if args.output is not None:
         with os.fdopen(os.open(os.path.join(args.output, "topk_index.json"), flag, modes), 'w') as f:
             f.write(json.dumps(topk_index))
@@ -69,7 +69,7 @@ def get_args():
     parser.add_argument("--plog", help="plog path")
     parser.add_argument("--output", default=None, help="the output path")
     parser.add_argument("--mode", default="times", choices=["times", "plog"], help="mode (times or plog)")
-    
+
     args = parser.parse_args()
     return args
 
