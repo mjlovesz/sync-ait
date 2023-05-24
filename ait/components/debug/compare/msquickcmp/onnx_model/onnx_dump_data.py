@@ -260,7 +260,7 @@ class OnnxDumpData(DumpData):
             utils.print_error_log("find no aipp op in dump data, please check --dump is True")
         for i, tensor_info in enumerate(inputs_tensor_info):
             data_convert_file(aipp_input[i], os.path.join(self.args.out_path, "input"), self.args)
-            aipp_output_path = os.path.join(self.args.out_path, "input", aipp_input[i].rplit("/", 1)[1])
+            aipp_output_path = os.path.join(self.args.out_path, "input", aipp_input[i].rsplit("/", 1)[1])
             aipp_output = np.load(aipp_output_path + ".output.0.npy")
             nchw_prod = np.prod(tensor_info["shape"])
             nc0hwc1_prod_without_c1 = np.prod(aipp_output.shape[:-1])
