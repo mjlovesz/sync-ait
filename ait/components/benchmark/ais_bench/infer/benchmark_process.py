@@ -18,6 +18,8 @@ import sys
 import time
 import shutil
 import copy
+import subprocess
+import stat
 import re
 import subprocess
 from multiprocessing import Pool
@@ -39,6 +41,10 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                             get_fileslist_from_dir, list_split, logger,
                             save_data_to_files)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
+
+READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
+WRITE_FLAGS = os.O_WRONLY | os.O_CREAT
+WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 
 def set_session_options(session, args):
@@ -152,9 +158,9 @@ def warmup(session, args, intensors_desc, infiles):
 
 
 def run_inference(session, args, inputs, out_array=False):
-    if args.auto_set_dymshape_mode is True:
+    if args.auto_set_dymshape_mode:
         set_dymshape_shape(session, inputs)
-    elif args.auto_set_dymdims_mode is True:
+    elif args.auto_set_dymdims_mode:
         set_dymdims_shape(session, inputs)
     outputs = session.run(inputs, out_array)
     return outputs
@@ -220,18 +226,30 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
 
 def msprof_run_profiling(args, msprof_bin):
     cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
-    msprof_cmd = "{} --output={}/profiler --application=\"{}\" --model-execution=on \
-                    --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off \
-                    --sys-pid-profiling=off --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
-                    .format(msprof_bin, args.output, cmd)
+    msprof_cmd_list =[
+        '{}'.format(msprof_bin),
+        '--output={}/profiler'.format(args.output),
+        '--application=\"{}\"'.format(cmd),
+        '--model-execution=on',
+        '--sys-hardware-mem=on',
+        '--sys-cpu-profiling=off',
+        '--sys-profiling=off',
+        '--sys-pid-profiling=off',
+        '--dvpp-profiling=on',
+        '--runtime-api=on',
+        '--task-time=on',
+        '--aicpu=on'
+    ]
+    msprof_cmd = " "
+    msprof_cmd = msprof_cmd.join(msprof_cmd_list)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
-    ret = os.system(msprof_cmd)
+    ret = subprocess.call(msprof_cmd_list, shell=False)
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
 
 
 def get_energy_consumption(npu_id):
     cmd = "npu-smi info -t power -i {}".format(npu_id)
-    get_npu_id = subprocess.run(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    get_npu_id = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     npu_id = get_npu_id.stdout.decode('gb2312')
     power = []
     npu_id = npu_id.split("\n")
@@ -248,7 +266,7 @@ def main(args, index=0, msgq=None, device_list=None):
     if msgq is not None:
         logger.info("subprocess_{} main run".format(index))
 
-    if args.debug is True:
+    if args.debug:
         logger.setLevel(logging.DEBUG)
 
     session = init_inference_session(args)
@@ -353,7 +371,7 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
         return inputs_list
 
     fileslist = []
-    if os.path.isfile(inputs_list[0]) is True:
+    if os.path.isfile(inputs_list[0]):
         fileslist = inputs_list
     elif os.path.isdir(inputs_list[0]):
         for dir_path in inputs_list:
@@ -420,30 +438,30 @@ def multidevice_run(args):
 
 
 def args_rules(args):
-    if args.profiler is True and args.dump is True:
+    if args.profiler and args.dump:
         logger.error("parameter --profiler cannot be true at the same time as parameter --dump, please check them!\n")
         raise RuntimeError('error bad parameters --profiler and --dump')
 
-    if (args.profiler is True or args.dump is True) and (args.output is None):
+    if (args.profiler or args.dump) and (args.output is None):
         logger.error("when dump or profiler, miss output path, please check them!")
         raise RuntimeError('miss output parameter!')
 
     # 判断--aipp_config 文件是否是存在的.config文件
     if (args.aipp_config is not None):
         if (os.path.splitext(args.aipp_config)[-1] == ".config"):
-            if (os.path.isfile(args.aipp_config) is not True):
+            if (not os.path.isfile(args.aipp_config)):
                 logger.error("can't find the path of config file, please check it!")
                 raise RuntimeError('wrong aipp config file path!')
         else:
             logger.error("aipp config file is not a .config file, please check it!")
             raise RuntimeError('wrong aipp config file type!')
 
-    if args.auto_set_dymshape_mode is False and args.auto_set_dymdims_mode is False:
+    if not args.auto_set_dymshape_mode and not args.auto_set_dymdims_mode:
         args.no_combine_tensor_mode = False
     else:
         args.no_combine_tensor_mode = True
 
-    if args.profiler is True and args.warmup_count != 0 and args.input is not None:
+    if args.profiler and args.warmup_count != 0 and args.input is not None:
         logger.info("profiler mode with input change warmup_count to 0")
         args.warmup_count = 0
 
@@ -457,7 +475,7 @@ def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
 
-    if args.profiler is True:
+    if args.profiler:
         # try use msprof to run
         msprof_bin = shutil.which('msprof')
         if msprof_bin is None or os.getenv('GE_PROFILIGN_TO_STD_OUT') == '1':
