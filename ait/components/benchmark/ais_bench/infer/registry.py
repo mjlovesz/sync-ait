@@ -46,10 +46,6 @@ class Registry(Iterable[Tuple[str, Any]]):
         self._obj_map[name] = obj
 
     def __getitem__(self, name: str) -> Any:
-        try:
-            self._obj_map[name]
-        except KeyError:
-            logger.warning("Key not in dict")
         return self._obj_map[name]
 
     def __call__(self, obj: Any) -> Any:
