@@ -266,7 +266,7 @@ class OnnxDumpData(DumpData):
             nc0hwc1_prod_without_c1 = np.prod(aipp_output.shape[:-1])
             c0 = int(nchw_prod / nc0hwc1_prod_without_c1)
             onnx_input = np.delete(aipp_output, np.s_[c0:], -1)\
-                .transpose((0, 4, 2, 3, 1)).squueze(-1).astype(np.float32)
+                .transpose((0, 4, 2, 3, 1)).squeeze(-1).astype(np.float32)
             inputs_map[tensor_info["name"]] = onnx_input
         return inputs_map
 
