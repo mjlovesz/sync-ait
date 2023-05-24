@@ -52,7 +52,7 @@ def parse_input_param(model: str,
     )
 
 
-@click.command()
+@click.command(short_help='Analyze tool to analyze model support', no_args_is_help=True)
 @opt_model
 @opt_framework
 @opt_weight
