@@ -24,7 +24,7 @@ from typing import Iterable, List, Dict, Any
 
 from ais_bench.infer.backends import backend, BACKEND_REGISTRY
 from ais_bench.infer.backends.backend import AccuracyResult, PerformanceStats, PerformanceResult, InferenceTrace
-
+from ais_bench.infer.utils import logger
 
 class TrtexecConfig(object):
     def __init__(self):
@@ -147,6 +147,6 @@ class BackendTRTExec(backend.Backend):
             self.output_log += line.decode()
             line = line.strip()
             if line:
-                print(line.decode())
+                logger.info(line.decode())
 
         return []

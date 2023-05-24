@@ -14,8 +14,8 @@
 
 
 import logging
-from ais_bench.infer.utils import logger
 from typing import Any, Dict, Iterable, Iterator, Tuple
+from ais_bench.infer.utils import logger
 
 
 class Registry(Iterable[Tuple[str, Any]]):
@@ -46,6 +46,10 @@ class Registry(Iterable[Tuple[str, Any]]):
         self._obj_map[name] = obj
 
     def __getitem__(self, name: str) -> Any:
+        try:
+            self._obj_map[name]
+        except KeyError:
+            logger.warning("Key not in dict")
         return self._obj_map[name]
 
     def __call__(self, obj: Any) -> Any:
@@ -56,13 +60,12 @@ class Registry(Iterable[Tuple[str, Any]]):
         Register the given object under the the name `obj.__name__`.
         Can be used as either a decorator or not.See docstring of this class for usage.
         """
+        if callable(obj):
+            return add(None, obj)
 
         def add(name: str, obj: Any) -> Any:
             self[name] = obj
             return obj
-
-        if callable(obj):
-            return add(None, obj)
 
         return lambda x: add(obj, x)
 
