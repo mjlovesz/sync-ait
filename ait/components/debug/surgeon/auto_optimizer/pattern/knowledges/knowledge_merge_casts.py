@@ -164,8 +164,8 @@ class KnowledgeMergeCasts(KnowledgeBase):
             if to_type in cast_node_map:
                 for next_node in graph.get_next_nodes(cast_node.outputs[0]):
                     input_index = next_node.inputs.index(cast_node._outputs[0])
-                    if cast_node_map.get(to_type):
-                        next_node.inputs[input_index] = cast_node_map.get(to_type).get('outputs')[0]
+                    if cast_node_map[to_type]:
+                        next_node.inputs[input_index] = cast_node_map[to_type].get('outputs')[0]
                     else:
                         raise KeyError(f'{to_type} not in dict')
                 graph.update_map()
