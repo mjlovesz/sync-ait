@@ -170,7 +170,7 @@ def get_dymshape_list(input_ranges):
 
 # get throughput from out log
 def get_throughtput_from_log(log_path):
-    if os.path.exists(log_path) is False:
+    if not os.path.exists(log_path):
         return "Failed", 0
     cmd = "cat {} | grep throughput".format(log_path)
     cmd = cmd + " | awk '{print $NF}'"
