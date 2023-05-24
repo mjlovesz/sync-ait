@@ -31,42 +31,46 @@
 
 ## 源码拉取及第三方库安装
 
-- 拉取`ait`，并切换到 onnx-modifier目录，安装所需要的Python, node
+- 拉取`ait`，并切换到 onnx-modifier 目录，安装所需要的Python, NodeJS
 
-1. 安装python 
-2. 安装node(使用electron 启动时需要)
+1. 安装python
+    * 注意点: 在 windows 上，命令行的python命令优先会启动 WindowsApps 目录的程序，可以在环境变量中将 %USERPROFILE%\AppData\Local\Microsoft\WindowsApps 下移到最后
+2. 安装NodeJS(使用 electron 启动时需要)
 3. 拉取源码：
   ```bash
   git clone https://gitee.com/ascend/ait.git
   ```
-4. 安装 ait 
+4. 安装 ait 中的 surgeon 包, 请参考 ait 的安装流程，以下为参考步骤：
   ```bash
-  cd ait/ait
-  pip install . # 安装 ait 推理工具包
+  cd ait/ait/components/debug/surgeon
+  pip3 install . --force-reinstall
   cd - # 安装完成之后返回仓库根目录
   ```
 5. 安装 python 需要库
   ```bash
   cd ait/onnx-modifier
   pip install -r requirements.txt
-  npm install  # 如果electron 下载较慢，建议使用国内代理
   ```
 
-## 命令行启动
+## 启动方式一：命令行启动
 - 安装
     1. 下载electron: https://registry.npmmirror.com/binary.html?path=electron/24.3.1/
+        * linux 下载 electron-v24.3.1-linux-x64.zip 或 electron-v24.3.1-linux-arm64.zip
+        * windows 下载 electron-v24.3.1-win32-x64.zip 或 electron-v24.3.1-win32-arm64.zip
     2. zip解压之后，将解压路径配置到环境变量的PATH中 
 - 运行（常用于调试开发）
-
   ```bash
   cd ait/onnx-modifier
   electron .
   ```
 
-## 编译成可执行程序启动
+## 启动方式二：编译成可执行程序启动
 
 - 安装
+  编译环境对网络要求较高
+  ```bash
   npm install  # npm是node的包管理器；如果electron 下载较慢，建议使用国内代理
+  ```
 - 编译
   ```bash
   cd ait/onnx-modifier
@@ -75,7 +79,7 @@
 - 安装运行
   编译之后，可以在out中看到打包的程序，点击运行即可
 
-## web服务器启动（不推荐使用）
+## 启动方式三：web服务器启动
 - 安装
     1. 安装flask： pip install flask 
     2. 如果运行报错，建议升级flask。建议版本2.2.2
