@@ -20,7 +20,7 @@ from msquickcmp.net_compare import analyser
 
 
 @pytest.fixture(scope="module", autouse=True)
-def fake_csv():
+def fake_csv_file():
     test_csv_file_name = "/tmp/fake_test_csv.csv"
 
     columns = ["Index", "OpType", "NPUDump", "DataType", "GroundTruth"]
