@@ -303,11 +303,11 @@ def parse_input_shape_to_list(input_shape):
         tensor_shape_list = tensor.rsplit(':', maxsplit=1)
         if len(tensor_shape_list) == 2:
             shape_list_int = [int(i) for i in tensor_shape_list[1].split(',')]
-            input_shapes_list.append(shape_list_int)
+            input_shape_list.append(shape_list_int)
         else:
             logger.error(get_shape_not_match_message(InputShapeError.FORMAT_NOT_MATCH, input_shape))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-    return input_shapes_list
+    return input_shape_list
 
 
 def parse_dym_shape_range(dym_shape_range):
