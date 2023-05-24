@@ -261,6 +261,18 @@ def get_args():
         default=0,
         help="The NPU ID to use.valid value range is [0, 255]"
     )
+    parser.add_argument(
+        "--backend",
+        type=str,
+        default=None,
+        help="backend trtexec"
+    )
+    parser.add_argument(
+        "--perf",
+        type=str2bool,
+        default=False,
+        help="perf switch"
+    )
     args = parser.parse_args()
 
     return args
@@ -274,6 +286,7 @@ if __name__ == "__main__":
                 args.dym_batch, args.dym_hw, args.dym_dims, args.dym_shape, args.output_size, args.auto_set_dymshape_mode,
                 args.auto_set_dymdims_mode, args.batchsize, args.pure_data_type, args.profiler, args.dump,
                 args.acl_json_path, args.output_batchsize_axis, args.run_mode, args.display_all_summary,
-                args.warmup_count, args.dym_shape_range, args.aipp_config, args.energy_consumption, args.npu_id)
+                args.warmup_count, args.dym_shape_range, args.aipp_config, args.energy_consumption, args.npu_id,
+                args.backend, args.perf)
     ret = benchmark_process(args)
     exit(ret)
