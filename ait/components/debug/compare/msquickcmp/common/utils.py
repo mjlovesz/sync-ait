@@ -285,7 +285,7 @@ def parse_input_shape(input_shape):
     return input_shapes
 
 
-def parse_input_shape_list(input_shape):
+def parse_input_shape_to_list(input_shape):
     """
         Function Description:
             parse input shape and get a list only contains inputs shape
