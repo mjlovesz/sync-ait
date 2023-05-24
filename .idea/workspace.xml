@@ -4,11 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3863cbb3-304e-4dd2-b94a-df23f7fdf109" name="Changes" comment="#cleancode">
+    <list default="true" id="3863cbb3-304e-4dd2-b94a-df23f7fdf109" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_inference_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_inference_example.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_gather_to_split.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_knowledge_gather_to_split.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_onnx_surgen.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_onnx_surgen.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/benchmark/backend/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/benchmark/backend/setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/__main__.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/__main__.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -26,13 +25,13 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "D:/AscendDev/ait_dev"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/AscendDev/ait_dev&quot;
   }
-}]]></component>
+}</component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">

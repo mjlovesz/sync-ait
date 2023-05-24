@@ -35,6 +35,8 @@ STATIC_VERSION = "0.0.2"
 # cc1plus: warning: command line option ‘-Wstrict-prototypes’ is valid
 # for C/ObjC but not for C++
 
+import logging
+
 
 class BuildExt(build_ext):
     def build_extensions(self):
@@ -63,7 +65,7 @@ def get_cann_path():
 
     if CANN_BASE_PATH is None:
         raise RuntimeError('error find no cann path')
-    print("find cann path:", CANN_BASE_PATH)
+    logging.info("find cann path: %s", CANN_BASE_PATH)
 
 get_cann_path()
 

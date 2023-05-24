@@ -168,8 +168,10 @@ def command_evaluate(
     processes: int,
 ) -> None:
     path_ = pathlib.Path(path.decode()) if isinstance(path, bytes) else path
-    onnx_files = list(path_.rglob('*.onnx') if recursive else path_.glob('*.onnx')) \
-        if path_.is_dir() else [path_]
+    if path_.is_dir():
+        onnx_files = list(path_.rglob('*.onnx') if recursive else path_.glob('*.onnx'))
+    else:
+        onnx_files = [path_]
 
     if processes > 1:
         evaluate = partial(evaluate_onnx, optimizer=optimizer, verbose=verbose)
