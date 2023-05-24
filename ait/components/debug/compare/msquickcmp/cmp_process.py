@@ -20,6 +20,7 @@ from msquickcmp.net_compare.net_compare import NetCompare
 from msquickcmp.npu.npu_dump_data import NpuDumpData
 from msquickcmp.npu.npu_dump_data_bin2npy import data_convert
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
+from msquickcmp.npu.om_parser import OmParser
 
 
 def _generate_golden_data_model(args):
@@ -76,11 +77,7 @@ def cmp_process(args:CmpArgsAdapter, use_cli:bool):
         raise error
 
 
-def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
-    if input_shape:
-        args.input_shape = input_shape
-        args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
-
+def dump_data(args, output_json_path, use_cli):
     # generate dump data by the original model
     golden_dump = _generate_golden_data_model(args)
     golden_dump_data_path = golden_dump.generate_dump_data()
@@ -91,11 +88,43 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
     npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
     expect_net_output_node = npu_dump.get_expect_output_name()
 
-    # convert data from bin to npy if --convert is used
-    data_convert(npu_dump_data_path, npu_net_output_data_path, args)
+    # if it's dynamic batch scenario, golden data files should be renamed
+    utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
+
+    return golden_dump_data_path, golden_net_output_info, npu_dump_data_path,\
+        npu_net_output_data_path, expect_net_output_node
+
+
+def dump_data_aipp(args, output_json_path, use_cli):
+    npu_dump = NpuDumpData(args, output_json_path)
+    npu_dump.generate_dump_data()
+    npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
+    expect_net_output_node = npu_dump.get_expect_output_name()
+
+    golden_dump = _generate_golden_data_model(args)
+    golden_dump_data_path = golden_dump.generate_dump_data_aipp(npu_dump_data_path)
+    golden_net_output_info = golden_dump.get_net_output_info()
 
     # if it's dynamic batch scenario, golden data files should be renamed
     utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
+
+    return golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
+        npu_net_output_data_path, expect_net_output_node
+
+def run(args, input_shape, output_json_path, original_out_path, use_cli:bool ,aipp_om):
+    if input_shape:
+        args.input_shape = input_shape
+        args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
+
+    if aipp_om:
+        golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
+            npu_net_output_data_path, expect_net_output_node = dump_data_aipp(args, output_json_path, use_cli)
+    else:
+        golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
+            npu_net_output_data_path, expect_net_output_node = dump_data(args, output_json_path, use_cli)
+
+    # convert data from bin to npy if --convert is used
+    data_convert(npu_dump_data_path, npu_net_output_data_path, args)
 
     if not args.dump:
         # only compare the final output
@@ -124,6 +153,8 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
 
     # convert the om model to json
     output_json_path = AtcUtils(args).convert_model_to_json()
+    temp_om_parser = Omparser(output_json_path)
+    aipp_om = True if temp_om_parser.get_aipp_config_content() else False
 
     # deal with the dymShape_range param if exists
     input_shapes = []
@@ -132,4 +163,4 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     if not input_shapes:
         input_shapes.append("")
     for input_shape in input_shapes:
-        run(args, input_shape, output_json_path, original_out_path, use_cli)
+        run(args, input_shape, output_json_path, original_out_path, use_cli, aipp_om)

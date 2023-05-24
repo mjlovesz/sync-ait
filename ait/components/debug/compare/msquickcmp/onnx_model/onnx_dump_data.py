@@ -33,6 +33,7 @@ from msquickcmp.common.dump_data import DumpData
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException
 from msquickcmp.common.utils import InputShapeError
+from msquickcmp.npu.npu_dump_data_bin2npy import data_convert_file
 
 NODE_TYPE_TO_DTYPE_MAP = {
     "tensor(int)": np.int32,
@@ -237,6 +238,37 @@ class OnnxDumpData(DumpData):
         dump_bins = self._run_model(session, inputs_map)
         self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
         return onnx_dump_data_dir
+
+    def generate_dump_data_aipp(self, npu_dump_data_path):
+        data_dir, onnx_dump_data_dir, model_dir = self._create_dir()
+        old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
+        session = self._load_session(new_onnx_model_path)
+        net_output_node = self._get_net_output_node()
+        inputs_tensor_info = self._get_inputs_tensor_info(session)
+        inputs_map = self._get_inputs_data_aipp(data_dir, inputs_tensor_info, npu_dump_data_path)
+        dump_bins = self._run_model(session, inputs_map)
+        self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
+        return onnx_dump_data_dir
+
+    def _get_inputs_data_aipp(self, data_dir, inputs_tensor_info, npu_dump_data_path):
+        inputs_map = {}
+        aipp_input = []
+        for bin_file in os.listdir(npu_dump_data_path):
+            if bin_file.startswith("Aipp"):
+                aipp_input.append(os.path.join(npu_dump_data_path, bin_file))
+        if not aipp_input:
+            utils.print_error_log("find no aipp op in dump data, please check --dump is True")
+        for i, tensor_info in enumerate(inputs_tensor_info):
+            data_convert_file(aipp_input[i], os.path.join(self.args.out_path, "input"), self.args)
+            aipp_output_path = os.path.join(self.args.out_path, "input", aipp_input[i].rplit("/", 1)[1])
+            aipp_output = np.load(aipp_output_path + ".output.0.npy")
+            nchw_prod = np.prod(tensor_info["shape"])
+            nc0hwc1_prod_without_c1 = np.prod(aipp_output.shape[:-1])
+            c0 = int(nchw_prod / nc0hwc1_prod_without_c1)
+            onnx_input = np.delete(aipp_output, np.s_[c0:], -1)\
+                .transpose((0, 4, 2, 3, 1)).squueze(-1).astype(np.float32)
+            inputs_map[tensor_info["name"]] = onnx_input
+        return inputs_map
 
     def _get_net_output_node(self):
         """

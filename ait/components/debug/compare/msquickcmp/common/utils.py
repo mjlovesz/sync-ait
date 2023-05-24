@@ -285,7 +285,41 @@ def parse_input_shape(input_shape):
     return input_shapes
 
 
+def parse_input_shape_list(input_shape):
+    """
+        Function Description:
+            parse input shape and get a list only contains inputs shape
+        Parameter:
+            input_shape:the input shape,this format like:tensor_name1:dim1,dim2;tensor_name2:dim1,dim2.
+        Return Value:
+            a list only contains inputs shape, this format like [[dim1,dim2],[dim1,dim2]]
+    """
+    input_shape_list = []
+    if not input_shape:
+        return input_shape_list
+    _check_colon_exist(input_shape)
+    tensor_list = input_shape.split(';')
+    for tensor in tensor_list:
+        tensor_shape_list = tensor.rsplit(':', maxsplit=1)
+        if len(tensor_shape_list) == 2:
+            shape_list_int = [int(i) for i in tensor_shape_list[1].split(',')]
+            input_shapes_list.append(shape_list_int)
+        else:
+            logger.error(get_shape_not_match_message(InputShapeError.FORMAT_NOT_MATCH, input_shape))
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+    return input_shapes_list
+
+
 def parse_dym_shape_range(dym_shape_range):
+    """
+        Function Description:
+            parse dynamic input shape
+        Parameter:
+            dym_shape_range:the input shape,this format like:tensor_name1:dim1,dim2-dim3;tensor_name2:dim1,dim2~dim3.
+             - means the both dim2 and dim3 value, ~ means the range of [dim2:dim3]
+        Return Value:
+            a list only contains inputs shape, this format like [[dim1,dim2],[dim1,dim2]]
+    """
     _check_colon_exist(dym_shape_range)
     input_shapes = {}
     tensor_list = dym_shape_range.split(";")

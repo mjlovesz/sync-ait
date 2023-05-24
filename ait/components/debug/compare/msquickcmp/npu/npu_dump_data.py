@@ -27,7 +27,7 @@ import numpy as np
 
 from msquickcmp.common import utils
 from msquickcmp.common.dump_data import DumpData
-from msquickcmp.common.utils import AccuracyCompareException
+from msquickcmp.common.utils import AccuracyCompareException, parse_input_shape_to_list
 from msquickcmp.common.dynamic_argument_bean import DynamicArgumentEnum
 from msquickcmp.npu.om_parser import OmParser
 
@@ -203,6 +203,33 @@ class NpuDumpData(DumpData):
             utils.logger.error(
                 "The path {} does not have permission to write.Please check the path permission".format(acl_json_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+
+    def generate_input_data(self):
+        aipp_content = self.om_parser.get_aipp_config_content()
+        aipp_list = aipp_content.split(",")
+        src_image_size_h = []
+        src_image_size_w = []
+        for aipp_info in aipp_list:
+            if "src_image_size_h" in aipp_info:
+                src_image_size_h.append(aipp_info.split(":")[1])
+            if "src_image_size_w" in aipp_info:
+                src_image_size_w.append(aipp_info.split(":")[1])
+        if not src_image_size_h or not src_image_size_w:
+            utils.print_error_log("atc insert_op_config file contains no src_image_size_h or src_image_size_w")
+        if len(src_image_size_h) != len(src_image_size_w):
+            utils.print_error_log("atc insert_op_config file's src_image_size_h number "
+                                  "does not equal src_image_size_w")
+        input_format = ["NCHW"] * len(src_image_size_h)
+        inputs_list = parse_input_shape_to_list(self.arguments.input_shape)
+        if len(inputs_list) != len(src_image_size_h):
+            utils.print_error_log("inputs number is not equal to aipp inputs number")
+        data_dir, _, _ = self._create_dir()
+        for i in range(len(inputs_list)):
+            inputs_list[i][input_format[i].index("H")] = int(src_image_size_h[i])
+            inputs_list[i][input_format[i].index("W")] = int(src_image_size_w[i])
+            input_data = np.random.randint(0, 256, inputs_list[i]).astype(np.uint8)
+            file_name = "input_" + str(i) + ".bin"
+            input_data.tofile(os.path.join(data_dir, file_name))
 
     def generate_dump_data(self, use_cli):
         """
@@ -399,3 +426,24 @@ class NpuDumpData(DumpData):
                 if shape_size != bin_file_size:
                     utils.logger.error("The shape value is different from the size of the bin file.")
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
+
+    def _create_dir(self):
+        # create input directory
+        data_dir = os.path.join(self.args.out_path, "input")
+        utils.create_directory(data_dir)
+
+        # create dump_data/onnx directory
+        onnx_dump_data_dir = os.path.join(self.args.out_path, "dump_data/onnx")
+        utils.create_directory(onnx_dump_data_dir)
+
+        # create model directory
+        model_dir = ""
+        if self.args.dym_shape_range:
+            model_relative_name = "../model"
+        else:
+            model_relative_name = "model"
+            if self.args.dump:
+                model_dir = os.path.join(self.args.out_path, model_relative_name)
+                utils.create_directory(model_dir)
+
+        return data_dir, onnx_dump_data_dir, model_dir
