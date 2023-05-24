@@ -28,6 +28,7 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
 
+
 def set_session_options(session, args):
     # 增加校验
     aipp_batchsize = -1
