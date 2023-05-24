@@ -153,7 +153,7 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
 
     # convert the om model to json
     output_json_path = AtcUtils(args).convert_model_to_json()
-    temp_om_parser = Omparser(output_json_path)
+    temp_om_parser = OmParser(output_json_path)
     aipp_om = True if temp_om_parser.get_aipp_config_content() else False
 
     # deal with the dymShape_range param if exists
