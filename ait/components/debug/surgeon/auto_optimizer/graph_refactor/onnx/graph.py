@@ -306,7 +306,7 @@ class OnnxGraph(BaseGraph):
         end_nodes = [self.get_node(end_name, node_type=Node) for end_name in end_node_names]
 
         top_down_visited = self._bfs_search_reachable_nodes(start_nodes)
-        bottom_up_visited = self._bfs_search_reachable_nodes(end_nodes)
+        bottom_up_visited = self._bfs_search_reachable_nodes(end_nodes, top_down=False)
         reachable_nodes = top_down_visited & bottom_up_visited
 
         if not reachable_nodes:
