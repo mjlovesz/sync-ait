@@ -14,6 +14,7 @@
 
 import os
 import sys
+import logging
 
 from pybind11 import get_cmake_dir
 # Available at setup time due to pyproject.toml
@@ -34,8 +35,6 @@ STATIC_VERSION = "0.0.2"
 # Avoid a gcc warning below:
 # cc1plus: warning: command line option ‘-Wstrict-prototypes’ is valid
 # for C/ObjC but not for C++
-
-import logging
 
 
 class BuildExt(build_ext):
