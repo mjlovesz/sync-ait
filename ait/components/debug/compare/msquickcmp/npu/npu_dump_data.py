@@ -429,21 +429,21 @@ class NpuDumpData(DumpData):
 
     def _create_dir(self):
         # create input directory
-        data_dir = os.path.join(self.args.out_path, "input")
+        data_dir = os.path.join(self.arguments.out_path, "input")
         utils.create_directory(data_dir)
 
         # create dump_data/onnx directory
-        onnx_dump_data_dir = os.path.join(self.args.out_path, "dump_data/onnx")
+        onnx_dump_data_dir = os.path.join(self.arguments.out_path, "dump_data/onnx")
         utils.create_directory(onnx_dump_data_dir)
 
         # create model directory
         model_dir = ""
-        if self.args.dym_shape_range:
+        if self.arguments.dym_shape_range:
             model_relative_name = "../model"
         else:
             model_relative_name = "model"
-            if self.args.dump:
-                model_dir = os.path.join(self.args.out_path, model_relative_name)
+            if self.arguments.dump:
+                model_dir = os.path.join(self.arguments.out_path, model_relative_name)
                 utils.create_directory(model_dir)
 
         return data_dir, onnx_dump_data_dir, model_dir
