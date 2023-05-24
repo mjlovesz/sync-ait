@@ -97,7 +97,7 @@ def dump_data(args, output_json_path, use_cli):
 
 def dump_data_aipp(args, output_json_path, use_cli):
     npu_dump = NpuDumpData(args, output_json_path)
-    npu_dump.generate_dump_data()
+    npu_dump.generate_input_data()
     npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
     expect_net_output_node = npu_dump.get_expect_output_name()
 
