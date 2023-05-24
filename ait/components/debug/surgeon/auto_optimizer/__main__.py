@@ -88,8 +88,10 @@ def optimize_onnx(
             logger.warning('Failed to optimize %s with inference test.', input_model.as_posix())
             logger.warning('Didn\'t specify input_shape_range or dynamic_shape or output_size.')
             return []
-    optimize_action = partial(optimizer.apply_knowledges_with_infer_test, cfg=config) \
-        if infer_test else optimizer.apply_knowledges
+    if infer_test:
+        optimize_action = partial(optimizer.apply_knowledges_with_infer_test, cfg=config)
+    else:
+        optimize_action = optimizer.apply_knowledges
 
     try:
         graph_opt, applied_knowledges = optimize_action(graph=graph)
