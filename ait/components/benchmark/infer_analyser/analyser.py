@@ -56,10 +56,10 @@ def analyse_topk_times(args):
         logging.info(f"max-mean rate:{(np.max(times) - np.mean(times)) * 100.0 / np.mean(times)}%")
     topk_index = [ i[0] for i in topk_list ]
     logging.info(topk_index)
-    flag = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
     modes = stat.S_IWUSR | stat.S_IRUSR
     if args.output is not None:
-        with os.fdopen(os.open(os.path.join(args.output, "topk_index.json"), flag, modes), 'w') as f:
+        with os.fdopen(os.open(os.path.join(args.output, "topk_index.json"), flags, modes), 'w') as f:
             f.write(json.dumps(topk_index))
         os.chmod(os.path.join(args.output, "topk_index.json"), 0o440)
 
