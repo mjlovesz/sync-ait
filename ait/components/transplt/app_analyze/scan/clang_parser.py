@@ -76,6 +76,7 @@ def cuda_enabled(file, include, namespace=None):
     """判断该文件是否为加速库内cuda相关文件。"""
     if not isinstance(include, list):
         include = [include]
+
     for x in include:
         if x == 1 or x in file:
             return True
@@ -111,7 +112,9 @@ def in_acc_lib(file, cursor):
                 cuda_en = False
                 add_ns = ''
             else:
-                cuda_en = cuda_enabled(file, v[1])
+                # get relative path
+                new_file = file.replace(lib, '')
+                cuda_en = cuda_enabled(new_file, v[1])
                 add_ns = add_namespace(cursor, v[0])
                 cursor.lib = v[3]
             return True, cuda_en, add_ns
@@ -232,6 +235,10 @@ def parent_stmt(cursor):
 def parse_args(node):
     args = list()
     if node.kind == CursorKind.CALL_EXPR:
+        refs = node.referenced
+        if not refs:
+            return args
+
         parameters = [f'{x.type.spelling} {x.spelling}' for x in node.referenced.get_arguments()]
         arguments = list(node.get_arguments())
         # 构造函数调用时，get_arguments()获取不到实参，referenced.get_arguments()可以获取形参。

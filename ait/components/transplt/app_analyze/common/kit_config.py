@@ -61,18 +61,21 @@ class KitConfig:
     MACRO_PATTERN = re.compile(r'(OpenCV|CUDA|NVJPEG|DALI|CVCUDA)')
     LIBRARY_PATTERN = re.compile(
         r'nvjpeg_static|nvjpeg2k_static|avdevice|avfilter|avformat|avcodec|swresample|swscale|avutil|postproc|'
+        r'cvcuda|nvcv_types|'
         r'libnvjpeg_static|libnvjpeg2k_static|libavdevice|libavfilter|libavformat|libavcodec|libswresample|libswscale|'
-        r'libavutil|libpostproc|libnvcuvid|libnvidia-encode|libcvcuda|libnvcv_types|libnvcv_types')
+        r'libavutil|libpostproc|libnvcuvid|libnvidia-encode|libcvcuda|libnvcv_types')
     FILE_PATTERN = re.compile(r'opencv.hpp|opencv2')
     UNKNOWN_PATTERN = re.compile(r'opencv|cuda|dali|nvjpeg|ffmpeg')
 
     ARCH = platform.machine()
-    LIB_CLANG_PATH = f'/usr/lib/{ARCH}-linux-gnu/libclang-14.so'
+    # LIB_CLANG_PATH = f'/usr/lib/{ARCH}-linux-gnu/libclang-14.so'
+    LIB_CLANG_PATH = f'/usr/lib/{ARCH}-linux-gnu/libclang-6.0.so.1'
     HEADERS_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'headers'))
     INCLUDES = {
         CUDA: f'{HEADERS_FOLDER}/cuda/include',
         OPENCV: f'{HEADERS_FOLDER}/opencv/include/opencv4',
-        TENSORRT: '',
+        CVCUDA: f'{HEADERS_FOLDER}/cvcuda/include',
+        TENSORRT: f'{HEADERS_FOLDER}/tensorrt/include',
     }
 
     # 'make', 'automake'
@@ -103,9 +106,12 @@ class KitConfig:
     API_MAP = {
         OPENCV: f'{API_MAP_FOLDER}/mxBase_API_MAP.xlsx',
         CUDA: f'{API_MAP_FOLDER}/ACL_API_MAP.xlsx',
+        CVCUDA: f'{API_MAP_FOLDER}/mxBase_CVCUDA_API_MAP.xlsx',
     }
 
     CUDA_HOME = os.environ.get('CUDA_HOME', INCLUDES.get(CUDA, None))
+    CVCUDA_HOME = os.environ.get('CUDA_HOME', INCLUDES.get(CVCUDA, None))
+    TENSORRT_HOME = os.environ.get('TENSORRT_HOME', INCLUDES.get(TENSORRT, None))
     # C++加速库模式匹配:
     # 格式如下，第0/1/2可为list，第1/2用于分析基于CUDA加速的接口。
     # namespace, cuda_include, cuda_namespace, lib_name
@@ -136,7 +142,8 @@ class KitConfig:
         # DALI: https://github.com/NVIDIA/DALI
         'dali': ['dali', 1, '', DALI],
         # CV-CUDA
-        '/cvcuda': ['cvcuda', 1, '', CVCUDA]
+        CVCUDA_HOME: [['nvcv', 'cvcuda'], 1, '', CVCUDA],
+        TENSORRT_HOME: [['nvinfer1'], 1, '', TENSORRT]
     }
     LEVEL = 'small'  # parse level: 'large'
     TOLERANCE = 4  # code diag level: {'ignored':0, 'info':1, 'warning':2, 'error':3, 'fatal':4}
