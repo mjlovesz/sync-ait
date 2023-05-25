@@ -215,14 +215,14 @@ class NpuDumpData(DumpData):
             if "src_image_size_w" in aipp_info:
                 src_image_size_w.append(aipp_info.split(":")[1])
         if not src_image_size_h or not src_image_size_w:
-            utils.print_error_log("atc insert_op_config file contains no src_image_size_h or src_image_size_w")
+            utils.logger.error("atc insert_op_config file contains no src_image_size_h or src_image_size_w")
         if len(src_image_size_h) != len(src_image_size_w):
-            utils.print_error_log("atc insert_op_config file's src_image_size_h number "
+            utils.logger.error("atc insert_op_config file's src_image_size_h number "
                                   "does not equal src_image_size_w")
         input_format = ["NCHW"] * len(src_image_size_h)
         inputs_list = parse_input_shape_to_list(self.arguments.input_shape)
         if len(inputs_list) != len(src_image_size_h):
-            utils.print_error_log("inputs number is not equal to aipp inputs number")
+            utils.logger.error("inputs number is not equal to aipp inputs number")
         data_dir, _, _ = self._create_dir()
         for i in range(len(inputs_list)):
             inputs_list[i][input_format[i].index("H")] = int(src_image_size_h[i])
@@ -406,10 +406,10 @@ class NpuDumpData(DumpData):
                 try:
                     file_size.append(np.load(item).size)
                 except:
-                    utils.print_error_log("The path {} can not get its size through numpy".format(item))
+                    utils.logger.error("The path {} can not get its size through numpy".format(item))
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
             else:
-                utils.print_error_log("Input_path parameter only support bin or npy file, "
+                utils.logger.error("Input_path parameter only support bin or npy file, "
                                       "but got {}".format(item))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         return file_size
