@@ -300,7 +300,7 @@ int Utils::ScanFiles(std::vector<std::string> &fileList, std::string inputDirect
     const char* str = inputDirectory.c_str();
     DIR* dir = opendir(str);
     struct dirent* p = NULL;
-    while((p= readdir(dir)) != NULL)
+    while ((p = readdir(dir)) != NULL)
     {
         if (p->d_name[0] != '.')
         {
@@ -331,7 +331,7 @@ void Utils::SplitStringSimple(string str, vector<string> &out, char split1, char
     // find the last split2 because split2 only once
     for (auto var : split1_out) {
         size_t pos = var.rfind(split2);
-        if(pos != var.npos) {
+        if (pos != var.npos) {
             split2_out.push_back(var.substr(pos + 1, var.size()-pos-1));
         }
     }
@@ -397,7 +397,7 @@ Result Utils::SplitStingGetNameDimsMulMap(std::vector<std::string> in_dym_shape_
         vector<string> shape_tmp;
         Utils::SplitStringWithPunctuation(shape_str, shape_tmp, ',');
         int64_t DimsMul = 1;
-        for(size_t j = 0; j < shape_tmp.size(); ++j) {
+        for (size_t j = 0; j < shape_tmp.size(); ++j) {
 	        DimsMul = DimsMul * atoi(shape_tmp[j].c_str());
         }
         out_namedimsmul_map[name] = DimsMul;

@@ -36,6 +36,10 @@ class ONNXInference(InferenceBase, ABC):
         logger.debug("inference start")
         try:
             model = super()._get_params(cfg)
+        except Exception as err:
+            logger.error("inference failed error={}".format(err))
+            raise RuntimeError("model gets params error") from err
+        try:
             session, input_name, output_name = self._session_init(model)
         except Exception as err:
             logger.error("inference failed error={}".format(err))
