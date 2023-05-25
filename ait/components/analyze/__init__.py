@@ -17,19 +17,23 @@ import pkg_resources
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
-def load_benchmark_sub_task():
+def load_analyze_sub_task():
     sub_tasks = {}
-    for entry_point in pkg_resources.iter_entry_points('benchmark_sub_task'):
+    for entry_point in pkg_resources.iter_entry_points('analyze_sub_task'):
         sub_tasks[entry_point.name] = entry_point.load()
 
-    if len(sub_tasks) == 1:
+    if len(sub_tasks) > 1:
+        return click.Group(name='analyze',
+            context_settings=CONTEXT_SETTINGS,
+            commands=sub_tasks
+        )
+    elif len(sub_tasks) == 1:
         sub_task = list(sub_tasks.values())[0]
-        sub_task.name = 'benchmark'
+        sub_task.name = 'analyze'
         return sub_task
     else:
-        return click.Group(name='benchmark',
-                           context_settings=CONTEXT_SETTINGS
-                           )
+        return click.Group(name='analyze',
+            context_settings=CONTEXT_SETTINGS
+        )
 
-
-benchmark_cli = load_benchmark_sub_task()
+analyze_cli = load_analyze_sub_task()

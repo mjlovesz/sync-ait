@@ -27,39 +27,62 @@
 `onnx-modifier`基于流行的模型可视化工具 [Netron](https://github.com/lutzroeder/netron) 和[Electron](https://www.electronjs.org/)。希望它能给社区带来一些贡献~
 
 # 安装与运行
-目前支持两种方法运行`onnx-modifier`：
+目前支持两种方法运行`onnx-modifier`,Linux与windows安装流程一致，以下为安装运行说明：
 
 ## 源码拉取及第三方库安装
 
-- 拉取`ait`，并切换到 onnx-modifier目录，安装所需要的Python, node
+- 拉取`ait`，并切换到 onnx-modifier 目录，安装所需要的Python, NodeJS
 
+1. 安装python
+    * 注意点: 在 windows 上，命令行的python命令优先会启动 WindowsApps 目录的程序，可以在环境变量中将 %USERPROFILE%\AppData\Local\Microsoft\WindowsApps 下移到最后
+2. 安装NodeJS(使用 electron 启动时需要)
+3. 拉取源码：
   ```bash
   git clone https://gitee.com/ascend/ait.git
-  cd ait/ait
-  pip install . # 安装 ait 推理工具包
-  cd -
+  ```
+4. 安装 ait 中的 surgeon 包, 请参考 ait 的安装流程，以下为参考步骤：
+  ```bash
+  cd ait/ait/components/debug/surgeon
+  pip3 install . --force-reinstall
+  cd - # 安装完成之后返回仓库根目录
+  ```
+5. 安装 python 需要库
+  ```bash
   cd ait/onnx-modifier
   pip install -r requirements.txt
-  npm install  # 如果electron 下载较慢，建议使用国内代理
   ```
 
-## 命令行启动
+## 启动方式一：命令行启动
+- 安装
+    1. 下载electron: https://registry.npmmirror.com/binary.html?path=electron/24.3.1/
+        * linux 下载 electron-v24.3.1-linux-x64.zip 或 electron-v24.3.1-linux-arm64.zip
+        * windows 下载 electron-v24.3.1-win32-x64.zip 或 electron-v24.3.1-win32-arm64.zip
+    2. zip解压之后，将解压路径配置到环境变量的PATH中 
 - 运行（常用于调试开发）
-
   ```bash
+  cd ait/onnx-modifier
   electron .
   ```
 
-## 编译成可执行程序启动
+## 启动方式二：编译成可执行程序启动
 
+- 安装
+  编译环境对网络要求较高
+  ```bash
+  npm install  # npm是node的包管理器；如果electron 下载较慢，建议使用国内代理
+  ```
 - 编译
   ```bash
+  cd ait/onnx-modifier
   npm run make
   ```
 - 安装运行
   编译之后，可以在out中看到打包的程序，点击运行即可
 
-## web服务器启动（不推荐使用）
+## 启动方式三：web服务器启动
+- 安装
+    1. 安装flask： pip install flask 
+    2. 如果运行报错，建议升级flask。建议版本2.2.2
 - 运行，默认端口为5000（常用于调试开发）
   ```bash
   python flaskserver.py
@@ -69,10 +92,13 @@
 - 安全风险
   * web服务器方式运行，会开启端口，如果在不可信任的多用户服务器中，可能端口被监听
   * 仅支持绑定localhost。如果在服务器中启动，在开发者本地是无法访问到的，建议使用ssh端口转发功能
+    * 开启端口转发：比如将服务器（比如linux）的 loacalhost:5000 端口转发到本地(比如windows)的 8080 端口
     ```bash
-    # ssh -L [本地绑定端口]:localhost:[服务器端口] username@serverhost
-    ssh -L 5000:localhost:5000 username@serverhost
+    # 在windows本地运行
+    # ssh -L [本地绑定端口8080]:localhost:[服务器端口5000] [用户名username]@[服务器地址serverhost]
+    ssh -L 8080:localhost:5000 username@serverhost
     ```
+    * 本地浏览器打开 localhost:8080 端口即可访问到 onnx-modifier 服务
 
 # 用法
 
