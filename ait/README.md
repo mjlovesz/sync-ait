@@ -21,84 +21,9 @@ AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体�
 | [transplt](components/transplt/README.md)    | NA           | 提供推理应用迁移分析功能   | ait transplt |
 
 
-
 ## 工具安装
+[一体化安装指导](docs/install/README.md) 
 
-### 环境和依赖
-
-- 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit或nnrt软件包。
-- 安装python3.7.5。
-
-### 工具安装方式
-
-ait推理工具的安装包括**ait包**和**依赖的组件包**的安装，其中依赖包可以根据需求只添加所需要的组件包。
-
-安装方式包括：**源代码一键式安装**和**按需手动安装不同组件**，用户可以按需选取。
-
-**说明**：
-
-- 安装环境要求网络畅通。
-- centos平台默认为gcc 4.8编译器，可能无法安装本工具，建议更新gcc编译器后再安装。
-- 安装开发运行环境的昇腾 AI 推理相关驱动、固件、CANN 包，参照 [昇腾文档](https://www.hiascend.com/zh/document)。安装后用户可通过 **设置CANN_PATH环境变量** ，指定安装的CANN版本路径，例如：export CANN_PATH=/xxx/nnrt/latest/。若不设置，工具默认会从/usr/local/Ascend/nnrt/latest/和/usr/local/Ascend/ascend-toolkit/latest路径分别尝试获取CANN版本。
-- `TensorFlow` 相关 python 依赖包，参考 [Centos7.6上TensorFlow1.15.0 环境安装](https://bbs.huaweicloud.com/blogs/181055) 安装 TensorFlow1.15.0 环境。(**如不使用TensorFlow模型的精度对比功能则不需要安装**)
-- 依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。(**如不使用transplt应用迁移分析功能则不需要安装**)
-
-#### 源代码一键式安装
-
-```shell
-git clone https://gitee.com/ascend/ait.git
-cd ait/ait
-
-# 添加执行权限
-chmod u+x install.sh
-
-# 安装ait，包括debug、profile、benchmark、transplt、analyze组件
-./install.sh
-
-# 重新安装ait及其debug、profile、benchmark、transplt、analyze组件
-./install.sh --force-reinstall
-
-```
-
-#### 按需手动安装不同组件
-
-```shell
-git clone https://gitee.com/ascend/ait.git
-cd ait/ait
-
-# 1. install ait pkg
-pip3 install . --force-reinstall
-
-# 2. install compare pkg
-cd components/debug/compare
-pip3 install . --force-reinstall
-
-# 3. install surgeon pkg
-cd ../surgeon
-pip3 install . --force-reinstall
-
-# 4. install benchmark pkg
-cd ../../benchmark
-
-# 4.1 构建aclruntime包
-pip3 wheel ./backend/ -v
-# 4.2 构建ais_bench推理程序包
-pip3 wheel ./ -v
-
-
-# 4.3 安装aclruntime
-pip3 install ./aclruntime-*.whl
-# 4.4 安装ais_bench推理程序
-pip3 install ./ais_bench-*-py3-none-any.whl
-
-# 5. install analyze pkg
-cd ../analyze
-pip3 install . --force-reinstall
-
-# 6. install transplt pkg
-cd ../transplt
-pip3 install . --force-reinstall
-```
 
 ## 工具使用
 
@@ -107,86 +32,31 @@ pip3 install . --force-reinstall
 ait工具可通过ait可执行文件方式启动，若安装工具时未提示Python的PATH变量问题，或手动将Python安装可执行文件的目录加入PATH变量，则可以直接使用如下命令格式：
 
 ```bash
-# debug, benchmark
 ait <TASK> <SUB_TASK> [OPT] [ARGS]
-
-# analyze
-ait <TASK> [OPT] [ARGS]
 ```
 
 
 其中，```<TASK>```为任务类型，当前支持debug、profile、benchmark、transplt、analyze，后续可能会新增其他任务类型，可以通过如下方式查看当前支持的任务列表：
 
 ```bash
-
 ait -h
-Usage: ait [OPTIONS] COMMAND [ARGS]...
-
-Options:
-  -h, --help  Show this message and exit.
-
-Commands:
-  analyze
-  benchmark
-  debug
-  profile
-  transplt
 ```
 
-```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare;benchmark、analyze、transplt任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子类任务列表：
+```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare;
+当前benchmark、analyze、transplt任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子类任务列表：
 
 1、debug任务支持的功能示例：
 
 ```bash
 ait debug -h
-Usage: ait debug [OPTIONS] COMMAND [ARGS]...
-
-Options:
-  -h, --help  Show this message and exit.
-
-Commands:
-  compare  one-click network-wide accuracy analysis of gold models.
-  surgeon  main entrance of auto optimizer.
 ```
 
 
-```[OPT]```和```[ARGS]```为可选项以及参数，每个任务下面的可选项和参数都不同，以debug任务下面的compare子任务为例，可以通过如下方式获取
+```[OPT]```和```[ARGS]```为可选项以及参数，每个任务下面的可选项和参数都不同，以```debug任务下面的compare子任务```为例，可以通过如下方式获取
 
 
 ```bash
 ait debug compare -h
-Usage: ait debug compare [OPTIONS]
-
-Options:
-  -gm, --golden-model TEXT     <Required> The original model (.onnx or .pb)
-                               file path  [required]
-  -om, --om-model TEXT         <Required> The offline model (.om) file path
-                               [required]
-  -i, --input TEXT             <Optional> The input data path of the model.
-                               Separate multiple inputs with commas(,). E.g:
-                               input_0.bin,input_1.bin
-  -c, --cann-path TEXT         <Optional> The CANN installation path
-  -o, --output TEXT            <Optional> The output path
-  -s, --input-shape TEXT       <Optional> Shape of input shape. Separate
-                               multiple nodes with semicolons(;). E.g:
-                               input_name1:1,224,224,3;input_name2:3,300
-  -d, --device TEXT            <Optional> Input device ID [0, 255], default is
-                               0.
-  --output-size TEXT           <Optional> The size of output. Separate
-                               multiple sizes with commas(,). E.g: 10200,34000
-  -n, --output-nodes TEXT      <Optional> Output nodes designated by user.
-                               Separate multiple nodes with semicolons(;).
-                               E.g: node_name1:0;node_name2:1;node_name3:0
-  --advisor                    <Optional> Enable advisor after compare.
-  -dr, --dym-shape-range TEXT  <Optional> Dynamic shape range using in dynamic
-                               model, using this means ignore input_shape
-  --dump STR2BOOL              <Optional> Whether to dump all the operations
-                               ouput. Default True.
-  --convert STR2BOOL           <Optional> Enable npu dump data conversion from
-                               bin to npy after compare.Clarify --convert True
-                               when using
-  -h, --help                   Show this message and exit.
-
 ```
 
 ### debug任务使用说明
