@@ -260,11 +260,16 @@ class OnnxDumpData(DumpData):
             utils.print_error_log("find no aipp op in dump data, please check --dump is True")
         for i, tensor_info in enumerate(inputs_tensor_info):
             data_convert_file(aipp_input[i], os.path.join(self.args.out_path, "input"), self.args)
-            aipp_output_path = os.path.join(self.args.out_path, "input", aipp_input[i].rsplit("/", 1)[1])
-            aipp_output = np.load(aipp_output_path + ".output.0.npy")
+            aipp_output_path = os.path.join(self.args.out_path, "input", aipp_input[i].rsplit("/", 1)[1]) + \
+                               ".output.0.npy"
+            aipp_output = np.load(aipp_output_path)
             nchw_prod = np.prod(tensor_info["shape"])
-            nc0hwc1_prod_without_c1 = np.prod(aipp_output.shape[:-1])
-            c0 = int(nchw_prod / nc0hwc1_prod_without_c1)
+            nchwc_prod_without_c1 = np.prod(aipp_output.shape[:-1])
+            try:
+                c0 = int(nchw_prod / nchwc_prod_without_c1)
+            except ZeroDivisionError as e:
+                utils.logger.error("Aipp output has wrong shape, file path: {}".format(aipp_output_path))
+                raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR) from e
             onnx_input = np.delete(aipp_output, np.s_[c0:], -1)\
                 .transpose((0, 4, 2, 3, 1)).squeeze(-1).astype(np.float32)
             inputs_map[tensor_info["name"]] = onnx_input

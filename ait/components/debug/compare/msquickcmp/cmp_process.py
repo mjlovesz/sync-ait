@@ -11,6 +11,7 @@ import argparse
 import os
 import sys
 import time
+from collections import namedtuple
 
 from msquickcmp.atc.atc_utils import AtcUtils
 from msquickcmp.common import utils
@@ -22,6 +23,9 @@ from msquickcmp.npu.npu_dump_data_bin2npy import data_convert
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.npu.om_parser import OmParser
 
+
+DumpDataInfo = namedtuple('DumpDataInfo', 'golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
+        npu_net_output_data_path, expect_net_output_node')
 
 def _generate_golden_data_model(args):
     model_name, extension = utils.get_model_name_and_extension(args.model_path)
@@ -91,8 +95,10 @@ def dump_data(args, output_json_path, use_cli):
     # if it's dynamic batch scenario, golden data files should be renamed
     utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
 
-    return golden_dump_data_path, golden_net_output_info, npu_dump_data_path,\
-        npu_net_output_data_path, expect_net_output_node
+    dump_data_info = DumpDataInfo(golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
+                                  npu_net_output_data_path, expect_net_output_node)
+
+    return dump_data_info
 
 
 def dump_data_aipp(args, output_json_path, use_cli):
@@ -108,36 +114,41 @@ def dump_data_aipp(args, output_json_path, use_cli):
     # if it's dynamic batch scenario, golden data files should be renamed
     utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
 
-    return golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
-        npu_net_output_data_path, expect_net_output_node
+    dump_data_info = DumpDataInfo(golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
+        npu_net_output_data_path, expect_net_output_node)
 
-def run(args, input_shape, output_json_path, original_out_path, use_cli:bool ,aipp_om):
+    return dump_data_info
+
+
+def run(args, input_shape, output_json_path, original_out_path, use_cli:bool, aipp_om):
     if input_shape:
         args.input_shape = input_shape
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
 
     if aipp_om:
         golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
-            npu_net_output_data_path, expect_net_output_node = dump_data_aipp(args, output_json_path, use_cli)
+            npu_net_output_data_path, expect_net_output_node \
+        dump_data_info = dump_data_aipp(args, output_json_path, use_cli)
     else:
-        golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
-            npu_net_output_data_path, expect_net_output_node = dump_data(args, output_json_path, use_cli)
+        dump_data_info = dump_data(args, output_json_path, use_cli)
 
     # convert data from bin to npy if --convert is used
-    data_convert(npu_dump_data_path, npu_net_output_data_path, args)
+    data_convert(dump_data_info.npu_dump_data_path, dump_data_info.npu_net_output_data_path, args)
 
     if not args.dump:
         # only compare the final output
-        net_compare = NetCompare(npu_net_output_data_path, golden_dump_data_path, output_json_path, args)
-        net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
+        net_compare = NetCompare(dump_data_info.npu_net_output_data_path,
+                                 dump_data_info.golden_dump_data_path, output_json_path, args)
+        net_compare.net_output_compare(dump_data_info.npu_net_output_data_path, dump_data_info.golden_net_output_info)
     else:
         # compare the entire network
-        net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args)
+        net_compare = NetCompare(dump_data_info.npu_dump_data_path,
+                                 dump_data_info.golden_dump_data_path, output_json_path, args)
         net_compare.accuracy_network_compare()
     # Check and correct the mapping of net output node name.
-    if len(expect_net_output_node) == 1:
-        _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
-        net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
+    if len(dump_data_info.expect_net_output_node) == 1:
+        _check_output_node_name_mapping(dump_data_info.expect_net_output_node, dump_data_info.golden_net_output_info)
+        net_compare.net_output_compare(dump_data_info.npu_net_output_data_path, dump_data_info.golden_net_output_info)
     analyser.Analyser(args.out_path)()
 
 

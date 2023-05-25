@@ -224,10 +224,10 @@ class NpuDumpData(DumpData):
         if len(inputs_list) != len(src_image_size_h):
             utils.logger.error("inputs number is not equal to aipp inputs number")
         data_dir, _, _ = self._create_dir()
-        for i in range(len(inputs_list)):
-            inputs_list[i][input_format[i].index("H")] = int(src_image_size_h[i])
-            inputs_list[i][input_format[i].index("W")] = int(src_image_size_w[i])
-            input_data = np.random.randint(0, 256, inputs_list[i]).astype(np.uint8)
+        for i, item in enumerate(inputs_list):
+            item[input_format[i].index("H")] = int(src_image_size_h[i])
+            item[input_format[i].index("W")] = int(src_image_size_w[i])
+            input_data = np.random.randint(0, 256, item).astype(np.uint8)
             file_name = "input_" + str(i) + ".bin"
             input_data.tofile(os.path.join(data_dir, file_name))
 
@@ -405,9 +405,9 @@ class NpuDumpData(DumpData):
             elif item.endswith("npy") or item.endswith("NPY"):
                 try:
                     file_size.append(np.load(item).size)
-                except:
+                except (ValueError, FileNotFoundError) as e:
                     utils.logger.error("The path {} can not get its size through numpy".format(item))
-                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR) from e
             else:
                 utils.logger.error("Input_path parameter only support bin or npy file, "
                                       "but got {}".format(item))
