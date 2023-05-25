@@ -42,12 +42,6 @@ public class Icons {
     public static final Icon STAR = IconLoader.findIcon(
             "/icons/star.png", Icons.class.getClassLoader());
 
-    public static final Icon SWITCH_CLOSE = IconLoader.findIcon(
-            "/icons/switchclose.svg", Icons.class.getClassLoader());
-
-    public static final Icon SWITCH_OPEN = IconLoader.findIcon(
-            "/icons/switchopen.svg", Icons.class.getClassLoader());
-
     public static final Icon SYSTEM_PROFILER_DARK = IconLoader.findIcon(
             "/icons/SystemProfiler_dark.svg", Icons.class.getClassLoader());
 

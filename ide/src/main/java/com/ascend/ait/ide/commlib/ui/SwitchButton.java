@@ -1,8 +1,6 @@
 package com.ascend.ait.ide.commlib.ui;
 
-
-import com.ascend.ait.ide.Icons;
-
+import com.ascend.ait.ide.commlib.icons.CommonLibIcons;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;
@@ -13,8 +11,8 @@ import java.awt.event.MouseEvent;
  * switch button
  */
 public class SwitchButton extends JLabel {
-    private final Icon onIcon = Icons.SWITCH_OPEN;
-    private final Icon offIcon = Icons.SWITCH_CLOSE;
+    private final Icon onIcon = CommonLibIcons.SWITCH_OPEN;
+    private final Icon offIcon = CommonLibIcons.SWITCH_CLOSE;
     private boolean isSelected;
     private StateChangeListener listener;
     private boolean isSwitchButtonEnable;

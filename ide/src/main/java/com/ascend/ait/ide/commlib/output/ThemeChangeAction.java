@@ -2,7 +2,7 @@
 
 package com.ascend.ait.ide.commlib.output;
 
-import com.ascend.ait.ide.commlib.output.icons.OutputIcons;
+import com.ascend.ait.ide.commlib.icons.CommonLibIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.wm.ToolWindow;
@@ -44,13 +44,13 @@ public class ThemeChangeAction extends AnAction {
         if (outputToolWindows != null) {
             if (UIManager.getLookAndFeel().getName().contains("Darcula") ||
                     UIManager.getLookAndFeel().getName().contains("Dark")) {
-                outputToolWindows.setIcon(OutputIcons.TOOL_ICON_DARK);
-                OutputFactory.setConsoleContent(OutputIcons.TOOL_ICON_DARK);
-                OutputFactory.setDetailsContent(OutputIcons.DETAIL_ICON_DARK);
+                outputToolWindows.setIcon(CommonLibIcons.TOOL_ICON_DARK);
+                OutputFactory.setConsoleContent(CommonLibIcons.TOOL_ICON_DARK);
+                OutputFactory.setDetailsContent(CommonLibIcons.DETAIL_ICON_DARK);
             } else {
-                outputToolWindows.setIcon(OutputIcons.TOOL_ICON);
-                OutputFactory.setConsoleContent(OutputIcons.TOOL_ICON);
-                OutputFactory.setDetailsContent(OutputIcons.DETAIL_ICON);
+                outputToolWindows.setIcon(CommonLibIcons.TOOL_ICON);
+                OutputFactory.setConsoleContent(CommonLibIcons.TOOL_ICON);
+                OutputFactory.setDetailsContent(CommonLibIcons.DETAIL_ICON);
             }
         }
     }

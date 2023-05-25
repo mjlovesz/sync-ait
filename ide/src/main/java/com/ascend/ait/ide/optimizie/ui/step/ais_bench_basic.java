@@ -2,12 +2,11 @@ package com.ascend.ait.ide.optimizie.ui.step;
 
 import com.ascend.ait.ide.Icons;
 import com.ascend.ait.ide.commlib.ui.SwitchButton;
-import com.ascend.ait.ide.util.LocalExectorService;
 import com.ascend.ait.ide.util.FileChooseWithBrows;
 import com.ascend.ait.ide.commlib.exception.CommandInjectException;
 import com.ascend.ait.ide.commlib.output.OutputService;
-import com.ascend.ait.ide.commlib.util.safe.CmdExec;
-import com.ascend.ait.ide.commlib.util.safe.CmdStrBuffer;
+import com.ascend.ait.ide.commlib.util.safeCmd.CmdExec;
+import com.ascend.ait.ide.commlib.util.safeCmd.CmdStrBuffer;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -31,30 +30,28 @@ import java.util.List;
 
 public class ais_bench_basic extends DialogWrapper {
     private JPanel root;
-    private JComboBox pureDataCombx;
+    private JComboBox pureDataTypeCombx;
     private JLabel model;
-    private JComboBox output_comboBox;
-    private JTextField textField1;
-    private JTextField textField2;
+    private JComboBox outFormatComboBox;
+    private JTextField loopTextField;
+    private JTextField warmupTextField;
     private JLabel debug;
     private JLabel dusplay;
     private JPanel loop;
     private JToggleButton profilerBottun;
     private JPanel advance;
-    private TextFieldWithBrowseButton modelFile;
+    private TextFieldWithBrowseButton modelFileBrowse;
     private TextFieldWithBrowseButton inputFileBrowse;
-    private TextFieldWithBrowseButton outputFileBrowse;
+    private TextFieldWithBrowseButton outputPathBrowse;
     private TextFieldWithBrowseButton outputDirnameBrowse;
     private JPanel pureDataTypeJLabel;
     private JPanel outputDirnameJLabel;
     private JPanel outFmtJLabel;
-    private JTextField textField3;
-    private final JTextField modelFileTextField = modelFile.getTextField();
+    private JTextField deviceTextField;
+    private final JTextField modelFileTextField = modelFileBrowse.getTextField();
     private final JTextField inputFilesTextField = inputFileBrowse.getTextField();
-    private final JTextField outputTextField = outputFileBrowse.getTextField();
+    private final JTextField outputTextField = outputPathBrowse.getTextField();
     private final JTextField outputDirTextField = outputDirnameBrowse.getTextField();
-
-    private String pure_data_type;
 
     private static final String OM_MODEL_FILE_EXTENSION = "java";
     private static final String NPY_FILE_EXTENSION = "npy";
@@ -62,8 +59,9 @@ public class ais_bench_basic extends DialogWrapper {
     private static final String TXT_FILE_EXTENSION = "txt";
     private static final List<String> PURE_DATA_TYPE = List.of("zero", "random");
     private static final List<String> OUTFMT_TYPE = List.of("BIN", "NPY", "TXT");
+    private static final long FILE_SIZE_MAX = (long) 2 * 1024 * 1024 * 1024;
     private final Project project;
-    private JComponent aisView;
+    private JComponent debugButton;
     private SwitchButton displayButton;
 
     public ais_bench_basic(Project project) {
@@ -82,13 +80,13 @@ public class ais_bench_basic extends DialogWrapper {
         advance.setVisible(false);
 
         pureDataTypeJLabel.setVisible(false);
-        pureDataCombx.setVisible(false);
+        pureDataTypeCombx.setVisible(false);
 
         outputDirnameJLabel.setVisible(false);
         outputDirnameBrowse.setVisible(false);
 
         outFmtJLabel.setVisible(false);
-        output_comboBox.setVisible(false);
+        outFormatComboBox.setVisible(false);
     }
 
     private void setIcons() {
@@ -97,10 +95,10 @@ public class ais_bench_basic extends DialogWrapper {
 
     private void initComponent() {
         for (String s : PURE_DATA_TYPE) {
-            this.pureDataCombx.addItem(s);
+            this.pureDataTypeCombx.addItem(s);
         }
         for (String s : OUTFMT_TYPE) {
-            this.output_comboBox.addItem(s);
+            this.outFormatComboBox.addItem(s);
         }
     }
 
@@ -112,7 +110,7 @@ public class ais_bench_basic extends DialogWrapper {
 
     private void modelFIleAction() {
         List<String> lists = List.of(OM_MODEL_FILE_EXTENSION);
-        modelFile.addActionListener(event -> {
+        modelFileBrowse.addActionListener(event -> {
             String selectFile = getSelectedFile(lists, true, false);
             if (StringUtils.isEmpty(selectFile)) {
                 return;
@@ -135,13 +133,13 @@ public class ais_bench_basic extends DialogWrapper {
             checkFileSize(model);
             inputFilesTextField.setText(selectFile);
             pureDataTypeJLabel.setVisible(true);
-            pureDataCombx.setVisible(true);
+            pureDataTypeCombx.setVisible(true);
         });
     }
 
     private void outputAction() {
         List<String> lists = List.of(NPY_FILE_EXTENSION, BIN_FILE_EXTENSION);
-        outputFileBrowse.addActionListener(event -> {
+        outputPathBrowse.addActionListener(event -> {
             String selectFile = getSelectedFile(lists, false, false);
             if (StringUtils.isEmpty(selectFile)) {
                 return;
@@ -154,7 +152,7 @@ public class ais_bench_basic extends DialogWrapper {
             outputDirnameJLabel.setVisible(true);
 
             outFmtJLabel.setVisible(true);
-            output_comboBox.setVisible(true);
+            outFormatComboBox.setVisible(true);
             outputdIRAction();
         });
     }
@@ -173,8 +171,8 @@ public class ais_bench_basic extends DialogWrapper {
     }
 
     private void checkFileSize(File file) {
-        if (file.length() > (long) 2 * 1024 * 1024 * 1024) {
-            int result = Messages.showDialog("test1", "test2", new String[]{"yes", "no"},
+        if (file.length() > FILE_SIZE_MAX) {
+            int result = Messages.showDialog("The file you selected is too large.", "ERROR", new String[]{"Yes", "No"},
                     Messages.NO, AllIcons.General.QuestionDialog);
             if (result == Messages.NO) {
                 return;
@@ -203,15 +201,14 @@ public class ais_bench_basic extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
-        LocalExectorService localExectorService = new LocalExectorService(project);
         Boolean check = preCheck();
         if (!check) {
             return;
         }
-        Messages.showErrorDialog("check", "ERROR");
+        Messages.showErrorDialog("Check", "ERROR");
         OutputService.getInstance(project).print("testeeee");
         OutputService.getInstance(project).print(modelFileTextField.getText());
-        OutputService.getInstance(project).print(textField1.getText());
+        OutputService.getInstance(project).print(loopTextField.getText());
 
         CmdStrBuffer cmdStrBuffer = new CmdStrBuffer();
         cmdStrBuffer.append("dir");
@@ -232,18 +229,26 @@ public class ais_bench_basic extends DialogWrapper {
     }
 
     /*
-    check weather input is enough
+    在下发cmd之前检查配置是否完善
+    1：是否配置model file
+    2：有依赖关系的配置是否完成配置。
+    check weather the input is correct
      */
     private Boolean preCheck() {
-
         String modelfile = modelFileTextField.getText();
         if (modelfile.isEmpty()) {
             Messages.showErrorDialog("Model file must be chose", "ERROR");
             return false;
         }
-
-
         return true;
     }
+
+    /*
+    检查对于device loop warmup三个输入的文本是否正确
+   */
+    private Boolean inputValidCheck() {
+        return true;
+    }
+
 }
 

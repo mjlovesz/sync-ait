@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ascend.ait.ide.commlib.util.safe;
+package com.ascend.ait.ide.commlib.util.safeCmd;
 
 import org.jetbrains.annotations.NotNull;
 

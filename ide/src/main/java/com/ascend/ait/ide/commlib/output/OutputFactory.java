@@ -16,7 +16,7 @@
 
 package com.ascend.ait.ide.commlib.output;
 
-import com.ascend.ait.ide.commlib.output.icons.OutputIcons;
+import com.ascend.ait.ide.commlib.icons.CommonLibIcons;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleView;
@@ -81,17 +81,17 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
 
     private static void setContentTheme(Content content) {
         if (UIManager.getLookAndFeel().getName().contains(DARCULA) || UIManager.getLookAndFeel().getName().contains(DARK)) {
-            content.setIcon(OutputIcons.DETAIL_ICON_DARK);
+            content.setIcon(CommonLibIcons.DETAIL_ICON_DARK);
         } else {
-            content.setIcon(OutputIcons.DETAIL_ICON);
+            content.setIcon(CommonLibIcons.DETAIL_ICON);
         }
     }
 
     private static void setToolWindowTheme(ToolWindow toolWindow) {
         if (UIManager.getLookAndFeel().getName().contains(DARCULA) || UIManager.getLookAndFeel().getName().contains(DARK)) {
-            toolWindow.setIcon(OutputIcons.TOOL_ICON_DARK);
+            toolWindow.setIcon(CommonLibIcons.TOOL_ICON_DARK);
         } else {
-            toolWindow.setIcon(OutputIcons.TOOL_ICON);
+            toolWindow.setIcon(CommonLibIcons.TOOL_ICON);
         }
     }
 
