@@ -3,7 +3,7 @@
 
 ## 介绍
 
-提供模型转换开启aipp参数的om模型与标杆模型进行京都比对的功能。
+提供模型转换开启aipp参数的om模型与标杆模型进行精度比对的功能。
 
 ## 运行示例
 
@@ -18,10 +18,12 @@ atc --framework --model=./resnet18.onnx --output=resnet18_bs8 --input_format=NCH
 ```
 {
     "Switch":{
-        "ALL":"off"
-    }
-    "UBFusion":{
-        "ALL":"off"
+        "GraphFusion":{
+            "ALL":"off"
+        },
+        "UBFusion":{
+            "ALL":"off"
+        }
     }
 }
 ```
