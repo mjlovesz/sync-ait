@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import logging
 import math
 import os
@@ -375,7 +376,7 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
         logger.error("ZeroDivisionError: intensors_desc is empty")
         raise RuntimeError("error zero division") from err
     chunks = list(list_split(fileslist, chunks_elements, None))
-    fileslist = [ [] for e in range(jobs) ]
+    fileslist = [ [] for _ in range(jobs) ]
     for _, chunk in enumerate(chunks):
         splits_elements = math.ceil(len(chunk) / jobs)
         splits = list(list_split(chunk, splits_elements, None))
