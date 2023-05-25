@@ -27,6 +27,7 @@ from msquickcmp.npu.om_parser import OmParser
 DumpDataInfo = namedtuple('DumpDataInfo', 'golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
         npu_net_output_data_path, expect_net_output_node')
 
+
 def _generate_golden_data_model(args):
     model_name, extension = utils.get_model_name_and_extension(args.model_path)
     if ".pb" == extension:
