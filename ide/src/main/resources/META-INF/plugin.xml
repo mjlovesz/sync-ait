@@ -32,9 +32,15 @@
     </extensions>
 
     <actions>
-        <action id="HelloWorld" class="com.ascend.ait.ide.action.AitAction" text="HelloWorld"
+        <group id="Ascend" text="_Ascend">
+            <add-to-group group-id="MainMenu" anchor="before" relative-to-action="ToolsMenu"/>
+        </group>
+        <action id="Ait.Ide" class="com.ascend.ait.ide.action.AitAction" text="Ait"
                 description="Print hello world ">
-            <add-to-group group-id="GenerateGroup" anchor="first"/>
+            <add-to-group group-id="Ascend" anchor="first"/>
+        </action>
+        <action class="com.ascend.ait.ide.action.AisBenchAction" id="ais_bench">
+            <add-to-group group-id="Ascend" anchor="last"/>
         </action>
         <action class="com.ascend.ait.ide.commlib.output.ThemeChangeAction" id="ThemeChange">
             <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
