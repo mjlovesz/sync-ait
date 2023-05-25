@@ -76,9 +76,9 @@ class KnowledgeBNFolding(KnowledgeBase):
         common_divisor = np.sqrt(var + epsilon)
         try:
             mul_init = scale / common_divisor
-            add_init = bias - scale * mean / common_divisor
         except ZeroDivisionError as err:
-             raise ValueError('ZeroDivision Error: common divisor == 0') from err
+            raise ValueError('ZeroDivision Error: common divisor == 0') from err
+        add_init = bias - scale * mean / common_divisor
         return mul_init, add_init
 
     def _bn_folding(self, tr0: Node, bn: Node, tr1: Node,
