@@ -133,5 +133,5 @@ opt_bin2npy = click.option(
     "--convert",
     "bin2npy",
     type=str2bool,
-    help="Enable npu dump data conversion from bin to npy after compare."
+    help="Enable npu dump data conversion from bin to npy after compare.Usage: --convert True."
 )

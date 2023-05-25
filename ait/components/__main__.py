@@ -17,33 +17,12 @@ import pkg_resources
 
 from components.debug import debug_cli_group
 from components.profile import profile_cli_group
-from components.benchmark.ais_bench.infer.main_cli import benchmark_cli
 from components.transplt import transplt_cli
-
+from components.benchmark import benchmark_cli
+from components.analyze import analyze_cli
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-
-def load_analyze_sub_task():
-    sub_tasks = {}
-    for entry_point in pkg_resources.iter_entry_points('analyze_sub_task'):
-        sub_tasks[entry_point.name] = entry_point.load()
-
-    if len(sub_tasks) > 1:
-        return click.Group(name='analyze',
-            context_settings=CONTEXT_SETTINGS,
-            commands=sub_tasks
-        )
-    elif len(sub_tasks) == 1:
-        sub_task = list(sub_tasks.values())[0]
-        sub_task.name = 'analyze'
-        return sub_task
-    else:
-        return click.Group(name='analyze',
-            context_settings=CONTEXT_SETTINGS
-        )
-
-analyze_cli = load_analyze_sub_task()
 
 
 cli = click.Group(context_settings=CONTEXT_SETTINGS,
