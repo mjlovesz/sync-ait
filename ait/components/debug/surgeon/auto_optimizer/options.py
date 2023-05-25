@@ -103,16 +103,14 @@ arg_input = click.argument(
 
 
 arg_start = click.argument(
-    'start_node_name',
-    nargs=1,
-    type=click.STRING
+    'start_node_names',
+    type=click.STRING,
 )
 
 
 arg_end = click.argument(
-    'end_node_name',
-    nargs=1,
-    type=click.STRING
+    'end_node_names',
+    type=click.STRING,
 )
 
 
