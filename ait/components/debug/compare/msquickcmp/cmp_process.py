@@ -126,8 +126,6 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool, ai
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
 
     if aipp_om:
-        golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
-            npu_net_output_data_path, expect_net_output_node \
         dump_data_info = dump_data_aipp(args, output_json_path, use_cli)
     else:
         dump_data_info = dump_data(args, output_json_path, use_cli)
