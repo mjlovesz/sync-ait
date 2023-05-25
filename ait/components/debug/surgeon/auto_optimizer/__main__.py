@@ -281,12 +281,12 @@ def command_extract(
         return
 
     # parse start node names and end node names
-    start_nodes = [node_name.strip() for node_name in start_node_names.split(';')]
-    end_nodes = [node_name.strip() for node_name in end_node_names.split(';')]
+    start_nodes = [node_name.strip() for node_name in start_node_names.split(',')]
+    end_nodes = [node_name.strip() for node_name in end_node_names.split(',')]
 
     onnx_graph = OnnxGraph.parse(input_model.as_posix())
     try:
-        onnx_graph.extract_subgraph_multi_in_and_out(start_nodes, end_nodes, output_model_path, is_check_subgraph)
+        onnx_graph.extract_subgraph(start_nodes, end_nodes, output_model_path, is_check_subgraph)
     except ValueError as err:
         logger.error(err)
 
