@@ -35,9 +35,6 @@ class TestClass:
     def teardown_class(cls):
         logger.info('\n ---class level teardown_class')
 
-    def init(self):
-        self.model_name = "resnet50"
-
     @classmethod
     def get_input_tensor_name(cls):
         return "actual_input_1"
@@ -395,6 +392,9 @@ class TestClass:
         return os.path.join(
             os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_lack_title.config"
         )
+
+    def init(self):
+        self.model_name = "resnet50"
 
     # 各种测试场景
     def test_infer_dymaipp_staticshape(self):

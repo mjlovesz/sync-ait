@@ -15,10 +15,14 @@
 import json
 import os
 import logging
+import stat
 import shutil
 
 import pytest
 from test_common import TestCommonClass
+
+OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 
 class TestClass:
@@ -72,8 +76,7 @@ class TestClass:
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         json_dict = {"profiler": {"wrong": "on", "aicpu": "on", "output": "", "aic_metrics": ""}}
         acl_json_path = os.path.join(TestCommonClass.base_path, "acl.json")
-
-        with open(acl_json_path, "w") as f:
+        with os.fdopen(os.open(acl_json_path, OPEN_FLAGS, OPEN_MODES), "w") as f:
             json.dump(json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
         cmd = "{} --model {} --device {} --acl_json_path {} ".format(TestCommonClass.cmd_prefix, model_path,
                                                                      TestCommonClass.default_device_id, acl_json_path)
@@ -232,8 +235,7 @@ class TestClass:
         except Exception as e:
             raise Exception("Visit dict failed".format(e)) from e
         out_json_file_path = os.path.join(TestCommonClass.base_path, "acl.json")
-
-        with open(out_json_file_path, "w") as f:
+        with os.fdopen(open(out_json_file_path, OPEN_FLAGS, OPEN_MODES), "w") as f:
             json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
         cmd = "{} --model {} --device {} --acl_json_path {} --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                                 TestCommonClass.default_device_id,

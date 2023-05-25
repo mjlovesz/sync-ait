@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
-WRITE_FLAGS = os.O_WRONLY | os.O_CREAT
+WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 

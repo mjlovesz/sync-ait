@@ -23,7 +23,7 @@ AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体�
 ### 环境和依赖
 
 - 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit或nnrt软件包。
-- 安装Python3。
+- 安装python3.7.5。
 
 ### 工具安装方式
 
@@ -34,7 +34,6 @@ ait推理工具的安装包括**ait包**和**依赖的组件包**的安装，其
 **说明**：
 
 - 安装环境要求网络畅通。
-- 安装 `python3.7.5` 环境
 - centos平台默认为gcc 4.8编译器，可能无法安装本工具，建议更新gcc编译器后再安装。
 - 安装开发运行环境的昇腾 AI 推理相关驱动、固件、CANN 包，参照 [昇腾文档](https://www.hiascend.com/zh/document)。安装后用户可通过 **设置CANN_PATH环境变量** ，指定安装的CANN版本路径，例如：export CANN_PATH=/xxx/nnrt/latest/。若不设置，工具默认会从/usr/local/Ascend/nnrt/latest/和/usr/local/Ascend/ascend-toolkit/latest路径分别尝试获取CANN版本。
 - `TensorFlow` 相关 python 依赖包，参考 [Centos7.6上TensorFlow1.15.0 环境安装](https://bbs.huaweicloud.com/blogs/181055) 安装 TensorFlow1.15.0 环境。(**如不使用TensorFlow模型的精度对比功能则不需要安装**)
@@ -101,7 +100,7 @@ pip3 install . --force-reinstall
 
 ### 命令格式说明
 
-ait工具可通过ait可执行文件方式启动，若安装工具时未提示Python的HATH变量问题，或手动将Python安装可执行文件的目录加入PATH变量，则可以直接使用如下命令格式：
+ait工具可通过ait可执行文件方式启动，若安装工具时未提示Python的PATH变量问题，或手动将Python安装可执行文件的目录加入PATH变量，则可以直接使用如下命令格式：
 
 ```bash
 # debug, benchmark
