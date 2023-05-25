@@ -16,7 +16,6 @@ import time
 import pandas as pd
 
 from app_analyze.utils.log_util import logger
-from app_analyze.common.kit_config import KitConfig
 from app_analyze.scan.scanner import Scanner
 from app_analyze.scan.clang_parser import Parser
 
@@ -24,18 +23,6 @@ from app_analyze.scan.clang_parser import Parser
 class CxxScanner(Scanner):
     def __init__(self, files):
         super().__init__(files)
-
-    @staticmethod
-    def eval_thread(files, rp_idx, tid):
-        result = {}
-        for idx in range(rp_idx[tid], rp_idx[tid + 1]):
-            cxx_f = files[idx]
-
-            parser = Parser(cxx_f)
-            rst_vals = parser.parse(log=KitConfig.PRINT_DETAIL)
-
-            result[cxx_f] = pd.DataFrame.from_dict(rst_vals)
-        return result
 
     def do_scan(self):
         start_time = time.time()
@@ -49,7 +36,7 @@ class CxxScanner(Scanner):
         result = {}
         for file in self.files:
             p = Parser(file)
-            rst_vals = p.parse(log=KitConfig.PRINT_DETAIL)
+            rst_vals = p.parse()
             result[file] = pd.DataFrame.from_dict(rst_vals)
 
         return result

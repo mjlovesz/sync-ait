@@ -67,6 +67,13 @@ class KnowledgeBase(object):
             return True
         return False
 
+    def next_pattern(self) -> Optional[Pattern]:
+        if not self.has_next_pattern():
+            return None
+        self._pattern_idx += 1
+        self._apply_idx = -1
+        return self._patterns[self._pattern_idx]
+
     def _register_apply_funcs(self, pattern: Pattern, apply_funcs: ApplyFuncs) -> bool:
         '''
         注册pattern的apply方法
@@ -78,7 +85,7 @@ class KnowledgeBase(object):
             return False
         self._pattern_apply_dict[pattern].extend(apply_funcs)
         return True
-
+    
     def __get_current_pattern(self) -> Optional[Pattern]:
         if len(self._patterns) == 0:
             return None
@@ -87,14 +94,7 @@ class KnowledgeBase(object):
         if self._pattern_idx < len(self._patterns):
             return self._patterns[self._pattern_idx]
         return None
-
-    def next_pattern(self) -> Optional[Pattern]:
-        if not self.has_next_pattern():
-            return None
-        self._pattern_idx += 1
-        self._apply_idx = -1
-        return self._patterns[self._pattern_idx]
-
+    
     def has_next_apply(self) -> bool:
         pattern = self.__get_current_pattern()
         if pattern is None:
@@ -108,6 +108,11 @@ class KnowledgeBase(object):
             return True
         return False
 
+    def next_apply(self) -> None:
+        if not self.has_next_apply():
+            return
+        self._apply_idx += 1
+    
     def __get_current_apply_method(self) -> Optional[ApplyFunc]:
         pattern = self.__get_current_pattern()
         if pattern is None:
@@ -120,12 +125,7 @@ class KnowledgeBase(object):
         if self._apply_idx < len(apply_methods):
             return apply_methods[self._apply_idx]
         return None
-
-    def next_apply(self) -> None:
-        if not self.has_next_apply():
-            return
-        self._apply_idx += 1
-
+    
     def get_apply_ids(self) -> List[int]:
         """
         返回当前pattern对应的所有apply_id
