@@ -173,10 +173,7 @@ def macro_map(cursor, file=None):
     TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD需打开。
     """
     if cursor.kind == CursorKind.MACRO_DEFINITION:
-        if not file:
-            return
-
-        if not is_acc_path(file):
+        if not file or not is_acc_path(file):
             return
 
         tk = list(cursor.get_tokens())
