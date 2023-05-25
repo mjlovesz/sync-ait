@@ -288,7 +288,7 @@ class NpuDumpData(DumpData):
         except ModuleNotFoundError as err:
             raise err
 
-        self._compare_shape_vs_bin_file()
+        self._compare_shape_vs_file()
         npu_data_output_dir = os.path.join(self.arguments.out_path, NPU_DUMP_DATA_BASE_PATH)
         utils.create_directory(npu_data_output_dir)
         model_name, extension = utils.get_model_name_and_extension(self.arguments.offline_model_path)
@@ -389,42 +389,53 @@ class NpuDumpData(DumpData):
             bin_file_path_array = utils.check_input_bin_file_path(self.arguments.input_path)
             self.arguments.benchmark_input_path = ",".join(bin_file_path_array)
 
-    def _compare_shape_vs_bin_file(self):
+    def _compare_shape_vs_file(self):
         shape_size_array = self.om_parser.get_shape_size()
         if self.om_parser.contain_negative_1:
             return
-        bin_files_size_array = self._get_bin_file_size()
-        self._shape_size_vs_bin_file_size(shape_size_array, bin_files_size_array)
+        files_size_array = self._get_file_size()
+        self._shape_size_vs_file_size(shape_size_array, files_size_array)
 
-    def _get_bin_file_size(self):
-        bin_file_size = []
-        bin_files = self.arguments.benchmark_input_path.split(",")
-        for item in bin_files:
-            bin_file_size.append(os.path.getsize(item))
-        return bin_file_size
+    def _get_file_size(self):
+        file_size = []
+        files = self.arguments.benchmark_input_path.split(",")
+        for item in files:
+            if item.endswith("bin") or item.endswith("BIN"):
+                file_size.append(os.path.getsize(item))
+            elif item.endswith("npy") or item.endswith("NPY"):
+                try:
+                    file_size.append(np.load(item).size)
+                except:
+                    utils.print_error_log("The path {} can not get its size through numpy".format(item))
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+            else:
+                utils.print_error_log("Input_path parameter only support bin or npy file, "
+                                      "but got {}".format(item))
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+        return file_size
 
-    def _shape_size_vs_bin_file_size(self, shape_size_array, bin_files_size_array):
-        if len(shape_size_array) < len(bin_files_size_array):
-            utils.logger.error("The number of input bin files is incorrect.")
+    def _shape_size_vs_file_size(self, shape_size_array, files_size_array):
+        if len(shape_size_array) < len(files_size_array):
+            utils.logger.error("The number of input files is incorrect.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
         if self.om_parser.shape_range:
-            for bin_file_size in bin_files_size_array:
-                if bin_file_size not in shape_size_array:
+            for file_size in files_size_array:
+                if file_size not in shape_size_array:
                     utils.logger.error(
-                        "The size (%d) of bin file can not match the input of the model." % bin_file_size)
+                        "The size (%d) of file can not match the input of the model." % file_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
         elif self.dynamic_input.is_dynamic_shape_scenario():
             for shape_size in shape_size_array:
-                for bin_size in bin_files_size_array:
-                    if bin_size <= shape_size:
+                for file_size in files_size_array:
+                    if file_size <= shape_size:
                         return
-            utils.logger.warning("The size of bin file can not match the input of the model.")
+            utils.logger.warning("The size of file can not match the input of the model.")
         else:
-            for shape_size, bin_file_size in zip(shape_size_array, bin_files_size_array):
+            for shape_size, file_size in zip(shape_size_array, files_size_array):
                 if shape_size == 0:
                     continue
-                if shape_size != bin_file_size:
-                    utils.logger.error("The shape value is different from the size of the bin file.")
+                if shape_size != file_size:
+                    utils.logger.error("The shape value is different from the size of the file.")
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
 
     def _create_dir(self):
