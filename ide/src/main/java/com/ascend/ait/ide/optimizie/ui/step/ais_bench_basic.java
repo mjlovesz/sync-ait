@@ -48,6 +48,8 @@ public class ais_bench_basic extends DialogWrapper {
     private JPanel outputDirnameJLabel;
     private JPanel outFmtJLabel;
     private JTextField deviceTextField;
+    private JComponent debugButton;
+    private SwitchButton displayButton;
     private final JTextField modelFileTextField = modelFileBrowse.getTextField();
     private final JTextField inputFilesTextField = inputFileBrowse.getTextField();
     private final JTextField outputTextField = outputPathBrowse.getTextField();
@@ -61,8 +63,6 @@ public class ais_bench_basic extends DialogWrapper {
     private static final List<String> OUTFMT_TYPE = List.of("BIN", "NPY", "TXT");
     private static final long FILE_SIZE_MAX = (long) 2 * 1024 * 1024 * 1024;
     private final Project project;
-    private JComponent debugButton;
-    private SwitchButton displayButton;
 
     public ais_bench_basic(Project project) {
         super(true);
@@ -206,26 +206,29 @@ public class ais_bench_basic extends DialogWrapper {
             return;
         }
         Messages.showErrorDialog("Check", "ERROR");
-        OutputService.getInstance(project).print("testeeee");
-        OutputService.getInstance(project).print(modelFileTextField.getText());
-        OutputService.getInstance(project).print(loopTextField.getText());
-
         CmdStrBuffer cmdStrBuffer = new CmdStrBuffer();
-        cmdStrBuffer.append("dir");
-        OutputService.getInstance(project).print(cmdStrBuffer.toString());
+        cmdStrBuffer = getCmdStrBuffer();
+        if (cmdStrBuffer == null) {
+            return;
+        }
+        OutputService.getInstance(project).print("python3 " + cmdStrBuffer.toString());
         CmdExec exec = new CmdExec();
         try {
-            exec.bashStart(cmdStrBuffer);
-            OutputService.getInstance(project).print("TEST", ConsoleViewContentType.LOG_INFO_OUTPUT);
+            exec.pythonStart(cmdStrBuffer);
             String execRec = exec.getResult();
             if (execRec != null) {
-                OutputService.getInstance(project).print(execRec, ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+                OutputService.getInstance(project).print(execRec, ConsoleViewContentType.LOG_INFO_OUTPUT);
             }
-            OutputService.getInstance(project).print("error", ConsoleViewContentType.LOG_ERROR_OUTPUT);
         } catch (CommandInjectException | IOException e) {
             throw new RuntimeException(e);
         }
         close(0);
+    }
+    /*
+    编写cmd配置内容
+     */
+    private CmdStrBuffer getCmdStrBuffer() {
+        return null;
     }
 
     /*
