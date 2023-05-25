@@ -47,7 +47,7 @@ def data_convert(npu_dump_data_path, npu_net_output_data_path, arguments):
 def _check_data_convert_file(convert_dir_path):
     if not os.path.exists(convert_dir_path):
         os.makedirs(convert_dir_path)
-        return convert_dir_path
+    return convert_dir_path
 
 
 def _check_convert_bin2npy(arguments):

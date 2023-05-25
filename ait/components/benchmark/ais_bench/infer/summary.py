@@ -15,6 +15,7 @@
 
 import json
 import os
+import stat
 
 import numpy as np
 from ais_bench.infer.utils import logger
@@ -78,6 +79,8 @@ class Summary(object):
         d2h_latency = Summary.get_list_info(self.d2h_latency_list, scale)
         if self._batchsizes:
             batchsize = sum(self._batchsizes) / len(self._batchsizes)
+        else:
+            pass
         if npu_compute_time.mean == 0:
             throughput = 0
         else:
@@ -115,7 +118,9 @@ class Summary(object):
         logger.info("------------------------------------------------------")
 
         if output_prefix is not None:
-            with open(output_prefix + "_summary.json", 'w') as f:
+            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+            modes = stat.S_IWUSR | stat.S_IRUSR
+            with os.fdopen(os.open(output_prefix + "_summary.json", flags, modes), 'w') as f:
                 json.dump(self.infodict, f)
 
 
