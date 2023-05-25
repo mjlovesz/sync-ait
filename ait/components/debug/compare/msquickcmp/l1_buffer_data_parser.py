@@ -27,6 +27,9 @@ import sys
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
+OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
+
 
 class L1BufferDataParser:
     """
@@ -63,9 +66,7 @@ class L1BufferDataParser:
             data = l1_buffer_data_file.read(self.size)
             output_file_path = os.path.join(self.output_path,
                                             "%s.%d.%d" % (os.path.basename(self.dump_path), self.offset, self.size))
-            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-            modes = stat.S_IWUSR | stat.S_IRUSR
-            with os.fdopen(os.open(output_file_path, flags, modes),
+            with os.fdopen(os.open(output_file_path, OPEN_FLAGS, OPEN_MODES),
                            "wb") as output_file:
                 output_file.write(data)
             logger.info("The l1 buffer data for [%d, %d) has been saved in %s."

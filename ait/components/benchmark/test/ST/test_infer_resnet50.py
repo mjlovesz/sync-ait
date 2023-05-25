@@ -31,6 +31,9 @@ from ais_bench.infer.interface import InferSession
 logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
+OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
+
 
 class TestClass():
     @staticmethod
@@ -887,9 +890,7 @@ class TestClass():
     def test_pure_inference_normal_dynamic_shape_range_mode_3(self):
         range_file_parent_path = os.path.join(self.model_base_path, "input")
         dymshape_range_file = os.path.join(range_file_parent_path, "dymshape_range.info")
-        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-        modes = stat.S_IWUSR | stat.S_IRUSR
-        with os.fdopen(os.open(dymshape_range_file, flags, modes), 'w') as f:
+        with os.fdopen(os.open(dymshape_range_file, OPEN_FLAGS, OPEN_MODES), 'w') as f:
             f.write("actual_input_1:1,3,224-300,224-225\n")
             f.write("actual_input_1:8-9,3,224-300,260-300")
 

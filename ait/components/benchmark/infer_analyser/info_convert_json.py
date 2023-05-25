@@ -18,6 +18,9 @@ import logging
 import stat
 import json
 
+OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
+
 
 def get_times_list(file):
     time_list = []
@@ -47,8 +50,6 @@ if __name__ == '__main__':
     times = get_times_list(times_file)
     t_pid = get_pid(pid_file)
     info = {"pid": t_pid, "npu_compute_time_list": times}
-    open_flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-    open_modes = stat.S_IWUSR | stat.S_IRUSR
-    with os.fdopen(os.open(out_file, open_flags, open_modes), 'w') as ff:
+    with os.fdopen(os.open(out_file, OPEN_FLAGS, OPEN_MODES), 'w') as ff:
         json.dump(info, ff)
 
