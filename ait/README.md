@@ -12,11 +12,11 @@
 AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体化开发工具，支持一站式调试调优，当前包括debug、profile、benchmark、transplt、analyze等组件。
 
 ### AIT各子功能介绍
-| Task Name     | SubTask Name | 说明                                                                        | 命令入口 |
+| 任务类型     | 子功能 | 说明                                                                        | 命令行入口 |
 | ------------- | ------------ | --------------------------------------------------------------------------- | -------- |
 | [benchmark](docs/benchmark/README.md)     | NA           | 用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延）   | ait benchmark |
-| debug     | [surgeon](docs/debug/surgeon/README.md)           | 使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能。   | ait debug surgeon |
-| debug     | [compare](docs/debug/compare/README.md)           | 提供自动化的推理场景精度比对，用来定位问题算子   | ait debug compare |
+| debug(一站式调试)     | [surgeon](docs/debug/surgeon/README.md)           | 使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能。   | ait debug surgeon |
+| debug(一站式调试)      | [compare](docs/debug/compare/README.md)           | 提供自动化的推理场景精度比对，用来定位问题算子   | ait debug compare |
 | [analyze](components/analyze/README.md)     | NA           | 提供推理模型支持度分析功能   | ait analyze |
 | [transplt](components/transplt/README.md)    | NA           | 提供推理应用迁移分析功能   | ait transplt |
 
@@ -27,7 +27,7 @@ AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体�
 
 ## 工具使用
 
-### 命令格式说明
+### 命令行格式说明
 
 ait工具可通过ait可执行文件方式启动，若安装工具时未提示Python的PATH变量问题，或手动将Python安装可执行文件的目录加入PATH变量，则可以直接使用如下命令格式：
 
@@ -36,14 +36,14 @@ ait <TASK> <SUB_TASK> [OPT] [ARGS]
 ```
 
 
-其中，```<TASK>```为任务类型，当前支持debug、profile、benchmark、transplt、analyze，后续可能会新增其他任务类型，可以通过如下方式查看当前支持的任务列表：
+其中，```<TASK>```为任务类型，当前支持debug、benchmark、transplt、analyze，后续可能会新增其他任务类型，可以通过如下方式```查看当前支持的任务列表```：
 
 ```bash
 ait -h
 ```
 
 ```<SUB_TASK>```为子任务类型，当前在debug任务下面，有surgeon、compare;
-当前benchmark、analyze、transplt任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子类任务列表：
+当前benchmark、analyze、transplt任务没有子任务类型。后续其他任务会涉及扩展子任务类型，可以通过如下方式查看每个任务支持的子功能列表：
 
 1、debug任务支持的功能示例：
 
@@ -52,7 +52,7 @@ ait debug -h
 ```
 
 
-```[OPT]```和```[ARGS]```为可选项以及参数，每个任务下面的可选项和参数都不同，以```debug任务下面的compare子任务```为例，可以通过如下方式获取
+```[OPT]```和```[ARGS]```为可选项以及参数，每个任务下面的可选项和参数都不同，以```debug任务下面的compare子任务```为例，可以通过如下方式```获取可选项和参数```
 
 
 ```bash
