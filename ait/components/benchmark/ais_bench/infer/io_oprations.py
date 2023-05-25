@@ -198,6 +198,7 @@ def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index, o
                 summary.append_sample_id_outfile(sample_id, file_path)
                 save_data_to_files(file_path, subdata[j])
         else:
-            logger.error('save out files error array shape:{} filesinfo:{} files_count_perbatch:{} ndata.shape{}:{}'.format(
-                ndata.shape, infiles_paths, files_count_perbatch, output_batchsize_axis, ndata.shape[output_batchsize_axis]))
+            logger.error('save out files error array shape:{} filesinfo:{} files_count_perbatch:{} ndata.shape\
+                         {}:{}'.format(ndata.shape, infiles_paths, files_count_perbatch, output_batchsize_axis,\
+                         ndata.shape[output_batchsize_axis]))
             raise RuntimeError()

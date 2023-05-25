@@ -83,8 +83,9 @@ class Summary(object):
         else:
             throughput = 1000*batchsize/npu_compute_time.mean
 
-        self.infodict['NPU_compute_time'] = {"min": npu_compute_time.min, "max": npu_compute_time.max, "mean": npu_compute_time.mean,
-                                    "median": npu_compute_time.median, "percentile({}%)".format(scale): npu_compute_time.percentile,
+        self.infodict['NPU_compute_time'] = {"min": npu_compute_time.min, "max": npu_compute_time.max,\
+                                    "mean": npu_compute_time.mean, "median": npu_compute_time.median, "percentile({}%\
+                                    )".format(scale): npu_compute_time.percentile,
                                     "count": len(self.npu_compute_time_list)}
         self.infodict['H2D_latency'] = {"min": h2d_latency.min, "max": h2d_latency.max, "mean": h2d_latency.mean,
                                "median": h2d_latency.median, "percentile({}%)".format(scale): h2d_latency.percentile,
