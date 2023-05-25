@@ -42,6 +42,9 @@ chmod u+x install.sh
 git clone https://gitee.com/ascend/ait.git
 cd ait/ait
 
+# 添加执行权限
+chmod u+x install.sh
+
 # 1. 只安装debug组件
 ./install.sh --debug
 
