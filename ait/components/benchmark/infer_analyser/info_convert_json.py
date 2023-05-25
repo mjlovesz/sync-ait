@@ -47,8 +47,8 @@ if __name__ == '__main__':
     times = get_times_list(times_file)
     t_pid = get_pid(pid_file)
     info = {"pid": t_pid, "npu_compute_time_list": times}
-    flag = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
     modes = stat.S_IWUSR | stat.S_IRUSR
-    with os.fdopen(os.open(out_file, flag, modes), 'w') as ff:
+    with os.fdopen(os.open(out_file, flags, modes), 'w') as ff:
         json.dump(info, ff)
 
