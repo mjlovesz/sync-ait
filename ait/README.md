@@ -59,44 +59,6 @@ ait debug -h
 ait debug compare -h
 ```
 
-### debug任务使用说明
-
-#### 1. compare子任务简单使用示例
-```bash
-ait debug compare -h
-```
-
-更多使用方式和示例请参考：[compare examples](examples/cli/debug/compare/)
-
-#### 2. surgeon子任务使用说明
-```bash
-ait debug surgeon -h
-```
-
-更多使用方式和示例请参考：[surgeon examples](examples/cli/debug/surgeon/)
-
-
-### benchmark任务使用说明
-```bash
-ait benchmark -h
-```
-
-更多使用方式和示例请参考：[benchmark examples](examples/cli/benchmark/)
-
-### analyze任务使用说明
-
-```shell
-ait analyze -h
-```
-
-### transplt任务使用说明
-
-```shell
-ait transplt -h
-```
-
-更多使用方式和示例待补充
-
 
 ## 参考
 
