@@ -64,6 +64,10 @@ class OnnxGraph(BaseGraph):
             'opset_imports': opset_imports
         }
 
+    @property
+    def opset_imports(self) -> Optional[Sequence[OperatorSetIdProto]]:
+        return self._meta.get('opset_imports')
+
     @classmethod
     def parse(cls, path_or_bytes: Union[str, ModelProto, GraphProto], add_name_suffix: bool = False) -> 'OnnxGraph':
         if isinstance(path_or_bytes, str):
@@ -297,10 +301,6 @@ class OnnxGraph(BaseGraph):
 
         return OnnxGraph.parse(model_sim)
 
-    @property
-    def opset_imports(self) -> Optional[Sequence[OperatorSetIdProto]]:
-        return self._meta.get('opset_imports')
-
     @opset_imports.setter
     def opset_imports(self, opset: Union[int, None]) -> None:
         if not opset:
@@ -312,7 +312,6 @@ class OnnxGraph(BaseGraph):
             converted_model = version_converter.convert_version(model, opset)
             self.graph = OnnxGraph.parse(converted_model)
             self._meta['opset_imports'] = [opset_imports]
-
 
     def _bfs_search_reachable_nodes(self, start_nodes, top_down=True):
         visited = set()

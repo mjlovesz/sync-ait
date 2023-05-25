@@ -11,15 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import os
 import sys
+import stat
 import subprocess
 import json
 import numpy as np
 import itertools
 
 from ais_bench.infer.utils import logger
+
+OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 
 def get_modules_version(name):
@@ -113,7 +116,7 @@ def get_acl_json_path(args):
         output_json_dict["dump"]["dump_list"][0]["model_name"] = model_name.split('.')[0]
 
     out_json_file_path = os.path.join(args.output, "acl.json")
-    with open(out_json_file_path, "w") as f:
+    with os.fdopen(os.open(out_json_file_path, OPEN_FLAGS, OPEN_MODES), 'w') as f:
         json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
     return out_json_file_path
 
