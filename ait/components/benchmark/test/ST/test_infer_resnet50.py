@@ -223,8 +223,8 @@ class TestClass():
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
         os.makedirs(output_path)
-        cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output {}" \
-            "--output_dirname {} ".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+        cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output {} \
+            --output_dirname {} ".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                            output_size, file_paths, output_parent_path, output_dirname)
 
         ret = os.system(cmd)
@@ -240,8 +240,8 @@ class TestClass():
         shutil.rmtree(output_path)
         os.makedirs(output_path)
         # check input parameter is a folder
-        cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output {}" \
-            "--output_dirname {} ".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+        cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output {} \
+            --output_dirname {} ".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                            output_size, auto_set_dymshape_mode_input_dir_path, output_parent_path,
                                              output_dirname)
 
@@ -379,8 +379,8 @@ class TestClass():
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
             os.makedirs(output_path)
-            cmd = "{} --model {} --device {} --input {}  --debug true --output {}  --output_dirname {}" \
-                "--warmup_count {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+            cmd = "{} --model {} --device {} --input {}  --debug true --output {}  --output_dirname {} \
+                --warmup_count {} > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                  TestCommonClass.default_device_id, input_path,
                                                   output_parent_path, output_dirname,  warmup_num, log_path)
             logger.info("run cmd:{}".format(cmd))
@@ -424,8 +424,8 @@ class TestClass():
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
         os.makedirs(output_path)
-        cmd = "{} --model {} --device {} --debug true --output {}  --output_dirname {} --warmup_count {}" \
-            "--loop {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+        cmd = "{} --model {} --device {} --debug true --output {}  --output_dirname {} --warmup_count {} \
+            --loop {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                      output_parent_path, output_dirname,  warmup_num, loop_num, log_path)
 
         logger.info("run cmd:{}".format(cmd))
@@ -465,8 +465,8 @@ class TestClass():
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
             os.makedirs(output_path)
-            cmd = "{} --model {} --device {}  --debug true --output {}  --output_dirname {} --pure_data_type {}" \
-                "--loop {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+            cmd = "{} --model {} --device {}  --debug true --output {}  --output_dirname {} --pure_data_type {} \
+                --loop {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                          output_parent_path, output_dirname, pure_data_type, loop_num, log_path)
             logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
@@ -505,7 +505,7 @@ class TestClass():
         os.makedirs(output_dir_path)
         summary_json_path = os.path.join(output_path,  "{}_summary.json".format(output_dir_name))
 
-        cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {}" \
+        cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {}"\
             .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                      input_path, output_path, output_dir_name)
         logger.info("run cmd:{}".format(cmd))
