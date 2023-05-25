@@ -512,8 +512,9 @@ def inclusion_directive(c):
     try:
         file = c.get_included_file()
     except AssertionError as e:
-        prefix = '' if c.spelling.startswith('/') else '/'
-        c.info = Info(None, c.spelling, c.spelling, None, prefix + c.spelling)
+        # prefix = '' if c.spelling.startswith('/') else '/'
+        # c.info = Info(None, c.spelling, c.spelling, None, prefix + c.spelling)
+        c.info = Info(None, c.spelling, c.spelling, None, None)
     else:
         c.info = Info(None, c.spelling, c.spelling, None, file.name)
 
