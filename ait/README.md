@@ -101,7 +101,7 @@ pip3 install . --force-reinstall
 
 ### 命令格式说明
 
-ait工具可通过ait可执行文件方式启动，若安装工具时未提示Python的HATH变量问题，或手动将Python安装可执行文件的目录加入PATH变量，则可以直接使用如下命令格式：
+ait工具可通过ait可执行文件方式启动，若安装工具时未提示Python的PATH变量问题，或手动将Python安装可执行文件的目录加入PATH变量，则可以直接使用如下命令格式：
 
 ```bash
 # debug, benchmark
