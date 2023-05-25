@@ -32,4 +32,4 @@ atc --framework 5 --model=./resnet18.onnx --output=resnet18_bs8 --input_format=N
   ```sh
   ait debug compare -gm ./resnet18.onnx -om ./resnet18_bs8.om -s "image:8,3,224,224"
   ```
--om参数请输入上述生成的算子不融合的om模型；-s为onnx模型输入的shape信息；如果需要指定输入，使用-i参数指定om模型的输入(npy或者bin文件)。
+-gm为标杆onnx模型；-om参数请输入上述生成的算子不融合的om模型；-s为onnx模型输入的shape信息；如果需要指定输入，使用-i参数指定om模型的输入(npy或者bin文件)。
