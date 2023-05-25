@@ -63,7 +63,9 @@ class L1BufferDataParser:
             data = l1_buffer_data_file.read(self.size)
             output_file_path = os.path.join(self.output_path,
                                             "%s.%d.%d" % (os.path.basename(self.dump_path), self.offset, self.size))
-            with os.fdopen(os.open(output_file_path, os.O_WRONLY | os.O_CREAT, stat.S_IWUSR | stat.S_IRUSR),
+            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+            modes = stat.S_IWUSR | stat.S_IRUSR
+            with os.fdopen(os.open(output_file_path, flags, modes),
                            "wb") as output_file:
                 output_file.write(data)
             logger.info("The l1 buffer data for [%d, %d) has been saved in %s."

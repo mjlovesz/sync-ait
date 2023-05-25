@@ -117,7 +117,7 @@ class Summary(object):
         logger.info("------------------------------------------------------")
 
         if output_prefix is not None:
-            flags = os.O_WRONLY | os.O_CREAT
+            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
             modes = stat.S_IWUSR | stat.S_IRUSR
             with os.fdopen(os.open(output_prefix + "_summary.json", flags, modes), 'w') as f:
                 json.dump(self.infodict, f)

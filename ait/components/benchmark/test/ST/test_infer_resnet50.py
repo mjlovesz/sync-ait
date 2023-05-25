@@ -887,7 +887,7 @@ class TestClass():
     def test_pure_inference_normal_dynamic_shape_range_mode_3(self):
         range_file_parent_path = os.path.join(self.model_base_path, "input")
         dymshape_range_file = os.path.join(range_file_parent_path, "dymshape_range.info")
-        flags = os.O_WRONLY | os.O_CREAT
+        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
         modes = stat.S_IWUSR | stat.S_IRUSR
         with os.fdopen(os.open(dymshape_range_file, flags, modes), 'w') as f:
             f.write("actual_input_1:1,3,224-300,224-225\n")
