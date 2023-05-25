@@ -15,6 +15,7 @@
 
 import json
 import os
+import stat
 
 import numpy as np
 from ais_bench.infer.utils import logger
@@ -78,13 +79,16 @@ class Summary(object):
         d2h_latency = Summary.get_list_info(self.d2h_latency_list, scale)
         if self._batchsizes:
             batchsize = sum(self._batchsizes) / len(self._batchsizes)
+        else:
+            pass
         if npu_compute_time.mean == 0:
             throughput = 0
         else:
             throughput = 1000*batchsize/npu_compute_time.mean
 
-        self.infodict['NPU_compute_time'] = {"min": npu_compute_time.min, "max": npu_compute_time.max, "mean": npu_compute_time.mean,
-                                    "median": npu_compute_time.median, "percentile({}%)".format(scale): npu_compute_time.percentile,
+        self.infodict['NPU_compute_time'] = {"min": npu_compute_time.min, "max": npu_compute_time.max,\
+                                    "mean": npu_compute_time.mean, "median": npu_compute_time.median, "percentile({}%\
+                                    )".format(scale): npu_compute_time.percentile,
                                     "count": len(self.npu_compute_time_list)}
         self.infodict['H2D_latency'] = {"min": h2d_latency.min, "max": h2d_latency.max, "mean": h2d_latency.mean,
                                "median": h2d_latency.median, "percentile({}%)".format(scale): h2d_latency.percentile,
@@ -113,7 +117,9 @@ class Summary(object):
         logger.info("------------------------------------------------------")
 
         if output_prefix is not None:
-            with open(output_prefix + "_summary.json", 'w') as f:
+            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+            modes = stat.S_IWUSR | stat.S_IRUSR
+            with os.fdopen(os.open(output_prefix + "_summary.json", flags, modes), 'w') as f:
                 json.dump(self.infodict, f)
 
 

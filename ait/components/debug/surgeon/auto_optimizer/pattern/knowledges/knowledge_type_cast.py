@@ -133,7 +133,7 @@ class TypeConstraintQuery(object):
         if op_type not in self._constraint_map:
             return set()
         if self._constraint_map.get(op_type):
-            return self._constraint_map[op_type].get_constraint(io_type, io_index)
+            return self._constraint_map.get(op_type).get_constraint(io_type, io_index)
         else:
             raise KeyError(f'{op_type} does not exist')
 

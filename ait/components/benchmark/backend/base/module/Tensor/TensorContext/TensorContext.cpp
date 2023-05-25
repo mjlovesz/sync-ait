@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #include "Base/Tensor/TensorContext/TensorContext.h"
 #include "Base/DeviceManager/DeviceManager.h"
 #include "Base/Log/Log.h"
@@ -27,9 +27,6 @@ namespace Base {
 TensorContext::TensorContext()
 {
 #ifdef COMPILE_PYTHON_MODULE
-    // if (Base::Log::InitPythonModuleLog() != APP_ERR_OK) {
-    //     LogWarn << "Failed to initialize log." << std::endl;
-    // }
 #endif
     if (!DeviceManager::GetInstance()->IsInitDevices()) {
         APP_ERROR ret = DeviceManager::GetInstance()->InitDevices();

@@ -14,8 +14,8 @@
 
 class CmpArgsAdapter:
     def __init__(self,
-                 gold_model, 
-                 om_model, 
+                 gold_model,
+                 om_model,
                  input_data_path,
                  cann_path,
                  out_path,
@@ -36,7 +36,7 @@ class CmpArgsAdapter:
         self.device = device
         self.output_size = output_size
         self.output_nodes = output_nodes
-        self.advisor = advisor 
-        self.dym_shape_range = dym_shape_range   
-        self.dump = dump    
+        self.advisor = advisor
+        self.dym_shape_range = dym_shape_range
+        self.dump = dump
         self.bin2npy = bin2npy

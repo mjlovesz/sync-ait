@@ -62,8 +62,8 @@ class Config:
         """
         读取模型配置文件，返回模型相关配置参数及推理流程
         """
+        format_path = format_to_module(file_name)
         try:
-            format_path = format_to_module(file_name)
             model_dict = Register.import_module(format_path)
         except Exception as err:
             raise RuntimeError("invalid read file error={}".format(err)) from err
