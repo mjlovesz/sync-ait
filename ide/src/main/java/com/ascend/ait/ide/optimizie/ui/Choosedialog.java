@@ -2,9 +2,9 @@ package com.ascend.ait.ide.optimizie.ui;
 
 import com.ascend.ait.ide.Icons;
 import com.ascend.ait.ide.optimizie.ui.step.ais_bench_basic;
-import com.ascend.ait.ide.commlib.output.OutputFactory;
-import com.ascend.ait.ide.commlib.output.OutputService;
-import com.ascend.ait.ide.commlib.ui.UiUtils;
+import com.ascend.ait.ide.commonlib.output.OutputFactory;
+import com.ascend.ait.ide.commonlib.output.OutputService;
+import com.ascend.ait.ide.commonlib.ui.UiUtils;
 import com.intellij.openapi.project.Project;
 
 import javax.swing.JComponent;

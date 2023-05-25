@@ -1,8 +1,8 @@
 
 
-package com.ascend.ait.ide.commlib.output;
+package com.ascend.ait.ide.commonlib.output;
 
-import com.ascend.ait.ide.commlib.icons.CommonLibIcons;
+import com.ascend.ait.ide.commonlib.icons.CommonLibIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.wm.ToolWindow;

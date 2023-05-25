@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ascend.ait.ide.commlib.output;
+package com.ascend.ait.ide.commonlib.output;
 
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleView;

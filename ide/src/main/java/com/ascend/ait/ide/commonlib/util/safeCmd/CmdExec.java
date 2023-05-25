@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.ascend.ait.ide.commlib.util.safeCmd;
+package com.ascend.ait.ide.commonlib.util.safeCmd;
 
 
-import com.ascend.ait.ide.commlib.exception.CommandInjectException;
+import com.ascend.ait.ide.commonlib.exception.CommandInjectException;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

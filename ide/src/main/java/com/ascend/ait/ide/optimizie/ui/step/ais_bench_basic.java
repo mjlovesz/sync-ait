@@ -1,12 +1,12 @@
 package com.ascend.ait.ide.optimizie.ui.step;
 
 import com.ascend.ait.ide.Icons;
-import com.ascend.ait.ide.commlib.ui.SwitchButton;
+import com.ascend.ait.ide.commonlib.ui.SwitchButton;
 import com.ascend.ait.ide.util.FileChooseWithBrows;
-import com.ascend.ait.ide.commlib.exception.CommandInjectException;
-import com.ascend.ait.ide.commlib.output.OutputService;
-import com.ascend.ait.ide.commlib.util.safeCmd.CmdExec;
-import com.ascend.ait.ide.commlib.util.safeCmd.CmdStrBuffer;
+import com.ascend.ait.ide.commonlib.exception.CommandInjectException;
+import com.ascend.ait.ide.commonlib.output.OutputService;
+import com.ascend.ait.ide.commonlib.util.safeCmd.CmdExec;
+import com.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -54,7 +54,6 @@ public class ais_bench_basic extends DialogWrapper {
     private final JTextField inputFilesTextField = inputFileBrowse.getTextField();
     private final JTextField outputTextField = outputPathBrowse.getTextField();
     private final JTextField outputDirTextField = outputDirnameBrowse.getTextField();
-
     private static final String OM_MODEL_FILE_EXTENSION = "java";
     private static final String NPY_FILE_EXTENSION = "npy";
     private static final String BIN_FILE_EXTENSION = "bin";
@@ -205,12 +204,8 @@ public class ais_bench_basic extends DialogWrapper {
         if (!check) {
             return;
         }
-        Messages.showErrorDialog("Check", "ERROR");
         CmdStrBuffer cmdStrBuffer = new CmdStrBuffer();
         cmdStrBuffer = getCmdStrBuffer();
-        if (cmdStrBuffer == null) {
-            return;
-        }
         OutputService.getInstance(project).print("python3 " + cmdStrBuffer.toString());
         CmdExec exec = new CmdExec();
         try {
@@ -228,7 +223,19 @@ public class ais_bench_basic extends DialogWrapper {
     编写cmd配置内容
      */
     private CmdStrBuffer getCmdStrBuffer() {
-        return null;
+        CmdStrBuffer cmd = new CmdStrBuffer();
+        cmd.append(" -m ais_bench ");
+        if (modelFileTextField != null) {
+            cmd.append(" --model ").appendFilePath(modelFileTextField.getText());
+        }
+        if (outputTextField != null) {
+            cmd.append(" --output ").appendFilePath(outputTextField.getText());
+        }
+        String outFmtText = outFormatComboBox.getSelectedItem().toString();
+        if (outputTextField != null && outFmtText != null) {
+            cmd.append(" --outfmt ").appendFilePath(outFmtText);
+        }
+        return cmd;
     }
 
     /*

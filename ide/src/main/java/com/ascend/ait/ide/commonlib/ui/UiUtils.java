@@ -1,4 +1,4 @@
-package com.ascend.ait.ide.commlib.ui;
+package com.ascend.ait.ide.commonlib.ui;
 
 import com.intellij.ui.JBColor;
 import com.intellij.util.ui.UIUtil;

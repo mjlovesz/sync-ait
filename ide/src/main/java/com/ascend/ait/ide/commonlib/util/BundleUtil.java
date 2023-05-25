@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ascend.ait.ide.commlib.util;
+package com.ascend.ait.ide.commonlib.util;
 
 import org.jetbrains.annotations.NotNull;
 

@@ -27,8 +27,8 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.ascend.ait.ide.filetype.AitFileEditorProvider"/>
-        <projectService serviceImplementation="com.ascend.ait.ide.commlib.output.OutputService"/>
-        <toolWindow factoryClass="com.ascend.ait.ide.commlib.output.OutputFactory" id="Output" order="first" doNotActivateOnStart="true"/>
+        <projectService serviceImplementation="com.ascend.ait.ide.commonlib.output.OutputService"/>
+        <toolWindow factoryClass="com.ascend.ait.ide.commonlib.output.OutputFactory" id="Output" order="first" doNotActivateOnStart="true"/>
     </extensions>
 
     <actions>
@@ -42,7 +42,7 @@
         <action class="com.ascend.ait.ide.action.AisBenchAction" id="ais_bench">
             <add-to-group group-id="Ascend" anchor="last"/>
         </action>
-        <action class="com.ascend.ait.ide.commlib.output.ThemeChangeAction" id="ThemeChange">
+        <action class="com.ascend.ait.ide.commonlib.output.ThemeChangeAction" id="ThemeChange">
             <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
         </action>
     </actions>

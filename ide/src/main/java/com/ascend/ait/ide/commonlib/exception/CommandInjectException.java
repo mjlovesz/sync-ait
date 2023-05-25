@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Huawei Technologies Co., Ltd
+ * Copyright 2021 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,25 @@
  * limitations under the License.
  */
 
-package com.ascend.ait.ide.commlib.exception;
+package com.ascend.ait.ide.commonlib.exception;
+
+
+import com.ascend.ait.ide.commonlib.util.BundleUtil;
 
 /**
- * CommandExecutor Exception
+ * mindstudio - CommandInjectException
  *
- * @author baiguochao
- * @since 2019/4/22
+ * @author liucj
+ * @since 2021/4/14
  */
-public class CommandException extends RuntimeException {
-    private static final long serialVersionUID = -7848065374983831216L;
+public class CommandInjectException extends Exception {
+    private static final long serialVersionUID = -2439139320983098242L;
 
-    public CommandException(String message) {
-        super(message);
+    public CommandInjectException() {
+        this("");
     }
 
-    public CommandException() {
-        this("");
+    public CommandInjectException(String errorParam) {
+        super(BundleUtil.getCommonlibsString("command.inject.error") + "The error param is " + errorParam);
     }
 }

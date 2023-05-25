@@ -1,6 +1,6 @@
-package com.ascend.ait.ide.commlib.ui;
+package com.ascend.ait.ide.commonlib.ui;
 
-import com.ascend.ait.ide.commlib.icons.CommonLibIcons;
+import com.ascend.ait.ide.commonlib.icons.CommonLibIcons;
 
 import javax.swing.Icon;
 import javax.swing.JLabel;

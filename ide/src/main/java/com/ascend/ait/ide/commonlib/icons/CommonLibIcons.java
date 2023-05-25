@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.ascend.ait.ide.commlib.icons;
+package com.ascend.ait.ide.commonlib.icons;
 
 import com.ascend.ait.ide.Icons;
 import com.intellij.openapi.util.IconLoader;

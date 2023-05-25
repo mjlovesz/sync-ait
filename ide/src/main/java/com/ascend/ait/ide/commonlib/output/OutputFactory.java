@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.ascend.ait.ide.commlib.output;
+package com.ascend.ait.ide.commonlib.output;
 
-import com.ascend.ait.ide.commlib.icons.CommonLibIcons;
+import com.ascend.ait.ide.commonlib.icons.CommonLibIcons;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleView;
