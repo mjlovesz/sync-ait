@@ -73,7 +73,7 @@ class TestClass:
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         json_dict = {"profiler": {"wrong": "on", "aicpu": "on", "output": "", "aic_metrics": ""}}
         acl_json_path = os.path.join(TestCommonClass.base_path, "acl.json")
-        flags = os.O_WRONLY | os.O_CREAT
+        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
         modes = stat.S_IWUSR | stat.S_IRUSR
         with os.fdopen(os.open(acl_json_path, flags, modes), "w") as f:
             json.dump(json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
@@ -234,7 +234,7 @@ class TestClass:
         except Exception as e:
             raise Exception("Visit dict failed".format(e)) from e
         out_json_file_path = os.path.join(TestCommonClass.base_path, "acl.json")
-        flags = os.O_WRONLY | os.O_CREAT
+        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
         modes = stat.S_IWUSR | stat.S_IRUSR
         with os.fdopen(open(out_json_file_path, flags, modes), "w") as f:
             json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
