@@ -14,27 +14,24 @@
  * limitations under the License.
  */
 
-package com.huawei.mindstudio.output;
+package com.ascend.ait.ide.commlib.output;
 
-import com.huawei.mindstudio.output.icons.OutputIcons;
+import com.ascend.ait.ide.commlib.output.icons.OutputIcons;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.actions.ToggleUseSoftWrapsInPreviewAction;
 import com.intellij.openapi.editor.actions.ToggleUseSoftWrapsToolbarAction;
 import com.intellij.openapi.editor.impl.softwrap.SoftWrapAppliancePlaces;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.openapi.wm.ToolWindowAnchor;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
-import kotlinx.html.A;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.JPanel;

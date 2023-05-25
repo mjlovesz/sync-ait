@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package com.huawei.mindstudio.output;
+package com.ascend.ait.ide.commlib.output;
 
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 
 import org.jetbrains.annotations.NotNull;

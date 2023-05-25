@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Huawei Technologies Co., Ltd
+ * Copyright 2019 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,30 +14,16 @@
  * limitations under the License.
  */
 
-package com.huawei.mindstudio.util.safe;
-
-
-import org.jetbrains.annotations.Nullable;
+package com.ascend.ait.ide.commlib.output;
 
 /**
- * mindstudio - CmdStr
+ * OutputType
  *
- * @author liucj
- * @since 2021/4/15
+ * @author: zhouxiaohui
+ * @since: 2019/06/05 10:10
+ * @version: 1.0
  */
-public abstract class CmdStr {
-    /**
-     * is the cmd safe
-     *
-     * @return is safe
-     */
-    public abstract boolean isSafe();
-
-    /**
-     * get last unsafe param
-     *
-     * @return last unsafe param
-     */
-    @Nullable
-    public abstract String getLastUnSafeParam();
+public enum OutputType {
+    NORMAL,
+    DETAIL
 }

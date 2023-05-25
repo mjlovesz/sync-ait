@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.huawei.mindstudio.util;
+package com.ascend.ait.ide.commlib.util;
 
 import org.jetbrains.annotations.NotNull;
 

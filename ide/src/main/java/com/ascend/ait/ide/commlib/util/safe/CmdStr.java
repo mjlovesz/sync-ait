@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Huawei Technologies Co., Ltd
+ * Copyright 2021 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,30 @@
  * limitations under the License.
  */
 
-package com.huawei.mindstudio.exception;
+package com.ascend.ait.ide.commlib.util.safe;
+
+
+import org.jetbrains.annotations.Nullable;
 
 /**
- * CommandExecutor Exception
+ * mindstudio - CmdStr
  *
- * @author baiguochao
- * @since 2019/4/22
+ * @author liucj
+ * @since 2021/4/15
  */
-public class CommandException extends RuntimeException {
-    private static final long serialVersionUID = -7848065374983831216L;
+public abstract class CmdStr {
+    /**
+     * is the cmd safe
+     *
+     * @return is safe
+     */
+    public abstract boolean isSafe();
 
-    public CommandException(String message) {
-        super(message);
-    }
-
-    public CommandException() {
-        this("");
-    }
+    /**
+     * get last unsafe param
+     *
+     * @return last unsafe param
+     */
+    @Nullable
+    public abstract String getLastUnSafeParam();
 }

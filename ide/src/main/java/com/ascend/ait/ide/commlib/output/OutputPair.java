@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.huawei.mindstudio.output;
+package com.ascend.ait.ide.commlib.output;
 
 import com.intellij.execution.ui.ConsoleViewContentType;
 

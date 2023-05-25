@@ -27,14 +27,17 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.ascend.ait.ide.filetype.AitFileEditorProvider"/>
-        <projectService serviceImplementation="com.huawei.mindstudio.output.OutputService"/>
-        <toolWindow factoryClass="com.huawei.mindstudio.output.OutputFactory" id="Output" order="first" doNotActivateOnStart="true"/>
+        <projectService serviceImplementation="com.ascend.ait.ide.commlib.output.OutputService"/>
+        <toolWindow factoryClass="com.ascend.ait.ide.commlib.output.OutputFactory" id="Output" order="first" doNotActivateOnStart="true"/>
     </extensions>
 
     <actions>
         <action id="HelloWorld" class="com.ascend.ait.ide.action.AitAction" text="HelloWorld"
                 description="Print hello world ">
             <add-to-group group-id="GenerateGroup" anchor="first"/>
+        </action>
+        <action class="com.ascend.ait.ide.commlib.output.ThemeChangeAction" id="ThemeChange">
+            <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
         </action>
     </actions>
 

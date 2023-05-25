@@ -1,12 +1,13 @@
 package com.ascend.ait.ide.optimizie.ui.step;
 
 import com.ascend.ait.ide.Icons;
+import com.ascend.ait.ide.commlib.ui.SwitchButton;
 import com.ascend.ait.ide.util.LocalExectorService;
 import com.ascend.ait.ide.util.FileChooseWithBrows;
-import com.huawei.mindstudio.exception.CommandInjectException;
-import com.huawei.mindstudio.output.OutputService;
-import com.huawei.mindstudio.util.safe.CmdExec;
-import com.huawei.mindstudio.util.safe.CmdStrBuffer;
+import com.ascend.ait.ide.commlib.exception.CommandInjectException;
+import com.ascend.ait.ide.commlib.output.OutputService;
+import com.ascend.ait.ide.commlib.util.safe.CmdExec;
+import com.ascend.ait.ide.commlib.util.safe.CmdStrBuffer;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -15,13 +16,15 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.Comparing;
-import com.intellij.ui.JBColor;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,8 +39,6 @@ public class ais_bench_basic extends DialogWrapper {
     private JLabel debug;
     private JLabel dusplay;
     private JPanel loop;
-    private JToggleButton debugButton;
-    private JToggleButton displayButton;
     private JToggleButton profilerBottun;
     private JPanel advance;
     private TextFieldWithBrowseButton modelFile;
@@ -61,18 +62,20 @@ public class ais_bench_basic extends DialogWrapper {
     private static final String TXT_FILE_EXTENSION = "txt";
     private static final List<String> PURE_DATA_TYPE = List.of("zero", "random");
     private static final List<String> OUTFMT_TYPE = List.of("BIN", "NPY", "TXT");
-    private Project project;
+    private final Project project;
     private JComponent aisView;
+    private SwitchButton displayButton;
 
     public ais_bench_basic(Project project) {
         super(true);
         this.project = project;
-        this.aisView = null;
         init();
         setIcons();
+
         setFileChoodeAction();
         initComponent();
         initVisible();
+        setOKButtonText("Start");
     }
 
     private void initVisible() {
@@ -89,8 +92,7 @@ public class ais_bench_basic extends DialogWrapper {
     }
 
     private void setIcons() {
-        setSwitchButoon(debugButton);
-        setSwitchButoon(displayButton);
+        model.setIcon(Icons.STAR);
     }
 
     private void initComponent() {
@@ -101,26 +103,11 @@ public class ais_bench_basic extends DialogWrapper {
             this.output_comboBox.addItem(s);
         }
     }
+
     private void setFileChoodeAction() {
         modelFIleAction();
         inputAction();
         outputAction();
-    }
-
-
-    private void setSwitchButoon(JToggleButton button) {
-        button.setBorderPainted(false);
-        button.setBackground(new JBColor(0xFFFFFF, 0x242425));
-
-        button.setIcon(Icons.SWITCH_CLOSE);
-        button.setSelectedIcon(Icons.SWITCH_OPEN);
-
-        button.addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent e) {
-                JToggleButton button = (JToggleButton) e.getSource();
-            }
-        });
     }
 
     private void modelFIleAction() {
@@ -186,8 +173,8 @@ public class ais_bench_basic extends DialogWrapper {
     }
 
     private void checkFileSize(File file) {
-        if (file.length() > (long) 2*1024*1024*1024) {
-            int result = Messages.showDialog("test1", "test2", new String[] {"yes", "no"},
+        if (file.length() > (long) 2 * 1024 * 1024 * 1024) {
+            int result = Messages.showDialog("test1", "test2", new String[]{"yes", "no"},
                     Messages.NO, AllIcons.General.QuestionDialog);
             if (result == Messages.NO) {
                 return;
@@ -217,6 +204,11 @@ public class ais_bench_basic extends DialogWrapper {
     @Override
     protected void doOKAction() {
         LocalExectorService localExectorService = new LocalExectorService(project);
+        Boolean check = preCheck();
+        if (!check) {
+            return;
+        }
+        Messages.showErrorDialog("check", "ERROR");
         OutputService.getInstance(project).print("testeeee");
         OutputService.getInstance(project).print(modelFileTextField.getText());
         OutputService.getInstance(project).print(textField1.getText());
@@ -236,8 +228,22 @@ public class ais_bench_basic extends DialogWrapper {
         } catch (CommandInjectException | IOException e) {
             throw new RuntimeException(e);
         }
-
-        return;
+        close(0);
     }
 
+    /*
+    check weather input is enough
+     */
+    private Boolean preCheck() {
+
+        String modelfile = modelFileTextField.getText();
+        if (modelfile.isEmpty()) {
+            Messages.showErrorDialog("Model file must be chose", "ERROR");
+            return false;
+        }
+
+
+        return true;
+    }
 }
+

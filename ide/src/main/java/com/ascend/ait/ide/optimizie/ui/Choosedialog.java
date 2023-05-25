@@ -1,11 +1,11 @@
 package com.ascend.ait.ide.optimizie.ui;
 
-import com.ascend.ait.ide.optimizie.ui.step.aisStepController;
+import com.ascend.ait.ide.Icons;
 import com.ascend.ait.ide.optimizie.ui.step.ais_bench_basic;
-import com.huawei.mindstudio.output.OutputFactory;
-import com.huawei.mindstudio.output.OutputService;
+import com.ascend.ait.ide.commlib.output.OutputFactory;
+import com.ascend.ait.ide.commlib.output.OutputService;
+import com.ascend.ait.ide.commlib.ui.UiUtils;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.IconLoader;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -13,7 +13,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 
 public class Choosedialog extends JFrame {
     private JPanel root;
@@ -32,7 +31,7 @@ public class Choosedialog extends JFrame {
     }
 
     private void initIcon() {
-        rightIcon.setIcon(IconLoader.findIcon("/icons/dark@1x.png", Choosedialog.class));
+        rightIcon.setIcon(UiUtils.getJbIcon(Icons.RIGHT_DARK, Icons.RIGHT_LIGHT));
     }
 
     private void initComponent() {

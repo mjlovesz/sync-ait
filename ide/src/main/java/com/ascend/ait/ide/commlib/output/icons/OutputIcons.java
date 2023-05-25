@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.huawei.mindstudio.output.icons;
+package com.ascend.ait.ide.commlib.output.icons;
 
 import com.intellij.openapi.util.IconLoader;
 

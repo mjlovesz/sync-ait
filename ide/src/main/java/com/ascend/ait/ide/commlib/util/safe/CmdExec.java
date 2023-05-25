@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.huawei.mindstudio.util.safe;
+package com.ascend.ait.ide.commlib.util.safe;
 
 
-import com.huawei.mindstudio.exception.CommandInjectException;
+import com.ascend.ait.ide.commlib.exception.CommandInjectException;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
