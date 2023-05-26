@@ -27,6 +27,7 @@ import javax.swing.JToggleButton;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ais_bench_basic extends DialogWrapper {
     private JPanel root;
@@ -80,6 +81,7 @@ public class ais_bench_basic extends DialogWrapper {
 
         pureDataTypeJLabel.setVisible(false);
         pureDataTypeCombx.setVisible(false);
+        pureDataTypeCombx.setEditable(false);
 
         outputDirnameJLabel.setVisible(false);
         outputDirnameBrowse.setVisible(false);
@@ -225,16 +227,25 @@ public class ais_bench_basic extends DialogWrapper {
     private CmdStrBuffer getCmdStrBuffer() {
         CmdStrBuffer cmd = new CmdStrBuffer();
         cmd.append(" -m ais_bench ");
-        if (modelFileTextField != null) {
+        if (!modelFileTextField.getText().isEmpty()) {
             cmd.append(" --model ").appendFilePath(modelFileTextField.getText());
         }
-        if (outputTextField != null) {
+        if (!inputFilesTextField.getText().isEmpty()) {
+            cmd.append(" --input ").appendFilePath(inputFilesTextField.getText());
+        }
+        if (pureDataTypeCombx.isEditable()) {
+            cmd.append(" --pure ").append(pureDataTypeCombx.getSelectedItem().toString());
+        }
+        if (!outputTextField.getText().isEmpty()) {
             cmd.append(" --output ").appendFilePath(outputTextField.getText());
         }
-        String outFmtText = outFormatComboBox.getSelectedItem().toString();
-        if (outputTextField != null && outFmtText != null) {
-            cmd.append(" --outfmt ").appendFilePath(outFmtText);
+        if (!outputDirTextField.getText().isEmpty()) {
+            cmd.append(" --outputdir ").appendFilePath(outputDirTextField.getText());
         }
+        if (outFormatComboBox.isEditable()) {
+            cmd.append(" --outfmt ").appendFilePath(outFormatComboBox.getSelectedItem().toString());
+        }
+
         return cmd;
     }
 
@@ -250,6 +261,11 @@ public class ais_bench_basic extends DialogWrapper {
             Messages.showErrorDialog("Model file must be chose", "ERROR");
             return false;
         }
+        if (pureDataTypeCombx.getSelectedItem() != null && inputFilesTextField.getText().isEmpty()) {
+            Messages.showErrorDialog("Pure data type 必须和input配合使用", "ERROR");
+            return false;
+        }
+
         return true;
     }
 
