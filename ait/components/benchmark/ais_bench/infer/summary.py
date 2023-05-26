@@ -77,14 +77,14 @@ class Summary(object):
         npu_compute_time = Summary.get_list_info(self.npu_compute_time_list, scale)
         h2d_latency = Summary.get_list_info(self.h2d_latency_list, scale)
         d2h_latency = Summary.get_list_info(self.d2h_latency_list, scale)
-        if len(self._batchsizes) != 0:
+        if self._batchsizes:
             batchsize = sum(self._batchsizes) / len(self._batchsizes)
         else:
-            batchsize = 0
-        if npu_compute_time.mean != 0:
-            throughput = 1000*batchsize/npu_compute_time.mean
-        else:
+            pass
+        if npu_compute_time.mean == 0:
             throughput = 0
+        else:
+            throughput = 1000*batchsize/npu_compute_time.mean
 
         self.infodict['NPU_compute_time'] = {"min": npu_compute_time.min, "max": npu_compute_time.max,\
                                     "mean": npu_compute_time.mean, "median": npu_compute_time.median, "percentile({}%\
