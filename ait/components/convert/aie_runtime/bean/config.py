@@ -19,4 +19,4 @@ class ConvertConfig:
     """model convert config params"""
     model:  str = ''
     output: str = ''
-    soc_version str = ''
+    soc_version: str = ''
