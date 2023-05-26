@@ -14,7 +14,6 @@
 import os
 import sys
 import stat
-import subprocess
 import json
 import numpy as np
 import itertools
