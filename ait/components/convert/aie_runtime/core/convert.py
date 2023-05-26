@@ -48,6 +48,14 @@ class Convert:
         return retval
 
 
+    def aie_model_convert(self) -> None:
+        run_path = "./build"
+        os.chdir(run_path)
+        run_cmd = ["./ait_convert", self._config.model, self._config.output, self._config.soc_version]
+        self.execute_command(run_cmd)
+        logger.info("AIE model convert finished, the command: %s" % (run_cmd))
+
+
     def execute_command(self, cmd):
         """
         Function Description:
