@@ -44,8 +44,8 @@ from ais_bench.infer.options import (
     opt_dym_shape_range,
     opt_aipp_config,
     opt_energy_consumption,
-    opt_npu_id
-    opt_backend
+    opt_npu_id,
+    opt_backend,
     opt_perf
 )
 
