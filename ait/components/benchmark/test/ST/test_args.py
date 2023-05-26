@@ -235,7 +235,7 @@ class TestClass:
         except Exception as e:
             raise Exception("Visit dict failed".format(e)) from e
         out_json_file_path = os.path.join(TestCommonClass.base_path, "acl.json")
-        with os.fdopen(open(out_json_file_path, OPEN_FLAGS, OPEN_MODES), "w") as f:
+        with os.fdopen(os.open(out_json_file_path, OPEN_FLAGS, OPEN_MODES), "w") as f:
             json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
         cmd = "{} --model {} --device {} --acl_json_path {} --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                                 TestCommonClass.default_device_id,
