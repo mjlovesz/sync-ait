@@ -216,13 +216,16 @@ class NpuDumpData(DumpData):
                 src_image_size_w.append(aipp_info.split(":")[1])
         if not src_image_size_h or not src_image_size_w:
             utils.logger.error("atc insert_op_config file contains no src_image_size_h or src_image_size_w")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
         if len(src_image_size_h) != len(src_image_size_w):
             utils.logger.error("atc insert_op_config file's src_image_size_h number "
                                   "does not equal src_image_size_w")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
         input_format = ["NCHW"] * len(src_image_size_h)
         inputs_list = parse_input_shape_to_list(self.arguments.input_shape)
         if len(inputs_list) != len(src_image_size_h):
             utils.logger.error("inputs number is not equal to aipp inputs number")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
         data_dir, _, _ = self._create_dir()
         for i, item in enumerate(inputs_list):
             item[input_format[i].index("H")] = int(src_image_size_h[i])
