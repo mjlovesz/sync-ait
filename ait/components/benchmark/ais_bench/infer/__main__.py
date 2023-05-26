@@ -259,6 +259,19 @@ def get_args():
         default=0,
         help="The NPU ID to use.valid value range is [0, 255]"
     )
+    parser.add_argument(
+        "--backend",
+        type=str,
+        default=None,
+        help="Backend trtexec"
+    )
+    parser.add_argument(
+        "--perf",
+        type=str2bool,
+        default=False,
+        help="Perf switch"
+    )
+
     benchmark_args = parser.parse_args()
 
     return benchmark_args

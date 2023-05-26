@@ -354,3 +354,18 @@ opt_npu_id = click.option(
     callback=check_device_range_valid,
     help="The NPU ID to use.valid value range is [0, 255]"
 )
+
+opt_backend = click.option(
+    "--backend",
+    type=str,
+    default=None,
+    help="Backend trtexec"
+)
+
+opt_perf = click.option(
+    "--perf",
+    type=str,
+    callback=str2bool,
+    default=False,
+    help="Perf switch"
+)
