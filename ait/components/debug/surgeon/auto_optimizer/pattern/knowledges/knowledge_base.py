@@ -74,27 +74,6 @@ class KnowledgeBase(object):
         self._apply_idx = -1
         return self._patterns[self._pattern_idx]
 
-    def _register_apply_funcs(self, pattern: Pattern, apply_funcs: ApplyFuncs) -> bool:
-        '''
-        注册pattern的apply方法
-        '''
-        if not isinstance(pattern, Pattern) or \
-                not isinstance(apply_funcs, List):
-            return False
-        if not all(callable(func) for func in apply_funcs):
-            return False
-        self._pattern_apply_dict[pattern].extend(apply_funcs)
-        return True
-    
-    def __get_current_pattern(self) -> Optional[Pattern]:
-        if len(self._patterns) == 0:
-            return None
-        if self._pattern_idx == -1:
-            return self._patterns[0]
-        if self._pattern_idx < len(self._patterns):
-            return self._patterns[self._pattern_idx]
-        return None
-    
     def has_next_apply(self) -> bool:
         pattern = self.__get_current_pattern()
         if pattern is None:
@@ -112,20 +91,7 @@ class KnowledgeBase(object):
         if not self.has_next_apply():
             return
         self._apply_idx += 1
-    
-    def __get_current_apply_method(self) -> Optional[ApplyFunc]:
-        pattern = self.__get_current_pattern()
-        if pattern is None:
-            return None
-        apply_methods = self._pattern_apply_dict[pattern]
-        if len(apply_methods) == 0:
-            return None
-        if self._apply_idx == -1:
-            return apply_methods[0]
-        if self._apply_idx < len(apply_methods):
-            return apply_methods[self._apply_idx]
-        return None
-    
+
     def get_apply_ids(self) -> List[int]:
         """
         返回当前pattern对应的所有apply_id
@@ -229,3 +195,37 @@ class KnowledgeBase(object):
                 return False
             return apply_method(graph, match_result)
         return False
+
+    def __get_current_pattern(self) -> Optional[Pattern]:
+        if len(self._patterns) == 0:
+            return None
+        if self._pattern_idx == -1:
+            return self._patterns[0]
+        if self._pattern_idx < len(self._patterns):
+            return self._patterns[self._pattern_idx]
+        return None
+    
+    def __get_current_apply_method(self) -> Optional[ApplyFunc]:
+        pattern = self.__get_current_pattern()
+        if pattern is None:
+            return None
+        apply_methods = self._pattern_apply_dict[pattern]
+        if len(apply_methods) == 0:
+            return None
+        if self._apply_idx == -1:
+            return apply_methods[0]
+        if self._apply_idx < len(apply_methods):
+            return apply_methods[self._apply_idx]
+        return None
+    
+    def _register_apply_funcs(self, pattern: Pattern, apply_funcs: ApplyFuncs) -> bool:
+        '''
+        注册pattern的apply方法
+        '''
+        if not isinstance(pattern, Pattern) or \
+                not isinstance(apply_funcs, List):
+            return False
+        if not all(callable(func) for func in apply_funcs):
+            return False
+        self._pattern_apply_dict[pattern].extend(apply_funcs)
+        return True

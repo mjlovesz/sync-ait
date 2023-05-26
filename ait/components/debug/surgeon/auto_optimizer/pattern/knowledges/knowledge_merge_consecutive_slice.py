@@ -144,7 +144,9 @@ class KnowledgeMergeConsecutiveSlice(KnowledgeBase):
                 for inp in node.inputs[1:]
             ] for node in slices_total
         ]
-        if any(inp is None for lst in input_initializers for inp in lst):
+        if any(inp is None
+               for lst in input_initializers 
+               for inp in lst):
             logging.info("Failed to get slices parameters.")
             return False
         input_values = [[inp.value for inp in lst] for lst in input_initializers]
