@@ -100,7 +100,6 @@ class Summary(object):
         self.infodict['npu_compute_time_list'] = self.npu_compute_time_list
         self.infodict['pid'] = os.getpid()
 
-        # logger.debug("infer finish (ms) summary:{}".format(self.infodict))
         logger.info("-----------------Performance Summary------------------")
         if display_all_summary is True:
             logger.info("H2D_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
