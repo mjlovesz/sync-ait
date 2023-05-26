@@ -77,14 +77,14 @@ class Summary(object):
         npu_compute_time = Summary.get_list_info(self.npu_compute_time_list, scale)
         h2d_latency = Summary.get_list_info(self.h2d_latency_list, scale)
         d2h_latency = Summary.get_list_info(self.d2h_latency_list, scale)
-        if self._batchsizes:
+        if len(self._batchsizes) != 0:
             batchsize = sum(self._batchsizes) / len(self._batchsizes)
         else:
-            pass
-        if npu_compute_time.mean == 0:
-            throughput = 0
-        else:
+            batchsize = 0
+        if npu_compute_time.mean != 0:
             throughput = 1000*batchsize/npu_compute_time.mean
+        else:
+            throughput = 0
 
         self.infodict['NPU_compute_time'] = {"min": npu_compute_time.min, "max": npu_compute_time.max,\
                                     "mean": npu_compute_time.mean, "median": npu_compute_time.median, "percentile({}%\
@@ -100,7 +100,6 @@ class Summary(object):
         self.infodict['npu_compute_time_list'] = self.npu_compute_time_list
         self.infodict['pid'] = os.getpid()
 
-        # logger.debug("infer finish (ms) summary:{}".format(self.infodict))
         logger.info("-----------------Performance Summary------------------")
         if display_all_summary is True:
             logger.info("H2D_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
