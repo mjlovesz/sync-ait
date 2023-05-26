@@ -18,6 +18,8 @@ import subprocess
 
 import logging
 from dataclasses import dataclass
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from bean import ConvertConfig
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
