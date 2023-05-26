@@ -87,9 +87,7 @@ def import_all_modules_for_register(module_paths, base_model_name):
     modules = []
     for _, _, files in os.walk(module_paths):
         for filename in files:
-            if not filename.endswith(".py"):
-                continue
-            if filename == "__init__.py":
+            if not filename.endswith(".py") or if filename == "__init__.py":
                 continue
             model_name = base_model_name + "." + filename.rsplit(".", 1)[0]
             modules.append(model_name)
