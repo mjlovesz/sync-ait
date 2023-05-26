@@ -37,11 +37,12 @@ def parse_input_param(model: str,
     if soc_version is None:
         soc_version = utils.get_soc_version()
 
-        return ConvertConfig(
+        config =  ConvertConfig(
             model = model,
             output = output,
             soc_version = soc_version
         )
+        return config
 
 
 @click.command(short_help='model convert tool to convert offline model', no_args_is_help=True)
