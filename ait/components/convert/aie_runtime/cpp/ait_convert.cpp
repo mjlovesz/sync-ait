@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#include "AscendIE.h"
+#include <iostream>
 #include <fstream>
+
 using namespace AscendIE;
 
 int main(int argc, char** argv)
