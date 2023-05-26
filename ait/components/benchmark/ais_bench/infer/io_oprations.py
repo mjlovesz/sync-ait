@@ -12,6 +12,7 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
 pure_infer_fake_file = "pure_infer_data"
 padding_infer_fake_file = "padding_infer_fake_file"
 
+
 def convert_real_files(files):
     real_files = [ ]
     for file in files:
@@ -25,6 +26,7 @@ def convert_real_files(files):
             real_files.append(file)
     return real_files
 
+
 def get_pure_infer_data(size, pure_data_type):
     lst = []
     if pure_data_type == "random":
@@ -37,6 +39,7 @@ def get_pure_infer_data(size, pure_data_type):
     barray = bytearray(lst)
     ndata = np.frombuffer(barray, dtype=np.uint8)
     return ndata
+
 
 # get numpy array from files list combile all files
 def get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tensor_mode=False):
@@ -63,11 +66,13 @@ def get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tens
             raise RuntimeError()
         return ndata
 
+
 # get tensors from files list combile all files
 def get_tensor_from_files_list(files_list, session, size, pure_data_type, no_combine_tensor_mode=False):
     ndata = get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tensor_mode)
     tensor = session.create_tensor_from_arrays_to_device(ndata)
     return tensor
+
 
 # Obtain filesperbatch runcount information according to file information and input description information
 # The strategy is as follows:  Judge according to the realsize and file size of input 0. If the judgment fails,
@@ -82,13 +87,15 @@ def get_files_count_per_batch(intensors_desc, fileslist, no_combine_tensor_mode=
         if filesize == 0 or tensorsize % filesize != 0:
             logger.error('arg0 tensorsize: {} filesize: {} not match'.format(tensorsize, filesize))
             raise RuntimeError()
-        files_count_per_batch = (int)(tensorsize/filesize)
+        else:
+            files_count_per_batch = (int)(tensorsize/filesize)
+            runcount = math.ceil(len(fileslist[0]) / files_count_per_batch)
 
-    runcount = math.ceil(len(fileslist[0]) / files_count_per_batch)
     #runcount = len(fileslist[0]) // files_count_per_batch
     logger.info("get filesperbatch files0 size:{} tensor0size:{} filesperbatch:{} runcount:{}".format(
         filesize, tensorsize, files_count_per_batch, runcount))
     return files_count_per_batch, runcount
+
 
 # Obtain tensor information and files information according to the input filelist. Create intensor form files list
 # len(files_list) should equal len(intensors_desc)
@@ -104,13 +111,17 @@ def create_infileslist_from_fileslist(fileslist, intensors_desc, no_combine_tens
     for i in range(runcount):
         infiles = []
         for j in range(len(intensors_desc)):
-            logger.debug("create infileslist i:{} j:{} runcount:{} lists:{} filesPerPatch:{}".format(i, j, runcount, files_perbatch_list[j][i], files_count_per_batch))
+            logger.debug("create infileslist i:{} j:{} runcount:{} lists:{} filesPerPatch:{}" \
+                         .format(i, j, runcount, files_perbatch_list[j][i], files_count_per_batch))
             infiles.append(files_perbatch_list[j][i])
         infileslist.append(infiles)
     return infileslist
 
-#  outapi. Obtain tensor information and files information according to the input filelist. Create intensor form files list
-def create_intensors_from_infileslist(infileslist, intensors_desc, session, pure_data_type, no_combine_tensor_mode=False):
+
+#  outapi. Obtain tensor information and files information according to the input filelist.
+#  Create intensor form files list
+def create_intensors_from_infileslist(infileslist, intensors_desc, session,
+                                      pure_data_type, no_combine_tensor_mode=False):
     intensorslist = []
     for i, infiles in enumerate(infileslist):
         intensors = []
@@ -119,6 +130,7 @@ def create_intensors_from_infileslist(infileslist, intensors_desc, session, pure
             intensors.append(tensor)
         intensorslist.append(intensors)
     return intensorslist
+
 
 def check_input_parameter(inputs_list, intensors_desc):
     if len(inputs_list) == 0:
@@ -172,6 +184,7 @@ def create_infileslist_from_inputs_list(inputs_list, intensors_desc, no_combine_
 
     return infileslist
 
+
 def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index, output_batchsize_axis):
     files_count_perbatch = len(infiles_paths[0])
     infiles_perbatch = np.transpose(infiles_paths)
@@ -198,6 +211,7 @@ def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index, o
                 summary.append_sample_id_outfile(sample_id, file_path)
                 save_data_to_files(file_path, subdata[j])
         else:
-            logger.error('save out files error array shape:{} filesinfo:{} files_count_perbatch:{} ndata.shape{}:{}'.format(
-                ndata.shape, infiles_paths, files_count_perbatch, output_batchsize_axis, ndata.shape[output_batchsize_axis]))
+            logger.error('save out files error array shape:{} filesinfo:{} files_count_perbatch:{} ndata.shape\
+                         {}:{}'.format(ndata.shape, infiles_paths, files_count_perbatch, output_batchsize_axis,\
+                         ndata.shape[output_batchsize_axis]))
             raise RuntimeError()

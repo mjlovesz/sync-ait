@@ -1,10 +1,28 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 import os
 import sys
+import stat
+import subprocess
 import json
 import numpy as np
 import itertools
 
 from ais_bench.infer.utils import logger
+
+OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 
 def get_modules_version(name):
@@ -69,7 +87,8 @@ def check_valid_acl_json_for_dump(acl_json_path, model):
 
 def get_acl_json_path(args):
     """
-    get acl json path. when args.profiler is true or args.dump is True, create relative acl.json , default current folder
+    get acl json path. when args.profiler is true or args.dump is True, create relative acl.json ,
+    default current folder
     """
     if args.acl_json_path is not None:
         check_valid_acl_json_for_dump(args.acl_json_path, args.model)
@@ -97,7 +116,7 @@ def get_acl_json_path(args):
         output_json_dict["dump"]["dump_list"][0]["model_name"] = model_name.split('.')[0]
 
     out_json_file_path = os.path.join(args.output, "acl.json")
-    with open(out_json_file_path, "w") as f:
+    with os.fdopen(os.open(out_json_file_path, OPEN_FLAGS, OPEN_MODES), 'w') as f:
         json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
     return out_json_file_path
 
@@ -107,8 +126,8 @@ def get_batchsize(session, args):
     batchsize = intensors_desc[0].shape[0]
     if args.dym_batch != 0:
         batchsize = int(args.dym_batch)
-    elif args.dym_dims !=None or args.dym_shape !=None:
-        instr = args.dym_dims if args.dym_dims !=None else args.dym_shape
+    elif args.dym_dims is not None or args.dym_shape is not None:
+        instr = args.dym_dims if args.dym_dims is not None else args.dym_shape
         elems = instr.split(';')
         for elem in elems:
             name, shapestr = elem.split(':')
@@ -169,19 +188,18 @@ def get_dymshape_list(input_ranges):
 
 # get throughput from out log
 def get_throughtput_from_log(log_path):
-    if os.path.exists(log_path) == False:
+    if not os.path.exists(log_path):
         return "Failed", 0
+    cmd = "awk '/throughput/{print $NF}' {}".format(log_path)
     try:
-        cmd = "cat {} | grep throughput".format(log_path)
-        cmd = cmd + " | awk '{print $NF}'"
-        outval = os.popen(cmd).read()
-        if outval == "":
-            return "Failed", 0
-        throughtput = float(outval)
-        return "OK", throughtput
+        outval = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE).stdout.read()
     except Exception as e:
         logger.warning("get throughtput failed e:{}".format(e))
         return "Failed", 0
+    if outval == "":
+        return "Failed", 0
+    throughtput = float(outval)
+    return "OK", throughtput
 
 
 def dymshape_range_run(args):

@@ -180,7 +180,7 @@ class TestClass():
 
         # get msame inference  average time without first time
         msame_infer_log_path = os.path.join(output_path, output_dir_name, "msame_infer.log")
-        cmd = "{} --model {} --input {} > {}".format(TestCommonClass.msame_bin_path, model_path, 
+        cmd = "{} --model {} --input {} > {}".format(TestCommonClass.msame_bin_path, model_path,
                                                      input_path, msame_infer_log_path)
         logger.info("run cmd:{}".format(cmd))
         ret = os.system(cmd)
@@ -194,7 +194,7 @@ class TestClass():
                     continue
 
                 sub_str = line[(line.rfind(':') + 1):]
-                sub_str = sub_str.replace('ms\n','')
+                sub_str = sub_str.replace('ms\n', '')
                 msame_inference_time_ms = float(sub_str)
 
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
@@ -332,7 +332,7 @@ class TestClass():
         test_sh_path = os.path.join(curr_path, "../")
         i = 0
         bin_paths = []
-        for root, dirs, files in os.walk(test_sh_path):
+        for _, _, files in os.walk(test_sh_path):
             for file in files:
                 if "exception_cb_index" in file and file.endswith('.bin'):
                     i += 1

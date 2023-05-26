@@ -31,7 +31,7 @@ def check_batchsize_valid(ctx, param, value):
         return value
     # input value no None
     else:
-        return check_positive_integer(value)
+        return check_positive_integer(ctx, param, value)
 
 
 def check_nonnegative_integer(ctx, param, value):

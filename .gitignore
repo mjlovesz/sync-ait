@@ -3,3 +3,4 @@ modified_onnx
 **/__pycache__
 **/node_modules
 **/out
+.idea

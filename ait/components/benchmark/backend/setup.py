@@ -13,12 +13,16 @@
 # limitations under the License.
 
 import os
+import logging
 import sys
 
 from pybind11 import get_cmake_dir
 # Available at setup time due to pyproject.toml
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 STATIC_VERSION = "0.0.2"
 
@@ -63,7 +67,7 @@ def get_cann_path():
 
     if cann_base_path is None:
         raise RuntimeError('error find no cann path')
-    print("find cann path:", cann_base_path)
+    logger.info("find cann path:", cann_base_path)
 
 get_cann_path()
 
