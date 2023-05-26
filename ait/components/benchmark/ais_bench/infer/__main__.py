@@ -1,18 +1,16 @@
-"""
-Copyright(C) 2021. Huawei Technologies Co.,Ltd. All rights reserved.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import argparse
 
@@ -261,9 +259,22 @@ def get_args():
         default=0,
         help="The NPU ID to use.valid value range is [0, 255]"
     )
-    args = parser.parse_args()
+    parser.add_argument(
+        "--backend",
+        type=str,
+        default=None,
+        help="Backend trtexec"
+    )
+    parser.add_argument(
+        "--perf",
+        type=str2bool,
+        default=False,
+        help="Perf switch"
+    )
 
-    return args
+    benchmark_args = parser.parse_args()
+
+    return benchmark_args
 
 
 if __name__ == "__main__":
@@ -271,9 +282,10 @@ if __name__ == "__main__":
 
     args = BenchMarkArgsAdapter(args.model, args.input, args.output,
                 args.output_dirname, args.outfmt, args.loop, args.debug, args.device,
-                args.dym_batch, args.dym_hw, args.dym_dims, args.dym_shape, args.output_size, args.auto_set_dymshape_mode,
-                args.auto_set_dymdims_mode, args.batchsize, args.pure_data_type, args.profiler, args.dump,
-                args.acl_json_path, args.output_batchsize_axis, args.run_mode, args.display_all_summary,
-                args.warmup_count, args.dym_shape_range, args.aipp_config, args.energy_consumption, args.npu_id)
+                args.dym_batch, args.dym_hw, args.dym_dims, args.dym_shape, args.output_size,
+                args.auto_set_dymshape_mode, args.auto_set_dymdims_mode, args.batchsize, args.pure_data_type,
+                args.profiler, args.dump, args.acl_json_path, args.output_batchsize_axis, args.run_mode,
+                args.display_all_summary, args.warmup_count, args.dym_shape_range, args.aipp_config,
+                args.energy_consumption, args.npu_id)
     ret = benchmark_process(args)
     exit(ret)
