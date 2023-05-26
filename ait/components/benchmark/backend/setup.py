@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import platform
 import logging
 import sys
 
@@ -47,10 +48,11 @@ class BuildExt(build_ext):
         super().build_extensions()
 
 cann_base_path = None
-
+cann_lib_path = None
 
 def get_cann_path():
     global cann_base_path
+    global cann_lib_path
     set_env_path = os.getenv("CANN_PATH", "")
     atlas_nnae_path = "/usr/local/Ascend/nnae/latest/"
     atlas_toolkit_path = "/usr/local/Ascend/ascend-toolkit/latest/"
@@ -64,9 +66,31 @@ def get_cann_path():
         cann_base_path = atlas_toolkit_path
     elif os.path.exists(hisi_fwk_path+check_file_path):
         cann_base_path = hisi_fwk_path
+    cann_lib_path = f'{cann_base_path}/runtime/lib64/stub/'
 
     if cann_base_path is None:
-        raise RuntimeError('error find no cann path')
+        if platform.machine() == "x86_64":
+            check_file_path = "runtime/lib64/stub/x86_64/libascendcl.so"
+        elif platform.machine() == "aarch64":
+            check_file_path = "runtime/lib64/stub/aarch64/libascendcl.so"
+        if os.path.exists(os.path.join(set_env_path, check_file_path)):
+            cann_base_path = set_env_path
+        elif os.path.exists(atlas_nnae_path+check_file_path):
+            cann_base_path = atlas_nnae_path
+        elif os.path.exists(atlas_toolkit_path+check_file_path):
+            cann_base_path = atlas_toolkit_path
+        elif os.path.exists(hisi_fwk_path+check_file_path):
+            cann_base_path = hisi_fwk_path
+
+        if cann_base_path is None:
+            raise RuntimeError('error find no cann path')
+
+        if platform.machine() == "x86_64":
+            cann_lib_path = f'{cann_base_path}/runtime/lib64/stub/x86_64/'
+        elif platform.machine() == "aarch64":
+            cann_lib_path = f'{cann_base_path}/runtime/lib64/stub/aarch64/'
+
+
     logger.info("find cann path:", cann_base_path)
 
 get_cann_path()
@@ -99,7 +123,7 @@ ext_modules = [
             'base/include/Base/ModelInfer/',
             f'{cann_base_path}/runtime/include',
         ],
-        library_dirs = [f'{cann_base_path}/runtime/lib64/stub/', ],
+        library_dirs = [cann_lib_path, ],
 
         extra_compile_args = ['--std=c++11', '-g3'],
 
