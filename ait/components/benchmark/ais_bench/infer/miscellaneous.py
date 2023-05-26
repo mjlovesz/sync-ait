@@ -193,7 +193,7 @@ def get_throughtput_from_log(log_path):
     cmd = "cat {} | grep throughput".format(log_path)
     cmd = cmd + " | awk '{print $NF}'"
     try:
-        outval = subprocess.Popen(cmd, shell=True).stdout.read()
+        outval = os.popen(cmd).read()
     except Exception as e:
         logger.warning("get throughtput failed e:{}".format(e))
         return "Failed", 0
