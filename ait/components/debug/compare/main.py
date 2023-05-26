@@ -57,7 +57,7 @@ def _accuracy_compare_parser(compare_parser):
                              "using this means ignore input_shape")
     compare_parser.add_argument("--dump", dest="dump", default=True, type=str2bool,
                         help="<Optional> Whether to dump all the operations' ouput. Default True.")
-    compare_parser.add_argument("--convert", dest = "bin2npy", default=False, type=str2bool,
+    compare_parser.add_argument("--convert", dest="bin2npy", default=False, type=str2bool,
                         help="<Optional> Enable npu dump data conversion from bin to npy after compare.\
                         For example: --convert True")
 

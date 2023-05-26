@@ -1,4 +1,4 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -111,9 +111,9 @@ opt_advisor = click.option(
 )
 
 opt_dym_shape_range = click.option(
-    "-dr", 
-    "--dym-shape-range", 
-    "dym_shape_range", 
+    "-dr",
+    "--dym-shape-range",
+    "dym_shape_range",
     type=str,
     default="",
     help="Dynamic shape range using in dynamic model, "
@@ -122,16 +122,16 @@ opt_dym_shape_range = click.option(
 )
 
 opt_dump = click.option(
-    "--dump", 
-    "dump", 
-    default=True, 
+    "--dump",
+    "dump",
+    default=True,
     type=str2bool,
     help="Whether to dump all the operations' ouput. Default True."
 )
 
 opt_bin2npy = click.option(
-    "--convert", 
-    "bin2npy", 
+    "--convert",
+    "bin2npy",
     type=str2bool,
     help="Enable npu dump data conversion from bin to npy after compare.Usage: --convert True."
 )

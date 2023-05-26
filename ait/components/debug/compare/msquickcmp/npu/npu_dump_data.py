@@ -38,6 +38,8 @@ RESULT_DIR = "result"
 INPUT = "input"
 INPUT_SHAPE = "--input_shape"
 OUTPUT_SIZE = "--outputSize"
+OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 
 class DynamicInput(object):
@@ -187,10 +189,8 @@ class NpuDumpData(DumpData):
             }
         }
         if os.access(acl_json_path, os.W_OK):
-            json_flags = os.O_WRONLY | os.O_CREAT
-            json_modes = stat.S_IWUSR | stat.S_IRUSR
             try:
-                with os.fdopen(os.open(acl_json_path, json_flags, json_modes), "w") as write_json:
+                with os.fdopen(os.open(acl_json_path, OPEN_FLAGS, OPEN_MODES), "w") as write_json:
                     try:
                         json.dump(load_dict, write_json)
                     except ValueError as exc:

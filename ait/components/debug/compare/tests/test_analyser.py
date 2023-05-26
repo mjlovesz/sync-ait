@@ -18,9 +18,12 @@ import pytest
 
 from msquickcmp.net_compare import analyser
 
+OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
+
 
 @pytest.fixture(scope="module", autouse=True)
-def fake_csv():
+def fake_csv_file():
     test_csv_file_name = "/tmp/fake_test_csv.csv"
 
     columns = ["Index", "OpType", "NPUDump", "DataType", "GroundTruth"]
@@ -42,9 +45,7 @@ def fake_csv():
         "955,NaN,Node_Output,NaN,output_0.npy,0.704,0.761698,inf,3419.279248,63.709677,1.655235",
     ]
 
-    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL  # 注意根据具体业务的需要设置文件读写方式
-    modes = stat.S_IWUSR | stat.S_IRUSR  # 注意根据具体业务的需要设置文件权限
-    with os.fdopen(os.open(test_csv_file_name, flags, modes), 'w') as fout:
+    with os.fdopen(os.open(test_csv_file_name, OPEN_FLAGS, OPEN_MODES), 'w') as fout:
         fout.write(",".join(columns) + "\n")
         fout.write("\n".join(data))
 

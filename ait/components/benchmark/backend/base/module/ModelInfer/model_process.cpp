@@ -427,7 +427,7 @@ Result ModelProcess::CheckDynamicDims(vector<string> dym_dims, size_t gearCount,
         }
     }
 
-    if(! if_same) {
+    if (!if_same) {
         ERROR_LOG("the dynamic_dims parameter is not correct");
         GetDimInfo(gearCount, dims);
         return FAILED;
@@ -1509,6 +1509,8 @@ int ModelProcess::CheckDymAIPPInputExsity()
     */
     size_t numInputs = aclmdlGetNumInputs(modelDesc_);
     std::vector<size_t> dataNeedDynamicAipp = {};
+    DEBUG_LOG("Input nums: %d", int(numInputs));
+    DEBUG_LOG("Model id: %u", modelId_);
     for (size_t index = 0; index < numInputs; ++index) {
         aclmdlInputAippType aippType;
         size_t dynamicAttachedDataIndex;

@@ -42,7 +42,7 @@ def check_batchsize_valid(ctx, param, value):
         return value
     # input value no None
     else:
-        return check_positive_integer(value)
+        return check_positive_integer(ctx, param, value)
 
 
 def check_nonnegative_integer(ctx, param, value):
@@ -207,7 +207,7 @@ opt_dym_shape_range = click.option(
 )
 
 opt_output_size = click.option(
-    '-outsize', 
+    '-outsize',
     '--output-size',
     'output_size',
     default=None,

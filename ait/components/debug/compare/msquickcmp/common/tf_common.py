@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ def get_inputs_tensor(global_graph, input_shape_str):
                 tensor_index[op_name] += 1
             else:
                 tensor_index[op_name] = 0
-            tensor = global_graph.get_tensor_by_name(op.name + ":" + str(tensor_index[op_name]))
+            tensor = global_graph.get_tensor_by_name(op.name + ":" + str(tensor_index.get(op_name)))
             tensor = verify_and_adapt_dynamic_shape(input_shapes, op.name, tensor)
             inputs_tensor.append(tensor)
     utils.logger.info("model inputs tensor:\n{}\n".format(inputs_tensor))
@@ -162,12 +162,12 @@ def get_inputs_data(inputs_tensor, input_paths):
     for index, tensor in enumerate(inputs_tensor):
         try:
             input_data = np.fromfile(input_path[index], convert_to_numpy_type(tensor.dtype))
-            if tensor.shape:
-                input_data = input_data.reshape(tensor.shape)
-            inputs_map[tensor] = input_data
         except Exception as err:
             utils.logger.error("Failed to load data %s. %s" % (input_path[index], err))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR) from err
+        if tensor.shape:
+            input_data = input_data.reshape(tensor.shape)
+        inputs_map[tensor] = input_data
         utils.logger.info("load file name: {}, shape: {}, dtype: {}".format(
             os.path.basename(input_path[index]), input_data.shape, input_data.dtype))
     return inputs_map

@@ -15,6 +15,8 @@ import os
 import stat
 
 TIMEOUT = 60 * 60 * 24
+OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 
 class IOUtil:
@@ -55,14 +57,10 @@ class IOUtil:
 
     @staticmethod
     def file_safe_write(obj, file):
-        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-        modes = stat.S_IWUSR | stat.S_IRUSR  # 600
-        with os.fdopen(os.open(file, flags, modes), 'w') as fout:
+        with os.fdopen(os.open(file, OPEN_FLAGS, OPEN_MODES), 'w') as fout:
             fout.write(obj)
 
     @staticmethod
     def json_safe_dump(obj, file):
-        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-        modes = stat.S_IWUSR | stat.S_IRUSR  # 600
-        with os.fdopen(os.open(file, flags, modes), 'w') as fout:
+        with os.fdopen(os.open(file, OPEN_FLAGS, OPEN_MODES), 'w') as fout:
             json.dump(obj, fout, indent=4, ensure_ascii=False)

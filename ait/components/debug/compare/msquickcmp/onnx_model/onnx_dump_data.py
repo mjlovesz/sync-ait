@@ -80,6 +80,33 @@ class OnnxDumpData(DumpData):
                 utils.logger.error(message)
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
+    def generate_dump_data(self):
+        """
+        Function description:
+            generate onnx model dump data
+        Parameter:
+            none
+        Return Value:
+            onnx model dump data directory
+        Exception Description:
+            none
+        """
+        data_dir, onnx_dump_data_dir, model_dir = self._create_dir()
+        old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
+        session = self._load_session(new_onnx_model_path)
+        net_output_node = self._get_net_output_node()
+        inputs_tensor_info = self._get_inputs_tensor_info(session)
+        inputs_map = self._get_inputs_data(data_dir, inputs_tensor_info)
+        dump_bins = self._run_model(session, inputs_map)
+        self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
+        return onnx_dump_data_dir
+
+    def get_net_output_info(self):
+        """
+        get_net_output_info
+        """
+        return self.net_output
+
     def _create_dir(self):
         # create input directory
         data_dir = os.path.join(self.args.out_path, "input")
@@ -218,6 +245,7 @@ class OnnxDumpData(DumpData):
             utils.logger.info("net_output node is:{}, file path is {}".format(key, value))
         utils.logger.info("dump data success")
 
+
     def generate_dump_data(self):
         """
         Function description:
@@ -275,6 +303,7 @@ class OnnxDumpData(DumpData):
             inputs_map[tensor_info["name"]] = onnx_input
         return inputs_map
 
+
     def _get_net_output_node(self):
         """
         get net output name
@@ -284,9 +313,3 @@ class OnnxDumpData(DumpData):
         for output_item in session.get_outputs():
             net_output_node.append(output_item.name)
         return net_output_node
-
-    def get_net_output_info(self):
-        """
-        get_net_output_info
-        """
-        return self.net_output

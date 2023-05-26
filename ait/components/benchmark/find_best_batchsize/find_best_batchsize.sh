@@ -1,3 +1,4 @@
+#!/bin/bash
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/bin/bash
 #add aoe mode (demo)
 CUR_PATH=$(dirname $(readlink -f "$0"))
 
@@ -82,7 +82,7 @@ check_env_valid()
 }
 
 convert_and_run_model_atc()
-{   
+{
     echo "using atc mode"
     for batchsize in `seq $MAX_BATCH_NUM`; do
         input_shape=${INPUT_SHAPE_STR//batchsize/$batchsize}
@@ -101,7 +101,7 @@ convert_and_run_model_atc()
 }
 
 convert_and_run_model_aoe()
-{   
+{
     echo "using aoe mode"
     batchsize=1
     while [ $batchsize -le $MAX_BATCH_NUM ]; do
@@ -223,7 +223,7 @@ done
     CACHE_PATH=$CUR_PATH/cache
     [ ! -d $CACHE_PATH ] || rm -rf $CACHE_PATH
     mkdir -p $CACHE_PATH
-    
+
     check_args_valid || { echo "check args not valid return"; return $ret_run_failed; }
     check_env_valid || { echo "check env not valid return"; return $ret_run_failed; }
 
