@@ -265,13 +265,13 @@ def get_args():
         "--backend",
         type=str,
         default=None,
-        help="backend trtexec"
+        help="Backend trtexec"
     )
     parser.add_argument(
         "--perf",
         type=str2bool,
         default=False,
-        help="perf switch"
+        help="Perf switch"
     )
     args = parser.parse_args()
 
