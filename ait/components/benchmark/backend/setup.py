@@ -47,8 +47,10 @@ class BuildExt(build_ext):
             self.compiler.compiler_so.remove('-Wstrict-prototypes')
         super().build_extensions()
 
+
 cann_base_path = None
 cann_lib_path = None
+
 
 def get_cann_path():
     global cann_base_path
