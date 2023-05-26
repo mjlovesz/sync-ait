@@ -84,7 +84,7 @@ def get_files_count_per_batch(intensors_desc, fileslist, no_combine_tensor_mode=
     if no_combine_tensor_mode == True:
         files_count_per_batch = 1
     else:
-        if filesize == 0 or tensorsize % filesize != 0:
+        if filesize == 0 or tensorsize % filesize == 0:
             logger.error('arg0 tensorsize: {} filesize: {} not match'.format(tensorsize, filesize))
             raise RuntimeError()
         else:
