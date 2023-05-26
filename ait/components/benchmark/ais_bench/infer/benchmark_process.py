@@ -471,6 +471,10 @@ def backend_run(args):
 def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
+    
+    if args.perf:
+        backend_run(args)
+        return 0
 
     if args.profiler:
         # try use msprof to run
