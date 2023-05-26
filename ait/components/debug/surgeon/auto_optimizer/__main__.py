@@ -88,8 +88,9 @@ def optimize_onnx(
             logger.warning('Failed to optimize %s with inference test.', input_model.as_posix())
             logger.warning('Didn\'t specify input_shape_range or dynamic_shape or output_size.')
             return []
-    optimize_action = partial(optimizer.apply_knowledges_with_infer_test, cfg=config) \
-        if infer_test else optimizer.apply_knowledges
+        optimize_action = partial(optimizer.apply_knowledges_with_infer_test, cfg=config)
+    else:
+        optimize_action = optimizer.apply_knowledges
 
     try:
         graph_opt, applied_knowledges = optimize_action(graph=graph)
@@ -97,7 +98,7 @@ def optimize_onnx(
         logger.warning('%s optimize failed.', input_model.as_posix())
         logger.warning('exception: %s', exc)
         return []
-    
+
     if applied_knowledges:
         if not output_model.parent.exists():
             output_model.parent.mkdir(parents=True)
@@ -115,12 +116,17 @@ def evaluate_onnx(
         logger.info(f'Evaluating {model.as_posix()}')
     try:
         graph = OnnxGraph.parse(model.as_posix(), add_name_suffix=False)
-        graph, applied_knowledges = optimizer.apply_knowledges(graph)
-        return applied_knowledges
     except Exception as exc:
         logger.warning('%s match failed.', model.as_posix())
         logger.warning('exception: %s', exc)
         return []
+    try:
+        graph, applied_knowledges = optimizer.apply_knowledges(graph)
+    except Exception as exc:
+        logger.warning('%s match failed.', model.as_posix())
+        logger.warning('exception: %s', exc)
+        return []
+    return applied_knowledges
 
 
 class FormatMsg:
@@ -128,7 +134,7 @@ class FormatMsg:
         logger.error(self.format_message())
 
 
-@click.group(cls=ClickAliasedGroup, context_settings=CONTEXT_SETTINGS, 
+@click.group(cls=ClickAliasedGroup, context_settings=CONTEXT_SETTINGS,
              short_help='Modify ONNX models, and auto optimizer onnx models.',
              no_args_is_help=True)
 def cli() -> None:
@@ -163,8 +169,7 @@ def command_evaluate(
     processes: int,
 ) -> None:
     path_ = pathlib.Path(path.decode()) if isinstance(path, bytes) else path
-    onnx_files = list(path_.rglob('*.onnx') if recursive else path_.glob('*.onnx')) \
-        if path_.is_dir() else [path_]
+    onnx_files = list(path_.rglob('*.onnx') if recursive else path_.glob('*.onnx')) if path_.is_dir() else [path_]
 
     if processes > 1:
         evaluate = partial(evaluate_onnx, optimizer=optimizer, verbose=verbose)
@@ -269,8 +274,8 @@ def command_optimize(
 def command_extract(
     input_model: pathlib.Path,
     output_model: pathlib.Path,
-    start_node_name: str,
-    end_node_name: str,
+    start_node_names: str,
+    end_node_names: str,
     is_check_subgraph
 ) -> None:
     if input_model == output_model:
@@ -280,9 +285,13 @@ def command_extract(
     if not check_output_model_path(output_model_path):
         return
 
+    # parse start node names and end node names
+    start_nodes = [node_name.strip() for node_name in start_node_names.split(',')]
+    end_nodes = [node_name.strip() for node_name in end_node_names.split(',')]
+
     onnx_graph = OnnxGraph.parse(input_model.as_posix())
     try:
-        onnx_graph.extract_subgraph(start_node_name, end_node_name, output_model_path, is_check_subgraph)
+        onnx_graph.extract_subgraph(start_nodes, end_nodes, output_model_path, is_check_subgraph)
     except ValueError as err:
         logger.error(err)
 
