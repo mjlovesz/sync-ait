@@ -364,7 +364,8 @@ opt_backend = click.option(
 
 opt_perf = click.option(
     "--perf",
-    type=str2bool,
+    type=str,
+    callback=str2bool,
     default=False,
     help="Perf switch"
 )
