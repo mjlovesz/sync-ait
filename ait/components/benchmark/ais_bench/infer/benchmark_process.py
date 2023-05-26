@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import logging
 import math
 import os
@@ -41,6 +42,7 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                             get_fileslist_from_dir, list_split, logger,
                             save_data_to_files)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
+from ais_bench.infer.backends import BackendFactory
 
 
 def set_session_options(session, args):
@@ -375,7 +377,7 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
         logger.error("ZeroDivisionError: intensors_desc is empty")
         raise RuntimeError("error zero division") from err
     chunks = list(list_split(fileslist, chunks_elements, None))
-    fileslist = [ [] for e in range(jobs) ]
+    fileslist = [ [] for _ in range(jobs) ]
     for _, chunk in enumerate(chunks):
         splits_elements = math.ceil(len(chunk) / jobs)
         splits = list(list_split(chunk, splits_elements, None))
@@ -457,9 +459,22 @@ def args_rules(args):
     return args
 
 
+def backend_run(args):
+    backend_class = BackendFactory.create_backend(args.backend)
+    backend = backend_class(args)
+    backend.load(args.model)
+    backend.run()
+    perf = backend.get_perf()
+    logger.info("perf info:{}".format(perf))
+
+
 def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
+    
+    if args.perf:
+        backend_run(args)
+        return 0
 
     if args.profiler:
         # try use msprof to run
