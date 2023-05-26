@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 
     OnnxModelParser parser;
 
-    bool ret = parse.Parse(network, modelPath.c_str());
+    bool ret = parser.Parse(network, modelPath.c_str());
 
     BuilderConfig config;
 
