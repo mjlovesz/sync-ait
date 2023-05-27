@@ -3,17 +3,20 @@ package com.ascend.ait.ide.action;
 import com.ascend.ait.ide.Icons;
 import com.ascend.ait.ide.commonlib.ui.UiUtils;
 import com.ascend.ait.ide.optimizie.ui.step.ais_bench_basic;
+import com.ascend.ait.ide.optimizie.ui.step.compare;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.testFramework.LightVirtualFile;
 import org.jetbrains.annotations.NotNull;
 
-public class AisBenchAction extends AnAction {
+public class CompareAction extends AnAction {
 
-    public AisBenchAction() {
-        super("AisBench", "", UiUtils.getJbIcon(Icons.AIS_BENCH_DARK, Icons.AIS_BENCH_LIGHT));
+    public CompareAction() {
+        super("Compare", "", UiUtils.getJbIcon(Icons.COMPARE_DARK, Icons.COMPARE_LIGHT));
     }
-
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
         if (e.getProject() == null) {
@@ -23,7 +26,7 @@ public class AisBenchAction extends AnAction {
     }
 
     public void openNewPage(@NotNull Project project) {
-        ais_bench_basic basic = new ais_bench_basic(project);
-        basic.show();
+        compare c = new compare(project);
+        c.show();
     }
 }

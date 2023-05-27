@@ -18,7 +18,7 @@ public class PluginGet {
         PluginId pluginId = PluginId.getId(id);
         try {
             Class a = PluginManager.getInstance().findEnabledPlugin(pluginId).getPluginClassLoader().loadClass(className);
-            Method method = a.getMethod("open", void.class);
+            Method method = a.getMethod("openNewPage", void.class);
             Constructor constructor = a.getConstructor();
             Object object = constructor.newInstance();
             method.invoke(object, project);

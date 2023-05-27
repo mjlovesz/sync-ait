@@ -1,7 +1,20 @@
 package com.ascend.ait.ide.optimizie.ui.step;
 
-import javax.swing.JPanel;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
+import org.jetbrains.annotations.Nullable;
 
-public class compare {
+import javax.swing.*;
+
+public class compare extends DialogWrapper {
     private JPanel root;
+
+    public compare(@Nullable Project project) {
+        super(project);
+    }
+
+    @Override
+    protected @Nullable JComponent createCenterPanel() {
+        return root;
+    }
 }

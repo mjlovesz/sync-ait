@@ -63,15 +63,17 @@ public class Choosedialog extends JFrame {
         initComponent();
         initIcon();
         setBackgroundColor();
-        ModelAnalyse modelAnalyse1 = new ModelAnalyse();
-
+        ModelAnalyse modelAnalyse = new ModelAnalyse();
+        ModelConvert modelConvert = new ModelConvert();
+        SystemProfiling systemProfiling = new SystemProfiling();
+        AisBench aisBench = new AisBench();
+        Compare compare = new Compare();
     }
 
     private void initIcon() {
         rightIcon.setIcon(UiUtils.getJbIcon(Icons.RIGHT_DARK, Icons.RIGHT_LIGHT));
-        title.setFont(new Font(COMMON_FONT_STYLE, Font.PLAIN, JLABEL_FONT_SIZE));
+        title.setFont(new Font(COMMON_FONT_STYLE, Font.PLAIN, TITLE_FONT_SIZE));
         title.setForeground(TITLE_FONT_COLOR);
-
     }
 
     private void setBackgroundColor() {
@@ -126,7 +128,7 @@ public class Choosedialog extends JFrame {
     private class ModelAnalyse {
         ModelAnalyse() {
             setIcon(modelAnalyse, Icons.MODEL_ANALYSE_DARK, Icons.MODEL_ANALYSE_LIGHT);
-            setStepIcons(modelAnalyseJpanel, modelAnalyse, step1, "test");
+            setStepIcons(modelAnalyseJpanel, modelAnalyse, step1, PluginClassId.ModelAnalyse_ClassId);
             actionMappings.put(StepNum.MODEL_ANALYSE, this::doModelAnalyse);
         }
 
@@ -138,7 +140,63 @@ public class Choosedialog extends JFrame {
         }
     }
 
+    private class ModelConvert {
+        ModelConvert() {
+            setIcon(modelConverter, Icons.MODEL_CONVERTER_DARK, Icons.MODEL_CONVERTER_LIGHT);
+            setStepIcons(modelConverterJPanel, modelConverter, step2, PluginClassId.ModelConverter_ClassId);
+            actionMappings.put(StepNum.MODEL_CONVERTER, this::doModelConvert);
+        }
 
+        private Object doModelConvert(Project project){
+            activeOutput();
+            PluginGet pluginGet = new PluginGet(project);
+            pluginGet.getPluginClass(PluginClassId.ModelConverter_ClassId, PluginClassId.Inference_PluginId);
+            return Optional.empty();
+        }
+    }
+    private class AisBench {
+        AisBench() {
+            setIcon(aisBench, Icons.AIS_BENCH_DARK, Icons.AIS_BENCH_LIGHT);
+            setStepIcons(aisBenchJPanel, aisBench, step3, PluginClassId.AisBench_ClassId);
+            actionMappings.put(StepNum.AIS_BENCH, this::doAisBench);
+        }
+
+        private Object doAisBench(Project project){
+            activeOutput();
+            PluginGet pluginGet = new PluginGet(project);
+            pluginGet.getPluginClass(PluginClassId.AisBench_ClassId, PluginClassId.AitIde_PluginId);
+            return Optional.empty();
+        }
+    }
+
+    private class Compare {
+        Compare() {
+            setIcon(compare, Icons.COMPARE_DARK, Icons.COMPARE_LIGHT);
+            setStepIcons(compareJPanel, compare, step4, PluginClassId.ModelConverter_ClassId);
+            actionMappings.put(StepNum.COMPARE, this::doCompare);
+        }
+
+        private Object doCompare(Project project){
+            activeOutput();
+            PluginGet pluginGet = new PluginGet(project);
+            pluginGet.getPluginClass(PluginClassId.ModelConverter_ClassId, PluginClassId.AitIde_PluginId);
+            return Optional.empty();
+        }
+    }
+    private class SystemProfiling {
+        SystemProfiling() {
+            setIcon(systemProfiler, Icons.SYSTEM_PROFILER_DARK, Icons.SYSTEM_PROFILER_LIGHT);
+            setStepIcons(systemProfilerJPanel, systemProfiler, step5, PluginClassId.SystemProfiler_ClassId);
+            actionMappings.put(StepNum.MODEL_CONVERTER, this::doSystemProfiling);
+        }
+
+        private Object doSystemProfiling(Project project){
+            activeOutput();
+            PluginGet pluginGet = new PluginGet(project);
+            pluginGet.getPluginClass(PluginClassId.SystemProfiler_ClassId, PluginClassId.Foundation_PluginId);
+            return Optional.empty();
+        }
+    }
 
     public void setStepIcons(JPanel jPanel, JLabel jLabel1, JLabel jLabel2, String  pluginClass) {
         jPanel.setBackground(GUIDE_VIEW_COLOR);

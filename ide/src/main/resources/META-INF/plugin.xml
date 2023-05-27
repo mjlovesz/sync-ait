@@ -41,6 +41,9 @@
         <action class="com.ascend.ait.ide.action.AisBenchAction" id="ais_bench">
             <add-to-group group-id="Ascend" anchor="last"/>
         </action>
+        <action class="com.ascend.ait.ide.action.CompareAction" id="compare">
+            <add-to-group group-id="Ascend" anchor="last"/>
+        </action>
         <action class="com.ascend.ait.ide.commonlib.output.ThemeChangeAction" id="ThemeChange">
             <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
         </action>

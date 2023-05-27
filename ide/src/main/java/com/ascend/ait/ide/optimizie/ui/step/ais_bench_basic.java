@@ -262,8 +262,8 @@ public class ais_bench_basic extends DialogWrapper {
             Messages.showErrorDialog("Model file must be chose", "ERROR");
             return false;
         }
-        if (pureDataTypeCombx.getSelectedItem() != null && inputFilesTextField.getText().isEmpty()) {
-            Messages.showErrorDialog("Pure data type must be configured as output to be used together", "ERROR");
+        if (outFormatComboBox.getSelectedItem() != null && outputTextField.getText().isEmpty()) {
+            Messages.showErrorDialog("Out-fmt must be configured as output to be used together", "ERROR");
             return false;
         }
 
