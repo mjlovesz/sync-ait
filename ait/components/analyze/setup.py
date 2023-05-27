@@ -28,8 +28,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://gitee.com/ascend/ait',
-    packages=find_packages('src'),
-    package_dir={'': 'src'},
+    packages=find_packages(),
     package_data={
         'model_eval': ['data/op_map/*.yaml']
     },
@@ -49,6 +48,6 @@ setup(
     ],
     python_requires='>=3.7',
     entry_points={
-        'analyze_sub_task': ['model=model_eval.__main__:cli'],
+        'analyze_sub_task': ['model=model_evaluation.__main__:cli'],
     },
 )
