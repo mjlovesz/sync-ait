@@ -19,13 +19,11 @@ import os
 import sys
 import click
 
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+from aie_runtime.bean import ConvertConfig
 
-from bean import ConvertConfig
+from aie_runtime.core import Convert
 
-from core import Convert
-
-from options import (
+from aie_runtime.options import (
     opt_model,
     opt_out_path,
     opt_soc
