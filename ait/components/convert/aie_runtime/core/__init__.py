@@ -16,6 +16,6 @@ import os
 import sys
 
 
-from aie_runtime.convert import Convert
+from aie_runtime.core.convert import Convert
 
 
