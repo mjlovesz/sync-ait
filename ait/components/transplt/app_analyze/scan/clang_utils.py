@@ -81,8 +81,19 @@ from collections import namedtuple
 from clang.cindex import CursorKind, TypeKind
 
 from app_analyze.common.kit_config import KitConfig
+from app_analyze.utils.lib_util import get_sys_path
+
+SYS_PATH = get_sys_path()
+TYPEDEF_MAP = dict()
 
 Info = namedtuple('Info', ['result_type', 'spelling', 'api', 'definition', 'source'])
+
+
+def is_usr_code(file):
+    usr_code = True
+    if not file or any(file.startswith(p) for p in SYS_PATH):
+        usr_code = False
+    return usr_code
 
 
 def get_attr(obj, attr=None, default_val=None):
@@ -95,27 +106,102 @@ def get_attr(obj, attr=None, default_val=None):
     return obj
 
 
+def group_namespace(cursor):
+    """此处将template_ref和type_ref分开处理，如cv::Ptr<cv:cuda::VideoReader>分为cv::Ptr和cv:cuda::VideoReader"""
+    cursors = get_children(cursor.parent)
+    groups = [list()]
+    group = [cursor]
+    for c in cursors:
+        if c.kind == CursorKind.NAMESPACE_REF:
+            groups[-1].append(c)
+            if cursor == c:
+                group = groups[-1]
+        elif c.kind in [CursorKind.TEMPLATE_REF, CursorKind.TYPE_REF]:
+            groups[-1].append(c)
+            groups.append(list())
+    return group
+
+
+def merge_namespace(ns, api):
+    """合并namespace和API。
+
+    从连续的NAMESPACE_REF节点组合而成的namespace，TYPE_REF节点的type.spelling，后者更完整。
+    用户代码cv::dnn::Net，解析的是cv::dnn::Net或cv::dnn::dnn4_v20211220::Net（两者等价），尽量取前者。
+    """
+    if not ns or not api:
+        return api
+    api_ns = ''
+    api_core = api
+    ns_end = api.rfind('::')
+    if ns_end != -1:
+        api_ns = api[:ns_end]
+        api_core = api[ns_end + 2:]
+    if not api_ns.startswith(ns) and ns in api_ns:  # x.startswith('')为True
+        namespace = f'{api_ns[:api_ns.find(ns)]}{ns}{api_core}'
+    else:
+        namespace = f'{ns}{api_core}'
+    return namespace
+
+
+
 def get_namespace(children, suffix=True):
     """例如cv::cudacodec::VideoReader
 
     特殊示例：OpenCV FileStorage::READ，DECL_REF_EXPR，将子节点TYPE_REF作为namespace处理。
     {"kind": "DECL_REF_EXPR","type_kind": "ENUM","spelling": "READ","type": "cv::FileStorage::Mode"}
         {"kind": "TYPE_REF","type_kind": "RECORD","spelling": "class cv::FileStorage","type": "cv::FileStorage"}
+
+    特殊示例：OpenCV cv::cuda::HOG::create()，静态方法，CALL_EXPR->DECL_REF_EXPR，将子节点TYPE_REF作为namespace处理。
+    {"kind": "CALL_EXPR","type_kind": "UNEXPOSED","spelling": "create","type": "Ptr<cv::cuda::HOG>"}
+        {"kind": "DECL_REF_EXPR","type_kind": "FUNCTIONPROTO","spelling": "create","type": "Ptr<cv::cuda::HOG> (...)"}
     """
     namespace = ''
+    tpl_flag = list()  # 使用栈结构保存template的Flag，应对嵌套template场景
     for child in children:
-        if child.kind in [CursorKind.NAMESPACE_REF, CursorKind.TEMPLATE_REF]:
+        if child.kind == CursorKind.NAMESPACE_REF:
             child.scanned = True
             namespace += child.spelling + '::'
+        elif child.kind == CursorKind.TEMPLATE_REF:
+            child.scanned = True
+            namespace += child.spelling + '<'
+            tpl_flag.append(True)
         elif child.kind == CursorKind.TYPE_REF:  # 特殊示例
             child.scanned = True
-            if namespace in child.type.spelling:
-                namespace = child.type.spelling + '::'
+            ct = child.type.spelling
+            api_core = ct.split('::')[-1]
+            if not ct.startswith(namespace) and namespace in ct:  # 理论上前者满足时，后者必须满足，无需多加判断
+                # namespace为部分，例如代码cuda::GpuMat，namespace为cuda，type_ref为cv::cuda::GpuMat。
+                # 特殊代码dnn::Net，namespace为dnn，type_ref为cv::dnn::dnn4_v20211220::Net，希望为cv::dnn::Net
+                namespace = f'{ct[:ct.find(namespace)]}{namespace}{api_core}::'
             else:
-                namespace += child.type.spelling + '::'
+                namespace = f"{namespace}{api_core}{' > ' if tpl_flag and tpl_flag.pop() else '::'}"
         else:  # 应该不会出现，用作保险
             break
     return namespace if suffix else namespace[:-2]  # 空字符串不会报错
+
+
+def get_typedef(canonical_type):
+    for _ in range(10):
+        if canonical_type in TYPEDEF_MAP:
+            canonical_type = TYPEDEF_MAP.get(canonical_type)
+        else:
+            break
+    return canonical_type
+
+
+def off_alias(T):
+    """例如using T = cv::cuda::GpuMat;"""
+    type_decl = T.get_declaration()
+    if not type_decl:  # 不确定会否出现
+        return T
+    if not is_usr_code(get_attr(type_decl, 'location.file.name')):
+        return T
+    # 其他情况待确认：NAMESPACE_ALIAS，TYPE_ALIAS_TEMPLATE_DECL
+    true_type = T
+    if type_decl.kind == CursorKind.TYPE_ALIAS_DECL:
+        # 通过get_canonical()可以获取最原始类型，但underlying_typedef_type获取的是当前声明对应的源类型。
+        true_type = type_decl.underlying_typedef_type
+    return true_type
 
 
 def get_children(cursor):
@@ -125,6 +211,9 @@ def get_children(cursor):
         cursor.children = list(cursor.get_children())  # 临时属性，便于特殊处理子节点
     for child in cursor.children:
         child.parent = cursor
+        true_type = off_alias(child.type)
+        if child.type != true_type:
+            child._type = true_type
         if hasattr(cursor, 'scanned'):
             child.scanned = cursor.scanned
     return cursor.children
@@ -167,9 +256,12 @@ def read_code(file_path, start, end):
 
 
 def read_cursor(cursor):
+    file = get_attr(cursor, 'location.file.name')
     start = get_attr(cursor, 'extent.start.offset')
     end = get_attr(cursor, 'extent.end.offset')
-    spelling = read_code(cursor.translation_unit.spelling, start, end)
+    spelling = None
+    if file and start and end:
+        spelling = read_code(file, start, end)
     return spelling
 
 
@@ -201,13 +293,16 @@ def default(c):
     # 对应的：c.spelling = Size_，c.type.spelling = cv::Size
     if re.search(rf'\b{re.escape(c.spelling)}\b', c.type.get_canonical().spelling):
         api = c.type.spelling
+        api = strip_implicit(api)
     else:
         api = c.spelling
 
-    canonical_type = c.type
-    if 'std::' in c.type.spelling:  # 针对容器类型索引后的返回类型做处理
-        canonical_type = c.type.get_canonical() or c.type
-    c.info = Info(canonical_type.spelling, c.spelling, api, definition, source)
+    result_type = c.type.spelling
+    if 'std::' in result_type:  # 针对容器类型索引后的返回类型做处理，判断需要更准确
+        if c.type.get_canonical():
+            # get_canonical获取的是原始类型，需映射为typedef的最终类型
+            result_type = get_typedef(c.type.get_canonical().spelling)
+    c.info = Info(result_type, c.spelling, api, definition, source)
     return c.info
 
 
@@ -223,27 +318,18 @@ def var_decl(c):
         Info
     """
     children = get_children(c)
-    api = c.type.spelling
+    result_type, spelling, api, definition, source = default(c)
     if children:  # TYPEDEF RECORD
-        for i, child in enumerate(children):  # 示例2
-            if child.kind in [CursorKind.NAMESPACE_REF, CursorKind.TEMPLATE_REF]:
-                child.scanned = True  # 用于标识是否已被扫描
-            if child.kind == CursorKind.TYPE_REF:
+        # 此处将template_ref和type_ref合并处理，如cv::Ptr<cv:cuda::VideoReader>
+        spelling = get_namespace(children) + spelling  # TYPE VAR
+        for i, child in enumerate(children):
+            # 原生类型变量声明 = 加速库/非加速库调用，则没有TYPE_REF
+            if child.kind == CursorKind.TYPE_REF:  # 从变量声明所属类型获取source
                 definition = get_attr(child, 'referenced.displayname')
                 source = get_attr(child, 'referenced.location.file.name')
-                if i + 1 < len(children) and children[i + 1].kind == CursorKind.CALL_EXPR:
-                    definition = call_expr(children[i + 1])[3]
                 break
-        else:  # 原生类型变量声明 = 加速库调用
-            return default(c)
-    else:  # 原生类型变量声明
-        source = get_attr(c, 'location.file.name')
-        if c.get_definition():
-            definition = c.get_definition().displayname
-        else:
-            definition = None
 
-    c.info = Info(api, f'{c.type.spelling} {c.spelling}', api, definition, source)
+    c.info = Info(result_type, spelling, api, definition, source)
     return c.info
 
 
@@ -257,30 +343,21 @@ def parm_decl(c):
         Info
     """
     children = get_children(c)
-    # c.children = children  # 临时属性，用于特殊处理子节点
+    result_type, spelling, api, definition, source = default(c)
     if children:
-        for i, child in enumerate(children):
-            if child.kind in [CursorKind.NAMESPACE_REF, CursorKind.TEMPLATE_REF]:
-                child.scanned = True  # 用于标识是否已被扫描
-            if child.kind == CursorKind.TYPE_REF:
+        # 此处将template_ref和type_ref合并处理，如cv::Ptr<cv:cuda::VideoReader>
+        spelling = get_namespace(children) + spelling  # TYPE VAR
+        for i, child in enumerate(children):  # 示例2
+            # 原生类型变量声明 = 加速库/非加速库调用，则没有TYPE_REF
+            if child.kind == CursorKind.TYPE_REF:  # 从变量声明所属类型获取source
                 definition = get_attr(child, 'referenced.displayname')
                 source = get_attr(child, 'referenced.location.file.name')
-                if i + 1 < len(children) and children[i + 1].kind == CursorKind.CALL_EXPR:
-                    definition = call_expr(children[i + 1])[3]
                 break
-        else:  # 原生类型变量声明 = 加速库调用
-            return default(c)
-    else:  # 原生类型变量声明
-        source = get_attr(c, 'location.file.name')
-        if c.get_definition():
-            definition = c.get_definition().displayname
-        else:
-            definition = None
     if c.type.kind in (TypeKind.RVALUEREFERENCE, TypeKind.LVALUEREFERENCE):
         api = c.type.get_pointee().spelling
     else:
         api = c.type.spelling
-    c.info = Info(api, f'{c.type.spelling} {c.spelling}', api, definition, source)
+    c.info = Info(result_type, spelling, api, definition, source)
     return c.info
 
 
@@ -344,29 +421,34 @@ def call_expr(c):
     result_type, spelling, api, definition, source = default(c)
     op_overload = 'operator' in c.spelling  # 需要判断的更加准确
     if op_overload:
+        op = c.spelling  # {"spelling": "operator()"} 对应接口为`operator()`
         for i, child in enumerate(children):
             child = skip_implicit(child)
             if not child:
                 continue
             if c.spelling == child.spelling and i > 0:  # 重载的运算符节点
-                    child.scanned = True  # 用于标识是否已被扫描
-        name, _, attr, _, _ = auto_match(c0)
-        if c0.kind == CursorKind.MEMBER_REF_EXPR:
+                child.scanned = True  # 用于标识是否已被扫描
+        cls, _, attr, _, _ = auto_match(c0)
+        if c0.spelling == c.spelling and get_attr(c0, 'referenced.kind') == get_attr(c, 'referenced.kind'):  # 运算符节点
+            api = attr
+            c0.scanned = True  # 用于标识是否已被扫描
+        elif c0.kind == CursorKind.MEMBER_REF_EXPR:
             # 运算符重载，且最近子节点为MEMBER_REF_EXPR，则必为属性引用，而非方法引用，否则最近子节点为CALL_EXPR。
-            api = f"{attr}{c.spelling[8:]}"  # 例如呈现cv::Mat.size()，实际为cv::MatSize()
+            api = f"{attr if op == '()' else cls}.{op}"  # 例如呈现cv::Mat.size()，实际为cv::MatSize()，待商榷
             c0.scanned = True
         else:
             if c0.kind == CursorKind.CALL_EXPR:  # 可能返回const xxx类型
-                name = strip_implicit(name)  # 去除const和末尾指针符号*
-            api = f"{name}{c.spelling[8:]}"  # 例如呈现cv::FileStorage[]
+                cls = strip_implicit(cls)  # 去除const和末尾指针符号*
+            api = f"{cls}.{op}"  # 例如呈现cv::FileStorage[]
             if c0.kind == CursorKind.DECL_REF_EXPR:
                 c0.scanned = True
     else:
         # 1. c0 spelling、ref_kind和c一致，则c0为方法/函数引用，CursorKind为REF。
         if c0.spelling == c.spelling and get_attr(c0, 'referenced.kind') == get_attr(c, 'referenced.kind'):
+            api = auto_match(c0).api
             if c0.kind == CursorKind.MEMBER_REF_EXPR:
-                api = auto_match(c0).api
                 c0.scanned = True
+            # 静态方法掉用，c.referenced.is_static_method() == True，c0为DECL_REF_EXPR
             elif c0.kind in [CursorKind.DECL_REF_EXPR, CursorKind.TYPE_REF]:
                 c0.scanned = True
         # 2. 类/构造函数调用，如cv::Size(w, h)，不满足1。隐式调用子节点均为参数，显式调用子节点包含命名空间+（类型）引用+参数。
@@ -396,8 +478,13 @@ def member_ref_expr(c):
     Returns:
         Info
     """
-    api = c.spelling  # 示例1不适用
-    result_type = get_attr(c, 'referenced.result_type.spelling')
+    api = c.spelling  # 示例1、7不适用
+    if get_attr(c, 'referenced.kind') == CursorKind.FIELD_DECL:
+        result_type = c.type.spelling
+    else:  # CXX_METHOD
+        result_type = get_attr(c, 'referenced.result_type.spelling')
+        if get_attr(c, 'referenced.kind') == CursorKind.CONVERSION_FUNCTION:
+            api = f'operator {result_type}()'  # 例如示例7，从"operator unsigned long" 改为 "size_t"
     definition = get_attr(c, 'referenced.displayname')
     source = get_attr(c.referenced, 'location.file.name')
     children = get_children(c)
@@ -427,18 +514,20 @@ def decl_ref_expr(c):
     # type为<overloaded function type>，referenced
     definition = c.referenced.displayname if c.referenced else None
     children = get_children(c)
+    # get_namespace会设置scanned属性，set_attr_children(c, 'scanned', True)
+    namespace = get_namespace(children)
     if c.type.kind == TypeKind.OVERLOAD:  # 似乎没再遇到过
         if len(children) < 1:
             raise RuntimeError(f'DECL_REF_EXPR of Typekind OVERLOAD {c.spelling} {c.location} 应有后继节点：' \
                                f'命名空间NAMESPACE_REF（可选） 函数名OVERLOADED_DECL_REF')
-        spelling = get_namespace(children) + children[-1].spelling
+        spelling = namespace + children[-1].spelling
         api = spelling
         result_type = get_attr(children[-1], 'referenced.result_type.spelling')  # 函数返回值类型
         source = get_attr(children[0], 'referenced.location.file.name')
     # extent包含对象名、方法名，不包括()、参数，需修改。
     elif c.type.kind == TypeKind.FUNCTIONPROTO:
-        # DECL_REF_EXPR of Typekind FUNCTIONPROTO 有后继节点：命名空间NAMESPACE_REF（可选），类型TYPE_REF（可选）
-        spelling = get_namespace(children) + c.spelling
+        # 静态方法引用，c.referenced.is_static_method() == True，有后继节点：类型TYPE_REF
+        spelling = namespace + c.spelling
         api = spelling
         result_type = get_attr(c, 'referenced.result_type.spelling')  # 函数返回值类型
         source = get_attr(c, 'referenced.location.file.name')
@@ -446,12 +535,12 @@ def decl_ref_expr(c):
     # extent包含对象名，无需修改。
     else:
         result_type, spelling, api, definition, source = default(c)
-        # get_namespace会设置scanned属性，set_attr_children(c, 'scanned', True)
-        spelling = get_namespace(children) + spelling
+        spelling = namespace + spelling
         if c.type.kind == TypeKind.ENUM:
             if 'anonymous enum' not in c.type.spelling:
                 api = f'{c.type.spelling}.{api}'
 
+    api = merge_namespace(namespace, api)
     c.info = Info(result_type, spelling, api, definition, source)
     return c.info
 
@@ -503,7 +592,8 @@ def namespace_ref(c):
         Info
     """
     # 将连续的namespace合并
-    api = get_namespace(get_children(c.parent), suffix=False)
+    group = group_namespace(c)
+    api = get_namespace(group, suffix=False)
     c.info = Info(None, c.spelling, api, None, get_attr(c, 'referenced.location.file.name'))
     return c.info
 
@@ -522,15 +612,18 @@ def inclusion_directive(c):
 
 def literal(c):
     """XXX_LITERAL"""
-    spelling = read_cursor(c)
-    c.info = Info(c.spelling, spelling, None, None, None)
+    if c.kind == CursorKind.STRING_LITERAL:
+        spelling = c.spelling
+    else:
+        spelling = read_cursor(c)
+    c.info = Info(c.type.spelling, spelling, None, None, None)
     return c.info
 
 
 def operator(c):
     """UNARY_OPERATOR/BINARY_OPERATOR/..."""
     spelling = read_cursor(c)
-    c.info = Info(c.spelling, spelling, None, None, None)
+    c.info = Info(c.type.spelling, spelling, None, None, None)
     return c.info
 
 
@@ -545,7 +638,6 @@ small_dict = {
 
 # 大粒度分析CursorKind
 large_dict = {
-    'VAR_DECL': var_decl, 'PARM_DECL': parm_decl,
 }
 
 # 工具性分析CursorKind
@@ -558,7 +650,7 @@ whole_dict = {**small_dict, **large_dict, **other_dict}
 filter_dict = small_dict
 helper_dict = large_dict  # 用于提前对节点进行处理，比如VAR_DECL的命名空间、FUNCTIONPROTO的参数等
 if KitConfig.LEVEL == 'large':
-    filter_dict = whole_dict
+    filter_dict = {**small_dict, **large_dict}
     helper_dict = dict()
 
 

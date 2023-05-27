@@ -17,22 +17,27 @@ import numpy as np
 import pandas as pd
 from app_analyze.utils.excel import read_excel, write_excel
 from app_analyze.utils.log_util import logger
-from app_analyze.common.kit_config import KitConfig
+from app_analyze.common.kit_config import KitConfig as K
+
+API_MAP_KEYS = [K.ACC_API, K.ASCEND_API, K.DESC, K.WORKLOAD, K.PARAMS, K.ACC_LINK, K.ASCEND_LINK]
+REPORT_ADD_KEYS = [K.ASCEND_API, K.DESC, K.WORKLOAD, K.PARAMS, K.ACC_LINK, K.ASCEND_LINK, K.ASCEND_LIB]
 
 
 class Advisor:
 
     def __init__(self, results):
         self.results = self._dedup_results(results)
-        self.api_dfs = self._api_dfs(KitConfig.API_MAP)
+        self.api_dfs = self._api_dfs(K.API_MAP)
 
     @staticmethod
     def _dedup_results(val_dict):
         """deduplicate scanning results caused by same include files in different source files"""
         rst_dict = {}
         df = pd.concat(list(val_dict.values()), ignore_index=True)
-        df.drop_duplicates(subset=['API', 'Location'], keep='first', inplace=True)
-        df['file'] = df['Location'].str.split(',', expand=True)[0]
+        if df.empty:
+            return val_dict
+        df.drop_duplicates(subset=[K.ACC_API, K.LOCATION], keep='first', inplace=True)
+        df['file'] = df[K.LOCATION].str.split(',', expand=True)[0]
 
         files = df['file'].unique()
         for f in files:
@@ -44,23 +49,24 @@ class Advisor:
 
     @staticmethod
     def _api_map(api_path):
-        df_dict = read_excel(api_path)
+        """读取并整理一个API映射表"""
+        df_dict = read_excel(api_path, hyperlink_cols=[K.ACC_LINK, K.ASCEND_LINK])
         # 将它们合并到一个DataFrame中
         apis = pd.concat([v for k, v in df_dict.items() if k.endswith('APIMap')], axis=0)
-        cols = ['昇腾API', '说明', 'NV_API', '迁移预估人力（人/天）']
-        drop_cols = [c for c in apis.columns if c not in cols]
-        logger.debug(f'drop:{drop_cols}')
+        drop_cols = [c for c in apis.columns if c not in API_MAP_KEYS]
+        logger.debug(f'Drop columns from {api_path}:{drop_cols}')
         apis = apis.drop(drop_cols, axis=1)
-        apis['迁移预估人力（人/天）'].fillna(0.1, inplace=True)
-        apis['NV_API'].fillna('', inplace=True)
+        apis[K.WORKLOAD].fillna(K.DEFAULT_WORKLOAD, inplace=True)
+        apis[K.ACC_API].fillna('', inplace=True)
         return apis
 
     @staticmethod
-    def _sort(api, df, col):
+    def _sort(api, df):
+        """从映射表中检索三方加速库API对应的条目并排序。"""
         scores = dict()
         rows = list()
         for _, row in df.iterrows():
-            acc_apis = [s.strip() for s in row[col].split('/n')]
+            acc_apis = [s.strip() for s in row[K.ACC_API].split('/n')]
             if api in acc_apis:
                 try:
                     scores[id(row)] = 1.0 / len(acc_apis)
@@ -85,44 +91,33 @@ class Advisor:
         for _, df in self.results.items():
             if df.empty:
                 continue
-            # 增加表格列
-            df['AscendAPI'] = ''
-            df['Description'] = ''
-            df['Workload'] = 0.0
-            df['AscendLib'] = ''
-            df['Params(Ascend:Acc)'] = ''
-            df['AscendAPI Link'] = ''
-            df['AccAPI Link'] = ''
+            # 增加表格列，使之包含APIMap的字段，并设置默认值
+            for k in REPORT_ADD_KEYS:
+                if k != K.WORKLOAD:
+                    df[k] = ''
+                else:
+                    df[k] = K.DEFAULT_WORKLOAD
             # 遍历每一行，并进行修改
             for index, row in df.iterrows():
-                if row['API'] in KitConfig.EXCEPT_API:
+                if row[K.ACC_API] in K.EXCEPT_API:
                     continue
                 # 1. 使用Series.str.contains()做字符串检索
                 # 2. 自定义字符串检索
-                lib_name, api_df = self.api_dfs[row['AccLib']]
-                query = self._sort(row['API'], api_df, 'NV_API')
+                lib_name, api_df = self.api_dfs[row[K.ACC_LIB]]
+                query = self._sort(row[K.ACC_API], api_df)
 
                 if query:
                     best = query[0]
-                    row['AscendAPI'] = best['昇腾API']
-                    row['Description'] = best['说明']
-                    row['Workload'] = best['迁移预估人力（人/天）']
-                    row['AscendLib'] = lib_name
-                    row['Params(Ascend:Acc)'] = best.get('参数对应关系(昇腾:NV)', '')
-                    row['AscendAPI Link'] = best.get('昇腾API链接', '')
-                    row['AccAPI Link'] = best.get('NV_API链接', '')
-                else:
-                    row['Workload'] = 0.1
+                    row[K.ASCEND_LIB] = lib_name
+                    for k in REPORT_ADD_KEYS:
+                        row[k] = best.get(k, '')
                 df.iloc[index] = row
 
             drop_cols = list()
             for c in df.columns:
-                k = c
-                if c.startswith('Context'):
-                    k = 'Context'
-                if not KitConfig.OPTIONAL_REPORT_KEY.get(k, True):
+                if not K.OPT_REPORT_KEY.get(c, True):
                     drop_cols.append(c)
-            logger.debug(f'drop:{drop_cols}')
+            logger.debug(f'Drop columns from report:{drop_cols}')
             df.drop(drop_cols, axis=1, inplace=True)
         return self.results
 
@@ -131,13 +126,13 @@ class Advisor:
         for file_name, df in self.results.items():
             if df.empty:
                 continue
-            workload = df['Workload'].sum()
-            wl.append({'File': file_name, 'Workload': workload, 'Rectified': self._workload_model(workload)})
+            workload = df[K.WORKLOAD].sum()
+            wl.append({'File': file_name, K.WORKLOAD: workload, 'Rectified': self._workload_model(workload)})
         wldf = pd.DataFrame(wl)
         if wldf.empty:
             return wldf
-        total = wldf['Workload'].sum()
-        ttdf = pd.DataFrame({'File': ['Project'], 'Workload': [total], 'Rectified': self._workload_model(total)})
+        total = wldf[K.WORKLOAD].sum()
+        ttdf = pd.DataFrame({'File': ['Project'], K.WORKLOAD: [total], 'Rectified': self._workload_model(total)})
         wldf = pd.concat([wldf, ttdf], ignore_index=True)
         self.results['Workload'] = wldf
         return wldf
@@ -145,21 +140,22 @@ class Advisor:
     def cuda_apis(self):
         cu_list = list()
         for file_name, df in self.results.items():
-            if not df.empty and file_name != 'Workload':
-                if 'CUDAEnable' not in df.columns:
+            if not df.empty and file_name != K.WORKLOAD:
+                if K.CUDA_EN not in df.columns:
                     continue
-                cu_list.append(df[df['CUDAEnable'] == True])
+                cu_list.append(df[df[K.CUDA_EN] == True])
         if not cu_list:
             return pd.DataFrame()
         cu_df = pd.concat(cu_list, ignore_index=True)
-        cu_gp = cu_df.groupby('API').size()
-        self.results['CUDA_APIs'] = pd.DataFrame({'API': cu_gp.index, 'Count': cu_gp.values})
+        cu_gp = cu_df.groupby(K.ACC_API).size()
+        self.results['CUDA_APIs'] = pd.DataFrame({K.ACC_API: cu_gp.index, 'Count': cu_gp.values})
         return cu_gp
 
     def to_excel(self):
         write_excel(self.results)
 
     def _api_dfs(self, api_map):
+        """读取并整理多个API映射表"""
         api_dfs = dict()
         for k, v in api_map.items():
             lib_name = os.path.basename(v).split('_')[0]
