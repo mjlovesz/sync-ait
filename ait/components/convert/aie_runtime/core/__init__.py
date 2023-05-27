@@ -15,6 +15,7 @@
 import os
 import sys
 
+from convert import Convert
+
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
-from convert import Convert
