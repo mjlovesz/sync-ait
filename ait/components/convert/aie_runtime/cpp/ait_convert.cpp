@@ -13,8 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#include "AscendIE.h"
+#include <iostream>
 #include <fstream>
+
 using namespace AscendIE;
 
 int main(int argc, char** argv)
@@ -35,7 +37,7 @@ int main(int argc, char** argv)
 
     OnnxModelParser parser;
 
-    bool ret = parse.Parse(network, modelPath.c_str());
+    bool ret = parser.Parse(network, onnxModelPath.c_str());
 
     BuilderConfig config;
 
