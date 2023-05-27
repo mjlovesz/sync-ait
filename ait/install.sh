@@ -90,7 +90,7 @@ then
   ${arg_force_reinstall}
 fi
 
-if [ -z $only_debug ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [-z &only_convert] && [ -z $only_transplt ]
+if [ -z $only_debug ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z &only_convert ] && [ -z $only_transplt ]
 then
   pip3 install ${CURRENT_DIR}/components/debug/compare \
   ${CURRENT_DIR}/components/debug/surgeon \
