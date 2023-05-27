@@ -33,16 +33,14 @@ from clang.cindex import Index, CursorKind, TranslationUnit, Config
 from app_analyze.common.kit_config import KitConfig
 from app_analyze.utils.io_util import IOUtil
 from app_analyze.utils.log_util import logger
-from app_analyze.utils.lib_util import get_sys_path, is_acc_path
-from app_analyze.scan.clang_utils import helper_dict, filter_dict, Info, \
-    get_attr, get_children, skip_implicit, auto_match
-from app_analyze.scan.clang_utils import read_cursor
+from app_analyze.utils.lib_util import is_acc_path
+from app_analyze.scan.clang_utils import helper_dict, filter_dict, Info, get_attr, get_children, skip_implicit
+from app_analyze.scan.clang_utils import auto_match, read_cursor, TYPEDEF_MAP, is_usr_code
 
-SYS_PATH = get_sys_path()
+
 SCANNED_FILES = list()
 RESULTS = list()
 MACRO_MAP = dict()
-TYPEDEF_MAP = dict()
 # set the config
 if not Config.loaded:
     # 或指定目录：Config.set_library_path("/usr/lib/x86_64-linux-gnu")
@@ -134,9 +132,17 @@ def filter_acc(cursor):
         result_type, spelling, api, definition, source = filter_dict[cursor.kind.name](cursor)
         hit, cuda_en, ns = in_acc_lib(source, cursor)
 
-    if ns and api and f'{ns}::' not in api:
-        core = api.split('::')[-1]
-        api = f'{ns}::{core}'
+    # 从get_usr中解析的namespace（连续的(?:@N@\w+)），Cursor解析得到的API，前者更完整。
+    # 用户代码dnn::Net，get_user得到cv::dnn::dnn4_v20211220，Cursor得到dnn::Net，取cv::dnn::Net
+    if ns and api:
+        api_ns = ''
+        api_core = api
+        ns_end = api.rfind('::')
+        if ns_end != -1:
+            api_ns = api[:ns_end]
+            api_core = api[ns_end + 2:]
+        if not ns.startswith(api_ns):  # api.startswith('')为True
+            api = f'{ns[:ns.find(api_ns)]}{api_ns}{api_core}'
     return hit, Info(result_type, spelling, api, definition, source), cuda_en
 
 
@@ -156,13 +162,6 @@ def get_includes(tu):
                          get_attr(x, 'location.column'), x.source)
             srcs.append(x.include.name)
     return srcs
-
-
-def is_usr_code(file):
-    usr_code = True
-    if not file or any(file.startswith(p) for p in SYS_PATH):
-        usr_code = False
-    return usr_code
 
 
 def macro_map(cursor, file=None):
@@ -191,6 +190,7 @@ def typedef_map(cursor, file):
     if not file or not in_acc_lib(file, cursor)[0]:
         return
     if cursor.kind == CursorKind.TYPEDEF_DECL:
+        # 通过get_canonical()可以获取最原始类型，但underlying_typedef_type获取的是当前声明对应的源类型。
         TYPEDEF_MAP[cursor.type.get_canonical().spelling] = cursor.type.get_typedef_name()
     return
 
@@ -198,32 +198,26 @@ def typedef_map(cursor, file):
 def actual_arg(cursor):
     """获取调用时传递的实参，忽略隐式类型转换/实例化。Cursor.kind应为CALL_EXPR。
     """
-    root = cursor
     for _ in range(100):
         # CursorKind: MEMBER_REF_EXPR, DECL_REF_EXPR, TYPE_REF, STRING_LITERAL, INTEGER_LITERAL ...
         if 'REF' in cursor.kind.name or 'LITERAL' in cursor.kind.name:
-            return cursor
+            break
         children = get_children(cursor)
         if children:
             cursor = children[0]
-        else:
-            break
-    return root
+    return cursor
 
 
 def parent_stmt(cursor):
     """获取所属Statement对应的代码"""
-    root = cursor
     for _ in range(100):
         # CursorKind: DECL_STMT, DEFAULT_STMT ...
         if cursor.kind.name.endswith('STMT'):
-            return cursor
+            break
         parent = get_attr(cursor, 'parent')
         if parent:
             cursor = parent
-        else:
-            break
-    return root
+    return cursor
 
 
 def parse_args(node):
@@ -291,11 +285,11 @@ def parse_info(node, cwd=None):
                   f"{get_attr(node, 'extent.start.column')}"
             args = parse_args(node)
             item = {
-                'API': api,
-                'CUDAEnable': cuda_en,
-                'Location': loc,
-                'Context(形参 | 实参 | 来源代码 | 来源位置)': args,
-                'AccLib': get_attr(node, 'lib'),
+                KitConfig.ACC_API: api,
+                KitConfig.CUDA_EN: cuda_en,
+                KitConfig.LOCATION: loc,
+                KitConfig.CONTEXT: args,
+                KitConfig.ACC_LIB: get_attr(node, 'lib'),
             }
             RESULTS.append(item)
 
@@ -319,7 +313,6 @@ def parse_info(node, cwd=None):
         'ref_kind': get_attr(node, 'referenced.kind.name'),
         'spelling': node.spelling,
         'type': node.type.spelling,
-        'hash': node.hash,
         'location': location,
         'children': children
     }
@@ -336,7 +329,7 @@ class Parser:
         # option: TranslationUnit.PARSE_PRECOMPILED_PREAMBLE, TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
         includes = [f'-I{x}' for x in KitConfig.INCLUDES.values() if x]
         self.tu = self.index.parse(path,
-                                   args=includes,
+                                   args=includes + ['-std=c++17'],
                                    options=TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
 
     def parse(self):
