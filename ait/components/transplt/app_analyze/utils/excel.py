@@ -26,7 +26,7 @@ def update_hyperlink(path, sheet, hyperlink_cols, df=None, row_header=1):
         df: 已读取的Excel生成的DataFrame对象。
         row_header: 行表头的行号，超链接从下一行开始。
     """
-    if df is not None:
+    if df is None:
         df = pd.read_excel(path, sheet)
     ws = openpyxl.load_workbook(path)[sheet]
     get_url = lambda c: c.hyperlink.target if c.hyperlink and c.hyperlink.target else ''

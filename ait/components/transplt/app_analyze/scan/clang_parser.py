@@ -80,8 +80,8 @@ def cuda_enabled(file, include, namespace=None):
     return False
 
 
-def add_namespace(cursor, namespaces):
-    """获取未显示的命名空间"""
+def get_usr_namespace(cursor, namespaces):
+    """解析get_usr中的命名空间。"""
     if not namespaces or not cursor.referenced:
         return ''
     if not isinstance(namespaces, list):
@@ -110,7 +110,7 @@ def in_acc_lib(file, cursor):
                 add_ns = ''
             else:
                 cuda_en = cuda_enabled(file, v[1])
-                add_ns = add_namespace(cursor, v[0])
+                add_ns = get_usr_namespace(cursor, v[0])
                 cursor.lib = v[3]
             return True, cuda_en, add_ns
     return False, False, ''
@@ -135,14 +135,16 @@ def filter_acc(cursor):
     # 从get_usr中解析的namespace（连续的(?:@N@\w+)），Cursor解析得到的API，前者更完整。
     # 用户代码dnn::Net，get_user得到cv::dnn::dnn4_v20211220，Cursor得到dnn::Net，取cv::dnn::Net
     if ns and api:
-        api_ns = ''
-        api_core = api
         ns_end = api.rfind('::')
-        if ns_end != -1:
+        if ns_end == -1:  # api无命名空间
+            api = f'{ns}::{api}'
+        else:
             api_ns = api[:ns_end]
-            api_core = api[ns_end + 2:]
-        if not ns.startswith(api_ns):  # api.startswith('')为True
-            api = f'{ns[:ns.find(api_ns)]}{api_ns}{api_core}'
+            ns_idx = ns.find(api_ns)
+            if ns_idx == -1:  # api_ns不在ns里，当然也not ns.startswith(api_ns)，例如cv和Scalar::all
+                api = f'{ns}::{api}'
+            elif not ns.startswith(api_ns):  # api.startswith('')为True，例如cv::dnn和dnn::Net
+                api = f'{ns[:ns_idx]}{api}'
     return hit, Info(result_type, spelling, api, definition, source), cuda_en
 
 

@@ -103,7 +103,9 @@ class Advisor:
                     continue
                 # 1. 使用Series.str.contains()做字符串检索
                 # 2. 自定义字符串检索
-                lib_name, api_df = self.api_dfs[row[K.ACC_LIB]]
+                lib_name, api_df = self.api_dfs.get(row[K.ACC_LIB], (None, None))
+                if api_df is None:
+                    continue
                 query = self._sort(row[K.ACC_API], api_df)
 
                 if query:

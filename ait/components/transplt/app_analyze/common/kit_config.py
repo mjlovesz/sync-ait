@@ -101,8 +101,8 @@ class KitConfig:
     DESC = 'Description'  # API描述
     WORKLOAD = 'Workload(人/天)'  # 迁移工作量（人/天）
     PARAMS = 'Params(Ascend:Acc)'  # 昇腾API和三方加速库API形参对应关系
-    ACC_LINK = 'AccAPILink'  # 三方加速库API文档链接
     ASCEND_LINK = 'AscendAPILink'  # 昇腾API文档链接
+    ACC_LINK = 'AccAPILink'  # 三方加速库API文档链接
     # 可选报告字段
     OPT_REPORT_KEY = {
         DESC: True,
