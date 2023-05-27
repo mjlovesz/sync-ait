@@ -33,6 +33,7 @@ from msquickcmp.common.dump_data import DumpData
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException
 from msquickcmp.common.utils import InputShapeError
+from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 
 NODE_TYPE_TO_DTYPE_MAP = {
     "tensor(int)": np.int32,
@@ -59,7 +60,7 @@ class OnnxDumpData(DumpData):
     This class is used to generate GUP dump data of the ONNX model.
     """
 
-    def __init__(self, arguments):
+    def __init__(self, arguments:CmpArgsAdapter):
         super().__init__()
         self.args = arguments
         self.input_shapes = utils.parse_input_shape(self.args.input_shape)
@@ -97,11 +98,11 @@ class OnnxDumpData(DumpData):
             generate inputs data
         """
         if self.args.custom_op == "":
-            self.new_onnx_model_path =  self._modify_model_add_outputs_nodes(self.args.dump, self.args.model_path, self.model_dir)
+            self.new_onnx_model_path =  self._modify_model_add_outputs_nodes(self.args.model_path)
             session = self._load_session(self.new_onnx_model_path)
         else:
-            self.new_onnx_model_before_custom_op =  self._modify_model_add_outputs_nodes(self.args.dump, self.onnx_model_before_custom_op_path, self.model_dir)
-            session = self._load_session(self.new_onnx_model_before_custom_op)
+            self.new_onnx_model_before_custom_op_path =  self._modify_model_add_outputs_nodes(self.onnx_model_before_custom_op_path)
+            session = self._load_session(self.new_onnx_model_before_custom_op_path)
 
         inputs_tensor_info = self._get_inputs_tensor_info(session)
         self.inputs_map = self._get_inputs_data(self.data_dir, inputs_tensor_info)
@@ -169,8 +170,8 @@ class OnnxDumpData(DumpData):
                 self.model_dir = os.path.join(self.args.out_path, model_relative_name)
                 utils.create_directory(self.model_dir)
 
-    def _modify_model_add_outputs_nodes(self, model_dir):
-        old_onnx_model = onnx.load(self.args.model_path)
+    def _modify_model_add_outputs_nodes(self, onnx_model_path):
+        old_onnx_model = onnx.load(onnx_model_path)
         utils.logger.info("load model success")
         for index, node in enumerate(old_onnx_model.graph.node):
             if not node.name:
@@ -182,16 +183,15 @@ class OnnxDumpData(DumpData):
         else:
             outputs_name = [name for name in enumerate_model_node_outputs(old_onnx_model)]
         new_onnx_model = select_model_inputs_outputs(old_onnx_model, outputs_name)
-        new_onnx_model_path = os.path.join(model_dir, "new_" + os.path.basename(self.args.model_path))
+        new_onnx_model_path = os.path.join(self.model_dir, "new_" + os.path.basename(onnx_model_path))
         bytes_model = new_onnx_model.SerializeToString()
         save_as_external_data_switch = sys.getsizeof(bytes_model) > MAX_PROTOBUF
         onnx.save_model(new_onnx_model,
                         new_onnx_model_path,
                         save_as_external_data=save_as_external_data_switch,
-                        location=model_dir if save_as_external_data_switch else None)
-        utils.logger.info("modify model outputs success")
-
-        return old_onnx_model, new_onnx_model_path
+                        location=self.model_dir if save_as_external_data_switch else None)
+        utils.logger.info("modify model outputs success: %s", new_onnx_model_path)
+        return new_onnx_model_path
 
     def _get_inputs_tensor_info(self, session):
         inputs_tensor_info = []
@@ -321,7 +321,7 @@ class OnnxDumpData(DumpData):
             start_nodes = old_onnx_graph.get_next_nodes(input.name)
             for start_node in start_nodes:
                 start_nodes_name.append(start_node.name)
-        
+
         # end before custom op node
         end_nodes_name = []
         for input in custom_op_node.inputs:
@@ -329,4 +329,5 @@ class OnnxDumpData(DumpData):
             end_nodes_name.append(end_node.name)
         
         self.onnx_model_before_custom_op = old_onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
-        self.onnx_model_before_custom_op_path = os.path.join(self.model_dir, "before_custom_op" + os.path.basename(self.args.modelpath))
+        self.onnx_model_before_custom_op_path = os.path.join(self.model_dir, "before_custom_op" + os.path.basename(self.args.model_path))
+        utils.logger.info("extract model before custom op sucessed, save path: %s", self.onnx_model_before_custom_op_path)
