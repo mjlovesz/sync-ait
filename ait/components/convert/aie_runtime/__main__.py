@@ -12,16 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import logging
 import os
 import sys
 import click
-import logging
 
-from .bean import ConvertConfig
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
-from .core import Convert
+from bean import ConvertConfig
 
-from .options import (
+from core import Convert
+
+from options import (
     opt_model,
     opt_out_path,
     opt_soc
