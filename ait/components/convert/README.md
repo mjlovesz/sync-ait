@@ -32,6 +32,6 @@ OPTIONS参数说明如下：
 命令示例及输出如下：
 
 ```shell
-ait convert -gm resnet50.onnx -o resnet50.om -s Ascend310 
+ait convert --model resnet50.onnx --output resnet50.om --soc_version Ascend310 
 ```
 
