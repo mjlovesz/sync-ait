@@ -471,7 +471,7 @@ def backend_run(args):
 def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
-    
+
     if args.perf:
         backend_run(args)
         return 0
@@ -479,7 +479,7 @@ def benchmark_process(args:BenchMarkArgsAdapter):
     if args.profiler:
         # try use msprof to run
         msprof_bin = shutil.which('msprof')
-        if msprof_bin is None or os.getenv('GE_PROFILIGN_TO_STD_OUT') == '1':
+        if msprof_bin is None or os.getenv('GE_PROFILING_TO_STD_OUT') == '1':
             logger.info("find no msprof continue use acl.json mode")
         else:
             msprof_run_profiling(args, msprof_bin)
