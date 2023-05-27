@@ -16,7 +16,6 @@ import os
 import sys
 
 
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-from convert import Convert
+from aie_runtime.convert import Convert
 
 
