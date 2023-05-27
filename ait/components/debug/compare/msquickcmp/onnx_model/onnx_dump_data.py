@@ -329,5 +329,6 @@ class OnnxDumpData(DumpData):
             end_nodes_name.append(end_node.name)
         
         self.onnx_model_before_custom_op = old_onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
-        self.onnx_model_before_custom_op_path = os.path.join(self.model_dir, "before_custom_op" + os.path.basename(self.args.model_path))
+        self.onnx_model_before_custom_op_path = os.path.join(self.model_dir, "before_custom_op_" + os.path.basename(self.args.model_path))
+        self.onnx_model_before_custom_op.save(self.onnx_model_before_custom_op_path)
         utils.logger.info("extract model before custom op sucessed, save path: %s", self.onnx_model_before_custom_op_path)
