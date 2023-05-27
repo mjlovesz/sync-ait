@@ -34,8 +34,8 @@ class Convert:
         self._config = config
         self.python_version = sys.executable or "python3"
 
-    @staticmethod
-    def execute_command(self, cmd):
+    @classmethod
+    def execute_command(cls, cmd):
         """
         Function Description:
             run the following command
