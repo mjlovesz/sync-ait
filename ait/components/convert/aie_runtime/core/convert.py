@@ -36,7 +36,7 @@ class Convert:
 
     def convert_model(self) -> None:
         retval = self.aie_build_model()
-        self.aie_model_convert()
+        self.aie_model_convert(retval)
         os.chdir(retval)
 
 
@@ -50,11 +50,16 @@ class Convert:
         return retval
 
 
-    def aie_model_convert(self) -> None:
+    def aie_model_convert(self, retval) -> None:
         run_path = "./build"
         os.chdir(run_path)
         run_cmd = ["./ait_convert", self._config.model, self._config.output, self._config.soc_version]
         self.execute_command(run_cmd)
+
+        curval = os.getcwd()
+        output_model = self._config.output
+        copy_cmd = ["cp", output_model, retval]
+        self.execute_command(copy_cmd)
         logger.info("AIE model convert finished, the command: %s" % (run_cmd))
 
 
