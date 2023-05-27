@@ -17,6 +17,8 @@ import os
 import sys
 import click
 
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
 from bean import ConvertConfig
 
 from core import Convert
@@ -27,8 +29,6 @@ from options import (
     opt_soc
 )
 
-
-sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
