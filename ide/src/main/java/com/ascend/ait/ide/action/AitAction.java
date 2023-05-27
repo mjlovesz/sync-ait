@@ -1,5 +1,7 @@
 package com.ascend.ait.ide.action;
 
+import com.ascend.ait.ide.Icons;
+import com.ascend.ait.ide.commonlib.ui.UiUtils;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
@@ -12,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class AitAction extends AnAction {
 
     public AitAction() {
-        super("AIT", "", IconLoader.findIcon("/icons.pluginIcon.svg", AitAction.class));
+        super("AIT", "", UiUtils.getJbIcon(Icons.AIS_BENCH_DARK, Icons.AIS_BENCH_LIGHT));
     }
     @Override
     public void actionPerformed(AnActionEvent e) {
@@ -37,7 +39,7 @@ public class AitAction extends AnAction {
             return;
         }
         presentation.setVisible(true);
-        presentation.setIcon(IconLoader.findIcon("/icons.pluginIcon.svg", AitAction.class));
+        presentation.setIcon(UiUtils.getJbIcon(Icons.AIS_BENCH_DARK, Icons.AIS_BENCH_LIGHT));
     }
 
 }

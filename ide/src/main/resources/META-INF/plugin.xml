@@ -35,8 +35,7 @@
         <group id="Ascend" text="_Ascend">
             <add-to-group group-id="MainMenu" anchor="before" relative-to-action="ToolsMenu"/>
         </group>
-        <action id="Ait.Ide" class="com.ascend.ait.ide.action.AitAction" text="Ait"
-                description="Print hello world ">
+        <action id="Ait.Ide" class="com.ascend.ait.ide.action.AitAction" text="Ait">
             <add-to-group group-id="Ascend" anchor="first"/>
         </action>
         <action class="com.ascend.ait.ide.action.AisBenchAction" id="ais_bench">

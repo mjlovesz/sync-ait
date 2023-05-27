@@ -10,7 +10,7 @@ public class Icons {
             "/icons/AisBench_dark.svg", Icons.class.getClassLoader());
 
     public static final Icon AIS_BENCH_LIGHT = IconLoader.findIcon(
-            "/icons/AisBench_dark.svg", Icons.class.getClassLoader());
+            "/icons/AisBench_light.svg", Icons.class.getClassLoader());
 
     public static final Icon COMPARE_DARK = IconLoader.findIcon(
             "/icons/Compare_dark.svg", Icons.class.getClassLoader());
@@ -19,10 +19,10 @@ public class Icons {
             "/icons/Compare_light.svg", Icons.class.getClassLoader());
 
     public static final Icon RIGHT_DARK = IconLoader.findIcon(
-            "/icons/dark@1x.svg", Icons.class.getClassLoader());
+            "/icons/dark@1x.png", Icons.class.getClassLoader());
 
     public static final Icon RIGHT_LIGHT = IconLoader.findIcon(
-            "/icons/light@1x.svg", Icons.class.getClassLoader());
+            "/icons/light@1x.png", Icons.class.getClassLoader());
 
     public static final Icon MODEL_ANALYSE_DARK = IconLoader.findIcon(
             "/icons/ModelAnalyse_dark.svg", Icons.class.getClassLoader());

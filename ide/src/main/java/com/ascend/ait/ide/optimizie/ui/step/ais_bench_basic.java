@@ -55,7 +55,7 @@ public class ais_bench_basic extends DialogWrapper {
     private final JTextField inputFilesTextField = inputFileBrowse.getTextField();
     private final JTextField outputTextField = outputPathBrowse.getTextField();
     private final JTextField outputDirTextField = outputDirnameBrowse.getTextField();
-    private static final String OM_MODEL_FILE_EXTENSION = "java";
+    private static final String OM_MODEL_FILE_EXTENSION = "om";
     private static final String NPY_FILE_EXTENSION = "npy";
     private static final String BIN_FILE_EXTENSION = "bin";
     private static final String TXT_FILE_EXTENSION = "txt";
@@ -68,6 +68,7 @@ public class ais_bench_basic extends DialogWrapper {
         super(true);
         this.project = project;
         init();
+        setTitle("Ais Bench");
         setIcons();
 
         setFileChoodeAction();
@@ -262,7 +263,7 @@ public class ais_bench_basic extends DialogWrapper {
             return false;
         }
         if (pureDataTypeCombx.getSelectedItem() != null && inputFilesTextField.getText().isEmpty()) {
-            Messages.showErrorDialog("Pure data type 必须和input配合使用", "ERROR");
+            Messages.showErrorDialog("Pure data type must be configured as output to be used together", "ERROR");
             return false;
         }
 
