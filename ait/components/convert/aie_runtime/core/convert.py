@@ -63,6 +63,7 @@ class Convert:
         logger.info("AIE model convert finished, the command: %s" % (run_cmd))
 
 
+    @classmethod
     def execute_command(self, cmd):
         """
         Function Description:
