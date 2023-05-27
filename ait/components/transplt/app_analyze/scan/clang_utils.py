@@ -123,24 +123,25 @@ def group_namespace(cursor):
 
 
 def merge_namespace(ns, api):
-    """合并namespace和API。
+    """合并namespace和API，去除中间namespace。
 
     从连续的NAMESPACE_REF节点组合而成的namespace，TYPE_REF节点的type.spelling，后者更完整。
     用户代码cv::dnn::Net，解析的是cv::dnn::Net或cv::dnn::dnn4_v20211220::Net（两者等价），尽量取前者。
     """
     if not ns or not api:
         return api
-    api_ns = ''
-    api_core = api
     ns_end = api.rfind('::')
-    if ns_end != -1:
-        api_ns = api[:ns_end]
-        api_core = api[ns_end + 2:]
-    if not api_ns.startswith(ns) and ns in api_ns:  # x.startswith('')为True
-        namespace = f'{api_ns[:api_ns.find(ns)]}{ns}{api_core}'
+    if ns_end == -1:  # api无命名空间
+        nsapi = f'{ns}{api}'
     else:
-        namespace = f'{ns}{api_core}'
-    return namespace
+        api_ns = api[:ns_end + 2]
+        api_core = api[ns_end + 2:]
+        ns_idx = api_ns.find(ns)
+        if not api_ns.startswith(ns) and ns_idx != -1:  # x.startswith('')为True
+            nsapi = f'{api_ns[:ns_idx]}{ns}{api_core}'
+        else:
+            nsapi = f'{ns}{api_core}'
+    return nsapi
 
 
 
@@ -168,13 +169,13 @@ def get_namespace(children, suffix=True):
         elif child.kind == CursorKind.TYPE_REF:  # 特殊示例
             child.scanned = True
             ct = child.type.spelling
-            api_core = ct.split('::')[-1]
+            type_core = ct.split('::')[-1]
             if not ct.startswith(namespace) and namespace in ct:  # 理论上前者满足时，后者必须满足，无需多加判断
                 # namespace为部分，例如代码cuda::GpuMat，namespace为cuda，type_ref为cv::cuda::GpuMat。
                 # 特殊代码dnn::Net，namespace为dnn，type_ref为cv::dnn::dnn4_v20211220::Net，希望为cv::dnn::Net
-                namespace = f'{ct[:ct.find(namespace)]}{namespace}{api_core}::'
+                namespace = f'{ct[:ct.find(namespace)]}{namespace}{type_core}::'
             else:
-                namespace = f"{namespace}{api_core}{' > ' if tpl_flag and tpl_flag.pop() else '::'}"
+                namespace = f"{namespace}{type_core}{' > ' if tpl_flag and tpl_flag.pop() else '::'}"
         else:  # 应该不会出现，用作保险
             break
     return namespace if suffix else namespace[:-2]  # 空字符串不会报错
@@ -214,8 +215,6 @@ def get_children(cursor):
         true_type = off_alias(child.type)
         if child.type != true_type:
             child._type = true_type
-        if hasattr(cursor, 'scanned'):
-            child.scanned = cursor.scanned
     return cursor.children
 
 
@@ -520,15 +519,13 @@ def decl_ref_expr(c):
         if len(children) < 1:
             raise RuntimeError(f'DECL_REF_EXPR of Typekind OVERLOAD {c.spelling} {c.location} 应有后继节点：' \
                                f'命名空间NAMESPACE_REF（可选） 函数名OVERLOADED_DECL_REF')
-        spelling = namespace + children[-1].spelling
-        api = spelling
+        api = spelling = namespace + children[-1].spelling
         result_type = get_attr(children[-1], 'referenced.result_type.spelling')  # 函数返回值类型
         source = get_attr(children[0], 'referenced.location.file.name')
     # extent包含对象名、方法名，不包括()、参数，需修改。
     elif c.type.kind == TypeKind.FUNCTIONPROTO:
         # 静态方法引用，c.referenced.is_static_method() == True，有后继节点：类型TYPE_REF
-        spelling = namespace + c.spelling
-        api = spelling
+        api = spelling = namespace + c.spelling
         result_type = get_attr(c, 'referenced.result_type.spelling')  # 函数返回值类型
         source = get_attr(c, 'referenced.location.file.name')
     # 若为对象引用，可从type获取类型归属，ELABORATED/RECORD/CONSTANTARRAY/TYPEDEF/ENUM
@@ -539,8 +536,7 @@ def decl_ref_expr(c):
         if c.type.kind == TypeKind.ENUM:
             if 'anonymous enum' not in c.type.spelling:
                 api = f'{c.type.spelling}.{api}'
-
-    api = merge_namespace(namespace, api)
+                api = merge_namespace(namespace, api)  # 例如'cv::dnn::dnn4_v20211220::Backend.DNN_BACKEND_CUDA'
     c.info = Info(result_type, spelling, api, definition, source)
     return c.info
 
