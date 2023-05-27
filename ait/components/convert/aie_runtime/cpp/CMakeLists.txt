@@ -9,9 +9,6 @@ IF(NOT DEFINED $ENV{CANN_HOME})
     set(ASCEND_TOOLKIT_HOME ${ASCEND_HOME}/ascend-toolkit/latest)
 ENDIF()
 
-IF(NOT DEFINED $ENV{BACKEND_PATH})
-    set(BACKEND_PATH ../)
-ENDIF()
 
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 
@@ -21,7 +18,7 @@ LINK_DIRECTORIES(
     $ENV{CANN_HOME}/aarch64-linux/lib64
 )
 
-ADD_EXECUTABLE(ait_convert $ENV{BACKEND_PATH}/ait_convert.cpp)
+ADD_EXECUTABLE(ait_convert ait_convert.cpp)
 
 TARGET_INCLUDE_DIRECTORIES(ait_convert PUBLIC
     $ENV{AIE_DIR}/include
