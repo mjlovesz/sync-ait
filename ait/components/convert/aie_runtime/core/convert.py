@@ -19,9 +19,8 @@ import subprocess
 import logging
 from dataclasses import dataclass
 
-from bean import ConvertConfig
+from aie_runtime.bean import ConvertConfig
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
