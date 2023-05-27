@@ -65,6 +65,18 @@ class OnnxDumpData(DumpData):
         self.input_shapes = utils.parse_input_shape(self.args.input_shape)
         self.net_output = {}
 
+        self.data_dir = ""
+        self.onnx_dump_data_dir = ""
+        self.model_dir = ""
+        self.old_onnx_model = onnx.load(self.args.model_path)
+        self.new_onnx_model_path = ""
+        self.inputs_map = {}
+
+        self._create_dir()
+        self.onnx_model_before_custom_op_path = ""
+        self.new_onnx_model_before_custom_op_path = ""
+        self._extract_sub_models_by_custom_op()
+
     @staticmethod
     def _check_input_shape_fix_value(op_name, model_shape, input_shape):
         message = "fixed input tensor dim not equal to model input dim." \
@@ -79,6 +91,40 @@ class OnnxDumpData(DumpData):
                 utils.logger.error(message)
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
+    def generate_inputs_data(self):
+        """
+        Function Description:
+            generate inputs data
+        """
+        if self.args.custom_op == "":
+            self.new_onnx_model_path =  self._modify_model_add_outputs_nodes(self.args.dump, self.args.model_path, self.model_dir)
+            session = self._load_session(self.new_onnx_model_path)
+        else:
+            self.new_onnx_model_before_custom_op =  self._modify_model_add_outputs_nodes(self.args.dump, self.onnx_model_before_custom_op_path, self.model_dir)
+            session = self._load_session(self.new_onnx_model_before_custom_op)
+
+        inputs_tensor_info = self._get_inputs_tensor_info(session)
+        self.inputs_map = self._get_inputs_data(self.data_dir, inputs_tensor_info)
+  
+
+    def _generate_onnx_model_dump_data(self, onnx_model_witch_outputs_path, origin_onnx_model_path):
+        """
+        Function description:
+            generate onnx model dump data
+        Parameter:
+            none
+        Return Value:
+            onnx model dump data directory
+        Exception Description:
+            none
+        """
+        session = self._load_session(onnx_model_witch_outputs_path)
+        net_output_node = self._get_net_output_node(origin_onnx_model_path)
+        dump_bins = self._run_model(session, self.inputs_map)
+        origin_onnx_model = onnx.load(origin_onnx_model_path)
+        self._save_dump_data(dump_bins, self.onnx_dump_data_dir, origin_onnx_model, net_output_node)
+        return self.onnx_dump_data_dir
+        
     def generate_dump_data(self):
         """
         Function description:
@@ -90,14 +136,12 @@ class OnnxDumpData(DumpData):
         Exception Description:
             none
         """
-        data_dir, onnx_dump_data_dir, model_dir = self._create_dir()
-        old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
-        session = self._load_session(new_onnx_model_path)
-        net_output_node = self._get_net_output_node()
-        inputs_tensor_info = self._get_inputs_tensor_info(session)
-        inputs_map = self._get_inputs_data(data_dir, inputs_tensor_info)
-        dump_bins = self._run_model(session, inputs_map)
-        self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
+        if self.args.custom_op == "":
+            onnx_dump_data_dir = self._generate_onnx_model_dump_data(self.new_onnx_model_path, 
+                                                                     self.args.model_path)
+        else:
+            onnx_dump_data_dir = self._generate_onnx_model_dump_data(self.new_onnx_model_before_custom_op_path, 
+                                                                     self.onnx_model_before_custom_op_path)
         return onnx_dump_data_dir
 
     def get_net_output_info(self):
@@ -108,24 +152,22 @@ class OnnxDumpData(DumpData):
 
     def _create_dir(self):
         # create input directory
-        data_dir = os.path.join(self.args.out_path, "input")
-        utils.create_directory(data_dir)
+        self.data_dir = os.path.join(self.args.out_path, "input")
+        utils.create_directory(self.data_dir)
 
         # create dump_data/onnx directory
-        onnx_dump_data_dir = os.path.join(self.args.out_path, "dump_data/onnx")
-        utils.create_directory(onnx_dump_data_dir)
+        self.onnx_dump_data_dir = os.path.join(self.args.out_path, "dump_data/onnx")
+        utils.create_directory(self.onnx_dump_data_dir)
 
         # create model directory
-        model_dir = ""
+        self.model_dir = ""
         if self.args.dym_shape_range:
             model_relative_name = "../model"
         else:
             model_relative_name = "model"
             if self.args.dump:
-                model_dir = os.path.join(self.args.out_path, model_relative_name)
-                utils.create_directory(model_dir)
-
-        return data_dir, onnx_dump_data_dir, model_dir
+                self.model_dir = os.path.join(self.args.out_path, model_relative_name)
+                utils.create_directory(self.model_dir)
 
     def _modify_model_add_outputs_nodes(self, model_dir):
         old_onnx_model = onnx.load(self.args.model_path)
@@ -244,12 +286,47 @@ class OnnxDumpData(DumpData):
             utils.logger.info("net_output node is:{}, file path is {}".format(key, value))
         utils.logger.info("dump data success")
 
-    def _get_net_output_node(self):
+    def _get_net_output_node(self, onnx_model_path):
         """
         get net output name
         """
         net_output_node = []
-        session = self._load_session(self.args.model_path)
+        session = self._load_session(onnx_model_path)
         for output_item in session.get_outputs():
             net_output_node.append(output_item.name)
         return net_output_node
+
+    def _extract_sub_models_by_custom_op(self):
+        if self.args.custom_op == "":
+            return
+        try:
+            from auto_optimizer import OnnxGraph
+        except ModuleNotFoundError as err:
+            utils.logger.error("auto_optimizer is not install!")
+            raise err
+        
+        old_onnx_graph = OnnxGraph.parse(self.args.model_path)
+        old_onnx_graph.infer_shape()
+        custom_op_node = old_onnx_graph[self.args.custom_op]
+        if custom_op_node is None:
+            utils.logger.error("can't find custom op: %s", self.args.custom_op)
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+        
+        self._extract_model_before_custom_op(old_onnx_graph, custom_op_node)
+
+    def _extract_model_before_custom_op(self, old_onnx_graph, custom_op_node):
+        # start from inputs
+        start_nodes_name = []
+        for input in old_onnx_graph.inputs:
+            start_nodes = old_onnx_graph.get_next_nodes(input.name)
+            for start_node in start_nodes:
+                start_nodes_name.append(start_node.name)
+        
+        # end before custom op node
+        end_nodes_name = []
+        for input in custom_op_node.inputs:
+            end_node = old_onnx_graph.get_prev_node(input)
+            end_nodes_name.append(end_node.name)
+        
+        self.onnx_model_before_custom_op = old_onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
+        self.onnx_model_before_custom_op_path = os.path.join(self.model_dir, "before_custom_op" + os.path.basename(self.args.modelpath))

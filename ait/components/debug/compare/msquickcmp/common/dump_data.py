@@ -27,9 +27,16 @@ class DumpData(object):
     def __init__(self):
         pass
 
-    def generate_dump_data(self):
+    def generate_dump_data(self, npu_dump_data_path):
         """
         Function Description:
             generate dump data
+        """
+        pass
+
+    def generate_inputs_data(self):
+        """
+        Function Description:
+            generate inputs data
         """
         pass
