@@ -41,7 +41,7 @@ class Analyze:
 
         self._graph = None
         if config.framework == Framework.ONNX:
-            from model_eval.graph.onnx import OnnxGraph
+            from model_evaluation.graph.onnx import OnnxGraph
             try:
                 self._graph: OnnxGraph = \
                     OnnxGraph.load(self._model_path)
@@ -191,8 +191,8 @@ class Analyze:
             return
 
         if self._config.framework == Framework.ONNX:
-            from model_eval.core.checker import OnnxChecker
-            from model_eval.graph.onnx import OnnxGraph
+            from model_evaluation.core.checker import OnnxChecker
+            from model_evaluation.graph.onnx import OnnxGraph
 
             if not isinstance(self._graph, OnnxGraph):
                 return
