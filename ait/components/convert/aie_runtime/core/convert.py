@@ -19,8 +19,9 @@ import subprocess
 import logging
 from dataclasses import dataclass
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from bean import ConvertConfig
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -32,6 +33,28 @@ class Convert:
     ) -> None:
         self._config = config
         self.python_version = sys.executable or "python3"
+
+    @staticmethod
+    def execute_command(self, cmd):
+        """
+        Function Description:
+            run the following command
+        Parameter:
+            cmd: command
+        Return Value:
+            command output result
+        Exception Description:
+            when invalid command throw exception
+        """
+        logger.info('Execute command:%s' % cmd)
+        process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        while process.poll() is None:
+            line = process.stdout.readline()
+            line = line.strip()
+            if line:
+                logger.info(line)
+        if process.returncode != 0:
+            logger.error('Failed to execute command:%s' % " ".join(cmd))
 
 
     def convert_model(self) -> None:
@@ -61,29 +84,6 @@ class Convert:
         copy_cmd = ["cp", output_model, retval]
         self.execute_command(copy_cmd)
         logger.info("AIE model convert finished, the command: %s" % (run_cmd))
-
-
-    @classmethod
-    def execute_command(self, cmd):
-        """
-        Function Description:
-            run the following command
-        Parameter:
-            cmd: command
-        Return Value:
-            command output result
-        Exception Description:
-            when invalid command throw exception
-        """
-        logger.info('Execute command:%s' % cmd)
-        process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        while process.poll() is None:
-            line = process.stdout.readline()
-            line = line.strip()
-            if line:
-                logger.info(line)
-        if process.returncode != 0:
-            logger.error('Failed to execute command:%s' % " ".join(cmd))
 
 
 
