@@ -12,4 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .convert import Convert
+import os
+import sys
+
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
+from convert import Convert
