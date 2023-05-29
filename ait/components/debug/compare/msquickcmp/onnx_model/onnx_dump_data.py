@@ -91,21 +91,6 @@ class OnnxDumpData(DumpData):
             if input_shape[index] != value:
                 utils.logger.error(message)
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
-
-    def generate_inputs_data(self):
-        """
-        Function Description:
-            generate inputs data
-        """
-        if self.args.custom_op == "":
-            self.new_onnx_model_path =  self._modify_model_add_outputs_nodes(self.args.model_path)
-            session = self._load_session(self.new_onnx_model_path)
-        else:
-            self.new_onnx_model_before_custom_op_path =  self._modify_model_add_outputs_nodes(self.onnx_model_before_custom_op_path)
-            session = self._load_session(self.new_onnx_model_before_custom_op_path)
-
-        inputs_tensor_info = self._get_inputs_tensor_info(session)
-        self.inputs_map = self._get_inputs_data(self.data_dir, inputs_tensor_info)
   
 
     def _generate_onnx_model_dump_data(self, onnx_model_witch_outputs_path, origin_onnx_model_path):
@@ -125,7 +110,23 @@ class OnnxDumpData(DumpData):
         origin_onnx_model = onnx.load(origin_onnx_model_path)
         self._save_dump_data(dump_bins, self.onnx_dump_data_dir, origin_onnx_model, net_output_node)
         return self.onnx_dump_data_dir
-        
+
+    def generate_inputs_data(self):
+        """
+        Function Description:
+            generate inputs data
+        """
+        if self.args.custom_op == "":
+            self.new_onnx_model_path =  self._modify_model_add_outputs_nodes(self.args.model_path)
+            session = self._load_session(self.new_onnx_model_path)
+        else:
+            new_model_path = self._modify_model_add_outputs_nodes(self.onnx_model_before_custom_op_path)
+            self.new_onnx_model_before_custom_op_path = new_model_path
+            session = self._load_session(self.new_onnx_model_before_custom_op_path)
+
+        inputs_tensor_info = self._get_inputs_tensor_info(session)
+        self.inputs_map = self._get_inputs_data(self.data_dir, inputs_tensor_info)
+
     def generate_dump_data(self):
         """
         Function description:
@@ -317,18 +318,20 @@ class OnnxDumpData(DumpData):
     def _extract_model_before_custom_op(self, old_onnx_graph, custom_op_node):
         # start from inputs
         start_nodes_name = []
-        for input in old_onnx_graph.inputs:
-            start_nodes = old_onnx_graph.get_next_nodes(input.name)
+        for onnx_model_input in old_onnx_graph.inputs:
+            start_nodes = old_onnx_graph.get_next_nodes(onnx_model_input.name)
             for start_node in start_nodes:
                 start_nodes_name.append(start_node.name)
 
         # end before custom op node
         end_nodes_name = []
-        for input in custom_op_node.inputs:
-            end_node = old_onnx_graph.get_prev_node(input)
+        for custom_op_input in custom_op_node.inputs:
+            end_node = old_onnx_graph.get_prev_node(custom_op_input)
             end_nodes_name.append(end_node.name)
         
         self.onnx_model_before_custom_op = old_onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
-        self.onnx_model_before_custom_op_path = os.path.join(self.model_dir, "before_custom_op_" + os.path.basename(self.args.model_path))
+        self.onnx_model_before_custom_op_path = os.path.join(
+            self.model_dir, "before_custom_op_" + os.path.basename(self.args.model_path))
         self.onnx_model_before_custom_op.save(self.onnx_model_before_custom_op_path)
-        utils.logger.info("extract model before custom op sucessed, save path: %s", self.onnx_model_before_custom_op_path)
+        utils.logger.info("extract model before custom op sucessed, save path: %s", 
+                          self.onnx_model_before_custom_op_path)

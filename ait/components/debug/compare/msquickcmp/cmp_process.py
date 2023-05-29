@@ -137,7 +137,7 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     args.out_path = original_out_path
 
-    if args.custom_op is not "":
+    if args.custom_op != "":
         args.bin2npy = True
 
     # convert the om model to json
