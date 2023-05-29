@@ -107,6 +107,38 @@ class OnnxDumpData(DumpData):
         """
         return self.net_output
 
+    def generate_dump_data(self):
+        """
+        Function description:
+            generate onnx model dump data
+        Parameter:
+            none
+        Return Value:
+            onnx model dump data directory
+        Exception Description:
+            none
+        """
+        data_dir, onnx_dump_data_dir, model_dir = self._create_dir()
+        old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
+        session = self._load_session(new_onnx_model_path)
+        net_output_node = self._get_net_output_node()
+        inputs_tensor_info = self._get_inputs_tensor_info(session)
+        inputs_map = self._get_inputs_data(data_dir, inputs_tensor_info)
+        dump_bins = self._run_model(session, inputs_map)
+        self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
+        return onnx_dump_data_dir
+
+    def generate_dump_data_aipp(self, npu_dump_data_path):
+        data_dir, onnx_dump_data_dir, model_dir = self._create_dir()
+        old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
+        session = self._load_session(new_onnx_model_path)
+        net_output_node = self._get_net_output_node()
+        inputs_tensor_info = self._get_inputs_tensor_info(session)
+        inputs_map = self._get_inputs_data_aipp(data_dir, inputs_tensor_info, npu_dump_data_path)
+        dump_bins = self._run_model(session, inputs_map)
+        self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
+        return onnx_dump_data_dir
+
     def _create_dir(self):
         # create input directory
         data_dir = os.path.join(self.args.out_path, "input")
@@ -228,38 +260,6 @@ class OnnxDumpData(DumpData):
         outputs_name = [node.name for node in session.get_outputs()]
         return session.run(outputs_name, inputs_map)
 
-    def generate_dump_data(self):
-        """
-        Function description:
-            generate onnx model dump data
-        Parameter:
-            none
-        Return Value:
-            onnx model dump data directory
-        Exception Description:
-            none
-        """
-        data_dir, onnx_dump_data_dir, model_dir = self._create_dir()
-        old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
-        session = self._load_session(new_onnx_model_path)
-        net_output_node = self._get_net_output_node()
-        inputs_tensor_info = self._get_inputs_tensor_info(session)
-        inputs_map = self._get_inputs_data(data_dir, inputs_tensor_info)
-        dump_bins = self._run_model(session, inputs_map)
-        self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
-        return onnx_dump_data_dir
-
-    def generate_dump_data_aipp(self, npu_dump_data_path):
-        data_dir, onnx_dump_data_dir, model_dir = self._create_dir()
-        old_onnx_model, new_onnx_model_path = self._modify_model_add_outputs_nodes(model_dir)
-        session = self._load_session(new_onnx_model_path)
-        net_output_node = self._get_net_output_node()
-        inputs_tensor_info = self._get_inputs_tensor_info(session)
-        inputs_map = self._get_inputs_data_aipp(data_dir, inputs_tensor_info, npu_dump_data_path)
-        dump_bins = self._run_model(session, inputs_map)
-        self._save_dump_data(dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node)
-        return onnx_dump_data_dir
-
     def _get_inputs_data_aipp(self, data_dir, inputs_tensor_info, npu_dump_data_path):
         inputs_map = {}
         aipp_input = []
@@ -286,17 +286,6 @@ class OnnxDumpData(DumpData):
             inputs_map[tensor_info["name"]] = onnx_input
         return inputs_map
 
-
-    def _get_net_output_node(self):
-        """
-        get net output name
-        """
-        net_output_node = []
-        session = self._load_session(self.args.model_path)
-        for output_item in session.get_outputs():
-            net_output_node.append(output_item.name)
-        return net_output_node
-
     def _save_dump_data(self, dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node):
         res_idx = 0
         for node in old_onnx_model.graph.node:
@@ -313,3 +302,13 @@ class OnnxDumpData(DumpData):
         for key, value in self.net_output.items():
             utils.logger.info("net_output node is:{}, file path is {}".format(key, value))
         utils.logger.info("dump data success")
+
+    def _get_net_output_node(self):
+        """
+        get net output name
+        """
+        net_output_node = []
+        session = self._load_session(self.args.model_path)
+        for output_item in session.get_outputs():
+            net_output_node.append(output_item.name)
+        return net_output_node
