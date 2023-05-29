@@ -950,8 +950,8 @@ class TestClass():
                            output_dirname, log_path)
         logger.info("run cmd:{}".format(cmd))
 
-        ret = os.system(cmd)
         try:
+            ret = os.system(cmd)
             assert ret != 0
         except Exception as e:
             logger.info("some case run failure")
@@ -1233,10 +1233,10 @@ class TestClass():
         for i in range(loop):
             try:
                 session = InferSession(device_id, model_path)
+                del session
             except Exception as e:
                 logger.info("session finalize {} time, exception: {}".format(i + 1, e))
                 exception_num += 1
-            del session
 
         assert exception_num == 0
 
