@@ -15,6 +15,7 @@
 import os
 import argparse
 import logging
+import sys
 
 from multiprocessing import Pool, Manager
 
@@ -28,8 +29,8 @@ from auto_optimizer.inference_engine.data_process_factory import PostProcessFact
 from auto_optimizer.inference_engine.data_process_factory import InferenceFactory
 from auto_optimizer.inference_engine.data_process_factory import DatasetFactory
 
-logging = logging.getLogger("auto-optimizer")
-setup_logging(level=LogLevel.WARNING)
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 
 class InferEngine():
@@ -101,7 +102,7 @@ class InferEngine():
             loop = file_len // batch_size
         else:
             loop = file_len // batch_size + 1
-        logging.info("engine process loop count={}".format(loop))
+        logger.info("engine process loop count={}".format(loop))
 
         try:
             self._thread(loop, worker, batch_size, engine_cfg)
@@ -123,7 +124,10 @@ class InferEngine():
                                             None, self.dataset))
 
         for i in range(worker):
-            pre_loop = (loop / worker + loop % worker) if i == 0 else loop / worker
+            try:
+                pre_loop = (loop / worker + loop % worker) if i == 0 else loop / worker
+            except ZeroDivisionError as err:
+                raise RuntimeError("divide zero error") from err
             self.pre_process_pool.apply_async(pre_process,
                                               args=(int(pre_loop), engine_cfg["pre_process"],
                                                     self.dataset, self.pre_queue))

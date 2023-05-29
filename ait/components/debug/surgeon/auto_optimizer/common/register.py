@@ -70,6 +70,4 @@ class Register:
         pwd_dir = os.getcwd()
 
         for root, _, files in os.walk(self.path_name, topdown=False):
-            modules += [
-                format_to_module(os.path.join(root.split(pwd_dir)[1], file)) for file in files
-            ]
+            modules += [format_to_module(os.path.join(root.split(pwd_dir)[1], file)) for file in files]

@@ -32,7 +32,7 @@ function get_convert_file()
 {
     rm -rf "$1"
     local convert_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet101_Pytorch_Infer/resnet101_pth2onnx.py"
-    wget $convert_url -O $1
+    wget $convert_url -O $1 --no-check-certificate
 }
 
 function get_aippConfig_file()
@@ -40,7 +40,7 @@ function get_aippConfig_file()
     rm -rf "$1"
     local aipp_config_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/aipp_resnet50.aippconfig"
     #local aipp_config_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet101_Pytorch_Infer/aipp.config"
-    wget $aipp_config_url -O $1
+    wget $aipp_config_url -O $1 --no-check-certificate
 }
 
 convert_staticbatch_om()
@@ -183,23 +183,23 @@ main()
         # generate convert_pth_to_onnx.py
         CONVERT_FILE_PATH=$TESTDATA_PATH/resnet101_convert_pth_to_onnx.py
         get_convert_file $CONVERT_FILE_PATH || { echo "get convert file failed";return 1; }
-        $PYTHON_COMMAND $CONVERT_FILE_PATH $resnet_pth_file  $resnet_onnx_file || { echo "convert pth to onnx failed";return 1; }
+        $PYTHON_COMMAND $CONVERT_FILE_PATH --checkpoint=$resnet_pth_file  --save_dir=$resnet_onnx_file || { echo "convert pth to onnx failed";return 1; }
     fi
 
     AIPPCONFIG_FILE_PATH=$TESTDATA_PATH/aipp_resnet101.aippconfig
     get_aippConfig_file $AIPPCONFIG_FILE_PATH || { echo "get aipp file failed";return 1; }
 
     staticbatch="1 2 4 8"
-    staticbatch="1"
     convert_staticbatch_om $resnet_onnx_file $SOC_VERSION "${staticbatch[*]}" $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert static om failed";return 1; }
     dymbatch="1,2,4,8"
     convert_dymbatch_om $resnet_onnx_file $SOC_VERSION $dymbatch $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymbatch om failed";return 1; }
-    # dymhw="224,224"
-    # convert_dymhw_om $resnet_onnx_file $SOC_VERSION $dymhw $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymhw om failed";return 1; }
-    # dymdims="1,224,224;8,448,448"
-    # convert_dymdim_om $resnet_onnx_file $SOC_VERSION $dymdims $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymdim om failed";return 1; }
-    #dymshapes="[1~16,3,200~300,200~300]"
-    #convert_dymshape_om $resnet_onnx_file $SOC_VERSION $dymshapes $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymshape om failed";return 1; }
+    dymhw="112,112;224,224"
+    unset AIPPCONFIG_FILE_PATH
+    convert_dymhw_om $resnet_onnx_file $SOC_VERSION $dymhw $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymhw om failed";return 1; }
+    dymdims="1,224,224;8,448,448"
+    convert_dymdim_om $resnet_onnx_file $SOC_VERSION $dymdims $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymdim om failed";return 1; }
+    dymshapes="[1~16,3,200~300,200~300]"
+    convert_dymshape_om $resnet_onnx_file $SOC_VERSION $dymshapes $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymshape om failed";return 1; }
 }
 
 main "$@"

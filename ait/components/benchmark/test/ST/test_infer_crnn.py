@@ -106,7 +106,7 @@ class TestClass():
             os.makedirs(tmp_output_path)
             output_batchsize_axis = 1
             cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {}" \
-                .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, 
+                .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                         input_path, base_output_path, output_dirname, output_batchsize_axis)
             logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
@@ -146,8 +146,8 @@ class TestClass():
                 shutil.rmtree(tmp_output_path)
             os.makedirs(tmp_output_path)
             output_batchsize_axis = 1
-            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {}" \
-                "--dymBatch {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+            cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {} --output_batchsize_axis {} \
+                --dymBatch {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                          input_path, base_output_path, output_dirname,
                                           output_batchsize_axis, dys_batch_size)
             logger.info("run cmd:{}".format(cmd))
@@ -212,7 +212,7 @@ class TestClass():
             output_batchsize_axis = 1
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
             cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {} > {}" \
-                .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, 
+                .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                         output_parent_path, output_dirname, output_batchsize_axis, log_path)
             logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
@@ -253,8 +253,8 @@ class TestClass():
             os.makedirs(output_path)
             output_batchsize_axis = 1
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
-            cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {}" \
-                "--dymBatch {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+            cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {} \
+                --dymBatch {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                              output_parent_path, output_dirname, output_batchsize_axis,
                                                dys_batch_size, log_path)
             logger.info("run cmd:{}".format(cmd))
@@ -281,4 +281,3 @@ class TestClass():
 
 if __name__ == '__main__':
     pytest.main(['test_infer_crnn.py', '-vs'])
-    

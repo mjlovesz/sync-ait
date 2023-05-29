@@ -27,6 +27,9 @@ import sys
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
+OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
+
 
 class L1BufferDataParser:
     """
@@ -55,6 +58,20 @@ class L1BufferDataParser:
                   % (self.size, self.TWO_M - self.offset))
             sys.exit(self.INVALID_PARAM_ERROR)
 
+    def parse(self):
+        self.check_argument_valid()
+        with open(self.dump_path, 'rb') as l1_buffer_data_file:
+            if self.offset > 0:
+                l1_buffer_data_file.read(self.offset)
+            data = l1_buffer_data_file.read(self.size)
+            output_file_path = os.path.join(self.output_path,
+                                            "%s.%d.%d" % (os.path.basename(self.dump_path), self.offset, self.size))
+            with os.fdopen(os.open(output_file_path, OPEN_FLAGS, OPEN_MODES),
+                           "wb") as output_file:
+                output_file.write(data)
+            logger.info("The l1 buffer data for [%d, %d) has been saved in %s."
+                  % (self.offset, self.offset + self.size, output_file_path))
+
     def _check_path_valid(self, path, is_file):
         if not os.path.exists(path):
             logger.error('The path "%s" does not exist. Please check the path.' % path)
@@ -78,20 +95,6 @@ class L1BufferDataParser:
             if not os.access(path, os.W_OK):
                 logger.error('You do not have permission to write the path "%s". Please check the path.' % path)
                 sys.exit(self.INVALID_PARAM_ERROR)
-
-    def parse(self):
-        self.check_argument_valid()
-        with open(self.dump_path, 'rb') as l1_buffer_data_file:
-            if self.offset > 0:
-                l1_buffer_data_file.read(self.offset)
-            data = l1_buffer_data_file.read(self.size)
-            output_file_path = os.path.join(self.output_path,
-                                            "%s.%d.%d" % (os.path.basename(self.dump_path), self.offset, self.size))
-            with os.fdopen(os.open(output_file_path, os.O_WRONLY | os.O_CREAT, stat.S_IWUSR | stat.S_IRUSR),
-                           "wb") as output_file:
-                output_file.write(data)
-            logger.info("The l1 buffer data for [%d, %d) has been saved in %s."
-                  % (self.offset, self.offset + self.size, output_file_path))
 
 
 def _parser_argument(parser):

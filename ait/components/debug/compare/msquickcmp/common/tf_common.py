@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ def get_inputs_tensor(global_graph, input_shape_str):
                 tensor_index[op_name] += 1
             else:
                 tensor_index[op_name] = 0
-            tensor = global_graph.get_tensor_by_name(op.name + ":" + str(tensor_index.get(op_name, "")))
+            tensor = global_graph.get_tensor_by_name(op.name + ":" + str(tensor_index.get(op_name)))
             tensor = verify_and_adapt_dynamic_shape(input_shapes, op.name, tensor)
             inputs_tensor.append(tensor)
     utils.logger.info("model inputs tensor:\n{}\n".format(inputs_tensor))
