@@ -56,6 +56,7 @@ class KitConfig:
     DALI = 'DALI'
     CVCUDA = 'CVCUDA'
     TENSORRT = 'TensorRT'
+    CODEC = 'Codec'
 
     # CMake加速库模式匹配
     MACRO_PATTERN = re.compile(r'(OpenCV|CUDA|NVJPEG|DALI|CVCUDA)')
@@ -74,6 +75,7 @@ class KitConfig:
         CUDA: f'{HEADERS_FOLDER}/cuda/include',
         OPENCV: f'{HEADERS_FOLDER}/opencv/include/opencv4',
         TENSORRT: '',
+        CODEC: f'{HEADERS_FOLDER}/codec/include',
     }
 
     # 'make', 'automake'
@@ -122,6 +124,7 @@ class KitConfig:
     API_MAP = {
         OPENCV: f'{API_MAP_FOLDER}/mxBase_API_MAP.xlsx',
         CUDA: f'{API_MAP_FOLDER}/ACL_API_MAP.xlsx',
+        CODEC: f'{API_MAP_FOLDER}/Codec_API_MAP.xlsx',
     }
 
     CUDA_HOME = os.environ.get('CUDA_HOME', INCLUDES.get(CUDA, None))
@@ -155,7 +158,8 @@ class KitConfig:
         # DALI: https://github.com/NVIDIA/DALI
         'dali': ['dali', 1, '', DALI],
         # CV-CUDA
-        '/cvcuda': ['cvcuda', 1, '', CVCUDA]
+        '/cvcuda': ['cvcuda', 1, '', CVCUDA],
+        '/codec/': ['', 1, '', CODEC],
     }
 
     LEVEL = 'small'  # parse level: 'large'
