@@ -45,7 +45,7 @@ main() {
 
     export SOC_VERSION=${1:-"Ascend310P3"}
     export PYTHON_COMMAND=${2:-"python3"}
-    export BENCKMARK_DT_MODE=${3:-"simple"}
+    export BENCKMARK_DT_MODE=${3}
 
     get_msame_file $MSAME_PATH || { echo "get msame bin file failed";return 1; }
     chmod 750 $MSAME_PATH
