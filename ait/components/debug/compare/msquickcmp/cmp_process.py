@@ -133,12 +133,12 @@ def dump_data_aipp(args, output_json_path, use_cli):
     return dump_data_info
 
 
-def run(args, input_shape, output_json_path, original_out_path, use_cli:bool, aipp_om):
+def run(args, input_shape, output_json_path, original_out_path, use_cli:bool, use_aipp):
     if input_shape:
         args.input_shape = input_shape
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
 
-    if aipp_om:
+    if use_aipp:
         dump_data_info = dump_data_aipp(args, output_json_path, use_cli)
     else:
         dump_data_info = dump_data(args, output_json_path, use_cli)
@@ -176,7 +176,7 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     # convert the om model to json
     output_json_path = AtcUtils(args).convert_model_to_json()
     temp_om_parser = OmParser(output_json_path)
-    aipp_om = True if temp_om_parser.get_aipp_config_content() else False
+    use_aipp = True if temp_om_parser.get_aipp_config_content() else False
 
     # deal with the dymShape_range param if exists
     input_shapes = []
@@ -185,4 +185,4 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     if not input_shapes:
         input_shapes.append("")
     for input_shape in input_shapes:
-        run(args, input_shape, output_json_path, original_out_path, use_cli, aipp_om)
+        run(args, input_shape, output_json_path, original_out_path, use_cli, use_aipp)

@@ -250,7 +250,7 @@ class OnnxDumpData(DumpData):
                 aipp_input.append(os.path.join(npu_dump_data_path, bin_file))
         for i, tensor_info in enumerate(inputs_tensor_info):
             data_convert_file(aipp_input[i], os.path.join(self.args.out_path, "input"), self.args)
-            aipp_output_path = os.path.join(self.args.out_path, "input", aipp_input[i].rsplit("/", 1)[1]) + \
+            aipp_output_path = os.path.join(self.args.out_path, "input", aipp_input[i].rsplit(os.sep, 1)[1]) + \
                                ".output.0.npy"
             aipp_output = np.load(aipp_output_path)
             nchw_prod = np.prod(tensor_info["shape"])
@@ -260,8 +260,7 @@ class OnnxDumpData(DumpData):
             except ZeroDivisionError as e:
                 utils.logger.error("Aipp output has wrong shape, file path: {}".format(aipp_output_path))
                 raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR) from e
-            onnx_input = np.delete(aipp_output, np.s_[c0:], -1)\
-                .transpose((0, 4, 2, 3, 1)).squeeze(-1).astype(np.float32)
+            onnx_input = aipp_output[..., :c0].transpose((0, 4, 2, 3, 1)).squeeze(-1).astype(np.float32)
             inputs_map[tensor_info["name"]] = onnx_input
         return inputs_map
 
