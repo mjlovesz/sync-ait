@@ -93,7 +93,7 @@ def get_cann_path():
             cann_lib_path = f'{cann_base_path}/runtime/lib64/stub/aarch64/'
 
 
-    logger.info("find cann path:", cann_base_path)
+    logger.info("find cann path: %s", cann_base_path)
 
 get_cann_path()
 
