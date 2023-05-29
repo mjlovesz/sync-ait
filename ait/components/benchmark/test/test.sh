@@ -67,10 +67,12 @@ main() {
 
     if [ $BENCKMARK_DT_MODE -eq "full" ];then
         echo "run DT in full mode"
+        echo $BENCKMARK_DT_MODE
         ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/UT/
         ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/ST/
     else
         echo "run DT in simple mode"
+        echo $BENCKMARK_DT_MODE
         ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/UT_SIMPLE/
         ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/ST_SIMPLE/
     fi
