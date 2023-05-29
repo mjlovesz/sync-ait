@@ -100,7 +100,7 @@ def usr_namespace(cursor, namespaces):
     nsc = re.findall(r'(?:@N@\w+){1,1000}', usr[:index])
     nss = ['::'.join(x[3:].split('@N@')) for x in nsc]
     for namespace in namespaces:
-        for ns in reversed(nss):
+        for ns in nss:
             if namespace in ns:  # namespace可能是pattern，不是完整namespace
                 return ns
     return ''
