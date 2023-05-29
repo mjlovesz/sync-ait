@@ -16,9 +16,9 @@ import unittest
 import os
 import shutil
 
-from model_eval.data import Opp
-from model_eval.common import Const
-from model_eval.common.enum import SocType, Engine
+from model_evaluation.data import Opp
+from model_evaluation.common import Const
+from model_evaluation.common.enum import SocType, Engine
 
 
 class TestOpp(unittest.TestCase):
