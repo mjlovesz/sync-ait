@@ -108,9 +108,6 @@ public class SwitchButton extends JLabel {
 
     /**
      * state change listener
-     *
-     * @since 2019.10.14
-     * @author baiguochao
      */
     public interface StateChangeListener {
         /**
