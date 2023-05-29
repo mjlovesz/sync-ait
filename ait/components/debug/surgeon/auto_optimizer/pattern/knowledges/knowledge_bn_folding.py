@@ -74,9 +74,10 @@ class KnowledgeBNFolding(KnowledgeBase):
     def _constant_folding(self, scale: NDArray, bias: NDArray, mean: NDArray,
                           var: NDArray, epsilon: float,) -> Tuple[NDArray, NDArray]:
         common_divisor = np.sqrt(var + epsilon)
-        if common_divisor.any() == 0:
-            raise ValueError('ZeroDivision Error: common divisor == 0')
-        mul_init = scale / common_divisor
+        try:
+            mul_init = scale / common_divisor
+        except ZeroDivisionError as err:
+            raise ValueError('ZeroDivision Error: common divisor == 0') from err
         add_init = bias - scale * mean / common_divisor
         return mul_init, add_init
 

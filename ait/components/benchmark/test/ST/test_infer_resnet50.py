@@ -31,6 +31,9 @@ from ais_bench.infer.interface import InferSession
 logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
+OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
+
 
 class TestClass():
     @staticmethod
@@ -223,8 +226,8 @@ class TestClass():
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
         os.makedirs(output_path)
-        cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output {}" \
-            "--output_dirname {} ".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+        cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output {} \
+            --output_dirname {} ".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                            output_size, file_paths, output_parent_path, output_dirname)
 
         ret = os.system(cmd)
@@ -240,8 +243,8 @@ class TestClass():
         shutil.rmtree(output_path)
         os.makedirs(output_path)
         # check input parameter is a folder
-        cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output {}" \
-            "--output_dirname {} ".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+        cmd = "{} --model {} --device {} --outputSize {} --auto_set_dymshape_mode true --input {} --output {} \
+            --output_dirname {} ".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                            output_size, auto_set_dymshape_mode_input_dir_path, output_parent_path,
                                              output_dirname)
 
@@ -379,8 +382,8 @@ class TestClass():
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
             os.makedirs(output_path)
-            cmd = "{} --model {} --device {} --input {}  --debug true --output {}  --output_dirname {}" \
-                "--warmup_count {} > {}".format(TestCommonClass.cmd_prefix, model_path,
+            cmd = "{} --model {} --device {} --input {}  --debug true --output {}  --output_dirname {} \
+                --warmup_count {} > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                  TestCommonClass.default_device_id, input_path,
                                                   output_parent_path, output_dirname,  warmup_num, log_path)
             logger.info("run cmd:{}".format(cmd))
@@ -424,8 +427,8 @@ class TestClass():
         if os.path.exists(output_path):
             shutil.rmtree(output_path)
         os.makedirs(output_path)
-        cmd = "{} --model {} --device {} --debug true --output {}  --output_dirname {} --warmup_count {}" \
-            "--loop {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+        cmd = "{} --model {} --device {} --debug true --output {}  --output_dirname {} --warmup_count {} \
+            --loop {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                      output_parent_path, output_dirname,  warmup_num, loop_num, log_path)
 
         logger.info("run cmd:{}".format(cmd))
@@ -465,8 +468,8 @@ class TestClass():
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
             os.makedirs(output_path)
-            cmd = "{} --model {} --device {}  --debug true --output {}  --output_dirname {} --pure_data_type {}" \
-                "--loop {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+            cmd = "{} --model {} --device {}  --debug true --output {}  --output_dirname {} --pure_data_type {} \
+                --loop {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                          output_parent_path, output_dirname, pure_data_type, loop_num, log_path)
             logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
@@ -505,7 +508,7 @@ class TestClass():
         os.makedirs(output_dir_path)
         summary_json_path = os.path.join(output_path,  "{}_summary.json".format(output_dir_name))
 
-        cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {}" \
+        cmd = "{} --model {} --device {} --input {} --output {} --output_dirname {}"\
             .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                      input_path, output_path, output_dir_name)
         logger.info("run cmd:{}".format(cmd))
@@ -887,9 +890,7 @@ class TestClass():
     def test_pure_inference_normal_dynamic_shape_range_mode_3(self):
         range_file_parent_path = os.path.join(self.model_base_path, "input")
         dymshape_range_file = os.path.join(range_file_parent_path, "dymshape_range.info")
-        flags = os.O_WRONLY | os.O_CREAT
-        modes = stat.S_IWUSR | stat.S_IRUSR
-        with os.fdopen(os.open(dymshape_range_file, flags, modes), 'w') as f:
+        with os.fdopen(os.open(dymshape_range_file, OPEN_FLAGS, OPEN_MODES), 'w') as f:
             f.write("actual_input_1:1,3,224-300,224-225\n")
             f.write("actual_input_1:8-9,3,224-300,260-300")
 
@@ -1350,7 +1351,7 @@ class TestClass():
         log_path = os.path.join(output_path, "profiler.log")
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
 
-        # GE_PROFILIGN_TO_STD_OUT=0
+        # when GE_PROFILIGN_TO_STD_OUT=0
         env_label = os.getenv('GE_PROFILIGN_TO_STD_OUT', 'null')
         if env_label != 'null':
             del os.environ['GE_PROFILIGN_TO_STD_OUT']
@@ -1373,7 +1374,7 @@ class TestClass():
         else:
             assert label_is_exist is False
 
-        # GE_PROFILIGN_TO_STD_OUT=1
+        # when GE_PROFILIGN_TO_STD_OUT=1
         os.environ['GE_PROFILIGN_TO_STD_OUT'] = "1"
         label_is_exist = False
         os.remove(log_path)
