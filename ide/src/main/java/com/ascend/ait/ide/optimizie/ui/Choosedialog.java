@@ -111,24 +111,25 @@ public class Choosedialog extends JFrame {
         return root;
     }
 
+    private void initMouse() {
+        checkPluginsAndAddAction(modelAnalyse, StepNum.MODEL_ANALYSE, PluginClassId.Foundation_PluginId);
+        checkPluginsAndAddAction(modelConverter, StepNum.MODEL_CONVERTER, PluginClassId.Foundation_PluginId);
+        checkPluginsAndAddAction(aisBench, StepNum.AIS_BENCH, PluginClassId.AitIde_PluginId);
+        checkPluginsAndAddAction(compare, StepNum.COMPARE, PluginClassId.AitIde_PluginId);
+        checkPluginsAndAddAction(systemProfiler, StepNum.SYSTEM_PROFILER, PluginClassId.Inference_PluginId);
+    }
+
     private void checkPluginsAndAddAction(JLabel jLabel, StepNum step, String  pluginClass) {
+
         if (PluginId.findId(pluginClass) != null && PluginManager.getInstance().findEnabledPlugin(PluginId.getId(pluginClass)) != null) {
             jLabel.addMouseListener(new ChooseViewMouseAdapter(step, jLabel));
         }
     }
 
-    private void initMouse() {
-        checkPluginsAndAddAction(modelAnalyse, StepNum.MODEL_ANALYSE, PluginClassId.ModelAnalyse_ClassId);
-        checkPluginsAndAddAction(modelConverter, StepNum.MODEL_CONVERTER, PluginClassId.ModelConverter_ClassId);
-        checkPluginsAndAddAction(aisBench, StepNum.AIS_BENCH, "test");
-        checkPluginsAndAddAction(compare, StepNum.COMPARE, "ls");
-        checkPluginsAndAddAction(systemProfiler, StepNum.SYSTEM_PROFILER, "test");
-    }
-
     private class ModelAnalyse {
         ModelAnalyse() {
             setIcon(modelAnalyse, Icons.MODEL_ANALYSE_DARK, Icons.MODEL_ANALYSE_LIGHT);
-            setStepIcons(modelAnalyseJpanel, modelAnalyse, step1, PluginClassId.ModelAnalyse_ClassId);
+            setStepIcons(modelAnalyseJpanel, modelAnalyse, step1, PluginClassId.Foundation_PluginId);
             actionMappings.put(StepNum.MODEL_ANALYSE, this::doModelAnalyse);
         }
 
@@ -143,7 +144,7 @@ public class Choosedialog extends JFrame {
     private class ModelConvert {
         ModelConvert() {
             setIcon(modelConverter, Icons.MODEL_CONVERTER_DARK, Icons.MODEL_CONVERTER_LIGHT);
-            setStepIcons(modelConverterJPanel, modelConverter, step2, PluginClassId.ModelConverter_ClassId);
+            setStepIcons(modelConverterJPanel, modelConverter, step2, PluginClassId.Foundation_PluginId);
             actionMappings.put(StepNum.MODEL_CONVERTER, this::doModelConvert);
         }
 
@@ -154,10 +155,11 @@ public class Choosedialog extends JFrame {
             return Optional.empty();
         }
     }
+
     private class AisBench {
         AisBench() {
             setIcon(aisBench, Icons.AIS_BENCH_DARK, Icons.AIS_BENCH_LIGHT);
-            setStepIcons(aisBenchJPanel, aisBench, step3, PluginClassId.AisBench_ClassId);
+            setStepIcons(aisBenchJPanel, aisBench, step3, PluginClassId.AitIde_PluginId);
             actionMappings.put(StepNum.AIS_BENCH, this::doAisBench);
         }
 
@@ -172,21 +174,21 @@ public class Choosedialog extends JFrame {
     private class Compare {
         Compare() {
             setIcon(compare, Icons.COMPARE_DARK, Icons.COMPARE_LIGHT);
-            setStepIcons(compareJPanel, compare, step4, PluginClassId.ModelConverter_ClassId);
+            setStepIcons(compareJPanel, compare, step4, PluginClassId.AitIde_PluginId);
             actionMappings.put(StepNum.COMPARE, this::doCompare);
         }
 
         private Object doCompare(Project project){
             activeOutput();
             PluginGet pluginGet = new PluginGet(project);
-            pluginGet.getPluginClass(PluginClassId.ModelConverter_ClassId, PluginClassId.AitIde_PluginId);
+            pluginGet.getPluginClass(PluginClassId.Compare_ClassId, PluginClassId.AitIde_PluginId);
             return Optional.empty();
         }
     }
     private class SystemProfiling {
         SystemProfiling() {
             setIcon(systemProfiler, Icons.SYSTEM_PROFILER_DARK, Icons.SYSTEM_PROFILER_LIGHT);
-            setStepIcons(systemProfilerJPanel, systemProfiler, step5, PluginClassId.SystemProfiler_ClassId);
+            setStepIcons(systemProfilerJPanel, systemProfiler, step5, PluginClassId.Inference_PluginId);
             actionMappings.put(StepNum.MODEL_CONVERTER, this::doSystemProfiling);
         }
 

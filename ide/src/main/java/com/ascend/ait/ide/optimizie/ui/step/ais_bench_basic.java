@@ -49,7 +49,7 @@ public class ais_bench_basic extends DialogWrapper {
     private JPanel outputDirnameJLabel;
     private JPanel outFmtJLabel;
     private JTextField deviceTextField;
-    private JComponent debugButton;
+    private SwitchButton debugButton;
     private SwitchButton displayButton;
     private final JTextField modelFileTextField = modelFileBrowse.getTextField();
     private final JTextField inputFilesTextField = inputFileBrowse.getTextField();
@@ -247,6 +247,32 @@ public class ais_bench_basic extends DialogWrapper {
             cmd.append(" --outfmt ").appendFilePath(outFormatComboBox.getSelectedItem().toString());
         }
 
+        boolean isOnDebug = debugButton.isSelected();
+        if (!isOnDebug) {
+            cmd.append(" --debug ").append("false");
+        } else {
+            cmd.append(" --debug ").append("true");
+        }
+
+        boolean isOn = displayButton.isSelected();
+        if (!isOn) {
+            cmd.append(" --display_all_summary ").append("false");
+        } else {
+            cmd.append(" --display_all_summary ").append("true");
+        }
+
+        if (!loopTextField.getText().isEmpty()) {
+            cmd.append(" --loop ").append(loopTextField.getText());
+        }
+
+        if (!warmupTextField.getText().isEmpty()) {
+            cmd.append(" --warmup_count ").append(warmupTextField.getText());
+        }
+
+        if (!deviceTextField.getText().isEmpty()) {
+            cmd.append(" --device ").append(deviceTextField.getText());
+        }
+
         return cmd;
     }
 
@@ -266,7 +292,6 @@ public class ais_bench_basic extends DialogWrapper {
             Messages.showErrorDialog("Out-fmt must be configured as output to be used together", "ERROR");
             return false;
         }
-
         return true;
     }
 
