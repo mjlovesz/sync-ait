@@ -57,7 +57,6 @@ class InferEngine():
             evaluate = EvaluateFactory.get_evaluate(engine["evaluate"]["type"])
         except Exception as err:
             raise RuntimeError("get params failed error=%s", err) from err
-
         return dataset, pre_process, post_process, inference, evaluate
 
     def inference(self, cfg):
