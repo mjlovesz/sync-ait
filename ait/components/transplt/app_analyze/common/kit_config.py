@@ -73,7 +73,7 @@ class KitConfig:
     INCLUDES = {
         CUDA: f'{HEADERS_FOLDER}/cuda/include',
         OPENCV: f'{HEADERS_FOLDER}/opencv/include/opencv4',
-        TENSORRT: '',
+        TENSORRT: f'{HEADERS_FOLDER}/tensorrt/include/',
     }
 
     # 'make', 'automake'
@@ -122,6 +122,7 @@ class KitConfig:
     API_MAP = {
         OPENCV: f'{API_MAP_FOLDER}/mxBase_API_MAP.xlsx',
         CUDA: f'{API_MAP_FOLDER}/ACL_API_MAP.xlsx',
+        TENSORRT: f'{API_MAP_FOLDER}/ACLMDL_TRT_API_MAP.xlsx',
     }
 
     CUDA_HOME = os.environ.get('CUDA_HOME', INCLUDES.get(CUDA, None))
@@ -155,7 +156,8 @@ class KitConfig:
         # DALI: https://github.com/NVIDIA/DALI
         'dali': ['dali', 1, '', DALI],
         # CV-CUDA
-        '/cvcuda': ['cvcuda', 1, '', CVCUDA]
+        '/cvcuda': ['cvcuda', 1, '', CVCUDA],
+        '/tensorrt/': ['', 1, '', TENSORRT]
     }
 
     LEVEL = 'small'  # parse level: 'large'
