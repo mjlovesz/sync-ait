@@ -319,7 +319,7 @@ def parse_dym_shape_range(dym_shape_range):
             dym_shape_range:the input shape,this format like:tensor_name1:dim1,dim2-dim3;tensor_name2:dim1,dim2~dim3.
              - means the both dim2 and dim3 value, ~ means the range of [dim2:dim3]
         Return Value:
-            a list only contains inputs shape, this format like [[dim1,dim2],[dim1,dim2]]
+            a list contains all the input shape situations
     """
     _check_colon_exist(dym_shape_range)
     input_shapes = {}
