@@ -1,0 +1,46 @@
+FROM ubuntu:20.04
+
+# Update ubuntu source to huaweicloud
+RUN sed -i 's@http://.*archive.ubuntu.com@http://repo.huaweicloud.com@g' /etc/apt/sources.list \
+    && sed -i 's@http://.*security.ubuntu.com@http://repo.huaweicloud.com@g' /etc/apt/sources.list
+
+# Update packages and install necessary dependencies
+RUN apt-get update \
+    && apt-get install -y wget gnupg software-properties-common
+
+# Add the LLVM repository and install Clang-14 and Clang-14-dev using cernet source
+RUN wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
+    && add-apt-repository "deb https://mirrors.cernet.edu.cn/llvm-apt/focal/ llvm-toolchain-focal-14 main" \
+    && apt-get update \
+    && apt-get install -y clang-14 libclang-14-dev
+
+# Install Python 3.9 and pip
+RUN apt-get install -y python3.9 python3.9-dev python3.9-distutils \
+    && wget https://bootstrap.pypa.io/get-pip.py \
+    && python3.9 get-pip.py \
+    && rm get-pip.py
+
+# Set Clang-14 as the default compiler
+RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 100 \
+    && update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-14 100
+
+# Clone the repository
+# Run the install.sh script
+RUN apt-get install -y git \
+    && git clone https://gitee.com/ascend/ait.git \
+    && cd ait/ait \
+    && chmod +x install.sh \
+    && ./install.sh --transplt
+
+# Go to the site-packages directory
+# Download and unzip config.zip, headers.zip
+RUN cd /usr/local/lib/python3.9/dist-packages/app_analyze \
+    && apt-get install -y unzip \
+    && wget -O config.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip \
+    && unzip config.zip \
+    && rm config.zip \
+    && wget -O headers.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip \
+    && unzip headers.zip \
+    && rm headers.zip
+
+CMD ["bash"]
