@@ -65,14 +65,12 @@ main() {
     bash -x $CUR_PATH/get_yolo_data.sh $SOC_VERSION $PYTHON_COMMAND
     bash -x $CUR_PATH/get_pth_crnn_data.sh $SOC_VERSION $PYTHON_COMMAND
 
-    if [ $BENCKMARK_DT_MODE -eq "full" ];then
+    if [ $BENCKMARK_DT_MODE == "full" ];then
         echo "run DT in full mode"
-        echo $BENCKMARK_DT_MODE
         ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/UT/
         ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/ST/
     else
         echo "run DT in simple mode"
-        echo $BENCKMARK_DT_MODE
         ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/UT_SIMPLE/
         ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/ST_SIMPLE/
     fi
