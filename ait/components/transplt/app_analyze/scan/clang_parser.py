@@ -158,7 +158,7 @@ def filter_acc(cursor):
     # 用户代码dnn::Net，get_user得到cv::dnn::dnn4_v20211220，Cursor得到dnn::Net，取cv::dnn::Net
     if ns and api:
         # 拆分模板类型，保留第一个类型，cv::Ptr<cv::cudacodec::VideoReader>
-        left_bracket, right_bracket = api.find('<'), api.rfind('>')
+        left_bracket, right_bracket = api.find('<'), find_right_angle('>')
         if left_bracket != -1 and right_bracket != -1:
             api = api[:left_bracket] + api[right_bracket + 1:]
 

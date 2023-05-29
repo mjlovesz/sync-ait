@@ -319,7 +319,7 @@ def var_decl(c):
     if children:  # TYPEDEF RECORD
         # 此处将template_ref和type_ref合并处理，如cv::Ptr<cv:cuda::VideoReader>
         spelling = get_namespace(children) + spelling  # TYPE VAR
-        for _, child in enumerate(children):
+        for child in children:
             # 原生类型变量声明 = 加速库/非加速库调用，则没有TYPE_REF
             if child.kind == CursorKind.TYPE_REF:  # 从变量声明所属类型获取source
                 definition = get_attr(child, 'referenced.displayname')
@@ -344,7 +344,7 @@ def parm_decl(c):
     if children:
         # 此处将template_ref和type_ref合并处理，如cv::Ptr<cv:cuda::VideoReader>
         spelling = get_namespace(children) + spelling  # TYPE VAR
-        for _, child in enumerate(children):  # 示例2
+        for child in children:  # 示例2
             # 原生类型变量声明 = 加速库/非加速库调用，则没有TYPE_REF
             if child.kind == CursorKind.TYPE_REF:  # 从变量声明所属类型获取source
                 definition = get_attr(child, 'referenced.displayname')
