@@ -93,18 +93,21 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
         args.input_shape = input_shape
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
 
-    # generate dump data by the original model
+    # 1. generate inputs data
     golden_dump = _generate_golden_data_model(args)
-    golden_dump_data_path = golden_dump.generate_dump_data()
-    golden_net_output_info = golden_dump.get_net_output_info()
+    golden_dump.generate_inputs_data()
 
-    # compiling and running source codes
+    # 2. generate npu dump data
     npu_dump = NpuDumpData(args, output_json_path)
     npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
     expect_net_output_node = npu_dump.get_expect_output_name()
 
-    # convert data from bin to npy if --convert is used
+    # 3. convert data from bin to npy if --convert is used
     data_convert(npu_dump_data_path, npu_net_output_data_path, args)
+
+    # 4. generate dump data by golden model
+    golden_dump_data_path = golden_dump.generate_dump_data()
+    golden_net_output_info = golden_dump.get_net_output_info()
 
     # if it's dynamic batch scenario, golden data files should be renamed
     utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
@@ -133,6 +136,9 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     args.out_path = original_out_path
+
+    if args.custom_op != "":
+        args.bin2npy = True
 
     # convert the om model to json
     output_json_path = AtcUtils(args).convert_model_to_json()
