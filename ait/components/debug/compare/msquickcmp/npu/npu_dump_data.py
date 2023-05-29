@@ -224,7 +224,8 @@ class NpuDumpData(DumpData):
         input_format = ["NCHW"] * len(src_image_size_h)
         inputs_list = parse_input_shape_to_list(self.arguments.input_shape)
         if len(inputs_list) != len(src_image_size_h):
-            utils.logger.error("inputs number is not equal to aipp inputs number")
+            utils.logger.error("inputs number is not equal to aipp inputs number, "
+                               "please check the input_shape param and the aipp src_image_size data")
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
         data_dir, _, _ = self._create_dir()
         for i, item in enumerate(inputs_list):
