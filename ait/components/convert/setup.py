@@ -30,7 +30,7 @@ setup(
     url='https://gitee.com/ascend/ait',
     packages=find_packages(),
     license='Apache-2.0',
-    keywords='analyze tool',
+    keywords='convert tool',
     install_requires=required,
     classifiers=[
         'Development Status :: Alpha',
