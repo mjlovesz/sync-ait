@@ -14,11 +14,12 @@ RUN wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
     && apt-get update \
     && apt-get install -y clang-14 libclang-14-dev
 
-# Install Python 3.9 and pip
+# Install Python 3.9 and pip and set pypi source to huaweicloud
 RUN apt-get install -y python3.9 python3.9-dev python3.9-distutils \
     && wget https://bootstrap.pypa.io/get-pip.py \
     && python3.9 get-pip.py \
-    && rm get-pip.py
+    && rm get-pip.py \
+    && pip config set global.index-url https://repo.huaweicloud.com/repository/pypi/simple
 
 # Set Clang-14 as the default compiler
 RUN update-alternatives --install /usr/bin/clang clang /usr/bin/clang-14 100 \
