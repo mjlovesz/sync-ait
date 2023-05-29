@@ -227,7 +227,7 @@ public class ais_bench_basic extends DialogWrapper {
      */
     private CmdStrBuffer getCmdStrBuffer() {
         CmdStrBuffer cmd = new CmdStrBuffer();
-        cmd.append(" -m ais_bench ");
+        cmd.append(" -m ais_bench");
         if (!modelFileTextField.getText().isEmpty()) {
             cmd.append(" --model ").appendFilePath(modelFileTextField.getText());
         }
@@ -275,6 +275,8 @@ public class ais_bench_basic extends DialogWrapper {
 
         return cmd;
     }
+
+
 
     /*
     在下发cmd之前检查配置是否完善
