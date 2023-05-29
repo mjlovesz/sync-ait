@@ -228,24 +228,6 @@ class OnnxDumpData(DumpData):
         outputs_name = [node.name for node in session.get_outputs()]
         return session.run(outputs_name, inputs_map)
 
-    def _save_dump_data(self, dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node):
-        res_idx = 0
-        for node in old_onnx_model.graph.node:
-            for j, output in enumerate(node.output):
-                if not self.args.dump and output not in net_output_node:
-                    continue
-                file_name = node.name.replace('.', '_').replace('/', '_') + "." + str(j) + "." \
-                            + str(round(time.time() * 1000000)) + ".npy"
-                file_path = os.path.join(onnx_dump_data_dir, file_name)
-                if output in net_output_node:
-                    self.net_output[net_output_node.index(output)] = file_path
-                np.save(file_path, dump_bins[res_idx])
-                res_idx += 1
-        for key, value in self.net_output.items():
-            utils.logger.info("net_output node is:{}, file path is {}".format(key, value))
-        utils.logger.info("dump data success")
-
-
     def generate_dump_data(self):
         """
         Function description:
@@ -314,3 +296,20 @@ class OnnxDumpData(DumpData):
         for output_item in session.get_outputs():
             net_output_node.append(output_item.name)
         return net_output_node
+
+    def _save_dump_data(self, dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node):
+        res_idx = 0
+        for node in old_onnx_model.graph.node:
+            for j, output in enumerate(node.output):
+                if not self.args.dump and output not in net_output_node:
+                    continue
+                file_name = node.name.replace('.', '_').replace('/', '_') + "." + str(j) + "." \
+                            + str(round(time.time() * 1000000)) + ".npy"
+                file_path = os.path.join(onnx_dump_data_dir, file_name)
+                if output in net_output_node:
+                    self.net_output[net_output_node.index(output)] = file_path
+                np.save(file_path, dump_bins[res_idx])
+                res_idx += 1
+        for key, value in self.net_output.items():
+            utils.logger.info("net_output node is:{}, file path is {}".format(key, value))
+        utils.logger.info("dump data success")
