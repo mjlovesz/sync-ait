@@ -28,7 +28,8 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://gitee.com/ascend/ait',
-    packages=find_packages(),
+    packages=find_packages('model_evaluation'),
+    package_dir={'': 'model_evaluation'}
     package_data={
         'model_eval': ['data/op_map/*.yaml']
     },
