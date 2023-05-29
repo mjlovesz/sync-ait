@@ -12,6 +12,9 @@
 
 - 工具安装请见 [ait一体化工具使用指南](../../README.md)
 
+如果使用AIE(Ascend Inference Engine)做模型转换，需要安装AIE，例如：./Ascend-cann-aie-api_6.3.RC2_linux-x86_64.run --install 对AIE进行安装。
+安装完AIE后，需要设置AIE_DIR环境变量，指定安装的AIE版本路径，例如： export AIE_DIR=/xxx/Ascend-cann-aie-api/。
+
 
 ## 工具使用
 
