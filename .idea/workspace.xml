@@ -7,8 +7,6 @@
     <list default="true" id="3863cbb3-304e-4dd2-b94a-df23f7fdf109" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ait/components/benchmark/test/ST/test_infer_resnet50.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/benchmark/test/ST/test_infer_resnet50.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/tools/inference.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/auto_optimizer/tools/inference.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_inference_example.py" beforeDir="false" afterPath="$PROJECT_DIR$/ait/components/debug/surgeon/test/test_inference_example.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
