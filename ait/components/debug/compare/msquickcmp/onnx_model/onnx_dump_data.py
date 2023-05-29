@@ -281,11 +281,12 @@ class OnnxDumpData(DumpData):
     def _get_inputs_data_aipp(self, data_dir, inputs_tensor_info, npu_dump_data_path):
         inputs_map = {}
         aipp_input = []
+        if not npu_dump_data_path:
+            utils.logger.error("find no aipp op in dump data, please check --dump is True")
+            raise utils.AccuracyCompareException(utils.A CCURACY_COMPARISON_INVALID_PARAM_ERROR)
         for bin_file in os.listdir(npu_dump_data_path):
             if bin_file.startswith("Aipp"):
                 aipp_input.append(os.path.join(npu_dump_data_path, bin_file))
-        if not aipp_input:
-            utils.print_error_log("find no aipp op in dump data, please check --dump is True")
         for i, tensor_info in enumerate(inputs_tensor_info):
             data_convert_file(aipp_input[i], os.path.join(self.args.out_path, "input"), self.args)
             aipp_output_path = os.path.join(self.args.out_path, "input", aipp_input[i].rsplit("/", 1)[1]) + \
