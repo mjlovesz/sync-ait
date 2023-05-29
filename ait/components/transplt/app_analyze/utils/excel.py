@@ -39,6 +39,7 @@ def update_hyperlink(path, sheet, hyperlink_cols, df=None, row_header=1):
         df[col_name] = [get_url(ws.cell(row=row + i, column=col)) for i in range(len(df))]
     return df
 
+
 def read_excel(path="", hyperlink_cols=None):
     # 读取Excel文件
     excel = pd.ExcelFile(path)

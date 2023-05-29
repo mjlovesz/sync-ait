@@ -35,7 +35,7 @@ from app_analyze.utils.io_util import IOUtil
 from app_analyze.utils.log_util import logger
 from app_analyze.utils.lib_util import is_acc_path
 from app_analyze.scan.clang_utils import helper_dict, filter_dict, Info, get_attr, get_children, skip_implicit
-from app_analyze.scan.clang_utils import auto_match, read_cursor, TYPEDEF_MAP, is_usr_code
+from app_analyze.scan.clang_utils import auto_match, read_cursor, TYPEDEF_MAP, is_user_code
 
 
 SCANNED_FILES = list()
@@ -100,7 +100,7 @@ def usr_namespace(cursor, namespaces):
     nsc = re.findall(r'(?:@N@\w+){1,1000}', usr[:index])
     nss = ['::'.join(x[3:].split('@N@')) for x in nsc]
     for namespace in namespaces:
-        for ns in reversed(nss):
+        for ns in nss:
             if namespace in ns:  # namespace可能是pattern，不是完整namespace
                 return ns
     return ''
@@ -158,9 +158,9 @@ def filter_acc(cursor):
     # 用户代码dnn::Net，get_user得到cv::dnn::dnn4_v20211220，Cursor得到dnn::Net，取cv::dnn::Net
     if ns and api:
         # 拆分模板类型，保留第一个类型，cv::Ptr<cv::cudacodec::VideoReader>
-        l, r = api.find('<'), api.rfind('>')
-        if l != -1 and r != -1:
-            api = api[:l] + api[r + 1:]
+        left_bracket, right_bracket = api.find('<'), find_right_angle('>')
+        if left_bracket != -1 and right_bracket != -1:
+            api = api[:left_bracket] + api[right_bracket + 1:]
 
         ns_end = api.rfind('::')
         if ns_end == -1:  # api无命名空间
@@ -276,7 +276,7 @@ def parse_args(node):
             x = actual_arg(x)
             # 或直接读取代码：read_cursor(x)
             spelling = auto_match(x).spelling  # 参数通常未记录info，无法获取info.spelling
-            if is_usr_code(get_attr(x, 'referenced.location.file.name')):
+            if is_user_code(get_attr(x, 'referenced.location.file.name')):
                 start = get_attr(x, 'referenced.extent.start')
                 src_loc = f"{get_attr(start, 'file.name')}, {get_attr(start, 'line')}:" \
                           f"{get_attr(start, 'column')}"
@@ -301,7 +301,7 @@ def parse_info(node, cwd=None):
     typedef_map(node, file)
 
     # 如果对于系统库直接返回None，可能会导致部分类型无法解析，但是解析系统库会导致性能下降。
-    usr_code = is_usr_code(file)
+    usr_code = is_user_code(file)
 
     if usr_code:
         SCANNED_FILES.append(file)
