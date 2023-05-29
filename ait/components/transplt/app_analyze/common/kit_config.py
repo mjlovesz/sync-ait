@@ -68,6 +68,7 @@ class KitConfig:
 
     ARCH = platform.machine()
     LIB_CLANG_PATH = f'/usr/lib/{ARCH}-linux-gnu/libclang-14.so'
+    CXX_STD = 'c++17'  # c++11、c++14、c++17、c++20等，或者None，表示使用clang默认值
     HEADERS_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'headers'))
     INCLUDES = {
         CUDA: f'{HEADERS_FOLDER}/cuda/include',
@@ -156,8 +157,10 @@ class KitConfig:
         # CV-CUDA
         '/cvcuda': ['cvcuda', 1, '', CVCUDA]
     }
+
     LEVEL = 'small'  # parse level: 'large'
     TOLERANCE = 4  # code diag level: {'ignored':0, 'info':1, 'warning':2, 'error':3, 'fatal':4}
+    CURSOR_DEPTH = 100
 
 
 @unique

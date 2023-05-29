@@ -80,14 +80,21 @@ def cuda_enabled(file, include, namespace=None):
     return False
 
 
-def get_usr_namespace(cursor, namespaces):
-    """解析get_usr中的命名空间。"""
+def usr_namespace(cursor, namespaces):
+    """解析get_usr中的命名空间。
+
+    例如：
+    "c:@N@cv@ST>1#T@Ptr"：cv::Ptr<T>
+    "c:@N@cv@E@WindowFlags@WINDOW_OPENGL"：cv::WindowFlags.WINDOW_OPENGL
+    "c:@N@cv@N@cuda@S@GpuMat@F@GpuMat#*$@N@cv@N@cuda@S@GpuMat@S@Allocator#"：cv::cuda::CpuMat::GptMat
+    "c:@N@cv@S@Ptr>#$@N@cv@N@cudacodec@S@VideoReader@F@operator->#1"：cv::Ptr<cv::cudacodec::VideoReader>
+    """
     if not namespaces or not cursor.referenced:
         return ''
     if not isinstance(namespaces, list):
         namespaces = [namespaces]
     usr = cursor.referenced.get_usr()
-    index = usr.find(cursor.referenced.spelling)
+    index = usr.find(cursor.referenced.spelling)  # 忽略"@S@GpuMat@F@GpuMat"这种重复的影响
     if index == -1:
         return ''
     nsc = re.findall(r'(?:@N@\w+){1,1000}', usr[:index])
@@ -104,16 +111,31 @@ def in_acc_lib(file, cursor):
     if not file:
         return False, False, ''
     for lib, v in KitConfig.ACC_LIBS.items():
-        if lib in file:
+        if lib in file:  # 待ACC_LIBS的Pattern改为全路径后，可以使用file.startswith(lib)
             if not v:
                 cuda_en = False
-                add_ns = ''
+                usr_ns = ''
             else:
                 cuda_en = cuda_enabled(file, v[1])
-                add_ns = get_usr_namespace(cursor, v[0])
+                usr_ns = usr_namespace(cursor, v[0])
                 cursor.lib = v[3]
-            return True, cuda_en, add_ns
+            return True, cuda_en, usr_ns
     return False, False, ''
+
+
+def find_right_angle(api):
+    """找到右尖括号的位置"""
+    stack = 0
+    r = -1
+    for i, c in enumerate(api):
+        if c == '<':
+            stack += 1
+        elif c == '>':
+            stack -= 1
+            if stack == 0:
+                r = i
+                break
+    return r
 
 
 def filter_acc(cursor):
@@ -135,13 +157,20 @@ def filter_acc(cursor):
     # 从get_usr中解析的namespace（连续的(?:@N@\w+)），Cursor解析得到的API，前者更完整。
     # 用户代码dnn::Net，get_user得到cv::dnn::dnn4_v20211220，Cursor得到dnn::Net，取cv::dnn::Net
     if ns and api:
+        # 拆分模板类型，保留第一个类型，cv::Ptr<cv::cudacodec::VideoReader>
+        l, r = api.find('<'), api.rfind('>')
+        if l != -1 and r != -1:
+            api = api[:l] + api[r + 1:]
+
         ns_end = api.rfind('::')
         if ns_end == -1:  # api无命名空间
             api = f'{ns}::{api}'
         else:
             api_ns = api[:ns_end]
             ns_idx = ns.find(api_ns)
-            if ns_idx == -1:  # api_ns不在ns里，当然也not ns.startswith(api_ns)，例如cv和Scalar::all
+            if api_ns.startswith(ns):
+                api = api
+            elif ns_idx == -1:  # api_ns不在ns里，当然也not ns.startswith(api_ns)，例如cv和Scalar::all
                 api = f'{ns}::{api}'
             elif not ns.startswith(api_ns):  # api.startswith('')为True，例如cv::dnn和dnn::Net
                 api = f'{ns[:ns_idx]}{api}'
@@ -189,7 +218,7 @@ def typedef_map(cursor, file):
     c.type.get_canonical(): cv::Rect_<int>
     c.type.get_typedef_name(): Rect2i
     """
-    if not file or not in_acc_lib(file, cursor)[0]:
+    if not file or not is_acc_path(file):
         return
     if cursor.kind == CursorKind.TYPEDEF_DECL:
         # 通过get_canonical()可以获取最原始类型，但underlying_typedef_type获取的是当前声明对应的源类型。
@@ -200,7 +229,7 @@ def typedef_map(cursor, file):
 def actual_arg(cursor):
     """获取调用时传递的实参，忽略隐式类型转换/实例化。Cursor.kind应为CALL_EXPR。
     """
-    for _ in range(100):
+    for _ in range(KitConfig.CURSOR_DEPTH):
         # CursorKind: MEMBER_REF_EXPR, DECL_REF_EXPR, TYPE_REF, STRING_LITERAL, INTEGER_LITERAL ...
         if 'REF' in cursor.kind.name or 'LITERAL' in cursor.kind.name:
             break
@@ -212,7 +241,7 @@ def actual_arg(cursor):
 
 def parent_stmt(cursor):
     """获取所属Statement对应的代码"""
-    for _ in range(100):
+    for _ in range(KitConfig.CURSOR_DEPTH):
         # CursorKind: DECL_STMT, DEFAULT_STMT ...
         if cursor.kind.name.endswith('STMT'):
             break
@@ -329,9 +358,11 @@ class Parser:
         self.index = Index.create()  # 若为单例模型，是否有加速作用
         # args: '-Xclang', '-ast-dump', '-fsyntax-only', '-std=c++17', "-I/path/to/include"
         # option: TranslationUnit.PARSE_PRECOMPILED_PREAMBLE, TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
-        includes = [f'-I{x}' for x in KitConfig.INCLUDES.values() if x]
+        args = [f'-I{x}' for x in KitConfig.INCLUDES.values() if x]
+        if KitConfig.CXX_STD:
+            args.append(f'-std={KitConfig.CXX_STD}')
         self.tu = self.index.parse(path,
-                                   args=includes + ['-std=c++17'],
+                                   args=args,
                                    options=TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
 
     def parse(self):

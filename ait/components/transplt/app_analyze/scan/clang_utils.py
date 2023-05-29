@@ -89,11 +89,8 @@ TYPEDEF_MAP = dict()
 Info = namedtuple('Info', ['result_type', 'spelling', 'api', 'definition', 'source'])
 
 
-def is_usr_code(file):
-    usr_code = True
-    if not file or any(file.startswith(p) for p in SYS_PATH):
-        usr_code = False
-    return usr_code
+def is_user_code(file):
+    return file and all(not file.startswith(p) for p in SYS_PATH)
 
 
 def get_attr(obj, attr=None, default_val=None):
@@ -178,7 +175,8 @@ def get_namespace(children, suffix=True):
                 namespace = f"{namespace}{type_core}{' > ' if tpl_flag and tpl_flag.pop() else '::'}"
         else:  # 应该不会出现，用作保险
             break
-    return namespace if suffix else namespace[:-2]  # 空字符串不会报错
+    namespace = namespace.strip('<')  # 防止遗留<
+    return namespace if suffix else namespace.strip(':')  # 空字符串不会报错
 
 
 def get_typedef(canonical_type):
@@ -428,6 +426,7 @@ def call_expr(c):
             if c.spelling == child.spelling and i > 0:  # 重载的运算符节点
                 child.scanned = True  # 用于标识是否已被扫描
         cls, _, attr, _, _ = auto_match(c0)
+        cls = strip_implicit(cls)  # 可能返回const xxx类型，去除const和末尾指针符号*
         if c0.spelling == c.spelling and get_attr(c0, 'referenced.kind') == get_attr(c, 'referenced.kind'):  # 运算符节点
             api = attr
             c0.scanned = True  # 用于标识是否已被扫描
@@ -436,8 +435,6 @@ def call_expr(c):
             api = f"{attr if op == '()' else cls}.{op}"  # 例如呈现cv::Mat.size()，实际为cv::MatSize()，待商榷
             c0.scanned = True
         else:
-            if c0.kind == CursorKind.CALL_EXPR:  # 可能返回const xxx类型
-                cls = strip_implicit(cls)  # 去除const和末尾指针符号*
             api = f"{cls}.{op}"  # 例如呈现cv::FileStorage[]
             if c0.kind == CursorKind.DECL_REF_EXPR:
                 c0.scanned = True
@@ -454,6 +451,7 @@ def call_expr(c):
         # 如：{"kind": "CALL_EXPR","ref_kind": "CONSTRUCTOR","spelling": "Size_"}
         #        "kind": "TYPE_REF","ref_kind": "TYPEDEF_DECL","spelling": "cv::Size"
         elif get_attr(c, 'referenced.kind') == CursorKind.CONSTRUCTOR:
+            # 获取TYPE_REF出现的位置，之前是命名空间等，之后是参数
             ref_end = -1
             for i, ci in enumerate(children):
                 if ci.kind not in [CursorKind.NAMESPACE_REF, CursorKind.TEMPLATE_REF, CursorKind.TYPE_REF]:
@@ -483,7 +481,7 @@ def member_ref_expr(c):
     else:  # CXX_METHOD
         result_type = get_attr(c, 'referenced.result_type.spelling')
         if get_attr(c, 'referenced.kind') == CursorKind.CONVERSION_FUNCTION:
-            api = f'operator {result_type}()'  # 例如示例7，从"operator unsigned long" 改为 "size_t"
+            api = f'operator {result_type}'  # 例如示例7，从"operator unsigned long" 改为 "size_t"
     definition = get_attr(c, 'referenced.displayname')
     source = get_attr(c.referenced, 'location.file.name')
     children = get_children(c)
@@ -536,7 +534,8 @@ def decl_ref_expr(c):
         if c.type.kind == TypeKind.ENUM:
             if 'anonymous enum' not in c.type.spelling:
                 api = f'{c.type.spelling}.{api}'
-                api = merge_namespace(namespace, api)  # 例如'cv::dnn::dnn4_v20211220::Backend.DNN_BACKEND_CUDA'
+                # 例如'cv::dnn::', 'cv::dnn::dnn4_v20211220::Backend.DNN_BACKEND_CUDA'
+                api = merge_namespace(namespace, api)
     c.info = Info(result_type, spelling, api, definition, source)
     return c.info
 
