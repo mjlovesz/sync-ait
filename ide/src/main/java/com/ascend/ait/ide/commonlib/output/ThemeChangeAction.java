@@ -1,5 +1,3 @@
-
-
 package com.ascend.ait.ide.commonlib.output;
 
 import com.ascend.ait.ide.commonlib.icons.CommonLibIcons;

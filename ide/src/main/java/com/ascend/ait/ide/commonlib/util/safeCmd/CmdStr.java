@@ -1,6 +1,5 @@
 package com.ascend.ait.ide.commonlib.util.safeCmd;
 
-
 import org.jetbrains.annotations.Nullable;
 
 public abstract class CmdStr {
