@@ -45,6 +45,7 @@ main() {
 
     export SOC_VERSION=${1:-"Ascend310P3"}
     export PYTHON_COMMAND=${2:-"python3"}
+    export BENCKMARK_DT_MODE=${3:-"simple"}
 
     get_msame_file $MSAME_PATH || { echo "get msame bin file failed";return 1; }
     chmod 750 $MSAME_PATH
@@ -57,14 +58,22 @@ main() {
         return $ret_invalid_args
     }
 
-    bash -x $CUR_PATH/get_pth_resnet50_data.sh $SOC_VERSION $PYTHON_COMMAND
+    bash -x $CUR_PATH/get_pth_resnet50_data.sh $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE
     #bash -x $CUR_PATH/get_pth_resnet101_data.sh $SOC_VERSION $PYTHON_COMMAND
     #bash -x $CUR_PATH/get_pth_inception_v3_data.sh $SOC_VERSION $PYTHON_COMMAND
     bash -x $CUR_PATH/get_bert_data.sh $SOC_VERSION $PYTHON_COMMAND
     bash -x $CUR_PATH/get_yolo_data.sh $SOC_VERSION $PYTHON_COMMAND
     bash -x $CUR_PATH/get_pth_crnn_data.sh $SOC_VERSION $PYTHON_COMMAND
-    ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/ST/
-    ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/UT/
+
+    if [ $BENCKMARK_DT_MODE -eq "full" ];then
+        echo "run DT in full mode"
+        ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/UT/
+        ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/ST/
+    else
+        echo "run DT in simple mode"
+        ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/UT_SIMPLE/
+        ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/ST_SIMPLE/
+    fi
 
     return $ret_ok
 }

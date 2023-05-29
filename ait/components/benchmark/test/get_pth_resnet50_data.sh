@@ -255,6 +255,7 @@ main()
 {
     SOC_VERSION=${1:-"Ascend310P3"}
     PYTHON_COMMAND=${2:-"python3"}
+    BENCKMARK_DT_MODE=${3:-"simple"}
     TESTDATA_PATH=$CUR_PATH/testdata/resnet50/model
     [ -d $TESTDATA_PATH ] || mkdir -p $TESTDATA_PATH
 
@@ -312,10 +313,13 @@ main()
 
 
     # dymshapes 310 不支持，310P支持
-    dymshapes="[1~16,3,200~300,200~300]"
-    convert_dymshape_om $resnet_onnx_file $SOC_VERSION $dymshapes $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymshape om failed";return 1; }
-    if [ ! -f $TESTDATA_PATH/pth_resnet50_dymshape.om ]; then
-        mv $TESTDATA_PATH/pth_resnet50_dymshape*.om $TESTDATA_PATH/pth_resnet50_dymshape.om
+    if [ $BENCKMARK_DT_MODE -eq "full" ]; then
+        echo "test dymshape enabled"
+        dymshapes="[1~16,3,200~300,200~300]"
+        convert_dymshape_om $resnet_onnx_file $SOC_VERSION $dymshapes $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymshape om failed";return 1; }
+        if [ ! -f $TESTDATA_PATH/pth_resnet50_dymshape.om ]; then
+            mv $TESTDATA_PATH/pth_resnet50_dymshape*.om $TESTDATA_PATH/pth_resnet50_dymshape.om
+        fi
     fi
 }
 
