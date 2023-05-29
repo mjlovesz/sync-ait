@@ -86,9 +86,9 @@ class Summary(object):
         else:
             throughput = 1000*batchsize/npu_compute_time.mean
 
-        self.infodict['NPU_compute_time'] = {"min": npu_compute_time.min, "max": npu_compute_time.max,\
-                                    "mean": npu_compute_time.mean, "median": npu_compute_time.median, "percentile({}%\
-                                    )".format(scale): npu_compute_time.percentile,
+        self.infodict['NPU_compute_time'] = {"min": npu_compute_time.min, "max": npu_compute_time.max,
+                                    "mean": npu_compute_time.mean, "median": npu_compute_time.median,
+                                    "percentile({}%)".format(scale): npu_compute_time.percentile,
                                     "count": len(self.npu_compute_time_list)}
         self.infodict['H2D_latency'] = {"min": h2d_latency.min, "max": h2d_latency.max, "mean": h2d_latency.mean,
                                "median": h2d_latency.median, "percentile({}%)".format(scale): h2d_latency.percentile,
@@ -100,7 +100,6 @@ class Summary(object):
         self.infodict['npu_compute_time_list'] = self.npu_compute_time_list
         self.infodict['pid'] = os.getpid()
 
-        # logger.debug("infer finish (ms) summary:{}".format(self.infodict))
         logger.info("-----------------Performance Summary------------------")
         if display_all_summary is True:
             logger.info("H2D_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"

@@ -11,27 +11,36 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 from setuptools import setup, find_packages  # type: ignore
 
 
 with open('requirements.txt', encoding='utf-8') as f:
     required = f.read().splitlines()
 
-with open('README.md', encoding='utf-8') as f:
-    long_description = f.read()
 
 setup(
-    name='ais_bench',
-    version='0.0.2',
-    description='ais_bench tool',
-    long_description=long_description,
-    url='ais_bench url',
+    name='convert_tool',
+    version='0.1.0',
+    description='model convert tool',
+    url='https://gitee.com/ascend/ait',
     packages=find_packages(),
-    keywords='ais_bench tool',
+    license='Apache-2.0',
+    keywords='analyze tool',
     install_requires=required,
+    classifiers=[
+        'Development Status :: Alpha',
+        'Intended Audience :: Developers',
+        'License :: Apache-2.0 Software License',
+        'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Software Development'
+    ],
     python_requires='>=3.7',
     entry_points={
-        'benchmark_sub_task': ['benchmark=ais_bench.infer.main_cli:benchmark_cli'],
+        'convert_sub_task': ['convert=aie_runtime.__main__:cli'],
     },
-
 )

@@ -14,15 +14,11 @@
 import os
 import sys
 import stat
-import subprocess
 import json
 import numpy as np
 import itertools
 
 from ais_bench.infer.utils import logger
-
-OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 
 def get_modules_version(name):
@@ -116,6 +112,9 @@ def get_acl_json_path(args):
         output_json_dict["dump"]["dump_list"][0]["model_name"] = model_name.split('.')[0]
 
     out_json_file_path = os.path.join(args.output, "acl.json")
+
+    OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+    OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
     with os.fdopen(os.open(out_json_file_path, OPEN_FLAGS, OPEN_MODES), 'w') as f:
         json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
     return out_json_file_path
@@ -190,9 +189,10 @@ def get_dymshape_list(input_ranges):
 def get_throughtput_from_log(log_path):
     if not os.path.exists(log_path):
         return "Failed", 0
-    cmd = "awk '/throughput/{print $NF}' {}".format(log_path)
+    cmd = "cat {} | grep throughput".format(log_path)
+    cmd = cmd + " | awk '{print $NF}'"
     try:
-        outval = subprocess.Popen(cmd, stdout = subprocess.PIPE, stderr = subprocess.PIPE).stdout.read()
+        outval = os.popen(cmd).read()
     except Exception as e:
         logger.warning("get throughtput failed e:{}".format(e))
         return "Failed", 0
