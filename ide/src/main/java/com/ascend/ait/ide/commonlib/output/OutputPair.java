@@ -18,12 +18,6 @@ package com.ascend.ait.ide.commonlib.output;
 
 import com.intellij.execution.ui.ConsoleViewContentType;
 
-/**
- * output pair
- *
- * @author baiguochao
- * @since 2019/4/24
- */
 public class OutputPair {
     private String text;
 

@@ -35,12 +35,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-/**
- * output service
- *
- * @author baiguochao
- * @since 1.0
- */
 public class OutputService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OutputService.class);
 

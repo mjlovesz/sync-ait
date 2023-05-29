@@ -23,13 +23,6 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
-/**
- * ui util in profiling
- *
- * @author WangBo
- * @since 2019/7/30 16:03
- */
-
 public class UiUtils {
     /**
      * left indent
