@@ -934,7 +934,7 @@ class TestClass():
     def test_pure_inference_abnormal_dynamic_shape_range_mode(self):
         dymshape_range = "actual_input_1:1,3~4,224-300,224"
         dymshapes = ["actual_input_1:1,3,224,224", "actual_input_1:1,3,300,224",
-                      "actual_input_1:1,4,224,224", "actual_input_1:1,4,300,224"]
+                     "actual_input_1:1,4,224,224", "actual_input_1:1,4,300,224"]
         model_path = self.get_dynamic_shape_om_path()
         output_size = 100000
         output_parent_path = os.path.join(self.model_base_path, "output")
@@ -947,14 +947,14 @@ class TestClass():
         log_path = os.path.join(output_path, "log.txt")
         cmd = "{} --model {} --outputSize {} --dymShape_range {} --output {} --output_dirname {} > \
                 {}".format(TestCommonClass.cmd_prefix, model_path, output_size, dymshape_range, output_parent_path,
-                        output_dirname, log_path)
+                           output_dirname, log_path)
         logger.info("run cmd:{}".format(cmd))
 
+        ret = os.system(cmd)
         try:
-            ret = os.system(cmd)
+            assert ret != 0
         except Exception as e:
             logger.info("some case run failure")
-        assert ret != 0
 
         run_count, result_ok_num, shape_status = self.get_dynamic_shape_range_mode_inference_result_info(log_path)
         assert run_count == len(dymshapes)
