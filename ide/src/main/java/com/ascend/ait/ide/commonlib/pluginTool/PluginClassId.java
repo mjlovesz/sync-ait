@@ -1,7 +1,5 @@
 package com.ascend.ait.ide.commonlib.pluginTool;
 
-import org.bouncycastle.pqc.crypto.newhope.NHSecretKeyProcessor;
-
 public class PluginClassId {
     public static final String Ascend_id = "com.huawei.nubdstudio.ascend";
     public static final String Foundation_PluginId = Ascend_id + ".foundation";
