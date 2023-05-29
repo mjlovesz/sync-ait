@@ -283,7 +283,7 @@ class OnnxDumpData(DumpData):
         aipp_input = []
         if not npu_dump_data_path:
             utils.logger.error("find no aipp op in dump data, please check --dump is True")
-            raise utils.AccuracyCompareException(utils.A CCURACY_COMPARISON_INVALID_PARAM_ERROR)
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
         for bin_file in os.listdir(npu_dump_data_path):
             if bin_file.startswith("Aipp"):
                 aipp_input.append(os.path.join(npu_dump_data_path, bin_file))
