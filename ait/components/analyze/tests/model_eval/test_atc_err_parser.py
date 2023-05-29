@@ -17,8 +17,8 @@ import os
 
 from typing import List
 
-from model_eval.common.enum import AtcErr
-from model_eval.parser import AtcErrParser
+from model_evaluation.common.enum import AtcErr
+from model_evaluation.parser import AtcErrParser
 
 
 class TestAtcErrParser(unittest.TestCase):
