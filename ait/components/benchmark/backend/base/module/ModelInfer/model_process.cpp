@@ -1542,7 +1542,7 @@ Result ModelProcess::GetAIPPIndexList(std::vector<size_t> &dataNeedDynamicAipp)
             break;
         }
     }
-    DEBUG_LOG("GetAIPPIndexList, dymaipp inputs: %d", int(dataNeedDynamicAipp.size()));
+    INFO_LOG("GetAIPPIndexList, dymaipp inputs: %d", int(dataNeedDynamicAipp[0]));
 
     if (dataNeedDynamicAipp.size() == 0) {
         return FAILED;
