@@ -1536,6 +1536,7 @@ Result ModelProcess::GetAIPPIndexList(std::vector<size_t> &dataNeedDynamicAipp)
     for (size_t index = 0; index < aclmdlGetNumInputs(modelDesc_); ++index) {
         if (strcmp(ACL_DYNAMIC_AIPP_NAME, aclmdlGetInputNameByIndex(modelDesc_, index)) == 0) {
             dataNeedDynamicAipp.push_back(index);
+            break;
         }
     }
     DEBUG_LOG("aclmdlGetAippType, dymaipp inputs: %d", int(dataNeedDynamicAipp[0]));
