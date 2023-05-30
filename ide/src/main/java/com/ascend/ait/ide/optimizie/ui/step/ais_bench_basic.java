@@ -2,6 +2,7 @@ package com.ascend.ait.ide.optimizie.ui.step;
 
 import com.ascend.ait.ide.Icons;
 import com.ascend.ait.ide.commonlib.ui.SwitchButton;
+import com.ascend.ait.ide.service.ais_bench_service;
 import com.ascend.ait.ide.util.FileChooseWithBrows;
 import com.ascend.ait.ide.commonlib.exception.CommandInjectException;
 import com.ascend.ait.ide.commonlib.output.OutputService;
@@ -27,7 +28,6 @@ import javax.swing.JToggleButton;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class ais_bench_basic extends DialogWrapper {
     private JPanel root;
@@ -182,7 +182,6 @@ public class ais_bench_basic extends DialogWrapper {
         }
     }
 
-
     private String getSelectedFile(List<String> strings, Boolean isFile, Boolean chooseMultiple) {
         FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(isFile, !isFile, false, false,
                 false, chooseMultiple)
@@ -194,12 +193,10 @@ public class ais_bench_basic extends DialogWrapper {
                 this.getClass().getName(), "modelseletcPath").orElse(null);
     }
 
-
     @Override
     protected @Nullable JComponent createCenterPanel() {
         return root;
     }
-
 
     @Override
     protected void doOKAction() {
@@ -222,85 +219,33 @@ public class ais_bench_basic extends DialogWrapper {
         }
         close(0);
     }
-    /*
-    编写cmd配置内容
-     */
+
     private CmdStrBuffer getCmdStrBuffer() {
         CmdStrBuffer cmd = new CmdStrBuffer();
         cmd.append(" -m ais_bench");
-        if (!modelFileTextField.getText().isEmpty()) {
-            cmd.append(" --model ").appendFilePath(modelFileTextField.getText());
-        }
-        if (!inputFilesTextField.getText().isEmpty()) {
-            cmd.append(" --input ").appendFilePath(inputFilesTextField.getText());
-        }
-        if (pureDataTypeCombx.isEditable()) {
-            cmd.append(" --pure ").append(pureDataTypeCombx.getSelectedItem().toString());
-        }
-        if (!outputTextField.getText().isEmpty()) {
-            cmd.append(" --output ").appendFilePath(outputTextField.getText());
-        }
-        if (!outputDirTextField.getText().isEmpty()) {
-            cmd.append(" --outputdir ").appendFilePath(outputDirTextField.getText());
-        }
-        if (outFormatComboBox.isEditable()) {
-            cmd.append(" --outfmt ").appendFilePath(outFormatComboBox.getSelectedItem().toString());
-        }
+        ais_bench_service service = new ais_bench_service();
 
-        boolean isOnDebug = debugButton.isSelected();
-        if (!isOnDebug) {
-            cmd.append(" --debug ").append("false");
-        } else {
-            cmd.append(" --debug ").append("true");
-        }
-
-        boolean isOn = displayButton.isSelected();
-        if (!isOn) {
-            cmd.append(" --display_all_summary ").append("false");
-        } else {
-            cmd.append(" --display_all_summary ").append("true");
-        }
-
-        if (!loopTextField.getText().isEmpty()) {
-            cmd.append(" --loop ").append(loopTextField.getText());
-        }
-
-        if (!warmupTextField.getText().isEmpty()) {
-            cmd.append(" --warmup_count ").append(warmupTextField.getText());
-        }
-
-        if (!deviceTextField.getText().isEmpty()) {
-            cmd.append(" --device ").append(deviceTextField.getText());
-        }
+        service.pathAdd(cmd, ais_bench_service.modelService, modelFileTextField.getText());
+        service.pathAdd(cmd, ais_bench_service.inputService, inputFilesTextField.getText());
+        service.strAdd(cmd, ais_bench_service.pureService, pureDataTypeCombx.getSelectedItem().toString());
+        service.pathAdd(cmd, ais_bench_service.outputService, outputTextField.getText());
+        service.pathAdd(cmd, ais_bench_service.outputdirService, outputDirTextField.getText());
+        service.strAdd(cmd, ais_bench_service.outfmtService, outFormatComboBox.getSelectedItem().toString());
+        service.strAdd(cmd, ais_bench_service.loopService, loopTextField.getText());
+        service.strAdd(cmd, ais_bench_service.warmupService, warmupTextField.getText());
+        service.strAdd(cmd, ais_bench_service.deviceService, deviceTextField.getText());
+        service.statueAdd(cmd, ais_bench_service.debugService, debugButton.isSelected());
+        service.statueAdd(cmd, ais_bench_service.displayService, displayButton.isSelected());
 
         return cmd;
     }
 
-
-
-    /*
-    在下发cmd之前检查配置是否完善
-    1：是否配置model file
-    2：有依赖关系的配置是否完成配置。
-    check weather the input is correct
-     */
     private Boolean preCheck() {
         String modelfile = modelFileTextField.getText();
         if (modelfile.isEmpty()) {
             Messages.showErrorDialog("Model file must be chose", "ERROR");
             return false;
         }
-        if (outFormatComboBox.getSelectedItem() != null && outputTextField.getText().isEmpty()) {
-            Messages.showErrorDialog("Out-fmt must be configured as output to be used together", "ERROR");
-            return false;
-        }
-        return true;
-    }
-
-    /*
-    检查对于device loop warmup三个输入的文本是否正确
-   */
-    private Boolean inputValidCheck() {
         return true;
     }
 
