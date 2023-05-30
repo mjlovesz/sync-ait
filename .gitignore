@@ -4,3 +4,4 @@ modified_onnx
 **/node_modules
 **/out
 .idea
+*.onnx
