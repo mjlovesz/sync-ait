@@ -61,9 +61,11 @@ main() {
     bash -x $CUR_PATH/get_pth_resnet50_data.sh $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE
     #bash -x $CUR_PATH/get_pth_resnet101_data.sh $SOC_VERSION $PYTHON_COMMAND
     #bash -x $CUR_PATH/get_pth_inception_v3_data.sh $SOC_VERSION $PYTHON_COMMAND
-    bash -x $CUR_PATH/get_bert_data.sh $SOC_VERSION $PYTHON_COMMAND
-    bash -x $CUR_PATH/get_yolo_data.sh $SOC_VERSION $PYTHON_COMMAND
-    bash -x $CUR_PATH/get_pth_crnn_data.sh $SOC_VERSION $PYTHON_COMMAND
+    if [ $BENCKMARK_DT_MODE == "full" ];then
+        bash -x $CUR_PATH/get_bert_data.sh $SOC_VERSION $PYTHON_COMMAND
+        bash -x $CUR_PATH/get_yolo_data.sh $SOC_VERSION $PYTHON_COMMAND
+        bash -x $CUR_PATH/get_pth_crnn_data.sh $SOC_VERSION $PYTHON_COMMAND
+    fi
 
     if [ $BENCKMARK_DT_MODE == "full" ];then
         echo "run DT in full mode"
