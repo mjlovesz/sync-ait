@@ -91,7 +91,10 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
         return new ToggleUseSoftWrapsToolbarAction(SoftWrapAppliancePlaces.CONSOLE) {
             private boolean isSelected = false;
             @Override
-            protected Editor getEditor(@NotNull AnActionEvent ex) {return consoleView.getEditor();}
+            protected Editor getEditor(@NotNull AnActionEvent ex) {
+                return consoleView.getEditor();
+            }
+
             @Override
             public void update(@NotNull AnActionEvent ex) {
                 super.update(ex);
