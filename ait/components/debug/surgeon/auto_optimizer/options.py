@@ -241,7 +241,7 @@ opt_output_size = click.option(
 
 opt_subgraph_input_shape = click.option(
     '--subgraph_input_shape',
-    'opt_subgraph_input_shape',
+    'subgraph_input_shape',
     type=str,
     help='Specify the input shape of subgraph'
 )
@@ -249,7 +249,7 @@ opt_subgraph_input_shape = click.option(
 
 opt_subgraph_input_dtype = click.option(
     '--subgraph_input_dtype',
-    'opt_subgraph_input_dtype',
+    'subgraph_input_dtype',
     type=str,
     help='Specify the input dtype of subgraph'
 )

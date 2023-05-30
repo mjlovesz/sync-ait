@@ -284,8 +284,8 @@ def command_extract(
     start_node_names: str,
     end_node_names: str,
     is_check_subgraph: bool,
-    opt_subgraph_input_shape: str,
-    opt_subgraph_input_dtype: str
+    subgraph_input_shape: str,
+    subgraph_input_dtype: str
 ) -> None:
     if input_model == output_model:
         logger.warning('output_model is input_model, refuse to overwrite origin model!')
@@ -303,7 +303,7 @@ def command_extract(
         onnx_graph.extract_subgraph(
             start_nodes, end_nodes,
             output_model_path, is_check_subgraph,
-            opt_subgraph_input_shape, opt_subgraph_input_dtype
+            subgraph_input_shape, subgraph_input_dtype
         )
     except ValueError as err:
         logger.error(err)
