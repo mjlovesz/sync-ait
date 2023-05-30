@@ -1531,13 +1531,19 @@ int ModelProcess::CheckDymAIPPInputExsity()
 Result ModelProcess::GetAIPPIndexList(std::vector<size_t> &dataNeedDynamicAipp)
 {
     // 获取标识动态AIPP输入的index
-    size_t index;
     // modelDesc_为aclmdlCreateDesc表示模型描述信息，根据1中加载成功的模型的ID，获取该模型的描述信息
-    aclError ret = aclmdlGetInputIndexByName(modelDesc_, ACL_DYNAMIC_AIPP_NAME, &index);
-    if (ret != ACL_ERROR_NONE) {
+    for (size_t index = 0; index < aclmdlGetNumInputs(modelDesc_); ++index) {
+        aclmdlInputAippType aippType;
+        size_t dynamicAttachedDataIndex;
+        aclError ret = aclmdlGetAippType(modelId_, index, &aippType, &dynamicAttachedDataIndex);
+        if (aippType == ACL_DATA_WITH_DYNAMIC_AIPP) {
+            dataNeedDynamicAipp.push_back(index);
+        }
+    }
+
+    if (dataNeedDynamicAipp.size() == 0) {
         return FAILED;
     }
-    dataNeedDynamicAipp.push_back(index);
     INFO_LOG("GetAIPPIndex success");
     return SUCCESS;
 }
