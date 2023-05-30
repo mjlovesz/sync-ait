@@ -25,21 +25,7 @@ from auto_optimizer.pattern.knowledges.big_kernel.util import (
     QK_MASK_ADD,
     CONVERT_3DIMS_TO_4DIMS,
     START_ADD,
-    END_ADD,
-    QK_MATMUL,
-    MUL,
-    MUL_B,
-    QK_MASK_ADD_B,
-    SOFTMAX,
-    SCORE_V_MATMUL,
-    TRANSPOSE,
-    RESHAPE,
-    RESHAPE_S,
-    MATMUL,
-    MATMUL_W,
-    ADD,
-    ADD_B,
-    END_ADD_B
+    END_ADD
 )
 
 
