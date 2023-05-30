@@ -42,7 +42,7 @@ class Register:
             errors.append((module, error))
 
         Register._handle_errors(errors)
-        return
+        return None
 
     @staticmethod
     def _handle_errors(errors):
