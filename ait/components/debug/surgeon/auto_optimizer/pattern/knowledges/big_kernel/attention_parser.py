@@ -1,7 +1,7 @@
 from collections import deque
 from typing import Optional
 
-from numpy as np
+import numpy as np
 
 from auto_optimizer.graph_refactor import OnnxGraph, OnnxNode, OnnxInitializer
 from auto_optimizer.pattern.knowledges.big_kernel.util import get_k_2nd_perm
@@ -81,7 +81,7 @@ class AttentionParser:
     def down_top_search(self, start_node: OnnxNode, goal_op_type: str, end_node=None, input_idx=0) \
             -> Optional[OnnxNode]:
         visited = []
-        if input_idx + 1 > len(start_node.inputs)
+        if input_idx + 1 > len(start_node.inputs):
             return
         goal_node = None
         pre_node = self.graph.get_prev_node(start_node.inputs[input_idx])
@@ -310,3 +310,71 @@ class AttentionParser:
 
         return nodes
 
+    def _get_ori_shape(self):
+        # 获取attention的原始输入shape，用于在模型最后将feature map重新reshape成之前的shape
+        ori_shape = None
+        for idx, _ in enumerate(self.end_node.inputs):
+            reshape = self.down_top_search(self.end_node, goal_op_type="Reshape", input_idx=idx)
+            if reshape and reshape in self.graph.nodes:
+                ori_shape = self.graph.get_node(reshape.inputs[1], node_type=OnnxInitializer)
+                if ori_shape:
+                    self._params.setdefault("ori_shape", ori_shape.value)
+
+        if not ori_shape:
+            raise ValueError("Cannot get origin shape of attention input.")
+
+        # 各个attention和layernorm之间需要2维的shape计算，需要将attention的输出reshape成2维
+        shape = ori_shape.value
+        if len(shape) == 3:
+            shape = np.array([shape[0] * shape[1], shape[2]])
+        self._params.setdefault(RESHAPE_S, shape)
+
+    def _parse_last_linear_layer(self):
+        transpose = self.top_down_search(self._score_v_mm, goal_op_type="Transpose")
+        perm = transpose.attrs.get("perm")
+        if len(perm) == 3:
+            perm = [p+1 for p in perm]
+            perm.insert(0, 0)
+        self._params.setdefault("transpose_perm", perm)
+
+        matmul = self.top_down_search(self._score_v_mm, goal_op_type="Matmul")
+        if matmul:
+            matmul_w = self.graph.get_node(matmul.inputs[1], node_type=OnnxInitializer)
+            self._params.setdefault(MATMUL_W, matmul_w.value)
+            add = self.top_down_search(matmul, goal_op_type="Add")
+            for input_x in add.inputs:
+                add_b = self.graph.get_node(input_x, node_type=OnnxInitializer)
+                if add_b:
+                    self._params.setdefault(ADD_B, add_b.value)
+        else:
+            gemm = self.top_down_search(self._score_v_mm, goal_op_type="Gemm")
+            if gemm:
+                weight, bias = self._parse_gemm_node(gemm)
+                self._params.setdefault(MATMUL_W, weight)
+                self._params.setdefault(ADD_B, bias)
+            else:
+                raise ValueError("There is no linear layer(gemm or matmul) at the end of the multi-head attention.")
+
+    def _parse_gemm_node(self, gemm):
+        """
+        将attention中的Gemm算子转换成matmul算子，因此需要解析Gemm算子的weight和bias
+        Gemm的计算公式如下：
+            A' = transpose(A) if transA else A
+            B' = transpose(B) if transB else B
+            Y = alpha * A' * B' + beta * C
+        所以，matmul的weight=alpha*B, bias=beta*C
+        """
+        attrs = gemm.attrs
+        gemm_w = self.graph.get_node(gemm.inputs[1], node_type=OnnxInitializer)
+        if attrs.get("transB"): # transA的情况暂不考虑，需要在gemm（matmul）之前插入transpose算子，这样将破坏了标准pattern
+            weight = attrs.get("alpha") * gemm_w.value.T
+        else:
+            weight = attrs.get("alpha") * gemm_w.value
+
+        if len(gemm.inputs) == 3:
+            gemm_b = self.graph.get_node(gemm.inputs[2], node_type=OnnxInitializer)
+            bias = attrs.get("beta") * gemm_b.value
+        else:  # Gemm没有偏置的情况
+            w_shape = self._params.get(MATMUL_W).shape
+            bias = np.zeros([w_shape[-1]]).astype(np.float32)
+        return weight, bias
