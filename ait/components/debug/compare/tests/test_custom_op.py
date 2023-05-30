@@ -13,10 +13,9 @@
 # limitations under the License.
 
 import os
-import stat
 import pytest
-import click
 import shutil
+import onnx
 
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.onnx_model.onnx_dump_data import OnnxDumpData
@@ -62,5 +61,13 @@ def test_before_custom_op_dump(args):
     golden_net_output_info = golden_dump.get_net_output_info()
     assert len(golden_net_output_info) == 2
 
+
+def test_before_custom_op_dump_not_support(args):
+
+    args.custom_op = ""
+    golden_dump = OnnxDumpData(args)
+
+    with pytest.raises(Exception) as error:
+        golden_dump.generate_inputs_data()
 
 
