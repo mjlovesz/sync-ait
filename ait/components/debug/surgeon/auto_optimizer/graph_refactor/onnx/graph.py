@@ -276,6 +276,9 @@ class OnnxGraph(BaseGraph):
                 elif self.get_node(inp, PlaceHolder) and inp not in input_name_list:
                     value_infos.append(self.get_node(inp, PlaceHolder))
 
+        # check input shape and input dtype
+        self._check_input_shape_and_dtype(input_name_list, input_shape_dict, input_dtype_dict)
+
         # add inputs and outputs for extracted graph
         inputs = self._add_new_io_placeholder(input_name_list, input_shape_dict, input_dtype_dict)
         outputs = self._add_new_io_placeholder(output_name_list)
@@ -354,10 +357,7 @@ class OnnxGraph(BaseGraph):
             if input_shape_dict and input_shape_dict.get(name):
                 ph_shape = [int(i) for i in input_shape_dict[name]]
             if input_dtype_dict and input_dtype_dict.get(name):
-                try:
-                    ph_dtype = np.dtype(input_dtype_dict[name][0])
-                except Exception as err:
-                    raise ValueError(f"Invalid input dtype: {input_dtype_dict[name][0]}") from err
+                ph_dtype = np.dtype(input_dtype_dict[name])
 
             if ph_shape:
                 onnx_placeholder = OnnxPlaceHolder(
@@ -386,3 +386,33 @@ class OnnxGraph(BaseGraph):
             input_info_dict[input_field] = input_value
 
         return input_info_dict
+
+    def _check_input_shape_and_dtype(self,
+                                     input_name_list,
+                                     input_shape_dict,
+                                     input_dtype_dict):
+        dtype_converter = {
+            'bool': 'bool', 'int': 'int32', 'intc': 'int32',
+            'intp': 'int32', 'int8': 'int8', 'int16': 'int16',
+            'int32': 'int32', 'int64': 'int64', 'uint8': 'uint8',
+            'uint16': 'uint16', 'uint32': 'uint32', 'uint64': 'uint64',
+            'float': 'float64', 'float16': 'float16', 'float32': 'float32',
+            'float64': 'float64', 'complex': 'complex128', 'complex64': 'complex64',
+            'complex128': 'complex128', 'fp16': 'float16', 'fp32': 'float32', 'fp64': 'float64'
+        }
+
+        for inp in input_shape_dict.keys():
+            if inp not in input_name_list:
+                logger.warning(f'Input : {inp} is not in the inputs of the subgraph'
+                               f'Please check it or the default shape will be applied.')
+
+        for inp, inp_dtype in input_dtype_dict.items():
+            if inp not in input_name_list:
+                logger.warning(f'Input : {inp} is not in the inputs of the subgraph'
+                               f'Please check it or the default dtype (float32) will be applied.')
+            if inp_dtype[0] not in dtype_converter:
+                raise ValueError(f"The input type {inp_dtype} of {inp} is not valid. Please check it.")
+
+            input_dtype_dict[inp] = dtype_converter[inp_dtype[0]]
+
+
