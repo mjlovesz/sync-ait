@@ -26,7 +26,7 @@ class AttentionParser:
         self._softmax = softmax
         self._params = {}
         self._branch_nodes = {}
-        self._mask_add = {}
+        self._mask_add = None
         self._qk_mm = None
         self._score_v_mm = None
 
@@ -35,40 +35,40 @@ class AttentionParser:
         return self._graph
 
     @graph.setter
-    def graph(self, value):
-        self._graph = value
+    def graph(self, graph):
+        self._graph = graph
 
     @property
     def start_node(self):
         return self._start_node
 
     @start_node.setter
-    def start_node(self, value):
-        self._start_node = value
+    def start_node(self, node: OnnxNode):
+        self._start_node = node
 
     @property
     def end_node(self):
         return self._end_node
 
     @end_node.setter
-    def end_node(self, value):
-        self._end_node = value
+    def end_node(self, node: OnnxNode):
+        self._end_node = node
 
     @property
     def softmax(self):
         return self._softmax
 
     @softmax.setter
-    def softmax(self, value):
-        self._softmax = value
+    def softmax(self, node: OnnxNode):
+        self._softmax = node
 
     @property
     def params(self):
         return self._params
 
     @params.setter
-    def params(self, value):
-        self._params = value
+    def params(self, params):
+        self._params = params
 
     @property
     def branch_nodes(self):
@@ -134,7 +134,7 @@ class AttentionParser:
         self._score_v_mm = self.top_down_search(self._softmax, goal_op_type="MatMul")
         if qkv_gemm:
             # 有些模型，如gpt2，qkv是合在一起用一个Gemm算子计算的，然后再split成3份
-            self.concat_qkv_situation(qkv_gemm)
+            self._concat_qkv_situation(qkv_gemm)
         else:
             # 有些模型，如bert，qkv分别用3个matmul计算的
             self._split_qkv_situation()
@@ -234,6 +234,9 @@ class AttentionParser:
                 mul_b = (mul_b / bias).astype(bias.dtype)
 
     def _parse_qkv_branches(self, branch_name="q"):
+        """
+        分别解析q、k、v3个分支上的matmul、add、reshape、transpose节点，并获取到参数和属性
+        """
         prefix = branch_name + "_"
         if branch_name == "q":
             matmul = self.down_top_search(self._qk_mm, goal_op_type="MatMul")
@@ -337,7 +340,7 @@ class AttentionParser:
             perm.insert(0, 0)
         self._params.setdefault("transpose_perm", perm)
 
-        matmul = self.top_down_search(self._score_v_mm, goal_op_type="Matmul")
+        matmul = self.top_down_search(self._score_v_mm, goal_op_type="MatMul")
         if matmul:
             matmul_w = self.graph.get_node(matmul.inputs[1], node_type=OnnxInitializer)
             self._params.setdefault(MATMUL_W, matmul_w.value)
