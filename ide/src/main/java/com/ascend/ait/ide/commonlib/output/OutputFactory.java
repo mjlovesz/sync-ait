@@ -49,30 +49,20 @@ import java.util.Map;
 
 public class OutputFactory implements ToolWindowFactory, DumbAware{
     private static final String OUTPUT_TOOL_WINDOW_ID = "Output";
-
     private static final String OUTPUT_TOOL_WINDOW_DETAILS = "Detail";
-
     private static final String DARCULA = "Darcula";
-
     private static final String DARK = "Dark";
     private static final String Output_NORMAL = "Normal";
-
     private static final String Output_Detail = "Detail";
     private static ConsoleView console;
-
     private static ConsoleView details;
-
     private static Map<Project, ConsoleView> normalConsoleViewmap = new HashMap<>();
-
     private static Map<Project, ConsoleView> detailConsoleViewmap = new HashMap<>();
-
     private static Content consoleContent;
     private static Content detailsContent;
-
     public static Map<Project, ConsoleView> getNormalConsoleViewmap() {
         return normalConsoleViewmap;
     }
-
     public static Map<Project, ConsoleView> getDetailConsoleViewmap() {
         return detailConsoleViewmap;
     }
@@ -138,8 +128,6 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
      * @param project current project
      */
     public static void show(Project project) {
-
-
         ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(OUTPUT_TOOL_WINDOW_ID);
         if (toolWindow == null){
             return;
@@ -209,7 +197,6 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
         setContentTheme(detailsContent);
         contentManager.addContent(detailsContent);
         detailConsoleViewmap.put(project, details);
-
     }
 
     @Override
