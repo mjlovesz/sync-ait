@@ -6,7 +6,19 @@
 
 ## 工具安装
 
-### 环境和依赖
+### 使用容器
+
+在当前目录下运行以下命令以构建镜像：
+```shell
+docker build --no-cache -t ait-transplt:latest .
+```
+运行以下命令以上述镜像启动容器：
+```shell
+docker run -it ait-transplt:latest
+```
+
+
+### 不使用容器
 1. 安装Clang工具
 
 依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。以Ubuntu22.04为例：
