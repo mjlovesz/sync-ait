@@ -1542,8 +1542,10 @@ Result ModelProcess::GetAIPPIndexList(std::vector<size_t> &dataNeedDynamicAipp)
             break;
         }
     }
-    INFO_LOG("GetAIPPIndexList, dymaipp inputs: %d", int(dataNeedDynamicAipp[0]));
-
+    size_t i;
+    ret = aclmdlGetInputIndexByName(modelDesc_, ACL_DYNAMIC_AIPP_NAME, &index);
+    INFO_LOG("aclmdlGetAippType, dymaipp inputs: %d", int(dataNeedDynamicAipp[0]));
+    INFO_LOG("aclmdlGetInputIndexByName, dymaipp inputs: %d", int(i));
     if (dataNeedDynamicAipp.size() == 0) {
         return FAILED;
     }
