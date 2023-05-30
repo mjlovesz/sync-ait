@@ -10,20 +10,9 @@
 
 ## 工具安装
 
-一站式ait工具安装方式：
+- 工具安装请见 [ait一体化工具使用指南](../../README.md)
 
-```shell
-git clone https://gitee.com/ascend/ait.git
-cd ait/ait
 
-# 一键式安装方式
-./install.sh --analyze --force-reinstall
-
-# 独立安装方式
-python3 -m pip install . --force-reinstall
-cd components/analyze
-python3 -m pip install . --force-reinstall
-```
 ## 工具使用
 
 一站式ait工具使用命令格式说明如下：

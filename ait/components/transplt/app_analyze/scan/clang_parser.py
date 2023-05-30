@@ -33,16 +33,13 @@ from clang.cindex import Index, CursorKind, TranslationUnit, Config
 from app_analyze.common.kit_config import KitConfig
 from app_analyze.utils.io_util import IOUtil
 from app_analyze.utils.log_util import logger
-from app_analyze.utils.lib_util import get_sys_path, is_acc_path
-from app_analyze.scan.clang_utils import helper_dict, filter_dict, Info, \
-    get_attr, get_children, skip_implicit, auto_match
-from app_analyze.scan.clang_utils import read_cursor
+from app_analyze.utils.lib_util import is_acc_path
+from app_analyze.scan.clang_utils import helper_dict, filter_dict, Info, get_attr, get_children, skip_implicit
+from app_analyze.scan.clang_utils import auto_match, read_cursor, TYPEDEF_MAP, is_user_code
 
-SYS_PATH = get_sys_path()
 SCANNED_FILES = list()
 RESULTS = list()
 MACRO_MAP = dict()
-TYPEDEF_MAP = dict()
 # set the config
 if not Config.loaded:
     # 或指定目录：Config.set_library_path("/usr/lib/x86_64-linux-gnu")
@@ -83,14 +80,21 @@ def cuda_enabled(file, include, namespace=None):
     return False
 
 
-def add_namespace(cursor, namespaces):
-    """获取未显示的命名空间"""
+def usr_namespace(cursor, namespaces):
+    """解析get_usr中的命名空间。
+
+    例如：
+    "c:@N@cv@ST>1#T@Ptr"：cv::Ptr<T>
+    "c:@N@cv@E@WindowFlags@WINDOW_OPENGL"：cv::WindowFlags.WINDOW_OPENGL
+    "c:@N@cv@N@cuda@S@GpuMat@F@GpuMat#*$@N@cv@N@cuda@S@GpuMat@S@Allocator#"：cv::cuda::CpuMat::GptMat
+    "c:@N@cv@S@Ptr>#$@N@cv@N@cudacodec@S@VideoReader@F@operator->#1"：cv::Ptr<cv::cudacodec::VideoReader>
+    """
     if not namespaces or not cursor.referenced:
         return ''
     if not isinstance(namespaces, list):
         namespaces = [namespaces]
     usr = cursor.referenced.get_usr()
-    index = usr.find(cursor.referenced.spelling)
+    index = usr.find(cursor.referenced.spelling)  # 忽略"@S@GpuMat@F@GpuMat"这种重复的影响
     if index == -1:
         return ''
     nsc = re.findall(r'(?:@N@\w+){1,1000}', usr[:index])
@@ -107,18 +111,33 @@ def in_acc_lib(file, cursor):
     if not file:
         return False, False, ''
     for lib, v in KitConfig.ACC_LIBS.items():
-        if lib in file:
+        if lib in file:  # 待ACC_LIBS的Pattern改为全路径后，可以使用file.startswith(lib)
             if not v:
                 cuda_en = False
-                add_ns = ''
+                usr_ns = ''
             else:
                 # get relative path
                 new_file = file.replace(lib, '')
                 cuda_en = cuda_enabled(new_file, v[1])
-                add_ns = add_namespace(cursor, v[0])
+                usr_ns = usr_namespace(cursor, v[0])
                 cursor.lib = v[3]
-            return True, cuda_en, add_ns
+            return True, cuda_en, usr_ns
     return False, False, ''
+
+
+def find_right_angle(api):
+    """找到右尖括号的位置"""
+    stack = 0
+    r = -1
+    for i, c in enumerate(api):
+        if c == '<':
+            stack += 1
+        elif c == '>':
+            stack -= 1
+            if stack == 0:
+                r = i
+                break
+    return r
 
 
 def filter_acc(cursor):
@@ -137,9 +156,26 @@ def filter_acc(cursor):
         result_type, spelling, api, definition, source = filter_dict[cursor.kind.name](cursor)
         hit, cuda_en, ns = in_acc_lib(source, cursor)
 
-    if ns and api and f'{ns}::' not in api:
-        core = api.split('::')[-1]
-        api = f'{ns}::{core}'
+    # 从get_usr中解析的namespace（连续的(?:@N@\w+)），Cursor解析得到的API，前者更完整。
+    # 用户代码dnn::Net，get_user得到cv::dnn::dnn4_v20211220，Cursor得到dnn::Net，取cv::dnn::Net
+    if ns and api:
+        # 拆分模板类型，保留第一个类型，cv::Ptr<cv::cudacodec::VideoReader>
+        l, r = api.find('<'), api.rfind('>')
+        if l != -1 and r != -1:
+            api = api[:l] + api[r + 1:]
+
+        ns_end = api.rfind('::')
+        if ns_end == -1:  # api无命名空间
+            api = f'{ns}::{api}'
+        else:
+            api_ns = api[:ns_end]
+            ns_idx = ns.find(api_ns)
+            if api_ns.startswith(ns):
+                api = api
+            elif ns_idx == -1:  # api_ns不在ns里，当然也not ns.startswith(api_ns)，例如cv和Scalar::all
+                api = f'{ns}::{api}'
+            elif not ns.startswith(api_ns):  # api.startswith('')为True，例如cv::dnn和dnn::Net
+                api = f'{ns[:ns_idx]}{api}'
     return hit, Info(result_type, spelling, api, definition, source), cuda_en
 
 
@@ -161,13 +197,6 @@ def get_includes(tu):
     return srcs
 
 
-def is_usr_code(file):
-    usr_code = True
-    if not file or any(file.startswith(p) for p in SYS_PATH):
-        usr_code = False
-    return usr_code
-
-
 def macro_map(cursor, file=None):
     """过滤并保存宏定义到字典中，主要用于标识符重命名场景。
 
@@ -176,10 +205,7 @@ def macro_map(cursor, file=None):
     TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD需打开。
     """
     if cursor.kind == CursorKind.MACRO_DEFINITION:
-        if not file:
-            return
-
-        if not is_acc_path(file):
+        if not file or not is_acc_path(file):
             return
 
         tk = list(cursor.get_tokens())
@@ -194,9 +220,10 @@ def typedef_map(cursor, file):
     c.type.get_canonical(): cv::Rect_<int>
     c.type.get_typedef_name(): Rect2i
     """
-    if not file or not in_acc_lib(file, cursor)[0]:
+    if not file or not is_acc_path(file):
         return
     if cursor.kind == CursorKind.TYPEDEF_DECL:
+        # 通过get_canonical()可以获取最原始类型，但underlying_typedef_type获取的是当前声明对应的源类型。
         TYPEDEF_MAP[cursor.type.get_canonical().spelling] = cursor.type.get_typedef_name()
     return
 
@@ -204,32 +231,26 @@ def typedef_map(cursor, file):
 def actual_arg(cursor):
     """获取调用时传递的实参，忽略隐式类型转换/实例化。Cursor.kind应为CALL_EXPR。
     """
-    root = cursor
-    for _ in range(100):
+    for _ in range(KitConfig.CURSOR_DEPTH):
         # CursorKind: MEMBER_REF_EXPR, DECL_REF_EXPR, TYPE_REF, STRING_LITERAL, INTEGER_LITERAL ...
         if 'REF' in cursor.kind.name or 'LITERAL' in cursor.kind.name:
-            return cursor
+            break
         children = get_children(cursor)
         if children:
             cursor = children[0]
-        else:
-            break
-    return root
+    return cursor
 
 
 def parent_stmt(cursor):
     """获取所属Statement对应的代码"""
-    root = cursor
-    for _ in range(100):
+    for _ in range(KitConfig.CURSOR_DEPTH):
         # CursorKind: DECL_STMT, DEFAULT_STMT ...
         if cursor.kind.name.endswith('STMT'):
-            return cursor
+            break
         parent = get_attr(cursor, 'parent')
         if parent:
             cursor = parent
-        else:
-            break
-    return root
+    return cursor
 
 
 def parse_args(node):
@@ -261,7 +282,7 @@ def parse_args(node):
             x = actual_arg(x)
             # 或直接读取代码：read_cursor(x)
             spelling = auto_match(x).spelling  # 参数通常未记录info，无法获取info.spelling
-            if is_usr_code(get_attr(x, 'referenced.location.file.name')):
+            if is_user_code(get_attr(x, 'referenced.location.file.name')):
                 start = get_attr(x, 'referenced.extent.start')
                 src_loc = f"{get_attr(start, 'file.name')}, {get_attr(start, 'line')}:" \
                           f"{get_attr(start, 'column')}"
@@ -286,7 +307,7 @@ def parse_info(node, cwd=None):
     typedef_map(node, file)
 
     # 如果对于系统库直接返回None，可能会导致部分类型无法解析，但是解析系统库会导致性能下降。
-    usr_code = is_usr_code(file)
+    usr_code = is_user_code(file)
 
     if usr_code:
         SCANNED_FILES.append(file)
@@ -301,11 +322,11 @@ def parse_info(node, cwd=None):
                   f"{get_attr(node, 'extent.start.column')}"
             args = parse_args(node)
             item = {
-                'API': api,
-                'CUDAEnable': cuda_en,
-                'Location': loc,
-                'Context(形参 | 实参 | 来源代码 | 来源位置)': args,
-                'AccLib': get_attr(node, 'lib'),
+                KitConfig.ACC_API: api,
+                KitConfig.CUDA_EN: cuda_en,
+                KitConfig.LOCATION: loc,
+                KitConfig.CONTEXT: args,
+                KitConfig.ACC_LIB: get_attr(node, 'lib'),
             }
             RESULTS.append(item)
 
@@ -318,6 +339,7 @@ def parse_info(node, cwd=None):
     if not usr_code:
         info = None
         return info
+
     location = f"{get_attr(node, 'extent.start.file.name')}, {get_attr(node, 'extent.start.line')}:" \
                f"{get_attr(node, 'extent.start.column')}-{get_attr(node, 'extent.end.column')}"
 
@@ -329,7 +351,6 @@ def parse_info(node, cwd=None):
         'ref_kind': get_attr(node, 'referenced.kind.name'),
         'spelling': node.spelling,
         'type': node.type.spelling,
-        'hash': node.hash,
         'location': location,
         'children': children
     }
@@ -344,9 +365,11 @@ class Parser:
         self.index = Index.create()  # 若为单例模型，是否有加速作用
         # args: '-Xclang', '-ast-dump', '-fsyntax-only', '-std=c++17', "-I/path/to/include"
         # option: TranslationUnit.PARSE_PRECOMPILED_PREAMBLE, TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
-        includes = [f'-I{x}' for x in KitConfig.INCLUDES.values() if x]
+        args = [f'-I{x}' for x in KitConfig.INCLUDES.values() if x]
+        if KitConfig.CXX_STD:
+            args.append(f'-std={KitConfig.CXX_STD}')
         self.tu = self.index.parse(path,
-                                   args=includes,
+                                   args=args,
                                    options=TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD)
 
     def parse(self):
