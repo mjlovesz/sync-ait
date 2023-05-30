@@ -15,6 +15,7 @@
 import tempfile
 import warnings
 import os
+import re
 from typing import List, Dict, Union, Sequence, Optional
 from collections import deque
 
@@ -220,7 +221,16 @@ class OnnxGraph(BaseGraph):
                          start_node_names: List[str],
                          end_node_names: List[str],
                          subgraph_path: str = None,
-                         is_check_subgraph: bool = False):
+                         is_check_subgraph: bool = False,
+                         input_shape: str = None,
+                         input_dtype: str = None):
+        # do shape info by default
+        self.infer_shape()
+
+        # parse input info from input shape and input dtype
+        input_shape_dict = self._parse_input_info(input_shape)
+        input_dtype_dict = self._parse_input_info(input_dtype)
+
         all_node_names = {node.name for node in self.nodes}
         for start_node_name in start_node_names:
             if start_node_name not in all_node_names:
@@ -267,7 +277,7 @@ class OnnxGraph(BaseGraph):
                     value_infos.append(self.get_node(inp, PlaceHolder))
 
         # add inputs and outputs for extracted graph
-        inputs = self._add_new_io_placeholder(input_name_list)
+        inputs = self._add_new_io_placeholder(input_name_list, input_shape_dict, input_dtype_dict)
         outputs = self._add_new_io_placeholder(output_name_list)
 
         # save_model
@@ -332,24 +342,46 @@ class OnnxGraph(BaseGraph):
                         queue.append(prev_node)
         return visited
 
-    def _add_new_io_placeholder(self, name_list):
+    def _add_new_io_placeholder(self, name_list, input_shape_dict=None, input_dtype_dict=None):
         ph_list = []
         for name in name_list:
             value_info = self.get_node(name, PlaceHolder)
+            ph_shape = None
+            ph_dtype = 'float16'
             if value_info:
-                ph_list.append(
-                    OnnxPlaceHolder(
-                        value_info.name,
-                        value_info.dtype,
-                        value_info.shape
-                    )
+                ph_shape = value_info.shape
+                ph_dtype = value_info.dtype
+            if input_shape_dict and input_shape_dict.get(name):
+                ph_shape = [int(i) for i in input_shape_dict[name]]
+            if input_dtype_dict and input_dtype_dict.get(name):
+                ph_dtype = input_dtype_dict[name][0]
+
+            if ph_shape:
+                onnx_placeholder = OnnxPlaceHolder(
+                    name,
+                    np.dtype(ph_dtype),
+                    ph_shape
                 )
             else:
-                ph_list.append(
-                    OnnxPlaceHolder(
-                        name,
-                        np.dtype('float32')
-                    )
+                onnx_placeholder = OnnxPlaceHolder(
+                    name,
+                    ph_dtype
                 )
+            ph_list.append(onnx_placeholder)
         return ph_list
 
+    def _parse_input_info(self, input_info):
+        # input_info1 = "n1_inp_0:1, 3, 224, 224; n1_inp_1: 1, 3, 640, 640; n2_inp_0: 3, 4, 64, 64"
+        # input_info2 = "n1: int8; n2:float16"
+        if not input_info:
+            return None
+
+        input_info_dict = {}
+        input_segs = input_info.strip().split(";")
+        for items in input_segs:
+            input_field, input_value = items.strip().split(":")
+            input_field = input_field.strip()
+            input_value = [i.strip() for i in input_value.strip().split(",")]
+            input_info_dict[input_field] = input_value
+
+        return input_info_dict
