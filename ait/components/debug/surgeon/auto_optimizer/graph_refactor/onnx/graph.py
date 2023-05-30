@@ -371,12 +371,10 @@ class OnnxGraph(BaseGraph):
         return ph_list
 
     def _parse_input_info(self, input_info):
-        # input_info1 = "n1_inp_0:1, 3, 224, 224; n1_inp_1: 1, 3, 640, 640; n2_inp_0: 3, 4, 64, 64"
-        # input_info2 = "n1: int8; n2:float16"
-        if not input_info:
-            return None
-
         input_info_dict = {}
+        if not input_info:
+            return input_info_dict
+
         input_segs = input_info.strip().split(";")
         for items in input_segs:
             input_field, input_value = items.strip().split(":")
