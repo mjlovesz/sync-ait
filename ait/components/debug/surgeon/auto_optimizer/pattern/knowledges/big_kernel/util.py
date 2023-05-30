@@ -17,8 +17,8 @@ K_RESHAPE = "k_reshape"
 K_RESHAPE_S = "k_reshape_s"
 K_TRANSPOSE1 = "k_transpose1"
 K_TRANSPOSE2 = "k_transpose2"
-K_TRANSPOSE_PERM = "q_transpose_perm"
-K_TRANSPOSE_PERM2 = "q_transpose2_perm"
+K_TRANSPOSE_PERM = "k_transpose_perm"
+K_TRANSPOSE_PERM2 = "k_transpose2_perm"
 
 V_MATMUL = "v_matmul"
 V_MATMUL_W = "v_matmul_w"
@@ -52,6 +52,10 @@ END_ADD_B = "end_add_b"
 CONVERT_3DIMS_TO_4DIMS = "convert_3dims_to_4dims"
 
 def get_k_2nd_perm(q_perm):
+    """
+    k������transpose�����е�һ��transpose��ֵ����q_transpose_perm��
+    �ڶ���transpose��ֵ����q_transpose_perm�ĺ�����Ԫ�ؽ������ı�ά�Ȳ���������ˡ�
+    """
     dims = len(q_perm)
     k_transpose_perm2 = list(range(len(q_perm)))
     for axis in range(len(q_perm)):
