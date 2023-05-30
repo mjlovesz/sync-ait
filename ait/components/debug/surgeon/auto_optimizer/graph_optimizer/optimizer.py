@@ -61,6 +61,15 @@ class InferTestConfig:
     process_run_infer: bool = False
 
 
+@dataclass
+class BigKernelConfig:
+    """
+    Big kernel optimize config
+    """
+    attention_start_node: str = ""
+    attention_end_node: str = ""
+
+
 class GraphOptimizer:
     '''Public Graph Optimizer class.'''
     def __init__(self, knowledges_: List[str]) -> None:
@@ -78,7 +87,16 @@ class GraphOptimizer:
         }
         if len(knowledge_dict) == 0:
             raise ValueError('No valid knowledge provided.')
-        self.knowledges: Dict[str, KnowledgeBase] = knowledge_dict
+        self.knowledges = knowledge_dict
+
+    def init_knowledges(self):
+        knowledges_ins = {}
+        for k_name, k_cls in self.knowledges.items():
+            if k_name != "KnowledgeBigKernel":
+                knowledges_ins.setdefault(k_name, k_cls())
+            else:
+                knowledges_ins.setdefault(k_name, k_cls)
+        self.knowledges = knowledges_ins
 
     @staticmethod
     def _effective(om_ori: str, om_opt: str, cfg: InferTestConfig, check_precision: bool,
