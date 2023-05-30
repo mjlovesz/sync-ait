@@ -42,7 +42,7 @@ profiler，采集性能数据；dump，保存全部算子输出。支持以--acl
 
   通过该方式进行Profiler采集时，输出的性能数据文件需要参见《[CANN 开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/auxiliarydevtool_0002.html)》中的“性能分析工具>高级功能>数据解析与导出”章节，将性能数据解析并导出为可视化的timeline和summary文件。
 
-  + profiler为固化到程序中的一组性能数据采集配置，生成的性能数据保存在--output参数指定的目录下的profiler文件夹内。
++ profiler为固化到程序中的一组性能数据采集配置，生成的性能数据保存在--output参数指定的目录下的profiler文件夹内。
 
     该参数是通过调用ait/profiler/benchmark/infer/benchmark_process.py中的msprof_run_profiling函数来拉起msprof命令进行性能数据采集的。若需要修改性能数据采集参数，可根据实际情况修改msprof_run_profiling函数中的msprof_cmd参数。示例如下：
 

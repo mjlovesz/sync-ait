@@ -14,8 +14,8 @@
 
 import unittest
 
-from model_eval.common.enum import Framework
-from model_eval.data import OpMap
+from model_evaluation.common.enum import Framework
+from model_evaluation.data import OpMap
 
 
 class TestOpMap(unittest.TestCase):
