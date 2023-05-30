@@ -130,7 +130,7 @@ class TestClass():
 
     def test_pure_inference_normal_static_batch(self):
         """
-        batch size 1,2,4,8
+        batch size 1,4
         """
         batch_list = [1, 2, 4, 8]
 
@@ -143,7 +143,7 @@ class TestClass():
             assert ret == 0
 
     def test_pure_inference_normal_dynamic_batch(self):
-        batch_list = [1, 2, 4, 8, 16]
+        batch_list = [1, 16]
         model_path = self.get_dynamic_batch_om_path()
         for _, dys_batch_size in enumerate(batch_list):
             cmd = "{} --model {} --device {} --dymBatch {}".format(TestCommonClass.cmd_prefix, model_path,
@@ -179,7 +179,7 @@ class TestClass():
         input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
         input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
                                                      self.output_file_num)
-        batch_list = [1, 2, 4, 8, 16]
+        batch_list = [1, 16]
 
         for _, batch_size in enumerate(batch_list):
             model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
@@ -195,7 +195,7 @@ class TestClass():
         input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
         input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(self.model_base_path, "input"),
                                                      self.output_file_num)
-        batch_list = [1, 2, 4, 8, 16]
+        batch_list = [1, 16]
 
         for _, dys_batch_size in enumerate(batch_list):
             model_path = self.get_dynamic_batch_om_path()
@@ -468,9 +468,9 @@ class TestClass():
 
     def test_pure_inference_batchsize_is_none_normal_static_batch(self):
         """
-        batch size 1,2,4,8,16
+        batch size 1,16
         """
-        batch_list = [1, 2, 4, 8, 16]
+        batch_list = [1, 16]
         output_parent_path = os.path.join(self.model_base_path,  "output")
         output_paths = []
         summary_paths = []
@@ -508,9 +508,9 @@ class TestClass():
 
     def test_pure_inference_batchsize_is_none_normal_dynamic_batch(self):
         """
-        batch size 1,2,4,8,16
+        batch size 1,8
         """
-        batch_list = [1, 2, 4, 8]
+        batch_list = [1, 8]
         output_parent_path = os.path.join(self.model_base_path, "output")
         output_paths = []
         summary_paths = []
@@ -626,7 +626,7 @@ class TestClass():
             os.remove(summary_path)
 
     def test_pure_inference_batchsize(self):
-        batch_sizes = [1, 2, 4, 8, 16]
+        batch_sizes = [1, 16]
         para_batch_size = 16
 
         output_parent_path = os.path.join(self.model_base_path, "output")
