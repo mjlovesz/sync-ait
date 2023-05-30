@@ -225,7 +225,7 @@ class TransformRefactor:
             if first_node.op_type == "Transpose":
                 self.graph.remove(first_node.name)
 
-    def update_mask_add(self, attention_num):
+    def update_mask_add_node(self, attention_num):
         for i in range(attention_num):
             prefix = str(i) + "."
             start_add = self.graph.get_node(prefix + START_ADD, node_type=OnnxNode)
@@ -260,7 +260,7 @@ class TransformRefactor:
                                                   outputs=[prefix + "mask_expand"])
                 self.graph.insert_node(refer_name=qk_mask_add.name, insert_node=expand_node, refer_index=1,
                                        mode="before")
-                expand_shape = self.graph.add_initializer(name=prefix+"mask_expand_x",
+                expand_shape = self.graph.add_initializer(name=prefix + "mask_expand_s",
                                                           value=np.array(expand_shape_value))
                 expand_node.inputs.append(expand_shape.name)
 
@@ -282,7 +282,7 @@ class TransformRefactor:
                     logger.debug("Remove unused initializer: %s", init_name)
 
 
-def gen_norm_subgraph(prefix: str = "0."):
+def gen_normal_subgraph(prefix: str = "0."):
     subgraph = OnnxGraph(name="normal_pattern")
     init_value = np.zeros((1, 1))
 
