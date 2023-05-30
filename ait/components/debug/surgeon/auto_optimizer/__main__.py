@@ -71,12 +71,12 @@ def is_graph_input_static(graph: BaseGraph) -> bool:
 
 
 def optimize_onnx(
-        optimizer: GraphOptimizer,
-        input_model: pathlib.Path,
-        output_model: pathlib.Path,
-        infer_test: bool,
-        config: InferTestConfig,
-        big_kernel_config: Optional[BigKernelConfig] = None
+    optimizer: GraphOptimizer,
+    input_model: pathlib.Path,
+    output_model: pathlib.Path,
+    infer_test: bool,
+    config: InferTestConfig,
+    big_kernel_config: Optional[BigKernelConfig] = None
 ) -> List[str]:
     '''Optimize a onnx file and save as a new file.'''
     try:

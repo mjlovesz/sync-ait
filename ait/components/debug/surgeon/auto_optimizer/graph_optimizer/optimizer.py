@@ -89,15 +89,6 @@ class GraphOptimizer:
             raise ValueError('No valid knowledge provided.')
         self.knowledges = knowledge_dict
 
-    def init_knowledges(self):
-        knowledges_ins = {}
-        for k_name, k_cls in self.knowledges.items():
-            if k_name != "KnowledgeBigKernel":
-                knowledges_ins.setdefault(k_name, k_cls())
-            else:
-                knowledges_ins.setdefault(k_name, k_cls)
-        self.knowledges = knowledges_ins
-
     @staticmethod
     def _effective(om_ori: str, om_opt: str, cfg: InferTestConfig, check_precision: bool,
                    knowledge_name: str, queue: multiprocessing.Queue) -> None:
@@ -184,6 +175,15 @@ class GraphOptimizer:
                 for match_result in match_results:
                     res |= knowledge.apply(graph, match_result)
         return knowledge.post_process(graph) and res
+
+    def init_knowledges(self):
+        knowledges_ins = {}
+        for k_name, k_cls in self.knowledges.items():
+            if k_name != "KnowledgeBigKernel":
+                knowledges_ins.setdefault(k_name, k_cls())
+            else:
+                knowledges_ins.setdefault(k_name, k_cls)
+        self.knowledges = knowledges_ins
 
     def load_config(self):
         pass
