@@ -339,16 +339,16 @@ class OnnxGraph(BaseGraph):
             if value_info:
                 ph_list.append(
                     OnnxPlaceHolder(
-                    value_info.name,
-                    value_info.dtype,
-                    value_info.shape
+                        value_info.name,
+                        value_info.dtype,
+                        value_info.shape
                     )
                 )
             else:
                 ph_list.append(
                     OnnxPlaceHolder(
-                    name,
-                    np.dtype('float32')
+                        name,
+                        np.dtype('float32')
                     )
                 )
         return ph_list
