@@ -1,3 +1,17 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from collections import deque
 from typing import Optional
 
@@ -82,11 +96,11 @@ class AttentionParser:
             -> Optional[OnnxNode]:
         visited = []
         if input_idx + 1 > len(start_node.inputs):
-            return
+            return None
         goal_node = None
         pre_node = self.graph.get_prev_node(start_node.inputs[input_idx])
         if not pre_node:
-            return
+            return None
         stack = [pre_node]
         while stack:
             node = stack.pop()
@@ -195,7 +209,8 @@ class AttentionParser:
 
             if i == 0:
                 # 通过计算q分支的transpose可以得到k和v的transpose的perm值
-                q_transpose = self.down_top_search(start_node=self._qk_mm, end_node=split_node, goal_op_type="Transpose")
+                q_transpose = self.down_top_search(start_node=self._qk_mm, end_node=split_node,
+                                                   goal_op_type="Transpose")
                 transpose_perm = q_transpose.attrs.get("perm")
 
             self._params.setdefault(prefix_list[i] + TRANSPOSE_PERM, transpose_perm)
@@ -207,7 +222,10 @@ class AttentionParser:
         div = self.top_down_search(start_node=self._qk_mm, end_node=self._score_v_mm, goal_op_type="Div")
         if div:
             div_b = self.graph.get_node(div.inputs[1], node_type=OnnxInitializer)
-            mul_b = np.array(1/div_b.value).astype(div_b.value.dtype)
+            try:
+                mul_b = np.array(1/div_b.value).astype(div_b.value.dtype)
+            except ZeroDivisionError as err:
+                raise err
         else:
             mul = self.top_down_search(self._qk_mm, end_node=self._score_v_mm, goal_op_type="Mul")
             if mul:
@@ -231,7 +249,10 @@ class AttentionParser:
 
             if node.op_type == "Div":
                 bias = self.graph.get_node(node.inputs[1], node_type=OnnxInitializer).value
-                mul_b = (mul_b / bias).astype(bias.dtype)
+                try:
+                    mul_b = (mul_b / bias).astype(bias.dtype)
+                except ZeroDivisionError as err:
+                    raise err
 
     def _parse_qkv_branches(self, branch_name="q"):
         """
