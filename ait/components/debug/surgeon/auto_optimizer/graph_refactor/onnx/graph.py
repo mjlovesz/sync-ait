@@ -347,19 +347,22 @@ class OnnxGraph(BaseGraph):
         for name in name_list:
             value_info = self.get_node(name, PlaceHolder)
             ph_shape = None
-            ph_dtype = 'float16'
+            ph_dtype = 'float32'
             if value_info:
                 ph_shape = value_info.shape
                 ph_dtype = value_info.dtype
             if input_shape_dict and input_shape_dict.get(name):
                 ph_shape = [int(i) for i in input_shape_dict[name]]
             if input_dtype_dict and input_dtype_dict.get(name):
-                ph_dtype = input_dtype_dict[name][0]
+                try:
+                    ph_dtype = np.dtype(input_dtype_dict[name][0])
+                except Exception as err:
+                    raise ValueError(f"Invalid input dtype: {input_dtype_dict[name][0]}") from err
 
             if ph_shape:
                 onnx_placeholder = OnnxPlaceHolder(
                     name,
-                    np.dtype(ph_dtype),
+                    ph_dtype,
                     ph_shape
                 )
             else:
