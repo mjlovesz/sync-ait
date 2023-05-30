@@ -26,7 +26,6 @@ from components.convert import convert_cli
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
-
 cli = click.Group(context_settings=CONTEXT_SETTINGS,
                   commands=[debug_cli_group, profile_cli_group, 
                             analyze_cli, benchmark_cli, 
