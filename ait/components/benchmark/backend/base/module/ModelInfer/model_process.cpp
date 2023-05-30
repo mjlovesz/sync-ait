@@ -1534,16 +1534,12 @@ Result ModelProcess::GetAIPPIndexList(std::vector<size_t> &dataNeedDynamicAipp)
     // 获取标识动态AIPP输入的index
     // modelDesc_为aclmdlCreateDesc表示模型描述信息，根据1中加载成功的模型的ID，获取该模型的描述信息
     for (size_t index = 0; index < aclmdlGetNumInputs(modelDesc_); ++index) {
-        aclmdlInputAippType aippType;
-        size_t dynamicAttachedDataIndex;
-        aclError ret = aclmdlGetAippType(modelId_, index, &aippType, &dynamicAttachedDataIndex);
-        if (aippType == ACL_DATA_WITH_DYNAMIC_AIPP) {
+        if (ACL_DYNAMIC_AIPP_NAME == aclmdlGetInputNameByIndex(modelDesc_, index)) {
             dataNeedDynamicAipp.push_back(index);
-            break;
         }
     }
     size_t i;
-    ret = aclmdlGetInputIndexByName(modelDesc_, ACL_DYNAMIC_AIPP_NAME, &index);
+    aclError ret = aclmdlGetInputIndexByName(modelDesc_, ACL_DYNAMIC_AIPP_NAME, &index);
     INFO_LOG("aclmdlGetAippType, dymaipp inputs: %d", int(dataNeedDynamicAipp[0]));
     INFO_LOG("aclmdlGetInputIndexByName, dymaipp inputs: %d", int(i));
     if (dataNeedDynamicAipp.size() == 0) {
