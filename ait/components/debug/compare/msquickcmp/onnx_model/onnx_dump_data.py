@@ -34,6 +34,7 @@ from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException
 from msquickcmp.common.utils import InputShapeError
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
+from msquickcmp.npu.npu_dump_data_bin2npy import data_convert_file
 
 NODE_TYPE_TO_DTYPE_MAP = {
     "tensor(int)": np.int32,
@@ -111,7 +112,7 @@ class OnnxDumpData(DumpData):
         self._save_dump_data(dump_bins, self.onnx_dump_data_dir, origin_onnx_model, net_output_node)
         return self.onnx_dump_data_dir
 
-    def generate_inputs_data(self):
+    def generate_inputs_data(self, npu_dump_data_path, use_aipp):
         """
         Function Description:
             generate inputs data
@@ -125,7 +126,7 @@ class OnnxDumpData(DumpData):
             session = self._load_session(self.new_onnx_model_before_custom_op_path)
 
         inputs_tensor_info = self._get_inputs_tensor_info(session)
-        self.inputs_map = self._get_inputs_data(self.data_dir, inputs_tensor_info)
+        self.inputs_map = self._get_inputs_data(self.data_dir, inputs_tensor_info, npu_dump_data_path, use_aipp)
 
     def generate_dump_data(self):
         """
@@ -228,17 +229,20 @@ class OnnxDumpData(DumpData):
         utils.logger.info("model inputs tensor info:\n{}\n".format(inputs_tensor_info))
         return inputs_tensor_info
 
-    def _get_inputs_data(self, data_dir, inputs_tensor_info):
+    def _get_inputs_data(self, data_dir, inputs_tensor_info, npu_dump_data_path, use_aipp):
         inputs_map = {}
         if "" == self.args.input_path:
-            for i, tensor_info in enumerate(inputs_tensor_info):
-                input_data = np.random.random(tensor_info["shape"]).astype(
-                    self._convert_to_numpy_type(tensor_info["type"]))
-                inputs_map[tensor_info["name"]] = input_data
-                file_name = "input_" + str(i) + ".bin"
-                input_data.tofile(os.path.join(data_dir, file_name))
-                utils.logger.info("save input file name: {}, shape: {}, dtype: {}".format(
-                    file_name, input_data.shape, input_data.dtype))
+            if use_aipp:
+                inputs_map = self._get_inputs_data_aipp(data_dir, inputs_tensor_info, npu_dump_data_path)
+            else:
+                for i, tensor_info in enumerate(inputs_tensor_info):
+                    input_data = np.random.random(tensor_info["shape"]).astype(
+                        self._convert_to_numpy_type(tensor_info["type"]))
+                    inputs_map[tensor_info["name"]] = input_data
+                    file_name = "input_" + str(i) + ".bin"
+                    input_data.tofile(os.path.join(data_dir, file_name))
+                    utils.logger.info("save input file name: {}, shape: {}, dtype: {}".format(
+                        file_name, input_data.shape, input_data.dtype))
         else:
             input_path = self.args.input_path.split(",")
             if len(inputs_tensor_info) != len(input_path):
@@ -252,6 +256,31 @@ class OnnxDumpData(DumpData):
                 inputs_map[tensor_info["name"]] = input_data
                 utils.logger.info("load input file name: {}, shape: {}, dtype: {}".format(
                     os.path.basename(input_path[i]), input_data.shape, input_data.dtype))
+        return inputs_map
+    
+    def _get_inputs_data_aipp(self, data_dir, inputs_tensor_info, npu_dump_data_path):
+        inputs_map = {}
+        aipp_input = []
+        if not npu_dump_data_path:
+            utils.logger.error("find no aipp op in dump data, please check --dump is True")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+        for bin_file in os.listdir(npu_dump_data_path):
+            if bin_file.startswith("Aipp"):
+                aipp_input.append(os.path.join(npu_dump_data_path, bin_file))
+        for i, tensor_info in enumerate(inputs_tensor_info):
+            data_convert_file(aipp_input[i], os.path.join(self.args.out_path, "input"), self.args)
+            aipp_output_path = os.path.join(self.args.out_path, "input", aipp_input[i].rsplit("/", 1)[1]) + \
+                               ".output.0.npy"
+            aipp_output = np.load(aipp_output_path)
+            nchw_prod = np.prod(tensor_info["shape"])
+            nchwc_prod_without_c1 = np.prod(aipp_output.shape[:-1])
+            try:
+                c0 = int(nchw_prod / nchwc_prod_without_c1)
+            except ZeroDivisionError as e:
+                utils.logger.error("Aipp output has wrong shape, file path: {}".format(aipp_output_path))
+                raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR) from e
+            onnx_input = aipp_output[..., :c0].transpose((0, 4, 2, 3, 1)).squeeze(-1).astype(np.float32)
+            inputs_map[tensor_info["name"]] = onnx_input
         return inputs_map
 
     def _convert_to_numpy_type(self, tensor_type):

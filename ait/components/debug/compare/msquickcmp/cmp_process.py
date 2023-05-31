@@ -32,6 +32,7 @@ from msquickcmp.net_compare.net_compare import NetCompare
 from msquickcmp.npu.npu_dump_data import NpuDumpData
 from msquickcmp.npu.npu_dump_data_bin2npy import data_convert
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
+from msquickcmp.npu.om_parser import OmParser
 
 
 def _generate_golden_data_model(args):
@@ -93,13 +94,26 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
         args.input_shape = input_shape
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
 
-    # 1. generate inputs data
-    golden_dump = _generate_golden_data_model(args)
-    golden_dump.generate_inputs_data()
+    # whether use aipp
+    temp_om_parser = OmParser(output_json_path)
+    use_aipp = True if temp_om_parser.get_aipp_config_content() else False
 
-    # 2. generate npu dump data
+    golden_dump = _generate_golden_data_model(args)
     npu_dump = NpuDumpData(args, output_json_path)
-    npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
+
+    if use_aipp:
+        # 1.a generate npu inputs data
+        npu_dump.generate_inputs_data()
+        # 2. generate npu dump data
+        npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
+        # 1.b generate onnx inputs data
+        golden_dump.generate_inputs_data(npu_dump_data_path, use_aipp)
+    else:
+        # 1. generate onnx and npu inputs data
+        golden_dump.generate_inputs_data('', use_aipp)
+        # 2. generate npu dump data
+        npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
+
     expect_net_output_node = npu_dump.get_expect_output_name()
 
     # 3. convert data from bin to npy if --convert is used
