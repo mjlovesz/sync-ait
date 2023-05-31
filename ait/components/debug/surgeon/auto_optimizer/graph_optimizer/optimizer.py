@@ -38,6 +38,7 @@ NONEQUIVALENT_KNOWLEDGES = [
     'KnowledgeResizeModeToNearest',
     'KnowledgeTopkFix',
     'KnowledgeEmptySliceFix',
+    'KnowledgeBigKernel'
 ]
 
 COLOR_SUCCESS = '\033[92m'
