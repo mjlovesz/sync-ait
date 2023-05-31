@@ -39,17 +39,17 @@ compare精度对比功能可以通过ait命令行方式启动。
 │   │   │   ├-- input_0_0.bin
 │   │   │   └-- input_0_0.npy
 │   │   └-- {time_stamp}_summary.json
-│   └-- {onnx or tf or caffe}       # 原模型 dump 数据存放路径，onnx / tf / caffe 分别对应 ONNX / Tensorflow / Caffe 模型
+│   └-- {onnx or tf or caffe}        # 原模型 dump 数据存放路径，onnx / tf / caffe 分别对应 ONNX / Tensorflow / Caffe 模型
 │       ├-- Add_100.0.1682148256368588.npy
 │       ├-- ...
 │       └-- Where_22.0.1682148253575249.npy
 ├-- input
-│   └-- input_0.bin                          # 随机输入数据，若指定了输入数据，则该文件不存在
+│   └-- input_0.bin                  # 随机输入数据，若指定了输入数据，则该文件不存在
 ├-- model
 │   ├-- {om_model_name}.json
-│   └-- new_{om_model_name}.onnx             # 把每个算子作为输出节点后新生成的 onnx 模型
-├-- result_{timestamp}.csv                   # 比对结果文件
-└-- tmp                                      # 如果 -m 模型为 Tensorflow pb 文件, tfdbg 相关的临时目录
+│   └-- new_{om_model_name}.onnx     # 把每个算子作为输出节点后新生成的 onnx 模型
+├-- result_{timestamp}.csv           # 比对结果文件
+└-- tmp                              # 如果 -m 模型为 Tensorflow pb 文件, tfdbg 相关的临时目录
 ```
 
 ### 比对结果分析
