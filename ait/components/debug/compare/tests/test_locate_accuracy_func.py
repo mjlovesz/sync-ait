@@ -1,6 +1,7 @@
 
 
 import logging
+import sys
 import os
 import pytest
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
