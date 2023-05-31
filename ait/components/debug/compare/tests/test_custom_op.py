@@ -13,10 +13,9 @@
 # limitations under the License.
 
 import os
-import stat
 import pytest
-import click
 import shutil
+import onnx
 
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.onnx_model.onnx_dump_data import OnnxDumpData
@@ -32,12 +31,12 @@ def args() -> None:
     if os.path.exists("./input"):
          shutil.rmtree("./input")
 
-    cmp_args = CmpArgsAdapter(gold_model="./onnx/model.onnx",
-                              om_model="./om/model.om",
+    cmp_args = CmpArgsAdapter(gold_model="./onnx/sub_model.onnx",
+                              om_model="./om/sub_model.om",
                               input_data_path = "",
                               cann_path="/usr/local/Ascend/ascend-toolkit/latest/",
                               out_path="",
-                              input_shape="input0:1,3,1344,1344",
+                              input_shape="boxes_all:1000,80,4;scores_all:1000,80",
                               device=0,
                               output_size="",
                               output_nodes="",
@@ -53,14 +52,22 @@ def test_before_custom_op_dump(args):
     golden_dump = OnnxDumpData(args)
     golden_dump.generate_inputs_data()
 
-    assert golden_dump.inputs_map['input0'].shape == (1, 3, 1344, 1344)
+    assert golden_dump.inputs_map['boxes_all'].shape == (1000,80,4)
 
     # 4. generate dump data by golden model
     golden_dump_data_path = golden_dump.generate_dump_data()
-    assert len(os.listdir(golden_dump_data_path)) == 904
+    assert len(os.listdir(golden_dump_data_path)) == 4
 
     golden_net_output_info = golden_dump.get_net_output_info()
     assert len(golden_net_output_info) == 2
 
+
+def test_before_custom_op_dump_not_support(args):
+
+    args.custom_op = ""
+    golden_dump = OnnxDumpData(args)
+
+    with pytest.raises(Exception) as error:
+        golden_dump.generate_inputs_data()
 
 
