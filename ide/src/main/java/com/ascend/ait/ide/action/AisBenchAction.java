@@ -18,7 +18,7 @@ package com.ascend.ait.ide.action;
 
 import com.ascend.ait.ide.Icons;
 import com.ascend.ait.ide.commonlib.ui.UiUtils;
-import com.ascend.ait.ide.optimizie.ui.step.ais_bench_basic;
+import com.ascend.ait.ide.optimizie.ui.step.AisBenchBasic;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
@@ -40,7 +40,7 @@ public class AisBenchAction extends AnAction {
     }
 
     public void openNewPage(@NotNull Project project) {
-        ais_bench_basic basic = new ais_bench_basic(project);
+        AisBenchBasic basic = new AisBenchBasic(project);
         basic.show();
     }
 }

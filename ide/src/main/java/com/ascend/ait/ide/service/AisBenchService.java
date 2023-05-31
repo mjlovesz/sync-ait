@@ -18,7 +18,7 @@ package com.ascend.ait.ide.service;
 
 import com.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
 
-public class ais_bench_service {
+public class AisBenchService {
     public static final String modelService = " --model ";
     public static final String inputService = " --input ";
     public static final String pureService = " --pure ";

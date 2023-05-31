@@ -18,14 +18,10 @@ package com.ascend.ait.ide.action;
 
 import com.ascend.ait.ide.Icons;
 import com.ascend.ait.ide.commonlib.ui.UiUtils;
-import com.ascend.ait.ide.optimizie.ui.step.ais_bench_basic;
-import com.ascend.ait.ide.optimizie.ui.step.compare;
+import com.ascend.ait.ide.optimizie.ui.step.Compare;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.testFramework.LightVirtualFile;
 import org.jetbrains.annotations.NotNull;
 
 public class CompareAction extends AnAction {
@@ -43,7 +39,7 @@ public class CompareAction extends AnAction {
     }
 
     public void openNewPage(@NotNull Project project) {
-        compare c = new compare(project);
-        c.show();
+        Compare compare = new Compare(project);
+        compare.show();
     }
 }

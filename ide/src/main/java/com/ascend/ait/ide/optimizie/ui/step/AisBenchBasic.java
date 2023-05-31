@@ -36,7 +36,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ais_bench_basic extends DialogWrapper {
+public class AisBenchBasic extends DialogWrapper {
     private JPanel root;
     private JComboBox pureDataTypeCombx;
     private JLabel model;
@@ -71,7 +71,7 @@ public class ais_bench_basic extends DialogWrapper {
     private static final long FILE_SIZE_MAX = (long) 2 * 1024 * 1024 * 1024;
     private final Project project;
 
-    public ais_bench_basic(Project project) {
+    public AisBenchBasic(Project project) {
         super(true);
         this.project = project;
         init();
