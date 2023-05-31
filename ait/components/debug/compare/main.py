@@ -29,9 +29,11 @@ from msquickcmp.common import utils
 
 def _accuracy_compare_parser(compare_parser):
     compare_parser.add_argument("-m", "--model-path", dest="model_path", default="",
-                        help="<Required> The original model (.onnx or .pb) file path", required=True)
+                        help="<Required> The original model (.onnx or .pb. or .prototxt) file path", required=True)
     compare_parser.add_argument("-om", "--offline-model-path", dest="offline_model_path", default="",
                         help="<Required> The offline model (.om) file path", required=True)
+    compare_parser.add_argument("-w", "--weight-path", dest="weight_path", default="",
+                        help="<Optional> Required when framework is Caffe (.cafemodel)")
     compare_parser.add_argument("-i", "--input-path", dest="input_path", default="",
                         help="<Optional> The input data path of the model."
                              " Separate multiple inputs with commas(,). E.g: input_0.bin,input_1.bin")
@@ -67,7 +69,7 @@ if __name__ == '__main__':
     _accuracy_compare_parser(parser)
     args = parser.parse_args(sys.argv[1:])
 
-    cmp_args = CmpArgsAdapter(args.model_path, args.offline_model_path, args.input_path,
+    cmp_args = CmpArgsAdapter(args.model_path, args.offline_model_path, args.weight_path, args.input_path,
                               args.cann_path, args.out_path, args.input_shape,
                               args.device, args.output_size, args.output_nodes, args.advisor,
                               args.dym_shape_range, args.dump, args.bin2npy)
@@ -75,4 +77,3 @@ if __name__ == '__main__':
         cmp_process(cmp_args, False)
     except utils.AccuracyCompareException as error:
         sys.exit(error.error_info)
-
