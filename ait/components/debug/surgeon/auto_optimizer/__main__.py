@@ -237,7 +237,7 @@ def command_optimize(
     output_model: pathlib.Path,
     optimizer: GraphOptimizer,
     infer_test: bool,
-	big_kernel: bool,
+    big_kernel: bool,
     attention_start_node: str,
     attention_end_node: str,
     soc: str,
