@@ -43,6 +43,13 @@ opt_om_model = click.option(
     required=True
 )
 
+opt_weight_path = click.option(
+    "-w",
+    "--weight-path",
+    "weight_path",
+    help="Required when framework is Caffe (.cafemodel)",
+)
+
 opt_input = click.option(
     "-i",
     "--input",
