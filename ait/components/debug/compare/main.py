@@ -67,7 +67,7 @@ if __name__ == '__main__':
     _accuracy_compare_parser(parser)
     args = parser.parse_args(sys.argv[1:])
 
-     args.weight_path = None
+    args.weight_path = None
     cmp_args = CmpArgsAdapter(args.model_path, args.offline_model_path, args.weight_path, args.input_path,
                               args.cann_path, args.out_path, args.input_shape,
                               args.device, args.output_size, args.output_nodes, args.advisor,
