@@ -27,6 +27,7 @@ NodeType = Union[PlaceHolder, Initializer, Node]
 
 class NodeNotExistException(KeyError):
     def __init__(self, node_name: str) -> None:
+        super().__init__()
         self.value = '{} is not exist in graph'.format(node_name)
 
     def __str__(self) -> str:

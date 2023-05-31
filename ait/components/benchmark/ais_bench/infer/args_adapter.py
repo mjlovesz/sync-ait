@@ -47,5 +47,6 @@ class BenchMarkArgsAdapter():
         self.dym_shape_range = dym_shape_range
         self.aipp_config = aipp_config
         self.energy_consumption = energy_consumption
+        self.npu_id = npu_id
         self.backend = backend
         self.perf = perf
