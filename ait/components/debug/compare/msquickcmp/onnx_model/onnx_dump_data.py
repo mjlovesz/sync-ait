@@ -148,7 +148,7 @@ class OnnxDumpData(DumpData):
                                                                      self.onnx_model_before_custom_op_path)
             
             # 2. dump data before custom op
-            onnx_dump_data_dir = self._gen_after_custom_op_dump_data(npu_dump_path)
+            self._gen_after_custom_op_dump_data(npu_dump_path)
         return onnx_dump_data_dir
 
     def get_net_output_info(self):
@@ -383,11 +383,10 @@ class OnnxDumpData(DumpData):
                 if input.name == input_tensor_info['name']:
                     input.shape = input_tensor_info['shape']
                     input.dtype = input_tensor_info['type']
-                    print(input)
 
         for input_tensor_info in inputs_tensor_info:
-            print(input_tensor_info['name'], input_tensor_info['shape'] , input_tensor_info['type'])
             _update_sub_model_input(onnx_model_after_custom_op, input_tensor_info)
+
         onnx_model_after_custom_op.infer_shape()
         onnx_model_after_custom_op.save(self.onnx_model_after_custom_op_path)
 
