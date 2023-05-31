@@ -257,6 +257,8 @@ class AttentionParser:
                     logger.error("The value of {} is zero, please check your model.".format(div_b.name))
                     raise err
 
+        self.params.setdefault(MUL_B, mul_b)
+
     def _parse_qkv_branches(self, branch_name="q"):
         """
         分别解析q、k、v3个分支上的matmul、add、reshape、transpose节点，并获取到参数和属性
