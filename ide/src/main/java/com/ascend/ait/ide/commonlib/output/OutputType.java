@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Huawei Technologies Co., Ltd
+ * Copyright 2023 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,6 @@
 
 package com.ascend.ait.ide.commonlib.output;
 
-/**
- * OutputType
- *
- * @author: zhouxiaohui
- * @since: 2019/06/05 10:10
- * @version: 1.0
- */
 public enum OutputType {
     NORMAL,
     DETAIL

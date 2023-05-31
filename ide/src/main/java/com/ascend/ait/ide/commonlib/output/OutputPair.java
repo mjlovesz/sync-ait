@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Huawei Technologies Co., Ltd
+ * Copyright 2023 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,6 @@ package com.ascend.ait.ide.commonlib.output;
 
 import com.intellij.execution.ui.ConsoleViewContentType;
 
-/**
- * output pair
- *
- * @author baiguochao
- * @since 2019/4/24
- */
 public class OutputPair {
     private String text;
 

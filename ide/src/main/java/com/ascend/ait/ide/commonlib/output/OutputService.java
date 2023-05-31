@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Huawei Technologies Co., Ltd
+ * Copyright 2023 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,13 +35,11 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-/**
- * output service
- *
- * @author baiguochao
- * @since 1.0
- */
-public class OutputService {
+public class
+
+
+
+OutputService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OutputService.class);
 
     private static final String SPACE = "  ";
@@ -236,7 +234,7 @@ public class OutputService {
                 Optional<ConsoleView> optional = Optional.ofNullable(OutputFactory.getDetailConsoleViewmap())
                         .map(outputfACTORY -> outputfACTORY.get(project));
                 if (optional.isEmpty()) {
-                    LOGGER.error("null");
+                    LOGGER.error("detailConsoleViewmap is null");
                     return;
                 }
                 optional.get().print(currentTime + SPACE + outputPair.getText() + System.lineSeparator(),
@@ -248,7 +246,7 @@ public class OutputService {
                 Optional<ConsoleView> optional = Optional.ofNullable(OutputFactory.getNormalConsoleViewmap())
                         .map(outputfACTORY -> outputfACTORY.get(project));
                 if (optional.isEmpty()) {
-                    LOGGER.error("null");
+                    LOGGER.error("normalConsoleViewmap is null");
                     return;
                 }
                 optional.get().print(currentTime + SPACE + outputPair.getText() + System.lineSeparator(),

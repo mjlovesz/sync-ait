@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Huawei Technologies Co., Ltd
+ * Copyright 2023 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,12 @@ import com.ascend.ait.ide.commonlib.icons.CommonLibIcons;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.ui.ConsoleView;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionPlaces;
+import com.intellij.openapi.actionSystem.ActionToolbar;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.actions.ToggleUseSoftWrapsToolbarAction;
@@ -42,39 +47,22 @@ import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * OutputFactory
- *
- * @author: zhouxiaohui
- * @since: 2019/06/05 10:10
- * @version: 1.0
- */
 public class OutputFactory implements ToolWindowFactory, DumbAware{
     private static final String OUTPUT_TOOL_WINDOW_ID = "Output";
-
     private static final String OUTPUT_TOOL_WINDOW_DETAILS = "Detail";
-
     private static final String DARCULA = "Darcula";
-
     private static final String DARK = "Dark";
     private static final String Output_NORMAL = "Normal";
-
     private static final String Output_Detail = "Detail";
     private static ConsoleView console;
-
     private static ConsoleView details;
-
     private static Map<Project, ConsoleView> normalConsoleViewmap = new HashMap<>();
-
     private static Map<Project, ConsoleView> detailConsoleViewmap = new HashMap<>();
-
     private static Content consoleContent;
     private static Content detailsContent;
-
     public static Map<Project, ConsoleView> getNormalConsoleViewmap() {
         return normalConsoleViewmap;
     }
-
     public static Map<Project, ConsoleView> getDetailConsoleViewmap() {
         return detailConsoleViewmap;
     }
@@ -103,7 +91,10 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
         return new ToggleUseSoftWrapsToolbarAction(SoftWrapAppliancePlaces.CONSOLE) {
             private boolean isSelected = false;
             @Override
-            protected Editor getEditor(@NotNull AnActionEvent ex) {return consoleView.getEditor();}
+            protected Editor getEditor(@NotNull AnActionEvent ex) {
+                return consoleView.getEditor();
+            }
+
             @Override
             public void update(@NotNull AnActionEvent ex) {
                 super.update(ex);
@@ -140,8 +131,6 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
      * @param project current project
      */
     public static void show(Project project) {
-
-
         ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(OUTPUT_TOOL_WINDOW_ID);
         if (toolWindow == null){
             return;
@@ -211,7 +200,6 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
         setContentTheme(detailsContent);
         contentManager.addContent(detailsContent);
         detailConsoleViewmap.put(project, details);
-
     }
 
     @Override

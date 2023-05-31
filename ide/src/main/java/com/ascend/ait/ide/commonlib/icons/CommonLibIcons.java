@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Huawei Technologies Co., Ltd
+ * Copyright 2023 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,11 +21,6 @@ import com.intellij.openapi.util.IconLoader;
 
 import javax.swing.Icon;
 
-/**
- * OutputIcons
- *
- * @since 1.0
- */
 public interface CommonLibIcons {
     /**
      * TOOL_ICON

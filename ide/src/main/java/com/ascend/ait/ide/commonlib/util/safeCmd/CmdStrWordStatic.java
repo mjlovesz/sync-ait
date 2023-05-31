@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Huawei Technologies Co., Ltd
+ * Copyright 2023 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +19,6 @@ package com.ascend.ait.ide.commonlib.util.safeCmd;
 import org.jetbrains.annotations.NotNull;
 import java.io.File;
 
-/**
- * mindstudio - CmdStaticWord
- *
- * @author liucj
- * @since 2021/4/6
- */
 public class CmdStrWordStatic extends CmdStr {
     // character used by the command
 

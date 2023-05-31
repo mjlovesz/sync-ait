@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Huawei Technologies Co., Ltd
+ * Copyright 2023 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 
 package com.ascend.ait.ide.commonlib.util.safeCmd;
 
-
 import com.ascend.ait.ide.commonlib.exception.CommandInjectException;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
@@ -30,12 +29,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/**
- * mindstudio - CmdExec
- *
- * @author liucj
- * @since 2021/4/14
- */
 public class CmdExec {
     /**
      * exec event type

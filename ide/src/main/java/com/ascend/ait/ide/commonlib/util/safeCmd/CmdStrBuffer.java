@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Huawei Technologies Co., Ltd
+ * Copyright 2023 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-/**
- * mindstudio - cmdBuffer
- *
- * @author liucj
- * @since 2021/4/6
- */
 public class CmdStrBuffer extends CmdStr {
     private static final String linuxLikeSep = "/";
     private static boolean isLinuxLikeSep = File.separator.equals(linuxLikeSep);

@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 Huawei Technologies Co., Ltd
+ * Copyright 2023 Huawei Technologies Co., Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,10 @@
 
 package com.ascend.ait.ide.commonlib.exception;
 
-/**
- * CommandExecutor Exception
- *
- * @author baiguochao
- * @since 2019/4/22
- */
 public class CommandException extends RuntimeException {
     private static final long serialVersionUID = -7848065374983831216L;
 
     public CommandException(String message) {
         super(message);
-    }
-
-    public CommandException() {
-        this("");
     }
 }
