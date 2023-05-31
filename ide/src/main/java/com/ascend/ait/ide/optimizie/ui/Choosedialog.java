@@ -265,6 +265,5 @@ public class Choosedialog extends JFrame {
         AIS_BENCH,
         COMPARE,
         SYSTEM_PROFILER
-
     }
 }
