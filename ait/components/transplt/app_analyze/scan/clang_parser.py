@@ -75,6 +75,9 @@ def cuda_enabled(file, include, namespace=None):
         include = [include]
 
     for x in include:
+        if x == '':
+            continue
+
         if x == 1 or x in file:
             return True
     return False
@@ -100,7 +103,7 @@ def usr_namespace(cursor, namespaces):
     nsc = re.findall(r'(?:@N@\w+){1,1000}', usr[:index])
     nss = ['::'.join(x[3:].split('@N@')) for x in nsc]
     for namespace in namespaces:
-        for ns in reversed(nss):
+        for ns in nss:
             if namespace in ns:  # namespace可能是pattern，不是完整namespace
                 return ns
     return ''
@@ -117,7 +120,7 @@ def in_acc_lib(file, cursor):
                 usr_ns = ''
             else:
                 # get relative path
-                new_file = file.replace(lib, '')
+                new_file = file if not file.startswith(lib) else file.replace(lib, '')
                 cuda_en = cuda_enabled(new_file, v[1])
                 usr_ns = usr_namespace(cursor, v[0])
                 cursor.lib = v[3]
@@ -160,9 +163,9 @@ def filter_acc(cursor):
     # 用户代码dnn::Net，get_user得到cv::dnn::dnn4_v20211220，Cursor得到dnn::Net，取cv::dnn::Net
     if ns and api:
         # 拆分模板类型，保留第一个类型，cv::Ptr<cv::cudacodec::VideoReader>
-        l, r = api.find('<'), api.rfind('>')
-        if l != -1 and r != -1:
-            api = api[:l] + api[r + 1:]
+        left_bracket, right_bracket = api.find('<'), find_right_angle('>')
+        if left_bracket != -1 and right_bracket != -1:
+            api = api[:left_bracket] + api[right_bracket + 1:]
 
         ns_end = api.rfind('::')
         if ns_end == -1:  # api无命名空间

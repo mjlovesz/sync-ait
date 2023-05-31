@@ -187,15 +187,16 @@ def get_typedef(canonical_type):
     return canonical_type
 
 
-def off_alias(T):
+def off_alias(t):
     """例如using T = cv::cuda::GpuMat;"""
-    type_decl = T.get_declaration()
+    type_decl = t.get_declaration()
     if not type_decl:  # 不确定会否出现
-        return T
+        return t
     if not is_user_code(get_attr(type_decl, 'location.file.name')):
-        return T
+        return t
+
     # 其他情况待确认：NAMESPACE_ALIAS，TYPE_ALIAS_TEMPLATE_DECL
-    true_type = T
+    true_type = t
     if type_decl.kind == CursorKind.TYPE_ALIAS_DECL:
         # 通过get_canonical()可以获取最原始类型，但underlying_typedef_type获取的是当前声明对应的源类型。
         true_type = type_decl.underlying_typedef_type
@@ -246,7 +247,7 @@ def strip_implicit(type_str):
 
 
 def read_code(file_path, start, end):
-    with open(file_path, 'r') as f:
+    with open(file_path, 'rb') as f:
         f.seek(start)
         return f.read(end - start)
 
@@ -318,7 +319,7 @@ def var_decl(c):
     if children:  # TYPEDEF RECORD
         # 此处将template_ref和type_ref合并处理，如cv::Ptr<cv:cuda::VideoReader>
         spelling = get_namespace(children) + spelling  # TYPE VAR
-        for i, child in enumerate(children):
+        for child in children:
             # 原生类型变量声明 = 加速库/非加速库调用，则没有TYPE_REF
             if child.kind == CursorKind.TYPE_REF:  # 从变量声明所属类型获取source
                 definition = get_attr(child, 'referenced.displayname')
@@ -343,7 +344,7 @@ def parm_decl(c):
     if children:
         # 此处将template_ref和type_ref合并处理，如cv::Ptr<cv:cuda::VideoReader>
         spelling = get_namespace(children) + spelling  # TYPE VAR
-        for i, child in enumerate(children):  # 示例2
+        for child in children:  # 示例2
             # 原生类型变量声明 = 加速库/非加速库调用，则没有TYPE_REF
             if child.kind == CursorKind.TYPE_REF:  # 从变量声明所属类型获取source
                 definition = get_attr(child, 'referenced.displayname')
