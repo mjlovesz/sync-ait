@@ -72,8 +72,8 @@ CONVERT_3DIMS_TO_4DIMS = "convert_3dims_to_4dims"
 
 def get_k_2nd_perm(q_perm):
     """
-    k������transpose�����е�һ��transpose��ֵ����q_transpose_perm��
-    �ڶ���transpose��ֵ����q_transpose_perm�ĺ�����Ԫ�ؽ������ı�ά�Ȳ���������ˡ�
+    k有两个transpose，其中第一个transpose的值等于q_transpose_perm，
+    第二个transpose的值等于q_transpose_perm的后两个元素交换，改变维度才能做矩阵乘。
     """
     dims = len(q_perm)
     k_transpose_perm2 = list(range(len(q_perm)))

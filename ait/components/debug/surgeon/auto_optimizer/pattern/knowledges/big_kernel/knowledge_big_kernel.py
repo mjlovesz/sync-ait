@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from auto_optimizer.graph_refactor.onnx import OnnxNode, OnnxGraph
-from auto_optimizer.pattern import KnowledgeBase
+from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.pattern.pattern import Pattern
 from auto_optimizer.pattern.knowledges.big_kernel.attention_parser import AttentionParser

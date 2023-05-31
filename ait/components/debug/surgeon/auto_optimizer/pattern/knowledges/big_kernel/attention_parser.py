@@ -19,6 +19,7 @@ import numpy as np
 
 from auto_optimizer.graph_refactor import OnnxGraph, OnnxNode, OnnxInitializer
 from auto_optimizer.pattern.knowledges.big_kernel.util import get_k_2nd_perm
+from auto_optimizer.tools.log import logger
 from auto_optimizer.pattern.knowledges.big_kernel.util import (
     MATMUL_W,
     RESHAPE_S,
@@ -94,7 +95,7 @@ class AttentionParser:
 
     def down_top_search(self, start_node: OnnxNode, goal_op_type: str, end_node=None, input_idx=0) \
             -> Optional[OnnxNode]:
-        visited = []
+        visited = set()
         if input_idx + 1 > len(start_node.inputs):
             return None
         goal_node = None
@@ -104,7 +105,7 @@ class AttentionParser:
         stack = [pre_node]
         while stack:
             node = stack.pop()
-            visited.append(node)
+            visited.add(node)
             if node.op_type == goal_op_type:
                 goal_node = node
                 break
@@ -121,7 +122,7 @@ class AttentionParser:
         visited = []
         queue = deque()
         queue.append(start_node)
-        while queue and not goal_node:
+        while queue:
             node = queue.popleft()
             if node == end_node:
                 break
@@ -225,6 +226,7 @@ class AttentionParser:
             try:
                 mul_b = np.array(1/div_b.value).astype(div_b.value.dtype)
             except ZeroDivisionError as err:
+                logger.error("The value of {} is zero, please check your model.".format(div_b.name))
                 raise err
         else:
             mul = self.top_down_search(self._qk_mm, end_node=self._score_v_mm, goal_op_type="Mul")
@@ -248,10 +250,11 @@ class AttentionParser:
                 mul_b = (mul_b * bias).astype(bias.dtype)
 
             if node.op_type == "Div":
-                bias = self.graph.get_node(node.inputs[1], node_type=OnnxInitializer).value
+                div_b = self.graph.get_node(node.inputs[1], node_type=OnnxInitializer)
                 try:
-                    mul_b = (mul_b / bias).astype(bias.dtype)
+                    mul_b = (mul_b / div_b.value).astype(div_b.value.dtype)
                 except ZeroDivisionError as err:
+                    logger.error("The value of {} is zero, please check your model.".format(div_b.name))
                     raise err
 
     def _parse_qkv_branches(self, branch_name="q"):
