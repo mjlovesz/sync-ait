@@ -103,10 +103,10 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
     expect_net_output_node = npu_dump.get_expect_output_name()
 
     # 3. convert data from bin to npy if --convert is used
-    data_convert(npu_dump_data_path, npu_net_output_data_path, args)
+    npu_dump_path = data_convert(npu_dump_data_path, npu_net_output_data_path, args)
 
     # 4. generate dump data by golden model
-    golden_dump_data_path = golden_dump.generate_dump_data()
+    golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_path)
     golden_net_output_info = golden_dump.get_net_output_info()
 
     # if it's dynamic batch scenario, golden data files should be renamed

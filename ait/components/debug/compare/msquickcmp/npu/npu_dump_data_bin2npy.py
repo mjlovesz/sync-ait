@@ -41,7 +41,8 @@ def data_convert(npu_dump_data_path, npu_net_output_data_path, arguments):
                         "convert", "-d", npu_dump_data_path, "-out", convert_data_path]
         utils.execute_command(bin2npy_cmd)
         utils.logger.info("msaccucmp command line: %s " % " ".join(bin2npy_cmd))
-        return
+        return convert_data_path
+    return None
 
 
 def _check_data_convert_file(convert_dir_path):
