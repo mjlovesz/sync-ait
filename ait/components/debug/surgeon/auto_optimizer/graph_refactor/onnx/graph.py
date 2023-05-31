@@ -224,8 +224,6 @@ class OnnxGraph(BaseGraph):
                          is_check_subgraph: bool = False,
                          input_shape: str = None,
                          input_dtype: str = None):
-        # do shape info by default
-        self.infer_shape()
 
         # parse input info from input shape and input dtype
         input_shape_dict = self._parse_input_info(input_shape)
@@ -299,6 +297,9 @@ class OnnxGraph(BaseGraph):
             except Exception as exp:
                 logger.info("Check subgraph failed, error is:", exp)
 
+        # do shape info by default
+        self.infer_shape()
+
         return subgraph
 
     def simplify(self, **kwargs) -> 'OnnxGraph':
@@ -355,8 +356,10 @@ class OnnxGraph(BaseGraph):
                 ph_shape = value_info.shape
                 ph_dtype = value_info.dtype
             if input_shape_dict and input_shape_dict.get(name):
+                print('hi1')
                 ph_shape = [int(i) for i in input_shape_dict[name]]
             if input_dtype_dict and input_dtype_dict.get(name):
+                print('hi2')
                 ph_dtype = np.dtype(input_dtype_dict[name])
 
             if ph_shape:
