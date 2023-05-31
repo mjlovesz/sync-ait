@@ -116,10 +116,10 @@ public class ais_bench_basic extends DialogWrapper {
                 false, chooseMultiple)
                 .withFileFilter(virtualFile -> virtualFile.isDirectory() ||
                         Comparing.equal(new ArrayList<>(strings).contains(virtualFile.getExtension()), true))
-                .withTitle("model file")
-                .withDescription("teste");
+                .withTitle("Model File")
+                .withDescription("Please select the appropriate file");
         return FileChooseWithBrows.fileChoosewithBrowse(project, fileChooserDescriptor,
-                this.getClass().getName(), "modelseletcPath").orElse(null);
+                this.getClass().getName(), "modelSelectPath").orElse(null);
     }
 
     @Override
