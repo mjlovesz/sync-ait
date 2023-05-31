@@ -66,28 +66,6 @@ class CaffeDumpData(DumpData):
             np.copyto(model.blobs[input_name].data, input_data)
         return model.forward()  # {"output_name": output_numpy_data}
 
-    def _init_model(self):
-        import caffe
-
-        model = caffe.Net(self.model_path, self.weight_path, caffe.TEST)
-        return model
-
-    def _save_dump_data(self, model):
-        output_names = model.outputs
-        for layer_name, blob_names in model.top_names.items():
-            for blob_id, blob_name in enumerate(blob_names):
-                file_name = self._generate_dump_data_file_name(layer_name, blob_id)
-                file_path = os.path.join(self.dump_data_dir, file_name)
-                np.save(file_path, model.blobs.get(blob_name, np.empty(0, dtype="float32")).data)
-                utils.logger.info(f"The dump data of layer '{layer_name}' has been saved to '{file_path}'")
-
-                if blob_name in output_names:
-                    self.net_output[output_names.index(blob_name)] = file_path
-
-        for name, file_path in self.net_output.items():
-            utils.logger.info("net_output node is:{}, file path is {}".format(name, file_path))
-        utils.logger.info("dump data success")
-
     def generate_dump_data(self):
         """
         Function description:
@@ -123,3 +101,25 @@ class CaffeDumpData(DumpData):
         outputs_map = self._run_model(model, inputs_map)
         self._save_dump_data(model)
         return self.dump_data_dir
+
+    def _init_model(self):
+        import caffe
+
+        model = caffe.Net(self.model_path, self.weight_path, caffe.TEST)
+        return model
+
+    def _save_dump_data(self, model):
+        output_names = model.outputs
+        for layer_name, blob_names in model.top_names.items():
+            for blob_id, blob_name in enumerate(blob_names):
+                file_name = self._generate_dump_data_file_name(layer_name, blob_id)
+                file_path = os.path.join(self.dump_data_dir, file_name)
+                np.save(file_path, model.blobs.get(blob_name, np.empty(0, dtype="float32")).data)
+                utils.logger.info(f"The dump data of layer '{layer_name}' has been saved to '{file_path}'")
+
+                if blob_name in output_names:
+                    self.net_output[output_names.index(blob_name)] = file_path
+
+        for name, file_path in self.net_output.items():
+            utils.logger.info("net_output node is:{}, file path is {}".format(name, file_path))
+        utils.logger.info("dump data success")
