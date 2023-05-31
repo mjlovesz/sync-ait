@@ -222,7 +222,7 @@ public class ais_bench_basic extends DialogWrapper {
 
     private CmdStrBuffer getCmdStrBuffer() {
         CmdStrBuffer cmd = new CmdStrBuffer();
-        cmd.append(" -m ais_bench");
+        cmd.append("-m ais_bench");
         ais_bench_service service = new ais_bench_service();
 
         service.pathAdd(cmd, ais_bench_service.modelService, modelFileTextField.getText());
