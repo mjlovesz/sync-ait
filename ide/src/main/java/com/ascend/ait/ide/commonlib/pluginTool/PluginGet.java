@@ -31,16 +31,5 @@ public class PluginGet {
     }
 
     public void getPluginClass(String className, String id) {
-        PluginId pluginId = PluginId.getId(id);
-        try {
-            Class a = PluginManager.getInstance().findEnabledPlugin(pluginId).getPluginClassLoader().loadClass(className);
-            Method method = a.getMethod("openNewPage", Project.class);
-            Constructor constructor = a.getConstructor();
-            Object object = constructor.newInstance();
-            method.invoke(object, project);
-        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
-                 IllegalAccessException | InstantiationException e) {
-            throw new RuntimeException(e);
-        }
     }
 }
