@@ -50,7 +50,7 @@ class DumpData(object):
         name_str = name_str.replace('.', '_').replace('/', '_')
         return  ".".join([name_str, str(node_id), str(round(time.time() * 1e6)), "npy"])
 
-    def _check_input_data_path(self, input_path, input_tensor_info):
+    def _check_input_data_path(self, input_path, inputs_tensor_info):
         if len(inputs_tensor_info) != len(input_path):
             logger.error("the number of model inputs tensor_info is not equal the number of "
                                   "inputs data, inputs tensor_info is: {}, inputs data is: {}".format(

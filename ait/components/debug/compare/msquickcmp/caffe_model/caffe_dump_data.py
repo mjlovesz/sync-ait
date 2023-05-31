@@ -91,7 +91,7 @@ class CaffeDumpData(DumpData):
         utils.logger.info("Caffe input info: \n{}\n".format(input_info))
 
         if self.input_data_path:
-            self._check_input_data_path(self.input_data_path)
+            self._check_input_data_path(self.input_data_path, input_shapes)
             inputs_map = self._read_input_data(self.input_data_path, input_names, input_shapes, input_dtypes)
         else:
             inputs_map = self._generate_random_input_data(
