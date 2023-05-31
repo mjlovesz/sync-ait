@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
@@ -52,7 +51,7 @@ ACCURACY_COMPARISON_NO_DUMP_FILE_ERROR = 14
 ACCURACY_COMPARISON_NOT_SUPPORT_ERROR = 15
 ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
-MODEL_TYPE = ['.onnx', '.pb', '.om']
+MODEL_TYPE = ['.onnx', '.pb', '.om', '.prototxt']
 DIM_PATTERN = r"^(-?[0-9]{1,100})(,-?[0-9]{1,100}){0,100}"
 DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+){0,3}"
 MAX_DEVICE_ID = 255
