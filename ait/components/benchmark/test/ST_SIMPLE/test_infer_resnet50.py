@@ -828,7 +828,6 @@ class TestClass():
         cmd = "{} --model {} --device {} --input {} --debug=1 > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                             devices, input_path, log_path)
         logger.info("run cmd:{}".format(cmd))
-        print(cmd)
         ret = os.system(cmd)
         assert ret == 0
         assert os.path.exists(log_path)
