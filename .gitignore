@@ -1,5 +1,5 @@
 .vscode
-modified_onnx
+**/modified_onnx
 **/__pycache__
 **/node_modules
 **/out
