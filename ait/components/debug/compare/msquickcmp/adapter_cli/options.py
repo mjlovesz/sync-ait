@@ -32,7 +32,7 @@ opt_golden_model = click.option(
     '--golden-model',
     'golden_model',
     required=True,
-    help="The original model (.onnx or .pb) file path",
+    help="The original model (.onnx or .pb or .prototxt) file path",
 )
 
 opt_om_model = click.option(
