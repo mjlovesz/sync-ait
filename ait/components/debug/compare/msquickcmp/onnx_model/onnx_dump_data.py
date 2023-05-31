@@ -77,6 +77,7 @@ class OnnxDumpData(DumpData):
         self._create_dir()
         self.onnx_model_before_custom_op_path = ""
         self.new_onnx_model_before_custom_op_path = ""
+        self.onnx_model_after_custom_op_path = ""
         self._extract_sub_models_by_custom_op()
 
     @staticmethod
@@ -128,7 +129,7 @@ class OnnxDumpData(DumpData):
         inputs_tensor_info = self._get_inputs_tensor_info(session)
         self.inputs_map = self._get_inputs_data(self.data_dir, inputs_tensor_info, npu_dump_data_path, use_aipp)
 
-    def generate_dump_data(self):
+    def generate_dump_data(self, npu_dump_path):
         """
         Function description:
             generate onnx model dump data
@@ -143,8 +144,12 @@ class OnnxDumpData(DumpData):
             onnx_dump_data_dir = self._generate_onnx_model_dump_data(self.new_onnx_model_path, 
                                                                      self.args.model_path)
         else:
+            # 1. dump data before custom op
             onnx_dump_data_dir = self._generate_onnx_model_dump_data(self.new_onnx_model_before_custom_op_path, 
                                                                      self.onnx_model_before_custom_op_path)
+            
+            # 2. dump data before custom op
+            onnx_dump_data_dir = self._gen_after_custom_op_dump_data(npu_dump_path)
         return onnx_dump_data_dir
 
     def get_net_output_info(self):
@@ -343,6 +348,7 @@ class OnnxDumpData(DumpData):
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
         
         self._extract_model_before_custom_op(old_onnx_graph, custom_op_node)
+        self._extract_model_after_custom_op(old_onnx_graph, custom_op_node)
 
     def _extract_model_before_custom_op(self, old_onnx_graph, custom_op_node):
         # start from inputs
@@ -364,3 +370,95 @@ class OnnxDumpData(DumpData):
         self.onnx_model_before_custom_op.save(self.onnx_model_before_custom_op_path)
         utils.logger.info("extract model before custom op sucessed, save path: %s", 
                           self.onnx_model_before_custom_op_path)
+        
+    def _extract_model_after_custom_op(self, old_onnx_graph, custom_op_node):
+
+        # start from custom op outputs
+        start_nodes_name = []
+
+        for output in custom_op_node.outputs:
+            start_nodes = old_onnx_graph.get_next_nodes(output)
+            for start_node in start_nodes:
+                start_nodes_name.append(start_node.name)
+                utils.logger.info("start_node.name: %s", 
+                                  start_node.name)
+
+        # end by old onnx graph outputs
+        end_nodes_name = []
+        for graph_output in old_onnx_graph.outputs:
+            end_node = old_onnx_graph.get_prev_node(graph_output.name)
+            end_nodes_name.append(end_node.name)
+
+        self.onnx_model_after_custom_op = old_onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
+        self.onnx_model_after_custom_op_path = os.path.join(
+            self.model_dir, "after_custom_op_" + os.path.basename(self.args.model_path))
+        self.onnx_model_after_custom_op.save(self.onnx_model_after_custom_op_path)
+        utils.logger.info("extract model after custom op sucessed, save path: %s", 
+                          self.onnx_model_after_custom_op_path)
+        
+    def _gen_after_custom_op_dump_data(self, npu_dump_path):
+        try:
+            from auto_optimizer import OnnxGraph
+        except ModuleNotFoundError as err:
+            utils.logger.error("auto_optimizer is not install!")
+            raise err
+        
+        inputs_map, inputs_tensor_info = self._get_npu_dump_data_by_custom_op(npu_dump_path)
+
+        # fix inputs info 
+        onnx_model_after_custom_op = OnnxGraph.parse(self.onnx_model_after_custom_op_path)
+        def _update_sub_model_input(onnx_model_after_custom_op, input_tensor_info):
+            for input in onnx_model_after_custom_op.inputs:
+                if input.name == input_tensor_info['name']:
+                    input.shape = input_tensor_info['shape']
+                    input.dtype = input_tensor_info['type']
+                    print(input)
+
+        for input_tensor_info in inputs_tensor_info:
+            print(input_tensor_info['name'], input_tensor_info['shape'] , input_tensor_info['type'])
+            _update_sub_model_input(onnx_model_after_custom_op, input_tensor_info)
+        onnx_model_after_custom_op.infer_shape()
+        onnx_model_after_custom_op.save(self.onnx_model_after_custom_op_path)
+
+        # gen dump data
+        new_model_path = self._modify_model_add_outputs_nodes(self.onnx_model_after_custom_op_path)        
+        session = self._load_session(new_model_path)
+        net_output_node = self._get_net_output_node(self.onnx_model_after_custom_op_path)
+        dump_bins = self._run_model(session, inputs_map)
+        self._save_dump_data(dump_bins, self.onnx_dump_data_dir, 
+                             onnx.load(self.onnx_model_after_custom_op_path), 
+                             net_output_node)
+
+    def _get_npu_dump_data_by_custom_op(self, npu_dump_path):
+        inputs_tensor_info = self._get_after_custom_op_inputs_ternsor_info()
+        inputs_map = {}
+
+        for item in os.listdir(npu_dump_path):
+
+            # file name format: [Optype].[OpName].{time}.[dump_type].[index].npy
+            file_name_info = item.split('.')
+            op_name = file_name_info[1]
+            dump_type = file_name_info[-3]
+            index = int(file_name_info[-2])
+            if op_name == self.args.custom_op and dump_type == "output" and index < len(inputs_tensor_info):
+                numpy_data = np.load(os.path.join(npu_dump_path, item))
+                inputs_tensor_info[index]['shape'] = numpy_data.shape
+                inputs_tensor_info[index]['type'] = numpy_data.dtype
+                inputs_map[inputs_tensor_info[index]['name']] = numpy_data
+
+        utils.logger.info("extract model after custom op inputs tensor info:\n{}\n".format(inputs_tensor_info))
+        return inputs_map, inputs_tensor_info
+
+    def _get_after_custom_op_inputs_ternsor_info(self):
+        inputs_tensor_info = []
+
+        session = self._load_session(self.onnx_model_after_custom_op_path)
+        for input_item in session.get_inputs():
+            tensor_name = input_item.name
+            tensor_shape = input_item.shape
+            tensor_type = input_item.type
+
+            tensor_info = {"name": tensor_name, "shape": tensor_shape, "type": tensor_type}
+            inputs_tensor_info.append(tensor_info)
+        return inputs_tensor_info
+
