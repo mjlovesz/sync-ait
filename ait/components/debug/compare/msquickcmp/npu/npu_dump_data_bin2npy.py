@@ -44,6 +44,22 @@ def data_convert(npu_dump_data_path, npu_net_output_data_path, arguments):
         return
 
 
+def data_convert_file(bin_file_path, npy_dir_path, arguments):
+    """
+    Function Description:
+        convert a bin file to npy file.
+    Parameter:
+        bin_file_path: the path of the bin file needed to be converted to npy
+        npy_dir_path: the dest dir to save the converted npy file
+        arguments: the enter arguments, here arguments.cann_path is required
+    """
+    python_version = sys.executable.split('/')[-1]
+    msaccucmp_command_file_path = os.path.join(arguments.cann_path, MSACCUCMP_FILE_PATH)
+    bin2npy_cmd = [python_version, msaccucmp_command_file_path, "convert", "-d", bin_file_path, "-out", npy_dir_path]
+    utils.logger.info("convert dump data: %s to npy file" % (bin_file_path))
+    utils.execute_command(bin2npy_cmd)
+
+
 def _check_data_convert_file(convert_dir_path):
     if not os.path.exists(convert_dir_path):
         os.makedirs(convert_dir_path)
