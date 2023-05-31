@@ -19,6 +19,7 @@ from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.adapter_cli.options import (
     opt_golden_model,
     opt_om_model,
+    opt_weight_path,
     opt_input,
     opt_cann_path,
     opt_out_path,
@@ -39,6 +40,7 @@ from msquickcmp.common import utils
                no_args_is_help=True)
 @opt_golden_model
 @opt_om_model
+@opt_weight_path
 @opt_input
 @opt_cann_path
 @opt_out_path
@@ -53,6 +55,7 @@ from msquickcmp.common import utils
 def compare_cli(
     golden_model,
     om_model,
+    weight_path,
     input_data_path,
     cann_path,
     out_path,
@@ -65,8 +68,8 @@ def compare_cli(
     dump,
     bin2npy
 ) -> None:
-    cmp_args = CmpArgsAdapter(golden_model, om_model, input_data_path, cann_path, out_path, input_shape, device,
-                              output_size, output_nodes, advisor, dym_shape_range, dump, bin2npy)
+    cmp_args = CmpArgsAdapter(golden_model, om_model, weight_path, input_data_path, cann_path, out_path, input_shape,
+                               device, output_size, output_nodes, advisor, dym_shape_range, dump, bin2npy)
     return cmp_process(cmp_args, True)
 
 if __name__ == '__main__':
