@@ -39,7 +39,7 @@ Caffe 一键式精度比对
 - **比对结果** 位于 `{output_path}/{timestamp}/result_{timestamp}.csv` 中，比对结果的含义与基础精度比对工具完全相同，其中每个字段的含义可参考 [CANN商用版/比对步骤（推理场景）](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/atlasaccuracy_16_0039.html)
 ## Caffe 模型结构文件示例
 - `caffe_demo.prototxt`
-```yml
+```java
 name: "caffe_Demo"
 layer {
   name: "Input_1"

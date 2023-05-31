@@ -98,7 +98,7 @@ class CaffeDumpData(DumpData):
                 self.input_data_save_dir, input_names, input_shapes, input_dtypes
             )
 
-        outputs_map = self._run_model(model, inputs_map)
+        self._run_model(model, inputs_map)
         self._save_dump_data(model)
         return self.dump_data_dir
 
