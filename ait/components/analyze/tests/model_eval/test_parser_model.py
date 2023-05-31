@@ -19,10 +19,10 @@ import shutil
 from unittest import mock
 from typing import List
 
-from model_eval.common import utils
-from model_eval.common.enum import AtcErr, Framework
-from model_eval.bean import ConvertConfig
-from model_eval.parser import ModelParser
+from model_evaluation.common import utils
+from model_evaluation.common.enum import AtcErr, Framework
+from model_evaluation.bean import ConvertConfig
+from model_evaluation.parser import ModelParser
 
 
 class TestModelParser(unittest.TestCase):
