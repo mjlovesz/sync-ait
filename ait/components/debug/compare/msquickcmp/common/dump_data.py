@@ -70,7 +70,7 @@ class DumpData(object):
 
     def _read_input_data(self, input_pathes, names, shapes, dtypes):
         inputs_map = {}
-        for index, (input_path, name, shape, dtype) in enumerate(zip(input_pathes, names, shapes, dtypes)):
+        for input_path, name, shape, dtype in zip(input_pathes, names, shapes, dtypes):
             input_data = np.fromfile(input_path, dtype=dtype).reshape(shape)
             inputs_map[name] = input_data
             logger.info("load input file name: {}, shape: {}, dtype: {}".format(
