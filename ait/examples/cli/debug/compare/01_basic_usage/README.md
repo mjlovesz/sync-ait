@@ -39,7 +39,7 @@ compare精度对比功能可以通过ait命令行方式启动。
 │   │   │   ├-- input_0_0.bin
 │   │   │   └-- input_0_0.npy
 │   │   └-- {time_stamp}_summary.json
-│   └-- {onnx or tf}                         # -m 模型为 .onnx 时，onnx dump 数据目录，Tensorflow 模型为 tf
+│   └-- {onnx or tf or caffe}       # 原模型 dump 数据存放路径，onnx / tf / caffe 分别对应 ONNX / Tensorflow / Caffe 模型
 │       ├-- Add_100.0.1682148256368588.npy
 │       ├-- ...
 │       └-- Where_22.0.1682148253575249.npy
