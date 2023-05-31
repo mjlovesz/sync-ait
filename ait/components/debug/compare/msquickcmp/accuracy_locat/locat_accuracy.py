@@ -148,7 +148,7 @@ def calculate_flow(graph, startnode, endnode):
                 if next_node is not None:
                     flow[next_node.name] += flow_increment
                     incnt[next_node.name] -= 1
-                if next_node is not None and incnt.get(next_node.name) == 0"
+                if next_node is not None and incnt.get(next_node.name) == 0:
                     queue.append([next_node, flow.get(next_node.name)])
                     visited.add(next_node)
     return satisfied_nodes
