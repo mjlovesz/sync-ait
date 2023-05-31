@@ -39,7 +39,7 @@ from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
 from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
 from ais_bench.infer.utils import (get_file_content, get_file_datasize,
-                                   get_fileslist_from_dir, list_split, logger,
+                                   get_fileslist_from_dir, list_split, list_share, logger,
                                    save_data_to_files)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
@@ -392,8 +392,9 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
     chunks = list(list_split(fileslist, chunks_elements, None))
     fileslist = [ [] for _ in range(jobs) ]
     for _, chunk in enumerate(chunks):
-        splits_elements = math.ceil(len(chunk) / jobs)
-        splits = list(list_split(chunk, splits_elements, None))
+        splits_elements = int(len(chunk) / jobs)
+        splits_left = len(chunk) % jobs
+        splits = list(list_share(chunk, jobs, splits_elements, splits_left))
         for j, split in enumerate(splits):
             fileslist[j].extend(split)
     res = []
