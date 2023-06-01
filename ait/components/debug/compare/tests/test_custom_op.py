@@ -26,7 +26,7 @@ from msquickcmp.common import utils
 
 
 @pytest.fixture(scope="module", autouse=True)
-def args() -> None:
+def cmp_args() -> None:
     if os.path.exists("./dump_data"):      
         shutil.rmtree("./dump_data")
     if os.path.exists("./model"):
@@ -34,7 +34,7 @@ def args() -> None:
     if os.path.exists("./input"):
         shutil.rmtree("./input")
 
-    cmp_args = CmpArgsAdapter(gold_model="./onnx/model.onnx",
+    args_adapter = CmpArgsAdapter(gold_model="./onnx/model.onnx",
                               om_model="./om/model.om",
                               input_data_path = "",
                               cann_path="/usr/local/Ascend/ascend-toolkit/latest/",
@@ -48,13 +48,13 @@ def args() -> None:
                               dump=True,
                               bin2npy=True,
                               custom_op="BatchMultiClassNMS_1203")
-    yield cmp_args
+    yield args_adapter
 
 
 def test_init_onnx_dump_data(cmp_args):
 
     golden_dump = OnnxDumpData(cmp_args)
-    golden_dump.generate_inputs_data()
+    golden_dump.generate_inputs_data("", False)
 
     assert 'before_custom_op_model.onnx' in os.listdir('./model')
     assert 'after_custom_op_model.onnx' in os.listdir('./model')
@@ -64,7 +64,7 @@ def test_init_onnx_dump_data(cmp_args):
 def test_onnx_dump_data(cmp_args):
 
     golden_dump = OnnxDumpData(cmp_args)
-    golden_dump.generate_inputs_data()
+    golden_dump.generate_inputs_data("", False)
 
     # 2. generate npu dump data
     npu_dump = NpuDumpData(cmp_args, "./om/model.json")
@@ -72,7 +72,7 @@ def test_onnx_dump_data(cmp_args):
 
     # 3. convert data from bin to npy if --convert is used
     npu_dump_path = data_convert(npu_dump_data_path, npu_net_output_data_path, cmp_args)
-
+    print(npu_dump_path)
     # generate dump data by golden model
     golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_path)
     assert len(os.listdir(golden_dump_data_path)) == 14
@@ -87,4 +87,4 @@ def test_before_custom_op_dump_not_support(cmp_args):
     golden_dump = OnnxDumpData(cmp_args)
 
     with pytest.raises(Exception) as error:
-        golden_dump.generate_inputs_data()
+        golden_dump.generate_inputs_data("", False)

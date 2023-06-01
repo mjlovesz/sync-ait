@@ -52,7 +52,7 @@ class TfDumpData(DumpData):
         self._load_graph()
         self._create_dir()
 
-    def generate_inputs_data(self):
+    def generate_inputs_data(self, npu_dump_data_path, use_aipp):
         """
         Generate tf model inputs data
         :return tf model inputs data directory
