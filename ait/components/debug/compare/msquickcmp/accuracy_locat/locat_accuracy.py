@@ -1,4 +1,5 @@
 from collections import deque
+from collections import OrderedDict
 import re
 import argparse
 import os
@@ -6,6 +7,7 @@ import sys
 import time
 
 import numpy as np
+import onnxruntime
 
 from auto_optimizer.graph_refactor import Node
 from auto_optimizer import OnnxGraph
@@ -35,15 +37,18 @@ def find_accuracy_interval(args, endnode_name, input_shape):
     #获取精度异常节点
     endnode = og.get_node(endnode_name, node_type=Node)
 
+    output_file = './accuracy_location_log.txt'
+    output_file = os.path.realpath(output_file)
     error_node_list = []
     #验证单层算子是否有问题
     #单层算子无问题
     if not subgraph_check(og, endnode, endnode, args, 'Ascend310P3', onnx_data_path, input_shape):
         for node in og.nodes:
-            if og.get_prev_node(node.inputs[0]) is None:
+            if check_node_valid_normal(og, node):
                 l_node, r_node = bin_divide(og, node, endnode, args, 'Ascend310P3', onnx_data_path, input_shape)
                 error_node_list.append([l_node, r_node])
-    return [endnode, endnode]
+        return error_node_list
+    return [[endnode, endnode]]
 
 
 def subgraph_check(og, startnode, endnode, args, soc_version, onnx_data_path, input_shape):
@@ -60,18 +65,19 @@ def subgraph_check(og, startnode, endnode, args, soc_version, onnx_data_path, in
 
     #获得onnx与om模型后
     subog = OnnxGraph.parse(subgraph_onnx_file)
-    input_need_list = set()
-    for node in subog.nodes:
-        for node_input in node.inputs:
-            input_node = og.get_prev_node(node_input)
-            if input_node is not None and input_node not in subog.nodes:
-                input_need_list.add(f"{input_node.name}\.")
-
+    input_need_list = []
+    inputs_list = [(ii.name, ii.shape) for ii in onnxruntime.InferenceSession(subgraph_onnx_file).get_inputs()]
+    input_need_list = input_completion(og, inputs_list)
     #按照需要读入所有需要的输入文件
     pattern = '|'.join(input_need_list)
     print(pattern)
     matched_files = find_npy_files_with_prefix(onnx_data_path, pattern)
-    bin_files_path = create_bin_file(matched_files)
+    sort_matched_files = []
+    for prefix in input_need_list:
+        for match_file in matched_files:
+            if match_file.startwith(prefix):
+                sort_matched_files.append(match_file)
+    bin_files_path = create_bin_file(sort_matched_files)
     subgraph_om_path = './tmp.om'
     model_path = os.path.realpath(subgraph_onnx_file)
     om_model = subgraph_om_path
@@ -97,7 +103,7 @@ def subgraph_check(og, startnode, endnode, args, soc_version, onnx_data_path, in
     res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
     clr_cmd = 'rm -rf ./tmp/ ./tmpres/'
     os.system(clr_cmd)
-    if len(res) != 0:
+    if check_res(res, endnode):
         return True
     return False
 
@@ -123,32 +129,44 @@ def bin_divide(og, startnode, endnode, args, soc_version, onnx_data_path, input_
 
 
 def calculate_flow(graph, startnode, endnode):
-    lin = len(startnode.outputs)
-    # 流量值
+    #误差限
+    eps = 1e-10
+    lin = 0
+    for output_name in startnode.outputs:
+        for next_node in graph.get_next_nodes(output_name):
+            if next_node is not None:
+                lin += 1
+    if lin < 512:
+        lin *= 512
+
     flow = {}
-    # 入度
     incnt = {}
     for node in graph.nodes:
-        flow[node.name] = 0.0
+        flow[node.name] = float(0)
         incnt[node.name] = len(node.inputs)
-    flow[startnode.name] = lin
+    flow[startnode.name] = float(lin)
     satisfied_nodes = []
     visited = set()
     queue = deque([(startnode, flow[startnode.name])])
     visited.add(startnode)
     while queue:
         current_node, current_flow = queue.popleft()
-        if current_flow == lin:
+        if abs(current_flow - lin) < eps:
             satisfied_nodes.append(current_node)
-        outdegree = len(current_node.outputs)
+        outdegree = 0
+        for output_name in current_node.outputs:
+            for next_node in graph.get_next_nodes(output_name):
+                if next_node is not None:
+                    outdegree += 1
+
         if outdegree != 0:
-            flow_increment = current_flow // outdegree
+            flow_increment = float(current_flow) / float(outdegree)
         for output_name in current_node.outputs:
             for next_node in graph.get_next_nodes(output_name):
                 if next_node is not None:
                     flow[next_node.name] += flow_increment
                     incnt[next_node.name] -= 1
-                if next_node is not None and incnt.get(next_node.name) == 0:
+                if next_node is not None and check_node_valid(incnt, graph, next_node):
                     queue.append([next_node, flow.get(next_node.name)])
                     visited.add(next_node)
     return satisfied_nodes
@@ -181,3 +199,51 @@ def create_bin_file(matched_files):
             bin_file_list += bin_file
         data.tofile(bin_file)
     return bin_files_list
+
+
+def input_completion(og, inputs_list):
+    """
+    """
+    input_need_list = []
+    index = 0
+    for node_input in inputs_list:
+        input_node = og.get_prev_node(node_input[0])
+        if input_node is not None:
+            input_need_list.append(f"{input_node.name}\.")
+    input_need_list = list(OrderedDict.fromkeys(input_need_list))
+    return input_need_list
+
+
+def check_node_valid(incnt, graph, node):
+    """
+    """
+    if incnt.get(node.name) == 0:
+        return True
+    else:
+        emp_cnt = 0
+        for node_input in node.inputs:
+            input_node = graph.get_prev_node(node_input)
+            if input_node is not None:
+                emp_cnt += 1
+        if emp_cnt == incnt.get(node.name):
+            return True
+    return False
+
+
+def check_node_valid_normal(og, node):
+    input_cnt = 0
+    for node_input in node.inputs:
+        input_node = og.get_prev_node(node_input)
+        if input_node is not None:
+            input_cnt += 1
+    if input_cnt == len(node.inputs):
+        return True
+    return False
+
+
+def check_res(res, endnode):
+    for row in res:
+        for ground_truth_name in row["GroundTruth"]:
+            if ground_truth_name == endnode.name:
+                return True
+    return False
