@@ -65,11 +65,13 @@ def subgraph_check(og, startnode, endnode, args, soc_version, onnx_data_path, in
     except Exception as e:
         utils.logger.error("Failed to extract subgraph model")
         raise AccuracyCompareException(utils.ACCRACY_COMPARISON_EXTRACT_ERROR) from e
-    utils.logger.info
+    utils.logger.info("Extracting model Sucess!")
     utils.logger.info("Start using atc to convert onnx to om file")
     atc_cmd = f"atc --framework=5 --soc_version={soc_version} --model={subgraph_onnx_file} --output=tmp"
     os.system(atc_cmd)
+    utils.logger.info("atc conversion Sucess!")
     #获得onnx与om模型后
+    utils.logger.info("Start to loading input data")
     subog = OnnxGraph.parse(subgraph_onnx_file)
     input_need_list = []
     inputs_list = [(ii.name, ii.shape) for ii in onnxruntime.InferenceSession(subgraph_onnx_file).get_inputs()]
@@ -83,29 +85,18 @@ def subgraph_check(og, startnode, endnode, args, soc_version, onnx_data_path, in
             if match_file.startwith(prefix):
                 sort_matched_files.append(match_file)
     bin_files_path = create_bin_file(sort_matched_files)
-    subgraph_om_path = './tmp.om'
-    model_path = os.path.realpath(subgraph_onnx_file)
-    om_model = subgraph_om_path
-    input_data_path = bin_files_path
-    cann_path = args.cann_path
-    tmp_out_path = './tmpres'
+    utils.logger.info("Loading data Finished!")
     tmp_out_path = os.path.realpath('./tmpres')
     if not os.path.exists(tmp_out_path):
         os.makedirs(tmp_out_path)
-    out_path = tmp_out_path
-    device = args.device
-    output_size = ""
-    output_nodes = ""
-    advisor = False
-    dym_shape_range = ""
-    dump = True
-    bin2npy = False
     time_dir = time.strftime("%Y%m%d%H%M%S",time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
-    cmg_args = CmpArgsAdapter(model_path, om_model, input_data_path, cann_path, out_path, "", device,
-                              output_size, output_nodes, advisor, dym_shape_range, dump, bin2npy)
+    cmg_args = CmpArgsAdapter(subgraph_onnx_file, subgraph_om_path, bin_files_path, args.cann_path, tmp_out_path, "", args.device,
+                              args.output_size, args.output_nodes, False, "", True, False)
     output_json_path = AtcUtils(cmg_args).convert_model_to_json()
+    utils.logger.info("Start to run comparision")
     res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
+    utils.logger.info("Comparision finished")
     clr_cmd = 'rm -rf ./tmp/ ./tmpres/'
     os.system(clr_cmd)
     if check_res(res, endnode):
