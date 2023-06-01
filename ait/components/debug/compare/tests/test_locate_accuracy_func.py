@@ -45,7 +45,7 @@ class TestClass:
         cls.init(TestClass)
 
     def init(self):
-        self.cann_path =  self.get_cann_path
+        self.cann_path = self.get_cann_path()
         self.args_1 = CmpArgsAdapter(
             os.path.join(self.get_base_path(), 'onnx/data2vec_1_108.onnx'), # gold_model
             os.path.join(self.get_base_path(), 'om/data2vec_1_108.om'), # om_model
