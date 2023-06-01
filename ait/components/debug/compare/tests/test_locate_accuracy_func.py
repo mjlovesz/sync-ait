@@ -38,8 +38,8 @@ class TestClass:
 
     def init(self):
         self.args_1 = CmpArgsAdapter(
-            os.path.join(self.get_base_path(), 'model/output1.onnx'), # gold_model
-            os.path.join(self.get_base_path(), 'model/output1.om'), # om_model
+            os.path.join(self.get_base_path(), 'onnx/data2vec_1_108.onnx'), # gold_model
+            os.path.join(self.get_base_path(), 'om/data2vec_1_108.om'), # om_model
             "", # input_data_path
             "/usr/local/Ascend/ascend-toolkit/latest/", # cann_path
             os.path.join(self.get_base_path(), '/test/output/'), # out_path
@@ -70,4 +70,4 @@ class TestClass:
         logger.info(self.args_1.dym_shape_range)
         logger.info(self.args_1.dump)
         logger.info(self.args_1.bin2npy)
-        # find_accuracy_interval(self.args_1, "endnode_name", "")
+        find_accuracy_interval(self.args_1, "Gather_1186", "")
