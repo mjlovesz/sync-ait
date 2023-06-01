@@ -389,11 +389,11 @@ class OnnxDumpData(DumpData):
             end_nodes_name.append(end_node.name)
 
         onnx_model_after_custom_op = old_onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
-        onnx_model_after_custom_op_path = os.path.join(
+        self.onnx_model_after_custom_op_path = os.path.join(
             self.model_dir, "after_custom_op_" + os.path.basename(self.args.model_path))
-        self.onnx_model_after_custom_op.save(onnx_model_after_custom_op_path)
+        onnx_model_after_custom_op.save(self.onnx_model_after_custom_op_path)
         utils.logger.info("extract model after custom op sucessed, save path: %s", 
-                          onnx_model_after_custom_op_path)
+                          self.onnx_model_after_custom_op_path)
         
     def _gen_after_custom_op_dump_data(self, npu_dump_path):
         try:
@@ -407,8 +407,8 @@ class OnnxDumpData(DumpData):
         # fix inputs info 
         onnx_model_after_custom_op = OnnxGraph.parse(self.onnx_model_after_custom_op_path)
 
-        def _update_sub_model_input(onnx_model_after_custom_op, input_tensor_info):
-            for model_input in onnx_model_after_custom_op.inputs:
+        def _update_sub_model_input(onnx_model, input_tensor_info):
+            for model_input in onnx_model.inputs:
                 if model_input.name == input_tensor_info['name']:
                     model_input.shape = input_tensor_info['shape']
                     model_input.dtype = input_tensor_info['type']

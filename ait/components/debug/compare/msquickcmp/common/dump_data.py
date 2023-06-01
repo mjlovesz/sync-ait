@@ -34,7 +34,7 @@ class DumpData(object):
         """
         pass
 
-    def generate_inputs_data(self):
+    def generate_inputs_data(self, npu_dump_data_path, use_aipp):
         """
         Function Description:
             generate inputs data
