@@ -267,3 +267,21 @@ opt_output_size = click.option(
     type=str,
     help='Specify real size of graph output.'
 )
+
+
+opt_subgraph_input_shape = click.option(
+    '-sis',
+    '--subgraph_input_shape',
+    'subgraph_input_shape',
+    type=str,
+    help='Specify the input shape of subgraph'
+)
+
+
+opt_subgraph_input_dtype = click.option(
+    '-sit',
+    '--subgraph_input_dtype',
+    'subgraph_input_dtype',
+    type=str,
+    help='Specify the input dtype of subgraph'
+)
