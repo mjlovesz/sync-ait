@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import logging
+import subprocess
 import sys
 import os
 import pytest
@@ -30,6 +31,13 @@ class TestClass:
         return os.path.join(_current_dir, "../tests")
 
     @classmethod
+    def get_cann_path(cls):
+        result = subprocess.run(['which', 'atc'], stdout=subprocess.PIPE)
+        atc_path = result.stdout.decode('utf-8').strip()
+        cann_path = atc_path[:-8]
+        return cann_path
+
+    @classmethod
     def setup_class(cls):
         """
         class level setup_class
@@ -37,11 +45,12 @@ class TestClass:
         cls.init(TestClass)
 
     def init(self):
+        self.cann_path =  self.get_cann_path
         self.args_1 = CmpArgsAdapter(
             os.path.join(self.get_base_path(), 'onnx/data2vec_1_108.onnx'), # gold_model
             os.path.join(self.get_base_path(), 'om/data2vec_1_108.om'), # om_model
             "", # input_data_path
-            "/usr/local/Ascend/ascend-toolkit/latest/", # cann_path
+            self.cann_path, # cann_path
             os.path.join(self.get_base_path(), '/test/output/'), # out_path
             "", # input_shape
             "0", # device
