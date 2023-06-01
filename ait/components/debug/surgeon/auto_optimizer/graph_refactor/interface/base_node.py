@@ -119,6 +119,10 @@ class Node(BaseNode):
     def attrs(self) -> Dict[str, object]:
         return self._attrs
 
+    @attrs.setter
+    def attrs(self, value):
+        self._attrs = value
+
     @property
     def domain(self) -> str:
         return self._domain

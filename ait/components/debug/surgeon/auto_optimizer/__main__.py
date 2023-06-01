@@ -16,13 +16,13 @@ import os
 from multiprocessing import Pool
 import pathlib
 from functools import partial
-from typing import List
+from typing import List, Optional
 
 import click
 from click_aliases import ClickAliasedGroup
 from click.exceptions import UsageError
 
-from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig
+from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern import KnowledgeFactory
@@ -41,6 +41,9 @@ from auto_optimizer.options import (
     opt_verbose,
     opt_soc,
     opt_device,
+    opt_big_kernel,
+    opt_attention_start_node,
+    opt_attention_end_node,
     opt_infer_test,
     opt_loop,
     opt_threshold,
@@ -73,6 +76,7 @@ def optimize_onnx(
     output_model: pathlib.Path,
     infer_test: bool,
     config: InferTestConfig,
+    big_kernel_config: Optional[BigKernelConfig] = None
 ) -> List[str]:
     '''Optimize a onnx file and save as a new file.'''
     try:
@@ -81,6 +85,20 @@ def optimize_onnx(
         logger.warning('%s model parse failed.', input_model.as_posix())
         logger.warning('exception: %s', exc)
         return []
+
+    optimizer.init_knowledges()
+
+    if big_kernel_config:
+        knowledge_cls = optimizer.knowledges.get("KnowledgeBigKernel")
+        if knowledge_cls:
+            knowledge_bk = knowledge_cls(
+                graph=graph,
+                start_node=big_kernel_config.attention_start_node,
+                end_node=big_kernel_config.attention_end_node
+            )
+            optimizer.knowledges.update({"KnowledgeBigKernel": knowledge_bk})
+    else:
+        optimizer.knowledges.pop("KnowledgeBigKernel")
 
     config.is_static = is_graph_input_static(graph)
     if infer_test:
@@ -202,6 +220,9 @@ def command_evaluate(
 @arg_input
 @arg_output
 @opt_optimizer
+@opt_big_kernel
+@opt_attention_start_node
+@opt_attention_end_node
 @opt_infer_test
 @opt_soc
 @opt_device
@@ -216,6 +237,9 @@ def command_optimize(
     output_model: pathlib.Path,
     optimizer: GraphOptimizer,
     infer_test: bool,
+    big_kernel: bool,
+    attention_start_node: str,
+    attention_end_node: str,
     soc: str,
     device: int,
     loop: int,
@@ -231,6 +255,15 @@ def command_optimize(
     if input_model_ == output_model_:
         logger.warning('output_model is input_model, refuse to overwrite origin model!')
         return
+
+    if big_kernel:
+        big_kernel_config = BigKernelConfig(
+            attention_start_node=attention_start_node,
+            attention_end_node=attention_end_node
+        )
+    else:
+        big_kernel_config = None
+
     config = InferTestConfig(
         converter='atc',
         soc=soc,
@@ -248,6 +281,7 @@ def command_optimize(
         output_model=output_model_,
         infer_test=infer_test,
         config=config,
+        big_kernel_config=big_kernel_config
     )
     if infer_test:
         logger.info('=' * 100)
