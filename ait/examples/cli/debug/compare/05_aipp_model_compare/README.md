@@ -3,7 +3,7 @@
 
 ## 介绍
 
-提供模型转换开启aipp参数的om模型与标杆模型进行精度比对的功能。
+提供模型转换开启aipp参数的om模型与onnx模型进行精度比对的功能。
 
 ## 运行示例
 
@@ -14,7 +14,7 @@ atc --framework 5 --model=./resnet18.onnx --output=resnet18_bs8 --input_format=N
 --input_shape="image:8,3,224,224" --log=debug --soc_version=Ascend310P3 \
 --insert_op_config=aipp.config --fusion_switch_file=fusionswitch.cfg
 ```
-其中fusionswitch.cfg内容如下：
+其中fusionswitch.cfg(算子不融合)内容如下：
 ```
 {
     "Switch":{
@@ -27,7 +27,7 @@ atc --framework 5 --model=./resnet18.onnx --output=resnet18_bs8 --input_format=N
     }
 }
 ```
-aipp.config内容如下：
+aipp.config内容样例如下：
 ```
 aipp_op{
     aipp_mode:static
@@ -55,4 +55,4 @@ aipp_op{
 ```sh
 ait debug compare -gm ./resnet18.onnx -om ./resnet18_bs8.om -s "image:8,3,224,224"
 ```
--gm为标杆onnx模型(必选)；-om参数请输入上述生成的算子不融合的om模型(必选)；-s为onnx模型输入的shape信息(**必选**)；如果需要指定输入(可选)，使用-i参数指定om模型的输入(npy或者bin文件)。
+-gm为标杆onnx模型(必选)；-om参数请输入上述生成的算子不融合的om模型(必选)；-s为onnx模型输入的shape信息(**必选**)；如果需要指定输入(可选)，请使用-i参数指定om模型的输入(npy或者bin文件)。
