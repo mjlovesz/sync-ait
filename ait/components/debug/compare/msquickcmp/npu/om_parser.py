@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ DTYPE_MAP = {"DT_FLOAT": np.float32, "DT_FLOAT16": np.float16, "DT_DOUBLE": np.f
              "DT_INT16": np.int16, "DT_INT32": np.int32, "DT_INT64": np.int64, "DT_UINT8": np.uint8,
              "DT_UINT16": np.uint16, "DT_UINT32": np.uint32, "DT_UINT64": np.uint64, "DT_BOOL": np.bool}
 OUT_NODES_NAME = "attr_model_out_nodes_name"
+AIPP_CONFIG_PATH = "aipp_config_path"
+LAYOUT_OBJECT = "layout"
 # special ops
 SPECIAL_OPS_TYPE = ("Cast", "TransData")
 
@@ -123,6 +125,14 @@ class OmParser(object):
         input_desc_array = self._get_data_input_desc()
         # extracts the input shape value
         return self._process_inputs(input_desc_array)
+
+    def get_shape_list(self):
+        """
+        Get shape list for input
+        """
+        input_desc_array = self._get_data_input_desc()
+        # extracts the input shape value
+        return self._process_inputs_to_list(input_desc_array)
 
     def get_net_output_count(self):
         """
@@ -197,6 +207,14 @@ class OmParser(object):
                 return True, dym_arg
         return False, None
 
+    def get_aipp_config_content(self):
+        for graph in self.json_object.get(GRAPH_OBJECT):
+            for op in graph.get(OP_OBJECT):
+                for attr in op.get(ATTR_OBJECT):
+                    if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == AIPP_CONFIG_PATH:
+                        return attr.get(VALUE_OBJECT).get(S_OBJECT)
+        return ''
+
     def _get_sub_graph_name(self):
         subgraph_name = []
         for graph in self.json_object.get(GRAPH_OBJECT):
@@ -263,7 +281,7 @@ class OmParser(object):
     def _get_range_shape_size_list(self, input_object):
         range_shape_size_list = []
         if ATTR_OBJECT not in input_object:
-            return
+            return range_shape_size_list
         shape_list = []
         for attr in input_object.get(ATTR_OBJECT):
             if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == SHAPE_RANGE_OBJECT:
@@ -302,3 +320,28 @@ class OmParser(object):
                     item_sum *= num
                 value.append(item_sum * data_type_size)
         return value
+
+    def _process_inputs_to_list(self, input_desc_array):
+        shape_lists = []
+        for input_object in input_desc_array:
+            shape_list = []
+            if SHAPE_OBJECT not in input_object:
+                utils.logger.error("Please specify the input shape of om model through -s param")
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+            data_type = DTYPE_MAP.get(input_object.get(DTYPE_OBJECT))
+            if not data_type:
+                utils.logger.error(
+                    "The dtype attribute does not support {} value.".format(input_object[DTYPE_OBJECT]))
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_KEY_ERROR)
+            data_type_size = np.dtype(data_type).itemsize
+            if self.shape_range:
+                utils.logger.error("Please specify the input shape of om model through -s param")
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+            else:
+                input_format = input_object.get(LAYOUT_OBJECT, "NCHW")
+                input_format_index = [input_format.index(x) for x in "NCHW"]
+                for num in input_object.get(SHAPE_OBJECT).get(DIM_OBJECT):
+                    shape_list.append(num)
+                shape_list = list(np.array(shape_list)[input_format_index])
+                shape_lists.append(shape_list)
+        return shape_lists

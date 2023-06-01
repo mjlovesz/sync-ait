@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,9 +35,9 @@ MSACCUCMP_DIR_PATH = "toolkit/tools/operator_cmp/compare"
 MSACCUCMP_FILE_NAME = ["msaccucmp.py", "msaccucmp.pyc"]
 PYC_FILE_TO_PYTHON_VERSION = "3.7.5"
 INFO_FLAG = "[INFO]"
-WRITE_FLAGS = os.O_WRONLY | os.O_CREAT
+WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
-READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
+READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT | os.O_TRUNC
 # index of each member in compare result_*.csv file
 NPU_DUMP_TAG = "NPUDump"
 GROUND_TRUTH_TAG = "GroundTruth"

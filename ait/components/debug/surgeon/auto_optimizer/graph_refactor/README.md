@@ -44,7 +44,13 @@ g.insert_node('dummy_add', argmax, mode='before') # 由于 argmax 为单输入�
 g.save('layernorm_modify.onnx')
 
 # 切分子图
-g.extract_subgraph("sub.onnx", "start_node_name", "end_node_name")
+g.extract_subgraph(
+    "sub.onnx", 
+    ["start_node_name1", "start_node_name2"],
+    ["end_node_name1", "end_node_name1"],
+    input_shape="input1:1,3,224,224;input2:1,3,64,64",
+    input_dtype="input1:float16;input2:int8"
+)
 ```
 
 ## 使用方法

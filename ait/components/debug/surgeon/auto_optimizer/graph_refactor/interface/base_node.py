@@ -25,23 +25,6 @@ class BaseNode(ABC):
         self._name: str = name
         self._op_type: str = op_type
 
-    @classmethod
-    @abstractmethod
-    def parse(cls, _) -> 'BaseNode':
-        raise NotImplementedError()
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @name.setter
-    def name(self, name: str) -> None:
-        self._name = name
-
-    @property
-    def op_type(self) -> str:
-        return self._op_type
-
     def __eq__(self, rhs: 'BaseNode') -> bool:
         if not isinstance(rhs, BaseNode):
             return False
@@ -49,6 +32,23 @@ class BaseNode(ABC):
 
     def __hash__(self) -> int:
         return hash((self.name, self.op_type))
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def op_type(self) -> str:
+        return self._op_type
+
+    @classmethod
+    @abstractmethod
+    def parse(cls, _) -> 'BaseNode':
+        raise NotImplementedError()
+
+    @name.setter
+    def name(self, name: str) -> None:
+        self._name = name
 
 
 class Node(BaseNode):
@@ -118,6 +118,10 @@ class Node(BaseNode):
     @property
     def attrs(self) -> Dict[str, object]:
         return self._attrs
+
+    @attrs.setter
+    def attrs(self, value):
+        self._attrs = value
 
     @property
     def domain(self) -> str:
@@ -191,13 +195,13 @@ class Initializer(BaseNode):
     def value(self) -> np.ndarray:
         return self._value
 
-    @classmethod
-    def parse(cls, _) -> 'Initializer':
-        raise NotImplementedError()
-
     @value.setter
     def value(self, value: np.ndarray) -> None:
         self._value = value
+
+    @classmethod
+    def parse(cls, _) -> 'Initializer':
+        raise NotImplementedError()
 
 
 class PlaceHolder(BaseNode):
@@ -243,10 +247,6 @@ class PlaceHolder(BaseNode):
     def shape(self) -> Sequence[Union[str, int]]:
         return self._shape
 
-    @classmethod
-    def parse(cls, _) -> 'PlaceHolder':
-        raise NotImplementedError()
-
     @dtype.setter
     def dtype(self, dtype: np.dtype) -> None:
         self._dtype = dtype
@@ -256,3 +256,7 @@ class PlaceHolder(BaseNode):
         if -1 in shape:
             warnings.warn('To represent the dynamic dimension int -1 is converted to str "-1".')
         self._shape = ['-1' if dim == -1 else dim for dim in shape]
+
+    @classmethod
+    def parse(cls, _) -> 'PlaceHolder':
+        raise NotImplementedError()

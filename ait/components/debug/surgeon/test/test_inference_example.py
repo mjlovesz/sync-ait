@@ -116,7 +116,10 @@ class TestResnet(unittest.TestCase):
                                             None, self.dataset))
 
         for i in range(worker):
-            pre_loop = (loop / worker + loop % worker) if i == 0 else loop / worker
+            try:
+                pre_loop = (loop / worker + loop % worker) if i == 0 else loop / worker
+            except ZeroDivisionError as err:
+                raise RuntimeError("divide zero error") from err
             self.pre_process_pool.apply_async(pre_process,
                                               args=(int(pre_loop), engine_cfg["pre_process"],
                                                     self.dataset, self.pre_queue))
@@ -149,8 +152,7 @@ class TestResnet(unittest.TestCase):
             inference = InferenceFactory.get_inference(engine["inference"]["type"])
             evaluate = EvaluateFactory.get_evaluate(engine["evaluate"]["type"])
         except Exception as err:
-            raise RuntimeError("get params failed error={}".format(err)) from err
-
+            raise RuntimeError("get params failed error=%s", err) from err
         return dataset, pre_process, post_process, inference, evaluate
 
 

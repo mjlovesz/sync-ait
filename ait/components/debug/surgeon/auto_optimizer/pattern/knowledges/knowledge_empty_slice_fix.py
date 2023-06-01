@@ -110,11 +110,12 @@ class KnowledgeEmptySliceFix(KnowledgeBase):
                 continue
             output_name = slice_empty.outputs[0]
             for node in graph.get_next_nodes(output_name):
+                target_name = output_name
                 if op.ne(node.op_type, 'Concat'):
                     # next node is not concat, do nothing
                     continue
                 # remove the output of empty slice from it's inputs
-                node.inputs = list(filter(lambda x: x != output_name, node.inputs))
+                node.inputs = list(filter(lambda x: x != target_name, node.inputs))
                 if len(node.inputs) != 1:
                     continue
                 # number of concat's inputs equal to 1 after removal

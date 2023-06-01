@@ -71,9 +71,9 @@ modifier.Modifier = class {
         let name2NodeOutput = 'out_' + modelNode.outputs[0].arguments[0].name
         if (this.name2NodeStates.has(name2NodeOutput)) {
             this.name2NodeStates.set(name2NodeOutput, 'Exist');
-        } else {
-            this.addedOutputs.add(modelNode.outputs[0].arguments[0].name);
         }
+
+        this.addedOutputs.add(modelNode.outputs[0].arguments[0].name);
         this.applyAndUpdateView();
     }
     addModelInput(node_name, input_name) {
@@ -82,9 +82,9 @@ modifier.Modifier = class {
         // this.addedInputs.add(modelNode.inputs[0].arguments[0].name);
         if (this.name2NodeStates.has(input_name)) {
             this.name2NodeStates.set(input_name, 'Exist');
-        } else {
-            this.addedInputs.add(input_name)
         }
+        
+        this.addedInputs.add(input_name)
         this.applyAndUpdateView();
     }
 

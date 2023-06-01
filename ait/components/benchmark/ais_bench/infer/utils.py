@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
-WRITE_FLAGS = os.O_WRONLY | os.O_CREAT
+WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 
@@ -38,6 +38,18 @@ def list_split(list_a, n, padding_file):
         if len(every_chunk) < n:
             every_chunk = every_chunk + \
                 [padding_file for _ in range(n-len(every_chunk))]
+        yield every_chunk
+
+
+def list_share(list_a, count, num, left):
+    head = 0
+    for i in range(count):
+        if i < left:
+            every_chunk = list_a[head: head + num + 1]
+            head = head + num + 1
+        else:
+            every_chunk = list_a[head: head + num]
+            head = head + num
         yield every_chunk
 
 

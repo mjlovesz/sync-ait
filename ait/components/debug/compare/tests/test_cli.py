@@ -1,4 +1,4 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,18 +24,18 @@ from msquickcmp.common import utils
 
 @pytest.fixture(scope="module", autouse=True)
 def compare_cli() -> None:
-    cmp_args = CmpArgsAdapter(gold_model="tmp/fake.onnx", 
-                              om_model="tmp/fake.onnx",
-                              input_data_path = "", 
-                              cann_path="/usr/local/Ascend/ascend-toolkit/latest/", 
-                              out_path="", 
+    cmp_args = CmpArgsAdapter(gold_model="./fake.onnx",
+                              om_model="./fake.om",
+                              input_data_path = "",
+                              cann_path="/usr/local/Ascend/ascend-toolkit/latest/",
+                              out_path="",
                               input_shape="",
-                              device=0,
-                              output_size="", 
-                              output_nodes="", 
-                              advisor=False, 
-                              dym_shape_range="", 
-                              dump=True, 
+                              device='0',
+                              output_size="",
+                              output_nodes="",
+                              advisor=False,
+                              dym_shape_range="",
+                              dump=True,
                               bin2npy=False)
     yield cmp_args
 
