@@ -15,7 +15,9 @@ from msquickcmp.atc.atc_utils import AtcUtils
 from msquickcmp.common import utils
 from msquickcmp.net_compare import analyser
 from msquickcmp.net_compare.net_compare import NetCompare
+from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.npu.npu_dump_data import NpuDumpData
+from msquickcmp.common.utils import get_shape_to_directory_name
 from msquickcmp.npu.npu_dump_data_bin2npy import data_convert
 from msquickcmp.cmp_process import run
 
