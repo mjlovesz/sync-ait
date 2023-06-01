@@ -58,8 +58,7 @@ def test_init_onnx_dump_data(cmp_args):
 
     assert 'before_custom_op_model.onnx' in os.listdir('./model')
     assert 'after_custom_op_model.onnx' in os.listdir('./model')
-
-    assert golden_dump.inputs_map['boxes_all'].shape == (1000,80,4)
+    assert golden_dump.inputs_map['boxes_all'].shape == (1000, 80, 4)
 
 
 def test_onnx_dump_data(cmp_args):
