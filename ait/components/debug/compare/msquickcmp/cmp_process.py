@@ -102,24 +102,24 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
     npu_dump = NpuDumpData(args, output_json_path)
 
     if use_aipp:
-        # 1.a generate npu inputs data
+        # generate npu inputs data
         npu_dump.generate_inputs_data()
-        # 2. generate npu dump data
+        # generate npu dump data
         npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
-        # 1.b generate onnx inputs data
+        # generate onnx inputs data
         golden_dump.generate_inputs_data(npu_dump_data_path, use_aipp)
     else:
-        # 1. generate onnx and npu inputs data
+        # generate onnx and npu inputs data
         golden_dump.generate_inputs_data('', use_aipp)
-        # 2. generate npu dump data
+        # generate npu dump data
         npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
 
     expect_net_output_node = npu_dump.get_expect_output_name()
 
-    # 3. convert data from bin to npy if --convert is used
+    # convert data from bin to npy if --convert is used
     npu_dump_path = data_convert(npu_dump_data_path, npu_net_output_data_path, args)
 
-    # 4. generate dump data by golden model
+    # generate dump data by golden model
     golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_path)
     golden_net_output_info = golden_dump.get_net_output_info()
 
