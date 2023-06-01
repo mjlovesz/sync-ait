@@ -61,7 +61,7 @@ def subgraph_check(og, startnode, endnode, args, soc_version, onnx_data_path, in
     subgraph_onnx_file = os.path.realpath(subgraph_onnx_file)
     utils.logger.info(f"Start extracting subgraph model, model saved in {subgraph_onnx_file}")
     try:
-        og.extract_subgraph(startnode.name, endnode.name, subgraph_onnx_file)
+        og.extract_subgraph([startnode.name], [endnode.name], subgraph_onnx_file)
     except Exception as e:
         utils.logger.error("Failed to extract subgraph model")
         raise AccuracyCompareException(utils.ACCRACY_COMPARISON_EXTRACT_ERROR) from e
@@ -111,7 +111,7 @@ def bin_divide(og, startnode, endnode, args, soc_version, onnx_data_path, input_
     Return:
         an accuracy error interval list
     """
-    og.extract_subgraph(startnode.name, endnode.name, './tmp.onnx')
+    og.extract_subgraph([startnode.name], [endnode.name], './tmp.onnx')
     subog = OnnxGraph.parse('./tmp.onnx')
 
     # 直线化
