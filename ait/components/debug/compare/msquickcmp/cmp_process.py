@@ -37,7 +37,7 @@ from msquickcmp.accuracy_locat.accuracy_locat import find_accuracy_interval
 
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
-error_interval_info_file = "error_interval_info.txt"
+ERROR_INTERVAL_INFO_FILE = "error_interval_info.txt"
 
 
 def _generate_golden_data_model(args):
@@ -156,7 +156,7 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
             endnode_names_list = res[0]["GroundTruth"].split(",")
             endnode_name = endnode_names_list[0]
             error_node_list = find_accuracy_interval(args, endnode_name)
-            error_interval_info_file = os.path.join(error_interval_info_file, args.out_path)
+            error_interval_info_file = os.path.join(ERROR_INTERVAL_INFO_FILE, args.out_path)
             with os.fdopen(os.open(error_interval_info_file, READ_WRITE_FLAGS, WRITE_MODES), "a+") as fp_writer:
                 output_error_interval_info(fp_writer, error_node_list)
 
