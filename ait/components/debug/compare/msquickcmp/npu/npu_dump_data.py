@@ -232,9 +232,12 @@ class NpuDumpData(DumpData):
             utils.logger.error("atc insert_op_config file's src_image_size_h number "
                                   "does not equal src_image_size_w")
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
-        inputs_list = parse_input_shape_to_list(self.arguments.input_shape)
+        if self.arguments.input_shape:
+            inputs_list = parse_input_shape_to_list(self.arguments.input_shape)
+        else:
+            inputs_list = self.om_parser.get_shape_list()
         if len(inputs_list) != len(src_image_size_h):
-            utils.logger.error("inputs number is not equal to aipp inputs number")
+            utils.logger.error("inputs number is not equal to aipp inputs number, please check the -s param")
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
         # currently, onnx only support input format nchw
         h_position = 2
