@@ -74,7 +74,6 @@ class OnnxDumpData(DumpData):
         self.inputs_map = {}
 
         self._create_dir()
-        self.onnx_model_before_custom_op = None
         self.onnx_model_before_custom_op_path = ""
         self.new_onnx_model_before_custom_op_path = ""
         self.onnx_model_after_custom_op_path = ""
@@ -335,10 +334,10 @@ class OnnxDumpData(DumpData):
             end_node = old_onnx_graph.get_prev_node(custom_op_input)
             end_nodes_name.append(end_node.name)
         
-        self.onnx_model_before_custom_op = old_onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
+        onnx_model_before_custom_op = old_onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
         self.onnx_model_before_custom_op_path = os.path.join(
             self.model_dir, "before_custom_op_" + os.path.basename(self.args.model_path))
-        self.onnx_model_before_custom_op.save(self.onnx_model_before_custom_op_path)
+        onnx_model_before_custom_op.save(self.onnx_model_before_custom_op_path)
         utils.logger.info("extract model before custom op sucessed, save path: %s", 
                           self.onnx_model_before_custom_op_path)
         
@@ -360,12 +359,12 @@ class OnnxDumpData(DumpData):
             end_node = old_onnx_graph.get_prev_node(graph_output.name)
             end_nodes_name.append(end_node.name)
 
-        self.onnx_model_after_custom_op = old_onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
-        self.onnx_model_after_custom_op_path = os.path.join(
+        onnx_model_after_custom_op = old_onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
+        onnx_model_after_custom_op_path = os.path.join(
             self.model_dir, "after_custom_op_" + os.path.basename(self.args.model_path))
-        self.onnx_model_after_custom_op.save(self.onnx_model_after_custom_op_path)
+        self.onnx_model_after_custom_op.save(onnx_model_after_custom_op_path)
         utils.logger.info("extract model after custom op sucessed, save path: %s", 
-                          self.onnx_model_after_custom_op_path)
+                          onnx_model_after_custom_op_path)
         
     def _gen_after_custom_op_dump_data(self, npu_dump_path):
         try:
@@ -373,8 +372,9 @@ class OnnxDumpData(DumpData):
         except ModuleNotFoundError as err:
             utils.logger.error("auto_optimizer is not install!")
             raise err
-
-        inputs_map, inputs_tensor_info = self._get_npu_dump_data_by_custom_op(npu_dump_path)
+        
+        inputs_tensor_info = self._get_after_custom_op_inputs_ternsor_info()
+        inputs_map, inputs_tensor_info = self._get_npu_dump_data_by_custom_op(npu_dump_path, inputs_tensor_info)
         # fix inputs info 
         onnx_model_after_custom_op = OnnxGraph.parse(self.onnx_model_after_custom_op_path)
 
@@ -399,8 +399,7 @@ class OnnxDumpData(DumpData):
                              onnx.load(self.onnx_model_after_custom_op_path), 
                              net_output_node)
 
-    def _get_npu_dump_data_by_custom_op(self, npu_dump_path):
-        inputs_tensor_info = self._get_after_custom_op_inputs_ternsor_info()
+    def _get_npu_dump_data_by_custom_op(self, npu_dump_path, inputs_tensor_info):
         inputs_map = {}
 
         for item in os.listdir(npu_dump_path):
