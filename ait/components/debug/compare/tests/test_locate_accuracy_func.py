@@ -16,11 +16,11 @@ import subprocess
 import sys
 import os
 import pytest
-from msquickcmp.cmp_process import run
-from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
-from msquickcmp.atc.atc_utils import AtcUtils
-from msquickcmp.common import utils
-from msquickcmp.accuracy_locat.accuracy_locat import find_accuracy_interval
+from compare.msquickcmp.cmp_process import run
+from compare.msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
+from compare.msquickcmp.atc.atc_utils import AtcUtils
+from compare.msquickcmp.common import utils
+from compare.msquickcmp.accuracy_locat.accuracy_locat import find_accuracy_interval
 
 logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
