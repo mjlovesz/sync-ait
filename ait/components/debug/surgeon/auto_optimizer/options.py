@@ -207,6 +207,36 @@ opt_infer_test = click.option(
 )
 
 
+opt_big_kernel = click.option(
+    '-bk',
+    '--big-kernel',
+    'big_kernel',
+    is_flag=True,
+    default=False,
+    help='Whether to apply big kernel optimize knowledge. Default to False.'
+)
+
+
+opt_attention_start_node = click.option(
+    '-as',
+    '--attention-start-node',
+    'attention_start_node',
+    type=str,
+    default="",
+    help='Start node of the first attention block, it must be set when apply big kernel knowledge.',
+)
+
+
+opt_attention_end_node = click.option(
+    '-ae',
+    '--attention-end-node',
+    'attention_end_node',
+    type=str,
+    default="",
+    help='End node of the first attention block, it must be set when apply big kernel knowledge.',
+)
+
+
 opt_input_shape = click.option(
     '--input-shape',
     'input_shape',
