@@ -144,25 +144,25 @@
           </grid>
           <component id="dcd0d" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="modelFileBrowse">
             <constraints>
-              <grid row="0" column="2" row-span="1" col-span="2" vsize-policy="3" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
           </component>
           <component id="35bad" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="inputFileBrowse">
             <constraints>
-              <grid row="1" column="2" row-span="1" col-span="2" vsize-policy="3" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
           </component>
           <component id="13f3f" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="outputPathBrowse">
             <constraints>
-              <grid row="3" column="2" row-span="1" col-span="2" vsize-policy="3" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
           </component>
           <component id="73fdf" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="outputDirnameBrowse">
             <constraints>
-              <grid row="4" column="2" row-span="1" col-span="2" vsize-policy="3" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+              <grid row="4" column="2" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
           </component>
