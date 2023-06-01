@@ -1,3 +1,17 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from collections import deque
 from collections import OrderedDict
 import re
@@ -19,6 +33,7 @@ from msquickcmp.npu.npu_dump_data import NpuDumpData
 from msquickcmp.npu.npu_dump_data_bin2npy import data_convert
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import run
+
 
 def find_accuracy_interval(args, endnode_name, input_shape):
     """
@@ -89,9 +104,10 @@ def subgraph_check(og, startnode, endnode, args, soc_version, onnx_data_path, in
     tmp_out_path = os.path.realpath('./tmpres')
     if not os.path.exists(tmp_out_path):
         os.makedirs(tmp_out_path)
-    time_dir = time.strftime("%Y%m%d%H%M%S",time.localtime())
+    time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
-    cmg_args = CmpArgsAdapter(subgraph_onnx_file, subgraph_om_path, bin_files_path, args.cann_path, tmp_out_path, "", args.device,
+    cmg_args = CmpArgsAdapter(subgraph_onnx_file, subgraph_om_path, bin_files_path, 
+                              args.cann_path, tmp_out_path, "", args.device,
                               args.output_size, args.output_nodes, False, "", True, False)
     output_json_path = AtcUtils(cmg_args).convert_model_to_json()
     utils.logger.info("Start to run comparision")
@@ -155,7 +171,7 @@ def calculate_flow(graph, startnode, endnode):
     flow[startnode.name] = float(lin)
     satisfied_nodes = []
     visited = set()
-    queue = deque([(startnode, flow[startnode.name])])
+    queue = deque([(startnode, flow.get(startnode.name))])
     visited.add(startnode)
     while queue:
         current_node, current_flow = queue.popleft()
