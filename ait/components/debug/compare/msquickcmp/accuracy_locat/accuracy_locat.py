@@ -17,6 +17,7 @@ from msquickcmp.net_compare import analyser
 from msquickcmp.net_compare.net_compare import NetCompare
 from msquickcmp.npu.npu_dump_data import NpuDumpData
 from msquickcmp.npu.npu_dump_data_bin2npy import data_convert
+from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import run
 
 def find_accuracy_interval(args, endnode_name, input_shape):
@@ -55,22 +56,19 @@ def find_accuracy_interval(args, endnode_name, input_shape):
 
 
 def subgraph_check(og, startnode, endnode, args, soc_version, onnx_data_path, input_shape):
-    """
-    Function:
-        check if subgraph has accuracy error relative to endnode
-    Return: 
-        true if error occurred
-        false otherwise
-    """
     #onnx临时文件，为切分子图后的模型文件
     subgraph_onnx_file = './tmp.onnx'
     subgraph_onnx_file = os.path.realpath(subgraph_onnx_file)
-    og.extract_subgraph(startnode.name, endnode.name, subgraph_onnx_file)
-
-    #执行atc转换
+    utils.logger.info(f"Start extracting subgraph model, model saved in {subgraph_onnx_file}")
+    try:
+        og.extract_subgraph(startnode.name, endnode.name, subgraph_onnx_file)
+    except Exception as e:
+        utils.logger.error("Failed to extract subgraph model")
+        raise AccuracyCompareException(utils.ACCRACY_COMPARISON_EXTRACT_ERROR) from e
+    utils.logger.info
+    utils.logger.info("Start using atc to convert onnx to om file")
     atc_cmd = f"atc --framework=5 --soc_version={soc_version} --model={subgraph_onnx_file} --output=tmp"
     os.system(atc_cmd)
-
     #获得onnx与om模型后
     subog = OnnxGraph.parse(subgraph_onnx_file)
     input_need_list = []
