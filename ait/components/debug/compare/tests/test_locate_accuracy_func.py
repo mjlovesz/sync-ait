@@ -16,7 +16,7 @@ import subprocess
 import sys
 import os
 import pytest
-# from msquickcmp.cmp_process import run
+from msquickcmp.cmp_process import run
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.atc.atc_utils import AtcUtils
 from msquickcmp.common import utils
