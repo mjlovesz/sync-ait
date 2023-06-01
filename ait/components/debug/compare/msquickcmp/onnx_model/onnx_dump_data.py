@@ -74,6 +74,7 @@ class OnnxDumpData(DumpData):
         self.inputs_map = {}
 
         self._create_dir()
+        self.onnx_model_before_custom_op = None
         self.onnx_model_before_custom_op_path = ""
         self.new_onnx_model_before_custom_op_path = ""
         self.onnx_model_after_custom_op_path = ""
@@ -92,25 +93,6 @@ class OnnxDumpData(DumpData):
             if input_shape[index] != value:
                 utils.logger.error(message)
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
-  
-
-    def _generate_onnx_model_dump_data(self, onnx_model_witch_outputs_path, origin_onnx_model_path):
-        """
-        Function description:
-            generate onnx model dump data
-        Parameter:
-            none
-        Return Value:
-            onnx model dump data directory
-        Exception Description:
-            none
-        """
-        session = self._load_session(onnx_model_witch_outputs_path)
-        net_output_node = self._get_net_output_node(origin_onnx_model_path)
-        dump_bins = self._run_model(session, self.inputs_map)
-        origin_onnx_model = onnx.load(origin_onnx_model_path)
-        self._save_dump_data(dump_bins, self.onnx_dump_data_dir, origin_onnx_model, net_output_node)
-        return self.onnx_dump_data_dir
 
     def generate_inputs_data(self):
         """
@@ -176,6 +158,24 @@ class OnnxDumpData(DumpData):
                 self.model_dir = os.path.join(self.args.out_path, model_relative_name)
                 utils.create_directory(self.model_dir)
 
+    def _generate_onnx_model_dump_data(self, onnx_model_witch_outputs_path, origin_onnx_model_path):
+        """
+        Function description:
+            generate onnx model dump data
+        Parameter:
+            none
+        Return Value:
+            onnx model dump data directory
+        Exception Description:
+            none
+        """
+        session = self._load_session(onnx_model_witch_outputs_path)
+        net_output_node = self._get_net_output_node(origin_onnx_model_path)
+        dump_bins = self._run_model(session, self.inputs_map)
+        origin_onnx_model = onnx.load(origin_onnx_model_path)
+        self._save_dump_data(dump_bins, self.onnx_dump_data_dir, origin_onnx_model, net_output_node)
+        return self.onnx_dump_data_dir
+    
     def _modify_model_add_outputs_nodes(self, onnx_model_path):
         old_onnx_model = onnx.load(onnx_model_path)
         utils.logger.info("load model success")
@@ -373,16 +373,16 @@ class OnnxDumpData(DumpData):
         except ModuleNotFoundError as err:
             utils.logger.error("auto_optimizer is not install!")
             raise err
-        
-        inputs_map, inputs_tensor_info = self._get_npu_dump_data_by_custom_op(npu_dump_path)
 
+        inputs_map, inputs_tensor_info = self._get_npu_dump_data_by_custom_op(npu_dump_path)
         # fix inputs info 
         onnx_model_after_custom_op = OnnxGraph.parse(self.onnx_model_after_custom_op_path)
+
         def _update_sub_model_input(onnx_model_after_custom_op, input_tensor_info):
-            for input in onnx_model_after_custom_op.inputs:
-                if input.name == input_tensor_info['name']:
-                    input.shape = input_tensor_info['shape']
-                    input.dtype = input_tensor_info['type']
+            for model_input in onnx_model_after_custom_op.inputs:
+                if model_input.name == input_tensor_info['name']:
+                    model_input.shape = input_tensor_info['shape']
+                    model_input.dtype = input_tensor_info['type']
 
         for input_tensor_info in inputs_tensor_info:
             _update_sub_model_input(onnx_model_after_custom_op, input_tensor_info)
@@ -404,7 +404,6 @@ class OnnxDumpData(DumpData):
         inputs_map = {}
 
         for item in os.listdir(npu_dump_path):
-
             # file name format: [Optype].[OpName].{time}.[dump_type].[index].npy
             file_name_info = item.split('.')
             op_name = file_name_info[1]
