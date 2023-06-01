@@ -49,10 +49,10 @@ class TestClass:
         self.args_1 = CmpArgsAdapter(
             os.path.join(self.get_base_path(), 'onnx/data2vec_1_108.onnx'), # gold_model
             os.path.join(self.get_base_path(), 'om/data2vec_1_108.om'), # om_model
-            "input_ids:1,108;attention_mask:1,108", # input_data_path
+            "", # input_data_path
             self.cann_path, # cann_path
             os.path.join(self.get_base_path(), '/test/output/'), # out_path
-            "", # input_shape
+            "input_ids:1,108;attention_mask:1,108", # input_shape
             "0", # device
             "", # output_size
             "", # output_nodes
