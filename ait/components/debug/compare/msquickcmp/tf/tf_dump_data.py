@@ -49,16 +49,22 @@ class TfDumpData(DumpData):
         self.input_path = self.args.input_path
         self.net_output_name = []
         self.net_output = {}
+        self._load_graph()
+        self._create_dir()
 
-    def generate_dump_data(self):
+    def generate_inputs_data(self, npu_dump_data_path, use_aipp):
+        """
+        Generate tf model inputs data
+        :return tf model inputs data directory
+        """
+        inputs_tensor = tf_common.get_inputs_tensor(self.global_graph, self.args.input_shape)
+        self._make_inputs_data(inputs_tensor)
+
+    def generate_dump_data(self, npu_dump_path):
         """
         Generate tf model dump data
         :return tf model dump data directory
         """
-        self._load_graph()
-        self._create_dir()
-        inputs_tensor = tf_common.get_inputs_tensor(self.global_graph, self.args.input_shape)
-        self._make_inputs_data(inputs_tensor)
         outputs_tensor = self._get_outputs_tensor()
         if tf_common.check_tf_version(tf_common.VERSION_TF2X):
             self._run_model_tf2x(outputs_tensor)
