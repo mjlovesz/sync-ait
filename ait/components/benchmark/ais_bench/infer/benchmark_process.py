@@ -392,7 +392,11 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
     chunks = list(list_split(fileslist, chunks_elements, None))
     fileslist = [ [] for _ in range(jobs) ]
     for _, chunk in enumerate(chunks):
-        splits_elements = int(len(chunk) / jobs)
+        try:
+            splits_elements = int(len(chunk) / jobs)
+        except ZeroDivisionError as err:
+            logger.error("ZeroDivisionError: intensors_desc is empty")
+            raise RuntimeError("error zero division") from err
         splits_left = len(chunk) % jobs
         splits = list(list_share(chunk, jobs, splits_elements, splits_left))
         for j, split in enumerate(splits):
