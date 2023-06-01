@@ -27,7 +27,7 @@ class TestClass:
     @classmethod
     def get_base_path(cls):
         _current_dir = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(_current_dir, "../test/testdata/")
+        return os.path.join(_current_dir, "../test")
 
     @classmethod
     def setup_class(cls):
