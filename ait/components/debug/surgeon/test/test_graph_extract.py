@@ -52,8 +52,8 @@ def create_subgraph(name: str = "test_subgraph"):
         inputs=[input_],
         outputs=[output],
         value_infos=[
-            OnnxPlaceHolder('sqrt2_output', np.dtype('float32'), [1, 3, 224, 224]),
             OnnxPlaceHolder('relu1_output', np.dtype('float32'), [1, 3, 224, 224]),
+            OnnxPlaceHolder('sqrt2_output', np.dtype('float32'), [1, 3, 224, 224]),
         ]
     )
 
