@@ -147,6 +147,12 @@ class KnowledgeBase(object):
         pattern = self.__get_current_pattern()
         if pattern is None:
             return []
+        return self.search_subgraph(graph, pattern)
+
+    def search_subgraph(self, graph, pattern):
+        """
+        根据给定的pattern，搜索子图
+        """
         matcher = Matcher(graph, pattern)
         candidate_nodes = matcher.get_candidate_nodes()
 
