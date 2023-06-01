@@ -16,7 +16,7 @@ import subprocess
 import sys
 import os
 import pytest
-from msquickcmp.cmp_process import run
+from msquickcmp import cmp_process
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.atc.atc_utils import AtcUtils
 from msquickcmp.common import utils
@@ -83,7 +83,7 @@ class TestClass:
         if not input_shapes:
             input_shapes.append("")
         for input_shape in input_shapes:
-            res = run(args, input_shape, output_json_path, original_out_path, use_cli)
+            res = cmp_process.run(args, input_shape, output_json_path, original_out_path, use_cli)
 
     @classmethod
     def setup_class(cls):
