@@ -8,8 +8,12 @@
 ## 使用景约束
 
 1、只支持标杆模型为onnx文件；
+
 2、onnx模型中只存在一个自定义算子；
+
 3、通过该算子，能够将模型一分为二。
+
+4、当前已验证模型：[Retinanet](https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/contrib/cv/detection/Retinanet)
 
 例如如下模型中：
 
