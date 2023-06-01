@@ -7,14 +7,14 @@
 
 ## 运行示例
 
-1. 指定-s或input-shape进行精度对比。
+1. 指定-s或--input-shape进行精度对比。
   ```sh
   ait debug compare -gm /home/HwHiAiUser/onnx_prouce_data/resnet_offical.onnx -om /home/HwHiAiUser/onnx_prouce_data/model/resnet50.om \
   -s "image:1,3,224,224"
   ```
 如果模型为动态shape模型，则会以该-s输入的shape信息进行推理和精度对比。
 
-2. 指定-dr或--dym-shape-range进行多个shape情况的精度对比。
+2. 指定-dr或--dym-shape-range进行多个shape情况的精度对比。(优先级比-s,--input-shape更高)
   ```sh
   ait debug compare -gm /home/HwHiAiUser/onnx_prouce_data/resnet_offical.onnx -om /home/HwHiAiUser/onnx_prouce_data/model/resnet50.om \
   -dr "image:1,3,224-256,224~226"
