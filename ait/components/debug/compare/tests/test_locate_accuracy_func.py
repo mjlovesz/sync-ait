@@ -46,8 +46,8 @@ class TestClass:
             os.path.join(cls.get_base_path(), 'onnx/data2vec_1_108.onnx'), # gold_model
             os.path.join(cls.get_base_path(), 'om/data2vec_1_108.om'), # om_model
             "{},{}".format(
-                os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_0'),
-                os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_1')
+                os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_0.bin'),
+                os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_1.bin')
             ), # input_data_path
             cls.cann_path, # cann_path
             os.path.join(cls.get_base_path(), '/test/data2vec/output/'), # out_path
@@ -61,6 +61,63 @@ class TestClass:
             False # bin2npy
         )
         return args_data2vec_cmp
+
+    @classmethod
+    def set_accumulate_acc_args(cls):
+        args_data2vec_acc = CmpArgsAdapter(
+            os.path.join(cls.get_base_path(), 'onnx/data2vec_1_108.onnx'), # gold_model
+            os.path.join(cls.get_base_path(), 'om/data2vec_1_108.om'), # om_model
+            "", # input_data_path
+            cls.cann_path, # cann_path
+            os.path.join(cls.get_base_path(), '/test/data2vec/output/log/'), # out_path
+            "", # input_shape
+            "0", # device
+            "", # output_size
+            "", # output_nodes
+            False, # advisor
+            "", # dym_shape_range
+            True, # dump
+            False # bin2npy
+        )
+        return args_data2vec_acc
+
+    @classmethod
+    def set_single_node_cmp_args(cls):
+        args_gelu_cmp = CmpArgsAdapter(
+            os.path.join(cls.get_base_path(), 'onnx/gelu.onnx'), # gold_model
+            os.path.join(cls.get_base_path(), 'om/gelu.om'), # om_model
+            os.path.join(cls.get_base_path(), 'input_datas/gelu/695.npy'), # input_data_path
+            cls.cann_path, # cann_path
+            os.path.join(cls.get_base_path(), '/test/gelu/output/'), # out_path
+            "", # input_shape
+            "0", # device
+            "", # output_size
+            "", # output_nodes
+            False, # advisor
+            "", # dym_shape_range
+            True, # dump
+            False # bin2npy
+        )
+        return args_gelu_cmp
+
+    @classmethod
+    def set_single_node_acc_args(cls):
+        args_gelu_acc = CmpArgsAdapter(
+            os.path.join(cls.get_base_path(), 'onnx/gelu.onnx'), # gold_model
+            os.path.join(cls.get_base_path(), 'om/gelu.om'), # om_model
+            "", # input_data_path
+            cls.cann_path, # cann_path
+            os.path.join(cls.get_base_path(), '/test/gelu/output/log/'), # out_path
+            "", # input_shape
+            "0", # device
+            "", # output_size
+            "", # output_nodes
+            False, # advisor
+            "", # dym_shape_range
+            True, # dump
+            False # bin2npy
+        )
+        return args_gelu_acc
 
     @classmethod
     def check_and_run(cls, args:CmpArgsAdapter, use_cli:bool):
@@ -94,40 +151,51 @@ class TestClass:
 
     def init(self):
         self.cann_path = self.get_cann_path()
+
         self.args_data2vec_cmp = self.set_accumulate_cmp_args
         self.check_and_run(self.args_data2vec_cmp, True)
+        self.args_data2vec_acc = self.set_accumulate_acc_args
 
+        self.args_gelu_cmp = self.set_single_node_cmp_args
+        self.check_and_run(self.args_gelu_cmp, True)
+        self.args_gelu_acc = self.set_single_node_acc_args
 
-        self.args_data2vec_acc = CmpArgsAdapter(
-            os.path.join(self.get_base_path(), 'onnx/data2vec_1_108.onnx'), # gold_model
-            os.path.join(self.get_base_path(), 'om/data2vec_1_108.om'), # om_model
-            "", # input_data_path
-            self.cann_path, # cann_path
-            os.path.join(self.get_base_path(), '/test/data2vec/output/log/'), # out_path
-            "", # input_shape
-            "0", # device
-            "", # output_size
-            "", # output_nodes
-            False, # advisor
-            "", # dym_shape_range
-            True, # dump
-            False # bin2npy
-        )
+ # =======================testcases=============================
 
- # testcases
-
-    def test_compare_accumlate_accuracy_situation(self):
-        logger.info(self.args_data2vec_acc.model_path)
-        logger.info(self.args_data2vec_acc.offline_model_path)
-        logger.info(self.args_data2vec_acc.input_path)
+    def test_compare_accumlate_accuracy_area_situation(self):
+        '''
+            存在累计误差区间的场景
+        '''
+        # logger.info(self.args_data2vec_acc.model_path)
+        # logger.info(self.args_data2vec_acc.offline_model_path)
+        # logger.info(self.args_data2vec_acc.input_path)
         logger.info(self.args_data2vec_acc.cann_path)
         logger.info(self.args_data2vec_acc.out_path)
-        logger.info(self.args_data2vec_acc.input_shape)
-        logger.info(self.args_data2vec_acc.device)
-        logger.info(self.args_data2vec_acc.output_size)
-        logger.info(self.args_data2vec_acc.output_nodes)
-        logger.info(self.args_data2vec_acc.advisor)
-        logger.info(self.args_data2vec_acc.dym_shape_range)
-        logger.info(self.args_data2vec_acc.dump)
-        logger.info(self.args_data2vec_acc.bin2npy)
+        # logger.info(self.args_data2vec_acc.input_shape)
+        # logger.info(self.args_data2vec_acc.device)
+        # logger.info(self.args_data2vec_acc.output_size)
+        # logger.info(self.args_data2vec_acc.output_nodes)
+        # logger.info(self.args_data2vec_acc.advisor)
+        # logger.info(self.args_data2vec_acc.dym_shape_range)
+        # logger.info(self.args_data2vec_acc.dump)
+        # logger.info(self.args_data2vec_acc.bin2npy)
         find_accuracy_interval(self.args_data2vec_acc, "Gather_1186", "")
+
+    def test_compare_cause_by_single_node_situation(self):
+        '''
+            单算子引起的场景
+        '''
+        # logger.info(self.args_gelu_acc.model_path)
+        # logger.info(self.args_gelu_acc.offline_model_path)
+        # logger.info(self.args_gelu_acc.input_path)
+        logger.info(self.args_gelu_acc.cann_path)
+        logger.info(self.args_gelu_acc.out_path)
+        # logger.info(self.args_gelu_acc.input_shape)
+        # logger.info(self.args_gelu_acc.device)
+        # logger.info(self.args_gelu_acc.output_size)
+        # logger.info(self.args_gelu_acc.output_nodes)
+        # logger.info(self.args_gelu_acc.advisor)
+        # logger.info(self.args_gelu_acc.dym_shape_range)
+        # logger.info(self.args_gelu_acc.dump)
+        # logger.info(self.args_gelu_acc.bin2npy)
+        find_accuracy_interval(self.args_gelu_acc, "703", "")
