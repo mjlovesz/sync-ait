@@ -41,8 +41,8 @@ def create_graph(name: str = 'test_graph'):
 
 
 def create_subgraph(name: str = "test_subgraph"):
-    input_ = OnnxPlaceHolder('sqrt0_output', np.dtype('float32'))
-    output = OnnxPlaceHolder('relu3_output', np.dtype('float32'))
+    input_ = OnnxPlaceHolder('sqrt0_output', np.dtype('float32'), [1, 3, 224, 224])
+    output = OnnxPlaceHolder('relu3_output', np.dtype('float32'), [1, 3, 224, 224])
     node_1 = OnnxNode('relu1', 'Relu', inputs=['sqrt0_output'], outputs=['relu1_output'], attrs={})
     node_2 = OnnxNode('sqrt2', 'Sqrt', inputs=['relu1_output'], outputs=['sqrt2_output'], attrs={})
     node_3 = OnnxNode('relu3', 'Relu', inputs=['sqrt2_output'], outputs=['relu3_output'], attrs={})
@@ -51,6 +51,10 @@ def create_subgraph(name: str = "test_subgraph"):
         nodes=[node_1, node_2, node_3],
         inputs=[input_],
         outputs=[output],
+        value_infos=[
+            OnnxPlaceHolder('relu1_output', np.dtype('float32'), [1, 3, 224, 224]),
+            OnnxPlaceHolder('sqrt2_output', np.dtype('float32'), [1, 3, 224, 224]),
+        ]
     )
 
 
@@ -64,8 +68,8 @@ class TestGraphExtract(unittest.TestCase):
         self.subgraph = create_subgraph()
 
     def test_extract_subgraph(self):
-        sub_graph = self.graph.extract_subgraph(start_node_name="relu1",
-                                                end_node_name="relu3")
+        sub_graph = self.graph.extract_subgraph(start_node_names=["relu1"],
+                                                end_node_names=["relu3"])
         self.assertEqual(sub_graph, self.subgraph)
 
 

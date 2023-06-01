@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # coding=utf-8
-
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,6 +32,7 @@ from msquickcmp.net_compare.net_compare import NetCompare
 from msquickcmp.npu.npu_dump_data import NpuDumpData
 from msquickcmp.npu.npu_dump_data_bin2npy import data_convert
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
+from msquickcmp.npu.om_parser import OmParser
 from msquickcmp.accuracy_locat.accuracy_locat import find_accuracy_interval
 
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
@@ -99,18 +99,34 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
         args.input_shape = input_shape
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
 
-    # generate dump data by the original model
-    golden_dump = _generate_golden_data_model(args)
-    golden_dump_data_path = golden_dump.generate_dump_data()
-    golden_net_output_info = golden_dump.get_net_output_info()
+    # whether use aipp
+    temp_om_parser = OmParser(output_json_path)
+    use_aipp = True if temp_om_parser.get_aipp_config_content() else False
 
-    # compiling and running source codes
+    golden_dump = _generate_golden_data_model(args)
     npu_dump = NpuDumpData(args, output_json_path)
-    npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
+
+    if use_aipp:
+        # generate npu inputs data
+        npu_dump.generate_inputs_data()
+        # generate npu dump data
+        npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
+        # generate onnx inputs data
+        golden_dump.generate_inputs_data(npu_dump_data_path, use_aipp)
+    else:
+        # generate onnx and npu inputs data
+        golden_dump.generate_inputs_data('', use_aipp)
+        # generate npu dump data
+        npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
+
     expect_net_output_node = npu_dump.get_expect_output_name()
 
     # convert data from bin to npy if --convert is used
-    data_convert(npu_dump_data_path, npu_net_output_data_path, args)
+    npu_dump_path = data_convert(npu_dump_data_path, npu_net_output_data_path, args)
+
+    # generate dump data by golden model
+    golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_path)
+    golden_net_output_info = golden_dump.get_net_output_info()
 
     # if it's dynamic batch scenario, golden data files should be renamed
     utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
@@ -140,6 +156,9 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     args.out_path = original_out_path
+
+    if args.custom_op != "":
+        args.bin2npy = True
 
     # convert the om model to json
     output_json_path = AtcUtils(args).convert_model_to_json()
