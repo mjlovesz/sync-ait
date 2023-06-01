@@ -16,7 +16,10 @@ import subprocess
 import sys
 import os
 import pytest
+from msquickcmp.cmp_process import run
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
+from msquickcmp.atc.atc_utils import AtcUtils
+from msquickcmp.common import utils
 from msquickcmp.accuracy_locat.accuracy_locat import find_accuracy_interval
 
 logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
@@ -38,21 +41,17 @@ class TestClass:
         return cann_path
 
     @classmethod
-    def setup_class(cls):
-        """
-        class level setup_class
-        """
-        cls.init(TestClass)
-
-    def init(self):
-        self.cann_path = self.get_cann_path()
-        self.args_1 = CmpArgsAdapter(
-            os.path.join(self.get_base_path(), 'onnx/data2vec_1_108.onnx'), # gold_model
-            os.path.join(self.get_base_path(), 'om/data2vec_1_108.om'), # om_model
-            "", # input_data_path
-            self.cann_path, # cann_path
-            os.path.join(self.get_base_path(), '/test/output/'), # out_path
-            "input_ids:1,108;attention_mask:1,108", # input_shape
+    def set_accumulate_cmp_args(cls):
+        args_data2vec_cmp = CmpArgsAdapter(
+            os.path.join(cls.get_base_path(), 'onnx/data2vec_1_108.onnx'), # gold_model
+            os.path.join(cls.get_base_path(), 'om/data2vec_1_108.om'), # om_model
+            "{},{}".format(
+                os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_0'),
+                os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_1')
+            ), # input_data_path
+            cls.cann_path, # cann_path
+            os.path.join(cls.get_base_path(), '/test/data2vec/output/'), # out_path
+            "", # input_shape
             "0", # device
             "", # output_size
             "", # output_nodes
@@ -61,22 +60,74 @@ class TestClass:
             True, # dump
             False # bin2npy
         )
-        self.model_1_name = ""
+        return args_data2vec_cmp
+
+    @classmethod
+    def check_and_run(cls, args:CmpArgsAdapter, use_cli:bool):
+        utils.check_file_or_directory_path(args.model_path)
+        utils.check_file_or_directory_path(args.offline_model_path)
+        utils.check_device_param_valid(args.device)
+        utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
+        utils.check_convert_is_valid_used(args.dump, args.bin2npy)
+
+        original_out_path = os.path.realpath(os.path.join(args.out_path, "log/"))
+        args.out_path = original_out_path
+
+        # convert the om model to json
+        output_json_path = AtcUtils(args).convert_model_to_json()
+
+        # deal with the dymShape_range param if exists
+        input_shapes = []
+        if args.dym_shape_range:
+            input_shapes = utils.parse_dym_shape_range(args.dym_shape_range)
+        if not input_shapes:
+            input_shapes.append("")
+        for input_shape in input_shapes:
+            res = run(args, input_shape, output_json_path, original_out_path, use_cli)
+
+    @classmethod
+    def setup_class(cls):
+        """
+        class level setup_class
+        """
+        cls.init(TestClass)
+
+    def init(self):
+        self.cann_path = self.get_cann_path()
+        self.args_data2vec_cmp = self.set_accumulate_cmp_args
+        self.check_and_run(self.args_data2vec_cmp, True)
+
+
+        self.args_data2vec_acc = CmpArgsAdapter(
+            os.path.join(self.get_base_path(), 'onnx/data2vec_1_108.onnx'), # gold_model
+            os.path.join(self.get_base_path(), 'om/data2vec_1_108.om'), # om_model
+            "", # input_data_path
+            self.cann_path, # cann_path
+            os.path.join(self.get_base_path(), '/test/data2vec/output/log/'), # out_path
+            "", # input_shape
+            "0", # device
+            "", # output_size
+            "", # output_nodes
+            False, # advisor
+            "", # dym_shape_range
+            True, # dump
+            False # bin2npy
+        )
 
  # testcases
 
-    def test_basic_func(self):
-        logger.info(self.args_1.model_path)
-        logger.info(self.args_1.offline_model_path)
-        logger.info(self.args_1.input_path)
-        logger.info(self.args_1.cann_path)
-        logger.info(self.args_1.out_path)
-        logger.info(self.args_1.input_shape)
-        logger.info(self.args_1.device)
-        logger.info(self.args_1.output_size)
-        logger.info(self.args_1.output_nodes)
-        logger.info(self.args_1.advisor)
-        logger.info(self.args_1.dym_shape_range)
-        logger.info(self.args_1.dump)
-        logger.info(self.args_1.bin2npy)
-        find_accuracy_interval(self.args_1, "Gather_1186", "")
+    def test_compare_accumlate_accuracy_situation(self):
+        logger.info(self.args_data2vec_acc.model_path)
+        logger.info(self.args_data2vec_acc.offline_model_path)
+        logger.info(self.args_data2vec_acc.input_path)
+        logger.info(self.args_data2vec_acc.cann_path)
+        logger.info(self.args_data2vec_acc.out_path)
+        logger.info(self.args_data2vec_acc.input_shape)
+        logger.info(self.args_data2vec_acc.device)
+        logger.info(self.args_data2vec_acc.output_size)
+        logger.info(self.args_data2vec_acc.output_nodes)
+        logger.info(self.args_data2vec_acc.advisor)
+        logger.info(self.args_data2vec_acc.dym_shape_range)
+        logger.info(self.args_data2vec_acc.dump)
+        logger.info(self.args_data2vec_acc.bin2npy)
+        find_accuracy_interval(self.args_data2vec_acc, "Gather_1186", "")
