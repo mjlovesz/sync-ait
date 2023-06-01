@@ -54,6 +54,7 @@ DTYPE_MAP = {"DT_FLOAT": np.float32, "DT_FLOAT16": np.float16, "DT_DOUBLE": np.f
              "DT_INT16": np.int16, "DT_INT32": np.int32, "DT_INT64": np.int64, "DT_UINT8": np.uint8,
              "DT_UINT16": np.uint16, "DT_UINT32": np.uint32, "DT_UINT64": np.uint64, "DT_BOOL": np.bool}
 OUT_NODES_NAME = "attr_model_out_nodes_name"
+AIPP_CONFIG_PATH = "aipp_config_path"
 # special ops
 SPECIAL_OPS_TYPE = ("Cast", "TransData")
 
@@ -196,6 +197,14 @@ class OmParser(object):
             if dym_arg.value.atc_arg in atc_cmd:
                 return True, dym_arg
         return False, None
+
+    def get_aipp_config_content(self):
+        for graph in self.json_object.get(GRAPH_OBJECT):
+            for op in graph.get(OP_OBJECT):
+                for attr in op.get(ATTR_OBJECT):
+                    if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == AIPP_CONFIG_PATH:
+                        return attr.get(VALUE_OBJECT).get(S_OBJECT)
+        return ''
 
     def _get_sub_graph_name(self):
         subgraph_name = []

@@ -23,6 +23,7 @@ import argparse
 import os
 import sys
 import time
+from collections import namedtuple
 
 from msquickcmp.atc.atc_utils import AtcUtils
 from msquickcmp.common import utils
@@ -32,6 +33,11 @@ from msquickcmp.net_compare.net_compare import NetCompare
 from msquickcmp.npu.npu_dump_data import NpuDumpData
 from msquickcmp.npu.npu_dump_data_bin2npy import data_convert
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
+from msquickcmp.npu.om_parser import OmParser
+
+
+DumpDataInfo = namedtuple('DumpDataInfo', 'golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
+        npu_net_output_data_path, expect_net_output_node')
 
 
 def _generate_golden_data_model(args):
@@ -88,11 +94,7 @@ def cmp_process(args:CmpArgsAdapter, use_cli:bool):
         raise error
 
 
-def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
-    if input_shape:
-        args.input_shape = input_shape
-        args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
-
+def dump_data(args, output_json_path, use_cli):
     # generate dump data by the original model
     golden_dump = _generate_golden_data_model(args)
     golden_dump_data_path = golden_dump.generate_dump_data()
@@ -103,24 +105,61 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
     npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
     expect_net_output_node = npu_dump.get_expect_output_name()
 
-    # convert data from bin to npy if --convert is used
-    data_convert(npu_dump_data_path, npu_net_output_data_path, args)
+    # if it's dynamic batch scenario, golden data files should be renamed
+    utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
+
+    dump_data_info = DumpDataInfo(golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
+                                  npu_net_output_data_path, expect_net_output_node)
+
+    return dump_data_info
+
+
+def dump_data_aipp(args, output_json_path, use_cli):
+    npu_dump = NpuDumpData(args, output_json_path)
+    npu_dump.generate_input_data()
+    npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
+    expect_net_output_node = npu_dump.get_expect_output_name()
+
+    golden_dump = _generate_golden_data_model(args)
+    golden_dump_data_path = golden_dump.generate_dump_data_aipp(npu_dump_data_path)
+    golden_net_output_info = golden_dump.get_net_output_info()
 
     # if it's dynamic batch scenario, golden data files should be renamed
     utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
 
+    dump_data_info = DumpDataInfo(golden_dump_data_path, golden_net_output_info, npu_dump_data_path, \
+        npu_net_output_data_path, expect_net_output_node)
+
+    return dump_data_info
+
+
+def run(args, input_shape, output_json_path, original_out_path, use_cli:bool, use_aipp):
+    if input_shape:
+        args.input_shape = input_shape
+        args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
+
+    if use_aipp:
+        dump_data_info = dump_data_aipp(args, output_json_path, use_cli)
+    else:
+        dump_data_info = dump_data(args, output_json_path, use_cli)
+
+    # convert data from bin to npy if --convert is used
+    data_convert(dump_data_info.npu_dump_data_path, dump_data_info.npu_net_output_data_path, args)
+
     if not args.dump:
         # only compare the final output
-        net_compare = NetCompare(npu_net_output_data_path, golden_dump_data_path, output_json_path, args)
-        net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
+        net_compare = NetCompare(dump_data_info.npu_net_output_data_path,
+                                 dump_data_info.golden_dump_data_path, output_json_path, args)
+        net_compare.net_output_compare(dump_data_info.npu_net_output_data_path, dump_data_info.golden_net_output_info)
     else:
         # compare the entire network
-        net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args)
+        net_compare = NetCompare(dump_data_info.npu_dump_data_path,
+                                 dump_data_info.golden_dump_data_path, output_json_path, args)
         net_compare.accuracy_network_compare()
     # Check and correct the mapping of net output node name.
-    if len(expect_net_output_node) == 1:
-        _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
-        net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
+    if len(dump_data_info.expect_net_output_node) == 1:
+        _check_output_node_name_mapping(dump_data_info.expect_net_output_node, dump_data_info.golden_net_output_info)
+        net_compare.net_output_compare(dump_data_info.npu_net_output_data_path, dump_data_info.golden_net_output_info)
     analyser.Analyser(args.out_path)()
 
 
@@ -136,6 +175,8 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
 
     # convert the om model to json
     output_json_path = AtcUtils(args).convert_model_to_json()
+    temp_om_parser = OmParser(output_json_path)
+    use_aipp = True if temp_om_parser.get_aipp_config_content() else False
 
     # deal with the dymShape_range param if exists
     input_shapes = []
@@ -144,4 +185,4 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     if not input_shapes:
         input_shapes.append("")
     for input_shape in input_shapes:
-        run(args, input_shape, output_json_path, original_out_path, use_cli)
+        run(args, input_shape, output_json_path, original_out_path, use_cli, use_aipp)
