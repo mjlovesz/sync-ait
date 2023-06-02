@@ -23,13 +23,13 @@ import onnx
 from onnx import helper
 from onnx import TensorProto
 
-from model_eval.bean import OpInfo
-from model_eval.common import Const
-from model_eval.common.enum import Framework, SocType, AtcErr
-from model_eval.parser import ModelParser
-from model_eval.bean import ConvertConfig
-from model_eval.core import Analyze
-from model_eval.core.result import OpResult
+from model_evaluation.bean import OpInfo
+from model_evaluation.common import Const
+from model_evaluation.common.enum import Framework, SocType, AtcErr
+from model_evaluation.parser import ModelParser
+from model_evaluation.bean import ConvertConfig
+from model_evaluation.core import Analyze
+from model_evaluation.core.result import OpResult
 
 
 def make_new_onnx_model(onnx_path: str):

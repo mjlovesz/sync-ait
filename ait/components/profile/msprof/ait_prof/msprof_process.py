@@ -25,11 +25,12 @@ from ait_prof.args_adapter import MsProfArgsAdapter
 
 
 def msprof_run_profiling(args, msprof_bin):
-    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
-    msprof_cmd = "{} --output={}/profiler --application=\"{}\" --model-execution={}" \
+    bin_path = ' '.join(sys.argv).split(" ")[0]
+    bin_path = bin_path.rsplit('/', 1)[0]
+    msprof_cmd = "{} --output={}/profiler --application=\"{} {}/{}\" --model-execution={}" \
                " --sys-hardware-mem={} --sys-cpu-profiling={}" \
                " --sys-profiling={} --sys-pid-profiling={} --dvpp-profiling={} " \
-               "--runtime-api={} --task-time={} --aicpu={}".format(msprof_bin, args.output, args.application,
+               "--runtime-api={} --task-time={} --aicpu={}".format(msprof_bin, args.output, sys.executable, bin_path, args.application,
                                                                    args.model_execution, args.sys_hardware_mem,
                                                                    args.sys_cpu_profiling, args.sys_profiling,
                                                                    args.sys_pid_profiling, args.dvpp_profiling,
@@ -49,7 +50,7 @@ def args_rules(args):
 
 def msprof_process(args:MsProfArgsAdapter):
     msprof_bin = shutil.which('msprof')
-    if msprof_bin is None or os.getenv('GE_PROFILIGN_TO_STD_OUT') == '1':
+    if msprof_bin is None or os.getenv('GE_PROFILING_TO_STD_OUT') == '1':
         logger.info("find no msprof continue use acl.json mode")
     else:
         msprof_run_profiling(args, msprof_bin)

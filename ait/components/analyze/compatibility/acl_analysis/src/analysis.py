@@ -46,7 +46,7 @@ def match_knowledge(line) -> Dict[str, List[Knowledge]]:
     # 遍历API变更迁移分析知识库
     result: Dict[str, List[Knowledge]] = {}
     for knowledge in KnowledgeGroup.get_knowledges():
-        acl_apis = knowledge._apis
+        acl_apis = knowledge.apis
         for acl_api in acl_apis:
             if acl_api in line:
                 if acl_api not in result and \

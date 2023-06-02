@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import argparse
 
 from flask import Flask, render_template, request, send_file
@@ -33,8 +34,14 @@ def main():
     @app.route('/')
     def index():
         return render_template('electron.html')
+    
+    def send_file_method(file, **kwargs):
+        if hasattr(file, "seek"):
+            file.seek(0, os.SEEK_SET)
 
-    register_interface(app, request, send_file)
+        return send_file(file, **kwargs)
+
+    register_interface(app, request, send_file_method)
     app.run(host='localhost', port=args.port, debug=args.debug)
 
 if __name__ == '__main__':

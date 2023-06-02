@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #ifndef TENSOR_SHAPE_H
 #define TENSOR_SHAPE_H
 
@@ -28,7 +28,7 @@ public:
     TensorShape(std::vector<T> shape)
     {
         shape_.clear();
-        for(auto s : shape) {
+        for (auto s : shape) {
             shape_.push_back((size_t)s);
         }
     }

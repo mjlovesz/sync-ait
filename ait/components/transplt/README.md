@@ -6,7 +6,20 @@
 
 ## 工具安装
 
-### 环境和依赖
+### 使用容器
+
+在当前目录下运行以下命令以构建镜像：
+```shell
+docker build --no-cache -t ait-transplt:latest .
+```
+运行以下命令以上述镜像启动容器：
+```shell
+docker run -it ait-transplt:latest
+```
+
+
+### 不使用容器
+1. 安装Clang工具
 
 依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。以Ubuntu22.04为例：
 
@@ -20,21 +33,10 @@ sudo apt-get install libclang-14-dev clang-14
 
 
 
+2. 安装ait工具
 
-### 一站式ait工具安装方式
+- 工具安装请见 [ait一体化工具使用指南](../../README.md)
 
-```shell
-git clone https://gitee.com/ascend/ait.git
-cd ait/ait
-
-# 一键式安装方式
-python3 -m pip install .[transplt] --force-reinstall
-
-# 独立安装方式
-python3 -m pip install . --force-reinstall
-cd components/transplt
-python3 -m pip install . --force-reinstall
-```
 
 ## 工具使用
 

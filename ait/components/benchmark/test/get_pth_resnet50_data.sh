@@ -155,7 +155,7 @@ convert_dymshape_om()
     if [ ! -f $_om_path ]; then
         local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
             --input_shape_range=$_input_tensor_name:$_dymshapes --soc_version=$_soc_version \
-            --input_format=NCHW --enable_small_channel=1"
+            --input_format=NCHW"
         [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
         $_cmd || { echo "atc run $_cmd failed"; return 1; }
     fi
@@ -179,7 +179,7 @@ convert_dymaipp_staticbatch_om()
         if [ ! -f $_om_path ]; then
             local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
                 --input_shape=$_input_shape --soc_version=$_soc_version \
-                --input_format=NCHW --enable_small_channel=1"
+                --input_format=NCHW"
             [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
             $_cmd || { echo "atc run $_cmd failed"; return 1; }
         fi
@@ -203,7 +203,7 @@ convert_dymaipp_dymbatch_om()
     if [ ! -f $_om_path ]; then
         local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
         --input_shape=$_input_shape --soc_version=$_soc_version --dynamic_batch_size=$_dymbatch \
-        --input_format=NCHW --enable_small_channel=1"
+        --input_format=NCHW"
         [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
         $_cmd || { echo "atc run $_cmd failed"; return 1; }
     fi
@@ -226,7 +226,7 @@ convert_dymaipp_dymhw_om()
     if [ ! -f $_om_path ]; then
         local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
         --input_shape=$_input_shape --soc_version=$_soc_version --dynamic_image_size=$_dymhw
-        --input_format=NCHW --enable_small_channel=1"
+        --input_format=NCHW"
         [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
         $_cmd || { echo "atc run $_cmd failed"; return 1; }
     fi
@@ -255,6 +255,7 @@ main()
 {
     SOC_VERSION=${1:-"Ascend310P3"}
     PYTHON_COMMAND=${2:-"python3"}
+    BENCKMARK_DT_MODE=${3:-"simple"}
     TESTDATA_PATH=$CUR_PATH/testdata/resnet50/model
     [ -d $TESTDATA_PATH ] || mkdir -p $TESTDATA_PATH
 
@@ -312,9 +313,15 @@ main()
 
 
     # dymshapes 310 不支持，310P支持
-    # dymshapes="[1~16,3,200~300,200~300]"
-    # convert_dymshape_om $resnet_onnx_file $SOC_VERSION $dymshapes $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymshape om failed";return 1; }
-    }
+    if [ $BENCKMARK_DT_MODE == "full" ]; then
+        echo "test dymshape enabled"
+        dymshapes="[1~16,3,200~300,200~300]"
+        convert_dymshape_om $resnet_onnx_file $SOC_VERSION $dymshapes $input_tensor_name $AIPPCONFIG_FILE_PATH || { echo "convert dymshape om failed";return 1; }
+        if [ ! -f $TESTDATA_PATH/pth_resnet50_dymshape.om ]; then
+            mv $TESTDATA_PATH/pth_resnet50_dymshape*.om $TESTDATA_PATH/pth_resnet50_dymshape.om
+        fi
+    fi
+}
 
 main "$@"
 exit $?

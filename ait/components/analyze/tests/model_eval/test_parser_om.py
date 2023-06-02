@@ -18,10 +18,10 @@ import shutil
 
 from unittest import mock
 
-from model_eval.bean import OpInnerInfo
-from model_eval.common import utils
-from model_eval.common.enum import Engine
-from model_eval.parser import OmParser
+from model_evaluation.bean import OpInnerInfo
+from model_evaluation.common import utils
+from model_evaluation.common.enum import Engine
+from model_evaluation.parser import OmParser
 
 
 class TestOmParser(unittest.TestCase):
