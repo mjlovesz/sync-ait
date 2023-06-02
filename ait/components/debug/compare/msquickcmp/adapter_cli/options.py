@@ -150,6 +150,5 @@ opt_soc_version = click.option(
     "--soc_version", 
     "soc_version",
     default="", 
-    type=str,
-    help="When -l or --locat is enabled, soc_version needs to be provided.E.g:--soc_version \"Ascend310P3\""
+    help="When -l or --locat is enabled, soc_version needs to be provided.E.g:--soc_version Ascend310P3"
 )

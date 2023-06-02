@@ -122,6 +122,27 @@
   # | KullbackLeiblerDivergence | 0.01125 |   316 | BatchMatMulV2 |                    MatMul_179 |  MatMul_179 |
   ```
 
+### 误差定位
+- 误差定位功能选项参数为-l或--locat,开启时需要指定soc_version, 如"Ascend310P3",另外需要保证dump开启.
+- 开启后,自动在每次比对结束后,对误差超阈值的首个节点(任一类误差),执行误差定位流程,自动定位
+误差的区间范围(无论单节点还是累计误差),输出结果保存在输出文件同目录下的"error_interval_info.txt"中.
+- 输出内容为：
+```
+(误差起始节点)
+Node({Node_name}):
+  inputs=[...]
+  outputs=[...]
+  attrs=[]
+
+(误差终止节点)
+:Node({Node_name}):
+  inputs=[...]
+  outputs=[...]
+  attrs=[]
+```
+- **注意**：如果模型有多个输入节点,会输出每个输入节点分支的对应误差区间节点.(譬如有n个输入节点,则输出n个误差区间)
+
+
 ### 参数说明
 
   | 参数名                      | 描述                                       | 必选   |
@@ -139,6 +160,9 @@
   | -dr，--dymShape-range     | 动态Shape的阈值范围。如果设置该参数，那么将根据参数中所有的Shape列表进行依次推理和精度比对。(仅支持onnx模型)<br/>配置格式为：input_name1:1,3,200\~224,224-230;input_name2:1,300。<br/>其中，input_name必须是转换前的网络模型中的节点名称；"\~"表示范围，a\~b\~c含义为[a: b :c]；"-"表示某一位的取值。 <br/> | 否  |
   | --dump                   | 是否dump所有算子的输出并进行精度对比。默认是True，即开启全部算子输出的比对。(仅支持onnx模型)<br/>使用方式：--dump False            | 否  |
   | --convert                 | 支持om比对结果文件数据格式由bin文件转为npy文件，生成的npy文件目录为./dump_data/npu/{时间戳_bin2npy} 文件夹。使用方式：--convert True | 否    |
+  | -cp, --custom-op      | 支持存在NPU自定义算子的模型进行精度比对，使用方式：--custom-op="op_nanme"，其中op_name代表onnx模型中，仅支持在NPU上运行的算子名称。[使用示例](../../../examples/cli/debug/compare/06_npu_custom_op) | 否    |
+  | -l, --locat           | 开启后,自动在每次比对结束后,对误差超阈值的首个节点(任一类误差),执行误差定位流程,自动定位误差的区间范围(无论单节点还是累计误差)。使用方式：-l 或 --locat | 否    |
+  | --soc_version         | 指定执行atc时使用的soc型号。使用方式：--soc_version Ascend310P3 | 否    |
 
 ### 执行案例
 - 获取 Tensorflow pb 原始模型 [AIPainting_v2.pb](https://obs-9be7.obs.cn-east-2.myhuaweicloud.com/003_Atc_Models/AE/ATC%20Model/painting/AIPainting_v2.pb)
