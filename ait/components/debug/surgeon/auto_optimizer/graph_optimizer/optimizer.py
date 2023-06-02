@@ -38,6 +38,7 @@ NONEQUIVALENT_KNOWLEDGES = [
     'KnowledgeResizeModeToNearest',
     'KnowledgeTopkFix',
     'KnowledgeEmptySliceFix',
+    'KnowledgeBigKernel'
 ]
 
 COLOR_SUCCESS = '\033[92m'
@@ -61,6 +62,15 @@ class InferTestConfig:
     process_run_infer: bool = False
 
 
+@dataclass
+class BigKernelConfig:
+    """
+    Big kernel optimize config
+    """
+    attention_start_node: str = ""
+    attention_end_node: str = ""
+
+
 class GraphOptimizer:
     '''Public Graph Optimizer class.'''
     def __init__(self, knowledges_: List[str]) -> None:
@@ -78,7 +88,7 @@ class GraphOptimizer:
         }
         if len(knowledge_dict) == 0:
             raise ValueError('No valid knowledge provided.')
-        self.knowledges: Dict[str, KnowledgeBase] = knowledge_dict
+        self.knowledges = knowledge_dict
 
     @staticmethod
     def _effective(om_ori: str, om_opt: str, cfg: InferTestConfig, check_precision: bool,
@@ -91,7 +101,7 @@ class GraphOptimizer:
         if cfg.is_static:
             input_ = [
                 np.random.randn(*inp.shape)
-                         .astype(tensor_type_to_numpy_type[inp.datatype])
+                         .astype(tensor_type_to_numpy_type.get(inp.datatype))
                 for inp in sess_ori.get_inputs()
             ]
             out_ori = sess_ori.infer(input_)
@@ -167,6 +177,15 @@ class GraphOptimizer:
                     res |= knowledge.apply(graph, match_result)
         return knowledge.post_process(graph) and res
 
+    def init_knowledges(self):
+        knowledges_ins = {}
+        for k_name, k_cls in self.knowledges.items():
+            if k_name != "KnowledgeBigKernel":
+                knowledges_ins.setdefault(k_name, k_cls())
+            else:
+                knowledges_ins.setdefault(k_name, k_cls)
+        self.knowledges = knowledges_ins
+
     def load_config(self):
         pass
 
@@ -175,24 +194,6 @@ class GraphOptimizer:
         Optimize graph using optimizer.
         '''
         return self._exec_action(graph, GraphOptimizer._optimize)
-
-    def _exec_action(
-        self,
-        graph: BaseGraph,
-        action: Callable[[BaseGraph, KnowledgeBase], bool]
-    ) -> Tuple[BaseGraph, List[str]]:
-        applied_knowledges = []
-        for name, knowledge in self.knowledges.items():
-            knowledge.reset()
-            graph_copy = deepcopy(graph)
-            try:
-                if action(graph_copy, knowledge):
-                    graph = graph_copy
-                    applied_knowledges.append(name)
-            except Exception as exc:
-                logger.warning('Error applying knowledge: %s!', name)
-                logger.warning(exc)
-        return graph, applied_knowledges
 
     def apply_knowledges_with_infer_test(
         self,
@@ -272,7 +273,23 @@ class GraphOptimizer:
             pass
         return graph, applied_knowledges
 
-
+    def _exec_action(
+        self,
+        graph: BaseGraph,
+        action: Callable[[BaseGraph, KnowledgeBase], bool]
+    ) -> Tuple[BaseGraph, List[str]]:
+        applied_knowledges = []
+        for name, knowledge in self.knowledges.items():
+            knowledge.reset()
+            graph_copy = deepcopy(graph)
+            try:
+                if action(graph_copy, knowledge):
+                    graph = graph_copy
+                    applied_knowledges.append(name)
+            except Exception as exc:
+                logger.warning('Error applying knowledge: %s!', name)
+                logger.warning(exc)
+        return graph, applied_knowledges
 
 
 if __name__ == "__main__":

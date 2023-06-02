@@ -1,5 +1,4 @@
-#
-# Copyright 2023 Huawei Technologies Co., Ltd
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -19,7 +18,8 @@ class BenchMarkArgsAdapter():
                  dym_shape, output_size, auto_set_dymshape_mode,
                  auto_set_dymdims_mode, batchsize, pure_data_type,
                  profiler, dump, acl_json_path, output_batchsize_axis,
-                 run_mode, display_all_summary, warmup_count, dym_shape_range, aipp_config, energy_consumption, npu_id):
+                 run_mode, display_all_summary, warmup_count, dym_shape_range, aipp_config,
+                 energy_consumption, npu_id, backend, perf):
         self.model = model
         self.input = input_path
         self.output = output
@@ -48,3 +48,5 @@ class BenchMarkArgsAdapter():
         self.aipp_config = aipp_config
         self.energy_consumption = energy_consumption
         self.npu_id = npu_id
+        self.backend = backend
+        self.perf = perf

@@ -49,6 +49,16 @@ class InputType(Enum):
 
 
 class KitConfig:
+    # 加速库名
+    OPENCV = 'OpenCV'
+    FFMPEG = 'FFmpeg'
+    CUDA = 'CUDA'
+    DALI = 'DALI'
+    CVCUDA = 'CVCUDA'
+    TENSORRT = 'TensorRT'
+    CODEC = 'Codec'
+
+    # CMake加速库模式匹配
     MACRO_PATTERN = re.compile(r'(OpenCV|CUDA|NVJPEG|DALI|CVCUDA)')
     LIBRARY_PATTERN = re.compile(
         r'nvjpeg_static|nvjpeg2k_static|avdevice|avfilter|avformat|avcodec|swresample|swscale|avutil|postproc|'
@@ -57,15 +67,15 @@ class KitConfig:
     FILE_PATTERN = re.compile(r'opencv.hpp|opencv2')
     UNKNOWN_PATTERN = re.compile(r'opencv|cuda|dali|nvjpeg|ffmpeg')
 
-    THREAD_NUM = 3
-
     ARCH = platform.machine()
     LIB_CLANG_PATH = f'/usr/lib/{ARCH}-linux-gnu/libclang-14.so'
+    CXX_STD = 'c++17'  # c++11、c++14、c++17、c++20等，或者None，表示使用clang默认值
     HEADERS_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'headers'))
     INCLUDES = {
-        'cuda': '',
-        'opencv': f'{HEADERS_FOLDER}/opencv/include/opencv4',
-        'tensorrt': '',
+        CUDA: f'{HEADERS_FOLDER}/cuda/include',
+        OPENCV: f'{HEADERS_FOLDER}/opencv/include/opencv4',
+        TENSORRT: f'{HEADERS_FOLDER}/tensorrt/include/',
+        CODEC: f'{HEADERS_FOLDER}/codec/include',
     }
 
     # 'make', 'automake'
@@ -80,43 +90,83 @@ class KitConfig:
     PROJECT_TIME = ''
 
     VALID_REPORT_TYPE = ['csv', 'json']
-    API_MAP = '../config/mxBase_API_MAP.xlsx'
-    EXCEPT_API = ['', 'NAMESPACE_REF']
 
-    CUDA_HOME = os.environ.get('CUDA_HOME', '/usr/local/cuda')
-    # lib_name: [namespace, cuda_include, cuda_namespace]，后两者用于分析基于CUDA加速的接口
-    # cuda_include参考示例：
-    # OpenCV-CUDA
+    # Report字段，含扫描分析和API Map字段
+    # 源于扫描分析
+    ACC_API = 'AccAPI'  # 三方加速库API
+    CUDA_EN = 'CUDAEnable'  # 是否CUDA
+    LOCATION = 'Location'  # 调用三方加速库API的位置
+    CONTEXT = 'Context(形参 | 实参 | 来源代码 | 来源位置)'  # 三方加速库API参数及上下文
+    ACC_LIB = 'AccLib'  # API所属三方加速库
+    # 源于API MAP
+    ASCEND_LIB = 'AscendLib'  # 推荐的昇腾API所属库
+    ASCEND_API = 'AscendAPI'  # 昇腾API
+    DESC = 'Description'  # API描述
+    WORKLOAD = 'Workload(人/天)'  # 迁移工作量（人/天）
+    PARAMS = 'Params(Ascend:Acc)'  # 昇腾API和三方加速库API形参对应关系
+    ASCEND_LINK = 'AscendAPILink'  # 昇腾API文档链接
+    ACC_LINK = 'AccAPILink'  # 三方加速库API文档链接
+    # 可选报告字段
+    OPT_REPORT_KEY = {
+        DESC: True,
+        CONTEXT: True,
+        ACC_LIB: True,
+        ASCEND_LIB: True,
+        PARAMS: True,
+        ACC_LINK: True,
+        ASCEND_LINK: True,
+    }
+    EXCEPT_API = ['']  # 扫描时忽略的API
+    DEFAULT_WORKLOAD = 0.1  # 无映射关系/未设置工作量的API的默认工作量
+
+    # API映射表，文件名第一个'_'前为加速库名；内部工作表/Sheet名以'-APIMap'结尾，其他工作表会被忽略。
+    API_MAP_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'config'))
+    API_MAP = {
+        OPENCV: f'{API_MAP_FOLDER}/mxBase_API_MAP.xlsx',
+        CUDA: f'{API_MAP_FOLDER}/ACL_API_MAP.xlsx',
+        TENSORRT: f'{API_MAP_FOLDER}/ACLMDL_TRT_API_MAP.xlsx',
+        CODEC: f'{API_MAP_FOLDER}/Codec_API_MAP.xlsx',
+    }
+
+    CUDA_HOME = os.environ.get('CUDA_HOME', INCLUDES.get(CUDA, None))
+    # C++加速库模式匹配:
+    # 格式如下，第0/1/2可为list，第1/2用于分析基于CUDA加速的接口。
+    # namespace, cuda_include, cuda_namespace, lib_name
+    #
+    # cuda使能头文件示例：
+    # OpenCV-CUDA：
     # "opencv2/core/cuda.hpp", "opencv2/cudaarithm.hpp", "opencv2/cudaimgproc.hpp", "opencv2/cudabgsegm.hpp",
     # "opencv2/cudawarping.hpp", "opencv2/cudaobjdetect.hpp", "opencv2/cudafilters.hpp", "opencv2/cudastereo.hpp",
     # "opencv2/cudafeatures2d.hpp", "opencv2/xfeatures2d/cuda.hpp", "opencv2/cudacodec.hpp",
     # "opencv2/core/cuda_types.hpp", "opencv2/core/cuda_stream_accessor.hpp", "opencv2/core/cuda.inl.hpp"
-    # FFmpeg-CUDA
+    # FFmpeg-CUDA：
     # "libavcodec/nvenc.h"
     ACC_LIBS = {
         # OpenCV
-        '/opencv2/': ['cv', '/cuda', ['cuda', 'gpu']],
-        # FFMPEG: https://github.com/FFmpeg/FFmpeg
-        '/libavcodec/': ['', '/nv', None],
-        '/libavfilter/': ['', ['/cuda/', '_cuda'], None],
-        'libavformat': '',
-        '/libavdevice/': '',
-        '/libavutil/': ['', ['/cuda_', '_cuda/', '_cuda_'], None],
-        '/libswresample/': '',
-        '/libpostproc/': '',
-        '/libswscale/': '',
+        '/opencv2/': ['cv', '/cuda', ['cuda', 'gpu'], OPENCV],
+        # FFmpeg: https://github.com/FFmpeg/FFmpeg
+        '/libavcodec/': ['', '/nv', '', FFMPEG],
+        '/libavfilter/': ['', ['/cuda/', '_cuda'], '', FFMPEG],
+        'libavformat': ['', '', '', FFMPEG],
+        '/libavdevice/': ['', '', '', FFMPEG],
+        '/libavutil/': ['', ['/cuda_', '_cuda/', '_cuda_'], '', FFMPEG],
+        '/libswresample/': ['', '', '', FFMPEG],
+        '/libpostproc/': ['', '', '', FFMPEG],
+        '/libswscale/': ['', '', '', FFMPEG],
         # CUDA samples: https://github.com/NVIDIA/CUDALibrarySamples
-        CUDA_HOME: ['', 1, ''],
         # nvJPEG samples: https://github.com/NVIDIA/CUDALibrarySamples/tree/master/nvJPEG
-        'nvjpeg': ['', 1, ''],
+        CUDA_HOME: ['', 1, '', CUDA],  # 含nvJPEG等
         # DALI: https://github.com/NVIDIA/DALI
-        'dali': ['dali', 1, ''],
+        'dali': ['dali', 1, '', DALI],
         # CV-CUDA
-        '/cvcuda': ['cvcuda', 1, '']
+        '/cvcuda': ['cvcuda', 1, '', CVCUDA],
+        '/tensorrt/': ['', 1, '', TENSORRT],
+        '/codec/': ['', 1, '', CODEC],
     }
+
     LEVEL = 'small'  # parse level: 'large'
-    PRINT_DETAIL = False
     TOLERANCE = 4  # code diag level: {'ignored':0, 'info':1, 'warning':2, 'error':3, 'fatal':4}
+    CURSOR_DEPTH = 100
 
 
 @unique

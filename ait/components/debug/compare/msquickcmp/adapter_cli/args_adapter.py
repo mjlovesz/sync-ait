@@ -1,4 +1,4 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,8 +14,8 @@
 
 class CmpArgsAdapter:
     def __init__(self,
-                 gold_model, 
-                 om_model, 
+                 gold_model,
+                 om_model,
                  input_data_path,
                  cann_path,
                  out_path,
@@ -26,7 +26,10 @@ class CmpArgsAdapter:
                  advisor,
                  dym_shape_range,
                  dump,
-                 bin2npy):
+                 bin2npy,
+                 locat,
+                 soc_version
+                 ):
         self.model_path = gold_model
         self.offline_model_path = om_model
         self.input_path = input_data_path
@@ -40,3 +43,5 @@ class CmpArgsAdapter:
         self.dym_shape_range = dym_shape_range   
         self.dump = dump    
         self.bin2npy = bin2npy
+        self.locat = locat
+        self.soc_version = soc_version

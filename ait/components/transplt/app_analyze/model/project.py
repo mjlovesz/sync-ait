@@ -12,7 +12,6 @@
 # limitations under the License.
 
 import time
-import os
 
 from app_analyze.utils.log_util import logger
 from app_analyze.common.kit_config import KitConfig
@@ -127,10 +126,9 @@ class Project:
                 if not val_dict:
                     continue
 
-                ad = Advisor(val_dict, os.path.abspath(os.path.dirname(__file__)) + '/' + KitConfig.API_MAP)
+                ad = Advisor(val_dict)
                 ad.recommend()
-                workloads = ad.workload()
-                logger.info(f'Workloads:\n', workloads)
+                ad.workload()
                 ad.cuda_apis()
                 self.report_results.update(ad.results)
             elif key == 'cmake':
