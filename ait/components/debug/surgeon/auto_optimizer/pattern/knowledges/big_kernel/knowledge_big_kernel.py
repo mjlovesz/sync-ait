@@ -53,7 +53,7 @@ class KnowledgeBigKernel(KnowledgeBase):
     def __init__(self, graph, start_node, end_node):
         super(KnowledgeBigKernel, self).__init__()
         self.attention_pattern = self.get_pattern(graph, start_node, end_node)
-        self.end_node_type = graph.get_node(end_node, type=OnnxNode)
+        self.end_node_type = graph.get_node(end_node, node_type=OnnxNode).op_type
         self._register_apply_funcs(self.attention_pattern, [self.big_kernel_apply])
         self.attention_idx = 0
         self.attention_ori_shape = None
