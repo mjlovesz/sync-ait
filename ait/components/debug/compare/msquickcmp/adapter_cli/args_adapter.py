@@ -27,6 +27,7 @@ class CmpArgsAdapter:
                  dym_shape_range,
                  dump,
                  bin2npy,
+                 custom_op,
                  locat,
                  soc_version
                  ):
@@ -39,9 +40,10 @@ class CmpArgsAdapter:
         self.device = device
         self.output_size = output_size
         self.output_nodes = output_nodes
-        self.advisor = advisor 
-        self.dym_shape_range = dym_shape_range   
-        self.dump = dump    
+        self.advisor = advisor
+        self.dym_shape_range = dym_shape_range
+        self.dump = dump
         self.bin2npy = bin2npy
+        self.custom_op = custom_op
         self.locat = locat
         self.soc_version = soc_version
