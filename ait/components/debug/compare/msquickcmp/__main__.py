@@ -66,10 +66,13 @@ def compare_cli(
     dym_shape_range,
     dump,
     bin2npy,
-    custom_op
+    custom_op,
+    locat,
+    soc_version
 ) -> None:
     cmp_args = CmpArgsAdapter(golden_model, om_model, input_data_path, cann_path, out_path, input_shape, device,
-                              output_size, output_nodes, advisor, dym_shape_range, dump, bin2npy, custom_op)
+                              output_size, output_nodes, advisor, dym_shape_range, dump, bin2npy,
+                              custom_op, locat, soc_version)
     return cmp_process(cmp_args, True)
 
 if __name__ == '__main__':
