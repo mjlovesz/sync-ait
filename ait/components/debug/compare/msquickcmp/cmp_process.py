@@ -267,7 +267,8 @@ def subgraph_check(og, startnode, endnode, args, onnx_data_path, input_shape):
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     cmg_args = CmpArgsAdapter(subgraph_onnx_file, os.path.realpath("./tmp_for_accuracy_locat.om"),
                               bin_files_path, args.cann_path, tmp_out_path, "", args.device,
-                              args.output_size, args.output_nodes, False, "", True, False)
+                              args.output_size, args.output_nodes, False, "", True, False, args.custom_op,
+                              args.locat, args.soc_version)
     output_json_path = AtcUtils(cmg_args).convert_model_to_json()
     utils.logger.info("Start to run comparision")
     res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
