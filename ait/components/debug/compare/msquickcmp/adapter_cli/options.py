@@ -112,9 +112,9 @@ opt_advisor = click.option(
 )
 
 opt_dym_shape_range = click.option(
-    "-dr", 
-    "--dym-shape-range", 
-    "dym_shape_range", 
+    "-dr",
+    "--dym-shape-range",
+    "dym_shape_range",
     type=str,
     default="",
     help="Dynamic shape range using in dynamic model, "
@@ -123,33 +123,42 @@ opt_dym_shape_range = click.option(
 )
 
 opt_dump = click.option(
-    "--dump", 
-    "dump", 
-    default=True, 
+    "--dump",
+    "dump",
+    default=True,
     type=str2bool,
     help="Whether to dump all the operations' ouput. Default True."
 )
 
 opt_bin2npy = click.option(
-    "--convert", 
+    "--convert",
     "bin2npy",
-    default=False, 
+    default=False,
     type=str2bool,
     help="Enable npu dump data conversion from bin to npy after compare.Usage: --convert True."
 )
 
 opt_locat = click.option(
     "-l",
-    "--locat", 
+    "--locat",
     "locat",
-    default=False, 
+    default=False,
     type=str2bool,
     help="Enable accuracy interval location when needed.E.g: --locat."
 )
 
 opt_soc_version = click.option(
-    "--soc_version", 
+    "--soc_version",
     "soc_version",
-    default="", 
+    default="",
     help="When -l or --locat is enabled, soc_version needs to be provided.E.g:--soc_version Ascend310P3"
+)
+
+opt_custom_op = click.option(
+    "-cp",
+    "--custom-op",
+    "custom_op",
+    type=str,
+    default="",
+    help="Op name witch is not registered in onnxruntime, only supported by Ascend."
 )
