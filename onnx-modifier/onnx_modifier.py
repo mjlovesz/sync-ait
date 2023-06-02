@@ -457,12 +457,12 @@ class OnnxModifier:
             node = nodes[index]
             # check if inputs before this node 
             for input_name in node.input:
-                if input_name not in dict_output_to_node:
-                    continue
                 if input_name in inputs_before_this_index_node:
                     continue
+                node_prev = dict_output_to_node.get(input_name)
+                if node_prev is None:
+                    continue
 
-                node_prev = dict_output_to_node[input_name]
                 nodes.remove(node_prev)
                 nodes.insert(index, node_prev)
                 break
