@@ -114,9 +114,9 @@ def create_bin_file(matched_files):
         bin_file_name = f'{i}.bin'
         bin_file = os.path.join(bin_file_path, bin_file_name)
         if i != 0:
-            bin_file_list += ","+bin_file
+            bin_files_list += ","+bin_file
         else:
-            bin_file_list += bin_file
+            bin_files_list += bin_file
         data.tofile(bin_file)
     return bin_files_list
 
