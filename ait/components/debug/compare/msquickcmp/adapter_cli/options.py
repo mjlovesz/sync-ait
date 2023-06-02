@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -111,9 +111,9 @@ opt_advisor = click.option(
 )
 
 opt_dym_shape_range = click.option(
-    "-dr",
-    "--dym-shape-range",
-    "dym_shape_range",
+    "-dr", 
+    "--dym-shape-range", 
+    "dym_shape_range", 
     type=str,
     default="",
     help="Dynamic shape range using in dynamic model, "
@@ -122,25 +122,34 @@ opt_dym_shape_range = click.option(
 )
 
 opt_dump = click.option(
-    "--dump",
-    "dump",
-    default=True,
+    "--dump", 
+    "dump", 
+    default=True, 
     type=str2bool,
     help="Whether to dump all the operations' ouput. Default True."
 )
 
 opt_bin2npy = click.option(
-    "--convert",
+    "--convert", 
     "bin2npy",
+    default=False, 
     type=str2bool,
     help="Enable npu dump data conversion from bin to npy after compare.Usage: --convert True."
 )
 
-opt_custom_op = click.option(
-    "-cp",
-    "--custom-op",
-    "custom_op",
+opt_locat = click.option(
+    "-l",
+    "--locat", 
+    "locat",
+    default=False, 
+    type=str2bool,
+    help="Enable accuracy interval location when needed.E.g: --locat."
+)
+
+opt_soc_version = click.option(
+    "--soc_version", 
+    "soc_version",
+    default="", 
     type=str,
-    default="",
-    help="Op name witch is not registered in onnxruntime, only supported by Ascend."
+    help="When -l or --locat is enabled, soc_version needs to be provided.E.g:--soc_version \"Ascend310P3\""
 )

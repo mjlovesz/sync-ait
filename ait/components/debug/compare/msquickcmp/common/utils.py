@@ -54,6 +54,7 @@ ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
 ACCURACY_COMPARISON_WRONG_AIPP_CONTENT = 18
 ACCRACY_COMPARISON_EXTRACT_ERROR = 19
+ACCRACY_COMPARISON_FETCH_DATA_ERROR = 20
 MODEL_TYPE = ['.onnx', '.pb', '.om']
 DIM_PATTERN = r"^(-?[0-9]{1,100})(,-?[0-9]{1,100}){0,100}"
 DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+){0,3}"
@@ -258,6 +259,22 @@ def check_convert_is_valid_used(dump, bin2npy):
             Please keep dump True while using convert."
         )
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
+
+
+def check_locat_is_valid(dump, locat, soc_version):
+    """
+    Function:
+        check locat args is completed
+    Return:
+        True or False
+    """
+    if locat:
+        if soc_version == "":
+            logger.error("SOC_VERSION isn't defined, please explicify")
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
+        if not dump:
+            logger.error("Dump must be True when locat is used")
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
 
 
 def parse_input_shape(input_shape):
