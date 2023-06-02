@@ -29,8 +29,7 @@ class CmpArgsAdapter:
                  bin2npy,
                  custom_op,
                  locat,
-                 soc_version,
-                 custom_op=""
+                 soc_version
                  ):
         self.model_path = gold_model
         self.offline_model_path = om_model
@@ -48,4 +47,3 @@ class CmpArgsAdapter:
         self.custom_op = custom_op
         self.locat = locat
         self.soc_version = soc_version
-        self.custom_op = custom_op
