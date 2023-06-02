@@ -46,6 +46,13 @@ class DumpData(object):
         """
         return self.net_output
 
+    def generate_inputs_data(self):
+        """
+        Function Description:
+            generate inputs data
+        """
+        pass
+
     def _generate_dump_data_file_name(self, name_str, node_id):
         name_str = name_str.replace('.', '_').replace('/', '_')
         return  ".".join([name_str, str(node_id), str(round(time.time() * 1e6)), "npy"])

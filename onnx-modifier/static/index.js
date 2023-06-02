@@ -61,40 +61,8 @@ host.BrowserHost = class {
 
     initialize(view) {
         this._view = view;
-        return new Promise((resolve /*, reject */) => {
-            const accept = () => {
-                if (this._telemetry) {
-                    const script = this.document.createElement('script');
-                    script.setAttribute('type', 'text/javascript');
-                    script.setAttribute('src', 'https://www.google-analytics.com/analytics.js');
-                    script.onload = () => {
-                        if (this.window.ga) {
-                            this.window.ga.l = 1 * new Date();
-                            this.window.ga('create', 'UA-54146-13', 'auto');
-                            this.window.ga('set', 'anonymizeIp', true);
-                        }
-                        resolve();
-                    };
-                    script.onerror = () => {
-                        resolve();
-                    };
-                    this.document.body.appendChild(script);
-                }
-                else {
-                    resolve();
-                }
-            };
-            const request = () => {
-                this._view.show('welcome consent');
-                const acceptButton = this.document.getElementById('consent-accept-button');
-                if (acceptButton) {
-                    acceptButton.addEventListener('click', () => {
-                        this._setCookie('consent', 'yes', 30);
-                        accept();
-                    });
-                }
-            };
-            accept();
+        return new Promise((resolve) => {
+            resolve()
         });
     }
 
@@ -269,7 +237,7 @@ host.BrowserHost = class {
                 }
 
                 blob() {
-                    return new Blob([this._file])
+                    return Promise.resolve(new Blob([this._file]))
                 }
 
                 get status() {
@@ -389,11 +357,6 @@ host.BrowserHost = class {
             }
         }
 
-        const gist = params.get('gist');
-        if (gist) {
-            this._openGist(gist);
-            return;
-        }
 
         const openFileButton = this.document.getElementById('open-file-button');
         const openFileDialog = this.document.getElementById('open-file-dialog');
@@ -796,37 +759,6 @@ host.BrowserHost = class {
             });
         }).catch((error) => {
             this._view.error(error, null, null);
-        });
-    }
-
-    _openGist(gist) {
-        this._view.show('welcome spinner');
-        const url = 'https://api.github.com/gists/' + gist;
-        this._request(url, { 'Content-Type': 'application/json' }, 'utf-8').then((text) => {
-            const json = JSON.parse(text);
-            if (json.message) {
-                this.error('Error while loading Gist.', json.message);
-                return;
-            }
-            const key = Object.keys(json.files).find((key) => this._view.accept(json.files[key].filename));
-            if (!key) {
-                this.error('Error while loading Gist.', 'Gist does not contain a model file.');
-                return;
-            }
-            const file = json.files[key];
-            const identifier = file.filename;
-            const encoder = new TextEncoder();
-            const buffer = encoder.encode(file.content);
-            const context = new host.BrowserHost.BrowserContext(this, '', identifier, buffer);
-            this._view.open(context).then(() => {
-                this.document.title = identifier;
-            }).catch((error) => {
-                if (error) {
-                    this._view.show(error.name, error, 'welcome');
-                }
-            });
-        }).catch((err) => {
-            this._view.show('Model load request failed.', err, 'welcome');
         });
     }
 
