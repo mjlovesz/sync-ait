@@ -55,7 +55,7 @@ DTYPE_MAP = {"DT_FLOAT": np.float32, "DT_FLOAT16": np.float16, "DT_DOUBLE": np.f
              "DT_UINT16": np.uint16, "DT_UINT32": np.uint32, "DT_UINT64": np.uint64, "DT_BOOL": np.bool}
 OUT_NODES_NAME = "attr_model_out_nodes_name"
 AIPP_CONFIG_PATH = "aipp_config_path"
-LAYOUT_OBJECT="layout"
+LAYOUT_OBJECT = "layout"
 # special ops
 SPECIAL_OPS_TYPE = ("Cast", "TransData")
 
@@ -323,7 +323,7 @@ class OmParser(object):
 
     def _process_inputs_to_list(self, input_desc_array):
         shape_lists = []
-        for i, input_object in enumerate(input_desc_array):
+        for input_object in input_desc_array:
             shape_list = []
             if SHAPE_OBJECT not in input_object:
                 utils.logger.error("Please specify the input shape of om model through -s param")

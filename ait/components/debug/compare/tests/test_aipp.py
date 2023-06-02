@@ -1,4 +1,4 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ from msquickcmp.cmp_process import cmp_process
 WRITE_FLAGS = os.O_WRONLY | os.O_CREAT  # 注意根据具体业务的需要设置文件读写方式
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR  # 注意根据具体业务的需要设置文件权限
 
+
 class TwoLayerNet(torch.nn.Module):
     def __init__(self):
         super(TwoLayerNet, self).__init__()
@@ -39,9 +40,11 @@ class TwoLayerNet(torch.nn.Module):
         y_pred = self.linear1(self.conv1(x).reshape(1, -1))
         return y_pred
 
+
 @pytest.fixture(scope="session", autouse=True)
 def fake_tmp_dir():
     os.makedirs("./tmp", exist_ok=True)
+
 
 @pytest.fixture(scope="module", autouse=True)
 def fake_onnx_model(fake_tmp_dir):
@@ -54,6 +57,7 @@ def fake_onnx_model(fake_tmp_dir):
         model_path,
         input_names=["image"]
     )
+
 
 @pytest.fixture(scope="module", autouse=True)
 def fake_aipp_config(fake_tmp_dir):
@@ -84,6 +88,7 @@ var_reci_chn_2: 0.0174291938997821
         fout.write(data)
     return fake_aipp_config_path
 
+
 @pytest.fixture(scope="module", autouse=True)
 def fake_switch_config(fake_tmp_dir):
     fake_switch_config_path = "./tmp/fusionswitch.cfg"
@@ -105,7 +110,9 @@ def fake_switch_config(fake_tmp_dir):
 
 @pytest.fixture(scope="module", autouse=True)
 def fake_om_model(fake_onnx_model, fake_aipp_config, fake_switch_config):
-    subprocess.run('atc --model ./tmp/fake.onnx --soc_version Ascend310P3 --framework 5 --input_format NCHW --input_shape image:1,3,7,7 --output ./tmp/fake --insert_op_conf ./tmp/aipp.config --fusion_switch_file ./tmp/fusionswitch.cfg'.split(), shell=False)
+    subprocess.run('atc --model ./tmp/fake.onnx --soc_version Ascend310P3 --framework 5 \
+    --input_format NCHW --input_shape image:1,3,7,7 --output ./tmp/fake --insert_op_conf \
+    ./tmp/aipp.config --fusion_switch_file ./tmp/fusionswitch.cfg'.split(), shell=False)
     return "./tmp/fake.om"
 
 
@@ -125,6 +132,7 @@ def test_aipp_function_st_pass(fake_om_model):
                           bin2npy=False)
     cmp_process(args, use_cli=True)
 
+
 def test_aipp_function_st_no_dump_error(fake_om_model):
     args = CmpArgsAdapter(gold_model="tmp/fake.onnx",
                           om_model="tmp/fake.om",
@@ -143,10 +151,12 @@ def test_aipp_function_st_no_dump_error(fake_om_model):
         cmp_process(args, use_cli=True)
     assert error.value.error_info == utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR
 
+
 def test_parse_input_shape_to_list_when_wrong_format_error():
     with pytest.raises(utils.AccuracyCompareException) as error:
         parse_input_shape_to_list("image1,3,224,224")
     assert error.value.error_info == utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR
+
 
 def test_get_aipp_config_content_pass(fake_om_model):
     args = CmpArgsAdapter(gold_model="tmp/fake.onnx",
