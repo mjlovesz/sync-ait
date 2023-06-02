@@ -48,7 +48,30 @@ class CaffeDumpData(DumpData):
         self.input_data_save_dir = os.path.join(self.output_path, "input")
         self.dump_data_dir = os.path.join(self.output_path, "dump_data", "caffe")
 
+        utils.create_directory(self.input_data_save_dir)
+        utils.create_directory(self.dump_data_dir)
+
+        self.model = self._init_model()
+        
+        self.inputs_map = {}
         self.net_output = {}
+
+    def generate_inputs_data(self, npu_dump_data_path, use_aipp):
+        input_names, input_shapes, input_dtypes = self._init_tensors_info(self.model, self.model.inputs)
+
+        input_info = [
+            {"name": name, "shape": shape, "type": dtype}
+            for name, shape, dtype in zip(input_names, input_shapes, input_dtypes)
+        ]
+        utils.logger.info("Caffe input info: \n{}\n".format(input_info))
+
+        if self.input_data_path:
+            self._check_input_data_path(self.input_data_path, input_shapes)
+            self.inputs_map = self._read_input_data(self.input_data_path, input_names, input_shapes, input_dtypes)
+        else:
+            self.inputs_map = self._generate_random_input_data(
+                self.input_data_save_dir, input_names, input_shapes, input_dtypes
+            )
 
     @staticmethod
     def _init_tensors_info(model, tensor_names):
@@ -77,27 +100,6 @@ class CaffeDumpData(DumpData):
         Exception Description:
             none
         """
-        utils.create_directory(self.input_data_save_dir)
-        utils.create_directory(self.dump_data_dir)
-
-        model = self._init_model()
-        input_names, input_shapes, input_dtypes = self._init_tensors_info(model, model.inputs)
-        output_names, output_shapes, output_dtypes = self._init_tensors_info(model, model.outputs)
-
-        input_info = [
-            {"name": name, "shape": shape, "type": dtype}
-            for name, shape, dtype in zip(input_names, input_shapes, input_dtypes)
-        ]
-        utils.logger.info("Caffe input info: \n{}\n".format(input_info))
-
-        if self.input_data_path:
-            self._check_input_data_path(self.input_data_path, input_shapes)
-            inputs_map = self._read_input_data(self.input_data_path, input_names, input_shapes, input_dtypes)
-        else:
-            inputs_map = self._generate_random_input_data(
-                self.input_data_save_dir, input_names, input_shapes, input_dtypes
-            )
-
         self._run_model(model, inputs_map)
         self._save_dump_data(model)
         return self.dump_data_dir
