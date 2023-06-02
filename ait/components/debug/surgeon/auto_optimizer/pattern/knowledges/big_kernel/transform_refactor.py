@@ -42,7 +42,7 @@ class TransformRefactor:
     def infer_graph_shape(self):
         self.graph.infer_shape()
 
-    def get_anchor_nodes(self, match_nodes, last_node):
+    def get_anchor_nodes(self, match_nodes, last_node_type):
         """
         选取几个节点作为锚点
         """
@@ -58,7 +58,7 @@ class TransformRefactor:
                 softmax = node
                 continue
 
-            if node.op_type != last_node.op_type:
+            if node.op_type != last_node_type:
                 continue
 
             is_next_node_in_subgraph = False
