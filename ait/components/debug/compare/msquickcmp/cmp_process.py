@@ -22,6 +22,7 @@ This class mainly involves the main function.
 import argparse
 import os
 import sys
+import stat
 import time
 import onnxruntime
 
