@@ -14,8 +14,8 @@
 
 class CmpArgsAdapter:
     def __init__(self,
-                 gold_model, 
-                 om_model, 
+                 gold_model,
+                 om_model,
                  input_data_path,
                  cann_path,
                  out_path,
