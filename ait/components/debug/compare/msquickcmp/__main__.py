@@ -30,7 +30,9 @@ from msquickcmp.adapter_cli.options import (
     opt_dym_shape_range,
     opt_dump,
     opt_bin2npy,
-    opt_custom_op
+    opt_custom_op,
+    opt_locat,
+    opt_soc_version
 )
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common import utils
@@ -52,6 +54,8 @@ from msquickcmp.common import utils
 @opt_dump
 @opt_bin2npy
 @opt_custom_op
+@opt_locat
+@opt_soc_version
 def compare_cli(
     golden_model,
     om_model,
