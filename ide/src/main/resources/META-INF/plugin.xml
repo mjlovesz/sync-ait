@@ -41,6 +41,7 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
+        <fileEditorProvider implementation="com.ascend.ait.ide.filetype.AitFileEditorProvider"/>
         <projectService serviceImplementation="com.ascend.ait.ide.commonlib.output.OutputService"/>
         <toolWindow factoryClass="com.ascend.ait.ide.commonlib.output.OutputFactory" id="Output" order="first" doNotActivateOnStart="true"/>
     </extensions>
@@ -49,6 +50,15 @@
         <group id="Ascend" text="_Ascend">
             <add-to-group group-id="MainMenu" anchor="before" relative-to-action="ToolsMenu"/>
         </group>
+        <action id="Ait.Ide" class="com.ascend.ait.ide.action.AitAction" text="Ait">
+            <add-to-group group-id="Ascend" anchor="first"/>
+        </action>
+        <action class="com.ascend.ait.ide.action.AisBenchAction" id="ais_bench">
+            <add-to-group group-id="Ascend" anchor="last"/>
+        </action>
+        <action class="com.ascend.ait.ide.action.CompareAction" id="compare">
+            <add-to-group group-id="Ascend" anchor="last"/>
+        </action>
         <action class="com.ascend.ait.ide.commonlib.output.ThemeChangeAction" id="ThemeChange">
             <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
         </action>
