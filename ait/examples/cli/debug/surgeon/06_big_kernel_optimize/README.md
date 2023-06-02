@@ -36,5 +36,7 @@ ATC在做模型转换时，对于transform类模型的decoder结构，支持一�
 
 ## 运行示例
 
-
+```shell
+ait debug surgeon opt bert-base-chinese.onnx bert-base-chinese_opt.onnx -bk -as start_add -ae end_add
+```
 
