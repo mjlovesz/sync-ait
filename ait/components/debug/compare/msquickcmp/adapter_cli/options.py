@@ -142,3 +142,12 @@ opt_bin2npy = click.option(
     type=str2bool,
     help="Enable npu dump data conversion from bin to npy after compare.Usage: --convert True."
 )
+
+opt_custom_op = click.option(
+    "-cp",
+    "--custom-op",
+    "custom_op",
+    type=str,
+    default="",
+    help="Op name witch is not registered in onnxruntime, only supported by Ascend."
+)

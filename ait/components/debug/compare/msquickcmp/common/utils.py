@@ -51,6 +51,7 @@ ACCURACY_COMPARISON_NO_DUMP_FILE_ERROR = 14
 ACCURACY_COMPARISON_NOT_SUPPORT_ERROR = 15
 ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
+ACCURACY_COMPARISON_WRONG_AIPP_CONTENT = 18
 MODEL_TYPE = ['.onnx', '.pb', '.om', '.prototxt']
 DIM_PATTERN = r"^(-?[0-9]{1,100})(,-?[0-9]{1,100}){0,100}"
 DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+){0,3}"
@@ -284,7 +285,41 @@ def parse_input_shape(input_shape):
     return input_shapes
 
 
+def parse_input_shape_to_list(input_shape):
+    """
+        Function Description:
+            parse input shape and get a list only contains inputs shape
+        Parameter:
+            input_shape:the input shape,this format like:tensor_name1:dim1,dim2;tensor_name2:dim1,dim2.
+        Return Value:
+            a list only contains inputs shape, this format like [[dim1,dim2],[dim1,dim2]]
+    """
+    input_shape_list = []
+    if not input_shape:
+        return input_shape_list
+    _check_colon_exist(input_shape)
+    tensor_list = input_shape.split(';')
+    for tensor in tensor_list:
+        tensor_shape_list = tensor.rsplit(':', maxsplit=1)
+        if len(tensor_shape_list) == 2:
+            shape_list_int = [int(i) for i in tensor_shape_list[1].split(',')]
+            input_shape_list.append(shape_list_int)
+        else:
+            logger.error(get_shape_not_match_message(InputShapeError.FORMAT_NOT_MATCH, input_shape))
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+    return input_shape_list
+
+
 def parse_dym_shape_range(dym_shape_range):
+    """
+        Function Description:
+            parse dynamic input shape
+        Parameter:
+            dym_shape_range:the input shape,this format like:tensor_name1:dim1,dim2-dim3;tensor_name2:dim1,dim2~dim3.
+             - means the both dim2 and dim3 value, ~ means the range of [dim2:dim3]
+        Return Value:
+            a list only contains inputs shape, this format like [[dim1,dim2],[dim1,dim2]]
+    """
     _check_colon_exist(dym_shape_range)
     input_shapes = {}
     tensor_list = dym_shape_range.split(";")

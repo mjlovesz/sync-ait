@@ -27,15 +27,16 @@
 `onnx-modifier`基于流行的模型可视化工具 [Netron](https://github.com/lutzroeder/netron) 和[Electron](https://www.electronjs.org/)。希望它能给社区带来一些贡献~
 
 # 安装与运行
-目前支持两种方法运行`onnx-modifier`,Linux与windows安装流程一致，以下为安装运行说明：
+目前支持三种方法运行`onnx-modifier`, Linux与windows安装流程一致，以下为安装运行说明：
 
 ## 源码拉取及第三方库安装
 
-- 拉取`ait`，并切换到 onnx-modifier 目录，安装所需要的Python, NodeJS
+安装所需要的Python, NodeJS。拉取`ait`，并切换到 onnx-modifier 目录
 
 1. 安装python
+    * 建议安装[miniconda3](https://docs.conda.io/en/latest/miniconda.html)
     * 注意点: 在 windows 上，命令行的python命令优先会启动 WindowsApps 目录的程序，可以在环境变量中将 %USERPROFILE%\AppData\Local\Microsoft\WindowsApps 下移到最后
-2. 安装NodeJS(使用 electron 启动时需要)
+2. 安装[NodeJS](https://nodejs.org/zh-cn) (使用 electron 启动时需要，建议安装最新长期维护版本)
 3. 拉取源码：
   ```bash
   git clone https://gitee.com/ascend/ait.git
@@ -54,11 +55,14 @@
 
 ## 启动方式一：命令行启动
 - 安装
-    1. 下载electron: https://registry.npmmirror.com/binary.html?path=electron/24.3.1/
-        * linux 下载 electron-v24.3.1-linux-x64.zip 或 electron-v24.3.1-linux-arm64.zip
-        * windows 下载 electron-v24.3.1-win32-x64.zip 或 electron-v24.3.1-win32-arm64.zip
-    2. zip解压之后，将解压路径配置到环境变量的PATH中 
-- 运行（常用于调试开发）
+    1. 方式1：
+        1. 下载electron: [v24.1.3版本下载地址](https://registry.npmmirror.com/binary.html?path=electron/24.1.3/)
+            * linux 下载 electron-v24.1.3-linux-x64.zip 或 electron-v24.1.3-linux-arm64.zip
+            * windows 下载 electron-v24.1.3-win32-x64.zip 或 electron-v24.1.3-win32-arm64.zip
+        2. zip解压之后，将解压路径配置到环境变量的PATH中 
+    2. 方式2：
+        直接 `npm install` , npm是NodeJS的包管理器。如果遇到electron 无法安装失败问题，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85) 
+- 运行（该方式启动常用于调试开发）
   ```bash
   cd ait/onnx-modifier
   electron .
@@ -66,10 +70,13 @@
 
 ## 启动方式二：编译成可执行程序启动
 
+编译对环境网络要求较高, 如果遇到electron 无法安装失败问题，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85) 
+
+
 - 安装
-  编译环境对网络要求较高
+
   ```bash
-  npm install  # npm是node的包管理器；如果electron 下载较慢，建议使用国内代理
+  npm install  # npm是NodeJS的包管理器；
   ```
 - 编译
   ```bash
@@ -77,7 +84,7 @@
   npm run make
   ```
 - 安装运行
-  编译之后，可以在out中看到打包的程序，点击运行即可
+  编译之后，可以在out中看到打包的程序，解压运行即可
 
 ## 启动方式三：web服务器启动
 - 安装
@@ -85,20 +92,27 @@
     2. 如果运行报错，建议升级flask。建议版本2.2.2
 - 运行，默认端口为5000（常用于调试开发）
   ```bash
-  python flaskserver.py
+  python flaskserver.py 
+  # 然后打开浏览器，打开 localhost:5000 即可访问到 onnx-modifier
   ```
-- 支持指定端口，参数为： --port [端口号]
-- 支持debug 模式，会打印更多日志，参数为： --debug
+- 命令行参数
+  - 支持指定端口，参数为： --port [端口号]
+  - 支持debug 模式，会打印更多日志，参数为： --debug
+  ```bash
+  # 样例
+  python flaskserver.py --port 5000 --debug
+  ```
 - 安全风险
   * web服务器方式运行，会开启端口，如果在不可信任的多用户服务器中，可能端口被监听
   * 仅支持绑定localhost。如果在服务器中启动，在开发者本地是无法访问到的，建议使用ssh端口转发功能
+- ssh 端口转发
     * 开启端口转发：比如将服务器（比如linux）的 loacalhost:5000 端口转发到本地(比如windows)的 8080 端口
     ```bash
     # 在windows本地运行
     # ssh -L [本地绑定端口8080]:localhost:[服务器端口5000] [用户名username]@[服务器地址serverhost]
     ssh -L 8080:localhost:5000 username@serverhost
     ```
-    * 本地浏览器打开 localhost:8080 端口即可访问到 onnx-modifier 服务
+    * 本地windows浏览器打开 localhost:8080 端口即可访问到linux服务器上的 onnx-modifier 服务
 
 # 用法
 
@@ -199,7 +213,7 @@
 ## 修改模型batch size
 动态batch size和固定batch size均已支持。
 - 动态batch size：点击`Dynamic batch size`即可；
-- 动态bacth size：在`Fixed batch size`后方输入框内填入预期的batch size值；
+- 静态bacth size：在`Fixed batch size`后方输入框内填入预期的batch size值；
 
 <img src="./docs/rebatch.gif" style="zoom:75%;" />
 
@@ -217,7 +231,7 @@
 有时候我们需要修改模型输入
 <img src="./docs/input_modify.gif" style="zoom:75%;" />
 
-## 修改导出导出
+## 修改导入导出
 
 有时候我们需要固化修改。常用于训练之后参数做了一些修改，模型结构没有变化的情况。下面展示导出json 以及导入的操作方式
 <img src="./docs/modify_export_import.gif" style="zoom:75%;" />

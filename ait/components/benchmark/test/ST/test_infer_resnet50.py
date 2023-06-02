@@ -1273,7 +1273,7 @@ class TestClass():
             for line in f:
                 if "device_"  in line:
                     temp_strs = line.split(' ')
-                    throughtout = float(temp_strs[2].split(':')[1])
+                    throughtout = float(temp_strs[3].split(':')[1])
                     device_throughputs.append(throughtout)
                     total_throughtout += throughtout
                 elif "summary throughput" in line:
