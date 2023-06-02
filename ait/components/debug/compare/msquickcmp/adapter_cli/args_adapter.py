@@ -27,7 +27,6 @@ class CmpArgsAdapter:
                  dym_shape_range,
                  dump,
                  bin2npy,
-                 custom_op,
                  locat,
                  soc_version
                  ):
@@ -44,6 +43,5 @@ class CmpArgsAdapter:
         self.dym_shape_range = dym_shape_range
         self.dump = dump
         self.bin2npy = bin2npy
-        self.custom_op = custom_op
         self.locat = locat
         self.soc_version = soc_version
