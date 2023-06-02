@@ -138,7 +138,7 @@ class FileMatrix:
         检查全部文件类型：C/C++源文件、makefile文件
         """
         file_name = os.path.basename(file_path)
-        source_ext = ('.c', '.cc', '.cpp', '.cxx', '.cx')
+        source_ext = ('.c', '.cc', '.cpp', '.cxx', '.cx', '.cu')
 
         if ext.lower() in source_ext and not from_external_tool:
             self.files.setdefault('cpp_sources', {})[file_path] = ''

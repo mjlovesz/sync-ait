@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import os
+import logging
+import sys
 from typing import List
 
 import logging
@@ -23,6 +25,9 @@ from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.matcher import Matcher, MatchResult
 from auto_optimizer.pattern.pattern import MatchPattern, Pattern, MatchBase
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 
 class DummyKnowledge(KnowledgeBase):
@@ -46,17 +51,17 @@ class ConvMatch(MatchBase):
 
 
 # get subgraph inputs by pattern
-def get_input_op_name_list(pattern: Pattern) -> List[str]:
+def get_input_op_name_list(pattern_: Pattern) -> List[str]:
     input_op_name_list: List[str] = []
-    for pattern_node in pattern.inputs:
+    for pattern_node in pattern_.inputs:
         input_op_name_list.append(pattern_node.op_name)
     return input_op_name_list
 
 
 # get subgraph outputs by pattern
-def get_output_op_name_list(pattern: Pattern) -> List[str]:
+def get_output_op_name_list(pattern_: Pattern) -> List[str]:
     output_op_name_list: List[str] = []
-    for pattern_node in pattern.outputs:
+    for pattern_node in pattern_.outputs:
         output_op_name_list.append(pattern_node.op_name)
     return output_op_name_list
 
@@ -90,7 +95,7 @@ def get_subgraph(onnxpath: str, pattern_: Pattern) -> None:
             # 模型截断后导出
             graph.extract(new_model_path, input_name_list, output_name_list)
         except Exception as err:
-            print('Failed to extract subgraph, error: {}'.format(err))
+            logger.error('Failed to extract subgraph, error: {}'.format(err))
     return
 
 

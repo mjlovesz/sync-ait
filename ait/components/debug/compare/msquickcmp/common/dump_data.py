@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
-# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -31,5 +31,12 @@ class DumpData(object):
         """
         Function Description:
             generate dump data
+        """
+        pass
+
+    def generate_inputs_data(self):
+        """
+        Function Description:
+            generate inputs data
         """
         pass

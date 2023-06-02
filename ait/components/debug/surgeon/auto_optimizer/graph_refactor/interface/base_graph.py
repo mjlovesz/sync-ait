@@ -27,6 +27,7 @@ NodeType = Union[PlaceHolder, Initializer, Node]
 
 class NodeNotExistException(KeyError):
     def __init__(self, node_name: str) -> None:
+        super().__init__()
         self.value = '{} is not exist in graph'.format(node_name)
 
     def __str__(self) -> str:
@@ -116,6 +117,10 @@ class BaseGraph(ABC):
     @property
     def initializers(self) -> List[Initializer]:
         return self._initializers
+
+    @initializers.setter
+    def initializers(self, value):
+        self._initializers = value
 
     @property
     def value_infos(self) -> List[PlaceHolder]:
@@ -397,8 +402,6 @@ class BaseGraph(ABC):
         return nodes
 
     def get_value_info(self, io_name: str) -> PlaceHolder:
-        if not self._value_map.get(io_name, None):
-            raise KeyError("'{}' does not have value_info or does not exist!".format(io_name))
         return self._value_map.get(io_name)
 
     def remove(self, name: str, mapping: Optional[Dict[int, int]] = None) -> bool:

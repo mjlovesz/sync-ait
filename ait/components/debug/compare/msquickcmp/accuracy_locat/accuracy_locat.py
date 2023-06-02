@@ -27,123 +27,6 @@ from auto_optimizer.graph_refactor import Node
 from auto_optimizer import OnnxGraph
 from msquickcmp.atc.atc_utils import AtcUtils
 from msquickcmp.common import utils
-from msquickcmp.net_compare import analyser
-from msquickcmp.net_compare.net_compare import NetCompare
-from msquickcmp.npu.npu_dump_data import NpuDumpData
-from msquickcmp.npu.npu_dump_data_bin2npy import data_convert
-from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
-from msquickcmp.cmp_process import run
-
-
-def find_accuracy_interval(args, endnode_name, input_shape):
-    """
-    Function:
-        find accuracy interval of the error node
-    Return:
-        an error node interval list
-    """
-    if input_shape:
-        args.out_path = os.path.join(args.out_path, get_shape_to_directory_name(input_shape))
-
-    #读入onnx数据文件的路径
-    onnx_file_path = 'dump_data/onnx'
-    onnx_data_path = os.path.join(args.out_path, onnx_file_path)
-
-    #读入onnx模型
-    og = OnnxGraph.parse(args.model_path)
-    og.infer_shape()
-
-    #获取精度异常节点
-    endnode = og.get_node(endnode_name, node_type=Node)
-
-    output_file = './accuracy_location_log.txt'
-    output_file = os.path.realpath(output_file)
-    error_node_list = []
-    #验证单层算子是否有问题
-    #单层算子无问题
-    if not subgraph_check(og, endnode, endnode, args, 'Ascend310P3', onnx_data_path, input_shape):
-        for node in og.nodes:
-            if check_node_valid_normal(og, node):
-                l_node, r_node = bin_divide(og, node, endnode, args, 'Ascend310P3', onnx_data_path, input_shape)
-                error_node_list.append([l_node, r_node])
-        return error_node_list
-    return [[endnode, endnode]]
-
-
-def subgraph_check(og, startnode, endnode, args, soc_version, onnx_data_path, input_shape):
-    #onnx临时文件，为切分子图后的模型文件
-    subgraph_onnx_file = './tmp.onnx'
-    subgraph_onnx_file = os.path.realpath(subgraph_onnx_file)
-    utils.logger.info(f"Start extracting subgraph model, model saved in {subgraph_onnx_file}")
-    try:
-        og.extract_subgraph([startnode.name], [endnode.name], subgraph_onnx_file)
-    except Exception as e:
-        utils.logger.error("Failed to extract subgraph model")
-        raise AccuracyCompareException(utils.ACCRACY_COMPARISON_EXTRACT_ERROR) from e
-    utils.logger.info("Extracting model Sucess!")
-    utils.logger.info("Start using atc to convert onnx to om file")
-    atc_cmd = f"atc --framework=5 --soc_version={soc_version} --model={subgraph_onnx_file} --output=tmp"
-    os.system(atc_cmd)
-    utils.logger.info("atc conversion Sucess!")
-    #获得onnx与om模型后
-    utils.logger.info("Start to loading input data")
-    subog = OnnxGraph.parse(subgraph_onnx_file)
-    input_need_list = []
-    inputs_list = [(ii.name, ii.shape) for ii in onnxruntime.InferenceSession(subgraph_onnx_file).get_inputs()]
-    input_need_list = input_completion(og, inputs_list)
-    #按照需要读入所有需要的输入文件
-    pattern = '|'.join(input_need_list)
-    matched_files = find_npy_files_with_prefix(onnx_data_path, pattern)
-    sort_matched_files = []
-    for prefix in input_need_list:
-        for match_file in matched_files:
-            if match_file.startwith(prefix):
-                sort_matched_files.append(match_file)
-    bin_files_path = create_bin_file(sort_matched_files)
-    utils.logger.info("Loading data Finished!")
-    tmp_out_path = os.path.realpath('./tmpres')
-    if not os.path.exists(tmp_out_path):
-        os.makedirs(tmp_out_path)
-    time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
-    original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
-    cmg_args = CmpArgsAdapter(subgraph_onnx_file, subgraph_om_path, bin_files_path,
-                              args.cann_path, tmp_out_path, "", args.device,
-                              args.output_size, args.output_nodes, False, "", True, False)
-    output_json_path = AtcUtils(cmg_args).convert_model_to_json()
-    utils.logger.info("Start to run comparision")
-    res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
-    utils.logger.info("Comparision finished")
-    clr_cmd = 'rm -rf ./tmp/ ./tmpres/'
-    os.system(clr_cmd)
-    if check_res(res, endnode):
-        return True
-    return False
-
-
-def bin_divide(og, startnode, endnode, args, soc_version, onnx_data_path, input_shape):
-    """
-    Function:
-        using binary search to find the accuracy error interval
-    Return:
-        an accuracy error interval list
-    """
-    og.extract_subgraph([startnode.name], [endnode.name], './tmp.onnx')
-    subog = OnnxGraph.parse('./tmp.onnx')
-
-    # 直线化
-    satisfied_nodes = []
-    satisfied_nodes = calculate_flow(subog, startnode, endnode)
-    low = 0
-    high = len(satisfied_nodes) - 1
-
-    #二分
-    while low < high:
-        mid = (low + high + 1) // 2
-        if subgraph_check(og, satisfied_nodes[mid], endnode, args, soc_version, onnx_data_path, input_shape):
-            low = mid
-        else:
-            high = mid - 1
-    return satisfied_nodes[low], endnode
 
 
 def calculate_flow(graph, startnode, endnode):
@@ -256,7 +139,7 @@ def input_completion(og, inputs_list):
             if pre_input == node_input[0]:
                 index = i
                 break
-        input_need_list.append(f"{input_node.name}\.{index}\.")
+        input_need_list.append(f"{input_node.name}.{index}.")
     input_need_list = list(OrderedDict.fromkeys(input_need_list))
     return input_need_list
 
@@ -307,7 +190,8 @@ def check_res(res, endnode):
     check error is relative to endnode
     """
     for row in res:
-        for ground_truth_name in row["GroundTruth"]:
+        gdt_name_list = row["GroundTruth"].split(",")
+        for ground_truth_name in gdt_name_list:
             if ground_truth_name == endnode.name:
                 return True
     return False
