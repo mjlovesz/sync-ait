@@ -110,7 +110,20 @@ def fake_om_model(fake_onnx_model, fake_aipp_config, fake_switch_config):
 
 
 def test_aipp_function_st_pass(fake_om_model):
-    subprocess.run('ait debug compare -gm ./tmp/fake.onnx -om ./tmp/fake.om -s image:1,3,7,7 -o ./tmp/'.split(), shell=False)
+    args = CmpArgsAdapter(gold_model="tmp/fake.onnx",
+                          om_model="tmp/fake.om",
+                          input_data_path = "",
+                          cann_path="/usr/local/Ascend/ascend-toolkit/latest/",
+                          out_path="./tmp/",
+                          input_shape="",
+                          device="0",
+                          output_size="",
+                          output_nodes="",
+                          advisor=False,
+                          dym_shape_range="",
+                          dump=True,
+                          bin2npy=False)
+    cmp_process(args, use_cli=True)
 
 def test_aipp_function_st_no_dump_error(fake_om_model):
     args = CmpArgsAdapter(gold_model="tmp/fake.onnx",
