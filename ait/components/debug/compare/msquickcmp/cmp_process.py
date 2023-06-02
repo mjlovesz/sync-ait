@@ -180,7 +180,7 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
             endnode_names_list = res[0]["GroundTruth"].split(",")
             endnode_name = endnode_names_list[0]
             error_node_list = find_accuracy_interval(args, endnode_name, input_shape)
-            error_interval_info_file = os.path.join(ERROR_INTERVAL_INFO_FILE, args.out_path)
+            error_interval_info_file = os.path.join(args.out_path, ERROR_INTERVAL_INFO_FILE)
             with os.fdopen(os.open(error_interval_info_file, READ_WRITE_FLAGS, WRITE_MODES), "a+") as fp_writer:
                 output_error_interval_info(fp_writer, error_node_list)
 
