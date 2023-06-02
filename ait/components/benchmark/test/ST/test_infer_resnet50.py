@@ -934,7 +934,7 @@ class TestClass():
     def test_pure_inference_abnormal_dynamic_shape_range_mode(self):
         dymshape_range = "actual_input_1:1,3~4,224-300,224"
         dymshapes = ["actual_input_1:1,3,224,224", "actual_input_1:1,3,300,224",
-                      "actual_input_1:1,4,224,224", "actual_input_1:1,4,300,224"]
+                     "actual_input_1:1,4,224,224", "actual_input_1:1,4,300,224"]
         model_path = self.get_dynamic_shape_om_path()
         output_size = 100000
         output_parent_path = os.path.join(self.model_base_path, "output")
@@ -947,7 +947,7 @@ class TestClass():
         log_path = os.path.join(output_path, "log.txt")
         cmd = "{} --model {} --outputSize {} --dymShape_range {} --output {} --output_dirname {} > \
                 {}".format(TestCommonClass.cmd_prefix, model_path, output_size, dymshape_range, output_parent_path,
-                        output_dirname, log_path)
+                           output_dirname, log_path)
         logger.info("run cmd:{}".format(cmd))
 
         try:
@@ -1273,7 +1273,7 @@ class TestClass():
             for line in f:
                 if "device_"  in line:
                     temp_strs = line.split(' ')
-                    throughtout = float(temp_strs[2].split(':')[1])
+                    throughtout = float(temp_strs[3].split(':')[1])
                     device_throughputs.append(throughtout)
                     total_throughtout += throughtout
                 elif "summary throughput" in line:

@@ -51,17 +51,17 @@ class ConvMatch(MatchBase):
 
 
 # get subgraph inputs by pattern
-def get_input_op_name_list(pattern: Pattern) -> List[str]:
+def get_input_op_name_list(pattern_: Pattern) -> List[str]:
     input_op_name_list: List[str] = []
-    for pattern_node in pattern.inputs:
+    for pattern_node in pattern_.inputs:
         input_op_name_list.append(pattern_node.op_name)
     return input_op_name_list
 
 
 # get subgraph outputs by pattern
-def get_output_op_name_list(pattern: Pattern) -> List[str]:
+def get_output_op_name_list(pattern_: Pattern) -> List[str]:
     output_op_name_list: List[str] = []
-    for pattern_node in pattern.outputs:
+    for pattern_node in pattern_.outputs:
         output_op_name_list.append(pattern_node.op_name)
     return output_op_name_list
 

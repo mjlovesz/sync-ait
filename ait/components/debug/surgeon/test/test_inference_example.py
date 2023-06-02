@@ -152,8 +152,7 @@ class TestResnet(unittest.TestCase):
             inference = InferenceFactory.get_inference(engine["inference"]["type"])
             evaluate = EvaluateFactory.get_evaluate(engine["evaluate"]["type"])
         except Exception as err:
-            raise RuntimeError("get params failed error={}".format(err)) from err
-
+            raise RuntimeError("get params failed error=%s", err) from err
         return dataset, pre_process, post_process, inference, evaluate
 
 

@@ -281,7 +281,7 @@ class OmParser(object):
     def _get_range_shape_size_list(self, input_object):
         range_shape_size_list = []
         if ATTR_OBJECT not in input_object:
-            return
+            return range_shape_size_list
         shape_list = []
         for attr in input_object.get(ATTR_OBJECT):
             if KEY_OBJECT in attr and attr.get(KEY_OBJECT) == SHAPE_RANGE_OBJECT:
