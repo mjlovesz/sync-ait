@@ -72,7 +72,7 @@ def test_onnx_dump_data(cmp_args):
 
     # 3. convert data from bin to npy if --convert is used
     npu_dump_path = data_convert(npu_dump_data_path, npu_net_output_data_path, cmp_args)
-    print(npu_dump_path)
+
     # generate dump data by golden model
     golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_path)
     assert len(os.listdir(golden_dump_data_path)) == 14
