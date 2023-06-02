@@ -256,7 +256,7 @@ def subgraph_check(og, startnode, endnode, args, onnx_data_path, input_shape):
     for prefix in input_need_list:
         for match_file in matched_files:
             file_name = os.path.basename(match_file)
-            if file_name.startwith(prefix):
+            if file_name.startswith(prefix):
                 sort_matched_files.append(match_file)
     bin_files_path = al.create_bin_file(sort_matched_files)
     utils.logger.info("Loading data Finished!")
@@ -274,7 +274,7 @@ def subgraph_check(og, startnode, endnode, args, onnx_data_path, input_shape):
     utils.logger.info("Comparision finished")
     clr_cmd = 'rm -rf ./tmp/ ./tmpres/'
     os.system(clr_cmd)
-    if check_res(res, endnode):
+    if al.check_res(res, endnode):
         return True
     return False
 
