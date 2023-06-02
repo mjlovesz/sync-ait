@@ -52,11 +52,11 @@ class CaffeDumpData(DumpData):
         utils.create_directory(self.dump_data_dir)
 
         self.model = self._init_model()
-        
+
         self.inputs_map = {}
         self.net_output = {}
 
-    def generate_inputs_data(self, npu_dump_data_path, use_aipp):
+    def generate_inputs_data(self, npu_dump_data_path=None, use_aipp=False):
         input_names, input_shapes, input_dtypes = self._init_tensors_info(self.model, self.model.inputs)
 
         input_info = [
@@ -89,7 +89,7 @@ class CaffeDumpData(DumpData):
             np.copyto(model.blobs[input_name].data, input_data)
         return model.forward()  # {"output_name": output_numpy_data}
 
-    def generate_dump_data(self):
+    def generate_dump_data(self, npu_dump_path=None):
         """
         Function description:
             generate caffe model dump data
@@ -100,8 +100,8 @@ class CaffeDumpData(DumpData):
         Exception Description:
             none
         """
-        self._run_model(model, inputs_map)
-        self._save_dump_data(model)
+        self._run_model(self.model, self.inputs_map)
+        self._save_dump_data(self.model)
         return self.dump_data_dir
 
     def _init_model(self):
