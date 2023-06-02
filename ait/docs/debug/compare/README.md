@@ -82,3 +82,11 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
 
 请移步[compare使用示例](../../../examples/cli/debug/compare/)
 
+  | 示例                   | 使用场景                                 |
+  |-----------------------| ---------------------------------------- |
+  | [01_basic_usage](../../../examples/cli/debug/compare/01_basic_usage)    | 基础示例，运行onnx和om模型精度比对       | 
+  | [02_specify_input_data](../../../examples/cli/debug/compare/02_specify_input_data)    | 指定模型输入数据       | 
+  | [03_save_output_data](../../../examples/cli/debug/compare/03_save_output_data)    | 指定结果输出目录       | 
+  | [04_specify_input_shape_info](../../../examples/cli/debug/compare/04_specify_input_shape_info)    | 指定模型输入的shape信息(动态场景必须进行指定)。       | 
+  | [05_aipp_model_compare](../../../examples/cli/debug/compare/05_aipp_model_compare)    | 提供模型转换开启aipp参数的om模型与onnx模型进行精度比对的功能。 | 
+  | [06_npu_custom_op](../../../examples/cli/debug/compare/06_npu_custom_op)    | onnx模型中存在NPU自定义算子场景 | 
