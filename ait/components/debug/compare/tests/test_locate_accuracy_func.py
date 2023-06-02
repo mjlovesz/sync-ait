@@ -152,13 +152,13 @@ class TestClass:
     def init(self):
         self.cann_path = self.get_cann_path()
 
-        self.args_data2vec_cmp = self.set_accumulate_cmp_args
+        self.args_data2vec_cmp = self.set_accumulate_cmp_args()
         self.check_and_run(self.args_data2vec_cmp, True)
-        self.args_data2vec_acc = self.set_accumulate_acc_args
+        self.args_data2vec_acc = self.set_accumulate_acc_args()
 
-        self.args_gelu_cmp = self.set_single_node_cmp_args
+        self.args_gelu_cmp = self.set_single_node_cmp_args()
         self.check_and_run(self.args_gelu_cmp, True)
-        self.args_gelu_acc = self.set_single_node_acc_args
+        self.args_gelu_acc = self.set_single_node_acc_args()
 
  # =======================testcases=============================
 
