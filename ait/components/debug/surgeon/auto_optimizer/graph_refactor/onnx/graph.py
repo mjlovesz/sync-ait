@@ -226,7 +226,10 @@ class OnnxGraph(BaseGraph):
                          input_dtype: str = None):
 
         # do shape info by default
-        self.infer_shape()
+        try:
+            self.infer_shape()
+        except Exception as exp:
+            logger.debug("Infer shape failed: %s", exp)
 
         # parse input info from input shape and input dtype
         input_shape_dict = self._parse_input_info(input_shape)
