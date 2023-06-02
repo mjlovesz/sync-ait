@@ -440,6 +440,38 @@ class OnnxModifier:
 
         self.post_process(modify_info['postprocess_args'])
 
+        self.sort_nodes()
+
+    def sort_nodes(self):
+        nodes = self.graph.node
+        if len(nodes) == 0:
+            return 
+        dict_output_to_node = dict()
+        for node in nodes:
+            for output in node.output:
+                dict_output_to_node[output] = node
+
+        inputs_before_this_index_node = set()
+        index = 0
+        while index < len(nodes):
+            node = nodes[index]
+            # check if inputs before this node 
+            for input_name in node.input:
+                if input_name not in dict_output_to_node:
+                    continue
+                if input_name in inputs_before_this_index_node:
+                    continue
+
+                node_prev = dict_output_to_node[input_name]
+                nodes.remove(node_prev)
+                nodes.insert(index, node_prev)
+                break
+            else:
+                # all input is before this node，good and go on
+                for output_name in node.output:
+                    inputs_before_this_index_node.add(output_name)
+                index += 1
+
     def check_and_save_model(self, save_dir='./modified_onnx'):
         logging.info("saving model...")
         if not os.path.exists(save_dir):
