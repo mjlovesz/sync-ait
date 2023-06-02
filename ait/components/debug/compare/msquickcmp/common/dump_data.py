@@ -18,6 +18,7 @@ This class mainly involves generate dump data function.
 """
 import os
 import time
+
 import numpy as np
 
 from msquickcmp.common.utils import logger
