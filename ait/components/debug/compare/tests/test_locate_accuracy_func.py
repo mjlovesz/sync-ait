@@ -50,7 +50,7 @@ class TestClass:
                 os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_1.bin')
             ), # input_data_path
             cls.cann_path, # cann_path
-            os.path.join(cls.get_base_path(), '/test/data2vec/output/'), # out_path
+            os.path.join(cls.get_base_path(), '/test/data2vec/output'), # out_path
             "", # input_shape
             "0", # device
             "", # output_size
@@ -88,7 +88,7 @@ class TestClass:
             os.path.join(cls.get_base_path(), 'om/gelu.om'), # om_model
             os.path.join(cls.get_base_path(), 'input_datas/gelu/695.npy'), # input_data_path
             cls.cann_path, # cann_path
-            os.path.join(cls.get_base_path(), '/test/gelu/output/'), # out_path
+            os.path.join(cls.get_base_path(), '/test/gelu/output'), # out_path
             "", # input_shape
             "0", # device
             "", # output_size
