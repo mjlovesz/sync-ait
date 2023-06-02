@@ -16,6 +16,7 @@ class CmpArgsAdapter:
     def __init__(self,
                  gold_model,
                  om_model,
+                 weight_path,
                  input_data_path,
                  cann_path,
                  out_path,
@@ -30,6 +31,7 @@ class CmpArgsAdapter:
                  custom_op=""):
         self.model_path = gold_model
         self.offline_model_path = om_model
+        self.weight_path = weight_path
         self.input_path = input_data_path
         self.cann_path = cann_path
         self.out_path = out_path

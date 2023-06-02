@@ -1,9 +1,9 @@
 # ait debug compare功能使用指南
 
 ## 简介
-compare一键式全流程精度比对（推理）功能将推理场景的精度比对做了自动化，适用于 TensorFlow 和 ONNX 模型，用户只需要输入原始模型，对应的离线模型和输入，输出整网比对的结果，离线模型为通过 ATC 工具转换的 om 模型，输入 bin 文件需要符合模型的输入要求（支持模型多输入）。
-
-该功能使用约束场景说明，参考链接：[CANN商用版/约束说明（仅推理场景）](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/atlasaccuracy_16_0035.html)
+- compare一键式全流程精度比对（推理）功能将推理场景的精度比对做了自动化，适用于 TensorFlow 和 ONNX 模型，用户只需要输入原始模型，对应的离线模型和输入，输出整网比对的结果，离线模型为通过 ATC 工具转换的 om 模型，输入 bin 文件需要符合模型的输入要求（支持模型多输入）。
+- 该功能使用约束场景说明，参考链接：[CANN商用版/约束说明（仅推理场景）](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/atlasaccuracy_16_0035.html)
+- 对于 Caffe 模型，目前不支持动态 shape 的模型比对。
 
 
 ## 工具安装
@@ -24,8 +24,9 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
 
   | 参数名                   | 描述                                       | 必选   |
   |-----------------------| ---------------------------------------- | ---- |
-  | -gm，--golden-model    | 模型文件（.pb或.onnx)路径，目前只支持pb模型与onnx模型       | 是    |
+  | -gm，--golden-model    | 模型文件 [.pb, .onnx, .prototxt] 路径，分别对应 TF, ONNX, Caffe 模型       | 是    |
   | -om，--om-model        | 昇腾AI处理器的离线模型（.om）                        | 是    |
+  | -w，--weight-path      | -gm 为 Caffe 模型时对应的权重文件（.caffemodel）                        | 是    |
   | -i，--input            | 模型的输入数据路径，默认根据模型的input随机生成，多个输入以逗号分隔，例如：/home/input\_0.bin,/home/input\_1.bin。注意：使用aipp模型时该输入为om模型的输入 | 否    |
   | -c，--cann-path        | CANN包安装完后路径，默认为/usr/local/Ascend/ascend-toolkit/latest | 否    |
   | -o，--output           | 输出文件路径，默认为当前路径                           | 否    |
@@ -42,4 +43,3 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
 ### 使用场景
 
 请移步[compare使用示例](../../../examples/cli/debug/compare/)
-
