@@ -226,7 +226,10 @@ class OnnxGraph(BaseGraph):
                          input_dtype: str = None):
 
         # do shape info by default
-        self.infer_shape()
+        try:
+            self.infer_shape()
+        except Exception as exp:
+            logger.debug("Infer shape failed: %s", exp)
 
         # parse input info from input shape and input dtype
         input_shape_dict = self._parse_input_info(input_shape)
@@ -351,7 +354,7 @@ class OnnxGraph(BaseGraph):
         for name in name_list:
             value_info = self.get_node(name, PlaceHolder)
             ph_shape = None
-            ph_dtype = 'float32'
+            ph_dtype = np.dtype('float32')
             if value_info:
                 ph_shape = value_info.shape
                 ph_dtype = value_info.dtype
