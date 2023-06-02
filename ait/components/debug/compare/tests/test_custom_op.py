@@ -33,6 +33,7 @@ from msquickcmp.common import utils
 def fake_onnx_dir():
     os.makedirs("./onnx", exist_ok=True)
 
+
 @pytest.fixture(scope="session", autouse=True)
 def fake_onnx_model(fake_onnx_dir):
     with open("./test_resource/model_BatchMultiClassNMS.json", "r") as fi:
@@ -41,9 +42,12 @@ def fake_onnx_model(fake_onnx_dir):
         convert_model = Parse(onnx_str, onnx.ModelProto())
         onnx.save(convert_model, "./onnx/model.onnx")
 
+
 @pytest.fixture(scope="session", autouse=True)
 def fake_om_model(fake_onnx_model):
-    subprocess.run('atc --model=./onnx/model.onnx --framework=5 --output=./om/model --soc_version=Ascend310'.split(), shell=False)
+    subprocess.run('atc --model=./onnx/model.onnx --framework=5 \
+                   --output=./om/model --soc_version=Ascend310'.split(), shell=False)
+
 
 @pytest.fixture(scope="session", autouse=True)
 def cmp_args(fake_onnx_model, fake_om_model) -> None:
