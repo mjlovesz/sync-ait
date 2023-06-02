@@ -235,7 +235,8 @@ def subgraph_check(og, startnode, endnode, args, onnx_data_path, input_shape):
         raise AccuracyCompareException(utils.ACCRACY_COMPARISON_EXTRACT_ERROR) from e
     utils.logger.info("Extracting model Sucess!")
     utils.logger.info("Start using atc to convert onnx to om file")
-    atc_cmd = f"atc --framework=5 --soc_version={args.soc_version} --model={subgraph_onnx_file} --output=tmp_for_accuracy_locat"
+    atc_cmd = f"atc --framework=5 --soc_version={args.soc_version} --model={subgraph_onnx_file} \
+                --output=tmp_for_accuracy_locat"
     os.system(atc_cmd)
     utils.logger.info("atc conversion Sucess!")
     #获得onnx与om模型后
