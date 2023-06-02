@@ -14,7 +14,11 @@
 
 import os
 import shutil
+import subprocess
 
+import json
+import onnx 
+from google.protobuf.json_format import MessageToJson, Parse
 import pytest
 
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
@@ -25,8 +29,24 @@ from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common import utils
 
 
-@pytest.fixture(scope="module", autouse=True)
-def cmp_args() -> None:
+@pytest.fixture(scope="session", autouse=True)
+def fake_onnx_dir():
+    os.makedirs("./onnx", exist_ok=True)
+
+@pytest.fixture(scope="session", autouse=True)
+def fake_onnx_model(fake_onnx_dir):
+    with open("./test_resource/model_BatchMultiClassNMS.json", "r") as fi:
+        onnx_json = json.loads(fi.read())
+        onnx_str = json.dumps(onnx_json)
+        convert_model = Parse(onnx_str, onnx.ModelProto())
+        onnx.save(convert_model, "./onnx/model.onnx")
+
+@pytest.fixture(scope="session", autouse=True)
+def fake_om_model(fake_onnx_model):
+    subprocess.run('atc --model=./onnx/model.onnx --framework=5 --output=./om/model --soc_version=Ascend310'.split(), shell=False)
+
+@pytest.fixture(scope="session", autouse=True)
+def cmp_args(fake_onnx_model, fake_om_model) -> None:
     if os.path.exists("./dump_data"):      
         shutil.rmtree("./dump_data")
     if os.path.exists("./model"):
@@ -67,7 +87,7 @@ def test_onnx_dump_data(cmp_args):
     golden_dump.generate_inputs_data("", False)
 
     # 2. generate npu dump data
-    npu_dump = NpuDumpData(cmp_args, "./om/model.json")
+    npu_dump = NpuDumpData(cmp_args, "./test_resource/om/model.json")
     npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(True)
 
     # 3. convert data from bin to npy if --convert is used
