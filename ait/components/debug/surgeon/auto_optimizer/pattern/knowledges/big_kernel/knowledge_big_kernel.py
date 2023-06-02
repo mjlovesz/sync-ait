@@ -52,9 +52,8 @@ layernorm_pattern = Pattern() \
 class KnowledgeBigKernel(KnowledgeBase):
     def __init__(self, graph, start_node, end_node):
         super(KnowledgeBigKernel, self).__init__()
-        self.start_node = start_node
-        self.end_node = end_node
         self.attention_pattern = self.get_pattern(graph, start_node, end_node)
+        self.end_node_type = graph.get_node(end_node, type=OnnxNode)
         self._register_apply_funcs(self.attention_pattern, [self.big_kernel_apply])
         self.attention_idx = 0
         self.attention_ori_shape = None
@@ -74,10 +73,9 @@ class KnowledgeBigKernel(KnowledgeBase):
 
     def big_kernel_apply(self, graph: OnnxGraph, match_result: MatchResult):
         logger.info("Start to optimize {} attention in graph.".format(self.attention_idx))
-        last_node = graph.get_node(self.end_node, node_type=OnnxNode)
         refactor = TransformRefactor(graph)
         match_nodes = {node[0].name: node[0] for _, node in match_result.node_dicts[0].items()}
-        atten_start_node, atten_end_node, softmax = refactor.get_anchor_nodes(match_nodes, last_node)
+        atten_start_node, atten_end_node, softmax = refactor.get_anchor_nodes(match_nodes, self.end_node_type)
         if not atten_start_node or not atten_end_node or not softmax:
             raise ValueError("Cann\'t get attention start node or softmax node or attention end node.")
 
