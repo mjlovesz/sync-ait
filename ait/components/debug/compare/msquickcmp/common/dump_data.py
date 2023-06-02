@@ -33,3 +33,10 @@ class DumpData(object):
             generate dump data
         """
         pass
+
+    def generate_inputs_data(self):
+        """
+        Function Description:
+            generate inputs data
+        """
+        pass

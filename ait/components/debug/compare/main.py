@@ -61,7 +61,6 @@ def _accuracy_compare_parser(compare_parser):
                         help="<Optional> Enable npu dump data conversion from bin to npy after compare.\
                         For example: --convert True")
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     _accuracy_compare_parser(parser)
