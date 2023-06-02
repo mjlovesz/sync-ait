@@ -38,6 +38,7 @@ NONEQUIVALENT_KNOWLEDGES = [
     'KnowledgeResizeModeToNearest',
     'KnowledgeTopkFix',
     'KnowledgeEmptySliceFix',
+    'KnowledgeBigKernel'
 ]
 
 COLOR_SUCCESS = '\033[92m'
@@ -61,6 +62,15 @@ class InferTestConfig:
     process_run_infer: bool = False
 
 
+@dataclass
+class BigKernelConfig:
+    """
+    Big kernel optimize config
+    """
+    attention_start_node: str = ""
+    attention_end_node: str = ""
+
+
 class GraphOptimizer:
     '''Public Graph Optimizer class.'''
     def __init__(self, knowledges_: List[str]) -> None:
@@ -78,7 +88,7 @@ class GraphOptimizer:
         }
         if len(knowledge_dict) == 0:
             raise ValueError('No valid knowledge provided.')
-        self.knowledges: Dict[str, KnowledgeBase] = knowledge_dict
+        self.knowledges = knowledge_dict
 
     @staticmethod
     def _effective(om_ori: str, om_opt: str, cfg: InferTestConfig, check_precision: bool,
@@ -166,6 +176,15 @@ class GraphOptimizer:
                 for match_result in match_results:
                     res |= knowledge.apply(graph, match_result)
         return knowledge.post_process(graph) and res
+
+    def init_knowledges(self):
+        knowledges_ins = {}
+        for k_name, k_cls in self.knowledges.items():
+            if k_name != "KnowledgeBigKernel":
+                knowledges_ins.setdefault(k_name, k_cls())
+            else:
+                knowledges_ins.setdefault(k_name, k_cls)
+        self.knowledges = knowledges_ins
 
     def load_config(self):
         pass
