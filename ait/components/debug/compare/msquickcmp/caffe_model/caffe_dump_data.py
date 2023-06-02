@@ -56,6 +56,22 @@ class CaffeDumpData(DumpData):
         self.inputs_map = {}
         self.net_output = {}
 
+    @staticmethod
+    def _init_tensors_info(model, tensor_names):
+        names, shapes, dtypes = [], [], []
+        for name in tensor_names:
+            names.append(name)
+            data = model.blobs[name].data
+            shapes.append(data.shape)
+            dtypes.append(data.dtype.name)
+        return names, shapes, dtypes
+
+    @staticmethod
+    def _run_model(model, inputs_map):
+        for input_name, input_data in inputs_map.items():
+            np.copyto(model.blobs[input_name].data, input_data)
+        return model.forward()  # {"output_name": output_numpy_data}
+
     def generate_inputs_data(self, npu_dump_data_path=None, use_aipp=False):
         input_names, input_shapes, input_dtypes = self._init_tensors_info(self.model, self.model.inputs)
 
@@ -72,22 +88,6 @@ class CaffeDumpData(DumpData):
             self.inputs_map = self._generate_random_input_data(
                 self.input_data_save_dir, input_names, input_shapes, input_dtypes
             )
-
-    @staticmethod
-    def _init_tensors_info(model, tensor_names):
-        names, shapes, dtypes = [], [], []
-        for name in tensor_names:
-            names.append(name)
-            data = model.blobs[name].data
-            shapes.append(data.shape)
-            dtypes.append(data.dtype.name)
-        return names, shapes, dtypes
-
-    @staticmethod
-    def _run_model(model, inputs_map):
-        for input_name, input_data in inputs_map.items():
-            np.copyto(model.blobs[input_name].data, input_data)
-        return model.forward()  # {"output_name": output_numpy_data}
 
     def generate_dump_data(self, npu_dump_path=None):
         """
