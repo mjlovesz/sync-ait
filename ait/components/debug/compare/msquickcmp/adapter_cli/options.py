@@ -131,7 +131,25 @@ opt_dump = click.option(
 
 opt_bin2npy = click.option(
     "--convert", 
-    "bin2npy", 
+    "bin2npy",
+    default=False, 
     type=str2bool,
     help="Enable npu dump data conversion from bin to npy after compare.Usage: --convert True."
+)
+
+opt_locat = click.option(
+    "-l",
+    "--locat", 
+    "locat",
+    default=False, 
+    type=str2bool,
+    help="Enable accuracy interval location when needed.E.g: --locat."
+)
+
+opt_soc_version = click.option(
+    "--soc_version", 
+    "soc_version",
+    default="", 
+    type=str,
+    help="When -l or --locat is enabled, soc_version needs to be provided.E.g:--soc_version \"Ascend310P3\""
 )

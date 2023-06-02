@@ -28,6 +28,7 @@
 #include <iostream>
 
 using namespace std;
+
 #define FILELINE __FILE__, __FUNCTION__, __LINE__
 #define LogDebug  cout  // LOG(INFO)   // VLOG_EVERY_N(Base::LOG_LEVEL_DEBUG, Base::Log::logFlowControlFrequency_)
 #define LogInfo   cout       // LOG(INFO)        //LOG_EVERY_N(INFO, Base::Log::logFlowControlFrequency_)

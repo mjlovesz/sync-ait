@@ -31,6 +31,9 @@ from ais_bench.infer.interface import InferSession
 logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
+OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
+
 
 class TestClass():
     @staticmethod
@@ -887,9 +890,7 @@ class TestClass():
     def test_pure_inference_normal_dynamic_shape_range_mode_3(self):
         range_file_parent_path = os.path.join(self.model_base_path, "input")
         dymshape_range_file = os.path.join(range_file_parent_path, "dymshape_range.info")
-        flags = os.O_WRONLY | os.O_CREAT
-        modes = stat.S_IWUSR | stat.S_IRUSR
-        with os.fdopen(os.open(dymshape_range_file, flags, modes), 'w') as f:
+        with os.fdopen(os.open(dymshape_range_file, OPEN_FLAGS, OPEN_MODES), 'w') as f:
             f.write("actual_input_1:1,3,224-300,224-225\n")
             f.write("actual_input_1:8-9,3,224-300,260-300")
 
@@ -933,7 +934,7 @@ class TestClass():
     def test_pure_inference_abnormal_dynamic_shape_range_mode(self):
         dymshape_range = "actual_input_1:1,3~4,224-300,224"
         dymshapes = ["actual_input_1:1,3,224,224", "actual_input_1:1,3,300,224",
-                      "actual_input_1:1,4,224,224", "actual_input_1:1,4,300,224"]
+                     "actual_input_1:1,4,224,224", "actual_input_1:1,4,300,224"]
         model_path = self.get_dynamic_shape_om_path()
         output_size = 100000
         output_parent_path = os.path.join(self.model_base_path, "output")
@@ -946,7 +947,7 @@ class TestClass():
         log_path = os.path.join(output_path, "log.txt")
         cmd = "{} --model {} --outputSize {} --dymShape_range {} --output {} --output_dirname {} > \
                 {}".format(TestCommonClass.cmd_prefix, model_path, output_size, dymshape_range, output_parent_path,
-                        output_dirname, log_path)
+                           output_dirname, log_path)
         logger.info("run cmd:{}".format(cmd))
 
         try:
@@ -1272,7 +1273,7 @@ class TestClass():
             for line in f:
                 if "device_"  in line:
                     temp_strs = line.split(' ')
-                    throughtout = float(temp_strs[2].split(':')[1])
+                    throughtout = float(temp_strs[3].split(':')[1])
                     device_throughputs.append(throughtout)
                     total_throughtout += throughtout
                 elif "summary throughput" in line:
@@ -1350,10 +1351,10 @@ class TestClass():
         log_path = os.path.join(output_path, "profiler.log")
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
 
-        # GE_PROFILIGN_TO_STD_OUT=0
-        env_label = os.getenv('GE_PROFILIGN_TO_STD_OUT', 'null')
+        # when GE_PROFILING_TO_STD_OUT=0
+        env_label = os.getenv('GE_PROFILING_TO_STD_OUT', 'null')
         if env_label != 'null':
-            del os.environ['GE_PROFILIGN_TO_STD_OUT']
+            del os.environ['GE_PROFILING_TO_STD_OUT']
         cmd = "{} --model {} --device {} --profiler True --output {} > {}" \
             .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, output_path, log_path)
         logger.info("run cmd:{}".format(cmd))
@@ -1373,8 +1374,8 @@ class TestClass():
         else:
             assert label_is_exist is False
 
-        # GE_PROFILIGN_TO_STD_OUT=1
-        os.environ['GE_PROFILIGN_TO_STD_OUT'] = "1"
+        # when GE_PROFILING_TO_STD_OUT=1
+        os.environ['GE_PROFILING_TO_STD_OUT'] = "1"
         label_is_exist = False
         os.remove(log_path)
         shutil.rmtree(output_path)
@@ -1396,7 +1397,7 @@ class TestClass():
         assert label_is_exist is True
 
         shutil.rmtree(output_path)
-        del os.environ['GE_PROFILIGN_TO_STD_OUT']
+        del os.environ['GE_PROFILING_TO_STD_OUT']
 
 
 if __name__ == '__main__':

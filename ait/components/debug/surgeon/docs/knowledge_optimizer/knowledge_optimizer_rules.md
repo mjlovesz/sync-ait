@@ -682,3 +682,114 @@ graph TD
 ```
 
 如上图所示，Pad算子转换为一个等价子图。
+
+
+
+## transform模型大kernel优化
+
+### 原理
+
+ATC工具对transform模型的标准attention结构进行了优化，在转换om时将标准attention结构转成AttentionLnQKV和AttentionScore两个大算子，从而提升模型的推理性能。transform类模型的attention变体有多种，本知识库是将attention变体通过一定的规则转换成ATC能识别的标准attention结构，从而提升模型的性能。
+
+### 示意图
+
+```mermaid
+graph TD
+	subgraph after
+		sadd(Add)
+		qmm(MatMul)
+		qadd(Add)
+		qres(Reshape)
+		qtrans(Transpose)
+		kmm(MatMul)
+		kadd(Add)
+		kres(Reshape)
+		ktrans1(Transpose)
+		ktrans2(Transpose)
+		vmm(MatMul)
+		vadd(Add)
+		vres(Reshape)
+		vtrans(Transpose)
+		qkmm(MatMul)
+		mul(Mul)
+		maskadd(Add)
+		softmax(Softmax)
+		scorevmm(MatMul)
+		transe(Tanspose)
+		mme(MatMul)
+		adde(Add)
+		endadd(Add)
+		
+		sadd-->qmm
+		sadd-->kmm
+		sadd-->vmm
+		qmm-->qadd
+		kmm-->kadd
+		vmm-->vadd
+		qadd-->qres
+		kadd-->kres
+		vadd-->vres
+		qres-->qtrans
+		kres-->ktrans1
+		ktrans1-->ktrans2
+		vres-->vtrans
+		qtrans-->qkmm
+		ktrans2-->qkmm
+		qkmm-->mul
+		mul-->maskadd
+		maskadd-->softmax
+		softmax-->scorevmm
+		vtrans-->scorevmm
+		scorevmm-->transe
+		transe-->mme
+		mme-->adde
+		adde-->endadd
+	end
+	
+    subgraph before
+    	add1(Add)
+    	res1(Reshape)
+    	gemm1(Gemm)
+    	res2(Reshape)
+    	split(Split)
+    	q_res(Reshape)
+    	k_res(Reshape)
+    	v_res(Reshape)
+    	q_trans(Transpose)
+    	k_trans(Transpose)
+    	v_trans(Transpose)
+    	qk_mm(MatMul)
+    	div(Div)
+    	sub(Sub)
+    	soft(Softmax)
+    	vs_mm(MatMul)
+    	trans(Transpose)
+    	resh1(Reshape)
+    	gemm(Gemm)
+    	resh2(Reshape)
+    	add2(Add)
+    	
+		add1-->res1
+		res1-->gemm1
+		gemm1-->res2
+		res2-->split
+		split-->q_res
+		split-->k_res
+		split-->v_res
+		q_res-->q_trans
+		k_res-->k_trans
+		v_res-->v_trans
+		q_trans-->qk_mm
+		k_trans-->qk_mm
+		qk_mm-->div
+		div-->sub
+		sub-->soft
+		soft-->vs_mm
+		v_trans-->vs_mm
+		vs_mm-->trans
+		trans-->resh1
+		resh1-->gemm
+		gemm-->resh2
+		resh2-->add2
+    end
+```

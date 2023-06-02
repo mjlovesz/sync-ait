@@ -32,6 +32,10 @@ class Knowledge(object):
     def suggestion(self):
         return self._suggestion
 
+    @property
+    def apis(self):
+        return self._apis
+
     def analysis(self, line: str) -> bool:
         for func in self._match_funcs:
             if not func(line):

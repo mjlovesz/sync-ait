@@ -26,7 +26,10 @@ class CmpArgsAdapter:
                  advisor,
                  dym_shape_range,
                  dump,
-                 bin2npy):
+                 bin2npy,
+                 locat,
+                 soc_version
+                 ):
         self.model_path = gold_model
         self.offline_model_path = om_model
         self.input_path = input_data_path
@@ -40,3 +43,5 @@ class CmpArgsAdapter:
         self.dym_shape_range = dym_shape_range   
         self.dump = dump    
         self.bin2npy = bin2npy
+        self.locat = locat
+        self.soc_version = soc_version

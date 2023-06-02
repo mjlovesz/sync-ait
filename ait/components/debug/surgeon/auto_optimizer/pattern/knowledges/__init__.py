@@ -14,3 +14,4 @@ from auto_optimizer.pattern.knowledges.knowledge_gather_to_split import Knowledg
 from auto_optimizer.pattern.knowledges.knowledge_avgpool_split import KnowledgeAvgPoolSplit
 from auto_optimizer.pattern.knowledges.knowledge_bn_folding import KnowledgeBNFolding
 from auto_optimizer.pattern.knowledges.knowledge_modify_reflection_pad import KnowledgeModifyReflectionPad
+from auto_optimizer.pattern.knowledges.big_kernel.knowledge_big_kernel import KnowledgeBigKernel
