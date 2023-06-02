@@ -354,7 +354,7 @@ class OnnxGraph(BaseGraph):
         for name in name_list:
             value_info = self.get_node(name, PlaceHolder)
             ph_shape = None
-            ph_dtype = 'float32'
+            ph_dtype = np.dtype('float32')
             if value_info:
                 ph_shape = value_info.shape
                 ph_dtype = value_info.dtype
