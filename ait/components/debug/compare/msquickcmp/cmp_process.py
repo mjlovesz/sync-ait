@@ -290,6 +290,7 @@ def bin_divide(og, startnode, endnode, args, onnx_data_path, input_shape):
     og.extract_subgraph([startnode.name], [endnode.name], './tmp_for_subgraph.onnx')
     subog = OnnxGraph.parse('./tmp_for_subgraph.onnx')
 
+    utils.logger.info("Binary Search for error interval starts.")
     # 直线化
     satisfied_nodes = []
     satisfied_nodes = al.calculate_flow(subog, startnode, endnode)
@@ -303,4 +304,5 @@ def bin_divide(og, startnode, endnode, args, onnx_data_path, input_shape):
             low = mid
         else:
             high = mid - 1
+    utils.logger.info("Binary Search for error interval ends.")
     return satisfied_nodes[low], endnode
