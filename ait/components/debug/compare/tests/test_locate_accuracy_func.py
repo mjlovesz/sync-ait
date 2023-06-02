@@ -1,4 +1,4 @@
-# Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -166,36 +166,15 @@ class TestClass:
         '''
             存在累计误差区间的场景
         '''
-        # logger.info(self.args_data2vec_acc.model_path)
-        # logger.info(self.args_data2vec_acc.offline_model_path)
-        # logger.info(self.args_data2vec_acc.input_path)
         logger.info(self.args_data2vec_acc.cann_path)
         logger.info(self.args_data2vec_acc.out_path)
-        # logger.info(self.args_data2vec_acc.input_shape)
-        # logger.info(self.args_data2vec_acc.device)
-        # logger.info(self.args_data2vec_acc.output_size)
-        # logger.info(self.args_data2vec_acc.output_nodes)
-        # logger.info(self.args_data2vec_acc.advisor)
-        # logger.info(self.args_data2vec_acc.dym_shape_range)
-        # logger.info(self.args_data2vec_acc.dump)
-        # logger.info(self.args_data2vec_acc.bin2npy)
+
         find_accuracy_interval(self.args_data2vec_acc, "Gather_1186", "")
 
     def test_compare_cause_by_single_node_situation(self):
         '''
             单算子引起的场景
         '''
-        # logger.info(self.args_gelu_acc.model_path)
-        # logger.info(self.args_gelu_acc.offline_model_path)
-        # logger.info(self.args_gelu_acc.input_path)
         logger.info(self.args_gelu_acc.cann_path)
         logger.info(self.args_gelu_acc.out_path)
-        # logger.info(self.args_gelu_acc.input_shape)
-        # logger.info(self.args_gelu_acc.device)
-        # logger.info(self.args_gelu_acc.output_size)
-        # logger.info(self.args_gelu_acc.output_nodes)
-        # logger.info(self.args_gelu_acc.advisor)
-        # logger.info(self.args_gelu_acc.dym_shape_range)
-        # logger.info(self.args_gelu_acc.dump)
-        # logger.info(self.args_gelu_acc.bin2npy)
         find_accuracy_interval(self.args_gelu_acc, "703", "")
