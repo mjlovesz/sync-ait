@@ -296,8 +296,9 @@ def bin_divide(og, startnode, endnode, args, onnx_data_path, input_shape):
     Return:
         an accuracy error interval list
     """
-    og.extract_subgraph([startnode.name], [endnode.name], './tmp_for_subgraph.onnx')
-    subog = OnnxGraph.parse('./tmp_for_subgraph.onnx')
+    subgraph_model_path = os.path.join(args.out_path, 'tmp_for_subgraph.onnx')
+    og.extract_subgraph([startnode.name], [endnode.name], subgraph_model_path)
+    subog = OnnxGraph.parse(subgraph_model_path)
 
     utils.logger.info("Binary Search for error interval starts.")
     # 直线化
