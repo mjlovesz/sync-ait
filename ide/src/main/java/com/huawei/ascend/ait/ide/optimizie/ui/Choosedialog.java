@@ -29,7 +29,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
 
-import org.bouncycastle.pqc.crypto.newhope.NHSecretKeyProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -219,7 +218,7 @@ public class Choosedialog extends JFrame {
 
     private class ModelConvert {
         ModelConvert() {
-            setIcon(modelConverter, Icons.MODEL_CONVERTER_DARK, Icons.MODEL_CONVERTER_LIGHT);
+            setIcon(modelConverter, Icons.AIT_MODEL_CONVERTER_DARK, Icons.AIT_MODEL_CONVERTER_LIGHT);
             setStepIcons(modelConverterJPanel, modelConverter, step2, PluginClassId.Foundation_PluginId);
             actionMappings.put(StepNum.MODEL_CONVERTER, this::doModelConvert);
         }
