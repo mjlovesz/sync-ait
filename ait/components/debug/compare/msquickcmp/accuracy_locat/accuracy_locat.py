@@ -158,7 +158,7 @@ def check_node_valid(incnt, graph, node):
         emp_cnt = 0
         for node_input in node.inputs:
             input_node = graph.get_prev_node(node_input)
-            if input_node is not None:
+            if input_node is None:
                 emp_cnt += 1
         if emp_cnt == incnt.get(node.name):
             return True
@@ -176,7 +176,7 @@ def check_input_node(og, node):
     input_cnt = 0
     for node_input in node.inputs:
         input_node = og.get_prev_node(node_input)
-        if input_node is not None:
+        if input_node is None:
             input_cnt += 1
     if input_cnt == len(node.inputs):
         return True
