@@ -38,6 +38,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * AisBenchBasic
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class AisBenchBasic extends DialogWrapper {
     private JPanel root;
     private JComboBox pureDataTypeCombx;
@@ -73,6 +79,11 @@ public class AisBenchBasic extends DialogWrapper {
     private static final long FILE_SIZE_MAX = (long) 2 * 1024 * 1024 * 1024;
     private final Project project;
 
+    /**
+     * AisBenchBasic
+     *
+     * @param project project
+     */
     public AisBenchBasic(Project project) {
         super(true);
         this.project = project;

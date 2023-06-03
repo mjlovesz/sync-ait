@@ -21,6 +21,12 @@ import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
 
 import java.util.List;
 
+/**
+ * AisBenchCmdStr
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class AisBenchCmdStr {
     public static final CmdStrWordStatic modelService = new CmdStrWordStatic("--model");
     public static final CmdStrWordStatic inputService = new CmdStrWordStatic("--input");
@@ -36,15 +42,29 @@ public class AisBenchCmdStr {
     public static final CmdStrWordStatic falseService = new CmdStrWordStatic("false");
     public static final CmdStrWordStatic trueService = new CmdStrWordStatic("true");
 
-    public static void addPath(List<CmdStr> strBuffer, CmdStrWordStatic service, CmdStrWordStatic param) {
+    /**
+     * addPath
+     *
+     * @param strBuffer strBuffer
+     * @param wordStatic  wordStatic
+     * @param param parm
+     */
+    public static void addPath(List<CmdStr> strBuffer, CmdStrWordStatic wordStatic, CmdStrWordStatic param) {
         if (!param.toString().isEmpty()) {
-            strBuffer.add(service);
+            strBuffer.add(wordStatic);
             strBuffer.add(param);
         }
     }
 
-    public static void addState(List<CmdStr> strBuffer, CmdStrWordStatic service, boolean isOn) {
-        strBuffer.add(service);
+    /**
+     * addState
+     *
+     * @param strBuffer strBuffer
+     * @param wordStatic  wordStatic
+     * @param isOn   isOn
+     */
+    public static void addState(List<CmdStr> strBuffer, CmdStrWordStatic wordStatic, boolean isOn) {
+        strBuffer.add(wordStatic);
         if (!isOn) {
             strBuffer.add(falseService);
         } else {

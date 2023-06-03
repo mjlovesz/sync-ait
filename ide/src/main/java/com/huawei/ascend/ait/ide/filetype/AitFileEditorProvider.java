@@ -26,8 +26,13 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * AitFileEditorProvider
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class AitFileEditorProvider implements FileEditorProvider, DumbAware {
-
     public static final String FILE_NAME = "AIT";
     public static final String EDITOR_TYPE_ID = "supported_model_info_file_editor_id";
 

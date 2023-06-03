@@ -47,6 +47,12 @@ import java.util.HashMap;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * choosedialog
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class Choosedialog extends JFrame {
     private JPanel root;
     private JPanel guide;
@@ -83,6 +89,11 @@ public class Choosedialog extends JFrame {
     private static final int JLABEL_FONT_SIZE = 20;
     private static final int TITLE_FONT_SIZE = 36;
 
+    /**
+     * choosedialog
+     *
+     * @param project project
+     */
     public Choosedialog(Project project) {
         this.project = project;
         initComponent();
@@ -90,12 +101,18 @@ public class Choosedialog extends JFrame {
         setBackgroundColor();
     }
 
+    /**
+     * init图标
+     */
     private void initIcon() {
         rightIcon.setIcon(UiUtils.getJbIcon(Icons.RIGHT_DARK, Icons.RIGHT_LIGHT));
         title.setFont(new Font(COMMON_FONT_STYLE, Font.PLAIN, TITLE_FONT_SIZE));
         title.setForeground(TITLE_FONT_COLOR);
     }
 
+    /**
+     * 设置背景颜色
+     */
     private void setBackgroundColor() {
         root.setBackground(GUIDE_VIEW_COLOR);
         guide.setBackground(GUIDE_VIEW_COLOR);
@@ -104,6 +121,9 @@ public class Choosedialog extends JFrame {
         stepJPanel.setBackground(GUIDE_VIEW_COLOR);
     }
 
+    /**
+     * activeOutput
+     */
     private void activeOutput() {
         Window window = WindowManager.getInstance().suggestParentWindow(project);
         if (window == null) {
@@ -114,11 +134,21 @@ public class Choosedialog extends JFrame {
         OutputFactory.show(project);
     }
 
+    /**
+     * setIcon
+     *
+     * @param jLabel jLabel
+     * @param dark   dark
+     * @param light  light
+     */
     private void setIcon(JLabel jLabel, Icon dark, Icon light) {
         jLabel.setIcon(UiUtils.getJbIcon(dark, light));
         jLabel.setIconTextGap(ICON_TEXT_GAP);
     }
 
+    /**
+     * initComponent
+     */
     private void initComponent() {
         root.setVisible(true);
         initMouse();
@@ -128,6 +158,9 @@ public class Choosedialog extends JFrame {
         });
     }
 
+    /**
+     * initMap
+     */
     private void initMap() {
         ModelAnalyse modelAnalyse = new ModelAnalyse();
         ModelConvert modelConvert = new ModelConvert();
@@ -136,10 +169,18 @@ public class Choosedialog extends JFrame {
         Compare compare = new Compare();
     }
 
+    /**
+     * getRoot
+     *
+     * @return root
+     */
     public JComponent getRoot() {
         return root;
     }
 
+    /**
+     * initMouse
+     */
     private void initMouse() {
         checkPluginsAndAddAction(modelAnalyse, StepNum.MODEL_ANALYSE, PluginClassId.Foundation_PluginId);
         checkPluginsAndAddAction(modelConverter, StepNum.MODEL_CONVERTER, PluginClassId.Foundation_PluginId);
@@ -148,6 +189,13 @@ public class Choosedialog extends JFrame {
         checkPluginsAndAddAction(systemProfiler, StepNum.SYSTEM_PROFILER, PluginClassId.Inference_PluginId);
     }
 
+    /**
+     * checkPluginsAndAddAction
+     *
+     * @param jLabel jLabel
+     * @param step    step
+     * @param pluginClass pluginClass
+     */
     private void checkPluginsAndAddAction(JLabel jLabel, StepNum step, String  pluginClass) {
         if (PluginId.findId(pluginClass) != null && PluginManager.getInstance().findEnabledPlugin(PluginId.getId(pluginClass)) != null) {
             jLabel.addMouseListener(new ChooseViewMouseAdapter(step, jLabel));
@@ -229,7 +277,7 @@ public class Choosedialog extends JFrame {
         }
     }
 
-    public void setStepIcons(JPanel jPanel, JLabel jLabel1, JLabel jLabel2, String  pluginClass) {
+    private void setStepIcons(JPanel jPanel, JLabel jLabel1, JLabel jLabel2, String  pluginClass) {
         jPanel.setBackground(GUIDE_VIEW_COLOR);
 
         jLabel1.setBackground(GUIDE_VIEW_COLOR);

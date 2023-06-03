@@ -18,8 +18,20 @@ package com.huawei.ascend.ait.ide.commonlib.exception;
 
 import com.huawei.ascend.ait.ide.commonlib.util.BundleUtil;
 
+/**
+ * CommandInjectException
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class CommandInjectException extends Exception {
     private static final long serialVersionUID = -2439139320983098242L;
+
+    /**
+     * CommandInjectException
+     *
+     * @param errorParam errorParam
+     */
     public CommandInjectException(String errorParam) {
         super(BundleUtil.getCommonlibsString("command.inject.error") + "The error param is " + errorParam);
     }

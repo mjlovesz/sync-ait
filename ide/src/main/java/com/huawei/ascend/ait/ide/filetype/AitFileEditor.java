@@ -31,11 +31,23 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.JComponent;
 import java.beans.PropertyChangeListener;
 
+/**
+ * AitFileEditor
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class AitFileEditor extends UserDataHolderBase implements FileEditor {
     private final Choosedialog choosedialog;
     private VirtualFile file;
     private Project project;
 
+    /**
+     * AitFileEditor
+     *
+     * @param project     project
+     * @param virtualFile virtualFile
+     */
     public AitFileEditor(@NotNull Project project, @NotNull VirtualFile virtualFile) {
         this.project = project;
         if (file instanceof LightVirtualFile) {

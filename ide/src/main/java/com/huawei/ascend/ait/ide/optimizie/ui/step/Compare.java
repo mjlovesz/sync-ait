@@ -30,6 +30,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+/**
+ * Compare
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class Compare extends DialogWrapper {
     private JPanel root;
     private JLabel model;
@@ -39,6 +45,11 @@ public class Compare extends DialogWrapper {
     private SwitchButton debugButton;
     private final Project project;
 
+    /**
+     * compare
+     *
+     * @param project project
+     */
     public Compare(@Nullable Project project) {
         super(true);
         this.project = project;

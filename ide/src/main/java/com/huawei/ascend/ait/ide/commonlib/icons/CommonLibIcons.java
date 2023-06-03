@@ -21,6 +21,12 @@ import com.intellij.openapi.util.IconLoader;
 
 import javax.swing.Icon;
 
+/**
+ * CommonLib Icons
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public interface CommonLibIcons {
     /**
      * TOOL_ICON
@@ -42,9 +48,15 @@ public interface CommonLibIcons {
      */
     Icon DETAIL_ICON_DARK = IconLoader.getIcon("/icons/dark/detail.svg", CommonLibIcons.class);
 
+    /**
+     * SWITCH_CLOSE
+     */
     public static final Icon SWITCH_CLOSE = IconLoader.findIcon(
             "/icons/switchclose.svg", Icons.class.getClassLoader());
 
+    /**
+     * SWITCH_OPEN
+     */
     public static final Icon SWITCH_OPEN = IconLoader.findIcon(
             "/icons/switchopen.svg", Icons.class.getClassLoader());
 }

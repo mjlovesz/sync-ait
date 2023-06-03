@@ -28,8 +28,17 @@ import com.intellij.testFramework.LightVirtualFile;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * AitAction
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class AitAction extends AnAction {
 
+    /**
+     * AitAction
+     */
     public AitAction() {
         super("AIT", "",
                 UiUtils.getJbIcon(Icons.AIS_BENCH_DARK, Icons.AIS_BENCH_LIGHT));
@@ -43,6 +52,11 @@ public class AitAction extends AnAction {
         openEditor(e.getProject());
     }
 
+    /**
+     * open Editor
+     *
+     * @param project project
+     */
     private void openEditor(Project project) {
         FileEditorManager instance = FileEditorManager.getInstance(project);
         instance.openFile(new LightVirtualFile("AIT"), true);
