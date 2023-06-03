@@ -33,7 +33,7 @@ opt_golden_model = click.option(
     '--golden-model',
     'golden_model',
     required=True,
-    help="The original model (.onnx or .pb) file path",
+    help="The original model (.onnx or .pb or .prototxt) file path",
 )
 
 opt_om_model = click.option(
@@ -42,6 +42,13 @@ opt_om_model = click.option(
     "om_model",
     help="The offline model (.om) file path",
     required=True
+)
+
+opt_weight_path = click.option(
+    "-w",
+    "--weight-path",
+    "weight_path",
+    help="Required when framework is Caffe (.cafemodel)",
 )
 
 opt_input = click.option(
