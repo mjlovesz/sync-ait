@@ -28,7 +28,7 @@ class CmpArgsAdapter:
                  dym_shape_range,
                  dump,
                  bin2npy,
-                 custom_op=""
+                 custom_op="",
                  locat=False
                  ):
         self.model_path = gold_model

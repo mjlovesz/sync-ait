@@ -20,6 +20,7 @@ This class mainly involves the main function.
 """
 
 import argparse
+import acl
 import os
 import sys
 import stat
@@ -274,9 +275,9 @@ def subgraph_check(og, startnode, endnode, args, onnx_data_path, input_shape):
     time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     cmg_args = CmpArgsAdapter(subgraph_onnx_file, os.path.join(args.out_path, "tmp_for_accuracy_locat.om"),
-                              bin_files_path, args.cann_path, tmp_out_path, "", args.device,
+                              "", bin_files_path, args.cann_path, tmp_out_path, "", args.device,
                               "", "", False, "", True, False, custom_op = args.custom_op,
-                              locat = args.locat)
+                              locat = False)
     output_json_path = AtcUtils(cmg_args).convert_model_to_json()
     utils.logger.info("Start to run comparision")
     res = run(cmg_args, input_shape, output_json_path, original_out_path, True)

@@ -74,9 +74,9 @@ def compare_cli(
     custom_op,
     locat
 ) -> None:
-    cmp_args = CmpArgsAdapter(golden_model, om_model, input_data_path, cann_path, out_path, input_shape, device,
-                              output_size, output_nodes, advisor, dym_shape_range, dump, bin2npy,
-                              custom_op, locat)
+    cmp_args = CmpArgsAdapter(golden_model, om_model, weight_path, input_data_path, cann_path, out_path,
+                              input_shape, device, output_size, output_nodes, advisor, dym_shape_range,
+                              dump, bin2npy, custom_op, locat)
     return cmp_process(cmp_args, True)
 
 if __name__ == '__main__':
