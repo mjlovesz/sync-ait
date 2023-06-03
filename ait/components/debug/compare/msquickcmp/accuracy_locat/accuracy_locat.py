@@ -104,7 +104,7 @@ def create_bin_file(out_path, matched_files):
     Return:
         bin file path list
     """
-    bin_files_list = ""
+    bin_files_list = []
     bin_file_path = './tmp'
     bin_file_path = os.path.join(out_path, bin_file_path)
     bin_file_path = os.path.realpath(bin_file_path)
