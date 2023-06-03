@@ -166,7 +166,7 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     utils.check_device_param_valid(args.device)
     utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
     utils.check_convert_is_valid_used(args.dump, args.bin2npy)
-    utils.check_locat_is_valid(args.dump, args.locat, args.soc_version)
+    utils.check_locat_is_valid(args.dump, args.locat)
     time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     args.out_path = original_out_path
@@ -227,17 +227,16 @@ def find_accuracy_interval(args, endnode_name, input_shape):
     #单层算子无问题
     if not subgraph_check(og, endnode, endnode, args, onnx_data_path, input_shape):
         for node in og.nodes:
-            if al.check_node_valid_normal(og, node):
+            if al.check_input_node(og, node):
                 l_node, r_node = bin_divide(og, node, endnode, args, onnx_data_path, input_shape)
+                utils.logger.info("Accumulated Error interval has been found.")
                 error_node_list.append([l_node, r_node])
         return error_node_list
     return [[endnode, endnode]]
 
 
 def subgraph_check(og, startnode, endnode, args, onnx_data_path, input_shape):
-    #onnx临时文件，为切分子图后的模型文件
-    subgraph_onnx_file = os.path.realpath('./tmp_for_accuracy_locat.onnx')
-    utils.logger.info(f"Start extracting subgraph model, model saved in {subgraph_onnx_file}")
+    subgraph_onnx_file = os.path.join(args.out_path, 'tmp_for_accuracy_locat.onnx')
     try:
         og.extract_subgraph([startnode.name], [endnode.name], subgraph_onnx_file)
     except Exception as e:
@@ -245,16 +244,15 @@ def subgraph_check(og, startnode, endnode, args, onnx_data_path, input_shape):
         raise AccuracyCompareException(utils.ACCRACY_COMPARISON_EXTRACT_ERROR) from e
     utils.logger.info("Extracting model Sucess!")
     utils.logger.info("Start using atc to convert onnx to om file")
-    atc_cmd = f"atc --framework=5 --soc_version={args.soc_version} --model={subgraph_onnx_file} \
-                --output=tmp_for_accuracy_locat"
+    subgraph_om_file = os.path.join(args.out_path, 'tmp_for_accuracy_locat')
+    atc_cmd = f"atc --framework=5 --soc_version={acl.get_soc_name()} --model={subgraph_onnx_file} \
+                --output={subgraph_om_file}"
     os.system(atc_cmd)
-    utils.logger.info("atc conversion Sucess!")
-    #获得onnx与om模型后
+    utils.logger.info("atc conversion Success!")
     utils.logger.info("Start to loading input data")
     subog = OnnxGraph.parse(subgraph_onnx_file)
     inputs_list = [(ii.name, ii.shape) for ii in onnxruntime.InferenceSession(subgraph_onnx_file).get_inputs()]
     input_need_list = al.input_completion(og, inputs_list)
-    #按照需要读入所有需要的输入文件
     pattern = '|'.join(input_need_list)
     try:
         matched_files = al.find_npy_files_with_prefix(onnx_data_path, pattern)
@@ -267,22 +265,23 @@ def subgraph_check(og, startnode, endnode, args, onnx_data_path, input_shape):
             file_name = os.path.basename(match_file)
             if file_name.startswith(prefix):
                 sort_matched_files.append(match_file)
-    bin_files_path = al.create_bin_file(sort_matched_files)
+    bin_files_path = al.create_bin_file(args.out_path, sort_matched_files)
+    tmp_bin_path = os.path.join(args.out_path, 'tmp')
     utils.logger.info("Loading data Finished!")
-    tmp_out_path = os.path.realpath('./tmpres')
+    tmp_out_path = os.path.join(args.out_path, 'tmpres')
     if not os.path.exists(tmp_out_path):
         os.makedirs(tmp_out_path)
     time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
-    cmg_args = CmpArgsAdapter(subgraph_onnx_file, os.path.realpath("./tmp_for_accuracy_locat.om"),
+    cmg_args = CmpArgsAdapter(subgraph_onnx_file, os.path.join(args.out_path, "tmp_for_accuracy_locat.om"),
                               bin_files_path, args.cann_path, tmp_out_path, "", args.device,
                               "", "", False, "", True, False, custom_op = args.custom_op,
-                              locat = args.locat, soc_version = args.soc_version)
+                              locat = args.locat)
     output_json_path = AtcUtils(cmg_args).convert_model_to_json()
     utils.logger.info("Start to run comparision")
     res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
     utils.logger.info("Comparision finished")
-    clr_cmd = 'rm -rf ./tmp/ ./tmpres/'
+    clr_cmd = f"rm -rf {tmp_out_path} {tmp_bin_path}"
     os.system(clr_cmd)
     if al.check_res(res, endnode):
         return True

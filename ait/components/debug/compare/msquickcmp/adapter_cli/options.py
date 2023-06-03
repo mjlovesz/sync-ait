@@ -151,14 +151,7 @@ opt_locat = click.option(
     "locat",
     default=False,
     type=str2bool,
-    help="Enable accuracy interval location when needed.E.g: --locat."
-)
-
-opt_soc_version = click.option(
-    "--soc_version",
-    "soc_version",
-    default="",
-    help="When -l or --locat is enabled, soc_version needs to be provided.E.g:--soc_version Ascend310P3"
+    help="Enable accuracy interval location when needed.E.g: --locat True."
 )
 
 opt_custom_op = click.option(

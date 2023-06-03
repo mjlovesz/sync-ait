@@ -37,7 +37,7 @@ MONITOR_THRESHOLD = {
 REVERSE_MONITORS = ["CosineSimilarity"]
 PRINT_COLUMNS = ["Index", "OpType", "NPUDump", "GroundTruth"]
 
-_STRATEGY_NAMES = ["FIRST_INVALID_OVERALL", "FIRST_INVALID_EACH", "ALL_INVALID_OVERALL"]
+_STRATEGY_NAMES = ["FIRST_INVALID_OVERALL", "FIRST_INVALID_EACH", "ALL_INVALID"]
 STRATEGIES = namedtuple("STRATEGIES", _STRATEGY_NAMES)(*_STRATEGY_NAMES)
 
 
@@ -88,10 +88,10 @@ class Analyser:
         self._strategy_func_dict = {
             STRATEGIES.FIRST_INVALID_OVERALL: self._first_invalid_overall,
             STRATEGIES.FIRST_INVALID_EACH: self._first_invalid_each,
-            STRATEGIES.ALL_INVALID_OVERALL:self._all_invalid_overall,
+            STRATEGIES.ALL_INVALID:self._all_invalid,
         }
 
-    def __call__(self, strategy=STRATEGIES.ALL_INVALID_OVERALL, max_column_len=30):
+    def __call__(self, strategy=STRATEGIES.FIRST_INVALID_OVERALL, max_column_len=30):
         """
         Run analyser and print result info.
         Args:
@@ -100,7 +100,7 @@ class Analyser:
                 that any monitor value is not within threshold.
               - STRATEGIES.FIRST_INVALID_OVERALL means printing the first operators
                 whose value is not within threshold for each monitor.
-              - STRATEGIES.ALL_INVALID_OVERALL means printing all the operators
+              - STRATEGIES.ALL_INVALID means printing all the operators
                 whose value is not within threshold for each monitor.
           max_column_len: int value for each column max print length.
         """
@@ -184,7 +184,7 @@ class Analyser:
 
         return invalid_rows, invalid_monitors
 
-    def _all_invalid_overall(self, csv_rows):
+    def _all_invalid(self, csv_rows):
         invalid_rows = []
         invalid_monitors = []
         for row in csv_rows:

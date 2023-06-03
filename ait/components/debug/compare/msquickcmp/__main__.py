@@ -32,7 +32,7 @@ from msquickcmp.adapter_cli.options import (
     opt_dump,
     opt_bin2npy,
     opt_custom_op,
-    opt_locat,
+    opt_locat
 )
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common import utils
@@ -72,7 +72,7 @@ def compare_cli(
     dump,
     bin2npy,
     custom_op,
-    locat,
+    locat
 ) -> None:
     cmp_args = CmpArgsAdapter(golden_model, om_model, input_data_path, cann_path, out_path, input_shape, device,
                               output_size, output_nodes, advisor, dym_shape_range, dump, bin2npy,

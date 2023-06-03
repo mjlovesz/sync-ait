@@ -96,7 +96,7 @@ def find_npy_files_with_prefix(workdir, prefix):
     return matched_files
 
 
-def create_bin_file(matched_files):
+def create_bin_file(out_path, matched_files):
     """
     Function:
         convert all the matched_files in npy format
@@ -106,6 +106,7 @@ def create_bin_file(matched_files):
     """
     bin_files_list = ""
     bin_file_path = './tmp'
+    bin_file_path = os.path.join(out_path, bin_file_path)
     bin_file_path = os.path.realpath(bin_file_path)
     if not os.path.exists(bin_file_path):
         os.makedirs(bin_file_path)
@@ -113,12 +114,10 @@ def create_bin_file(matched_files):
         data = np.load(npy_file)
         bin_file_name = f'{i}.bin'
         bin_file = os.path.join(bin_file_path, bin_file_name)
-        if i != 0:
-            bin_files_list += ","+bin_file
-        else:
-            bin_files_list += bin_file
+        bin_files_list.append(bin_file)
         data.tofile(bin_file)
-    return bin_files_list
+    bin_files_name_list = ','.join(bin_files_list)
+    return bin_files_name_list
 
 
 def input_completion(og, inputs_list):
@@ -166,7 +165,7 @@ def check_node_valid(incnt, graph, node):
     return False
 
 
-def check_node_valid_normal(og, node):
+def check_input_node(og, node):
     """
     Function:
         check node is an input node in model og
