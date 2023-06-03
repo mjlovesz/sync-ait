@@ -38,8 +38,7 @@ public class AisBenchAction extends AnAction {
      * Ais bench
      */
     public AisBenchAction() {
-        super("AisBench", "",
-                UiUtils.getJbIcon(Icons.AIS_BENCH_DARK, Icons.AIS_BENCH_LIGHT));
+        super("AisBench", "", UiUtils.getJbIcon(Icons.AIS_TITLE_DARK, Icons.AIS_TITLE_LIGHT));
     }
 
     @Override
