@@ -46,14 +46,20 @@ ERROR_INTERVAL_INFO_FILE = "error_interval_info.txt"
 
 def _generate_golden_data_model(args):
     model_name, extension = utils.get_model_name_and_extension(args.model_path)
-    if ".pb" == extension:
+    if args.weight_path and ".prototxt" == extension:
+        from msquickcmp.caffe_model.caffe_dump_data import CaffeDumpData
+
+        return CaffeDumpData(args)
+    elif ".pb" == extension:
         from msquickcmp.tf.tf_dump_data import TfDumpData
+
         return TfDumpData(args)
     elif ".onnx" == extension:
         from msquickcmp.onnx_model.onnx_dump_data import OnnxDumpData
+
         return OnnxDumpData(args)
     else:
-        utils.logger.error("Only model files whose names end with .pb or .onnx are supported")
+        utils.logger.error("Only model files whose names end with .pb or .onnx or .prototxt are supported")
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_MODEL_TYPE_ERROR)
 
 
@@ -90,6 +96,7 @@ def cmp_process(args:CmpArgsAdapter, use_cli:bool):
         exit the program when an AccuracyCompare Exception  occurs
     """
     args.model_path = os.path.realpath(args.model_path)
+    args.weight_path = os.path.realpath(args.weight_path) if args.weight_path else None
     args.offline_model_path = os.path.realpath(args.offline_model_path)
     args.cann_path = os.path.realpath(args.cann_path)
     try:
@@ -154,6 +161,8 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
 def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     utils.check_file_or_directory_path(args.model_path)
     utils.check_file_or_directory_path(args.offline_model_path)
+    if args.weight_path:
+        utils.check_file_or_directory_path(args.weight_path)
     utils.check_device_param_valid(args.device)
     utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
     utils.check_convert_is_valid_used(args.dump, args.bin2npy)
