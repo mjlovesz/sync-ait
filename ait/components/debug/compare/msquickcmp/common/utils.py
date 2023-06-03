@@ -260,18 +260,14 @@ def check_convert_is_valid_used(dump, bin2npy):
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
 
 
-def check_locat_is_valid(dump, locat, soc_version):
+def check_locat_is_valid(dump, locat):
     """
     Function:
         check locat args is completed
     Return:
         True or False
     """
-    if locat:
-        if soc_version == "":
-            logger.error("SOC_VERSION isn't defined, please explicify")
-            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
-        if not dump:
+    if locat and not dump:
             logger.error("Dump must be True when locat is used")
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
 
