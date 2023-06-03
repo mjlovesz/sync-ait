@@ -39,6 +39,12 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+/**
+ * UiUtILS
+ *
+ * @author CABBAGE
+ * @date 2023/06/03
+ */
 public class UiUtils {
     /**
      * left indent

@@ -16,14 +16,55 @@
 
 package com.huawei.ascend.ait.ide.commonlib.pluginTool;
 
+/**
+ * PluginClassId
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class PluginClassId {
+    /**
+     * Ascend_id
+     */
     public static final String Ascend_id = "com.huawei.mindstudio.ascend";
+
+    /**
+     * Foundation_PluginId
+     */
     public static final String Foundation_PluginId = Ascend_id + ".foundation";
+
+    /**
+     * Inference_PluginId
+     */
     public static final String Inference_PluginId = Ascend_id + ".inference";
+
+    /**
+     * AitIde_PluginId
+     */
     public static final String AitIde_PluginId = "com.huawei.ascend.ait.ide";
+
+    /**
+     * ModelAnalyse_ClassId
+     */
     public static final String ModelAnalyse_ClassId = Ascend_id + ".infer.action.ModelAnalyseAction";
+
+    /**
+     * ModelConverter_ClassId
+     */
     public static final String ModelConverter_ClassId = Ascend_id + ".modelconvert.action.ModelConvertAction";
+
+    /**
+     * SystemProfiler_ClassId
+     */
     public static final String SystemProfiler_ClassId = Ascend_id + ".systemprofiling.action.SystemProfilingProfilerAction";
+
+    /**
+     * AisBench_ClassId
+     */
     public static final String AisBench_ClassId = "com.huawei.ascend.ait.ide.action.AisBenchAction";
+
+    /**
+     * Compare_ClassId
+     */
     public static final String Compare_ClassId = "com.huawei.ascend.ait.ide.action.CompareAction";
 }

@@ -32,6 +32,7 @@ public class SwitchButton extends JLabel {
     private boolean isSelected;
     private StateChangeListener listener;
     private boolean isSwitchButtonEnable;
+
     private final MouseAdapter mouseAdapter = new MouseAdapter() {
         @Override
         public void mouseClicked(MouseEvent mouseEvent) {
@@ -40,6 +41,9 @@ public class SwitchButton extends JLabel {
         }
     };
 
+    /**
+     * SwitchButton
+     */
     public SwitchButton() {
         this(false);
     }

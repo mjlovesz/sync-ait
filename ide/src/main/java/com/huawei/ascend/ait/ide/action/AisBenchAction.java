@@ -26,8 +26,17 @@ import com.intellij.openapi.project.Project;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Ais bench
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class AisBenchAction extends AnAction {
 
+    /**
+     * Ais bench
+     */
     public AisBenchAction() {
         super("AisBench", "",
                 UiUtils.getJbIcon(Icons.AIS_BENCH_DARK, Icons.AIS_BENCH_LIGHT));
@@ -41,6 +50,11 @@ public class AisBenchAction extends AnAction {
         openNewPage(e.getProject());
     }
 
+    /**
+     * Open New Page
+     *
+     * @param project project
+     */
     public void openNewPage(@NotNull Project project) {
         AisBenchBasic basic = new AisBenchBasic(project);
         basic.show();

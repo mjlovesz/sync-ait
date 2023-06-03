@@ -21,6 +21,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+/**
+ * BundleUtil
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class BundleUtil {
     /**
      * Get bundle string by resource bundle and key

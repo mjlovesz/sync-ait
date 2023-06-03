@@ -24,12 +24,24 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+/**
+ * PluginGet
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class PluginGet {
     private final Project project;
     public PluginGet(Project project) {
         this.project = project;
     }
 
+    /**
+     * getPluginClass
+     *
+     * @param className className
+     * @param id id
+     */
     public void getPluginClass(String className, String id) {
         PluginId pluginId = PluginId.getId(id);
         try {

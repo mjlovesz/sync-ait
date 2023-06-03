@@ -16,6 +16,12 @@
 
 package com.huawei.ascend.ait.ide.commonlib.output;
 
+/**
+ * OutputType
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public enum OutputType {
     NORMAL,
     DETAIL

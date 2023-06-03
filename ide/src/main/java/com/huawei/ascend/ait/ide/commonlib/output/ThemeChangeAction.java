@@ -26,6 +26,12 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.UIManager;
 
+/**
+ * ThemeChangeAction
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class ThemeChangeAction extends AnAction {
     @Override
     public void actionPerformed(@NotNull AnActionEvent actionEvent) {

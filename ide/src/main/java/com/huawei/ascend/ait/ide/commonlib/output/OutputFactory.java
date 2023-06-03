@@ -47,6 +47,12 @@ import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * OutputFactory
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class OutputFactory implements ToolWindowFactory, DumbAware{
     private static final String OUTPUT_TOOL_WINDOW_ID = "Output";
     private static final String OUTPUT_TOOL_WINDOW_DETAILS = "Detail";

@@ -20,6 +20,12 @@ import com.intellij.openapi.util.IconLoader;
 
 import javax.swing.Icon;
 
+/**
+ * Icons
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class Icons {
     public static final Icon AIS_BENCH_DARK = IconLoader.findIcon(
             "/icons/AisBench_dark.svg", Icons.class.getClassLoader());

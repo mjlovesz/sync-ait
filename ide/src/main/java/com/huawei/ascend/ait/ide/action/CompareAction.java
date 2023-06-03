@@ -26,8 +26,17 @@ import com.intellij.openapi.project.Project;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Compare
+ *
+ * @author cabbage
+ * @date 2023/06/03
+ */
 public class CompareAction extends AnAction {
 
+    /**
+     * Compare
+     */
     public CompareAction() {
         super("Compare", "",
                 UiUtils.getJbIcon(Icons.COMPARE_DARK, Icons.COMPARE_LIGHT));
@@ -41,6 +50,11 @@ public class CompareAction extends AnAction {
         openNewPage(e.getProject());
     }
 
+    /**
+     * Open New Page
+     *
+     * @param project project
+     */
     public void openNewPage(@NotNull Project project) {
         Compare compare = new Compare(project);
         compare.show();
