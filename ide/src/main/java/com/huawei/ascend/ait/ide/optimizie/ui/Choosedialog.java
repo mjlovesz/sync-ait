@@ -29,7 +29,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.ui.JBColor;
 
-import org.bouncycastle.pqc.crypto.newhope.NHSecretKeyProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -266,7 +265,7 @@ public class Choosedialog extends JFrame {
         SystemProfiling() {
             setIcon(systemProfiler, Icons.SYSTEM_PROFILER_DARK, Icons.SYSTEM_PROFILER_LIGHT);
             setStepIcons(systemProfilerJPanel, systemProfiler, step5, PluginClassId.Inference_PluginId);
-            actionMappings.put(StepNum.MODEL_CONVERTER, this::doSystemProfiling);
+            actionMappings.put(StepNum.SYSTEM_PROFILER, this::doSystemProfiling);
         }
 
         private Object doSystemProfiling(Project project){

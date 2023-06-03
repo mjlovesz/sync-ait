@@ -14,48 +14,34 @@
  * limitations under the License.
  */
 
-package com.huawei.ascend.ait.ide.action;
+package com.huawei.ascend.ait.ide.filetype;
 
 import com.huawei.ascend.ait.ide.Icons;
 import com.huawei.ascend.ait.ide.commonlib.ui.UiUtils;
-import com.huawei.ascend.ait.ide.optimizie.ui.step.Compare;
 
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.ide.FileIconProvider;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import javax.swing.Icon;
 
 /**
- * Compare
+ * AitFileEditorIconProvider
  *
  * @author cabbage
- * @date 2023/06/03
+ * @date 2023/06/08
  */
-public class CompareAction extends AnAction {
-
-    /**
-     * Compare
-     */
-    public CompareAction() {
-        super("Compare", "", UiUtils.getJbIcon(Icons.COMPARE_TITLE_DARK, Icons.COMPARE_TITLE_LIGHT));
-    }
+public class AitFileEditorIconProvider implements FileIconProvider {
+    private static final String AIT_FILE = "AIT";
 
     @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
-        if (e.getProject() == null) {
-            return;
+    public @Nullable Icon getIcon(@NotNull VirtualFile file, int flags, @Nullable Project project) {
+        if (AIT_FILE.equals(file.getName())) {
+            return UiUtils.getJbIcon(Icons.AIT_TITLE_DARK, Icons.AIT_TITLE_LIGHT);
         }
-        openNewPage(e.getProject());
-    }
-
-    /**
-     * Open New Page
-     *
-     * @param project project
-     */
-    public void openNewPage(@NotNull Project project) {
-        Compare compare = new Compare(project);
-        compare.show();
+        return null;
     }
 }
