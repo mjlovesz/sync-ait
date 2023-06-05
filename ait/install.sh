@@ -20,6 +20,7 @@ only_benchmark=
 only_analyze=
 only_convert=
 only_transplt=
+only_profile=
 arg_help=0
 
 while [[ "$#" -gt 0 ]]; do case $1 in
@@ -30,6 +31,7 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --analyze) only_analyze=true;;
   --convert) only_convert=true;;
   --transplt) only_transplt=true;;
+  --profile) only_profile=true;;
   -h|--help) arg_help=1;;
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
@@ -48,6 +50,7 @@ if [ "$arg_help" -eq "1" ]; then
   echo " --analyze : only install analyze component"
   echo " --convert : only install convert component"
   echo " --transplt : only install transplt component"
+  echo " --profile : only install profile component"
   exit;
 fi
 
@@ -90,7 +93,13 @@ then
   ${arg_force_reinstall}
 fi
 
-if [ -z $only_debug ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ]
+if [ ! -z $only_profile ]
+then
+  pip3 install ${CURRENT_DIR}/components/profile \
+  ${arg_force_reinstall}
+fi
+
+if [ -z $only_debug ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ]
 then
   pip3 install ${CURRENT_DIR}/components/debug/compare \
   ${CURRENT_DIR}/components/debug/surgeon \
@@ -99,5 +108,6 @@ then
   ${CURRENT_DIR}/components/analyze \
   ${CURRENT_DIR}/components/convert \
   ${CURRENT_DIR}/components/transplt \
+  ${CURRENT_DIR}/components/profile \
   ${arg_force_reinstall}
 fi
