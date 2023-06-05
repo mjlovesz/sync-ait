@@ -20,6 +20,13 @@ import numpy as np
 
 from msquickcmp.caffe_model.caffe_dump_data import CaffeDumpData
 
+try:
+    import caffe
+except ModuleNotFoundError as ee:
+    print(ee)
+    caffe = None
+
+ 
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
@@ -42,7 +49,7 @@ class Args:
         for kk, vv in kwargs.items():
             setattr(self, kk, vv)
 
-
+@pytest.mark.skipif(caffe is None, reason="Caffe not found")
 @pytest.fixture(scope="module", autouse=True)
 def fake_caffe_model_args():
     import caffe
@@ -68,7 +75,7 @@ def fake_caffe_model_args():
     if os.path.exists(out_path):
         shutil.rmtree(out_path)
 
-
+@pytest.mark.skipif(caffe is None, reason="Caffe not found")
 def test_caffe_dump_data_given_valid_when_any_then_pass(fake_caffe_model_args):
     caffe_dump = CaffeDumpData(fake_caffe_model_args)
     dump_data_dir = caffe_dump.generate_dump_data()
