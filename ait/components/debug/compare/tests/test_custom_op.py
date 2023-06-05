@@ -97,7 +97,7 @@ def test_onnx_dump_data(cmp_args):
     golden_dump.generate_inputs_data("", False)
 
     # 2. generate npu dump data
-    npu_dump = NpuDumpData(cmp_args, "./test_resource/om/model.json")
+    npu_dump = NpuDumpData(cmp_args, "./om/model.json")
     npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(True)
 
     # 3. convert data from bin to npy if --convert is used
