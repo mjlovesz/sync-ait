@@ -16,7 +16,7 @@ import subprocess
 import sys
 import os
 import pytest
-import onnxruntime as ort
+import onnx
 
 from auto_optimizer import OnnxGraph
 from auto_optimizer.graph_refactor import Node
@@ -68,9 +68,11 @@ class TestClass:
         )
 
     def test_calculate_flow(self):
-        sess = ort.InferenceSession(self.args.model_path)
-        startnode_name = sess.get_modelmeta().graph.node[0].name
-        endnode_name = sess.get_modelmeta().graph.node[-1].name
+        model = onnx.load(self.args.model_path)
+        graph = model.graph
+
+        startnode_name = graph.node[0].name
+        endnode_name = graph.node[-1].name
 
         og = OnnxGraph.parse(self.args.model_path)
         startnode: Node = og.get_node(startnode_name, node_type=Node)
