@@ -82,6 +82,15 @@ main()
         try_download_url $pth_url $pth_file || { echo "donwload stubs failed";return $ret_failed; }
     fi
     org_onnx_file="$CUR_PATH/onnx/pth_resnet18.onnx"
+    if [ ！ -f $org_onnx_file ];then
+        convert_file_path=$CUR_PATH/onnx/resnet18_pth2onnx.py
+        get_convert_file $convert_file_path || { echo "get convert file failed";return $ret_failed; }
+        chmod 750 $convert_file_path
+        cd $CUR_PATH/onnx/
+        python3 $convert_file_path $pth_file || { echo "convert pth to onnx failed";return $ret_failed; }
+        mv $CUR_PATH/onnx/resnet18.onnx $org_onnx_file
+        cd -
+    fi
     static_onnx_file="$CUR_PATH/onnx/resnet18_static.onnx"
     if [ ! -f $static_onnx_file ]; then
         onnxsim $org_onnx_file $static_onnx_file || { echo "onnxsim failed!";return $ret_failed; }
