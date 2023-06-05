@@ -17,7 +17,6 @@ set -u
 
 cur_dir=$(pwd)
 
-CUR_PATH=$(dirname $(readlink -f "$0"))
 
 # copy source code to tests, and test
 function copy_source_code_dir_to_tests() {
@@ -33,10 +32,9 @@ declare -i ret_ok=0
 main() {
     copy_source_code_dir_to_tests
 
-    export SOC_VERSION=${1:-"Ascend310P3"}
     export PYTHON_COMMAND=${2:-"python3"}
 
-    ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/
+    ${PYTHON_COMMAND} -m pytest .
 
     del_source_code_from_tests
 
