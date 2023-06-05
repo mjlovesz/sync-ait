@@ -70,8 +70,8 @@ class TestClass:
         print(self.args.model_path)
         og = OnnxGraph.parse(self.args.model_path)
 
-        startnode_name = "image"
-        endnode_name = "class"
+        startnode_name = "Conv_0"
+        endnode_name = "Gemm_48"
         startnode: Node = og.get_node(startnode_name, node_type=Node)
         endnode: Node = og.get_node(endnode_name, node_type=Node)
         satisfied_nodes = []
