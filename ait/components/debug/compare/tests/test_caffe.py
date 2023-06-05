@@ -23,7 +23,6 @@ from msquickcmp.caffe_model.caffe_dump_data import CaffeDumpData
 try:
     import caffe
 except ModuleNotFoundError as ee:
-    print(ee)
     caffe = None
 
  
@@ -48,6 +47,7 @@ class Args:
     def __init__(self, **kwargs):
         for kk, vv in kwargs.items():
             setattr(self, kk, vv)
+
 
 @pytest.mark.skipif(caffe is None, reason="Caffe not found")
 @pytest.fixture(scope="module", autouse=True)
@@ -74,6 +74,7 @@ def fake_caffe_model_args():
         os.remove(weight_path)
     if os.path.exists(out_path):
         shutil.rmtree(out_path)
+
 
 @pytest.mark.skipif(caffe is None, reason="Caffe not found")
 def test_caffe_dump_data_given_valid_when_any_then_pass(fake_caffe_model_args):
