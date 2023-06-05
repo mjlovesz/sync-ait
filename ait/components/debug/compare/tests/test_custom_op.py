@@ -32,29 +32,33 @@ from msquickcmp.common import utils
 
 @pytest.fixture(scope="session", autouse=True)
 def fake_onnx_dir():
+    if os.path.exists("./onnx"):      
+        shutil.rmtree("./onnx")
     os.makedirs("./onnx", exist_ok=True)
 
 
 @pytest.fixture(scope="session", autouse=True)
 def fake_om_dir():
+    if os.path.exists("./om"):      
+        shutil.rmtree("./om")
     os.makedirs("./om", exist_ok=True)
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def fake_onnx_model(fake_onnx_dir):
     with open("./test_resource/onnx/model_BatchMultiClassNMS.json", "r") as fi:
         onnx_json = json.loads(fi.read())
         onnx_str = json.dumps(onnx_json)
         convert_model = Parse(onnx_str, onnx.ModelProto())
-        onnx.save(convert_model, "./onnx/model.onnx")
+        onnx.save(convert_model, "./test_resource/onnx/model.onnx")
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def fake_om_model(fake_om_dir):
-    cmd = 'atc --model=./onnx/model.onnx --framework=5 --output=./om/model --soc_version=' + acl.get_soc_name()
+    cmd = 'atc --model=./test_resource/onnx/model.onnx --framework=5 --output=./test_resource/om/model --soc_version=' + acl.get_soc_name()
     subprocess.run(cmd.split(), shell=False)
 
-    cmd = 'atc --mode=1 --om=./om/model.om --json=./om/model.json'
+    cmd = 'atc --mode=1 --om=./test_resource/om/model.om --json=./om/model.json'
     subprocess.run(cmd.split(), shell=False)
 
 
@@ -67,8 +71,9 @@ def cmp_args(fake_onnx_model, fake_om_model) -> None:
     if os.path.exists("./input"):
         shutil.rmtree("./input")
 
-    args_adapter = CmpArgsAdapter(gold_model="./onnx/model.onnx",
-                              om_model="./om/model.om",
+    args_adapter = CmpArgsAdapter(gold_model="./test_resource/onnx/model.onnx",
+                              om_model="./test_resource/om/model.om",
+                              weight_path = "",
                               input_data_path = "",
                               cann_path="/usr/local/Ascend/ascend-toolkit/latest/",
                               out_path="",
@@ -100,7 +105,7 @@ def test_onnx_dump_data(cmp_args):
     golden_dump.generate_inputs_data("", False)
 
     # 2. generate npu dump data
-    npu_dump = NpuDumpData(cmp_args, "./om/model.json")
+    npu_dump = NpuDumpData(cmp_args, "./test_resource/om/model.json")
     npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(True)
 
     # 3. convert data from bin to npy if --convert is used
