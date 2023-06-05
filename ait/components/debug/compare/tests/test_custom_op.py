@@ -52,6 +52,8 @@ def fake_om_model(fake_om_dir):
     cmd = 'atc --model=./onnx/model.onnx --framework=5 --output=./om/model --soc_version=' + acl.get_soc_name()
     subprocess.run(cmd.split(), shell=False)
 
+    cmd = 'atc --mode=1 --om=./om/model.om --json=./om/model.json'
+    subprocess.run(cmd.split(), shell=False)
 
 @pytest.fixture(scope="module", autouse=True)
 def cmp_args(fake_onnx_model, fake_om_model) -> None:
