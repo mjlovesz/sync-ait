@@ -58,7 +58,7 @@ def fake_om_model(fake_om_dir):
     cmd = 'atc --model=./test_resource/onnx/model.onnx --framework=5 --output=./test_resource/om/model --soc_version=' + acl.get_soc_name()
     subprocess.run(cmd.split(), shell=False)
 
-    cmd = 'atc --mode=1 --om=./test_resource/om/model.om --json=./om/model.json'
+    cmd = 'atc --mode=1 --om=./test_resource/om/model.om --json=./test_resource/om/model.json'
     subprocess.run(cmd.split(), shell=False)
 
 
