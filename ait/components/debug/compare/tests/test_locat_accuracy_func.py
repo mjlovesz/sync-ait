@@ -71,8 +71,8 @@ class TestClass:
 
         startnode_name = "image"
         endnode_name = "class"
-        startnode = og.get_node(startnode_name, node_type=Node)
-        endnode = og.get_node(endnode_name, node_type=Node)
+        startnode: Node = og.get_node(startnode_name, node_type=Node)
+        endnode: Node = og.get_node(endnode_name, node_type=Node)
         satisfied_nodes = []
         satisfied_nodes = al.calculate_flow(og, startnode, endnode)
         logger.info("linear nodes list:{}".format(satisfied_nodes))
