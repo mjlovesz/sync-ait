@@ -56,4 +56,7 @@ chmod u+x install.sh
 
 # 4. 只安装transplt组件
 ./install.sh --transplt
+
+# 5. 只安装profile组件
+./install.sh --profile
 ```
