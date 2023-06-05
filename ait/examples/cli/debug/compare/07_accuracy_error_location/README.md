@@ -28,3 +28,17 @@ ait debug compare -gm {onnx_model_path} -om {om_model_path} -i {input_data_path}
 - **输出结果** 参考 [01_basic_usage](../01_basic_usage/README.md)),其中误差定界定位信息输出在'{output_path}/{timestamp}/error_interval_info.txt'
 
 ## 结果
+![content](./说明.png)
+**结果解释**：每两个节点信息为一组误差区间起始节点，模型有多个输入则有多个误差区间节点对.
+如：
+```
+Node(Mul_28): 
+	inputs=['232', '233']
+	outputs=['234']
+	attrs = {}
+:Node(Gather_1186): 
+	inputs=['last_hidden_state', '270']
+	outputs=['1632']
+	attrs = {'axis': 1}
+```
+表示起始节点Mul_28到Gather_1186的误差区间
