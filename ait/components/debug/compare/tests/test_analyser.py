@@ -68,8 +68,8 @@ def fake_dump_false_csv_file():
 
     yield test_csv_file_name
 
-    # if os.path.exists(test_csv_file_name):
-    #     os.remove(test_csv_file_name)
+    if os.path.exists(test_csv_file_name):
+        os.remove(test_csv_file_name)
 
 
 def test_analyser_init_given_valid_file_when_any_then_pass(fake_csv_file):
