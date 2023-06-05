@@ -79,6 +79,8 @@ class TestClass:
         endnode: Node = og.get_node(endnode_name, node_type=Node)
         satisfied_nodes = []
         satisfied_nodes = al.calculate_flow(og, startnode, endnode)
-        logger.info("linear nodes list:{}".format(satisfied_nodes))
+        linear_size_real = 22
+        linear_size = len(satisfied_nodes)
+        assert linear_size == linear_size_real
 
 
