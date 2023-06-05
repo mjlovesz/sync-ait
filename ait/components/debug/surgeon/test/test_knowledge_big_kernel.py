@@ -168,7 +168,6 @@ def gen_qkv_branch(graph: OnnxGraph, input_x, branch_name="q"):
 class TestKnowledgeBigKernel(unittest.TestCase, KnowledgeTestHelper):
     def test_bert_opt(self):
         graph = gen_bert_attention()
-        graph.save("./bert_test.onnx")
         knowledge = KnowledgeBigKernel(graph, "start_add", "end_add")
         cfg = OptimizationConfig(
             graph=graph,
@@ -180,7 +179,6 @@ class TestKnowledgeBigKernel(unittest.TestCase, KnowledgeTestHelper):
 
     def test_gpt2_opt(self):
         graph = gen_gpt2_attention()
-        graph.save("./gpt2_test.onnx")
         knowledge = KnowledgeBigKernel(graph, "start_add", "end_add")
         cfg = OptimizationConfig(
             graph=graph,
