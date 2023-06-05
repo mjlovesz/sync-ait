@@ -86,7 +86,7 @@ main()
         get_convert_file $convert_file_path || { echo "get convert file failed";return $ret_failed; }
         chmod 750 $convert_file_path
         cd $CUR_PATH/onnx/
-        python3 $convert_file_path --checkpoint ./$pth_file --save_dir ./$CUR_PATH/onnx/resnet18.onnx || { echo "convert pth to onnx failed";return $ret_failed; }
+        python3 $convert_file_path --checkpoint $pth_file --save_dir $CUR_PATH/onnx/resnet18.onnx || { echo "convert pth to onnx failed";return $ret_failed; }
         mv $CUR_PATH/onnx/resnet18.onnx $org_onnx_file
         cd -
     fi
