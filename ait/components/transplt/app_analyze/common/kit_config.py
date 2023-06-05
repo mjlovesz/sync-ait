@@ -108,7 +108,7 @@ class KitConfig:
     ACC_LIBS = {
         # OpenCV
         OPENCV_HOME: ['cv', '/cuda', ['cuda', 'gpu'], OPENCV],
-        # FFmpeg: https://github.com/FFmpeg/FFmpeg
+        # FFmpeg
         '/libavcodec/': ['', '/nv', '', FFMPEG],
         '/libavfilter/': ['', ['/cuda/', '_cuda'], '', FFMPEG],
         'libavformat': ['', '', '', FFMPEG],
@@ -117,10 +117,10 @@ class KitConfig:
         '/libswresample/': ['', '', '', FFMPEG],
         '/libpostproc/': ['', '', '', FFMPEG],
         '/libswscale/': ['', '', '', FFMPEG],
-        # DALI: https://github.com/NVIDIA/DALI
+        # DALI
         'dali': ['dali', 1, '', DALI],
-        # CUDA samples: https://github.com/NVIDIA/CUDALibrarySamples
-        # nvJPEG samples: https://github.com/NVIDIA/CUDALibrarySamples/tree/master/nvJPEG
+        # CUDA
+        # nvJPEG
         CUDA_HOME: ['', 1, '', CUDA],  # 含nvJPEG等
         # CV-CUDA
         CVCUDA_HOME: [['nvcv', 'cvcuda'], 1, '', CVCUDA],
