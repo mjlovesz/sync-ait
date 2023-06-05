@@ -63,8 +63,8 @@ class TestClass:
             "", # dym_shape_range
             True, # dump
             False, # bin2npy
-            "",
-            True
+            "", # custom_op
+            True # locat
         )
 
     def test_calculate_flow(self):
