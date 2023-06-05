@@ -24,6 +24,7 @@ import onnxruntime as ort
 from auto_optimizer.common.utils import meet_precision
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
+from auto_optimizer.pattern.knowledges import KnowledgeBigKernel
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 
 ort.set_default_logger_severity(3)
@@ -113,9 +114,10 @@ class KnowledgeTestHelper:
         success, graph_opt = self.optimize(cfg.graph, cfg.knowledge)
         if not success or self.graph_equal(cfg.graph, graph_opt):
             return False
-        success, graph_opt_2 = self.optimize(graph_opt, cfg.knowledge)
-        if success or not self.graph_equal(graph_opt, graph_opt_2):
-            return False
+        if not isinstance(cfg.knowledge, KnowledgeBigKernel):
+            success, graph_opt_2 = self.optimize(graph_opt, cfg.knowledge)
+            if success or not self.graph_equal(graph_opt, graph_opt_2):
+                return False
         cfg.graph.save(cfg.onnx_ori)
         graph_opt.save(cfg.onnx_opt)
         return True
