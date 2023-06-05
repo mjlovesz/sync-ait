@@ -1,0 +1,67 @@
+# Basic Usage
+
+## 介绍
+
+analyze模型支持度分析工具可以通过ait命令行方式启动
+
+
+## 工具使用
+
+一站式ait工具使用命令格式说明如下：
+
+```shell
+ait analyze [OPTIONS]
+```
+
+OPTIONS参数说明如下：
+
+| 参数                | 说明                                                         | 是否必选 |
+| ------------------- | ------------------------------------------------------------ | -------- |
+| -gm, --golden_model | 标杆模型输入路径，支持onnx、caffe、tensorflow模型            | 是       |
+| -o, --output        | 输出路径，在该路径下会生成分析结果**result.csv**             | 是       |
+| --framework         | 模型类型，和[atc](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/inferapplicationdev/atctool/atctool_000041.html)参数一致，0：caffe，3：tensorflow，5：onnx | 否       |
+| --weight            | 权重文件，输入模型是caffe时，需要传入该文件                  | 否       |
+| -s, --soc           | 芯片类型，不指定则会通过[acl](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/inferapplicationdev/aclpythondevg/aclpythondevg_01_0008.html)接口获取 | 否       |
+
+
+## 运行示例
+
+```shell
+ait analyze -gm /tmp/test.onnx -o /tmp/out
+```
+
+```shell
+2023-05-11 11:23:25,824 INFO : convert model to json, please wait...
+2023-05-11 11:23:28,210 INFO : convert model to json finished.
+2023-05-11 11:23:29,997 INFO : try to convert model to om, please wait...
+2023-05-11 11:23:35,127 INFO : try to convert model to om finished.
+2023-05-11 11:23:36,321 INFO : analysis result has bean written in /tmp/result.csv
+2023-05-11 11:23:36,321 INFO : analyze model finished.
+```
+
+输出结果在result.csv，会记录模型中每个算子的信息和支持情况，结果如下：
+
+| ori_op_name           | ori_op_type        | op_name | op_type         | soc_type  | engine  | is_supported | details                                                      |
+| --------------------- | ------------------ | ------- | --------------- | --------- | ------- | ------------ | ------------------------------------------------------------ |
+| Reshape_46            | Reshape            |         | Reshape         | Ascend310 | AICORE  | TRUE         |                                                              |
+| Cast_47               | Cast               |         | Cast            | Ascend310 | AICORE  | TRUE         |                                                              |
+| Pad_49                | Pad                |         | PadV3           | Ascend310 | AICORE  | TRUE         |                                                              |
+| Conv_52               | Convx              |         |                 | Ascend310 | UNKNOWN | FALSE        | No Op registered for Convx with domain_version of 11;Op is unsupported. |
+| Transpose_53          | Transpose          |         | PartitionedCall | Ascend310 | AICORE  | TRUE         |                                                              |
+| LeakyRelu_54          | LeakyRelu          |         | LeakyRelu       | Ascend310 | AICORE  | TRUE         |                                                              |
+| BatchNormalization_60 | BatchNormalization |         | BatchNorm       | Ascend310 | AICORE  | TRUE         |                                                              |
+| Shape_61              | Shape              |         | Shape           | Ascend310 | AICORE  | TRUE         |                                                              |
+
+输出数据说明：
+
+| 标题         | 说明                                                         |
+| ------------ | ------------------------------------------------------------ |
+| ori_op_name  | 原始算子名称                                                 |
+| ori_op_type  | 原始算子类型                                                 |
+| op_name      | 模型迁移后算子名称                                           |
+| op_type      | 模型迁移后算子类型                                           |
+| soc_type     | 芯片类型                                                     |
+| engine       | 算子执行引擎                                                 |
+| is_supported | 算子是否支持，TRUE：支持，FALSE：不支持                      |
+| details      | 算子支持情况问题描述，包括算子是否支持，算子定义是否符合约束条件、输入是否为空 |
+

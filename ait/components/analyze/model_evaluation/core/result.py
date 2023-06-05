@@ -109,5 +109,5 @@ class Result:
         f.flush()
         f.close()
         os.chmod(out_csv, Const.ONLY_READ)
-        logger.info(f'analysis result has bean writted in {out_csv}.')
+        logger.info(f'analysis result has bean written in {out_csv}.')
         logger.info(f'number of abnormal operators: {err_op_num}.')
