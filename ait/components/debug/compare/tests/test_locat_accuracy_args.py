@@ -45,6 +45,7 @@ class TestClass:
         args_data2vec_cmp = CmpArgsAdapter(
             os.path.join(cls.get_base_path(), 'onnx/data2vec_1_108.onnx'), # gold_model
             os.path.join(cls.get_base_path(), 'om/data2vec_1_108.om'), # om_model
+            "", # weight_path
             os.path.realpath("{},{}".format(
                 os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_0.bin'),
                 os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_1.bin')
@@ -69,6 +70,7 @@ class TestClass:
         args_gelu_cmp = CmpArgsAdapter(
             os.path.join(cls.get_base_path(), 'onnx/695_703.onnx'), # gold_model
             os.path.join(cls.get_base_path(), 'om/695_703.om'), # om_model
+            "", # weight_path
             os.path.join(cls.get_base_path(), 'input_datas/gelu/695.npy'), # input_data_path
             cls.cann_path, # cann_path
             os.path.join(cls.get_base_path(), '/output'), # out_path
