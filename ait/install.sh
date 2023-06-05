@@ -95,7 +95,7 @@ fi
 
 if [ ! -z $only_profile ]
 then
-  pip3 install ${CURRENT_DIR}/components/profile \
+  pip3 install ${CURRENT_DIR}/components/profile/msprof \
   ${arg_force_reinstall}
 fi
 
@@ -108,6 +108,6 @@ then
   ${CURRENT_DIR}/components/analyze \
   ${CURRENT_DIR}/components/convert \
   ${CURRENT_DIR}/components/transplt \
-  ${CURRENT_DIR}/components/profile \
+  ${CURRENT_DIR}/components/profile/msprof \
   ${arg_force_reinstall}
 fi
