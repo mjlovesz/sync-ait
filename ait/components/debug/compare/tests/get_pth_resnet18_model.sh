@@ -43,12 +43,13 @@ function convert_onnx_to_om()
     local _input_model=$1
     local _soc_version=$SOC_VERSION
     local _framework=5
+    local _input_shape="image:1,3,224,224"
 
     local _output_model="$CUR_PATH/om/resnet18_static"
     local _output_path="$_output_model.om"
     if [ ! -f $_output_path ];then
-        local _cmd="atc --model=$_input_model --output=$_output_model --framework=$_framework \
-        --soc_version=$_soc_version"
+        local _cmd="atc --model=$_input_model --output=$_output_model --framework=$_framework\
+        --soc_version=$_soc_version --input_shape $_input_shape"
         $_cmd || { echo "atc run $_cmd failed"; return ret_failed; }
     fi
 }
