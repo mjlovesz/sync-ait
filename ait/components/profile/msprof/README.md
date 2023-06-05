@@ -8,7 +8,7 @@
 ### 环境准备
 - 已安装开发运行环境的昇腾 AI 推理相关驱动、固件、CANN 包，参照 [昇腾文档](https://www.hiascend.com/zh/document)
 - 安装 `python3.7.5` 环境
-- **安装ait工具**，安装参考文档：[ait工具安装](docs/install/README.md)
+- **安装ait工具**，安装参考文档：[ait工具安装](https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md)
 
 ### 使用方法
 - 通过压缩包方式或 git 命令获取本项目
