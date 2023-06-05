@@ -58,7 +58,7 @@ class TestClass:
             False, # advisor
             "", # dym_shape_range
             True, # dump
-            False， # bin2npy
+            False, # bin2npy
             "", # custom_op
             True # locat
         )
