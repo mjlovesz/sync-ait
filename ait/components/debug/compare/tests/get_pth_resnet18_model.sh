@@ -91,7 +91,7 @@ main()
     if [ ! -f $stati_onnx_file ]; then
         convert_onnx_to_static $org_onnx_file $static_onnx_file || { echo "onnxsim failed!";return $ret_failed; }
     fi
-    convert_onnx_to_om
+    convert_onnx_to_om static_onnx_file
 }
 
 main "$@"
