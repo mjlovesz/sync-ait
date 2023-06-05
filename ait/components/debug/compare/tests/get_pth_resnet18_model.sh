@@ -88,7 +88,7 @@ main()
     fi
     org_onnx_file="$CUR_PATH/onnx/pth_resnet18.onnx"
     static_onnx_file="$CUR_PATH/onnx/resnet18_static.onnx"
-    if [ ! -f $stati_onnx_file ]; then
+    if [ ! -f $static_onnx_file ]; then
         convert_onnx_to_static $org_onnx_file $static_onnx_file || { echo "onnxsim failed!";return $ret_failed; }
     fi
     convert_onnx_to_om $static_onnx_file
