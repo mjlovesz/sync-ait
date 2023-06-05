@@ -20,6 +20,7 @@ import json
 import onnx 
 from google.protobuf.json_format import MessageToJson, Parse
 import pytest
+import acl
 
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.onnx_model.onnx_dump_data import OnnxDumpData
@@ -36,7 +37,7 @@ def fake_onnx_dir():
 
 @pytest.fixture(scope="session", autouse=True)
 def fake_onnx_model(fake_onnx_dir):
-    with open("./test_resource/model_BatchMultiClassNMS.json", "r") as fi:
+    with open("./test_resource/onnx/model_BatchMultiClassNMS.json", "r") as fi:
         onnx_json = json.loads(fi.read())
         onnx_str = json.dumps(onnx_json)
         convert_model = Parse(onnx_str, onnx.ModelProto())
@@ -45,8 +46,8 @@ def fake_onnx_model(fake_onnx_dir):
 
 @pytest.fixture(scope="session", autouse=True)
 def fake_om_model(fake_onnx_model):
-    subprocess.run('atc --model=./onnx/model.onnx --framework=5 \
-                   --output=./om/model --soc_version=Ascend310'.split(), shell=False)
+    subprocess.run(('atc --model=./onnx/model.onnx --framework=5 \
+                   --output=./om/model --soc_version=Ascend310' + acl.get_soc_name()).split(), shell=False)
 
 
 @pytest.fixture(scope="session", autouse=True)
