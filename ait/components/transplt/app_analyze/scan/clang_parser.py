@@ -11,18 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""
-Possible methods:
-1. LLVM python bindings: https://github.com/llvm/llvm-project/tree/main/clang/bindings/python
-2. http://gccxml.github.io/HTML/Index.html
-
-libclang(mirrored LLVM python bindings): https://readthedocs.org/projects/libclang/
-clang(mirrored LLVM python bindings): https://pypi.org/project/clang/
-libclang case: https://eli.thegreenplace.net/2011/07/03/parsing-c-in-python-with-clang/
-
-Note that the package libclang on PyPi bundles the prebuilt shared library, but may be incompatible with the system.
-The package clang on PyPi doesn't bundle the prebuilt shared library, and the clang tool should be installed.
-"""
 import logging
 import re
 import os
