@@ -18,6 +18,7 @@ import stat
 
 import pytest
 import torch
+import acl
 
 from msquickcmp.common import utils
 from msquickcmp.common.utils import parse_input_shape_to_list
@@ -110,9 +111,11 @@ def fake_switch_config(fake_tmp_dir):
 
 @pytest.fixture(scope="module", autouse=True)
 def fake_om_model(fake_onnx_model, fake_aipp_config, fake_switch_config):
-    subprocess.run('atc --model ./tmp/fake.onnx --soc_version Ascend310P3 --framework 5 \
-    --input_format NCHW --input_shape image:1,3,7,7 --output ./tmp/fake --insert_op_conf \
-    ./tmp/aipp.config --fusion_switch_file ./tmp/fusionswitch.cfg'.split(), shell=False)
+    cmd = 'atc --model ./tmp/fake.onnx --soc_version '  + acl.get_soc_name() + \
+        '--framework 5 --input_format NCHW --input_shape image:1,3,7,7 --output ./tmp/fake --insert_op_conf' + \
+        './tmp/aipp.config --fusion_switch_file ./tmp/fusionswitch.cfg'
+
+    subprocess.run(cmd.split(), shell=False)
     return "./tmp/fake.om"
 
 

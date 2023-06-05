@@ -34,6 +34,9 @@ from msquickcmp.common import utils
 def fake_onnx_dir():
     os.makedirs("./onnx", exist_ok=True)
 
+@pytest.fixture(scope="session", autouse=True)
+def fake_om_dir():
+    os.makedirs("./om", exist_ok=True)
 
 @pytest.fixture(scope="session", autouse=True)
 def fake_onnx_model(fake_onnx_dir):
@@ -45,12 +48,12 @@ def fake_onnx_model(fake_onnx_dir):
 
 
 @pytest.fixture(scope="session", autouse=True)
-def fake_om_model(fake_onnx_model):
-    subprocess.run(('atc --model=./onnx/model.onnx --framework=5 \
-                   --output=./om/model --soc_version=Ascend310' + acl.get_soc_name()).split(), shell=False)
+def fake_om_model(fake_om_dir):
+    cmd = 'atc --model=./onnx/model.onnx --framework=5 --output=./om/model --soc_version=' + acl.get_soc_name()
+    subprocess.run(cmd.split(), shell=False)
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def cmp_args(fake_onnx_model, fake_om_model) -> None:
     if os.path.exists("./dump_data"):      
         shutil.rmtree("./dump_data")
