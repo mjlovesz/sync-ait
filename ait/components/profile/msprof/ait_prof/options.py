@@ -73,7 +73,7 @@ opt_output = click.option(
     '-o',
     '--output',
     'output',
-    default=None,
+    default="output",
     type=click.Path(
         path_type=pathlib.Path
     ),
