@@ -51,7 +51,7 @@ class TestClass:
                 os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_1.bin')
             )), # input_data_path
             cls.cann_path, # cann_path
-            os.path.join(cls.get_base_path(), '/output'), # out_path
+            os.path.join(cls.get_base_path(), 'output/'), # out_path
             "", # input_shape
             "0", # device
             "", # output_size
@@ -73,7 +73,7 @@ class TestClass:
             "", # weight_path
             os.path.join(cls.get_base_path(), 'input_datas/gelu/695.npy'), # input_data_path
             cls.cann_path, # cann_path
-            os.path.join(cls.get_base_path(), '/output'), # out_path
+            os.path.join(cls.get_base_path(), 'output/'), # out_path
             "", # input_shape
             "0", # device
             "", # output_size
@@ -89,7 +89,7 @@ class TestClass:
 
     @classmethod
     def get_latest_dir(cls):
-        cur_path = os.path.join(cls.get_base_path(), "/output")
+        cur_path = os.path.join(cls.get_base_path(), "output/")
         latest_timestamp = 0
         latest_dir_path = ""
 
