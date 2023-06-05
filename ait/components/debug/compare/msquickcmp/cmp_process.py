@@ -20,12 +20,12 @@ This class mainly involves the main function.
 """
 
 import argparse
-import acl
 import os
 import sys
 import stat
 import time
 import onnxruntime
+import acl
 
 from auto_optimizer.graph_refactor import Node
 from auto_optimizer import OnnxGraph
@@ -228,18 +228,21 @@ def find_accuracy_interval(args, endnode_name, input_shape):
     output_file = os.path.realpath(output_file)
     error_node_list = []
     #验证单层算子是否有问题
+    node_interval = zip(endnode, endnode)
     #单层算子无问题
-    if not subgraph_check(og, endnode, endnode, args, onnx_data_path, input_shape):
+    if not subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
         for node in og.nodes:
             if al.check_input_node(og, node):
-                l_node, r_node = bin_divide(og, node, endnode, args, onnx_data_path, input_shape)
+                input_node_interval = zip(node, endnode)
+                l_node, r_node = bin_divide(og, input_node_interval, args, onnx_data_path, input_shape)
                 utils.logger.info("Accumulated Error interval has been found.")
                 error_node_list.append([l_node, r_node])
         return error_node_list
     return [[endnode, endnode]]
 
 
-def subgraph_check(og, startnode, endnode, args, onnx_data_path, input_shape):
+def subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
+    startnode, endnode = node_interval
     subgraph_onnx_file = os.path.join(args.out_path, 'tmp_for_accuracy_locat.onnx')
     try:
         og.extract_subgraph([startnode.name], [endnode.name], subgraph_onnx_file)
@@ -279,8 +282,7 @@ def subgraph_check(og, startnode, endnode, args, onnx_data_path, input_shape):
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     cmg_args = CmpArgsAdapter(subgraph_onnx_file, os.path.join(args.out_path, "tmp_for_accuracy_locat.om"),
                               "", bin_files_path, args.cann_path, tmp_out_path, "", args.device,
-                              "", "", False, "", True, False, custom_op = args.custom_op,
-                              locat = False)
+                              "", "", False, "", True, False, custom_op = args.custom_op, locat = False)
     output_json_path = AtcUtils(cmg_args).convert_model_to_json()
     utils.logger.info("Start to run comparision")
     res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
@@ -292,13 +294,14 @@ def subgraph_check(og, startnode, endnode, args, onnx_data_path, input_shape):
     return False
 
 
-def bin_divide(og, startnode, endnode, args, onnx_data_path, input_shape):
+def bin_divide(og, node_interval, args, onnx_data_path, input_shape):
     """
     Function:
         using binary search to find the accuracy error interval
     Return:
         an accuracy error interval list
     """
+    startnode, endnode = node_interval
     subgraph_model_path = os.path.join(args.out_path, 'tmp_for_subgraph.onnx')
     og.extract_subgraph([startnode.name], [endnode.name], subgraph_model_path)
     subog = OnnxGraph.parse(subgraph_model_path)
@@ -313,7 +316,8 @@ def bin_divide(og, startnode, endnode, args, onnx_data_path, input_shape):
     #二分
     while low < high:
         mid = (low + high + 1) // 2
-        if subgraph_check(og, satisfied_nodes[mid], endnode, args, onnx_data_path, input_shape):
+        input_node_interval = zip(satisfied_nodes[mid], endnode)
+        if subgraph_check(og, input_node_interval, args, onnx_data_path, input_shape):
             low = mid
         else:
             high = mid - 1
