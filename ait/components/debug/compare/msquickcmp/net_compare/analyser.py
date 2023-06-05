@@ -121,30 +121,6 @@ class Analyser:
         self._show_result(invalid_rows, invalid_monitors, max_column_len=max_column_len)
         return invalid_rows, invalid_monitors
 
-    def _read_result_csv(self, csv_path):
-        csv_header = _MAPPING_FILE_HEADER + _BUILT_IN_ALGORITHM
-        is_first_line = True
-        try:
-            with open(csv_path, "r") as csv_file:
-                csv_rows = []
-                for list_row in csv.reader(csv_file):
-                    # Handle header line in case source csv doesn't contain one.
-                    if is_first_line and list_row[0] == "Index":  # Header line
-                        csv_header = list_row
-                        is_first_line = False
-                        continue
-                    if is_first_line:
-                        is_first_line = False
-
-                    dict_row = OrderedDict(zip(csv_header, list_row))
-                    if self._is_valid_row(dict_row):
-                        csv_rows.append(dict_row)
-        except IOError as csv_file_except:
-            utils.logger.error('Failed to open"' + csv_path + '", ' + str(csv_file_except))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from csv_file_except
-
-        return csv_rows
-
     @staticmethod
     def _get_single_csv_in_folder(csv_path):
         for file_name in os.listdir(csv_path):
@@ -190,6 +166,30 @@ class Analyser:
             if row.get(item_key) in invalid_values:
                 return False
         return True
+
+    def _read_result_csv(self, csv_path):
+        csv_header = _MAPPING_FILE_HEADER + _BUILT_IN_ALGORITHM
+        is_first_line = True
+        try:
+            with open(csv_path, "r") as csv_file:
+                csv_rows = []
+                for list_row in csv.reader(csv_file):
+                    # Handle header line in case source csv doesn't contain one.
+                    if is_first_line and list_row[0] == "Index":  # Header line
+                        csv_header = list_row
+                        is_first_line = False
+                        continue
+                    if is_first_line:
+                        is_first_line = False
+
+                    dict_row = OrderedDict(zip(csv_header, list_row))
+                    if self._is_valid_row(dict_row):
+                        csv_rows.append(dict_row)
+        except IOError as csv_file_except:
+            utils.logger.error('Failed to open"' + csv_path + '", ' + str(csv_file_except))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from csv_file_except
+
+        return csv_rows
 
     def _first_invalid_overall(self, csv_rows):
         for row in csv_rows:
