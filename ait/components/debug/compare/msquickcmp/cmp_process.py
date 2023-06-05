@@ -228,12 +228,12 @@ def find_accuracy_interval(args, endnode_name, input_shape):
     output_file = os.path.realpath(output_file)
     error_node_list = []
     #验证单层算子是否有问题
-    node_interval = zip(endnode, endnode)
+    node_interval = [endnode, endnode]
     #单层算子无问题
     if not subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
         for node in og.nodes:
             if al.check_input_node(og, node):
-                input_node_interval = zip(node, endnode)
+                input_node_interval = [node, endnode]
                 l_node, r_node = bin_divide(og, input_node_interval, args, onnx_data_path, input_shape)
                 utils.logger.info("Accumulated Error interval has been found.")
                 error_node_list.append([l_node, r_node])
@@ -282,7 +282,7 @@ def subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     cmg_args = CmpArgsAdapter(subgraph_onnx_file, os.path.join(args.out_path, "tmp_for_accuracy_locat.om"),
                               "", bin_files_path, args.cann_path, tmp_out_path, "", args.device,
-                              "", "", False, "", True, False, custom_op = args.custom_op, locat = False)
+                              "", "", False, "", True, False, custom_op = args.custom_op, locat = True)
     output_json_path = AtcUtils(cmg_args).convert_model_to_json()
     utils.logger.info("Start to run comparision")
     res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
@@ -316,7 +316,7 @@ def bin_divide(og, node_interval, args, onnx_data_path, input_shape):
     #二分
     while low < high:
         mid = (low + high + 1) // 2
-        input_node_interval = zip(satisfied_nodes[mid], endnode)
+        input_node_interval = [satisfied_nodes[mid], endnode]
         if subgraph_check(og, input_node_interval, args, onnx_data_path, input_shape):
             low = mid
         else:
