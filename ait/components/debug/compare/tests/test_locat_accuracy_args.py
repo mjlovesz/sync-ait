@@ -50,7 +50,7 @@ class TestClass:
                 os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_1.bin')
             ), # input_data_path
             cls.cann_path, # cann_path
-            os.path.join(cls.get_base_path(), '/test/data2vec/output'), # out_path
+            os.path.join(cls.get_base_path(), '/output'), # out_path
             "", # input_shape
             "0", # device
             "", # output_size
@@ -67,11 +67,11 @@ class TestClass:
     @classmethod
     def set_single_node_cmp_args(cls):
         args_gelu_cmp = CmpArgsAdapter(
-            os.path.join(cls.get_base_path(), 'onnx/gelu.onnx'), # gold_model
-            os.path.join(cls.get_base_path(), 'om/gelu.om'), # om_model
+            os.path.join(cls.get_base_path(), 'onnx/695_703.onnx'), # gold_model
+            os.path.join(cls.get_base_path(), 'om/695_703.om'), # om_model
             os.path.join(cls.get_base_path(), 'input_datas/gelu/695.npy'), # input_data_path
             cls.cann_path, # cann_path
-            os.path.join(cls.get_base_path(), '/test/gelu/output'), # out_path
+            os.path.join(cls.get_base_path(), '/output'), # out_path
             "", # input_shape
             "0", # device
             "", # output_size
@@ -87,7 +87,7 @@ class TestClass:
 
     @classmethod
     def get_latest_dir(cls):
-        cur_path = cls.get_base_path()
+        cur_path = os.path.join(cls.get_base_path(), "/output")
         latest_timestamp = 0
         latest_dir_path = ""
 
