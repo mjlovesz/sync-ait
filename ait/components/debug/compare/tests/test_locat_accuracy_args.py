@@ -45,10 +45,10 @@ class TestClass:
         args_data2vec_cmp = CmpArgsAdapter(
             os.path.join(cls.get_base_path(), 'onnx/data2vec_1_108.onnx'), # gold_model
             os.path.join(cls.get_base_path(), 'om/data2vec_1_108.om'), # om_model
-            "{},{}".format(
+            os.path.realpath("{},{}".format(
                 os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_0.bin'),
                 os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_1.bin')
-            ), # input_data_path
+            )), # input_data_path
             cls.cann_path, # cann_path
             os.path.join(cls.get_base_path(), '/output'), # out_path
             "", # input_shape
