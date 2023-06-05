@@ -119,9 +119,9 @@ class CMakeScanner(Scanner):
                 # reference match
                 rst = {'lineno': start_line, 'content': content, 'command': func_name, 'suggestion': 'modifying'}
                 rst_dict[start_line] = rst
-            elif KitConfig.UNKNOWN_PATTERN.search(content):
+            elif KitConfig.KEYWORD_PATTERN.search(content):
                 # fuzzy match
-                rst = {'lineno': start_line, 'content': content, 'command': func_name, 'suggestion': 'uncertain'}
+                rst = {'lineno': start_line, 'content': content, 'command': func_name, 'suggestion': 'modifying'}
                 rst_dict[start_line] = rst
             # save variable definition
             save_var_info_input = CMakeScanner.SAVE_VAR_INFO_INPUT(
