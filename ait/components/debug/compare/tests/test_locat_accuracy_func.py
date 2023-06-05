@@ -52,6 +52,7 @@ class TestClass:
         self.args = CmpArgsAdapter(
             os.path.join(self.get_base_path(), 'onnx/resnet18_static.onnx'), # gold_model
             os.path.join(self.get_base_path(), 'om/resnet18_static.om'), # om_model
+            "", # weight_path
             "", # input_data_path
             self.cann_path, # cann_path
             os.path.join(self.get_base_path(), '/test/resnet18/output/'), # out_path
