@@ -83,7 +83,7 @@ class TestClass:
 
     @classmethod
     def set_single_node_cmp_args(cls):
-        args_gelu_cmp=CmpArgsAdapter(
+        args_gelu_cmp = CmpArgsAdapter(
             golden_model=os.path.join(cls.get_base_path(), 'onnx/gelu.onnx'),
             om_model=os.path.join(cls.get_base_path(), 'om/gelu.om'),
             input_data_path=os.path.join(cls.get_base_path(), 'input_datas/gelu/695.npy'),
