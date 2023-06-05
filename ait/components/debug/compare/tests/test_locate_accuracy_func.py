@@ -43,79 +43,79 @@ class TestClass:
     @classmethod
     def set_accumulate_cmp_args(cls):
         args_data2vec_cmp = CmpArgsAdapter(
-            golden_model = os.path.join(cls.get_base_path(), 'onnx/data2vec_1_108.onnx'),
-            om_model = os.path.join(cls.get_base_path(), 'om/data2vec_1_108.om'),
-            input_data_path = "{},{}".format(
+            golden_model=os.path.join(cls.get_base_path(), 'onnx/data2vec_1_108.onnx'),
+            om_model=os.path.join(cls.get_base_path(), 'om/data2vec_1_108.om'),
+            input_data_path="{},{}".format(
                 os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_0.bin'),
                 os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_1.bin')
             ),
-            cann_path = cls.cann_path,
-            out_path = os.path.join(cls.get_base_path(), '/test/data2vec/output'),
-            input_shape = "",
-            device = "0",
-            output_size = "",
-            output_nodes = "",
-            advisor = False,
-            dym_shape_range = "",
-            dump = True,
-            bin2npy = False
+            cann_path=cls.cann_path,
+            out_path=os.path.join(cls.get_base_path(), '/test/data2vec/output'),
+            input_shape="",
+            device="0",
+            output_size="",
+            output_nodes="",
+            advisor=False,
+            dym_shape_range="",
+            dump=True,
+            bin2npy=False
         )
         return args_data2vec_cmp
 
     @classmethod
     def set_accumulate_acc_args(cls):
         args_data2vec_acc = CmpArgsAdapter(
-            golden_model = os.path.join(cls.get_base_path(), 'onnx/data2vec_1_108.onnx'),
-            om_model = os.path.join(cls.get_base_path(), 'om/data2vec_1_108.om'),
-            input_data_path = "",
-            cann_path = cls.cann_path,
-            out_path = os.path.join(cls.get_base_path(), '/test/data2vec/output/log/'),
-            input_shape = "",
-            device = "0",
-            output_size = "",
-            output_nodes = "",
-            advisor = False,
-            dym_shape_range = "",
-            dump = True,
-            bin2npy = False
+            golden_model=os.path.join(cls.get_base_path(), 'onnx/data2vec_1_108.onnx'),
+            om_model=os.path.join(cls.get_base_path(), 'om/data2vec_1_108.om'),
+            input_data_path="",
+            cann_path=cls.cann_path,
+            out_path=os.path.join(cls.get_base_path(), '/test/data2vec/output/log/'),
+            input_shape="",
+            device="0",
+            output_size="",
+            output_nodes="",
+            advisor=False,
+            dym_shape_range="",
+            dump=True,
+            bin2npy=False
         )
         return args_data2vec_acc
 
     @classmethod
     def set_single_node_cmp_args(cls):
-        args_gelu_cmp = CmpArgsAdapter(
-            golden_model = os.path.join(cls.get_base_path(), 'onnx/gelu.onnx'),
-            om_model = os.path.join(cls.get_base_path(), 'om/gelu.om'),
-            input_data_path = os.path.join(cls.get_base_path(), 'input_datas/gelu/695.npy'),
-            cann_path = cls.cann_path,
-            out_path = os.path.join(cls.get_base_path(), '/test/gelu/output'),
-            input_shape = "",
-            device = "0",
-            output_size = "",
-            output_nodes = "",
-            advisor = False,
-            dym_shape_range = "",
-            dump = True,
-            bin2npy = False
+        args_gelu_cmp=CmpArgsAdapter(
+            golden_model=os.path.join(cls.get_base_path(), 'onnx/gelu.onnx'),
+            om_model=os.path.join(cls.get_base_path(), 'om/gelu.om'),
+            input_data_path=os.path.join(cls.get_base_path(), 'input_datas/gelu/695.npy'),
+            cann_path=cls.cann_path,
+            out_path=os.path.join(cls.get_base_path(), '/test/gelu/output'),
+            input_shape="",
+            device="0",
+            output_size="",
+            output_nodes="",
+            advisor=False,
+            dym_shape_range="",
+            dump=True,
+            bin2npy=False
         )
         return args_gelu_cmp
 
     @classmethod
     def set_single_node_acc_args(cls):
         args_gelu_acc = CmpArgsAdapter(
-            golden_model = os.path.join(cls.get_base_path(), 'onnx/gelu.onnx'),
-            om_model = os.path.join(cls.get_base_path(), 'om/gelu.om'),
-            input_data_path = "",
-            cann_path = cls.cann_path,
-            out_path = os.path.join(cls.get_base_path(), '/test/gelu/output/log/'),
-            input_shape = "",
-            device = "0",
-            output_size = "",
-            output_nodes = "",
-            advisor = False,
-            dym_shape_range = "",
-            dump = True,
-            bin2npy = False
+            golden_model=os.path.join(cls.get_base_path(), 'onnx/gelu.onnx'),
+            om_model=os.path.join(cls.get_base_path(), 'om/gelu.om'),
+            input_data_path="",
+            cann_path=cls.cann_path,
+            out_path=os.path.join(cls.get_base_path(), '/test/gelu/output/log/'),
+            input_shape="",
+            device="0",
+            output_size="",
+            output_nodes="",
+            advisor=False,
+            dym_shape_range="",
+            dump=True,
+            bin2npy=False
         )
         return args_gelu_acc
 
