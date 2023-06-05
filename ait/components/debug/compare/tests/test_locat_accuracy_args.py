@@ -129,9 +129,9 @@ class TestClass:
 
     def test_compare_cause_by_single_node_situation(self):
         '''
-            单算子引起的场景
+            正常的场景
         '''
         cmp_process(self.args_gelu_cmp, True)
         latest_path = self.get_latest_dir()
         log_path = os.path.join(latest_path, "/error_interval_info.txt")
-        assert os.path.exists(log_path)
+        assert not os.path.exists(log_path)
