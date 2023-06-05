@@ -141,7 +141,6 @@ def merge_namespace(ns, api):
     return nsapi
 
 
-
 def get_namespace(children, suffix=True):
     """例如cv::cudacodec::VideoReader
 
@@ -195,6 +194,7 @@ def off_alias(t):
         return t
     if not is_user_code(get_attr(type_decl, 'location.file.name')):
         return t
+
     # 其他情况待确认：NAMESPACE_ALIAS，TYPE_ALIAS_TEMPLATE_DECL
     true_type = t
     if type_decl.kind == CursorKind.TYPE_ALIAS_DECL:
@@ -247,7 +247,7 @@ def strip_implicit(type_str):
 
 
 def read_code(file_path, start, end):
-    with open(file_path, 'r') as f:
+    with open(file_path, 'rb') as f:
         f.seek(start)
         return f.read(end - start)
 
@@ -597,8 +597,7 @@ def inclusion_directive(c):
     try:
         file = c.get_included_file()
     except AssertionError as e:
-        prefix = '' if c.spelling.startswith('/') else '/'
-        c.info = Info(None, c.spelling, c.spelling, None, prefix + c.spelling)
+        c.info = Info(None, c.spelling, c.spelling, None, None)
     else:
         c.info = Info(None, c.spelling, c.spelling, None, file.name)
 
@@ -625,8 +624,12 @@ def operator(c):
 ##### Cursor解析函数（结束）
 # 小粒度分析CursorKind
 small_dict = {
-    'MEMBER_REF_EXPR': member_ref_expr, 'DECL_REF_EXPR': decl_ref_expr, 'OVERLOADED_DECL_REF': overloaded_decl_ref,
-    'TYPE_REF': type_ref, 'TEMPLATE_REF': template_ref, 'NAMESPACE_REF': namespace_ref,
+    'MEMBER_REF_EXPR': member_ref_expr,
+    'DECL_REF_EXPR': decl_ref_expr,
+    'OVERLOADED_DECL_REF': overloaded_decl_ref,
+    'TYPE_REF': type_ref,
+    'TEMPLATE_REF': template_ref,
+    'NAMESPACE_REF': namespace_ref,
     'INCLUSION_DIRECTIVE': inclusion_directive,
     'CALL_EXPR': call_expr
 }
