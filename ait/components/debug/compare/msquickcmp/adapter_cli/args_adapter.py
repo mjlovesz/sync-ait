@@ -14,13 +14,16 @@
 import os
 
 
+CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "usr/local/Ascend/ascend-toolkit/latest")
+
+
 class CmpArgsAdapter:
     def __init__(self,
                  gold_model,
                  om_model,
                  weight_path="",
                  input_data_path="",
-                 cann_path=os.environ.get('ASCEND_TOOLKIT_HOME', "usr/local/Ascend/ascend-toolkit/latest"),
+                 cann_path=CANN_PATH,
                  out_path="./",
                  input_shape="",
                  device="0",
