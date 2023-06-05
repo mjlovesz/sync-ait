@@ -61,7 +61,9 @@ class TestClass:
             False, # advisor
             "", # dym_shape_range
             True, # dump
-            False # bin2npy
+            False, # bin2npy
+            "",
+            True
         )
 
     def test_calculate_flow(self):
