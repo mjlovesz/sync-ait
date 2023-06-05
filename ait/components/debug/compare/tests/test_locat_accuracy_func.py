@@ -67,6 +67,7 @@ class TestClass:
         )
 
     def test_calculate_flow(self):
+        print(self.args.model_path)
         og = OnnxGraph.parse(self.args.model_path)
 
         startnode_name = "image"
