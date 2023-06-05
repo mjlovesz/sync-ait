@@ -155,7 +155,10 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
     if len(expect_net_output_node) == 1:
         _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
         net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
-    invalid_rows, _ = analyser.Analyser(args.out_path)()
+    if not args.locat:    
+        invalid_rows, _ = analyser.Analyser(args.out_path)()
+    else:
+        invalid_rows, _ = analyser.Analyser(args.out_path)('ALL_INVALID')
     return invalid_rows
 
 
