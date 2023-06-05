@@ -29,7 +29,7 @@ ait debug compare -gm {onnx_model_path} -om {om_model_path} -i {input_data_path}
 
 ## 结果
 ![content](./说明.png)
-**结果解释**：每两个节点信息为一组误差区间起始节点，模型有多个输入则有多个误差区间节点对.
+* **结果解释**：每两个节点信息为一组误差区间起始节点，模型有多个输入则有多个误差区间节点对.
 如：
 ```
 Node(Mul_28): 
