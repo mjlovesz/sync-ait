@@ -20,11 +20,11 @@ cur_dir=$(pwd)
 
 # copy source code to tests, and test
 function copy_source_code_dir_to_tests() {
-    cp -rf ${cur_dir}/../msquickcmp ${cur_dir}/
+    cp -rf ${cur_dir}/../../msquickcmp ${cur_dir}/
 }
 
 function del_source_code_from_tests() {
-    rm -rf ${cur_dir}/msquickcmp
+    rm -rf ${cur_dir}/../msquickcmp
 }
 
 declare -i ret_ok=0
