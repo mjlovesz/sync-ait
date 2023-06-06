@@ -289,8 +289,8 @@ def subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
     utils.logger.info("Start to run comparision")
     res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
     utils.logger.info("Comparision finished")
-    os.rmdir(tmp_out_path)
-    os.rmdir(tmp_bin_path)
+    shutil.rmtree(tmp_out_path)
+    shutil.rmtree(tmp_bin_path)
     if al.check_res(res, endnode):
         return True
     return False
