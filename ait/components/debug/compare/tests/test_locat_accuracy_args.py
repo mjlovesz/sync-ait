@@ -44,47 +44,47 @@ class TestClass:
     @classmethod
     def set_accumulate_cmp_args(cls):
         args_data2vec_cmp = CmpArgsAdapter(
-            os.path.join(cls.get_base_path(), 'onnx/data2vec_1_108.onnx'), # gold_model
-            os.path.join(cls.get_base_path(), 'om/data2vec_1_108.om'), # om_model
-            "", # weight_path
-            os.path.realpath("{},{}".format(
+            gold_model=os.path.join(cls.get_base_path(), 'onnx/data2vec_1_108.onnx'),
+            om_model=os.path.join(cls.get_base_path(), 'om/data2vec_1_108.om'),
+            weight_path="",
+            input_data_path=os.path.realpath("{},{}".format(
                 os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_0.bin'),
                 os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_1.bin')
-            )), # input_data_path
-            cls.cann_path, # cann_path
-            os.path.join(cls.get_base_path(), 'output/'), # out_path
-            "", # input_shape
-            "0", # device
-            "", # output_size
-            "", # output_nodes
-            False, # advisor
-            "", # dym_shape_range
-            True, # dump
-            False, # bin2npy
-            "", # custom_op
-            True # locat
+            )),
+            cann_path=cls.cann_path,
+            out_path=os.path.join(cls.get_base_path(), 'output/'),
+            input_shape="",
+            device="0",
+            output_size="",
+            output_nodes="",
+            advisor=False,
+            dym_shape_range="",
+            dump=True,
+            bin2npy=False,
+            custom_op="",
+            locat=True
         )
         return args_data2vec_cmp
 
     @classmethod
     def set_single_node_cmp_args(cls):
         args_gelu_cmp = CmpArgsAdapter(
-            os.path.join(cls.get_base_path(), 'onnx/695_703.onnx'), # gold_model
-            os.path.join(cls.get_base_path(), 'om/695_703.om'), # om_model
-            "", # weight_path
-            os.path.join(cls.get_base_path(), 'input_datas/gelu/695.bin'), # input_data_path
-            cls.cann_path, # cann_path
-            os.path.join(cls.get_base_path(), 'output/'), # out_path
-            "", # input_shape
-            "0", # device
-            "", # output_size
-            "", # output_nodes
-            False, # advisor
-            "", # dym_shape_range
-            True, # dump
-            False, # bin2npy
-            "", # custom_op
-            True, # locat
+            gold_model=os.path.join(cls.get_base_path(), 'onnx/695_703.onnx'),
+            om_model=os.path.join(cls.get_base_path(), 'om/695_703.om'),
+            weight_path="",
+            input_data_path=os.path.join(cls.get_base_path(), 'input_datas/gelu/695.bin'),
+            cann_path=cls.cann_path,
+            out_path=os.path.join(cls.get_base_path(), 'output/'),
+            input_shape="",
+            device="0",
+            output_size="",
+            output_nodes="",
+            advisor=False,
+            dym_shape_range="",
+            dump=True,
+            bin2npy=False,
+            custom_op="",
+            locat=True,
         )
         return args_gelu_cmp
 
