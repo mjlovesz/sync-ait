@@ -10,9 +10,6 @@ host.BrowserHost = class {
         this._document = window.document;
         this._window = window;
         this._navigator = navigator;
-        if (this._window.location.hostname.endsWith('.github.io')) {
-            this._window.location.replace('https://netron.app');
-        }
         this._window.eval = () => {
             throw new Error('window.eval() not supported.');
         };
@@ -270,7 +267,6 @@ host.BrowserHost = class {
             }
         }
         downloadButton.addEventListener('click', () => {
-            // https://healeycodes.com/talking-between-languages
             fetch('/download', {
                 // Declare what type of data we're sending
                 headers: {
@@ -290,9 +286,7 @@ host.BrowserHost = class {
                     swal("Success!", "Modified model has been successfuly saved in ./modified_onnx/", "success");
                 }
                 else {
-                    // swal("Error happens!", "You are kindly to create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
                     swal("Error happens!", "You are kindly to check the log and create an issue on https://gitee.com/ascend/ait", "error");
-                    // alert('Error happens, you can find it out or create an issue on https://github.com/ZhangGe6/onnx-modifier')
                 }
             });
         });
@@ -347,17 +341,6 @@ host.BrowserHost = class {
             }
         }
 
-        const url = params.get('url');
-        if (url) {
-            const identifier = params.get('identifier') || null;
-            const location = url.replace(new RegExp('^https://github.com/([\\w]*/[\\w]*)/blob/([\\w/_.]*)(\\?raw=true)?$'), 'https://raw.githubusercontent.com/$1/$2');
-            if (this._view.accept(identifier || location)) {
-                this._openModel(location, identifier);
-                return;
-            }
-        }
-
-
         const openFileButton = this.document.getElementById('open-file-button');
         const openFileDialog = this.document.getElementById('open-file-dialog');
         if (openFileButton && openFileDialog) {
@@ -376,7 +359,6 @@ host.BrowserHost = class {
                     form.append('file', file);
                     this._ori_model_file = file
 
-                    // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
                     fetch('/open_model', {
                         method: 'POST',
                         body: form
@@ -420,7 +402,6 @@ host.BrowserHost = class {
                 form.append('file', file);
                 this._ori_model_file = file
 
-                // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
                 fetch('/open_model', {
                     method: 'POST',
                     body: form
@@ -441,7 +422,6 @@ host.BrowserHost = class {
     }
 
     take_effect_modify(path, data_body, callback) {
-        // // https://healeycodes.com/talking-between-languages
         return fetch(path, {
             // Declare what type of data we're sending
             headers: {
@@ -498,7 +478,6 @@ host.BrowserHost = class {
         let form = new FormData();
         form.append('file', file);
 
-        // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
         fetch('/open_model', {
             method: 'POST',
             body: form
@@ -786,7 +765,6 @@ host.BrowserHost = class {
         this._view.show('about');
     }
 
-    // https://blog.csdn.net/Crazy_SunShine/article/details/80624366
     _strMapToObj(strMap) {
         let obj = Object.create(null);
         for (let [k, v] of strMap) {
@@ -800,7 +778,6 @@ host.BrowserHost = class {
         return JSON.stringify(this._strMapToObj(map));
     }
 
-    // https://www.xul.fr/javascript/map-and-object.php
     mapToObjectRec(m) {
         let lo = {}
         for (let [k, v] of m) {
@@ -848,7 +825,6 @@ host.BrowserHost = class {
         return processed;
     }
 
-    // https://stackoverflow.com/a/4215753/10096987
     arrayToObject(arr) {
         var rv = {};
         for (var i = 0; i < arr.length; ++i)
