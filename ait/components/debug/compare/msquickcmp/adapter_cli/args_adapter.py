@@ -33,7 +33,8 @@ class CmpArgsAdapter:
                  dym_shape_range="",
                  dump=True,
                  bin2npy=False,
-                 custom_op=""):
+                 custom_op="",
+                 locat=False):
         self.model_path = gold_model
         self.offline_model_path = om_model
         self.weight_path = weight_path
@@ -49,3 +50,4 @@ class CmpArgsAdapter:
         self.dump = dump
         self.bin2npy = bin2npy
         self.custom_op = custom_op
+        self.locat = locat
