@@ -24,10 +24,10 @@ logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(leve
 logger = logging.getLogger(__name__)
 
 
-'''
-just for smoking test， not for pipeline or DT
-'''
 class TestClass:
+    '''
+        just for smoking test， not for pipeline or DT
+    '''
     # staticmethod or classmethod
     @classmethod
     def get_base_path(cls):
