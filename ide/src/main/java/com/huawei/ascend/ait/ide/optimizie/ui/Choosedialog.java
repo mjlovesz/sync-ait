@@ -182,7 +182,7 @@ public class Choosedialog extends JFrame {
      */
     private void initMouse() {
         checkPluginsAndAddAction(modelAnalyse, StepNum.MODEL_ANALYSE, PluginClassId.Foundation_PluginId);
-        checkPluginsAndAddAction(modelConverter, StepNum.MODEL_CONVERTER, PluginClassId.Foundation_PluginId);
+        checkPluginsAndAddAction(modelConverter, StepNum.MODEL_CONVERTER, PluginClassId.AitIde_PluginId);
         checkPluginsAndAddAction(aisBench, StepNum.AIS_BENCH, PluginClassId.AitIde_PluginId);
         checkPluginsAndAddAction(compare, StepNum.COMPARE, PluginClassId.AitIde_PluginId);
         checkPluginsAndAddAction(systemProfiler, StepNum.SYSTEM_PROFILER, PluginClassId.Inference_PluginId);
@@ -219,14 +219,14 @@ public class Choosedialog extends JFrame {
     private class ModelConvert {
         ModelConvert() {
             setIcon(modelConverter, Icons.AIT_MODEL_CONVERTER_DARK, Icons.AIT_MODEL_CONVERTER_LIGHT);
-            setStepIcons(modelConverterJPanel, modelConverter, step2, PluginClassId.Foundation_PluginId);
+            setStepIcons(modelConverterJPanel, modelConverter, step2, PluginClassId.AitIde_PluginId);
             actionMappings.put(StepNum.MODEL_CONVERTER, this::doModelConvert);
         }
 
         private Object doModelConvert(Project project){
             activeOutput();
             PluginGet pluginGet = new PluginGet(project);
-            pluginGet.getPluginClass(PluginClassId.ModelConverter_ClassId, PluginClassId.Inference_PluginId);
+            pluginGet.getPluginClass(PluginClassId.AitModelConverter_ClassId, PluginClassId.AitIde_PluginId);
             return Optional.empty();
         }
     }
@@ -265,7 +265,7 @@ public class Choosedialog extends JFrame {
         SystemProfiling() {
             setIcon(systemProfiler, Icons.SYSTEM_PROFILER_DARK, Icons.SYSTEM_PROFILER_LIGHT);
             setStepIcons(systemProfilerJPanel, systemProfiler, step5, PluginClassId.Inference_PluginId);
-            actionMappings.put(StepNum.MODEL_CONVERTER, this::doSystemProfiling);
+            actionMappings.put(StepNum.SYSTEM_PROFILER, this::doSystemProfiling);
         }
 
         private Object doSystemProfiling(Project project){
