@@ -15,5 +15,77 @@
 # limitations under the License.
 
 declare -i ret_ok=0
-declare -i ret_invalid_args=1
+declare -i ret_failed=1
 CUR_PATH=$(dirname $(readlink -f "$0"))
+SOC_VERSION=""
+
+function get_npu_type()
+{
+    get_npu_310=`lspci | grep d100`
+    get_npu_310P3=`lspci | grep d500`
+    get_npu_310B=`lspci | grep d107`
+    if [[ $get_npu_310 != "" ]];then
+        SOC_VERSION="Ascend310"
+        echo "npu is Ascend310"
+    elif [[ $get_npu_310P3 != "" ]];then
+        SOC_VERSION="Ascend310P3"
+        echo "npu is Ascend310P3"
+    elif [[ $get_npu_310B != "" ]];then
+        SOC_VERSION="Ascend310B"
+        echo "npu is Ascend310B"
+    else
+        return $ret_failed
+    fi
+}
+
+function test_analyze()
+{
+    bash $CUR_PATH/analyser/tests/test.sh
+}
+function test_benchmark()
+{
+    bash $CUR_PATH/benchmark/test/test.sh $1 $2
+}
+function test_convert()
+{
+
+}
+function test_debug_compare()
+{
+
+}
+function test_debug_surgeon()
+{
+    bash $CUR_PATH/debug/surgeon/test/test.sh
+}
+function test_profile()
+{
+
+}
+function test_transplt()
+{
+
+}
+
+main() {
+    if [ $# -lt 1 ]; then
+        echo "at least one parameter. for example: bash test_ait.sh Ascend310P3"
+        return $ret_invalid_args
+    fi
+    get_npu_type || { echo "invalid npu device";return $ret_failed; }
+    PYTHON_COMMAND="python3"
+    BENCKMARK_DT_MODE="simple"
+
+    test_analyze || { echo "developer test analyze failed";return $ret_failed; }
+    test_benchmark $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE|| { echo "developer test benchmark failed";return $ret_failed; }
+    test_convert || { echo "developer test analyze failed";return $ret_failed; }
+    test_debug_compare || { echo "developer test analyze failed";return $ret_failed; }
+    test_debug_surgeon || { echo "developer test analyze failed";return $ret_failed; }
+    test_profile || { echo "developer test analyze failed";return $ret_failed; }
+    test_transplt || { echo "developer test analyze failed";return $ret_failed; }
+
+    return $ret_ok
+}
+
+main "$@"
+exit $?
