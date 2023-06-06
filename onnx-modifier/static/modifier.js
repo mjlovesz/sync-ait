@@ -39,7 +39,6 @@ modifier.Modifier = class {
         this.resetGraph()
     }
 
-    // TODO: add filter feature like here: https://www.w3schools.com/howto/howto_js_dropdown.asp
     updateAddNodeDropDown() {
         // update dropdown supported node lost
         var addNodeDropdown = this.view._host.document.getElementById('add-node-dropdown');
