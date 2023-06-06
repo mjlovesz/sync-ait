@@ -1,0 +1,8 @@
+onnx >= 1.14.0
+numpy >= 1.21.6
+onnxruntime >= 1.14.0
+setuptools >= 63.2.0
+skl2onnx >= 1.14.1
+protobuf == 3.20.2
+pexpect
+psutil
