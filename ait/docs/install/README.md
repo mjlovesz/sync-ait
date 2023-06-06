@@ -60,4 +60,7 @@ chmod u+x install.sh
 
 # 5. 只安装profile组件
 ./install.sh --profile
+
+# 6. 只安装convert组件
+./install.sh --convert
 ```
