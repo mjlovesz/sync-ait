@@ -39,7 +39,6 @@ def make_new_node(node_info):
             if not out.startswith('list_custom'):
                 outputs.append(out)
     
-    # https://github.com/onnx/onnx/blob/main/onnx/helper.py#L82
     node = onnx.helper.make_node(
         op_type=op_type,
         inputs=inputs,
@@ -54,7 +53,6 @@ def make_new_node(node_info):
 def make_attr_changed_node(node, attr_change_info):
     # convert the changed attribute value into the type that is consistent with the original attribute
     # because AttributeProto is constructed barely based on the input value
-    # https://github.com/onnx/onnx/blob/4e24b635c940801555bee574b4eb3a34cab9acd5/onnx/helper.py#L472
     def make_type_value(value, attribute_proto_type):
         attr_type = AttributeProto.AttributeType.Name(attribute_proto_type)
         if attr_type == "FLOAT":
@@ -78,7 +76,6 @@ def make_attr_changed_node(node, attr_change_info):
         if attr.name in attr_change_info.keys():            
             new_attr[attr.name] = make_type_value(attr_change_info[attr.name][0], attr.type)
         else:
-            # https://github.com/onnx/onnx/blob/4e24b635c940801555bee574b4eb3a34cab9acd5/onnx/helper.py#L548
             new_attr[attr.name] = onnx.helper.get_attribute_value(attr)
         
     node = onnx.helper.make_node(
