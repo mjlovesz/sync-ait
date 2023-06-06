@@ -149,8 +149,7 @@ class Analyser:
     def _get_monitors_exceeding_threshold(row, monitor_threshold):
         invalid_monitors = []
         for monitor, threshold in monitor_threshold.items():
-            row_str_value = row.get(monitor, "NaN")
-            row_value = float("inf" if row_str_value.lower() == "overflow" else row_str_value)
+            row_value = float(row.get(monitor, "NaN"))
             if math.isnan(row_value) or math.isinf(row_value):
                 continue
 
