@@ -126,27 +126,6 @@ Used to distinguish between different actual inputs of models in dynamic shapes,
   # | KullbackLeiblerDivergence | 0.01125 |   316 | BatchMatMulV2 |                    MatMul_179 |  MatMul_179 |
   ```
 
-### Error Location
-- The error positioning function option parameter is - l or -- locat, and when enabled, soc_version needs to be specified, such as "Ascend310P3", and also ensure that dump is enabled
-- After each comparison is completed, the error localization process is automatically executed for the first node (any type of error) with an error exceeding the threshold.
-The interval range of the error is automatically located (whether it is a single node or a cumulative error), and the output result is saved in the same directory as the output file in "error_interval_info. txt"
-- The output content is:
-```
-(error interval startnode)
-Node({Node_name}):
-  inputs=[...]
-  outputs=[...]
-  attrs=[]
-
-(error interval endnode)
-:Node({Node_name}):
-  inputs=[...]
-  outputs=[...]
-  attrs=[]
-```
-- **Note**: If the model has multiple input nodes, the corresponding error interval nodes for each input node branch will be output (For example, if there are n input nodes, output n error intervals)
-
-
 ### Command-line Options
 
 | Option&emsp                              | Description                              | Required |
