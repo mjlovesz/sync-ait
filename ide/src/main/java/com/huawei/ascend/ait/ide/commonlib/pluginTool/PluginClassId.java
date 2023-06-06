@@ -51,7 +51,7 @@ public class PluginClassId {
     /**
      * ModelConverter_ClassId
      */
-    public static final String ModelConverter_ClassId = Ascend_id + ".modelconvert.action.ModelConvertAction";
+    public static final String AitModelConverter_ClassId = "com.huawei.ascend.ait.ide.action.AitModelConverterAction";
 
     /**
      * SystemProfiler_ClassId
