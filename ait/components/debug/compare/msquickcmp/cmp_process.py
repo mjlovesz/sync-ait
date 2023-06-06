@@ -24,6 +24,7 @@ import os
 import sys
 import stat
 import time
+import subprocess
 import onnxruntime
 import acl
 
@@ -252,9 +253,9 @@ def subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
     utils.logger.info("Extracting model Sucess!")
     utils.logger.info("Start using atc to convert onnx to om file")
     subgraph_om_file = os.path.join(args.out_path, 'tmp_for_accuracy_locat')
-    atc_cmd = f"atc --framework=5 --soc_version={acl.get_soc_name()} --model={subgraph_onnx_file} \
-                --output={subgraph_om_file}"
-    os.system(atc_cmd)
+    atc_cmd = ["atc", "--framework=5", "--soc_version=" + acl.get_soc_name(), "--model=" + subgraph_onnx_file,\
+                "--output=" + subgraph_om_file]
+    subprocess.run(atc_cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     utils.logger.info("atc conversion Success!")
     utils.logger.info("Start to loading input data")
     subog = OnnxGraph.parse(subgraph_onnx_file)
@@ -287,8 +288,8 @@ def subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
     utils.logger.info("Start to run comparision")
     res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
     utils.logger.info("Comparision finished")
-    clr_cmd = f"rm -rf {tmp_out_path} {tmp_bin_path}"
-    os.system(clr_cmd)
+    clr_cmd = ["rm", "-rf", tmp_out_path, tmp_bin_path]
+    subprocess.run(clr_cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     if al.check_res(res, endnode):
         return True
     return False
