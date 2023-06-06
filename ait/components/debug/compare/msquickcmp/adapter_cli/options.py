@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import argparse
 
 import click
@@ -139,8 +140,18 @@ opt_dump = click.option(
 opt_bin2npy = click.option(
     "--convert",
     "bin2npy",
+    default=False,
     type=str2bool,
     help="Enable npu dump data conversion from bin to npy after compare.Usage: --convert True."
+)
+
+opt_locat = click.option(
+    "-l",
+    "--locat",
+    "locat",
+    default=False,
+    type=str2bool,
+    help="Enable accuracy interval location when needed.E.g: --locat True."
 )
 
 opt_custom_op = click.option(
