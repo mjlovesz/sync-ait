@@ -51,22 +51,22 @@ class TestClass:
     def init(self):
         self.cann_path = self.get_cann_path()
         self.args = CmpArgsAdapter(
-            os.path.join(self.get_base_path(), 'onnx/resnet18_static.onnx'), # gold_model
-            os.path.join(self.get_base_path(), 'om/resnet18_static.om'), # om_model
-            "", # weight_path
-            "", # input_data_path
-            self.cann_path, # cann_path
-            os.path.join(self.get_base_path(), '/test/resnet18/output/'), # out_path
-            "", # input_shape
-            "0", # device
-            "", # output_size
-            "", # output_nodes
-            False, # advisor
-            "", # dym_shape_range
-            True, # dump
-            False, # bin2npy
-            "", # custom_op
-            True # locat
+            gold_model=os.path.join(self.get_base_path(), 'onnx/resnet18_static.onnx'),
+            om_model=os.path.join(self.get_base_path(), 'om/resnet18_static.om'),
+            weight_path="",
+            input_data_path="",
+            cann_path=self.cann_path,
+            out_path=os.path.join(self.get_base_path(), '/test/resnet18/output/'),
+            input_shape="",
+            device="0",
+            output_size="",
+            output_nodes="",
+            advisor=False,
+            dym_shape_range="",
+            dump=True,
+            bin2npy=False,
+            custom_op="",
+            locat=True
         )
 
     def test_calculate_flow(self):
