@@ -26,6 +26,7 @@ from msquickcmp.accuracy_locat import accuracy_locat as al
 logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
+
 class TestClass:
     # staticmethod or classmethod
     @classmethod
