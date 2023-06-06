@@ -15,7 +15,7 @@
 import os
 import csv
 import math
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException
@@ -23,7 +23,6 @@ from msquickcmp.common.utils import AccuracyCompareException
 INVALID_ROW_VALUES = {
     "OpType": ["TransData"],
     "GroundTruth": ["*"],
-    "DataType": ["NaN"],
 }
 
 MONITOR_THRESHOLD = {
@@ -34,11 +33,22 @@ MONITOR_THRESHOLD = {
     "MeanRelativeError": 1.0,
 }
 
+
 REVERSE_MONITORS = ["CosineSimilarity"]
 PRINT_COLUMNS = ["Index", "OpType", "NPUDump", "GroundTruth"]
 
 _STRATEGY_NAMES = ["FIRST_INVALID_OVERALL", "FIRST_INVALID_EACH"]
 STRATEGIES = namedtuple("STRATEGIES", _STRATEGY_NAMES)(*_STRATEGY_NAMES)
+
+_MAPPING_FILE_HEADER = [
+    "Index", "OpType", "NPUDump", "DataType", "Address", "GroundTruth", "DataType", "TensorIndex", "Shape"
+]
+
+_BUILT_IN_ALGORITHM = [
+    "CosineSimilarity", "MaxAbsoluteError", "AccumulatedRelativeError", "RelativeEuclideanDistance",
+    "KullbackLeiblerDivergence", "StandardDeviation", "MeanAbsoluteError", "RootMeanSquareError",
+    "MaxRelativeError", "MeanRelativeError"
+]
 
 
 def type_to_str(value_type):
@@ -103,15 +113,9 @@ class Analyser:
         """
         if strategy not in STRATEGIES:
             raise ValueError(f"strategy Should be one of {list(STRATEGIES)}")
-
-        try:
-            with open(self.csv_path, "r") as csv_file:
-                csv_rows = [row for row in csv.DictReader(csv_file) if self._is_valid_row(row)]
-        except IOError as csv_file_except:
-            utils.logger.error('Failed to open"' + self.csv_path + '", ' + str(csv_file_except))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from csv_file_except
         utils.logger.info(f"Analyser call parameter strategy={strategy}, max_column_len={max_column_len}")
 
+        csv_rows = self._read_result_csv(self.csv_path)
         invalid_rows, invalid_monitors = self._strategy_func_dict.get(strategy, self._first_invalid_overall)(csv_rows)
 
         self._show_result(invalid_rows, invalid_monitors, max_column_len=max_column_len)
@@ -145,7 +149,8 @@ class Analyser:
     def _get_monitors_exceeding_threshold(row, monitor_threshold):
         invalid_monitors = []
         for monitor, threshold in monitor_threshold.items():
-            row_value = float(row.get(monitor, "NaN"))
+            row_str_value = row.get(monitor, "NaN")
+            row_value = float("inf" if row_str_value.lower() == "overflow" else row_str_value)
             if math.isnan(row_value) or math.isinf(row_value):
                 continue
 
@@ -161,6 +166,30 @@ class Analyser:
             if row.get(item_key) in invalid_values:
                 return False
         return True
+
+    def _read_result_csv(self, csv_path):
+        csv_header = _MAPPING_FILE_HEADER + _BUILT_IN_ALGORITHM
+        is_first_line = True
+        try:
+            with open(csv_path, "r") as csv_file:
+                csv_rows = []
+                for list_row in csv.reader(csv_file):
+                    # Handle header line in case source csv doesn't contain one.
+                    if is_first_line and list_row[0] == "Index":  # Header line
+                        csv_header = list_row
+                        is_first_line = False
+                        continue
+                    if is_first_line:
+                        is_first_line = False
+
+                    dict_row = OrderedDict(zip(csv_header, list_row))
+                    if self._is_valid_row(dict_row):
+                        csv_rows.append(dict_row)
+        except IOError as csv_file_except:
+            utils.logger.error('Failed to open"' + csv_path + '", ' + str(csv_file_except))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_OPEN_FILE_ERROR) from csv_file_except
+
+        return csv_rows
 
     def _first_invalid_overall(self, csv_rows):
         for row in csv_rows:
