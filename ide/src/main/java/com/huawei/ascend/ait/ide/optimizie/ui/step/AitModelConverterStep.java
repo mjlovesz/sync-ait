@@ -1,8 +1,24 @@
+/**
+ * Copyright 2023 Huawei Technologies Co., Ltd
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.huawei.ascend.ait.ide.optimizie.ui.step;
 
 import com.huawei.ascend.ait.ide.optimizie.aitmodelconvert.AitModelConvertTask;
 import com.huawei.ascend.ait.ide.util.FileChooseWithBrows;
-import com.huawei.ascend.ait.ide.util.exception.OutputPathInvalidException;
+import com.huawei.ascend.ait.ide.util.exception.PathInvalidException;
 import com.huawei.ascend.ait.ide.util.exception.ModelFileInvalidException;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
@@ -24,9 +40,15 @@ import org.cef.OS;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import javax.swing.JComponent;
+import javax.swing.BorderFactory;
 import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -53,6 +75,14 @@ public class AitModelConverterStep extends DialogWrapper {
     private JTextField modelNameTextField;
     private JPanel modelNameErrPanel;
     private JLabel modelNameErrLabel;
+    private TextFieldWithBrowseButton cannPathBrowse;
+    private JTextField cannPathTextField = cannPathBrowse.getTextField();
+    private TextFieldWithBrowseButton aiePathBrowse;
+    private JPanel cannPathErrPanel;
+    private JLabel cannPathErrLabel;
+    private JPanel aiePathErrPanel;
+    private JLabel aiePathErrLabel;
+    private JTextField aiePathTextField = aiePathBrowse.getTextField();
     private final Project project;
     private static final List<String> SOC_VERSION_LIST = List.of("Ascend310P3", "Ascend910B3");
     private static final long FILE_SIZE_LIMIT_2G = 2 * 1024 * 1024 * 1024L;
@@ -60,6 +90,7 @@ public class AitModelConverterStep extends DialogWrapper {
     private static final int MODEL_NAME_LIMIT = 64;
     private static final String ONNX_MODEL_FILE_SUFFIX = ".onnx";
     private static final String OM_MODEL_FILE_SUFFIX = ".om";
+
     public AitModelConverterStep(@Nullable Project project) {
         super(true);
         this.project = project;
@@ -70,14 +101,22 @@ public class AitModelConverterStep extends DialogWrapper {
         initComponent();
         initVisible();
         setTextFieldLimitAndToolTip();
+        addCannPathBrowseListener();
+        addCannPathTextListener();
+        addAiePathBrowseListener();
+        addAiePathTextListener();
         addModelFileBrowseListener();
-        addoutputPathBrowseListener();
         addModelFileTextFieldListener();
-        addModelNameTextListener();
+        addOutputPathBrowseListener();
         initOutputPathTextListener();
+        addModelNameTextListener();
     }
 
     private void setTextFieldLimitAndToolTip() {
+        cannPathTextField.setDocument(new JTextFieldLimit(DOCUMENT_LIMIT));
+        cannPathTextField.setToolTipText("Only letters, digits, and the following special characters are allowed:- . _ : \\ /");
+        aiePathTextField.setDocument(new JTextFieldLimit(DOCUMENT_LIMIT));
+        aiePathTextField.setToolTipText("Only letters, digits, and the following special characters are allowed:- . _ : \\ /");
         modelFileTextField.setDocument(new JTextFieldLimit(DOCUMENT_LIMIT));
         modelFileTextField.setToolTipText("Only letters, digits, and the following special characters are allowed:- . _ : \\ /");
         modelNameTextField.setDocument(new JTextFieldLimit(DOCUMENT_LIMIT));
@@ -87,6 +126,7 @@ public class AitModelConverterStep extends DialogWrapper {
     }
 
     private void initComponent() {
+        root.setPreferredSize(new Dimension(500, -1));
         for (String soc : SOC_VERSION_LIST) {
             this.socVersionComboBox.addItem(soc);
         }
@@ -95,9 +135,13 @@ public class AitModelConverterStep extends DialogWrapper {
 
     private void initVisible() {
         socVersionComboBox.setVisible(true);
+        cannPathBrowse.setVisible(true);
+        cannPathErrPanel.setVisible(false);
+        aiePathBrowse.setVisible(true);
+        aiePathErrPanel.setVisible(false);
         modelFileBrowse.setVisible(true);
-        outputPathBrowse.setVisible(true);
         modelFileErrPanel.setVisible(false);
+        outputPathBrowse.setVisible(true);
         outputPathErrPanel.setVisible(false);
         modelNameTextField.setVisible(true);
         modelNameErrPanel.setVisible(false);
@@ -106,6 +150,46 @@ public class AitModelConverterStep extends DialogWrapper {
     @Override
     protected @Nullable JComponent createCenterPanel() {
         return root;
+    }
+
+    private void addCannPathTextListener() {
+        cannPathTextField.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                String cannPath= cannPathTextField.getText();
+                if (StringUtils.isEmpty(cannPath)) {
+                    normalizeInput(cannPathErrPanel, cannPathErrLabel, cannPathTextField);
+                    return;
+                }
+
+                try {
+                    checkPathValid(cannPath);
+                    normalizeInput(cannPathErrPanel, cannPathErrLabel, cannPathTextField);
+                } catch (PathInvalidException exception) {
+                    abnormalInput(cannPathErrPanel, cannPathErrLabel, cannPathTextField, exception.getMessage());
+                }
+            }
+        });
+    }
+
+    private void addAiePathTextListener() {
+        aiePathTextField.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                String aiePath= aiePathTextField.getText();
+                if (StringUtils.isEmpty(aiePath)) {
+                    normalizeInput(aiePathErrPanel, aiePathErrLabel, aiePathTextField);
+                    return;
+                }
+
+                try {
+                    checkPathValid(aiePath);
+                    normalizeInput(aiePathErrPanel, aiePathErrLabel, aiePathTextField);
+                } catch (PathInvalidException exception) {
+                    abnormalInput(aiePathErrPanel, aiePathErrLabel, aiePathTextField, exception.getMessage());
+                }
+            }
+        });
     }
 
     private void initOutputPathTextListener() {
@@ -130,30 +214,72 @@ public class AitModelConverterStep extends DialogWrapper {
                                     "The model already exists in the output path and it will be overlayed.");
                         }
                     }
-                } catch (OutputPathInvalidException exception) {
+                } catch (PathInvalidException exception) {
                     abnormalInput(outputPathErrPanel, outputPathErrLabel, outputPathTextField, exception.getMessage());
                 }
             }
         });
     }
 
-    private void checkOutputPathValid(@NotNull String outputPath) throws OutputPathInvalidException {
-        File outputPathFile = FileUtils.getFile(outputPath);
-        if (!pathValid(outputPath)) {
-            throw new OutputPathInvalidException("Valid file path characters: -, _, :, \\, /, [0-9], [A-Z], [a-z].");
+    private void checkPathValid(@NotNull String path) throws PathInvalidException {
+        if (!pathValid(path)) {
+            throw new PathInvalidException("Valid file path characters: -, _, :, \\, /, [0-9], [A-Z], [a-z].");
         }
+
+        File outputPathFile = FileUtils.getFile(path);
         if (FileUtils.isSymlink(outputPathFile)) {
-            throw new OutputPathInvalidException("The path is a soft link.");
+            throw new PathInvalidException("The path is a soft link.");
         }
-        if (!FileUtil.exists(outputPath)) {
-            throw new OutputPathInvalidException("The path does not exist.");
+        if (!FileUtil.exists(path)) {
+            throw new PathInvalidException("The path does not exist.");
         }
-        if (!FileUtils.getFile(outputPath).isDirectory()) {
-            throw new OutputPathInvalidException("The path must be a directory.");
+        if (!FileUtils.getFile(path).isDirectory()) {
+            throw new PathInvalidException("The path must be a directory.");
         }
+    }
+
+    private void checkOutputPathValid(@NotNull String outputPath) throws PathInvalidException {
+        checkPathValid(outputPath);
+
         if (!FileUtils.getFile(outputPath).canWrite()) {
-            throw new OutputPathInvalidException("You do not have the permission to create files in the current directory.");
+            throw new PathInvalidException("You do not have the permission to create files in the current directory.");
         }
+    }
+
+    private void addCannPathBrowseListener() {
+        cannPathBrowse.addActionListener(event -> {
+            String outputPath = getCannPathBrowseSelectedFile();
+            if (!StringUtils.isEmpty(outputPath)) {
+                cannPathBrowse.setText(outputPath);
+            }
+        });
+    }
+
+    private String getCannPathBrowseSelectedFile() {
+        FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(false, true, false, false,
+                false, false)
+                .withTitle("Browse for cann path")
+                .withDescription("Please select a cann path");
+        return FileChooseWithBrows.fileChoosewithBrowse(project, fileChooserDescriptor,
+                this.getClass().getName(), "selectedCannPath").orElse("");
+    }
+
+    private void addAiePathBrowseListener() {
+        aiePathBrowse.addActionListener(event -> {
+            String outputPath = getAiePathBrowseSelectedFile();
+            if (!StringUtils.isEmpty(outputPath)) {
+                aiePathBrowse.setText(outputPath);
+            }
+        });
+    }
+
+    private String getAiePathBrowseSelectedFile() {
+        FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(false, true, false, false,
+                false, false)
+                .withTitle("Browse for Aie path")
+                .withDescription("Please select a Aie path");
+        return FileChooseWithBrows.fileChoosewithBrowse(project, fileChooserDescriptor,
+                this.getClass().getName(), "selectedAiePath").orElse("");
     }
 
     private void addModelFileBrowseListener() {
@@ -245,7 +371,7 @@ public class AitModelConverterStep extends DialogWrapper {
         }
     }
 
-    private void addoutputPathBrowseListener() {
+    private void addOutputPathBrowseListener() {
         outputPathBrowse.addActionListener(event -> {
             String outputPath = getOutputPathBrowseSelectedFile();
             if (!StringUtils.isEmpty(outputPath)) {
@@ -341,7 +467,7 @@ public class AitModelConverterStep extends DialogWrapper {
         }
         try {
             checkOutputPathValid(outputPath);
-        } catch (OutputPathInvalidException exception) {
+        } catch (PathInvalidException exception) {
             abnormalInput(outputPathErrPanel, outputPathErrLabel, outputPathTextField, exception.getMessage());
             return false;
         }
@@ -390,8 +516,8 @@ public class AitModelConverterStep extends DialogWrapper {
             }
         }
 
-        ProgressManager.getInstance().run(new AitModelConvertTask(project, modelFileTextField.getText(),
-                Objects.requireNonNull(socVersionComboBox.getSelectedItem()).toString(), outputFile));
+        ProgressManager.getInstance().run(new AitModelConvertTask(project, cannPathTextField.getText(), aiePathTextField.getText(),
+                modelFileTextField.getText(), Objects.requireNonNull(socVersionComboBox.getSelectedItem()).toString(), outputFile));
     }
 
     private void normalizeInput(@NotNull JPanel panel, @NotNull JLabel label,
