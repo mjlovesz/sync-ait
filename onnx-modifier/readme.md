@@ -36,7 +36,7 @@
 1. 安装python
     * 建议安装[miniconda3](https://docs.conda.io/en/latest/miniconda.html)
     * 注意点: 在 windows 上，命令行的python命令优先会启动 WindowsApps 目录的程序，可以在环境变量中将 %USERPROFILE%\AppData\Local\Microsoft\WindowsApps 下移到最后
-2. 安装[NodeJS](https://nodejs.org/zh-cn) (使用 electron 启动时需要，建议安装最新长期维护版本)
+2. 安装[NodeJS](https://nodejs.org/zh-cn/download) (使用 electron 启动时需要，建议安装最新长期维护版本)
 3. 拉取源码：
   ```bash
   git clone https://gitee.com/ascend/ait.git
