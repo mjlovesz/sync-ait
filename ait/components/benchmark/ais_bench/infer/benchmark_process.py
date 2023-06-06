@@ -249,7 +249,7 @@ def msprof_run_profiling(args, msprof_bin):
 
 def get_energy_consumption(npu_id):
     cmd = "npu-smi info -t power -i {}".format(npu_id)
-    get_npu_id = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    get_npu_id = subprocess.run(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     npu_id = get_npu_id.stdout.decode('gb2312')
     power = []
     npu_id = npu_id.split("\n")
