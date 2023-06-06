@@ -23,6 +23,7 @@ from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
+
 '''
 just for smoking test， not for pipeline or DT
 '''
@@ -71,7 +72,7 @@ class TestClass:
             os.path.join(cls.get_base_path(), 'onnx/695_703.onnx'), # gold_model
             os.path.join(cls.get_base_path(), 'om/695_703.om'), # om_model
             "", # weight_path
-            os.path.join(cls.get_base_path(), 'input_datas/gelu/695.npy'), # input_data_path
+            os.path.join(cls.get_base_path(), 'input_datas/gelu/695.bin'), # input_data_path
             cls.cann_path, # cann_path
             os.path.join(cls.get_base_path(), 'output/'), # out_path
             "", # input_shape
@@ -124,7 +125,7 @@ class TestClass:
 
         cmp_process(self.args_data2vec_cmp, True)
         latest_path = self.get_latest_dir()
-        log_path = os.path.join(latest_path, "/error_interval_info.txt")
+        log_path = os.path.join(latest_path, "error_interval_info.txt")
         assert os.path.exists(log_path)
 
 
@@ -135,5 +136,5 @@ class TestClass:
         '''
         cmp_process(self.args_gelu_cmp, True)
         latest_path = self.get_latest_dir()
-        log_path = os.path.join(latest_path, "/error_interval_info.txt")
+        log_path = os.path.join(latest_path, "error_interval_info.txt")
         assert not os.path.exists(log_path)
