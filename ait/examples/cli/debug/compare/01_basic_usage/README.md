@@ -59,12 +59,12 @@ compare精度对比功能可以通过ait命令行方式启动。
   |------------------------:|---------:|---------:|--------:|------------:|---------:|-----------:|----:|-------:|---------------:|--:|----------------:|----------------:|
   |                      Sub|Sub_26Mul_28| float16 |    NaN |Sub_26,Mul_28|   float32|Sub_26Mul_28:output:0|[1,1,1,108]|NO|      1|...|         0.000364|                 |
 如上所示的结果文件中主要关注以下几项:
- - [x] NPUDump:这个对应om模型中的算子,由于融合规则,可能会对应多个GPU/CPU算子
- - [x] DataType:一共有两个,一个是NPU侧的数据类型,一个是CPU/GPU侧的数据类型,二者有所不同,可能会有精度损失问题.
- - [x] GroundTruth:om算子所对应的onnx模型算子
- - [x] Overflow:数据是否出现上下溢.
- - [x] CosineSimilarity, RelativeEuclideanDistance, ..., MeanRelativeError等为各类误差,主要需要看是否某一项超过精度阈值(即某项异常),若超过则需要重点关注.
- - [x] CompareFailReason:比对失败原因,误差可能会因为除零非法或者不对应等原因造成无法计算,变为NaN值,会列出详细原因.
+ - [x] [NPUDump]:这个对应om模型中的算子,由于融合规则,可能会对应多个GPU/CPU算子
+ - [x] [DataType]:一共有两个,一个是NPU侧的数据类型,一个是CPU/GPU侧的数据类型,二者有所不同,可能会有精度损失问题.
+ - [x] [GroundTruth]:om算子所对应的onnx模型算子
+ - [x] [Overflow]:数据是否出现上下溢.
+ - [x] [CosineSimilarity][RelativeEuclideanDistance]...[MeanRelativeError]：这是比对的各类误差,主要需要看是否某一项超过精度阈值(即某项异常),若超过则需要重点关注.
+ - [x] [CompareFailReason]:比对失败原因,误差可能会因为除零非法或者不对应等原因造成无法计算,变为NaN值,会列出详细原因.
 ### 比对结果分析
 - **analyser 分析结果** 在调用结束后打印，在全部对比完成后，逐行分析数据，排除 nan 数据，输出各对比项中首个差距不在阈值范围内的算子。
 
