@@ -40,3 +40,5 @@ OPTIONS参数说明如下：
 ait convert --model resnet50.onnx --output resnet50.om --soc_version Ascend310 
 ```
 
+## 使用案例
+请移步[convert工具使用示例](../../examples/cli/convert/)
