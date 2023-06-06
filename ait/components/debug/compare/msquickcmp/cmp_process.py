@@ -288,8 +288,8 @@ def subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
     utils.logger.info("Start to run comparision")
     res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
     utils.logger.info("Comparision finished")
-    clr_cmd = ["rm", "-rf", tmp_out_path, tmp_bin_path]
-    subprocess.run(clr_cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    os.remove(tmp_out_path)
+    os.remove(tmp_bin_path)
     if al.check_res(res, endnode):
         return True
     return False
