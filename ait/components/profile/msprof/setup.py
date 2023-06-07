@@ -17,10 +17,13 @@ from setuptools import setup, find_packages  # type: ignore
 with open('requirements.txt', encoding='utf-8') as f:
     required = f.read().splitlines()
 
+with open('README.md', encoding='utf-8') as f:
+    long_description = f.read()
 setup(
     name='msprof',
     version='0.0.2',
     description='msprof tool',
+    long_description=long_description,
     url='ait_msprof url',
     packages=find_packages(),
     keywords='ait_msprof tool',
