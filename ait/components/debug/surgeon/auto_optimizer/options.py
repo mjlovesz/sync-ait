@@ -57,7 +57,8 @@ opt_optimizer = click.option(
     '--knowledges',
     'optimizer',
     default=','.join(
-        knowledge for knowledge in KnowledgeFactory.get_knowledge_pool().keys()
+        knowledge 
+        for knowledge in KnowledgeFactory.get_knowledge_pool().keys()
         if knowledge not in default_off_knowledges
     ),
     type=str,

@@ -15,6 +15,7 @@
 
 import click
 
+
 def check_args(ctx: click.Context, params: click.Option, value: str):
     """
     check whether the param is provided
