@@ -271,6 +271,7 @@ host.BrowserHost = class {
         downloadButton.addEventListener('click', () => {
             this.take_effect_modify("/download", this.build_download_data(true), false, (blob)=> {
                 this.export(this.upload_filename, blob)
+                this.show_message("Success!", "Model has been successfuly modified", "success");
             })
         });
 
@@ -287,15 +288,15 @@ host.BrowserHost = class {
         const extract = this.document.getElementById('extract-graph');
         extract.addEventListener('click', () => {
             if (!(this._view.modifier.getExtractStart() && this._view.modifier.getExtractEnd())) {
-                swal("Select Extract Net Start And End", "Select the start node and end node for the subnet export", "info");
+                this.show_message("Select Extract Net Start And End", "Select the start node and end node for the subnet export", "info");
                 return 
             }
             let download_data = this.build_download_data(true)
             download_data["extract_start"] = this._view.modifier.getExtractStart()
             download_data["extract_end"] = this._view.modifier.getExtractEnd()
             this.take_effect_modify("/extract", download_data, false, (blob) => {
-                swal("Success!", "Extract model has been successfuly saved", "success");
                 this.export(this.upload_filename.replace(".onnx", ".extract.onnx"), blob)
+                this.show_message("Success!", "Model has been successfuly extracted", "success");
                 this._view.modifier.setExtractStart(null)
                 this._view.modifier.setExtractEnd(null)
             })
@@ -425,11 +426,11 @@ host.BrowserHost = class {
         }).then((response) => {
             if (response.status == 204) {
                 return response.text().then((text) => {
-                    swal("Nothing happens!", text, "info");
+                    this.show_message("Nothing happens!", text, "info");
                 })
             } else if (!response.ok) {
                 return response.text().then((text) => {
-                    swal("Error happens!", 
+                    this.show_message("Error happens!", 
                         `You are kindly to check the log and create an issue on https://gitee.com/ascend/ait\n${text}`,
                         "error");
                 })
@@ -454,7 +455,7 @@ host.BrowserHost = class {
             fetch("/get_output_message", {method: 'POST', body:"{}"}).then((response) => {
                 response.text().then((text) => {
                     if (text) {
-                        swal("messages", text, "info");
+                        this.show_message("messages", text, "info");
                     }
                 })
             })
@@ -507,32 +508,67 @@ host.BrowserHost = class {
         return this._environment.get(name);
     }
 
+    show_message(title, message, level) {
+        let box = document.createElement("div")
+        box.classList.add("message-box", `${level}-message-box`)
+        let boxTitle = document.createElement("b")
+        boxTitle.innerText = title
+        let boxClose = document.createElement("span")
+        boxClose.innerText = " X "
+        boxClose.style.float = "right"
+        let boxText = document.createElement("p")
+        boxText.classList.add("text")
+        boxText.innerText = message
+        box.append(boxTitle, boxClose, boxText)
+        document.getElementById("show-message-info").append(box)
+
+        // event
+        let remove_function = () => { box.remove(); }
+        boxClose.addEventListener("click", remove_function)
+        let remove_info = {}
+        remove_info.time_id = setTimeout(remove_function, 10000);
+        box.addEventListener("mouseover", () => {
+            clearTimeout(remove_info.time_id)
+        })
+        box.addEventListener("mouseout", () => {
+            remove_info.time_id = setTimeout(remove_function, 10000);
+        })
+    }
+
+    show_alert_message(title, message) {
+        let alert_element = document.getElementById('show-message-alert')
+        alert_element.getElementsByTagName("h1")[0].innerText = title
+        alert_element.getElementsByClassName("text")[0].innerText = message
+        alert_element.showModal()
+    }
+
+    show_confirm_message(title, message) {
+        return new Promise((resolve)=>{
+            let confirm_element = document.getElementById('show-message-confirm')
+            confirm_element.getElementsByTagName("h1")[0].innerText = title
+            confirm_element.getElementsByClassName("text")[0].innerText = message
+    
+            let [cancelBtn, okBtn] = confirm_element.getElementsByTagName("button")
+            let cancel_event_listener = cancelBtn.addEventListener("click", ()=> {
+                confirm_element.close()
+                cancelBtn.removeEventListener("click", cancel_event_listener)
+                resolve(false)
+            })
+            let ok_event_listener = okBtn.addEventListener("click", ()=> {
+                confirm_element.close()
+                okBtn.removeEventListener("click", ok_event_listener)
+                resolve(true)
+            })
+            confirm_element.showModal()
+        })
+    }
+
     error(message, detail) {
-        swal(message, detail)
+        this.show_alert_message(message, detail)
     }
 
     confirm(message, detail) {
-        return swal({
-            title: message,
-            text: detail,
-            closeOnClickOutside: false,
-            buttons: {
-                cancel: {
-                    text: "Cancel",
-                    value: false,
-                    visible: true,
-                    className: "",
-                    closeModal: true,
-                },
-                confirm: {
-                    text: "OK",
-                    value: true,
-                    visible: true,
-                    className: "",
-                    closeModal: true
-                }
-            }
-        })
+        return this.show_confirm_message(message, detail);
     }
 
     require(id) {
