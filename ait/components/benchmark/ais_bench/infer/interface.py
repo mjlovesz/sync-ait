@@ -96,12 +96,14 @@ class InferSession:
         """
         get inputs info of model
         """
+        self.intensors_desc = self.session.get_inputs()
         return self.intensors_desc
 
     def get_outputs(self):
         """
         get outputs info of model
         """
+        self.outtensors_desc = self.session.get_outputs()
         return self.outtensors_desc
 
     def set_loop_count(self, loop):
