@@ -46,8 +46,8 @@ def main():
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        register_interface(app, request, send_file_method, tmp_dir)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        register_interface(app, request, send_file_method, temp_dir)
         app.run(host='localhost', port=args.port, debug=args.debug)
 
 if __name__ == '__main__':
