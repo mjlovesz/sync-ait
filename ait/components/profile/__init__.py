@@ -15,18 +15,22 @@
 import click
 import pkg_resources
 
-
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
-@click.group(name="profile", context_settings=CONTEXT_SETTINGS, invoke_without_command=True,
-             no_args_is_help=True, short_help="Profile tools to get .om model performance data")
-def profile_cli_group():
-    pass
+def load_profile_sub_task():
+    sub_tasks = {}
+    for entry_point in pkg_resources.iter_entry_points('profile_sub_task'):
+        sub_tasks[entry_point.name] = entry_point.load()
 
-## add other sub task [benchmark .ed]
+    if len(sub_tasks) == 1:
+        sub_task = list(sub_tasks.values())[0]
+        sub_task.name = 'profile'
+        return sub_task
+    else:
+        return click.Group(name='profile',
+                           context_settings=CONTEXT_SETTINGS
+                           )
 
-profile_sub_task = {}
-for entry_point in pkg_resources.iter_entry_points('profile_sub_task'):
-    profile_sub_task[entry_point.name] = entry_point.load()
-    profile_cli_group.add_command(entry_point.load(), entry_point.name)
+
+profile_cli = load_profile_sub_task()
