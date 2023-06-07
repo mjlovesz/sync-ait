@@ -391,7 +391,7 @@ def register_interface(app, request, send_file, temp_dir_path):
 
 
 if __name__ == '__main__':
-    with tempfile.TemporaryDirectory() as temp_dir_path:
-        server = RpcServer(temp_dir_path)
-        register_interface(server, server.request, server.send_file, temp_dir_path)
+    with tempfile.TemporaryDirectory() as server_temp_dir_path:
+        server = RpcServer(server_temp_dir_path)
+        register_interface(server, server.request, server.send_file, server_temp_dir_path)
         server.run()
