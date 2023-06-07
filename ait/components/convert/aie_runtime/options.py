@@ -15,12 +15,27 @@
 
 import click
 
+def check_args(ctx: click.Context, params: click.Option, value: str):
+    """
+    check whether the param is provided
+    """
+    args = [
+        opt
+        for param in ctx.command.params
+        for opt in param.opts
+    ]
+    if value in args:
+        raise click.MissingParameter()
+    return value
+
+
 opt_model = click.option(
     '-gm',
     '--model',
     'model',
     type=str,
     required=True,
+    callback=check_args,
     help='Input model file path&name.'
 )
 
@@ -31,6 +46,7 @@ opt_out_path = click.option(
     'output',
     type=str,
     required=True,
+    callback=check_args,
     help='Output file path&name(needn\'t .om suffix for ATC, need .om suffix for AIE)'
 )
 
@@ -41,6 +57,7 @@ opt_soc = click.option(
     'soc_version',
     type=str,
     required=True,
+    callback=check_args,
     help='The soc version.'
 )
 
