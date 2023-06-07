@@ -62,6 +62,11 @@
         <action class="com.huawei.ascend.ait.ide.commonlib.output.ThemeChangeAction" id="ThemeChange">
             <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
         </action>
+        <action id="AitModelConverter"
+                class="com.huawei.ascend.ait.ide.action.AitModelConverterAction"
+                text="Ait Model Converter">
+            <add-to-group group-id="Ascend" anchor="last"/>
+        </action>
     </actions>
 
 
