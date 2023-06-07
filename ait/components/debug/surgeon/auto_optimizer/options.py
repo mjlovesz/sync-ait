@@ -57,7 +57,7 @@ opt_optimizer = click.option(
     '--knowledges',
     'optimizer',
     default=','.join(
-        knowledge 
+        knowledge
         for knowledge in KnowledgeFactory.get_knowledge_pool().keys()
         if knowledge not in default_off_knowledges
     ),
@@ -97,11 +97,12 @@ opt_recursive = click.option(
 )
 
 
-arg_output = click.argument(
+arg_output = click.option(
     '-o',
     '--output'
     'output_model',
     nargs=1,
+    required=True,
     type=click.Path(path_type=pathlib.Path)
 )
 
