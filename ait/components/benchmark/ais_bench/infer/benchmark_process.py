@@ -249,7 +249,7 @@ def msprof_run_profiling(args, msprof_bin):
 
 def get_energy_consumption(npu_id):
     cmd = "npu-smi info -t power -i {}".format(npu_id)
-    get_npu_id = subprocess.run(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    get_npu_id = subprocess.run(cmd.split(), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     npu_id = get_npu_id.stdout.decode('gb2312')
     power = []
     npu_id = npu_id.split("\n")
@@ -348,8 +348,8 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.add_args(sys.argv)
     s = session.sumary()
     summary.npu_compute_time_list = s.exec_time_list
-    summary.h2d_latency_list = MemorySummary.get_H2D_time_list()
-    summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
+    summary.h2d_latency_list = MemorySummary.get_h2d_time_list()
+    summary.d2h_latency_list = MemorySummary.get_d2h_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
     if args.energy_consumption:
         logger.info("npu_id {} energy_consumption {}".format(args.npu_id, (float(end_energy_consumption) -
