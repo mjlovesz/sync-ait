@@ -57,8 +57,8 @@ opt_weight = click.option(
 )
 
 opt_soc = click.option(
-    '-s',
-    '--soc',
+    '-soc',
+    '--soc_version',
     'soc',
     type=str,
     callback=check_args,
