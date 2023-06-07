@@ -66,3 +66,14 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
 ### 使用场景
 
 请移步[benchmark使用示例](../../examples/cli/benchmark/)
+  | 使用示例               | 使用场景                                 |
+  |-----------------------| ---------------------------------------- |
+  | [01_basic_usage](../../../examples/cli/benchmark/01_basic_usage)    | 基础示例，运行om模型的纯推理以及调试模式       |
+  |[02_specify_input_data](../../../examples/cli/benchmark/02_specify_input_data)|指定输入数据场景下的om模型推理|
+  |[03_save_profiler_or_dump_data](../../../examples/cli/benchmark/03_save_profiler_or_dump_data)|om模型推理过程中采集性能数据|
+  |[04_save_output_data](../../../examples/cli/benchmark/04_save_output_data)|om模型推理结束后保存输出结果|
+  |[05_dynamic_grading](../../../examples/cli/benchmark/05_dynamic_grading)|动态分档场景下的om模型推理|
+  |[06_dynamic_shapes](../../../examples/cli/benchmark/06_dynamic_shapes)|动态shape场景下的om模型推理|
+  |[07_dynamic_aipp](../../../examples/cli/benchmark/07_dynamic_aipp)|动态AIPP场景下的om模型推理|
+  |[08_multi_device_scenario](../../../examples/cli/benchmark/08_multi_device_scenario)|采用多个npu同步进行om模型的推理|
+  |[09_trtexec](../../../examples/cli/benchmark/09_trtexec)|集成NVIDIA trtexec工具进行onnx模型的推理|
