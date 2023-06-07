@@ -80,12 +80,12 @@ class InferSession:
         self.outtensors_desc = self.session.get_outputs()
 
     @staticmethod
-    def convert_tensors_to_host(self, tensors):
+    def convert_tensors_to_host(tensors):
         for tensor in tensors:
             tensor.to_host()
     
     @staticmethod
-    def convert_tensors_to_arrays(self, tensors):
+    def convert_tensors_to_arrays(tensors):
         arrays = []
         for tensor in tensors:
             # convert acltensor to numpy array
