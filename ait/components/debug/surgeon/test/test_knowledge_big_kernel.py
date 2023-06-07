@@ -1,3 +1,17 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import unittest
 
 import numpy as np
@@ -154,7 +168,6 @@ def gen_qkv_branch(graph: OnnxGraph, input_x, branch_name="q"):
 class TestKnowledgeBigKernel(unittest.TestCase, KnowledgeTestHelper):
     def test_bert_opt(self):
         graph = gen_bert_attention()
-        graph.save("./bert_test.onnx")
         knowledge = KnowledgeBigKernel(graph, "start_add", "end_add")
         cfg = OptimizationConfig(
             graph=graph,
@@ -166,7 +179,6 @@ class TestKnowledgeBigKernel(unittest.TestCase, KnowledgeTestHelper):
 
     def test_gpt2_opt(self):
         graph = gen_gpt2_attention()
-        graph.save("./gpt2_test.onnx")
         knowledge = KnowledgeBigKernel(graph, "start_add", "end_add")
         cfg = OptimizationConfig(
             graph=graph,
@@ -175,3 +187,7 @@ class TestKnowledgeBigKernel(unittest.TestCase, KnowledgeTestHelper):
             onnx_opt="./test_opt.onnx"
         )
         self.assertTrue(self.check_optimization(cfg=cfg, expect=True))
+
+
+if __name__ == '__main__':
+    unittest.main()

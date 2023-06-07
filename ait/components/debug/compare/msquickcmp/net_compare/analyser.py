@@ -37,7 +37,7 @@ MONITOR_THRESHOLD = {
 REVERSE_MONITORS = ["CosineSimilarity"]
 PRINT_COLUMNS = ["Index", "OpType", "NPUDump", "GroundTruth"]
 
-_STRATEGY_NAMES = ["FIRST_INVALID_OVERALL", "FIRST_INVALID_EACH"]
+_STRATEGY_NAMES = ["FIRST_INVALID_OVERALL", "FIRST_INVALID_EACH", "ALL_INVALID"]
 STRATEGIES = namedtuple("STRATEGIES", _STRATEGY_NAMES)(*_STRATEGY_NAMES)
 
 
@@ -88,6 +88,7 @@ class Analyser:
         self._strategy_func_dict = {
             STRATEGIES.FIRST_INVALID_OVERALL: self._first_invalid_overall,
             STRATEGIES.FIRST_INVALID_EACH: self._first_invalid_each,
+            STRATEGIES.ALL_INVALID:self._all_invalid,
         }
 
     def __call__(self, strategy=STRATEGIES.FIRST_INVALID_OVERALL, max_column_len=30):
@@ -99,11 +100,12 @@ class Analyser:
                 that any monitor value is not within threshold.
               - STRATEGIES.FIRST_INVALID_OVERALL means printing the first operators
                 whose value is not within threshold for each monitor.
+              - STRATEGIES.ALL_INVALID means printing all the operators
+                whose value is not within threshold for each monitor.
           max_column_len: int value for each column max print length.
         """
         if strategy not in STRATEGIES:
             raise ValueError(f"strategy Should be one of {list(STRATEGIES)}")
-
         try:
             with open(self.csv_path, "r") as csv_file:
                 csv_rows = [row for row in csv.DictReader(csv_file) if self._is_valid_row(row)]
@@ -161,7 +163,7 @@ class Analyser:
             if row.get(item_key) in invalid_values:
                 return False
         return True
-
+    
     def _first_invalid_overall(self, csv_rows):
         for row in csv_rows:
             cur_invalid_monitors = self._get_monitors_exceeding_threshold(row, self.monitor_threshold)
@@ -180,6 +182,16 @@ class Analyser:
                 for monitor in cur_invalid_monitors:
                     monitor_threshold.pop(monitor)
 
+        return invalid_rows, invalid_monitors
+
+    def _all_invalid(self, csv_rows):
+        invalid_rows = []
+        invalid_monitors = []
+        for row in csv_rows:
+            cur_invalid_monitors = self._get_monitors_exceeding_threshold(row, self.monitor_threshold)
+            if len(cur_invalid_monitors) > 0:
+                invalid_rows.append(row)
+                invalid_monitors.append(cur_invalid_monitors)
         return invalid_rows, invalid_monitors
 
 

@@ -44,7 +44,7 @@ class ModelParser:
     def om_path(self) -> str:
         return self._om_path
 
-    def parse_all_ops(self, convert = False) -> List[OpInfo]:
+    def parse_all_ops(self, convert=False) -> List[OpInfo]:
         if self._json_path == '' and convert:
             if not self.parse_model_to_json():
                 logger.error(f'parse model ops failed.')
