@@ -97,6 +97,8 @@ opt_recursive = click.option(
 
 
 arg_output = click.argument(
+    '-o',
+    '--output'
     'output_model',
     nargs=1,
     type=click.Path(path_type=pathlib.Path)
