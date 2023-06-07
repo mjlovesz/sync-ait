@@ -11,8 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import argparse
+import logging
+import os
+import tempfile
 
 from flask import Flask, render_template, request, send_file
 from server import register_interface
@@ -40,9 +42,13 @@ def main():
             file.seek(0, os.SEEK_SET)
 
         return send_file(file, **kwargs)
+    
+    if args.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
 
-    register_interface(app, request, send_file_method)
-    app.run(host='localhost', port=args.port, debug=args.debug)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        register_interface(app, request, send_file_method, tmp_dir)
+        app.run(host='localhost', port=args.port, debug=args.debug)
 
 if __name__ == '__main__':
     main()
