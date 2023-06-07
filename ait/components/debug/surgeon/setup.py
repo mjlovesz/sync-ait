@@ -52,7 +52,6 @@ setup(
                 'ais_bench @ git+https://gitee.com/ascend/ait.git'
                 '#egg=ais_bench&subdirectory=ait/components/benchmark/'
             ),
-            'pyacl @ git+https://gitee.com/peng-ao/pyacl.git',
             'pillow >= 9.0.0',
             'tqdm >= 4.63.0',
         ],
