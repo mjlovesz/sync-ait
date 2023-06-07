@@ -36,7 +36,7 @@
 1. 安装python
     * 建议安装[miniconda3](https://docs.conda.io/en/latest/miniconda.html)
     * 注意点: 在 windows 上，命令行的python命令优先会启动 WindowsApps 目录的程序，可以在环境变量中将 %USERPROFILE%\AppData\Local\Microsoft\WindowsApps 下移到最后
-2. 安装[NodeJS](https://nodejs.org/zh-cn) (使用 electron 启动时需要，建议安装最新长期维护版本)
+2. 安装[NodeJS](https://nodejs.org/zh-cn/download) (使用 electron 启动时需要，建议安装最新长期维护版本)
 3. 拉取源码：
   ```bash
   git clone https://gitee.com/ascend/ait.git
@@ -245,6 +245,23 @@
 
 
 <img src="./docs/extract.gif" style="zoom:75%;" />
+
+
+
+# 外部链接网址
+
+| 网址                                      | 功能                                     | 
+|-------------------------------------------|-----------------------------------------|
+| https://github.com/ZhangGe6               | 该仓库原始仓库位置，在About菜单中展示      |
+| https://arxiv.org/ | 算子说明信息        |
+| https://github.com/onnx/onnx/ | 算子说明信息 |
+| https://pytorch.org/docs/ | 算子说明信息 |
+| https://docs.scipy.org/doc/ | 算子说明信息 |
+| https://devblogs.nvidia.com/ | 算子说明信息 |
+| https://github.com/numpy/numpy/issues/8621 | 算子说明信息 |
+| https://en.wikipedia.org/wiki/ | 算子说明信息 |
+| https://papers.nips.cc/paper/ | 算子说明信息 |
+| https://ieeexplore.ieee.org/document | 算子说明信息 |
 
 # 参考资料
 

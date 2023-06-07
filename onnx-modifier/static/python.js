@@ -1872,7 +1872,6 @@ python.Execution = class {
                 if (signature.trim() !== 'tree') {
                     throw new python.Error("Invalid signature '" + signature.trim() + "'.");
                 }
-                // GBDT::LoadModelFromString() in https://github.com/microsoft/LightGBM/blob/master/src/boosting/gbdt_model_text.cpp
                 const key_vals = new Map();
                 while (lines.length > 0 && !lines[0].startsWith('Tree=')) {
                     const cur_line = lines.shift().trim();
@@ -2532,7 +2531,6 @@ python.Execution = class {
             throw new python.Error("Unknown scalar type '" + dtype.name + "'.");
         });
         this.registerFunction('numpy.load', function(file) {
-            // https://github.com/numpy/numpy/blob/main/numpy/lib/format.py
             const signature = [ 0x93, 0x4E, 0x55, 0x4D, 0x50, 0x59 ];
             if (!file.read(6).every((v, i) => v == signature[i])) {
                 throw new numpy.Error('Invalid signature.');
@@ -3763,8 +3761,6 @@ python.Unpickler = class {
     }
 };
 
-// https://svn.python.org/projects/python/trunk/Lib/pickletools.py
-// https://github.com/python/cpython/blob/master/Lib/pickle.py
 python.Unpickler.OpCode = {
     MARK: 40,              // '('
     EMPTY_TUPLE: 41,       // ')'

@@ -51,10 +51,10 @@ public class Icons {
     public static final Icon MODEL_ANALYSE_LIGHT = IconLoader.findIcon(
             "/icons/ModelAnalyse_light.svg", Icons.class.getClassLoader());
 
-    public static final Icon MODEL_CONVERTER_DARK = IconLoader.findIcon(
+    public static final Icon AIT_MODEL_CONVERTER_DARK = IconLoader.findIcon(
             "/icons/ModelConverter_dark.svg", Icons.class.getClassLoader());
 
-    public static final Icon MODEL_CONVERTER_LIGHT = IconLoader.findIcon(
+    public static final Icon AIT_MODEL_CONVERTER_LIGHT = IconLoader.findIcon(
             "/icons/ModelConverter_light.svg", Icons.class.getClassLoader());
 
     public static final Icon QUESTION = IconLoader.findIcon(
