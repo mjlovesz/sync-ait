@@ -16,6 +16,7 @@ import logging
 import os
 import sys
 import json
+import stat
 import tempfile
 from urllib import parse
 
@@ -39,13 +40,13 @@ class RequestInfo:
 
 
 class RpcServer:
-    def __init__(self, tmp_dir) -> None:
+    def __init__(self, temp_dir) -> None:
         self.path_amp = dict()
         self.request = RequestInfo()
         self.msg_cache = ""
         self.msg_end_flag = 2
         self.max_msg_len_recv = 500 * 1024 * 1024
-        self.tmp_dir = tmp_dir
+        self.temp_dir = temp_dir
 
     @staticmethod
     def send_message(msg, status, file, req_ind):
@@ -56,9 +57,11 @@ class RpcServer:
         return return_str
 
     def send_file(self, file, **kwargs):
-        file_path = os.path.join(self.tmp_dir, "modified.onnx")
+        file_path = os.path.join(self.temp_dir, "modified.onnx")
         file.seek(0)
-        with open(file_path, "wb") as modified_file:
+        flags = os.O_WRONLY | os.O_CREAT
+        mode = stat.S_IWUSR | stat.S_IRUSR
+        with os.fdopen(os.open(file_path, flags=flags, mode=mode), "wb") as modified_file:
             modified_file.write(file.read())
         return dict(file=file_path), 200
 
@@ -230,7 +233,8 @@ def call_auto_optimizer(modifier, modify_info, output_suffix, make_cmd):
 
         out_res = subprocess.run(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if out_res.returncode != 0:
-            raise RuntimeError("auto_optimizer run error: " + str(out_res.returncode) + str(out_res) + " cmd: " + " ".join(cmd))
+            raise RuntimeError("auto_optimizer run error: " + str(out_res.returncode) + str(out_res) +
+                               " cmd: " + " ".join(cmd))
 
         return opt_file_path, out_res.stdout.decode()
 
@@ -251,6 +255,7 @@ def optimizer_model(modifier, modify_info, opt_tmp_file):
                 opt_tmp_file.write(opt_file.read())
 
     return msg
+
 
 def extract_model(modifier, modify_info, start_node_name, end_node_name, tmp_file):
     def make_cmd(py_path, in_path, out_path):
@@ -284,7 +289,7 @@ def json_modify_model(modifier, modify_infos):
             raise ServerError("unknown path", 500)
 
 
-def register_interface(app, request, send_file, tmp_dir):
+def register_interface(app, request, send_file, temp_dir):
     @app.route('/open_model', methods=['POST'])
     def open_model():
         onnx_file = request.files.get("file")
@@ -386,7 +391,7 @@ def register_interface(app, request, send_file, tmp_dir):
 
 
 if __name__ == '__main__':
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        server = RpcServer(tmp_dir)
-        register_interface(server, server.request, server.send_file, tmp_dir)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        server = RpcServer(temp_dir)
+        register_interface(server, server.request, server.send_file, temp_dir)
         server.run()
