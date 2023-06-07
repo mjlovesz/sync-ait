@@ -81,8 +81,6 @@ class Analyze:
             self._result.insert(op_result)
 
     def _update_result_with_err_op_types(self, err_op_types):
-        if not isinstance(err_op_types, set):
-            return
         op_infos = self._model_parser.parse_all_ops()
         for op_info in op_infos:
             if op_info.op_type not in err_op_types:

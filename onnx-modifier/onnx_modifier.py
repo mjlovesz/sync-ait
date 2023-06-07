@@ -49,7 +49,6 @@ class OnnxModifier:
 
     @classmethod
     def from_name_stream(cls, name, stream):
-        # https://leimao.github.io/blog/ONNX-IO-Stream/
         logging.info("loading model...")
         stream.seek(0)
         model_proto = onnx.load_model(stream, onnx.ModelProto, load_external_data=False)
@@ -91,7 +90,6 @@ class OnnxModifier:
     def change_batch_size(self, rebatch_info):
         if not (rebatch_info): 
             return
-        # https://github.com/onnx/onnx/issues/2182
         rebatch_type = rebatch_info['type']
         rebatch_value = rebatch_info['value']
         if rebatch_type == 'fixed':
@@ -162,7 +160,6 @@ class OnnxModifier:
                 self.initializer.remove(self.initializer_name2module.get(init_name, None))
 
         # remove the (model) inputs related to deleted nodes 
-        # https://github.com/ZhangGe6/onnx-modifier/issues/12
         for input_name in self.graph_input_names:
             if input_name not in remained_inputs:
                 self.graph.input.remove(self.node_name2module.get(input_name, None))
@@ -251,7 +248,6 @@ class OnnxModifier:
             self.node_name2module[node.name] = node
 
     def add_outputs(self, added_outputs):
-        # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
         added_output_names = added_outputs.values()
         if len(added_output_names) == 0:
             return
@@ -273,7 +269,6 @@ class OnnxModifier:
             self.node_name2module["out_" + output.name] = output
                 
     def add_inputs(self, added_inputs):
-        # https://github.com/onnx/onnx/issues/3277#issuecomment-1050600445
         added_input_infos = added_inputs.values()
         if len(added_input_infos) == 0:
             return
@@ -294,7 +289,6 @@ class OnnxModifier:
 
     def modify_initializer(self, changed_initializer):
         for init_name, meta in changed_initializer.items():
-            # https://github.com/onnx/onnx/issues/2978
             init_type, init_val_str = meta
             if init_val_str == "":
                 continue # in case we clear the input
@@ -306,7 +300,6 @@ class OnnxModifier:
             # for custom added initilizers
             else:
                 # more details about why the .flatten() is needed can be found 
-                # in https://github.com/ZhangGe6/onnx-modifier/issues/28
                 init_val_flat = init_val
                 if len(init_val.shape) > 1:
                     init_val_flat = init_val.flatten()
@@ -387,7 +380,6 @@ class OnnxModifier:
             
         def shape_inference():
             # [Shape inference is not guaranteed to be complete]
-            # https://github.com/onnx/onnx/blob/main/docs/ShapeInference.md
             # clear the existed value_info and replace them with newly inferred one
             del self.graph.value_info[:]
             # clear output, otherwise infer_shapes() could fail due to shape inconsistency
@@ -439,6 +431,38 @@ class OnnxModifier:
         self.modify_model_props(modify_info['model_properties'])
 
         self.post_process(modify_info['postprocess_args'])
+
+        self.sort_nodes()
+
+    def sort_nodes(self):
+        nodes = self.graph.node
+        if len(nodes) == 0:
+            return 
+        dict_output_to_node = dict()
+        for node in nodes:
+            for output in node.output:
+                dict_output_to_node[output] = node
+
+        inputs_before_this_index_node = set()
+        index = 0
+        while index < len(nodes):
+            node = nodes[index]
+            # check if inputs before this node 
+            for input_name in node.input:
+                if input_name in inputs_before_this_index_node:
+                    continue
+                node_prev = dict_output_to_node.get(input_name)
+                if node_prev is None:
+                    continue
+
+                nodes.remove(node_prev)
+                nodes.insert(index, node_prev)
+                break
+            else:
+                # all input is before this node，good and go on
+                for output_name in node.output:
+                    inputs_before_this_index_node.add(output_name)
+                index += 1
 
     def check_and_save_model(self, save_dir='./modified_onnx'):
         logging.info("saving model...")

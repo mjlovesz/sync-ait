@@ -81,8 +81,8 @@ def parse_str2np(tensor_str, tensor_type):
     except Exception as ex:
         raise RuntimeError("Type {} is not supported.\n \
                             You can check all supported datatypes in \
-                                https://numpy.org/doc/stable/user/basics.types.html or \
-                                https://www.tutorialspoint.com/numpy/numpy_data_types.htm . \
+                                numpy basics.types or \
+                                tutorialspoint numpy_data_types . \
                             If the problem still exists, \
                             you are kindly to report an issue. Thanks!".format(tensor_type)) from ex
 
@@ -119,7 +119,6 @@ def parse_str2val(val_str, val_type):
     
     # onnx built-in values 
     elif val_type == "DataType":
-        # https://github.com/onnx/onnx/blob/46b96275554b0d978dd5c8ba786cc81dabd1d25a/onnx/onnx.proto#L479
         return getattr(TensorProto, val_str.upper())
         
     else:
@@ -130,7 +129,6 @@ def parse_str2val(val_str, val_type):
 
 
 # map np datatype to onnx datatype
-# https://github.com/onnx/onnx/blob/8669fad0247799f4d8683550eec749974b4f5338/onnx/helper.py#L1177
 def np2onnxdtype(np_dtype):
     return cast(int, NP_TYPE_TO_TENSOR_TYPE[np_dtype])
 
