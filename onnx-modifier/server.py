@@ -40,13 +40,13 @@ class RequestInfo:
 
 
 class RpcServer:
-    def __init__(self, temp_dir) -> None:
+    def __init__(self, temp_dir_path) -> None:
         self.path_amp = dict()
         self.request = RequestInfo()
         self.msg_cache = ""
         self.msg_end_flag = 2
         self.max_msg_len_recv = 500 * 1024 * 1024
-        self.temp_dir = temp_dir
+        self.temp_dir_path = temp_dir_path
 
     @staticmethod
     def send_message(msg, status, file, req_ind):
@@ -57,7 +57,7 @@ class RpcServer:
         return return_str
 
     def send_file(self, file, **kwargs):
-        file_path = os.path.join(self.temp_dir, "modified.onnx")
+        file_path = os.path.join(self.temp_dir_path, "modified.onnx")
         file.seek(0)
         flags = os.O_WRONLY | os.O_CREAT
         mode = stat.S_IWUSR | stat.S_IRUSR
@@ -289,7 +289,7 @@ def json_modify_model(modifier, modify_infos):
             raise ServerError("unknown path", 500)
 
 
-def register_interface(app, request, send_file, temp_dir):
+def register_interface(app, request, send_file, temp_dir_path):
     @app.route('/open_model', methods=['POST'])
     def open_model():
         onnx_file = request.files.get("file")
@@ -391,7 +391,7 @@ def register_interface(app, request, send_file, temp_dir):
 
 
 if __name__ == '__main__':
-    with tempfile.TemporaryDirectory() as temp_dir:
-        server = RpcServer(temp_dir)
-        register_interface(server, server.request, server.send_file, temp_dir)
+    with tempfile.TemporaryDirectory() as temp_dir_path:
+        server = RpcServer(temp_dir_path)
+        register_interface(server, server.request, server.send_file, temp_dir_path)
         server.run()
