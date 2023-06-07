@@ -234,7 +234,9 @@ host.BrowserHost = class {
                 }
 
                 blob() {
-                    return Promise.resolve(new Blob([this._file]))
+                    let blob = new Blob([this._file])
+                    blob.filepath = this._msg.filepath
+                    return Promise.resolve(blob)
                 }
 
                 get status() {
@@ -403,6 +405,14 @@ host.BrowserHost = class {
         this._view.show('welcome');
     }
 
+    bolb2text(blob) {
+        return new Promise((resolve)=> {
+            let reader = new FileReader()
+            reader.readAsText(blob, 'utf-8')
+            reader.onload = () => { resolve(reader.result) }
+        })
+    }
+
     take_effect_modify(path, data_body, record_modify, callback) {
         return fetch(path, {
             // Declare what type of data we're sending
@@ -413,31 +423,33 @@ host.BrowserHost = class {
             method: 'POST',
             body: typeof (data_body) == "string" ? data_body : JSON.stringify(data_body),
         }).then((response) => {
-            return Promise.all([Promise.resolve(response), response.text(), response.blob()]).then(([response, text, blob]) => {
-                if (response.status == 204) {
+            if (response.status == 204) {
+                return response.text().then((text) => {
                     swal("Nothing happens!", text, "info");
-                    return
-                } else if (!response.ok) {
+                })
+            } else if (!response.ok) {
+                return response.text().then((text) => {
                     swal("Error happens!", 
                         `You are kindly to check the log and create an issue on https://gitee.com/ascend/ait\n${text}`,
                         "error");
-                    return
-                }
+                })
+            }
 
-                if (record_modify) {
-                    this._modify_info.push({path, data_body})
-                }
-                if (!blob) {
-                    return
-                }
-                if (callback) {
-                    return callback(blob)
-                }
+            if (record_modify) {
+                this._modify_info.push({path, data_body})
+            }
+            return response.blob()
+        }).then((blob) => {
+            if (!blob) {
+                return
+            }
+            if (callback) {
+                return callback(blob)
+            }
 
-                let file = new File([blob], this.upload_filename);
-                file.filepath = text.filepath ? text.filepath : this.upload_filepath
-                return this.openFile(file)
-            })
+            let file = new File([blob], this.upload_filename);
+            file.filepath = blob.filepath ? blob.filepath : this.upload_filepath
+            return this.openFile(file)
         }).then(()=>{
             fetch("/get_output_message", {method: 'POST', body:"{}"}).then((response) => {
                 response.text().then((text) => {
