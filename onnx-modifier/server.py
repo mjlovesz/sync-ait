@@ -63,6 +63,7 @@ class RpcServer:
         mode = stat.S_IWUSR | stat.S_IRUSR
         with os.fdopen(os.open(file_path, flags=flags, mode=mode), "wb") as modified_file:
             modified_file.write(file.read())
+        file.close()
         return dict(file=file_path), 200
 
     def route(self, path, **kwargs):
