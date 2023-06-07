@@ -52,7 +52,7 @@ opt_out_path = click.option(
 
 
 opt_soc = click.option(
-    '-s',
+    '-soc',
     '--soc_version',
     'soc_version',
     type=str,

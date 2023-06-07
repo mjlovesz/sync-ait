@@ -97,7 +97,7 @@ opt_out_path = click.option(
 )
 
 opt_input_shape = click.option(
-    "-s",
+    "-is",
     "--input-shape",
     "input_shape",
     type=str,

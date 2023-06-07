@@ -172,8 +172,8 @@ opt_loop = click.option(
 
 
 opt_soc = click.option(
-    '-s',
-    '--soc',
+    '-soc',
+    '--soc_version',
     'soc',
     default='Ascend310P3',
     type=str,
@@ -255,6 +255,7 @@ opt_attention_end_node = click.option(
 
 
 opt_input_shape = click.option(
+    '-is',
     '--input-shape',
     'input_shape',
     type=str,
