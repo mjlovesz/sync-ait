@@ -30,3 +30,11 @@ ait debug surgeon [OPTIONS] COMMAND [ARGS]...
 
 请移步[surgeon使用示例](../../../examples/cli/debug/surgeon/)
 
+  | 使用示例               | 使用场景                                 |
+  |-----------------------| ---------------------------------------- |
+  | [01_basic_usage](../../../examples/cli/debug/surgeon/01_basic_usage)    | 基础示例，采用surgeon对onnx模型进行自动调优的基本流程      | 
+  | [02_list_command](../../../examples/cli/debug/surgeon/02_list_command)    | 列举当前支持自动调优的所有知识库       | 
+  | [03_evaluate_command](../../../examples/cli/debug/surgeon/03_evaluate_command)    | 列举指定onnx模型可采用的调优知识库       | 
+  | [04_optimize_command](../../../examples/cli/debug/surgeon/04_optimize_command)    | 使用指定的知识库来优化指定的ONNX模型       | 
+  | [05_extract_command](../../../examples/cli/debug/surgeon/05_extract_command)    | 调用接口对模型进行子图切分       | 
+  | [06_big_kernel_optimize](../../../examples/cli/debug/surgeon/06_big_kernel_optimize)    | transform类模型大kernel优化       | 
