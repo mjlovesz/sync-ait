@@ -59,7 +59,7 @@ class RpcServer:
     def send_file(self, file, **kwargs):
         file_path = os.path.join(self.temp_dir_path, "modified.onnx")
         file.seek(0)
-        flags = os.O_WRONLY | os.O_CREAT
+        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
         mode = stat.S_IWUSR | stat.S_IRUSR
         with os.fdopen(os.open(file_path, flags=flags, mode=mode), "wb") as modified_file:
             modified_file.write(file.read())
