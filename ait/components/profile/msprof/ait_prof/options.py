@@ -61,10 +61,25 @@ def check_device_range_valid(ctx, param, value):
         return ivalue
 
 
+def check_args(ctx: click.Context, params: click.Option, value: str):
+    """
+    check whether the param is provided
+    """
+    args = [
+        opt
+        for param in ctx.command.params
+        for opt in param.opts
+    ]
+    if value in args:
+        raise click.MissingParameter()
+    return value
+
+
 opt_application = click.option(
     "--application",
     default=None,
     type=str,
+    callback=check_args,
     help="Configure to run AI task files on the environment"
 )
 
@@ -85,36 +100,42 @@ opt_model_execution = click.option(
     '--model_execution',
     default="on",
     type=str,
+    callback=check_args,
     help='Control ge model execution performance data collection switch'
 )
 opt_sys_hardware_mem = click.option(
     "--sys_hardware_mem",
     default="on",
     type=str,
+    callback=check_args,
     help="Control the read/write bandwidth data acquisition switch for ddr and llc"
 )
 opt_sys_cpu_profiling = click.option(
     "--sys_cpu_profiling",
     default="off",
     type=str,
+    callback=check_args,
     help="CPU acquisition switch"
 )
 opt_sys_profiling = click.option(
     "--sys_profiling",
     default="off",
     type=str,
+    callback=check_args,
     help="System CPU usage and system memory acquisition switch"
 )
 opt_sys_pid_profiling = click.option(
     "--sys_pid_profiling",
     default="off",
     type=str,
+    callback=check_args,
     help="The CPU usage of the process and the memory collection switch of the process"
 )
 opt_dvpp_profiling = click.option(
     "--dvpp_profiling",
     default="on",
     type=str,
+    callback=check_args,
     help="DVPP acquisition switch"
 )
 
@@ -122,17 +143,20 @@ opt_runtime_api = click.option(
     "--runtime_api",
     default="on",
     type=str,
+    callback=check_args,
     help="Control runtime api performance data collection switch"
 )
 opt_task_time = click.option(
     "--task_time",
     default="on",
     type=str,
+    callback=check_args,
     help="Control ts timeline performance data collection switch"
 )
 opt_aicpu = click.option(
     "--aicpu",
     default="on",
     type=str,
+    callback=check_args,
     help="Control aicpu performance data collection switch"
 )

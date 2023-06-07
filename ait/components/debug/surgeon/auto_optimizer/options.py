@@ -28,6 +28,20 @@ def convert_to_graph_optimizer(ctx: click.Context, param: click.Option, value: s
         raise click.BadParameter('No valid knowledge provided!') from err
 
 
+def check_args(ctx: click.Context, params: click.Option, value: str):
+    """
+    check whether the param is provided
+    """
+    args = [
+        opt
+        for param in ctx.command.params
+        for opt in param.opts
+    ]
+    if value in args:
+        raise click.MissingParameter()
+    return value
+
+
 default_off_knowledges = [
     'KnowledgeEmptySliceFix',
     'KnowledgeTopkFix',
@@ -163,6 +177,7 @@ opt_soc = click.option(
     'soc',
     default='Ascend310P3',
     type=str,
+    callback=check_args,
     help='Soc_version, default to Ascend310P3.'
 )
 
@@ -223,6 +238,7 @@ opt_attention_start_node = click.option(
     'attention_start_node',
     type=str,
     default="",
+    callback=check_args,
     help='Start node of the first attention block, it must be set when apply big kernel knowledge.',
 )
 
@@ -233,6 +249,7 @@ opt_attention_end_node = click.option(
     'attention_end_node',
     type=str,
     default="",
+    callback=check_args,
     help='End node of the first attention block, it must be set when apply big kernel knowledge.',
 )
 
@@ -241,6 +258,7 @@ opt_input_shape = click.option(
     '--input-shape',
     'input_shape',
     type=str,
+    callback=check_args,
     help='Input shape of onnx graph.',
 )
 
@@ -249,6 +267,7 @@ opt_input_shape_range = click.option(
     '--input-shape-range',
     'input_shape_range',
     type=str,
+    callback=check_args,
     help='Specify input shape range for OM converter.'
 )
 
@@ -257,6 +276,7 @@ opt_dynamic_shape = click.option(
     '--dynamic-shape',
     'dynamic_shape',
     type=str,
+    callback=check_args,
     help='Specify input shape for dynamic onnx in inference.'
 )
 
@@ -265,6 +285,7 @@ opt_output_size = click.option(
     '--output-size',
     'output_size',
     type=str,
+    callback=check_args,
     help='Specify real size of graph output.'
 )
 
@@ -274,6 +295,7 @@ opt_subgraph_input_shape = click.option(
     '--subgraph_input_shape',
     'subgraph_input_shape',
     type=str,
+    callback=check_args,
     help='Specify the input shape of subgraph'
 )
 
@@ -283,5 +305,6 @@ opt_subgraph_input_dtype = click.option(
     '--subgraph_input_dtype',
     'subgraph_input_dtype',
     type=str,
+    callback=check_args,
     help='Specify the input dtype of subgraph'
 )
