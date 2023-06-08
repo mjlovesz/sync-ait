@@ -55,7 +55,8 @@ class DumpData(object):
         """
         pass
 
-    def _generate_dump_data_file_name(self, name_str, node_id):
+    @staticmethod
+    def _generate_dump_data_file_name(name_str, node_id):
         name_str = name_str.replace('.', '_').replace('/', '_')
         return  ".".join([name_str, str(node_id), str(round(time.time() * 1e6)), "npy"])
 
