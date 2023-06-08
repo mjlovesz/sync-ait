@@ -58,7 +58,7 @@ class DumpData(object):
         name_str = name_str.replace('.', '_').replace('/', '_')
         return  ".".join([name_str, str(node_id), str(round(time.time() * 1e6)), "npy"])
 
-    @statismethod
+    @staticmethod
     def _check_path_exists(input_path, extentions=None):
         if not os.path.exists(input_path):
             logger.error(f"path '{input_path}' not exists")
