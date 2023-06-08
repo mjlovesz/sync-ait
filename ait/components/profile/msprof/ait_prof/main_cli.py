@@ -31,8 +31,10 @@ from ait_prof.options import (
 )
 
 
-@click.command(name="msprof",
-               short_help = "msprof tool to get performance data including latency and throughput",
+@click.command(name="profile",
+               short_help = "profile tool to get performance datProfiling, as a professional performance analysis tool "
+                            "for Ascension AI tasks, covers the collection of key data and analysis of performance"
+                            " indicators during AI task execution.",
                no_args_is_help=True)
 @opt_application
 @opt_output
