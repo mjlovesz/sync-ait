@@ -19,7 +19,7 @@ rm -rf build && mkdir build && cd build && cmake .. && make -j
 
 AIT_CONVERT=${CONVERT_DIR}/aie_runtime/cpp/build/ait_convert
 
-AIE_DIR=${dirname $(python3 -c "import aie_runtime;print(aie_runtime.__file__)")}
+AIE_DIR=$(dirname $(python3 -c "import aie_runtime;print(aie_runtime.__file__)"))
 
 if [ -f ${AIT_CONVERT} ];then
   cp ${AIT_CONVERT} ${AIE_DIR}
