@@ -25,14 +25,17 @@ def get_modules_version(name):
     try:
         import pkg_resources
     except ImportError:
-        return None
+        raise Exception("importerror")
     pkg = pkg_resources.get_distribution(name)
+    if pkg.version == "0.0.1":
+        raise Exception("versionerror")
     return pkg.version
 
 
 def version_check(args):
-    aclruntime_version = get_modules_version('aclruntime')
-    if aclruntime_version is None or aclruntime_version == "0.0.1":
+    try:
+        aclruntime_version = get_modules_version('aclruntime')
+    except Exception:
         url = 'https://gitee.com/ascend/tools.git'
         logger.warning("aclruntime version:{} is lower please update aclruntime follow any one method"
                        .format(aclruntime_version))
@@ -205,7 +208,7 @@ def get_throughtput_from_log(log_path):
 def dymshape_range_run(args):
     dymshape_list = get_dymshape_list(args.dym_shape_range)
     results = []
-    log_path = "./dym.log" if args.output is None else args.output + "/dym.log"
+    log_path = os.path.realpath("./dym.log") if args.output is None else os.path.join(args.output, "dym.log")
     for dymshape in dymshape_list:
         cmd = "rm -rf {};{} {} {}".format(log_path, sys.executable, ' '.join(sys.argv),
             "--dym-shape={}  | tee {}".format(dymshape,  log_path))
