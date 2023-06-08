@@ -35,6 +35,21 @@ class DumpData(object):
         self.net_output = {}
         pass
 
+    @staticmethod
+    def _generate_dump_data_file_name(name_str, node_id):
+        name_str = name_str.replace('.', '_').replace('/', '_')
+        return  ".".join([name_str, str(node_id), str(round(time.time() * 1e6)), "npy"])
+
+    @staticmethod
+    def _check_path_exists(input_path, extentions=None):
+        if not os.path.exists(input_path):
+            logger.error(f"path '{input_path}' not exists")
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+
+        if extentions and not any([input_path.endswith(extention) for extention in extentions]):
+            logger.error(f"path '{input_path}' not ends with extention {extentions}")
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+
     def generate_dump_data(self):
         """
         Function Description:
@@ -54,22 +69,6 @@ class DumpData(object):
             generate inputs data
         """
         pass
-
-    @staticmethod
-    def _generate_dump_data_file_name(name_str, node_id):
-        name_str = name_str.replace('.', '_').replace('/', '_')
-        return  ".".join([name_str, str(node_id), str(round(time.time() * 1e6)), "npy"])
-
-    @staticmethod
-    def _check_path_exists(input_path, extentions=None):
-        if not os.path.exists(input_path):
-            logger.error(f"path '{input_path}' not exists")
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
-
-        if extentions and not any([input_path.endswith(extention) for extention in extentions]):
-            logger.error(f"path '{input_path}' not ends with extention {extentions}")
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
-
 
     def _check_input_data_path(self, input_path, inputs_tensor_info):
         if len(inputs_tensor_info) != len(input_path):
