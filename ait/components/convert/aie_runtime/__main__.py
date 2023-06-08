@@ -42,7 +42,7 @@ def parse_input_param(model: str,
     )
 
 
-@click.command(short_help='model convert tool to convert offline model', no_args_is_help=True)
+@click.command(short_help='Model convert tool to convert offline model', no_args_is_help=True)
 @opt_model
 @opt_soc
 @opt_out_path
@@ -52,7 +52,7 @@ def cli(
         soc_version: str
 ) -> None:
     if not os.path.isfile(model):
-        logger.error('input model is not a file.')
+        logger.error('Input model is not a file.')
         return
 
     try:
@@ -65,7 +65,7 @@ def cli(
 
     converter = Convert(config)
     if converter is None:
-        logger.error('the object of \'convert\' create failed.')
+        logger.error('The object of \'convert\' create failed.')
         return
 
     converter.convert_model()
