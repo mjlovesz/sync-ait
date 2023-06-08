@@ -246,12 +246,22 @@ public class Compare extends DialogWrapper {
     private Boolean preCheck() {
         String model = modelFileBrowse.getText();
         String offline = offlineModelPathBrowse.getText();
+        String cannPath = cannPathBrowse.getText();
+        String output = outputPathBrowse.getText();
         if (model.isEmpty()) {
             Messages.showErrorDialog("Model file must be chose", "ERROR");
             return false;
         }
         if (offline.isEmpty()) {
             Messages.showErrorDialog("Offline model must be chose", "ERROR");
+            return false;
+        }
+        if (cannPath.isEmpty()) {
+            Messages.showErrorDialog("CANN path must be chose", "ERROR");
+            return false;
+        }
+        if (output.isEmpty()) {
+            Messages.showErrorDialog("Output path must be chose", "ERROR");
             return false;
         }
         return true;
