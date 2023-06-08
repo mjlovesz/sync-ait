@@ -57,7 +57,7 @@ def get_cann_path():
     global cann_lib_path
     set_env_path = os.getenv("CANN_PATH", "")
     if not set_env_path:
-        set_env_path = os.getenv("ASCEND_TOOLKIT_HOME","")
+        set_env_path = os.getenv("ASCEND_TOOLKIT_HOME", "")
     atlas_nnae_path = "/usr/local/Ascend/nnae/latest/"
     atlas_toolkit_path = "/usr/local/Ascend/ascend-toolkit/latest/"
     hisi_fwk_path = "/usr/local/Ascend/"
