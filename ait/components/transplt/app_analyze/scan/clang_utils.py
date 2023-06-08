@@ -589,7 +589,9 @@ def namespace_ref(c):
     # 将连续的namespace合并
     group = group_namespace(c)
     api = get_namespace(group, suffix=False)
-    c.info = Info(None, c.spelling, api, None, get_attr(c, 'referenced.location.file.name'))
+    # 某些情况下，命名空间cv的referenced.location为opencv2/cudaimgproc.hpp，被判断为CUDAEnable，故使用group[-1]（如TYPE_REF）的
+    # referenced.location作为location。比如AIFaceLib/faceSubstitution/FaceSubstitutionOpencvDnnImpi.h, 159:9
+    c.info = Info(None, c.spelling, api, None, get_attr(group[-1], 'referenced.location.file.name'))
     return c.info
 
 
