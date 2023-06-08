@@ -31,7 +31,7 @@ def check_args(ctx: click.Context, params: click.Option, value: str):
 
 opt_model = click.option(
     '-gm',
-    '--golden_model',
+    '--golden-model',
     'input_model',
     type=str,
     required=True,
@@ -58,7 +58,7 @@ opt_weight = click.option(
 
 opt_soc = click.option(
     '-soc',
-    '--soc_version',
+    '--soc-version',
     'soc',
     type=str,
     callback=check_args,
