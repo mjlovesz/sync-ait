@@ -170,7 +170,7 @@ class KitConfig:
         CONTEXT: True,
         ACC_LIB: True,
         ASCEND_LIB: True,
-        PARAMS: True,
+        PARAMS: False,
         ACC_LINK: True,
         ASCEND_LINK: True,
     }
