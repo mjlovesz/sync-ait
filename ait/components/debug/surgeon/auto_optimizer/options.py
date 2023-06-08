@@ -97,9 +97,9 @@ opt_recursive = click.option(
 )
 
 
-arg_output = click.option(
+opt_output = click.option(
     '-o',
-    '--output'
+    '--output',
     'output_model',
     nargs=1,
     required=True,
@@ -107,9 +107,12 @@ arg_output = click.option(
 )
 
 
-arg_input = click.argument(
+opt_input = click.option(
+    '-i'
+    '--input',
     'input_model',
     nargs=1,
+    required=True,
     type=click.Path(
         exists=True,
         file_okay=True,
@@ -120,14 +123,18 @@ arg_input = click.argument(
 )
 
 
-arg_start = click.argument(
+opt_start = click.option(
+    '--start-node-names',
     'start_node_names',
+    required=True,
     type=click.STRING,
 )
 
 
-arg_end = click.argument(
+opt_end = click.option(
+    '--end-node-names'
     'end_node_names',
+    required=True,
     type=click.STRING,
 )
 
@@ -142,9 +149,11 @@ opt_check = click.option(
 )
 
 
-arg_path = click.argument(
+opt_path = click.option(
+    '--path'
     'path',
     nargs=1,
+    required=True,
     type=click.Path(
         exists=True,
         file_okay=True,
