@@ -38,7 +38,7 @@ class OnnxModifier:
         self.graph_output_names = []
         self.graph_input_names = []
         self._cache_msg = ""
-        self.reload()
+        self.reload(self.model_proto_backup)
 
     @classmethod
     def from_model_path(cls, model_path, name=None):
@@ -55,9 +55,18 @@ class OnnxModifier:
         logging.info("load done!")
         cls.ONNX_MODIFIER = cls(name, model_proto)
         return cls.ONNX_MODIFIER
+    
+    @classmethod
+    def from_model_proto(cls, model_name, model_proto):
+        cls.ONNX_MODIFIER = cls(model_name, model_proto)
+        return cls.ONNX_MODIFIER
 
-    def reload(self):
-        self.model_proto = copy.deepcopy(self.model_proto_backup)
+    def reload(self, model_proto=None):
+        if model_proto is None:
+            self.model_proto = copy.deepcopy(self.model_proto_backup)
+        else:
+            self.model_proto_backup = model_proto
+            self.model_proto = copy.deepcopy(model_proto)
         self.graph = self.model_proto.graph
         self.initializer = self.model_proto.graph.initializer
 
@@ -464,18 +473,14 @@ class OnnxModifier:
                     inputs_before_this_index_node.add(output_name)
                 index += 1
 
-    def check_and_save_model(self, save_dir='./modified_onnx'):
-        logging.info("saving model...")
-        if not os.path.exists(save_dir):
-            os.mkdir(save_dir)
-        save_path = os.path.abspath(os.path.join(save_dir, 'modified_' + self.model_name))
-
+    def check_and_save_model(self, save_file):
+        save_path = save_file.name
         # adding new node like self.add_nodes() and self.modify_node_attr() can not 
         # guarantee the nodes are topologically sorted
         # so `onnx.onnx_cpp2py_export.checker.ValidationError: Nodes in a graph 
         # must be topologically sorted` will be invoked
         # I turn off the onnx checker as a workaround.
-        onnx.save(self.model_proto, save_path)
+        onnx.save(self.model_proto, save_file)
         logging.info("model saved in %s !", save_path)
         return save_path
 
