@@ -58,12 +58,28 @@ class DumpData(object):
         name_str = name_str.replace('.', '_').replace('/', '_')
         return  ".".join([name_str, str(node_id), str(round(time.time() * 1e6)), "npy"])
 
+    @statismethod
+    def _check_path_exists(input_path, extentions=None):
+        if not os.path.exists(input_path):
+            logger.error(f"path '{input_path}' not exists")
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+
+        if extentions and not any([input_path.endswith(extention) for extention in extentions]):
+            logger.error(f"path '{input_path}' not with extention {extentions}")
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+
+
     def _check_input_data_path(self, input_path, inputs_tensor_info):
         if len(inputs_tensor_info) != len(input_path):
             logger.error("the number of model inputs tensor_info is not equal the number of "
                                   "inputs data, inputs tensor_info is: {}, inputs data is: {}".format(
                 len(inputs_tensor_info), len(input_path)))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+        
+        for cur_path in input_path:
+            if not os.path.exists(cur_path):
+                logger.error(f"input data path '{cur_path}' not exists")
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
     def _generate_random_input_data(self, save_dir, names, shapes, dtypes):
         inputs_map = {}
