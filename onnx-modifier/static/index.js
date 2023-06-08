@@ -184,7 +184,7 @@ host.BrowserHost = class {
                 reader.onload = async () => {
                     let json_modify_info = JSON.parse(reader.result)
 
-                    this.take_effect_modify("/load-json", json_modify_info)
+                    this.take_effect_modify("/load-json", json_modify_info, true)
                 }
                 reader.readAsText(file)
                 openJsonFileDialog.value = null
@@ -234,7 +234,9 @@ host.BrowserHost = class {
                 }
 
                 blob() {
-                    return Promise.resolve(new Blob([this._file]))
+                    let blob = new Blob([this._file])
+                    blob.filepath = this._msg.filepath
+                    return Promise.resolve(blob)
                 }
 
                 get status() {
@@ -267,38 +269,19 @@ host.BrowserHost = class {
             }
         }
         downloadButton.addEventListener('click', () => {
-            fetch('/download', {
-                // Declare what type of data we're sending
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                // Specify the method
-                method: 'POST',
-                body: JSON.stringify(this.build_download_data()),
-            }).then(function (response) {
-                return response.text();
-            }).then(function (text) {
-                console.log('POST response: ');
-                // Should be 'OK' if everything was successful
-                console.log(text);
-                if (text == 'OK') {
-                    // alert("Modified model has been successfuly saved in ./modified_onnx/");
-                    swal("Success!", "Modified model has been successfuly saved in ./modified_onnx/", "success");
-                }
-                else {
-                    swal("Error happens!", "You are kindly to check the log and create an issue on https://gitee.com/ascend/ait", "error");
-                }
-            });
+            this.take_effect_modify("/download", this.build_download_data(true), false, (blob)=> {
+                this.export(this.upload_filename, blob)
+            })
         });
 
         const onnxSimButton = this.document.getElementById('onnxsim-graph');
         onnxSimButton.addEventListener('click', () => {
-            this.take_effect_modify("/onnxsim", this.build_download_data(true))
+            this.take_effect_modify("/onnxsim", this.build_download_data(true), true)
         });
 
         const onnxOptimizer = this.document.getElementById('auto-optimizer-graph');
         onnxOptimizer.addEventListener('click', () => {
-            this.take_effect_modify("/auto-optimizer", this.build_download_data(true))
+            this.take_effect_modify("/auto-optimizer", this.build_download_data(true), true)
         });
 
         const extract = this.document.getElementById('extract-graph');
@@ -310,8 +293,9 @@ host.BrowserHost = class {
             let download_data = this.build_download_data(true)
             download_data["extract_start"] = this._view.modifier.getExtractStart()
             download_data["extract_end"] = this._view.modifier.getExtractEnd()
-            this.take_effect_modify("/extract", download_data, (blob) => {
-                swal("Success!", "Extract model has been successfuly saved in ./modified_onnx/", "success");
+            this.take_effect_modify("/extract", download_data, false, (blob) => {
+                swal("Success!", "Extract model has been successfuly saved", "success");
+                this.export(this.upload_filename.replace(".onnx", ".extract.onnx"), blob)
                 this._view.modifier.setExtractStart(null)
                 this._view.modifier.setExtractEnd(null)
             })
@@ -421,7 +405,15 @@ host.BrowserHost = class {
         this._view.show('welcome');
     }
 
-    take_effect_modify(path, data_body, callback) {
+    bolb2text(blob) {
+        return new Promise((resolve)=> {
+            let reader = new FileReader()
+            reader.readAsText(blob, 'utf-8')
+            reader.onload = () => { resolve(reader.result) }
+        })
+    }
+
+    take_effect_modify(path, data_body, record_modify, callback) {
         return fetch(path, {
             // Declare what type of data we're sending
             headers: {
@@ -432,24 +424,21 @@ host.BrowserHost = class {
             body: typeof (data_body) == "string" ? data_body : JSON.stringify(data_body),
         }).then((response) => {
             if (response.status == 204) {
-                response.text().then(text => {
+                return response.text().then((text) => {
                     swal("Nothing happens!", text, "info");
                 })
-            } else if (response.ok) {
-                if (path == "/onnxsim" || path == "/load-json" || path == "/auto-optimizer" ) {
-                    this._modify_info.push({
-                        path, data_body
-                    })
-                }
-                return response.blob();
-            } else {
-                response.text().then(text => {
+            } else if (!response.ok) {
+                return response.text().then((text) => {
                     swal("Error happens!", 
                         `You are kindly to check the log and create an issue on https://gitee.com/ascend/ait\n${text}`,
                         "error");
                 })
-                
             }
+
+            if (record_modify) {
+                this._modify_info.push({path, data_body})
+            }
+            return response.blob()
         }).then((blob) => {
             if (!blob) {
                 return
@@ -459,10 +448,10 @@ host.BrowserHost = class {
             }
 
             let file = new File([blob], this.upload_filename);
-            file.filepath = this.upload_filepath
+            file.filepath = blob.filepath ? blob.filepath : this.upload_filepath
             return this.openFile(file)
         }).then(()=>{
-            fetch("/get_output_message", {body:"{}"}).then((response) => {
+            fetch("/get_output_message", {method: 'POST', body:"{}"}).then((response) => {
                 response.text().then((text) => {
                     if (text) {
                         swal("messages", text, "info");

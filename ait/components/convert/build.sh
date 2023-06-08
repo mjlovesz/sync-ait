@@ -16,16 +16,13 @@
 CONVERT_DIR=$(dirname $(readlink -f $0))
 cd ${CONVERT_DIR}/aie_runtime/cpp
 rm -rf build && mkdir build && cd build && cmake .. && make -j
-AIT_CONVERT=${CONVERT_DIR}/aie_runtime/cpp/build/ait_convert
-echo ${AIT_CONVERT}
 
-AIE_DIR=$(dirname $(python3 -c "import aie_runtime;print(aie_runtime.__file__)"))
+AIT_CONVERT=${CONVERT_DIR}/aie_runtime/cpp/build/ait_convert
+
+AIE_DIR=${dirname $(python3 -c "import aie_runtime;print(aie_runtime.__file__)")}
 
 if [ -f ${AIT_CONVERT} ];then
   cp ${AIT_CONVERT} ${AIE_DIR}
   else
-  echo "ait_convert编译失败" >&2
-  exit
+    echo "Error: Build ait_convert failed."
 fi
-
-

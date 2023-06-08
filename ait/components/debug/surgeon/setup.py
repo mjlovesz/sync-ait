@@ -25,7 +25,7 @@ setup(
     description='auto optimizer',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://gitee.com/ascend/auto-optimizer',
+    url='https://gitee.com/ascend/ait',
     packages=find_packages(),
     package_data={'': ['LICENSE', 'model.cfg']},
     license='Apache-2.0',
@@ -52,7 +52,6 @@ setup(
                 'ais_bench @ git+https://gitee.com/ascend/ait.git'
                 '#egg=ais_bench&subdirectory=ait/components/benchmark/'
             ),
-            'pyacl @ git+https://gitee.com/peng-ao/pyacl.git',
             'pillow >= 9.0.0',
             'tqdm >= 4.63.0',
         ],
