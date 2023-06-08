@@ -177,7 +177,7 @@ opt_loop = click.option(
 
 opt_soc = click.option(
     '-soc',
-    '--soc_version',
+    '--soc-version',
     'soc',
     default='Ascend310P3',
     type=str,
