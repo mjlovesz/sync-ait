@@ -20,8 +20,16 @@ import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addPath;
 import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addState;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedFile;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedPath;
+import static com.huawei.ascend.ait.ide.util.CheckInput.DOCUMENT_LIMIT;
+import static com.huawei.ascend.ait.ide.util.CheckInput.FileCheck;
+import static com.huawei.ascend.ait.ide.util.CheckInput.MODEL_FILE_LIMIT;
+import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_DIR_PATH_CHARACTERS;
+import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_FILE_PATH_CHARTERS;
+import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_STRING_CHARATERS;
+import static com.huawei.ascend.ait.ide.util.CheckInput.checkPath;
+import static com.huawei.ascend.ait.ide.util.CheckInput.checkStringValid;
+import static com.huawei.ascend.ait.ide.util.CheckInput.normalizeInput;
 
-import com.huawei.ascend.ait.ide.Icons;
 import com.huawei.ascend.ait.ide.commonlib.exception.CommandInjectException;
 import com.huawei.ascend.ait.ide.commonlib.output.OutputService;
 import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdExec;
@@ -36,7 +44,10 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 
+import com.intellij.ui.DocumentAdapter;
+import com.jediterm.terminal.util.JTextFieldLimit;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +57,8 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
+import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -64,27 +76,36 @@ public class AisBenchBasic extends DialogWrapper {
     private JComboBox pureDataTypeCombx;
     private JLabel model;
     private JComboBox outFormatComboBox;
-    private JTextField loopTextField;
-    private JTextField warmupTextField;
+    private JTextField loopJText;
+    private JTextField warmupJText;
     private JLabel debug;
     private JLabel dusplay;
     private JPanel loop;
-    private JToggleButton profilerBottun;
-    private JPanel advanceOptions;
     private TextFieldWithBrowseButton modelFileBrowse;
     private TextFieldWithBrowseButton inputFileBrowse;
     private TextFieldWithBrowseButton outputPathBrowse;
-    private TextFieldWithBrowseButton outputDirnameBrowse;
     private JPanel pureDataTypeJLabel;
     private JPanel outputDirnameJLabel;
     private JPanel outFmtJLabel;
     private JTextField deviceTextField;
     private SwitchButton debugButton;
     private SwitchButton displayButton;
+    private JLabel inputFileErrorJLabel;
+    private JLabel outputPathErrorJLabel;
+    private JLabel outputDirErrorJLabel;
+    private JLabel countErrorJLabel;
+    private JLabel deviceErrorJLabel;
+    private JPanel inputFileErrorJPanel;
+    private JPanel modelErrorJPanel;
+    private JLabel modelErrorJLabel;
+    private JTextField outputDirJText;
+    private JPanel countErrorJPanel;
+    private JPanel outputDirErrorJPanel;
+    private JPanel deviceErrorJPanel;
+    private JPanel outputPathErrorJPanel;
     private final JTextField modelFileTextField = modelFileBrowse.getTextField();
     private final JTextField inputFilesTextField = inputFileBrowse.getTextField();
     private final JTextField outputTextField = outputPathBrowse.getTextField();
-    private final JTextField outputDirTextField = outputDirnameBrowse.getTextField();
     private static final String OM_MODEL_FILE_EXTENSION = "om";
     private static final String NPY_FILE_EXTENSION = "npy";
     private static final String BIN_FILE_EXTENSION = "bin";
@@ -92,6 +113,7 @@ public class AisBenchBasic extends DialogWrapper {
     private static final List<String> PURE_DATA_TYPE = List.of("zero", "random");
     private static final List<String> OUTFMT_TYPE = List.of("BIN", "NPY", "TXT");
     private static final long FILE_SIZE_MAX = (long) 2 * 1024 * 1024 * 1024;
+    private final Border defBorder = modelFileTextField.getBorder();
     private final Project project;
 
     /**
@@ -105,6 +127,7 @@ public class AisBenchBasic extends DialogWrapper {
         init();
         setTitle("Ais Bench");
 
+        setTextFieldLimitAndToolTip();
         setFileChooseAction();
         initComponent();
         initVisible();
@@ -121,14 +144,12 @@ public class AisBenchBasic extends DialogWrapper {
     }
 
     private void initVisible() {
-        advanceOptions.setVisible(false);
-
         pureDataTypeJLabel.setVisible(false);
         pureDataTypeCombx.setVisible(false);
         pureDataTypeCombx.setEditable(false);
 
         outputDirnameJLabel.setVisible(false);
-        outputDirnameBrowse.setVisible(false);
+        outputDirJText.setVisible(false);
 
         outFmtJLabel.setVisible(false);
         outFormatComboBox.setVisible(false);
@@ -136,8 +157,15 @@ public class AisBenchBasic extends DialogWrapper {
 
     private void setFileChooseAction() {
         modelFIleAction();
+        addModelFileTextFieldListener();
         inputAction();
+        addInputFileTextFieldListener();
         outputAction();
+        addOutputPathTextListener();
+        addOutputDirTextListener();
+        addWarmupTextListener();
+        addLoopTextListener();
+        addDeviceTextListener();
     }
 
     private void modelFIleAction() {
@@ -157,9 +185,6 @@ public class AisBenchBasic extends DialogWrapper {
         List<String> lists = List.of(NPY_FILE_EXTENSION, BIN_FILE_EXTENSION);
         inputFileBrowse.addActionListener(event -> {
             String selectFile = getSelectedFile(project, lists, true);
-            if (StringUtils.isEmpty(selectFile)) {
-                return;
-            }
             File model = new File(selectFile);
             checkFileSize(model);
             inputFilesTextField.setText(selectFile);
@@ -174,28 +199,124 @@ public class AisBenchBasic extends DialogWrapper {
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
-            File model = new File(selectFile);
-            checkFileSize(model);
             outputTextField.setText(selectFile);
 
-            outputDirnameBrowse.setVisible(true);
+            outputDirJText.setVisible(true);
             outputDirnameJLabel.setVisible(true);
 
             outFmtJLabel.setVisible(true);
             outFormatComboBox.setVisible(true);
-            outputdIRAction();
         });
     }
 
-    private void outputdIRAction() {
-        outputDirnameBrowse.addActionListener(event -> {
-            String selectFile = getSelectedPath(project);
-            if (StringUtils.isEmpty(selectFile)) {
-                return;
+    private void setTextFieldLimitAndToolTip() {
+        modelFileTextField.setToolTipText(VALID_FILE_PATH_CHARTERS);
+        modelFileTextField.setDocument(new JTextFieldLimit(MODEL_FILE_LIMIT));
+
+        inputFilesTextField.setToolTipText(VALID_FILE_PATH_CHARTERS);
+        inputFilesTextField.setDocument(new JTextFieldLimit(MODEL_FILE_LIMIT));
+
+        outputTextField.setToolTipText(VALID_DIR_PATH_CHARACTERS);
+        outputTextField.setDocument(new JTextFieldLimit(DOCUMENT_LIMIT));
+
+        loopJText.setToolTipText(VALID_STRING_CHARATERS);
+        loopJText.setDocument(new JTextFieldLimit(255));
+
+        warmupJText.setToolTipText(VALID_STRING_CHARATERS);
+        warmupJText.setDocument(new JTextFieldLimit(255));
+
+        deviceTextField.setToolTipText(VALID_STRING_CHARATERS);
+        deviceTextField.setDocument(new JTextFieldLimit(255));
+    }
+
+    private void addOutputPathTextListener() {
+        outputTextField.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                checkPath(outputTextField, outputPathErrorJLabel, deviceErrorJPanel);
             }
-            File model = new File(selectFile);
-            checkFileSize(model);
-            outputDirTextField.setText(selectFile);
+        });
+    }
+
+    private void addModelFileTextFieldListener() {
+        modelFileBrowse.getTextField().getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                FileCheck(modelErrorJPanel, modelErrorJLabel, modelFileTextField, List.of(".om"));
+            }
+        });
+    }
+
+    private void addInputFileTextFieldListener() {
+        inputFileBrowse.getTextField().getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                FileCheck(inputFileErrorJPanel, inputFileErrorJLabel, inputFilesTextField, List.of(".bin", ".npy"));
+            }
+        });
+    }
+
+    private void addOutputDirTextListener() {
+        outputDirJText.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                String modelName = outputDirJText.getText();
+                if (StringUtils.isEmpty(modelName)) {
+                    normalizeInput(outputDirErrorJPanel, outputDirErrorJLabel, outputDirJText);
+                } else {
+                    if (checkStringValid(outputDirErrorJPanel, outputDirErrorJLabel, outputDirJText)) {
+                        normalizeInput(outputDirErrorJPanel, outputDirErrorJLabel, outputDirJText);
+                    }
+                }
+            }
+        });
+    }
+
+    private void addLoopTextListener() {
+        loopJText.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                String modelName = loopJText.getText();
+                if (StringUtils.isEmpty(modelName)) {
+                    normalizeInput(countErrorJPanel, countErrorJLabel, loopJText);
+                } else {
+                    if (checkStringValid(countErrorJPanel, countErrorJLabel, loopJText)) {
+                        normalizeInput(countErrorJPanel, countErrorJLabel, loopJText);
+                    }
+                }
+            }
+        });
+    }
+
+    private void addWarmupTextListener() {
+        warmupJText.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                String modelName = warmupJText.getText();
+                if (StringUtils.isEmpty(modelName)) {
+                    normalizeInput(countErrorJPanel, countErrorJLabel, warmupJText);
+                } else {
+                    if (checkStringValid(countErrorJPanel, countErrorJLabel, warmupJText)) {
+                        normalizeInput(countErrorJPanel, countErrorJLabel, warmupJText);
+                    }
+                }
+            }
+        });
+    }
+
+    private void addDeviceTextListener() {
+        deviceTextField.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                String modelName = deviceTextField.getText();
+                if (StringUtils.isEmpty(modelName)) {
+                    normalizeInput(deviceErrorJPanel, deviceErrorJLabel, deviceTextField);
+                } else {
+                    if (checkStringValid(deviceErrorJPanel, deviceErrorJLabel, deviceTextField)) {
+                        normalizeInput(deviceErrorJPanel, deviceErrorJLabel, deviceTextField);
+                    }
+                }
+            }
         });
     }
 
@@ -248,10 +369,10 @@ public class AisBenchBasic extends DialogWrapper {
         addPath(cmd, "--input", inputFilesTextField.getText());
         addPath(cmd, "--pure", pureDataTypeCombx.getSelectedItem().toString());
         addPath(cmd, "--output", outputTextField.getText());
-        addPath(cmd, "--outputdir", outputDirTextField.getText());
+        addPath(cmd, "--output_dirname", outputDirJText.getText());
         addPath(cmd, "--outfmt", outFormatComboBox.getSelectedItem().toString());
-        addPath(cmd, "--loop", loopTextField.getText());
-        addPath(cmd, "--warmup_count", warmupTextField.getText());
+        addPath(cmd, "--loop", loopJText.getText());
+        addPath(cmd, "--warmup_count", warmupJText.getText());
         addPath(cmd, "--device", deviceTextField.getText());
         addState(cmd, "--debug", debugButton.isSelected());
         addState(cmd, "--display_all_summary", displayButton.isSelected());
