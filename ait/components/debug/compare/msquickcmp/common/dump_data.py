@@ -66,7 +66,7 @@ class DumpData(object):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
         if extentions and not any([input_path.endswith(extention) for extention in extentions]):
-            logger.error(f"path '{input_path}' not with extention {extentions}")
+            logger.error(f"path '{input_path}' not ends with extention {extentions}")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
 

@@ -111,6 +111,15 @@ class CaffeDumpData(DumpData):
         import caffe
 
         model = caffe.Net(self.model_path, self.weight_path, caffe.TEST)
+
+        num_params = 0
+        for params in nn.params.values():
+            num_params += np.sum([np.sum([np.prod(blob.data.shape) for blob in params])
+        if os.path.getsize(self.weight_path) < num_params:
+            utils.logger.warning(
+                f"weight file {self.weight_path} size is too small, model may be randomly initailized"
+            )
+
         return model
 
     def _save_dump_data(self, model):
