@@ -264,6 +264,28 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .message-box div {font-size: 16px;}
 .message-box .footer {text-align: right; padding-top: 13px;}
 .dialog .text {text-align: center;}
+
+.message-box:hover .message-box-progress {
+    animation-play-state: paused;
+}
+
+.message-box-progress {
+    height: 1px;
+    background-color: #1d59d1;
+    animation: progress-like 10s;
+}
+.message-box-progress-error {
+    animation-play-state: paused;
+}
+@keyframes progress-like {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
 #show-message-info {
     border-style: hidden;
     position: fixed;
@@ -272,6 +294,8 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     max-width: 40vw;
     background: transparent;  
     z-index: 10;
+    max-height: 90vh;
+    overflow: auto;
 }
 
 #show-message-info .message-box {
@@ -280,6 +304,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     border-width: 1px;
 }
 
+.warn-message-box {background:burlywood}
 .error-message-box {background: lightcoral;}
 .success-message-box {background: aquamarine;}
 

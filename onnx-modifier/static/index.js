@@ -288,7 +288,7 @@ host.BrowserHost = class {
         const extract = this.document.getElementById('extract-graph');
         extract.addEventListener('click', () => {
             if (!(this._view.modifier.getExtractStart() && this._view.modifier.getExtractEnd())) {
-                this.show_message("Select Extract Net Start And End", "Select the start node and end node for the subnet export", "info");
+                this.show_message("Select Extract Net Start And End", "Select the start node and end node for the subnet export", "warn");
                 return 
             }
             let download_data = this.build_download_data(true)
@@ -511,28 +511,24 @@ host.BrowserHost = class {
     show_message(title, message, level) {
         let box = document.createElement("div")
         box.classList.add("message-box", `${level}-message-box`)
+        let progressLine = document.createElement("div")
+        progressLine.classList.add("message-box-progress", `message-box-progress-${level}`)
+
         let boxTitle = document.createElement("b")
         boxTitle.innerText = title
         let boxClose = document.createElement("span")
-        boxClose.innerText = " X "
+        boxClose.innerText = "[ X ]"
         boxClose.style.float = "right"
         let boxText = document.createElement("p")
         boxText.classList.add("text")
         boxText.innerText = message
-        box.append(boxTitle, boxClose, boxText)
+        box.append(progressLine, boxTitle, boxClose, boxText)
         document.getElementById("show-message-info").append(box)
 
         // event
         let remove_function = () => { box.remove(); }
         boxClose.addEventListener("click", remove_function)
-        let remove_info = {}
-        remove_info.time_id = setTimeout(remove_function, 10000);
-        box.addEventListener("mouseover", () => {
-            clearTimeout(remove_info.time_id)
-        })
-        box.addEventListener("mouseout", () => {
-            remove_info.time_id = setTimeout(remove_function, 10000);
-        })
+        progressLine.addEventListener("animationend", remove_function)
     }
 
     show_alert_message(title, message) {
