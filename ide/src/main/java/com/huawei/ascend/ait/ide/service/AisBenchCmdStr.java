@@ -16,10 +16,10 @@
 
 package com.huawei.ascend.ait.ide.service;
 
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStr;
+import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
 import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
 
-import java.util.List;
+import java.util.Objects;
 
 /**
  * AisBenchCmdStr
@@ -28,31 +28,20 @@ import java.util.List;
  * @date 2023/06/03
  */
 public class AisBenchCmdStr {
-    public static final CmdStrWordStatic modelService = new CmdStrWordStatic("--model");
-    public static final CmdStrWordStatic inputService = new CmdStrWordStatic("--input");
-    public static final CmdStrWordStatic pureService = new CmdStrWordStatic("--pure");
-    public static final CmdStrWordStatic outputService = new CmdStrWordStatic("--output");
-    public static final CmdStrWordStatic outputdirService = new CmdStrWordStatic("--outputdir");
-    public static final CmdStrWordStatic outfmtService = new CmdStrWordStatic("--outfmt");
-    public static final CmdStrWordStatic loopService = new CmdStrWordStatic("--loop");
-    public static final CmdStrWordStatic warmupService = new CmdStrWordStatic("--warmup_count");
-    public static final CmdStrWordStatic deviceService = new CmdStrWordStatic("--device");
-    public static final CmdStrWordStatic debugService = new CmdStrWordStatic("--debug");
-    public static final CmdStrWordStatic displayService = new CmdStrWordStatic("--display_all_summary");
-    public static final CmdStrWordStatic falseService = new CmdStrWordStatic("false");
-    public static final CmdStrWordStatic trueService = new CmdStrWordStatic("true");
+    public static final CmdStrWordStatic falseService = new CmdStrWordStatic("False");
+    public static final CmdStrWordStatic trueService = new CmdStrWordStatic("True");
 
     /**
      * addPath
      *
      * @param strBuffer strBuffer
-     * @param wordStatic  wordStatic
-     * @param param parm
+     * @param param param
+     * @param param1 param1
      */
-    public static void addPath(List<CmdStr> strBuffer, CmdStrWordStatic wordStatic, CmdStrWordStatic param) {
-        if (!param.toString().isEmpty()) {
-            strBuffer.add(wordStatic);
-            strBuffer.add(param);
+    public static void addPath(CmdStrBuffer strBuffer, String param, String param1) {
+        if (!Objects.equals(param1, "")) {
+            strBuffer.append(param).append(CmdStrWordStatic.SPACE)
+                    .append(param1).append(CmdStrWordStatic.SPACE);
         }
     }
 
@@ -60,15 +49,15 @@ public class AisBenchCmdStr {
      * addState
      *
      * @param strBuffer strBuffer
-     * @param wordStatic  wordStatic
-     * @param isOn   isOn
+     * @param param param
+     * @param isOn isOn
      */
-    public static void addState(List<CmdStr> strBuffer, CmdStrWordStatic wordStatic, boolean isOn) {
-        strBuffer.add(wordStatic);
+    public static void addState(CmdStrBuffer strBuffer, String param, boolean isOn) {
+        strBuffer.append(param).append(CmdStrWordStatic.SPACE);
         if (!isOn) {
-            strBuffer.add(falseService);
+            strBuffer.append(falseService).append(CmdStrWordStatic.SPACE);
         } else {
-            strBuffer.add(trueService);
+            strBuffer.append(trueService).append(CmdStrWordStatic.SPACE);
         }
     }
 }
