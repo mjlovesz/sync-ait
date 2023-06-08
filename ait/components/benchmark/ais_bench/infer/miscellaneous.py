@@ -24,8 +24,8 @@ from ais_bench.infer.utils import logger
 def get_modules_version(name):
     try:
         import pkg_resources
-    except ImportError:
-        raise Exception("importerror")
+    except ImportError as err:
+        raise Exception("importerror") from err
     pkg = pkg_resources.get_distribution(name)
     if pkg.version == "0.0.1":
         raise Exception("versionerror")
