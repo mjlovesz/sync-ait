@@ -6,7 +6,6 @@
 指定模型输入的shape信息(动态场景必须进行指定)。
 
 ## 运行示例
-- **注意**：使用atc转换时确保转换后的om模型与源onnx模型输入数据类型一致。（如fp32输入的onnx模型atc转换时不能使用input_fp16_nodes参数）
 1. 指定-s或--input-shape进行精度对比。
   ```sh
   ait debug compare -gm /home/HwHiAiUser/onnx_prouce_data/resnet_offical.onnx -om /home/HwHiAiUser/onnx_prouce_data/model/resnet50.om \
