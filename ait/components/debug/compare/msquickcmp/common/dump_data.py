@@ -21,6 +21,7 @@ import time
 
 import numpy as np
 
+from msquickcmp.common import utils
 from msquickcmp.common.utils import logger
 from msquickcmp.common.utils import AccuracyCompareException
 
@@ -62,11 +63,11 @@ class DumpData(object):
     def _check_path_exists(input_path, extentions=None):
         if not os.path.exists(input_path):
             logger.error(f"path '{input_path}' not exists")
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
         if extentions and not any([input_path.endswith(extention) for extention in extentions]):
             logger.error(f"path '{input_path}' not with extention {extentions}")
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
 
     def _check_input_data_path(self, input_path, inputs_tensor_info):
@@ -79,7 +80,7 @@ class DumpData(object):
         for cur_path in input_path:
             if not os.path.exists(cur_path):
                 logger.error(f"input data path '{cur_path}' not exists")
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
     def _generate_random_input_data(self, save_dir, names, shapes, dtypes):
         inputs_map = {}
