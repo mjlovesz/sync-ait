@@ -41,6 +41,10 @@ NONEQUIVALENT_KNOWLEDGES = [
     'KnowledgeBigKernel'
 ]
 
+ARGS_REQUIRED_KNOWLEDGES = [
+    'KnowledgeBigKernel'
+]
+
 COLOR_SUCCESS = '\033[92m'
 COLOR_FAIL = '\033[91m'
 COLOR_END = '\033[0m'
@@ -180,7 +184,7 @@ class GraphOptimizer:
     def init_knowledges(self):
         knowledges_ins = {}
         for k_name, k_cls in self.knowledges.items():
-            if k_name != "KnowledgeBigKernel":
+            if k_name not in ARGS_REQUIRED_KNOWLEDGES:
                 knowledges_ins.setdefault(k_name, k_cls())
             else:
                 knowledges_ins.setdefault(k_name, k_cls)
