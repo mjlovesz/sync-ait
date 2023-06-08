@@ -21,12 +21,9 @@ import com.huawei.ascend.ait.ide.commonlib.ui.UiUtils;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.LightVirtualFile;
-
-import org.jetbrains.annotations.NotNull;
 
 /**
  * AitAction
@@ -40,8 +37,7 @@ public class AitAction extends AnAction {
      * AitAction
      */
     public AitAction() {
-        super("AIT", "",
-                UiUtils.getJbIcon(Icons.AIS_BENCH_DARK, Icons.AIS_BENCH_LIGHT));
+        super("Ait", "", UiUtils.getJbIcon(Icons.AIT_TITLE_DARK, Icons.AIT_TITLE_LIGHT));
     }
 
     @Override
@@ -61,18 +57,4 @@ public class AitAction extends AnAction {
         FileEditorManager instance = FileEditorManager.getInstance(project);
         instance.openFile(new LightVirtualFile("AIT"), true);
     }
-
-    @Override
-    public void update(@NotNull AnActionEvent e) {
-        super.update(e);
-        Presentation presentation = e.getPresentation();
-        Project project = e.getProject();
-        if (project == null) {
-            presentation.setVisible(false);
-            return;
-        }
-        presentation.setVisible(true);
-        presentation.setIcon(UiUtils.getJbIcon(Icons.AIS_BENCH_DARK, Icons.AIS_BENCH_LIGHT));
-    }
-
 }
