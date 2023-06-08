@@ -74,50 +74,50 @@ def get_args():
              " which defaults to the directory where the app is located"
     )
     parser.add_argument(
-        "--model_execution",
+        "--model-execution",
         default="on",
         choices=["on", "off"],
         help="Control ge model execution performance data collection switch"
     )
     parser.add_argument(
-        "--sys_hardware_mem",
+        "--sys-hardware-mem",
         default="on",
         choices=["on", "off"],
         help="Control the read/write bandwidth data acquisition switch for ddr and llc"
     )
     parser.add_argument(
-        "--sys_cpu_profiling",
+        "--sys-cpu-profiling",
         default="off",
         choices=["on", "off"],
         help="CPU acquisition switch"
     )
     parser.add_argument(
-        "--sys_profiling",
+        "--sys-profiling",
         default="off",
         choices=["on", "off"],
         help="System CPU usage and system memory acquisition switch"
     )
     parser.add_argument(
-        "--sys_pid_profiling",
+        "--sys-pid-profiling",
         default="off",
         choices=["on", "off"],
         help="The CPU usage of the process and the memory collection switch of the process"
     )
     parser.add_argument(
-        "--dvpp_profiling",
+        "--dvpp-profiling",
         default="on",
         choices=["on", "off"],
         help="DVPP acquisition switch"
     )
 
     parser.add_argument(
-        "--runtime_api",
+        "--runtime-api",
         default="on",
         choices=["on", "off"],
         help="Control runtime api performance data collection switch"
     )
     parser.add_argument(
-        "--task_time",
+        "--task-time",
         default="on",
         choices=["on", "off"],
         help="Control ts timeline performance data collection switch"
