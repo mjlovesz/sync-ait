@@ -64,6 +64,22 @@ Used to distinguish between different actual inputs of models in dynamic shapes,
 │   │   │                   ├-- Add.11.4.1682148323212422
 │   │   │                   ├-- ...
 │   │   │                   └-- Transpose.4.1682148327390978
+│   │   ├-- {timestamp}_bin2npy      # The data directory for converting npu dump data to npy files, which does not exist when convert is not selected
+│   │   │   └-- 0                    # Device ID
+│   │   │       └-- {om_model_name}  # om model name
+│   │   │           └-- 1            # model ID
+│   │   │               ├-- 0        # Task ID， increase 1 each time a repeat task executed
+│   │   │               │   ├-- Add.8.5.1682067845380164.input.0.npy  #The input npy files for each operator, if there are multiple inputs, there will be multiple npy files
+│   │   │               │   ├-- Add.8.5.1682067845380164.output.0.npy #Output npy file for each operator
+│   │   │               │   ├-- ...
+│   │   │               │   └-- Transpose.4.1682148295048447.input.0.npy
+│   │   │               │   └-- Transpose.4.1682148295048447.output.0.npy 
+│   │   │               └-- 1
+│   │   │                   ├-- Add.11.4.1682148323212422.input.0.npy
+│   │   │                   ├-- Add.11.4.1682148323212422.output.0.npy
+│   │   │                   ├-- ...
+│   │   │                   └-- Transpose.4.1682148327390978.input.0.npy
+│   │   │                   └-- Transpose.4.1682148327390978.output.0.npy
 │   │   ├-- {time_stamp}
 │   │   │   ├-- input_0_0.bin
 │   │   │   └-- input_0_0.npy
