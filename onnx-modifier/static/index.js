@@ -775,15 +775,7 @@ host.BrowserHost = class {
     }
 
     _about() {
-        const self = this;
-        const eventHandler = () => {
-            this.window.removeEventListener('keydown', eventHandler);
-            self.document.body.removeEventListener('click', eventHandler);
-            self._view.show('default');
-        };
-        this.window.addEventListener('keydown', eventHandler);
-        this.document.body.addEventListener('click', eventHandler);
-        this._view.show('about');
+        document.getElementById("show-about").showModal()
     }
 
     _strMapToObj(strMap) {
