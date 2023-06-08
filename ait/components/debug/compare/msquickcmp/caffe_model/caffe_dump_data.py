@@ -113,7 +113,7 @@ class CaffeDumpData(DumpData):
         model = caffe.Net(self.model_path, self.weight_path, caffe.TEST)
 
         num_params = 0
-        for params in nn.params.values():
+        for params in model.params.values():
             num_params += np.sum([np.prod(blob.data.shape) for blob in params])
         if os.path.getsize(self.weight_path) < num_params:
             utils.logger.warning(
