@@ -17,7 +17,6 @@ import sys
 import subprocess
 
 import logging
-from dataclasses import dataclass
 
 from aie_runtime.bean import ConvertConfig
 
