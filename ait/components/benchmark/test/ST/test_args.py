@@ -26,9 +26,6 @@ OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 
 class TestClass:
-    def init(self):
-        self.model_name = "resnet50"
-
     @classmethod
     def setup_class(cls):
         """
@@ -39,6 +36,9 @@ class TestClass:
     @classmethod
     def teardown_class(cls):
         logging.info('\n ---class level teardown_class')
+
+    def init(self):
+        self.model_name = "resnet50"
 
     def test_args_invalid_model_path(self):
         model_path = "xxx_invalid.om"
@@ -122,7 +122,7 @@ class TestClass:
             try:
                 outval = os.popen(cmd).read()
             except Exception as e:
-                raise Exception("raise an exception: {}".format(e))
+                raise Exception("raise an exception: {}".format(e)) from e
 
             assert int(outval) == (loop_num + warmup_num)
 
@@ -142,7 +142,7 @@ class TestClass:
         try:
             outval = os.popen(cmd).read()
         except Exception as e:
-            raise Exception("raise an exception: {}".format(e))
+            raise Exception("raise an exception: {}".format(e)) from e
 
         assert int(outval) > 1
 
@@ -214,7 +214,7 @@ class TestClass:
         try:
             outval = os.popen(cmd).read()
         except Exception as e:
-            raise Exception("grep action raises an exception: {}".format(e))
+            raise Exception("grep action raises an exception: {}".format(e)) from e
 
         result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
         bin_path = os.path.join(result_path, "pure_infer_data_0.bin")
@@ -271,7 +271,7 @@ class TestClass:
         try:
             outval = os.popen(cmd).read()
         except Exception as e:
-            raise Exception("grep action raises an exception: {}".format(e))
+            raise Exception("grep action raises an exception: {}".format(e)) from e
 
         result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
         bin_path = os.path.join(result_path, "pure_infer_data_0.bin")
@@ -306,7 +306,7 @@ class TestClass:
             try:
                 outval = os.popen(cmd).read()
             except Exception as e:
-                raise Exception("grep action raises an exception: {}".format(e))
+                raise Exception("grep action raises an exception: {}".format(e)) from e
 
             result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
 
