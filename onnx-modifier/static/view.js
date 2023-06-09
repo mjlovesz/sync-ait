@@ -752,6 +752,15 @@ view.View = class {
                 });
                 const content = modelSidebar.render();
                 this._sidebar.open(content, 'Model Properties');
+                
+                document.dispatchEvent(new CustomEvent("node-clicked", {detail:{
+                    is_input:clicked_input_name, 
+                    input_name: clicked_input_name,
+                    is_output:clicked_output_name,
+                    output_name: clicked_output_name,
+                    name:clicked_input_name|| clicked_output_name
+                }}))
+
             }
             catch (error) {
                 const content = " in '" + this._model.identifier + "'.";
@@ -811,6 +820,8 @@ view.View = class {
                     nodeSidebar.toggleInput(input.name);
                 }
                 this._sidebar.open(nodeSidebar.render(), 'Node Properties');
+                
+                document.dispatchEvent(new CustomEvent("node-clicked", {detail:{is_node:true, node:node, node_name:modelNodeName}}))
             }
             catch (error) {
                 const content = " in '" + this._model.identifier + "'.";
