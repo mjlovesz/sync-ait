@@ -296,6 +296,7 @@ opt_dynamic_shape = click.option(
 
 
 opt_output_size = click.option(
+    '-outsize',
     '--output-size',
     'output_size',
     type=str,
@@ -306,7 +307,7 @@ opt_output_size = click.option(
 
 opt_subgraph_input_shape = click.option(
     '-sis',
-    '--subgraph_input_shape',
+    '--subgraph-input-shape',
     'subgraph_input_shape',
     type=str,
     callback=check_args,
@@ -316,7 +317,7 @@ opt_subgraph_input_shape = click.option(
 
 opt_subgraph_input_dtype = click.option(
     '-sit',
-    '--subgraph_input_dtype',
+    '--subgraph-input-dtype',
     'subgraph_input_dtype',
     type=str,
     callback=check_args,

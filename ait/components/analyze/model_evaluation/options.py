@@ -48,7 +48,8 @@ opt_framework = click.option(
 )
 
 opt_weight = click.option(
-    '--weight',
+    '-w',
+    '--weight-path',
     'weight',
     type=str,
     default='',
