@@ -231,7 +231,6 @@ class NetCompare(object):
         while process.poll() is None:
             line = process.stdout.readline().strip()
             if line:
-                utils.logger.info(line)
                 compare_result, header_result = self._catch_compare_result(line, catch)
                 result = compare_result if compare_result else result
                 header = header_result if header_result else header
