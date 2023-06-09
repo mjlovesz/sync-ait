@@ -11,7 +11,7 @@ Ascend Inference Tools，昇腾推理工具链。
 
 1.  [ait](https://gitee.com/ascend/ait/tree/master/ait)
 
-    **一体化推理开发工具**：提供客户一体化开发工具，支持一站式调试调优。
+    **一体化推理开发工具**：作为昇腾统一推理工具，提供客户一体化开发工具，支持一站式调试调优，当前包括benchmark、debug、transplt、analyze等组件。
 
 2.  [onnx-modifier](https://gitee.com/ascend/ait/tree/master/onnx-modifier)
 
