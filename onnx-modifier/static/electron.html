@@ -84,35 +84,25 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     top: 65px;
 }
 .graph-op-button-download:active {  background: #e7e7e7; }
+.graph-node-delete { opacity: 0.3 }
+.graph-node-hide { opacity: 0}
 .download-checkbox-shapeInference {
-    position:absolute;
-    left: 120px;
-    top: 62px;
-    width: 15px;
-    height: 15px;
+    width: 12px;
+    height: 12px;
 }
 .download-anno-shapeInference {
-    position:absolute;
-    left: 140px;
-    top: 62px;
     font-family:"Oliviar Sans Light";
-    font-size: 10px;
+    font-size: 12px;
     border:none
 }
 
 .download-checkbox-cleanUp {
-    position:absolute;
-    left: 120px;
-    top: 80px;
-    width: 15px;
-    height: 15px;
+    width: 12px;
+    height: 12px;
 }
 .download-anno-cleanUp {
-    position:absolute;
-    left: 140px;
-    top: 80px;
     font-family:"Oliviar Sans Light";
-    font-size: 10px;
+    font-size: 12px;
     border:none
 }
 
@@ -131,9 +121,6 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .graph-op-button-addNode:active {  background: #e7e7e7; }
 .graph-op-add-node-dropdown {
     font-size: 15px;
-    position:absolute;
-    left: 2px;
-    top: 135px;
 }
 .icon .border { stroke: #fff; }
 .icon .stroke { stroke: #808080; }
@@ -175,6 +162,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .welcome.consent .consent-message { opacity: 1; display: block; }
 .welcome.spinner .graph { display: flex; opacity: 0; }
 .welcome .toolbar { display: none; }
+.welcome .main-page {display: none;}
 .default { background-color: #ffffff; }
 .default .logo { display: none; }
 .default .graph { display: flex; opacity: 1; }
@@ -182,7 +170,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 @media (prefers-color-scheme: dark) {
 :root { color-scheme: dark; }
 .default { background-color: #404040; }
-.graph { background-color: #404040; }
+.graph { background-color: #404040; flex: 1;}
 .welcome { background-color: #1e1e1e; color: #888888; }
 .welcome .logo-stroke { stroke: #888888; }
 .welcome .logo-fill { fill: #888888; }
@@ -227,6 +215,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .message-box h1 {text-align: center; }
 .message-box div {font-size: 16px;}
 .message-box .footer {text-align: right; padding-top: 13px;}
+.message-box .center-item {text-align: center;}
 .dialog .text {text-align: center;}
 
 .message-box:hover .message-box-progress {
@@ -272,9 +261,182 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .error-message-box {background: lightcoral;}
 .success-message-box {background: aquamarine;}
 
+.welcome.spinner .main-page { display: flex;}
+.main-page {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+.content {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    overflow: auto;
+}
+
+.sidebar {
+    width: min(60%, 750px);
+    position: static;
+    overflow: auto;
+}
+
+.top-toolbar{
+    height: 100px;
+    background-color: white;
+    display: flex;
+    flex-shrink: 0;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+.toolbar-tab-group {
+    display: flex;
+    margin: 5px;
+    padding: 5px;
+    flex-shrink: 0;
+}
+
+.toolbar-tab {
+    flex-direction: column;
+    flex-shrink: 0;
+    display: flex;
+    border-right: solid 1px #a5a5a5;
+    padding: 0 15px;
+}
+
+.toolbar-tab-title {
+    padding: 0 5px;
+    margin: 0 5px ;
+    font-size: smaller;
+    border-bottom: solid 1px #a5a5a5;
+}
+
+.toolbar-contant {
+    flex-shrink: 0;
+    writing-mode: vertical-lr;
+    height: calc(2lh + 5*4px + 5*4px);
+}
+
+.toolbar-item {
+    padding: 5px;
+    margin: 5px;
+    width: 100px;
+    flex-shrink: 0;
+    --display: inline-block;
+    float: left;
+    writing-mode: horizontal-tb;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.toolbar-item:hover {
+    border-radius: 5px;
+    background-color: white;
+    cursor: pointer;
+    background-color: gray;
+}
+.toolbar-menu {
+    display: none;
+}
+.toolbar-item:hover .toolbar-menu {
+    display: block;
+    position: absolute;
+    padding: 5px 0px;
+    z-index: 2;
+}
+.toolbar-menu-item {
+    padding: 5px;
+    width: 120px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
+    text-align: center;
+    background-color: white;
+    border-bottom: solid 1px grey;
+}
+
+.toolbar-menu-item:hover {
+    background-color: rgba(128, 128, 128, 1);
+}
+
 </style>
 </head>
 <body class="welcome spinner">
+    
+<div class="main-page">
+<div class="top-toolbar">
+    <div class="toolbar-tab-group-title" style="display: none;">
+        File
+    </div>
+    <div class="toolbar-tab-group-title" style="display: none;">
+        Modifier
+    </div>
+
+    <div class="toolbar-tab-group" id="toolbar-group-file"> 
+        <div class="toolbar-tab"> 
+            <div class="toolbar-tab-title" > File </div>
+            <div class="toolbar-contant">
+                <div class="toolbar-item" id="open-file-button" class="open-file-button"> Open Onnx </div>
+                <div class="toolbar-item" id="download-graph"> Save File </div>
+                <div class="toolbar-item" id="reset-graph"> Reset </div>
+                <div class="toolbar-item" id="extract-graph"> Extract Sub Net</div>
+            </div>
+        </div>
+    </div>
+    <div class="toolbar-tab-group" id="toolbar-group-modify"> 
+        <div class="toolbar-tab"> 
+            <div class="toolbar-tab-title" > Optimizer </div>
+            <div class="toolbar-contant">
+                <div class="toolbar-item" id="onnxsim-graph"> OnnxSim </div>
+                <div class="toolbar-item" id="auto-optimizer-graph"> AutoOptimizer </div>
+            </div>
+        </div>
+        <div class="toolbar-tab"> 
+            <div class="toolbar-tab-title" > Node </div>
+            <div class="toolbar-contant">
+                <div class="toolbar-item" id="add-node"> Add Node </div>
+            </div>
+        </div>
+        <div class="toolbar-tab"> 
+            <div class="toolbar-tab-title" > Delete Node </div>
+            <div class="toolbar-contant">
+                <div class="toolbar-item" id="delete-node"> Delete Node 
+                    <div class="toolbar-menu">
+                        <div class="toolbar-menu-item" id="delete-node-with-children">Delete With Children</div>
+                    </div>
+                </div>
+                <div class="toolbar-item" id="delete-enter-node"> Delete Enter </div>
+                <div class="toolbar-item" id="recover-node"> Recover Node 
+                    <div class="toolbar-menu">
+                        <div class="toolbar-menu-item" id="recover-node-with-children">Recover With Children</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="toolbar-tab"> 
+            <div class="toolbar-tab-title" > Net Input Output </div>
+            <div class="toolbar-contant">
+                <div class="toolbar-item" id="add-input"> Add Input </div>
+                <div class="toolbar-item" id="remove-input"> Remove Input </div>
+                <div class="toolbar-item" id="add-output"> Add Output </div>
+                <div class="toolbar-item" id="remove-output"> Remove Output </div>
+                <div class="toolbar-item" id="change-input-shape"> Set Input Shape 
+                    <div class="toolbar-menu">
+                        <div class="toolbar-menu-item" id="batch-size-dynamic">Dynamic Batch Size</div>
+                        <div class="toolbar-menu-item" id="batch-size-fixed">Fixed Batch Size</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="toolbar-tab"> 
+            <div class="toolbar-tab-title" > Modify Info </div>
+            <div class="toolbar-contant">
+                <div class="toolbar-item" id="modify-export"> Modify Export </div>
+                <div class="toolbar-item" id="modify-import"> Modify Import </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+<div class="content">
 <div id="graph" class="graph" tabindex="0">
     <svg id="canvas" class="canvas" preserveaspectratio="xMidYMid meet" width="100%" height="100%">   
         <g id="linecolor">
@@ -297,7 +459,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     </svg>
 </div>
 <div id="sidebar" class="sidebar"></div>
-<div id="toolbar" class="toolbar">
+<div id="toolbar" class="toolbar" style="top:110px">
     <button id="menu-button" class="toolbar-button" title="Menu">
         <svg class="icon" viewbox="0 0 100 100">
             <rect class="border" x="12" y="12" width="76" height="76" rx="16" ry="16" stroke-width="8"></rect>
@@ -333,21 +495,6 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
             <line class="stroke" x1="78" y1="78" x2="82" y2="82" stroke-width="8" stroke-linecap="square"></line>
         </svg>
     </button>
-
-    <button id="reset-graph" class="graph-op-button graph-op-button-reset">Reset</button>
-    <button id="download-graph" class="graph-op-button-download">Download</button>
-    <input type="checkbox" id="shapeInference" class="download-checkbox-shapeInference"/> 
-    <input type="text" value="shape inference" class="download-anno-shapeInference" readonly/> </td>
-    <input type="checkbox" id="cleanUp" class="download-checkbox-cleanUp"/> 
-    <input type="text" value="clean up" class="download-anno-cleanUp" readonly/> </td>
-    <button id="add-node" class="graph-op-button-addNode">Add node</button>
-    <select id="add-node-dropdown" class="graph-op-add-node-dropdown">
-    </select>
-    <button id="onnxsim-graph" class="graph-op-button graph-op-button-onnxsim">OnnxSim</button>
-    <button id="auto-optimizer-graph" class="graph-op-button graph-op-button-optimizer">AutoOptimizer</button>
-    
-    <button id="extract-graph" class="graph-op-button graph-op-button-extract">Extract</button>
-
     <button id="back-button" class="toolbar-back-button" title="Back">
         &#x276E;
     </button>
@@ -355,7 +502,8 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     </button>
     <div id="menu-dropdown" class="dropdown"></div>
 </div>
-<div id="transparent" class="transparent"></div>
+</div>
+</div>
 <div class="center logo">
     <a href="https://gitee.com/ascend/ait" target="blank_">
         <svg class="" viewbox="0 0 5120 300">
@@ -370,7 +518,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
              height="130">
     </a>
 
-    <button id="open-file-button" class="center open-file-button">Open Model&hellip;</button>
+    <button id="open-file-button-logo" class="center open-file-button">Open Model&hellip;</button>
     <button id="github-button" class="center github-button">Gitee repo</button>
     <input type="file" id="open-file-dialog" class="open-file-dialog" multiple="false" accept=".onnx, .ort, .pb, .meta, .tflite, .lite, .tfl, .keras, .h5, .hd5, .hdf5, .json, .model, .mar, .params, .param, .armnn, .mnn, .ncnn, .tnnproto, .tmfile, .ms, .nn, .uff, .rknn, .xmodel, .kmodel, .paddle, .pdmodel, .pdparams, .nb, .dnn, .cmf, .mlmodel, .mlpackage, .caffemodel, .pbtxt, .prototxt, .pkl, .pt, .pth, .ptl, .t7, .joblib, .cfg, .xml, .zip, .tar">
     <input type="file" id="open-modify-json-dialog" class="open-file-dialog" multiple="false" accept=".json">
@@ -379,7 +527,8 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     <div style="font-weight: bold; color: rgba(0, 0, 0, 0.01); user-select: none;">.</div>
     <div style="font-weight: bold; color: rgba(0, 0, 0, 0.01); user-select: none;">.</div>
 </div>
-
+<div id="transparent" class="transparent"></div>
+<!-- dialogs -->
 <dialog id="show-message-alert" class="message-box dialog"> 
     <h1> </h1>
     <div class="text"> </div>
@@ -389,8 +538,8 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     <h1> </h1>
     <div class="text"> </div>
     <div class="footer">
-        <button id="show-message-confirm-cancel">Cancel</button>
-        <button id="show-message-confirm-cancel">OK</button>
+        <button>Cancel</button>
+        <button>OK</button>
     </div>
 </dialog>
 <dialog id="show-message-info" open></dialog>
@@ -415,6 +564,60 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     </div>
     
     <div class="footer"><button onclick="document.getElementById('show-about').close()">OK</button></div>
+</dialog>
+
+<dialog id="download-dialog" class="dialog message-box"> 
+    <input type="checkbox" id="shapeInference" class="download-checkbox-shapeInference"/> 
+    <input type="text" value="shape inference" class="download-anno-shapeInference" readonly/> </td>
+    <input type="checkbox" id="cleanUp" class="download-checkbox-cleanUp"/> 
+    <input type="text" value="clean up" class="download-anno-cleanUp" readonly/> </td>
+    <div class="footer">
+        <button>Cancel</button>
+        <button>OK</button>
+    </div>
+</dialog>
+<dialog id="addnode-dialog" class="dialog message-box"> 
+    <h1> Add New Node </h1>
+    <select id="add-node-dropdown" class="graph-op-add-node-dropdown">
+    </select>
+    <div class="footer">
+        <button>Cancel</button>
+        <button>OK</button>
+    </div>
+</dialog>
+<dialog id="addinput-dialog" class="dialog message-box"> 
+    <h1> Add New Input </h1>
+    <div class="text"> </div>
+    <div style="display: flex; margin: 5px; justify-content: center;">
+        <select id="add-input-dropdown" class="graph-op-add-node-dropdown">
+        </select>
+    </div>
+    <div class="footer">
+        <button>Cancel</button>
+        <button>OK</button>
+    </div>
+</dialog>
+<dialog id="changeinputshape-dialog" class="dialog message-box"> 
+    <h1> Change Input Shape </h1>
+    <div class="text"> </div>
+    <div style="display: flex; margin: 5px; justify-content: center;">
+        <input id="change-input-shape-input" type="text" size="32" placeholder="example: batch,3,224,224"/>
+    </div>
+    <div class="footer">
+        <button>Cancel</button>
+        <button id="change-input-shape-input-ok">OK</button>
+    </div>
+</dialog>
+<dialog id="fixed-batch-size-dialog" class="dialog message-box"> 
+    <h1> Fixed Input Batch Size </h1>
+    <div class="text"> Please enter batchsize </div>
+    <div style="display: flex; margin: 5px; justify-content: center;">
+        <input id="fixed-batch-size-input" type="text" size="32"/>
+    </div>
+    <div class="footer">
+        <button>Cancel</button>
+        <button id="fixed-batch-size-input-ok">OK</button>
+    </div>
 </dialog>
 </body>
 </html>
