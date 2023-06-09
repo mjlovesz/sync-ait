@@ -16,27 +16,53 @@
 
 package com.huawei.ascend.ait.ide.optimizie.ui.step;
 
+import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addPath;
+import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addState;
+import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedFile;
+import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedPath;
+import static com.huawei.ascend.ait.ide.util.CheckInput.DOCUMENT_LIMIT;
+import static com.huawei.ascend.ait.ide.util.CheckInput.FileCheck;
+import static com.huawei.ascend.ait.ide.util.CheckInput.MODEL_FILE_LIMIT;
+import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_DIR_PATH_CHARACTERS;
+import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_FILE_PATH_CHARTERS;
+import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_STRING_CHARATERS;
+import static com.huawei.ascend.ait.ide.util.CheckInput.checkPath;
+import static com.huawei.ascend.ait.ide.util.CheckInput.checkStringValid;
+import static com.huawei.ascend.ait.ide.util.CheckInput.normalizeInput;
+
+import com.huawei.ascend.ait.ide.commonlib.exception.CommandInjectException;
+import com.huawei.ascend.ait.ide.commonlib.output.OutputService;
+import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdExec;
 import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
-import com.huawei.ascend.ait.ide.util.FileChooseWithBrows;
+import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
 import com.huawei.ascend.ait.ide.commonlib.ui.SwitchButton;
 
-import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.openapi.util.Comparing;
 
+import com.intellij.ui.DocumentAdapter;
+import com.jediterm.terminal.util.JTextFieldLimit;
+import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
+import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
 import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.List;
+
 
 /**
  * AisBenchBasic
@@ -45,31 +71,41 @@ import java.util.List;
  * @date 2023/06/03
  */
 public class AisBenchBasic extends DialogWrapper {
+    private static final Logger LOGGER = LoggerFactory.getLogger(AisBenchBasic.class);
     private JPanel root;
     private JComboBox pureDataTypeCombx;
     private JLabel model;
     private JComboBox outFormatComboBox;
-    private JTextField loopTextField;
-    private JTextField warmupTextField;
+    private JTextField loopJText;
+    private JTextField warmupJText;
     private JLabel debug;
     private JLabel dusplay;
     private JPanel loop;
-    private JToggleButton profilerBottun;
-    private JPanel advance;
     private TextFieldWithBrowseButton modelFileBrowse;
     private TextFieldWithBrowseButton inputFileBrowse;
     private TextFieldWithBrowseButton outputPathBrowse;
-    private TextFieldWithBrowseButton outputDirnameBrowse;
     private JPanel pureDataTypeJLabel;
     private JPanel outputDirnameJLabel;
     private JPanel outFmtJLabel;
     private JTextField deviceTextField;
     private SwitchButton debugButton;
     private SwitchButton displayButton;
+    private JLabel inputFileErrorJLabel;
+    private JLabel outputPathErrorJLabel;
+    private JLabel outputDirErrorJLabel;
+    private JLabel countErrorJLabel;
+    private JLabel deviceErrorJLabel;
+    private JPanel inputFileErrorJPanel;
+    private JPanel modelErrorJPanel;
+    private JLabel modelErrorJLabel;
+    private JTextField outputDirJText;
+    private JPanel countErrorJPanel;
+    private JPanel outputDirErrorJPanel;
+    private JPanel deviceErrorJPanel;
+    private JPanel outputPathErrorJPanel;
     private final JTextField modelFileTextField = modelFileBrowse.getTextField();
     private final JTextField inputFilesTextField = inputFileBrowse.getTextField();
     private final JTextField outputTextField = outputPathBrowse.getTextField();
-    private final JTextField outputDirTextField = outputDirnameBrowse.getTextField();
     private static final String OM_MODEL_FILE_EXTENSION = "om";
     private static final String NPY_FILE_EXTENSION = "npy";
     private static final String BIN_FILE_EXTENSION = "bin";
@@ -77,6 +113,7 @@ public class AisBenchBasic extends DialogWrapper {
     private static final List<String> PURE_DATA_TYPE = List.of("zero", "random");
     private static final List<String> OUTFMT_TYPE = List.of("BIN", "NPY", "TXT");
     private static final long FILE_SIZE_MAX = (long) 2 * 1024 * 1024 * 1024;
+    private final Border defBorder = modelFileTextField.getBorder();
     private final Project project;
 
     /**
@@ -89,50 +126,205 @@ public class AisBenchBasic extends DialogWrapper {
         this.project = project;
         init();
         setTitle("Ais Bench");
-        setIcons();
 
-        setFileChoodeAction();
+        setTextFieldLimitAndToolTip();
+        setFileChooseAction();
         initComponent();
         initVisible();
         setOKButtonText("Start");
     }
 
     private void initComponent() {
+        for (String s : PURE_DATA_TYPE) {
+            this.pureDataTypeCombx.addItem(s);
+        }
+        for (String s : OUTFMT_TYPE) {
+            this.outFormatComboBox.addItem(s);
+        }
     }
 
     private void initVisible() {
+        pureDataTypeJLabel.setVisible(false);
+        pureDataTypeCombx.setVisible(false);
+        pureDataTypeCombx.setEditable(false);
+
+        outputDirnameJLabel.setVisible(false);
+        outputDirJText.setVisible(false);
+
+        outFmtJLabel.setVisible(false);
+        outFormatComboBox.setVisible(false);
     }
 
-    private void setIcons() {
-    }
-
-    private void setFileChoodeAction() {
+    private void setFileChooseAction() {
+        modelFIleAction();
+        addModelFileTextFieldListener();
+        inputAction();
+        addInputFileTextFieldListener();
+        outputAction();
+        addOutputPathTextListener();
+        addOutputDirTextListener();
+        addWarmupTextListener();
+        addLoopTextListener();
+        addDeviceTextListener();
     }
 
     private void modelFIleAction() {
+        List<String> lists = List.of(OM_MODEL_FILE_EXTENSION);
+        modelFileBrowse.addActionListener(event -> {
+            String selectFile = getSelectedFile(project, lists, false);
+            if (StringUtils.isEmpty(selectFile)) {
+                return;
+            }
+            File model = new File(selectFile);
+            checkFileSize(model);
+            modelFileTextField.setText(selectFile);
+        });
     }
 
     private void inputAction() {
+        List<String> lists = List.of(NPY_FILE_EXTENSION, BIN_FILE_EXTENSION);
+        inputFileBrowse.addActionListener(event -> {
+            String selectFile = getSelectedFile(project, lists, true);
+            File model = new File(selectFile);
+            checkFileSize(model);
+            inputFilesTextField.setText(selectFile);
+            pureDataTypeJLabel.setVisible(true);
+            pureDataTypeCombx.setVisible(true);
+        });
     }
 
     private void outputAction() {
+        outputPathBrowse.addActionListener(event -> {
+            String selectFile = getSelectedPath(project);
+            if (StringUtils.isEmpty(selectFile)) {
+                return;
+            }
+            outputTextField.setText(selectFile);
+
+            outputDirJText.setVisible(true);
+            outputDirnameJLabel.setVisible(true);
+
+            outFmtJLabel.setVisible(true);
+            outFormatComboBox.setVisible(true);
+        });
     }
 
-    private void outputdIRAction() {
+    private void setTextFieldLimitAndToolTip() {
+        modelFileTextField.setToolTipText(VALID_FILE_PATH_CHARTERS);
+        modelFileTextField.setDocument(new JTextFieldLimit(MODEL_FILE_LIMIT));
+
+        inputFilesTextField.setToolTipText(VALID_FILE_PATH_CHARTERS);
+        inputFilesTextField.setDocument(new JTextFieldLimit(MODEL_FILE_LIMIT));
+
+        outputTextField.setToolTipText(VALID_DIR_PATH_CHARACTERS);
+        outputTextField.setDocument(new JTextFieldLimit(DOCUMENT_LIMIT));
+
+        loopJText.setToolTipText(VALID_STRING_CHARATERS);
+        loopJText.setDocument(new JTextFieldLimit(255));
+
+        warmupJText.setToolTipText(VALID_STRING_CHARATERS);
+        warmupJText.setDocument(new JTextFieldLimit(255));
+
+        deviceTextField.setToolTipText(VALID_STRING_CHARATERS);
+        deviceTextField.setDocument(new JTextFieldLimit(255));
+    }
+
+    private void addOutputPathTextListener() {
+        outputTextField.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                checkPath(outputTextField, outputPathErrorJLabel, deviceErrorJPanel);
+            }
+        });
+    }
+
+    private void addModelFileTextFieldListener() {
+        modelFileBrowse.getTextField().getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                FileCheck(modelErrorJPanel, modelErrorJLabel, modelFileTextField, List.of(".om"));
+            }
+        });
+    }
+
+    private void addInputFileTextFieldListener() {
+        inputFileBrowse.getTextField().getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                FileCheck(inputFileErrorJPanel, inputFileErrorJLabel, inputFilesTextField, List.of(".bin", ".npy"));
+            }
+        });
+    }
+
+    private void addOutputDirTextListener() {
+        outputDirJText.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                String modelName = outputDirJText.getText();
+                if (StringUtils.isEmpty(modelName)) {
+                    normalizeInput(outputDirErrorJPanel, outputDirErrorJLabel, outputDirJText);
+                } else {
+                    if (checkStringValid(outputDirErrorJPanel, outputDirErrorJLabel, outputDirJText)) {
+                        normalizeInput(outputDirErrorJPanel, outputDirErrorJLabel, outputDirJText);
+                    }
+                }
+            }
+        });
+    }
+
+    private void addLoopTextListener() {
+        loopJText.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                String modelName = loopJText.getText();
+                if (StringUtils.isEmpty(modelName)) {
+                    normalizeInput(countErrorJPanel, countErrorJLabel, loopJText);
+                } else {
+                    if (checkStringValid(countErrorJPanel, countErrorJLabel, loopJText)) {
+                        normalizeInput(countErrorJPanel, countErrorJLabel, loopJText);
+                    }
+                }
+            }
+        });
+    }
+
+    private void addWarmupTextListener() {
+        warmupJText.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                String modelName = warmupJText.getText();
+                if (StringUtils.isEmpty(modelName)) {
+                    normalizeInput(countErrorJPanel, countErrorJLabel, warmupJText);
+                } else {
+                    if (checkStringValid(countErrorJPanel, countErrorJLabel, warmupJText)) {
+                        normalizeInput(countErrorJPanel, countErrorJLabel, warmupJText);
+                    }
+                }
+            }
+        });
+    }
+
+    private void addDeviceTextListener() {
+        deviceTextField.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(@NotNull DocumentEvent event) {
+                String modelName = deviceTextField.getText();
+                if (StringUtils.isEmpty(modelName)) {
+                    normalizeInput(deviceErrorJPanel, deviceErrorJLabel, deviceTextField);
+                } else {
+                    if (checkStringValid(deviceErrorJPanel, deviceErrorJLabel, deviceTextField)) {
+                        normalizeInput(deviceErrorJPanel, deviceErrorJLabel, deviceTextField);
+                    }
+                }
+            }
+        });
     }
 
     private void checkFileSize(File file) {
-    }
-
-    private String getSelectedFile(List<String> strings, Boolean isFile, Boolean chooseMultiple) {
-        FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(isFile, !isFile, false, false,
-                false, chooseMultiple)
-                .withFileFilter(virtualFile -> virtualFile.isDirectory() ||
-                        Comparing.equal(new ArrayList<>(strings).contains(virtualFile.getExtension()), true))
-                .withTitle("Model File")
-                .withDescription("Please select the appropriate file");
-        return FileChooseWithBrows.fileChoosewithBrowse(project, fileChooserDescriptor,
-                this.getClass().getName(), "modelSelectPath").orElse(null);
+        if (file.length() > FILE_SIZE_MAX) {
+            int result = Messages.showDialog("The file you selected is too large.", "ERROR", new String[]{"Yes", "No"},
+                    Messages.NO, AllIcons.General.QuestionDialog);
+        }
     }
 
     @Override
@@ -142,16 +334,59 @@ public class AisBenchBasic extends DialogWrapper {
 
     @Override
     protected void doOKAction() {
-        close(0);
+        Boolean check = preCheck();
+        if (!check) {
+            return;
+        }
+        CmdStrBuffer cmdStrBuffer = new CmdStrBuffer();
+        cmdStrBuffer = getCmdStrBuffer();
+        OutputService.getInstance(project).print(cmdStrBuffer.toString());
+        CmdExec exec = new CmdExec();
+        try {
+            exec.bashStart(cmdStrBuffer);
+            String errorRec = exec.getErrorResult();
+            close(0);
+            if (errorRec != null) {
+                OutputService.getInstance(project).print("There are some errors here.", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
+                OutputService.getInstance(project).print(errorRec, ConsoleViewContentType.LOG_ERROR_OUTPUT);
+            }
+            String execRec = exec.getResult();
+            if (execRec != null) {
+                OutputService.getInstance(project).print(execRec, ConsoleViewContentType.LOG_INFO_OUTPUT);
+            }
+        } catch (CommandInjectException | IOException e) {
+            LOGGER.error(e.getMessage());
+        }
     }
 
     private CmdStrBuffer getCmdStrBuffer() {
-        return null;
+        CmdStrBuffer cmd = new CmdStrBuffer();
+
+        cmd.append("python3").append(CmdStrWordStatic.SPACE);
+        cmd.append("-m").append(CmdStrWordStatic.SPACE);
+        cmd.append("ais_bench").append(CmdStrWordStatic.SPACE);
+        addPath(cmd, "--model", modelFileTextField.getText());
+        addPath(cmd, "--input", inputFilesTextField.getText());
+        addPath(cmd, "--pure", pureDataTypeCombx.getSelectedItem().toString());
+        addPath(cmd, "--output", outputTextField.getText());
+        addPath(cmd, "--output_dirname", outputDirJText.getText());
+        addPath(cmd, "--outfmt", outFormatComboBox.getSelectedItem().toString());
+        addPath(cmd, "--loop", loopJText.getText());
+        addPath(cmd, "--warmup_count", warmupJText.getText());
+        addPath(cmd, "--device", deviceTextField.getText());
+        addState(cmd, "--debug", debugButton.isSelected());
+        addState(cmd, "--display_all_summary", displayButton.isSelected());
+
+        return cmd;
     }
 
     private Boolean preCheck() {
+        String model = modelFileTextField.getText();
+        if (model.isEmpty()) {
+            Messages.showErrorDialog("Model file must be chose", "ERROR");
+            return false;
+        }
         return true;
     }
-
 }
 

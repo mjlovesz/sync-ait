@@ -21,6 +21,7 @@ import time
 
 import numpy as np
 
+from msquickcmp.common import utils
 from msquickcmp.common.utils import logger
 from msquickcmp.common.utils import AccuracyCompareException
 
@@ -33,6 +34,26 @@ class DumpData(object):
     def __init__(self):
         self.net_output = {}
         pass
+
+    @staticmethod
+    def _generate_dump_data_file_name(name_str, node_id):
+        name_str = name_str.replace('.', '_').replace('/', '_')
+        return  ".".join([name_str, str(node_id), str(round(time.time() * 1e6)), "npy"])
+
+    @staticmethod
+    def _check_path_exists(input_path, extentions=None):
+        input_path = os.path.realpath(input_path)
+        if not os.path.exists(input_path):
+            logger.error(f"path '{input_path}' not exists")
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+
+        if extentions and not any([input_path.endswith(extention) for extention in extentions]):
+            logger.error(f"path '{input_path}' not ends with extention {extentions}")
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+
+        if not os.access(input_path, os.R_OK):
+            logger.error(f"user doesn't have read permission to the file {input_path}.")
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
     def generate_dump_data(self):
         """
@@ -54,16 +75,17 @@ class DumpData(object):
         """
         pass
 
-    def _generate_dump_data_file_name(self, name_str, node_id):
-        name_str = name_str.replace('.', '_').replace('/', '_')
-        return  ".".join([name_str, str(node_id), str(round(time.time() * 1e6)), "npy"])
-
     def _check_input_data_path(self, input_path, inputs_tensor_info):
         if len(inputs_tensor_info) != len(input_path):
             logger.error("the number of model inputs tensor_info is not equal the number of "
                                   "inputs data, inputs tensor_info is: {}, inputs data is: {}".format(
                 len(inputs_tensor_info), len(input_path)))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+        
+        for cur_path in input_path:
+            if not os.path.exists(cur_path):
+                logger.error(f"input data path '{cur_path}' not exists")
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
     def _generate_random_input_data(self, save_dir, names, shapes, dtypes):
         inputs_map = {}

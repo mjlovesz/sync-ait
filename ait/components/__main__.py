@@ -16,7 +16,7 @@ import click
 import pkg_resources
 
 from components.debug import debug_cli_group
-from components.profile import profile_cli_group
+from components.profile import profile_cli
 from components.transplt import transplt_cli
 from components.benchmark import benchmark_cli
 from components.analyze import analyze_cli
@@ -27,7 +27,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 cli = click.Group(context_settings=CONTEXT_SETTINGS,
-                  commands=[debug_cli_group, profile_cli_group, 
+                  commands=[debug_cli_group, profile_cli,
                             analyze_cli, benchmark_cli, 
                             transplt_cli, convert_cli],
                   no_args_is_help=True,

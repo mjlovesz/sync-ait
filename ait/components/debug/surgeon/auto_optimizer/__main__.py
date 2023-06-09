@@ -22,7 +22,8 @@ import click
 from click_aliases import ClickAliasedGroup
 from click.exceptions import UsageError
 
-from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig
+from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig, \
+    ARGS_REQUIRED_KNOWLEDGES
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern import KnowledgeFactory
@@ -193,6 +194,11 @@ def command_evaluate(
         onnx_files = list(path_.rglob('*.onnx') if recursive else path_.glob('*.onnx'))
     else:
         onnx_files = [path_]
+
+    optimizer.init_knowledges()
+    for know in ARGS_REQUIRED_KNOWLEDGES:
+        if know in optimizer.knowledges:
+            optimizer.knowledges.pop(know)
 
     if processes > 1:
         evaluate = partial(evaluate_onnx, optimizer=optimizer, verbose=verbose)

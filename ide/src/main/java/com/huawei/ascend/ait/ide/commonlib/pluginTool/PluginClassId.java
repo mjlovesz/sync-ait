@@ -56,7 +56,7 @@ public class PluginClassId {
     /**
      * SystemProfiler_ClassId
      */
-    public static final String SystemProfiler_ClassId = Ascend_id + ".systemprofiling.action.SystemProfilingProfilerAction";
+    public static final String SystemProfiler_ClassId = Ascend_id + ".systemprofiling.actions.SystemProfilingProfileAction";
 
     /**
      * AisBench_ClassId
