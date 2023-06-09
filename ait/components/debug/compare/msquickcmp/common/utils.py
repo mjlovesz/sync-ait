@@ -486,6 +486,14 @@ def get_batch_index(dump_data_path):
                 return get_batch_index_from_name(file_name)
     return ""
 
+def get_mbatch_op_name(om_parser, op_name, npu_dump_data_path):
+    _, scenario = om_parser.get_dynamic_scenario_info()
+    if scenario in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
+        batch_index = get_batch_index(npu_dump_data_path)
+        current_op_name = BATCH_SCENARIO_OP_NAME.format(op_name, batch_index)
+    else:
+        return op_name
+    return current_op_name
 
 def handle_ground_truth_files(om_parser, npu_dump_data_path, golden_dump_data_path):
     _, scenario = om_parser.get_dynamic_scenario_info()
