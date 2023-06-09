@@ -248,7 +248,18 @@ class OnnxDumpData(DumpData):
                     utils.logger.info("save input file name: {}, shape: {}, dtype: {}".format(
                         file_name, input_data.shape, input_data.dtype))
             else:
-                input_path = self.args.input_path.split(",")
+                input_path = []
+                input_initial_path = self.args.input_path.split(",")
+                for input_item in input_initial_path:
+                    input_item_path = os.path.realpath(input_item)
+                    if input_item_path.endswith('.bin'):
+                        input_path.append(input_item_path)
+                    else:
+                        for root, _, files in os.walk(input_item_path):
+                            for bin_file in files:
+                                if bin_file.endswith('.bin'):
+                                    file_path = os.path.join(root, bin_file)
+                                    input_path.append(file_path)
                 if len(inputs_tensor_info) != len(input_path):
                     utils.logger.error("the number of model inputs tensor_info is not equal the number of "
                                         "inputs data, inputs tensor_info is: {}, inputs data is: {}".format(
