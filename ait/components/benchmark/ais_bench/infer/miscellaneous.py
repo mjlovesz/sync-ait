@@ -207,7 +207,7 @@ def get_throughtput_from_log(log_path):
 def dymshape_range_run(args):
     dymshape_list = get_dymshape_list(args.dym_shape_range)
     results = []
-    log_path = os.path.realpath("./dym.log") if args.output is None else os.path.join(args.output, "dym.log")
+    log_path = os.path.realpath("dym.log") if args.output is None else os.path.join(args.output, "dym.log")
     for dymshape in dymshape_list:
         cmd = "rm -rf {};{} {} {}".format(log_path, sys.executable, ' '.join(sys.argv),
             "--dym-shape={}  | tee {}".format(dymshape,  log_path))
