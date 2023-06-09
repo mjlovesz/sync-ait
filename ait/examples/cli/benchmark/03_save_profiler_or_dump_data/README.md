@@ -25,7 +25,7 @@ ait benchmark --om-model /home/model/resnet50_v1.om --output ./output --profiler
 |    |    |    |--- device_0/ #device侧数据，调用多个device推理会有多个和device文件夹
 
 ```
-### 1.2 --dump 采集推理中的性能数据
+### 1.2 --dump 采集推理中的每层算子的输出数据
 - 示例命令：
 ```bash
 ait benchmark --om-model /home/model/resnet50_v1.om --output ./output --dump 1
@@ -37,7 +37,7 @@ ait benchmark --om-model /home/model/resnet50_v1.om --output ./output --dump 1
 |    |--- 2023_06_08_19_27_summary.json  # 汇总推理结果（推理总体性能数据）
 |    |--- 2023_06_08_19_27/
 |    |    |--- pure_infer_data_0.bin # 输入文件
-|    |--- dump/  # 采集的性能数据
+|    |--- dump/  # 采集的每层算子的输出数据
 |    |    |--- 20230608192722/ # dump数据
 |    |    |    |--- 0/
 |    |    |    |    |--- resnet50_v1/
@@ -45,7 +45,7 @@ ait benchmark --om-model /home/model/resnet50_v1.om --output ./output --dump 1
 |    |    |    |    |    |--- 0/
 ```
 
-### 1.3 --acl-json-path 自定义采集推理中的性能数据
+### 1.3 --acl-json-path 自定义采集推理中的数据
 + acl-json-path参数指定acl.json文件，可以在该文件中对应的profiler或dump参数。示例json文件如下：
 
   + 通过profiler采集推理中的性能数据
