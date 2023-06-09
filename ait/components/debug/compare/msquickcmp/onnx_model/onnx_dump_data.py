@@ -110,7 +110,7 @@ class OnnxDumpData(DumpData):
         inputs_tensor_info = self._get_inputs_tensor_info(session)
         self.inputs_map = self._get_inputs_data(self.data_dir, inputs_tensor_info, npu_dump_data_path, use_aipp)
 
-    def generate_dump_data(self, npu_dump_path):
+    def generate_dump_data(self, npu_dump_path, om_parser):
         """
         Function description:
             generate onnx model dump data
@@ -130,7 +130,7 @@ class OnnxDumpData(DumpData):
                                                                      self.onnx_model_before_custom_op_path)
             
             # 2. dump data before custom op
-            self._gen_after_custom_op_dump_data(npu_dump_path)
+            self._gen_after_custom_op_dump_data(npu_dump_path, om_parser)
         return onnx_dump_data_dir
 
     def get_net_output_info(self):
@@ -395,7 +395,7 @@ class OnnxDumpData(DumpData):
         utils.logger.info("extract model after custom op sucessed, save path: %s", 
                           self.onnx_model_after_custom_op_path)
         
-    def _gen_after_custom_op_dump_data(self, npu_dump_path):
+    def _gen_after_custom_op_dump_data(self, npu_dump_path, om_parser):
         try:
             from auto_optimizer import OnnxGraph
         except ModuleNotFoundError as err:
@@ -403,7 +403,8 @@ class OnnxDumpData(DumpData):
             raise err
         
         inputs_tensor_info = self._get_after_custom_op_inputs_ternsor_info()
-        inputs_map, inputs_tensor_info = self._get_npu_dump_data_by_custom_op(npu_dump_path, inputs_tensor_info)
+        inputs_map, inputs_tensor_info = self._get_npu_dump_data_by_custom_op(
+            npu_dump_path, inputs_tensor_info, om_parser)
         # fix inputs info 
         onnx_model_after_custom_op = OnnxGraph.parse(self.onnx_model_after_custom_op_path)
 
@@ -428,16 +429,18 @@ class OnnxDumpData(DumpData):
                              onnx.load(self.onnx_model_after_custom_op_path), 
                              net_output_node)
 
-    def _get_npu_dump_data_by_custom_op(self, npu_dump_path, inputs_tensor_info):
+    def _get_npu_dump_data_by_custom_op(self, npu_dump_path, inputs_tensor_info, om_parser):
         inputs_map = {}
 
+        # 动态bs和动态dim场景，om中的op都会加上_ascend_mbatch_batch_后缀，需要转化下才能匹配上
+        custom_op_name = utils.get_mbatch_op_name(om_parser, self.args.custom_op, npu_dump_path)
         for item in os.listdir(npu_dump_path):
             # file name format: [Optype].[OpName].{time}.[dump_type].[index].npy
             file_name_info = item.split('.')
             op_name = file_name_info[1]
             dump_type = file_name_info[-3]
             index = int(file_name_info[-2])
-            if op_name == self.args.custom_op and dump_type == "output" and index < len(inputs_tensor_info):
+            if op_name == custom_op_name and dump_type == "output" and index < len(inputs_tensor_info):
                 numpy_data = np.load(os.path.join(npu_dump_path, item))
                 inputs_tensor_info[index]['shape'] = numpy_data.shape
                 inputs_tensor_info[index]['type'] = numpy_data.dtype
