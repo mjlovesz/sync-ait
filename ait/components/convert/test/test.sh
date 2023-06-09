@@ -1,4 +1,4 @@
-# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,20 +12,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#!/bin/bash
 
-import os
-import sys
-import logging
+set -u
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
-logger = logging.getLogger(__name__)
+pwd_dir=${PWD}
 
+# copy auto_optimizer to test file, and test
+cp ${pwd_dir}/../aie_runtime ${pwd_dir}/ -rf
 
-def get_soc_version() -> str:
-    default_soc = "Ascend310"
-    try:
-        import acl
-        return acl.get_soc_name()
-    except ImportError:
-        logger.warning(f'Get soc failed, use default {default_soc}.')
-    return default_soc
+coverage run -p -m unittest
+ret=$?
+if [ $ret != 0 ]; then
+    echo "coverage run failed! "
+    exit -1
+fi
+
+coverage combine
+coverage report -m --omit="test_*.py" > ${pwd_dir}/test.coverage
+
+coverage_line=`cat ${pwd_dir}/test.coverage | grep "TOTAL" | awk '{print $4}' | awk '{print int($0)}'`
+
+echo "coverage_line=${coverage_line}"
