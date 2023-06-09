@@ -174,7 +174,6 @@ public class Compare extends DialogWrapper {
         cmdStrBuffer = getCmdStrBuffer();
         OutputService.getInstance(project).print(cmdStrBuffer.toString());
         CmdExec exec = new CmdExec();
-        showCsv();
         try {
             exec.bashStart(cmdStrBuffer);
             close(0);

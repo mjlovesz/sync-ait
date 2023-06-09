@@ -87,4 +87,10 @@ public class Icons {
 
     public static final Icon AIT_TITLE_LIGHT = IconLoader.findIcon(
             "/icons/AIT_light.svg", AitAction.class.getClassLoader());
+
+    public static final Icon MODEL_CONVERT_TITLE_DARK = IconLoader.findIcon(
+            "/icons/dark/ModelConverter_dark.svg", Icons.class.getClassLoader());
+
+    public static final Icon MODEL_CONVERT_TITLE_LIGHT = IconLoader.findIcon(
+            "/icons/light/ModelAnalyse_light.svg", AitAction.class.getClassLoader());
 }
