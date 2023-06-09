@@ -24,21 +24,23 @@ from ais_bench.infer.utils import logger
 def get_modules_version(name):
     try:
         import pkg_resources
-    except ImportError:
-        return None
+    except ImportError as err:
+        raise Exception("importerror") from err
     pkg = pkg_resources.get_distribution(name)
     return pkg.version
 
 
 def version_check(args):
-    aclruntime_version = get_modules_version('aclruntime')
-    if aclruntime_version is None or aclruntime_version == "0.0.1":
+    try:
+        aclruntime_version = get_modules_version('aclruntime')
+    except Exception:
         url = 'https://gitee.com/ascend/tools.git'
-        logger.warning("aclruntime version:{} is lower please update aclruntime follow any one method"
-                       .format(aclruntime_version))
-        logger.warning(f"1. visit {url} to install ais_bench"
+        logger.warning(f"can't find aclruntime, please visit {url} to install ais_bench(benchmark)"
                        "to install")
-        logger.warning(f"2. or run cmd: pip3  install -v --force-reinstall 'git+{url}' to install ais_bench")
+        args.run_mode = "tensor"
+    if (aclruntime_version != "0.0.2"):
+        logger.warning(f"aclruntime{aclruntime_version} version is lower please update \
+                        aclruntime follow any one method")
         # set old run mode to run ok
         args.run_mode = "tensor"
 
@@ -205,7 +207,7 @@ def get_throughtput_from_log(log_path):
 def dymshape_range_run(args):
     dymshape_list = get_dymshape_list(args.dym_shape_range)
     results = []
-    log_path = "./dym.log" if args.output is None else args.output + "/dym.log"
+    log_path = os.path.realpath("dym.log") if args.output is None else os.path.join(args.output, "dym.log")
     for dymshape in dymshape_list:
         cmd = "rm -rf {};{} {} {}".format(log_path, sys.executable, ' '.join(sys.argv),
             "--dym-shape={}  | tee {}".format(dymshape,  log_path))
