@@ -25,7 +25,7 @@ def get_modules_version(name):
     try:
         import pkg_resources
     except ImportError as err:
-        raise ImportError("importerror") from err
+        raise Exception("importerror") from err
     pkg = pkg_resources.get_distribution(name)
     return pkg.version
 
@@ -33,7 +33,7 @@ def get_modules_version(name):
 def version_check(args):
     try:
         aclruntime_version = get_modules_version('aclruntime')
-    except ImportError:
+    except Exception:
         url = 'https://gitee.com/ascend/tools.git'
         logger.warning(f"can't find aclruntime, please visit {url} to install ais_bench(benchmark)"
                        "to install")
