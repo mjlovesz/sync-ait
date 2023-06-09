@@ -28,7 +28,9 @@ import com.huawei.ascend.ait.ide.commonlib.ui.SwitchButton;
 import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
 import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
 
+import com.huawei.ascend.ait.ide.util.FileChooseWithBrows;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -43,7 +45,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -133,7 +135,13 @@ public class Compare extends DialogWrapper {
 
     private void inputAction() {
         inputPathBrowse.addActionListener(event -> {
-            String selectFile = getSelectedPath(project);
+            FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, true, false, false,
+                    false, true)
+                    .withFileFilter(virtualFile -> virtualFile.isDirectory() || ("bin").equals(virtualFile.getExtension()))
+                    .withTitle("Browse for File or Path")
+                    .withDescription("Please select the appropriate file of .bin or the path of the file.");
+            String selectFile = FileChooseWithBrows.fileChoosewithBrowse(project, fileChooserDescriptor,
+                    "", "SelectFile").orElse(null);
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
@@ -147,7 +155,6 @@ public class Compare extends DialogWrapper {
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
-            File model = new File(selectFile);
             cannPathBrowse.setText(selectFile);
         });
     }
@@ -158,7 +165,6 @@ public class Compare extends DialogWrapper {
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
-            File model = new File(selectFile);
             outputPathBrowse.setText(selectFile);
         });
     }
