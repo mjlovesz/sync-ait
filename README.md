@@ -17,11 +17,6 @@ Ascend Inference Tools，昇腾推理工具链。
 
     **可视化改图工具**：提供ONNX模型的实时预览、可视化改图功能，从而更方便、快捷、直观地实现ONNX模型的编辑。
 
-
-#### 贡献
-
-欢迎参与贡献。更多详情，请参阅我们的[贡献者Wiki](./CONTRIBUTING.md)。
-
 #### 许可证
 [Apache License 2.0](LICENSE)
 
