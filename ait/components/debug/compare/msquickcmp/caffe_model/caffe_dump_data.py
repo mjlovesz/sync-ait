@@ -92,7 +92,7 @@ class CaffeDumpData(DumpData):
                 self.input_data_save_dir, input_names, input_shapes, input_dtypes
             )
 
-    def generate_dump_data(self, npu_dump_path=None):
+    def generate_dump_data(self, npu_dump_path=None, om_parser=None):
         """
         Function description:
             generate caffe model dump data
