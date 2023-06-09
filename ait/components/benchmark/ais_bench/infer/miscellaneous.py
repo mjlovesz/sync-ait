@@ -25,26 +25,24 @@ def get_modules_version(name):
     try:
         import pkg_resources
     except ImportError as err:
-        raise Exception("importerror") from err
+        raise ImportError("importerror") from err
     pkg = pkg_resources.get_distribution(name)
-    if pkg.version == "0.0.1":
-        raise Exception("versionerror")
     return pkg.version
 
 
 def version_check(args):
     try:
         aclruntime_version = get_modules_version('aclruntime')
-    except Exception:
+    except ImportError:
         url = 'https://gitee.com/ascend/tools.git'
-        logger.warning("aclruntime version:{} is lower please update aclruntime follow any one method"
-                       .format(aclruntime_version))
-        logger.warning(f"1. visit {url} to install ais_bench"
+        logger.warning(f"can't find aclruntime, please visit {url} to install ais_bench(benchmark)"
                        "to install")
-        logger.warning(f"2. or run cmd: pip3  install -v --force-reinstall 'git+{url}' to install ais_bench")
+        args.run_mode = "tensor"
+    if (aclruntime_version != "0.0.2"):
+        logger.warning(f"aclruntime{aclruntime_version} version is lower please update \
+                        aclruntime follow any one method")
         # set old run mode to run ok
         args.run_mode = "tensor"
-
 
 def get_model_name(model):
     path_list = model.split('/')
