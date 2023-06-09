@@ -34,7 +34,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -57,7 +56,7 @@ public class CheckInput {
     public static final int MODEL_FILE_LIMIT = 64;
     public static final String VALID_DIR_PATH_CHARACTERS = "Valid folder path characters: -, _, :, \\, /, [0-9], [A-Z], [a-z].";
     public static final String VALID_FILE_PATH_CHARTERS = "Only letters, digits, and the following special characters are allowed:- . _ : \\ /";
-    public static final String VALID_STRING_CHARATERS = "Only digits, and the following special characters are allowed:,";
+    public static final String VALID_STRING_CHARATERS = "Only digits, and the following special characters are allowed: , ";
 
     /**
      * checkFileExist
@@ -213,7 +212,6 @@ public class CheckInput {
         errPanel.setVisible(true);
         errLabel.setText(errMsg);
         errLabel.setForeground(JBColor.RED);
-        textField.setBorder(BorderFactory.createLineBorder(JBColor.RED));
     }
 }
 

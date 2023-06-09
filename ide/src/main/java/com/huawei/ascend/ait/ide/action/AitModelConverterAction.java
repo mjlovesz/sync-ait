@@ -27,7 +27,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class AitModelConverterAction extends AnAction {
     public AitModelConverterAction() {
-        super("AitModelConverter", "", UiUtils.getJbIcon(Icons.AIT_MODEL_CONVERTER_DARK, Icons.AIT_MODEL_CONVERTER_LIGHT));
+        super("AitModelConverter", "", UiUtils.getJbIcon(Icons.MODEL_CONVERT_TITLE_DARK, Icons.MODEL_CONVERT_TITLE_LIGHT));
     }
 
     @Override
