@@ -104,7 +104,7 @@ opt_model_execution = click.option(
     help='Control ge model execution performance data collection switch'
 )
 opt_sys_hardware_mem = click.option(
-    "--sys-hardware_mem",
+    "--sys-hardware-mem",
     default="on",
     type=str,
     callback=check_args,
