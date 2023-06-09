@@ -143,6 +143,10 @@ public class AitModelConvertTask extends Backgroundable {
             OutputService.getInstance(project).print(exception.getMessage(), ConsoleViewContentType.LOG_INFO_OUTPUT);
         }
 
+        if (!convertSuccess && (exec.getErrorResult() != null)) {
+            OutputService.getInstance(project).print(exec.getErrorResult(), ConsoleViewContentType.LOG_INFO_OUTPUT);
+        }
+
         synchronized (lock) {
             exec = null;
         }

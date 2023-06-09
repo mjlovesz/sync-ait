@@ -16,6 +16,7 @@
 
 package com.huawei.ascend.ait.ide;
 
+import com.huawei.ascend.ait.ide.action.AitAction;
 import com.intellij.openapi.util.IconLoader;
 
 import javax.swing.Icon;
@@ -68,4 +69,28 @@ public class Icons {
 
     public static final Icon SYSTEM_PROFILER_LIGHT = IconLoader.findIcon(
             "/icons/SystemProfiler_light.svg", Icons.class.getClassLoader());
+
+    public static final Icon AIS_TITLE_DARK = IconLoader.findIcon(
+            "/icons/dark/AisBench_dark.svg", Icons.class.getClassLoader());
+
+    public static final Icon AIS_TITLE_LIGHT = IconLoader.findIcon(
+            "/icons/light/AisBench_light.svg", AitAction.class.getClassLoader());
+
+    public static final Icon COMPARE_TITLE_DARK = IconLoader.findIcon(
+            "/icons/dark/Compare_dark.svg", Icons.class.getClassLoader());
+
+    public static final Icon COMPARE_TITLE_LIGHT = IconLoader.findIcon(
+            "/icons/light/Compare_light.svg", AitAction.class.getClassLoader());
+
+    public static final Icon AIT_TITLE_DARK = IconLoader.findIcon(
+            "/icons/AIT_dark.svg", Icons.class.getClassLoader());
+
+    public static final Icon AIT_TITLE_LIGHT = IconLoader.findIcon(
+            "/icons/AIT_light.svg", AitAction.class.getClassLoader());
+
+    public static final Icon MODEL_CONVERT_TITLE_DARK = IconLoader.findIcon(
+            "/icons/dark/ModelConverter_dark.svg", Icons.class.getClassLoader());
+
+    public static final Icon MODEL_CONVERT_TITLE_LIGHT = IconLoader.findIcon(
+            "/icons/light/ModelAnalyse_light.svg", AitAction.class.getClassLoader());
 }

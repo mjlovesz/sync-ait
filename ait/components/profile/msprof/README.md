@@ -27,25 +27,25 @@
   - 昇腾AI处理器的离线模型（.om）路径
 - **不指定模型输入** 命令示例，**其中路径需使用绝对路径**
   ```sh
-  ait profile msprof --application "ait benchmark -om /home/HwHiAiUser/resnet101_bs1.om" --output  /home/HwHiAiUser/result
+  ait profile --application "ait benchmark -om /home/HwHiAiUser/resnet101_bs1.om" --output  /home/HwHiAiUser/result
   ```
   - `--application` 配置为运行环境上app可执行文件，可配置ait自带的benchmark推理程序，需配置ait自带的benchmark推理程序，具体使用方法参照参数说明及benchmark使用。
-  - `-o, --output` (可选) 输出文件路径，默认为当前路径
+  - `-o, --output` (可选) 搜集到的profiling数据的存放路径，默认为当前路径下输出output目录
 
 ### 参数说明
 
   | 参数名                    | 描述                                       | 必选   |
   | ------------------------ | ---------------------------------------- | ---- |
   | --application            | 配置为运行环境上app可执行文件，可配置ait自带的benchmark推理程序，application带参数输入，此时需要使用英文双引号将”application”的参数值括起来，例如--application "ait benchmark -om /home/HwHiAiUser/resnet50.om"，用户使用仅需修改指定om路径 | 是    |
-  | -o, --output             | 搜集到的profiling数据的存放路径                                                                 | 是    |
-  | --model_execution        | 控制ge model execution性能数据采集开关，可选on或off，默认为off。该参数配置前提是application参数已配置。 | 否    |
-  | --sys_hardware_mem       | 控制DDR，LLC的读写带宽数据采集开关，可选on或off，默认为off。 | 否    |
-  | --sys_cpu_profiling      | CPU（AI CPU、Ctrl CPU、TS CPU）采集开关。可选on或off，默认值为on。                           | 否    |
-  | --sys_profiling          | 系统CPU usage及System memory采集开关。可选on或off，默认值为on。 | 否    |
-  | --sys_pid_profiling      | 进程的CPU usage及进程的memory采集开关。可选on或off，默认值为off。 | 否    |
-  | --dvpp_profiling         | DVPP采集开关，可选on或off，默认值为off | 否    |
-  | --runtime_api            | 控制runtime api性能数据采集开关，可选on或off，默认为off。该参数配置前提是application参数已配置。 | 否    |
-  | --task_time              | 控制ts timeline数据采集开关，可选on或off，默认为on。该参数配置前提是application参数已配置。 | 否    |
+  | -o, --output             | 搜集到的profiling数据的存放路径，默认为当前路径下输出output目录                                                                | 否    |
+  | --model-execution        | 控制ge model execution性能数据采集开关，可选on或off，默认为off。该参数配置前提是application参数已配置。 | 否    |
+  | --sys-hardware-mem       | 控制DDR，LLC的读写带宽数据采集开关，可选on或off，默认为off。 | 否    |
+  | --sys-cpu-profiling      | CPU（AI CPU、Ctrl CPU、TS CPU）采集开关。可选on或off，默认值为on。                           | 否    |
+  | --sys-profiling          | 系统CPU usage及System memory采集开关。可选on或off，默认值为on。 | 否    |
+  | --sys-pid-profiling      | 进程的CPU usage及进程的memory采集开关。可选on或off，默认值为off。 | 否    |
+  | --dvpp-profiling         | DVPP采集开关，可选on或off，默认值为off | 否    |
+  | --runtime-api            | 控制runtime api性能数据采集开关，可选on或off，默认为off。该参数配置前提是application参数已配置。 | 否    |
+  | --task-time              | 控制ts timeline数据采集开关，可选on或off，默认为on。该参数配置前提是application参数已配置。 | 否    |
   | --aicpu                  | aicpu开关 | 否  |
   | -h, --help               | 工具使用帮助信息。               | 否  |
 

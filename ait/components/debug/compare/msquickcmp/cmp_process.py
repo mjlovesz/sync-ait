@@ -139,7 +139,7 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
     npu_dump_path = data_convert(npu_dump_data_path, npu_net_output_data_path, args)
 
     # generate dump data by golden model
-    golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_path)
+    golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_path, npu_dump.om_parser)
     golden_net_output_info = golden_dump.get_net_output_info()
 
     # if it's dynamic batch scenario, golden data files should be renamed
@@ -160,7 +160,18 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
         invalid_rows, _ = analyser.Analyser(args.out_path)()
     else:
         invalid_rows, _ = analyser.Analyser(args.out_path)('ALL_INVALID')
+    print_advisor_info(args.out_path)
     return invalid_rows
+
+
+def print_advisor_info(out_path):
+    advisor_info_txt_path = os.path.join(out_path, 'advisor_summary.txt')
+    if os.path.exists(advisor_info_txt_path):
+        utils.logger.info(f"The advisor summary (.txt) is saved in :\"{advisor_info_txt_path}\"")
+        with open(advisor_info_txt_path, 'r') as advisor_file:
+            lines = advisor_file.readlines()
+            for line in lines:
+                utils.logger.info(line.strip())
 
 
 def check_and_run(args:CmpArgsAdapter, use_cli:bool):

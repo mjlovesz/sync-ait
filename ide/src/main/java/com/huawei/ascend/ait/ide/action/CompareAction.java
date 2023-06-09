@@ -38,8 +38,7 @@ public class CompareAction extends AnAction {
      * Compare
      */
     public CompareAction() {
-        super("Compare", "",
-                UiUtils.getJbIcon(Icons.COMPARE_DARK, Icons.COMPARE_LIGHT));
+        super("Compare", "", UiUtils.getJbIcon(Icons.COMPARE_TITLE_DARK, Icons.COMPARE_TITLE_LIGHT));
     }
 
     @Override
