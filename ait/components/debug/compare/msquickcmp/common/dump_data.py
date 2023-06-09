@@ -42,12 +42,17 @@ class DumpData(object):
 
     @staticmethod
     def _check_path_exists(input_path, extentions=None):
+        input_path = os.path.realpath(input_path)
         if not os.path.exists(input_path):
             logger.error(f"path '{input_path}' not exists")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
         if extentions and not any([input_path.endswith(extention) for extention in extentions]):
             logger.error(f"path '{input_path}' not ends with extention {extentions}")
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+
+        if not os.access(input_path, os.R_OK):
+            logger.error(f"user doesn't have read permission to the file {input_path}.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
     def generate_dump_data(self):
