@@ -434,6 +434,8 @@ class OnnxDumpData(DumpData):
 
         # 动态bs和动态dim场景，om中的op都会加上_ascend_mbatch_batch_后缀，需要转化下才能匹配上
         custom_op_name = utils.get_mbatch_op_name(om_parser, self.args.custom_op, npu_dump_path)
+        utils.logger.info("custom_op_name in npu model:%s", custom_op_name)
+
         for item in os.listdir(npu_dump_path):
             # file name format: [Optype].[OpName].{time}.[dump_type].[index].npy
             file_name_info = item.split('.')
