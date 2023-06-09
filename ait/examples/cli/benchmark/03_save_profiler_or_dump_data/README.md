@@ -2,8 +2,8 @@
 
 
 ## 0 基本介绍
-- 当开启可选命令`--profiler`，benchmark会调用msprof采集推理中的性能数据；
-- 当开启可选命令`--dump`，benchmark推理过程中会保留全部算子的输出
+- 当开启可选命令`--profiler`，benchmark会调用msprof采集推理中的性能数据。
+- 当开启可选命令`--dump`，benchmark推理过程中会保留全部算子的输出。
 - 当开启`--acl-json-path`，可以在json文件中自定义profiler或dump的配置参数（只能选择其一）。
 
 ## 1 基本运行示例
@@ -51,7 +51,7 @@ ait benchmark --om-model /home/model/resnet50_v1.om --output ./output --dump 1
   + 通过profiler采集推理中的性能数据
 
     ```bash
-         # acl.json
+    # acl.json
     {
     "profiler": {
                   "switch": "on",
@@ -64,7 +64,7 @@ ait benchmark --om-model /home/model/resnet50_v1.om --output ./output --dump 1
   + 通过dump采集算子的输出
 
     ```bash
-        # acl.json
+    # acl.json
     {
         "dump": {
             "dump_list": [
