@@ -44,6 +44,7 @@ def version_check(args):
         # set old run mode to run ok
         args.run_mode = "tensor"
 
+
 def get_model_name(model):
     path_list = model.split('/')
     return path_list[-1][:-3]
