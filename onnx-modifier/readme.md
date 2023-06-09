@@ -265,7 +265,7 @@
 
 # 常见问题 Q&A
 
-参考：[OnnxModify 常见问题](https://gitee.com/ascend/ait/wikis/OnnxModify%20%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98?sort_id=8153178)
+参考：[OnnxModify 常见问题](https://gitee.com/ascend/ait/wikis/OnnxModifier/OnnxModify%20%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
 
 # 参考资料
 
