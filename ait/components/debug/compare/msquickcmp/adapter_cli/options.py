@@ -117,6 +117,7 @@ opt_device = click.option(
 )
 
 opt_output_size = click.option(
+    "-outsize",
     "--output-size",
     "output_size",
     default="",
