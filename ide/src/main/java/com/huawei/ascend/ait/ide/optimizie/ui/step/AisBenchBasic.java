@@ -16,7 +16,7 @@
 
 package com.huawei.ascend.ait.ide.optimizie.ui.step;
 
-import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addPath;
+import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.add;
 import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addState;
 import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_DIGITS_CHARATERS;
 import static com.huawei.ascend.ait.ide.util.CheckInput.checkDigitValid;
@@ -319,15 +319,15 @@ public class AisBenchBasic extends DialogWrapper {
         cmd.append("python3").append(CmdStrWordStatic.SPACE);
         cmd.append("-m").append(CmdStrWordStatic.SPACE);
         cmd.append("ais_bench").append(CmdStrWordStatic.SPACE);
-        addPath(cmd, "--model", modelFileTextField.getText());
-        addPath(cmd, "--input", inputFilesTextField.getText());
-        addPath(cmd, "--pure", pureDataTypeCombx.getSelectedItem().toString());
-        addPath(cmd, "--output", outputTextField.getText());
-        addPath(cmd, "--output_dirname", outputDirJText.getText());
-        addPath(cmd, "--outfmt", outFormatComboBox.getSelectedItem().toString());
-        addPath(cmd, "--loop", loopJText.getText());
-        addPath(cmd, "--warmup_count", warmupJText.getText());
-        addPath(cmd, "--device", deviceTextField.getText());
+        add(cmd, "--model", modelFileTextField.getText());
+        add(cmd, "--input", inputFilesTextField.getText());
+        add(cmd, "--pure", pureDataTypeCombx.getSelectedItem().toString());
+        add(cmd, "--output", outputTextField.getText());
+        add(cmd, "--output_dirname", outputDirJText.getText());
+        add(cmd, "--outfmt", outFormatComboBox.getSelectedItem().toString());
+        add(cmd, "--loop", loopJText.getText());
+        add(cmd, "--warmup_count", warmupJText.getText());
+        add(cmd, "--device", deviceTextField.getText());
         addState(cmd, "--debug", debugButton.isSelected());
         addState(cmd, "--display_all_summary", displayButton.isSelected());
 
