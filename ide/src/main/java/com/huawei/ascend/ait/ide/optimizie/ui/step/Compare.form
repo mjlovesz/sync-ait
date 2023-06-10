@@ -85,7 +85,7 @@
                 </constraints>
                 <properties>
                   <icon value="icons/no_star.png"/>
-                  <text value="Input Path"/>
+                  <text value="Input File/Path"/>
                 </properties>
               </component>
             </children>

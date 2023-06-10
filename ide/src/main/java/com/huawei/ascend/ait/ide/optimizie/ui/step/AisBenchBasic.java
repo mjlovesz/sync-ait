@@ -80,7 +80,6 @@ public class AisBenchBasic extends DialogWrapper {
     private JTextField warmupJText;
     private JLabel debug;
     private JLabel dusplay;
-    private JPanel loop;
     private TextFieldWithBrowseButton modelFileBrowse;
     private TextFieldWithBrowseButton inputFileBrowse;
     private TextFieldWithBrowseButton outputPathBrowse;
@@ -185,6 +184,9 @@ public class AisBenchBasic extends DialogWrapper {
         List<String> lists = List.of(NPY_FILE_EXTENSION, BIN_FILE_EXTENSION);
         inputFileBrowse.addActionListener(event -> {
             String selectFile = getSelectedFile(project, lists, true);
+            if (StringUtils.isEmpty(selectFile)) {
+                return;
+            }
             File model = new File(selectFile);
             checkFileSize(model);
             inputFilesTextField.setText(selectFile);

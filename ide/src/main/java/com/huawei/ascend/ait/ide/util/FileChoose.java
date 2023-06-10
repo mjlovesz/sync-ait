@@ -39,7 +39,7 @@ public class FileChoose {
         FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, false, false, false,
                 false, chooseMultiple)
                 .withFileFilter(virtualFile -> virtualFile.isDirectory() || new ArrayList<>(strings).contains(virtualFile.getExtension()))
-                .withTitle("File")
+                .withTitle("Browse for File")
                 .withDescription("Please select the appropriate file of " + strings);
         return FileChooseWithBrows.fileChoosewithBrowse(project, fileChooserDescriptor,
                 "", "SelectFile").orElse(null);
@@ -53,7 +53,7 @@ public class FileChoose {
         FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(false, true, false, false,
                 false, false)
                 .withFileFilter(VirtualFile::isDirectory)
-                .withTitle("Path")
+                .withTitle("Browse for Path")
                 .withDescription("Select the appropriate path");
         return FileChooseWithBrows.fileChoosewithBrowse(project, fileChooserDescriptor,
                 "", "SelectPath").orElse(null);
