@@ -67,7 +67,7 @@ class DynamicInput(object):
         # get atc input shape from atc cmdline
         atc_input_shape = ""
         atc_cmd_args = om_parser.get_atc_cmdline().split(" ")
-        for i, atc_arg in atc_cmd_args:
+        for i, atc_arg in enumerate(atc_cmd_args):
             if INPUT_SHAPE in atc_arg:
                 if INPUT_SHAPE == atc_arg:
                     atc_arg += '='+atc_cmd_args[i+1]
