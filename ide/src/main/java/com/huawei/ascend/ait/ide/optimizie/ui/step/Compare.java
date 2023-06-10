@@ -16,8 +16,9 @@
 
 package com.huawei.ascend.ait.ide.optimizie.ui.step;
 
-import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addPath;
+import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.add;
 import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addState;
+import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addString;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedFile;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedPath;
 
@@ -230,17 +231,18 @@ public class Compare extends DialogWrapper {
         cmd.append("ait").append(CmdStrWordStatic.SPACE)
                 .append("debug").append(CmdStrWordStatic.SPACE)
                 .append("compare").append(CmdStrWordStatic.SPACE);
-        addPath(cmd, "-gm", modelFileBrowse.getText());
-        addPath(cmd, "-om", offlineModelPathBrowse.getText());
-        addPath(cmd, "-i", inputPathBrowse.getText());
-        addPath(cmd, "-o", outputPathBrowse.getText());
-        addPath(cmd, "-c", cannPathBrowse.getText());
+        add(cmd, "-gm", modelFileBrowse.getText());
+        add(cmd, "-om", offlineModelPathBrowse.getText());
+        add(cmd, "-i", inputPathBrowse.getText());
+        add(cmd, "-o", outputPathBrowse.getText());
+        add(cmd, "-c", cannPathBrowse.getText());
 
-        addPath(cmd, "-s", inputShapeJText.getText());
-        addPath(cmd, "-dr", dymShapeJtext.getText());
-        addPath(cmd, "--output-nodes", outputNodesJText.getText());
-        addPath(cmd, "--output-size", outputSizeJText.getText());
-        addPath(cmd, "-d", deviceJText.getText());
+        addString(cmd, "-s", new CmdStrWordStatic(inputShapeJText.getText()));
+        addString(cmd, "-dr", new CmdStrWordStatic(dymShapeJtext.getText()));
+        addString(cmd, "--output-nodes", new CmdStrWordStatic(outputNodesJText.getText()));
+
+        add(cmd, "--output-size", outputSizeJText.getText());
+        add(cmd, "-d", deviceJText.getText());
 
         addState(cmd, "--dump", dumpButton.isSelected());
         addState(cmd, "--convert", convertButton.isSelected());
