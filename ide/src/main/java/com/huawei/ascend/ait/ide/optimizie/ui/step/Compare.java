@@ -96,6 +96,7 @@ public class Compare extends DialogWrapper {
         super(true);
         this.project = project;
         root.setPreferredSize(new Dimension(500, 350));
+        dumpButton.setOn();
         init();
         setTitle("Compare");
 
@@ -179,10 +180,10 @@ public class Compare extends DialogWrapper {
         CmdStrBuffer cmdStrBuffer = new CmdStrBuffer();
         cmdStrBuffer = getCmdStrBuffer();
         OutputService.getInstance(project).print(cmdStrBuffer.toString());
+        close(0);
         CmdExec exec = new CmdExec();
         try {
             exec.bashStart(cmdStrBuffer);
-            close(0);
             String errorRec = exec.getErrorResult();
             if (errorRec != null) {
                 OutputService.getInstance(project).print(errorRec, ConsoleViewContentType.LOG_ERROR_OUTPUT);
@@ -194,6 +195,7 @@ public class Compare extends DialogWrapper {
             }
         } catch (IOException | CommandInjectException e) {
             LOGGER.error(e.getMessage());
+            OutputService.getInstance(project).print(e.getMessage());
         }
     }
 
