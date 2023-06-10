@@ -18,15 +18,11 @@ package com.huawei.ascend.ait.ide.optimizie.ui.step;
 
 import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addPath;
 import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addState;
+import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_DIGITS_CHARATERS;
+import static com.huawei.ascend.ait.ide.util.CheckInput.checkDigitValid;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedFile;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedPath;
-import static com.huawei.ascend.ait.ide.util.CheckInput.DOCUMENT_LIMIT;
-import static com.huawei.ascend.ait.ide.util.CheckInput.FileCheck;
-import static com.huawei.ascend.ait.ide.util.CheckInput.MODEL_FILE_LIMIT;
-import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_DIR_PATH_CHARACTERS;
-import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_FILE_PATH_CHARTERS;
 import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_STRING_CHARATERS;
-import static com.huawei.ascend.ait.ide.util.CheckInput.checkPath;
 import static com.huawei.ascend.ait.ide.util.CheckInput.checkStringValid;
 import static com.huawei.ascend.ait.ide.util.CheckInput.normalizeInput;
 
@@ -89,19 +85,13 @@ public class AisBenchBasic extends DialogWrapper {
     private JTextField deviceTextField;
     private SwitchButton debugButton;
     private SwitchButton displayButton;
-    private JLabel inputFileErrorJLabel;
-    private JLabel outputPathErrorJLabel;
     private JLabel outputDirErrorJLabel;
     private JLabel countErrorJLabel;
     private JLabel deviceErrorJLabel;
-    private JPanel inputFileErrorJPanel;
-    private JPanel modelErrorJPanel;
-    private JLabel modelErrorJLabel;
     private JTextField outputDirJText;
     private JPanel countErrorJPanel;
     private JPanel outputDirErrorJPanel;
     private JPanel deviceErrorJPanel;
-    private JPanel outputPathErrorJPanel;
     private final JTextField modelFileTextField = modelFileBrowse.getTextField();
     private final JTextField inputFilesTextField = inputFileBrowse.getTextField();
     private final JTextField outputTextField = outputPathBrowse.getTextField();
@@ -156,11 +146,8 @@ public class AisBenchBasic extends DialogWrapper {
 
     private void setFileChooseAction() {
         modelFIleAction();
-        addModelFileTextFieldListener();
         inputAction();
-        addInputFileTextFieldListener();
         outputAction();
-        addOutputPathTextListener();
         addOutputDirTextListener();
         addWarmupTextListener();
         addLoopTextListener();
@@ -212,58 +199,22 @@ public class AisBenchBasic extends DialogWrapper {
     }
 
     private void setTextFieldLimitAndToolTip() {
-        modelFileTextField.setToolTipText(VALID_FILE_PATH_CHARTERS);
-        modelFileTextField.setDocument(new JTextFieldLimit(MODEL_FILE_LIMIT));
-
-        inputFilesTextField.setToolTipText(VALID_FILE_PATH_CHARTERS);
-        inputFilesTextField.setDocument(new JTextFieldLimit(MODEL_FILE_LIMIT));
-
-        outputTextField.setToolTipText(VALID_DIR_PATH_CHARACTERS);
-        outputTextField.setDocument(new JTextFieldLimit(DOCUMENT_LIMIT));
-
-        loopJText.setToolTipText(VALID_STRING_CHARATERS);
+        loopJText.setToolTipText(VALID_DIGITS_CHARATERS);
         loopJText.setDocument(new JTextFieldLimit(255));
 
-        warmupJText.setToolTipText(VALID_STRING_CHARATERS);
+        warmupJText.setToolTipText(VALID_DIGITS_CHARATERS);
         warmupJText.setDocument(new JTextFieldLimit(255));
 
         deviceTextField.setToolTipText(VALID_STRING_CHARATERS);
         deviceTextField.setDocument(new JTextFieldLimit(255));
     }
 
-    private void addOutputPathTextListener() {
-        outputTextField.getDocument().addDocumentListener(new DocumentAdapter() {
-            @Override
-            protected void textChanged(@NotNull DocumentEvent event) {
-                checkPath(outputTextField, outputPathErrorJLabel, deviceErrorJPanel);
-            }
-        });
-    }
-
-    private void addModelFileTextFieldListener() {
-        modelFileBrowse.getTextField().getDocument().addDocumentListener(new DocumentAdapter() {
-            @Override
-            protected void textChanged(@NotNull DocumentEvent event) {
-                FileCheck(modelErrorJPanel, modelErrorJLabel, modelFileTextField, List.of(".om"));
-            }
-        });
-    }
-
-    private void addInputFileTextFieldListener() {
-        inputFileBrowse.getTextField().getDocument().addDocumentListener(new DocumentAdapter() {
-            @Override
-            protected void textChanged(@NotNull DocumentEvent event) {
-                FileCheck(inputFileErrorJPanel, inputFileErrorJLabel, inputFilesTextField, List.of(".bin", ".npy"));
-            }
-        });
-    }
-
     private void addOutputDirTextListener() {
         outputDirJText.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(@NotNull DocumentEvent event) {
-                String modelName = outputDirJText.getText();
-                if (StringUtils.isEmpty(modelName)) {
+                String outputDirText = outputDirJText.getText();
+                if (StringUtils.isEmpty(outputDirText)) {
                     normalizeInput(outputDirErrorJPanel, outputDirErrorJLabel, outputDirJText);
                 } else {
                     if (checkStringValid(outputDirErrorJPanel, outputDirErrorJLabel, outputDirJText)) {
@@ -278,11 +229,11 @@ public class AisBenchBasic extends DialogWrapper {
         loopJText.getDocument().addDocumentListener(new DocumentAdapter() {
             @Override
             protected void textChanged(@NotNull DocumentEvent event) {
-                String modelName = loopJText.getText();
-                if (StringUtils.isEmpty(modelName)) {
+                String loopText = loopJText.getText();
+                if (StringUtils.isEmpty(loopText)) {
                     normalizeInput(countErrorJPanel, countErrorJLabel, loopJText);
                 } else {
-                    if (checkStringValid(countErrorJPanel, countErrorJLabel, loopJText)) {
+                    if (checkDigitValid(countErrorJPanel, countErrorJLabel, loopJText)) {
                         normalizeInput(countErrorJPanel, countErrorJLabel, loopJText);
                     }
                 }
@@ -298,7 +249,7 @@ public class AisBenchBasic extends DialogWrapper {
                 if (StringUtils.isEmpty(modelName)) {
                     normalizeInput(countErrorJPanel, countErrorJLabel, warmupJText);
                 } else {
-                    if (checkStringValid(countErrorJPanel, countErrorJLabel, warmupJText)) {
+                    if (checkDigitValid(countErrorJPanel, countErrorJLabel, warmupJText)) {
                         normalizeInput(countErrorJPanel, countErrorJLabel, warmupJText);
                     }
                 }
@@ -344,10 +295,10 @@ public class AisBenchBasic extends DialogWrapper {
         cmdStrBuffer = getCmdStrBuffer();
         OutputService.getInstance(project).print(cmdStrBuffer.toString());
         CmdExec exec = new CmdExec();
+        close(0);
         try {
             exec.bashStart(cmdStrBuffer);
             String errorRec = exec.getErrorResult();
-            close(0);
             if (errorRec != null) {
                 OutputService.getInstance(project).print("There are some errors here.", ConsoleViewContentType.LOG_DEBUG_OUTPUT);
                 OutputService.getInstance(project).print(errorRec, ConsoleViewContentType.LOG_ERROR_OUTPUT);
@@ -358,6 +309,7 @@ public class AisBenchBasic extends DialogWrapper {
             }
         } catch (CommandInjectException | IOException e) {
             LOGGER.error(e.getMessage());
+            OutputService.getInstance(project).print(e.getMessage());
         }
     }
 
