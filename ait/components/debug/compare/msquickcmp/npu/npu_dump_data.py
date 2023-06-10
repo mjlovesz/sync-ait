@@ -54,9 +54,11 @@ class DynamicInput(object):
     @staticmethod
     def get_dynamic_arg_from_om(om_parser):
         atc_cmd_args = om_parser.get_atc_cmdline().split(" ")
-        for atc_arg in atc_cmd_args:
+        for i, atc_arg in enumerate(atc_cmd_args):
             for dym_arg in DynamicArgumentEnum:
                 if dym_arg.value.atc_arg in atc_arg:
+                    if dym_arg.value.atc_arg == atc_arg:
+                        atc_arg += '='+atc_cmd_args[i+1]
                     return atc_arg, dym_arg
         return "", None
 
@@ -65,8 +67,10 @@ class DynamicInput(object):
         # get atc input shape from atc cmdline
         atc_input_shape = ""
         atc_cmd_args = om_parser.get_atc_cmdline().split(" ")
-        for atc_arg in atc_cmd_args:
+        for i, atc_arg in atc_cmd_args:
             if INPUT_SHAPE in atc_arg:
+                if INPUT_SHAPE == atc_arg:
+                    atc_arg += '='+atc_cmd_args[i+1]
                 atc_input_shape = atc_arg.split(utils.EQUAL)[1]
                 break
         return atc_input_shape
