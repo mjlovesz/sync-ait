@@ -166,7 +166,7 @@ class GraphOptimizer:
         queue.put(True)
 
     @staticmethod
-    def _optimize(graph: BaseGraph, knowledge: KnowledgeBase) -> bool:
+    def optimize(graph: BaseGraph, knowledge: KnowledgeBase) -> bool:
         res = False
         if not knowledge.pre_process(graph):
             return False
@@ -197,7 +197,7 @@ class GraphOptimizer:
         '''
         Optimize graph using optimizer.
         '''
-        return self._exec_action(graph, GraphOptimizer._optimize)
+        return self._exec_action(graph, GraphOptimizer.optimize)
 
     def apply_knowledges_with_infer_test(
         self,
