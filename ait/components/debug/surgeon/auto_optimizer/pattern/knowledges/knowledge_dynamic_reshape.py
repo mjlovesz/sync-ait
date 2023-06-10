@@ -234,7 +234,7 @@ class KnowledgeDynamicReshape(KnowledgeBase):
 
         insert = { 'squeeze': [], 'unsqueeze': [] }
         in_dim = 0
-        for dim , _ in enumerate(shape):
+        for dim, _ in enumerate(shape):
             if not shape[dim] is None:
                 continue
             # the dim is dynamic
