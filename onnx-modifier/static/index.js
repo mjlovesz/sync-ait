@@ -10,9 +10,6 @@ host.BrowserHost = class {
         this._document = window.document;
         this._window = window;
         this._navigator = navigator;
-        if (this._window.location.hostname.endsWith('.github.io')) {
-            this._window.location.replace('https://netron.app');
-        }
         this._window.eval = () => {
             throw new Error('window.eval() not supported.');
         };
@@ -141,26 +138,6 @@ host.BrowserHost = class {
             accelerator: 'CmdOrCtrl+Alt+E',
             click: () => this._view.export(document.title + '.svg')
         });
-        this._menu.add({});
-        this._menu.add({
-            label: 'Export Modify Info',
-            accelerator: 'CmdOrCtrl+Shift+M',
-            click: () => {
-                let export_name = "modify_info.json"
-                if (this._ori_model_file) {
-                    export_name = `${this._ori_model_file.name}.${export_name}`
-                }
-                let modify_info = [...this._modify_info, { path: "/download", data_body: this.build_download_data(true) }]
-                this.export(export_name, new Blob([JSON.stringify(modify_info)], { type: 'text/plain' }))
-            }
-        });
-        this._menu.add({
-            label: 'Import Modify Info',
-            accelerator: 'CmdOrCtrl+Alt+I',
-            click: () => {
-                this.document.getElementById('open-modify-json-dialog').click();
-            }
-        });
         this.document.getElementById('menu-button').addEventListener('click', (e) => {
             this._menu.toggle();
             e.preventDefault();
@@ -171,11 +148,18 @@ host.BrowserHost = class {
             click: () => this._about()
         });
 
-        // const refreshButton = this.document.getElementById('refresh-graph');
-        // refreshButton.addEventListener('click', () => {
-        //     this._view._updateGraph();
-        // })
+        this.document.getElementById("modify-export").addEventListener("click", ()=> {
+            let export_name = "modify_info.json"
+            if (this._ori_model_file) {
+                export_name = `${this._ori_model_file.name}.${export_name}`
+            }
+            let modify_info = [...this._modify_info, { path: "/download", data_body: this.build_download_data(true) }]
+            this.export(export_name, new Blob([JSON.stringify(modify_info)], { type: 'text/plain' }))
+        })
 
+        this.document.getElementById("modify-import").addEventListener("click", ()=> {
+            this.document.getElementById('open-modify-json-dialog').click();
+        })
 
         const openJsonFileDialog = this.document.getElementById('open-modify-json-dialog');
 
@@ -187,7 +171,7 @@ host.BrowserHost = class {
                 reader.onload = async () => {
                     let json_modify_info = JSON.parse(reader.result)
 
-                    this.take_effect_modify("/load-json", json_modify_info)
+                    this.take_effect_modify("/load-json", json_modify_info, true)
                 }
                 reader.readAsText(file)
                 openJsonFileDialog.value = null
@@ -237,7 +221,9 @@ host.BrowserHost = class {
                 }
 
                 blob() {
-                    return Promise.resolve(new Blob([this._file]))
+                    let blob = new Blob([this._file])
+                    blob.filepath = this._msg.filepath
+                    return Promise.resolve(blob)
                 }
 
                 get status() {
@@ -270,54 +256,41 @@ host.BrowserHost = class {
             }
         }
         downloadButton.addEventListener('click', () => {
-            // https://healeycodes.com/talking-between-languages
-            fetch('/download', {
-                // Declare what type of data we're sending
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                // Specify the method
-                method: 'POST',
-                body: JSON.stringify(this.build_download_data()),
-            }).then(function (response) {
-                return response.text();
-            }).then(function (text) {
-                console.log('POST response: ');
-                // Should be 'OK' if everything was successful
-                console.log(text);
-                if (text == 'OK') {
-                    // alert("Modified model has been successfuly saved in ./modified_onnx/");
-                    swal("Success!", "Modified model has been successfuly saved in ./modified_onnx/", "success");
+            let dialog = this.document.getElementById("download-dialog")
+            this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                if (!is_not_cancel) {
+                    return 
                 }
-                else {
-                    // swal("Error happens!", "You are kindly to create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
-                    swal("Error happens!", "You are kindly to check the log and create an issue on https://gitee.com/ascend/ait", "error");
-                    // alert('Error happens, you can find it out or create an issue on https://github.com/ZhangGe6/onnx-modifier')
-                }
-            });
+
+                this.take_effect_modify("/download", this.build_download_data(true), false, (blob)=> {
+                    this.export(this.upload_filename, blob)
+                    this.show_message("Success!", "Model has been successfuly modified", "success");
+                })
+            })
         });
 
         const onnxSimButton = this.document.getElementById('onnxsim-graph');
         onnxSimButton.addEventListener('click', () => {
-            this.take_effect_modify("/onnxsim", this.build_download_data(true))
+            this.take_effect_modify("/onnxsim", this.build_download_data(true), true)
         });
 
         const onnxOptimizer = this.document.getElementById('auto-optimizer-graph');
         onnxOptimizer.addEventListener('click', () => {
-            this.take_effect_modify("/auto-optimizer", this.build_download_data(true))
+            this.take_effect_modify("/auto-optimizer", this.build_download_data(true), true)
         });
 
         const extract = this.document.getElementById('extract-graph');
         extract.addEventListener('click', () => {
             if (!(this._view.modifier.getExtractStart() && this._view.modifier.getExtractEnd())) {
-                swal("Select Extract Net Start And End", "Select the start node and end node for the subnet export", "info");
+                this.show_message("Select Extract Net Start And End", "Select the start node and end node for the subnet export", "warn");
                 return 
             }
             let download_data = this.build_download_data(true)
             download_data["extract_start"] = this._view.modifier.getExtractStart()
             download_data["extract_end"] = this._view.modifier.getExtractEnd()
-            this.take_effect_modify("/extract", download_data, (blob) => {
-                swal("Success!", "Extract model has been successfuly saved in ./modified_onnx/", "success");
+            this.take_effect_modify("/extract", download_data, false, (blob) => {
+                this.export(this.upload_filename.replace(".onnx", ".extract.onnx"), blob)
+                this.show_message("Success!", "Model has been successfuly extracted", "success");
                 this._view.modifier.setExtractStart(null)
                 this._view.modifier.setExtractEnd(null)
             })
@@ -325,16 +298,19 @@ host.BrowserHost = class {
 
         const addNodeButton = this.document.getElementById('add-node');
         addNodeButton.addEventListener('click', () => {
-            // this._view._graph.resetGraph();
-            // this._view._updateGraph();
-            var addNodeDropDown = this.document.getElementById('add-node-dropdown');
-            var selected_val = addNodeDropDown.options[addNodeDropDown.selectedIndex].value
-            var add_op_domain = selected_val.split(':')[0]
-            var add_op_type = selected_val.split(':')[1]
-            // console.log(selected_val)
-            // this._view._graph.add_node(add_op_domain, add_op_type)
-            this._view.modifier.addNode(add_op_domain, add_op_type);
-            this._view._updateGraph();
+            let dialog = this.document.getElementById("addnode-dialog")
+            this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                if (!is_not_cancel) {
+                    return 
+                }
+
+                var addNodeDropDown = this.document.getElementById('add-node-dropdown');
+                var selected_val = addNodeDropDown.options[addNodeDropDown.selectedIndex].value
+                var add_op_domain = selected_val.split(':')[0]
+                var add_op_type = selected_val.split(':')[1]
+                this._view.modifier.addNode(add_op_domain, add_op_type);
+                this._view._updateGraph();
+            })
         })
 
         this.document.getElementById('version').innerText = this.version;
@@ -347,24 +323,18 @@ host.BrowserHost = class {
             }
         }
 
-        const url = params.get('url');
-        if (url) {
-            const identifier = params.get('identifier') || null;
-            const location = url.replace(new RegExp('^https://github.com/([\\w]*/[\\w]*)/blob/([\\w/_.]*)(\\?raw=true)?$'), 'https://raw.githubusercontent.com/$1/$2');
-            if (this._view.accept(identifier || location)) {
-                this._openModel(location, identifier);
-                return;
-            }
-        }
-
-
         const openFileButton = this.document.getElementById('open-file-button');
+        const openFileButtonLogo = this.document.getElementById('open-file-button-logo');
         const openFileDialog = this.document.getElementById('open-file-dialog');
-        if (openFileButton && openFileDialog) {
+        if (openFileButtonLogo && openFileDialog) {
             openFileButton.addEventListener('click', () => {
+                    openFileDialog.value = '';
+                    openFileDialog.click();
+                });
+            openFileButtonLogo.addEventListener('click', () => {
                 openFileDialog.value = '';
                 openFileDialog.click();
-            });
+            })
             openFileDialog.addEventListener('change', (e) => {
                 if (e.target && e.target.files && e.target.files.length > 0) {
                     const files = Array.from(e.target.files);
@@ -376,7 +346,6 @@ host.BrowserHost = class {
                     form.append('file', file);
                     this._ori_model_file = file
 
-                    // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
                     fetch('/open_model', {
                         method: 'POST',
                         body: form
@@ -420,7 +389,6 @@ host.BrowserHost = class {
                 form.append('file', file);
                 this._ori_model_file = file
 
-                // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
                 fetch('/open_model', {
                     method: 'POST',
                     body: form
@@ -438,10 +406,253 @@ host.BrowserHost = class {
         });
 
         this._view.show('welcome');
+        this.toolbar_enable()
     }
 
-    take_effect_modify(path, data_body, callback) {
-        // // https://healeycodes.com/talking-between-languages
+    get_default_input_shape(input_name) {
+        let default_shape = ""
+        for (var input_info of this._view.modifier.graph.inputs) {
+            if (input_name == input_info.name) {
+                if (input_info.arguments 
+                    && input_info.arguments.length > 0 
+                    && input_info.arguments[0].type 
+                    && input_info.arguments[0].type.shape
+                    && input_info.arguments[0].type.shape.dimensions
+                    && input_info.arguments[0].type.shape.dimensions.length > 0) {
+                    let dims = input_info.arguments[0].type.shape.dimensions
+                    default_shape = dims.map((dim) => dim ? dim.toString() : '?').join(',')
+                }
+                break
+            }
+        }
+        return default_shape
+    }
+
+    dimStr2dimArray(dim_str) {
+        let dims = []
+        let has_error = false
+        let input_dims = dim_str.split(",")
+        for (const dim_str of input_dims) {
+            let dim = dim_str.trim()
+            if (dim.match("^-?[1-9][0-9]{0,10}$")) {
+                dims.push(parseInt(dim))
+            } else if (dim.match("^[a-zA-Z\\-_\\\\/\\.0-9]{1,64}$")) {
+                dims.push(dim)
+            } else {
+                has_error = true
+            }
+        }
+        return [dims, has_error]
+    }
+
+    change_batch_size(batch_value) {
+        for (var input_info of this._view.modifier.graph.inputs) {
+            if (input_info.arguments 
+                && input_info.arguments.length > 0 
+                && input_info.arguments[0].type 
+                && input_info.arguments[0].type.shape
+                && input_info.arguments[0].type.shape.dimensions
+                && input_info.arguments[0].type.shape.dimensions.length > 0) {
+                let dims = input_info.arguments[0].type.shape.dimensions
+                if (dims.length > 0) {
+                    dims[0] = batch_value
+                    let dim_str = dims.map((dim) => dim ? dim.toString() : '?').join(',')
+                    let [input_dims, has_error] = this.dimStr2dimArray(dim_str)
+                    this._view.modifier.changeInputSize(input_info.name, input_dims);
+                }
+            }
+        }
+    }
+
+    init_input_shape_change_event() {
+        let input_change = this.document.getElementById("change-input-shape-input")
+        input_change.addEventListener('input', (e) => {
+            let value = e.target.value.trim()
+            
+            let [dims, has_error] = this.dimStr2dimArray(value)
+
+            if (has_error) {
+                input_change.style.borderColor = 'red'
+                input_change.has_error = true
+                this.document.getElementById("change-input-shape-input-ok").disabled = "disabled"
+            } else {
+                input_change.style.borderColor = null
+                input_change.has_error = false
+                input_change.dims = dims
+                this.document.getElementById("change-input-shape-input-ok").disabled = ""
+            }
+        });
+    }
+    init_batch_size_change_event() {
+        let input_change = this.document.getElementById("fixed-batch-size-input")
+        input_change.addEventListener('input', (e) => {
+            let value = e.target.value.trim()
+            if (!value.match("^-?[1-9][0-9]{0,10}$")) {
+                input_change.style.borderColor = 'red'
+                input_change.has_error = true
+                this.document.getElementById("fixed-batch-size-input-ok").disabled = "disabled"
+            } else {
+                input_change.style.borderColor = null
+                input_change.has_error = false
+                this.document.getElementById("fixed-batch-size-input-ok").disabled = ""
+            }
+        });
+    }
+
+    toolbar_enable() {
+        let enable_map = new Map()
+        let listener_map = new Map()
+        let is_deleting = false
+
+        let change_delete_status = (status, event) => {
+            if (is_deleting != status) {
+                is_deleting = status
+                document.dispatchEvent(event)
+            }
+        }
+        enable_map.set("delete-node", (detail, event) => {
+            return [detail.is_node, () => {
+                this._view.modifier.deleteSingleNode(detail.node_name);
+                change_delete_status(true, event)
+            }]
+        })
+        enable_map.set("delete-node-with-children", (detail, event) => {
+            return [detail.is_node, (click_event) => {
+                this._view.modifier.deleteNodeWithChildren(detail.node_name);
+                change_delete_status(true, event)
+                click_event.stopPropagation();
+            }]
+        })
+        enable_map.set("recover-node", (detail) => {
+            return [detail.is_node && is_deleting, () => {
+                this._view.modifier.recoverSingleNode(detail.node_name);
+            }]
+        })
+        enable_map.set("recover-node-with-children", (detail) => {
+            return [detail.is_node && is_deleting, (click_event) => {
+                this._view.modifier.recoverNodeWithChildren(detail.node_name);
+                click_event.stopPropagation();
+            }]
+        })
+        
+        enable_map.set("delete-enter-node", (detail, event) => {
+            return [is_deleting, () => {
+                this._view.modifier.deleteEnter();
+                change_delete_status(false, event)
+            }]
+        })
+
+        enable_map.set("add-input", (detail) => {
+            let listener = () => {
+                // show dialog
+                let select_elem = this.document.getElementById("add-input-dropdown")
+                select_elem.options.length = 0
+                detail.node.inputs.map(inPram => inPram.arguments[0].name).forEach((input_name) => {
+                    select_elem.appendChild(new Option(input_name));
+                })
+
+                let dialog = this.document.getElementById("addinput-dialog")
+                dialog.getElementsByClassName("text")[0].innerText = `Choose a input of Node ${detail.node_name} :`
+                this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                    if (!is_not_cancel) {
+                        return 
+                    }
+                    let select_input = select_elem.options[select_elem.selectedIndex].value;
+                    this._view.modifier.addModelInput(detail.node_name, select_input);
+                })
+            }
+            
+            return [detail.is_node, listener]
+        })
+        enable_map.set("remove-input", (detail) => {
+            return [detail.is_input, ()=>{
+                this._view.modifier.deleteModelInput(detail.input_name);
+            }]
+        })
+        enable_map.set("add-output", (detail) => {
+            return [detail.is_node, () => {
+                this._view.modifier.addModelOutput(detail.node_name);
+            }]
+        })
+        enable_map.set("remove-output", (detail) => {
+            return [detail.is_output, () => {
+                this._view.modifier.deleteModelOutput(detail.output_name);
+            }]
+        })
+
+        this.init_input_shape_change_event()
+        enable_map.set("change-input-shape", (detail) => {
+            return [detail.is_input, () => {
+                // show dialog
+                let default_shape = this.get_default_input_shape(detail.input_name)
+
+                let input_change = this.document.getElementById("change-input-shape-input")
+                input_change.value = default_shape
+                let dialog = this.document.getElementById("changeinputshape-dialog")
+                dialog.getElementsByClassName("text")[0].innerText = `Change the shape of input: ${detail.input_name}`
+                this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                    if (!is_not_cancel) {
+                        return 
+                    }
+                    
+                    this._view.modifier.changeInputSize(detail.input_name, input_change.dims);
+                    this._view.modifier.refreshModelInputOutput()
+                })
+            }]
+        })
+        enable_map.set("batch-size-dynamic", (detail) => {
+            return [detail.is_input, (click_event) => {
+                this.change_batch_size("dynamic")
+                this._view.modifier.changeBatchSize("dynamic");
+                click_event.stopPropagation();
+            }]
+        })
+        this.init_batch_size_change_event()
+        enable_map.set("batch-size-fixed", (detail) => {
+            return [detail.is_input, (click_event) => {
+                // show dialog
+                let dialog = this.document.getElementById("fixed-batch-size-dialog")
+                this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                    if (!is_not_cancel) {
+                        return 
+                    }
+                    let input_change = this.document.getElementById("fixed-batch-size-input")
+                    this.change_batch_size(input_change.value)
+                    this._view.modifier.changeBatchSize('fixed', input_change.value);
+                })
+                click_event.stopPropagation();
+            }]
+        })
+
+        this.document.addEventListener("node-clicked", (event) => {
+            enable_map.forEach((check_enable_func, elem_id)=>{
+                let elem = this.document.getElementById(elem_id)
+                let [enable, listener] = check_enable_func(event.detail, event)
+                elem.removeEventListener("click", listener_map.get(elem_id))
+                if (enable) {
+                    elem.style.pointerEvents = ""
+                    elem.style.backgroundColor = ""
+                    elem.addEventListener("click", listener)
+                    listener_map.set(elem_id, listener)
+                } else {
+                    elem.style.pointerEvents = "none"
+                    elem.style.backgroundColor = "#80808017"
+                }
+            }) 
+        })
+
+        document.dispatchEvent(new CustomEvent("node-clicked", {detail:{}}))
+    }
+
+    bolb2text(blob) {
+        return new Promise((resolve)=> {
+            let reader = new FileReader()
+            reader.readAsText(blob, 'utf-8')
+            reader.onload = () => { resolve(reader.result) }
+        })
+    }
+
+    take_effect_modify(path, data_body, record_modify, callback) {
         return fetch(path, {
             // Declare what type of data we're sending
             headers: {
@@ -452,24 +663,21 @@ host.BrowserHost = class {
             body: typeof (data_body) == "string" ? data_body : JSON.stringify(data_body),
         }).then((response) => {
             if (response.status == 204) {
-                response.text().then(text => {
-                    swal("Nothing happens!", text, "info");
+                return response.text().then((text) => {
+                    this.show_message("Nothing happens!", text, "info");
                 })
-            } else if (response.ok) {
-                if (path == "/onnxsim" || path == "/load-json" || path == "/auto-optimizer" ) {
-                    this._modify_info.push({
-                        path, data_body
-                    })
-                }
-                return response.blob();
-            } else {
-                response.text().then(text => {
-                    swal("Error happens!", 
+            } else if (!response.ok) {
+                return response.text().then((text) => {
+                    this.show_message("Error happens!", 
                         `You are kindly to check the log and create an issue on https://gitee.com/ascend/ait\n${text}`,
                         "error");
                 })
-                
             }
+
+            if (record_modify) {
+                this._modify_info.push({path, data_body})
+            }
+            return response.blob()
         }).then((blob) => {
             if (!blob) {
                 return
@@ -479,13 +687,13 @@ host.BrowserHost = class {
             }
 
             let file = new File([blob], this.upload_filename);
-            file.filepath = this.upload_filepath
+            file.filepath = blob.filepath ? blob.filepath : this.upload_filepath
             return this.openFile(file)
         }).then(()=>{
-            fetch("/get_output_message", {body:"{}"}).then((response) => {
+            fetch("/get_output_message", {method: 'POST', body:"{}"}).then((response) => {
                 response.text().then((text) => {
                     if (text) {
-                        swal("messages", text, "info");
+                        this.show_message("messages", text, "info");
                     }
                 })
             })
@@ -498,7 +706,6 @@ host.BrowserHost = class {
         let form = new FormData();
         form.append('file', file);
 
-        // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
         fetch('/open_model', {
             method: 'POST',
             body: form
@@ -539,32 +746,75 @@ host.BrowserHost = class {
         return this._environment.get(name);
     }
 
+    show_message(title, message, level) {
+        let box = document.createElement("div")
+        box.classList.add("message-box", `${level}-message-box`)
+        let progressLine = document.createElement("div")
+        progressLine.classList.add("message-box-progress", `message-box-progress-${level}`)
+
+        let boxTitle = document.createElement("b")
+        boxTitle.innerText = title
+        let boxClose = document.createElement("span")
+        boxClose.innerText = "[ X ]"
+        boxClose.style.float = "right"
+        let boxText = document.createElement("p")
+        boxText.classList.add("text")
+        boxText.innerText = message
+        box.append(progressLine, boxTitle, boxClose, boxText)
+        document.getElementById("show-message-info").append(box)
+
+        // event
+        let remove_function = () => { box.remove(); }
+        boxClose.addEventListener("click", remove_function)
+        progressLine.addEventListener("animationend", remove_function)
+    }
+
+    show_alert_message(title, message) {
+        let alert_element = document.getElementById('show-message-alert')
+        alert_element.getElementsByTagName("h1")[0].innerText = title
+        alert_element.getElementsByClassName("text")[0].innerText = message
+        alert_element.showModal()
+    }
+
+    show_confirm_message(title, message) {
+        let confirm_element = document.getElementById('show-message-confirm')
+        confirm_element.getElementsByTagName("h1")[0].innerText = title
+        confirm_element.getElementsByClassName("text")[0].innerText = message
+
+        return this.show_confirm_dialog(confirm_element)
+    }
+
+    show_confirm_dialog(dialogElem) {
+        return new Promise((resolve)=>{
+            let [cancelBtn, okBtn] = dialogElem.getElementsByTagName("button")
+            let listener = []
+            let remove_listener = () => {
+                let [cancel_listener, ok_listener] = listener
+                cancelBtn.removeEventListener("click", cancel_listener)
+                okBtn.removeEventListener("click", ok_listener)
+            }
+            
+            let cancel_event_listener = cancelBtn.addEventListener("click", ()=> {
+                dialogElem.close()
+                remove_listener()
+                resolve(false)
+            })
+            let ok_event_listener = okBtn.addEventListener("click", ()=> {
+                dialogElem.close()
+                remove_listener()
+                resolve(true)
+            })
+            listener = [cancel_event_listener, ok_event_listener]
+            dialogElem.showModal()
+        }) 
+    }
+
     error(message, detail) {
-        swal(message, detail)
+        this.show_alert_message(message, detail)
     }
 
     confirm(message, detail) {
-        return swal({
-            title: message,
-            text: detail,
-            closeOnClickOutside: false,
-            buttons: {
-                cancel: {
-                    text: "Cancel",
-                    value: false,
-                    visible: true,
-                    className: "",
-                    closeModal: true,
-                },
-                confirm: {
-                    text: "OK",
-                    value: true,
-                    visible: true,
-                    className: "",
-                    closeModal: true
-                }
-            }
-        })
+        return this.show_confirm_message(message, detail);
     }
 
     require(id) {
@@ -775,18 +1025,9 @@ host.BrowserHost = class {
     }
 
     _about() {
-        const self = this;
-        const eventHandler = () => {
-            this.window.removeEventListener('keydown', eventHandler);
-            self.document.body.removeEventListener('click', eventHandler);
-            self._view.show('default');
-        };
-        this.window.addEventListener('keydown', eventHandler);
-        this.document.body.addEventListener('click', eventHandler);
-        this._view.show('about');
+        document.getElementById("show-about").showModal()
     }
 
-    // https://blog.csdn.net/Crazy_SunShine/article/details/80624366
     _strMapToObj(strMap) {
         let obj = Object.create(null);
         for (let [k, v] of strMap) {
@@ -800,7 +1041,6 @@ host.BrowserHost = class {
         return JSON.stringify(this._strMapToObj(map));
     }
 
-    // https://www.xul.fr/javascript/map-and-object.php
     mapToObjectRec(m) {
         let lo = {}
         for (let [k, v] of m) {
@@ -848,7 +1088,6 @@ host.BrowserHost = class {
         return processed;
     }
 
-    // https://stackoverflow.com/a/4215753/10096987
     arrayToObject(arr) {
         var rv = {};
         for (var i = 0; i < arr.length; ++i)

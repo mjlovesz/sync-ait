@@ -5,7 +5,7 @@
 
 某些昇腾模型，存在NPU自定义算，比如 [Retinanet](https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/contrib/cv/detection/Retinanet)，存在BatchMultiClassNMS后处理算子，该算子无法在onnxruntime上运行，导致该模型无法使用ait debug compare功能进行精度比对。添加--custom-op参数，指定onnx模型中自定义算子名称，工具会自动拆分模型，将模型一分为二，分别获取两个子网的dump数据后，再和NPU模型的dump数据进行比对。
 
-## 使用景约束
+## 使用场景约束
 
 1、只支持标杆模型为onnx文件；
 

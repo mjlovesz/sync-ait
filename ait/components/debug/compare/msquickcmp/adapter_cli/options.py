@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import argparse
 
 import click
@@ -32,7 +33,7 @@ opt_golden_model = click.option(
     '--golden-model',
     'golden_model',
     required=True,
-    help="The original model (.onnx or .pb) file path",
+    help="The original model (.onnx or .pb or .prototxt) file path",
 )
 
 opt_om_model = click.option(
@@ -41,6 +42,13 @@ opt_om_model = click.option(
     "om_model",
     help="The offline model (.om) file path",
     required=True
+)
+
+opt_weight_path = click.option(
+    "-w",
+    "--weight-path",
+    "weight_path",
+    help="Required when framework is Caffe (.cafemodel)",
 )
 
 opt_input = click.option(
@@ -132,8 +140,18 @@ opt_dump = click.option(
 opt_bin2npy = click.option(
     "--convert",
     "bin2npy",
+    default=False,
     type=str2bool,
     help="Enable npu dump data conversion from bin to npy after compare.Usage: --convert True."
+)
+
+opt_locat = click.option(
+    "-l",
+    "--locat",
+    "locat",
+    default=False,
+    type=str2bool,
+    help="Enable accuracy interval location when needed.E.g: --locat True."
 )
 
 opt_custom_op = click.option(

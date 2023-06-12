@@ -6,10 +6,34 @@ const { EventEmitter } = require('events')
 var fs = require('fs')
 const path = require('path')
 
+class ElectronMsgHandelManager {
+    constructor() {
+        this.map_ipc = new Map()
+    }
+
+    handleMessage(event, path, msg_send) {
+        let senderId = event.processId
+        if (!this.map_ipc.has(senderId)) {
+            this.map_ipc.set(senderId, new PythonIPC())
+        }
+
+        let python_ipc = this.map_ipc.get(senderId)
+        return python_ipc.send(path, msg_send)
+    }
+
+    close() {
+        for (const [key, ipc] of this.map_ipc) {
+            ipc.send("/exit", "")
+        }
+    }
+}
+
+let handle_msg = new ElectronMsgHandelManager()
+
 const createWindow = () => {
     // 创建浏览窗口
     const mainWindow = new BrowserWindow({
-        width: 1000,
+        width: 1450,
         height: 900,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
@@ -32,7 +56,6 @@ app.whenReady().then(() => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow()
     })
 
-    let handle_msg = new ElectronMsgHandelManager()
     ipcMain.handle('message', (event, path, msg_send) => {
         return handle_msg.handleMessage(event, path, msg_send)
     })
@@ -43,6 +66,7 @@ app.whenReady().then(() => {
 // 直到用户使用 Cmd + Q 明确退出
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()
+    handle_msg.close()
 })
 
 
@@ -117,6 +141,7 @@ class PythonIPC {
             const req_ind = this.req_ind
             this.msg_event.once(`server-msg-${req_ind}`, (msg, status, file) => {
                 if (file) {
+                    msg.filepath = file
                     file = fs.readFileSync(file)
                 }
                 resolve([status, msg, file])
@@ -132,21 +157,5 @@ class PythonIPC {
             this.process.stdin.write(`${encodeURI(send_obj_str)}\n`)
             this.process.stdin.write(`\n\n`)
         })
-    }
-}
-
-class ElectronMsgHandelManager {
-    constructor() {
-        this.map_ipc = new Map()
-    }
-
-    handleMessage(event, path, msg_send) {
-        let senderId = event.processId
-        if (!this.map_ipc.has(senderId)) {
-            this.map_ipc.set(senderId, new PythonIPC())
-        }
-
-        let python_ipc = this.map_ipc.get(senderId)
-        return python_ipc.send(path, msg_send)
     }
 }
