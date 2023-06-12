@@ -111,7 +111,7 @@ void setSession(std::shared_ptr<Base::PyInferenceSession> session, Arguments& ar
 
 void func_prepare(int32_t deviceId, std::shared_ptr<Base::PyInferenceSession> session, std::string modelPath,
                   std::shared_ptr<Base::SessionOptions> options, std::vector<std::vector<std::string>> &filesList,
-                  ConcurrentQueue<std::shared_ptr<Feeds>> &h2d_queue, Arguments& arguments)
+                  ConcurrentQueue<std::shared_ptr<Feeds>> &h2d_queue, bool autoDymShape)
 {
     APP_ERROR ret;
     ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
@@ -119,14 +119,14 @@ void func_prepare(int32_t deviceId, std::shared_ptr<Base::PyInferenceSession> se
         throw std::runtime_error(GetError(ret));
     }
     std::vector<std::string> input_names{};
-    if (arguments["auto_set_dymshape_mode"] != "0") {
+    if (autoDymShape) {
         auto intensor_desc = session->GetInputs();
         for (auto &desc: intensor_desc) {
             input_names.push_back(desc.name);
         }
     }
     
-    for (auto &files: files_list) {
+    for (auto &files: filesList) {
         auto output_names = std::make_shared<std::vector<std::string>>();
         for (const auto &desc: session->GetOutputs()) {
             output_names->push_back(desc.name);
@@ -137,7 +137,7 @@ void func_prepare(int32_t deviceId, std::shared_ptr<Base::PyInferenceSession> se
         for (size_t i = 0; i < files.size(); i++) {
             auto array = std::make_shared<cnpy::NpyArray>(cnpy::npy_load(files[i]));
             arrayptr->emplace_back(array);
-            inputs->emplace_back(array->data<void>(), array->shape);
+            inputs->emplace_back(array->data<void>(), array->num_bytes());
             if (i != files.size()-1) {
                 autoDynamicShape += ";";
             }
@@ -353,7 +353,7 @@ void Execute(Arguments& arguments)
     std::thread d2hThread(func_d2h, std::ref(d2h_queue), std::ref(save_queue), deviceId, std::ref(h2d_ts));
     std::thread saveThread(func_save, std::ref(save_queue), deviceId, arguments["output"]);
     
-    func_prepare(deviceId, session, arguments["model"], options, filesList, h2d_queue);
+    func_prepare(deviceId, session, arguments["model"], options, filesList, h2d_queue, arguments["auto_set_dymshape_mode"] != "0");
 
     h2dThread.join();
     computeThread.join();
