@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.0)
 project(ais_bench_infer VERSION 0.1.0)
 
 # Compile options
-add_compile_options(-std=c++11)
+add_compile_options(-std=c++17)
 
 add_definitions(-DENABLE_DVPP_INTERFACE)
 
@@ -74,6 +74,7 @@ add_executable(concur
         ${BACKEND_PATH}/base/module/ModelInfer/DynamicAippConfig.cpp
         ${BACKEND_PATH}/python/src/PyInferenceSession/PyInferenceSession.cpp
         ${BACKEND_PATH}/python/src/PyTensor/PyTensor.cpp
+        ${BACKEND_PATH}/concur/utils.cpp
         ${BACKEND_PATH}/concur/cnpy.cpp
         concur.cpp)
 

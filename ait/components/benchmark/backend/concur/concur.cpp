@@ -263,7 +263,7 @@ int tensotToNumpy(std::string output_filename, Base::TensorBase& output)
     if (output.GetDataType() == Base::TENSOR_DTYPE_FLOAT32) {
         cnpy::npy_save(output_filename, (float*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_FLOAT16) {
-        cnpy::npy_save(output_filename, (aclFloat16*)output.GetBuffer(), shape);
+        cnpy::npy_save(output_filename, (short*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT8) {
         cnpy::npy_save(output_filename, (int8_t*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT32) {
@@ -336,10 +336,10 @@ void Execute(Arguments& arguments)
     auto session = std::make_shared<Base::PyInferenceSession>(arguments["model"], deviceId, options);
     setSession(session, arguments);
 
-    ConcurrentQueue<std::shared_ptr<Feeds>> &h2d_queue;
-    ConcurrentQueue<std::shared_ptr<Feeds>> &compute_queue;
-    ConcurrentQueue<std::shared_ptr<Feeds>> &d2h_queue;
-    ConcurrentQueue<std::shared_ptr<Feeds>> &save_queue;
+    ConcurrentQueue<std::shared_ptr<Feeds>> h2d_queue;
+    ConcurrentQueue<std::shared_ptr<Feeds>> compute_queue;
+    ConcurrentQueue<std::shared_ptr<Feeds>> d2h_queue;
+    ConcurrentQueue<std::shared_ptr<Feeds>> save_queue;
 
     std::vector<TimePointPair> h2d_ts;
     std::vector<TimePointPair> compute_ts;

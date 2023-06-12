@@ -84,7 +84,7 @@ void npy_save(std::string fname, const T *data, const std::vector<size_t> shape,
     FILE *fp = NULL;
     std::vector<size_t> true_data_shape;
 
-    if (mode = "a")
+    if (mode == "a")
         fp = fopen(fname.c_str(), "r+b");
 
     if (fp) {
