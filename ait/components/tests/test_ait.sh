@@ -71,16 +71,17 @@ main() {
     get_npu_type || { echo "invalid npu device";return $ret_failed; }
     PYTHON_COMMAND="python3"
     BENCKMARK_DT_MODE="simple"
+    all_part_test_ok=$ret_ok
 
     test_analyze || { echo "developer test analyze failed";return $ret_failed; }
-    test_benchmark $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE || { echo "developer test benchmark failed";return $ret_failed; }
-    test_convert || { echo "developer test convert failed";return $ret_failed; }
-    test_debug_compare || { echo "developer test comnpare failed";return $ret_failed; }
-    test_debug_surgeon || { echo "developer test surgeon failed";return $ret_failed; }
-    test_profile || { echo "developer test profile failed";return $ret_failed; }
-    test_transplt || { echo "developer test transplt failed";return $ret_failed; }
+    test_benchmark $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE || { echo "developer test benchmark failed";all_part_test_ok=$ret_failed; }
+    test_convert || { echo "developer test convert failed";all_part_test_ok=$ret_failed; }
+    test_debug_compare || { echo "developer test comnpare failed";all_part_test_ok=$ret_failed; }
+    test_debug_surgeon || { echo "developer test surgeon failed";all_part_test_ok=$ret_failed; }
+    test_profile || { echo "developer test profile failed";all_part_test_ok=$ret_failed; }
+    test_transplt || { echo "developer test transplt failed";all_part_test_ok=$ret_failed; }
 
-    return $ret_ok
+    return $all_part_test_ok
 }
 
 main "$@"
