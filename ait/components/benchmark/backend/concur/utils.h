@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include <unordered_map>
+#include <cstring>
 
 namespace chr = std::chrono;
 using TimePointPair = std::pair<chr::steady_clock::time_point, chr::steady_clock::time_point>;
