@@ -1,7 +1,8 @@
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <numeric>
-
+#include <dirent.h>
 
 #include "utils.h"
 
@@ -34,6 +35,19 @@ std::stirng merge(std::vector<std::string> list, std::string delimiter)
     return res;
 }
 
+std::vector<std::string> split(std::string input, char delimiter)
+{
+    std::stringstream ss(input);
+    std::vector<std::string> res;
+
+    while (ss.good()) {
+        std::string substr;
+        getline(ss, substr, delimiter);
+        res.push_back(substr);
+    }
+    return res;
+}
+
 std::vector<size_t> strVecToNumVec(const std::vector<std::string>& vec)
 {
     std::vector<size_t> res;
@@ -42,3 +56,90 @@ std::vector<size_t> strVecToNumVec(const std::vector<std::string>& vec)
     }
     return res;
 }
+
+std::vector<std::string> traversal(const char* dir)
+{
+    DIR *dir_ptr;
+    struct dirent *diread;
+    if (dir_ptr = opendir(dir) != nullptr) {
+        while (diread = readdir(dir_ptr) != nullptr) {
+            if (diread->d_type == DT_REG)
+                filenames.push_back(string(dir) + diread->d_name);
+        }
+        closedir(dir_ptr);
+    }
+    sort(filenames.begin(), filenames.end());
+    return filenames;
+}
+
+// input need to be dir1,dir2,dir3,...
+int createFilesList(std::vector<std::vecotr<std::string>>& fileList, std::string input)
+{
+    std::stringstream ss(input);
+    std::vector<std::vector<std::string>> directorys;
+    std::vector<std::string> dirs;
+    
+    while (ss.good())
+    {
+        std::string dir;
+        getline(ss, dir, ',');
+        if (dir.back() != '/') {
+            dir.push_back('/');
+        }
+        directorys.push_back(std::move(traversal(dir.c_str())));
+    }
+    // check whether number of files in each directory is the same
+    size_n = directorys[0].size();
+    for (auto &directory: directorys) {
+        if (directory.size() != n) {
+            return 1;
+        }
+    }
+
+    for (size_t i = 0; i < n; i++) {
+        std::vector<std::string>> combine;
+        for (auto &directory : directorys) {
+            combine.push_back(directory[i]);
+        }
+        fileList.push_back(std::move(combine));
+    }
+    return 0;
+
+}
+
+std::string getPrefix(std::string filePath)
+{
+    std::stringstream ss(filePath);
+    std::string res{};
+    while (ss.good()) {
+        std::string substr;
+        getline(ss, substr, '/');
+        if (substr == "") {
+            continue;
+        }
+        res = substr;
+    }
+    return res;
+}
+
+std::string removeSlash(std::string name)
+{
+    std::string res;
+    for (auto &elem: name) {
+        if (elem != '/') {
+            res.push_back(elem);
+        }
+    }
+    return res;
+}
+
+std::string createDynamicShape(std::string name, std::vector<size_t> shapes)
+{
+    std::vector<std::string> shapes_str{};
+    for (auto &shape: shapes) {
+        shapes_str.push_back(std::to_string(shape));
+    }
+    auto res = merge(shapes_str, ",");
+    return name + ":" + res;
+}
+
