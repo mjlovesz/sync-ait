@@ -46,7 +46,7 @@ using TimePointPair = std::pair<chr::steady_clock::time_point, chr::steady_clock
 using Arguments = std::unordered_map<std::string, std::string>;
 
 struct Feeds{
-    std::shared_ptr<std::vector<std::string>> _output_names = nullptr;s
+    std::shared_ptr<std::vector<std::string>> _output_names = nullptr;
     std::shared_ptr<std::vector<Base::BaseTensor>> _inputs = nullptr;
     std::shared_ptr<std::vector<Base::TensorBase>> _outputs = nullptr;
     std::shared_ptr<std::vector<Base::MemoryData>> _memory = nullptr;
@@ -110,8 +110,8 @@ void setSession(std::shared_ptr<Base::PyInferenceSession> session, Arguments& ar
 }
 
 void func_prepare(int32_t deviceId, std::shared_ptr<Base::PyInferenceSession> session, std::string modelPath,
-                  std::shared_ptr<Base::SessionOptions> options, std::vector<std::vector<std::string> &filesList,
-                  ConcurrentQueue<std::shared_ptr<Feeds>> &h2d_queue)
+                  std::shared_ptr<Base::SessionOptions> options, std::vector<std::vector<std::string>> &filesList,
+                  ConcurrentQueue<std::shared_ptr<Feeds>> &h2d_queue, Arguments& arguments)
 {
     APP_ERROR ret;
     ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
