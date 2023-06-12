@@ -42,8 +42,8 @@ opt_model = click.option(
 
 
 opt_out_path = click.option(
-    '-o',
-    '--output',
+    '-of',
+    '--output-file',
     'output',
     type=str,
     required=True,
