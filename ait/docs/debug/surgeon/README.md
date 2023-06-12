@@ -5,15 +5,14 @@ Surgeon（自动调优）使能ONNX模型在昇腾芯片的优化，并提供基
 ## 工具安装
 - 工具安装请见 [ait一体化工具使用指南](../../../README.md)
 
-## 使用方法
-### 功能介绍
+## 功能介绍
 
 Surgeon工具包含两大功能模块--面向昇腾设备的ONNX模型自动改图优化和丰富易用的ONNX改图接口。
 
 - 工具的自动改图优化功能：基于[graph_optimizer](../../../components/debug/surgeon/docs/knowledge_optimizer/knowledge_optimizer_framework.md)图优化组件，集成业界先进的可泛化性图优化策略，构建17个改图知识库，识别模型中对应模式或子图，从而进行自动改图优化
 - 工具的ONNX改图接口：基于[graph_refactor](../../../components/debug/surgeon/auto_optimizer/graph_refactor/README.md)基础改图组件，提供简易的改图接口，提供用户对ONNX图进行“增删改查”等多种改图需求的支持
 
-### 使用入口
+## 1. 图优化工具命令行使用入口
 
 surgeon功能可以直接通过ait命令行形式启动模型测试。启动方式如下：
 
@@ -107,7 +106,7 @@ optimize可简写为opt。
 命令格式如下：
 
 ```bash
-python3 -m auto_optimizer extract [OPTIONS] INPUT_MODEL OUTPUT_MODEL START_NODE_NAME1,START_NODE_NAME2 END_NODE_NAME1, END_NODE_NAME2
+ait debug surgeon extract [OPTIONS] INPUT_MODEL OUTPUT_MODEL START_NODE_NAME1,START_NODE_NAME2 END_NODE_NAME1, END_NODE_NAME2
 ```
 
 extract 可简写为ext
@@ -126,7 +125,70 @@ extract 可简写为ext
 
 使用特别说明：为保证子图切分功能正常使用且不影响推理性能，请勿指定存在**父子关系**的输入或输出节点作为切分参数。
 
-### 使用场景
+
+## 2. 改图工具API使用入口
+
+### 简介
+
+graph_refactor 是 AutoOptimizer 工具的一个基础组件，提供简易的改图接口，解决用户改图难度大、学习成本高的问题。目前支持 onnx 模型的以下改图功能：
+
+- [x] 加载和保存模型
+- [x] 查询和修改单个节点信息
+- [x] 新增节点，根据条件插入节点
+- [x] 删除指定节点
+- [x] 选定起始节点和结束节点，切分子图
+
+### 快速上手
+
+![动画演示](../../docs/img/graph_refactor_demo.gif)
+
+以下是一个简单的改图脚本示例，包括加载 -> 修改 -> 保存三个基本步骤：
+
+```python
+import numpy as np
+from auto_optimizer import OnnxGraph
+
+# 加载 onnx 模型
+g = OnnxGraph.parse('example/magic/layernorm.onnx')
+
+# 增加一个整网输入节点
+dummy_input = g.add_input('dummy_input', 'int32', [2, 3, 4])
+
+# 增加一个 add 算子节点和一个 const 常量节点
+add = g.add_node('dummy_add', 'Add')
+add_ini = g.add_initializer('add_ini', np.array([[2, 3, 4]]))
+add.inputs = ['dummy_input', 'add_ini'] # 手动连边
+add.outputs = ['add_out']
+g.update_map() # 手动连边后需更新连边关系
+
+
+# 在 add 算子节点前插入一个 argmax 节点
+argmax = g.add_node('dummy_ArgMax',
+                      'ArgMax',
+                      attrs={'axis': 0, 'keepdims': 1, 'select_last_index': 0})
+g.insert_node('dummy_add', argmax, mode='before') # 由于 argmax 为单输入单输出节点，可以不手动连边而是使用 insert 函数
+
+# 保存修改好的 onnx 模型
+g.save('layernorm_modify.onnx')
+
+# 切分子图
+g.extract_subgraph(
+    "sub.onnx", 
+    ["start_node_name1", "start_node_name2"],
+    ["end_node_name1", "end_node_name1"],
+    input_shape="input1:1,3,224,224;input2:1,3,64,64",
+    input_dtype="input1:float16;input2:int8"
+)
+```
+
+### 详细使用方法
+
+- 接口详见 [API 说明和示例](../../docs/graph_refactor/graph_refactor_API.md)
+- BaseNode 使用方法参见 [BaseNode 说明](../../docs/graph_refactor/graph_refactor_BaseNode.md)
+- BaseGraph 使用方法参见 [BaseGraph 说明](../../docs/graph_refactor/graph_refactor_BaseGraph.md)
+
+
+## 使用示例
 
 请移步[surgeon使用示例](../../../examples/cli/debug/surgeon/)
 
