@@ -140,7 +140,7 @@ def create_infileslist_from_fileslist(fileslist, intensors_desc, no_combine_tens
 def create_intensors_from_infileslist(infileslist, intensors_desc, session,
                                       pure_data_type, no_combine_tensor_mode=False):
     intensorslist = []
-    for _, infiles in enumerate(infileslist):
+    for infiles in infileslist:
         intensors = []
         for j, files in enumerate(infiles):
             tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize,
@@ -193,8 +193,8 @@ def create_infileslist_from_inputs_list(inputs_list, intensors_desc, no_combine_
         logger.debug("create intensors list dictionary type inlistcount:{} intensorcont:{} files_size:{}".format(
             inputlistcount, intensorcount, len(fileslist)))
     else:
-        logger.error('create intensors list filelists:{} intensorcont:{} error create'.format(inputlistcount,
-                                                                                              intensorcount))
+        logger.error('create intensors list filelists:{} intensorcont:{} error create'.format(
+            inputlistcount, intensorcount))
         raise RuntimeError()
 
     infileslist = create_infileslist_from_fileslist(fileslist, intensors_desc, no_combine_tensor_mode)
