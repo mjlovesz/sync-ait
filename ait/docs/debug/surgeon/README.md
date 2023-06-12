@@ -140,7 +140,7 @@ graph_refactor 是 AutoOptimizer 工具的一个基础组件，提供简易的�
 
 ### 快速上手
 
-![动画演示](../../docs/img/graph_refactor_demo.gif)
+![动画演示](../../../components/debug/surgeon/docs/img/graph_refactor_demo.gif)
 
 以下是一个简单的改图脚本示例，包括加载 -> 修改 -> 保存三个基本步骤：
 
