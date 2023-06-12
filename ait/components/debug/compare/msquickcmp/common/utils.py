@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
@@ -52,7 +51,10 @@ ACCURACY_COMPARISON_NO_DUMP_FILE_ERROR = 14
 ACCURACY_COMPARISON_NOT_SUPPORT_ERROR = 15
 ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
-MODEL_TYPE = ['.onnx', '.pb', '.om']
+ACCURACY_COMPARISON_WRONG_AIPP_CONTENT = 18
+ACCRACY_COMPARISON_EXTRACT_ERROR = 19
+ACCRACY_COMPARISON_FETCH_DATA_ERROR = 20
+MODEL_TYPE = ['.onnx', '.pb', '.om', '.prototxt']
 DIM_PATTERN = r"^(-?[0-9]{1,100})(,-?[0-9]{1,100}){0,100}"
 DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+){0,3}"
 MAX_DEVICE_ID = 255
@@ -258,6 +260,18 @@ def check_convert_is_valid_used(dump, bin2npy):
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
 
 
+def check_locat_is_valid(dump, locat):
+    """
+    Function:
+        check locat args is completed
+    Return:
+        True or False
+    """
+    if locat and not dump:
+            logger.error("Dump must be True when locat is used")
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
+
+
 def parse_input_shape(input_shape):
     """
     Function Description:
@@ -285,7 +299,41 @@ def parse_input_shape(input_shape):
     return input_shapes
 
 
+def parse_input_shape_to_list(input_shape):
+    """
+        Function Description:
+            parse input shape and get a list only contains inputs shape
+        Parameter:
+            input_shape:the input shape,this format like:tensor_name1:dim1,dim2;tensor_name2:dim1,dim2.
+        Return Value:
+            a list only contains inputs shape, this format like [[dim1,dim2],[dim1,dim2]]
+    """
+    input_shape_list = []
+    if not input_shape:
+        return input_shape_list
+    _check_colon_exist(input_shape)
+    tensor_list = input_shape.split(';')
+    for tensor in tensor_list:
+        tensor_shape_list = tensor.rsplit(':', maxsplit=1)
+        if len(tensor_shape_list) == 2:
+            shape_list_int = [int(i) for i in tensor_shape_list[1].split(',')]
+            input_shape_list.append(shape_list_int)
+        else:
+            logger.error(get_shape_not_match_message(InputShapeError.FORMAT_NOT_MATCH, input_shape))
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+    return input_shape_list
+
+
 def parse_dym_shape_range(dym_shape_range):
+    """
+        Function Description:
+            parse dynamic input shape
+        Parameter:
+            dym_shape_range:the input shape,this format like:tensor_name1:dim1,dim2-dim3;tensor_name2:dim1,dim2~dim3.
+             - means the both dim2 and dim3 value, ~ means the range of [dim2:dim3]
+        Return Value:
+            a list only contains inputs shape, this format like [[dim1,dim2],[dim1,dim2]]
+    """
     _check_colon_exist(dym_shape_range)
     input_shapes = {}
     tensor_list = dym_shape_range.split(";")
@@ -437,6 +485,16 @@ def get_batch_index(dump_data_path):
             if ASCEND_BATCH_FIELD in file_name:
                 return get_batch_index_from_name(file_name)
     return ""
+
+
+def get_mbatch_op_name(om_parser, op_name, npu_dump_data_path):
+    _, scenario = om_parser.get_dynamic_scenario_info()
+    if scenario in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
+        batch_index = get_batch_index(npu_dump_data_path)
+        current_op_name = BATCH_SCENARIO_OP_NAME.format(op_name, batch_index)
+    else:
+        return op_name
+    return current_op_name
 
 
 def handle_ground_truth_files(om_parser, npu_dump_data_path, golden_dump_data_path):

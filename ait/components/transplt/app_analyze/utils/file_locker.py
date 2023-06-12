@@ -11,12 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Reference:
-# - https://docs.python.org/zh-cn/3/library/fcntl.html
-# - https://docs.python.org/zh-cn/3/library/msvcrt.html
-# - https://docs.python.org/zh-cn/3/library/ctypes.html#ctypes.WinDLL
-# - https://juejin.cn/post/6870689230440529927
-# - https://zhuanlan.zhihu.com/p/354383209
 """
 用法1：
 with open('x.py', 'w') as fd:

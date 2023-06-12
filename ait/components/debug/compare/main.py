@@ -61,13 +61,13 @@ def _accuracy_compare_parser(compare_parser):
                         help="<Optional> Enable npu dump data conversion from bin to npy after compare.\
                         For example: --convert True")
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     _accuracy_compare_parser(parser)
     args = parser.parse_args(sys.argv[1:])
 
-    cmp_args = CmpArgsAdapter(args.model_path, args.offline_model_path, args.input_path,
+    args.weight_path = None
+    cmp_args = CmpArgsAdapter(args.model_path, args.offline_model_path, args.weight_path, args.input_path,
                               args.cann_path, args.out_path, args.input_shape,
                               args.device, args.output_size, args.output_nodes, args.advisor,
                               args.dym_shape_range, args.dump, args.bin2npy)
@@ -75,4 +75,3 @@ if __name__ == '__main__':
         cmp_process(cmp_args, False)
     except utils.AccuracyCompareException as error:
         sys.exit(error.error_info)
-

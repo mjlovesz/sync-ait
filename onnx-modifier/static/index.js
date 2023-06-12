@@ -10,9 +10,6 @@ host.BrowserHost = class {
         this._document = window.document;
         this._window = window;
         this._navigator = navigator;
-        if (this._window.location.hostname.endsWith('.github.io')) {
-            this._window.location.replace('https://netron.app');
-        }
         this._window.eval = () => {
             throw new Error('window.eval() not supported.');
         };
@@ -187,7 +184,7 @@ host.BrowserHost = class {
                 reader.onload = async () => {
                     let json_modify_info = JSON.parse(reader.result)
 
-                    this.take_effect_modify("/load-json", json_modify_info)
+                    this.take_effect_modify("/load-json", json_modify_info, true)
                 }
                 reader.readAsText(file)
                 openJsonFileDialog.value = null
@@ -237,7 +234,9 @@ host.BrowserHost = class {
                 }
 
                 blob() {
-                    return Promise.resolve(new Blob([this._file]))
+                    let blob = new Blob([this._file])
+                    blob.filepath = this._msg.filepath
+                    return Promise.resolve(blob)
                 }
 
                 get status() {
@@ -270,54 +269,34 @@ host.BrowserHost = class {
             }
         }
         downloadButton.addEventListener('click', () => {
-            // https://healeycodes.com/talking-between-languages
-            fetch('/download', {
-                // Declare what type of data we're sending
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                // Specify the method
-                method: 'POST',
-                body: JSON.stringify(this.build_download_data()),
-            }).then(function (response) {
-                return response.text();
-            }).then(function (text) {
-                console.log('POST response: ');
-                // Should be 'OK' if everything was successful
-                console.log(text);
-                if (text == 'OK') {
-                    // alert("Modified model has been successfuly saved in ./modified_onnx/");
-                    swal("Success!", "Modified model has been successfuly saved in ./modified_onnx/", "success");
-                }
-                else {
-                    // swal("Error happens!", "You are kindly to create an issue on https://github.com/ZhangGe6/onnx-modifier", "error");
-                    swal("Error happens!", "You are kindly to check the log and create an issue on https://gitee.com/ascend/ait", "error");
-                    // alert('Error happens, you can find it out or create an issue on https://github.com/ZhangGe6/onnx-modifier')
-                }
-            });
+            this.take_effect_modify("/download", this.build_download_data(true), false, (blob)=> {
+                this.export(this.upload_filename, blob)
+                this.show_message("Success!", "Model has been successfuly modified", "success");
+            })
         });
 
         const onnxSimButton = this.document.getElementById('onnxsim-graph');
         onnxSimButton.addEventListener('click', () => {
-            this.take_effect_modify("/onnxsim", this.build_download_data(true))
+            this.take_effect_modify("/onnxsim", this.build_download_data(true), true)
         });
 
         const onnxOptimizer = this.document.getElementById('auto-optimizer-graph');
         onnxOptimizer.addEventListener('click', () => {
-            this.take_effect_modify("/auto-optimizer", this.build_download_data(true))
+            this.take_effect_modify("/auto-optimizer", this.build_download_data(true), true)
         });
 
         const extract = this.document.getElementById('extract-graph');
         extract.addEventListener('click', () => {
             if (!(this._view.modifier.getExtractStart() && this._view.modifier.getExtractEnd())) {
-                swal("Select Extract Net Start And End", "Select the start node and end node for the subnet export", "info");
+                this.show_message("Select Extract Net Start And End", "Select the start node and end node for the subnet export", "warn");
                 return 
             }
             let download_data = this.build_download_data(true)
             download_data["extract_start"] = this._view.modifier.getExtractStart()
             download_data["extract_end"] = this._view.modifier.getExtractEnd()
-            this.take_effect_modify("/extract", download_data, (blob) => {
-                swal("Success!", "Extract model has been successfuly saved in ./modified_onnx/", "success");
+            this.take_effect_modify("/extract", download_data, false, (blob) => {
+                this.export(this.upload_filename.replace(".onnx", ".extract.onnx"), blob)
+                this.show_message("Success!", "Model has been successfuly extracted", "success");
                 this._view.modifier.setExtractStart(null)
                 this._view.modifier.setExtractEnd(null)
             })
@@ -347,17 +326,6 @@ host.BrowserHost = class {
             }
         }
 
-        const url = params.get('url');
-        if (url) {
-            const identifier = params.get('identifier') || null;
-            const location = url.replace(new RegExp('^https://github.com/([\\w]*/[\\w]*)/blob/([\\w/_.]*)(\\?raw=true)?$'), 'https://raw.githubusercontent.com/$1/$2');
-            if (this._view.accept(identifier || location)) {
-                this._openModel(location, identifier);
-                return;
-            }
-        }
-
-
         const openFileButton = this.document.getElementById('open-file-button');
         const openFileDialog = this.document.getElementById('open-file-dialog');
         if (openFileButton && openFileDialog) {
@@ -376,7 +344,6 @@ host.BrowserHost = class {
                     form.append('file', file);
                     this._ori_model_file = file
 
-                    // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
                     fetch('/open_model', {
                         method: 'POST',
                         body: form
@@ -420,7 +387,6 @@ host.BrowserHost = class {
                 form.append('file', file);
                 this._ori_model_file = file
 
-                // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
                 fetch('/open_model', {
                     method: 'POST',
                     body: form
@@ -440,8 +406,15 @@ host.BrowserHost = class {
         this._view.show('welcome');
     }
 
-    take_effect_modify(path, data_body, callback) {
-        // // https://healeycodes.com/talking-between-languages
+    bolb2text(blob) {
+        return new Promise((resolve)=> {
+            let reader = new FileReader()
+            reader.readAsText(blob, 'utf-8')
+            reader.onload = () => { resolve(reader.result) }
+        })
+    }
+
+    take_effect_modify(path, data_body, record_modify, callback) {
         return fetch(path, {
             // Declare what type of data we're sending
             headers: {
@@ -452,24 +425,21 @@ host.BrowserHost = class {
             body: typeof (data_body) == "string" ? data_body : JSON.stringify(data_body),
         }).then((response) => {
             if (response.status == 204) {
-                response.text().then(text => {
-                    swal("Nothing happens!", text, "info");
+                return response.text().then((text) => {
+                    this.show_message("Nothing happens!", text, "info");
                 })
-            } else if (response.ok) {
-                if (path == "/onnxsim" || path == "/load-json" || path == "/auto-optimizer" ) {
-                    this._modify_info.push({
-                        path, data_body
-                    })
-                }
-                return response.blob();
-            } else {
-                response.text().then(text => {
-                    swal("Error happens!", 
+            } else if (!response.ok) {
+                return response.text().then((text) => {
+                    this.show_message("Error happens!", 
                         `You are kindly to check the log and create an issue on https://gitee.com/ascend/ait\n${text}`,
                         "error");
                 })
-                
             }
+
+            if (record_modify) {
+                this._modify_info.push({path, data_body})
+            }
+            return response.blob()
         }).then((blob) => {
             if (!blob) {
                 return
@@ -479,13 +449,13 @@ host.BrowserHost = class {
             }
 
             let file = new File([blob], this.upload_filename);
-            file.filepath = this.upload_filepath
+            file.filepath = blob.filepath ? blob.filepath : this.upload_filepath
             return this.openFile(file)
         }).then(()=>{
-            fetch("/get_output_message", {body:"{}"}).then((response) => {
+            fetch("/get_output_message", {method: 'POST', body:"{}"}).then((response) => {
                 response.text().then((text) => {
                     if (text) {
-                        swal("messages", text, "info");
+                        this.show_message("messages", text, "info");
                     }
                 })
             })
@@ -498,7 +468,6 @@ host.BrowserHost = class {
         let form = new FormData();
         form.append('file', file);
 
-        // https://stackoverflow.com/questions/66039996/javascript-fetch-upload-files-to-python-flask-restful
         fetch('/open_model', {
             method: 'POST',
             body: form
@@ -539,32 +508,63 @@ host.BrowserHost = class {
         return this._environment.get(name);
     }
 
+    show_message(title, message, level) {
+        let box = document.createElement("div")
+        box.classList.add("message-box", `${level}-message-box`)
+        let progressLine = document.createElement("div")
+        progressLine.classList.add("message-box-progress", `message-box-progress-${level}`)
+
+        let boxTitle = document.createElement("b")
+        boxTitle.innerText = title
+        let boxClose = document.createElement("span")
+        boxClose.innerText = "[ X ]"
+        boxClose.style.float = "right"
+        let boxText = document.createElement("p")
+        boxText.classList.add("text")
+        boxText.innerText = message
+        box.append(progressLine, boxTitle, boxClose, boxText)
+        document.getElementById("show-message-info").append(box)
+
+        // event
+        let remove_function = () => { box.remove(); }
+        boxClose.addEventListener("click", remove_function)
+        progressLine.addEventListener("animationend", remove_function)
+    }
+
+    show_alert_message(title, message) {
+        let alert_element = document.getElementById('show-message-alert')
+        alert_element.getElementsByTagName("h1")[0].innerText = title
+        alert_element.getElementsByClassName("text")[0].innerText = message
+        alert_element.showModal()
+    }
+
+    show_confirm_message(title, message) {
+        return new Promise((resolve)=>{
+            let confirm_element = document.getElementById('show-message-confirm')
+            confirm_element.getElementsByTagName("h1")[0].innerText = title
+            confirm_element.getElementsByClassName("text")[0].innerText = message
+    
+            let [cancelBtn, okBtn] = confirm_element.getElementsByTagName("button")
+            let cancel_event_listener = cancelBtn.addEventListener("click", ()=> {
+                confirm_element.close()
+                cancelBtn.removeEventListener("click", cancel_event_listener)
+                resolve(false)
+            })
+            let ok_event_listener = okBtn.addEventListener("click", ()=> {
+                confirm_element.close()
+                okBtn.removeEventListener("click", ok_event_listener)
+                resolve(true)
+            })
+            confirm_element.showModal()
+        })
+    }
+
     error(message, detail) {
-        swal(message, detail)
+        this.show_alert_message(message, detail)
     }
 
     confirm(message, detail) {
-        return swal({
-            title: message,
-            text: detail,
-            closeOnClickOutside: false,
-            buttons: {
-                cancel: {
-                    text: "Cancel",
-                    value: false,
-                    visible: true,
-                    className: "",
-                    closeModal: true,
-                },
-                confirm: {
-                    text: "OK",
-                    value: true,
-                    visible: true,
-                    className: "",
-                    closeModal: true
-                }
-            }
-        })
+        return this.show_confirm_message(message, detail);
     }
 
     require(id) {
@@ -786,7 +786,6 @@ host.BrowserHost = class {
         this._view.show('about');
     }
 
-    // https://blog.csdn.net/Crazy_SunShine/article/details/80624366
     _strMapToObj(strMap) {
         let obj = Object.create(null);
         for (let [k, v] of strMap) {
@@ -800,7 +799,6 @@ host.BrowserHost = class {
         return JSON.stringify(this._strMapToObj(map));
     }
 
-    // https://www.xul.fr/javascript/map-and-object.php
     mapToObjectRec(m) {
         let lo = {}
         for (let [k, v] of m) {
@@ -848,7 +846,6 @@ host.BrowserHost = class {
         return processed;
     }
 
-    // https://stackoverflow.com/a/4215753/10096987
     arrayToObject(arr) {
         var rv = {};
         for (var i = 0; i < arr.length; ++i)

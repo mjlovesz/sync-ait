@@ -4,9 +4,9 @@
 
 模型支持度分析工具提供算子支持情况分析、算子定义是否符合约束条件和算子输入是否为空。
 
-### 软件架构
+## 软件架构
 
-
+![architecture](img.png)
 
 ## 工具安装
 
@@ -72,3 +72,5 @@ ait analyze -gm /tmp/test.onnx -o /tmp/out
 | is_supported | 算子是否支持，TRUE：支持，FALSE：不支持                      |
 | details      | 算子支持情况问题描述，包括算子是否支持，算子定义是否符合约束条件、输入是否为空 |
 
+## 工具详细介绍
+- 工具详细介绍请见[analyze工具详细介绍](../../examples/cli/analyze/)

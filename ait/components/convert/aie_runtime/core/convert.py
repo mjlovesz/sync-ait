@@ -17,7 +17,6 @@ import sys
 import subprocess
 
 import logging
-from dataclasses import dataclass
 
 from aie_runtime.bean import ConvertConfig
 
@@ -51,38 +50,13 @@ class Convert:
             line = process.stdout.readline()
             line = line.strip()
             if line:
-                logger.info(line)
+                logger.debug(line)
         if process.returncode != 0:
             logger.error('Failed to execute command:%s' % " ".join(cmd))
 
-
     def convert_model(self) -> None:
-        retval = self.aie_build_model()
-        self.aie_model_convert(retval)
-        os.chdir(retval)
-
-
-    def aie_build_model(self) -> None:
-        execute_path = "./components/convert/aie_runtime/cpp"
-        convert_sh_cmd = ["sh", "build.sh", "-p", self.python_version]
-        retval = os.getcwd()
-        os.chdir(execute_path)
-        self.execute_command(convert_sh_cmd)
-        logger.info("Run command line: %s" % (convert_sh_cmd))
-        return retval
-
-
-    def aie_model_convert(self, retval) -> None:
-        run_path = "./build"
-        os.chdir(run_path)
-        run_cmd = ["./ait_convert", self._config.model, self._config.output, self._config.soc_version]
+        cur_dir = os.path.dirname(__file__)
+        ait_convert = os.path.join(cur_dir, "../ait_convert")
+        run_cmd = [ait_convert, self._config.model, self._config.output, self._config.soc_version]
         self.execute_command(run_cmd)
-
-        curval = os.getcwd()
-        output_model = self._config.output
-        copy_cmd = ["cp", output_model, retval]
-        self.execute_command(copy_cmd)
-        logger.info("AIE model convert finished, the command: %s" % (run_cmd))
-
-
-
+        logger.info("AIE model convert finished, the command: %s", run_cmd)

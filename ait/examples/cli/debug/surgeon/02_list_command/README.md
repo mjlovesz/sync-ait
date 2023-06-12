@@ -30,6 +30,7 @@ Available knowledges:
   13 KnowledgeAvgPoolSplit
   14 KnowledgeBNFolding
   15 KnowledgeModifyReflectionPad
+  16 KnowledgeBigKernel
 ``` 
 
 列举的知识库按照“序号”+“知识库名称”的格式展示，**evaluate**或**optimize**命令通过**knowledges**参数指定知识库时，可指定知识库序号或名称。关于具体知识库的详细信息，请参见[知识库文档](../../../../../components/debug/surgeon/docs/knowledge_optimizer/knowledge_optimizer_rules.md)。
