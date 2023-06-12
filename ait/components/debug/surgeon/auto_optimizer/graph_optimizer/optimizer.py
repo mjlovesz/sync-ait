@@ -95,6 +95,22 @@ class GraphOptimizer:
         self.knowledges = knowledge_dict
 
     @staticmethod
+    def optimize(graph: BaseGraph, knowledge: KnowledgeBase) -> bool:
+        res = False
+        if not knowledge.pre_process(graph):
+            return False
+        while knowledge.has_next_pattern():
+            knowledge.next_pattern()
+            match_results = knowledge.match_pattern(graph)
+            if match_results is None or len(match_results) == 0:
+                continue
+            while knowledge.has_next_apply():
+                knowledge.next_apply()
+                for match_result in match_results:
+                    res |= knowledge.apply(graph, match_result)
+        return knowledge.post_process(graph) and res
+
+    @staticmethod
     def _effective(om_ori: str, om_opt: str, cfg: InferTestConfig, check_precision: bool,
                    knowledge_name: str, queue: multiprocessing.Queue) -> None:
         from auto_optimizer.inference_engine.inference.acl_inference \
@@ -165,22 +181,6 @@ class GraphOptimizer:
             return
         queue.put(True)
 
-    @staticmethod
-    def _optimize(graph: BaseGraph, knowledge: KnowledgeBase) -> bool:
-        res = False
-        if not knowledge.pre_process(graph):
-            return False
-        while knowledge.has_next_pattern():
-            knowledge.next_pattern()
-            match_results = knowledge.match_pattern(graph)
-            if match_results is None or len(match_results) == 0:
-                continue
-            while knowledge.has_next_apply():
-                knowledge.next_apply()
-                for match_result in match_results:
-                    res |= knowledge.apply(graph, match_result)
-        return knowledge.post_process(graph) and res
-
     def init_knowledges(self):
         knowledges_ins = {}
         for k_name, k_cls in self.knowledges.items():
@@ -197,7 +197,7 @@ class GraphOptimizer:
         '''
         Optimize graph using optimizer.
         '''
-        return self._exec_action(graph, GraphOptimizer._optimize)
+        return self._exec_action(graph, GraphOptimizer.optimize)
 
     def apply_knowledges_with_infer_test(
         self,
