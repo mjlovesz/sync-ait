@@ -46,6 +46,9 @@ py::buffer_info ToNumpy(const TensorBase &tensor);
 #endif
 
 }
+#ifdef COMPILE_PYTHON_MODULE
 void RegistPyTensorModule(py::module &m);
+#endif
+
 #endif
 
