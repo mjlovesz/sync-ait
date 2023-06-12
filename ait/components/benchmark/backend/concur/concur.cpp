@@ -33,6 +33,7 @@
 #include "Base/Tensor/TensorBase/TensorBase.h"
 #include "PyTensor/PyTensor.h"
 #include "cnpy.h"
+#include "utils.h"
 
 #include "Base/ModelInfer/SessionOptions.h"
 #include "Base/ModelInfer/ModelInferenceProcessor.h"
@@ -91,33 +92,27 @@ class ConcurrentQueue {
     int _depth;
 };
 
-int str2num(char* str)    
+void setSession(std::shared_ptr<Base::PyInferenceSession> session, Arguments& arguments)
 {
-    int n = 0;
-    int flag = 0;
-    const int decimal = 10;
-    while (*str >= '0' && *str <= '9') {
-        n = n * decimal + (*str - '0');
-        str++;
+    if (arguments["dymHW"] != "") {
+        auto dymhw = split(arguments["dymHW"], ',');
+        session->SetDynamicHW(stoi(dymhw[0]), stoi(dymhw[1]));
     }
-    if (flag == 1) {
-        n = -n;
+    if (arguments["dymDims"] != "") {
+        session->SetDynamicDims(arguments["dymDims"]);
     }
-    return n;
+    if (arguments["dymShape"] != "") {
+        session ->SetDynamicShape(arguments["dymShape"]);
+    }
+    if (arguments["outputSize"] != "") {
+        auto outputSize = strVecToNumVec(split(arguments["outputSize"], ','));
+        session->SetCustomOutTensorsSize(outputSize);
+    }
 }
 
-vector<std::string> traversal(const char *dir) {
-   DIR *dr;
-   struct dirent *diread;
-   vector<std::string> filenames;
-   if (dr) {
-      while ((en = readdir(dr)) != NULL) {
-         cout<<" \n"<<en->d_name; //print all directory name
-      }
-      closedir(dr); //close all directory
-   }
-   return(0);
-}
+
+
+
 
 
 int main(int argc, char **argv) {

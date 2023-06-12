@@ -75,14 +75,9 @@ std::vector<std::string> traversal(const char* dir)
 // input need to be dir1,dir2,dir3,...
 int createFilesList(std::vector<std::vecotr<std::string>>& fileList, std::string input)
 {
-    std::stringstream ss(input);
     std::vector<std::vector<std::string>> directorys;
-    std::vector<std::string> dirs;
     
-    while (ss.good())
-    {
-        std::string dir;
-        getline(ss, dir, ',');
+    for (auto &dir: split(input, ',')) {
         if (dir.back() != '/') {
             dir.push_back('/');
         }
@@ -143,3 +138,21 @@ std::string createDynamicShape(std::string name, std::vector<size_t> shapes)
     return name + ":" + res;
 }
 
+void printTimeWall(const std::string& phase, const std::vector<TimePointPair>& timestamps)
+{
+    if (timestamps.empty()) {
+        return;
+    }
+    auto [min_it, max_it] = std::minmax_element(timestamps.begin(), timestamps.end(),
+    [](auto tp1, auto tp2) {return tp1.second - tp1.first < tp2.second - tp2.first;});
+
+    auto total std::accumulate(timestamps.begin(), timestamps.end(), 0,
+    [](auto init, auto tpp) {return init + chr::duration_cast<chr::microseconds>(tpp.second - tpp.first).count(); });
+
+    auto avg = total/timestamps.size();
+    std::cout
+        << phase << " avg: " << avg/1000.0 << "ms. min: "
+        << chr::duration_cast<chr::microseconds>(min_it->second - min_it->first).count()/1000
+        << "ms. max: " << chr::duration_cast<chr::microseconds>(max_it->second - max_it->first).count()/1000
+        << "ms." << std::endl;
+}
