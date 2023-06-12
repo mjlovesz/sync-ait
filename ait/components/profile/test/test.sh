@@ -15,7 +15,7 @@
 # limitations under the License.
 declare -i ret_ok=0
 declare -i ret_failed=1
-CUR_PATH=$("pwd")
+CUR_PATH=$(dirname $(readlink -f "$0"))
 TEST_DATA_PATH=$CUR_PATH/../../benchmark/test/testdata/
 OUTPUT_PATH=$CUR_PATH/output_datas
 
