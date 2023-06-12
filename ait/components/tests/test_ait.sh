@@ -16,7 +16,7 @@
 
 declare -i ret_ok=0
 declare -i ret_failed=1
-CUR_PATH=$(dirname $(readlink -f "$0"))
+CUR_PATH=$("pwd")
 SOC_VERSION=""
 
 function get_npu_type()
@@ -48,7 +48,7 @@ function test_benchmark()
 }
 function test_convert()
 {
-
+    bash $CUR_PATH/convert/test/test.sh
 }
 function test_debug_compare()
 {
