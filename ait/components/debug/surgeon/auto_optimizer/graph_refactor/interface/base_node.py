@@ -41,14 +41,14 @@ class BaseNode(ABC):
     def op_type(self) -> str:
         return self._op_type
 
+    @name.setter
+    def name(self, name: str) -> None:
+        self._name = name
+    
     @classmethod
     @abstractmethod
     def parse(cls, _) -> 'BaseNode':
         raise NotImplementedError()
-
-    @name.setter
-    def name(self, name: str) -> None:
-        self._name = name
 
 
 class Node(BaseNode):
@@ -127,13 +127,13 @@ class Node(BaseNode):
     def domain(self) -> str:
         return self._domain
 
-    @classmethod
-    def parse(cls, _) -> 'Node':
-        raise NotImplementedError()
-
     @domain.setter
     def domain(self, domain: str) -> None:
         self._domain = domain
+    
+    @classmethod
+    def parse(cls, _) -> 'Node':
+        raise NotImplementedError()
 
     @inputs.setter
     def inputs(self, inputs: List[str]) -> None:
@@ -145,12 +145,12 @@ class Node(BaseNode):
                 f'Name of input should be one of {self._inputs}')
         return self._inputs.index(node_input)
 
-    def get_input_ids(self, node_input: str) -> List[int]:
-        return [idx for idx, name in enumerate(self._inputs) if name == node_input]
-
     @outputs.setter
     def outputs(self, outputs: List[str]) -> None:
         self._outputs = outputs
+    
+    def get_input_ids(self, node_input: str) -> List[int]:
+        return [idx for idx, name in enumerate(self._inputs) if name == node_input]
 
     def get_output_id(self, output: str) -> int:
         if output not in self._outputs:
