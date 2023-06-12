@@ -305,6 +305,18 @@ class OnnxGraph(BaseGraph):
 
         return subgraph
 
+    @opset_imports.setter
+    def opset_imports(self, opset: Union[int, None]) -> None:
+        if not opset:
+            self._meta['opset_imports'] = None
+        else:
+            opset_imports = OperatorSetIdProto()
+            opset_imports.version = opset
+            model = self.model()
+            converted_model = version_converter.convert_version(model, opset)
+            self.graph = OnnxGraph.parse(converted_model)
+            self._meta['opset_imports'] = [opset_imports]
+    
     def simplify(self, **kwargs) -> 'OnnxGraph':
         try:
             from onnxsim import simplify
@@ -317,18 +329,6 @@ class OnnxGraph(BaseGraph):
             raise RuntimeError("Simplified ONNX model could not be validated")
 
         return OnnxGraph.parse(model_sim)
-
-    @opset_imports.setter
-    def opset_imports(self, opset: Union[int, None]) -> None:
-        if not opset:
-            self._meta['opset_imports'] = None
-        else:
-            opset_imports = OperatorSetIdProto()
-            opset_imports.version = opset
-            model = self.model()
-            converted_model = version_converter.convert_version(model, opset)
-            self.graph = OnnxGraph.parse(converted_model)
-            self._meta['opset_imports'] = [opset_imports]
 
     def _bfs_search_reachable_nodes(self, start_nodes, top_down=True):
         visited = set()

@@ -70,15 +70,15 @@ class KnowledgeBNFolding(KnowledgeBase):
             .add_edge('bn0', 'tr1') \
             .set_loop(MatchPattern.MATCH_ONCE)
         self._register_apply_funcs(self.pattern_, [self._apply])
-
+    
     def _constant_folding(self, scale: NDArray, bias: NDArray, mean: NDArray,
                           var: NDArray, epsilon: float,) -> Tuple[NDArray, NDArray]:
         common_divisor = np.sqrt(var + epsilon)
         try:
             mul_init = scale / common_divisor
         except ZeroDivisionError as err:
-            raise ValueError('ZeroDivision Error: common divisor == 0') from err
-        add_init = bias - scale * mean / common_divisor
+            raise ValueError('ZeroDivision Error: common divisor == 0') from err 
+        add_init = bias - mean * mul_init
         return mul_init, add_init
 
     def _bn_folding(self, tr0: Node, bn: Node, tr1: Node,
