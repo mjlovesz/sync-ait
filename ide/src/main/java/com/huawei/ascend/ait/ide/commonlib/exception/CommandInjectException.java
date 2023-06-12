@@ -16,7 +16,7 @@
 
 package com.huawei.ascend.ait.ide.commonlib.exception;
 
-import com.huawei.ascend.ait.ide.commonlib.util.BundleUtil;
+import java.util.List;
 
 /**
  * CommandInjectException
@@ -26,6 +26,8 @@ import com.huawei.ascend.ait.ide.commonlib.util.BundleUtil;
  */
 public class CommandInjectException extends Exception {
     private static final long serialVersionUID = -2439139320983098242L;
+    private static final List<String> INVALID_CHAR = List.of("|", ";", "&", "$", ">", "<", "`", "\\" + "\\", "!", "\\n");
+    private static final String INJECT_ERROR = "Parameters cannot contain the following characters: " + INVALID_CHAR;
 
     /**
      * CommandInjectException
@@ -33,6 +35,6 @@ public class CommandInjectException extends Exception {
      * @param errorParam errorParam
      */
     public CommandInjectException(String errorParam) {
-        super(BundleUtil.getCommonlibsString("command.inject.error") + "The error param is " + errorParam);
+        super(INJECT_ERROR + " The error param is " + errorParam);
     }
 }
