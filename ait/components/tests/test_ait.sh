@@ -40,38 +40,34 @@ function get_npu_type()
 
 function test_analyze()
 {
-    bash $CUR_PATH/analyser/tests/test.sh
+    bash $CUR_PATH/../analyser/tests/test.sh
 }
 function test_benchmark()
 {
-    bash $CUR_PATH/benchmark/test/test.sh $1 $2
+    bash $CUR_PATH/../benchmark/test/test.sh $1 $2
 }
 function test_convert()
 {
-    bash $CUR_PATH/convert/test/test.sh
+    bash $CUR_PATH/../convert/test/test.sh
 }
 function test_debug_compare()
 {
-    bash $CUR_PATH/debug/compare/tests/ut/test.sh
+    bash $CUR_PATH/../debug/compare/tests/ut/test.sh
 }
 function test_debug_surgeon()
 {
-    bash $CUR_PATH/debug/surgeon/test/test.sh
+    bash $CUR_PATH/../debug/surgeon/test/test.sh
 }
 function test_profile()
 {
-    bash $CUR_PATH/profile/test/test.sh
+    bash $CUR_PATH/../profile/test/test.sh
 }
 function test_transplt()
 {
-    bash $CUR_PATH/transplt/test/test.sh
+    bash $CUR_PATH/../transplt/test/test.sh
 }
 
 main() {
-    if [ $# -lt 1 ]; then
-        echo "at least one parameter. for example: bash test_ait.sh Ascend310P3"
-        return $ret_invalid_args
-    fi
     get_npu_type || { echo "invalid npu device";return $ret_failed; }
     PYTHON_COMMAND="python3"
     BENCKMARK_DT_MODE="simple"
