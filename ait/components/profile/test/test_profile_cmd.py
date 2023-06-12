@@ -31,7 +31,7 @@ class TestClass:
     def init(self):
         self.model_path = os.path.join(self.get_cur_path(), "testdata/resnet50/model/pth_resnet50_bs1.om")
         self.output_path = os.path.join(self.get_cur_path(), "output/")
-        self.app_cmd = "ait benchmark -om {}".format(self.model_path)
+        self.app_cmd = "/'ait benchmark -om {}/'".format(self.model_path)
 
     def test_default_cmd(self):
         cmd = "ait profile --application {} -o {}".format(self.app_cmd, self.output_path)
