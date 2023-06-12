@@ -80,7 +80,7 @@ int createFilesList(std::vector<std::vector<std::string>>& fileList, std::string
 {
     std::vector<std::vector<std::string>> directorys;
     
-    for (auto &dir: split(input, ',')) {
+    for (auto &dir: split_str(input, ',')) {
         if (dir.back() != '/') {
             dir.push_back('/');
         }
@@ -137,7 +137,7 @@ std::string createDynamicShape(std::string name, std::vector<size_t> shapes)
     for (auto &shape: shapes) {
         shapes_str.push_back(std::to_string(shape));
     }
-    auto res = merge(shapes_str, ",");
+    auto res = merge_str(shapes_str, ",");
     return name + ":" + res;
 }
 
