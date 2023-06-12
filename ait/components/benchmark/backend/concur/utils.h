@@ -11,8 +11,8 @@ using TimePointPair = std::pair<chr::steady_clock::time_point, chr::steady_clock
 using Arguments = std::unordered_map<std::string, std::string>;
 
 void readArgs(int argc, char *argv[], Arguments& arguments);
-std::string merge(std::vector<std::string> list, std::string delimiter); // merge a vector of string with delimiter
-std::vector<std::string> split(std::string input, char delimiter);
+std::string merge_str(std::vector<std::string> list, std::string delimiter); // merge a vector of string with delimiter
+std::vector<std::string> split_str(std::string input, char delimiter);
 std::vector<size_t> strVecToNumVec(const std::vector<std::string>& vec);
 std::vector<std::string> traversal(const char* dir); // traversal a directory return vector of filename
 int createFilesList(std::vector<std::vector<std::string>>& fileList, std::string input);

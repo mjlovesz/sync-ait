@@ -94,7 +94,7 @@ class ConcurrentQueue {
 void setSession(std::shared_ptr<Base::PyInferenceSession> session, Arguments& arguments)
 {
     if (arguments["dymHW"] != "") {
-        auto dymhw = split(arguments["dymHW"], ',');
+        auto dymhw = split_str(arguments["dymHW"], ',');
         session->SetDynamicHW(stoi(dymhw[0]), stoi(dymhw[1]));
     }
     if (arguments["dymDims"] != "") {
@@ -104,7 +104,7 @@ void setSession(std::shared_ptr<Base::PyInferenceSession> session, Arguments& ar
         session ->SetDynamicShape(arguments["dymShape"]);
     }
     if (arguments["outputSize"] != "") {
-        auto outputSize = strVecToNumVec(split(arguments["outputSize"], ','));
+        auto outputSize = strVecToNumVec(split_str(arguments["outputSize"], ','));
         session->SetCustomOutTensorsSize(outputSize);
     }
 }
@@ -213,7 +213,7 @@ void func_compute(ConcurrentQueue<std::shared_ptr<Feeds>> &compute_queue,
             session->SetDynamicShape(item->_autoDynamicShape);
         }
         auto outputs = std::make_shared<std::vector<Base::TensorBase>>();
-        Base::PyInferenceSession::PureInfer(*(item->_inputs), *(item->_output_names), *outputs);
+        session->PureInfer(*(item->_inputs), *(item->_output_names), *outputs);
         item->_outputs = outputs;
 
         auto end = chr::steady_clock::now();
