@@ -142,8 +142,8 @@ def create_intensors_from_infileslist(infileslist, intensors_desc, session,
     intensorslist = []
     for infiles in infileslist:
         intensors = []
-        for j, files in enumerate(infiles):
-            tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize,
+        for files, intensor_desc in zip(infiles, intensors_desc):
+            tensor = get_tensor_from_files_list(files, session, intensor_desc.realsize,
                                                 pure_data_type, no_combine_tensor_mode)
             intensors.append(tensor)
         intensorslist.append(intensors)
@@ -158,8 +158,8 @@ def check_input_parameter(inputs_list, intensors_desc):
         for index, file_path in enumerate(inputs_list):
             realpath = os.readlink(file_path) if os.path.islink(file_path) else file_path
             if not os.path.isfile(realpath):
-                logger.error("Invalid input args.--input:{} input[{}]:{} {} not exist".format(inputs_list, index,
-                                                                                              file_path, realpath))
+                logger.error("Invalid input args.--input:{} input[{}]:{} {} not exist".format(
+                    inputs_list, index, file_path, realpath))
                 raise RuntimeError()
     elif os.path.isdir(inputs_list[0]):
         if len(inputs_list) != len(intensors_desc):
