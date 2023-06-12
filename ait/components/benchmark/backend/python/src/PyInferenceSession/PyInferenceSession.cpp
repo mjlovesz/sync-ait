@@ -300,6 +300,15 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
     return outputs;
 }
 
+void PyInferenceSession::PureInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names, std::vector<TensorBase>& outputs)
+{
+    APP_ERROR ret = modelInfer_.Inference(inputs, output_names, outputs);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+}
+
+
 int PyInferenceSession::AippSetMaxBatchSize(uint64_t batchSize)
 {
     APP_ERROR ret = modelInfer_.AippSetMaxBatchSize(batchSize);

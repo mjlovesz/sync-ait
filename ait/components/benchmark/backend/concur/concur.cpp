@@ -212,8 +212,8 @@ void func_compute(ConcurrentQueue<std::shared_ptr<Feeds>> &compute_queue,
         if (item->_autoDynamicShape != "") {
             session->SetDynamicShape(item->_autoDynamicShape);
         }
-        auto outputs = std::make_shared<std::vector<Base::TensorBase>>(
-            session->InferVector(*(item->_output_names), *(item->_inputs)));
+        auto outputs = std::make_shared<std::vector<Base::TensorBase>>();
+        Base::PyInferenceSession::PureInfer(*(item->_inputs), *(item->_output_names), *outputs);
         item->_outputs = outputs;
 
         auto end = chr::steady_clock::now();
