@@ -23,10 +23,10 @@ PYTHON_COMMAND="python3"
 
 
 main() {
-    if [[ ! -f $CUR_PATH/testdata ]];then
+    if [ ! -f $CUR_PATH/testdata ];then
         ln -s $TEST_DATA_PATH $CUR_PATH/testdata || { echo "make soft link failed!"; return $ret_failed; }
     fi
-    if [[ ! -f $OUTPUT_PATH ]];then
+    if [ ! -f $OUTPUT_PATH ];then
         mkdir $OUTPUT_PATH || { echo "make output dir failed"; return $ret_failed; }
     fi
 
