@@ -41,6 +41,18 @@ def list_split(list_a, n, padding_file):
         yield every_chunk
 
 
+def list_share(list_a, count, num, left):
+    head = 0
+    for i in range(count):
+        if i < left:
+            every_chunk = list_a[head: head + num + 1]
+            head = head + num + 1
+        else:
+            every_chunk = list_a[head: head + num]
+            head = head + num
+        yield every_chunk
+
+
 def natural_sort(lst):
     convert = lambda text: int(text) if text.isdigit() else text.lower()
     alphanum_key = lambda key: [convert(c) for c in re.split('([0-9]+)', key)]

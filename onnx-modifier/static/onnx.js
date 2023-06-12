@@ -762,7 +762,6 @@ onnx.Argument = class {
         return this._name;
     }
 
-    // https://bobbyhadz.com/blog/javascript-cannot-set-property-which-has-only-getter
     // It is unsafe
     set name(name) {
         this._name = name;

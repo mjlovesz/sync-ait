@@ -22,12 +22,13 @@ import sys
 import os
 import stat
 import re
+import shutil
 import numpy as np
 
 
 from msquickcmp.common import utils
 from msquickcmp.common.dump_data import DumpData
-from msquickcmp.common.utils import AccuracyCompareException
+from msquickcmp.common.utils import AccuracyCompareException, parse_input_shape_to_list
 from msquickcmp.common.dynamic_argument_bean import DynamicArgumentEnum
 from msquickcmp.npu.om_parser import OmParser
 
@@ -204,6 +205,51 @@ class NpuDumpData(DumpData):
                 "The path {} does not have permission to write.Please check the path permission".format(acl_json_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
+    def generate_inputs_data(self):
+        if self.arguments.input_path:
+            input_path = self.arguments.input_path.split(",")
+            for i, input_file in enumerate(input_path):
+                if not os.path.isfile(input_file):
+                    utils.logger.error("no such file exists: {}".format(input_file))
+                    raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+                file_name = "input_" + str(i) + ".bin"
+                dest_file = os.path.join(self.arguments.out_path, "input", file_name)
+                shutil.copy(input_file, dest_file)
+            return
+        aipp_content = self.om_parser.get_aipp_config_content()
+        aipp_list = aipp_content.split(",")
+        src_image_size_h = []
+        src_image_size_w = []
+        for aipp_info in aipp_list:
+            if "src_image_size_h" in aipp_info:
+                src_image_size_h.append(aipp_info.split(":")[1])
+            if "src_image_size_w" in aipp_info:
+                src_image_size_w.append(aipp_info.split(":")[1])
+        if not src_image_size_h or not src_image_size_w:
+            utils.logger.error("atc insert_op_config file contains no src_image_size_h or src_image_size_w")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
+        if len(src_image_size_h) != len(src_image_size_w):
+            utils.logger.error("atc insert_op_config file's src_image_size_h number "
+                                  "does not equal src_image_size_w")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
+        if self.arguments.input_shape:
+            inputs_list = parse_input_shape_to_list(self.arguments.input_shape)
+        else:
+            inputs_list = self.om_parser.get_shape_list()
+        if len(inputs_list) != len(src_image_size_h):
+            utils.logger.error("inputs number is not equal to aipp inputs number, please check the -s param")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
+        # currently, onnx only support input format nchw
+        h_position = 2
+        w_position = 3
+        input_dir = os.path.join(self.arguments.out_path, "input")
+        for i, item in enumerate(inputs_list):
+            item[h_position] = int(src_image_size_h[i])
+            item[w_position] = int(src_image_size_w[i])
+            input_data = np.random.randint(0, 256, item).astype(np.uint8)
+            file_name = "input_" + str(i) + ".bin"
+            input_data.tofile(os.path.join(input_dir, file_name))
+
     def generate_dump_data(self, use_cli):
         """
         Function Description:
@@ -261,7 +307,7 @@ class NpuDumpData(DumpData):
         except ModuleNotFoundError as err:
             raise err
 
-        self._compare_shape_vs_bin_file()
+        self._compare_shape_vs_file()
         npu_data_output_dir = os.path.join(self.arguments.out_path, NPU_DUMP_DATA_BASE_PATH)
         utils.create_directory(npu_data_output_dir)
         model_name, extension = utils.get_model_name_and_extension(self.arguments.offline_model_path)
@@ -362,40 +408,51 @@ class NpuDumpData(DumpData):
             bin_file_path_array = utils.check_input_bin_file_path(self.arguments.input_path)
             self.arguments.benchmark_input_path = ",".join(bin_file_path_array)
 
-    def _compare_shape_vs_bin_file(self):
+    def _compare_shape_vs_file(self):
         shape_size_array = self.om_parser.get_shape_size()
         if self.om_parser.contain_negative_1:
             return
-        bin_files_size_array = self._get_bin_file_size()
-        self._shape_size_vs_bin_file_size(shape_size_array, bin_files_size_array)
+        files_size_array = self._get_file_size()
+        self._shape_size_vs_file_size(shape_size_array, files_size_array)
 
-    def _get_bin_file_size(self):
-        bin_file_size = []
-        bin_files = self.arguments.benchmark_input_path.split(",")
-        for item in bin_files:
-            bin_file_size.append(os.path.getsize(item))
-        return bin_file_size
+    def _get_file_size(self):
+        file_size = []
+        files = self.arguments.benchmark_input_path.split(",")
+        for item in files:
+            if item.endswith("bin") or item.endswith("BIN"):
+                file_size.append(os.path.getsize(item))
+            elif item.endswith("npy") or item.endswith("NPY"):
+                try:
+                    file_size.append(np.load(item).size)
+                except (ValueError, FileNotFoundError) as e:
+                    utils.logger.error("The path {} can not get its size through numpy".format(item))
+                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR) from e
+            else:
+                utils.logger.error("Input_path parameter only support bin or npy file, "
+                                      "but got {}".format(item))
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+        return file_size
 
-    def _shape_size_vs_bin_file_size(self, shape_size_array, bin_files_size_array):
-        if len(shape_size_array) < len(bin_files_size_array):
-            utils.logger.error("The number of input bin files is incorrect.")
+    def _shape_size_vs_file_size(self, shape_size_array, files_size_array):
+        if len(shape_size_array) < len(files_size_array):
+            utils.logger.error("The number of input files is incorrect.")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
         if self.om_parser.shape_range:
-            for bin_file_size in bin_files_size_array:
-                if bin_file_size not in shape_size_array:
+            for file_size in files_size_array:
+                if file_size not in shape_size_array:
                     utils.logger.error(
-                        "The size (%d) of bin file can not match the input of the model." % bin_file_size)
+                        "The size (%d) of file can not match the input of the model." % file_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
         elif self.dynamic_input.is_dynamic_shape_scenario():
             for shape_size in shape_size_array:
-                for bin_size in bin_files_size_array:
-                    if bin_size <= shape_size:
+                for file_size in files_size_array:
+                    if file_size <= shape_size:
                         return
             utils.logger.warning("The size of bin file can not match the input of the model.")
         else:
-            for shape_size, bin_file_size in zip(shape_size_array, bin_files_size_array):
+            for shape_size, file_size in zip(shape_size_array, files_size_array):
                 if shape_size == 0:
                     continue
-                if shape_size != bin_file_size:
-                    utils.logger.error("The shape value is different from the size of the bin file.")
+                if shape_size != file_size:
+                    utils.logger.error("The shape value is different from the size of the file.")
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
