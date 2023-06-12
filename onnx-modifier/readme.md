@@ -36,7 +36,7 @@
 1. 安装python
     * 建议安装[miniconda3](https://docs.conda.io/en/latest/miniconda.html)
     * 注意点: 在 windows 上，命令行的python命令优先会启动 WindowsApps 目录的程序，可以在环境变量中将 %USERPROFILE%\AppData\Local\Microsoft\WindowsApps 下移到最后
-2. 安装[NodeJS](https://nodejs.org/zh-cn) (使用 electron 启动时需要，建议安装最新长期维护版本)
+2. 安装[NodeJS](https://nodejs.org/zh-cn/download) (使用 electron 启动时需要，建议安装最新长期维护版本)
 3. 拉取源码：
   ```bash
   git clone https://gitee.com/ascend/ait.git
@@ -64,7 +64,7 @@
         直接 `npm install` , npm是NodeJS的包管理器。如果遇到electron 无法安装失败问题，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85) 
 - 运行（该方式启动常用于调试开发）
   ```bash
-  cd ait/onnx-modifier
+  # 切到目录 ait/onnx-modifier 运行以下命令
   electron .
   ```
 
@@ -76,11 +76,12 @@
 - 安装
 
   ```bash
+  # 切到目录 ait/onnx-modifier 运行以下命令
   npm install  # npm是NodeJS的包管理器；
   ```
 - 编译
   ```bash
-  cd ait/onnx-modifier
+  # 切到目录 ait/onnx-modifier 运行以下命令
   npm run make
   ```
 - 安装运行
@@ -92,8 +93,10 @@
     2. 如果运行报错，建议升级flask。建议版本2.2.2
 - 运行，默认端口为5000（常用于调试开发）
   ```bash
+  # 切到目录 ait/onnx-modifier 运行以下命令
   python flaskserver.py 
-  # 然后打开浏览器，打开 localhost:5000 即可访问到 onnx-modifier
+  # 然后打开浏览器，打开 localhost:5000 即可访问到 onnx-modifier。
+  # 因为安全考虑。仅支持运行命令的主机访问该端口，如果需要其他机器访问，建议使用ssh端口转发功能
   ```
 - 命令行参数
   - 支持指定端口，参数为： --port [端口号]
@@ -245,6 +248,27 @@
 
 
 <img src="./docs/extract.gif" style="zoom:75%;" />
+
+
+
+# 外部链接网址
+
+| 网址                                      | 功能                                     | 
+|-------------------------------------------|-----------------------------------------|
+| https://github.com/ZhangGe6               | 该仓库原始仓库位置，在About菜单中展示      |
+| https://arxiv.org/ | 算子说明信息        |
+| https://github.com/onnx/onnx/ | 算子说明信息 |
+| https://pytorch.org/docs/ | 算子说明信息 |
+| https://docs.scipy.org/doc/ | 算子说明信息 |
+| https://devblogs.nvidia.com/ | 算子说明信息 |
+| https://github.com/numpy/numpy/issues/8621 | 算子说明信息 |
+| https://en.wikipedia.org/wiki/ | 算子说明信息 |
+| https://papers.nips.cc/paper/ | 算子说明信息 |
+| https://ieeexplore.ieee.org/document | 算子说明信息 |
+
+# 常见问题 Q&A
+
+参考：[OnnxModify 常见问题](https://gitee.com/ascend/ait/wikis/OnnxModifier/OnnxModify%20%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
 
 # 参考资料
 

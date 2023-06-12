@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
@@ -53,7 +52,9 @@ ACCURACY_COMPARISON_NOT_SUPPORT_ERROR = 15
 ACCURACY_COMPARISON_NET_OUTPUT_ERROR = 16
 ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
 ACCURACY_COMPARISON_WRONG_AIPP_CONTENT = 18
-MODEL_TYPE = ['.onnx', '.pb', '.om']
+ACCRACY_COMPARISON_EXTRACT_ERROR = 19
+ACCRACY_COMPARISON_FETCH_DATA_ERROR = 20
+MODEL_TYPE = ['.onnx', '.pb', '.om', '.prototxt']
 DIM_PATTERN = r"^(-?[0-9]{1,100})(,-?[0-9]{1,100}){0,100}"
 DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+){0,3}"
 MAX_DEVICE_ID = 255
@@ -257,6 +258,18 @@ def check_convert_is_valid_used(dump, bin2npy):
             Please keep dump True while using convert."
         )
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
+
+
+def check_locat_is_valid(dump, locat):
+    """
+    Function:
+        check locat args is completed
+    Return:
+        True or False
+    """
+    if locat and not dump:
+            logger.error("Dump must be True when locat is used")
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
 
 
 def parse_input_shape(input_shape):
@@ -472,6 +485,16 @@ def get_batch_index(dump_data_path):
             if ASCEND_BATCH_FIELD in file_name:
                 return get_batch_index_from_name(file_name)
     return ""
+
+
+def get_mbatch_op_name(om_parser, op_name, npu_dump_data_path):
+    _, scenario = om_parser.get_dynamic_scenario_info()
+    if scenario in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
+        batch_index = get_batch_index(npu_dump_data_path)
+        current_op_name = BATCH_SCENARIO_OP_NAME.format(op_name, batch_index)
+    else:
+        return op_name
+    return current_op_name
 
 
 def handle_ground_truth_files(om_parser, npu_dump_data_path, golden_dump_data_path):

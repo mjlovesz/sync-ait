@@ -39,7 +39,6 @@ modifier.Modifier = class {
         this.resetGraph()
     }
 
-    // TODO: add filter feature like here: https://www.w3schools.com/howto/howto_js_dropdown.asp
     updateAddNodeDropDown() {
         // update dropdown supported node lost
         var addNodeDropdown = this.view._host.document.getElementById('add-node-dropdown');
@@ -204,14 +203,14 @@ modifier.Modifier = class {
 
     deleteSingleNode(node_name) {
         this.name2NodeStates.set(node_name, 'Deleted');
-        this.name2ViewNode.get(node_name).element.style.opacity = 0.3;
+        this.name2ViewNode.get(node_name).element.classList.add("graph-node-delete")
     }
 
     deleteNodeWithChildren(node_name) {
         if (this.name2NodeStates.get(node_name) == 'Deleted') return;
 
         this.name2NodeStates.set(node_name, 'Deleted');
-        this.name2ViewNode.get(node_name).element.style.opacity = 0.3;
+        this.name2ViewNode.get(node_name).element.classList.add("graph-node-delete")
 
         if (!this.namedEdges.has(node_name)) return; // for leaf node
 
@@ -222,7 +221,21 @@ modifier.Modifier = class {
 
     recoverSingleNode(node_name) {
         this.name2NodeStates.set(node_name, 'Exist');
-        this.name2ViewNode.get(node_name).element.style.opacity = 1;
+        this.name2ViewNode.get(node_name).element.classList.remove("graph-node-delete")
+    }
+
+    recoverNodeWithChildren(node_name) {
+        if (this.name2NodeStates.get(node_name) == 'Exist') return;
+        if (!this.name2ViewNode.get(node_name).element.classList.contains("graph-node-delete")) return;
+
+        this.name2NodeStates.set(node_name, 'Exist');
+        this.name2ViewNode.get(node_name).element.classList.remove("graph-node-delete")
+
+        if (!this.namedEdges.has(node_name)) return; // for leaf node
+
+        for (var i = 0; i < this.namedEdges.get(node_name).length; i++) {
+            this.recoverNodeWithChildren(this.namedEdges.get(node_name)[i]);
+        }
     }
 
     changeNodeInputOutput(modelNodeName, parameterName, param_type, param_index, arg_index, targetValue) {

@@ -28,6 +28,9 @@ from model_evaluation.options import (
 )
 
 
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+
 def parse_input_param(model: str,
     framework: str, weight: str, soc: str
 ) -> ConvertConfig:
@@ -52,7 +55,8 @@ def parse_input_param(model: str,
     )
 
 
-@click.command(short_help='Analyze tool to analyze model support', no_args_is_help=True)
+@click.command(short_help='Analyze tool to analyze model support', no_args_is_help=True,
+               context_settings=CONTEXT_SETTINGS)
 @opt_model
 @opt_framework
 @opt_weight
