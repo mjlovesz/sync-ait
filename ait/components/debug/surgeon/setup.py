@@ -59,7 +59,7 @@ setup(
     },
     python_requires='>=3.7',
     entry_points={
-        'console_scripts': ['auto_optimizer=auto_optimizer.__main__:cli'],
+        'console_scripts': ['auto_optimizer=auto_optimizer.old_main:cli'],
         'debug_sub_task': ['surgeon=auto_optimizer.__main__:cli'],
     },
 )
