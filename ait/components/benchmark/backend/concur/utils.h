@@ -13,7 +13,7 @@ std::stirng merge(std::vector<std::string> list, std::string delimiter); // merg
 std::vector<std::string> split(std::string input, char delimiter);
 std::vector<size_t> strVecToNumVec(const std::vector<std::string>& vec);
 std::vector<std::string> traversal(const char* dir); // traversal a directory return vector of filename
-int createFilesList(std::vector<std::vecotr<std::string>>& fileList, std::string input);
+int createFilesList(std::vector<std::vector<std::string>>& fileList, std::string input);
 std::string getPrefix(std::string filePath);
 std::string removeSlash(std::string name);
 std::string createDynamicShape(std::string name, std::vector<size_t> shapes);

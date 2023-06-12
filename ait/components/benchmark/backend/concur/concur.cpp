@@ -23,6 +23,8 @@
 #include <thread>
 #include <condition_variable>
 #include <chrono>
+#include <unordered_map>
+
 
 #include <unistd.h>
 #include <assert.h>
@@ -40,11 +42,11 @@
 #include "PyInferenceSession/PyInferenceSession.h"
 
 namespace chr = std::chrono;
-using TimePointPair = std::pair<chr::steady_clock::time, chr::steady_clock::time_point>;
+using TimePointPair = std::pair<chr::steady_clock::time_point, chr::steady_clock::time_point>;
 using Arguments = std::unordered_map<std::string, std::string>;
 
 struct Feeds{
-    std::shared_ptr<std::vector<std::string>> _output_names = nullptr;
+    std::shared_ptr<std::vector<std::string>> _output_names = nullptr;s
     std::shared_ptr<std::vector<Base::BaseTensor>> _inputs = nullptr;
     std::shared_ptr<std::vector<Base::TensorBase>> _outputs = nullptr;
     std::shared_ptr<std::vector<Base::MemoryData>> _memory = nullptr;
@@ -259,29 +261,29 @@ int tensotToNumpy(std::string output_filename, Base::TensorBase& output)
     std::vector<size_t> shape{shape_tmp.begin(), shape_tmp.end()};
 
     if (output.GetDataType() == Base::TENSOR_DTYPE_FLOAT32) {
-        cnpy::npy_save(output_filename. (float*)output.GetBuffer(), shape);
+        cnpy::npy_save(output_filename, (float*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_FLOAT16) {
-        cnpy::npy_save(output_filename. (aclFloat16*)output.GetBuffer(), shape);
+        cnpy::npy_save(output_filename, (aclFloat16*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT8) {
-        cnpy::npy_save(output_filename. (int8_t*)output.GetBuffer(), shape);
+        cnpy::npy_save(output_filename, (int8_t*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT32) {
-        cnpy::npy_save(output_filename. (int32_t*)output.GetBuffer(), shape);
+        cnpy::npy_save(output_filename, (int32_t*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT8) {
-        cnpy::npy_save(output_filename. (uint8_t*)output.GetBuffer(), shape);
+        cnpy::npy_save(output_filename, (uint8_t*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT16) {
-        cnpy::npy_save(output_filename. (int16_t*)output.GetBuffer(), shape);
+        cnpy::npy_save(output_filename, (int16_t*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT16) {
-        cnpy::npy_save(output_filename. (uint16_t*)output.GetBuffer(), shape);
+        cnpy::npy_save(output_filename, (uint16_t*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT32) {
-        cnpy::npy_save(output_filename. (uint32_t*)output.GetBuffer(), shape);
+        cnpy::npy_save(output_filename, (uint32_t*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT64) {
-        cnpy::npy_save(output_filename. (int64_t*)output.GetBuffer(), shape);
+        cnpy::npy_save(output_filename, (int64_t*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT64) {
-        cnpy::npy_save(output_filename. (uint64_t*)output.GetBuffer(), shape);
+        cnpy::npy_save(output_filename, (uint64_t*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_DOUBLE64) {
-        cnpy::npy_save(output_filename. (double*)output.GetBuffer(), shape);
+        cnpy::npy_save(output_filename, (double*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_BOOL) {
-        cnpy::npy_save(output_filename. (bool*)output.GetBuffer(), shape);
+        cnpy::npy_save(output_filename, (bool*)output.GetBuffer(), shape);
     }
     return 0;
 }
