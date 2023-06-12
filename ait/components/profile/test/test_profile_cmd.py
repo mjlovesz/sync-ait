@@ -30,12 +30,11 @@ class TestClass:
 
     def init(self):
         self.model_path = os.path.join(self.get_cur_path(), "testdata/resnet50/model/pth_resnet50_bs1.om")
-        self.output_path = os.path.join(self.get_cur_path(), "output/")
+        self.output_path = os.path.join(self.get_cur_path(), "output_datas/")
         self.app_cmd = "'ait benchmark -om {}'".format(self.model_path)
 
     def test_default_cmd(self):
         cmd = "ait profile --application {} -o {}".format(self.app_cmd, self.output_path)
-        print(cmd)
         ret = os.system(cmd)
         assert ret == 0
 
@@ -43,14 +42,12 @@ class TestClass:
         cmd = "ait profile --application {} -o {} --model-execution {} --sys-hardware-mem {} \
             --sys-profiling {} --sys-pid-profiling {} --dvpp-profiling {} --runtime-api {} \
             --task-time {} --aicpu {}".format(self.app_cmd, self.output_path,
-                                              "on", "on", "off", "off", "on"
+                                              "on", "on", "off", "off", "on",
                                               "on", "on", "off", "off")
-        print(cmd)
         ret = os.system(cmd)
         assert ret == 0
 
     def test_application_not_set(self):
         cmd = "ait profile -o {} --model-execution {}".format(self.output_path, "on")
-        print(cmd)
         ret = os.system(cmd)
         assert ret != 0
