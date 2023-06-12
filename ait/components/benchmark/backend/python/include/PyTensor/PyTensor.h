@@ -21,12 +21,15 @@
 #include <string>
 #include <memory>
 
+#ifdef COMPILE_PYTHON_MODULE
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+namespace py = pybind11;
+#endif
 
 #include "Base/Tensor/TensorBase/TensorBase.h"
 
-namespace py = pybind11;
+
 #define REGIST_ENUM_TYPE_TO_MODULE(Module, EnumClass, EnumValueName, EnumValue) \
     (EnumClass).value((EnumValueName), (EnumValue)); \
     (Module).attr((EnumValueName)) = (EnumValue)
@@ -35,10 +38,13 @@ namespace Base {
 void TensorToHost(TensorBase &tensor);
 void TensorToDevice(TensorBase &tensor, const int32_t deviceId);
 void TensorToDvpp(TensorBase &tensor, const int32_t deviceId);
+TensorBase BatchVector(const std::vector<TensorBase> &tensors, const bool &keepDims = false);
 
+#ifdef COMPILE_PYTHON_MODULE
 TensorBase FromNumpy(py::buffer b);
 py::buffer_info ToNumpy(const TensorBase &tensor);
-TensorBase BatchVector(const std::vector<TensorBase> &tensors, const bool &keepDims = false);
+#endif
+
 }
 void RegistPyTensorModule(py::module &m);
 #endif
