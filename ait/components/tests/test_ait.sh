@@ -40,7 +40,7 @@ function get_npu_type()
 
 function test_analyze()
 {
-    bash $CUR_PATH/../analyser/tests/test.sh
+    bash $CUR_PATH/../analyze/tests/test.sh
 }
 function test_benchmark()
 {
