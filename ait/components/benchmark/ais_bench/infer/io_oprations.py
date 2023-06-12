@@ -65,7 +65,7 @@ def get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tens
         elif file_path == PADDING_INFER_FAKE_FILE:
             logger.debug("padding file use fileslist[0]:{}".format(files_list[0]))
             ndata = get_file_content(files_list[0])
-        elif file_path is None or os.path.exists(file_path) is False:
+        elif file_path is None or not os.path.exists(file_path):
             logger.error('filepath:{} not valid'.format(file_path))
             raise RuntimeError()
         else:
@@ -75,7 +75,7 @@ def get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tens
         return ndatalist[0]
     else:
         ndata = np.concatenate(ndatalist)
-        if no_combine_tensor_mode is False and ndata.nbytes != size:
+        if not no_combine_tensor_mode and ndata.nbytes != size:
             logger.error('ndata size:{} not match {}'.format(ndata.nbytes, size))
             raise RuntimeError()
         return ndata
@@ -95,7 +95,7 @@ def get_files_count_per_batch(intensors_desc, fileslist, no_combine_tensor_mode=
     # get filesperbatch
     filesize = get_file_datasize(fileslist[0][0])
     tensorsize = intensors_desc[0].realsize
-    if no_combine_tensor_mode is True:
+    if no_combine_tensor_mode:
         files_count_per_batch = 1
     else:
         if filesize == 0 or tensorsize % filesize != 0:
@@ -183,7 +183,7 @@ def create_infileslist_from_inputs_list(inputs_list, intensors_desc, no_combine_
     fileslist = []
     inputlistcount = len(inputs_list)
     intensorcount = len(intensors_desc)
-    if os.path.isfile(inputs_list[0]) is True:
+    if os.path.isfile(inputs_list[0]):
         chunks = inputlistcount // intensorcount
         fileslist = list(list_split(inputs_list, chunks, PADDING_INFER_FAKE_FILE))
         logger.debug("create intensors list file type inlistcount:{} intensorcont:{} chunks:{} files_size:{}".format(
