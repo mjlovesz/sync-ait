@@ -98,8 +98,8 @@ opt_recursive = click.option(
 
 
 opt_output = click.option(
-    '-o',
-    '--output',
+    '-of',
+    '--output-file',
     'output_model',
     nargs=1,
     required=True,
@@ -140,7 +140,7 @@ opt_end = click.option(
 
 
 opt_check = click.option(
-    '-c',
+    '-ck',
     '--is-check-subgraph',
     'is_check_subgraph',
     is_flag=True,
@@ -203,7 +203,6 @@ def validate_opt_converter(ctx: click.Context, param: click.Option, value: str) 
 
 
 opt_converter = click.option(
-    '-c',
     '--converter',
     'converter',
     default='atc',
