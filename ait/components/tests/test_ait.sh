@@ -52,7 +52,7 @@ function test_convert()
 }
 function test_debug_compare()
 {
-
+    bash $CUR_PATH/debug/compare/tests/ut/test.sh
 }
 function test_debug_surgeon()
 {
@@ -60,11 +60,11 @@ function test_debug_surgeon()
 }
 function test_profile()
 {
-
+    bash $CUR_PATH/profile/test/test.sh
 }
 function test_transplt()
 {
-
+    bash $CUR_PATH/transplt/test/test.sh
 }
 
 main() {
@@ -78,11 +78,11 @@ main() {
 
     test_analyze || { echo "developer test analyze failed";return $ret_failed; }
     test_benchmark $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE|| { echo "developer test benchmark failed";return $ret_failed; }
-    test_convert || { echo "developer test analyze failed";return $ret_failed; }
-    test_debug_compare || { echo "developer test analyze failed";return $ret_failed; }
-    test_debug_surgeon || { echo "developer test analyze failed";return $ret_failed; }
-    test_profile || { echo "developer test analyze failed";return $ret_failed; }
-    test_transplt || { echo "developer test analyze failed";return $ret_failed; }
+    test_convert || { echo "developer test convert failed";return $ret_failed; }
+    test_debug_compare || { echo "developer test comnpare failed";return $ret_failed; }
+    test_debug_surgeon || { echo "developer test surgeon failed";return $ret_failed; }
+    test_profile || { echo "developer test profile failed";return $ret_failed; }
+    test_transplt || { echo "developer test transplt failed";return $ret_failed; }
 
     return $ret_ok
 }
