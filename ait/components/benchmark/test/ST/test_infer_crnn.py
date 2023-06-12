@@ -23,7 +23,7 @@ import sys
 
 import aclruntime
 import pytest
-from ait.components.benchmark.test.test_common import TestCommonClass
+from test_common import TestCommonClass
 
 logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
