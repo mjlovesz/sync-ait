@@ -17,13 +17,13 @@ declare -i ret_ok=0
 declare -i ret_failed=1
 CUR_PATH=$("pwd")
 TEST_DATA_PATH=$CUR_PATH/../../benchmark/test/testdata/
-OUTPUT_PATH=$CUR_PATH/output_datas/
+OUTPUT_PATH=$CUR_PATH/output_datas
 
 PYTHON_COMMAND="python3"
 
 
 main() {
-    if [[ ! -f $CUR_PATH/testdata/ ]];then
+    if [[ ! -f $CUR_PATH/testdata ]];then
         ln -s $TEST_DATA_PATH $CUR_PATH/testdata || { echo "make soft link failed!"; return $ret_failed; }
     fi
     if [[ ! -f $OUTPUT_PATH ]];then
