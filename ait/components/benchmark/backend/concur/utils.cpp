@@ -2,7 +2,9 @@
 #include <sstream>
 #include <string>
 #include <numeric>
+#include <algorithm>
 #include <dirent.h>
+#include <chrono>
 
 #include "utils.h"
 
@@ -26,7 +28,7 @@ void readArgs(int argc, char *argv[], Arguments& arguments)
 }
 
 
-std::stirng merge(std::vector<std::string> list, std::string delimiter)
+std::string merge_str(std::vector<std::string> list, std::string delimiter)
 {
     auto res = std::accumulate(list.begin(), list.end(), std::string(),
     [=](const std::string& a, const std::string& b) -> std::string {
@@ -35,7 +37,7 @@ std::stirng merge(std::vector<std::string> list, std::string delimiter)
     return res;
 }
 
-std::vector<std::string> split(std::string input, char delimiter)
+std::vector<std::string> split_str(std::string input, char delimiter)
 {
     std::stringstream ss(input);
     std::vector<std::string> res;
@@ -52,7 +54,7 @@ std::vector<size_t> strVecToNumVec(const std::vector<std::string>& vec)
 {
     std::vector<size_t> res;
     for (auto &elem: vec) {
-        res.push(stoi(elem));
+        res.push_back(stoi(elem));
     }
     return res;
 }
@@ -61,19 +63,20 @@ std::vector<std::string> traversal(const char* dir)
 {
     DIR *dir_ptr;
     struct dirent *diread;
-    if (dir_ptr = opendir(dir) != nullptr) {
-        while (diread = readdir(dir_ptr) != nullptr) {
+    std::vector<std::string> filenames;
+    if ((dir_ptr = opendir(dir)) != nullptr) {
+        while ((diread = readdir(dir_ptr)) != nullptr) {
             if (diread->d_type == DT_REG)
-                filenames.push_back(string(dir) + diread->d_name);
+                filenames.push_back(std::string(dir) + diread->d_name);
         }
         closedir(dir_ptr);
     }
-    sort(filenames.begin(), filenames.end());
+    std::sort(filenames.begin(), filenames.end());
     return filenames;
 }
 
 // input need to be dir1,dir2,dir3,...
-int createFilesList(std::vector<std::vecotr<std::string>>& fileList, std::string input)
+int createFilesList(std::vector<std::vector<std::string>>& fileList, std::string input)
 {
     std::vector<std::vector<std::string>> directorys;
     
@@ -84,7 +87,7 @@ int createFilesList(std::vector<std::vecotr<std::string>>& fileList, std::string
         directorys.push_back(std::move(traversal(dir.c_str())));
     }
     // check whether number of files in each directory is the same
-    size_n = directorys[0].size();
+    size_t n = directorys[0].size();
     for (auto &directory: directorys) {
         if (directory.size() != n) {
             return 1;
@@ -92,7 +95,7 @@ int createFilesList(std::vector<std::vecotr<std::string>>& fileList, std::string
     }
 
     for (size_t i = 0; i < n; i++) {
-        std::vector<std::string>> combine;
+        std::vector<std::string> combine;
         for (auto &directory : directorys) {
             combine.push_back(directory[i]);
         }
@@ -146,7 +149,7 @@ void printTimeWall(const std::string& phase, const std::vector<TimePointPair>& t
     auto [min_it, max_it] = std::minmax_element(timestamps.begin(), timestamps.end(),
     [](auto tp1, auto tp2) {return tp1.second - tp1.first < tp2.second - tp2.first;});
 
-    auto total std::accumulate(timestamps.begin(), timestamps.end(), 0,
+    auto total = std::accumulate(timestamps.begin(), timestamps.end(), 0,
     [](auto init, auto tpp) {return init + chr::duration_cast<chr::microseconds>(tpp.second - tpp.first).count(); });
 
     auto avg = total/timestamps.size();
