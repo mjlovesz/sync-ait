@@ -138,17 +138,17 @@ class Node(BaseNode):
     @inputs.setter
     def inputs(self, inputs: List[str]) -> None:
         self._inputs = inputs
+    
+    @outputs.setter
+    def outputs(self, outputs: List[str]) -> None:
+        self._outputs = outputs
 
     def get_input_id(self, node_input: str) -> int:
         if node_input not in self._inputs:
             raise RuntimeError(
                 f'Name of input should be one of {self._inputs}')
         return self._inputs.index(node_input)
-
-    @outputs.setter
-    def outputs(self, outputs: List[str]) -> None:
-        self._outputs = outputs
-    
+  
     def get_input_ids(self, node_input: str) -> List[int]:
         return [idx for idx, name in enumerate(self._inputs) if name == node_input]
 
