@@ -34,7 +34,7 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                           get_narray_from_files_list,
                                           get_tensor_from_files_list,
                                           convert_real_files,
-                                          pure_infer_fake_file, save_tensors_to_file)
+                                          PURE_INFER_FAKE_FILE, save_tensors_to_file)
 from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
 from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
@@ -304,7 +304,7 @@ def main(args, index=0, msgq=None, device_list=None):
     # create infiles list accord inputs list
     if len(inputs_list) == 0:
         # Pure reference scenario. Create input zero data
-        infileslist = [[[pure_infer_fake_file] for index in intensors_desc]]
+        infileslist = [[[PURE_INFER_FAKE_FILE] for index in intensors_desc]]
     else:
         infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
 
