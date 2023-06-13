@@ -32,6 +32,10 @@ class RequestInfo:
     def files(self):
         return self._json
 
+    @property
+    def form(self):
+        return self._json
+
     def set_json(self, json_msg):
         self._json = json_msg
 
@@ -189,6 +193,52 @@ class FileAutoClear:
             os.remove(file_path)
 
 
+class SessionInfo:
+
+    SESSION_INDEX = 0
+    SESSION_INSTENCES = dict()
+
+    def __init__(self) -> None:
+        self.modifier = None
+        self._cache_msg = ""
+
+    @classmethod
+    def get_session_index(cls):
+        cls.SESSION_INDEX += 1
+        return cls.SESSION_INDEX
+    
+    @classmethod
+    def get_session(cls, session_id):
+        if session_id in cls.SESSION_INSTENCES:
+            return cls.SESSION_INSTENCES.get(session_id)
+        session = SessionInfo()
+        cls.SESSION_INSTENCES[session_id] = session
+        return session
+
+    def get_modifier(self):
+        if self.modifier is None:
+            raise ServerError("server error, cannot find modifier, you can refresh the page", 598)
+        return self.modifier
+    
+    def init_modifier_by_path(self, name, model_path):
+        model_name = os.path.basename(model_path) if name is None else name
+        model_proto = onnx.load(model_path)
+        self.init_modifier(model_name, model_proto)
+
+    def init_modifier_by_stream(self, name, stream):
+        stream.seek(0)
+        model_proto = onnx.load_model(stream, onnx.ModelProto, load_external_data=False)
+        self.init_modifier(name, model_proto)
+    
+    def init_modifier(self, model_name, model_proto):
+        self.modifier = OnnxModifier(model_name, model_proto)
+
+    def cache_message(self, new_msg=""):
+        old_msg = self._cache_msg
+        self._cache_msg = new_msg
+        return old_msg
+
+
 def modify_model(modifier, modify_info, save_file):
     modifier.modify(modify_info)
     if save_file is not None:
@@ -291,20 +341,30 @@ def json_modify_model(modifier, modify_infos):
 
 
 def register_interface(app, request, send_file, temp_dir_path):
+    @app.route('/get_session_index', methods=['POST'])
+    def get_session_index():
+        return str(SessionInfo.get_session_index()), 200
+    
     @app.route('/open_model', methods=['POST'])
     def open_model():
         onnx_file = request.files.get("file")
+        form_data = request.form
+        session = SessionInfo.get_session(form_data.get("session"))
         if isinstance(onnx_file, str):
-            OnnxModifier.from_model_path(onnx_file)
+            session.init_modifier_by_path(None, onnx_file)
         else:
-            OnnxModifier.from_name_stream(onnx_file.filename, onnx_file.stream)
+            session.init_modifier_by_stream(onnx_file.filename, onnx_file.stream)
 
         return 'OK', 200
 
     @app.route('/download', methods=['POST'])
     def modify_and_download_model():
         modify_info = request.get_json()
-        modifier = OnnxModifier.ONNX_MODIFIER
+        session = SessionInfo.get_session(modify_info.get("session"))
+        try:
+            modifier = session.get_modifier()
+        except ServerError as error:
+            return error.msg, error.status
         modifier.reload()   # allow downloading for multiple times
         with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, tmp_file):
             modify_model(modifier, modify_info, tmp_file)
@@ -315,10 +375,14 @@ def register_interface(app, request, send_file, temp_dir_path):
     @app.route('/onnxsim', methods=['POST'])
     def modify_and_onnxsim_model():
         modify_info = request.get_json()
+        session = SessionInfo.get_session(modify_info.get("session"))
 
-        modifier = OnnxModifier.ONNX_MODIFIER
-        modifier.reload()   # allow downloading for multiple times
         with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, tmp_file):
+            try:
+                modifier = session.get_modifier()
+            except ServerError as error:
+                return error.msg, error.status
+            modifier.reload()   # allow downloading for multiple times
             try:
                 onnxsim_model(modifier, modify_info, tmp_file)
             except ServerError as error:
@@ -330,16 +394,20 @@ def register_interface(app, request, send_file, temp_dir_path):
     @app.route('/auto-optimizer', methods=['POST'])
     def modify_and_optimizer_model():
         modify_info = request.get_json()
+        session = SessionInfo.get_session(modify_info.get("session"))
 
-        modifier = OnnxModifier.ONNX_MODIFIER
-        modifier.reload()   # allow downloading for multiple times
         with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, opt_tmp_file):
+            try:
+                modifier = session.get_modifier()
+            except ServerError as error:
+                return error.msg, error.status
+            modifier.reload()   # allow downloading for multiple times
             try:
                 out_message = optimizer_model(modifier, modify_info, opt_tmp_file)
             except ServerError as error:
                 return error.msg, error.status
             
-            OnnxModifier.ONNX_MODIFIER.cache_message(out_message)
+            session.cache_message(out_message)
 
             if opt_tmp_file.tell() == 0:
                 return "auto-optimizer 没有匹配到的知识库", 204
@@ -350,10 +418,14 @@ def register_interface(app, request, send_file, temp_dir_path):
     @app.route('/extract', methods=['POST'])
     def modify_and_extract_model():
         modify_info = request.get_json()
+        session = SessionInfo.get_session(modify_info.get("session"))
 
-        modifier = OnnxModifier.ONNX_MODIFIER
-        modifier.reload()   # allow downloading for multiple times
         with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, extract_tmp_file):
+            try:
+                modifier = session.get_modifier()
+            except ServerError as error:
+                return error.status, error.msg
+            modifier.reload()   # allow downloading for multiple times
             try:
                 out_message = extract_model(modifier, modify_info, 
                               modify_info.get("extract_start"), modify_info.get("extract_end"),
@@ -361,7 +433,7 @@ def register_interface(app, request, send_file, temp_dir_path):
             except ServerError as error:
                 return error.status, error.msg
             
-            OnnxModifier.ONNX_MODIFIER.cache_message(out_message)
+            session.cache_message(out_message)
 
             if extract_tmp_file.tell() == 0:
                 return "未正常生成子网", 204
@@ -371,11 +443,16 @@ def register_interface(app, request, send_file, temp_dir_path):
 
     @app.route('/load-json', methods=['POST'])
     def load_json_and_modify_model():
-        modify_infos = request.get_json()
-        modifier = OnnxModifier.ONNX_MODIFIER
-        modifier.reload()   # allow downloading for multiple times
+        json_info = request.get_json()
+        session = SessionInfo.get_session(json_info.get("session"))
+        modify_infos = json_info.modify_infos
 
         with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, tmp_file):
+            try:
+                modifier = session.get_modifier()
+            except ServerError as error:
+                return error.msg, error.status
+            modifier.reload()   # allow downloading for multiple times
             tmp_modifier = OnnxModifier(modifier.model_name, modifier.model_proto)
             try:
                 json_modify_model(tmp_modifier, modify_infos)
@@ -383,14 +460,16 @@ def register_interface(app, request, send_file, temp_dir_path):
                 return error.msg, error.status
 
             tmp_modifier.check_and_save_model(tmp_file)
-            OnnxModifier.from_model_proto(modifier.model_name, tmp_modifier.model_proto)
+            session.init_modifier(modifier.model_name, tmp_modifier.model_proto)
 
             auto_close.set_not_close()  # file will auto close in send_file 
             return send_file(tmp_file, download_name="extracted.onnx")
 
     @app.route('/get_output_message', methods=['POST'])
     def get_out_message():
-        return OnnxModifier.ONNX_MODIFIER.cache_message(), 200
+        json_info = request.get_json()
+        session = SessionInfo.get_session(json_info.get("session"))
+        return session.cache_message(), 200
 
 
 if __name__ == '__main__':
