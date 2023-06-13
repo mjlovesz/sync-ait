@@ -22,7 +22,7 @@
 #include <cstring>
 #include <regex>
 
-#define UPPER_BOUND_FILE 1 << 40
+#define UPPER_BOUND_FILE 1 << 30
 
 char cnpy::BigEndianTest()
 {
