@@ -322,7 +322,7 @@ void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, int32_t device
 void Execute(Arguments& arguments)
 {
     std::string input = arguments["input"];
-    std::vector<std::vector<std::string>> filesList{};
+    std::vector<std::vector<std::string>> filesList {};
     CreateFilesList(filesList, input);
 
     std::shared_ptr<Base::SessionOptions> options = std::make_shared<Base::SessionOptions>();
