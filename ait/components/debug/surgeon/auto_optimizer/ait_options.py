@@ -150,7 +150,7 @@ opt_check = click.option(
 
 
 opt_path = click.option(
-    '--path'
+    '--path',
     'path',
     nargs=1,
     required=True,
