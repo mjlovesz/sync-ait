@@ -98,7 +98,7 @@ Result CreateFilesList(std::vector<std::vector<std::string>>& fileList, std::str
 
     for (auto &dir : SplitStr(input, ',')) {
         if (dir.back() != '/') {
-            dir.emplace_back('/');
+            dir.push_back('/');
         }
         directorys.emplace_back(std::move(Traversal(dir.c_str())));
     }
@@ -140,7 +140,7 @@ std::string RemoveSlash(std::string name)
     std::string res;
     for (auto &elem: name) {
         if (elem != '/') {
-            res.emplace_back(elem);
+            res.push_back(elem);
         }
     }
     return res;
