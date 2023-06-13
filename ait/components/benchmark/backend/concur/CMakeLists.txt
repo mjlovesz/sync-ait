@@ -6,8 +6,8 @@ add_compile_options(-std=c++17)
 
 add_definitions(-DENABLE_DVPP_INTERFACE)
 
-set(CMAKE_CXX_FLAGS_DEBUG "-fPIC -O0 -g -Wall")
-set(CMAKE_CXX_FLAGS_RELEASE "-fPIC -O2 -Wall")
+set(CMAKE_CXX_FLAGS_DEBUG "-fPIC -O0 -g")
+set(CMAKE_CXX_FLAGS_RELEASE "-fPIC -O2")
 
 set(BACKEND_PATH ../)
 

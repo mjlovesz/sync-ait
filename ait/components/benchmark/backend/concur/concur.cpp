@@ -25,7 +25,6 @@
 #include <chrono>
 #include <unordered_map>
 
-
 #include <unistd.h>
 #include <assert.h>
 
@@ -33,13 +32,14 @@
 #include "Base/Tensor/TensorShape/TensorShape.h"
 #include "Base/Tensor/TensorContext/TensorContext.h"
 #include "Base/Tensor/TensorBase/TensorBase.h"
-#include "PyTensor/PyTensor.h"
-#include "cnpy.h"
-#include "utils.h"
-
 #include "Base/ModelInfer/SessionOptions.h"
 #include "Base/ModelInfer/ModelInferenceProcessor.h"
+#include "Base/Log/Log.h"
 #include "PyInferenceSession/PyInferenceSession.h"
+#include "PyTensor/PyTensor.h"
+
+#include "cnpy.h"
+#include "utils.h"
 
 namespace chr = std::chrono;
 using TimePointPair = std::pair<chr::steady_clock::time_point, chr::steady_clock::time_point>;
@@ -312,7 +312,7 @@ void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, int32_t device
                 std::string outputFileName = outputDir + RemoveSlash(
                     item->outputPrefix + "_" + item->outputNames->at(i) + "_" + std::to_string(i) + ".npy");
                 if (TensotToNumpy(outputFileName, item->outputs->at(i))) {
-                    std::cout << outputFileName << "save failed" << endl;
+                    ERROR_LOG("%s save failed\n", outputFileName);
                 }
             }
         }
@@ -360,7 +360,7 @@ void Execute(Arguments& arguments)
 
     auto end = chr::steady_clock::now();
     auto e2ems = chr::duration_cast<chr::milliseconds>(end - start).count();
-    std::cout << "End2End time: " << e2ems << "ms" << std::endl;
+    INFO_LOG("End2End time: %d ms\n", e2ems);
 
     PrintTimeWall("h2d", h2dTs);
     PrintTimeWall("compute", computeTs);

@@ -30,6 +30,8 @@
 #include <stdint.h>
 #include <numeric>
 
+#include "Base/Log/Log.h"
+
 namespace cnpy
 {
 struct NpyArray {
@@ -110,17 +112,17 @@ void NpySave(std::string fname, const T *data, const std::vector<size_t> shape, 
         }
 
         if (wordSize != sizeof(T)) {
-            std::cout << "libnpy error: " << fname << " has word size " << wordSize <<
-                " but NpySave appending data sized " << sizeof(T) << "\n";
+            ERROR_LOG("libnpy error: %s has word size %zu but NpySave appending data sized %zu\n",
+                    fname, wordSize, sizeof(T));
             throw std::runtime_error("NpySave: wordSize not matching");
         }
         if (trueDataShape.size() != shape.size()) {
-            std::cout << "libnpy error: NpySave attempting to append misdimensioned data to " << fname << "\n";
+            ERROR_LOG("libnpy error: NpySave attempting to append misdimensioned data to %s\n", fname);
             throw std::runtime_error("NpySave: dimension not matching");
         }
         for (size_t i = 1; i < shape.size(); i++) {
             if (shape[i] != trueDataShape[i]) {
-                std::cout << "libnpy error: NpySave attempting to append misshaped data to  " << fname << "\n";
+                ERROR_LOG("libnpy error: NpySave attempting to append misshaped data to %s", fname);
                 throw std::runtime_error("NpySave: shape not matching");
             }
         }
