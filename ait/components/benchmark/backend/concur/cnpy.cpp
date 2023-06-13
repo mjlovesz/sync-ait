@@ -145,7 +145,7 @@ void cnpy::ParseNpyHeader(FILE *fp, size_t &wordSize, std::vector<size_t> &shape
     if (loc1 == std::string::npos) {
         throw std::runtime_error("ParseNpyHeader: failed to find header keyword : 'descr'");
     }
-    loc1 += 9;
+    loc1 += 9; // 9 menas offset
     bool littleEndian = (header[loc1] == '<' || header[loc1] == '|' ? true : false);
     if (!littleEndian) {
         throw std::runtime_error("ParseNpyHeader: should be little endian.");

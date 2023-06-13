@@ -35,10 +35,10 @@ void ReadArgs(int argc, char *argv[], Arguments& arguments)
             if (arguments.find(key) != arguments.end()) {
                 arguments[key] = value;
             } else {
-                std::cout << key << " is not a parameter" << std::endl;
+                ERROR_LOG("%s is not a parameter\n", key);
             }
         } else {
-            std::cout << "pass the parameter in form of key=value" << std::endl;
+            ERROR_LOG("pass the parameter in form of key=value\n");
         }
     }
 }
@@ -167,11 +167,9 @@ void PrintTimeWall(const std::string& phase, const std::vector<TimePointPair>& t
     auto total = std::accumulate(timeStamps.begin(), timeStamps.end(), 0,
     [](auto init, auto tpp) {return init + chr::duration_cast<chr::microseconds>(tpp.second - tpp.first).count(); });
 
-    int division = 1000; // microsecond to millisecond
+    float division = 1000.0; // microsecond to millisecond
     auto avg = total/timeStamps.size();
-    std::cout
-        << phase << " avg: " << avg/division << "ms. min: "
-        << chr::duration_cast<chr::microseconds>(minIt->second - minIt->first).count()/division
-        << "ms. max: " << chr::duration_cast<chr::microseconds>(maxIt->second - maxIt->first).count()/division
-        << "ms." << std::endl;
+    INFO_LOG("%s avg: %fms. min: %fms. max: %f ms.\n", phase, avg/division,
+             chr::duration_cast<chr::microseconds>(minIt->second - minIt->first).count()/division,
+             chr::duration_cast<chr::microseconds>(maxIt->second - maxIt->first).count()/division);
 }

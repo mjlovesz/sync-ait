@@ -113,7 +113,7 @@ void NpySave(std::string fname, const T *data, const std::vector<size_t> shape, 
 
         if (wordSize != sizeof(T)) {
             ERROR_LOG("libnpy error: %s has word size %zu but NpySave appending data sized %zu\n",
-                    fname, wordSize, sizeof(T));
+                      fname, wordSize, sizeof(T));
             throw std::runtime_error("NpySave: wordSize not matching");
         }
         if (trueDataShape.size() != shape.size()) {
