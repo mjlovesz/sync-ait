@@ -120,14 +120,14 @@ void FuncPrepare(int32_t deviceId, std::shared_ptr<Base::PyInferenceSession> ses
     if (autoDymShape) {
         auto intensor_desc = session->GetInputs();
         for (auto &desc : intensor_desc) {
-            inputNames.push_back(desc.name);
+            inputNames.emplace_back(desc.name);
         }
     }
 
     for (auto &files : filesList) {
         auto outputNames = std::make_shared<std::vector<std::string>>();
         for (const auto &desc: session->GetOutputs()) {
-            outputNames->push_back(desc.name);
+            outputNames->emplace_back(desc.name);
         }
         auto inputs = std::make_shared<std::vector<Base::BaseTensor>>();
         auto arrayPtr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
@@ -138,7 +138,7 @@ void FuncPrepare(int32_t deviceId, std::shared_ptr<Base::PyInferenceSession> ses
             inputs->emplace_back(array->Data<void>(), array->NumBytes());
             if (autoDymShape) {
                 autoDynamicShape += CreateDynamicShape(inputNames[i], array->shape);
-                if (i != files.size()-1) {
+                if (i != files.size() - 1) {
                     autoDynamicShape += ";";
                 }
             }
@@ -178,9 +178,9 @@ void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
         auto inputs = std::make_shared<std::vector<Base::BaseTensor>>();
         for (auto &info : *(item->inputs)) {
             Base::MemoryData mem = Base::CopyMemory2DeviceMemory(info.buf, info.size, deviceId);
-            item->memory->push_back(mem);
+            item->memory->emplace_back(mem);
             Base::BaseTensor tensor(mem.ptrData, mem.size);
-            inputs->push_back(tensor);
+            inputs->emplace_back(tensor);
         }
         item->inputs = inputs;
         auto end = chr::steady_clock::now();
@@ -208,13 +208,13 @@ void FuncCompute(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
             d2hQueue.push(nullptr);
             break;
         }
-        auto start = chr::steady_clock::now();
-
         if (item->autoDynamicShape != "") {
             session->SetDynamicShape(item->autoDynamicShape);
         }
+
+        auto start = chr::steady_clock::now();
         auto outputs = std::make_shared<std::vector<Base::TensorBase>>();
-        session->PureInfer(*(item->inputs), *(item->outputNames), *outputs);
+        session->OnlyInfer(*(item->inputs), *(item->outputNames), *outputs);
         item->outputs = outputs;
 
         auto end = chr::steady_clock::now();
@@ -254,7 +254,7 @@ void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
     }
 }
 
-int TensotToNumpy(std::string outputFileName, Base::TensorBase& output)
+Result TensorToNumpy(std::string outputFileName, Base::TensorBase& output)
 {
     auto shapeTmp = output.GetShape();
     std::vector<size_t> shape { shapeTmp.begin(), shapeTmp.end() };
@@ -283,8 +283,10 @@ int TensotToNumpy(std::string outputFileName, Base::TensorBase& output)
         cnpy::NpySave(outputFileName, (double*)output.GetBuffer(), shape);
     } else if (output.GetDataType() == Base::TENSOR_DTYPE_BOOL) {
         cnpy::NpySave(outputFileName, (bool*)output.GetBuffer(), shape);
+    } else {
+        return FAILED;
     }
-    return 0;
+    return SUCCESS;
 }
 
 
@@ -311,7 +313,7 @@ void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, int32_t device
             for (size_t i = 0; i < n; i++) {
                 std::string outputFileName = outputDir + RemoveSlash(
                     item->outputPrefix + "_" + item->outputNames->at(i) + "_" + std::to_string(i) + ".npy");
-                if (TensotToNumpy(outputFileName, item->outputs->at(i))) {
+                if (TensorToNumpy(outputFileName, item->outputs->at(i)) == FAILED) {
                     ERROR_LOG("%s save failed\n", outputFileName.c_str());
                 }
             }
@@ -323,7 +325,9 @@ void Execute(Arguments& arguments)
 {
     std::string input = arguments["input"];
     std::vector<std::vector<std::string>> filesList {};
-    CreateFilesList(filesList, input);
+    if (CreateFilesList(filesList, input) == FAILED) {
+        throw std::runtime_error("parse input parameter failed.");
+    }
 
     std::shared_ptr<Base::SessionOptions> options = std::make_shared<Base::SessionOptions>();
 

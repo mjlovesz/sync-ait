@@ -22,6 +22,7 @@
 #include <cstring>
 #include <regex>
 
+#define UPPER_BOUND_FILE 1 << 40
 
 char cnpy::BigEndianTest()
 {
@@ -162,6 +163,9 @@ cnpy::NpyArray LoadNpyFile(FILE *fp)
     size_t wordSize;
     bool fortranOrder;
     cnpy::ParseNpyHeader(fp, wordSize, shape, fortranOrder);
+    if (wordSize > UPPER_BOUND_FILE) {
+        throw std::runtime_error("LoadNpyFile: file size greater than upper bound");
+    }
 
     cnpy::NpyArray arr(shape, wordSize, fortranOrder);
     size_t nread = fread(arr.Data<char>(), 1, arr.NumBytes(), fp);

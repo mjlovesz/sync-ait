@@ -300,7 +300,7 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
     return outputs;
 }
 
-void PyInferenceSession::PureInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names, std::vector<TensorBase>& outputs)
+void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names, std::vector<TensorBase>& outputs)
 {
     APP_ERROR ret = modelInfer_.Inference(inputs, output_names, outputs);
     if (ret != APP_ERR_OK) {

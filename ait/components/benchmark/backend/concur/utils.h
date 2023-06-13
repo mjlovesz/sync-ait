@@ -22,6 +22,7 @@
 #include <unordered_map>
 #include <cstring>
 #include "Base/Log/Log.h"
+#include "Base/ModelInfer/utils.h"
 
 namespace chr = std::chrono;
 using TimePointPair = std::pair<chr::steady_clock::time_point, chr::steady_clock::time_point>;
@@ -32,7 +33,7 @@ std::string MergeStr(std::vector<std::string> list, std::string delimiter); // m
 std::vector<std::string> SplitStr(std::string input, char delimiter);
 std::vector<size_t> StrVecToNumVec(const std::vector<std::string>& strVec);
 std::vector<std::string> Traversal(const char* dir); // Traversal a directory return vector of filename
-int CreateFilesList(std::vector<std::vector<std::string>>& fileList, std::string input);
+Result CreateFilesList(std::vector<std::vector<std::string>>& fileList, std::string input);
 std::string GetPrefix(std::string filePath);
 std::string RemoveSlash(std::string name);
 std::string CreateDynamicShape(std::string name, std::vector<size_t> shapes);
