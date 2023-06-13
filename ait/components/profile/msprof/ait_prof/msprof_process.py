@@ -30,7 +30,8 @@ def msprof_run_profiling(args, msprof_bin):
     msprof_cmd = "{} --output={}/profiler --application=\"{} {}/{}\" --model-execution={}" \
                " --sys-hardware-mem={} --sys-cpu-profiling={}" \
                " --sys-profiling={} --sys-pid-profiling={} --dvpp-profiling={} " \
-               "--runtime-api={} --task-time={} --aicpu={}".format(msprof_bin, args.output, sys.executable, bin_path, args.application,
+               "--runtime-api={} --task-time={} --aicpu={}".format(msprof_bin, args.output, sys.executable,
+                                                                   bin_path, args.application,
                                                                    args.model_execution, args.sys_hardware_mem,
                                                                    args.sys_cpu_profiling, args.sys_profiling,
                                                                    args.sys_pid_profiling, args.dvpp_profiling,

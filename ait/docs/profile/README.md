@@ -1,39 +1,23 @@
-# 一键式全流程profiling（推理）使用指南
+# ait profile 功能使用指南
 
-### 功能介绍
+## 简介
 - 一键式全流程推理工具ait集成了Profiling性能分析工具，用于分析运行在昇腾AI处理器上的APP工程各个运行阶段的关键性能瓶颈并提出针对性能优化的建议，最终实现产品的极致性能。
 - Profiling数据通过二进制可执行文件”msprof”进行数据采集，使用该方式采集Profiling数据需确保应用工程或算子工程所在运行环境已安装Toolkit组件包。
 - 该工具使用约束场景说明，参考链接：[CANN商用版/约束说明（仅推理场景）](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/atlasaccuracy_16_0035.html)
 
-### 环境准备
-- 已安装开发运行环境的昇腾 AI 推理相关驱动、固件、CANN 包，参照 [昇腾文档](https://www.hiascend.com/zh/document)
-- 安装 `python3.7.5` 环境
-- **安装ait工具**，安装参考文档：[ait工具安装](https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md)
+## 工具安装
+- 工具安装请见 [ait一体化工具使用指南](../../README.md)
 
-### 使用方法
-- 通过压缩包方式或 git 命令获取本项目
-  ```sh
-  git clone https://gitee.com/ascend/ait.git
-  ```
-- 进入 msprof 目录
-  ```sh
-  cd ait/ait/components/profile/msprof
-  ```
-- 配置 CANN 包相关环境变量，其中 `/usr/local/Ascend/ascend-toolkit` 需使用实际 CANN 包安装后路径
-  ```sh
-  source /usr/local/Ascend/ascend-toolkit/set_env.sh
-  ```
-- **数据准备**
-  - 昇腾AI处理器的离线模型（.om）路径
-- **不指定模型输入** 命令示例，**其中路径需使用绝对路径**
-  ```sh
-  ait profile --application "ait benchmark -om /home/HwHiAiUser/resnet101_bs1.om" --output  /home/HwHiAiUser/result
-  ```
-  - `--application` 配置为运行环境上app可执行文件，可配置ait自带的benchmark推理程序，需配置ait自带的benchmark推理程序，具体使用方法参照参数说明及benchmark使用。
-  - `-o, --output` (可选) 搜集到的profiling数据的存放路径，默认为当前路径下输出output目录
+## 使用方法
+### 功能介绍
+#### 使用入口
+profile可以直接通过ait命令行形式启动模型推理的性能分析。使用ait benchmark(ait benchmark为ait自带的推理工程，用户只需修改om路径即可进行模型推理的性能分析及数据采集)推理的性能分析的命令如下：
+```bash
+ait profile --application "ait benchmark -om *.om" --output <some path>
+```
+其中，*为OM离线模型文件名；<some path>为路径名称。
 
-### 参数说明
-
+#### 参数说明
   | 参数名                    | 描述                                       | 必选   |
   | ------------------------ | ---------------------------------------- | ---- |
   | --application            | 配置为运行环境上app可执行文件，可配置ait自带的benchmark推理程序，application带参数输入，此时需要使用英文双引号将”application”的参数值括起来，例如--application "ait benchmark -om /home/HwHiAiUser/resnet50.om"，用户使用仅需修改指定om路径 | 是    |
@@ -49,3 +33,8 @@
   | --aicpu                  | aicpu开关 | 否  |
   | -h, --help               | 工具使用帮助信息，可选on或off，默认为on。               | 否  |
 
+  ### 使用场景
+请移步[profile使用示例](../../examples/cli/profile/)
+  | 使用示例               | 使用场景                                 |
+  |-----------------------| ---------------------------------------- |
+  | [01_basic_usage](../../examples/cli/profile/01_basic_usage)    | 基础示例，对benchmark推理om模型执行性能分析       |
