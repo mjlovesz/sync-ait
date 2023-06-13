@@ -156,7 +156,7 @@ template <typename T> std::vector<char> create_npy_header(const std::vector<size
     header += (char)0x93;
     header += "NUMPY";
     header += (char)0x01;
-    header += (char)0x01;
+    header += (char)0x00;
     header += (uint16_t)dict.size();
     header.insert(header.end(), dict.begin(), dict.end());
 
