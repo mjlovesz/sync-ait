@@ -262,7 +262,7 @@ host.BrowserHost = class {
             }
         }
 
-        fetch("/init", {method: 'POST', 
+        fetch("/get_session_index", {method: 'POST', 
             headers: {
                 'Content-Type': 'application/json'
             }, body: JSON.stringify({session:this.session})}).then((response) => {
