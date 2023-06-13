@@ -139,7 +139,6 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .welcome .logo-border { stroke: #555555; }
 .welcome .logo-glyph { fill: #444444; }
 .welcome .logo-message { display: none; }
-.welcome .logo-github { display: none; }
 .welcome button { font-size: 12px; font-weight: bold; line-height: 1.25; text-align: center; vertical-align: middle; min-width: 60px; height: 32px; border-radius: 16px; transition: 0.1s; user-select: none; -webkit-user-select: none; -moz-user-select: none; color: #444444; background-color: #ececec; border: 1px solid #444444; }
 .welcome button:hover { color: #ececec; background-color: #444444; cursor: pointer; transition: 0.2s; }
 .welcome button:focus { outline: 0; }
@@ -191,6 +190,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 .toolbar-back-button:hover { background: #dfdfdf; border-color: #dfdfdf; }
 .toolbar-name-button { background: #404040; border-color: #aaaaaa; color: #cccccc; }
 .toolbar-name-button:hover { color: #dfdfdf; }
+.top-toolbar { background-color: #1d1d1d; }
 }
 @media all and (max-width: 640px) {
 .welcome .logo { width: 240px; }
@@ -321,7 +321,6 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     margin: 5px;
     width: 100px;
     flex-shrink: 0;
-    --display: inline-block;
     float: left;
     writing-mode: horizontal-tb;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
@@ -330,7 +329,6 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 
 .toolbar-item:hover {
     border-radius: 5px;
-    background-color: white;
     cursor: pointer;
     background-color: gray;
 }
@@ -348,12 +346,22 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     width: 120px;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.1);
     text-align: center;
-    background-color: white;
     border-bottom: solid 1px grey;
+    background-color: white;
 }
 
 .toolbar-menu-item:hover {
     background-color: rgba(128, 128, 128, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+.top-toolbar { background-color: #1d1d1d; }
+.toolbar-menu-item { background-color: #3d3d3d; }
+.toolbar-item {background-color: #3d3d3d;}
+.message-box {background: #2d2d2d;}
+.warn-message-box {background:burlywood}
+.error-message-box {background: lightcoral;}
+.success-message-box {background: aquamarine;}
 }
 
 </style>
@@ -601,22 +609,42 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
         <button>OK</button>
     </div>
 </dialog>
-<dialog id="changeinputshape-dialog" class="dialog message-box"> 
+<dialog id="change-input-shape-dialog" class="dialog message-box"> 
     <h1> Change Input Shape </h1>
     <div class="text"> </div>
-    <div style="display: flex; margin: 5px; justify-content: center;">
+    <div style="display: flex; margin: 5px; justify-content: center; flex-direction: column;">
         <input id="change-input-shape-input" type="text" size="32" placeholder="example: batch,3,224,224"/>
+        <div>
+            <input type="checkbox" class="checkbox-shape-change" checked /> 
+            <span class="download-anno-cleanUp"> shape inference </span>
+        </div>
     </div>
+    
     <div class="footer">
         <button>Cancel</button>
         <button id="change-input-shape-input-ok">OK</button>
     </div>
 </dialog>
+<dialog id="dynamic-batch-size-dialog" class="dialog message-box"> 
+    <h1> Dynamic Input Batch Size </h1>
+    <div>
+        <input type="checkbox" class="checkbox-shape-change" checked /> 
+        <span class="download-anno-cleanUp"> shape inference </span>
+    </div>
+    <div class="footer">
+        <button>Cancel</button>
+        <button id="fixed-batch-size-input-ok">OK</button>
+    </div>
+</dialog>
 <dialog id="fixed-batch-size-dialog" class="dialog message-box"> 
     <h1> Fixed Input Batch Size </h1>
     <div class="text"> Please enter batchsize </div>
-    <div style="display: flex; margin: 5px; justify-content: center;">
+    <div style="display: flex; margin: 5px; justify-content: center; flex-direction: column;">
         <input id="fixed-batch-size-input" type="text" size="32"/>
+        <div>
+            <input type="checkbox" class="checkbox-shape-change" checked /> 
+            <span class="download-anno-cleanUp"> shape inference  </span>
+        </div>
     </div>
     <div class="footer">
         <button>Cancel</button>

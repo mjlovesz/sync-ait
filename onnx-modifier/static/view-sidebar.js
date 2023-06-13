@@ -115,6 +115,22 @@ sidebar.Sidebar = class {
     }
 };
 
+function checkInputValidChars(name) {
+    return name.match(/^[\w\s\-,\[\]\_\.]+$/)
+}
+
+function checkInputShowErr(elem, has_error) {
+    if (has_error) {
+        elem.style.outline = "red"
+        elem.style.borderColor = "red"
+        elem.title = "Please confirm that the characters you entered meet the requirements of ONNX"
+    } else {
+        elem.style.outline = ""
+        elem.style.borderColor = ""
+        elem.title = ""
+    }
+}
+
 sidebar.NodeSidebar = class {
 
     constructor(host, node, modelNodeName) {
@@ -252,7 +268,7 @@ sidebar.NodeSidebar = class {
         item.on('show-graph', (sender, graph) => {
             this._raise('show-graph', graph);
         });
-        const view = new sidebar.NameValueView(this._host, name, item);
+        const view = new sidebar.NameValueView(this._host, name, item, checkInputValidChars);
         this._attributes.push(view);
         this._elements.push(view.render());
     }
@@ -267,7 +283,7 @@ sidebar.NodeSidebar = class {
             view.on('error', (sender, tensor) => {
                 this._raise('error', tensor);
             });
-            const item = new sidebar.NameValueView(this._host, name, view);
+            const item = new sidebar.NameValueView(this._host, name, view, checkInputValidChars);
             this._inputs.push(item);
             this._elements.push(item.render());
     
@@ -433,7 +449,7 @@ sidebar.NodeSidebar = class {
 
 sidebar.NameValueView = class {
 
-    constructor(host, name, value) {
+    constructor(host, name, value, checker) {
         this._host = host;
         this._name = name;
         this._value = value;
@@ -456,6 +472,17 @@ sidebar.NameValueView = class {
 
         for (const element of value.render()) {
             valueElement.appendChild(element);
+        }
+
+        if (checker) {
+            let input_elems = valueElement.getElementsByTagName("input")
+            for (const input_elem of input_elems) {
+                if (input_elem.type == "text") {
+                    input_elem.addEventListener("input", (e) => {
+                        checkInputShowErr(input_elem, !checker(e.target.value))
+                    })
+                }
+            }
         }
 
         this._element = this._host.document.createElement('div');
@@ -939,6 +966,7 @@ sidebar.ArgumentView = class {
 
                     inputInitializerVal.addEventListener('input', (e) => {
                         // console.log(e.target.value)
+                        checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value))
                         this._host._view.modifier.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, this._argument.type._dataType, e.target.value);
                     });
                     this._element.appendChild(inputInitializerVal);
@@ -965,6 +993,7 @@ sidebar.ArgumentView = class {
 
                     inputInitializerVal.addEventListener('input', (e) => {
                         new_init_val = e.target.value;
+                        checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value))
                         this._host._view.modifier.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
                     });
                     this._element.appendChild(inputInitializerVal);
@@ -990,6 +1019,7 @@ sidebar.ArgumentView = class {
 
                     inputInitializerType.addEventListener('input', (e) => {
                         new_init_type = e.target.value;
+                        checkInputShowErr(inputInitializerType, !checkInputValidChars(e.target.value))
                         this._host._view.modifier.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
                     });
                     this._element.appendChild(inputInitializerType);
@@ -1089,9 +1119,6 @@ sidebar.ModelSidebar = class {
         if (model.license) {
             this._addProperty('license', new sidebar.ValueTextView(this._host, model.license));
         }
-        // if (model.domain) {
-        //     this._addProperty('domain', new sidebar.ValueTextView(this._host, model.domain));
-        // }
 
         this._addProperty('domain', new sidebar.ValueTextView(this._host, model.domain, undefined, (domain_value)=> {
             this._host._view.modifier.changeModelProperties("domain", domain_value)
@@ -1158,10 +1185,8 @@ sidebar.ModelSidebar = class {
             }
             if (Array.isArray(graph.inputs) && graph.inputs.length > 0) {
                 this._addHeader('Inputs');
-                // for (const input of graph.inputs) {
                 for (const [index, input] of graph.inputs.entries()){
-                    this.addArgument(input.name, input, index, 'model_input');
-                    // this.addArgument(input.modelNodeName, input, index, 'model_input');
+                    this.addArgument(input.name, input, index, 'model_input', checkInputValidChars);
                 }
             }
             if (Array.isArray(graph.outputs) && graph.outputs.length > 0) {
@@ -1265,11 +1290,11 @@ sidebar.ModelSidebar = class {
         this._elements.push(fixed_batch_size_value);
     }
 
-    addArgument(name, argument, index, arg_type) {
+    addArgument(name, argument, index, arg_type, checker) {
         // const view = new sidebar.ParameterView(this._host, argument);
         const view = new sidebar.ParameterView(this._host, argument, arg_type, index, name);
         view.toggle();
-        const item = new sidebar.NameValueView(this._host, name, view);
+        const item = new sidebar.NameValueView(this._host, name, view, checker);
         this._elements.push(item.render());
     }
 

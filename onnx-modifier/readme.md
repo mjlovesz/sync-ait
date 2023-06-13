@@ -119,7 +119,7 @@
 
 # 用法
 
-图结构层级的操作按钮放置在可视化页面的左上角，目前有五个：`Reset`，`Download`，`Add node`，`OnnxSim`， `AutOptimizer`. 它们的功能分别为：
+图结构层级的操作按钮放置在可视化页面的左上角，目前有五个：`Reset`，`Download`，`Add node`，`OnnxSim`， `AutoOptimizer`. 它们的功能分别为：
 
 - `Reset`：重置模型图结构为导入时的初始状态；
 
@@ -129,7 +129,7 @@
 
 - `Add node`：向当前模型中，添加新节点。
 
-- `OnnxSim`， `AutOptimizer`：模型自动优化
+- `OnnxSim`， `AutoOptimizer`：模型自动优化
 
 节点层级的操作都在节点侧边栏里，点击某一节点后即可弹出。
 
