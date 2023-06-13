@@ -238,7 +238,6 @@ class SessionInfo:
         self._cache_msg = new_msg
         return old_msg
 
-    
 
 def modify_model(modifier, modify_info, save_file):
     modifier.modify(modify_info)
