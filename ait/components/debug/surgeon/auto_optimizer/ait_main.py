@@ -30,7 +30,7 @@ from auto_optimizer.pattern import KnowledgeFactory
 from auto_optimizer.tools.log import logger
 from auto_optimizer.common.utils import check_output_model_path
 
-from auto_optimizer.new_options import (
+from auto_optimizer.ait_options import (
     opt_path,
     opt_input,
     opt_output,
