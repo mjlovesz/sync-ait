@@ -96,12 +96,13 @@ void cnpy::ParseNpyHeader(unsigned char *buffer, size_t &wordSize, std::vector<s
     
     loc1 = header.find("descr") + 9; // 9 means offset
     bool littleEndian = (header[loc1] == '<' || header[loc1] == '|' ? true : false);
-    assert(littleEndian);
+    if (!littleEndian) {
+        throw std::runtime_error("ParseNpyHeader: should be little endian.");
+    }
 
     std::string strWs = header.substr(loc1 + 2);
     loc2 = strWs.find("'");
     wordSize = atoi(strWs.substr(0, loc2).c_str());
-    
 }
 
 void cnpy::ParseNpyHeader(FILE *fp, size_t &wordSize, std::vector<size_t> &shape, bool &fortranOrder)
@@ -112,21 +113,24 @@ void cnpy::ParseNpyHeader(FILE *fp, size_t &wordSize, std::vector<size_t> &shape
         throw std::runtime_error("ParseNpyHeader: failed fread");
     }
     std::string header = fgets(buffer, 256, fp);
-    assert(header[header.size() - 1] == '\n');
+    if (header[header.size() - 1] != '\n') {
+        throw std::runtime_error("ParseNpyHeader: the ending of header should be \n.");
+    }
 
     size_t loc1, loc2;
 
     loc1 = header.find("fortranOrder");
-    if (loc1 == std::string::npos)
+    if (loc1 == std::string::npos) {
         throw std::runtime_error("ParseNpyHeader: failed to find header keyword : 'fortranOrder'");
+    }
     loc1 += 16; // 16 menas offset
     fortranOrder = (header.substr(loc1, 4) == "True" ? true :false); // 4 means length of "True"
 
     loc1 = header.find("(");
     loc2 = header.find(")");
-    if (loc1 == std::string::npos || loc2 == std::string::npos)
+    if (loc1 == std::string::npos || loc2 == std::string::npos) {
         throw std::runtime_error("ParseNpyHeader: failed to find header keyword: '(' or ')'");
-
+    }
     std::regex numRegex("[0-9][0-9]*");
     std::smatch sm;
     shape.clear();
@@ -138,11 +142,14 @@ void cnpy::ParseNpyHeader(FILE *fp, size_t &wordSize, std::vector<size_t> &shape
     }
 
     loc1 = header.find("descr");
-    if (loc1 == std::string::npos)
+    if (loc1 == std::string::npos) {
         throw std::runtime_error("ParseNpyHeader: failed to find header keyword : 'descr'");
+    }
     loc1 += 9;
     bool littleEndian = (header[loc1] == '<' || header[loc1] == '|' ? true : false);
-    assert(littleEndian);
+    if (!littleEndian) {
+        throw std::runtime_error("ParseNpyHeader: should be little endian.");
+    }
 
     std::string strWs = header.substr(loc1 + 2);
     loc2 = strWs.find("'");
