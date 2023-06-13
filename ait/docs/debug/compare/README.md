@@ -4,7 +4,7 @@
 - compare一键式全流程精度比对（推理）功能将推理场景的精度比对做了自动化，适用于 TensorFlow 和 ONNX 模型，用户只需要输入原始模型，对应的离线模型和输入，输出整网比对的结果，离线模型为通过 ATC 工具转换的 om 模型，输入 bin 文件需要符合模型的输入要求（支持模型多输入）。
 - 该功能使用约束场景说明，参考链接：[CANN商用版/约束说明（仅推理场景）](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/atlasaccuracy_16_0035.html)
 - 对于 Caffe 模型，目前不支持动态 shape 的模型比对。
-
+- **注意**：请确保ATC工具转换的om与当前运行环境使用的芯片型号一致。
 
 ## 工具安装
 - 工具安装请见 [ait一体化工具使用指南](../../../README.md)
@@ -93,4 +93,3 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
   | [05_aipp_model_compare](../../../examples/cli/debug/compare/05_aipp_model_compare)    | 提供模型转换开启aipp参数的om模型与onnx模型进行精度比对的功能。 | 
   | [06_npu_custom_op](../../../examples/cli/debug/compare/06_npu_custom_op)    | onnx模型中存在NPU自定义算子场景 | 
   | [07_caffe_model](../../../examples/cli/debug/compare/07_caffe_model)    | 标杆模型为Caffe框架的一键式精度比对 | 
-  | [08_accuracy_error_location](../../../examples/cli/debug/compare/08_accuracy_error_location)    | 误差及累计误差自动定位 |
