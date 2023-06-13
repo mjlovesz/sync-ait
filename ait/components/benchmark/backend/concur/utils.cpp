@@ -65,7 +65,7 @@ std::vector<std::string> SplitStr(std::string input, char delimiter)
     return res;
 }
 
-std::vector<size_t> StrVecToNumVec(const std::vector<std::string>& vec)
+std::vector<size_t> StrVecToNumVec(const std::vector<std::string>& strVec)
 {
     std::vector<size_t> res;
     for (auto &elem : vec) {
@@ -148,7 +148,7 @@ std::string RemoveSlash(std::string name)
 
 std::string CreateDynamicShape(std::string name, std::vector<size_t> shapes)
 {
-    std::vector<std::string> shapeStr{};
+    std::vector<std::string> shapeStr {};
     for (auto &shape : shapes) {
         shapeStr.push_back(std::to_string(shape));
     }

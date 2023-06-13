@@ -58,7 +58,7 @@ struct Feeds {
 template <typename T>
 class ConcurrentQueue {
 public:
-    ConcurrentQueue(int depth = 3): depth(depth) {} explicit
+    explicit ConcurrentQueue(int depth = 3): depth(depth) {}
 
     T pop() {
         std::unique_lock<std::mutex> mlock(mtx);
@@ -108,15 +108,15 @@ void SetSession(std::shared_ptr<Base::PyInferenceSession> session, Arguments& ar
 }
 
 void FuncPrepare(int32_t deviceId, std::shared_ptr<Base::PyInferenceSession> session, std::string modelPath,
-                  std::shared_ptr<Base::SessionOptions> options, std::vector<std::vector<std::string>> &filesList,
-                  ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, bool autoDymShape)
+                 std::shared_ptr<Base::SessionOptions> options, std::vector<std::vector<std::string>> &filesList,
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, bool autoDymShape)
 {
     APP_ERROR ret;
     ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
-    std::vector<std::string> inputNames{};
+    std::vector<std::string> inputNames {};
     if (autoDymShape) {
         auto intensor_desc = session->GetInputs();
         for (auto &desc : intensor_desc) {
@@ -131,7 +131,7 @@ void FuncPrepare(int32_t deviceId, std::shared_ptr<Base::PyInferenceSession> ses
         }
         auto inputs = std::make_shared<std::vector<Base::BaseTensor>>();
         auto arrayPtr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
-        std::string autoDynamicShape{};
+        std::string autoDynamicShape {};
         for (size_t i = 0; i < files.size(); i++) {
             auto array = std::make_shared<cnpy::NpyArray>(cnpy::NpyLoad(files[i]));
             arrayPtr->emplace_back(array);
@@ -156,9 +156,9 @@ void FuncPrepare(int32_t deviceId, std::shared_ptr<Base::PyInferenceSession> ses
 }
 
 void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
-              ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, int32_t deviceId,
-              std::shared_ptr<Base::PyInferenceSession> session,
-              std::vector<TimePointPair>& timeStamps)
+             ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, int32_t deviceId,
+             std::shared_ptr<Base::PyInferenceSession> session,
+             std::vector<TimePointPair>& timeStamps)
 {
     APP_ERROR ret;
     ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
@@ -191,9 +191,9 @@ void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
 }
 
 void FuncCompute(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
-                  ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, int32_t deviceId,
-                  std::shared_ptr<Base::PyInferenceSession> session,
-                  std::vector<TimePointPair>& timeStamps)
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, int32_t deviceId,
+                 std::shared_ptr<Base::PyInferenceSession> session,
+                 std::vector<TimePointPair>& timeStamps)
 {
     APP_ERROR ret;
     ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
@@ -225,8 +225,8 @@ void FuncCompute(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
 }
 
 void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
-              ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, int32_t deviceId,
-              std::vector<TimePointPair>& timeStamps)
+             ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, int32_t deviceId,
+             std::vector<TimePointPair>& timeStamps)
 {
     APP_ERROR ret;
     ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
