@@ -45,7 +45,7 @@ namespace chr = std::chrono;
 using TimePointPair = std::pair<chr::steady_clock::time_point, chr::steady_clock::time_point>;
 using Arguments = std::unordered_map<std::string, std::string>;
 
-struct Feeds{
+struct Feeds {
     std::shared_ptr<std::vector<std::string>> _output_names = nullptr;
     std::shared_ptr<std::vector<Base::BaseTensor>> _inputs = nullptr;
     std::shared_ptr<std::vector<Base::TensorBase>> _outputs = nullptr;
@@ -55,12 +55,10 @@ struct Feeds{
     std::string _output_prefix = "";
 };
 
-
-
 template <typename T>
 class ConcurrentQueue {
-    public:
-    ConcurrentQueue(int depth = 3): _depth(depth) {}
+public:
+    ConcurrentQueue(int depth = 3): _depth(depth) {} explicit
 
     T pop() {
         std::unique_lock<std::mutex> mlock(_mtx);
@@ -84,7 +82,7 @@ class ConcurrentQueue {
         _cond_var.notify_one();
     }
 
-    private:
+private:
     std::mutex _mtx;
     std::queue<T> _queue;
     std::condition_variable _cond_var;
@@ -132,7 +130,7 @@ void func_prepare(int32_t deviceId, std::shared_ptr<Base::PyInferenceSession> se
             output_names->push_back(desc.name);
         }
         auto inputs = std::make_shared<std::vector<Base::BaseTensor>>();
-        auto arrayptr =std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
+        auto arrayptr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
         std::string autoDynamicShape{};
         for (size_t i = 0; i < files.size(); i++) {
             auto array = std::make_shared<cnpy::NpyArray>(cnpy::npy_load(files[i]));
@@ -190,9 +188,9 @@ void func_h2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2d_queue,
 }
 
 void func_compute(ConcurrentQueue<std::shared_ptr<Feeds>> &compute_queue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &d2h_queue, int32_t deviceId,
-                 std::shared_ptr<Base::PyInferenceSession> session,
-                 std::vector<TimePointPair>& timestamps)
+                  ConcurrentQueue<std::shared_ptr<Feeds>> &d2h_queue, int32_t deviceId,
+                  std::shared_ptr<Base::PyInferenceSession> session,
+                  std::vector<TimePointPair>& timestamps)
 {
     APP_ERROR ret;
     ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
@@ -221,12 +219,11 @@ void func_compute(ConcurrentQueue<std::shared_ptr<Feeds>> &compute_queue,
 
         d2h_queue.push(item);
     }
-    
 }
 
 void func_d2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2h_queue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &save_queue, int32_t deviceId,
-                 std::vector<TimePointPair>& timestamps)
+              ConcurrentQueue<std::shared_ptr<Feeds>> &save_queue, int32_t deviceId,
+              std::vector<TimePointPair>& timestamps)
 {
     APP_ERROR ret;
     ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
@@ -252,13 +249,12 @@ void func_d2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2h_queue,
 
         save_queue.push(item);
     }
-    
 }
 
 int tensotToNumpy(std::string output_filename, Base::TensorBase& output)
 {
     auto shape_tmp = output.GetShape();
-    std::vector<size_t> shape{shape_tmp.begin(), shape_tmp.end()};
+    std::vector<size_t> shape{ shape_tmp.begin(), shape_tmp.end() };
 
     if (output.GetDataType() == Base::TENSOR_DTYPE_FLOAT32) {
         cnpy::npy_save(output_filename, (float*)output.GetBuffer(), shape);
@@ -318,7 +314,6 @@ void func_save(ConcurrentQueue<std::shared_ptr<Feeds>> &save_queue, int32_t devi
             }
         }
     }
-    
 }
 
 void Execute(Arguments& arguments)
@@ -330,7 +325,7 @@ void Execute(Arguments& arguments)
     std::shared_ptr<Base::SessionOptions> options = std::make_shared<Base::SessionOptions>();
 
     options->loop = stoi(arguments["loop"]);
-    options->log_level = arguments["debug"] == "0" ? 2 : 1;
+    options->log_level = arguments["debug"] == "0" ? LOG_INFO_LEVEL : LOG_DEBUG_LEVEL;
     size_t deviceId = stoi(arguments["device"]);
     
     auto session = std::make_shared<Base::PyInferenceSession>(arguments["model"], deviceId, options);
@@ -344,7 +339,6 @@ void Execute(Arguments& arguments)
     std::vector<TimePointPair> h2d_ts;
     std::vector<TimePointPair> compute_ts;
     std::vector<TimePointPair> d2h_ts;
-    
 
     auto start = chr::steady_clock::now();
 
@@ -352,7 +346,6 @@ void Execute(Arguments& arguments)
     std::thread computeThread(func_compute, std::ref(compute_queue), std::ref(d2h_queue), deviceId, session, std::ref(compute_ts));
     std::thread d2hThread(func_d2h, std::ref(d2h_queue), std::ref(save_queue), deviceId, std::ref(h2d_ts));
     std::thread saveThread(func_save, std::ref(save_queue), deviceId, arguments["output"]);
-    
     func_prepare(deviceId, session, arguments["model"], options, filesList, h2d_queue, arguments["auto_set_dymshape_mode"] != "0");
 
     h2dThread.join();
@@ -369,17 +362,14 @@ void Execute(Arguments& arguments)
     printTimeWall("d2h", d2h_ts);
 
     session->Finalize();
-
-
 }
 
 
 int main(int argc, char **argv) {
-
     Arguments arguments{{"model", ""}, {"input", ""}, {"output", ""}, {"loop", "1"}, {"debug", "0"}, {"warmup", "1"},
                     {"device", ""}, {"dymHW", ""}, {"dymDims", ""}, {"dymShape", ""}, {"display", "0"},
                     {"outputSize", ""}, {"auto_set_dymshape_mode", "0"}};
-    
+
     readArgs(argc, argv, arguments);
 
     Execute(arguments);

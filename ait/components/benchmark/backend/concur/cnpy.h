@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #ifndef BACKEND_CNPY_H
 #define BACKEND_CNPY_H
 
@@ -17,7 +33,6 @@
 
 namespace cnpy
 {
-
 struct NpyArray {
     NpyArray(const std::vector<size_t> &shape, size_t word_size, bool fortran_order)
         : _shape(shape), _word_size(word_size), _fortran_order(fortran_order), _num_vals(1)
@@ -68,24 +83,25 @@ NpyArray npy_load(std::string fname);
 template <typename T> std::vector<char> &operator += (std::vector<char> &lhs, const T rhs)
 {
     for (size_t byte = 0; byte < sizeof(T); byte++) {
-        char val = *((char *)&rhs + byte);
+        char val = *(static_cast<char*>(&rhs) + byte);
         lhs.push_back(val);
     }
     return lhs;
 }
 
 
-template <> std::vector<char> &operator += (std::vector<char> &lhs, const std::string rhs);
-template <> std::vector<char> &operator += (std::vector<char> &lhs, const char *rhs);
+// template <> std::vector<char> &operator += (std::vector<char> &lhs, const std::string rhs);
+// template <> std::vector<char> &operator += (std::vector<char> &lhs, const char *rhs);
 
 template <typename T>
 void npy_save(std::string fname, const T *data, const std::vector<size_t> shape, std::string mode = "w")
 {
-    FILE *fp = NULL;
+    FILE *fp = nullptr;
     std::vector<size_t> true_data_shape;
 
-    if (mode == "a")
+    if (mode == "a") {
         fp = fopen(fname.c_str(), "r+b");
+    }
 
     if (fp) {
         size_t word_size;
@@ -128,8 +144,8 @@ template <typename T> void npy_save(std::string fname, const std::vector<T> data
 {
     std::vector<size_t> shape;
     shape.push_back(data.size());
-    npy_save(fname, &data[0] ,shape, mode);
-} 
+    npy_save(fname, &data[0], shape, mode);
+}
 
 
 template <typename T> std::vector<char> create_npy_header(const std::vector<size_t> &shape)
@@ -145,24 +161,24 @@ template <typename T> std::vector<char> create_npy_header(const std::vector<size
         dict += ", ";
         dict += std::to_string(shape[i]);
     }
-    if (shape.size() == 1)
+    if (shape.size() == 1){
         dict += ",";
+    }
     dict += "), }";
     int remainder = 16 - (10 + dict.size()) % 16;
     dict.insert(dict.end(), remainder, ' ');
     dict.back() = '\n';
 
     std::vector<char> header;
-    header += (char)0x93;
+    header += static_cast<char>(0x93);
     header += "NUMPY";
-    header += (char)0x01;
-    header += (char)0x00;
-    header += (uint16_t)dict.size();
+    header += static_cast<char>(0x01);
+    header += static_cast<char>(0x00);
+    header += static_cast<uint16_t>(dict.size());
     header.insert(header.end(), dict.begin(), dict.end());
 
     return header;
 }
-
 } // namespace cnpy
 
-#endif //BACKEND_CNPY_H
+#endif // BACKEND_CNPY_H

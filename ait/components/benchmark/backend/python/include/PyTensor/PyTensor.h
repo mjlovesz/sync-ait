@@ -44,8 +44,8 @@ TensorBase BatchVector(const std::vector<TensorBase> &tensors, const bool &keepD
 TensorBase FromNumpy(py::buffer b);
 py::buffer_info ToNumpy(const TensorBase &tensor);
 #endif
-
 }
+
 #ifdef COMPILE_PYTHON_MODULE
 void RegistPyTensorModule(py::module &m);
 #endif
