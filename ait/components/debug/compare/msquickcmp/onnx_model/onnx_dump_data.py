@@ -232,13 +232,6 @@ class OnnxDumpData(DumpData):
             inputs_tensor_info.append(tensor_info)
         utils.logger.info("model inputs tensor info:\n{}\n".format(inputs_tensor_info))
         return inputs_tensor_info
-    
-    def get_bin_path(input_item_path, input_path):
-        for root, _, files in os.walk(input_item_path):
-            for bin_file in files:
-                if bin_file.endswith('.bin'):
-                    file_path = os.path.join(root, bin_file)
-                    input_path.append(file_path)
 
     def _get_inputs_data(self, data_dir, inputs_tensor_info, npu_dump_data_path, use_aipp):
         inputs_map = {}
@@ -262,7 +255,7 @@ class OnnxDumpData(DumpData):
             if input_item_path.endswith('.bin'):
                 input_path.append(input_item_path)
             else:
-                get_bin_path(input_item_path, input_path)
+                utils.get_input_path(input_item_path, input_path)
         if len(inputs_tensor_info) != len(input_path):
             utils.logger.error("the number of model inputs tensor_info is not equal the number of "
                                 "inputs data, inputs tensor_info is: {}, inputs data is: {}".format(
