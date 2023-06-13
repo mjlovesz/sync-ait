@@ -54,13 +54,13 @@ std::string MergeStr(std::vector<std::string> list, std::string delimiter)
 
 std::vector<std::string> SplitStr(std::string input, char delimiter)
 {
-    std::stringstream ss(input);
+    std::stringstream inStream(input);
     std::vector<std::string> res;
 
-    while (ss.good()) {
-        std::string substr;
-        getline(ss, substr, delimiter);
-        res.push_back(substr);
+    while (inStream.good()) {
+        std::string subStr;
+        getline(inStream, subStr, delimiter);
+        res.emplace_back(subStr);
     }
     return res;
 }
@@ -69,7 +69,7 @@ std::vector<size_t> StrVecToNumVec(const std::vector<std::string>& strVec)
 {
     std::vector<size_t> res;
     for (auto &elem : strVec) {
-        res.push_back(stoi(elem));
+        res.emplace_back(stoi(elem));
     }
     return res;
 }
@@ -82,7 +82,7 @@ std::vector<std::string> Traversal(const char* dir)
     if ((dir_ptr = opendir(dir)) != nullptr) {
         while ((diread = readdir(dir_ptr)) != nullptr) {
             if (diread->d_type == DT_REG) {
-                filenames.push_back(std::string(dir) + diread->d_name);
+                filenames.emplace_back(std::string(dir) + diread->d_name);
             }
         }
         closedir(dir_ptr);
@@ -92,45 +92,45 @@ std::vector<std::string> Traversal(const char* dir)
 }
 
 // input need to be dir1,dir2,dir3,...
-int CreateFilesList(std::vector<std::vector<std::string>>& fileList, std::string input)
+Result CreateFilesList(std::vector<std::vector<std::string>>& fileList, std::string input)
 {
     std::vector<std::vector<std::string>> directorys;
 
     for (auto &dir : SplitStr(input, ',')) {
         if (dir.back() != '/') {
-            dir.push_back('/');
+            dir.emplace_back('/');
         }
-        directorys.push_back(std::move(Traversal(dir.c_str())));
+        directorys.emplace_back(std::move(Traversal(dir.c_str())));
     }
     // check whether number of files in each directory is the same
     size_t n = directorys[0].size();
     for (auto &directory : directorys) {
         if (directory.size() != n) {
-            return 1;
+            return FAILED;
         }
     }
 
     for (size_t i = 0; i < n; i++) {
         std::vector<std::string> combine {};
         for (auto &directory : directorys) {
-            combine.push_back(directory[i]);
+            combine.emplace_back(directory[i]);
         }
-        fileList.push_back(std::move(combine));
+        fileList.emplace_back(std::move(combine));
     }
-    return 0;
+    return SUCCESS;
 }
 
 std::string GetPrefix(std::string filePath)
 {
-    std::stringstream ss(filePath);
+    std::stringstream inStream(filePath);
     std::string res {};
-    while (ss.good()) {
-        std::string substr;
-        getline(ss, substr, '/');
-        if (substr == "") {
+    while (inStream.good()) {
+        std::string subStr;
+        getline(inStream, subStr, '/');
+        if (subStr == "") {
             continue;
         }
-        res = substr;
+        res = subStr;
     }
     return res;
 }
@@ -140,7 +140,7 @@ std::string RemoveSlash(std::string name)
     std::string res;
     for (auto &elem: name) {
         if (elem != '/') {
-            res.push_back(elem);
+            res.emplace_back(elem);
         }
     }
     return res;
@@ -150,7 +150,7 @@ std::string CreateDynamicShape(std::string name, std::vector<size_t> shapes)
 {
     std::vector<std::string> shapeStr {};
     for (auto &shape : shapes) {
-        shapeStr.push_back(std::to_string(shape));
+        shapeStr.emplace_back(std::to_string(shape));
     }
     auto res = MergeStr(shapeStr, ",");
     return name + ":" + res;
@@ -162,10 +162,12 @@ void PrintTimeWall(const std::string& phase, const std::vector<TimePointPair>& t
         return;
     }
     auto [minIt, maxIt] = std::minmax_element(timeStamps.begin(), timeStamps.end(),
-    [](auto tp1, auto tp2) {return tp1.second - tp1.first < tp2.second - tp2.first;});
+                          [](auto tp1, auto tp2)
+                          {return tp1.second - tp1.first < tp2.second - tp2.first;});
 
     auto total = std::accumulate(timeStamps.begin(), timeStamps.end(), 0,
-    [](auto init, auto tpp) {return init + chr::duration_cast<chr::microseconds>(tpp.second - tpp.first).count(); });
+                 [](auto init, auto tpp)
+                 {return init + chr::duration_cast<chr::microseconds>(tpp.second - tpp.first).count(); });
 
     float division = 1000.0; // microsecond to millisecond
     auto avg = total/timeStamps.size();
