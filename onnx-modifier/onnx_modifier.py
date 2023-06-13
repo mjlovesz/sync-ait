@@ -25,8 +25,7 @@ from utils import parse_str2np, np2onnxdtype
 
 
 class OnnxModifier:
-    
-    ONNX_MODIFIER = None
+    ONNX_MODIFIER_MAP = dict()
 
     def __init__(self, model_name, model_proto):
         self.model_name = model_name
@@ -41,25 +40,32 @@ class OnnxModifier:
         self.reload(self.model_proto_backup)
 
     @classmethod
-    def from_model_path(cls, model_path, name=None):
-        model_name = os.path.basename(model_path) if name is None else name
-        model_proto = onnx.load(model_path)
-        cls.ONNX_MODIFIER = cls(model_name, model_proto)
-        return cls.ONNX_MODIFIER
+    def get_modifier(cls, session):
+        return cls.ONNX_MODIFIER_MAP.get(session, None)
 
     @classmethod
-    def from_name_stream(cls, name, stream):
+    def from_model_path(cls, session, model_path, name=None):
+        model_name = os.path.basename(model_path) if name is None else name
+        model_proto = onnx.load(model_path)
+        modifier = cls(model_name, model_proto)
+        cls.ONNX_MODIFIER_MAP[session] = modifier
+        return modifier
+
+    @classmethod
+    def from_name_stream(cls, session, name, stream):
         logging.info("loading model...")
         stream.seek(0)
         model_proto = onnx.load_model(stream, onnx.ModelProto, load_external_data=False)
         logging.info("load done!")
-        cls.ONNX_MODIFIER = cls(name, model_proto)
-        return cls.ONNX_MODIFIER
+        modifier = cls(name, model_proto)
+        cls.ONNX_MODIFIER_MAP[session] = modifier
+        return modifier
     
     @classmethod
-    def from_model_proto(cls, model_name, model_proto):
-        cls.ONNX_MODIFIER = cls(model_name, model_proto)
-        return cls.ONNX_MODIFIER
+    def from_model_proto(cls, session, model_name, model_proto):
+        modifier = cls(model_name, model_proto)
+        cls.ONNX_MODIFIER_MAP[session] = modifier
+        return modifier
 
     def reload(self, model_proto=None):
         if model_proto is None:
@@ -71,6 +77,7 @@ class OnnxModifier:
         self.initializer = self.model_proto.graph.initializer
 
         self.gen_name2module_map()
+        return self
 
     def gen_name2module_map(self):
         # node name => node
