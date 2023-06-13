@@ -368,7 +368,7 @@ host.BrowserHost = class {
                     fetch('/open_model', {
                         method: 'POST',
                         body: form
-                    }).then(function (response) {
+                    }).then((response) => {
                         this.check_res_status(response.status)
                         return response.text();
                     }).then(function (text) {
@@ -395,11 +395,10 @@ host.BrowserHost = class {
              click_event.stopPropagation();
         })
         const githubButton = this.document.getElementById('github-button');
-        const githubLink = this.document.getElementById('logo-github');
-        if (githubButton && githubLink) {
+        if (githubButton) {
             githubButton.style.opacity = 1;
             githubButton.addEventListener('click', () => {
-                this.openURL(githubLink.href);
+                this.openURL("https://gitee.com/ascend/ait/tree/master/onnx-modifier");
             });
         }
         this.document.addEventListener('dragover', (e) => {
@@ -423,7 +422,7 @@ host.BrowserHost = class {
                 fetch('/open_model', {
                     method: 'POST',
                     body: form
-                }).then(function (response) {
+                }).then((response) => {
                     this.check_res_status(response.status)
                     return response.text();
                 }).then(function (text) {
@@ -505,10 +504,12 @@ host.BrowserHost = class {
 
             if (has_error) {
                 input_change.style.borderColor = 'red'
+                input_change.style.outline = "red"
                 input_change.has_error = true
                 this.document.getElementById("change-input-shape-input-ok").disabled = "disabled"
             } else {
                 input_change.style.borderColor = null
+                input_change.style.outline = ""
                 input_change.has_error = false
                 input_change.dims = dims
                 this.document.getElementById("change-input-shape-input-ok").disabled = ""
@@ -521,10 +522,12 @@ host.BrowserHost = class {
             let value = e.target.value.trim()
             if (!value.match("^-?[1-9][0-9]{0,10}$")) {
                 input_change.style.borderColor = 'red'
+                input_change.style.outline = "red"
                 input_change.has_error = true
                 this.document.getElementById("fixed-batch-size-input-ok").disabled = "disabled"
             } else {
                 input_change.style.borderColor = null
+                input_change.style.outline = ""
                 input_change.has_error = false
                 this.document.getElementById("fixed-batch-size-input-ok").disabled = ""
             }
@@ -620,7 +623,7 @@ host.BrowserHost = class {
 
                 let input_change = this.document.getElementById("change-input-shape-input")
                 input_change.value = default_shape
-                let dialog = this.document.getElementById("changeinputshape-dialog")
+                let dialog = this.document.getElementById("change-input-shape-dialog")
                 dialog.getElementsByClassName("text")[0].innerText = `Change the shape of input: ${detail.input_name}`
                 this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
                     if (!is_not_cancel) {
@@ -629,13 +632,32 @@ host.BrowserHost = class {
                     
                     this._view.modifier.changeInputSize(detail.input_name, input_change.dims);
                     this._view.modifier.refreshModelInputOutput()
+
+                    if (dialog.getElementsByClassName("checkbox-shape-change")[0].checked) {
+                        let data = this.build_download_data(true)
+                        data.postprocess_args.shapeInf = true
+                        this.take_effect_modify("/download", data, false)
+                    }
+                    this._view._sidebar.close()
                 })
             }]
         })
         enable_map.set("batch-size-dynamic", (detail) => {
             return [detail.is_input, (click_event) => {
-                this.change_batch_size("dynamic")
-                this._view.modifier.changeBatchSize("dynamic");
+                let dialog = this.document.getElementById("dynamic-batch-size-dialog")
+                this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                    if (!is_not_cancel) {
+                        return 
+                    }
+                    this.change_batch_size("dynamic")
+                    this._view.modifier.changeBatchSize("dynamic");
+                    if (dialog.getElementsByClassName("checkbox-shape-change")[0].checked) {
+                        let data = this.build_download_data(true)
+                        data.postprocess_args.shapeInf = true
+                        this.take_effect_modify("/download", data, false)
+                    }
+                    this._view._sidebar.close()
+                })
                 click_event.stopPropagation();
             }]
         })
@@ -651,6 +673,13 @@ host.BrowserHost = class {
                     let input_change = this.document.getElementById("fixed-batch-size-input")
                     this.change_batch_size(input_change.value)
                     this._view.modifier.changeBatchSize('fixed', input_change.value);
+
+                    if (dialog.getElementsByClassName("checkbox-shape-change")[0].checked) {
+                        let data = this.build_download_data(true)
+                        data.postprocess_args.shapeInf = true
+                        this.take_effect_modify("/download", data, false)
+                    }
+                    this._view._sidebar.close()
                 })
                 click_event.stopPropagation();
             }]
@@ -756,7 +785,7 @@ host.BrowserHost = class {
         fetch('/open_model', {
             method: 'POST',
             body: form
-        }).then(function (response) {
+        }).then((response) => {
             this.check_res_status(response.status)
             return response.text();
         }).then(function (text) {
@@ -770,7 +799,7 @@ host.BrowserHost = class {
         }
     }
 
-    build_download_data(return_modified_file) {
+    build_download_data(return_modified_file, shape_inf) {
         return {
             'node_states': this.mapToObjectRec(this._view.modifier.name2NodeStates),
             'node_renamed_io': this.mapToObjectRec(this._view.modifier.renameMap),
@@ -783,7 +812,9 @@ host.BrowserHost = class {
                 this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
             'rebatch_info': this.mapToObjectRec(this._view.modifier.reBatchInfo),
             'changed_initializer': this.mapToObjectRec(this._view.modifier.initializerEditInfo),
-            'postprocess_args': { 'shapeInf': this._view.modifier.downloadWithShapeInf, 'cleanUp': this._view.modifier.downloadWithCleanUp },
+            'postprocess_args': { 
+                'shapeInf': this._view.modifier.downloadWithShapeInf, 
+                'cleanUp': this._view.modifier.downloadWithCleanUp },
             "model_properties": this.mapToObjectRec(this._view.modifier.modelProperties),
             'input_size_info': this.mapToObjectRec(this._view.modifier.inputSizeInfo),
             'return_modified_file': Boolean(return_modified_file),
