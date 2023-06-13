@@ -31,11 +31,11 @@ void ReadArgs(int argc, char *argv[], Arguments& arguments)
         auto valuePtr = strchr(argv[i], '=');
         if (valuePtr) {
             std::string value { valuePtr + 1 };
-            std::string key { argv[i], valuePtr - argv[i] };
+            std::string key { argv[i], (long unsigned int)(valuePtr - argv[i]) };
             if (arguments.find(key) != arguments.end()) {
                 arguments[key] = value;
             } else {
-                ERROR_LOG("%s is not a parameter\n", key);
+                ERROR_LOG("%s is not a parameter\n", key.c_str());
             }
         } else {
             ERROR_LOG("pass the parameter in form of key=value\n");
@@ -68,7 +68,7 @@ std::vector<std::string> SplitStr(std::string input, char delimiter)
 std::vector<size_t> StrVecToNumVec(const std::vector<std::string>& strVec)
 {
     std::vector<size_t> res;
-    for (auto &elem : vec) {
+    for (auto &elem : strVec) {
         res.push_back(stoi(elem));
     }
     return res;
@@ -95,7 +95,7 @@ std::vector<std::string> Traversal(const char* dir)
 int CreateFilesList(std::vector<std::vector<std::string>>& fileList, std::string input)
 {
     std::vector<std::vector<std::string>> directorys;
-    
+
     for (auto &dir : SplitStr(input, ',')) {
         if (dir.back() != '/') {
             dir.push_back('/');
@@ -169,7 +169,7 @@ void PrintTimeWall(const std::string& phase, const std::vector<TimePointPair>& t
 
     float division = 1000.0; // microsecond to millisecond
     auto avg = total/timeStamps.size();
-    INFO_LOG("%s avg: %fms. min: %fms. max: %f ms.\n", phase, avg/division,
+    INFO_LOG("%s avg: %fms. min: %fms. max: %f ms.\n", phase.c_str(), avg/division,
              chr::duration_cast<chr::microseconds>(minIt->second - minIt->first).count()/division,
              chr::duration_cast<chr::microseconds>(maxIt->second - maxIt->first).count()/division);
 }
