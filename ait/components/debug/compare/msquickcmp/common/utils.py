@@ -215,6 +215,14 @@ def create_directory(dir_path):
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR) from ex
 
 
+def get_input_path(input_item_path, bin_file_path_array):
+    for root, _, files in os.walk(input_item_path):
+        for bin_file in files:
+            if bin_file.endswith('.bin'):
+                file_path = os.path.join(root, bin_file)
+                bin_file_path_array.append(file_path)
+
+
 def check_input_bin_file_path(input_path):
     """
     Function Description:
@@ -226,8 +234,12 @@ def check_input_bin_file_path(input_path):
     bin_file_path_array = []
     for input_item in input_bin_files:
         input_item_path = os.path.realpath(input_item)
-        check_file_or_directory_path(input_item_path)
-        bin_file_path_array.append(input_item_path)
+        if input_item_path.endswith('.bin'):
+            check_file_or_directory_path(input_item_path)
+            bin_file_path_array.append(input_item_path)
+        else:
+            check_file_or_directory_path(input_item_path, True)
+            get_input_path(input_item_path, bin_file_path_array)
     return bin_file_path_array
 
 
