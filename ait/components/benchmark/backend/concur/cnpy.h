@@ -84,7 +84,7 @@ NpyArray NpyLoad(std::string fname);
 template <typename T> std::vector<char> &operator += (std::vector<char> &lhs, const T rhs)
 {
     for (size_t byte = 0; byte < sizeof(T); byte++) {
-        char val = *(static_cast<char*>(&rhs) + byte);
+        char val = *((char*)(&rhs) + byte);
         lhs.push_back(val);
     }
     return lhs;
@@ -113,16 +113,16 @@ void NpySave(std::string fname, const T *data, const std::vector<size_t> shape, 
 
         if (wordSize != sizeof(T)) {
             ERROR_LOG("libnpy error: %s has word size %zu but NpySave appending data sized %zu\n",
-                      fname, wordSize, sizeof(T));
+                      fname.c_str(), wordSize, sizeof(T));
             throw std::runtime_error("NpySave: wordSize not matching");
         }
         if (trueDataShape.size() != shape.size()) {
-            ERROR_LOG("libnpy error: NpySave attempting to append misdimensioned data to %s\n", fname);
+            ERROR_LOG("libnpy error: NpySave attempting to append misdimensioned data to %s\n", fname.c_str());
             throw std::runtime_error("NpySave: dimension not matching");
         }
         for (size_t i = 1; i < shape.size(); i++) {
             if (shape[i] != trueDataShape[i]) {
-                ERROR_LOG("libnpy error: NpySave attempting to append misshaped data to %s", fname);
+                ERROR_LOG("libnpy error: NpySave attempting to append misshaped data to %s", fname.c_str());
                 throw std::runtime_error("NpySave: shape not matching");
             }
         }

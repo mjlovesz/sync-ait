@@ -123,7 +123,7 @@ void FuncPrepare(int32_t deviceId, std::shared_ptr<Base::PyInferenceSession> ses
             inputNames.push_back(desc.name);
         }
     }
-    
+
     for (auto &files : filesList) {
         auto outputNames = std::make_shared<std::vector<std::string>>();
         for (const auto &desc: session->GetOutputs()) {
@@ -209,7 +209,7 @@ void FuncCompute(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
             break;
         }
         auto start = chr::steady_clock::now();
-        
+
         if (item->autoDynamicShape != "") {
             session->SetDynamicShape(item->autoDynamicShape);
         }
@@ -242,7 +242,7 @@ void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
             break;
         }
         auto start = chr::steady_clock::now();
-        
+
         for (auto &output : *(item->outputs)) {
             Base::TensorToHost(output);
         }
@@ -312,7 +312,7 @@ void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, int32_t device
                 std::string outputFileName = outputDir + RemoveSlash(
                     item->outputPrefix + "_" + item->outputNames->at(i) + "_" + std::to_string(i) + ".npy");
                 if (TensotToNumpy(outputFileName, item->outputs->at(i))) {
-                    ERROR_LOG("%s save failed\n", outputFileName);
+                    ERROR_LOG("%s save failed\n", outputFileName.c_str());
                 }
             }
         }
@@ -330,7 +330,7 @@ void Execute(Arguments& arguments)
     options->loop = stoi(arguments["loop"]);
     options->log_level = arguments["debug"] == "0" ? LOG_INFO_LEVEL : LOG_DEBUG_LEVEL;
     size_t deviceId = stoi(arguments["device"]);
-    
+
     auto session = std::make_shared<Base::PyInferenceSession>(arguments["model"], deviceId, options);
     SetSession(session, arguments);
 
@@ -360,7 +360,7 @@ void Execute(Arguments& arguments)
 
     auto end = chr::steady_clock::now();
     auto e2ems = chr::duration_cast<chr::milliseconds>(end - start).count();
-    INFO_LOG("End2End time: %d ms\n", e2ems);
+    INFO_LOG("End2End time: %ld ms\n", e2ems);
 
     PrintTimeWall("h2d", h2dTs);
     PrintTimeWall("compute", computeTs);

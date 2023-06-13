@@ -26,7 +26,7 @@
 char cnpy::BigEndianTest()
 {
     int x = 1;
-    return ((static_cast<char *>(&x))[0]) ? '<' : '>';
+    return (((char*)(&x))[0]) ? '<' : '>';
 }
 
 char cnpy::MapType(const std::type_info &t)
@@ -43,11 +43,11 @@ char cnpy::MapType(const std::type_info &t)
         t == typeid(unsigned long long) || t == typeid(unsigned int)) {
         return 'u';
     }
-    
+
     if (t == typeid(bool)) {
         return 'b';
     }
-    
+
     if (t == typeid(std::complex<float>) || t == typeid(std::complex<double>) ||
         t == typeid(std::complex<long double>)) {
         return 'c';
@@ -93,7 +93,7 @@ void cnpy::ParseNpyHeader(unsigned char *buffer, size_t &wordSize, std::vector<s
         shape.push_back(std::stoi(sm[0].str()));
         strShape = sm.suffix().str();
     }
-    
+
     loc1 = header.find("descr") + 9; // 9 means offset
     bool littleEndian = (header[loc1] == '<' || header[loc1] == '|' ? true : false);
     if (!littleEndian) {
