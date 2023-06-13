@@ -29,7 +29,7 @@ char cnpy::BigEndianTest()
     return ((static_cast<char *>(&x))[0]) ? '<' : '>';
 }
 
-char cnpy::map_type(const std::type_info &t)
+char cnpy::MapType(const std::type_info &t)
 {
     if (t == typeid(float) || t == typeid(double) || t == typeid(long double)) {
         return 'f';
@@ -72,105 +72,105 @@ template <> std::vector<char> &cnpy::operator += (std::vector<char> &lhs, const 
     return lhs;
 }
 
-void cnpy::parse_npy_header(unsigned char *buffer, size_t &word_size, std::vector<size_t> &shape, bool &fortran_order)
+void cnpy::ParseNpyHeader(unsigned char *buffer, size_t &wordSize, std::vector<size_t> &shape, bool &fortranOrder)
 {
-    uint16_t header_len = *reinterpret_cast<uint16_t *>(buffer + 8);            // 8 means offset of header_len
-    std::string header(reinterpret_cast<char *>(buffer + 9), header_len);       // 9 means offser of header
+    uint16_t headerLen = *reinterpret_cast<uint16_t *>(buffer + 8);            // 8 means offset of headerLen
+    std::string header(reinterpret_cast<char *>(buffer + 9), headerLen);       // 9 means offser of header
 
     size_t loc1, loc2;
 
-    loc1 = header.find("fortran_order") + 16; // 16 means offset
-    fortran_order = (header.substr(loc1, 4) == "True" ? true : false); // 4 means length of "True"
+    loc1 = header.find("fortranOrder") + 16; // 16 means offset
+    fortranOrder = (header.substr(loc1, 4) == "True" ? true : false); // 4 means length of "True"
 
     loc1 = header.find("(");
     loc2 = header.find(")");
 
-    std::regex num_regex("[0-9][0-9]*");
+    std::regex numRegex("[0-9][0-9]*");
     std::smatch sm;
     shape.clear();
-    std::string str_shape = header.substr(loc1 + 1, loc2 - loc1 - 1);
-    while (std::regex_search(str_shape, sm, num_regex)) {
+    std::string strShape = header.substr(loc1 + 1, loc2 - loc1 - 1);
+    while (std::regex_search(strShape, sm, numRegex)) {
         shape.push_back(std::stoi(sm[0].str()));
-        str_shape = sm.suffix().str();
+        strShape = sm.suffix().str();
     }
     
     loc1 = header.find("descr") + 9; // 9 means offset
     bool littleEndian = (header[loc1] == '<' || header[loc1] == '|' ? true : false);
     assert(littleEndian);
 
-    std::string str_ws = header.substr(loc1 + 2);
-    loc2 = str_ws.find("'");
-    word_size = atoi(str_ws.substr(0, loc2).c_str());
+    std::string strWs = header.substr(loc1 + 2);
+    loc2 = strWs.find("'");
+    wordSize = atoi(strWs.substr(0, loc2).c_str());
     
 }
 
-void cnpy::parse_npy_header(FILE *fp, size_t &word_size, std::vector<size_t> &shape, bool &fortran_order)
+void cnpy::ParseNpyHeader(FILE *fp, size_t &wordSize, std::vector<size_t> &shape, bool &fortranOrder)
 {
     char buffer[256];
     size_t res = fread(buffer, sizeof(char), 11, fp);
     if (res != 11) { // 11 means buffer size
-        throw std::runtime_error("parse_npy_header: failed fread");
+        throw std::runtime_error("ParseNpyHeader: failed fread");
     }
     std::string header = fgets(buffer, 256, fp);
     assert(header[header.size() - 1] == '\n');
 
     size_t loc1, loc2;
 
-    loc1 = header.find("fortran_order");
+    loc1 = header.find("fortranOrder");
     if (loc1 == std::string::npos)
-        throw std::runtime_error("parse_npy_header: failed to find header keyword : 'fortran_order'");
+        throw std::runtime_error("ParseNpyHeader: failed to find header keyword : 'fortranOrder'");
     loc1 += 16; // 16 menas offset
-    fortran_order = (header.substr(loc1, 4) == "True" ? true :false); // 4 means length of "True"
+    fortranOrder = (header.substr(loc1, 4) == "True" ? true :false); // 4 means length of "True"
 
     loc1 = header.find("(");
     loc2 = header.find(")");
     if (loc1 == std::string::npos || loc2 == std::string::npos)
-        throw std::runtime_error("parse_npy_header: failed to find header keyword: '(' or ')'");
+        throw std::runtime_error("ParseNpyHeader: failed to find header keyword: '(' or ')'");
 
-    std::regex num_regex("[0-9][0-9]*");
+    std::regex numRegex("[0-9][0-9]*");
     std::smatch sm;
     shape.clear();
 
-    std::string str_shape = header.substr(loc1 + 1, loc2 - loc1 - 1);
-    while (std::regex_search(str_shape, sm, num_regex)) {
+    std::string strShape = header.substr(loc1 + 1, loc2 - loc1 - 1);
+    while (std::regex_search(strShape, sm, numRegex)) {
         shape.push_back(std::stoi(sm[0].str()));
-        str_shape = sm.suffix().str();
+        strShape = sm.suffix().str();
     }
 
     loc1 = header.find("descr");
     if (loc1 == std::string::npos)
-        throw std::runtime_error("parse_npy_header: failed to find header keyword : 'descr'");
+        throw std::runtime_error("ParseNpyHeader: failed to find header keyword : 'descr'");
     loc1 += 9;
     bool littleEndian = (header[loc1] == '<' || header[loc1] == '|' ? true : false);
     assert(littleEndian);
 
-    std::string str_ws = header.substr(loc1 + 2);
-    loc2 = str_ws.find("'");
-    word_size = atoi(str_ws.substr(0, loc2).c_str());
+    std::string strWs = header.substr(loc1 + 2);
+    loc2 = strWs.find("'");
+    wordSize = atoi(strWs.substr(0, loc2).c_str());
 }
 
-cnpy::NpyArray load_the_npy_file(FILE *fp)
+cnpy::NpyArray LoadNpyFile(FILE *fp)
 {
     std::vector<size_t> shape;
-    size_t word_size;
-    bool fortran_order;
-    cnpy::parse_npy_header(fp, word_size, shape, fortran_order);
+    size_t wordSize;
+    bool fortranOrder;
+    cnpy::ParseNpyHeader(fp, wordSize, shape, fortranOrder);
 
-    cnpy::NpyArray arr(shape, word_size, fortran_order);
-    size_t nread = fread(arr.data<char>(), 1, arr.num_bytes(), fp);
-    if (nread != arr.num_bytes())
-        throw std::runtime_error("load_the_npy_file: failed fread");
+    cnpy::NpyArray arr(shape, wordSize, fortranOrder);
+    size_t nread = fread(arr.Data<char>(), 1, arr.NumBytes(), fp);
+    if (nread != arr.NumBytes())
+        throw std::runtime_error("LoadNpyFile: failed fread");
     return arr;
 }
 
-cnpy::NpyArray cnpy::npy_load(std::string fname)
+cnpy::NpyArray cnpy::NpyLoad(std::string fname)
 {
     FILE *fp = fopen(fname.c_str(), "rb");
 
     if (!fp)
-        throw std::runtime_error("npy_load: Unable to open file" + fname);
+        throw std::runtime_error("NpyLoad: Unable to open file" + fname);
     
-    NpyArray arr = load_the_npy_file(fp);
+    NpyArray arr = LoadNpyFile(fp);
 
     fclose(fp);
     return arr;

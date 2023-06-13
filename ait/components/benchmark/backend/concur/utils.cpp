@@ -25,13 +25,13 @@
 #include "utils.h"
 
 
-void readArgs(int argc, char *argv[], Arguments& arguments)
+void ReadArgs(int argc, char *argv[], Arguments& arguments)
 {
     for (int i = 1; i < argc; ++i) {
         auto valuePtr = strchr(argv[i], '=');
         if (valuePtr) {
-            std::string value{ valuePtr + 1 };
-            std::string key{ argv[i], valuePtr - argv[i] };
+            std::string value { valuePtr + 1 };
+            std::string key { argv[i], valuePtr - argv[i] };
             if (arguments.find(key) != arguments.end()) {
                 arguments[key] = value;
             } else {
@@ -44,7 +44,7 @@ void readArgs(int argc, char *argv[], Arguments& arguments)
 }
 
 
-std::string merge_str(std::vector<std::string> list, std::string delimiter)
+std::string MergeStr(std::vector<std::string> list, std::string delimiter)
 {
     auto res = std::accumulate(list.begin(), list.end(), std::string(),
     [=](const std::string& a, const std::string& b) -> std::string {
@@ -52,7 +52,7 @@ std::string merge_str(std::vector<std::string> list, std::string delimiter)
     return res;
 }
 
-std::vector<std::string> split_str(std::string input, char delimiter)
+std::vector<std::string> SplitStr(std::string input, char delimiter)
 {
     std::stringstream ss(input);
     std::vector<std::string> res;
@@ -65,16 +65,16 @@ std::vector<std::string> split_str(std::string input, char delimiter)
     return res;
 }
 
-std::vector<size_t> strVecToNumVec(const std::vector<std::string>& vec)
+std::vector<size_t> StrVecToNumVec(const std::vector<std::string>& vec)
 {
     std::vector<size_t> res;
-    for (auto &elem: vec) {
+    for (auto &elem : vec) {
         res.push_back(stoi(elem));
     }
     return res;
 }
 
-std::vector<std::string> traversal(const char* dir)
+std::vector<std::string> Traversal(const char* dir)
 {
     DIR *dir_ptr;
     struct dirent *diread;
@@ -92,26 +92,26 @@ std::vector<std::string> traversal(const char* dir)
 }
 
 // input need to be dir1,dir2,dir3,...
-int createFilesList(std::vector<std::vector<std::string>>& fileList, std::string input)
+int CreateFilesList(std::vector<std::vector<std::string>>& fileList, std::string input)
 {
     std::vector<std::vector<std::string>> directorys;
     
-    for (auto &dir: split_str(input, ',')) {
+    for (auto &dir : SplitStr(input, ',')) {
         if (dir.back() != '/') {
             dir.push_back('/');
         }
-        directorys.push_back(std::move(traversal(dir.c_str())));
+        directorys.push_back(std::move(Traversal(dir.c_str())));
     }
     // check whether number of files in each directory is the same
     size_t n = directorys[0].size();
-    for (auto &directory: directorys) {
+    for (auto &directory : directorys) {
         if (directory.size() != n) {
             return 1;
         }
     }
 
     for (size_t i = 0; i < n; i++) {
-        std::vector<std::string> combine;
+        std::vector<std::string> combine {};
         for (auto &directory : directorys) {
             combine.push_back(directory[i]);
         }
@@ -120,10 +120,10 @@ int createFilesList(std::vector<std::vector<std::string>>& fileList, std::string
     return 0;
 }
 
-std::string getPrefix(std::string filePath)
+std::string GetPrefix(std::string filePath)
 {
     std::stringstream ss(filePath);
-    std::string res{};
+    std::string res {};
     while (ss.good()) {
         std::string substr;
         getline(ss, substr, '/');
@@ -135,7 +135,7 @@ std::string getPrefix(std::string filePath)
     return res;
 }
 
-std::string removeSlash(std::string name)
+std::string RemoveSlash(std::string name)
 {
     std::string res;
     for (auto &elem: name) {
@@ -146,32 +146,32 @@ std::string removeSlash(std::string name)
     return res;
 }
 
-std::string createDynamicShape(std::string name, std::vector<size_t> shapes)
+std::string CreateDynamicShape(std::string name, std::vector<size_t> shapes)
 {
-    std::vector<std::string> shapes_str{};
-    for (auto &shape: shapes) {
-        shapes_str.push_back(std::to_string(shape));
+    std::vector<std::string> shapeStr{};
+    for (auto &shape : shapes) {
+        shapeStr.push_back(std::to_string(shape));
     }
-    auto res = merge_str(shapes_str, ",");
+    auto res = MergeStr(shapeStr, ",");
     return name + ":" + res;
 }
 
-void printTimeWall(const std::string& phase, const std::vector<TimePointPair>& timestamps)
+void PrintTimeWall(const std::string& phase, const std::vector<TimePointPair>& timeStamps)
 {
-    if (timestamps.empty()) {
+    if (timeStamps.empty()) {
         return;
     }
-    auto [min_it, max_it] = std::minmax_element(timestamps.begin(), timestamps.end(),
+    auto [minIt, maxIt] = std::minmax_element(timeStamps.begin(), timeStamps.end(),
     [](auto tp1, auto tp2) {return tp1.second - tp1.first < tp2.second - tp2.first;});
 
-    auto total = std::accumulate(timestamps.begin(), timestamps.end(), 0,
+    auto total = std::accumulate(timeStamps.begin(), timeStamps.end(), 0,
     [](auto init, auto tpp) {return init + chr::duration_cast<chr::microseconds>(tpp.second - tpp.first).count(); });
 
     int division = 1000; // microsecond to millisecond
-    auto avg = total/timestamps.size();
+    auto avg = total/timeStamps.size();
     std::cout
         << phase << " avg: " << avg/division << "ms. min: "
-        << chr::duration_cast<chr::microseconds>(min_it->second - min_it->first).count()/division
-        << "ms. max: " << chr::duration_cast<chr::microseconds>(max_it->second - max_it->first).count()/division
+        << chr::duration_cast<chr::microseconds>(minIt->second - minIt->first).count()/division
+        << "ms. max: " << chr::duration_cast<chr::microseconds>(maxIt->second - maxIt->first).count()/division
         << "ms." << std::endl;
 }
