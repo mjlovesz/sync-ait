@@ -31,11 +31,11 @@ from auto_optimizer.tools.log import logger
 from auto_optimizer.common.utils import check_output_model_path
 
 from auto_optimizer.options import (
-    opt_path,
-    opt_input,
-    opt_output,
-    opt_start,
-    opt_end,
+    arg_path,
+    arg_input,
+    arg_output,
+    arg_start,
+    arg_end,
     opt_check,
     opt_optimizer,
     opt_recursive,
@@ -177,7 +177,7 @@ def command_list() -> None:
     short_help='Evaluate model matching specified knowledges.',
     context_settings=CONTEXT_SETTINGS
 )
-@opt_path
+@arg_path
 @opt_optimizer
 @opt_recursive
 @opt_verbose
@@ -225,8 +225,8 @@ def command_evaluate(
     short_help='Optimize model with specified knowledges.',
     context_settings=CONTEXT_SETTINGS
 )
-@opt_input
-@opt_output
+@arg_input
+@arg_output
 @opt_optimizer
 @opt_big_kernel
 @opt_attention_start_node
@@ -311,10 +311,10 @@ def command_optimize(
     short_help='Extract subgraph from onnx model.',
     context_settings=CONTEXT_SETTINGS
 )
-@opt_input
-@opt_output
-@opt_start
-@opt_end
+@arg_input
+@arg_output
+@arg_start
+@arg_end
 @opt_check
 @opt_subgraph_input_shape
 @opt_subgraph_input_dtype
