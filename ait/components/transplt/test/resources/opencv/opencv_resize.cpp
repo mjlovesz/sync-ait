@@ -17,6 +17,6 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     resize_opencv(argv[1]);
-    cv::dnn dnn('placeholder');
+    cv::dnn dnn("placeholder");
     return 0;
 }
