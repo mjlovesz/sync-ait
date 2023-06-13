@@ -100,7 +100,7 @@
   ```
 - 命令行参数
   - 支持指定端口，参数为： --port [端口号]
-  - 支持debug 模式，会打印更多日志，参数为： --debug
+  - 支持debug 模式，会打印更多日志，调试信息等，常用于开发场景，参数为： --debug
   ```bash
   # 样例
   python flaskserver.py --port 5000 --debug

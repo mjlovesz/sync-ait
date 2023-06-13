@@ -731,7 +731,7 @@ host.BrowserHost = class {
                 }, method: 'POST', body}).then((response) => {
                 response.text().then((text) => {
                     if (text) {
-                        this.show_message("messages", text, "info");
+                        this.show_message("Messages", text, "info");
                     }
                 })
             })
