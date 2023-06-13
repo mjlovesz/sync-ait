@@ -11,7 +11,7 @@
 ## 使用方法
 ### 功能介绍
 #### 使用入口
-profile可以直接通过ait命令行形式启动模型推理的性能分析。使用ait benchmark推理的性能分析的命令如下：
+profile可以直接通过ait命令行形式启动模型推理的性能分析。使用ait benchmark(ait benchmark为ait自带的推理工程，用户只需修改om路径即可进行模型推理的性能分析及数据采集)推理的性能分析的命令如下：
 ```bash
 ait profile --application "ait benchmark -om *.om" --output <some path>
 ```
