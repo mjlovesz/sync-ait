@@ -27,14 +27,14 @@ RUN apt-get update \
     && apt-get install -y wget gnupg software-properties-common
 
 # Add the LLVM repository and install Clang-14 and Clang-14-dev using cernet repo
-RUN wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key --no-check-certificate | apt-key add - \
+RUN wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
     && add-apt-repository "deb https://mirrors.cernet.edu.cn/llvm-apt/focal/ llvm-toolchain-focal-14 main" \
     && apt-get update \
     && apt-get install -y clang-14 libclang-14-dev
 
 # Install Python 3.9 and pip and set pypi repo to huaweicloud
 RUN apt-get install -y python3.9 python3.9-dev python3.9-distutils
-RUN wget https://bootstrap.pypa.io/get-pip.py --no-check-certificate \
+RUN wget https://bootstrap.pypa.io/get-pip.py \
     && python3.9 get-pip.py \
     && rm get-pip.py \
     && pip3.9 config set global.index-url https://repo.huaweicloud.com/repository/pypi/simple
@@ -56,10 +56,10 @@ RUN apt-get install -y git \
 # Download and unzip config.zip, headers.zip
 RUN cd /usr/local/lib/python3.9/dist-packages/app_analyze \
     && apt-get install -y unzip \
-    && wget -O config.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip --no-check-certificate \
+    && wget -O config.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip \
     && unzip config.zip \
     && rm config.zip \
-    && wget -O headers.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip --no-check-certificate \
+    && wget -O headers.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip \
     && unzip headers.zip \
     && rm headers.zip
 
