@@ -73,11 +73,21 @@ ait transplt -s /data/examples/simple/
 
 输出数据说明：
 
-| 标题          | 说明                |
-|:------------|-------------------|
-| api         | cpp文件中的三方库API     |
-| cuda_en     | 是否cuda使能          |
-| location    | api在源文件中的位置       |
-| mxBase_API  | 对应的可加速的mxBase API |
-| Description | mxBase API的简介     |
-| Workload    | 预估迁移人力            |
+| 标题                                          | 说明      |
+| -------------- | ---------------------------------------- |
+| AccAPI                                        | 三方加速库API |
+| CUDAEnable                                    | 是否CUDA |
+| Location                                      | 调用三方加速库API的位置 |
+| Context(形参 \| 实参 \| 来源代码 \| 来源位置) | 三方加速库API参数及上下文，包括形参、实参、来源代码文件以及来源位置 |
+| AccLib                                        | API所属三方加速库 |
+| AscendAPI                                     | 推荐的昇腾API |
+| Description                                   | API描述 |
+| Workload(人/天)                               | 迁移工作量（人/天） |
+| AccAPILink | 三方加速库API文档链接 |
+| AscendAPILink | 昇腾API文档链接 |
+| AscendLib | 推荐的昇腾API所在库 |
+
+## FAQ
+### 1. Dockerfile构建报错 `ERROR: cannot verify xxx.com's certificate`
+
+可在Dockerfile中每个wget命令后加--no-check-certificate，有安全风险，由用户自行承担。
