@@ -76,7 +76,7 @@ void cnpy::parse_npy_header(unsigned char *buffer, size_t &word_size, std::vecto
     assert(littleEndian);
 
     std::string str_ws = header.substr(loc1 + 2);
-    loc2 = str_ws.find("");
+    loc2 = str_ws.find("'");
     word_size = atoi(str_ws.substr(0, loc2).c_str());
     
 }
@@ -121,7 +121,7 @@ void cnpy::parse_npy_header(FILE *fp, size_t &word_size, std::vector<size_t> &sh
     assert(littleEndian);
 
     std::string str_ws = header.substr(loc1 + 2);
-    loc2 = str_ws.find("");
+    loc2 = str_ws.find("'");
     word_size = atoi(str_ws.substr(0, loc2).c_str());
 }
 
