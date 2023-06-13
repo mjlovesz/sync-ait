@@ -108,7 +108,7 @@ opt_output = click.option(
 
 
 opt_input = click.option(
-    '-i'
+    '-i',
     '--input',
     'input_model',
     nargs=1,
