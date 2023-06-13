@@ -210,7 +210,7 @@ class SessionInfo:
     @classmethod
     def get_session(cls, session_id):
         if session_id in cls.SESSION_INSTENCES:
-            return cls.SESSION_INSTENCES[session_id]
+            return cls.SESSION_INSTENCES.get(session_id)
         session = SessionInfo()
         cls.SESSION_INSTENCES[session_id] = session
         return session
@@ -343,7 +343,7 @@ def json_modify_model(modifier, modify_infos):
 def register_interface(app, request, send_file, temp_dir_path):
     @app.route('/get_session_index', methods=['POST'])
     def get_session_index():
-        return SessionInfo.get_session_index(), 200
+        return str(SessionInfo.get_session_index()), 200
     
     @app.route('/open_model', methods=['POST'])
     def open_model():
