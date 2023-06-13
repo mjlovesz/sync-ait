@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -14,8 +30,8 @@ void readArgs(int argc, char *argv[], Arguments& arguments)
     for (int i = 1; i < argc; ++i) {
         auto valuePtr = strchr(argv[i], '=');
         if (valuePtr) {
-            std::string value{valuePtr + 1};
-            std::string key{argv[i], valuePtr - argv[i]};
+            std::string value{ valuePtr + 1 };
+            std::string key{ argv[i], valuePtr - argv[i] };
             if (arguments.find(key) != arguments.end()) {
                 arguments[key] = value;
             } else {
@@ -32,8 +48,7 @@ std::string merge_str(std::vector<std::string> list, std::string delimiter)
 {
     auto res = std::accumulate(list.begin(), list.end(), std::string(),
     [=](const std::string& a, const std::string& b) -> std::string {
-        return a + (a.length() > 0 ? delimiter : "") + b;
-    } );
+        return a + (a.length() > 0 ? delimiter : "") + b; });
     return res;
 }
 
@@ -66,8 +81,9 @@ std::vector<std::string> traversal(const char* dir)
     std::vector<std::string> filenames;
     if ((dir_ptr = opendir(dir)) != nullptr) {
         while ((diread = readdir(dir_ptr)) != nullptr) {
-            if (diread->d_type == DT_REG)
+            if (diread->d_type == DT_REG) {
                 filenames.push_back(std::string(dir) + diread->d_name);
+            }
         }
         closedir(dir_ptr);
     }
@@ -102,7 +118,6 @@ int createFilesList(std::vector<std::vector<std::string>>& fileList, std::string
         fileList.push_back(std::move(combine));
     }
     return 0;
-
 }
 
 std::string getPrefix(std::string filePath)
@@ -152,10 +167,11 @@ void printTimeWall(const std::string& phase, const std::vector<TimePointPair>& t
     auto total = std::accumulate(timestamps.begin(), timestamps.end(), 0,
     [](auto init, auto tpp) {return init + chr::duration_cast<chr::microseconds>(tpp.second - tpp.first).count(); });
 
+    int division = 1000; // microsecond to millisecond
     auto avg = total/timestamps.size();
     std::cout
-        << phase << " avg: " << avg/1000.0 << "ms. min: "
-        << chr::duration_cast<chr::microseconds>(min_it->second - min_it->first).count()/1000
-        << "ms. max: " << chr::duration_cast<chr::microseconds>(max_it->second - max_it->first).count()/1000
+        << phase << " avg: " << avg/division << "ms. min: "
+        << chr::duration_cast<chr::microseconds>(min_it->second - min_it->first).count()/division
+        << "ms. max: " << chr::duration_cast<chr::microseconds>(max_it->second - max_it->first).count()/division
         << "ms." << std::endl;
 }

@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #include "cnpy.h"
 #include <typeinfo>
 #include <complex>
@@ -10,27 +26,34 @@
 char cnpy::BigEndianTest()
 {
     int x = 1;
-    return (((char *)&x)[0]) ? '<' : '>';
+    return ((static_cast<char *>(&x))[0]) ? '<' : '>';
 }
 
 char cnpy::map_type(const std::type_info &t)
 {
-    if (t == typeid(float) || t == typeid(double) || t == typeid(long double))
+    if (t == typeid(float) || t == typeid(double) || t == typeid(long double)) {
         return 'f';
-        
-    if (t == typeid(int) || t == typeid(char) || t == typeid(short) || t == typeid(long) || t == typeid(long long))
+    }
+
+    if (t == typeid(int) || t == typeid(char) || t == typeid(short) || t == typeid(long) || t == typeid(long long)) {
         return 'i';
+    }
+
     if (t == typeid(unsigned char) || t == typeid(unsigned short) || t == typeid(unsigned long) ||
-        t == typeid(unsigned long long) || t == typeid(unsigned int))
+        t == typeid(unsigned long long) || t == typeid(unsigned int)) {
         return 'u';
+    }
     
-    if (t == typeid(bool))
+    if (t == typeid(bool)) {
         return 'b';
+    }
     
-    if (t == typeid(std::complex<float>) || t == typeid(std::complex<double>) || t == typeid(std::complex<long double>))
+    if (t == typeid(std::complex<float>) || t == typeid(std::complex<double>) ||
+        t == typeid(std::complex<long double>)) {
         return 'c';
-    else
-        return '?';
+    }
+
+    return '?';
 }
 
 template <> std::vector<char> &cnpy::operator += (std::vector<char> &lhs, const std::string rhs)
@@ -51,13 +74,13 @@ template <> std::vector<char> &cnpy::operator += (std::vector<char> &lhs, const 
 
 void cnpy::parse_npy_header(unsigned char *buffer, size_t &word_size, std::vector<size_t> &shape, bool &fortran_order)
 {
-    uint16_t header_len = *reinterpret_cast<uint16_t *>(buffer + 8);            //8 means offset of header_len
+    uint16_t header_len = *reinterpret_cast<uint16_t *>(buffer + 8);            // 8 means offset of header_len
     std::string header(reinterpret_cast<char *>(buffer + 9), header_len);       // 9 means offser of header
 
     size_t loc1, loc2;
 
-    loc1 = header.find("fortran_order") + 16;
-    fortran_order = (header.substr(loc1, 4) == "True" ? true : false);
+    loc1 = header.find("fortran_order") + 16; // 16 means offset
+    fortran_order = (header.substr(loc1, 4) == "True" ? true : false); // 4 means length of "True"
 
     loc1 = header.find("(");
     loc2 = header.find(")");
@@ -71,7 +94,7 @@ void cnpy::parse_npy_header(unsigned char *buffer, size_t &word_size, std::vecto
         str_shape = sm.suffix().str();
     }
     
-    loc1 = header.find("descr") + 9;
+    loc1 = header.find("descr") + 9; // 9 means offset
     bool littleEndian = (header[loc1] == '<' || header[loc1] == '|' ? true : false);
     assert(littleEndian);
 
@@ -85,8 +108,9 @@ void cnpy::parse_npy_header(FILE *fp, size_t &word_size, std::vector<size_t> &sh
 {
     char buffer[256];
     size_t res = fread(buffer, sizeof(char), 11, fp);
-    if (res != 11)
+    if (res != 11) { // 11 means buffer size
         throw std::runtime_error("parse_npy_header: failed fread");
+    }
     std::string header = fgets(buffer, 256, fp);
     assert(header[header.size() - 1] == '\n');
 
@@ -95,8 +119,8 @@ void cnpy::parse_npy_header(FILE *fp, size_t &word_size, std::vector<size_t> &sh
     loc1 = header.find("fortran_order");
     if (loc1 == std::string::npos)
         throw std::runtime_error("parse_npy_header: failed to find header keyword : 'fortran_order'");
-    loc1 += 16;
-    fortran_order = (header.substr(loc1, 4) == "True" ? true :false);
+    loc1 += 16; // 16 menas offset
+    fortran_order = (header.substr(loc1, 4) == "True" ? true :false); // 4 means length of "True"
 
     loc1 = header.find("(");
     loc2 = header.find(")");
