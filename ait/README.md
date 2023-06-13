@@ -59,6 +59,23 @@ ait debug -h
 ait debug compare -h
 ```
 
+### 注意
+* 如果使用过程中出现
+```
+No module named 'acl'
+```
+--------------
+
+* 请检验环境变量是否正确。
+以下是两种常见的设置CANN包环境变量方法：
+1. 用户角色
+```
+source $HOME/Ascend/ascend-toolkit/set_env.sh
+```
+2. root角色：
+```
+source /usr/local/Ascend/ascend-toolkit/set_env.sh
+```
 
 ## 参考
 
