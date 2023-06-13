@@ -9,16 +9,6 @@ add_definitions(-DENABLE_DVPP_INTERFACE)
 set(CMAKE_CXX_FLAGS_DEBUG "-fPIC -O0 -g -Wall")
 set(CMAKE_CXX_FLAGS_RELEASE "-fPIC -O2 -Wall")
 
-# set_env_path=os.getenv("CANN_PATH", "")
-# atlas_nnae_path = "/usr/local/Ascend/nnae/latest/"
-# atlas_toolkit_path = "/usr/local/Ascend/ascend-toolkit/latest/"
-# hisi_fwk_path = "/usr/local/Ascend/"
-# check_file_path = "acllib/lib64/stub/libascendcl.so"
-
-# set(CHECK_FILE_PATH "acllib/lib64/stub/libascendcl.so")
-
-# if (EXISTS ${CHECK_FILE_PATH})
-
 set(BACKEND_PATH ../)
 
 set(INC_PATH $ENV{DDK_PATH})
