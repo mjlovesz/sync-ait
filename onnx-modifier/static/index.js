@@ -740,7 +740,7 @@ host.BrowserHost = class {
 
     check_res_status(status) {
         if (status == 598) {
-            this.show_message("Error", "Server Error, you can Save modify info to json and Raise an issue.", "error")
+            this.show_message("Error", "Server Error, you can save modify info to json and reopen this page, and then raise an issue.", "error")
             return true
         }
         return false
