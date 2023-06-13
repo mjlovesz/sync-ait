@@ -358,7 +358,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 
 </style>
 </head>
-<body class="welcome spinner">
+<body class="welcome">
     
 <div class="main-page">
 <div class="top-toolbar">
@@ -373,7 +373,11 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
         <div class="toolbar-tab"> 
             <div class="toolbar-tab-title" > File </div>
             <div class="toolbar-contant">
-                <div class="toolbar-item" id="open-file-button" class="open-file-button"> Open Onnx </div>
+                <div class="toolbar-item" id="open-file-button" class="open-file-button"> Open Onnx 
+                    <div class="toolbar-menu">
+                        <div class="toolbar-menu-item" id="open-new-window-button">Open New Window</div>
+                    </div>
+                </div>
                 <div class="toolbar-item" id="download-graph"> Save File </div>
                 <div class="toolbar-item" id="reset-graph" title="Roll back all modifications to the original model"> Reset </div>
                 <div class="toolbar-item" id="extract-graph" title="Subnet export. start and end nodes need to be selected"> Extract Sub Net</div>

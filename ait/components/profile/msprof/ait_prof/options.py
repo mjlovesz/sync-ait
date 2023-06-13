@@ -63,6 +63,7 @@ def check_device_range_valid(ctx, param, value):
 
 opt_application = click.option(
     "--application",
+    required=True,
     default=None,
     type=str,
     help="Configure to run AI task files on the environment"
