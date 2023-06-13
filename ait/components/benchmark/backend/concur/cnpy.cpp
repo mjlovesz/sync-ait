@@ -79,7 +79,7 @@ void cnpy::ParseNpyHeader(unsigned char *buffer, size_t &wordSize, std::vector<s
 
     size_t loc1, loc2;
 
-    loc1 = header.find("fortranOrder") + 16; // 16 means offset
+    loc1 = header.find("fortran_order") + 16; // 16 means offset
     fortranOrder = (header.substr(loc1, 4) == "True" ? true : false); // 4 means length of "True"
 
     loc1 = header.find("(");
@@ -119,7 +119,7 @@ void cnpy::ParseNpyHeader(FILE *fp, size_t &wordSize, std::vector<size_t> &shape
 
     size_t loc1, loc2;
 
-    loc1 = header.find("fortranOrder");
+    loc1 = header.find("fortran_order");
     if (loc1 == std::string::npos) {
         throw std::runtime_error("ParseNpyHeader: failed to find header keyword : 'fortranOrder'");
     }
