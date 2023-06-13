@@ -1,13 +1,54 @@
 # 工具使用指南
 
-## 介绍
+## 1 介绍
 
 本文介绍应用迁移分析工具，提供NV C++推理应用工程迁移分析以及昇腾API推荐
 
-## 工具安装
+## 2 工具安装
 
-### 使用容器
+### 2.1 使用容器方式安装
+#### 2.1.1 安装docker
 
+> 以下docker安装指引以ubuntu20.04操作系统为基准，其他系统需要自行修改部分内容。
+
+a) 更新软件包索引，并且安装必要的依赖软件
+```shell
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+```
+b) 导入docker源仓库的 GPG key
+```shell
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+```
+c) 将 Docker APT 软件源添加到系统
+```shell
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+```
+d) 安装docker
+```shell
+sudo apt install docker-ce docker-ce-cli containerd.io
+```
+如果想安装指定版本的docker，可以在上面的命令中添加docker版本信息，如下所示
+```shell
+sudo apt install docker-ce=<VERSION> docker-ce-cli=<VERSION> containerd.io
+```
+e) 启动docker服务
+一旦安装完成，Docker 服务将会自动启动，可以输入下面的命令查看docker服务的状态
+```shell
+sudo systemctl status docker
+```
+如果docker服务没有启动，可以尝试手动启动docker服务
+```shell
+sudo systemctl start docker
+```
+f) 以非root用户运行docker命令
+
+默认情况下，只有 root 或者 有 sudo 权限的用户可以执行 Docker 命令。如果想要以非 root 用户执行 Docker 命令，则需要将你的用户添加到 Docker 用户组，如下所示：
+```shell
+sudo usermod -aG docker $USER
+```
+其中$USER代表当前用户。
+#### 2.1.2 构建docker镜像
 在当前目录下运行以下命令以构建镜像：
 ```shell
 docker build --no-cache -t ait-transplt:latest .
@@ -18,8 +59,8 @@ docker run -it ait-transplt:latest
 ```
 
 
-### 不使用容器
-1. 安装Clang工具
+### 2.2 不使用容器方式安装
+#### 2.2.1 安装Clang工具
 
 依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。以Ubuntu22.04为例：
 
@@ -33,12 +74,12 @@ sudo apt-get install libclang-14-dev clang-14
 
 
 
-2. 安装ait工具
+#### 2.2.2 安装ait工具
 
 - 工具安装请见 [ait一体化工具使用指南](../../README.md)
 
 
-## 工具使用
+## 3 工具使用
 
 一站式ait工具使用命令格式说明如下：
 
@@ -73,11 +114,21 @@ ait transplt -s /data/examples/simple/
 
 输出数据说明：
 
-| 标题          | 说明                |
-|:------------|-------------------|
-| api         | cpp文件中的三方库API     |
-| cuda_en     | 是否cuda使能          |
-| location    | api在源文件中的位置       |
-| mxBase_API  | 对应的可加速的mxBase API |
-| Description | mxBase API的简介     |
-| Workload    | 预估迁移人力            |
+| 标题                                          | 说明      |
+| -------------- | ---------------------------------------- |
+| AccAPI                                        | 三方加速库API |
+| CUDAEnable                                    | 是否CUDA |
+| Location                                      | 调用三方加速库API的位置 |
+| Context(形参 \| 实参 \| 来源代码 \| 来源位置) | 三方加速库API参数及上下文，包括形参、实参、来源代码文件以及来源位置 |
+| AccLib                                        | API所属三方加速库 |
+| AscendAPI                                     | 推荐的昇腾API |
+| Description                                   | API描述 |
+| Workload(人/天)                               | 迁移工作量（人/天） |
+| AccAPILink | 三方加速库API文档链接 |
+| AscendAPILink | 昇腾API文档链接 |
+| AscendLib | 推荐的昇腾API所在库 |
+
+## FAQ
+### 1. Dockerfile构建报错 `ERROR: cannot verify xxx.com's certificate`
+
+可在Dockerfile中每个wget命令后加--no-check-certificate，有安全风险，由用户自行承担。
