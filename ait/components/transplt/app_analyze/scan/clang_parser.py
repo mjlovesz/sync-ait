@@ -162,7 +162,7 @@ def filter_acc(cursor):
             api_ns = api[:ns_end]
             ns_idx = ns.find(api_ns)
             if api_ns.startswith(ns):
-                api = api
+                pass
             elif ns_idx == -1:  # api_ns不在ns里，当然也not ns.startswith(api_ns)，例如cv和Scalar::all
                 api = f'{ns}::{api}'
             elif not ns.startswith(api_ns):  # api.startswith('')为True，例如cv::dnn和dnn::Net

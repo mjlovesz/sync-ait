@@ -375,8 +375,8 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
             <div class="toolbar-contant">
                 <div class="toolbar-item" id="open-file-button" class="open-file-button"> Open Onnx </div>
                 <div class="toolbar-item" id="download-graph"> Save File </div>
-                <div class="toolbar-item" id="reset-graph"> Reset </div>
-                <div class="toolbar-item" id="extract-graph"> Extract Sub Net</div>
+                <div class="toolbar-item" id="reset-graph" title="Roll back all modifications to the original model"> Reset </div>
+                <div class="toolbar-item" id="extract-graph" title="Subnet export. start and end nodes need to be selected"> Extract Sub Net</div>
             </div>
         </div>
     </div>
@@ -384,8 +384,8 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
         <div class="toolbar-tab"> 
             <div class="toolbar-tab-title" > Optimizer </div>
             <div class="toolbar-contant">
-                <div class="toolbar-item" id="onnxsim-graph"> OnnxSim </div>
-                <div class="toolbar-item" id="auto-optimizer-graph"> AutoOptimizer </div>
+                <div class="toolbar-item" id="onnxsim-graph" title="Invoke onnxsim to optimize the entire network"> OnnxSim </div>
+                <div class="toolbar-item" id="auto-optimizer-graph" title="Invoke AutoOptimizer(surgeon) to optimize the entire network. It is an optimization tool based on the knowledge base. For details, see the AIT description document"> AutoOptimizer </div>
             </div>
         </div>
         <div class="toolbar-tab"> 
@@ -428,8 +428,8 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
         <div class="toolbar-tab"> 
             <div class="toolbar-tab-title" > Modify Info </div>
             <div class="toolbar-contant">
-                <div class="toolbar-item" id="modify-export"> Modify Export </div>
-                <div class="toolbar-item" id="modify-import"> Modify Import </div>
+                <div class="toolbar-item" id="modify-export" title="Export the current modification to a JSON file. You can import and apply these changes later"> Modify Export </div>
+                <div class="toolbar-item" id="modify-import" title="Import the JSON file and apply the saved modification steps"> Modify Import </div>
             </div>
         </div>
     </div>

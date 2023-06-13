@@ -355,11 +355,13 @@ def register_interface(app, request, send_file, temp_dir_path):
         modifier.reload()   # allow downloading for multiple times
         with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, extract_tmp_file):
             try:
-                extract_model(modifier, modify_info, 
+                out_message = extract_model(modifier, modify_info, 
                               modify_info.get("extract_start"), modify_info.get("extract_end"),
                               extract_tmp_file)
             except ServerError as error:
                 return error.status, error.msg
+            
+            OnnxModifier.ONNX_MODIFIER.cache_message(out_message)
 
             if extract_tmp_file.tell() == 0:
                 return "未正常生成子网", 204
