@@ -56,13 +56,10 @@ sidebar.Sidebar = class {
     _hide() {
         const sidebar = this._getElementById('sidebar');
         if (sidebar) {
-            sidebar.style.width = '0px';
+            sidebar.style.display = "none";
         }
-        const container = this._getElementById('graph');
-        if (container) {
-            container.style.width = '100%';
-            container.focus();
-        }
+
+        document.dispatchEvent(new CustomEvent("node-clicked", {detail:{}}))
     }
 
     _deactivate() {
@@ -112,12 +109,8 @@ sidebar.Sidebar = class {
             else {
                 content.appendChild(item.content);
             }
-            sidebar.style.width = 'min(calc(100% * 0.6), 500px)';
+            sidebar.style.display= "block";
             this._host.document.addEventListener('keydown', this._closeSidebarKeyDownHandler);
-        }
-        const container = this._getElementById('graph');
-        if (container) {
-            container.style.width = 'max(40vw, calc(100vw - 500px))';
         }
     }
 };
@@ -202,22 +195,6 @@ sidebar.NodeSidebar = class {
         this._elements.push(this._host.document.createElement('hr'));
         this.add_separator(this._elements, 'sidebar-view-separator')
 
-        this._addHeader('Node deleting helper');
-        this._addButton('Delete With Children');
-        this.add_span()
-        this._addButton('Delete Single Node');
-        this.add_span()
-        this._addButton('Recover Node');
-        this.add_separator(this._elements, 'sidebar-view-separator')
-        this._addButton('Enter');
-    
-        this._addHeader('Output adding helper');
-        this._addButton('Add Output');
-        this._addHeader('Input adding helper');
-        let input_select = this._addComboBox(`${node.name}_input_select`, node.inputs.map(i=> i.arguments[0].name))
-        this.add_span()
-        this._addButton('Add Input', input_select);
-        
         this._addHeader('Extract helper');
 
         let is_extract_start = this._host._view.modifier.getExtractStart() == this._modelNodeName
@@ -314,37 +291,6 @@ sidebar.NodeSidebar = class {
         buttonElement.innerText = title;
         this._elements.push(buttonElement);
         
-        if (title === 'Delete Single Node') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.deleteSingleNode(this._modelNodeName);
-            });
-        }
-        if (title === 'Delete With Children') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.deleteNodeWithChildren(this._modelNodeName);
-            });
-        }
-        if (title === 'Recover Node') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.recoverSingleNode(this._modelNodeName);
-            });
-        }
-        if (title === 'Enter') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.deleteEnter();
-                this._raise("close-sidebar")
-            });
-        }
-        if (title === 'Add Output') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.addModelOutput(this._modelNodeName);
-            });   
-        }
-        if (title === 'Add Input') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.addModelInput(this._modelNodeName, input_select.options[input_select.selectedIndex].value);
-            });   
-        }
         if (click_callback) {
             buttonElement.addEventListener('click', click_callback);  
         }
@@ -1231,56 +1177,6 @@ sidebar.ModelSidebar = class {
         const separator = this._host.document.createElement('div');
         separator.className = 'sidebar-view-separator';
         this._elements.push(separator);
-        
-        this._addHeader('Batch size changing helper');
-        this._addRebatcher();
-        
-        if (this.clicked_output_name) {
-            this._addHeader('Output deleting helper');
-            this._addButton('Delete the output');
-        }
-        if (this.clicked_input_name) {
-            this._addHeader('Input deleting helper');
-            this._addButton('Delete the input');
-
-            this._addHeader('Input size helper');
-
-            let default_shape = ""
-        
-            for (var input_info of this._host._view.modifier.graph.inputs) {
-                if (this.clicked_input_name == input_info.name) {
-                    if (input_info.arguments 
-                        && input_info.arguments.length > 0 
-                        && input_info.arguments[0].type 
-                        && input_info.arguments[0].type.shape
-                        && input_info.arguments[0].type.shape.dimensions
-                        && input_info.arguments[0].type.shape.dimensions.length > 0) {
-                        let dims = input_info.arguments[0].type.shape.dimensions
-                        default_shape = dims.map((dim) => dim ? dim.toString() : '?').join(',')
-                    }
-                    break
-                }
-            }
-            this._addInput('shape', default_shape, (value, e) => {
-                let has_error = false
-                let dims = []
-                let input_dims = value.split(",")
-                for (const dim_str of input_dims) {
-                    let dim = dim_str.trim()
-                    if (dim.match("^-?[1-9][0-9]{0,10}$")) {
-                        dims.push(parseInt(dim))
-                    } else if (dim.match("^[a-zA-Z\\-_\\\\/\\.0-9]{1,64}$")) {
-                        dims.push(dim)
-                    } else {
-                        has_error = true
-                        return has_error
-                    }
-                }
-                this._host._view.modifier.changeInputSize(this.clicked_input_name, dims);
-                this._host._view.modifier.refreshModelInputOutput()
-                return has_error
-            }, "example: batch,3,224,224");
-        }
     }
 
     render() {

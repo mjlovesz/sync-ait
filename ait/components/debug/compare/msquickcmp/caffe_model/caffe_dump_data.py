@@ -36,6 +36,9 @@ class CaffeDumpData(DumpData):
             utils.logger.warning(
                 "input_shapes provided, but currently dynamic input shape not supported in caffe, ignore."
             )
+        
+        self._check_path_exists(arguments.model_path, extentions=[".prototxt"])
+        self._check_path_exists(arguments.weight_path, extentions=[".caffemodel", ".bin"])
 
         self.output_path = os.path.realpath(arguments.out_path)
         self.model_path = os.path.realpath(arguments.model_path)
@@ -89,7 +92,7 @@ class CaffeDumpData(DumpData):
                 self.input_data_save_dir, input_names, input_shapes, input_dtypes
             )
 
-    def generate_dump_data(self, npu_dump_path=None):
+    def generate_dump_data(self, npu_dump_path=None, om_parser=None):
         """
         Function description:
             generate caffe model dump data

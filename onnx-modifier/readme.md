@@ -64,7 +64,7 @@
         直接 `npm install` , npm是NodeJS的包管理器。如果遇到electron 无法安装失败问题，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85) 
 - 运行（该方式启动常用于调试开发）
   ```bash
-  cd ait/onnx-modifier
+  # 切到目录 ait/onnx-modifier 运行以下命令
   electron .
   ```
 
@@ -76,11 +76,12 @@
 - 安装
 
   ```bash
+  # 切到目录 ait/onnx-modifier 运行以下命令
   npm install  # npm是NodeJS的包管理器；
   ```
 - 编译
   ```bash
-  cd ait/onnx-modifier
+  # 切到目录 ait/onnx-modifier 运行以下命令
   npm run make
   ```
 - 安装运行
@@ -92,12 +93,14 @@
     2. 如果运行报错，建议升级flask。建议版本2.2.2
 - 运行，默认端口为5000（常用于调试开发）
   ```bash
+  # 切到目录 ait/onnx-modifier 运行以下命令
   python flaskserver.py 
-  # 然后打开浏览器，打开 localhost:5000 即可访问到 onnx-modifier
+  # 然后打开浏览器，打开 localhost:5000 即可访问到 onnx-modifier。
+  # 因为安全考虑。仅支持运行命令的主机访问该端口，如果需要其他机器访问，建议使用ssh端口转发功能
   ```
 - 命令行参数
   - 支持指定端口，参数为： --port [端口号]
-  - 支持debug 模式，会打印更多日志，参数为： --debug
+  - 支持debug 模式，会打印更多日志，调试信息等，常用于开发场景，参数为： --debug
   ```bash
   # 样例
   python flaskserver.py --port 5000 --debug
@@ -262,6 +265,10 @@
 | https://en.wikipedia.org/wiki/ | 算子说明信息 |
 | https://papers.nips.cc/paper/ | 算子说明信息 |
 | https://ieeexplore.ieee.org/document | 算子说明信息 |
+
+# 常见问题 Q&A
+
+参考：[OnnxModify 常见问题](https://gitee.com/ascend/ait/wikis/OnnxModifier/OnnxModify%20%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
 
 # 参考资料
 

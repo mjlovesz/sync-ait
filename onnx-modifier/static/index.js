@@ -138,26 +138,6 @@ host.BrowserHost = class {
             accelerator: 'CmdOrCtrl+Alt+E',
             click: () => this._view.export(document.title + '.svg')
         });
-        this._menu.add({});
-        this._menu.add({
-            label: 'Export Modify Info',
-            accelerator: 'CmdOrCtrl+Shift+M',
-            click: () => {
-                let export_name = "modify_info.json"
-                if (this._ori_model_file) {
-                    export_name = `${this._ori_model_file.name}.${export_name}`
-                }
-                let modify_info = [...this._modify_info, { path: "/download", data_body: this.build_download_data(true) }]
-                this.export(export_name, new Blob([JSON.stringify(modify_info)], { type: 'text/plain' }))
-            }
-        });
-        this._menu.add({
-            label: 'Import Modify Info',
-            accelerator: 'CmdOrCtrl+Alt+I',
-            click: () => {
-                this.document.getElementById('open-modify-json-dialog').click();
-            }
-        });
         this.document.getElementById('menu-button').addEventListener('click', (e) => {
             this._menu.toggle();
             e.preventDefault();
@@ -168,11 +148,18 @@ host.BrowserHost = class {
             click: () => this._about()
         });
 
-        // const refreshButton = this.document.getElementById('refresh-graph');
-        // refreshButton.addEventListener('click', () => {
-        //     this._view._updateGraph();
-        // })
+        this.document.getElementById("modify-export").addEventListener("click", ()=> {
+            let export_name = "modify_info.json"
+            if (this._ori_model_file) {
+                export_name = `${this._ori_model_file.name}.${export_name}`
+            }
+            let modify_info = [...this._modify_info, { path: "/download", data_body: this.build_download_data(true) }]
+            this.export(export_name, new Blob([JSON.stringify(modify_info)], { type: 'text/plain' }))
+        })
 
+        this.document.getElementById("modify-import").addEventListener("click", ()=> {
+            this.document.getElementById('open-modify-json-dialog').click();
+        })
 
         const openJsonFileDialog = this.document.getElementById('open-modify-json-dialog');
 
@@ -269,9 +256,16 @@ host.BrowserHost = class {
             }
         }
         downloadButton.addEventListener('click', () => {
-            this.take_effect_modify("/download", this.build_download_data(true), false, (blob)=> {
-                this.export(this.upload_filename, blob)
-                this.show_message("Success!", "Model has been successfuly modified", "success");
+            let dialog = this.document.getElementById("download-dialog")
+            this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                if (!is_not_cancel) {
+                    return 
+                }
+
+                this.take_effect_modify("/download", this.build_download_data(true), false, (blob)=> {
+                    this.export(this.upload_filename, blob)
+                    this.show_message("Success!", "Model has been successfuly modified", "success");
+                })
             })
         });
 
@@ -304,16 +298,19 @@ host.BrowserHost = class {
 
         const addNodeButton = this.document.getElementById('add-node');
         addNodeButton.addEventListener('click', () => {
-            // this._view._graph.resetGraph();
-            // this._view._updateGraph();
-            var addNodeDropDown = this.document.getElementById('add-node-dropdown');
-            var selected_val = addNodeDropDown.options[addNodeDropDown.selectedIndex].value
-            var add_op_domain = selected_val.split(':')[0]
-            var add_op_type = selected_val.split(':')[1]
-            // console.log(selected_val)
-            // this._view._graph.add_node(add_op_domain, add_op_type)
-            this._view.modifier.addNode(add_op_domain, add_op_type);
-            this._view._updateGraph();
+            let dialog = this.document.getElementById("addnode-dialog")
+            this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                if (!is_not_cancel) {
+                    return 
+                }
+
+                var addNodeDropDown = this.document.getElementById('add-node-dropdown');
+                var selected_val = addNodeDropDown.options[addNodeDropDown.selectedIndex].value
+                var add_op_domain = selected_val.split(':')[0]
+                var add_op_type = selected_val.split(':')[1]
+                this._view.modifier.addNode(add_op_domain, add_op_type);
+                this._view._updateGraph();
+            })
         })
 
         this.document.getElementById('version').innerText = this.version;
@@ -327,12 +324,17 @@ host.BrowserHost = class {
         }
 
         const openFileButton = this.document.getElementById('open-file-button');
+        const openFileButtonLogo = this.document.getElementById('open-file-button-logo');
         const openFileDialog = this.document.getElementById('open-file-dialog');
-        if (openFileButton && openFileDialog) {
+        if (openFileButtonLogo && openFileDialog) {
             openFileButton.addEventListener('click', () => {
+                    openFileDialog.value = '';
+                    openFileDialog.click();
+                });
+            openFileButtonLogo.addEventListener('click', () => {
                 openFileDialog.value = '';
                 openFileDialog.click();
-            });
+            })
             openFileDialog.addEventListener('change', (e) => {
                 if (e.target && e.target.files && e.target.files.length > 0) {
                     const files = Array.from(e.target.files);
@@ -404,6 +406,242 @@ host.BrowserHost = class {
         });
 
         this._view.show('welcome');
+        this.toolbar_enable()
+    }
+
+    get_default_input_shape(input_name) {
+        let default_shape = ""
+        for (var input_info of this._view.modifier.graph.inputs) {
+            if (input_name == input_info.name) {
+                if (input_info.arguments 
+                    && input_info.arguments.length > 0 
+                    && input_info.arguments[0].type 
+                    && input_info.arguments[0].type.shape
+                    && input_info.arguments[0].type.shape.dimensions
+                    && input_info.arguments[0].type.shape.dimensions.length > 0) {
+                    let dims = input_info.arguments[0].type.shape.dimensions
+                    default_shape = dims.map((dim) => dim ? dim.toString() : '?').join(',')
+                }
+                break
+            }
+        }
+        return default_shape
+    }
+
+    dimStr2dimArray(dim_str) {
+        let dims = []
+        let has_error = false
+        let input_dims = dim_str.split(",")
+        for (const dim_str of input_dims) {
+            let dim = dim_str.trim()
+            if (dim.match("^-?[1-9][0-9]{0,10}$")) {
+                dims.push(parseInt(dim))
+            } else if (dim.match("^[a-zA-Z\\-_\\\\/\\.0-9]{1,64}$")) {
+                dims.push(dim)
+            } else {
+                has_error = true
+            }
+        }
+        return [dims, has_error]
+    }
+
+    change_batch_size(batch_value) {
+        for (var input_info of this._view.modifier.graph.inputs) {
+            if (input_info.arguments 
+                && input_info.arguments.length > 0 
+                && input_info.arguments[0].type 
+                && input_info.arguments[0].type.shape
+                && input_info.arguments[0].type.shape.dimensions
+                && input_info.arguments[0].type.shape.dimensions.length > 0) {
+                let dims = input_info.arguments[0].type.shape.dimensions
+                if (dims.length > 0) {
+                    dims[0] = batch_value
+                    let dim_str = dims.map((dim) => dim ? dim.toString() : '?').join(',')
+                    let [input_dims, has_error] = this.dimStr2dimArray(dim_str)
+                    this._view.modifier.changeInputSize(input_info.name, input_dims);
+                }
+            }
+        }
+    }
+
+    init_input_shape_change_event() {
+        let input_change = this.document.getElementById("change-input-shape-input")
+        input_change.addEventListener('input', (e) => {
+            let value = e.target.value.trim()
+            
+            let [dims, has_error] = this.dimStr2dimArray(value)
+
+            if (has_error) {
+                input_change.style.borderColor = 'red'
+                input_change.has_error = true
+                this.document.getElementById("change-input-shape-input-ok").disabled = "disabled"
+            } else {
+                input_change.style.borderColor = null
+                input_change.has_error = false
+                input_change.dims = dims
+                this.document.getElementById("change-input-shape-input-ok").disabled = ""
+            }
+        });
+    }
+    init_batch_size_change_event() {
+        let input_change = this.document.getElementById("fixed-batch-size-input")
+        input_change.addEventListener('input', (e) => {
+            let value = e.target.value.trim()
+            if (!value.match("^-?[1-9][0-9]{0,10}$")) {
+                input_change.style.borderColor = 'red'
+                input_change.has_error = true
+                this.document.getElementById("fixed-batch-size-input-ok").disabled = "disabled"
+            } else {
+                input_change.style.borderColor = null
+                input_change.has_error = false
+                this.document.getElementById("fixed-batch-size-input-ok").disabled = ""
+            }
+        });
+    }
+
+    toolbar_enable() {
+        let enable_map = new Map()
+        let listener_map = new Map()
+        let is_deleting = false
+
+        let change_delete_status = (status, event) => {
+            if (is_deleting != status) {
+                is_deleting = status
+                document.dispatchEvent(event)
+            }
+        }
+        enable_map.set("delete-node", (detail, event) => {
+            return [detail.is_node, () => {
+                this._view.modifier.deleteSingleNode(detail.node_name);
+                change_delete_status(true, event)
+            }]
+        })
+        enable_map.set("delete-node-with-children", (detail, event) => {
+            return [detail.is_node, (click_event) => {
+                this._view.modifier.deleteNodeWithChildren(detail.node_name);
+                change_delete_status(true, event)
+                click_event.stopPropagation();
+            }]
+        })
+        enable_map.set("recover-node", (detail) => {
+            return [detail.is_node && is_deleting, () => {
+                this._view.modifier.recoverSingleNode(detail.node_name);
+            }]
+        })
+        enable_map.set("recover-node-with-children", (detail) => {
+            return [detail.is_node && is_deleting, (click_event) => {
+                this._view.modifier.recoverNodeWithChildren(detail.node_name);
+                click_event.stopPropagation();
+            }]
+        })
+        
+        enable_map.set("delete-enter-node", (detail, event) => {
+            return [is_deleting, () => {
+                this._view.modifier.deleteEnter();
+                change_delete_status(false, event)
+            }]
+        })
+
+        enable_map.set("add-input", (detail) => {
+            let listener = () => {
+                // show dialog
+                let select_elem = this.document.getElementById("add-input-dropdown")
+                select_elem.options.length = 0
+                detail.node.inputs.map(inPram => inPram.arguments[0].name).forEach((input_name) => {
+                    select_elem.appendChild(new Option(input_name));
+                })
+
+                let dialog = this.document.getElementById("addinput-dialog")
+                dialog.getElementsByClassName("text")[0].innerText = `Choose a input of Node ${detail.node_name} :`
+                this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                    if (!is_not_cancel) {
+                        return 
+                    }
+                    let select_input = select_elem.options[select_elem.selectedIndex].value;
+                    this._view.modifier.addModelInput(detail.node_name, select_input);
+                })
+            }
+            
+            return [detail.is_node, listener]
+        })
+        enable_map.set("remove-input", (detail) => {
+            return [detail.is_input, ()=>{
+                this._view.modifier.deleteModelInput(detail.input_name);
+            }]
+        })
+        enable_map.set("add-output", (detail) => {
+            return [detail.is_node, () => {
+                this._view.modifier.addModelOutput(detail.node_name);
+            }]
+        })
+        enable_map.set("remove-output", (detail) => {
+            return [detail.is_output, () => {
+                this._view.modifier.deleteModelOutput(detail.output_name);
+            }]
+        })
+
+        this.init_input_shape_change_event()
+        enable_map.set("change-input-shape", (detail) => {
+            return [detail.is_input, () => {
+                // show dialog
+                let default_shape = this.get_default_input_shape(detail.input_name)
+
+                let input_change = this.document.getElementById("change-input-shape-input")
+                input_change.value = default_shape
+                let dialog = this.document.getElementById("changeinputshape-dialog")
+                dialog.getElementsByClassName("text")[0].innerText = `Change the shape of input: ${detail.input_name}`
+                this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                    if (!is_not_cancel) {
+                        return 
+                    }
+                    
+                    this._view.modifier.changeInputSize(detail.input_name, input_change.dims);
+                    this._view.modifier.refreshModelInputOutput()
+                })
+            }]
+        })
+        enable_map.set("batch-size-dynamic", (detail) => {
+            return [detail.is_input, (click_event) => {
+                this.change_batch_size("dynamic")
+                this._view.modifier.changeBatchSize("dynamic");
+                click_event.stopPropagation();
+            }]
+        })
+        this.init_batch_size_change_event()
+        enable_map.set("batch-size-fixed", (detail) => {
+            return [detail.is_input, (click_event) => {
+                // show dialog
+                let dialog = this.document.getElementById("fixed-batch-size-dialog")
+                this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                    if (!is_not_cancel) {
+                        return 
+                    }
+                    let input_change = this.document.getElementById("fixed-batch-size-input")
+                    this.change_batch_size(input_change.value)
+                    this._view.modifier.changeBatchSize('fixed', input_change.value);
+                })
+                click_event.stopPropagation();
+            }]
+        })
+
+        this.document.addEventListener("node-clicked", (event) => {
+            enable_map.forEach((check_enable_func, elem_id)=>{
+                let elem = this.document.getElementById(elem_id)
+                let [enable, listener] = check_enable_func(event.detail, event)
+                elem.removeEventListener("click", listener_map.get(elem_id))
+                if (enable) {
+                    elem.style.pointerEvents = ""
+                    elem.style.backgroundColor = ""
+                    elem.addEventListener("click", listener)
+                    listener_map.set(elem_id, listener)
+                } else {
+                    elem.style.pointerEvents = "none"
+                    elem.style.backgroundColor = "#80808017"
+                }
+            }) 
+        })
+
+        document.dispatchEvent(new CustomEvent("node-clicked", {detail:{}}))
     }
 
     bolb2text(blob) {
@@ -455,7 +693,7 @@ host.BrowserHost = class {
             fetch("/get_output_message", {method: 'POST', body:"{}"}).then((response) => {
                 response.text().then((text) => {
                     if (text) {
-                        this.show_message("messages", text, "info");
+                        this.show_message("Messages", text, "info");
                     }
                 })
             })
@@ -539,24 +777,36 @@ host.BrowserHost = class {
     }
 
     show_confirm_message(title, message) {
+        let confirm_element = document.getElementById('show-message-confirm')
+        confirm_element.getElementsByTagName("h1")[0].innerText = title
+        confirm_element.getElementsByClassName("text")[0].innerText = message
+
+        return this.show_confirm_dialog(confirm_element)
+    }
+
+    show_confirm_dialog(dialogElem) {
         return new Promise((resolve)=>{
-            let confirm_element = document.getElementById('show-message-confirm')
-            confirm_element.getElementsByTagName("h1")[0].innerText = title
-            confirm_element.getElementsByClassName("text")[0].innerText = message
-    
-            let [cancelBtn, okBtn] = confirm_element.getElementsByTagName("button")
+            let [cancelBtn, okBtn] = dialogElem.getElementsByTagName("button")
+            let listener = []
+            let remove_listener = () => {
+                let [cancel_listener, ok_listener] = listener
+                cancelBtn.removeEventListener("click", cancel_listener)
+                okBtn.removeEventListener("click", ok_listener)
+            }
+            
             let cancel_event_listener = cancelBtn.addEventListener("click", ()=> {
-                confirm_element.close()
-                cancelBtn.removeEventListener("click", cancel_event_listener)
+                dialogElem.close()
+                remove_listener()
                 resolve(false)
             })
             let ok_event_listener = okBtn.addEventListener("click", ()=> {
-                confirm_element.close()
-                okBtn.removeEventListener("click", ok_event_listener)
+                dialogElem.close()
+                remove_listener()
                 resolve(true)
             })
-            confirm_element.showModal()
-        })
+            listener = [cancel_event_listener, ok_event_listener]
+            dialogElem.showModal()
+        }) 
     }
 
     error(message, detail) {
@@ -775,15 +1025,7 @@ host.BrowserHost = class {
     }
 
     _about() {
-        const self = this;
-        const eventHandler = () => {
-            this.window.removeEventListener('keydown', eventHandler);
-            self.document.body.removeEventListener('click', eventHandler);
-            self._view.show('default');
-        };
-        this.window.addEventListener('keydown', eventHandler);
-        this.document.body.addEventListener('click', eventHandler);
-        this._view.show('about');
+        document.getElementById("show-about").showModal()
     }
 
     _strMapToObj(strMap) {
