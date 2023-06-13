@@ -44,10 +44,11 @@ public class AisBenchCmdStr {
                     .append(param1).append(CmdStrWordStatic.SPACE);
         }
     }
-    public static void addString(CmdStrBuffer strBuffer, String param, CmdStrWordStatic wordStatic) {
-        if (wordStatic != null) {
+
+    public static void addString(CmdStrBuffer strBuffer, String param, String param1) {
+        if (!Objects.equals(param1, "")) {
             strBuffer.append(param).append(CmdStrWordStatic.SPACE)
-                    .append(wordStatic).append(CmdStrWordStatic.SPACE);
+                    .append(new CmdStrWordStatic(param1)).append(CmdStrWordStatic.SPACE);
         }
     }
 
