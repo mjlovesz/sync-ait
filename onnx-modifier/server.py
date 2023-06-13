@@ -388,6 +388,7 @@ def register_interface(app, request, send_file, temp_dir_path):
                               extract_tmp_file)
             except ServerError as error:
                 return error.status, error.msg
+            
             modifier.cache_message(out_message)
 
             if extract_tmp_file.tell() == 0:
