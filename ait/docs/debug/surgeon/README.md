@@ -1,13 +1,13 @@
 # ait debug surgeon功能使用指南
 
 ## 简介
-Surgeon（自动调优）使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能。
+surgeon（自动调优）使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能。
 ## 工具安装
 - 工具安装请见 [ait一体化工具使用指南](../../../README.md)
 
 ## 功能介绍
 
-Surgeon工具包含两大功能模块--面向昇腾设备的ONNX模型自动改图优化和丰富易用的ONNX改图接口。
+surgeon工具包含两大功能模块--面向昇腾设备的ONNX模型自动改图优化和丰富易用的ONNX改图接口。
 
 - 工具的自动改图优化功能：基于[graph_optimizer](../../../components/debug/surgeon/docs/knowledge_optimizer/knowledge_optimizer_framework.md)图优化组件，集成业界先进的可泛化性图优化策略，构建17个改图知识库，识别模型中对应模式或子图，从而进行自动改图优化
 - 工具的ONNX改图接口：基于[graph_refactor](../../../components/debug/surgeon/auto_optimizer/graph_refactor/README.md)基础改图组件，提供简易的改图接口，提供用户对ONNX图进行“增删改查”等多种改图需求的支持
@@ -187,7 +187,7 @@ g.extract_subgraph(
 - BaseNode 使用方法参见 [BaseNode 说明](../../docs/graph_refactor/graph_refactor_BaseNode.md)
 - BaseGraph 使用方法参见 [BaseGraph 说明](../../docs/graph_refactor/graph_refactor_BaseGraph.md)
 
-
+ 
 ## 使用示例
 
 请移步[surgeon使用示例](../../../examples/cli/debug/surgeon/)
