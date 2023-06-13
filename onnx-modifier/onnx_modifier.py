@@ -25,7 +25,6 @@ from utils import parse_str2np, np2onnxdtype
 
 
 class OnnxModifier:
-    ONNX_MODIFIER_MAP = dict()
 
     def __init__(self, model_name, model_proto):
         self.model_name = model_name
@@ -36,36 +35,7 @@ class OnnxModifier:
         self.initializer_name2module = []
         self.graph_output_names = []
         self.graph_input_names = []
-        self._cache_msg = ""
         self.reload(self.model_proto_backup)
-
-    @classmethod
-    def get_modifier(cls, session):
-        return cls.ONNX_MODIFIER_MAP.get(session, None)
-
-    @classmethod
-    def from_model_path(cls, session, model_path, name=None):
-        model_name = os.path.basename(model_path) if name is None else name
-        model_proto = onnx.load(model_path)
-        modifier = cls(model_name, model_proto)
-        cls.ONNX_MODIFIER_MAP[session] = modifier
-        return modifier
-
-    @classmethod
-    def from_name_stream(cls, session, name, stream):
-        logging.info("loading model...")
-        stream.seek(0)
-        model_proto = onnx.load_model(stream, onnx.ModelProto, load_external_data=False)
-        logging.info("load done!")
-        modifier = cls(name, model_proto)
-        cls.ONNX_MODIFIER_MAP[session] = modifier
-        return modifier
-    
-    @classmethod
-    def from_model_proto(cls, session, model_name, model_proto):
-        modifier = cls(model_name, model_proto)
-        cls.ONNX_MODIFIER_MAP[session] = modifier
-        return modifier
 
     def reload(self, model_proto=None):
         if model_proto is None:
@@ -512,8 +482,3 @@ class OnnxModifier:
         input_name = inference_session.get_inputs()[0].name
         out = inference_session.run(output_names, {input_name: x})[0]
         logging.info(out.shape, out.dtype)
-
-    def cache_message(self, new_msg=""):
-        old_msg = self._cache_msg
-        self._cache_msg = new_msg
-        return old_msg
