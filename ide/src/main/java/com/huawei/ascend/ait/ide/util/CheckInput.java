@@ -17,7 +17,6 @@
 package com.huawei.ascend.ait.ide.util;
 
 import static com.huawei.ascend.ait.ide.optimizie.ui.step.AitModelConverterStep.MODEL_FILE_NOT_EXIST;
-import static com.huawei.ascend.ait.ide.optimizie.ui.step.AitModelConverterStep.MODEL_NAME_MAXIMUM;
 import static com.huawei.ascend.ait.ide.optimizie.ui.step.AitModelConverterStep.NO_READ_PERMISSION;
 import static com.huawei.ascend.ait.ide.optimizie.ui.step.AitModelConverterStep.PATH_MUST_BE_A_DIRECTORY;
 import static com.huawei.ascend.ait.ide.optimizie.ui.step.AitModelConverterStep.PATH_NOT_EXIST;
@@ -34,7 +33,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -52,12 +50,15 @@ import java.util.List;
  * @date 2023/06/08
  */
 public class CheckInput {
-    private static final String PATH_EXPRESSION_PATTERN = "(_|\\.|-|,|[0-9a-zA-Z])+";
+    private static final String DIGIT_EXPRESSION_PATTERN = "[0-9]+";
+    private static final String STRING_EXPRESSION_PATTERN = "(,|[0-9])+";
     public static final int DOCUMENT_LIMIT = 256;
-    public static final int MODEL_FILE_LIMIT = 64;
+    public static final int STRING_LIMIT = 64;
     public static final String VALID_DIR_PATH_CHARACTERS = "Valid folder path characters: -, _, :, \\, /, [0-9], [A-Z], [a-z].";
     public static final String VALID_FILE_PATH_CHARTERS = "Only letters, digits, and the following special characters are allowed:- . _ : \\ /";
-    public static final String VALID_STRING_CHARATERS = "Only digits, and the following special characters are allowed:,";
+    public static final String VALID_STRING_CHARATERS = "Only digits, and the following special characters are allowed: , ";
+    public static final String VALID_DIGITS_CHARATERS = "Only digits are allowed.";
+    public static final String INPUT_MAXIMUM = "The maximum input size is 64 bits.";
 
     /**
      * checkFileExist
@@ -183,13 +184,35 @@ public class CheckInput {
      */
     public static boolean checkStringValid(JPanel errorJPanel, JLabel errorJLabel, JTextField jText) {
         String text = jText.getText();
-        if (!text.matches(PATH_EXPRESSION_PATTERN)) {
+        if (!text.matches(STRING_EXPRESSION_PATTERN)) {
             abnormalInput(errorJPanel, errorJLabel, jText, VALID_STRING_CHARATERS);
             return false;
         }
 
-        if (text.length() > MODEL_FILE_LIMIT) {
-            abnormalInput(errorJPanel, errorJLabel, jText, MODEL_NAME_MAXIMUM);
+        if (text.length() > STRING_LIMIT) {
+            abnormalInput(errorJPanel, errorJLabel, jText, INPUT_MAXIMUM);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * checkDigitValid
+     *
+     * @param errorJPanel errorJPanel
+     * @param errorJLabel errorJLabel
+     * @param jText       jText
+     * @return boolean
+     */
+    public static boolean checkDigitValid(JPanel errorJPanel, JLabel errorJLabel, JTextField jText) {
+        String text = jText.getText();
+        if (!text.matches(DIGIT_EXPRESSION_PATTERN)) {
+            abnormalInput(errorJPanel, errorJLabel, jText, VALID_STRING_CHARATERS);
+            return false;
+        }
+
+        if (text.length() > STRING_LIMIT) {
+            abnormalInput(errorJPanel, errorJLabel, jText, INPUT_MAXIMUM);
             return false;
         }
         return true;
@@ -213,7 +236,6 @@ public class CheckInput {
         errPanel.setVisible(true);
         errLabel.setText(errMsg);
         errLabel.setForeground(JBColor.RED);
-        textField.setBorder(BorderFactory.createLineBorder(JBColor.RED));
     }
 }
 

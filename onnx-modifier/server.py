@@ -306,7 +306,7 @@ def register_interface(app, request, send_file, temp_dir_path):
         modify_info = request.get_json()
         modifier = OnnxModifier.ONNX_MODIFIER
         modifier.reload()   # allow downloading for multiple times
-        with FileAutoClear(tempfile.TemporaryFile(mode="w+b")) as (auto_close, tmp_file):
+        with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, tmp_file):
             modify_model(modifier, modify_info, tmp_file)
 
             auto_close.set_not_close()  # file will auto close in send_file 
@@ -318,7 +318,7 @@ def register_interface(app, request, send_file, temp_dir_path):
 
         modifier = OnnxModifier.ONNX_MODIFIER
         modifier.reload()   # allow downloading for multiple times
-        with FileAutoClear(tempfile.TemporaryFile(mode="w+b")) as (auto_close, tmp_file):
+        with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, tmp_file):
             try:
                 onnxsim_model(modifier, modify_info, tmp_file)
             except ServerError as error:
@@ -333,7 +333,7 @@ def register_interface(app, request, send_file, temp_dir_path):
 
         modifier = OnnxModifier.ONNX_MODIFIER
         modifier.reload()   # allow downloading for multiple times
-        with FileAutoClear(tempfile.TemporaryFile(mode="w+b")) as (auto_close, opt_tmp_file):
+        with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, opt_tmp_file):
             try:
                 out_message = optimizer_model(modifier, modify_info, opt_tmp_file)
             except ServerError as error:
@@ -353,13 +353,15 @@ def register_interface(app, request, send_file, temp_dir_path):
 
         modifier = OnnxModifier.ONNX_MODIFIER
         modifier.reload()   # allow downloading for multiple times
-        with FileAutoClear(tempfile.TemporaryFile(mode="w+b")) as (auto_close, extract_tmp_file):
+        with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, extract_tmp_file):
             try:
-                extract_model(modifier, modify_info, 
+                out_message = extract_model(modifier, modify_info, 
                               modify_info.get("extract_start"), modify_info.get("extract_end"),
                               extract_tmp_file)
             except ServerError as error:
                 return error.status, error.msg
+            
+            OnnxModifier.ONNX_MODIFIER.cache_message(out_message)
 
             if extract_tmp_file.tell() == 0:
                 return "未正常生成子网", 204
@@ -373,7 +375,7 @@ def register_interface(app, request, send_file, temp_dir_path):
         modifier = OnnxModifier.ONNX_MODIFIER
         modifier.reload()   # allow downloading for multiple times
 
-        with FileAutoClear(tempfile.TemporaryFile(mode="w+b")) as (auto_close, tmp_file):
+        with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, tmp_file):
             tmp_modifier = OnnxModifier(modifier.model_name, modifier.model_proto)
             try:
                 json_modify_model(tmp_modifier, modify_infos)

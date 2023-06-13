@@ -78,7 +78,7 @@ class KnowledgeTestHelper:
     def optimize(self, graph: BaseGraph, knowledge: KnowledgeBase) -> Tuple[bool, BaseGraph]:
         '''Optimize a graph with specific knowledge.'''
         graph_opt = deepcopy(graph)
-        res = GraphOptimizer._optimize(graph_opt, knowledge)
+        res = GraphOptimizer.optimize(graph_opt, knowledge)
         return res, graph_opt
 
     def check_optimization(self, cfg: OptimizationConfig, expect: bool) -> bool:

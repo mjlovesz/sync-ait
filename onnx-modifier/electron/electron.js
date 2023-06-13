@@ -33,7 +33,7 @@ let handle_msg = new ElectronMsgHandelManager()
 const createWindow = () => {
     // 创建浏览窗口
     const mainWindow = new BrowserWindow({
-        width: 1000,
+        width: 1450,
         height: 900,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
