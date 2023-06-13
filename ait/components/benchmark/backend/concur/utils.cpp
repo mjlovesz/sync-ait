@@ -162,12 +162,12 @@ void PrintTimeWall(const std::string& phase, const std::vector<TimePointPair>& t
         return;
     }
     auto [minIt, maxIt] = std::minmax_element(timeStamps.begin(), timeStamps.end(),
-                          [](auto tp1, auto tp2)
-                          {return tp1.second - tp1.first < tp2.second - tp2.first;});
+                                              [](auto tp1, auto tp2)
+                                              {return tp1.second - tp1.first < tp2.second - tp2.first;});
 
     auto total = std::accumulate(timeStamps.begin(), timeStamps.end(), 0,
-                 [](auto init, auto tpp)
-                 {return init + chr::duration_cast<chr::microseconds>(tpp.second - tpp.first).count(); });
+                                 [](auto init, auto tpp)
+                                 {return init + chr::duration_cast<chr::microseconds>(tpp.second - tpp.first).count();});
 
     float division = 1000.0; // microsecond to millisecond
     auto avg = total/timeStamps.size();
