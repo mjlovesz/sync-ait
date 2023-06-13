@@ -175,7 +175,7 @@ cnpy::NpyArray cnpy::NpyLoad(std::string fname)
 {
     FILE *fp = fopen(fname.c_str(), "rb");
 
-    if (!fp){
+    if (!fp) {
         throw std::runtime_error("NpyLoad: Unable to open file" + fname);
     }
     
