@@ -61,7 +61,7 @@ def check_device_range_valid(ctx, param, value):
         return ivalue
 
 
-opt_application = click.option(
+opt_application = click.argument(
     "--application",
     default=None,
     type=str,
