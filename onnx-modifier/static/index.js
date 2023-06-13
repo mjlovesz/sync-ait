@@ -7,6 +7,8 @@ var host = {};
 host.BrowserHost = class {
 
     constructor() {
+        this._random_session = Math.random()
+        this._index_session = ""
         this._document = window.document;
         this._window = window;
         this._navigator = navigator;
@@ -30,6 +32,10 @@ host.BrowserHost = class {
         this._activate_model_file = null
         this._modify_info = []
         window._host = this
+    }
+
+    get session() {
+        return `${this._index_session}${this._random_session}`
     }
 
     get window() {
@@ -169,9 +175,9 @@ host.BrowserHost = class {
                 const file = files[0];
                 let reader = new FileReader()
                 reader.onload = async () => {
-                    let json_modify_info = JSON.parse(reader.result)
+                    let modify_infos = JSON.parse(reader.result)
 
-                    this.take_effect_modify("/load-json", json_modify_info, true)
+                    this.take_effect_modify("/load-json", {modify_infos, session:this.session}, true)
                 }
                 reader.readAsText(file)
                 openJsonFileDialog.value = null
@@ -255,6 +261,17 @@ host.BrowserHost = class {
                 })
             }
         }
+
+        fetch("/init", {method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json'
+            }, body: JSON.stringify({session:this.session})}).then((response) => {
+            this.check_res_status(response.status)
+            response.text().then((text) => {
+                this._index_session = text
+            })
+        })
+
         downloadButton.addEventListener('click', () => {
             let dialog = this.document.getElementById("download-dialog")
             this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
@@ -288,6 +305,7 @@ host.BrowserHost = class {
             let download_data = this.build_download_data(true)
             download_data["extract_start"] = this._view.modifier.getExtractStart()
             download_data["extract_end"] = this._view.modifier.getExtractEnd()
+            download_data['session'] = this.session
             this.take_effect_modify("/extract", download_data, false, (blob) => {
                 this.export(this.upload_filename.replace(".onnx", ".extract.onnx"), blob)
                 this.show_message("Success!", "Model has been successfuly extracted", "success");
@@ -345,11 +363,13 @@ host.BrowserHost = class {
                     var form = new FormData();
                     form.append('file', file);
                     this._ori_model_file = file
+                    form.append('session', this.session)
 
                     fetch('/open_model', {
                         method: 'POST',
                         body: form
                     }).then(function (response) {
+                        this.check_res_status(response.status)
                         return response.text();
                     }).then(function (text) {
                         console.log('POST response: ');
@@ -364,6 +384,16 @@ host.BrowserHost = class {
                 }
             });
         }
+
+        const openNewFileButton = this.document.getElementById('open-new-window-button');
+        openNewFileButton.addEventListener("click", (click_event) => {
+             if (this.window.is_electron) {
+                this.window.new_window()
+             } else {
+                this.window.open("/")
+             }
+             click_event.stopPropagation();
+        })
         const githubButton = this.document.getElementById('github-button');
         const githubLink = this.document.getElementById('logo-github');
         if (githubButton && githubLink) {
@@ -388,11 +418,13 @@ host.BrowserHost = class {
                 var form = new FormData();
                 form.append('file', file);
                 this._ori_model_file = file
+                form.append('session', this.session)
 
                 fetch('/open_model', {
                     method: 'POST',
                     body: form
                 }).then(function (response) {
+                    this.check_res_status(response.status)
                     return response.text();
                 }).then(function (text) {
                     console.log('POST response: ');
@@ -662,7 +694,9 @@ host.BrowserHost = class {
             method: 'POST',
             body: typeof (data_body) == "string" ? data_body : JSON.stringify(data_body),
         }).then((response) => {
-            if (response.status == 204) {
+            if (this.check_res_status(response.status)) {
+                return 
+            } else if (response.status == 204) {
                 return response.text().then((text) => {
                     this.show_message("Nothing happens!", text, "info");
                 })
@@ -690,7 +724,11 @@ host.BrowserHost = class {
             file.filepath = blob.filepath ? blob.filepath : this.upload_filepath
             return this.openFile(file)
         }).then(()=>{
-            fetch("/get_output_message", {method: 'POST', body:"{}"}).then((response) => {
+            let body = JSON.stringify({session:this.session})
+            fetch("/get_output_message", {
+                headers: {
+                    'Content-Type': 'application/json'
+                }, method: 'POST', body}).then((response) => {
                 response.text().then((text) => {
                     if (text) {
                         this.show_message("messages", text, "info");
@@ -700,16 +738,26 @@ host.BrowserHost = class {
         })
     }
 
+    check_res_status(status) {
+        if (status == 598) {
+            this.show_message("Error", "Server Error, you can Save modify info to json and Raise an issue.", "error")
+            return true
+        }
+        return false
+    }
+
     openFile(file) {
         let files = [file]
 
         let form = new FormData();
         form.append('file', file);
+        form.append('session', this.session)
 
         fetch('/open_model', {
             method: 'POST',
             body: form
         }).then(function (response) {
+            this.check_res_status(response.status)
             return response.text();
         }).then(function (text) {
             console.log('POST response: ');
@@ -738,7 +786,8 @@ host.BrowserHost = class {
             'postprocess_args': { 'shapeInf': this._view.modifier.downloadWithShapeInf, 'cleanUp': this._view.modifier.downloadWithCleanUp },
             "model_properties": this.mapToObjectRec(this._view.modifier.modelProperties),
             'input_size_info': this.mapToObjectRec(this._view.modifier.inputSizeInfo),
-            'return_modified_file': Boolean(return_modified_file)
+            'return_modified_file': Boolean(return_modified_file),
+            "session": this.session
         }
     }
 
