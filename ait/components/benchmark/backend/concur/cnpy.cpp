@@ -165,8 +165,9 @@ cnpy::NpyArray LoadNpyFile(FILE *fp)
 
     cnpy::NpyArray arr(shape, wordSize, fortranOrder);
     size_t nread = fread(arr.Data<char>(), 1, arr.NumBytes(), fp);
-    if (nread != arr.NumBytes())
+    if (nread != arr.NumBytes()) {
         throw std::runtime_error("LoadNpyFile: failed fread");
+    }
     return arr;
 }
 
@@ -174,8 +175,9 @@ cnpy::NpyArray cnpy::NpyLoad(std::string fname)
 {
     FILE *fp = fopen(fname.c_str(), "rb");
 
-    if (!fp)
+    if (!fp){
         throw std::runtime_error("NpyLoad: Unable to open file" + fname);
+    }
     
     NpyArray arr = LoadNpyFile(fp);
 

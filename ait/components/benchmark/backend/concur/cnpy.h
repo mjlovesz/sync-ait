@@ -24,7 +24,6 @@
 #include <cstdio>
 #include <typeinfo>
 #include <iostream>
-#include <cassert>
 #include <zlib.h>
 #include <map>
 #include <memory>
@@ -87,8 +86,7 @@ template <typename T> std::vector<char> &operator += (std::vector<char> &lhs, co
         lhs.push_back(val);
     }
     return lhs;
-}        
-
+}
 
 template <> std::vector<char> &operator += (std::vector<char> &lhs, const std::string rhs);
 template <> std::vector<char> &operator += (std::vector<char> &lhs, const char *rhs);
@@ -107,21 +105,23 @@ void NpySave(std::string fname, const T *data, const std::vector<size_t> shape, 
         size_t wordSize;
         bool fortranOrder;
         ParseNpyHeader(fp, wordSize, trueDataShape, fortranOrder);
-        assert(!fortranOrder);
+        if (fortranOrder) {
+            throw std::runtime_error("NpySave: fortranOrder wrong");
+        }
 
         if (wordSize != sizeof(T)) {
             std::cout << "libnpy error: " << fname << " has word size " << wordSize <<
                 " but NpySave appending data sized " << sizeof(T) << "\n";
-            assert(wordSize == sizeof(T));
+            throw std::runtime_error("NpySave: wordSize not matching");
         }
         if (trueDataShape.size() != shape.size()) {
             std::cout << "libnpy error: NpySave attempting to append misdimensioned data to " << fname << "\n";
-            assert(trueDataShape.size() != shape.size());
+            throw std::runtime_error("NpySave: dimension not matching");
         }
         for (size_t i = 1; i < shape.size(); i++) {
             if (shape[i] != trueDataShape[i]) {
                 std::cout << "libnpy error: NpySave attempting to append misshaped data to  " << fname << "\n";
-                assert(shape[i] == trueDataShape[i]);
+                throw std::runtime_error("NpySave: shape not matching");
             }
         }
         trueDataShape[0] += shape[0];
@@ -161,7 +161,7 @@ template <typename T> std::vector<char> CreateNpyHeader(const std::vector<size_t
         dict += ", ";
         dict += std::to_string(shape[i]);
     }
-    if (shape.size() == 1){
+    if (shape.size() == 1) {
         dict += ",";
     }
     dict += "), }";
