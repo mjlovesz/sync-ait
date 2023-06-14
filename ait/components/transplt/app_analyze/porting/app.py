@@ -29,6 +29,20 @@ def start_scan_kit(args):
     scan_api.scan_source(args)
 
 
+def check_args(ctx: click.Context, params: click.Option, value: str):
+    """
+    check whether the param is provided
+    """
+    args = [
+        opt
+        for param in ctx.command.params
+        for opt in param.opts
+    ]
+    if value in args:
+        raise click.MissingParameter()
+    return value
+
+
 # 添加需要进行扫描的目录列表，逗号分隔的情况下只有一个列表元素
 opt_source = click.option(
     '-s',
@@ -36,6 +50,7 @@ opt_source = click.option(
     'source',
     type=str,
     required=True,
+    callback=check_args,
     help='directories of source folder'
 )
 

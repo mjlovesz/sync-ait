@@ -16,6 +16,9 @@ Ascend Inference Tools，昇腾推理工具链。
 2.  [onnx-modifier](https://gitee.com/ascend/ait/tree/master/onnx-modifier)
 
     **可视化改图工具**：提供ONNX模型的实时预览、可视化改图功能，从而更方便、快捷、直观地实现ONNX模型的编辑。
+3.  [ide](https://gitee.com/ascend/ait/tree/master/ide)
+
+    **一体化推理开发工具IDE插件**：作为一体化推理工具集成IDE插件，当前集成模型转换，Ais_Bench，Compare（一键式精度比对）等组件。
 
 #### 许可证
 [Apache License 2.0](LICENSE)

@@ -59,6 +59,10 @@ app.whenReady().then(() => {
     ipcMain.handle('message', (event, path, msg_send) => {
         return handle_msg.handleMessage(event, path, msg_send)
     })
+
+    ipcMain.handle('new_window', (event, path, msg_send) => {
+        createWindow()
+    })
 })
 
 // 除了 macOS 外，当所有窗口都被关闭的时候退出程序。 因此, 通常

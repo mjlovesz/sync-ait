@@ -36,6 +36,7 @@
 1. 安装python
     * 建议安装[miniconda3](https://docs.conda.io/en/latest/miniconda.html)
     * 注意点: 在 windows 上，命令行的python命令优先会启动 WindowsApps 目录的程序，可以在环境变量中将 %USERPROFILE%\AppData\Local\Microsoft\WindowsApps 下移到最后
+    * 验证是否安装成功:命令行输入 `python --version`。能正常输入python 版本即表示成功
 2. 安装[NodeJS](https://nodejs.org/zh-cn/download) (使用 electron 启动时需要，建议安装最新长期维护版本)
 3. 拉取源码：
   ```bash
@@ -44,8 +45,8 @@
 4. 安装 ait 中的 surgeon 包, 请参考 ait 的安装流程，以下为参考步骤：
   ```bash
   cd ait/ait/components/debug/surgeon
-  pip3 install . --force-reinstall
-  cd - # 安装完成之后返回仓库根目录
+  pip install . --force-reinstall
+  # 安装完成之后返回仓库根目录
   ```
 5. 安装 python 需要库
   ```bash
@@ -119,7 +120,7 @@
 
 # 用法
 
-图结构层级的操作按钮放置在可视化页面的左上角，目前有五个：`Reset`，`Download`，`Add node`，`OnnxSim`， `AutOptimizer`. 它们的功能分别为：
+图结构层级的操作按钮放置在可视化页面的左上角，目前有五个：`Reset`，`Download`，`Add node`，`OnnxSim`， `AutoOptimizer`. 它们的功能分别为：
 
 - `Reset`：重置模型图结构为导入时的初始状态；
 
@@ -129,7 +130,7 @@
 
 - `Add node`：向当前模型中，添加新节点。
 
-- `OnnxSim`， `AutOptimizer`：模型自动优化
+- `OnnxSim`， `AutoOptimizer`：模型自动优化
 
 节点层级的操作都在节点侧边栏里，点击某一节点后即可弹出。
 
@@ -255,6 +256,7 @@
 
 | 网址                                      | 功能                                     | 
 |-------------------------------------------|-----------------------------------------|
+| https://gitee.com/ascend/ait               | 本仓库位置      |
 | https://github.com/ZhangGe6               | 该仓库原始仓库位置，在About菜单中展示      |
 | https://arxiv.org/ | 算子说明信息        |
 | https://github.com/onnx/onnx/ | 算子说明信息 |
