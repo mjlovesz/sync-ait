@@ -44,4 +44,4 @@ ait benchmark -om pth_resnet50.onnx --backend trtexec --perf 1
 | Total GPU Compute Time| 所有执行的 GPU 计算时间的总和。 |
 
 ## FAQ
-使用出现问题时，可参考[FAQ.md](../../../../docs/benchmark/FAQ.md)
+使用出现问题时，可参考[FAQ](../../../../docs/benchmark/FAQ.md)
