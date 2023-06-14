@@ -214,7 +214,7 @@ class OnnxDumpData(DumpData):
                 if not self.input_shapes:
                     utils.logger.error(
                         "The dynamic shape {} are not supported. Please "
-                        "set '-s' or '--input-shape' to fix the dynamic shape.".format(tensor_shape))
+                        "set '-is' or '--input-shape' to fix the dynamic shape.".format(tensor_shape))
                     raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             if self.input_shapes and tensor_name in self.input_shapes:
                 input_shape = self.input_shapes.get(tensor_name)

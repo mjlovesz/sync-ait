@@ -237,7 +237,7 @@ class NpuDumpData(DumpData):
         else:
             inputs_list = self.om_parser.get_shape_list()
         if len(inputs_list) != len(src_image_size_h):
-            utils.logger.error("inputs number is not equal to aipp inputs number, please check the -s param")
+            utils.logger.error("inputs number is not equal to aipp inputs number, please check the -is param")
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
         # currently, onnx only support input format nchw
         h_position = 2

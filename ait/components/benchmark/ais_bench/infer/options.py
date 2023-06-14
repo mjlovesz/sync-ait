@@ -132,8 +132,8 @@ opt_output_dirname = click.option(
     type=str,
     callback=check_args,
     help='Actual output directory name. Used with parameter output, cannot be used alone. '
-        'The inference result is output to  subdirectory named by output_dirname under  output path. '
-        'such as --output_dirname "tmp", the final inference results are output to the folder of  {$output}/tmp'
+        'The inference result is output to subdirectory named by output_dirname under output path. '
+        'such as --output_dirname "tmp", the final inference results are output to the folder of {$output}/tmp'
 )
 
 
