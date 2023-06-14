@@ -39,4 +39,4 @@
     ```
 
 ## FAQ
-使用出现问题时，可参考[FAQ.md](../../../../docs/benchmark/FAQ.md)
+使用出现问题时，可参考[FAQ](../../../../docs/benchmark/FAQ.md)
