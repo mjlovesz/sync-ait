@@ -31,6 +31,7 @@ import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
 
 import com.huawei.ascend.ait.ide.util.FileChooseWithBrows;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -49,9 +50,11 @@ import javax.swing.JTextField;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Compare
@@ -80,13 +83,21 @@ public class Compare extends DialogWrapper {
     private JLabel inputPathJLabel;
     private JLabel cannPathJLabel;
     private JTextField outputNodesJText;
+    private TextFieldWithBrowseButton weightBrowse;
+    private JPanel weightJPanel;
+    private JLabel weightJLabel;
     private TextFieldWithBrowseButton CompareMainBrowse;
     private SwitchButton debugButton;
     private final Project project;
+    private boolean isPrototxt = false;
 
     private static final String OM_MODEL_FILE_EXTENSION = "om";
     private static final String PB_MODEL_FILE_EXTENSION = "pb";
     private static final String ONNX_MODEL_FILE_EXTENSION = "onnx";
+    private static final String PROTOTXT_MODEL_FILE_EXTENSION = "prototxt";
+    private static final String CAFFE_MODEL_FILE_EXTENSION = "caffemodel";
+    private static final List<String> INVALID_CHAR = List.of("|", "&", "$", ">", "<", "`", "\\" + "\\", "!", "\\n");
+    private static final String INJECT_ERROR = "Parameters cannot contain the following characters: " + INVALID_CHAR;
 
     /**
      * compare
@@ -101,26 +112,60 @@ public class Compare extends DialogWrapper {
         init();
         setTitle("Compare");
 
-        setFileChoodeAction();
+        setFileChooseAction();
+        initWeight(isPrototxt);
         setOKButtonText("Start");
     }
 
-    private void setFileChoodeAction() {
-        modelFIleAction();
+    private void setFileChooseAction() {
+        modelFileAction();
+        weightFileAction();
         offlineModelAction();
         inputAction();
         cannPathAction();
         outputAction();
     }
 
-    private void modelFIleAction() {
-        List<String> lists = List.of(PB_MODEL_FILE_EXTENSION, ONNX_MODEL_FILE_EXTENSION);
+    private void modelFileAction() {
+        List<String> lists = List.of(PB_MODEL_FILE_EXTENSION, ONNX_MODEL_FILE_EXTENSION, PROTOTXT_MODEL_FILE_EXTENSION);
         modelFileBrowse.addActionListener(event -> {
             String selectFile = getSelectedFile(project, lists, false);
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
+            File model = new File(selectFile);
+            String modelName = model.getName();
             modelFileBrowse.setText(selectFile);
+            if ("prototxt".equals(modelName.substring(modelName.lastIndexOf(".") + 1))) {
+                isPrototxt = true;
+                initWeight(true);
+                setWeightPath(model, modelName);
+            }
+
+        });
+    }
+
+    private void setWeightPath(File model, String modelName) {
+        Path path = Path.of(model.getParent(), modelName.substring(0, modelName.lastIndexOf(".")) + ".caffemodel");
+        File file = new File(path.toString());
+        if (file.exists()) {
+            weightBrowse.setText(path.toString());
+        }
+    }
+
+    private void initWeight(boolean isPrototxt) {
+        weightJPanel.setVisible(isPrototxt);
+        weightJLabel.setVisible(isPrototxt);
+        weightBrowse.setVisible(isPrototxt);
+    }
+
+    private void weightFileAction() {
+        weightBrowse.addActionListener(event -> {
+            String selectFile = getSelectedFile(project, List.of(CAFFE_MODEL_FILE_EXTENSION), false);
+            if (StringUtils.isEmpty(selectFile)) {
+                return;
+            }
+            weightBrowse.setText(selectFile);
         });
     }
 
@@ -232,14 +277,17 @@ public class Compare extends DialogWrapper {
                 .append("debug").append(CmdStrWordStatic.SPACE)
                 .append("compare").append(CmdStrWordStatic.SPACE);
         add(cmd, "-gm", modelFileBrowse.getText());
+        if (isPrototxt) {
+            add(cmd, "-w", weightBrowse.getText());
+        }
         add(cmd, "-om", offlineModelPathBrowse.getText());
         add(cmd, "-i", inputPathBrowse.getText());
         add(cmd, "-o", outputPathBrowse.getText());
         add(cmd, "-c", cannPathBrowse.getText());
 
-        addString(cmd, "-s", new CmdStrWordStatic(inputShapeJText.getText()));
-        addString(cmd, "-dr", new CmdStrWordStatic(dymShapeJtext.getText()));
-        addString(cmd, "--output-nodes", new CmdStrWordStatic(outputNodesJText.getText()));
+        addString(cmd, "-s", inputShapeJText.getText());
+        addString(cmd, "-dr", dymShapeJtext.getText());
+        addString(cmd, "--output-nodes", outputNodesJText.getText());
 
         add(cmd, "--output-size", outputSizeJText.getText());
         add(cmd, "-d", deviceJText.getText());
@@ -273,7 +321,27 @@ public class Compare extends DialogWrapper {
             Messages.showErrorDialog("Output path must be chose", "ERROR");
             return false;
         }
+        if (!checkStringSafe(inputShapeJText.getText())) {
+            Messages.showErrorDialog("Input Shape contains illegal characters.", "ERROR");
+            return false;
+        }
+        if (!checkStringSafe(dymShapeJtext.getText())) {
+            Messages.showErrorDialog("DymShape Range contains illegal characters.", "ERROR");
+            return false;
+        }
+        if (!checkStringSafe(outputNodesJText.getText())) {
+            Messages.showErrorDialog("Output Nodes contains illegal characters.", "ERROR");
+            return false;
+        }
         return true;
+    }
+
+    private boolean checkStringSafe(String inputShape) {
+        if (Pattern.matches("[^|&$><`\\\\!\n]*", inputShape)) {
+            return true;
+        }
+        OutputService.getInstance(project).print(inputShape + " contains illegal characters. " + INJECT_ERROR);
+        return false;
     }
 
     @Override
