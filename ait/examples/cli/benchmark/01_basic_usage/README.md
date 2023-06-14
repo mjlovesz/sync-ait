@@ -51,31 +51,10 @@ benchmark推理工具可以通过ait命令行方式启动模型测试。
 
   ```bash
     ait benchmark --om-model /home/model/resnet50_v1.om --output ./ --debug 1
-  ```
-   
-  调试模式开启后会增加更多的打印信息，以单个batch的静态模型`resnet50_bs1.om`为例，包括：
+    ```
 
-  - 模型的输入信息
-  ```
-   [DEBUG] the size of 0 input: 602112
-   [DEBUG] the dims of 0 input:
-   1 3 224 224
-   [DEBUG] the name of 0 input: actual_input_1
-   [DEBUG] the Format of 0 input: 0
-   [DEBUG] the DataType of 0 input: 0
-
-  ``` 
-  - 模型的输出信息
-  ```
-    [DEBUG] the size of 0 output: 4000
-    [DEBUG] the dims of 0 output:
-    1 1000 
-    [DEBUG] the name of 0 output: PartitionedCall_/fc/Gemm_add_4:0:output1
-    [DEBUG] the Format of 0 output: 2
-    [DEBUG] the DataType of 0 output: 0
-
-  ```
-  - 描述模型的总体信息
+    调试模式开启后会增加更多的打印信息，包括：
+   - 模型的输入输出参数信息
 
      ```bash
       [INFO] try get model batchsize:1
@@ -96,3 +75,6 @@ benchmark推理工具可以通过ait命令行方式启动模型测试。
      [DEBUG] model aclExec cost : 2.336000
      ```
    - 模型输入输出等具体操作信息
+
+## FAQ
+使用出现问题时，可参考[FAQ](../../../../docs/benchmark/FAQ.md)

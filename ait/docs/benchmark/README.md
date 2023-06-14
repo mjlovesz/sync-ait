@@ -63,6 +63,8 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
 | --backend                |指定trtexec开关。需要指定为trtexec。配合--perf参数使用，单独使用无效。|否|
 | --perf                   |调用trtexec开关。1或true（开启）、0或false（关闭），默认关闭。配合--backend参数使用，单独使用无效。|否|
 
+### FAQ
+使用过程中遇到问题可以参考[FAQ](FAQ.md)
 ### 使用场景
 
 请移步[benchmark使用示例](../../examples/cli/benchmark/)
