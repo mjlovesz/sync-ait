@@ -146,7 +146,6 @@ opt_outfmt = click.option(
 
 
 opt_loop = click.option(
-    '-l',
     '--loop',
     default=1,
     type=int,
