@@ -9,7 +9,7 @@
 
 ```shell
 git clone https://gitee.com/ascend/ait.git
-cd ait/ait/components/benchmark/backend/concurrent_infer/
+cd ait/ait/components/benchmark/backend/concur/
 
 # 编译安装
 mkdir build
@@ -21,7 +21,7 @@ make
 #### 使用入口
 启动方式如下：
 ```bash
-./concur model=/home/model/resnet50.om 
+./concur model=/home/model/*.om input=/home/data/
 ```
 其中，*为OM离线模型文件名。
 命令行选项与参数参数通过=相连接。
@@ -41,13 +41,11 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
 | 参数名                   | 说明                                                                                                                                          | 是否必选 |
 |-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------| -------- |
 | model            | 需要进行推理的OM离线模型文件。                                                                                                                            | 是       |
-| input               | 模型需要的输入。可指定输入文件所在目录或直接指定输入文件。支持输入文件格式为“NPY”。可输入多个文件或目录，文件或目录之间用“,”隔开。具体输入文件请根据模型要求准备。  若不配置该参数，会自动构造纯0输入数据。 | 否       |
-| output              | 推理结果保存目录。配置后会创建“日期+时间”的子目录，保存输出结果。不配置输出目录时，仅打印输出结果，不保存输出结果。                                 | 否       |
+| input               | 模型需要的输入。可指定输入文件所在目录。支持输入文件格式为“NPY”。可输入多个目录，目录之间用“,”隔开。具体输入文件请根据模型要求准备。 | 是       |
+| output              | 推理结果保存目录。结果保存目录需要提前创建，结果会平铺式保存在该目录下。不配置输出目录时，仅打印输出结果，不保存输出结果。                                 | 否       |
 | debug               | 调试开关。可打印model的desc信息和其他详细执行信息。1或true（开启）、0或false（关闭），默认关闭。                                                                                  | 否       |
-| loop                | 推理次数。默认值为1，取值范围为大于0的正整数。                                                                                       | 否       |
-| warmup        | 推理预热次数。默认值为1，取值范围为大于等于0的整数。配置为0则表示不预热。                                                                                                      | 否       |
-| device              | 指定运行设备。根据设备实际的Device ID指定。例如：device=0。                                                        | 否       |
-| help                | 工具使用帮助信息。                                                                                                                                   | 否       |
+| loop                | 推理次数。默认值为1，取值范围为大于0的正整数。                                                                                       | 否       |                                                                                                    | 否       |
+| device              | 指定运行设备。根据设备实际的Device ID指定。例如：device=0。                                                        | 否       |                                                                                                                                | 否       |
 
 ##### 高级功能参数
 
@@ -57,5 +55,4 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
 | dymDims               | 动态维度参数，指定模型输入的实际Shape。 <br>如ATC模型转换时，设置 --input_shape="data:1,-1;img_info:1,-1" --dynamic_dims="224,224;600,600"，dym-dims参数可设置为：dymDims="data:1,600;img_info:1,600"。 | 否       |
 | dymShape              | 动态Shape参数，指定模型输入的实际Shape。 <br>如ATC模型转换时，设置--input_shape_range="input1:\[8\~20,3,5,-1\];input2:\[5,3\~9,10,-1\]"，dym-shape参数可设置为：dymShape="input1:8,3,5,10;input2:5,3,10,10"。<br>动态Shape场景下，获取模型的输出size通常为0（即输出数据占内存大小未知），建议设置outputSize参数。<br/>例如：dymShape="input1:8,3,5,10;input2:5,3,10,10" outputSize="10000,10000" | 否       |
 | outputSize            | 指定模型的输出数据所占内存大小，多个输出时，需要为每个输出设置一个值，多个值之间用“,”隔开。<br>动态Shape场景下，获取模型的输出size通常为0（即输出数据占内存大小未知），需要根据输入的Shape，预估一个较合适的大小，配置输出数据占内存大小。<br>例如：dymShape="input1:8,3,5,10;input2:5,3,10,10" outputSize="10000,10000" | 否       |
-| auto-set-dymdims-mode  | 自动设置动态Dims模式。1或true（开启）、0或false（关闭），默认关闭。<br/>针对动态档位Dims模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br/>配合input参数使用，单独使用无效。<br/>例如：input=1.npy auto-set-dymdims-mode=1 | 否       |
 | auto-set-dymshape-mode | 自动设置动态Shape模式。取值为：1或true（开启）、0或false（关闭），默认关闭。<br>针对动态Shape模型，根据输入的文件的信息，自动设置Shape参数，注意输入数据只能为npy文件，因为bin文件不能读取Shape信息。<br>配合input参数使用，单独使用无效。<br/>例如：input=1.npy auto-set-dymshape-mode=1 | 否       |
