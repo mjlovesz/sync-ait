@@ -18,7 +18,7 @@ benchmark推理工具可以通过ait命令行方式启动模型测试。
     ```bash
     ait benchmark --om-model /home/model/resnet50_v1.om --output ./ --debug 1
     ```
-   
+
     调试模式开启后会增加更多的打印信息，包括：
    - 模型的输入输出参数信息
 
@@ -37,3 +37,6 @@ benchmark推理工具可以通过ait命令行方式启动模型测试。
      [DEBUG] model aclExec cost : 2.336000
      ```
    - 模型输入输出等具体操作信息
+
+## FAQ
+使用出现问题时，可参考[FAQ](../../../../docs/benchmark/FAQ.md)
