@@ -28,6 +28,20 @@ def convert_to_graph_optimizer(ctx: click.Context, param: click.Option, value: s
         raise click.BadParameter('No valid knowledge provided!') from err
 
 
+def check_args(ctx: click.Context, params: click.Option, value: str):
+    """
+    check whether the param is provided
+    """
+    args = [
+        opt
+        for param in ctx.command.params
+        for opt in param.opts
+    ]
+    if value in args:
+        raise click.MissingParameter()
+    return value
+
+
 default_off_knowledges = [
     'KnowledgeEmptySliceFix',
     'KnowledgeTopkFix',
@@ -43,7 +57,8 @@ opt_optimizer = click.option(
     '--knowledges',
     'optimizer',
     default=','.join(
-        knowledge for knowledge in KnowledgeFactory.get_knowledge_pool().keys()
+        knowledge
+        for knowledge in KnowledgeFactory.get_knowledge_pool().keys()
         if knowledge not in default_off_knowledges
     ),
     type=str,
@@ -82,16 +97,22 @@ opt_recursive = click.option(
 )
 
 
-arg_output = click.argument(
+opt_output = click.option(
+    '-of',
+    '--output-file',
     'output_model',
     nargs=1,
+    required=True,
     type=click.Path(path_type=pathlib.Path)
 )
 
 
-arg_input = click.argument(
+opt_input = click.option(
+    '-i',
+    '--input',
     'input_model',
     nargs=1,
+    required=True,
     type=click.Path(
         exists=True,
         file_okay=True,
@@ -102,20 +123,24 @@ arg_input = click.argument(
 )
 
 
-arg_start = click.argument(
+opt_start = click.option(
+    '--start-node-names',
     'start_node_names',
+    required=True,
     type=click.STRING,
 )
 
 
-arg_end = click.argument(
+opt_end = click.option(
+    '--end-node-names'
     'end_node_names',
+    required=True,
     type=click.STRING,
 )
 
 
 opt_check = click.option(
-    '-c',
+    '-ck',
     '--is-check-subgraph',
     'is_check_subgraph',
     is_flag=True,
@@ -124,9 +149,11 @@ opt_check = click.option(
 )
 
 
-arg_path = click.argument(
+opt_path = click.option(
+    '--path',
     'path',
     nargs=1,
+    required=True,
     type=click.Path(
         exists=True,
         file_okay=True,
@@ -158,11 +185,12 @@ opt_loop = click.option(
 
 
 opt_soc = click.option(
-    '-s',
-    '--soc',
+    '-soc',
+    '--soc-version',
     'soc',
     default='Ascend310P3',
     type=str,
+    callback=check_args,
     help='Soc_version, default to Ascend310P3.'
 )
 
@@ -175,7 +203,6 @@ def validate_opt_converter(ctx: click.Context, param: click.Option, value: str) 
 
 
 opt_converter = click.option(
-    '-c',
     '--converter',
     'converter',
     default='atc',
@@ -223,6 +250,7 @@ opt_attention_start_node = click.option(
     'attention_start_node',
     type=str,
     default="",
+    callback=check_args,
     help='Start node of the first attention block, it must be set when apply big kernel knowledge.',
 )
 
@@ -233,14 +261,17 @@ opt_attention_end_node = click.option(
     'attention_end_node',
     type=str,
     default="",
+    callback=check_args,
     help='End node of the first attention block, it must be set when apply big kernel knowledge.',
 )
 
 
 opt_input_shape = click.option(
+    '-is',
     '--input-shape',
     'input_shape',
     type=str,
+    callback=check_args,
     help='Input shape of onnx graph.',
 )
 
@@ -249,6 +280,7 @@ opt_input_shape_range = click.option(
     '--input-shape-range',
     'input_shape_range',
     type=str,
+    callback=check_args,
     help='Specify input shape range for OM converter.'
 )
 
@@ -257,31 +289,36 @@ opt_dynamic_shape = click.option(
     '--dynamic-shape',
     'dynamic_shape',
     type=str,
+    callback=check_args,
     help='Specify input shape for dynamic onnx in inference.'
 )
 
 
 opt_output_size = click.option(
+    '-outsize',
     '--output-size',
     'output_size',
     type=str,
+    callback=check_args,
     help='Specify real size of graph output.'
 )
 
 
 opt_subgraph_input_shape = click.option(
     '-sis',
-    '--subgraph_input_shape',
+    '--subgraph-input-shape',
     'subgraph_input_shape',
     type=str,
+    callback=check_args,
     help='Specify the input shape of subgraph'
 )
 
 
 opt_subgraph_input_dtype = click.option(
     '-sit',
-    '--subgraph_input_dtype',
+    '--subgraph-input-dtype',
     'subgraph_input_dtype',
     type=str,
+    callback=check_args,
     help='Specify the input dtype of subgraph'
 )

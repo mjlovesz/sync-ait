@@ -72,6 +72,20 @@ def check_device_range_valid(ctx, param, value):
         return ivalue
 
 
+def check_args(ctx: click.Context, params: click.Option, value: str):
+    """
+    check whether the param is provided
+    """
+    args = [
+        opt
+        for param in ctx.command.params
+        for opt in param.opts
+    ]
+    if value in args:
+        raise click.MissingParameter()
+    return value
+
+
 opt_model = click.option(
     "-om",
     "--om-model",
@@ -93,6 +107,7 @@ opt_input_path = click.option(
     '--input',
     'input_path',
     default=None,
+    callback=check_args,
     help='Input file or dir'
 )
 
@@ -115,9 +130,10 @@ opt_output_dirname = click.option(
     '--output-dirname',
     'output_dirname',
     type=str,
+    callback=check_args,
     help='Actual output directory name. Used with parameter output, cannot be used alone. '
-        'The inference result is output to  subdirectory named by output_dirname under  output path. '
-        'such as --output_dirname "tmp", the final inference results are output to the folder of  {$output}/tmp'
+        'The inference result is output to subdirectory named by output_dirname under output path. '
+        'such as --output_dirname "tmp", the final inference results are output to the folder of {$output}/tmp'
 )
 
 
@@ -174,6 +190,7 @@ opt_dym_hw = click.option(
     'dym_hw',
     default=None,
     type=str,
+    callback=check_args,
     help='Dynamic image size param, such as --dym_hw \"300,500\"'
 )
 
@@ -184,6 +201,7 @@ opt_dym_dims = click.option(
     'dym_dims',
     default=None,
     type=str,
+    callback=check_args,
     help='Dynamic dims param, such as --dym_dims \"data:1,600;img_info:1,600\"'
 )
 
@@ -193,6 +211,7 @@ opt_dym_shape = click.option(
     'dym_shape',
     type=str,
     default=None,
+    callback=check_args,
     help='Dynamic shape param, such as --dym_shape \"data:1,600;img_info:1,600\"'
 )
 
@@ -203,6 +222,7 @@ opt_dym_shape_range = click.option(
     'dym_shape_range',
     default=None,
     type=str,
+    callback=check_args,
     help='Dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
 )
 
@@ -212,6 +232,7 @@ opt_output_size = click.option(
     'output_size',
     default=None,
     type=str,
+    callback=check_args,
     help='Output size for dynamic shape mode'
 )
 
@@ -280,6 +301,7 @@ opt_acl_json_path = click.option(
     'acl_json_path',
     default=None,
     type=str,
+    callback=check_args,
     help='Acl json path for profiling or dump'
 )
 
@@ -333,6 +355,7 @@ opt_aipp_config = click.option(
     'aipp_config',
     type=str,
     default=None,
+    callback=check_args,
     help="File type: .config, to set actual aipp params before infer"
 )
 
@@ -359,6 +382,7 @@ opt_backend = click.option(
     "--backend",
     type=str,
     default=None,
+    callback=check_args,
     help="Backend trtexec"
 )
 
