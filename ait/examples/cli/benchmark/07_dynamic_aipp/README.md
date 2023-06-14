@@ -70,4 +70,4 @@ python3 -m ais_bench --model resnet18_dym_image_aipp.om --aipp_config actual_aip
 ```
 
 ## FAQ
-使用出现问题时，可参考[FAQ.md](../../../../docs/benchmark/FAQ.md)
+使用出现问题时，可参考[FAQ](../../../../docs/benchmark/FAQ.md)

@@ -136,4 +136,4 @@ benchmark推理工具执行后，打屏输出结果示例如下：
 | batchsize             | 批大小。本工具不一定能准确识别当前样本的batchsize，建议通过--batchsize参数进行设置。 |
 
 ## FAQ
-使用出现问题时，可参考[FAQ.md](../../../../docs/benchmark/FAQ.md)
+使用出现问题时，可参考[FAQ](../../../../docs/benchmark/FAQ.md)
