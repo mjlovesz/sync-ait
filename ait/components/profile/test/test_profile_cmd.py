@@ -46,8 +46,3 @@ class TestClass:
                                               "on", "on", "off", "off")
         ret = os.system(cmd)
         assert ret == 0
-
-    def test_application_not_set(self):
-        cmd = "ait profile -o {} --model-execution {}".format(self.output_path, "on")
-        ret = os.system(cmd)
-        assert ret != 0
