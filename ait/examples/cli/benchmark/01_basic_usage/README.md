@@ -39,4 +39,4 @@ benchmark推理工具可以通过ait命令行方式启动模型测试。
    - 模型输入输出等具体操作信息
 
 ## FAQ
-使用出现问题时，可参考[FAQ.md](../../../../docs/benchmark/FAQ.md)
+使用出现问题时，可参考[FAQ](../../../../docs/benchmark/FAQ.md)
