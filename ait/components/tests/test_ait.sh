@@ -48,15 +48,18 @@ function test_benchmark()
 }
 function test_convert()
 {
-    bash $CUR_PATH/../convert/test/test.sh
+    cd $CUR_PATH/../convert/test/
+    bash test.sh
 }
 function test_debug_compare()
 {
-    bash $CUR_PATH/../debug/compare/tests/ut/test.sh
+    cd $CUR_PATH/../debug/compare/tests/ut/
+    bash test.sh
 }
 function test_debug_surgeon()
 {
-    bash $CUR_PATH/../debug/surgeon/test/test.sh
+    cd $CUR_PATH/../debug/surgeon/test/
+    bash test.sh
 }
 function test_profile()
 {
