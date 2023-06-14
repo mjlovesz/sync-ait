@@ -97,7 +97,7 @@ def convert_tensor_shape(tensor_shape):
     for i, _ in enumerate(tensor_shape_list):
         if tensor_shape_list[i] is None:
             utils.logger.error("The dynamic shape %s are not supported. "
-                                  "Please set '-s' or '--input-shape' to fix the dynamic shape." % tensor_shape)
+                                  "Please set '-is' or '--input-shape' to fix the dynamic shape." % tensor_shape)
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_NOT_SUPPORT_ERROR)
     return tuple(tensor_shape_list)
 
