@@ -76,7 +76,7 @@ main() {
     BENCKMARK_DT_MODE="simple"
     all_part_test_ok=$ret_ok
 
-    test_analyze || { echo "developer test analyze failed";return $ret_failed; }
+    test_analyze || { echo "developer test analyze failed";all_part_test_ok=$ret_failed; }
     test_benchmark $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE || { echo "developer test benchmark failed";all_part_test_ok=$ret_failed; }
     test_convert || { echo "developer test convert failed";all_part_test_ok=$ret_failed; }
     test_debug_compare || { echo "developer test comnpare failed";all_part_test_ok=$ret_failed; }
