@@ -12,9 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 import argparse
 
 import click
+
+CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
 
 
 def str2bool(v):
@@ -64,7 +68,7 @@ opt_cann_path = click.option(
     "-c",
     "--cann-path",
     "cann_path",
-    default="/usr/local/Ascend/ascend-toolkit/latest/",
+    default=CANN_PATH,
     help="The CANN installation path"
 )
 
