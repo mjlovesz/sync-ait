@@ -68,8 +68,9 @@ class KnowledgeBase(object):
         return False
 
     def next_pattern(self) -> Optional[Pattern]:
+        pattern_mode = None
         if not self.has_next_pattern():
-            return None
+            return pattern_mode
         self._pattern_idx += 1
         self._apply_idx = -1
         return self._patterns[self._pattern_idx]

@@ -4,18 +4,19 @@
 ## 介绍
 在模型比对完成后,对首个精度问题节点进行误差定界定位,判断其是单层误差还是累计误差,并输出误差区间,信息存储在输出目录下error_interval_info.txt内.
 默认为关闭,使用时使用 **--locat=True**.
-* **注意** 使用时dump必须为True
+* **注意** 使用时dump必须为True，custom-op功能暂不支持并行，使用本功能时禁止开启。
 
 ## 运行示例
+**前提**：暂不支持动态shape模型。
 * 如果是固定过shape的动态shape模型，请先使用onnxsim将模型内所有shape信息固定.
 命令如下：
 ```
-onnxsim {input_model} {fixed_shape_input_model}
+onnxsim {your_old_onnx_model} {your_new_output_onnx_model}
 ```
 如果是静态onnx则跳过此步.
 * 将onnx模型转为om,命令示例:
 ```
-atc --framework=5 --output={model_name} --soc_version=Ascend310P3 --model={model_path}
+atc --framework=5 --output={your_model_name} --soc_version=Ascend310P3 --model={your_onnx_model_path}
 ```
 * 执行精度比对命令,示例:
 ```
