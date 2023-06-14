@@ -23,7 +23,7 @@ from server import register_interface
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=5000, help='the port of the webserver. Defaults to 5000.')
-    parser.add_argument('--debug', type=bool, default=False, help='enable or disable debug mode.')
+    parser.add_argument('--debug', action="store_true", default=False, help='enable debug mode.')
     
     args = parser.parse_args()
     return args

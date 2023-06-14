@@ -59,7 +59,6 @@ ait debug -h
 ait debug compare -h
 ```
 
-
 ## 参考
 
 ### AIT资源
@@ -71,6 +70,10 @@ ait debug compare -h
 * [AIT transplt 快速入门指南](components/transplt/README.md)
 * [AIT convert 快速入门指南](components/convert/README.md)
 * [AIT profile 快速入门指南](components/profile/msprof/README.md)
+
+## 常见问题 Q&A
+
+参考：[Ait 安装常见问题](https://gitee.com/ascend/ait/wikis/ait%E7%9A%84%E5%AE%89%E8%A3%85%E4%B8%8E%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ait%E5%AE%89%E8%A3%85)
 
 ## 许可证
 

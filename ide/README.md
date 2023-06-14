@@ -22,7 +22,8 @@ AIT-IDE(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一�
 ### 背景：安装CANN以及Ait插件
 
 #### 1：CANN包安装： 安装开发运行环境的昇腾 AI 推理相关驱动、固件、CANN 包，参照 [昇腾文档](https://www.hiascend.com/zh/document)。安装后用户可通过 **设置CANN_PATH环境变量** ，指定安装的CANN版本路径，例如：export CANN_PATH=/xxx/nnrt/latest/。若不设置，工具默认会从/usr/local/Ascend/nnrt/latest/和/usr/local/Ascend/ascend-toolkit/latest路径分别尝试获取CANN版本。
-#### 2：Ait安装：[一体化安装指导](https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md)
+#### 2：Ait-Compare安装：[一体化安装指导](https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md)
+#### 3: Ais_Bench安装： [Ais_Bench安装指导](https://gitee.com/ascend/ait/tree/master/ait/components/benchmark)
 
 ### Ide插件安装
 #### 1：下载插件包：[ascend_ide-1.0-SNAPSHOT.zip]()
@@ -62,13 +63,13 @@ AIT-IDE(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一�
 | Input File          | 模型需要的输入。可指定输入文件所在目录或直接指定输入文件。支持输入文件格式为“NPY”、“BIN”。可输入多个文件或目录，文件或目录之间用“,”隔开。具体输入文件请根据模型要求准备。  若不配置该参数，会自动构造输入数据，输入数据类型由--pure_data_type参数决定。 | 否    |
 | Pure Data Type      | 纯推理数据类型。取值为：“zero”、“random”，默认值为"zero"。 未配置模型输入文件时，工具自动构造输入数据。设置为zero时，构造全为0的纯推理数据；设置为random时，为每一个输入生成一组随机数据。                               | 否    |
 | Output              | 推理结果保存目录。配置后会创建“日期+时间”的子目录，保存输出结果。如果指定output_dirname参数，输出结果将保存到子目录output_dirname下。不配置输出目录时，仅打印输出结果，不保存输出结果。                                 | 否    |
-| Output Dirname      | 推理结果保存子目录。设置该值时输出结果将保存到*output/output_dirname*目录下。  配合output参数使用，单独使用无效。 例如：--output */output* --output_dirname *output_dirname*            | 否    |
-| Outfmt              | 输出数据的格式。取值为：“NPY”、“BIN”、“TXT”，默认为”BIN“。  配合output参数使用，单独使用无效。 例如：--output */output* --outfmt NPY。                                           | 否    |
-| Debug               | 调试开关。可打印model的desc信息和其他详细执行信息。1或true（开启）、0或false（关闭），默认关闭。                                                                                  | 否    |
-| Display all summary | 是否显示所有的汇总信息，包含h2d和d2h信息。1或true（开启）、0或false（关闭），默认关闭。                                                                                        | 否    |
+| Output Dirname      | 推理结果保存子目录。设置该值时输出结果将保存到*output/output_dirname*目录下。  配合output参数使用，单独使用无效。                                                                    | 否    |
+| Outfmt              | 输出数据的格式。取值为：“NPY”、“BIN”、“TXT”，默认为”BIN“。  配合output参数使用，单独使用无效。                                                                               | 否    |
+| Debug               | 调试开关。可打印model的desc信息和其他详细执行信息。默认关闭。                                                                                                         | 否    |
+| Display all summary | 是否显示所有的汇总信息，包含h2d和d2h信息。默认关闭。                                                                                                               | 否    |
 | loop                | 推理次数。默认值为1，取值范围为大于0的正整数。  profiler参数配置为true时，推荐配置为1。                                                                                        | 否    |
 | warmup_count        | 推理预热次数。默认值为1，取值范围为大于等于0的整数。配置为0则表示不预热。                                                                                                      | 否    |
-| Device              | 指定运行设备。根据设备实际的Device ID指定，默认值为0。多Device场景下，可以同时指定多个Device进行推理测试，例如：--device 0,1,2,3。                                                        | 否    |
+| Device              | 指定运行设备。根据设备实际的Device ID指定，默认值为0。多Device场景下，可以同时指定多个Device进行推理测试，例如：0,1,2,3。                                                                 | 否    |
 
 ## Compare
 ![img_2.png](docs/Ait-Compare.png)
@@ -90,8 +91,8 @@ AIT-IDE(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一�
 | Output Size        | 指定模型的输出size，有几个输出，就设几个值。动态shape场景下，获取模型的输出size可能为0，用户需根据输入的shape预估一个较合适的值去申请内存。多个输出size用英文分号（,）隔开, 例如"10000,10000,10000"                                                                                        | 否  |
 | Advisor            | 在比对结束后，针对比对结果进行数据分析，给出专家建议                                                                                                                                                                                      | 否  |
 | DymShape Range     | 动态Shape的阈值范围。如果设置该参数，那么将根据参数中所有的Shape列表进行依次推理和精度比对。(仅支持onnx模型)<br/>配置格式为：input_name1:1,3,200\~224,224-230;input_name2:1,300。<br/>其中，input_name必须是转换前的网络模型中的节点名称；"\~"表示范围，a\~b\~c含义为[a: b :c]；"-"表示某一位的取值。 <br/> | 否  |
-| Dump               | 是否dump所有算子的输出并进行精度对比。默认是True，即开启全部算子输出的比对。(仅支持onnx模型)<br/>使用方式：--dump False                                                                                                                                     | 否  |
-| Convert            | 支持om比对结果文件数据格式由bin文件转为npy文件，生成的npy文件目录为./dump_data/npu/{时间戳_bin2npy} 文件夹。使用方式：--convert True                                                                                                                    | 否  |
+| Dump               | 是否dump所有算子的输出并进行精度对比。默认是True，即开启全部算子输出的比对。(仅支持onnx模型)<br/>使用方式：默认开启。                                                                                                                                            | 否  |
+| Convert            | 支持om比对结果文件数据格式由bin文件转为npy文件，生成的npy文件目录为./dump_data/npu/{时间戳_bin2npy} 文件夹。使用方式：默认关闭。                                                                                                                             | 否  |
 
 ## AitModelConvert
 ![docs/Ait-ModelConverter.png](docs/Ait-ModelConverter.png)
@@ -105,7 +106,7 @@ AIT-IDE(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一�
 | Input Model File   | 输入模型文件，当前仅支持onnx模型文件                    | 是  |
 | Target SoC Version | 模型转换时指定芯片型号，当前支持Ascend310P3和Ascend910B3 | 是  |
 | Output Model Path  | 模型文件输出路径                                | 是  |
-| Output Model Name  | 模型文件名，当前仅支持生成om模型文件                    | 是  |
+| Output Model Name  | 模型文件名，当前仅支持生成om模型文件                     | 是  |
 
 ## 参考
 ### AIT资源
