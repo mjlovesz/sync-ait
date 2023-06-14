@@ -14,8 +14,13 @@
 FROM ubuntu:20.04
 
 # Update Ubuntu repo to huaweicloud
-RUN sed -i 's@http://.*archive.ubuntu.com@http://repo.huaweicloud.com@g' /etc/apt/sources.list \
-    && sed -i 's@http://.*security.ubuntu.com@http://repo.huaweicloud.com@g' /etc/apt/sources.list
+RUN if [ "$(uname -m)" = "x86_64" ]; then \
+        sed -i "s@http://.*archive.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list \
+        && sed -i "s@http://.*security.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list; \
+    elif [ "$(uname -m)" = "aarch64" ]; then \
+        sed -i "s@http://ports.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list \
+        && sed -i "s@http://ports.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list; \
+    fi
 
 # Update packages and install necessary dependencies
 RUN apt-get update \

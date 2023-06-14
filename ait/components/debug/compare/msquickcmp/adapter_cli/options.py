@@ -32,11 +32,26 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
 
 
+def check_args(ctx: click.Context, params: click.Option, value: str):
+    """
+    check whether the param is provided
+    """
+    args = [
+        opt
+        for param in ctx.command.params
+        for opt in param.opts
+    ]
+    if value in args:
+        raise click.MissingParameter()
+    return value
+
+
 opt_golden_model = click.option(
     '-gm',
     '--golden-model',
     'golden_model',
     required=True,
+    callback=check_args,
     help="The original model (.onnx or .pb or .prototxt) file path",
 )
 
@@ -44,14 +59,16 @@ opt_om_model = click.option(
     "-om",
     "--om-model",
     "om_model",
+    callback=check_args,
     help="The offline model (.om) file path",
     required=True
 )
 
 opt_weight_path = click.option(
     "-w",
-    "--weight-path",
+    "--weight",
     "weight_path",
+    callback=check_args,
     help="Required when framework is Caffe (.cafemodel)",
 )
 
@@ -60,6 +77,7 @@ opt_input = click.option(
     "--input",
     "input_data_path",
     default="",
+    callback=check_args,
     help="The input data path of the model. Separate multiple inputs with commas(,)."
     " E.g: input_0.bin,input_1.bin"
 )
@@ -69,6 +87,7 @@ opt_cann_path = click.option(
     "--cann-path",
     "cann_path",
     default=CANN_PATH,
+    callback=check_args,
     help="The CANN installation path"
 )
 
@@ -77,15 +96,17 @@ opt_out_path = click.option(
     "--output",
     "out_path",
     default="",
+    callback=check_args,
     help="The output path"
 )
 
 opt_input_shape = click.option(
-    "-s",
+    "-is",
     "--input-shape",
     "input_shape",
     type=str,
     default="",
+    callback=check_args,
     help="Shape of input shape. Separate multiple nodes with semicolons(;)."
          " E.g: \"input_name1:1,224,224,3;input_name2:3,300\""
 )
@@ -95,13 +116,16 @@ opt_device = click.option(
     "--device",
     "device",
     default="0",
+    callback=check_args,
     help="Input device ID [0, 255], default is 0."
 )
 
 opt_output_size = click.option(
+    "-outsize",
     "--output-size",
     "output_size",
     default="",
+    callback=check_args,
     help="The size of output. Separate multiple sizes with commas(,). E.g: 10200,34000"
 )
 
@@ -111,6 +135,7 @@ opt_output_nodes = click.option(
     "output_nodes",
     type=str,
     default="",
+    callback=check_args,
     help="Output nodes designated by user. Separate multiple nodes with semicolons(;)."
          " E.g: \"node_name1:0;node_name2:1;node_name3:0\""
 )
@@ -119,6 +144,7 @@ opt_advisor = click.option(
     "--advisor",
     "advisor",
     is_flag=True,
+    callback=check_args,
     help="Enable advisor after compare."
 )
 
@@ -128,6 +154,7 @@ opt_dym_shape_range = click.option(
     "dym_shape_range",
     type=str,
     default="",
+    callback=check_args,
     help="Dynamic shape range using in dynamic model, "
          "using this means ignore input_shape"
          " E.g: \"input_name1:1,3,200\~224,224-230;input_name2:1,300\""
@@ -164,5 +191,6 @@ opt_custom_op = click.option(
     "custom_op",
     type=str,
     default="",
+    callback=check_args,
     help="Op name witch is not registered in onnxruntime, only supported by Ascend."
 )

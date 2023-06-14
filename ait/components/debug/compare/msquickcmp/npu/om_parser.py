@@ -326,7 +326,7 @@ class OmParser(object):
         for input_object in input_desc_array:
             shape_list = []
             if SHAPE_OBJECT not in input_object:
-                utils.logger.error("Please specify the input shape of om model through -s param")
+                utils.logger.error("Please specify the input shape of om model through -is param")
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             data_type = DTYPE_MAP.get(input_object.get(DTYPE_OBJECT))
             if not data_type:
@@ -335,7 +335,7 @@ class OmParser(object):
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_KEY_ERROR)
             data_type_size = np.dtype(data_type).itemsize
             if self.shape_range:
-                utils.logger.error("Please specify the input shape of om model through -s param")
+                utils.logger.error("Please specify the input shape of om model through -is param")
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             else:
                 input_format = input_object.get(LAYOUT_OBJECT, "NCHW")
