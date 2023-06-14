@@ -5,7 +5,7 @@
 benchmark推理工具目前提供多线程推理功能
 
 ## 准备
-根据根据完成多线程推理工具的编译[README.md](https://gitee.com/ascend/ait/blob/master/ait/components/benchmark/backend/concur/README.md)
+根据[README.md](https://gitee.com/ascend/ait/blob/master/ait/components/benchmark/backend/concur/README.md)
 完成多线程推理工具的编译
 
 ## 运行示例
