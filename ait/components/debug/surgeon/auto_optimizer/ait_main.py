@@ -87,7 +87,8 @@ def command_list() -> None:
     'evaluate',
     aliases=['eva'],
     short_help='Evaluate model matching specified knowledges.',
-    context_settings=CONTEXT_SETTINGS
+    context_settings=CONTEXT_SETTINGS,
+    no_args_is_help=True
 )
 @opt_path
 @opt_optimizer
@@ -135,7 +136,8 @@ def command_evaluate(
     'optimize',
     aliases=['opt'],
     short_help='Optimize model with specified knowledges.',
-    context_settings=CONTEXT_SETTINGS
+    context_settings=CONTEXT_SETTINGS,
+    no_args_is_help=True
 )
 @opt_input
 @opt_output
@@ -221,7 +223,8 @@ def command_optimize(
     'extract',
     aliases=['ext'],
     short_help='Extract subgraph from onnx model.',
-    context_settings=CONTEXT_SETTINGS
+    context_settings=CONTEXT_SETTINGS,
+    no_args_is_help=True
 )
 @opt_input
 @opt_output
