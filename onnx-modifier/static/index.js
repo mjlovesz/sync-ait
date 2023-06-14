@@ -303,13 +303,19 @@ host.BrowserHost = class {
                 return 
             }
             let download_data = this.build_download_data(true)
-            download_data["extract_start"] = this._view.modifier.getExtractStart()
-            download_data["extract_end"] = this._view.modifier.getExtractEnd()
+            download_data["extract_start"] = Array.from(this._view.modifier.getExtractStart()).join(",")
+            download_data["extract_end"] = Array.from(this._view.modifier.getExtractEnd()).join(",")
             download_data['session'] = this.session
             this.take_effect_modify("/extract", download_data, false, (blob) => {
                 this.export(this.upload_filename.replace(".onnx", ".extract.onnx"), blob)
                 this.show_message("Success!", "Model has been successfuly extracted", "success");
-                this._view.modifier.setExtractStart(null)
+                for (const start_name of this._view.modifier.getExtractStart()) {
+                    this._view.modifier.setExtractStart(start_name, false)
+                }
+                for (const end_name of this._view.modifier.getExtractEnd()) {
+                    this._view.modifier.setExtractEnd(end_name, false)
+                }
+                
                 this._view.modifier.setExtractEnd(null)
             })
         });
