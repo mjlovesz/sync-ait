@@ -13,9 +13,7 @@
 # limitations under the License.
 
 import os
-
 import argparse
-
 import click
 
 CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
