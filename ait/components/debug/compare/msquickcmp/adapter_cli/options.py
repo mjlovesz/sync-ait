@@ -173,7 +173,6 @@ opt_bin2npy = click.option(
 )
 
 opt_locat = click.option(
-    "-l",
     "--locat",
     "locat",
     default=False,

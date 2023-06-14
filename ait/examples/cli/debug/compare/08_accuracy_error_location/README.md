@@ -3,7 +3,7 @@
 
 ## 介绍
 在模型比对完成后,对首个精度问题节点进行误差定界定位,判断其是单层误差还是累计误差,并输出误差区间,信息存储在输出目录下error_interval_info.txt内.
-默认为关闭,使用时使用 **--locat=True** 或者 **-l=True**.
+默认为关闭,使用时使用 **--locat=True**.
 * **注意** 使用时dump必须为True
 
 ## 运行示例
@@ -19,7 +19,7 @@ atc --framework=5 --output={model_name} --soc_version=Ascend310P3 --model={model
 ```
 * 执行精度比对命令,示例:
 ```
-ait debug compare -gm {onnx_model_path} -om {om_model_path} -i {input_data_path} -o {output_file_path} -l True
+ait debug compare -gm {onnx_model_path} -om {om_model_path} -i {input_data_path} -o {output_file_path} --locat True
 ```
 * > onnx_model_path为onnx文件路径
 * > om_model_path为atc转换后om文件路径
