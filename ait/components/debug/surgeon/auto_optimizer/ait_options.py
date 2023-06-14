@@ -175,7 +175,6 @@ opt_device = click.option(
 
 
 opt_loop = click.option(
-    '-l',
     '--loop',
     'loop',
     default=100,
