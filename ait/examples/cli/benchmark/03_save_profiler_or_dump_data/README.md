@@ -113,3 +113,6 @@ ait benchmark --om-model /home/model/resnet50_v1.om --output ./output --dump 1
   + profiler参数和dump参数，必须要增加output参数，指示输出路径。
 
   + profiler和dump可以分别使用，但不能同时启用。
+
+## FAQ
+使用出现问题时，可参考[FAQ.md](../../../../docs/benchmark/FAQ.md)

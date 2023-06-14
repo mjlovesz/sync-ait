@@ -42,3 +42,6 @@ ait benchmark -om pth_resnet50.onnx --backend trtexec --perf 1
 | D2H Latency           | 单个执行的输出张量的设备到主机数据传输的延迟。                    |
 | Total Host Walltime   | 从第一个执行（预热后）入队到最后一个执行完成的主机时间。 |
 | Total GPU Compute Time| 所有执行的 GPU 计算时间的总和。 |
+
+## FAQ
+使用出现问题时，可参考[FAQ.md](../../../../docs/benchmark/FAQ.md)

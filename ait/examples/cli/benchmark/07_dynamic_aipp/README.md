@@ -68,3 +68,6 @@ atc --framework=5 --model=./resnet18.onnx --output=resnet18_dym_image_aipp --inp
 ```
 python3 -m ais_bench --model resnet18_dym_image_aipp.om --aipp_config actual_aipp_conf.config --dymHW 112,112
 ```
+
+## FAQ
+使用出现问题时，可参考[FAQ.md](../../../../docs/benchmark/FAQ.md)
