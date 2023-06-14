@@ -12,7 +12,7 @@ compare精度对比功能可以通过ait命令行方式启动。
   ait debug compare -gm /home/HwHiAiUser/onnx_prouce_data/resnet_offical.onnx -om /home/HwHiAiUser/onnx_prouce_data/model/resnet50.om \
   -c /usr/local/Ascend/ascend-toolkit/latest -o /home/HwHiAiUser/result/test
   ```
-  - `-om, –om-model` 指定昇腾AI处理器的离线模型（.om）路径
+  - `-om, –-om-model` 指定昇腾AI处理器的离线模型（.om）路径
   - `-gm, --golden-model` 指定模型文件（.pb或.onnx）路径
   - `-c，–-cann-path` (可选) 指定 `CANN` 包安装完后路径，默认为 `/usr/local/Ascend/ascend-toolkit/latest`
   - `-o, –-output` (可选) 输出文件路径，默认为当前路径
