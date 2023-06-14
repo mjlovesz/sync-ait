@@ -24,8 +24,8 @@ modifier.Modifier = class {
         this.downloadWithCleanUp = false;
 
         this.modelProperties = new Map();
-        this.extract_start = null;
-        this.extract_end = null;
+        this.extract_start = new Set();
+        this.extract_end = new Set();
         this.extract_highlight_nodes = [];
     }
 
@@ -109,13 +109,21 @@ modifier.Modifier = class {
 
     }
     
-    setExtractStart(node_name) {
-        this.extract_start = node_name
+    setExtractStart(node_name, is_start) {
+        if (is_start) {
+            this.extract_start.add(node_name)
+        } else {
+            this.extract_start.delete(node_name)
+        }
         this.highLightExtractNodes()
     }
     
-    setExtractEnd(node_name) {
-        this.extract_end = node_name
+    setExtractEnd(node_name, is_end) {
+        if (is_end) {
+            this.extract_end.add(node_name)
+        } else {
+            this.extract_end.delete(node_name)
+        }
         this.highLightExtractNodes()
     }
     
@@ -128,10 +136,10 @@ modifier.Modifier = class {
     }
 
     highLightExtractNodes() {
-        let start_node = this.getExtractStart()
-        let end_node = this.getExtractEnd()
+        let start_nodes = this.getExtractStart()
+        let end_nodes = this.getExtractEnd()
 
-        let inside_nodes = this.getInsideNodes(start_node, end_node)
+        let inside_nodes = this.getInsideNodes(start_nodes, end_nodes)
 
         for (const ori_node of this.extract_highlight_nodes) {
             this.name2ViewNode.get(ori_node).element.getElementsByClassName("node border")[0].style.stroke = null
@@ -146,44 +154,49 @@ modifier.Modifier = class {
             this.extract_highlight_nodes.push(inside_node)
         }
         
-        if (start_node) {
+        for (const start_node of start_nodes) {
             this.name2ViewNode.get(start_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-start)";
             this.name2ViewNode.get(start_node).element.getElementsByClassName("node border")[0].style.strokeWidth = "6px"
             this.extract_highlight_nodes.push(start_node)
         }
-        if (end_node) {
+        for (const end_node of end_nodes) {
             this.name2ViewNode.get(end_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-end)";
             this.name2ViewNode.get(end_node).element.getElementsByClassName("node border")[0].style.strokeWidth = "6px"
             this.extract_highlight_nodes.push(end_node)
         }
 
-        if (start_node == end_node && start_node) {
+        for (const start_node of start_nodes) {
+            if (!end_nodes.has(start_node)) {
+                continue
+            }
             this.name2ViewNode.get(end_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-start-end)";
         }
     }
 
-    getInsideNodes(start_node, end_node) {
-        if (!start_node || !end_node) {
+    getInsideNodes(start_nodes, end_nodes) {
+        if (!start_nodes || !end_nodes) {
             return []
         }
-        if (start_node == end_node) {
+        if (start_nodes == end_nodes) {
             return []
         }
 
         let cached_node = new Map()
         let reach_node = new Set()
-
-        this.is_reach_end_node(start_node, end_node, cached_node, reach_node)
+        
+        for (const start_node of start_nodes) {
+            this.is_reach_end_node(start_node, end_nodes, cached_node, reach_node)
+        }
 
         return [...reach_node]
     }
 
-    is_reach_end_node(this_node_name, end_node, cached_node, reach_node) {
+    is_reach_end_node(this_node_name, end_nodes, cached_node, reach_node) {
         if (cached_node.has(this_node_name)) {
             return cached_node.get(this_node_name)
         }
 
-        if (this_node_name == end_node) {
+        if (end_nodes.has(this_node_name)) {
             return true
         }
 
@@ -192,7 +205,7 @@ modifier.Modifier = class {
         }
 
         for (const next_node of this.namedEdges.get(this_node_name)) {
-            let is_next_reach = this.is_reach_end_node(next_node, end_node, cached_node, reach_node)
+            let is_next_reach = this.is_reach_end_node(next_node, end_nodes, cached_node, reach_node)
             cached_node.set(next_node, is_next_reach)
             if (is_next_reach) {
                 reach_node.add(this_node_name)
@@ -601,8 +614,8 @@ modifier.Modifier = class {
         container.scrollTop = 0;
         this.view._zoom = 1;
 
-        this.extract_start = null;
-        this.extract_end = null;
+        this.extract_start = new Set();
+        this.extract_end = new Set();
         this.highLightExtractNodes()
         this.extract_highlight_nodes = [];
 
