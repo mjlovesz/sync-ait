@@ -73,6 +73,7 @@ opt_output = click.option(
     nargs=1,
     required=True,
     type=click.Path(path_type=pathlib.Path),
+    callback=check_args,
     help='Output onnx model name'
 )
 
@@ -90,6 +91,7 @@ opt_input = click.option(
         readable=True,
         path_type=pathlib.Path
     ),
+    callback=check_args,
     help='Input onnx model to be optimized'
 )
 
@@ -99,6 +101,7 @@ opt_start = click.option(
     'start_node_names',
     required=True,
     type=click.STRING,
+    callback=check_args,
     help='The names of start nodes'
 )
 
@@ -108,6 +111,7 @@ opt_end = click.option(
     'end_node_names',
     required=True,
     type=click.STRING,
+    callback=check_args,
     help='The names of end nodes'
 )
 
@@ -134,6 +138,7 @@ opt_path = click.option(
         readable=True,
         path_type=pathlib.Path
     ),
+    callback=check_args,
     help='Target onnx file or directory containing onnx file'
 )
 
