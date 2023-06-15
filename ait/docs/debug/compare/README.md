@@ -94,4 +94,3 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
   | [05_aipp_model_compare](../../../examples/cli/debug/compare/05_aipp_model_compare)    | 提供模型转换开启aipp参数的om模型与onnx模型进行精度比对的功能。 | 
   | [06_npu_custom_op](../../../examples/cli/debug/compare/06_npu_custom_op)    | onnx模型中存在NPU自定义算子场景 | 
   | [07_caffe_model](../../../examples/cli/debug/compare/07_caffe_model)    | 标杆模型为Caffe框架的一键式精度比对 | 
-  | [08_accuracy_error_location](../../../examples/cli/debug/compare/08_accuracy_error_location)    | 误差（包含累计误差）精度问题算子一键式区间定位 | 
