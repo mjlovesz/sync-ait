@@ -8,10 +8,10 @@ surgeon工具可通过ait命令行形式启动。
 ## 运行示例
 
 ```bash
-ait debug surgeon <COMMAND> [OPTIONS] [ARGS]
+ait debug surgeon COMMAND [OPTIONS] [REQUIRED]
 ```
 
-其中<COMMAND>为surgeon执行模式参数，取值为list、evaluate、optimize和extract；[OPTIONS]和[ARGS]为evaluate和optimize命令的额外参数。
+其中<COMMAND>为surgeon执行模式参数，取值为list、evaluate、optimize和extract；[OPTIONS]和[REQUIRED]为可选项和必选项参数，每个子任务下面的可选项和必选项不同。
 
 ## 使用流程
 
