@@ -29,8 +29,9 @@ from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern import KnowledgeFactory
 from auto_optimizer.tools.log import logger
 from auto_optimizer.common.utils import check_output_model_path
-from auto_optimizer.__main__ import is_graph_input_static, optimize_onnx, evaluate_onnx, CONTEXT_SETTINGS, \
+from auto_optimizer.common.click_utils import is_graph_input_static, optimize_onnx, evaluate_onnx, CONTEXT_SETTINGS, \
     FormatMsg
+
 
 from auto_optimizer.ait_options import (
     opt_path,
