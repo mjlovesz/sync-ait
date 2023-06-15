@@ -21,7 +21,7 @@ from auto_optimizer.graph_refactor.interface.base_node import PlaceHolder, Initi
 from auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from test_node_common import is_ph_equal, is_ini_equal, is_node_equal
-from test_graph_basic import is_graph_equal, create_graph_1
+from ait.components.debug.surgeon.test.refactor.test_graph_basic import is_graph_equal, create_graph_1
 
 
 def create_graph(name: str = 'test_graph'):

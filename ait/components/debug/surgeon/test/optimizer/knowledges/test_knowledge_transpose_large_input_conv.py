@@ -20,14 +20,14 @@ import numpy as np
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_transpose_large_input_conv import KnowledgeTransposeLargeInputConv
-from helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 class TestKnowledgeTransposeLargeInputConv(unittest.TestCase, KnowledgeTestHelper):
 
     def test_aasist(self):
         models = [
-            (True, './onnx/aasist_bs1_ori.onnx', (1, 64600), 10),
+            (True, '../../onnx/aasist_bs1_ori.onnx', (1, 64600), 10),
         ]
         for expect, onnx_ori, shape, count in models:
             with self.subTest(onnx_ori):

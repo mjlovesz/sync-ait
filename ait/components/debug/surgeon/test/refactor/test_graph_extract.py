@@ -13,15 +13,13 @@
 # limitations under the License.
 
 
-from itertools import chain
-
 import unittest
 import numpy as np
 
 from auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from test_node_common import is_ph_equal, is_ini_equal, is_node_equal
-from test_graph_basic import is_graph_equal
+from ait.components.debug.surgeon.test.refactor.test_graph_basic import is_graph_equal
 
 
 def create_graph(name: str = 'test_graph'):
