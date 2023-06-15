@@ -98,6 +98,7 @@ opt_model = click.option(
         readable=True,
         path_type=pathlib.Path
     ),
+    callback=check_args,
     help="The path of the om model"
 )
 
@@ -120,6 +121,7 @@ opt_output = click.option(
     type=click.Path(
         path_type=pathlib.Path
     ),
+    callback=check_args,
     help='Inference data output path. The inference results are output to '
         'the subdirectory named current date under given output path'
 )
@@ -146,7 +148,6 @@ opt_outfmt = click.option(
 
 
 opt_loop = click.option(
-    '-l',
     '--loop',
     default=1,
     type=int,
