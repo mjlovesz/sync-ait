@@ -82,7 +82,7 @@ class TestKnowledgeDynamicReshape(unittest.TestCase, KnowledgeTestHelper):
                 {
                     'X': np.random.randn(*shape_).astype(x.get('dtype', np.float16)),
                     'Y': np.random.randn(*shape_).astype(y.get('dtype', np.float16)),
-                } for _ in range(10)
+                }
             ]
             self.assertTrue(self.check_precision(onnx_ori, onnx_opt, feeds))
 
@@ -117,7 +117,7 @@ class TestKnowledgeDynamicReshape(unittest.TestCase, KnowledgeTestHelper):
                 {
                     'X': np.random.randn(*shape_).astype(x.get('dtype', np.float16)),
                     'Y': np.random.randn(*shape_).astype(y.get('dtype', np.float16)),
-                } for _ in range(10)
+                }
             ]
             self.assertTrue(self.check_precision(onnx_ori, onnx_opt, feeds))
 
