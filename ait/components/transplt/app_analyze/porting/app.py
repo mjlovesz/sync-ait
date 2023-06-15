@@ -66,7 +66,6 @@ opt_report_type = click.option(
 
 # 添加日志级别开关，默认级别是INFO，只有添加ERROR后才能输出ERR级别日志
 opt_log_level = click.option(
-    '-l',
     '--log-level',
     'log_level',
     type=click.Choice(['DEBUG', 'INFO', 'WARNING', 'ERROR']),
@@ -76,7 +75,6 @@ opt_log_level = click.option(
 )
 
 opt_tools = click.option(
-    '-t',
     '--tools',
     'tools',
     type=click.Choice(KitConfig.VALID_CONSTRUCT_TOOLS),
