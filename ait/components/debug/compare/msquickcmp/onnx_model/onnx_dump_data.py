@@ -362,7 +362,8 @@ class OnnxDumpData(DumpData):
         for onnx_model_input in old_onnx_graph.inputs:
             start_nodes = old_onnx_graph.get_next_nodes(onnx_model_input.name)
             for start_node in start_nodes:
-                start_nodes_name.append(start_node.name)
+                if start_node is not None:
+                    start_nodes_name.append(start_node.name)
 
         # end before custom op node
         end_nodes_name = []
