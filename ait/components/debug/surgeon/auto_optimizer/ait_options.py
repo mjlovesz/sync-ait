@@ -18,14 +18,7 @@ import click
 
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-
-
-def convert_to_graph_optimizer(ctx: click.Context, param: click.Option, value: str) -> GraphOptimizer:
-    '''Process and validate knowledges option.'''
-    try:
-        return GraphOptimizer([v.strip() for v in value.split(',')])
-    except Exception as err:
-        raise click.BadParameter('No valid knowledge provided!') from err
+from auto_optimizer.options import convert_to_graph_optimizer, default_off_knowledges
 
 
 def check_args(ctx: click.Context, params: click.Option, value: str):
@@ -40,16 +33,6 @@ def check_args(ctx: click.Context, params: click.Option, value: str):
     if value in args:
         raise click.MissingParameter()
     return value
-
-
-default_off_knowledges = [
-    'KnowledgeEmptySliceFix',
-    'KnowledgeTopkFix',
-    'KnowledgeGatherToSplit',
-    'KnowledgeSplitQKVMatmul',
-    'KnowledgeDynamicReshape',
-    'KnowledgeResizeModeToNearest'
-]
 
 
 opt_optimizer = click.option(
