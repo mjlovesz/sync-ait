@@ -2,7 +2,7 @@
 
 ### 环境和依赖
 
-- 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit或nnrt软件包。建议安装CANN商业版6.3RC1以上版本。
+- 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit或nnrt软件包。建议安装CANN商业版6.3.RC1以上版本。
 - 安装python3.7.5。
 
 ### 工具安装方式
