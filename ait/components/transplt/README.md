@@ -9,22 +9,32 @@
 ### 2.1 使用容器方式安装
 #### 2.1.1 安装docker
 
-> 以下docker安装指引以ubuntu20.04操作系统为基准，其他系统需要自行修改部分内容。
+> 以下docker安装指引以x86版本的Ubuntu22.04操作系统为基准，其他系统需要自行修改部分内容。
 
 a) 更新软件包索引，并且安装必要的依赖软件
 ```shell
 sudo apt update
-sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common lsb-release
 ```
 b) 导入docker源仓库的 GPG key
 ```shell
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 ```
+> 注意：如果当前机器采用proxy方式联网，上面的命令有可能会遇到```curl: (60) SSL certificate problem: self signed certificate in certificate chain``` 的报错问题。遇到这种情况，可以在将curl的运行参数从```curl -fsSL```修改成```curl -fsSL -k```。需要注意的是，这会跳过检查目标网站的证书信息，有一定的安全风险，用户需要谨慎使用并自行承担后果。
+
 c) 将 Docker APT 软件源添加到系统
+
 ```shell
 sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
 ```
+> 注意：如果上面的命令运行失败了，用户也可以采用如下命令手动将docker apt源添加到系统
+>
+> ```shell
+> sudo echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" >> /etc/apt/sources.list
+> ```
+
 d) 安装docker
+
 ```shell
 sudo apt install docker-ce docker-ce-cli containerd.io
 ```
