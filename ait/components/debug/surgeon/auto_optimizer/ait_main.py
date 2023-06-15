@@ -29,7 +29,8 @@ from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern import KnowledgeFactory
 from auto_optimizer.tools.log import logger
 from auto_optimizer.common.utils import check_output_model_path
-from auto_optimizer.__main__ import is_graph_input_static, optimize_onnx, evaluate_onnx
+from auto_optimizer.__main__ import is_graph_input_static, optimize_onnx, evaluate_onnx, CONTEXT_SETTINGS, \
+    FormatMsg
 
 from auto_optimizer.ait_options import (
     opt_path,
@@ -57,14 +58,6 @@ from auto_optimizer.ait_options import (
     opt_subgraph_input_shape,
     opt_subgraph_input_dtype,
 )
-
-
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-
-
-class FormatMsg:
-    def show(self, file=None) -> None:
-        logger.error(self.format_message())
 
 
 @click.group(cls=ClickAliasedGroup, context_settings=CONTEXT_SETTINGS,
