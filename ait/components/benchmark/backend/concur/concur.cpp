@@ -310,9 +310,9 @@ void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, int32_t device
 
         if (outputDir != "") {
             size_t n = item->outputs->size();
+            std::string prefix = outputDir + "/" + RemoveSlash(RemoveTail(item->outputPrefix, ".npy") + "_");
             for (size_t i = 0; i < n; i++) {
-                std::string outputFileName = outputDir + "/" + RemoveSlash(
-                    RemoveTail(item->outputPrefix, ".npy") + "_" + item->outputNames->at(i) + ".npy");
+                std::string outputFileName = prefix + RemoveSlash(item->outputNames->at(i)) + ".npy";
                 if (TensorToNumpy(outputFileName, item->outputs->at(i)) == FAILED) {
                     ERROR_LOG("%s save failed\n", outputFileName.c_str());
                 }
