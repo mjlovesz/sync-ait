@@ -29,6 +29,9 @@ from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern import KnowledgeFactory
 from auto_optimizer.tools.log import logger
 from auto_optimizer.common.utils import check_output_model_path
+from auto_optimizer.common.click_utils import is_graph_input_static, optimize_onnx, evaluate_onnx, CONTEXT_SETTINGS, \
+    FormatMsg
+
 
 from auto_optimizer.options import (
     arg_path,
@@ -56,103 +59,6 @@ from auto_optimizer.options import (
     opt_subgraph_input_shape,
     opt_subgraph_input_dtype,
 )
-
-
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-
-
-def is_graph_input_static(graph: BaseGraph) -> bool:
-    for input_ in graph.inputs:
-        for dim in input_.shape:
-            try:
-                dim = int(dim)
-            except ValueError:
-                return False
-            if dim <= 0:
-                return False
-    return True
-
-
-def optimize_onnx(
-    optimizer: GraphOptimizer,
-    input_model: pathlib.Path,
-    output_model: pathlib.Path,
-    infer_test: bool,
-    config: InferTestConfig,
-    big_kernel_config: Optional[BigKernelConfig] = None
-) -> List[str]:
-    '''Optimize a onnx file and save as a new file.'''
-    try:
-        graph = OnnxGraph.parse(input_model.as_posix(), add_name_suffix=False)
-    except Exception as exc:
-        logger.warning('%s model parse failed.', input_model.as_posix())
-        logger.warning('exception: %s', exc)
-        return []
-
-    optimizer.init_knowledges()
-
-    if big_kernel_config:
-        knowledge_cls = optimizer.knowledges.get("KnowledgeBigKernel")
-        if knowledge_cls:
-            knowledge_bk = knowledge_cls(
-                graph=graph,
-                start_node=big_kernel_config.attention_start_node,
-                end_node=big_kernel_config.attention_end_node
-            )
-            optimizer.knowledges.update({"KnowledgeBigKernel": knowledge_bk})
-    else:
-        optimizer.knowledges.pop("KnowledgeBigKernel")
-
-    config.is_static = is_graph_input_static(graph)
-    if infer_test:
-        if not (config.is_static or (config.input_shape_range and config.dynamic_shape and config.output_size)):
-            logger.warning('Failed to optimize %s with inference test.', input_model.as_posix())
-            logger.warning('Didn\'t specify input_shape_range or dynamic_shape or output_size.')
-            return []
-        optimize_action = partial(optimizer.apply_knowledges_with_infer_test, cfg=config)
-    else:
-        optimize_action = optimizer.apply_knowledges
-
-    try:
-        graph_opt, applied_knowledges = optimize_action(graph=graph)
-    except Exception as exc:
-        logger.warning('%s optimize failed.', input_model.as_posix())
-        logger.warning('exception: %s', exc)
-        return []
-
-    if applied_knowledges:
-        if not output_model.parent.exists():
-            output_model.parent.mkdir(parents=True)
-        graph_opt.save(output_model.as_posix())
-    return applied_knowledges
-
-
-def evaluate_onnx(
-    model: pathlib.Path,
-    optimizer: GraphOptimizer,
-    verbose: bool,
-) -> List[str]:
-    '''Search knowledge pattern in a onnx model.'''
-    if verbose:
-        logger.info(f'Evaluating {model.as_posix()}')
-    try:
-        graph = OnnxGraph.parse(model.as_posix(), add_name_suffix=False)
-    except Exception as exc:
-        logger.warning('%s match failed.', model.as_posix())
-        logger.warning('exception: %s', exc)
-        return []
-    try:
-        graph, applied_knowledges = optimizer.apply_knowledges(graph)
-    except Exception as exc:
-        logger.warning('%s match failed.', model.as_posix())
-        logger.warning('exception: %s', exc)
-        return []
-    return applied_knowledges
-
-
-class FormatMsg:
-    def show(self, file=None) -> None:
-        logger.error(self.format_message())
 
 
 @click.group(cls=ClickAliasedGroup, context_settings=CONTEXT_SETTINGS,
