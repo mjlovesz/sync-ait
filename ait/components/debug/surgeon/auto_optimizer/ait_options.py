@@ -107,7 +107,7 @@ opt_start = click.option(
 
 
 opt_end = click.option(
-    '--end-node-names'
+    '--end-node-names',
     'end_node_names',
     required=True,
     type=click.STRING,
