@@ -35,7 +35,7 @@
   ```
   - `-om, –offline-model-path` Path of the offline model (.om) adapted to the Ascend AI Processor.
   - `-m, --model-path` Path of the original model (.pb or .onnx). Currently, only .pb and .onnx models are supported.
-  - `-c，–cann-path` (Optional) CANN installation path, defaulted to `/usr/local/Ascend/ascend-toolkit/latest`
+  - `-c，–-cann-path` (Optional) CANN installation path, defaulted to `/usr/local/Ascend/ascend-toolkit/latest`
   - `-o, –output-path` (Optional) Output path, defaulted to the current directory.
 - **With model input specified**. **The pathes used here need to be absolute pathes**.
   ```sh
@@ -133,7 +133,7 @@ Used to distinguish between different actual inputs of models in dynamic shapes,
 | -m, --model-path                         | Path of the original model (.pb or .onnx). Currently, only .pb and .onnx models are supported. | Yes      |
 | -om, --offline-model-path                | Path of the offline model (.om) adapted to the Ascend AI Processor. | Yes      |
 | -i, --input-path                         | Path of model input data, which is generated based on model inputs by default. Separate model inputs with commas (,), for example, **/home/input\_0.bin, /home/input\_1.bin**. | No       |
-| -c, --cann-path                          | CANN installation path, defaulted to **/usr/local/Ascend/ascend-toolkit/latest** | No       |
+| -c, --cann-path                          | CANN installation path, defaulted to **/usr/local/Ascend/ascend-toolkit/latest** if it is not found in the environment. | No       |
 | -o, --output-path                        | Output path, defaulted to the current directory | No       |
 | -s，--input-shape                         | Shape information of model inputs. Separate multiple nodes with semicolons, for example, **input_name1:1,224,224,3;input_name2:3,300**. By default, this option is left blank. **input_name** must be the node name in the network model before model conversion. | No       |
 | -d，--device                              | Specify running device [0,255], default 0. | No       |
