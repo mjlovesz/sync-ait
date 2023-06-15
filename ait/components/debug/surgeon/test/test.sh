@@ -21,10 +21,8 @@ surgeon_dir=${pwd_dir}/..
 
 export PYTHONPATH=${surgeon_dir}:$PYTHONPATH
 
-# copy auto_optimizer to test file, and test
-cp ${surgeon_dir}/auto_optimizer ${pwd_dir}/ -rf
+coverage run --source=${surgeon_dir}/auto_optimizer -p -m unittest
 
-coverage run --source=${pwd_dir}/auto_optimizer -p -m unittest
 ret=$?
 if [ $ret != 0 ]; then
     echo "coverage run failed! "
