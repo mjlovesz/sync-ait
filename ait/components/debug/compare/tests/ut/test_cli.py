@@ -27,7 +27,6 @@ def compare_cli() -> None:
     cmp_args = CmpArgsAdapter(gold_model="./fake.onnx",
                               om_model="./fake.om",
                               input_data_path = "",
-                              cann_path="/usr/local/Ascend/ascend-toolkit/latest/",
                               out_path="",
                               input_shape="",
                               device='0',
