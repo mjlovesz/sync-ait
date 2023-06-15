@@ -31,13 +31,13 @@ import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
 
 import com.huawei.ascend.ait.ide.util.FileChooseWithBrows;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -246,6 +246,9 @@ public class Compare extends DialogWrapper {
     }
 
     private void showCsv() {
+        if (!dumpButton.isSelected()){
+            return;
+        }
         File path = new File(outputPathBrowse.getText());
         File[] files = path.listFiles();
         if (files == null) {
@@ -285,8 +288,7 @@ public class Compare extends DialogWrapper {
         add(cmd, "-o", outputPathBrowse.getText());
         add(cmd, "-c", cannPathBrowse.getText());
 
-        addString(cmd, "-s", inputShapeJText.getText());
-        addString(cmd, "-dr", dymShapeJtext.getText());
+        addString(cmd, "--input-shape", inputShapeJText.getText());
         addString(cmd, "--output-nodes", outputNodesJText.getText());
 
         add(cmd, "--output-size", outputSizeJText.getText());
@@ -305,33 +307,53 @@ public class Compare extends DialogWrapper {
         String offline = offlineModelPathBrowse.getText();
         String cannPath = cannPathBrowse.getText();
         String output = outputPathBrowse.getText();
-        if (model.isEmpty()) {
-            Messages.showErrorDialog("Model file must be chose", "ERROR");
+        String inputPaths = inputPathBrowse.getText();
+
+        if (!checkPath(model, "Model File") || !checkPath(offline, "Offline File")
+                || !checkPath(cannPath, "CANN path")) {
             return false;
         }
-        if (offline.isEmpty()) {
-            Messages.showErrorDialog("Offline model must be chose", "ERROR");
-            return false;
-        }
-        if (cannPath.isEmpty()) {
-            Messages.showErrorDialog("CANN path must be chose", "ERROR");
-            return false;
-        }
-        if (output.isEmpty()) {
-            Messages.showErrorDialog("Output path must be chose", "ERROR");
-            return false;
-        }
+
         if (!checkStringSafe(inputShapeJText.getText())) {
             Messages.showErrorDialog("Input Shape contains illegal characters.", "ERROR");
-            return false;
-        }
-        if (!checkStringSafe(dymShapeJtext.getText())) {
-            Messages.showErrorDialog("DymShape Range contains illegal characters.", "ERROR");
             return false;
         }
         if (!checkStringSafe(outputNodesJText.getText())) {
             Messages.showErrorDialog("Output Nodes contains illegal characters.", "ERROR");
             return false;
+        }
+        if (!FileUtils.getFile(output).canWrite()) {
+            Messages.showErrorDialog("You do not have the write permission for output path.", "ERROR");
+            return false;
+        }
+        if (!checkRead(inputPaths)) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkPath(String file, String name) {
+        if (file.isEmpty()) {
+            Messages.showErrorDialog(name + " must be chosen", "ERROR");
+            return false;
+        }
+        if (!FileUtils.getFile(file).canRead()) {
+            Messages.showErrorDialog("You do not have the read permission for file: " + file, "ERROR");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkRead(String paths) {
+        if (paths.isEmpty()) {
+            return true;
+        }
+        String[] path = paths.split(",");
+        for (String p : path) {
+            if (!FileUtils.getFile(p).canRead()) {
+                Messages.showErrorDialog("You do not have the read permission for file: " + p, "ERROR");
+                return false;
+            }
         }
         return true;
     }
