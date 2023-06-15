@@ -74,3 +74,6 @@ ait analyze -gm /tmp/test.onnx -o /tmp/out
 
 ## 工具详细介绍
 - 工具详细介绍请见[analyze工具详细介绍](../../examples/cli/analyze/)
+
+## FAQ
+- 使用过程中出现问题可先行查阅[FAQ](FAQ.md)

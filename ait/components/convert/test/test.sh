@@ -16,7 +16,7 @@
 
 set -u
 
-pwd_dir=${PWD}
+pwd_dir=$(dirname $(readlink -f "$0"))
 
 # copy auto_optimizer to test file, and test
 cp ${pwd_dir}/../aie_runtime ${pwd_dir}/ -rf
