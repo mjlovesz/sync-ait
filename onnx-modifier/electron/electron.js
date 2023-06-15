@@ -110,6 +110,11 @@ class PythonIPC {
             }
         })
 
+        this.process.stderr.on("data", (data_text) => {
+            data_text = data_text.toString()
+            console.error(`${data_text}`)
+        })
+
         this.process.on("close", (code) => {
             this.process_exit_code = code
             this.msg_event_emit_exit_event()
