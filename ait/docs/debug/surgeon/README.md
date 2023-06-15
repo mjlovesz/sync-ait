@@ -20,7 +20,7 @@ surgeon功能可以直接通过ait命令行形式启动模型测试。启动方�
 ait debug surgeon COMMAND [OPTIONS] [REQUIRED]
 ```
 **COMMAND**为surgeon工具提供的四个功能选项：**list**、**evaluate**、**optimize**和**extract**。
-```[OPTIONS]```和```[REQUIRED]```为可选项和必选项参数，每个子任务下面的可选项和必选项都不同。
+```[OPTIONS]```和```[REQUIRED]```为可选项和必选项参数，每个子任务下面的可选项和必选项不同。
 
 建议使用流程：
   1. 执行**list**命令列举当前支持自动调优的所有知识库。
