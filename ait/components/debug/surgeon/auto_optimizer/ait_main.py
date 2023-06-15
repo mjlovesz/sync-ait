@@ -12,11 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 from multiprocessing import Pool
 import pathlib
 from functools import partial
-from typing import List, Optional
+from typing import List
 
 import click
 from click_aliases import ClickAliasedGroup
@@ -24,7 +23,6 @@ from click.exceptions import UsageError
 
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig, \
     ARGS_REQUIRED_KNOWLEDGES
-from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern import KnowledgeFactory
 from auto_optimizer.tools.log import logger
