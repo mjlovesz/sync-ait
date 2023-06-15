@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,35 +13,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-set -u
-
-cur_dir=$(dirname $(readlink -f "$0"))
-
-
-# copy source code to tests, and test
-function copy_source_code_dir_to_tests() {
-    cp -rf ${cur_dir}/../../msquickcmp ${cur_dir}/
-}
-
-function del_source_code_from_tests() {
-    rm -rf ${cur_dir}/../msquickcmp
-}
-
 declare -i ret_ok=0
+declare -i ret_failed=1
+CUR_PATH=$(dirname $(readlink -f "$0"))
+TEST_DATA_PATH=$CUR_PATH/../../benchmark/test/testdata/
+OUTPUT_PATH=$CUR_PATH/output_datas
+
+PYTHON_COMMAND="python3"
+
 
 main() {
-    copy_source_code_dir_to_tests
+    if [ ! -d $CUR_PATH/testdata ];then
+        ln -s $TEST_DATA_PATH $CUR_PATH || { echo "make soft link failed!"; return $ret_failed; }
+    fi
+    if [ ! -d $OUTPUT_PATH ];then
+        mkdir $OUTPUT_PATH || { echo "make output dir failed"; return $ret_failed; }
+    fi
 
-    export PYTHON_COMMAND=${2:-"python3"}
 
-    ${PYTHON_COMMAND} -m pytest .
-
-    del_source_code_from_tests
-
+    ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/test_profile_cmd.py || {  echo "execute ST command failed!"; return $ret_failed; }
     return $ret_ok
 }
-
 main "$@"
 exit $?
-
