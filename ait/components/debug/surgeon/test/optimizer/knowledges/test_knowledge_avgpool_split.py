@@ -55,8 +55,8 @@ class TestKnowledgeAvgPoolSplit(unittest.TestCase, KnowledgeTestHelper):
             }
 
             onnx_name = 'knowledge_avgpool_split_test'
-            onnx_ori = f'../../onnx/{onnx_name}.onnx'
-            onnx_opt = f'../../onnx/{onnx_name}_optimize.onnx'
+            onnx_ori = f'./{onnx_name}.onnx'
+            onnx_opt = f'./{onnx_name}_optimize.onnx'
             graph = make_dynamic_model(onnx_name, x, attrs)
             expect = len(split_result) != 0
             cfg = OptimizationConfig(

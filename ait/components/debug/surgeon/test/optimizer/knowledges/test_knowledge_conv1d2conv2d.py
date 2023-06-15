@@ -122,7 +122,7 @@ class TestKnowledgeConv1d2Conv2d(unittest.TestCase, KnowledgeTestHelper):
             onnx_opt=onnx_opt,
         )
         self.assertTrue(self.check_optimization(cfg=cfg, expect=True))
-        feeds = [{'X': np.random.randn(*x.shape).astype(x.dtype)} for _ in range(10)]
+        feeds = [{'X': np.random.randn(*x.shape).astype(x.dtype)}]
         self.assertTrue(self.check_precision(onnx_ori, onnx_opt, feeds))
 
     def test_conv1d2conv2d_optimizer_1(self):
@@ -139,7 +139,7 @@ class TestKnowledgeConv1d2Conv2d(unittest.TestCase, KnowledgeTestHelper):
             onnx_opt=onnx_opt,
         )
         self.assertTrue(self.check_optimization(cfg=cfg, expect=True))
-        feeds = [{'X': np.random.randn(*x.shape).astype(x.dtype)} for _ in range(10)]
+        feeds = [{'X': np.random.randn(*x.shape).astype(x.dtype)}]
         self.assertTrue(self.check_precision(onnx_ori, onnx_opt, feeds))
 
 

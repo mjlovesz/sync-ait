@@ -13,8 +13,8 @@
 # limitations under the License.
 
 import unittest
-
 import os
+from os import path
 
 import numpy as np
 
@@ -26,8 +26,9 @@ from test.helper import KnowledgeTestHelper, OptimizationConfig
 class TestKnowledgeTransposeLargeInputConv(unittest.TestCase, KnowledgeTestHelper):
 
     def test_aasist(self):
+        model_path = path.join(path.dirname(path.abspath(__file__)), "../../onnx/aasist_bs1_ori.onnx")
         models = [
-            (True, '../../onnx/aasist_bs1_ori.onnx', (1, 64600), 10),
+            (True, model_path, (1, 64600), 10),
         ]
         for expect, onnx_ori, shape, count in models:
             with self.subTest(onnx_ori):

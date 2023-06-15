@@ -168,12 +168,12 @@ def make_basic_qkv_matmul_model(onnx_name, perm, gathers=3, axis=0, ops1=1, ops2
     nodes.append(helper.make_node(_op, [out0, out1], ["output"], _name))
 
     graph = helper.make_graph(nodes, "qkv_slice_test", [input_], [output_], inits, value_info=vinfo)
-    model = helper.make_model(graph)
+    model = helper.make_model(graph, ir_version=8)
 
     del model.opset_import[:]
     opset = model.opset_import.add()
     opset.domain = ''
-    opset.version = 14
+    opset.version = 11
     onnx.save(model, onnx_name)
     return True
 
@@ -203,14 +203,12 @@ class TestKnowledgeSplitQKVMatmul(unittest.TestCase, KnowledgeTestHelper):
             # invalid permutation
             (False, [1, 2, 3, 0, 4], 3, 0, 1,  1,  True,         True),
         ]
-        if not os.path.exists("../../onnx"):
-            os.mkdir("../../onnx")
         for expect, perm, gathers, axis, s1, s2, vg, vr in params:
             pstr = ''.join(str(k) for k in perm)
             name = f"qkv_slice_p{pstr}_g{gathers}_a{axis}_s_{s1}_{s2}_g{int(vg)}_r{int(vr)}"
             with self.subTest(name):
-                onnx_ori = f"../../onnx/{name}.onnx"
-                onnx_opt = f"../../onnx/{name}_optimize.onnx"
+                onnx_ori = f"./{name}.onnx"
+                onnx_opt = f"./{name}_optimize.onnx"
 
                 ok = make_basic_qkv_matmul_model(
                     onnx_ori,

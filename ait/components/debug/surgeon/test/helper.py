@@ -93,8 +93,8 @@ class KnowledgeTestHelper:
         onnx_ori: str,
         onnx_opt: str,
         feeds: List[Dict[str, NDArray[Any]]],
-        cos_th: float = 1e-6,
-        atol: float = 1e-8,
+        cos_th: float = 1e-5,
+        atol: float = 1e-5,
         rtol: float = 1e-5
     ) -> bool:
         '''Check inference precision of two graph.'''

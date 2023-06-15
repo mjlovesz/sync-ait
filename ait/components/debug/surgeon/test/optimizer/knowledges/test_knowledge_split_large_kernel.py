@@ -123,11 +123,11 @@ class TestKnowledgeSplitLargeKernel(unittest.TestCase, KnowledgeTestHelper):
             kweight_s = 'x'.join(str(i) for i in kweight)
             pads_s = 'x'.join(str(i) for i in pads)
             name_ = f'split_kernel_in{ishape_s}_ks{kshape_s}_kw{kweight_s}_p{pads_s}_b{int(before)}_a{int(after)}'
-            onnx_ori = f'../../onnx/{name_}.onnx'
+            onnx_ori = f'./{name_}.onnx'
             graph = make_graph(name_, ishape, kshape, kweight, pads, before, after)
             for threshold in [16, 32, 48]:
                 with self.subTest(name=name_):
-                    onnx_opt = f'../..onnx/{name_}_th{threshold}.onnx'
+                    onnx_opt = f'./{name_}_th{threshold}.onnx'
                     # change threshold to small number to speed up unittest
                     cfg = OptimizationConfig(
                         graph=graph,

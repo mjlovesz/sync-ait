@@ -16,7 +16,7 @@ import unittest
 
 import numpy as np
 
-from ait.components.debug.surgeon.test.refactor.test_node_common import create_node
+from test.refactor.test_node_common import create_node
 
 
 class TestPlaceHolder(unittest.TestCase):
