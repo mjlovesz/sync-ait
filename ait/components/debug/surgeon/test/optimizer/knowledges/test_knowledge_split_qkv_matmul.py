@@ -26,7 +26,7 @@ from onnx import (
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_split_qkv_matmul import KnowledgeSplitQKVMatmul
-from helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_basic_qkv_matmul_model(onnx_name, perm, gathers=3, axis=0, ops1=1, ops2=1,
@@ -203,14 +203,14 @@ class TestKnowledgeSplitQKVMatmul(unittest.TestCase, KnowledgeTestHelper):
             # invalid permutation
             (False, [1, 2, 3, 0, 4], 3, 0, 1,  1,  True,         True),
         ]
-        if not os.path.exists("./onnx"):
-            os.mkdir("./onnx")
+        if not os.path.exists("../../onnx"):
+            os.mkdir("../../onnx")
         for expect, perm, gathers, axis, s1, s2, vg, vr in params:
             pstr = ''.join(str(k) for k in perm)
             name = f"qkv_slice_p{pstr}_g{gathers}_a{axis}_s_{s1}_{s2}_g{int(vg)}_r{int(vr)}"
             with self.subTest(name):
-                onnx_ori = f"./onnx/{name}.onnx"
-                onnx_opt = f"./onnx/{name}_optimize.onnx"
+                onnx_ori = f"../../onnx/{name}.onnx"
+                onnx_opt = f"../../onnx/{name}_optimize.onnx"
 
                 ok = make_basic_qkv_matmul_model(
                     onnx_ori,
