@@ -175,3 +175,11 @@ void PrintTimeWall(const std::string& phase, const std::vector<TimePointPair>& t
              chr::duration_cast<chr::microseconds>(minIt->second - minIt->first).count()/division,
              chr::duration_cast<chr::microseconds>(maxIt->second - maxIt->first).count()/division);
 }
+
+std::string RemoveTail(const std::string src, const std::string tail)
+{
+    if (src.size() >= tail.size() && src.compare(src.size() - tail.size(), tail.szie(), tail) == 0) {
+        src.erase(src.size() - tail.size());
+    }
+    return src;
+}

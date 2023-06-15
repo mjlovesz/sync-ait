@@ -311,8 +311,8 @@ void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, int32_t device
         if (outputDir != "") {
             size_t n = item->outputs->size();
             for (size_t i = 0; i < n; i++) {
-                std::string outputFileName = outputDir + RemoveSlash(
-                    item->outputPrefix + "_" + item->outputNames->at(i) + "_" + std::to_string(i) + ".npy");
+                std::string outputFileName = outputDir + "/" + RemoveSlash(
+                    RemoveTail(item->outputPrefix, ".npy") + "_" + item->outputNames->at(i) + ".npy");
                 if (TensorToNumpy(outputFileName, item->outputs->at(i)) == FAILED) {
                     ERROR_LOG("%s save failed\n", outputFileName.c_str());
                 }
@@ -376,7 +376,7 @@ void Execute(Arguments& arguments)
 
 int main(int argc, char **argv) {
     Arguments arguments{{"model", ""}, {"input", ""}, {"output", ""}, {"loop", "1"}, {"debug", "0"}, {"warmup", "1"},
-                    {"device", ""}, {"dymHW", ""}, {"dymDims", ""}, {"dymShape", ""}, {"display", "0"},
+                    {"device", "0"}, {"dymHW", ""}, {"dymDims", ""}, {"dymShape", ""}, {"display", "0"},
                     {"outputSize", ""}, {"auto_set_dymshape_mode", "0"}};
 
     ReadArgs(argc, argv, arguments);
