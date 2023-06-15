@@ -82,7 +82,7 @@ def command_list() -> None:
     context_settings=CONTEXT_SETTINGS,
     no_args_is_help=True
 )
-@opt_path
+@opt_p  ath
 @opt_optimizer
 @opt_recursive
 @opt_verbose
