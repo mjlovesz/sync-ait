@@ -23,7 +23,7 @@ from onnx import (
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_merge_consecutive_slice import KnowledgeMergeConsecutiveSlice
-from helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_c2_slice_model(onnx_name, x):
@@ -45,12 +45,12 @@ def make_c2_slice_model(onnx_name, x):
 
     graph = helper.make_graph([node_slice0, node_slice1], "continue_slice_test",
                               [input_x], [input_z], [start0, end0, axes0, step0, start1, end1, axes1, step1],)
-    model = helper.make_model(graph)
+    model = helper.make_model(graph, ir_version=8)
 
     del model.opset_import[:]
     opset = model.opset_import.add()
     opset.domain = ''
-    opset.version = 14
+    opset.version = 11
     onnx.save(model, onnx_name)
 
 
@@ -69,12 +69,12 @@ def make_c2_slice_optional_args_model(onnx_name, x):
 
     graph = helper.make_graph([node_slice0, node_slice1], "continue_slice_test",
                               [input_x], [input_z], [start0, end0, start1, end1],)
-    model = helper.make_model(graph)
+    model = helper.make_model(graph, ir_version=8)
 
     del model.opset_import[:]
     opset = model.opset_import.add()
     opset.domain = ''
-    opset.version = 14
+    opset.version = 11
     onnx.save(model, onnx_name)
 
 
@@ -101,12 +101,12 @@ def make_c2_slice_2dim_1dims_model(onnx_name, x, same_axis=False):
 
     graph = helper.make_graph([node_slice0, node_slice1], "continue_slice_test",
                               [input_x], [input_z], [start0, end0, axes0, step0, start1, end1, axes1, step1],)
-    model = helper.make_model(graph)
+    model = helper.make_model(graph, ir_version=8)
 
     del model.opset_import[:]
     opset = model.opset_import.add()
     opset.domain = ''
-    opset.version = 14
+    opset.version = 11
     onnx.save(model, onnx_name)
 
 
@@ -133,12 +133,12 @@ def make_c2_slice_2dim_model(onnx_name, x, same_axis=False):
 
     graph = helper.make_graph([node_slice0, node_slice1], "continue_slice_test",
                               [input_x], [input_z], [start0, end0, axes0, step0, start1, end1, axes1, step1],)
-    model = helper.make_model(graph)
+    model = helper.make_model(graph, ir_version=8)
 
     del model.opset_import[:]
     opset = model.opset_import.add()
     opset.domain = ''
-    opset.version = 14
+    opset.version = 11
     onnx.save(model, onnx_name)
 
 
@@ -172,12 +172,12 @@ def make_c3_slice_model(onnx_name, x):
         outputs=[input_z],
         initializer=[start0, end0, axes0, step0, start1, end1, axes1, step1, start2, end2, axes2, step2],
     )
-    model = helper.make_model(graph)
+    model = helper.make_model(graph, ir_version=8)
 
     del model.opset_import[:]
     opset = model.opset_import.add()
     opset.domain = ''
-    opset.version = 14
+    opset.version = 11
     onnx.save(model, onnx_name)
 
 
@@ -203,12 +203,12 @@ def make_c4_slice_model(onnx_name, x, same_axis=False):
 
     graph = helper.make_graph([node_slice0, node_slice1, node_slice2, node_slice3],
                               "continue4_slice_test", [input_x], [input_z], inits)
-    model = helper.make_model(graph)
+    model = helper.make_model(graph, ir_version=8)
 
     del model.opset_import[:]
     opset = model.opset_import.add()
     opset.domain = ''
-    opset.version = 14
+    opset.version = 11
     onnx.save(model, onnx_name)
 
 
@@ -218,8 +218,8 @@ class TestKnowledgeMergeConsecutiveSlice(unittest.TestCase, KnowledgeTestHelper)
         x = np.random.randn(50, 50, 50).astype(np.float32)
 
         onnx_name = "c2_slice"
-        onnx_ori = f"./onnx/{onnx_name}.onnx"
-        onnx_opt = f"./onnx/{onnx_name}_optimize.onnx"
+        onnx_ori = f"./{onnx_name}.onnx"
+        onnx_opt = f"./{onnx_name}_optimize.onnx"
 
         make_c2_slice_model(onnx_ori, x)
 
@@ -240,8 +240,8 @@ class TestKnowledgeMergeConsecutiveSlice(unittest.TestCase, KnowledgeTestHelper)
         x = np.random.randn(50, 50, 50).astype(np.float32)
 
         onnx_name = "c3_slice"
-        onnx_ori = f"./onnx/{onnx_name}.onnx"
-        onnx_opt = f"./onnx/{onnx_name}_optimize.onnx"
+        onnx_ori = f"./{onnx_name}.onnx"
+        onnx_opt = f"./{onnx_name}_optimize.onnx"
 
         make_c3_slice_model(onnx_ori, x)
 
@@ -262,8 +262,8 @@ class TestKnowledgeMergeConsecutiveSlice(unittest.TestCase, KnowledgeTestHelper)
         x = np.random.randn(50, 50, 50, 50).astype(np.float32)
 
         onnx_name = "c4_slice"
-        onnx_ori = f"./onnx/{onnx_name}.onnx"
-        onnx_opt = f"./onnx/{onnx_name}_optimize.onnx"
+        onnx_ori = f"./{onnx_name}.onnx"
+        onnx_opt = f"./{onnx_name}_optimize.onnx"
 
         make_c4_slice_model(onnx_ori, x, False)
 
@@ -284,7 +284,7 @@ class TestKnowledgeMergeConsecutiveSlice(unittest.TestCase, KnowledgeTestHelper)
         x = np.random.randn(50, 50, 50, 50).astype(np.float32)
 
         onnx_name = "c4_slice_same_axis"
-        onnx_ori = f"./onnx/{onnx_name}.onnx"
+        onnx_ori = f"./{onnx_name}.onnx"
 
         make_c4_slice_model(onnx_ori, x, True)
 
@@ -299,8 +299,8 @@ class TestKnowledgeMergeConsecutiveSlice(unittest.TestCase, KnowledgeTestHelper)
         x = np.random.randn(50, 50, 50, 30).astype(np.float32)
 
         onnx_name = "c2_slice_2dims"
-        onnx_ori = f"./onnx/{onnx_name}.onnx"
-        onnx_opt = f"./onnx/{onnx_name}_optimize.onnx"
+        onnx_ori = f"./{onnx_name}.onnx"
+        onnx_opt = f"./{onnx_name}_optimize.onnx"
 
         make_c2_slice_2dim_model(onnx_ori, x, False)
 
@@ -321,7 +321,7 @@ class TestKnowledgeMergeConsecutiveSlice(unittest.TestCase, KnowledgeTestHelper)
         x = np.random.randn(50, 50, 50, 30).astype(np.float32)
 
         onnx_name = "c2_slice_2dims_same_axis"
-        onnx_ori = f"./onnx/{onnx_name}.onnx"
+        onnx_ori = f"./{onnx_name}.onnx"
 
         make_c2_slice_2dim_model(onnx_ori, x, True)
 
@@ -336,8 +336,8 @@ class TestKnowledgeMergeConsecutiveSlice(unittest.TestCase, KnowledgeTestHelper)
         x = np.random.randn(50, 50, 50, 30).astype(np.float32)
 
         onnx_name = "c2_slice_2dims_1dims"
-        onnx_ori = f"./onnx/{onnx_name}.onnx"
-        onnx_opt = f"./onnx/{onnx_name}_optimize.onnx"
+        onnx_ori = f"./{onnx_name}.onnx"
+        onnx_opt = f"./{onnx_name}_optimize.onnx"
 
         make_c2_slice_2dim_model(onnx_ori, x, False)
 
@@ -358,7 +358,7 @@ class TestKnowledgeMergeConsecutiveSlice(unittest.TestCase, KnowledgeTestHelper)
         x = np.random.randn(50, 50, 50, 30).astype(np.float32)
 
         onnx_name = "c2_slice_2dims_1dims_same"
-        onnx_ori = f"./onnx/{onnx_name}.onnx"
+        onnx_ori = f"./{onnx_name}.onnx"
 
         make_c2_slice_2dim_model(onnx_ori, x, True)
 
@@ -373,7 +373,7 @@ class TestKnowledgeMergeConsecutiveSlice(unittest.TestCase, KnowledgeTestHelper)
         x = np.random.randn(50, 50, 50).astype(np.float32)
 
         onnx_name = "c2_slice_optional_args"
-        onnx_ori = f"./onnx/{onnx_name}.onnx"
+        onnx_ori = f"./{onnx_name}.onnx"
 
         make_c2_slice_optional_args_model(onnx_ori, x)
 
