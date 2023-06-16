@@ -52,4 +52,5 @@ def msprof_cli(application, output, model_execution, sys_hardware_mem, sys_cpu_p
     args = MsProfArgsAdapter(application, output.as_posix() if output else None,
                                 model_execution, sys_hardware_mem, sys_cpu_profiling, sys_profiling,
                  sys_pid_profiling, dvpp_profiling, runtime_api, task_time, aicpu)
-    msprof_process(args)
+    ret = msprof_process(args)
+    exit(ret)
