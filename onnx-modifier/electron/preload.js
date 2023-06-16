@@ -13,8 +13,13 @@ function fetch_electron(path, msg) {
     })
 }
 
+function new_window() {
+    return ipcRenderer.invoke('new_window')
+}
+
 
 window.addEventListener('DOMContentLoaded', () => {
     contextBridge.exposeInMainWorld('is_electron', true)
     contextBridge.exposeInMainWorld('fetch_electron', fetch_electron)
+    contextBridge.exposeInMainWorld('new_window', new_window)
   })

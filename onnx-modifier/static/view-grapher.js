@@ -272,7 +272,7 @@ grapher.Node = class {
             this.element.setAttribute('id', this.id);
         }
         this.element.setAttribute('class', this.class ? 'node ' + this.class : 'node');
-        this.element.style.opacity = 0;
+        this.element.classList.add("graph-node-hide");
         parent.appendChild(this.element);
 
         // ===> 配置每个节点的框边界
@@ -316,7 +316,7 @@ grapher.Node = class {
         this.element.setAttribute('transform', 'translate(' + (this.x - (this.width / 2)) + ',' + (this.y - (this.height / 2)) + ')');
         
         // 设定不透明度
-        this.element.style.opacity = 1; 
+        this.element.classList.remove("graph-node-hide");
     }
 
 
@@ -629,7 +629,7 @@ grapher.Edge = class {
             tspan.appendChild(document.createTextNode(this.label));
             this.labelElement = createElement('text');
             this.labelElement.appendChild(tspan);
-            this.labelElement.style.opacity = 0;
+            this.labelElement.classList.add("graph-node-hide");
             this.labelElement.setAttribute('class', 'edge-label');
             if (this.id) {
                 this.labelElement.setAttribute('id', 'edge-label-' + this.id);
@@ -648,7 +648,7 @@ grapher.Edge = class {
         // ===> 让label显示出来
         if (this.labelElement) {
             this.labelElement.setAttribute('transform', 'translate(' + (this.x - (this.width / 2)) + ',' + (this.y - (this.height / 2)) + ')');
-            this.labelElement.style.opacity = 1;
+            this.labelElement.classList.remove("graph-node-hide");
         }
         // <=== 让label显示出来
     }

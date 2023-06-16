@@ -56,13 +56,10 @@ sidebar.Sidebar = class {
     _hide() {
         const sidebar = this._getElementById('sidebar');
         if (sidebar) {
-            sidebar.style.width = '0px';
+            sidebar.style.display = "none";
         }
-        const container = this._getElementById('graph');
-        if (container) {
-            container.style.width = '100%';
-            container.focus();
-        }
+
+        document.dispatchEvent(new CustomEvent("node-clicked", {detail:{}}))
     }
 
     _deactivate() {
@@ -112,15 +109,27 @@ sidebar.Sidebar = class {
             else {
                 content.appendChild(item.content);
             }
-            sidebar.style.width = 'min(calc(100% * 0.6), 500px)';
+            sidebar.style.display= "block";
             this._host.document.addEventListener('keydown', this._closeSidebarKeyDownHandler);
-        }
-        const container = this._getElementById('graph');
-        if (container) {
-            container.style.width = 'max(40vw, calc(100vw - 500px))';
         }
     }
 };
+
+function checkInputValidChars(name) {
+    return name.match(/^[\w\s\-,\[\]\_\.]+$/)
+}
+
+function checkInputShowErr(elem, has_error) {
+    if (has_error) {
+        elem.style.outline = "red"
+        elem.style.borderColor = "red"
+        elem.title = "Please confirm that the characters you entered meet the requirements of ONNX"
+    } else {
+        elem.style.outline = ""
+        elem.style.borderColor = ""
+        elem.title = ""
+    }
+}
 
 sidebar.NodeSidebar = class {
 
@@ -202,40 +211,24 @@ sidebar.NodeSidebar = class {
         this._elements.push(this._host.document.createElement('hr'));
         this.add_separator(this._elements, 'sidebar-view-separator')
 
-        this._addHeader('Node deleting helper');
-        this._addButton('Delete With Children');
-        this.add_span()
-        this._addButton('Delete Single Node');
-        this.add_span()
-        this._addButton('Recover Node');
-        this.add_separator(this._elements, 'sidebar-view-separator')
-        this._addButton('Enter');
-    
-        this._addHeader('Output adding helper');
-        this._addButton('Add Output');
-        this._addHeader('Input adding helper');
-        let input_select = this._addComboBox(`${node.name}_input_select`, node.inputs.map(i=> i.arguments[0].name))
-        this.add_span()
-        this._addButton('Add Input', input_select);
-        
         this._addHeader('Extract helper');
 
-        let is_extract_start = this._host._view.modifier.getExtractStart() == this._modelNodeName
+        let is_extract_start = this._host._view.modifier.getExtractStart().has(this._modelNodeName)
         
         let get_start_btn_text = () => is_extract_start ? 'Unset Extract Net Start' : 'Extract Net Start'
         let buttonStartElement = this._addButton(get_start_btn_text(), null, () => {
             is_extract_start = !is_extract_start
-            this._host._view.modifier.setExtractStart(is_extract_start ? this._modelNodeName: null)
+            this._host._view.modifier.setExtractStart(this._modelNodeName, is_extract_start)
             buttonStartElement.innerText  = get_start_btn_text()
         });
         
-        let is_extract_end = this._host._view.modifier.getExtractEnd() == this._modelNodeName
+        let is_extract_end = this._host._view.modifier.getExtractEnd().has(this._modelNodeName)
         
         this.add_span()
         let get_btn_text = () => is_extract_end ? 'Unset Extract Net End' : 'Extract Net End'
         let buttonElement = this._addButton(get_btn_text(), null, () => {
             is_extract_end = !is_extract_end
-            this._host._view.modifier.setExtractEnd(is_extract_end ? this._modelNodeName: null)
+            this._host._view.modifier.setExtractEnd(this._modelNodeName, is_extract_end)
             buttonElement.innerText  = get_btn_text()
         });
     }
@@ -275,7 +268,7 @@ sidebar.NodeSidebar = class {
         item.on('show-graph', (sender, graph) => {
             this._raise('show-graph', graph);
         });
-        const view = new sidebar.NameValueView(this._host, name, item);
+        const view = new sidebar.NameValueView(this._host, name, item, checkInputValidChars);
         this._attributes.push(view);
         this._elements.push(view.render());
     }
@@ -290,7 +283,7 @@ sidebar.NodeSidebar = class {
             view.on('error', (sender, tensor) => {
                 this._raise('error', tensor);
             });
-            const item = new sidebar.NameValueView(this._host, name, view);
+            const item = new sidebar.NameValueView(this._host, name, view, checkInputValidChars);
             this._inputs.push(item);
             this._elements.push(item.render());
     
@@ -314,37 +307,6 @@ sidebar.NodeSidebar = class {
         buttonElement.innerText = title;
         this._elements.push(buttonElement);
         
-        if (title === 'Delete Single Node') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.deleteSingleNode(this._modelNodeName);
-            });
-        }
-        if (title === 'Delete With Children') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.deleteNodeWithChildren(this._modelNodeName);
-            });
-        }
-        if (title === 'Recover Node') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.recoverSingleNode(this._modelNodeName);
-            });
-        }
-        if (title === 'Enter') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.deleteEnter();
-                this._raise("close-sidebar")
-            });
-        }
-        if (title === 'Add Output') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.addModelOutput(this._modelNodeName);
-            });   
-        }
-        if (title === 'Add Input') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.addModelInput(this._modelNodeName, input_select.options[input_select.selectedIndex].value);
-            });   
-        }
         if (click_callback) {
             buttonElement.addEventListener('click', click_callback);  
         }
@@ -487,7 +449,7 @@ sidebar.NodeSidebar = class {
 
 sidebar.NameValueView = class {
 
-    constructor(host, name, value) {
+    constructor(host, name, value, checker) {
         this._host = host;
         this._name = name;
         this._value = value;
@@ -510,6 +472,17 @@ sidebar.NameValueView = class {
 
         for (const element of value.render()) {
             valueElement.appendChild(element);
+        }
+
+        if (checker) {
+            let input_elems = valueElement.getElementsByTagName("input")
+            for (const input_elem of input_elems) {
+                if (input_elem.type == "text") {
+                    input_elem.addEventListener("input", (e) => {
+                        checkInputShowErr(input_elem, !checker(e.target.value))
+                    })
+                }
+            }
         }
 
         this._element = this._host.document.createElement('div');
@@ -993,6 +966,7 @@ sidebar.ArgumentView = class {
 
                     inputInitializerVal.addEventListener('input', (e) => {
                         // console.log(e.target.value)
+                        checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value))
                         this._host._view.modifier.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, this._argument.type._dataType, e.target.value);
                     });
                     this._element.appendChild(inputInitializerVal);
@@ -1019,6 +993,7 @@ sidebar.ArgumentView = class {
 
                     inputInitializerVal.addEventListener('input', (e) => {
                         new_init_val = e.target.value;
+                        checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value))
                         this._host._view.modifier.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
                     });
                     this._element.appendChild(inputInitializerVal);
@@ -1044,6 +1019,7 @@ sidebar.ArgumentView = class {
 
                     inputInitializerType.addEventListener('input', (e) => {
                         new_init_type = e.target.value;
+                        checkInputShowErr(inputInitializerType, !checkInputValidChars(e.target.value))
                         this._host._view.modifier.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
                     });
                     this._element.appendChild(inputInitializerType);
@@ -1143,9 +1119,6 @@ sidebar.ModelSidebar = class {
         if (model.license) {
             this._addProperty('license', new sidebar.ValueTextView(this._host, model.license));
         }
-        // if (model.domain) {
-        //     this._addProperty('domain', new sidebar.ValueTextView(this._host, model.domain));
-        // }
 
         this._addProperty('domain', new sidebar.ValueTextView(this._host, model.domain, undefined, (domain_value)=> {
             this._host._view.modifier.changeModelProperties("domain", domain_value)
@@ -1212,10 +1185,8 @@ sidebar.ModelSidebar = class {
             }
             if (Array.isArray(graph.inputs) && graph.inputs.length > 0) {
                 this._addHeader('Inputs');
-                // for (const input of graph.inputs) {
                 for (const [index, input] of graph.inputs.entries()){
-                    this.addArgument(input.name, input, index, 'model_input');
-                    // this.addArgument(input.modelNodeName, input, index, 'model_input');
+                    this.addArgument(input.name, input, index, 'model_input', checkInputValidChars);
                 }
             }
             if (Array.isArray(graph.outputs) && graph.outputs.length > 0) {
@@ -1231,56 +1202,6 @@ sidebar.ModelSidebar = class {
         const separator = this._host.document.createElement('div');
         separator.className = 'sidebar-view-separator';
         this._elements.push(separator);
-        
-        this._addHeader('Batch size changing helper');
-        this._addRebatcher();
-        
-        if (this.clicked_output_name) {
-            this._addHeader('Output deleting helper');
-            this._addButton('Delete the output');
-        }
-        if (this.clicked_input_name) {
-            this._addHeader('Input deleting helper');
-            this._addButton('Delete the input');
-
-            this._addHeader('Input size helper');
-
-            let default_shape = ""
-        
-            for (var input_info of this._host._view.modifier.graph.inputs) {
-                if (this.clicked_input_name == input_info.name) {
-                    if (input_info.arguments 
-                        && input_info.arguments.length > 0 
-                        && input_info.arguments[0].type 
-                        && input_info.arguments[0].type.shape
-                        && input_info.arguments[0].type.shape.dimensions
-                        && input_info.arguments[0].type.shape.dimensions.length > 0) {
-                        let dims = input_info.arguments[0].type.shape.dimensions
-                        default_shape = dims.map((dim) => dim ? dim.toString() : '?').join(',')
-                    }
-                    break
-                }
-            }
-            this._addInput('shape', default_shape, (value, e) => {
-                let has_error = false
-                let dims = []
-                let input_dims = value.split(",")
-                for (const dim_str of input_dims) {
-                    let dim = dim_str.trim()
-                    if (dim.match("^-?[1-9][0-9]{0,10}$")) {
-                        dims.push(parseInt(dim))
-                    } else if (dim.match("^[a-zA-Z\\-_\\\\/\\.0-9]{1,64}$")) {
-                        dims.push(dim)
-                    } else {
-                        has_error = true
-                        return has_error
-                    }
-                }
-                this._host._view.modifier.changeInputSize(this.clicked_input_name, dims);
-                this._host._view.modifier.refreshModelInputOutput()
-                return has_error
-            }, "example: batch,3,224,224");
-        }
     }
 
     render() {
@@ -1369,11 +1290,11 @@ sidebar.ModelSidebar = class {
         this._elements.push(fixed_batch_size_value);
     }
 
-    addArgument(name, argument, index, arg_type) {
+    addArgument(name, argument, index, arg_type, checker) {
         // const view = new sidebar.ParameterView(this._host, argument);
         const view = new sidebar.ParameterView(this._host, argument, arg_type, index, name);
         view.toggle();
-        const item = new sidebar.NameValueView(this._host, name, view);
+        const item = new sidebar.NameValueView(this._host, name, view, checker);
         this._elements.push(item.render());
     }
 

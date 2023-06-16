@@ -38,10 +38,17 @@ public class AisBenchCmdStr {
      * @param param param
      * @param param1 param1
      */
-    public static void addPath(CmdStrBuffer strBuffer, String param, String param1) {
+    public static void add(CmdStrBuffer strBuffer, String param, String param1) {
         if (!Objects.equals(param1, "")) {
             strBuffer.append(param).append(CmdStrWordStatic.SPACE)
                     .append(param1).append(CmdStrWordStatic.SPACE);
+        }
+    }
+
+    public static void addString(CmdStrBuffer strBuffer, String param, String param1) {
+        if (!Objects.equals(param1, "")) {
+            strBuffer.append(param).append(CmdStrWordStatic.SPACE)
+                    .append(new CmdStrWordStatic(param1)).append(CmdStrWordStatic.SPACE);
         }
     }
 

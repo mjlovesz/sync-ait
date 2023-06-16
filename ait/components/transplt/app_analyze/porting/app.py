@@ -29,6 +29,20 @@ def start_scan_kit(args):
     scan_api.scan_source(args)
 
 
+def check_args(ctx: click.Context, params: click.Option, value: str):
+    """
+    check whether the param is provided
+    """
+    args = [
+        opt
+        for param in ctx.command.params
+        for opt in param.opts
+    ]
+    if value in args:
+        raise click.MissingParameter()
+    return value
+
+
 # 添加需要进行扫描的目录列表，逗号分隔的情况下只有一个列表元素
 opt_source = click.option(
     '-s',
@@ -36,6 +50,7 @@ opt_source = click.option(
     'source',
     type=str,
     required=True,
+    callback=check_args,
     help='directories of source folder'
 )
 
@@ -51,7 +66,6 @@ opt_report_type = click.option(
 
 # 添加日志级别开关，默认级别是INFO，只有添加ERROR后才能输出ERR级别日志
 opt_log_level = click.option(
-    '-l',
     '--log-level',
     'log_level',
     type=click.Choice(['DEBUG', 'INFO', 'WARNING', 'ERROR']),
@@ -61,7 +75,6 @@ opt_log_level = click.option(
 )
 
 opt_tools = click.option(
-    '-t',
     '--tools',
     'tools',
     type=click.Choice(KitConfig.VALID_CONSTRUCT_TOOLS),
