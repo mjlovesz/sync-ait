@@ -115,19 +115,23 @@ sidebar.Sidebar = class {
     }
 };
 
-function checkInputValidChars(name) {
+function checkInputValidChars(name, allow_empty) {
+    if (allow_empty && name.trim() === "") {
+        return true
+    }
     return name.match(/^[\w\s\-,\[\]\_\.]+$/)
 }
 
 function checkInputShowErr(elem, has_error) {
     if (has_error) {
-        elem.style.outline = "red"
-        elem.style.borderColor = "red"
-        elem.title = "Please confirm that the characters you entered meet the requirements of ONNX"
+        if (!(elem.previousElementSibling 
+                && elem.previousElementSibling.tagName.toLowerCase() == "err_msg")) {
+            let element = document.createElement("err_msg")
+            elem.parentElement.insertBefore(element, elem) 
+        }
+        elem.classList.add("input_error")
     } else {
-        elem.style.outline = ""
-        elem.style.borderColor = ""
-        elem.title = ""
+        elem.classList.remove("input_error")
     }
 }
 
@@ -966,7 +970,7 @@ sidebar.ArgumentView = class {
 
                     inputInitializerVal.addEventListener('input', (e) => {
                         // console.log(e.target.value)
-                        checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value))
+                        checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value, true))
                         this._host._view.modifier.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, this._argument.type._dataType, e.target.value);
                     });
                     this._element.appendChild(inputInitializerVal);
@@ -993,7 +997,7 @@ sidebar.ArgumentView = class {
 
                     inputInitializerVal.addEventListener('input', (e) => {
                         new_init_val = e.target.value;
-                        checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value))
+                        checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value, true))
                         this._host._view.modifier.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
                     });
                     this._element.appendChild(inputInitializerVal);
@@ -1019,7 +1023,7 @@ sidebar.ArgumentView = class {
 
                     inputInitializerType.addEventListener('input', (e) => {
                         new_init_type = e.target.value;
-                        checkInputShowErr(inputInitializerType, !checkInputValidChars(e.target.value))
+                        checkInputShowErr(inputInitializerType, !checkInputValidChars(e.target.value, true))
                         this._host._view.modifier.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
                     });
                     this._element.appendChild(inputInitializerType);
