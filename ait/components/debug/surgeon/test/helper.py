@@ -69,13 +69,15 @@ class KnowledgeTestHelper:
                 inmap_rhs[inp][node.name] = node
         return inmap_lhs == inmap_rhs
 
-    def inference(self, onnx_path: str, feeds: List[Dict[str, NDArray]]) -> List[List[NDArray]]:
+    @staticmethod
+    def inference(onnx_path: str, feeds: List[Dict[str, NDArray]]) -> List[List[NDArray]]:
         '''Inference a onnx model with a list of feeds'''
         session = ort.InferenceSession(onnx_path)
         outputs_name = [meta.name for meta in session.get_outputs()]
         return [session.run(outputs_name, feed) for feed in feeds]
 
-    def optimize(self, graph: BaseGraph, knowledge: KnowledgeBase) -> Tuple[bool, BaseGraph]:
+    @staticmethod
+    def optimize(graph: BaseGraph, knowledge: KnowledgeBase) -> Tuple[bool, BaseGraph]:
         '''Optimize a graph with specific knowledge.'''
         graph_opt = deepcopy(graph)
         res = GraphOptimizer.optimize(graph_opt, knowledge)

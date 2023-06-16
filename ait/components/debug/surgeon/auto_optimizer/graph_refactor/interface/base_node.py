@@ -131,10 +131,6 @@ class Node(BaseNode):
     def domain(self, domain: str) -> None:
         self._domain = domain
     
-    @classmethod
-    def parse(cls, _) -> 'Node':
-        raise NotImplementedError()
-
     @inputs.setter
     def inputs(self, inputs: List[str]) -> None:
         self._inputs = inputs
@@ -142,6 +138,10 @@ class Node(BaseNode):
     @outputs.setter
     def outputs(self, outputs: List[str]) -> None:
         self._outputs = outputs
+
+    @classmethod
+    def parse(cls, _) -> 'Node':
+        raise NotImplementedError()
 
     def get_input_id(self, node_input: str) -> int:
         if node_input not in self._inputs:
