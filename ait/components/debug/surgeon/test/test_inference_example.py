@@ -102,8 +102,14 @@ class TestResnet(unittest.TestCase):
         self.inference(self.cfg)
 
     def _thread(self, loop, worker, batch_size, engine_cfg):
-        dataset, pre_process, post_process, inference, evaluate = \
-            self._get_engine(engine_cfg)
+        try:
+            dataset = DatasetFactory.get_dataset(engine_cfg["dataset"]["type"])
+            pre_process = PreProcessFactory.get_pre_process(engine_cfg["pre_process"]["type"])
+            post_process = PostProcessFactory.get_post_process(engine_cfg["post_process"]["type"])
+            inference = InferenceFactory.get_inference(engine_cfg["inference"]["type"])
+            evaluate = EvaluateFactory.get_evaluate(engine_cfg["evaluate"]["type"])
+        except Exception as err:
+            raise RuntimeError("get params failed error=%s", err) from err
 
         self.dataset_pool = Pool(1)
         self.pre_process_pool = Pool(worker)
@@ -111,18 +117,16 @@ class TestResnet(unittest.TestCase):
         self.inference_pool = Pool(1)
         self.evaluate_pool = Pool(1)
 
-        self.dataset_pool.apply_async(dataset,
-                                      args=(batch_size, engine_cfg["dataset"],
-                                            None, self.dataset))
+        self.dataset_pool.apply_async(
+            dataset, args=(batch_size, engine_cfg["dataset"], None, self.dataset))
 
         for i in range(worker):
             try:
                 pre_loop = (loop / worker + loop % worker) if i == 0 else loop / worker
             except ZeroDivisionError as err:
                 raise RuntimeError("divide zero error") from err
-            self.pre_process_pool.apply_async(pre_process,
-                                              args=(int(pre_loop), engine_cfg["pre_process"],
-                                                    self.dataset, self.pre_queue))
+            self.pre_process_pool.apply_async(
+                pre_process, args=(int(pre_loop), engine_cfg["pre_process"], self.dataset, self.pre_queue))
 
         # 用单进程
         self.inference_pool.apply_async(inference,
@@ -144,16 +148,6 @@ class TestResnet(unittest.TestCase):
         self.post_process_pool.join()
         self.evaluate_pool.join()
 
-    def _get_engine(self, engine):
-        try:
-            dataset = DatasetFactory.get_dataset(engine["dataset"]["type"])
-            pre_process = PreProcessFactory.get_pre_process(engine["pre_process"]["type"])
-            post_process = PostProcessFactory.get_post_process(engine["post_process"]["type"])
-            inference = InferenceFactory.get_inference(engine["inference"]["type"])
-            evaluate = EvaluateFactory.get_evaluate(engine["evaluate"]["type"])
-        except Exception as err:
-            raise RuntimeError("get params failed error=%s", err) from err
-        return dataset, pre_process, post_process, inference, evaluate
 
 
 def test_suite():
