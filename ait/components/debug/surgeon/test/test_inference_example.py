@@ -103,11 +103,11 @@ class TestResnet(unittest.TestCase):
 
     def _thread(self, loop, worker, batch_size, engine_cfg):
         try:
-            dataset = DatasetFactory.get_dataset(engine["dataset"]["type"])
-            pre_process = PreProcessFactory.get_pre_process(engine["pre_process"]["type"])
-            post_process = PostProcessFactory.get_post_process(engine["post_process"]["type"])
-            inference = InferenceFactory.get_inference(engine["inference"]["type"])
-            evaluate = EvaluateFactory.get_evaluate(engine["evaluate"]["type"])
+            dataset = DatasetFactory.get_dataset(engine_cfg["dataset"]["type"])
+            pre_process = PreProcessFactory.get_pre_process(engine_cfg["pre_process"]["type"])
+            post_process = PostProcessFactory.get_post_process(engine_cfg["post_process"]["type"])
+            inference = InferenceFactory.get_inference(engine_cfg["inference"]["type"])
+            evaluate = EvaluateFactory.get_evaluate(engine_cfg["evaluate"]["type"])
         except Exception as err:
             raise RuntimeError("get params failed error=%s", err) from err
 
