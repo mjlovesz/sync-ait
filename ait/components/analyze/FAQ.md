@@ -3,7 +3,18 @@
 ## 1. 非root用户使用analyze工具时若使用root目录下/usr/local/Ascend/ascend-toolkit的文件，产生调用fast_query shell失败的错误
 
 - 错误信息：
+```bash
+2023-06-16 09:23:47,490 INFO : convert model to json, please wait...
+2023-06-16 09:24:01,852 INFO : convert model to json finished.
+2023-06-16 09:24:04,998 INFO : try to convert model to om, please wait...
+2023-06-16 09:24:28,326 INFO : try to convert model to om finished.
+2023-06-16 09:24:29,190 ERROR : load opp data failed, err:exec fast_query shell failed, err:2023-06-16 09:24:29 [ERROR] The input path may be insecure because it does not belong to you.
+.
+2023-06-16 09:24:29,247 INFO : analysis result has bean written in out/result.csv.
+2023-06-16 09:24:29,247 INFO : number of abnormal operators: 13.
+2023-06-16 09:24:29,248 INFO : analyze model finished.
 
+```
  
 
 - 错误原因分析：
