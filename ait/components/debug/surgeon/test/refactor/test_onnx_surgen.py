@@ -118,5 +118,5 @@ if __name__ == '__main__':
         .set_loop(MatchPattern.MATCH_ONCE)
 
     # 源onnx路径
-    ONNX_PATH = './onnx/aasist_bs1_ori.onnx'
+    ONNX_PATH = '../onnx/aasist_bs1_ori.onnx'
     get_subgraph(ONNX_PATH, pattern)

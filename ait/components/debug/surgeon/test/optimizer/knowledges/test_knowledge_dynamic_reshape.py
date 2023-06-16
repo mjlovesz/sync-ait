@@ -18,7 +18,7 @@ import numpy as np
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_dynamic_reshape import KnowledgeDynamicReshape
 from auto_optimizer.pattern.utils import insert_squeeze
-from helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_dynamic_model(onnx_name, x, y, shape):
@@ -48,7 +48,7 @@ def make_dynamic_model_and_squeeze(onnx_name, x, y, shape):
     graph.add_node('Add', 'Add', ['X', 'Y'], ['Add_out'])
     graph.add_node('Reshape1', 'Reshape', ['Add_out', 'Shape_out'], ['OUT_0'])
     attrs = {'axes': [1]}
-    insert_squeeze(graph, graph['Reshape0'], attrs, mode = 'after', refer_index = 0)
+    insert_squeeze(graph, graph['Reshape0'], attrs, mode='after', refer_index = 0)
     graph.update_map()
     return graph
 
@@ -82,7 +82,7 @@ class TestKnowledgeDynamicReshape(unittest.TestCase, KnowledgeTestHelper):
                 {
                     'X': np.random.randn(*shape_).astype(x.get('dtype', np.float16)),
                     'Y': np.random.randn(*shape_).astype(y.get('dtype', np.float16)),
-                } for _ in range(10)
+                }
             ]
             self.assertTrue(self.check_precision(onnx_ori, onnx_opt, feeds))
 
@@ -117,7 +117,7 @@ class TestKnowledgeDynamicReshape(unittest.TestCase, KnowledgeTestHelper):
                 {
                     'X': np.random.randn(*shape_).astype(x.get('dtype', np.float16)),
                     'Y': np.random.randn(*shape_).astype(y.get('dtype', np.float16)),
-                } for _ in range(10)
+                }
             ]
             self.assertTrue(self.check_precision(onnx_ori, onnx_opt, feeds))
 

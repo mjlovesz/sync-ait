@@ -21,7 +21,7 @@ from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_modify_reflection_pad import KnowledgeModifyReflectionPad
 
 from auto_optimizer.graph_optimizer import GraphOptimizer
-from helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_reflection_pad_model(model_name):
@@ -42,7 +42,7 @@ def make_reflection_pad_model(model_name):
     )
 
     graph = onnx.helper.make_graph([pad_op], model_name, [input_x], [output], [pads])
-    model = onnx.helper.make_model(graph)
+    model = onnx.helper.make_model(graph, ir_version=8)
 
     del model.opset_import[:]
     opset = model.opset_import.add()

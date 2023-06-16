@@ -18,7 +18,7 @@ from numpy.typing import NDArray
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges import KnowledgeBNFolding
-from helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def var_channel(arr: NDArray) -> NDArray:
@@ -121,8 +121,8 @@ class TestKnowledgeBNFolding(unittest.TestCase, KnowledgeTestHelper):
         for name, expect, shape_, perm, attrs, const, dtype in test_cases:
             with self.subTest(name):
                 onnx_name = f'bn_folding_{name}'
-                onnx_ori = f'onnx/{onnx_name}_ori.onnx'
-                onnx_opt = f'onnx/{onnx_name}_opt.onnx'
+                onnx_ori = f'./{onnx_name}_ori.onnx'
+                onnx_opt = f'./{onnx_name}_opt.onnx'
 
                 input_ = np.random.rand(*shape_).astype(dtype) * 10
                 graph = make_bn_folding_graph(onnx_name, input_, perm=perm, attrs=attrs, const=const)

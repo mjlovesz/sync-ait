@@ -17,11 +17,12 @@
 set -u
 
 pwd_dir=${PWD}
+surgeon_dir=${pwd_dir}/..
 
-# copy auto_optimizer to test file, and test
-cp ${pwd_dir}/../auto_optimizer ${pwd_dir}/ -rf
+export PYTHONPATH=${surgeon_dir}:$PYTHONPATH
 
-coverage run -p -m unittest
+coverage run --source=${surgeon_dir}/auto_optimizer -p -m unittest
+
 ret=$?
 if [ $ret != 0 ]; then
     echo "coverage run failed! "
@@ -40,3 +41,4 @@ if [ ${coverage_line} -lt ${target} ]; then
 fi
 
 echo "coverage_line=${coverage_line}"
+rm -rf ${pwd_dir}/*.onnx
