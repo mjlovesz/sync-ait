@@ -394,3 +394,11 @@ opt_perf = click.option(
     default=False,
     help="Perf switch"
 )
+
+opt_pipeline = click.option(
+    '--pipeline',
+    default=False,
+    type=str,
+    callback=str2bool,
+    help='Pipeline switch'
+)
