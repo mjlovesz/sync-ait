@@ -26,6 +26,8 @@ OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 
 class TestClass:
+    model_name = "resnet50"
+    
     @classmethod
     def setup_class(cls):
         """
@@ -38,7 +40,7 @@ class TestClass:
         logging.info('\n ---class level teardown_class')
 
     def init(self):
-        self.model_name = "resnet50"
+        pass
 
     def test_args_invalid_model_path(self):
         model_path = "xxx_invalid.om"
@@ -228,12 +230,8 @@ class TestClass:
         TestCommonClass.prepare_dir(output_path)
         profiler_path = os.path.join(output_path, "profiler")
         TestCommonClass.prepare_dir(profiler_path)
-        output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "", "aic_metrics": ""}}
+        output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": profiler_path, "aic_metrics": ""}}
 
-        try:
-            output_json_dict["profiler"]["output"] = profiler_path
-        except Exception as e:
-            raise Exception("Visit dict failed".format(e)) from e
         out_json_file_path = os.path.join(TestCommonClass.base_path, "acl.json")
         with os.fdopen(os.open(out_json_file_path, OPEN_FLAGS, OPEN_MODES), "w") as f:
             json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)

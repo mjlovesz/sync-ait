@@ -160,10 +160,9 @@ class OmParser(object):
         """
         Get the expected output tensor corresponding to Net_output.
         """
-        expect_net_output_name = {}
         net_output_names = []
         if ATTR_OBJECT not in self.json_object:
-            return expect_net_output_name
+            return {}
         for attr in self.json_object.get(ATTR_OBJECT):
             if not (KEY_OBJECT in attr and attr.get(KEY_OBJECT) == OUT_NODES_NAME):
                 continue
@@ -172,9 +171,7 @@ class OmParser(object):
             list_object = attr.get(VALUE_OBJECT).get(LIST_OBJECT)
             if S_OBJECT in list_object:
                 net_output_names = list_object.get(S_OBJECT)
-        for item, output_name in enumerate(net_output_names):
-            expect_net_output_name[item] = output_name
-        return expect_net_output_name
+        return dict(enumerate(net_output_names))
 
     def get_net_output_data_info(self, dump_data_path):
         """
