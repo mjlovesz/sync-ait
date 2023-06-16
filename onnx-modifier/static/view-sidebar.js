@@ -298,7 +298,8 @@ sidebar.NodeSidebar = class {
         if (output.arguments.length > 0) {
             // console.log(this._modelNodeName)
             const item = new sidebar.NameValueView(this._host, name, 
-                new sidebar.ParameterView(this._host, output, 'output', param_idx, this._modelNodeName), checkInputValidChars);
+                new sidebar.ParameterView(this._host, output, 'output', param_idx, this._modelNodeName),
+                checkInputValidChars);
             this._outputs.push(item);
             this._elements.push(item.render());
         }
