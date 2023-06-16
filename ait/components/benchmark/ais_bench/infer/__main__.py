@@ -275,7 +275,7 @@ def get_args():
         "--pipeline",
         type=str2bool,
         default=False,
-        help="run in pipeline switch"
+        help="Pipeline switch"
     )
 
     benchmark_args = parser.parse_args()
