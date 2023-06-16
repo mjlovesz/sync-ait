@@ -11,8 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import argparse
+import logging
+import os
+import tempfile
 
 from flask import Flask, render_template, request, send_file
 from server import register_interface
@@ -21,7 +23,7 @@ from server import register_interface
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=5000, help='the port of the webserver. Defaults to 5000.')
-    parser.add_argument('--debug', type=bool, default=False, help='enable or disable debug mode.')
+    parser.add_argument('--debug', action="store_true", default=False, help='enable debug mode.')
     
     args = parser.parse_args()
     return args
@@ -40,9 +42,13 @@ def main():
             file.seek(0, os.SEEK_SET)
 
         return send_file(file, **kwargs)
+    
+    if args.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
 
-    register_interface(app, request, send_file_method)
-    app.run(host='localhost', port=args.port, debug=args.debug)
+    with tempfile.TemporaryDirectory() as temp_dir_path:
+        register_interface(app, request, send_file_method, temp_dir_path)
+        app.run(host='localhost', port=args.port, debug=args.debug)
 
 if __name__ == '__main__':
     main()

@@ -71,7 +71,7 @@
   ```bash
   ait benchmark --om-model ./pth_resnet50_bs1.om --output ./result --dump 1
   ```
-  
+
   ```bash
   result
   |-- 2022_12_17-07_37_18
@@ -134,3 +134,6 @@ benchmark推理工具执行后，打屏输出结果示例如下：
 | D2H_latency (ms)      | Device to Host的内存拷贝耗时。单位为ms。                     |
 | throughput            | 吞吐率。吞吐率计算公式：1000 *batchsize/npu_compute_time.mean |
 | batchsize             | 批大小。本工具不一定能准确识别当前样本的batchsize，建议通过--batchsize参数进行设置。 |
+
+## FAQ
+使用出现问题时，可参考[FAQ](../../../../docs/benchmark/FAQ.md)

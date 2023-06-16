@@ -215,6 +215,14 @@ def create_directory(dir_path):
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR) from ex
 
 
+def get_input_path(input_item_path, bin_file_path_array):
+    for root, _, files in os.walk(input_item_path):
+        for bin_file in files:
+            if bin_file.endswith('.bin'):
+                file_path = os.path.join(root, bin_file)
+                bin_file_path_array.append(file_path)
+
+
 def check_input_bin_file_path(input_path):
     """
     Function Description:
@@ -226,8 +234,12 @@ def check_input_bin_file_path(input_path):
     bin_file_path_array = []
     for input_item in input_bin_files:
         input_item_path = os.path.realpath(input_item)
-        check_file_or_directory_path(input_item_path)
-        bin_file_path_array.append(input_item_path)
+        if input_item_path.endswith('.bin'):
+            check_file_or_directory_path(input_item_path)
+            bin_file_path_array.append(input_item_path)
+        else:
+            check_file_or_directory_path(input_item_path, True)
+            get_input_path(input_item_path, bin_file_path_array)
     return bin_file_path_array
 
 
@@ -485,6 +497,16 @@ def get_batch_index(dump_data_path):
             if ASCEND_BATCH_FIELD in file_name:
                 return get_batch_index_from_name(file_name)
     return ""
+
+
+def get_mbatch_op_name(om_parser, op_name, npu_dump_data_path):
+    _, scenario = om_parser.get_dynamic_scenario_info()
+    if scenario in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
+        batch_index = get_batch_index(npu_dump_data_path)
+        current_op_name = BATCH_SCENARIO_OP_NAME.format(op_name, batch_index)
+    else:
+        return op_name
+    return current_op_name
 
 
 def handle_ground_truth_files(om_parser, npu_dump_data_path, golden_dump_data_path):

@@ -570,14 +570,6 @@ class Application {
         }
 
         const helpSubmenu = [
-            {
-                label: '&Search Feature Requests',
-                click: () => { electron.shell.openExternal('https://www.github.com/' + this.package.repository + '/issues'); }
-            },
-            {
-                label: 'Report &Issues',
-                click: () => { electron.shell.openExternal('https://www.github.com/' + this.package.repository + '/issues/new'); }
-            }
         ];
 
         if (process.platform != 'darwin') {

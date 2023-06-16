@@ -17,6 +17,8 @@
 package com.huawei.ascend.ait.ide.action;
 
 import com.huawei.ascend.ait.ide.Icons;
+import com.huawei.ascend.ait.ide.commonlib.output.OutputFactory;
+import com.huawei.ascend.ait.ide.commonlib.output.OutputService;
 import com.huawei.ascend.ait.ide.commonlib.ui.UiUtils;
 import com.huawei.ascend.ait.ide.optimizie.ui.step.AisBenchBasic;
 
@@ -24,7 +26,12 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 
+import com.intellij.openapi.wm.WindowManager;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Window;
 
 /**
  * Ais bench
@@ -33,13 +40,13 @@ import org.jetbrains.annotations.NotNull;
  * @date 2023/06/03
  */
 public class AisBenchAction extends AnAction {
+    private static final Logger LOG = LoggerFactory.getLogger(AisBenchAction.class);
 
     /**
      * Ais bench
      */
     public AisBenchAction() {
-        super("AisBench", "",
-                UiUtils.getJbIcon(Icons.AIS_BENCH_DARK, Icons.AIS_BENCH_LIGHT));
+        super("AisBench", "", UiUtils.getJbIcon(Icons.AIS_TITLE_DARK, Icons.AIS_TITLE_LIGHT));
     }
 
     @Override
@@ -56,6 +63,12 @@ public class AisBenchAction extends AnAction {
      * @param project project
      */
     public void openNewPage(@NotNull Project project) {
+        Window window = WindowManager.getInstance().suggestParentWindow(project);
+        if (window == null) {
+            LOG.warn("window is null");
+            return;
+        }
+        OutputService.getInstance(project).active();
         AisBenchBasic basic = new AisBenchBasic(project);
         basic.show();
     }

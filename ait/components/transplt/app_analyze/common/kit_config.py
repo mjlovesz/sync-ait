@@ -131,12 +131,12 @@ class KitConfig:
     # e.API映射表，文件名第一个'_'前为加速库名；内部工作表/Sheet名以'-APIMap'结尾，其他工作表会被忽略。
     API_MAP_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'config'))
     API_MAP = {
-        OPENCV: f'{API_MAP_FOLDER}/mxBase_API_MAP.xlsx',
+        OPENCV: f'{API_MAP_FOLDER}/mxBase_OpenCV_API_MAP.xlsx',
         FFMPEG: f'{API_MAP_FOLDER}/DVPP_FFMPEG_API_MAP.xlsx',
-        CUDA: f'{API_MAP_FOLDER}/ACL_API_MAP.xlsx',
+        CUDA: f'{API_MAP_FOLDER}/ACL_CUDA_API_MAP.xlsx',
         CVCUDA: f'{API_MAP_FOLDER}/mxBase_CVCUDA_API_MAP.xlsx',
         TENSORRT: f'{API_MAP_FOLDER}/ACLMDL_TRT_API_MAP.xlsx',
-        CODEC: f'{API_MAP_FOLDER}/Codec_API_MAP.xlsx',
+        CODEC: f'{API_MAP_FOLDER}/DVPP_Codec_API_MAP.xlsx',
     }
 
     # 3.CMake加速库模式匹配
@@ -170,7 +170,7 @@ class KitConfig:
         CONTEXT: True,
         ACC_LIB: True,
         ASCEND_LIB: True,
-        PARAMS: True,
+        PARAMS: False,
         ACC_LINK: True,
         ASCEND_LINK: True,
     }

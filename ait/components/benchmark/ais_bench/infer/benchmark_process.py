@@ -34,7 +34,7 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                           get_narray_from_files_list,
                                           get_tensor_from_files_list,
                                           convert_real_files,
-                                          pure_infer_fake_file, save_tensors_to_file)
+                                          PURE_INFER_FAKE_FILE, save_tensors_to_file)
 from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
 from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
@@ -249,7 +249,7 @@ def msprof_run_profiling(args, msprof_bin):
 
 def get_energy_consumption(npu_id):
     cmd = "npu-smi info -t power -i {}".format(npu_id)
-    get_npu_id = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    get_npu_id = subprocess.run(cmd.split(), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     npu_id = get_npu_id.stdout.decode('gb2312')
     power = []
     npu_id = npu_id.split("\n")
@@ -304,7 +304,7 @@ def main(args, index=0, msgq=None, device_list=None):
     # create infiles list accord inputs list
     if len(inputs_list) == 0:
         # Pure reference scenario. Create input zero data
-        infileslist = [[[pure_infer_fake_file] for index in intensors_desc]]
+        infileslist = [[[PURE_INFER_FAKE_FILE] for index in intensors_desc]]
     else:
         infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
 
@@ -348,8 +348,8 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.add_args(sys.argv)
     s = session.sumary()
     summary.npu_compute_time_list = s.exec_time_list
-    summary.h2d_latency_list = MemorySummary.get_H2D_time_list()
-    summary.d2h_latency_list = MemorySummary.get_D2H_time_list()
+    summary.h2d_latency_list = MemorySummary.get_h2d_time_list()
+    summary.d2h_latency_list = MemorySummary.get_d2h_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
     if args.energy_consumption:
         logger.info("npu_id {} energy_consumption {}".format(args.npu_id, (float(end_energy_consumption) -

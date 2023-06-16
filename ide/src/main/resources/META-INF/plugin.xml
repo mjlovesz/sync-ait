@@ -13,51 +13,44 @@
     See the License for the specific language governing permissions and
     limitations under the License.
 -->
-<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
     <id>com.huawei.ascend.ait.ide</id>
-
-    <!-- Public plugin name should be written in Title Case.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
     <name>Ait-Ide</name>
-
-    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="sm" url="http.com">Yan</vendor>
 
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
-         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
     Enter short description for your plugin here.<br>
     <em>most HTML tags may be used</em>
   ]]></description>
     <idea-version since-build="223"/>
 
-    <!-- Product and plugin compatibility requirements.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
 
-    <!-- Extension points defined by the plugin.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <fileEditorProvider implementation="com.huawei.ascend.ait.ide.filetype.AitFileEditorProvider"/>
         <projectService serviceImplementation="com.huawei.ascend.ait.ide.commonlib.output.OutputService"/>
-        <toolWindow factoryClass="com.huawei.ascend.ait.ide.commonlib.output.OutputFactory" id="Output" order="first" doNotActivateOnStart="true"/>
+        <toolWindow factoryClass="com.huawei.ascend.ait.ide.commonlib.output.OutputFactory"
+                    anchor="bottom" id="Output" order="first" doNotActivateOnStart="true"/>
+        <fileIconProvider implementation="com.huawei.ascend.ait.ide.filetype.AitFileEditorIconProvider"/>
+        <ApplicationLoadListener implementation="com.huawei.ascend.ait.ide.service.AscendMenuAction"/>
     </extensions>
 
     <actions>
-        <group id="Ascend" text="_Ascend">
+        <group id="MindStudio.Ascend" text="_Ascend">
             <add-to-group group-id="MainMenu" anchor="before" relative-to-action="ToolsMenu"/>
         </group>
         <action id="Ait.Ide" class="com.huawei.ascend.ait.ide.action.AitAction" text="Ait">
-            <add-to-group group-id="Ascend" anchor="first"/>
+            <add-to-group group-id="MindStudio.Ascend" anchor="first"/>
         </action>
         <action class="com.huawei.ascend.ait.ide.action.AisBenchAction" id="ais_bench">
-            <add-to-group group-id="Ascend" anchor="last"/>
+            <add-to-group group-id="MindStudio.Ascend" anchor="last"/>
         </action>
         <action class="com.huawei.ascend.ait.ide.action.CompareAction" id="compare">
-            <add-to-group group-id="Ascend" anchor="last"/>
+            <add-to-group group-id="MindStudio.Ascend" anchor="last"/>
+        </action>
+        <action id="AitModelConverter"
+                class="com.huawei.ascend.ait.ide.action.AitModelConverterAction">
+            <add-to-group group-id="MindStudio.Ascend" anchor="last"/>
         </action>
         <action class="com.huawei.ascend.ait.ide.commonlib.output.ThemeChangeAction" id="ThemeChange">
             <add-to-group group-id="ToolbarRunGroup" anchor="last"/>

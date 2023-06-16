@@ -17,6 +17,8 @@
 package com.huawei.ascend.ait.ide.action;
 
 import com.huawei.ascend.ait.ide.Icons;
+import com.huawei.ascend.ait.ide.commonlib.output.OutputFactory;
+import com.huawei.ascend.ait.ide.commonlib.output.OutputService;
 import com.huawei.ascend.ait.ide.commonlib.ui.UiUtils;
 import com.huawei.ascend.ait.ide.optimizie.ui.step.Compare;
 
@@ -24,7 +26,12 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 
+import com.intellij.openapi.wm.WindowManager;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.awt.Window;
 
 /**
  * Compare
@@ -33,13 +40,13 @@ import org.jetbrains.annotations.NotNull;
  * @date 2023/06/03
  */
 public class CompareAction extends AnAction {
+    private static final Logger LOG = LoggerFactory.getLogger(CompareAction.class);
 
     /**
      * Compare
      */
     public CompareAction() {
-        super("Compare", "",
-                UiUtils.getJbIcon(Icons.COMPARE_DARK, Icons.COMPARE_LIGHT));
+        super("Compare", "", UiUtils.getJbIcon(Icons.COMPARE_TITLE_DARK, Icons.COMPARE_TITLE_LIGHT));
     }
 
     @Override
@@ -56,6 +63,12 @@ public class CompareAction extends AnAction {
      * @param project project
      */
     public void openNewPage(@NotNull Project project) {
+        Window window = WindowManager.getInstance().suggestParentWindow(project);
+        if (window == null) {
+            LOG.warn("window is null");
+            return;
+        }
+        OutputService.getInstance(project).active();
         Compare compare = new Compare(project);
         compare.show();
     }

@@ -41,6 +41,10 @@ NONEQUIVALENT_KNOWLEDGES = [
     'KnowledgeBigKernel'
 ]
 
+ARGS_REQUIRED_KNOWLEDGES = [
+    'KnowledgeBigKernel'
+]
+
 COLOR_SUCCESS = '\033[92m'
 COLOR_FAIL = '\033[91m'
 COLOR_END = '\033[0m'
@@ -89,6 +93,22 @@ class GraphOptimizer:
         if len(knowledge_dict) == 0:
             raise ValueError('No valid knowledge provided.')
         self.knowledges = knowledge_dict
+
+    @staticmethod
+    def optimize(graph: BaseGraph, knowledge: KnowledgeBase) -> bool:
+        res = False
+        if not knowledge.pre_process(graph):
+            return False
+        while knowledge.has_next_pattern():
+            knowledge.next_pattern()
+            match_results = knowledge.match_pattern(graph)
+            if match_results is None or len(match_results) == 0:
+                continue
+            while knowledge.has_next_apply():
+                knowledge.next_apply()
+                for match_result in match_results:
+                    res |= knowledge.apply(graph, match_result)
+        return knowledge.post_process(graph) and res
 
     @staticmethod
     def _effective(om_ori: str, om_opt: str, cfg: InferTestConfig, check_precision: bool,
@@ -161,26 +181,10 @@ class GraphOptimizer:
             return
         queue.put(True)
 
-    @staticmethod
-    def _optimize(graph: BaseGraph, knowledge: KnowledgeBase) -> bool:
-        res = False
-        if not knowledge.pre_process(graph):
-            return False
-        while knowledge.has_next_pattern():
-            knowledge.next_pattern()
-            match_results = knowledge.match_pattern(graph)
-            if match_results is None or len(match_results) == 0:
-                continue
-            while knowledge.has_next_apply():
-                knowledge.next_apply()
-                for match_result in match_results:
-                    res |= knowledge.apply(graph, match_result)
-        return knowledge.post_process(graph) and res
-
     def init_knowledges(self):
         knowledges_ins = {}
         for k_name, k_cls in self.knowledges.items():
-            if k_name != "KnowledgeBigKernel":
+            if k_name not in ARGS_REQUIRED_KNOWLEDGES:
                 knowledges_ins.setdefault(k_name, k_cls())
             else:
                 knowledges_ins.setdefault(k_name, k_cls)
@@ -193,7 +197,7 @@ class GraphOptimizer:
         '''
         Optimize graph using optimizer.
         '''
-        return self._exec_action(graph, GraphOptimizer._optimize)
+        return self._exec_action(graph, GraphOptimizer.optimize)
 
     def apply_knowledges_with_infer_test(
         self,

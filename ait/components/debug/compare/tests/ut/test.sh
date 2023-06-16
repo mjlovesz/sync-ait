@@ -15,7 +15,7 @@
 
 set -u
 
-cur_dir=$(pwd)
+cur_dir=$(dirname $(readlink -f "$0"))
 
 
 # copy source code to tests, and test

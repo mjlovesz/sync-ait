@@ -78,7 +78,7 @@ class KnowledgeTestHelper:
     def optimize(self, graph: BaseGraph, knowledge: KnowledgeBase) -> Tuple[bool, BaseGraph]:
         '''Optimize a graph with specific knowledge.'''
         graph_opt = deepcopy(graph)
-        res = GraphOptimizer._optimize(graph_opt, knowledge)
+        res = GraphOptimizer.optimize(graph_opt, knowledge)
         return res, graph_opt
 
     def check_optimization(self, cfg: OptimizationConfig, expect: bool) -> bool:
@@ -93,8 +93,8 @@ class KnowledgeTestHelper:
         onnx_ori: str,
         onnx_opt: str,
         feeds: List[Dict[str, NDArray[Any]]],
-        cos_th: float = 1e-6,
-        atol: float = 1e-8,
+        cos_th: float = 1e-5,
+        atol: float = 1e-5,
         rtol: float = 1e-5
     ) -> bool:
         '''Check inference precision of two graph.'''

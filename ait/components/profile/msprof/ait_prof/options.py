@@ -61,10 +61,26 @@ def check_device_range_valid(ctx, param, value):
         return ivalue
 
 
+def check_args(ctx: click.Context, params: click.Option, value: str):
+    """
+    check whether the param is provided
+    """
+    args = [
+        opt
+        for param in ctx.command.params
+        for opt in param.opts
+    ]
+    if value in args:
+        raise click.MissingParameter()
+    return value
+
+
 opt_application = click.option(
     "--application",
+    required=True,
     default=None,
     type=str,
+    callback=check_args,
     help="Configure to run AI task files on the environment"
 )
 
@@ -77,62 +93,72 @@ opt_output = click.option(
     type=click.Path(
         path_type=pathlib.Path
     ),
+    callback=check_args,
     help='Inference data output path. The inference results are output to '
         'the subdirectory named current date under given output path'
 )
 
 opt_model_execution = click.option(
-    '--model_execution',
+    '--model-execution',
     default="on",
     type=str,
+    callback=check_args,
     help='Control ge model execution performance data collection switch'
 )
 opt_sys_hardware_mem = click.option(
-    "--sys_hardware_mem",
+    "--sys-hardware-mem",
     default="on",
     type=str,
+    callback=check_args,
     help="Control the read/write bandwidth data acquisition switch for ddr and llc"
 )
 opt_sys_cpu_profiling = click.option(
-    "--sys_cpu_profiling",
+    "--sys-cpu-profiling",
     default="off",
     type=str,
+    callback=check_args,
     help="CPU acquisition switch"
 )
 opt_sys_profiling = click.option(
-    "--sys_profiling",
+    "--sys-profiling",
     default="off",
     type=str,
+    callback=check_args,
     help="System CPU usage and system memory acquisition switch"
 )
 opt_sys_pid_profiling = click.option(
-    "--sys_pid_profiling",
+    "--sys-pid-profiling",
     default="off",
     type=str,
+    callback=check_args,
     help="The CPU usage of the process and the memory collection switch of the process"
 )
 opt_dvpp_profiling = click.option(
-    "--dvpp_profiling",
+    "--dvpp-profiling",
     default="on",
     type=str,
+    callback=check_args,
     help="DVPP acquisition switch"
 )
 
 opt_runtime_api = click.option(
-    "--runtime_api",
+    "--runtime-api",
     default="on",
     type=str,
+    callback=check_args,
     help="Control runtime api performance data collection switch"
 )
 opt_task_time = click.option(
-    "--task_time",
+    "--task-time",
     default="on",
     type=str,
+    callback=check_args,
     help="Control ts timeline performance data collection switch"
 )
 opt_aicpu = click.option(
     "--aicpu",
     default="on",
     type=str,
+    callback=check_args,
     help="Control aicpu performance data collection switch"
 )

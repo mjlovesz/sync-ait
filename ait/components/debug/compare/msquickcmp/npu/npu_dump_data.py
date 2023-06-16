@@ -54,9 +54,11 @@ class DynamicInput(object):
     @staticmethod
     def get_dynamic_arg_from_om(om_parser):
         atc_cmd_args = om_parser.get_atc_cmdline().split(" ")
-        for atc_arg in atc_cmd_args:
+        for i, atc_arg in enumerate(atc_cmd_args):
             for dym_arg in DynamicArgumentEnum:
                 if dym_arg.value.atc_arg in atc_arg:
+                    if dym_arg.value.atc_arg == atc_arg:
+                        atc_arg += '='+atc_cmd_args[i+1]
                     return atc_arg, dym_arg
         return "", None
 
@@ -65,8 +67,10 @@ class DynamicInput(object):
         # get atc input shape from atc cmdline
         atc_input_shape = ""
         atc_cmd_args = om_parser.get_atc_cmdline().split(" ")
-        for atc_arg in atc_cmd_args:
+        for i, atc_arg in enumerate(atc_cmd_args):
             if INPUT_SHAPE in atc_arg:
+                if INPUT_SHAPE == atc_arg:
+                    atc_arg += '='+atc_cmd_args[i+1]
                 atc_input_shape = atc_arg.split(utils.EQUAL)[1]
                 break
         return atc_input_shape
@@ -237,7 +241,7 @@ class NpuDumpData(DumpData):
         else:
             inputs_list = self.om_parser.get_shape_list()
         if len(inputs_list) != len(src_image_size_h):
-            utils.logger.error("inputs number is not equal to aipp inputs number, please check the -s param")
+            utils.logger.error("inputs number is not equal to aipp inputs number, please check the -is param")
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
         # currently, onnx only support input format nchw
         h_position = 2
@@ -441,7 +445,7 @@ class NpuDumpData(DumpData):
             for file_size in files_size_array:
                 if file_size not in shape_size_array:
                     utils.logger.error(
-                        "The size (%d) of file can not match the input of the model." % bin_file_size)
+                        "The size (%d) of file can not match the input of the model." % file_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
         elif self.dynamic_input.is_dynamic_shape_scenario():
             for shape_size in shape_size_array:

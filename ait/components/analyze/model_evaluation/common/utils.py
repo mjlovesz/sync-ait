@@ -28,7 +28,7 @@ def get_soc_type() -> str:
         return acl.get_soc_name()
     except ImportError:
         logger.warning(
-            f'Get soc failed, use default {default_soc}.'
+            f'Get soc_version failed, use default {default_soc}.'
         )
     return default_soc
 

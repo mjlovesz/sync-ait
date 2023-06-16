@@ -20,7 +20,7 @@ from app_analyze.utils.log_util import logger
 from app_analyze.common.kit_config import KitConfig as K
 
 API_MAP_KEYS = [K.ACC_API, K.ASCEND_API, K.DESC, K.WORKLOAD, K.PARAMS, K.ACC_LINK, K.ASCEND_LINK]
-REPORT_ADD_KEYS = [K.ASCEND_API, K.DESC, K.WORKLOAD, K.PARAMS, K.ACC_LINK, K.ASCEND_LINK, K.ASCEND_LIB]
+REPORT_ADD_KEYS = [K.ASCEND_API, K.DESC, K.ASCEND_LIB, K.WORKLOAD, K.PARAMS, K.ACC_LINK, K.ASCEND_LINK]
 
 
 class Advisor:
@@ -110,9 +110,9 @@ class Advisor:
 
                 if query:
                     best = query[0]
-                    row[K.ASCEND_LIB] = lib_name
                     for k in REPORT_ADD_KEYS:
                         row[k] = best.get(k, '')
+                    row[K.ASCEND_LIB] = lib_name  # best中无该字段
                 df.iloc[index] = row
 
             drop_cols = list()
@@ -149,8 +149,10 @@ class Advisor:
         if not cu_list:
             return pd.DataFrame()
         cu_df = pd.concat(cu_list, ignore_index=True)
-        cu_gp = cu_df.groupby(K.ACC_API).size()
-        self.results['CUDA_APIs'] = pd.DataFrame({K.ACC_API: cu_gp.index, 'Count': cu_gp.values})
+        cu_gp = cu_df.groupby(K.ACC_API).agg({K.ASCEND_API: 'first', K.LOCATION: 'size'})
+        cu_gp.rename(columns={K.LOCATION: 'Count'}, inplace=True)
+        cu_gp.reset_index(inplace=True)
+        self.results['CUDA_APIs'] = cu_gp
         return cu_gp
 
     def to_excel(self):

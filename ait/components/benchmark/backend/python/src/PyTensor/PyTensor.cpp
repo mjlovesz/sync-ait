@@ -19,7 +19,9 @@
 
 #include <map>
 #include <exception>
+#ifdef COMPILE_PYTHON_MODULE
 #include <pybind11/stl.h>
+#endif
 
 #include "Base/Log/Log.h"
 
@@ -46,6 +48,7 @@ const std::map<Base::TensorDataType, uint32_t> DATA_TYPE_TO_BYTE_SIZE_MAP = {
     {Base::TENSOR_DTYPE_BOOL, ONE_BYTE}
 };
 
+#ifdef COMPILE_PYTHON_MODULE
 const std::map<Base::TensorDataType, std::string> DATA_TYPE_TO_FORMAT_MAP = {
     {Base::TENSOR_DTYPE_UINT8, py::format_descriptor<uint8_t>::format()},
     {Base::TENSOR_DTYPE_INT8, py::format_descriptor<int8_t>::format()},
@@ -61,6 +64,7 @@ const std::map<Base::TensorDataType, std::string> DATA_TYPE_TO_FORMAT_MAP = {
     {Base::TENSOR_DTYPE_BOOL, py::format_descriptor<bool>::format()}
 };
 
+
 const std::map<std::string, Base::TensorDataType> FORMAT_TO_DATA_TYPE_MAP = {
     {py::format_descriptor<uint8_t>::format(), Base::TENSOR_DTYPE_UINT8},
     {py::format_descriptor<int8_t>::format(), Base::TENSOR_DTYPE_INT8},
@@ -75,6 +79,7 @@ const std::map<std::string, Base::TensorDataType> FORMAT_TO_DATA_TYPE_MAP = {
     {py::format_descriptor<double>::format(), Base::TENSOR_DTYPE_DOUBLE64},
     {py::format_descriptor<bool>::format(), Base::TENSOR_DTYPE_BOOL}
 };
+#endif
 }
 namespace Base {
 void TensorToHost(TensorBase &tensor)
@@ -101,6 +106,7 @@ void TensorToDvpp(TensorBase &tensor, const int32_t deviceId)
     }
 }
 
+#ifdef COMPILE_PYTHON_MODULE
 TensorBase FromNumpy(py::buffer b)
 {
     py::buffer_info info = b.request();
@@ -160,6 +166,7 @@ py::buffer_info ToNumpy(const TensorBase &tensor)
     py::buffer_info buf = {tensor.GetBuffer(), bytes, format, (int64_t)shape.size(), shape, strides};
     return buf;
 }
+#endif
 
 TensorBase BatchVector(const std::vector<TensorBase> &tensors, const bool &keepDims)
 {
@@ -173,6 +180,7 @@ TensorBase BatchVector(const std::vector<TensorBase> &tensors, const bool &keepD
 }
 }
 
+#ifdef COMPILE_PYTHON_MODULE
 void RegistPyTensorEnumType(py::module &m)
 {
     auto dtype = py::enum_<Base::TensorDataType>(m, "dtype");
@@ -227,3 +235,4 @@ void RegistPyTensorModule(py::module &m)
     tensor.def_property_readonly("shape", &Base::TensorBase::GetShape);
     RegistPyTensorEnumType(m);
 }
+#endif

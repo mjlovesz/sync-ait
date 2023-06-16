@@ -85,6 +85,7 @@ if [ ! -z $only_convert ]
 then
   pip3 install ${CURRENT_DIR}/components/convert \
   ${arg_force_reinstall}
+  bash ${CURRENT_DIR}/components/convert/build.sh
 fi
 
 if [ ! -z $only_transplt ]
@@ -110,4 +111,10 @@ then
   ${CURRENT_DIR}/components/transplt \
   ${CURRENT_DIR}/components/profile/msprof \
   ${arg_force_reinstall}
+
+  if [ ! ${AIE_DIR} ];then
+    echo "Ascend Inference Engine is not install."
+  else
+    bash ${CURRENT_DIR}/components/convert/build.sh
+  fi
 fi

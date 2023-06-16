@@ -110,7 +110,7 @@ class OnnxDumpData(DumpData):
         inputs_tensor_info = self._get_inputs_tensor_info(session)
         self.inputs_map = self._get_inputs_data(self.data_dir, inputs_tensor_info, npu_dump_data_path, use_aipp)
 
-    def generate_dump_data(self, npu_dump_path):
+    def generate_dump_data(self, npu_dump_path, om_parser):
         """
         Function description:
             generate onnx model dump data
@@ -130,7 +130,7 @@ class OnnxDumpData(DumpData):
                                                                      self.onnx_model_before_custom_op_path)
             
             # 2. dump data before custom op
-            self._gen_after_custom_op_dump_data(npu_dump_path)
+            self._gen_after_custom_op_dump_data(npu_dump_path, om_parser)
         return onnx_dump_data_dir
 
     def get_net_output_info(self):
@@ -214,7 +214,7 @@ class OnnxDumpData(DumpData):
                 if not self.input_shapes:
                     utils.logger.error(
                         "The dynamic shape {} are not supported. Please "
-                        "set '-s' or '--input-shape' to fix the dynamic shape.".format(tensor_shape))
+                        "set '-is' or '--input-shape' to fix the dynamic shape.".format(tensor_shape))
                     raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             if self.input_shapes and tensor_name in self.input_shapes:
                 input_shape = self.input_shapes.get(tensor_name)
@@ -237,29 +237,36 @@ class OnnxDumpData(DumpData):
         inputs_map = {}
         if use_aipp:
             inputs_map = self._get_inputs_data_aipp(data_dir, inputs_tensor_info, npu_dump_data_path)
-        else:
-            if "" == self.args.input_path:
-                for i, tensor_info in enumerate(inputs_tensor_info):
-                    input_data = np.random.random(tensor_info["shape"]).astype(
-                        self._convert_to_numpy_type(tensor_info["type"]))
-                    inputs_map[tensor_info["name"]] = input_data
-                    file_name = "input_" + str(i) + ".bin"
-                    input_data.tofile(os.path.join(data_dir, file_name))
-                    utils.logger.info("save input file name: {}, shape: {}, dtype: {}".format(
-                        file_name, input_data.shape, input_data.dtype))
+            return inputs_map
+        if "" == self.args.input_path:
+            for i, tensor_info in enumerate(inputs_tensor_info):
+                input_data = np.random.random(tensor_info["shape"]).astype(
+                    self._convert_to_numpy_type(tensor_info["type"]))
+                inputs_map[tensor_info["name"]] = input_data
+                file_name = "input_" + str(i) + ".bin"
+                input_data.tofile(os.path.join(data_dir, file_name))
+                utils.logger.info("save input file name: {}, shape: {}, dtype: {}".format(
+                    file_name, input_data.shape, input_data.dtype))
+            return inputs_map
+        input_path = []
+        input_initial_path = self.args.input_path.split(",")
+        for input_item in input_initial_path:
+            input_item_path = os.path.realpath(input_item)
+            if input_item_path.endswith('.bin'):
+                input_path.append(input_item_path)
             else:
-                input_path = self.args.input_path.split(",")
-                if len(inputs_tensor_info) != len(input_path):
-                    utils.logger.error("the number of model inputs tensor_info is not equal the number of "
-                                        "inputs data, inputs tensor_info is: {}, inputs data is: {}".format(
-                        len(inputs_tensor_info), len(input_path)))
-                    raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
-                for i, tensor_info in enumerate(inputs_tensor_info):
-                    input_data = np.fromfile(input_path[i], self._convert_to_numpy_type(tensor_info["type"])).reshape(
-                        tensor_info["shape"])
-                    inputs_map[tensor_info["name"]] = input_data
-                    utils.logger.info("load input file name: {}, shape: {}, dtype: {}".format(
-                        os.path.basename(input_path[i]), input_data.shape, input_data.dtype))
+                utils.get_input_path(input_item_path, input_path)
+        if len(inputs_tensor_info) != len(input_path):
+            utils.logger.error("the number of model inputs tensor_info is not equal the number of "
+                                "inputs data, inputs tensor_info is: {}, inputs data is: {}".format(
+                len(inputs_tensor_info), len(input_path)))
+            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
+        for i, tensor_info in enumerate(inputs_tensor_info):
+            input_data = np.fromfile(input_path[i], self._convert_to_numpy_type(tensor_info["type"])).reshape(
+                tensor_info["shape"])
+            inputs_map[tensor_info["name"]] = input_data
+            utils.logger.info("load input file name: {}, shape: {}, dtype: {}".format(
+                os.path.basename(input_path[i]), input_data.shape, input_data.dtype))
         return inputs_map
     
     def _get_inputs_data_aipp(self, data_dir, inputs_tensor_info, npu_dump_data_path):
@@ -355,7 +362,8 @@ class OnnxDumpData(DumpData):
         for onnx_model_input in old_onnx_graph.inputs:
             start_nodes = old_onnx_graph.get_next_nodes(onnx_model_input.name)
             for start_node in start_nodes:
-                start_nodes_name.append(start_node.name)
+                if start_node is not None:
+                    start_nodes_name.append(start_node.name)
 
         # end before custom op node
         end_nodes_name = []
@@ -378,9 +386,10 @@ class OnnxDumpData(DumpData):
         for output in custom_op_node.outputs:
             start_nodes = old_onnx_graph.get_next_nodes(output)
             for start_node in start_nodes:
-                start_nodes_name.append(start_node.name)
-                utils.logger.info("start_node.name: %s", 
-                                  start_node.name)
+                if start_node is not None:
+                    start_nodes_name.append(start_node.name)
+                    utils.logger.info("start_node.name: %s", 
+                                    start_node.name)
 
         # end by old onnx graph outputs
         end_nodes_name = []
@@ -395,7 +404,7 @@ class OnnxDumpData(DumpData):
         utils.logger.info("extract model after custom op sucessed, save path: %s", 
                           self.onnx_model_after_custom_op_path)
         
-    def _gen_after_custom_op_dump_data(self, npu_dump_path):
+    def _gen_after_custom_op_dump_data(self, npu_dump_path, om_parser):
         try:
             from auto_optimizer import OnnxGraph
         except ModuleNotFoundError as err:
@@ -403,7 +412,8 @@ class OnnxDumpData(DumpData):
             raise err
         
         inputs_tensor_info = self._get_after_custom_op_inputs_ternsor_info()
-        inputs_map, inputs_tensor_info = self._get_npu_dump_data_by_custom_op(npu_dump_path, inputs_tensor_info)
+        inputs_map, inputs_tensor_info = self._get_npu_dump_data_by_custom_op(
+            npu_dump_path, inputs_tensor_info, om_parser)
         # fix inputs info 
         onnx_model_after_custom_op = OnnxGraph.parse(self.onnx_model_after_custom_op_path)
 
@@ -428,8 +438,12 @@ class OnnxDumpData(DumpData):
                              onnx.load(self.onnx_model_after_custom_op_path), 
                              net_output_node)
 
-    def _get_npu_dump_data_by_custom_op(self, npu_dump_path, inputs_tensor_info):
+    def _get_npu_dump_data_by_custom_op(self, npu_dump_path, inputs_tensor_info, om_parser):
         inputs_map = {}
+
+        # 动态bs和动态dim场景，om中的op都会加上_ascend_mbatch_batch_后缀，需要转化下才能匹配上
+        custom_op_name = utils.get_mbatch_op_name(om_parser, self.args.custom_op, npu_dump_path)
+        utils.logger.info("custom_op_name in npu model:%s", custom_op_name)
 
         for item in os.listdir(npu_dump_path):
             # file name format: [Optype].[OpName].{time}.[dump_type].[index].npy
@@ -437,7 +451,7 @@ class OnnxDumpData(DumpData):
             op_name = file_name_info[1]
             dump_type = file_name_info[-3]
             index = int(file_name_info[-2])
-            if op_name == self.args.custom_op and dump_type == "output" and index < len(inputs_tensor_info):
+            if op_name == custom_op_name and dump_type == "output" and index < len(inputs_tensor_info):
                 numpy_data = np.load(os.path.join(npu_dump_path, item))
                 inputs_tensor_info[index]['shape'] = numpy_data.shape
                 inputs_tensor_info[index]['type'] = numpy_data.dtype

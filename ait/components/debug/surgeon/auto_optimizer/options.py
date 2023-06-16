@@ -16,26 +16,9 @@ import pathlib
 
 import click
 
-from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-
-
-def convert_to_graph_optimizer(ctx: click.Context, param: click.Option, value: str) -> GraphOptimizer:
-    '''Process and validate knowledges option.'''
-    try:
-        return GraphOptimizer([v.strip() for v in value.split(',')])
-    except Exception as err:
-        raise click.BadParameter('No valid knowledge provided!') from err
-
-
-default_off_knowledges = [
-    'KnowledgeEmptySliceFix',
-    'KnowledgeTopkFix',
-    'KnowledgeGatherToSplit',
-    'KnowledgeSplitQKVMatmul',
-    'KnowledgeDynamicReshape',
-    'KnowledgeResizeModeToNearest'
-]
+from auto_optimizer.common.click_utils import convert_to_graph_optimizer, default_off_knowledges, \
+    validate_opt_converter, check_args
 
 
 opt_optimizer = click.option(
@@ -165,13 +148,6 @@ opt_soc = click.option(
     type=str,
     help='Soc_version, default to Ascend310P3.'
 )
-
-
-def validate_opt_converter(ctx: click.Context, param: click.Option, value: str) -> str:
-    '''Process and validate knowledges option.'''
-    if value.lower() not in ['atc']:
-        raise click.BadParameter('Invalid converter.')
-    return value.lower()
 
 
 opt_converter = click.option(
