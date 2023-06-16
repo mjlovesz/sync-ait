@@ -34,6 +34,8 @@
 
 #include "Base/Log/Log.h"
 
+extern bool g_is_device;
+
 typedef enum Result {
     SUCCESS = 0,
     FAILED = 1

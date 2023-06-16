@@ -18,7 +18,7 @@ def test_dynamic_scenario():
     om_parser = OmParser("./test_resource/om/model.json")
 
     is_dynamic_scenario, _ = om_parser.get_dynamic_scenario_info()
-    assert is_dynamic_scenario == False
+    assert is_dynamic_scenario is False
 
 
 def test_get_shape_size():
@@ -38,9 +38,9 @@ def test_net_output_count():
 
     net_output = om_parser.get_expect_net_output_name()
     assert len(net_output) == 3
-    assert (net_output[0]) == "Cast_1219:0:output0"
-    assert (net_output[1]) == 'PartitionedCall_Gather_1221_gatherv2_3:0:output2'
-    assert (net_output[2]) == 'Reshape_1213:0:output1'
+    assert net_output.get(0) == "Cast_1219:0:output0"
+    assert net_output.get(1) == 'PartitionedCall_Gather_1221_gatherv2_3:0:output2'
+    assert net_output.get(2) == 'Reshape_1213:0:output1'
 
 
 def test_get_atc_cmdline():
@@ -48,12 +48,13 @@ def test_get_atc_cmdline():
     atc_cmd = om_parser.get_atc_cmdline()
     assert "model" in atc_cmd
 
+
 def test_get_expect_net_output_name():
     om_parser = OmParser("./test_resource/om/model.json")
     net_output = om_parser.get_expect_net_output_name()
     assert len(net_output) == 3
-    assert (net_output[0]) == "Cast_1219:0:output0"
-    assert (net_output[1]) == 'PartitionedCall_Gather_1221_gatherv2_3:0:output2'
-    assert (net_output[2]) == 'Reshape_1213:0:output1'
+    assert net_output.get(0) == "Cast_1219:0:output0"
+    assert net_output.get(1) == 'PartitionedCall_Gather_1221_gatherv2_3:0:output2'
+    assert net_output.get(2) == 'Reshape_1213:0:output1'
 
 
