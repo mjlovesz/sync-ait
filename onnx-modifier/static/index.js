@@ -315,8 +315,6 @@ host.BrowserHost = class {
                 for (const end_name of this._view.modifier.getExtractEnd()) {
                     this._view.modifier.setExtractEnd(end_name, false)
                 }
-                
-                this._view.modifier.setExtractEnd(null)
             })
         });
 

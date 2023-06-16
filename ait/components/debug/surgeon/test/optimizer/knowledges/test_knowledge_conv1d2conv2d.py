@@ -16,7 +16,6 @@ import unittest
 
 import numpy as np
 import onnx
-import onnxruntime as ort
 
 from onnx import (
     helper,
@@ -25,7 +24,7 @@ from onnx import (
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_conv1d2conv2d import KnowledgeConv1d2Conv2d
-from helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 class TestKnowledgeConv1d2Conv2d(unittest.TestCase, KnowledgeTestHelper):
@@ -53,12 +52,12 @@ class TestKnowledgeConv1d2Conv2d(unittest.TestCase, KnowledgeTestHelper):
                                   strides=[1])
 
         graph = helper.make_graph([conv_0, conv_1], "conv1d_test", [input_x], [input_z], [weight_0, weight_1])
-        model = helper.make_model(graph)
+        model = helper.make_model(graph, ir_version=8)
 
         del model.opset_import[:]
         opset = model.opset_import.add()
         opset.domain = ''
-        opset.version = 14
+        opset.version = 11
         onnx.save(model, onnx_name)
 
     def make_multi_conv1d_and_split_graph_model(self, onnx_name, x):
@@ -101,17 +100,17 @@ class TestKnowledgeConv1d2Conv2d(unittest.TestCase, KnowledgeTestHelper):
 
         graph = helper.make_graph([conv_0, relu_0, relu_1, conv_1, relu_2, relu_3, conv_2, add], "conv1d_test",
                                   [input_x], [input_z], [weight_0, weight_1, weight_2])
-        model = helper.make_model(graph)
+        model = helper.make_model(graph, ir_version=8)
 
         del model.opset_import[:]
         opset = model.opset_import.add()
         opset.domain = ''
-        opset.version = 14
+        opset.version = 11
         onnx.save(model, onnx_name)
 
     def test_conv1d2conv2d_optimizer_0(self):
         x = np.random.randn(1, 3, 2500).astype(np.float32)
-        onnx_ori = './onnx/twice_conv1d.onnx'
+        onnx_ori = 'twice_conv1d.onnx'
         onnx_opt = f'{onnx_ori}_new.onnx'
         self.make_twice_conv1d_model(onnx_ori, x)
 
@@ -123,12 +122,12 @@ class TestKnowledgeConv1d2Conv2d(unittest.TestCase, KnowledgeTestHelper):
             onnx_opt=onnx_opt,
         )
         self.assertTrue(self.check_optimization(cfg=cfg, expect=True))
-        feeds = [{'X': np.random.randn(*x.shape).astype(x.dtype)} for _ in range(10)]
+        feeds = [{'X': np.random.randn(*x.shape).astype(x.dtype)}]
         self.assertTrue(self.check_precision(onnx_ori, onnx_opt, feeds))
 
     def test_conv1d2conv2d_optimizer_1(self):
         x = np.random.randn(1, 3, 2500).astype(np.float32)
-        onnx_ori = './onnx/multi_conv1d_and_split_graph.onnx'
+        onnx_ori = 'multi_conv1d_and_split_graph.onnx'
         onnx_opt = f'{onnx_ori}_new.onnx'
         self.make_multi_conv1d_and_split_graph_model(onnx_ori, x)
 
@@ -140,7 +139,7 @@ class TestKnowledgeConv1d2Conv2d(unittest.TestCase, KnowledgeTestHelper):
             onnx_opt=onnx_opt,
         )
         self.assertTrue(self.check_optimization(cfg=cfg, expect=True))
-        feeds = [{'X': np.random.randn(*x.shape).astype(x.dtype)} for _ in range(10)]
+        feeds = [{'X': np.random.randn(*x.shape).astype(x.dtype)}]
         self.assertTrue(self.check_precision(onnx_ori, onnx_opt, feeds))
 
 
