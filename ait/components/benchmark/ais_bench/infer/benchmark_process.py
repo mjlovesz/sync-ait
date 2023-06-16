@@ -487,9 +487,32 @@ def backend_run(args):
     logger.info("perf info:{}".format(perf))
 
 
+def pipeline_run(args, concur):
+    concur_args_dict = {"model": "", "input": "", "output": "", "loop": "1", "debug": "0", "warmup": "1",
+                    "device": "0", "dymHW": "", "dymDims": "", "dymShape": "", "display": "0",
+                    "outputSize": "", "auto_set_dymshape_mode": "0"}
+    for arg in args:
+        print(arg)
+    # concur_args_list = [f"{k}={v}" for k, v in concur_args_dict if v != ""]
+    # concur_cmd = "{} {}".format(concur, concur_args_list.join(" "))
+    # concur_cmd_list = shlex.split(concur_cmd)
+
+    # logger.info("pipeline cmd:{} begin run".format(concur_cmd))
+    # ret = subprocess.call(concur_cmd_list, shell=False)
+    # logger.info("msprof cmd:{} end run ret:{}".format(concur_cmd, ret))
+
+
 def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
+
+    if args.pipeline:
+        concur = shutil.which("concur")
+        if concur is None :
+            logger.info("find no pipeline excutable continue normal mode")
+        else:
+            pipeline_run(args, concur)
+            return 0
 
     if args.perf:
         backend_run(args)

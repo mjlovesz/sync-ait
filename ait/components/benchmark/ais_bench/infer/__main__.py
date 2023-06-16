@@ -271,6 +271,12 @@ def get_args():
         default=False,
         help="Perf switch"
     )
+    parser.add_argument(
+        "--pipeline",
+        type=str2bool,
+        default=False,
+        help="run in pipeline switch"
+    )
 
     benchmark_args = parser.parse_args()
 
@@ -286,6 +292,6 @@ if __name__ == "__main__":
                 args.auto_set_dymshape_mode, args.auto_set_dymdims_mode, args.batchsize, args.pure_data_type,
                 args.profiler, args.dump, args.acl_json_path, args.output_batchsize_axis, args.run_mode,
                 args.display_all_summary, args.warmup_count, args.dym_shape_range, args.aipp_config,
-                args.energy_consumption, args.npu_id, args.backend, args.perf)
+                args.energy_consumption, args.npu_id, args.backend, args.perf, args.pipeline)
     ret = benchmark_process(args)
     exit(ret)
