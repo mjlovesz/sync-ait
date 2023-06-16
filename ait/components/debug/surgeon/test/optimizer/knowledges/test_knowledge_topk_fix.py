@@ -18,7 +18,7 @@ import onnx
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges import KnowledgeTopkFix
-from helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_topk_model(onnx_name, x: np.ndarray):
@@ -78,8 +78,8 @@ class TestKnowledgeTopkFix(unittest.TestCase, KnowledgeTestHelper):
         input_ = np.random.rand(100).astype(np.float32)
 
         onnx_name = 'topk_model'
-        onnx_ori = f'onnx/{onnx_name}.onnx'
-        onnx_opt = f'onnx/{onnx_name}_fixed.onnx'
+        onnx_ori = f'./{onnx_name}.onnx'
+        onnx_opt = f'./{onnx_name}_fixed.onnx'
         graph = make_topk_model(onnx_name, input_)
         cfg = OptimizationConfig(
             graph=graph,

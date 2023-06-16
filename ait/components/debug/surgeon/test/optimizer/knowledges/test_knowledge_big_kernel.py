@@ -21,7 +21,7 @@ from auto_optimizer.pattern.knowledges import KnowledgeBigKernel
 from auto_optimizer.pattern.knowledges.big_kernel.util import gen_normal_subgraph, K_MATMUL_W, MATMUL_W, ADD_B, MUL_B, \
     RESHAPE_S, TRANSPOSE, QK_MASK_ADD, END_ADD
 from auto_optimizer.pattern.knowledges.big_kernel.util import K_TRANSPOSE2, K_TRANSPOSE1, START_ADD
-from helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def gen_bert_attention():
