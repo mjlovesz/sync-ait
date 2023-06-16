@@ -494,15 +494,13 @@ def pipeline_run(args, concur):
                         "dymShape": args.dym_shape, "display": "1" if args.display_all_summary else "0",
                         "outputSize": args.output_size,
                         "auto_set_dymshape_mode": "1" if args.auto_set_dymshape_mode else "0"}
-    concur_args_list = [f"{k}={v}" for k, v in concur_args_dict if v != ""]
-    print(concur_args_list)
-    concur_cmd = "{} {}".format(concur, concur_args_list.join(" "))
-    print(concur_cmd)
-    # concur_cmd_list = shlex.split(concur_cmd)
+    concur_args_list = [f"{k}={v}" for k, v in concur_args_dict.items() if v]
+    concur_cmd = "{} {}".format(concur, " ".join(concur_args_list))
+    concur_cmd_list = shlex.split(concur_cmd)
 
-    # logger.info("pipeline cmd:{} begin run".format(concur_cmd))
-    # ret = subprocess.call(concur_cmd_list, shell=False)
-    # logger.info("msprof cmd:{} end run ret:{}".format(concur_cmd, ret))
+    logger.info("pipeline cmd:{} begin run".format(concur_cmd))
+    ret = subprocess.call(concur_cmd_list, shell=False)
+    logger.info("pipeline cmd:{} end run ret:{}".format(concur_cmd, ret))
 
 
 def benchmark_process(args:BenchMarkArgsAdapter):
