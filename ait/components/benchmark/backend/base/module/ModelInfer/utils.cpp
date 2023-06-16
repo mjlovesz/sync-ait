@@ -18,6 +18,7 @@
 #include "acl/acl.h"
 #include <sys/time.h>
 using namespace std;
+extern bool g_is_device;
 
 void* Utils::ReadBinFile(std::string fileName, uint32_t& fileSize)
 {
