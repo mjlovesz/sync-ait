@@ -354,6 +354,24 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     background-color: rgba(128, 128, 128, 1);
 }
 
+.input_error {
+    border-color: red;
+    outline: red;
+}
+
+err_msg {
+    display: none;
+}
+
+err_msg::before {
+    content: "Please confirm that the characters you entered meet the requirements of ONNX";
+    color: red;
+}
+
+err_msg:has(+ .input_error) {
+    display: block;
+}
+
 @media (prefers-color-scheme: dark) {
 .top-toolbar { background-color: #1d1d1d; }
 .toolbar-menu-item { background-color: #3d3d3d; }
@@ -613,6 +631,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     <h1> Change Input Shape </h1>
     <div class="text"> </div>
     <div style="display: flex; margin: 5px; justify-content: center; flex-direction: column;">
+        <err_msg> </err_msg>
         <input id="change-input-shape-input" type="text" size="32" placeholder="example: batch,3,224,224"/>
         <div>
             <input type="checkbox" class="checkbox-shape-change" checked /> 
@@ -628,18 +647,20 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
 <dialog id="dynamic-batch-size-dialog" class="dialog message-box"> 
     <h1> Dynamic Input Batch Size </h1>
     <div>
+        <err_msg> </err_msg>
         <input type="checkbox" class="checkbox-shape-change" checked /> 
         <span class="download-anno-cleanUp"> shape inference </span>
     </div>
     <div class="footer">
         <button>Cancel</button>
-        <button id="fixed-batch-size-input-ok">OK</button>
+        <button id="dynamic-batch-size-input-ok">OK</button>
     </div>
 </dialog>
 <dialog id="fixed-batch-size-dialog" class="dialog message-box"> 
     <h1> Fixed Input Batch Size </h1>
     <div class="text"> Please enter batchsize </div>
     <div style="display: flex; margin: 5px; justify-content: center; flex-direction: column;">
+        <err_msg> </err_msg>
         <input id="fixed-batch-size-input" type="text" size="32"/>
         <div>
             <input type="checkbox" class="checkbox-shape-change" checked /> 
