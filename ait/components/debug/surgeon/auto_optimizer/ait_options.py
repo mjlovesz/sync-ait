@@ -16,40 +16,9 @@ import pathlib
 
 import click
 
-from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-
-
-def convert_to_graph_optimizer(ctx: click.Context, param: click.Option, value: str) -> GraphOptimizer:
-    '''Process and validate knowledges option.'''
-    try:
-        return GraphOptimizer([v.strip() for v in value.split(',')])
-    except Exception as err:
-        raise click.BadParameter('No valid knowledge provided!') from err
-
-
-def check_args(ctx: click.Context, params: click.Option, value: str):
-    """
-    check whether the param is provided
-    """
-    args = [
-        opt
-        for param in ctx.command.params
-        for opt in param.opts
-    ]
-    if value in args:
-        raise click.MissingParameter()
-    return value
-
-
-default_off_knowledges = [
-    'KnowledgeEmptySliceFix',
-    'KnowledgeTopkFix',
-    'KnowledgeGatherToSplit',
-    'KnowledgeSplitQKVMatmul',
-    'KnowledgeDynamicReshape',
-    'KnowledgeResizeModeToNearest'
-]
+from auto_optimizer.common.click_utils import convert_to_graph_optimizer, default_off_knowledges, \
+    validate_opt_converter, check_args
 
 
 opt_optimizer = click.option(
@@ -103,7 +72,9 @@ opt_output = click.option(
     'output_model',
     nargs=1,
     required=True,
-    type=click.Path(path_type=pathlib.Path)
+    type=click.Path(path_type=pathlib.Path),
+    callback=check_args,
+    help='Output onnx model name'
 )
 
 
@@ -119,7 +90,9 @@ opt_input = click.option(
         dir_okay=False,
         readable=True,
         path_type=pathlib.Path
-    )
+    ),
+    callback=check_args,
+    help='Input onnx model to be optimized'
 )
 
 
@@ -128,14 +101,18 @@ opt_start = click.option(
     'start_node_names',
     required=True,
     type=click.STRING,
+    callback=check_args,
+    help='The names of start nodes'
 )
 
 
 opt_end = click.option(
-    '--end-node-names'
+    '--end-node-names',
     'end_node_names',
     required=True,
     type=click.STRING,
+    callback=check_args,
+    help='The names of end nodes'
 )
 
 
@@ -160,7 +137,9 @@ opt_path = click.option(
         dir_okay=True,
         readable=True,
         path_type=pathlib.Path
-    )
+    ),
+    callback=check_args,
+    help='Target onnx file or directory containing onnx file'
 )
 
 
@@ -175,7 +154,6 @@ opt_device = click.option(
 
 
 opt_loop = click.option(
-    '-l',
     '--loop',
     'loop',
     default=100,
@@ -193,13 +171,6 @@ opt_soc = click.option(
     callback=check_args,
     help='Soc_version, default to Ascend310P3.'
 )
-
-
-def validate_opt_converter(ctx: click.Context, param: click.Option, value: str) -> str:
-    '''Process and validate knowledges option.'''
-    if value.lower() not in ['atc']:
-        raise click.BadParameter('Invalid converter.')
-    return value.lower()
 
 
 opt_converter = click.option(
