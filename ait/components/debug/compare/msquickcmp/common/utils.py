@@ -534,19 +534,8 @@ def get_batch_index_from_name(name):
 def get_data_len_by_shape(shape):
     data_len = 1
     for item in shape:
-        if item is -1:
+        if item == -1:
             logger.error("please check your input shape, one dim in shape is -1.")
             return -1
         data_len = data_len * item
     return data_len
-
-
-def str2bool(v):
-    if isinstance(v, bool):
-        return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return False
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
