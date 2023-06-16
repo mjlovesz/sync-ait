@@ -33,7 +33,7 @@ let handle_msg = new ElectronMsgHandelManager()
 const createWindow = () => {
     // 创建浏览窗口
     const mainWindow = new BrowserWindow({
-        width: 1000,
+        width: 1450,
         height: 900,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
@@ -58,6 +58,10 @@ app.whenReady().then(() => {
 
     ipcMain.handle('message', (event, path, msg_send) => {
         return handle_msg.handleMessage(event, path, msg_send)
+    })
+
+    ipcMain.handle('new_window', (event, path, msg_send) => {
+        createWindow()
     })
 })
 
@@ -104,6 +108,11 @@ class PythonIPC {
                 let { msg, status, file, req_ind } = JSON.parse(data)
                 this.msg_event_emit(req_ind, msg, status, file)
             }
+        })
+
+        this.process.stderr.on("data", (data_text) => {
+            data_text = data_text.toString()
+            console.error(`${data_text}`)
         })
 
         this.process.on("close", (code) => {

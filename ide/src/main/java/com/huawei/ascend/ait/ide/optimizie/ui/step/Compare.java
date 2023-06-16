@@ -16,8 +16,9 @@
 
 package com.huawei.ascend.ait.ide.optimizie.ui.step;
 
-import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addPath;
+import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.add;
 import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addState;
+import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addString;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedFile;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedPath;
 
@@ -28,12 +29,15 @@ import com.huawei.ascend.ait.ide.commonlib.ui.SwitchButton;
 import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
 import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
 
+import com.huawei.ascend.ait.ide.util.FileChooseWithBrows;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -43,12 +47,14 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import java.awt.*;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Compare
@@ -77,13 +83,21 @@ public class Compare extends DialogWrapper {
     private JLabel inputPathJLabel;
     private JLabel cannPathJLabel;
     private JTextField outputNodesJText;
+    private TextFieldWithBrowseButton weightBrowse;
+    private JPanel weightJPanel;
+    private JLabel weightJLabel;
     private TextFieldWithBrowseButton CompareMainBrowse;
     private SwitchButton debugButton;
     private final Project project;
+    private boolean isPrototxt = false;
 
     private static final String OM_MODEL_FILE_EXTENSION = "om";
     private static final String PB_MODEL_FILE_EXTENSION = "pb";
     private static final String ONNX_MODEL_FILE_EXTENSION = "onnx";
+    private static final String PROTOTXT_MODEL_FILE_EXTENSION = "prototxt";
+    private static final String CAFFE_MODEL_FILE_EXTENSION = "caffemodel";
+    private static final List<String> INVALID_CHAR = List.of("|", "&", "$", ">", "<", "`", "\\" + "\\", "!", "\\n");
+    private static final String INJECT_ERROR = "Parameters cannot contain the following characters: " + INVALID_CHAR;
 
     /**
      * compare
@@ -94,29 +108,64 @@ public class Compare extends DialogWrapper {
         super(true);
         this.project = project;
         root.setPreferredSize(new Dimension(500, 350));
+        dumpButton.setOn();
         init();
         setTitle("Compare");
 
-        setFileChoodeAction();
+        setFileChooseAction();
+        initWeight(isPrototxt);
         setOKButtonText("Start");
     }
 
-    private void setFileChoodeAction() {
-        modelFIleAction();
+    private void setFileChooseAction() {
+        modelFileAction();
+        weightFileAction();
         offlineModelAction();
         inputAction();
         cannPathAction();
         outputAction();
     }
 
-    private void modelFIleAction() {
-        List<String> lists = List.of(PB_MODEL_FILE_EXTENSION, ONNX_MODEL_FILE_EXTENSION);
+    private void modelFileAction() {
+        List<String> lists = List.of(PB_MODEL_FILE_EXTENSION, ONNX_MODEL_FILE_EXTENSION, PROTOTXT_MODEL_FILE_EXTENSION);
         modelFileBrowse.addActionListener(event -> {
             String selectFile = getSelectedFile(project, lists, false);
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
+            File model = new File(selectFile);
+            String modelName = model.getName();
             modelFileBrowse.setText(selectFile);
+            if ("prototxt".equals(modelName.substring(modelName.lastIndexOf(".") + 1))) {
+                isPrototxt = true;
+                initWeight(true);
+                setWeightPath(model, modelName);
+            }
+
+        });
+    }
+
+    private void setWeightPath(File model, String modelName) {
+        Path path = Path.of(model.getParent(), modelName.substring(0, modelName.lastIndexOf(".")) + ".caffemodel");
+        File file = new File(path.toString());
+        if (file.exists()) {
+            weightBrowse.setText(path.toString());
+        }
+    }
+
+    private void initWeight(boolean isPrototxt) {
+        weightJPanel.setVisible(isPrototxt);
+        weightJLabel.setVisible(isPrototxt);
+        weightBrowse.setVisible(isPrototxt);
+    }
+
+    private void weightFileAction() {
+        weightBrowse.addActionListener(event -> {
+            String selectFile = getSelectedFile(project, List.of(CAFFE_MODEL_FILE_EXTENSION), false);
+            if (StringUtils.isEmpty(selectFile)) {
+                return;
+            }
+            weightBrowse.setText(selectFile);
         });
     }
 
@@ -133,7 +182,13 @@ public class Compare extends DialogWrapper {
 
     private void inputAction() {
         inputPathBrowse.addActionListener(event -> {
-            String selectFile = getSelectedPath(project);
+            FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, true, false, false,
+                    false, true)
+                    .withFileFilter(virtualFile -> virtualFile.isDirectory() || ("bin").equals(virtualFile.getExtension()))
+                    .withTitle("Browse for File or Path")
+                    .withDescription("Please select the appropriate file of .bin or the path of the file.");
+            String selectFile = FileChooseWithBrows.fileChoosewithBrowse(project, fileChooserDescriptor,
+                    "", "SelectFile").orElse(null);
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
@@ -147,7 +202,6 @@ public class Compare extends DialogWrapper {
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
-            File model = new File(selectFile);
             cannPathBrowse.setText(selectFile);
         });
     }
@@ -158,7 +212,6 @@ public class Compare extends DialogWrapper {
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
-            File model = new File(selectFile);
             outputPathBrowse.setText(selectFile);
         });
     }
@@ -173,10 +226,10 @@ public class Compare extends DialogWrapper {
         CmdStrBuffer cmdStrBuffer = new CmdStrBuffer();
         cmdStrBuffer = getCmdStrBuffer();
         OutputService.getInstance(project).print(cmdStrBuffer.toString());
+        close(0);
         CmdExec exec = new CmdExec();
         try {
             exec.bashStart(cmdStrBuffer);
-            close(0);
             String errorRec = exec.getErrorResult();
             if (errorRec != null) {
                 OutputService.getInstance(project).print(errorRec, ConsoleViewContentType.LOG_ERROR_OUTPUT);
@@ -188,10 +241,14 @@ public class Compare extends DialogWrapper {
             }
         } catch (IOException | CommandInjectException e) {
             LOGGER.error(e.getMessage());
+            OutputService.getInstance(project).print(e.getMessage());
         }
     }
 
     private void showCsv() {
+        if (!dumpButton.isSelected()){
+            return;
+        }
         File path = new File(outputPathBrowse.getText());
         File[] files = path.listFiles();
         if (files == null) {
@@ -222,17 +279,20 @@ public class Compare extends DialogWrapper {
         cmd.append("ait").append(CmdStrWordStatic.SPACE)
                 .append("debug").append(CmdStrWordStatic.SPACE)
                 .append("compare").append(CmdStrWordStatic.SPACE);
-        addPath(cmd, "-gm", modelFileBrowse.getText());
-        addPath(cmd, "-om", offlineModelPathBrowse.getText());
-        addPath(cmd, "-i", inputPathBrowse.getText());
-        addPath(cmd, "-o", outputPathBrowse.getText());
-        addPath(cmd, "-c", cannPathBrowse.getText());
+        add(cmd, "-gm", modelFileBrowse.getText());
+        if (isPrototxt) {
+            add(cmd, "-w", weightBrowse.getText());
+        }
+        add(cmd, "-om", offlineModelPathBrowse.getText());
+        add(cmd, "-i", inputPathBrowse.getText());
+        add(cmd, "-o", outputPathBrowse.getText());
+        add(cmd, "-c", cannPathBrowse.getText());
 
-        addPath(cmd, "-s", inputShapeJText.getText());
-        addPath(cmd, "-dr", dymShapeJtext.getText());
-        addPath(cmd, "--output-nodes", outputNodesJText.getText());
-        addPath(cmd, "--output-size", outputSizeJText.getText());
-        addPath(cmd, "-d", deviceJText.getText());
+        addString(cmd, "--input-shape", inputShapeJText.getText());
+        addString(cmd, "--output-nodes", outputNodesJText.getText());
+
+        add(cmd, "--output-size", outputSizeJText.getText());
+        add(cmd, "-d", deviceJText.getText());
 
         addState(cmd, "--dump", dumpButton.isSelected());
         addState(cmd, "--convert", convertButton.isSelected());
@@ -247,23 +307,63 @@ public class Compare extends DialogWrapper {
         String offline = offlineModelPathBrowse.getText();
         String cannPath = cannPathBrowse.getText();
         String output = outputPathBrowse.getText();
-        if (model.isEmpty()) {
-            Messages.showErrorDialog("Model file must be chose", "ERROR");
+        String inputPaths = inputPathBrowse.getText();
+
+        if (!checkPath(model, "Model File") || !checkPath(offline, "Offline File")
+                || !checkPath(cannPath, "CANN path")) {
             return false;
         }
-        if (offline.isEmpty()) {
-            Messages.showErrorDialog("Offline model must be chose", "ERROR");
+
+        if (!checkStringSafe(inputShapeJText.getText())) {
+            Messages.showErrorDialog("Input Shape contains illegal characters.", "ERROR");
             return false;
         }
-        if (cannPath.isEmpty()) {
-            Messages.showErrorDialog("CANN path must be chose", "ERROR");
+        if (!checkStringSafe(outputNodesJText.getText())) {
+            Messages.showErrorDialog("Output Nodes contains illegal characters.", "ERROR");
             return false;
         }
-        if (output.isEmpty()) {
-            Messages.showErrorDialog("Output path must be chose", "ERROR");
+        if (!FileUtils.getFile(output).canWrite()) {
+            Messages.showErrorDialog("You do not have the write permission for output path.", "ERROR");
+            return false;
+        }
+        if (!checkRead(inputPaths)) {
             return false;
         }
         return true;
+    }
+
+    private boolean checkPath(String file, String name) {
+        if (file.isEmpty()) {
+            Messages.showErrorDialog(name + " must be chosen", "ERROR");
+            return false;
+        }
+        if (!FileUtils.getFile(file).canRead()) {
+            Messages.showErrorDialog("You do not have the read permission for file: " + file, "ERROR");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean checkRead(String paths) {
+        if (paths.isEmpty()) {
+            return true;
+        }
+        String[] path = paths.split(",");
+        for (String p : path) {
+            if (!FileUtils.getFile(p).canRead()) {
+                Messages.showErrorDialog("You do not have the read permission for file: " + p, "ERROR");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean checkStringSafe(String inputShape) {
+        if (Pattern.matches("[^|&$><`\\\\!\n]*", inputShape)) {
+            return true;
+        }
+        OutputService.getInstance(project).print(inputShape + " contains illegal characters. " + INJECT_ERROR);
+        return false;
     }
 
     @Override

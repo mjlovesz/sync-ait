@@ -30,14 +30,14 @@ OPTIONS参数说明如下：
 
 | 参数                  | 说明                                                       | 是否必选 |
 |---------------------|----------------------------------------------------------|------|
-| -gm, --golden_model | 标杆模型输入路径，支持onnx模型                                        | 是    |
-| -o, --output        | 输出文件，需要有后缀 .om, 当前支持基于 AIE(Ascend Inference Engine) 的模型转换 | 是    |
-| -s, --soc_version   | 芯片类型，AIE模型转换当前只支持Ascend310P3和Ascend910B3                 | 是    |
+| -gm, --golden-model | 标杆模型输入路径，支持onnx模型                                        | 是    |
+| -of, --output-file  | 输出文件，需要有后缀 .om, 当前支持基于 AIE(Ascend Inference Engine) 的模型转换 | 是    |
+| -soc, --soc-version | 芯片类型，AIE模型转换当前只支持Ascend310P3和Ascend910B3                 | 是    |
 
 命令示例如下：
 
 ```shell
-ait convert --model resnet50.onnx --output resnet50.om --soc_version Ascend310P3 
+ait convert --golden-model resnet50.onnx --output-file resnet50.om --soc-version Ascend310P3 
 ```
 
 ## 使用案例

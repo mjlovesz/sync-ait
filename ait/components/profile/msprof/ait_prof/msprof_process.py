@@ -30,13 +30,16 @@ def msprof_run_profiling(args, msprof_bin):
     msprof_cmd = "{} --output={}/profiler --application=\"{} {}/{}\" --model-execution={}" \
                " --sys-hardware-mem={} --sys-cpu-profiling={}" \
                " --sys-profiling={} --sys-pid-profiling={} --dvpp-profiling={} " \
-               "--runtime-api={} --task-time={} --aicpu={}".format(msprof_bin, args.output, sys.executable, bin_path, args.application,
+               "--runtime-api={} --task-time={} --aicpu={}".format(msprof_bin, args.output, sys.executable,
+                                                                   bin_path, args.application,
                                                                    args.model_execution, args.sys_hardware_mem,
                                                                    args.sys_cpu_profiling, args.sys_profiling,
                                                                    args.sys_pid_profiling, args.dvpp_profiling,
                                                                    args.runtime_api, args.task_time, args.aicpu)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
     ret = os.system(msprof_cmd)
+    if ret != 0:
+        raise RuntimeError(f"msprof cmd failed, ret = {ret}")
     logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
 
 
@@ -49,11 +52,18 @@ def args_rules(args):
 
 
 def msprof_process(args:MsProfArgsAdapter):
+    try:
+        args = args_rules(args)
+    except RuntimeError:
+        return 1
     msprof_bin = shutil.which('msprof')
     if msprof_bin is None or os.getenv('GE_PROFILING_TO_STD_OUT') == '1':
         logger.info("find no msprof continue use acl.json mode")
     else:
-        msprof_run_profiling(args, msprof_bin)
+        try:
+            msprof_run_profiling(args, msprof_bin)
+        except RuntimeError:
+            return 1
         return 0
 
     return 0

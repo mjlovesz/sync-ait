@@ -14,6 +14,7 @@
 
 from dataclasses import dataclass
 
+
 @dataclass
 class ConvertConfig:
     """model convert config params"""
