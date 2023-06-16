@@ -507,13 +507,11 @@ host.BrowserHost = class {
             let [dims, has_error] = this.dimStr2dimArray(value)
 
             if (has_error) {
-                input_change.style.borderColor = 'red'
-                input_change.style.outline = "red"
+                input_change.classList.add("input_error")
                 input_change.has_error = true
                 this.document.getElementById("change-input-shape-input-ok").disabled = "disabled"
             } else {
-                input_change.style.borderColor = null
-                input_change.style.outline = ""
+                input_change.classList.remove("input_error")
                 input_change.has_error = false
                 input_change.dims = dims
                 this.document.getElementById("change-input-shape-input-ok").disabled = ""
@@ -525,13 +523,11 @@ host.BrowserHost = class {
         input_change.addEventListener('input', (e) => {
             let value = e.target.value.trim()
             if (!value.match("^-?[1-9][0-9]{0,10}$")) {
-                input_change.style.borderColor = 'red'
-                input_change.style.outline = "red"
+                input_change.classList.add("input_error")
                 input_change.has_error = true
                 this.document.getElementById("fixed-batch-size-input-ok").disabled = "disabled"
             } else {
-                input_change.style.borderColor = null
-                input_change.style.outline = ""
+                input_change.classList.remove("input_error")
                 input_change.has_error = false
                 this.document.getElementById("fixed-batch-size-input-ok").disabled = ""
             }
