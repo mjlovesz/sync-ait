@@ -488,13 +488,16 @@ def backend_run(args):
 
 
 def pipeline_run(args, concur):
-    concur_args_dict = {"model": "", "input": "", "output": "", "loop": "1", "debug": "0", "warmup": "1",
-                    "device": "0", "dymHW": "", "dymDims": "", "dymShape": "", "display": "0",
-                    "outputSize": "", "auto_set_dymshape_mode": "0"}
-    for arg in args:
-        print(arg)
-    # concur_args_list = [f"{k}={v}" for k, v in concur_args_dict if v != ""]
-    # concur_cmd = "{} {}".format(concur, concur_args_list.join(" "))
+    concur_args_dict = {"model": args.model, "input": args.input, "output": args.output, "loop": str(args.loop),
+                        "debug": "1" if args.debug else "0", "warmup": str(args.warmup_count),
+                        "device": str(args.device), "dymHW": args.dym_hw, "dymDims": args.dym_dims,
+                        "dymShape": args.dym_shape, "display": "1" if args.display_all_summary else "0",
+                        "outputSize": args.output_size,
+                        "auto_set_dymshape_mode": "1" if args.auto_set_dymshape_mode else "0"}
+    concur_args_list = [f"{k}={v}" for k, v in concur_args_dict if v != ""]
+    print(concur_args_list)
+    concur_cmd = "{} {}".format(concur, concur_args_list.join(" "))
+    print(concur_cmd)
     # concur_cmd_list = shlex.split(concur_cmd)
 
     # logger.info("pipeline cmd:{} begin run".format(concur_cmd))
