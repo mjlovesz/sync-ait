@@ -126,8 +126,7 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
             for axis, (start, end) in enumerate(move_range)
             if start > 0 or end < 0           # 当不满足这个条件时，说明不需要slice
         ]
-        starts, ends, axes = [s[0] for s in slices_], [s[1] for s in slices_], [s[2] for s in slices_]
-        return new_pads, starts, ends, axes
+        return new_pads, slices_
 
     def _create_kernel_slice_branch(
         self, conv: Node, graph: BaseGraph, kslice: List[Tuple[int, int]], keep_bias: bool
@@ -157,7 +156,8 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
         slice_output_name = f'{slice_name}_output'
 
         kshape: List[int] = conv.attrs.get('kernel_shape', [1])
-        new_pads, start, end, axes = self._calculate_pads_and_slices(kslice, kshape, pads)
+        new_pads, slices_ = self._calculate_pads_and_slices(kslice, kshape, pads)
+        start, end, axes = [s[0] for s in slices_], [s[1] for s in slices_], [s[2] for s in slices_]
         graph.add_initializer(name=slice_start_name, value=np.array(start))
         graph.add_initializer(name=slice_end_name, value=np.array(end))
         graph.add_initializer(name=slice_axes_name, value=np.array(axes))
