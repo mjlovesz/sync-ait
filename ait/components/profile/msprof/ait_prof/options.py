@@ -93,6 +93,7 @@ opt_output = click.option(
     type=click.Path(
         path_type=pathlib.Path
     ),
+    callback=check_args,
     help='Inference data output path. The inference results are output to '
         'the subdirectory named current date under given output path'
 )
