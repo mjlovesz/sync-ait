@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="version" content="0.0.0">
+<title>onnx-modifier</title>
+<link rel="stylesheet" type="text/css" href="view-grapher.css">
+<link rel="stylesheet" type="text/css" href="view-sidebar.css">
+<link rel="stylesheet" type="text/css" href="view-main-page.css">
+<link rel="shortcut icon" type="image/x-icon" href="favicon.png">
+<script src="dagre.js"></script>
+<script src="base.js"></script>
+<script src="text.js"></script>
+<script src="json.js"></script>
+<script src="xml.js"></script>
+<script src="python.js"></script>
+<script src="protobuf.js"></script>
+<script src="flatbuffers.js"></script>
+<script src="zip.js"></script>
+<script src="gzip.js"></script>
+<script src="tar.js"></script>
+<script src="view-grapher.js"></script>
+<script src="view-sidebar.js"></script>
+<script src="view.js"></script>
+<script src="index.js"></script>
+<script src="modifier.js"></script>
+
+</head>
+<body class="welcome">
+    
+<div class="main-page">
+<div class="top-toolbar">
+    <div class="toolbar-tab-group-title" style="display: none;">
+        File
+    </div>
+    <div class="toolbar-tab-group-title" style="display: none;">
+        Modifier
+    </div>
+
+    <div class="toolbar-tab-group" id="toolbar-group-file"> 
+        <div class="toolbar-tab"> 
+            <div class="toolbar-tab-title" > File </div>
+            <div class="toolbar-contant">
+                <div class="toolbar-item" class="open-file-button"> Open Onnx 
+                    <div class="toolbar-menu">
+                        <div class="toolbar-menu-item" id="open-new-window-button">Open New Window</div>
+                    </div>
+                </div>
+                <div class="toolbar-item" > Save File </div>
+                <div class="toolbar-item" title="Roll back all modifications to the original model"> Reset </div>
+                <div class="toolbar-item" title="Subnet export. start and end nodes need to be selected"> Extract Sub Net</div>
+            </div>
+        </div>
+    </div>
+    <div class="toolbar-tab-group" id="toolbar-group-modify"> 
+        <div class="toolbar-tab"> 
+            <div class="toolbar-tab-title" > Optimizer </div>
+            <div class="toolbar-contant">
+                <div class="toolbar-item" title="Invoke onnxsim to optimize the entire network"> OnnxSim </div>
+                <div class="toolbar-item" title=""> AutoOptimizer </div>
+            </div>
+        </div>
+        <div class="toolbar-tab"> 
+            <div class="toolbar-tab-title" > Node </div>
+            <div class="toolbar-contant">
+                <div class="toolbar-item"> Add Node </div>
+            </div>
+        </div>
+        <div class="toolbar-tab"> 
+            <div class="toolbar-tab-title" > Delete Node </div>
+            <div class="toolbar-contant">
+                <div class="toolbar-item" id="delete-node"> Delete Node 
+                    <div class="toolbar-menu">
+                        <div class="toolbar-menu-item" id="delete-node-with-children">Delete With Children</div>
+                    </div>
+                </div>
+                <div class="toolbar-item" id="delete-enter-node"> Delete Enter </div>
+                <div class="toolbar-item" id="recover-node"> Recover Node 
+                    <div class="toolbar-menu">
+                        <div class="toolbar-menu-item" id="recover-node-with-children">Recover With Children</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="toolbar-tab"> 
+            <div class="toolbar-tab-title" > Net Input Output </div>
+            <div class="toolbar-contant">
+                <div class="toolbar-item" id="add-input"> Add Input </div>
+                <div class="toolbar-item" id="remove-input"> Remove Input </div>
+                <div class="toolbar-item" id="add-output"> Add Output </div>
+                <div class="toolbar-item" id="remove-output"> Remove Output </div>
+                <div class="toolbar-item" id="change-input-shape"> Set Input Shape 
+                    <div class="toolbar-menu">
+                        <div class="toolbar-menu-item" id="batch-size-dynamic">Dynamic Batch Size</div>
+                        <div class="toolbar-menu-item" id="batch-size-fixed">Fixed Batch Size</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="toolbar-tab"> 
+            <div class="toolbar-tab-title" > Modify Info </div>
+            <div class="toolbar-contant">
+                <div class="toolbar-item" title="Export the current modification to a JSON file. You can import and apply these changes later"> Modify Export </div>
+                <div class="toolbar-item" title="Import the JSON file and apply the saved modification steps"> Modify Import </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="content">
+<div class="toolbar-left">
+    <div id="menu-button" class="icon toolbar-button">
+        <div class="title"> Menu </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+        </svg>
+    </div>
+
+    <div id="open-file-button" class="icon toolbar-button">
+        <div class="title"> Open Onnx File </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-folder" viewBox="0 0 16 16">
+            <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h3.982a2 2 0 0 1 1.992 2.181l-.637 7A2 2 0 0 1 13.174 14H2.826a2 2 0 0 1-1.991-1.819l-.637-7a1.99 1.99 0 0 1 .342-1.31zM2.19 4a1 1 0 0 0-.996 1.09l.637 7a1 1 0 0 0 .995.91h10.348a1 1 0 0 0 .995-.91l.637-7A1 1 0 0 0 13.81 4H2.19zm4.69-1.707A1 1 0 0 0 6.172 2H2.5a1 1 0 0 0-1 .981l.006.139C1.72 3.042 1.95 3 2.19 3h5.396l-.707-.707z"/>
+          </svg>
+    </div>
+
+    <div id="download-graph" class="icon toolbar-button">
+        <div class="title"> Download </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-download" viewBox="0 0 16 16">
+            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+          </svg>
+    </div>
+    
+
+    <div id="reset-graph" class="icon toolbar-button" title="Roll back all modifications to the original model">
+        <div class="title"> Reset </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-skip-backward" viewBox="0 0 16 16">
+        <path d="M.5 3.5A.5.5 0 0 1 1 4v3.248l6.267-3.636c.52-.302 1.233.043 1.233.696v2.94l6.267-3.636c.52-.302 1.233.043 1.233.696v7.384c0 .653-.713.998-1.233.696L8.5 8.752v2.94c0 .653-.713.998-1.233.696L1 8.752V12a.5.5 0 0 1-1 0V4a.5.5 0 0 1 .5-.5zm7 1.133L1.696 8 7.5 11.367V4.633zm7.5 0L9.196 8 15 11.367V4.633z"/>
+      </svg>
+    </div>
+
+    <div id="extract-graph" class="icon toolbar-button" title="Subnet export. start and end nodes need to be selected">
+        <div class="title"> Extract Sub Network </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-pip" viewBox="0 0 16 16">
+            <path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5v-9zM1.5 3a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z"/>
+            <path d="M8 8.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-5a.5.5 0 0 1-.5-.5v-3z"/>
+          </svg>
+    </div>
+    
+    <hr/>
+
+    <div id="add-node" class="icon toolbar-button">
+        <div class="title"> Add Node </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-plus-circle" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+          </svg>
+    </div>
+    
+    <hr/>
+
+    <div id="onnxsim-graph" class="icon toolbar-button" title="Invoke onnxsim to optimize the entire network">
+        <div class="title"> OnnxSim </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-wrench" viewBox="0 0 16 16">
+            <path d="M.102 2.223A3.004 3.004 0 0 0 3.78 5.897l6.341 6.252A3.003 3.003 0 0 0 13 16a3 3 0 1 0-.851-5.878L5.897 3.781A3.004 3.004 0 0 0 2.223.1l2.141 2.142L4 4l-1.757.364L.102 2.223zm13.37 9.019.528.026.287.445.445.287.026.529L15 13l-.242.471-.026.529-.445.287-.287.445-.529.026L13 15l-.471-.242-.529-.026-.287-.445-.445-.287-.026-.529L11 13l.242-.471.026-.529.445-.287.287-.445.529-.026L13 11l.471.242z"/>
+          </svg>
+    </div>
+    
+
+    <div id="auto-optimizer-graph" class="icon toolbar-button" title="Invoke AutoOptimizer(surgeon) to optimize the entire network. It is an optimization tool based on the knowledge base. For details, see the AIT description document">
+        <div class="title"> AutoOptimizer </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-wrench-adjustable-circle" viewBox="0 0 16 16">
+            <path d="M12.496 8a4.491 4.491 0 0 1-1.703 3.526L9.497 8.5l2.959-1.11c.027.2.04.403.04.61Z"/>
+            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0Zm-1 0a7 7 0 1 0-13.202 3.249l1.988-1.657a4.5 4.5 0 0 1 7.537-4.623L7.497 6.5l1 2.5 1.333 3.11c-.56.251-1.18.39-1.833.39a4.49 4.49 0 0 1-1.592-.29L4.747 14.2A7 7 0 0 0 15 8Zm-8.295.139a.25.25 0 0 0-.288-.376l-1.5.5.159.474.808-.27-.595.894a.25.25 0 0 0 .287.376l.808-.27-.595.894a.25.25 0 0 0 .287.376l1.5-.5-.159-.474-.808.27.596-.894a.25.25 0 0 0-.288-.376l-.808.27.596-.894Z"/>
+          </svg>
+    </div>
+
+    <hr/>
+
+    <div id="modify-export" class="icon toolbar-button" title="Export the current modification to a JSON file. You can import and apply these changes later">
+        <div class="title"> Modifier Info Export </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-cloud-arrow-down" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M7.646 10.854a.5.5 0 0 0 .708 0l2-2a.5.5 0 0 0-.708-.708L8.5 9.293V5.5a.5.5 0 0 0-1 0v3.793L6.354 8.146a.5.5 0 1 0-.708.708l2 2z"/>
+            <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383zm.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/>
+          </svg>
+    </div>
+    
+
+    <div id="modify-import" class="icon toolbar-button" title="Import the JSON file and apply the saved modification steps">
+        <div class="title"> Modifier Info Import </div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-cloud-arrow-up" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M7.646 5.146a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 6.707V10.5a.5.5 0 0 1-1 0V6.707L6.354 7.854a.5.5 0 1 1-.708-.708l2-2z"/>
+            <path d="M4.406 3.342A5.53 5.53 0 0 1 8 2c2.69 0 4.923 2 5.166 4.579C14.758 6.804 16 8.137 16 9.773 16 11.569 14.502 13 12.687 13H3.781C1.708 13 0 11.366 0 9.318c0-1.763 1.266-3.223 2.942-3.593.143-.863.698-1.723 1.464-2.383zm.653.757c-.757.653-1.153 1.44-1.153 2.056v.448l-.445.049C2.064 6.805 1 7.952 1 9.318 1 10.785 2.23 12 3.781 12h8.906C13.98 12 15 10.988 15 9.773c0-1.216-1.02-2.228-2.313-2.228h-.5v-.5C12.188 4.825 10.328 3 8 3a4.53 4.53 0 0 0-2.941 1.1z"/>
+          </svg>
+    </div>
+</div>
+<div id="graph" class="graph" tabindex="0">
+    <svg id="canvas" class="canvas" preserveaspectratio="xMidYMid meet" width="100%" height="100%">   
+        <g id="linecolor">
+            <linearGradient id="gradient-start">
+                <stop stop-color="red"></stop>
+                <stop stop-color="red" offset="0.7"></stop>
+                <stop stop-color="orange" offset="1"></stop>
+            </linearGradient>
+            <linearGradient id="gradient-end">
+                <stop stop-color="orange"></stop>
+                <stop stop-color="purple" offset="0.4"></stop>
+                <stop stop-color="purple" offset="1"></stop>
+            </linearGradient>
+            <linearGradient id="gradient-start-end">
+                <stop stop-color="red"></stop>
+                <stop stop-color="orange" offset="0.5"></stop>
+                <stop stop-color="purple" offset="1"></stop>
+            </linearGradient>
+        </g>
+    </svg>
+</div>
+<div id="sidebar" class="sidebar"></div>
+<div id="toolbar" class="toolbar" style="top:110px; left:85px">
+    <button id="zoom-in-button" class="toolbar-button" title="Zoom In">
+        <svg class="icon" viewbox="0 0 100 100">
+            <circle class="border" cx="50" cy="50" r="35" stroke-width="8" stroke="#fff"></circle>
+            <line class="border" x1="50" y1="38" x2="50" y2="62" stroke-width="8" stroke-linecap="round" stroke="#fff"></line>
+            <line class="border" x1="38" y1="50" x2="62" y2="50" stroke-width="8" stroke-linecap="round" stroke="#fff"></line>
+            <line class="border" x1="78" y1="78" x2="82" y2="82" stroke-width="12" stroke-linecap="square" stroke="#fff"></line>
+            <circle class="stroke" cx="50" cy="50" r="35" stroke-width="4"></circle>
+            <line class="stroke" x1="50" y1="38" x2="50" y2="62" stroke-width="4" stroke-linecap="round"></line>
+            <line class="stroke" x1="38" y1="50" x2="62" y2="50" stroke-width="4" stroke-linecap="round"></line>
+            <line class="stroke" x1="78" y1="78" x2="82" y2="82" stroke-width="8" stroke-linecap="square"></line>
+        </svg>
+    </button>
+
+    <button id="zoom-out-button" class="toolbar-button" title="Zoom Out">
+        <svg class="icon" viewbox="0 0 100 100">
+            <circle class="border" cx="50" cy="50" r="35" stroke-width="8" stroke="#fff"></circle>
+            <line class="border" x1="38" y1="50" x2="62" y2="50" stroke-width="8" stroke-linecap="round" stroke="#fff"></line>
+            <line class="border" x1="78" y1="78" x2="82" y2="82" stroke-width="12" stroke-linecap="square" stroke="#fff"></line>
+            <circle class="stroke" cx="50" cy="50" r="35" stroke-width="4"></circle>
+            <line class="stroke" x1="38" y1="50" x2="62" y2="50" stroke-width="4" stroke-linecap="round"></line>
+            <line class="stroke" x1="78" y1="78" x2="82" y2="82" stroke-width="8" stroke-linecap="square"></line>
+        </svg>
+    </button>
+    <button id="back-button" class="toolbar-back-button" title="Back">
+        &#x276E;
+    </button>
+    <button id="name-button" class="toolbar-name-button" title="Name">
+    </button>
+    <div id="menu-dropdown" class="dropdown"></div>
+</div>
+</div>
+</div>
+<div class="center logo">
+    <a href="https://gitee.com/ascend/ait" target="blank_">
+        <svg class="" viewbox="0 0 5120 300">
+           <g style="font-size:240pt" >
+               <text class="logo-fill" x=200 y=260 textLength="2560">Ascend's</text>
+           </g>        
+       </svg>
+   </a>
+    <a href="https://gitee.com/ascend/ait/tree/master/onnx-modifier" target="blank_">
+        <img src="./logo.svg"
+             title="onnx-modifier is a tool to modify onnx models in a visualization fashion. It is built based on Netron and flask."
+             height="130">
+    </a>
+
+    <button id="open-file-button-logo" class="center open-file-button">Open Model&hellip;</button>
+    <button id="github-button" class="center github-button">Gitee repo</button>
+    <input type="file" id="open-file-dialog" class="open-file-dialog" multiple="false" accept=".onnx, .ort, .pb, .meta, .tflite, .lite, .tfl, .keras, .h5, .hd5, .hdf5, .json, .model, .mar, .params, .param, .armnn, .mnn, .ncnn, .tnnproto, .tmfile, .ms, .nn, .uff, .rknn, .xmodel, .kmodel, .paddle, .pdmodel, .pdparams, .nb, .dnn, .cmf, .mlmodel, .mlpackage, .caffemodel, .pbtxt, .prototxt, .pkl, .pt, .pth, .ptl, .t7, .joblib, .cfg, .xml, .zip, .tar">
+    <input type="file" id="open-modify-json-dialog" class="open-file-dialog" multiple="false" accept=".json">
+    <!-- Preload fonts to workaround Chrome SVG layout issue -->
+    <div style="font-weight: normal; color: rgba(0, 0, 0, 0.01); user-select: none;">.</div>
+    <div style="font-weight: bold; color: rgba(0, 0, 0, 0.01); user-select: none;">.</div>
+    <div style="font-weight: bold; color: rgba(0, 0, 0, 0.01); user-select: none;">.</div>
+</div>
+<div id="transparent" class="transparent"></div>
+<!-- dialogs -->
+<dialog id="show-message-alert" class="message-box dialog"> 
+    <h1> </h1>
+    <div class="text"> </div>
+    <div class="footer"><button onclick="document.getElementById('show-message-alert').close()">OK</button></div>
+</dialog>
+<dialog id="show-message-confirm" class="message-box confirm-message-box dialog"> 
+    <h1> </h1>
+    <div class="text"> </div>
+    <div class="footer">
+        <button>Cancel</button>
+        <button>OK</button>
+    </div>
+</dialog>
+<dialog id="show-message-info" open></dialog>
+<dialog id="show-about" class="dialog about message-box">
+    <a href="https://gitee.com/ascend/ait" target="blank_">
+        <svg class="logo-name" viewbox="0 0 5120 300">
+           <g style="font-size:240pt" >
+               <text class="logo-fill" x=200 y=260 textLength="2560">Ascend's</text>
+           </g>        
+       </svg>
+   </a>
+    <a href="https://gitee.com/ascend/ait/tree/master/onnx-modifier" target="blank_">
+        <img src="./logo.svg"
+             title="onnx-modifier is a tool to modify onnx models in a visualization fashion. It is built based on Netron and flask."
+             height="130px">
+    </a>
+
+    <div class="logo-message">
+        <div style="height: 30px; text-align: center;">Version <span id="version" class="select">{version}</span></div>
+        <div style="height: 30px; text-align: center;">Copyright &copy; <a href="https://gitee.com/ascend/ait/" target="blank_">Ascend</a></div>
+        <div style="height: 30px; text-align: center;">Thanks <a href="https://github.com/ZhangGe6" target="blank_">ZhangGe6</a></div>
+    </div>
+    
+    <div class="footer"><button onclick="document.getElementById('show-about').close()">OK</button></div>
+</dialog>
+
+<dialog id="download-dialog" class="dialog message-box"> 
+    <input type="checkbox" id="shapeInference" class="download-checkbox-shapeInference"/> 
+    <input type="text" value="shape inference" class="download-anno-shapeInference" readonly/> </td>
+    <input type="checkbox" id="cleanUp" class="download-checkbox-cleanUp"/> 
+    <input type="text" value="clean up" class="download-anno-cleanUp" readonly/> </td>
+    <div class="footer">
+        <button>Cancel</button>
+        <button>OK</button>
+    </div>
+</dialog>
+<dialog id="addnode-dialog" class="dialog message-box"> 
+    <h1> Add New Node </h1>
+    <select id="add-node-dropdown" class="graph-op-add-node-dropdown">
+    </select>
+    <div class="footer">
+        <button>Cancel</button>
+        <button>OK</button>
+    </div>
+</dialog>
+<dialog id="addinput-dialog" class="dialog message-box"> 
+    <h1> Add New Input </h1>
+    <div class="text"> </div>
+    <div style="display: flex; margin: 5px; justify-content: center;">
+        <select id="add-input-dropdown" class="graph-op-add-node-dropdown">
+        </select>
+    </div>
+    <div class="footer">
+        <button>Cancel</button>
+        <button>OK</button>
+    </div>
+</dialog>
+<dialog id="change-input-shape-dialog" class="dialog message-box"> 
+    <h1> Change Input Shape </h1>
+    <div class="text"> </div>
+    <div style="display: flex; margin: 5px; justify-content: center; flex-direction: column;">
+        <err_msg> </err_msg>
+        <input id="change-input-shape-input" type="text" size="32" placeholder="example: batch,3,224,224"/>
+        <div>
+            <input type="checkbox" class="checkbox-shape-change" checked /> 
+            <span class="download-anno-cleanUp"> shape inference </span>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <button>Cancel</button>
+        <button id="change-input-shape-input-ok">OK</button>
+    </div>
+</dialog>
+<dialog id="dynamic-batch-size-dialog" class="dialog message-box"> 
+    <h1> Dynamic Input Batch Size </h1>
+    <div>
+        <err_msg> </err_msg>
+        <input type="checkbox" class="checkbox-shape-change" checked /> 
+        <span class="download-anno-cleanUp"> shape inference </span>
+    </div>
+    <div class="footer">
+        <button>Cancel</button>
+        <button id="dynamic-batch-size-input-ok">OK</button>
+    </div>
+</dialog>
+<dialog id="fixed-batch-size-dialog" class="dialog message-box"> 
+    <h1> Fixed Input Batch Size </h1>
+    <div class="text"> Please enter batchsize </div>
+    <div style="display: flex; margin: 5px; justify-content: center; flex-direction: column;">
+        <err_msg> </err_msg>
+        <input id="fixed-batch-size-input" type="text" size="32"/>
+        <div>
+            <input type="checkbox" class="checkbox-shape-change" checked /> 
+            <span class="download-anno-cleanUp"> shape inference  </span>
+        </div>
+    </div>
+    <div class="footer">
+        <button>Cancel</button>
+        <button id="fixed-batch-size-input-ok">OK</button>
+    </div>
+</dialog>
+</body>
+</html>

@@ -64,6 +64,7 @@ host.BrowserHost = class {
 
     initialize(view) {
         this._view = view;
+        this.view = view;
         return new Promise((resolve) => {
             resolve()
         });
@@ -80,6 +81,19 @@ host.BrowserHost = class {
         this._environment.set('zoom', params.has('zoom') ? params.get('zoom') : this._environment.get('zoom'));
 
         this._menu = new host.Dropdown(this, 'menu-button', 'menu-dropdown');
+        this._menu.add({
+            label: 'Open New Window...',
+            accelerator: 'CmdOrCtrl+O',
+            click: () => {
+                if (this.window.is_electron) {
+                   this.window.new_window()
+                } else {
+                   this.window.open("/")
+                }
+            }
+        })
+
+        this._menu.add({});
         this._menu.add({
             label: 'Properties...',
             accelerator: 'CmdOrCtrl+Enter',
@@ -221,12 +235,22 @@ host.BrowserHost = class {
                     this._status = status
                     this._msg = msg
                     this._file = file
+                    this._headers = new Map()
+                    this._headers.set("Content-Disposition", `filename=${this._msg.filepath}`)
                 }
+
+                get headers() {
+                    return this._headers
+                }
+
                 text() {
                     return Promise.resolve(this._msg)
                 }
 
                 blob() {
+                    if (!this._file) {
+                        return Promise.resolve(null)
+                    }
                     let blob = new Blob([this._file])
                     blob.filepath = this._msg.filepath
                     return Promise.resolve(blob)
@@ -263,12 +287,40 @@ host.BrowserHost = class {
         }
 
         fetch("/get_session_index", {method: 'POST', 
-            headers: {
-                'Content-Type': 'application/json'
-            }, body: JSON.stringify({session:this.session})}).then((response) => {
+            headers: { 'Content-Type': 'application/json' }, 
+            body: JSON.stringify({session:this.session})
+        }).then((response) => {
             this.check_res_status(response.status)
-            response.text().then((text) => {
+            return response.text().then((text) => {
                 this._index_session = text
+            })
+        }).then(() => {
+            fetch("/init", {
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({session:this.session})
+            }).then((response) => {
+                this.check_res_status(response.status)
+                response.blob().then((blob) => {
+                    if (blob && blob.size > 0) {
+                        let disposition = response.headers.get('Content-Disposition')
+                        if (disposition) {
+                            this.upload_filepath = disposition.substring(disposition.indexOf("=") + 1)
+                            let last_index = disposition.replace(/[\\\\\/]/g, "#").lastIndexOf("#")
+                            if (last_index >= 0) {
+                                this.upload_filename = disposition.substring(last_index + 1)
+                            } else {
+                                this.upload_filename = this.upload_filepath
+                            }
+                        } else {
+                            this.upload_filepath = "some.onnx"
+                            this.upload_filename = "some.onnx"
+                        }
+                        let file = new File([blob], this.upload_filename);
+                        file.filepath = blob.filepath ? blob.filepath : this.upload_filepath
+                        return this.openFile(file)
+                    }
+                })
             })
         })
 

@@ -169,7 +169,7 @@ modifier.Modifier = class {
             if (!end_nodes.has(start_node)) {
                 continue
             }
-            this.name2ViewNode.get(end_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-start-end)";
+            this.name2ViewNode.get(start_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-start-end)";
         }
     }
 

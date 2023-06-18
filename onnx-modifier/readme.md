@@ -68,6 +68,8 @@
   # 切到目录 ait/onnx-modifier 运行以下命令
   electron .
   ```
+  - 命令行参数
+    - 支持指定onnx文件，参数为： --onnx [onnx文件路径]
 
 ## 启动方式二：编译成可执行程序启动
 
@@ -102,6 +104,7 @@
 - 命令行参数
   - 支持指定端口，参数为： --port [端口号]
   - 支持debug 模式，会打印更多日志，调试信息等，常用于开发场景，参数为： --debug
+  - 支持指定默认打开的onnx文件，参数为： --onnx [onnx文件路径]
   ```bash
   # 样例
   python flaskserver.py --port 5000 --debug
