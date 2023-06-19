@@ -63,6 +63,7 @@ if [ "$arg_help" -eq "1" ]; then
   exit;
 fi
 
+
 uninstall(){
   if [ -z $only_debug ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ]
   then
@@ -117,6 +118,7 @@ install(){
     pip3 install ${CURRENT_DIR}/components/benchmark/backend \
     ${CURRENT_DIR}/components/benchmark \
     ${arg_force_reinstall}
+    bash ${CURRENT_DIR}/components/benchmark/backend/concur/build.sh
   fi
 
   if [ ! -z $only_analyze ]
