@@ -6,7 +6,7 @@
 
 ## 软件架构
 
-![architecture](img.png)
+![architecture](analyze_flow.jpeg)
 
 ## 工具安装
 
