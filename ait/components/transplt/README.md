@@ -1,13 +1,13 @@
-# 工具使用指南
+# ait transplt工具使用指南
 
-## 1 介绍
+## 简介
 
 本文介绍应用迁移分析工具，提供NV C++推理应用工程迁移分析以及昇腾API推荐
 
-## 2 工具安装
+## 工具安装
 
-### 2.1 使用容器方式安装
-#### 2.1.1 安装docker
+### 使用容器方式安装
+#### 安装docker
 
 > 以下docker安装指引以x86版本的Ubuntu22.04操作系统为基准，其他系统需要自行修改部分内容。
 
@@ -58,7 +58,7 @@ f) 以非root用户运行docker命令
 sudo usermod -aG docker $USER
 ```
 其中$USER代表当前用户。
-#### 2.1.2 构建docker镜像
+#### 构建docker镜像
 在当前目录下运行以下命令以构建镜像：
 ```shell
 docker build --no-cache -t ait-transplt:latest .
@@ -69,8 +69,8 @@ docker run -it ait-transplt:latest
 ```
 
 
-### 2.2 不使用容器方式安装
-#### 2.2.1 安装Clang工具
+### 不使用容器方式安装
+#### 安装Clang工具
 
 依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。以Ubuntu22.04为例：
 
@@ -84,12 +84,12 @@ sudo apt-get install libclang-14-dev clang-14
 
 
 
-#### 2.2.2 安装ait工具
+#### 安装ait工具
 
 - 工具安装请见 [ait一体化工具使用指南](../../README.md)
 
 
-## 3 工具使用
+## 工具使用
 
 一站式ait工具使用命令格式说明如下：
 
@@ -139,6 +139,6 @@ ait transplt -s /data/examples/simple/
 | AscendLib | 推荐的昇腾API所在库 |
 
 ## FAQ
-### 1. Dockerfile构建报错 `ERROR: cannot verify xxx.com's certificate`
+### Dockerfile构建报错 `ERROR: cannot verify xxx.com's certificate`
 
 可在Dockerfile中每个wget命令后加--no-check-certificate，有安全风险，由用户自行承担。
