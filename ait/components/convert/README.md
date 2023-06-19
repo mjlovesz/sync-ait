@@ -1,8 +1,8 @@
-# Convert 工具使用指南
+# ait convert功能使用指南
 
-## 介绍
+## 简介
 
-Convert模型转换工具依托AIE（Ascend Inference Engine）推理引擎，提供由ONNX模型转换至om模型的功能。
+convert模型转换工具依托AIE（Ascend Inference Engine）推理引擎，提供由ONNX模型转换至om模型的功能。
 
 ## 工具安装
 
