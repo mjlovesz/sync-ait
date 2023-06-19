@@ -51,7 +51,7 @@ fi
 
 if [ "$arg_help" -eq "1" ]; then
   echo "Usage: $0 [options]"
-  echo " --help or -h      : Print help menu"
+  echo " --help or -h : Print help menu"
   echo " --debug : only install debug component"
   echo " --benchmark : only install benchmark component"
   echo " --analyze : only install analyze component"
