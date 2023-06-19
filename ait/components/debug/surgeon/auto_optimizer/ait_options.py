@@ -97,6 +97,7 @@ opt_input = click.option(
 
 
 opt_start = click.option(
+    '-snn',
     '--start-node-names',
     'start_node_names',
     required=True,
@@ -107,6 +108,7 @@ opt_start = click.option(
 
 
 opt_end = click.option(
+    '-enn',
     '--end-node-names',
     'end_node_names',
     required=True,
