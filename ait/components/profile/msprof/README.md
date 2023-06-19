@@ -46,6 +46,6 @@
   | --dvpp-profiling         | DVPP采集开关，可选on或off，默认值为on | 否    |
   | --runtime-api            | 控制runtime api性能数据采集开关，可选on或off，默认为on。该参数配置前提是application参数已配置。 | 否    |
   | --task-time              | 控制ts timeline数据采集开关，可选on或off，默认为on。该参数配置前提是application参数已配置。 | 否    |
-  | --aicpu                  | aicpu开关 | 否  |
-  | -h, --help               | 工具使用帮助信息，可选on或off，默认为on。               | 否  |
+  | --aicpu                  | aicpu开关，可选on或off，默认为on。 | 否  |
+  | -h, --help               | 工具使用帮助信息。               | 否  |
 
