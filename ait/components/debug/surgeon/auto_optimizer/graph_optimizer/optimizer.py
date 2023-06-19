@@ -227,7 +227,7 @@ class GraphOptimizer:
             logger.info(f'Applying {name}...')
             graph_opt = deepcopy(graph)
             knowledge.reset()
-            if not self._optimize(graph_opt, knowledge):
+            if not self.optimize(graph_opt, knowledge):
                 logger.warning(f'No match found for {name}, skipping...\n')
                 continue
             graph_opt.save(onnx_opt.as_posix())
