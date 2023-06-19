@@ -1,4 +1,4 @@
-# ait analyze工具使用指南
+# ait analyze功能使用指南
 
 ## 简介
 

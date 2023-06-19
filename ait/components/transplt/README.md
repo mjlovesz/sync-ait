@@ -1,4 +1,4 @@
-# ait transplt工具使用指南
+# ait transplt功能使用指南
 
 ## 简介
 
