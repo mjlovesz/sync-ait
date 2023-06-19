@@ -40,12 +40,12 @@ esac; shift; done
 
 if [ ! "$(command -v python3)" ]
 then
-  echo "错误: python3 没有安装" >&2
+  echo "Error: python3 is not installed" >&2
   exit 1;
 fi
 
 if [ ! "$(command -v pip3)" ]; then
-  echo "错误: pip3 没有安装" >&2
+  echo "Error: pip3 is not installed" >&2
   exit 1;
 fi
 
@@ -159,7 +159,7 @@ install(){
     ${arg_force_reinstall}
 
     if [ ! ${AIE_DIR} ];then
-      echo "Ascend Inference Engine is not install."
+      echo "Ascend Inference Engine is not installed."
     else
       bash ${CURRENT_DIR}/components/convert/build.sh
     fi
