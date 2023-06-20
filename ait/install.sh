@@ -163,7 +163,7 @@ install(){
     ${arg_force_reinstall} ${pip_source}
 
     if [ ! ${AIE_DIR} ];then
-      echo "WARNING: Ascend Inference Engine is not installed."
+      echo "WARNING: Ascend Inference Engine is not installed. (convert install failed)"
     else
       bash ${CURRENT_DIR}/components/convert/build.sh
     fi
