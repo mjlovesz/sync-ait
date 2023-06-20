@@ -36,8 +36,13 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   -y) all_uninstall=-y;;
   -i) shift
     pip_source_url=$1
+    curl_ans=`curl ${pip_source_url} -s --head | head -n 1 | grep "HTTP/1.[01] [23].."`
+    if [ -z "${curl_ans}" ];then
+      echo "Invalid pip source: ${pip_source_url}"
+      exit 1;
+    fi
+    echo "Info: Using pip source ${pip_source_url}";;
     pip_source="-i ${pip_source_url}"
-    echo "Using pip source ${pip_source_url}";;
   -h|--help) arg_help=1;;
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
@@ -164,7 +169,7 @@ install(){
     ${arg_force_reinstall} ${pip_source}
 
     if [ ! ${AIE_DIR} ];then
-      echo "WARNING: Ascend Inference Engine is not installed. (convert install failed)"
+      echo "Warning: Ascend Inference Engine is not installed. (convert install failed)"
     else
       bash ${CURRENT_DIR}/components/convert/build.sh
     fi
