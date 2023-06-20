@@ -761,7 +761,7 @@ ais_bench推理工具执行后，打屏输出结果示例如下：
 
 开放ais_bench推理工具推理Python接口。
 
-代码示例参考https://gitee.com/ascend/tools/blob/master/ais-bench_workload/tool/ais_bench/test/interface_sample.py
+代码示例参考https://gitee.com/ascend/tools/blob/master/ais-bench_workload/tool/ais_bench/tests/interface_sample.py
 
 可以通过如下示例代码完成ais_bench推理工具推理操作：
 

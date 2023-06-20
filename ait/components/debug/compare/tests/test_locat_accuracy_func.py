@@ -56,7 +56,7 @@ class TestClass:
             weight_path="",
             input_data_path="",
             cann_path=self.cann_path,
-            out_path=os.path.join(self.get_base_path(), '/test/resnet18/output/'),
+            out_path=os.path.join(self.get_base_path(), '/tests/resnet18/output/'),
             input_shape="",
             device="0",
             output_size="",
