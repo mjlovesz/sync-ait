@@ -13,22 +13,56 @@
 
 import sys
 import os
-import logging.handlers
+import logging
+from logging import handlers
 
 IS_PYTHON3 = sys.version_info > (3,)
-logger = logging.getLogger('ait transplt')
+LOG_FILE_PATH = "ait_transplt.log"
+LOG_FORMAT = "%(asctime)s - %(levelname)s - %(filename)s[%(lineno)d] - %(message)s"
+LOG_LEVEL = {
+    "notest": logging.NOTSET,
+    "debug": logging.DEBUG,
+    "info": logging.INFO,
+    "warn": logging.WARN,
+    "warning": logging.WARNING,
+    "error": logging.ERROR,
+    "fatal": logging.FATAL,
+    "critical": logging.CRITICAL
+}
 
-if os.path.exists("ait_transplt.log"):
-    os.remove("ait_transplt.log")
 
-# create console handler and formatter for logger
-console = logging.StreamHandler()
-fh = logging.handlers.TimedRotatingFileHandler("ait_transplt.log", when='midnight', interval=1, backupCount=7)
+def get_logger():
+    inner_logger = logging.getLogger("ait transplt")
+    inner_logger.propagate = False
+    inner_logger.setLevel(logging.INFO)
+    if not inner_logger.handlers:
+        stream_handler = logging.StreamHandler()
+        formatter = logging.Formatter(LOG_FORMAT)
+        stream_handler.setFormatter(formatter)
+        inner_logger.addHandler(stream_handler)
+    return inner_logger
 
-formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s[%(lineno)d] - %(message)s")
 
-console.setFormatter(formatter)
-fh.setFormatter(formatter)
+def set_logger_level(level="info"):
+    if level.lower() in LOG_LEVEL:
+        logger.setLevel(LOG_LEVEL.get(level.lower()))
+    else:
+        logger.warning("Set %s log level failed.", level)
 
-logger.addHandler(console)
-logger.addHandler(fh)
+
+def init_file_logger():
+    for ii in logger.handlers:
+        # Check if already set
+        if isinstance(ii, handlers.TimedRotatingFileHandler) and os.path.basename(ii.stream.name) == LOG_FILE_PATH:
+            return
+
+    if os.path.exists(LOG_FILE_PATH):
+        os.remove(LOG_FILE_PATH)
+
+    # create console handler and formatter for logger
+    fh = handlers.TimedRotatingFileHandler(LOG_FILE_PATH, when='midnight', interval=1, backupCount=7)
+    formatter = logging.Formatter(LOG_FORMAT)
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+
+logger = get_logger()
