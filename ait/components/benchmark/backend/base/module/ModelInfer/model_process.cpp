@@ -1502,7 +1502,7 @@ Result ModelProcess::FreeAIPP(aclmdlAIPP* aippParmsSet)
     return SUCCESS;
 }
 
-int ModelProcess::CheckDymAIPPInputExsity()
+int ModelProcess::CheckDymAIPPInputExist()
 {
     /*
     模型有没有动态AIPP输入，用aclmdlGetAippType 函数找找，能找到说明模型没问题
