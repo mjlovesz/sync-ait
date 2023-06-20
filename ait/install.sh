@@ -131,7 +131,11 @@ install(){
   then
     pip3 install ${CURRENT_DIR}/components/convert \
     ${arg_force_reinstall}
-    bash ${CURRENT_DIR}/components/convert/build.sh
+    if [ ! ${AIE_DIR} ];then
+      echo "Ascend Inference Engine is not installed."
+    else
+      bash ${CURRENT_DIR}/components/convert/build.sh
+    fi
   fi
 
   if [ ! -z $only_transplt ]
@@ -164,6 +168,8 @@ install(){
       bash ${CURRENT_DIR}/components/convert/build.sh
     fi
   fi
+
+  rm -rf ${CURRENT_DIR}/ait.egg-info
 }
 
 
