@@ -38,7 +38,7 @@ while [[ "$#" -gt 0 ]]; do case $1 in
     pip_source_url=$1
     curl_ans=`curl ${pip_source_url} -s --head | head -n 1 | grep "HTTP/1.[01] [23].."`
     if [ -z "${curl_ans}" ];then
-      echo "Invalid pip source: ${pip_source_url}"
+      echo "Error: Invalid pip source: ${pip_source_url}"
       exit 1;
     fi
     echo "Info: Using pip source ${pip_source_url}"
