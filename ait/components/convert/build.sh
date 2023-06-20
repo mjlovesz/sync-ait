@@ -30,7 +30,7 @@ if [ ! "$(command -v pip3)" ];then
 fi
 
 PIP3=$(which pip3)
-PIP3_DIR=$(dirname ${PIP3})
+PIP3_DIR=$(readlink -f ${PIP3})
 PYTHON=${PIP3_DIR}/python
 
 AIE_RUNTIME_PATH=$(dirname $(${PYTHON} -c "import aie_runtime;print(aie_runtime.__file__)"))
