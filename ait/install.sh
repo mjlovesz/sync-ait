@@ -35,8 +35,9 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --uninstall) uninstall=true;;
   -y) all_uninstall=-y;;
   -i) shift
-    pip_source=-i $1
-    echo "Using pip source ${pip_source}";;
+    pip_source_url=$1
+    pip_source="-i ${pip_source_url}"
+    echo "Using pip source ${pip_source_url}";;
   -h|--help) arg_help=1;;
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
@@ -107,7 +108,7 @@ uninstall(){
 
 
 install(){
-  pip3 install ${CURRENT_DIR} ${arg_force_reinstall}
+  pip3 install ${CURRENT_DIR} ${arg_force_reinstall} ${pip_source}
 
   if [ ! -z $only_debug ]
   then
