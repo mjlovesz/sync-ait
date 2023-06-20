@@ -13,22 +13,38 @@
 
 import sys
 import os
-import logging.handlers
+import logging
+from logging import handlers
 
 IS_PYTHON3 = sys.version_info > (3,)
-logger = logging.getLogger('ait transplt')
+LOG_FILE_PATH = "ait_transplt.log"
+LOG_FORMAT = "%(asctime)s - %(levelname)s - %(filename)s[%(lineno)d] - %(message)s"
 
-if os.path.exists("ait_transplt.log"):
-    os.remove("ait_transplt.log")
+def get_logger():
+    logger = logging.getLogger("ait transplt")
+    logger.propagate = False
+    logger.setLevel(logging.INFO)
+    if not logger.handlers:
+        stream_handler = logging.StreamHandler()
+        formatter = logging.Formatter(LOG_FORMAT)
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+    return logger
 
-# create console handler and formatter for logger
-console = logging.StreamHandler()
-fh = logging.handlers.TimedRotatingFileHandler("ait_transplt.log", when='midnight', interval=1, backupCount=7)
 
-formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s[%(lineno)d] - %(message)s")
+def init_file_logger():
+    for ii in logger.handlers:
+        # Check if already set
+        if isinstance(ii, handlers.TimedRotatingFileHandler) and os.path.basename(ii.stream.name) == LOG_FILE_PATH:
+            return
 
-console.setFormatter(formatter)
-fh.setFormatter(formatter)
+    if os.path.exists(LOG_FILE_PATH):
+        os.remove(LOG_FILE_PATH)
 
-logger.addHandler(console)
-logger.addHandler(fh)
+    # create console handler and formatter for logger
+    fh = handlers.TimedRotatingFileHandler(LOG_FILE_PATH, when='midnight', interval=1, backupCount=7)
+    formatter = logging.Formatter(LOG_FORMAT)
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+
+logger = get_logger()
