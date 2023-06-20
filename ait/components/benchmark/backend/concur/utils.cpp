@@ -21,6 +21,8 @@
 #include <algorithm>
 #include <dirent.h>
 #include <chrono>
+#include <ctime>
+#include <iomanip>
 
 #include "utils.h"
 
@@ -182,4 +184,13 @@ std::string RemoveTail(std::string src, const std::string tail)
         src.erase(src.size() - tail.size());
     }
     return src;
+}
+
+std::string GetCurrentTime()
+{
+    std::time_t now = std::time(nullptr);
+    std::tm time = *std::localtime(&now);
+    std::ostringstream oss;
+    oss << std::put_time(&time, "%Y_%m_%d-%H_%M_%S");
+    return oss.str();
 }

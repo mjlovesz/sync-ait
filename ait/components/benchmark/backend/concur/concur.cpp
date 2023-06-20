@@ -337,8 +337,10 @@ void Execute(Arguments& arguments)
     options->loop = stoi(arguments["loop"]);
     options->log_level = arguments["debug"] == "0" ? LOG_INFO_LEVEL : LOG_DEBUG_LEVEL;
     size_t deviceId = stoi(arguments["device"]);
+    std::string model = arguments["model"];
+    std::string outputDir = arguments["output"] == "" ? "" : arguments["output"] + "/" + GetCurrentTime() + "/";
 
-    auto session = std::make_shared<Base::PyInferenceSession>(arguments["model"], deviceId, options);
+    auto session = std::make_shared<Base::PyInferenceSession>(model, deviceId, options);
     SetSession(session, arguments);
 
     ConcurrentQueue<std::shared_ptr<Feeds>> h2dQueue;
@@ -356,8 +358,8 @@ void Execute(Arguments& arguments)
     std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue),
                               deviceId, session, std::ref(computeTs));
     std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId, std::ref(d2hTs));
-    std::thread saveThread(FuncSave, std::ref(saveQueue), deviceId, arguments["output"]);
-    FuncPrepare(deviceId, session, arguments["model"], options,
+    std::thread saveThread(FuncSave, std::ref(saveQueue), deviceId, outputDir);
+    FuncPrepare(deviceId, session, model, options,
                 filesList, h2dQueue, arguments["auto_set_dymshape_mode"] != "0");
 
     h2dThread.join();
