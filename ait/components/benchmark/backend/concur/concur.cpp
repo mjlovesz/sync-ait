@@ -24,6 +24,7 @@
 #include <condition_variable>
 #include <chrono>
 #include <unordered_map>
+#include <experimental/filesystem>
 
 #include <unistd.h>
 #include <assert.h>
@@ -42,6 +43,7 @@
 #include "utils.h"
 
 namespace chr = std::chrono;
+namespace fs = std::experimental::filesystem;
 using TimePointPair = std::pair<chr::steady_clock::time_point, chr::steady_clock::time_point>;
 using Arguments = std::unordered_map<std::string, std::string>;
 
@@ -309,6 +311,7 @@ void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, int32_t device
         }
 
         if (outputDir != "") {
+            fs::create_directories(outputDir);
             size_t n = item->outputs->size();
             std::string prefix = outputDir + "/" + RemoveSlash(RemoveTail(item->outputPrefix, ".npy") + "_");
             for (size_t i = 0; i < n; i++) {

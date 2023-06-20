@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.0)
 project(ais_bench_infer VERSION 0.1.0)
 
 # Compile options
-add_compile_options(-std=c++17)
+add_compile_options(-std=c++17 -lstdc++fs)
 
 add_definitions(-DENABLE_DVPP_INTERFACE)
 
@@ -13,7 +13,7 @@ set(BACKEND_PATH ../)
 
 set(INC_PATH $ENV{DDK_PATH})
 
-if (NOT DEFINED ENV{DDK_PATH})
+if (NOT DEFINED ENV{DDK_PATH})  
     set(INC_PATH "/usr/local/Ascend/ascend-toolkit/latest")
     message(STATUS "set default INC_PATH: ${INC_PATH}")
 else ()
@@ -43,7 +43,7 @@ link_directories(
 include_directories(
     ${BACKEND_PATH}/python/include/
     ${BACKEND_PATH}/base/include/
-    ${BACKEND_PATH}/base/include/Base/ModelInfer/   
+    ${BACKEND_PATH}/base/include/Base/ModelInfer/
 )
 
 include_directories(${PROJECT_SOURCE_DIR}/include)
@@ -68,4 +68,4 @@ add_executable(concur
         ${BACKEND_PATH}/concur/cnpy.cpp
         concur.cpp)
 
-target_link_libraries(concur ascendcl acl_cblas acl_dvpp stdc++ pthread)
+target_link_libraries(concur ascendcl acl_cblas acl_dvpp stdc++ pthread stdc++fs)
