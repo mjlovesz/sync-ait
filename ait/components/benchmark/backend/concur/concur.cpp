@@ -292,7 +292,7 @@ Result TensorToNumpy(std::string outputFileName, Base::TensorBase& output)
 }
 
 
-void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, int32_t deviceId, std::string outputDir)
+void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, int32_t deviceId, const std::string &outputDir)
 {
     APP_ERROR ret;
     ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
@@ -311,7 +311,6 @@ void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, int32_t device
         }
 
         if (outputDir != "") {
-            fs::create_directories(outputDir);
             size_t n = item->outputs->size();
             std::string prefix = outputDir + "/" + RemoveSlash(RemoveTail(item->outputPrefix, ".npy") + "_");
             for (size_t i = 0; i < n; i++) {
@@ -338,7 +337,11 @@ void Execute(Arguments& arguments)
     options->log_level = arguments["debug"] == "0" ? LOG_INFO_LEVEL : LOG_DEBUG_LEVEL;
     size_t deviceId = stoi(arguments["device"]);
     std::string model = arguments["model"];
-    std::string outputDir = arguments["output"] == "" ? "" : arguments["output"] + "/" + GetCurrentTime() + "/";
+    std::string outputDir = arguments["output"] == "" ? "" : arguments["output"] + "/" + GetCurrentTime();
+    if (outputDir != "" && fs::is_symlink(outputDir)) {
+        fs::remove(outputDir);
+    }
+    fs::create_directories(outputDir);
 
     auto session = std::make_shared<Base::PyInferenceSession>(model, deviceId, options);
     SetSession(session, arguments);
@@ -358,7 +361,7 @@ void Execute(Arguments& arguments)
     std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue),
                               deviceId, session, std::ref(computeTs));
     std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId, std::ref(d2hTs));
-    std::thread saveThread(FuncSave, std::ref(saveQueue), deviceId, outputDir);
+    std::thread saveThread(FuncSave, std::ref(saveQueue), deviceId, std::cref(outputDir));
     FuncPrepare(deviceId, session, model, options,
                 filesList, h2dQueue, arguments["auto_set_dymshape_mode"] != "0");
 
