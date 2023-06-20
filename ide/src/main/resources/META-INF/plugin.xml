@@ -15,13 +15,15 @@
 -->
 <idea-plugin>
     <id>com.huawei.ascend.ait.ide</id>
-    <name>Ait-Ide</name>
-    <vendor email="sm" url="http.com">Yan</vendor>
+    <name>Ascend Inference Tools IDE</name>
+    <vendor url="https://gitee.com/ascend">Huawei</vendor>
 
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
-  ]]></description>
+    <p><strong>Ascend-Inference-Tools-IDE as an Ascend unified inference tool.</strong></p>
+    <p>
+    Provides customers with integrated development tools and supports one-stop debugging and tuning, currently including Model Convert, Ais_Bench, Compare (one-click accuracy comparison) and other components.
+    ]]></description>
+
     <idea-version since-build="223"/>
 
     <depends>com.intellij.modules.platform</depends>
