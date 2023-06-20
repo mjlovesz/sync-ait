@@ -162,7 +162,7 @@ install(){
     ${CURRENT_DIR}/components/profile/msprof \
     ${arg_force_reinstall} ${pip_source}
 
-    bash ${CURRENT_DIR}/components/convert/build.sh
+    bash ${CURRENT_DIR}/components/convert/build.sh || true
   fi
 
   rm -rf ${CURRENT_DIR}/ait.egg-info
