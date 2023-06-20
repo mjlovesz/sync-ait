@@ -137,4 +137,4 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
-/test/test_auto_optimizer.py
+/tests/test_auto_optimizer.py

@@ -44,11 +44,11 @@ function test_analyze()
 }
 function test_benchmark()
 {
-    bash $CUR_PATH/../benchmark/test/test.sh $1 $2
+    bash $CUR_PATH/../benchmark/tests/test.sh $1 $2
 }
 function test_convert()
 {
-    cd $CUR_PATH/../convert/test/
+    cd $CUR_PATH/../convert/tests/
     bash test.sh
 }
 function test_debug_compare()
@@ -58,16 +58,16 @@ function test_debug_compare()
 }
 function test_debug_surgeon()
 {
-    cd $CUR_PATH/../debug/surgeon/test/
+    cd $CUR_PATH/../debug/surgeon/tests/
     bash test.sh
 }
 function test_profile()
 {
-    bash $CUR_PATH/../profile/test/test.sh
+    bash $CUR_PATH/../profile/tests/test.sh
 }
 function test_transplt()
 {
-    bash $CUR_PATH/../transplt/test/test.sh
+    bash $CUR_PATH/../transplt/tests/test.sh
 }
 
 main() {
