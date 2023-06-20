@@ -14,7 +14,7 @@
 
 import click
 
-from app_analyze.utils.log_util import logger
+from app_analyze.utils import log_util
 from app_analyze.porting.app import start_scan_kit, opt_source, opt_tools, opt_log_level, opt_report_type
 
 
@@ -33,7 +33,8 @@ class Args:
 @opt_tools
 def cli(source, report_type, log_level, tools):
     args = Args(source, report_type, log_level, tools)
-    logger.setLevel(args.log_level)
+    log_util.set_logger_level(args.log_level)
+    log_util.init_file_logger()
     start_scan_kit(args)
 
 

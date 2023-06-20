@@ -19,6 +19,16 @@ from logging import handlers
 IS_PYTHON3 = sys.version_info > (3,)
 LOG_FILE_PATH = "ait_transplt.log"
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(filename)s[%(lineno)d] - %(message)s"
+LOG_LEVEL = {
+    "notest": logging.NOTSET,
+    "debug": logging.DEBUG,
+    "info": logging.INFO,
+    "warn": logging.WARN,
+    "warning": logging.WARNING,
+    "error": logging.ERROR,
+    "fatal": logging.FATAL,
+    "critical": logging.CRITICAL
+}
 
 def get_logger():
     logger = logging.getLogger("ait transplt")
@@ -30,6 +40,13 @@ def get_logger():
         stream_handler.setFormatter(formatter)
         logger.addHandler(stream_handler)
     return logger
+
+
+def set_logger_level(level="info"):
+    if level.lower() in LOG_LEVEL:
+        logger.setLevel(LOG_LEVEL.get(level.lower()))
+    else:
+        logger.warning("Set %s log level failed.", level)
 
 
 def init_file_logger():
