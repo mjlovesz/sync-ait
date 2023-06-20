@@ -41,8 +41,8 @@ while [[ "$#" -gt 0 ]]; do case $1 in
       echo "Invalid pip source: ${pip_source_url}"
       exit 1;
     fi
-    echo "Info: Using pip source ${pip_source_url}";;
-    pip_source="-i ${pip_source_url}"
+    echo "Info: Using pip source ${pip_source_url}"
+    pip_source="-i ${pip_source_url}";;
   -h|--help) arg_help=1;;
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
