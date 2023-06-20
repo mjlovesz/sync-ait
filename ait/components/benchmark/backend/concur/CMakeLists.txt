@@ -13,7 +13,7 @@ set(BACKEND_PATH ../)
 
 set(INC_PATH $ENV{DDK_PATH})
 
-if (NOT DEFINED ENV{DDK_PATH})  
+if (NOT DEFINED ENV{DDK_PATH})
     set(INC_PATH "/usr/local/Ascend/ascend-toolkit/latest")
     message(STATUS "set default INC_PATH: ${INC_PATH}")
 else ()
