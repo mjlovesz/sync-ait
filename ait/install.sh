@@ -162,7 +162,11 @@ install(){
     ${CURRENT_DIR}/components/profile/msprof \
     ${arg_force_reinstall} ${pip_source}
 
-    bash ${CURRENT_DIR}/components/convert/build.sh || true
+    if [ ! ${AIE_DIR} ];then
+      echo "Warning: Ascend Inference Engine is not installed."
+    else
+      bash ${CURRENT_DIR}/components/convert/build.sh
+    fi
   fi
 
   rm -rf ${CURRENT_DIR}/ait.egg-info
