@@ -34,6 +34,9 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --profile) only_profile=true;;
   --uninstall) uninstall=true;;
   -y) all_uninstall=-y;;
+  -i) shift
+    pip_source=$1
+    echo "Using pip source ${pip_source}";;
   -h|--help) arg_help=1;;
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
@@ -110,27 +113,27 @@ install(){
   then
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} -i ${pip_source}
   fi
 
   if [ ! -z $only_benchmark ]
   then
     pip3 install ${CURRENT_DIR}/components/benchmark/backend \
     ${CURRENT_DIR}/components/benchmark \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} -i ${pip_source}
     bash ${CURRENT_DIR}/components/benchmark/backend/concur/build.sh
   fi
 
   if [ ! -z $only_analyze ]
   then
     pip3 install ${CURRENT_DIR}/components/analyze \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} -i ${pip_source}
   fi
 
   if [ ! -z $only_convert ]
   then
     pip3 install ${CURRENT_DIR}/components/convert \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} -i ${pip_source}
 
     bash ${CURRENT_DIR}/components/convert/build.sh
     fi
@@ -139,13 +142,13 @@ install(){
   if [ ! -z $only_transplt ]
   then
     pip3 install ${CURRENT_DIR}/components/transplt \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} -i ${pip_source}
   fi
 
   if [ ! -z $only_profile ]
   then
     pip3 install ${CURRENT_DIR}/components/profile/msprof \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} -i ${pip_source}
   fi
 
   if [ -z $only_debug ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ]
@@ -158,7 +161,7 @@ install(){
     ${CURRENT_DIR}/components/convert \
     ${CURRENT_DIR}/components/transplt \
     ${CURRENT_DIR}/components/profile/msprof \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} -i ${pip_source}
 
     bash ${CURRENT_DIR}/components/convert/build.sh
   fi
