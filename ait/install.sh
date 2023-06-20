@@ -136,7 +136,6 @@ install(){
     ${arg_force_reinstall} -i ${pip_source}
 
     bash ${CURRENT_DIR}/components/convert/build.sh
-    fi
   fi
 
   if [ ! -z $only_transplt ]
