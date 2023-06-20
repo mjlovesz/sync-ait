@@ -177,9 +177,10 @@ g.extract_subgraph(
 
 ### 详细使用方法
 
-- 接口详见 [API 说明和示例](../../docs/graph_refactor/graph_refactor_API.md)
-- BaseNode 使用方法参见 [BaseNode 说明](../../docs/graph_refactor/graph_refactor_BaseNode.md)
-- BaseGraph 使用方法参见 [BaseGraph 说明](../../docs/graph_refactor/graph_refactor_BaseGraph.md)
+
+- 接口详见 [API 说明和示例](../../../components/debug/surgeon/docs/graph_refactor/graph_refactor_API.md)
+- BaseNode 使用方法参见 [BaseNode 说明](../../../components/debug/surgeon/docs/graph_refactor/graph_refactor_BaseNode.md)
+- BaseGraph 使用方法参见 [BaseGraph 说明](../../../components/debug/surgeon/docs/graph_refactor/graph_refactor_BaseGraph.md)
 
  
 ## 使用示例
