@@ -73,3 +73,19 @@ chmod u+x install.sh
 # 6. 只安装convert组件
 ./install.sh --convert
 ```
+
+
+#### 卸载
+```shell
+# 1. 一个个询问式卸载
+./install.sh --uninstall
+
+# 2. 不询问式直接全部卸载
+./install.sh --uninstall -y
+
+# 3. 单独组件询问式卸载(例如debug组件)
+./install.sh --uninstall --debug
+
+# 4. 不询问式单独组件直接卸载(例如debug组件)
+./install.sh --uninstall --debug -y
+```
