@@ -16,21 +16,3 @@ TsdOpen failed, devId=0, tdt error=1[FUNC:startAicpuExecutor][FILE:runtime.cc][L
 ```
 unset ASCEND_AICPU_PATH
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
