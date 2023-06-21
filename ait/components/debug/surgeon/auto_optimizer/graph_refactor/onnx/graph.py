@@ -176,8 +176,8 @@ class OnnxGraph(BaseGraph):
 
     def infer_shape(self) -> None:
         # clear value_infos
-        self._value_infos = []
-        self._value_map = {}
+        self._value_infos.clear()
+        self._value_map.clear()
         model = self.model()
 
         try:
@@ -197,8 +197,8 @@ class OnnxGraph(BaseGraph):
 
        # update value_infos
         graph = inferred_model.graph
-        self._value_infos = [OnnxPlaceHolder.parse(v) for v in graph.value_info]
-        self._value_map = {v.name: v for v in self._value_infos}
+        self._value_infos.extend([OnnxPlaceHolder.parse(v) for v in graph.value_info])
+        self._value_map.update({v.name: v for v in self._value_infos})
 
     def extract(
         self,
