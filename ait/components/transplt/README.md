@@ -14,7 +14,7 @@
 a) 更新软件包索引，并且安装必要的依赖软件
 ```shell
 sudo apt update
-sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common lsb-release
+sudo apt install apt-transport-https ca-certificates curl wget gnupg-agent software-properties-common lsb-release
 ```
 b) 导入docker源仓库的 GPG key
 ```shell
@@ -72,22 +72,104 @@ docker run -it ait-transplt:latest
 ### 不使用容器方式安装
 #### 安装Clang工具
 
-依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。以Ubuntu22.04为例：
+ait transplt功能依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。下面介绍在不同OS中安装Clang工具的方法：
+
+##### 在Ubuntu 22.04中安装Clang
 
 ```shell
 sudo apt-get install libclang-14-dev clang-14
 ```
+##### 在Ubuntu 18.04中安装Clang
 
-依赖[加速库头文件](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip)，依赖[API映射表](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip)，下载后解压至安装目录，例如`/usr/local/site-packages/app_analyze`
+```shell
+sudo apt-get install libclang-10-dev clang-10
+```
+##### 在CentOS 7.6中安装Clang
 
-加速库头文件和API映射表可及时更新，注意格式。
+Centos7.x版本yum源无Clang4.8.5以上的安转包，我们需要通过源码编译安装LLVM和Clang，详细安装指导参考
+[Getting Started with the LLVM System](https://llvm.org/docs/GettingStarted.html)。编译LLVM依赖一些软件包，
+需用户提前确保依赖满足，或者自行手动安装。下面的表格列出了这些必需的软件包。Package列是LLVM所依赖的软件包通常的名称。
+Version列提供了“可以工作”的软件包版本。Notes列描述了LLVM如何使用这个软件包，并提供其它细节。
 
+| Package                                           | Version      | Notes                        |
+| :------------------------------------------------ | :----------- | :--------------------------- |
+| [CMake](http://cmake.org/)                        | >=3.20.0     | Makefile/workspace generator |
+| [GCC](http://gcc.gnu.org/)                        | >=7.1.0      | C/C++ compiler1              |
+| [python](http://www.python.org/)                  | >=3.6        | Automated test suite2        |
+| [zlib](http://zlib.net/)                          | >=1.2.3.4    | Compression library3         |
+| [GNU Make](http://savannah.gnu.org/projects/make) | 3.79, 3.79.1 | Makefile/build processor4    |
 
+下面以Clang7.0为例编译安装LLVM和Clang。
+
+获取源码。通过Git获取源码，包括LLVM和Clang子工程，切换到对应版本。
+
+```shell
+git clone https://github.com/llvm/llvm-project.git
+git checkout llvmorg-7.0.0
+```
+
+或者直接下载对应版本的源码。
+
+```shell
+wget https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-7.0.0.zip
+# 如果没有安装wget，可以采用curl
+curl -o llvmorg-7.0.0.zip https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-7.0.0.zip
+# 解压得到llvmorg-7.0.0目录
+unzip -q llvmorg-7.0.0.zip
+```
+
+也可以在[LLVM Release](https://github.com/llvm/llvm-project/releases)页面下载对应版本的源码包。
+
+编译和安装LLVM和Clang。
+
+```shell
+cd llvmorg-7.0.0/; mkdir build; cd build
+# 建议不开启libcxx;libcxxabi，使用默认的gcc/g++配套的libstdc++
+cmake -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS="clang" -G "Unix Makefiles" ../llvm
+make -j32  # 将32换成小于所在机器CPU线程数的数字，或者去除数字，自动设定
+make install  # 安装到默认位置/usr/local/lib/
+```
+
+配置环境变量。为防止后续Clang无法自动找到头文件，建议添加如下环境变量。
+
+```
+export CPLUS_INCLUDE_PATH=/usr/local/lib/clang/7.0.0/include
+```
+
+安装成功后，libclang.so一般位于`/usr/local/lib/libclang.so`，修改`common/kit_config.py`中的`LIB_CLANG_PATH`为该路径后，再进行ait的安装。
+
+##### 在SLES 12.5中安装Clang
+
+```shell
+sudo zypper install libclang7 clang7-devel
+```
+
+安装成功后，用```sudo find / -name "libclang.so"```命令查找安装的libclang动态库所在路径，一般位于`/usr/lib64/libclang.so`，
+修改`common/kit_config.py`中的`LIB_CLANG_PATH`为该路径后，再进行ait的安装。
 
 #### 安装ait工具
 
 - 工具安装请见 [ait一体化工具使用指南](../../README.md)
 
+#### 下载加速库头文件和API映射表
+
+依赖[加速库头文件](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip)，依赖[API映射表](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip)，下载后解压至ait transplt工具安装目录，这个安装目录根据您的python3安装位置不同会有不同的值。例如您的python3.7在`/usr/local/bin/python3.7`，那么可以下载后解压至```/usr/local/lib/python3.7/dist-packages/app_analyze```目录。
+
+您可以使用```python3 -c "import app_analyze; print(app_analyze.__path__[0])"```命令来确定具体的安装目录。
+
+您也可以使用如下命令一键式下载并解压到安装目录：
+
+```shell
+cd $(python3 -c "import app_analyze; print(app_analyze.__path__[0])") \
+    && wget -O config.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip \
+    && unzip config.zip \
+    && rm config.zip \
+    && wget -O headers.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip \
+    && unzip headers.zip \
+    && rm headers.zip
+```
+
+加速库头文件和API映射表可及时更新，注意格式。
 
 ## 工具使用
 
