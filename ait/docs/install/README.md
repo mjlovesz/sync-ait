@@ -55,7 +55,7 @@ cd ait/ait
 # 添加执行权限
 chmod u+x install.sh
 
-# 1. 只安装debug组件（使用compare功能、surgen功能的opt命令下面的--infer-test，**需要安装benchmark组件**）
+# 1. 只安装debug组件（使用compare功能、surgen功能的opt命令下面的--infer-test，需要安装benchmark组件）
 ./install.sh --debug
 
 # 2. 只安装benchmark组件
