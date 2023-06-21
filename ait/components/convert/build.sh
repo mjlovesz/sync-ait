@@ -13,16 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+if [ ! ${AIE_DIR} ];then
+  echo "Error: Ascend Inference Engine is not installed."
+  exit 1
+fi
+
 CONVERT_DIR=$(dirname $(readlink -f $0))
 cd ${CONVERT_DIR}/aie_runtime/cpp
 rm -rf build && mkdir build && cd build && cmake .. && make -j
 
 AIT_CONVERT=${CONVERT_DIR}/aie_runtime/cpp/build/ait_convert
 
-AIE_DIR=$(dirname $(python3 -c "import aie_runtime;print(aie_runtime.__file__)"))
+if [ ! "$(command -v pip3)" ];then
+  echo "Error: pip3 is not installed."
+  exit 1
+fi
+
+PIP3=$(readlink -f $(which pip3))
+PIP3_DIR=$(dirname ${PIP3})
+PYTHON=${PIP3_DIR}/python
+
+AIE_RUNTIME_PATH=$(dirname $(${PYTHON} -c "import aie_runtime;print(aie_runtime.__file__)"))
 
 if [ -f ${AIT_CONVERT} ];then
-  cp ${AIT_CONVERT} ${AIE_DIR}
+  cp ${AIT_CONVERT} ${AIE_RUNTIME_PATH}
   else
     echo "Error: Build ait_convert failed."
 fi

@@ -39,5 +39,6 @@ std::string RemoveSlash(std::string name);
 std::string CreateDynamicShape(std::string name, std::vector<size_t> shapes);
 void PrintTimeWall(const std::string& phase, const std::vector<TimePointPair>& timeStamps);
 std::string RemoveTail(std::string src, const std::string tail);
+std::string GetCurrentTime();
 
 #endif // BACKEND_UTILS_H

@@ -69,7 +69,7 @@ def set_session_options(session, args):
         aipp_batchsize = args.batchsize
 
     # 确认模型只有一个动态 aipp input
-    if args.dym_shape is not None:
+    if args.dym_shape is not None or args.auto_set_dymshape_mode:
         aipp_input_exist = 0
     else:
         aipp_input_exist = session.get_dym_aipp_input_exist()
