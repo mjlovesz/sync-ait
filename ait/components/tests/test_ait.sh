@@ -40,11 +40,13 @@ function get_npu_type()
 
 function test_analyze()
 {
-    bash $CUR_PATH/../analyze/tests/model_eval/test.sh
+    cd $CUR_PATH/../analyze/tests/model_eval/
+    bash test.sh
 }
 function test_benchmark()
 {
-    bash $CUR_PATH/../benchmark/test/test.sh $1 $2
+    cd $CUR_PATH/../benchmark/test/
+    bash test.sh $1 $2
 }
 function test_convert()
 {
@@ -63,11 +65,13 @@ function test_debug_surgeon()
 }
 function test_profile()
 {
-    bash $CUR_PATH/../profile/test/test.sh
+    cd $CUR_PATH/../profile/test/
+    bash test.sh
 }
 function test_transplt()
 {
-    bash $CUR_PATH/../transplt/test/test.sh
+    cd $CUR_PATH/../transplt/test/
+    bash test.sh
 }
 
 main() {
@@ -83,6 +87,7 @@ main() {
     test_debug_surgeon || { echo "developer test surgeon failed";all_part_test_ok=$ret_failed; }
     test_profile || { echo "developer test profile failed";all_part_test_ok=$ret_failed; }
     test_transplt || { echo "developer test transplt failed";all_part_test_ok=$ret_failed; }
+    cd $CUR_PATH
 
     return $all_part_test_ok
 }
