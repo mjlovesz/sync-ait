@@ -87,6 +87,7 @@ main() {
     test_debug_surgeon || { echo "developer test surgeon failed";all_part_test_ok=$ret_failed; }
     test_profile || { echo "developer test profile failed";all_part_test_ok=$ret_failed; }
     test_transplt || { echo "developer test transplt failed";all_part_test_ok=$ret_failed; }
+    cd $CUR_PATH
 
     return $all_part_test_ok
 }
