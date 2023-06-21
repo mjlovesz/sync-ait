@@ -441,15 +441,6 @@ host.BrowserHost = class {
             });
         }
 
-        const openNewFileButton = this.document.getElementById('open-new-window-button');
-        openNewFileButton.addEventListener("click", (click_event) => {
-             if (this.window.is_electron) {
-                this.window.new_window()
-             } else {
-                this.window.open("/")
-             }
-             click_event.stopPropagation();
-        })
         const githubButton = this.document.getElementById('github-button');
         if (githubButton) {
             githubButton.style.opacity = 1;
@@ -493,7 +484,7 @@ host.BrowserHost = class {
         });
 
         this._view.show('welcome');
-        this.toolbar_enable()
+        // this.toolbar_enable()
     }
 
     get_default_input_shape(input_name) {
@@ -584,177 +575,6 @@ host.BrowserHost = class {
                 this.document.getElementById("fixed-batch-size-input-ok").disabled = ""
             }
         });
-    }
-
-    toolbar_enable() {
-        let enable_map = new Map()
-        let listener_map = new Map()
-        let is_deleting = false
-
-        let change_delete_status = (status, event) => {
-            if (is_deleting != status) {
-                is_deleting = status
-                document.dispatchEvent(event)
-            }
-        }
-        enable_map.set("delete-node", (detail, event) => {
-            return [detail.is_node, () => {
-                this._view.modifier.deleteSingleNode(detail.node_name);
-                change_delete_status(true, event)
-            }]
-        })
-        enable_map.set("delete-node-with-children", (detail, event) => {
-            return [detail.is_node, (click_event) => {
-                this._view.modifier.deleteNodeWithChildren(detail.node_name);
-                change_delete_status(true, event)
-                click_event.stopPropagation();
-            }]
-        })
-        enable_map.set("recover-node", (detail) => {
-            return [detail.is_node && is_deleting, () => {
-                this._view.modifier.recoverSingleNode(detail.node_name);
-            }]
-        })
-        enable_map.set("recover-node-with-children", (detail) => {
-            return [detail.is_node && is_deleting, (click_event) => {
-                this._view.modifier.recoverNodeWithChildren(detail.node_name);
-                click_event.stopPropagation();
-            }]
-        })
-        
-        enable_map.set("delete-enter-node", (detail, event) => {
-            return [is_deleting, () => {
-                this._view.modifier.deleteEnter();
-                change_delete_status(false, event)
-            }]
-        })
-
-        enable_map.set("add-input", (detail) => {
-            let listener = () => {
-                // show dialog
-                let select_elem = this.document.getElementById("add-input-dropdown")
-                select_elem.options.length = 0
-                detail.node.inputs.map(inPram => inPram.arguments[0].name).forEach((input_name) => {
-                    select_elem.appendChild(new Option(input_name));
-                })
-
-                let dialog = this.document.getElementById("addinput-dialog")
-                dialog.getElementsByClassName("text")[0].innerText = `Choose a input of Node ${detail.node_name} :`
-                this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
-                    if (!is_not_cancel) {
-                        return 
-                    }
-                    let select_input = select_elem.options[select_elem.selectedIndex].value;
-                    this._view.modifier.addModelInput(detail.node_name, select_input);
-                })
-            }
-            
-            return [detail.is_node, listener]
-        })
-        enable_map.set("remove-input", (detail) => {
-            return [detail.is_input, ()=>{
-                this._view.modifier.deleteModelInput(detail.input_name);
-            }]
-        })
-        enable_map.set("add-output", (detail) => {
-            return [detail.is_node, () => {
-                this._view.modifier.addModelOutput(detail.node_name);
-            }]
-        })
-        enable_map.set("remove-output", (detail) => {
-            return [detail.is_output, () => {
-                this._view.modifier.deleteModelOutput(detail.output_name);
-            }]
-        })
-
-        this.init_input_shape_change_event()
-        enable_map.set("change-input-shape", (detail) => {
-            return [detail.is_input, () => {
-                // show dialog
-                let default_shape = this.get_default_input_shape(detail.input_name)
-
-                let input_change = this.document.getElementById("change-input-shape-input")
-                input_change.value = default_shape
-                let dialog = this.document.getElementById("change-input-shape-dialog")
-                dialog.getElementsByClassName("text")[0].innerText = `Change the shape of input: ${detail.input_name}`
-                this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
-                    if (!is_not_cancel) {
-                        return 
-                    }
-                    
-                    this._view.modifier.changeInputSize(detail.input_name, input_change.dims);
-                    this._view.modifier.refreshModelInputOutput()
-
-                    if (dialog.getElementsByClassName("checkbox-shape-change")[0].checked) {
-                        let data = this.build_download_data(true)
-                        data.postprocess_args.shapeInf = true
-                        this.take_effect_modify("/download", data, false)
-                    }
-                    this._view._sidebar.close()
-                })
-            }]
-        })
-        enable_map.set("batch-size-dynamic", (detail) => {
-            return [detail.is_input, (click_event) => {
-                let dialog = this.document.getElementById("dynamic-batch-size-dialog")
-                this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
-                    if (!is_not_cancel) {
-                        return 
-                    }
-                    this.change_batch_size("dynamic")
-                    this._view.modifier.changeBatchSize("dynamic");
-                    if (dialog.getElementsByClassName("checkbox-shape-change")[0].checked) {
-                        let data = this.build_download_data(true)
-                        data.postprocess_args.shapeInf = true
-                        this.take_effect_modify("/download", data, false)
-                    }
-                    this._view._sidebar.close()
-                })
-                click_event.stopPropagation();
-            }]
-        })
-        this.init_batch_size_change_event()
-        enable_map.set("batch-size-fixed", (detail) => {
-            return [detail.is_input, (click_event) => {
-                // show dialog
-                let dialog = this.document.getElementById("fixed-batch-size-dialog")
-                this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
-                    if (!is_not_cancel) {
-                        return 
-                    }
-                    let input_change = this.document.getElementById("fixed-batch-size-input")
-                    this.change_batch_size(input_change.value)
-                    this._view.modifier.changeBatchSize('fixed', input_change.value);
-
-                    if (dialog.getElementsByClassName("checkbox-shape-change")[0].checked) {
-                        let data = this.build_download_data(true)
-                        data.postprocess_args.shapeInf = true
-                        this.take_effect_modify("/download", data, false)
-                    }
-                    this._view._sidebar.close()
-                })
-                click_event.stopPropagation();
-            }]
-        })
-
-        this.document.addEventListener("node-clicked", (event) => {
-            enable_map.forEach((check_enable_func, elem_id)=>{
-                let elem = this.document.getElementById(elem_id)
-                let [enable, listener] = check_enable_func(event.detail, event)
-                elem.removeEventListener("click", listener_map.get(elem_id))
-                if (enable) {
-                    elem.style.pointerEvents = ""
-                    elem.style.backgroundColor = ""
-                    elem.addEventListener("click", listener)
-                    listener_map.set(elem_id, listener)
-                } else {
-                    elem.style.pointerEvents = "none"
-                    elem.style.backgroundColor = "#80808017"
-                }
-            }) 
-        })
-
-        document.dispatchEvent(new CustomEvent("node-clicked", {detail:{}}))
     }
 
     bolb2text(blob) {
