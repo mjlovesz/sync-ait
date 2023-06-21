@@ -14,7 +14,7 @@
 a) 更新软件包索引，并且安装必要的依赖软件
 ```shell
 sudo apt update
-sudo apt install apt-transport-https ca-certificates curl gnupg-agent software-properties-common lsb-release
+sudo apt install apt-transport-https ca-certificates curl wget gnupg-agent software-properties-common lsb-release
 ```
 b) 导入docker源仓库的 GPG key
 ```shell
@@ -72,22 +72,52 @@ docker run -it ait-transplt:latest
 ### 不使用容器方式安装
 #### 安装Clang工具
 
-依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。以Ubuntu22.04为例：
+ait transplt功能依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。下面介绍在不同OS中安装Clang工具的方法：
+
+##### 在Ubuntu 22.04中安装Clang
 
 ```shell
 sudo apt-get install libclang-14-dev clang-14
 ```
+##### 在Ubuntu 18.04中安装Clang
 
-依赖[加速库头文件](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip)，依赖[API映射表](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip)，下载后解压至安装目录，例如`/usr/local/site-packages/app_analyze`
+```shell
+sudo apt-get install libclang-10-dev clang-10
+```
+##### 在CentOS 7.6中安装Clang
 
-加速库头文件和API映射表可及时更新，注意格式。
+```shell
 
+```
+##### 在SLES 12.5中安装Clang
 
+```shell
+
+```
 
 #### 安装ait工具
 
 - 工具安装请见 [ait一体化工具使用指南](../../README.md)
 
+#### 下载加速库头文件和API映射表
+
+依赖[加速库头文件](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip)，依赖[API映射表](https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip)，下载后解压至ait transplt工具安装目录，这个安装目录根据您的python3安装位置不同会有不同的值。例如您的python3.7在`/usr/local/bin/python3.7`，那么可以下载后解压至```/usr/local/lib/python3.7/dist-packages/app_analyze```目录。
+
+您可以使用```python3 -c "import app_analyze; print(app_analyze.__path__[0])"```命令来确定具体的安装目录。
+
+您也可以使用如下命令一键式下载并解压到安装目录：
+
+```shell
+cd $(python3 -c "import app_analyze; print(app_analyze.__path__[0])") \
+    && wget -O config.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip \
+    && unzip config.zip \
+    && rm config.zip \
+    && wget -O headers.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip \
+    && unzip headers.zip \
+    && rm headers.zip
+```
+
+加速库头文件和API映射表可及时更新，注意格式。
 
 ## 工具使用
 
