@@ -86,15 +86,66 @@ sudo apt-get install libclang-10-dev clang-10
 ```
 ##### 在CentOS 7.6中安装Clang
 
+Centos7.x版本yum源无Clang4.8.5以上的安转包，我们需要通过源码编译安装LLVM和Clang，详细安装指导参考
+[Getting Started with the LLVM System](https://llvm.org/docs/GettingStarted.html)。编译LLVM依赖一些软件包，
+需用户提前确保依赖满足，或者自行手动安装。下面的表格列出了这些必需的软件包。Package列是LLVM所依赖的软件包通常的名称。
+Version列提供了“可以工作”的软件包版本。Notes列描述了LLVM如何使用这个软件包，并提供其它细节。
+
+| Package                                           | Version      | Notes                        |
+| :------------------------------------------------ | :----------- | :--------------------------- |
+| [CMake](http://cmake.org/)                        | >=3.20.0     | Makefile/workspace generator |
+| [GCC](http://gcc.gnu.org/)                        | >=7.1.0      | C/C++ compiler1              |
+| [python](http://www.python.org/)                  | >=3.6        | Automated test suite2        |
+| [zlib](http://zlib.net/)                          | >=1.2.3.4    | Compression library3         |
+| [GNU Make](http://savannah.gnu.org/projects/make) | 3.79, 3.79.1 | Makefile/build processor4    |
+
+下面以Clang7.0为例编译安装LLVM和Clang。
+
+获取源码。通过Git获取源码，包括LLVM和Clang子工程，切换到对应版本。
+
 ```shell
+git clone https://github.com/llvm/llvm-project.git
+git checkout llvmorg-7.0.0
+```
+
+或者直接下载对应版本的源码。
+
+```shell
+wget https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-7.0.0.zip
+# 如果没有安装wget，可以采用curl
+curl -o llvmorg-7.0.0.zip https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-7.0.0.zip
+# 解压得到llvmorg-7.0.0目录
+unzip -q llvmorg-7.0.0.zip
+```
+
+也可以在[LLVM Release](https://github.com/llvm/llvm-project/releases)页面下载对应版本的源码包。
+
+编译和安装LLVM和Clang。
+
+```shell
+cd llvmorg-7.0.0/; mkdir build; cd build
+# 建议不开启libcxx;libcxxabi，使用默认的gcc/g++配套的libstdc++
+cmake -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS="clang" -G "Unix Makefiles" ../llvm
+make -j32  # 将32换成小于所在机器CPU线程数的数字，或者去除数字，自动设定
+make install  # 安装到默认位置/usr/local/lib/
+```
+
+配置环境变量。为防止后续Clang无法自动找到头文件，建议添加如下环境变量。
 
 ```
+export CPLUS_INCLUDE_PATH=/usr/local/lib/clang/7.0.0/include
+```
+
+安装成功后，libclang.so一般位于`/usr/local/lib/libclang.so`，修改`common/kit_config.py`中的`LIB_CLANG_PATH`为该路径后，再进行ait的安装。
+
 ##### 在SLES 12.5中安装Clang
 
 ```shell
 sudo zypper install libclang7 clang7-devel
 ```
-安装成功后，用```sudo find / -name "libclang.so"```命令查找安装的libclang动态库所在路径，一般位于/usr/lib64/libclang.so,修改common/kit_config.py中的LIB_CLANG_PATH为该路径后，再进行ait的安装
+
+安装成功后，用```sudo find / -name "libclang.so"```命令查找安装的libclang动态库所在路径，一般位于`/usr/lib64/libclang.so`，
+修改`common/kit_config.py`中的`LIB_CLANG_PATH`为该路径后，再进行ait的安装。
 
 #### 安装ait工具
 
