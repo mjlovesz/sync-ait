@@ -338,10 +338,12 @@ void Execute(Arguments& arguments)
     size_t deviceId = stoi(arguments["device"]);
     std::string model = arguments["model"];
     std::string outputDir = arguments["output"] == "" ? "" : arguments["output"] + "/" + GetCurrentTime();
-    if (outputDir != "" && fs::is_symlink(outputDir)) {
-        fs::remove(outputDir);
+    if (outputDir != "") {
+        if (fs::is_symlink(outputDir)) {
+            fs::remove(outputDir);
+        }
+        fs::create_directories(outputDir);
     }
-    fs::create_directories(outputDir);
 
     auto session = std::make_shared<Base::PyInferenceSession>(model, deviceId, options);
     SetSession(session, arguments);
