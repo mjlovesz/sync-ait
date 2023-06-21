@@ -54,7 +54,7 @@ import java.util.Map;
  * @date 2023/06/03
  */
 public class OutputFactory implements ToolWindowFactory, DumbAware{
-    private static final String OUTPUT_TOOL_WINDOW_ID = "Output";
+    private static final String OUTPUT_TOOL_WINDOW_ID = "output";
     private static final String OUTPUT_TOOL_WINDOW_DETAILS = "Detail";
     private static final String DARCULA = "Darcula";
     private static final String DARK = "Dark";
