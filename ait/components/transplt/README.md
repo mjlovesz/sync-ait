@@ -92,8 +92,9 @@ sudo apt-get install libclang-10-dev clang-10
 ##### 在SLES 12.5中安装Clang
 
 ```shell
-
+sudo zypper install libclang7 clang7-devel
 ```
+安装成功后，用```sudo find / -name "libclang.so"```命令查找安装的libclang动态库所在路径，一般位于/usr/lib64/libclang.so,修改common/kit_config.py中的LIB_CLANG_PATH为该路径后，再进行ait的安装
 
 #### 安装ait工具
 
