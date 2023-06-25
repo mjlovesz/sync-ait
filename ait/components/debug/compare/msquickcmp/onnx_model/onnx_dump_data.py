@@ -305,7 +305,8 @@ class OnnxDumpData(DumpData):
 
     def _load_session(self, new_onnx_model_path):
         options = onnxruntime.SessionOptions()
-        options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
+        if self.args.locat:
+            options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
         return onnxruntime.InferenceSession(new_onnx_model_path, options)
 
     def _run_model(self, session, inputs_map):
