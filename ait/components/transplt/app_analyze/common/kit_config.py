@@ -17,6 +17,8 @@ from enum import Enum, unique
 from collections import namedtuple
 import platform
 
+from app_analyze.utils.clang_finder import get_lib_clang_path
+
 
 @unique
 class ScannerType(Enum):
@@ -51,7 +53,9 @@ class InputType(Enum):
 class KitConfig:
     # 1. 工具运行相关配置
     ARCH = platform.machine()
-    LIB_CLANG_PATH = f'/usr/lib/{ARCH}-linux-gnu/libclang-14.so'
+
+    LIB_CLANG_PATH = get_lib_clang_path()
+
     CXX_STD = 'c++17'  # c++11、c++14、c++17、c++20等，或者None，表示使用clang默认值
 
     # 'make', 'automake'
