@@ -304,7 +304,10 @@ class OnnxDumpData(DumpData):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_TENSOR_TYPE_ERROR)
 
     def _load_session(self, new_onnx_model_path):
-        return onnxruntime.InferenceSession(new_onnx_model_path)
+        options = onnxruntime.SessionOptions()
+        if self.args.locat:
+            options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
+        return onnxruntime.InferenceSession(new_onnx_model_path, options)
 
     def _run_model(self, session, inputs_map):
         outputs_name = [node.name for node in session.get_outputs()]
