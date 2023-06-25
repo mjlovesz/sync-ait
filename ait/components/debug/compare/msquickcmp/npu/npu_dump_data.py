@@ -39,6 +39,12 @@ RESULT_DIR = "result"
 INPUT = "input"
 INPUT_SHAPE = "--input_shape"
 OUTPUT_SIZE = "--outputSize"
+INPUT_FORMAT_DICT = {
+    "YUV420SP_U8" : 2,
+    "RGB888_U8" : 1,
+    "YUV400_U8" : 3,
+    "XGRB8888_U8": 3/4,
+}
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
@@ -224,11 +230,14 @@ class NpuDumpData(DumpData):
         aipp_list = aipp_content.split(",")
         src_image_size_h = []
         src_image_size_w = []
+        input_format = []
         for aipp_info in aipp_list:
             if "src_image_size_h" in aipp_info:
                 src_image_size_h.append(aipp_info.split(":")[1])
             if "src_image_size_w" in aipp_info:
                 src_image_size_w.append(aipp_info.split(":")[1])
+            if "input_format" in aipp_info:
+                input_format.append(aipp_info.split(":")[1].strip('\\"'))
         if not src_image_size_h or not src_image_size_w:
             utils.logger.error("atc insert_op_config file contains no src_image_size_h or src_image_size_w")
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
@@ -250,7 +259,11 @@ class NpuDumpData(DumpData):
         for i, item in enumerate(inputs_list):
             item[h_position] = int(src_image_size_h[i])
             item[w_position] = int(src_image_size_w[i])
-            input_data = np.random.randint(0, 256, item).astype(np.uint8)
+            div_input_format = INPUT_FORMAT_DICT.get(input_format[i])
+            if not div_input_format:
+                utils.logger.error("aipp input format only support: YUV420SP_U8, RGB888_U8, YUV400_U8, XGRB8888_U8")
+                raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
+            input_data = np.random.randint(0, 256, np.prod(item)//div_input_format).astype(np.uint8)
             file_name = "input_" + str(i) + ".bin"
             input_data.tofile(os.path.join(input_dir, file_name))
 
@@ -417,7 +430,8 @@ class NpuDumpData(DumpData):
         if self.om_parser.contain_negative_1:
             return
         files_size_array = self._get_file_size()
-        self._shape_size_vs_file_size(shape_size_array, files_size_array)
+        if not self.om_parser.get_aipp_config_content:
+            self._shape_size_vs_file_size(shape_size_array, files_size_array)
 
     def _get_file_size(self):
         file_size = []
