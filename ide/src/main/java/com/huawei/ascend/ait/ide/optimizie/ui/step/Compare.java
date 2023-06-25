@@ -129,7 +129,7 @@ public class Compare extends DialogWrapper {
     private void modelFileAction() {
         List<String> lists = List.of(PB_MODEL_FILE_EXTENSION, ONNX_MODEL_FILE_EXTENSION, PROTOTXT_MODEL_FILE_EXTENSION);
         modelFileBrowse.addActionListener(event -> {
-            String selectFile = getSelectedFile(project, lists, false);
+            String selectFile = getSelectedFile(project, lists, false, "Model File");
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
@@ -161,7 +161,7 @@ public class Compare extends DialogWrapper {
 
     private void weightFileAction() {
         weightBrowse.addActionListener(event -> {
-            String selectFile = getSelectedFile(project, List.of(CAFFE_MODEL_FILE_EXTENSION), false);
+            String selectFile = getSelectedFile(project, List.of(CAFFE_MODEL_FILE_EXTENSION), false, "Weight File Path");
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
@@ -172,7 +172,7 @@ public class Compare extends DialogWrapper {
     private void offlineModelAction() {
         List<String> lists = List.of(OM_MODEL_FILE_EXTENSION);
         offlineModelPathBrowse.addActionListener(event -> {
-            String selectFile = getSelectedFile(project, lists, false);
+            String selectFile = getSelectedFile(project, lists, false, "Offline Model Path");
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
@@ -198,7 +198,7 @@ public class Compare extends DialogWrapper {
 
     private void cannPathAction() {
         cannPathBrowse.addActionListener(event -> {
-            String selectFile = getSelectedPath(project);
+            String selectFile = getSelectedPath(project, "CANN Path");
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
@@ -208,7 +208,7 @@ public class Compare extends DialogWrapper {
 
     private void outputAction() {
         outputPathBrowse.addActionListener(event -> {
-            String selectFile = getSelectedPath(project);
+            String selectFile = getSelectedPath(project, "Output Path");
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }

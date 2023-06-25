@@ -35,27 +35,27 @@ public class FileChoose {
      * getSelectedFile
      *
      */
-    public static String getSelectedFile(Project project, List<String> strings, Boolean chooseMultiple) {
+    public static String getSelectedFile(Project project, List<String> strings, Boolean chooseMultiple, String historyKey) {
         FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(true, false, false, false,
                 false, chooseMultiple)
                 .withFileFilter(virtualFile -> virtualFile.isDirectory() || new ArrayList<>(strings).contains(virtualFile.getExtension()))
                 .withTitle("Browse for File")
                 .withDescription("Please select the appropriate file of " + strings);
         return FileChooseWithBrows.fileChoosewithBrowse(project, fileChooserDescriptor,
-                "", "SelectFile").orElse(null);
+                "", historyKey).orElse(null);
     }
 
     /**
      * getSelectedPath
      *
      */
-    public static String getSelectedPath(Project project) {
+    public static String getSelectedPath(Project project, String historyKey) {
         FileChooserDescriptor fileChooserDescriptor = new FileChooserDescriptor(false, true, false, false,
                 false, false)
                 .withFileFilter(VirtualFile::isDirectory)
                 .withTitle("Browse for Path")
                 .withDescription("Select the appropriate path");
         return FileChooseWithBrows.fileChoosewithBrowse(project, fileChooserDescriptor,
-                "", "SelectPath").orElse(null);
+                "", historyKey).orElse(null);
     }
 }
