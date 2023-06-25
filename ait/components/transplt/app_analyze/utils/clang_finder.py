@@ -14,6 +14,8 @@
 import os
 import platform
 
+from app_analyze.utils.log_util import logger
+
 
 def get_lib_clang_path():
     # default dirs
@@ -59,5 +61,5 @@ def get_lib_clang_path():
             if os.path.exists(candidate) and os.access(candidate, os.X_OK):
                 return candidate
 
-    raise RuntimeError(f"Unable to locate libclang so file, please make sure clang is installed."
-                       "If it's already installed, please report this bug to us.")
+    logger.debug('Unable to locate libclang so file, ait transplt may not be usable.')
+    return f"/usr/lib/{platform.machine()}-linux-gnu/libclang-14.so"
