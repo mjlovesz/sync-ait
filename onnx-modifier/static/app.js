@@ -663,7 +663,7 @@ class View {
         this._ready = false;
         this._path = null;
         this._properties = new Map();
-        this._location = url.format({ protocol: 'file:', slashes: true, pathname: path.join(__dirname, 'electron.html') });
+        this._location = url.format({ protocol: 'file:', slashes: true, pathname: path.join(__dirname, 'index.html') });
 
         const size = electron.screen.getPrimaryDisplay().workAreaSize;
         const options = {
