@@ -1,22 +1,39 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="16px" height="20px" viewBox="0 0 16 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <title>save</title>
-    <defs>
-        <path d="M13.25,0 C14.7687831,0 16,1.23121694 16,2.75 L16,17.25 C16,18.7687831 14.7687831,20 13.25,20 L2.75,20 C1.23121694,20 0,18.7687831 0,17.25 L0,2.75 C0,1.23121694 1.23121694,0 2.75,0 L13.25,0 Z M13.25,1.5 L13,1.5 L13,6.75 C13,7.71649831 12.2164983,8.5 11.25,8.5 L4.75,8.5 C3.78350169,8.5 3,7.71649831 3,6.75 L3,1.5 L2.75,1.5 C2.05964406,1.5 1.5,2.05964406 1.5,2.75 L1.5,17.25 C1.5,17.9403559 2.05964406,18.5 2.75,18.5 L13.25,18.5 C13.9403559,18.5 14.5,17.9403559 14.5,17.25 L14.5,2.75 C14.5,2.05964406 13.9403559,1.5 13.25,1.5 Z M11.5,1.5 L4.5,1.5 L4.5,6.75 C4.5,6.86834673 4.58223341,6.96748682 4.69267729,6.99339732 L4.75,7 L11.25,7 C11.3880712,7 11.5,6.88807119 11.5,6.75 L11.5,1.5 Z M9.75,3 C10.1642136,3 10.5,3.33578644 10.5,3.75 L10.5,5.25 C10.5,5.66421356 10.1642136,6 9.75,6 C9.33578644,6 9,5.66421356 9,5.25 L9,3.75 C9,3.33578644 9.33578644,3 9.75,3 Z" id="path-1"></path>
-    </defs>
-    <g id="onnx-modifier" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="nav/button/normal备份-2" transform="translate(-16.000000, -14.000000)">
-            <g id="save" transform="translate(16.000000, 14.000000)">
-                <mask id="mask-2" fill="white">
-                    <use xlink:href="#path-1"></use>
-                </mask>
-                <use id="形状" fill="#D8D8D8" xlink:href="#path-1"></use>
-                <g id="0-color/Dark/3-Text-3Secondary" mask="url(#mask-2)" fill="#8D98AA">
-                    <g transform="translate(-4.000000, -2.000000)" id="矩形">
-                        <rect x="0" y="0" width="24" height="24"></rect>
-                    </g>
-                </g>
-            </g>
-        </g>
-    </g>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.0.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill-rule:evenodd;clip-rule:evenodd;fill:#D8D8D8;}
+	.st1{filter:url(#Adobe_OpacityMaskFilter);}
+	.st2{fill-rule:evenodd;clip-rule:evenodd;fill:#FFFFFF;}
+	.st3{mask:url(#mask-2_1_);}
+	.st4{fill-rule:evenodd;clip-rule:evenodd;fill:#8D98AA;}
+</style>
+<title>1-icon/01公共/04桌面/save</title>
+<g id="_x31_-icon_x2F_01公共_x2F_04桌面_x2F_save">
+	<g id="形状">
+		<path id="path-1_1_" class="st0" d="M17.2,2C18.8,2,20,3.2,20,4.8v14.5c0,1.5-1.2,2.8-2.8,2.8H6.8C5.2,22,4,20.8,4,19.2V4.8
+			C4,3.2,5.2,2,6.8,2H17.2z M17.2,3.5H17v5.2c0,1-0.8,1.8-1.8,1.8H8.8c-1,0-1.8-0.8-1.8-1.8V3.5H6.8c-0.7,0-1.2,0.6-1.2,1.2v14.5
+			c0,0.7,0.6,1.2,1.2,1.2h10.5c0.7,0,1.2-0.6,1.2-1.2V4.8C18.5,4.1,17.9,3.5,17.2,3.5z M15.5,3.5h-7v5.2C8.5,8.9,8.6,9,8.7,9l0.1,0
+			h6.5c0.1,0,0.2-0.1,0.2-0.2V3.5z M13.8,5c0.4,0,0.8,0.3,0.8,0.8v1.5c0,0.4-0.3,0.8-0.8,0.8S13,7.7,13,7.2V5.8
+			C13,5.3,13.3,5,13.8,5z"/>
+	</g>
+	<defs>
+		<filter id="Adobe_OpacityMaskFilter" filterUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+			<feColorMatrix  type="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 1 0"/>
+		</filter>
+	</defs>
+	<mask maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24" id="mask-2_1_">
+		<g class="st1">
+			<path id="path-1_2_" class="st2" d="M17.2,2C18.8,2,20,3.2,20,4.8v14.5c0,1.5-1.2,2.8-2.8,2.8H6.8C5.2,22,4,20.8,4,19.2V4.8
+				C4,3.2,5.2,2,6.8,2H17.2z M17.2,3.5H17v5.2c0,1-0.8,1.8-1.8,1.8H8.8c-1,0-1.8-0.8-1.8-1.8V3.5H6.8c-0.7,0-1.2,0.6-1.2,1.2v14.5
+				c0,0.7,0.6,1.2,1.2,1.2h10.5c0.7,0,1.2-0.6,1.2-1.2V4.8C18.5,4.1,17.9,3.5,17.2,3.5z M15.5,3.5h-7v5.2C8.5,8.9,8.6,9,8.7,9l0.1,0
+				h6.5c0.1,0,0.2-0.1,0.2-0.2V3.5z M13.8,5c0.4,0,0.8,0.3,0.8,0.8v1.5c0,0.4-0.3,0.8-0.8,0.8S13,7.7,13,7.2V5.8
+				C13,5.3,13.3,5,13.8,5z"/>
+		</g>
+	</mask>
+	<g id="_x30_-color_x2F_Dark_x2F_3-Text-3Secondary" class="st3">
+		<rect id="矩形" class="st4" width="24" height="24"/>
+	</g>
+</g>
 </svg>

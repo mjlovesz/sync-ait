@@ -233,7 +233,7 @@
 .sidebar-view-modifer-buttons {
     display: flex;
     flex-direction: row;
-    margin: 40px 0 30px 0;
+    margin: 40px 0 40px 0;
 }
 .sidebar-view-modifer-buttons > button {
     flex: 1;
@@ -312,6 +312,31 @@
     padding: 0 40px;
 }
 
+.graph-node-highlight > .node.border{
+    stroke : url(#gradient-clicked);
+    stroke-width: 2px;
+}
+
+.graph-node-extract-node > .node.border{
+    stroke : url(#gradient-node);
+    stroke-width: 2px;
+}
+
+.graph-node-extract-start > .node.border{
+    stroke : url(#gradient-start);
+    stroke-width: 2px;
+}
+
+.graph-node-extract-end > .node.border{
+    stroke : url(#gradient-end);
+    stroke-width: 2px;
+}
+
+.graph-node-extract-start.graph-node-extract-end > .node.border{
+    stroke : url(#gradient-start-end);
+    stroke-width: 2px;
+}
+
 
 @media (prefers-color-scheme: dark) {
     .sidebar { 
@@ -357,5 +382,34 @@
     }
     .sidebar-view-header,.sidebar-title { 
         color: #FFFFFE; 
+    }
+    
+    .graph-node-highlight > .node.border{
+        stroke : url(#gradient-clicked-black);
+        stroke-width: 2px;
+    }
+
+    .graph-node-extract-node > .node.border{
+        stroke : url(#gradient-node-black);
+        stroke-width: 2px;
+    }
+
+    .graph-node-extract-start > .node.border{
+        stroke : url(#gradient-start-black);
+        stroke-width: 2px;
+    }
+
+    .graph-node-extract-end > .node.border{
+        stroke : url(#gradient-end-black);
+        stroke-width: 2px;
+    }
+
+    .graph-node-extract-start.graph-node-extract-end > .node.border{
+        stroke : url(#gradient-start-end-black);
+        stroke-width: 2px;
+    }
+
+    .sidebar-view-modifer-toolbar path {
+        fill: white;
     }
 }

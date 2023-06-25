@@ -26,12 +26,20 @@ sidebar.Sidebar = class {
     open(content, title) {
         this.close();
         this.push(content, title);
+        
+        for (const elem of document.getElementsByClassName("graph-node-clicked")) {
+            elem.classList.remove("graph-node-clicked")
+            elem.classList.add("graph-node-highlight")
+        }
     }
 
     close() {
         this._deactivate();
         this._stack = [];
         this._hide();
+        if (this._host._view.modifier) {
+            this._host._view.modifier.clearHighlightNode()
+        }
     }
 
     push(content, title) {
@@ -261,7 +269,7 @@ sidebar.NodeSidebar = class {
             })
 
             let dialog = document.getElementById("addinput-dialog")
-            dialog.getElementsByClassName("text")[0].innerText = `Choose a input of Node ${this._modelNodeName} :`
+            dialog.getElementsByClassName("message")[0].innerText = `Choose a input of Node ${this._modelNodeName} :`
             this._host.show_confirm_dialog(dialog).then((is_not_cancel)=> {
                 if (!is_not_cancel) {
                     return 
@@ -1453,7 +1461,7 @@ sidebar.ModelSidebar = class {
             let input_change = this._host.document.getElementById("change-input-shape-input")
             input_change.value = default_shape
             let dialog = this._host.document.getElementById("change-input-shape-dialog")
-            dialog.getElementsByClassName("text")[0].innerText = `Change the shape of input: ${this.clicked_input_name}`
+            dialog.getElementsByClassName("message")[0].innerText = `Change the shape of input: ${this.clicked_input_name}`
             this._host.show_confirm_dialog(dialog).then((is_not_cancel)=> {
                 if (!is_not_cancel) {
                     return 
