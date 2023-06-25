@@ -30,6 +30,9 @@ def get_lib_clang_path():
 
     # find clang in paths extracted from /etc/ld.so.conf and /etc/ld.so.conf.d
     def extract_ld_lib_dirs(file):
+        if not os.path.exists(file) or not os.access(file, os.R_OK):
+            return
+
         with open(file, "r") as tmp_file:
             for line in tmp_file:
                 if line.startswith("include"):
@@ -53,7 +56,7 @@ def get_lib_clang_path():
     for candidate_lib_dir in candidate_lib_dirs:
         for candidate_lib_name in clang_lib_names:
             candidate = os.path.join(candidate_lib_dir, candidate_lib_name)
-            if os.path.exists(candidate):
+            if os.path.exists(candidate) and os.access(candidate, os.X_OK):
                 return candidate
 
     raise RuntimeError(f"Unable to locate libclang so file, please make sure clang is installed."
