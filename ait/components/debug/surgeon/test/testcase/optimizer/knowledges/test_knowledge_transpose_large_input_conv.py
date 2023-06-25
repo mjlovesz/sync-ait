@@ -20,13 +20,13 @@ import numpy as np
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_transpose_large_input_conv import KnowledgeTransposeLargeInputConv
-from test.helper import KnowledgeTestHelper, OptimizationConfig
+from testcase.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 class TestKnowledgeTransposeLargeInputConv(unittest.TestCase, KnowledgeTestHelper):
 
     def test_aasist(self):
-        model_path = path.join(path.dirname(path.abspath(__file__)), "../../onnx/aasist_bs1_ori.onnx")
+        model_path = path.join(path.dirname(path.abspath(__file__)), "../../../onnx/aasist_bs1_ori.onnx")
         models = [
             (True, model_path, (1, 64600), 10),
         ]

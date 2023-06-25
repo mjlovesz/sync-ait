@@ -19,7 +19,7 @@ import numpy as np
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges import KnowledgeGatherToSplit
-from test.helper import KnowledgeTestHelper, OptimizationConfig
+from testcase.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_gather_to_split_graph(
