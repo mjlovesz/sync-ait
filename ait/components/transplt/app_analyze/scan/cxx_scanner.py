@@ -18,6 +18,7 @@ import pandas as pd
 from app_analyze.utils.log_util import logger
 from app_analyze.scan.scanner import Scanner
 from app_analyze.scan.clang_parser import Parser
+from app_analyze.scan.func_parser import FuncParser
 
 
 class CxxScanner(Scanner):
@@ -35,7 +36,8 @@ class CxxScanner(Scanner):
     def exec_without_threads(self):
         result = {}
         for file in self.files:
-            p = Parser(file)
+            # p = Parser(file)
+            p = FuncParser(file)
             rst_vals = p.parse()
             result[file] = pd.DataFrame.from_dict(rst_vals)
 

@@ -285,6 +285,25 @@ def parse_args(node):
     return args
 
 
+def node_debug_string(node, children):
+    location = f"{get_attr(node, 'extent.start.file.name')}, {get_attr(node, 'extent.start.line')}:" \
+               f"{get_attr(node, 'extent.start.column')}-{get_attr(node, 'extent.end.column')}"
+
+    # node的属性和方法：kind.name/type.kind.name/get_usr()/displayname/spelling/type.spelling/hash
+    # 其他可记录信息：get_attr(node, 'referenced.kind.name')/api/result_type/source/definition/get_ref_def(node)/children
+    info = {
+        'kind': node.kind.name,
+        'type_kind': node.type.kind.name,
+        'ref_kind': get_attr(node, 'referenced.kind.name'),
+        'spelling': node.spelling,
+        'type': node.type.spelling,
+        'location': location,
+        'children': children
+    }
+
+    return info
+
+
 def parse_info(node, cwd=None):
     if node.kind == CursorKind.TRANSLATION_UNIT:
         file = node.spelling
@@ -327,24 +346,9 @@ def parse_info(node, cwd=None):
         if c_info:
             children.append(c_info)
 
-    if not usr_code:
-        info = None
-        return info
-
-    location = f"{get_attr(node, 'extent.start.file.name')}, {get_attr(node, 'extent.start.line')}:" \
-               f"{get_attr(node, 'extent.start.column')}-{get_attr(node, 'extent.end.column')}"
-
-    # node的属性和方法：kind.name/type.kind.name/get_usr()/displayname/spelling/type.spelling/hash
-    # 其他可记录信息：get_attr(node, 'referenced.kind.name')/api/result_type/source/definition/get_ref_def(node)/children
-    info = {
-        'kind': node.kind.name,
-        'type_kind': node.type.kind.name,
-        'ref_kind': get_attr(node, 'referenced.kind.name'),
-        'spelling': node.spelling,
-        'type': node.type.spelling,
-        'location': location,
-        'children': children
-    }
+    info = None
+    if usr_code:
+        info = node_debug_string(node, children)
 
     return info
 
