@@ -181,6 +181,9 @@ host.BrowserHost = class {
             this.document.getElementById('open-modify-json-dialog').click();
         })
 
+        this.init_input_shape_change_event()
+        this.init_batch_size_change_event()
+
         const openJsonFileDialog = this.document.getElementById('open-modify-json-dialog');
 
         openJsonFileDialog.addEventListener('change', (e) => {
@@ -317,6 +320,7 @@ host.BrowserHost = class {
                             this.upload_filename = "some.onnx"
                         }
                         let file = new File([blob], this.upload_filename);
+                        this._ori_model_file = file
                         file.filepath = blob.filepath ? blob.filepath : this.upload_filepath
                         return this.openFile(file)
                     }
@@ -350,21 +354,23 @@ host.BrowserHost = class {
 
         const extract = this.document.getElementById('extract-graph');
         extract.addEventListener('click', () => {
-            if (!(this._view.modifier.getExtractStart() && this._view.modifier.getExtractEnd())) {
+            let start_nodes = this._view.modifier.getExtractStart()
+            let end_nodes = this._view.modifier.getExtractEnd()
+            if (!start_nodes || start_nodes.size == 0 || !end_nodes || end_nodes.size == 0 ) {
                 this.show_message("Select Extract Net Start And End", "Select the start node and end node for the subnet export", "warn");
                 return 
             }
             let download_data = this.build_download_data(true)
-            download_data["extract_start"] = Array.from(this._view.modifier.getExtractStart()).join(",")
-            download_data["extract_end"] = Array.from(this._view.modifier.getExtractEnd()).join(",")
+            download_data["extract_start"] = Array.from(start_nodes).join(",")
+            download_data["extract_end"] = Array.from(end_nodes).join(",")
             download_data['session'] = this.session
             this.take_effect_modify("/extract", download_data, false, (blob) => {
                 this.export(this.upload_filename.replace(".onnx", ".extract.onnx"), blob)
                 this.show_message("Success!", "Model has been successfuly extracted", "success");
-                for (const start_name of this._view.modifier.getExtractStart()) {
+                for (const start_name of start_nodes) {
                     this._view.modifier.setExtractStart(start_name, false)
                 }
-                for (const end_name of this._view.modifier.getExtractEnd()) {
+                for (const end_name of end_nodes) {
                     this._view.modifier.setExtractEnd(end_name, false)
                 }
             })
@@ -597,7 +603,7 @@ host.BrowserHost = class {
         }).then((response) => {
             if (this.check_res_status(response.status)) {
                 return 
-            } else if (response.status == 204) {
+            } else if (response.status == 299) {
                 return response.text().then((text) => {
                     this.show_message("Nothing happens!", text, "info");
                 })

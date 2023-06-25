@@ -428,7 +428,7 @@ def register_interface(app, request, send_file, temp_dir_path, init_file_path=No
             session.cache_message(out_message)
 
             if opt_tmp_file.tell() == 0:
-                return "auto-optimizer 没有匹配到的知识库", 204
+                return "auto-optimizer 没有匹配到的知识库", 299
 
             auto_close.set_not_close()  # file will auto close in send_file 
             return send_file(opt_tmp_file, session.get_session_id(), download_name="modified_opt.onnx")
@@ -449,12 +449,12 @@ def register_interface(app, request, send_file, temp_dir_path, init_file_path=No
                               modify_info.get("extract_start"), modify_info.get("extract_end"),
                               extract_tmp_file)
             except ServerError as error:
-                return error.status, error.msg
+                return error.msg, error.status
             
             session.cache_message(out_message)
 
             if extract_tmp_file.tell() == 0:
-                return "未正常生成子网", 204
+                return "未正常生成子网", 299
 
             auto_close.set_not_close()  # file will auto close in send_file 
             return send_file(extract_tmp_file, session.get_session_id(), download_name="extracted.onnx")
@@ -463,7 +463,7 @@ def register_interface(app, request, send_file, temp_dir_path, init_file_path=No
     def load_json_and_modify_model():
         json_info = request.get_json()
         session = SessionInfo.get_session(json_info.get("session"))
-        modify_infos = json_info.modify_infos
+        modify_infos = json_info.get("modify_infos", [])
 
         with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, tmp_file):
             try:

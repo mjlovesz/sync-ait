@@ -294,17 +294,8 @@ sidebar.NodeSidebar = class {
     }
 
     init_extract_helper() {
-        const iconElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', `M0 3.5A1.5 1.5 0 0 1 1.5 2h13A1.5 1.5 0 0 1 16 3.5v9a1.5 1.5 
-            0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 0 12.5v-9zM1.5 3a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 
-            .5.5h13a.5.5 0 0 0 .5-.5v-9a.5.5 0 0 0-.5-.5h-13z`);
-        iconElem.appendChild(path)
-        const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path2.setAttribute('d', `M8 8.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 .5.5v3a.5.5 
-            0 0 1-.5.5h-5a.5.5 0 0 1-.5-.5v-3z`);
-        iconElem.appendChild(path2)
-        iconElem.setAttribute("ViewBox", "0 0 16 16")
+        const iconElem = document.createElement("img")
+        iconElem.src = "svg/extract to.svg"
 
         let is_extract_start = this._host._view.modifier.getExtractStart().has(this._modelNodeName)
         let get_start_btn_text = () => is_extract_start ? 'Unset Extract Net Start' : 'Extract Net Start'
@@ -377,6 +368,7 @@ sidebar.NodeSidebar = class {
 
     init_helper(icon, title, helpers) {
         const helperElem = this._host.document.createElement('div');
+        helperElem.style.cursor = "default"
 
         const iconElem = this._host.document.createElement('div')
         iconElem.classList.add("icon")
@@ -1559,6 +1551,7 @@ sidebar.ModelSidebar = class {
 
     init_helper(icon, title, callback) {
             const helperElem = this._host.document.createElement('div');
+            helperElem.style.cursor = "default"
     
             const iconElem = this._host.document.createElement('div')
             iconElem.classList.add("icon")
