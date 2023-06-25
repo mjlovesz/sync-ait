@@ -55,8 +55,8 @@ import java.util.concurrent.Future;
 public class ShowResult extends JTable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShowResult.class);
     private DefaultTableModel model;
-    private static int width=500;
-    private static int height=600;
+    private static int width=1100;
+    private static int height=800;
     private JTable table;
     private String[] columnNames = null;
     private JPanel root;
@@ -163,7 +163,7 @@ public class ShowResult extends JTable {
         model = new DefaultTableModel(columnNames, 0);
         table.setModel(model);
         table.setSelectionBackground(Color.orange);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
         for (int i = 0; i < columnNames.length; i++) {
             table.getColumnModel().getColumn(i).setPreferredWidth(200);
         }
