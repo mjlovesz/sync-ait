@@ -16,7 +16,7 @@
 
 package com.huawei.ascend.ait.ide.optimizie.ui.step;
 
-import com.huawei.ascend.ait.ide.optimizie.aitmodelconvert.AitModelConvertTask;
+import com.huawei.ascend.ait.ide.optimizie.task.AitModelConvertTask;
 import com.huawei.ascend.ait.ide.util.FileChooseWithBrows;
 import com.huawei.ascend.ait.ide.util.exception.PathInvalidException;
 import com.huawei.ascend.ait.ide.util.exception.ModelFileInvalidException;
