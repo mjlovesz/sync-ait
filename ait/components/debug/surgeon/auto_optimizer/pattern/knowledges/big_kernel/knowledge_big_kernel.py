@@ -14,6 +14,7 @@
 
 from auto_optimizer.graph_refactor.onnx import OnnxNode, OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
+from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.pattern.pattern import Pattern
 from auto_optimizer.pattern.knowledges.big_kernel.attention_parser import AttentionParser
 from auto_optimizer.pattern.knowledges.big_kernel.transform_refactor import TransformRefactor
@@ -47,6 +48,7 @@ layernorm_pattern = Pattern() \
     .set_loop(MatchPattern.MATCH_ONCE_OR_MORE)
 
 
+@KnowledgeFactory.register()
 class KnowledgeBigKernel(KnowledgeBase):
     def __init__(self, graph, start_node, end_node):
         super(KnowledgeBigKernel, self).__init__()
