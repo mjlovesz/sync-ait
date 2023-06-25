@@ -20,6 +20,7 @@ pwd_dir=${PWD}
 surgeon_dir=${pwd_dir}/..
 
 export PYTHONPATH=${surgeon_dir}:$PYTHONPATH
+export PYTHONPATH=${surgeon_dir}/test:$PYTHONPATH
 
 coverage run --source=${surgeon_dir}/auto_optimizer -p -m unittest
 
