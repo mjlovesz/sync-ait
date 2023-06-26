@@ -750,6 +750,14 @@ view.View = class {
                 modelSidebar.on('update-active-graph', (sender, graph) => {
                     this._updateActiveGraph(graph);
                 });
+
+                if (clicked_input_name) {
+                    this._host._view.modifier.clickSingleNode(clicked_input_name)
+                }
+                if (clicked_output_name) {
+                    this._host._view.modifier.clickSingleNode(clicked_output_name)
+                }
+                
                 const content = modelSidebar.render();
                 this._sidebar.open(content, 'Model Properties');
                 
@@ -777,6 +785,9 @@ view.View = class {
             try {
                 // console.log(node)   // 注意是onnx.Node, 不是grapher.Node，所以没有update()， 没有element元素
                 const nodeSidebar = new sidebar.NodeSidebar(this._host, node, modelNodeName);
+                if (modelNodeName) {
+                    this._host._view.modifier.clickSingleNode(modelNodeName)
+                }
                 nodeSidebar.on('show-documentation', (/* sender, e */) => {
                     this.showDocumentation(node.type);
                 });

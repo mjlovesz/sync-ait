@@ -26,6 +26,11 @@ sidebar.Sidebar = class {
     open(content, title) {
         this.close();
         this.push(content, title);
+        
+        for (const elem of document.getElementsByClassName("graph-node-clicked")) {
+            elem.classList.remove("graph-node-clicked")
+            elem.classList.add("graph-node-highlight")
+        }
     }
 
     close() {
@@ -60,6 +65,10 @@ sidebar.Sidebar = class {
         }
 
         document.dispatchEvent(new CustomEvent("node-clicked", {detail:{}}))
+        
+        if (this._host._view.modifier) {
+            this._host._view.modifier.clearHighlightNode()
+        }
     }
 
     _deactivate() {
@@ -210,31 +219,13 @@ sidebar.NodeSidebar = class {
                 this._addOutput(output.name, output, index);
             }
         }
-
-        this.add_separator(this._elements, 'sidebar-view-separator')
-        this._elements.push(this._host.document.createElement('hr'));
-        this.add_separator(this._elements, 'sidebar-view-separator')
-
-        this._addHeader('Extract helper');
-
-        let is_extract_start = this._host._view.modifier.getExtractStart().has(this._modelNodeName)
         
-        let get_start_btn_text = () => is_extract_start ? 'Unset Extract Net Start' : 'Extract Net Start'
-        let buttonStartElement = this._addButton(get_start_btn_text(), null, () => {
-            is_extract_start = !is_extract_start
-            this._host._view.modifier.setExtractStart(this._modelNodeName, is_extract_start)
-            buttonStartElement.innerText  = get_start_btn_text()
-        });
+        this._view_elements = this._host.document.createElement('div')
+        for (const elem of this._elements) {
+            this._view_elements.appendChild(elem)
+        }
         
-        let is_extract_end = this._host._view.modifier.getExtractEnd().has(this._modelNodeName)
-        
-        this.add_span()
-        let get_btn_text = () => is_extract_end ? 'Unset Extract Net End' : 'Extract Net End'
-        let buttonElement = this._addButton(get_btn_text(), null, () => {
-            is_extract_end = !is_extract_end
-            this._host._view.modifier.setExtractEnd(this._modelNodeName, is_extract_end)
-            buttonElement.innerText  = get_btn_text()
-        });
+        this._modifer_element = this.add_modifer_panel()
     }
 
     add_separator(elment, className) {
@@ -251,14 +242,180 @@ sidebar.NodeSidebar = class {
     }
 
     render() {
-        // console.log(this._elements)
-        return this._elements;
+        return [this._view_elements, this._modifer_element];
     }
+
+    add_modifer_panel() {
+        const modiferPanelElem = this._host.document.createElement('div');
+        modiferPanelElem.className = 'sidebar-view-modifer-panel';
+
+        modiferPanelElem.appendChild(this.init_modifer_button())
+        modiferPanelElem.appendChild(this.init_modifer_toolbar())
+        return modiferPanelElem;
+    }
+
+    init_modifer_button() {
+        const modiferButtonsElem = this._host.document.createElement('div');
+        modiferButtonsElem.className = 'sidebar-view-modifer-buttons';
+
+        const addInputElem = this._host.document.createElement('button');
+        addInputElem.innerText = "Add Input"
+        addInputElem.addEventListener("click", ()=> {
+            // show dialog
+            let select_elem = document.getElementById("add-input-dropdown")
+            select_elem.options.length = 0
+            this._node.inputs.map(inPram => inPram.arguments[0].name).forEach((input_name) => {
+                select_elem.appendChild(new Option(input_name));
+            })
+
+            let dialog = document.getElementById("addinput-dialog")
+            dialog.getElementsByClassName("message")[0].innerText = `Choose a input of Node ${this._modelNodeName} :`
+            this._host.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                if (!is_not_cancel) {
+                    return 
+                }
+                let select_input = select_elem.options[select_elem.selectedIndex].value;
+                this._host._view.modifier.addModelInput(this._modelNodeName, select_input);
+            })
+        })
+        const addOutputElem = this._host.document.createElement('button');
+        addOutputElem.innerText = "Add Output"
+        addOutputElem.addEventListener("click", ()=> {
+            this._host._view.modifier.addModelOutput(this._modelNodeName);
+        })
+
+        modiferButtonsElem.appendChild(addInputElem)
+        modiferButtonsElem.appendChild(addOutputElem)
+
+        return modiferButtonsElem
+    }
+
+    init_modifer_toolbar() {
+        const modiferToolbarElem = this._host.document.createElement('div');
+        modiferToolbarElem.className = 'sidebar-view-modifer-toolbar';
+    
+        modiferToolbarElem.appendChild(this.init_extract_helper()) 
+        modiferToolbarElem.appendChild(this.init_delete_helper())
+        modiferToolbarElem.appendChild(this.init_recover_helper())
+
+        return modiferToolbarElem
+    }
+
+    init_extract_helper() {
+        const iconElem = document.createElement("img")
+        iconElem.src = "svg/extract to.svg"
+
+        let is_extract_start = this._host._view.modifier.getExtractStart().has(this._modelNodeName)
+        let get_start_btn_text = () => is_extract_start ? 'Unset Extract Net Start' : 'Extract Net Start'
+        let is_extract_end = this._host._view.modifier.getExtractEnd().has(this._modelNodeName)
+        let get_btn_text = () => is_extract_end ? 'Unset Extract Net End' : 'Extract Net End'
+
+        const helper_extract_start = this.init_menu_of_helper(get_start_btn_text(), ()=>{
+            is_extract_start = !is_extract_start
+            this._host._view.modifier.setExtractStart(this._modelNodeName, is_extract_start)
+            helper_extract_start.innerText = get_start_btn_text()
+        })
+        helper_extract_start.classList.add("NodeExtractStart")
+
+        const helper_extract_end = this.init_menu_of_helper(get_btn_text(), ()=>{
+            is_extract_end = !is_extract_end
+            this._host._view.modifier.setExtractEnd(this._modelNodeName, is_extract_end)
+            helper_extract_end.innerText  = get_btn_text()
+        })
+        helper_extract_end.classList.add("NodeExtractEnd")
+
+        const helper_extract_enter = this.init_menu_of_helper("Extract", ()=>{
+            this._host.document.getElementById("extract-graph").dispatchEvent(new Event('dblclick'))
+        })
+        helper_extract_enter.classList.add("NodeExtract")
+
+        return this.init_helper(iconElem, "Extract", [helper_extract_start, helper_extract_end, helper_extract_enter])
+    }
+
+    init_delete_helper() {
+        const iconElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 
+            0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 
+            16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 
+            10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 
+            0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 
+            0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z`);
+        iconElem.appendChild(path)
+        iconElem.setAttribute("ViewBox", "0 0 16 16")
+
+        const helper_delete = this.init_menu_of_helper("Delete Node", ()=>{
+            this._host._view.modifier.deleteSingleNode(this._modelNodeName);
+        })
+        const helper_delete_all = this.init_menu_of_helper("Delete Node With Children", ()=>{
+            this._host._view.modifier.deleteNodeWithChildren(this._modelNodeName);
+        })
+        const helper_delete_enter = this.init_menu_of_helper("Delete Enter", ()=>{
+            this._host._view.modifier.deleteEnter();
+        })
+
+        return this.init_helper(iconElem, "Delete", [helper_delete, helper_delete_all, helper_delete_enter])
+    }
+
+    init_recover_helper() {
+        const iconElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path1.setAttribute('d', 'M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z');
+        path1.style.setProperty('fill-rule', "evenodd");
+        const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path2.setAttribute('d', 'M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z');
+        iconElem.appendChild(path1)
+        iconElem.appendChild(path2)
+        iconElem.setAttribute("ViewBox", "0 0 16 16")
+
+        const helper_recover = this.init_menu_of_helper("Recover Node", ()=>{
+            this._host._view.modifier.recoverSingleNode(this._modelNodeName);
+        })
+        const helper_recover_all = this.init_menu_of_helper("Recover Node With Children", ()=>{
+            this._host._view.modifier.recoverNodeWithChildren(this._modelNodeName);
+        })
+
+        return this.init_helper(iconElem, "Recover", [helper_recover, helper_recover_all])
+    }
+
+    init_helper(icon, title, helpers) {
+        const helperElem = this._host.document.createElement('div');
+        helperElem.style.cursor = "default"
+
+        const iconElem = this._host.document.createElement('div')
+        iconElem.classList.add("icon")
+        iconElem.appendChild(icon)
+        icon.setAttribute("width", 16)
+        icon.setAttribute("height", 16)
+        helperElem.appendChild(iconElem)
+
+        const titleElem = this._host.document.createElement('div')
+        titleElem.classList.add("title")
+        titleElem.innerText = title
+        helperElem.appendChild(titleElem)
+
+        const helperMenuElem = this._host.document.createElement('div')
+        helperMenuElem.classList.add("menu")
+        for (const helperMenu of helpers) {
+            helperMenuElem.appendChild(helperMenu)
+        }
+        helperElem.appendChild(helperMenuElem)
+        return helperElem
+    }
+
+    init_menu_of_helper(menu_name, callback) {
+        const menuElem = this._host.document.createElement('div')
+        menuElem.classList.add("menu-item")
+        menuElem.innerText = menu_name
+        menuElem.addEventListener("click", callback)
+        return menuElem
+    }
+
 
     _addHeader(title) {
         const headerElement = this._host.document.createElement('div');
         headerElement.className = 'sidebar-view-header';
-        headerElement.innerText = title;
+        headerElement.innerText = title.toUpperCase();
         this._elements.push(headerElement);
     }
 
@@ -572,6 +729,11 @@ sidebar.ValueTextView = class {
             element.appendChild(this._action);
         }
 
+        const valueEditers = this._host.document.createElement('div');
+        valueEditers.className = 'sidebar-view-item-value-editers';
+        element.appendChild(valueEditers);
+        this._valueEditers = valueEditers
+
         const list = Array.isArray(value) ? value : [ value ];
         let className = 'sidebar-view-item-value-line';
         for (const index in list) {
@@ -580,8 +742,8 @@ sidebar.ValueTextView = class {
                 const line = this._host.document.createElement('input');
                 line.className = className;
                 line.value = item;
-                line.size = 44
-                element.appendChild(line);
+                line.type = "text";
+                this._valueEditers.appendChild(line);
                 className = 'sidebar-view-item-value-line-border';
                 line.addEventListener('input', (e) => {
                     let has_error = modifiy_event(e.target.value.trim(), index, e)
@@ -595,7 +757,7 @@ sidebar.ValueTextView = class {
                 const line = this._host.document.createElement('div');
                 line.className = className;
                 line.innerText = item;
-                element.appendChild(line);
+                this._valueEditers.appendChild(line);
                 className = 'sidebar-view-item-value-line-border';
             }
         }
@@ -622,14 +784,24 @@ class NodeAttributeView {
         const type = this._attribute.type;
         if (type) {
             this._expander = this._host.document.createElement('div');
-            this._expander.className = 'sidebar-view-item-value-expander';
-            this._expander.innerText = '+';
+            this._expander.classList.add('sidebar-view-item-value-expander');
+            this._expander.classList.add('off');
+            this._expander.innerHTML = `
+                <img src="./svg/chevron-up.svg" class="off"/>
+                <img src="./svg/chevron-down.svg" class="on"/>
+            `;
             this._expander.addEventListener('click', () => {
                 this.toggle();
             });
             this._element.appendChild(this._expander);
         }
         const value = this._attribute.value;
+
+        const valueEditers = this._host.document.createElement('div');
+        valueEditers.className = 'sidebar-view-item-value-editers';
+        this._element.appendChild(valueEditers);
+        this._valueEditers = valueEditers
+
         // console.log(this._attribute.name, value, type)
         switch (type) {
             case 'graph': {
@@ -639,7 +811,7 @@ class NodeAttributeView {
                 line.addEventListener('click', () => {
                     this._raise('show-graph', value);
                 });
-                this._element.appendChild(line);
+                this._valueEditers.appendChild(line);
                 break;
             }
             case 'function': {
@@ -649,7 +821,7 @@ class NodeAttributeView {
                 line.addEventListener('click', () => {
                     this._raise('show-graph', value.type);
                 });
-                this._element.appendChild(line);
+                this._valueEditers.appendChild(line);
                 break;
             }
             default: {
@@ -663,14 +835,12 @@ class NodeAttributeView {
 
                 var attr_input = document.createElement("INPUT");
                 attr_input.setAttribute("type", "text");
-                attr_input.setAttribute("size", "42");
                 attr_input.setAttribute("value", content ? content : 'undefined');
                 attr_input.addEventListener('input', (e) => {
                     this._host._view.modifier.changeNodeAttribute(this._modelNodeName, this._attributeName, e.target.value, type);
                 });
 
-                this._element.appendChild(attr_input);
-
+                this._valueEditers.appendChild(attr_input);
             }
         }
     }
@@ -680,8 +850,8 @@ class NodeAttributeView {
     }
 
     toggle() {
-        if (this._expander.innerText == '+') {
-            this._expander.innerText = '-';
+        if (this._expander.classList.contains("off")) {
+            this._expander.classList.remove("off");
 
             const typeLine = this._host.document.createElement('div');
             typeLine.className = 'sidebar-view-item-value-line-border';
@@ -689,11 +859,11 @@ class NodeAttributeView {
             const value = this._attribute.value;
             if (type == 'tensor' && value && value.type) {
                 typeLine.innerHTML = 'type: ' + '<code><b>' + value.type.toString() + '</b></code>';
-                this._element.appendChild(typeLine);
+                this._valueEditers.appendChild(typeLine);
             }
             else {
                 typeLine.innerHTML = 'type: ' + '<code><b>' + this._attribute.type + '</b></code>';
-                this._element.appendChild(typeLine);
+                this._valueEditers.appendChild(typeLine);
             }
 
             const description = this._attribute.description;
@@ -701,7 +871,7 @@ class NodeAttributeView {
                 const descriptionLine = this._host.document.createElement('div');
                 descriptionLine.className = 'sidebar-view-item-value-line-border';
                 descriptionLine.innerHTML = description;
-                this._element.appendChild(descriptionLine);
+                this._valueEditers.appendChild(descriptionLine);
             }
 
             if (this._attribute.type == 'tensor' && value) {
@@ -711,13 +881,13 @@ class NodeAttributeView {
                 const contentLine = this._host.document.createElement('pre');
                 contentLine.innerHTML = state || value.toString();
                 valueLine.appendChild(contentLine);
-                this._element.appendChild(valueLine);
+                this._valueEditers.appendChild(valueLine);
             }
         }
         else {
-            this._expander.innerText = '+';
-            while (this._element.childElementCount > 2) {
-                this._element.removeChild(this._element.lastChild);
+            this._expander.classList.add("off");
+            while (this._valueEditers.childElementCount > 1) {
+                this._valueEditers.removeChild(this._valueEditers.lastChild);
             }
         }
     }
@@ -840,13 +1010,23 @@ sidebar.ArgumentView = class {
         // console.log(argument)
         if (type || initializer || quantization || location || is_custom_added) {
             this._expander = this._host.document.createElement('div');
-            this._expander.className = 'sidebar-view-item-value-expander';
-            this._expander.innerText = '+';
+            this._expander.classList.add('sidebar-view-item-value-expander');
+            this._expander.classList.add('off');
+            this._expander.innerHTML = `
+                <img src="./svg/chevron-up.svg" class="off"/>
+                <img src="./svg/chevron-down.svg" class="on"/>
+            `;
             this._expander.addEventListener('click', () => {
                 this.toggle();
             });
             this._element.appendChild(this._expander);
         }
+
+        
+        const valueEditers = this._host.document.createElement('div');
+        valueEditers.className = 'sidebar-view-item-value-editers';
+        this._element.appendChild(valueEditers);
+        this._valueEditers = valueEditers
 
         let name = this._argument.name || '';
         this._hasId = name ? true : false;
@@ -863,12 +1043,11 @@ sidebar.ArgumentView = class {
 
             var arg_input = document.createElement("INPUT");
             arg_input.setAttribute("type", "text");
-            arg_input.setAttribute("size", "42");
             arg_input.setAttribute("value", name);
             arg_input.addEventListener('input', (e) => {
                 this._host._view.modifier.changeNodeInputOutput(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, e.target.value);
             });
-            this._element.appendChild(arg_input);
+            valueEditers.appendChild(arg_input);
 
         }
         else if (this._hasKind) {
@@ -876,14 +1055,14 @@ sidebar.ArgumentView = class {
             const kindLine = this._host.document.createElement('div');
             kindLine.className = 'sidebar-view-item-value-line';
             kindLine.innerHTML = 'kind: <b>' + initializer.kind + '</b>';
-            this._element.appendChild(kindLine);
+            valueEditers.appendChild(kindLine);
         }
         else if (type) {
             console.log("type is called")
             const typeLine = this._host.document.createElement('div');
             typeLine.className = 'sidebar-view-item-value-line-border';
             typeLine.innerHTML = 'type: <code><b>' + type.toString().split('<').join('&lt;').split('>').join('&gt;') + '</b></code>';
-            this._element.appendChild(typeLine);
+            valueEditers.appendChild(typeLine);
         }
     }
 
@@ -897,8 +1076,8 @@ sidebar.ArgumentView = class {
 
     toggle() {
         if (this._expander) {
-            if (this._expander.innerText == '+') {
-                this._expander.innerText = '-';
+            if (this._expander.classList.contains("off")) {
+                this._expander.classList.remove("off");
 
                 const initializer = this._argument.initializer;
                 // console.log(this._argument, initializer) // type: onnx.Argument, onnx.Tensor
@@ -906,7 +1085,7 @@ sidebar.ArgumentView = class {
                     const kindLine = this._host.document.createElement('div');
                     kindLine.className = 'sidebar-view-item-value-line-border';
                     kindLine.innerHTML = 'kind: ' + '<b>' + initializer.kind + '</b>';
-                    this._element.appendChild(kindLine);
+                    this._valueEditers.appendChild(kindLine);
                 }
                 let type = null;
                 let denotation = null;
@@ -919,13 +1098,13 @@ sidebar.ArgumentView = class {
                     typeLine.className = 'sidebar-view-item-value-line-border';
                     // console.log(type, type.split('<').join('&lt;').split('>').join('&gt;'))
                     typeLine.innerHTML = 'type: <code><b>' + type.split('<').join('&lt;').split('>').join('&gt;') + '</b></code>';
-                    this._element.appendChild(typeLine);
+                    this._valueEditers.appendChild(typeLine);
                 }
                 if (denotation) {
                     const denotationLine = this._host.document.createElement('div');
                     denotationLine.className = 'sidebar-view-item-value-line-border';
                     denotationLine.innerHTML = 'denotation: <code><b>' + denotation + '</b></code>';
-                    this._element.appendChild(denotationLine);
+                    this._valueEditers.appendChild(denotationLine);
                 }
 
                 const description = this._argument.description;
@@ -933,7 +1112,7 @@ sidebar.ArgumentView = class {
                     const descriptionLine = this._host.document.createElement('div');
                     descriptionLine.className = 'sidebar-view-item-value-line-border';
                     descriptionLine.innerHTML = description;
-                    this._element.appendChild(descriptionLine);
+                    this._valueEditers.appendChild(descriptionLine);
                 }
 
                 const quantization = this._argument.quantization;
@@ -942,26 +1121,25 @@ sidebar.ArgumentView = class {
                     quantizationLine.className = 'sidebar-view-item-value-line-border';
                     const content = !Array.isArray(quantization) ? quantization : '<br><br>' + quantization.map((value) => '  ' + value).join('<br>');
                     quantizationLine.innerHTML = '<span class=\'sidebar-view-item-value-line-content\'>quantization: ' + '<b>' + content + '</b></span>';
-                    this._element.appendChild(quantizationLine);
+                    this._valueEditers.appendChild(quantizationLine);
                 }
 
                 if (this._argument.location !== undefined) {
                     const location = this._host.document.createElement('div');
                     location.className = 'sidebar-view-item-value-line-border';
                     location.innerHTML = 'location: ' + '<b>' + this._argument.location + '</b>';
-                    this._element.appendChild(location);
+                    this._valueEditers.appendChild(location);
                 }
                 
                 if (initializer) {
                     const editInitializerVal = this._host.document.createElement('div');
                     editInitializerVal.className = 'sidebar-view-item-value-line-border';
                     editInitializerVal.innerHTML = 'This is an initializer, you can input a new value for it here:';
-                    this._element.appendChild(editInitializerVal);
+                    this._valueEditers.appendChild(editInitializerVal);
     
                     var inputInitializerVal = document.createElement("textarea");
                     inputInitializerVal.setAttribute("type", "text");
                     inputInitializerVal.rows = 8;
-                    inputInitializerVal.cols = 44;
 
                     // reload the last value
                     var orig_arg_name = this._host._view.modifier.getOriginalName(this._param_type, this._modelNodeName, this._param_index, this._arg_index)
@@ -975,7 +1153,7 @@ sidebar.ArgumentView = class {
                         checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value, true))
                         this._host._view.modifier.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, this._argument.type._dataType, e.target.value);
                     });
-                    this._element.appendChild(inputInitializerVal);
+                    editInitializerVal.appendChild(inputInitializerVal);
                 }
 
                 if (this._argument.is_custom_added) {
@@ -983,38 +1161,36 @@ sidebar.ArgumentView = class {
                         const isOptionalLine = this._host.document.createElement('div');
                         isOptionalLine.className = 'sidebar-view-item-value-line-border';
                         isOptionalLine.innerHTML = 'optional: <code><b>true</b></code>';
-                        this._element.appendChild(isOptionalLine);
+                        this._valueEditers.appendChild(isOptionalLine);
                     }
                     var new_init_val = "", new_init_type = "";
                     // ====== input value ======>
                     const editInitializerVal = this._host.document.createElement('div');
                     editInitializerVal.className = 'sidebar-view-item-value-line-border';
                     editInitializerVal.innerHTML = 'If this is an initializer, you can input new value for it here:';
-                    this._element.appendChild(editInitializerVal);
+                    this._valueEditers.appendChild(editInitializerVal);
     
                     var inputInitializerVal = document.createElement("textarea");
                     inputInitializerVal.setAttribute("type", "text");
                     inputInitializerVal.rows = 8;
-                    inputInitializerVal.cols = 44;
 
                     inputInitializerVal.addEventListener('input', (e) => {
                         new_init_val = e.target.value;
                         checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value, true))
                         this._host._view.modifier.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
                     });
-                    this._element.appendChild(inputInitializerVal);
+                    this._valueEditers.appendChild(inputInitializerVal);
                     // <====== input value ======
                     
                     // ====== input type ======>
                     const editInitializerType = this._host.document.createElement('div');
                     editInitializerType.className = 'sidebar-view-item-value-line-border';
                     editInitializerType.innerHTML = 'and input its type for it here <b>' + '(see properties->type->?' + '</b>' + ' for more info):';
-                    this._element.appendChild(editInitializerType);
+                    this._valueEditers.appendChild(editInitializerType);
     
                     var inputInitializerType = document.createElement("textarea");
                     inputInitializerType.setAttribute("type", "text");
                     inputInitializerType.rows = 1;
-                    inputInitializerType.cols = 44;
 
                     var arg_name = this._host._view.modifier.addedNode.get(this._modelNodeName).inputs.get(this._parameterName)[this._arg_index][0]  // [arg.name, arg.is_optional]
                     if (this._host._view.modifier.initializerEditInfo.get(arg_name)) {
@@ -1028,7 +1204,7 @@ sidebar.ArgumentView = class {
                         checkInputShowErr(inputInitializerType, !checkInputValidChars(e.target.value, true))
                         this._host._view.modifier.changeAddedNodeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, new_init_type, new_init_val);
                     });
-                    this._element.appendChild(inputInitializerType);
+                    editInitializerVal.appendChild(inputInitializerType);
                     // <====== input type ======
                 }
 
@@ -1037,7 +1213,7 @@ sidebar.ArgumentView = class {
                     const origInitLine = this._host.document.createElement('div');
                     origInitLine.className = 'sidebar-view-item-value-line-border';
                     origInitLine.innerHTML = 'original initializer value:';
-                    this._element.appendChild(origInitLine);
+                    this._valueEditers.appendChild(origInitLine);
                     const contentLine = this._host.document.createElement('pre');
                     const valueLine = this._host.document.createElement('div');
                     try {
@@ -1048,10 +1224,11 @@ sidebar.ArgumentView = class {
                             this._saveButton = this._host.document.createElement('div');
                             this._saveButton.className = 'sidebar-view-item-value-expander';
                             this._saveButton.innerHTML = '&#x1F4BE;';
+                            this._saveButton.style.float = "right";
                             this._saveButton.addEventListener('click', () => {
                                 this._raise('export-tensor', initializer);
                             });
-                            this._element.appendChild(this._saveButton);
+                            origInitLine.appendChild(this._saveButton);
                         }
 
                         valueLine.className = 'sidebar-view-item-value-border'
@@ -1061,14 +1238,13 @@ sidebar.ArgumentView = class {
                         contentLine.innerHTML = err.toString();
                         this._raise('error', err);
                     }
-                    valueLine.appendChild(contentLine);
-                    this._element.appendChild(valueLine);
+                    origInitLine.appendChild(contentLine);
+                    this._valueEditers.appendChild(valueLine);
                 }
-            }
-            else {
-                this._expander.innerText = '+';
-                while (this._element.childElementCount > 2) {
-                    this._element.removeChild(this._element.lastChild);
+            } else {
+                this._expander.classList.add("off");
+                while (this._valueEditers.childElementCount > 1) {
+                    this._valueEditers.removeChild(this._valueEditers.lastChild);
                 }
             }
         }
@@ -1093,6 +1269,7 @@ sidebar.ModelSidebar = class {
 
     constructor(host, model, graph, clicked_output_name, clicked_input_name) {
         this._host = host;
+        this._view = this._host.view;
         this._model = model;
         this._elements = [];
         this.clicked_output_name = clicked_output_name
@@ -1205,19 +1382,208 @@ sidebar.ModelSidebar = class {
             }
         }
 
-        const separator = this._host.document.createElement('div');
-        separator.className = 'sidebar-view-separator';
-        this._elements.push(separator);
+        this._view_elements = this._host.document.createElement('div')
+        for (const elem of this._elements) {
+            this._view_elements.appendChild(elem)
+        }
+        this._view_elements.style.flex = 1
+        
+        this._modifer_element = this.add_modifer_panel()
     }
 
     render() {
-        return this._elements;
+        return [this._view_elements, this._modifer_element];
     }
+
+    
+    add_separator(elment, className) {
+        const separator = this._host.document.createElement('div');
+        separator.className = className;
+        elment.push(separator);
+    }
+
+    
+    add_modifer_panel() {
+        const modiferPanelElem = this._host.document.createElement('div');
+        modiferPanelElem.className = 'sidebar-view-modifer-panel';
+
+        modiferPanelElem.appendChild(this.init_modifer_button())
+        if (this.clicked_input_name) {
+            modiferPanelElem.appendChild(this.init_modifer_toolbar())
+        }
+        return modiferPanelElem
+    }
+
+    init_modifer_button() {
+        const modiferButtonsElem = this._host.document.createElement('div');
+        modiferButtonsElem.className = 'sidebar-view-modifer-buttons';
+
+        if (this.clicked_input_name) {
+            const removeInputElem = this._host.document.createElement('button');
+            removeInputElem.innerText = "Remove Input"
+            removeInputElem.addEventListener("click", ()=> {
+                this._host._view.modifier.deleteModelInput(this.clicked_input_name);
+            })
+            modiferButtonsElem.appendChild(removeInputElem)
+        }
+        if (this.clicked_output_name) {
+            const removeOutputElem = this._host.document.createElement('button');
+            removeOutputElem.innerText = "Remove Output"
+            removeOutputElem.addEventListener("click", ()=> {
+                this._host._view.modifier.deleteModelOutput(this.clicked_output_name);
+            })
+            modiferButtonsElem.appendChild(removeOutputElem)
+        }
+
+        return modiferButtonsElem
+    }
+
+    init_modifer_toolbar() {
+        const modiferToolbarElem = this._host.document.createElement('div');
+        modiferToolbarElem.className = 'sidebar-view-modifer-toolbar';
+
+        const icon_shape = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M8.932.727c-.243-.97-1.62-.97-1.864 0l-.071.286a.96.96 0 0 
+            1-1.622.434l-.205-.211c-.695-.719-1.888-.03-1.613.931l.08.284a.96.96 0 0 1-1.186 
+            1.187l-.284-.081c-.96-.275-1.65.918-.931 1.613l.211.205a.96.96 0 0 1-.434 1.622l-.286.071c-.97.243-.97 
+            1.62 0 1.864l.286.071a.96.96 0 0 1 .434 1.622l-.211.205c-.719.695-.03 1.888.931 1.613l.284-.08a.96.96 
+            0 0 1 1.187 1.187l-.081.283c-.275.96.918 1.65 1.613.931l.205-.211a.96.96 0 0 1 1.622.434l.071.286c.243.97 
+            1.62.97 1.864 0l.071-.286a.96.96 0 0 1 1.622-.434l.205.211c.695.719 1.888.03 1.613-.931l-.08-.284a.96.96 
+            0 0 1 1.187-1.187l.283.081c.96.275 1.65-.918.931-1.613l-.211-.205a.96.96 0 0 1 
+            .434-1.622l.286-.071c.97-.243.97-1.62 0-1.864l-.286-.071a.96.96 0 0 
+            1-.434-1.622l.211-.205c.719-.695.03-1.888-.931-1.613l-.284.08a.96.96 0 0 
+            1-1.187-1.186l.081-.284c.275-.96-.918-1.65-1.613-.931l-.205.211a.96.96 0 0 
+            1-1.622-.434L8.932.727zM8 12.997a4.998 4.998 0 1 1 0-9.995 4.998 4.998 0 0 1 0 9.996z`);
+    
+        icon_shape.appendChild(path)
+        icon_shape.setAttribute("ViewBox", "0 0 16 16")
+        modiferToolbarElem.appendChild(this.init_helper(icon_shape, "Set Input Shape", () => {
+            // show dialog
+            let default_shape = this._host.get_default_input_shape(this.clicked_input_name)
+
+            let input_change = this._host.document.getElementById("change-input-shape-input")
+            input_change.value = default_shape
+            let dialog = this._host.document.getElementById("change-input-shape-dialog")
+            dialog.getElementsByClassName("message")[0].innerText = `Change the shape of input: ${this.clicked_input_name}`
+            this._host.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                if (!is_not_cancel) {
+                    return 
+                }
+                
+                this._host.view.modifier.changeInputSize(this.clicked_input_name, input_change.dims);
+                this._view.modifier.refreshModelInputOutput()
+
+                if (dialog.getElementsByClassName("checkbox-shape-change")[0].checked) {
+                    let data = this._host.build_download_data(true)
+                    data.postprocess_args.shapeInf = true
+                    this._host.take_effect_modify("/download", data, false)
+                }
+                this._view._sidebar.close()
+            })
+        }))
+
+        let icon_dynamic = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const path_dynamic = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path_dynamic.setAttribute('d', `M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 
+            1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 
+            1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 
+            2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 
+            1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 
+            1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 
+            1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 
+            1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z`);
+    
+        icon_dynamic.appendChild(path_dynamic)
+        icon_dynamic.setAttribute("ViewBox", "0 0 16 16")
+
+        modiferToolbarElem.appendChild(this.init_helper(icon_dynamic, "Batch Dynamic", () => {
+            let dialog = this._host.document.getElementById("dynamic-batch-size-dialog")
+            this._host.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                if (!is_not_cancel) {
+                    return 
+                }
+                this._host.change_batch_size("dynamic")
+                this._view.modifier.changeBatchSize("dynamic");
+                if (dialog.getElementsByClassName("checkbox-shape-change")[0].checked) {
+                    let data = this._host.build_download_data(true)
+                    data.postprocess_args.shapeInf = true
+                    this._host.take_effect_modify("/download", data, false)
+                }
+                this._view._sidebar.close()
+            })
+        }))
+
+        let icon_fix =  document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        const path_fix1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path_fix1.setAttribute('d', `M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 
+            0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z`);
+
+        const path_fix2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path_fix2.setAttribute('d', `M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 
+            1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 
+            1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 
+            3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873
+             0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 
+             .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 
+             1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 
+             1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 
+             1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 
+             1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 
+             1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0
+              0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 
+              8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 
+              4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z`);
+
+        icon_fix.appendChild(path_fix1)
+        icon_fix.appendChild(path_fix2)
+        icon_fix.setAttribute("ViewBox", "0 0 16 16")
+
+        modiferToolbarElem.appendChild(this.init_helper(icon_fix, "Batch Fixed", () => {
+            let dialog = this._host.document.getElementById("fixed-batch-size-dialog")
+            this._host.show_confirm_dialog(dialog).then((is_not_cancel)=> {
+                if (!is_not_cancel) {
+                    return 
+                }
+                let input_change = this._host.document.getElementById("fixed-batch-size-input")
+                this._host.change_batch_size(input_change.value)
+                this._view.modifier.changeBatchSize('fixed', input_change.value);
+
+                if (dialog.getElementsByClassName("checkbox-shape-change")[0].checked) {
+                    let data = this._host.build_download_data(true)
+                    data.postprocess_args.shapeInf = true
+                    this._host.take_effect_modify("/download", data, false)
+                }
+                this._view._sidebar.close()
+            })
+        }))
+
+        return modiferToolbarElem 
+    }
+
+    init_helper(icon, title, callback) {
+            const helperElem = this._host.document.createElement('div');
+            helperElem.style.cursor = "default"
+    
+            const iconElem = this._host.document.createElement('div')
+            iconElem.classList.add("icon")
+            iconElem.appendChild(icon)
+            icon.setAttribute("width", 16)
+            icon.setAttribute("height", 16)
+            helperElem.appendChild(iconElem)
+    
+            const titleElem = this._host.document.createElement('div')
+            titleElem.classList.add("title")
+            titleElem.innerText = title
+            helperElem.appendChild(titleElem)
+            helperElem.addEventListener("click", callback)
+            return helperElem
+        }
 
     _addHeader(title) {
         const headerElement = this._host.document.createElement('div');
         headerElement.className = 'sidebar-view-header';
-        headerElement.innerText = title;
+        headerElement.innerText = title.toUpperCase();
         this._elements.push(headerElement);
     }
 
