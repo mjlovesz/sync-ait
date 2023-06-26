@@ -109,7 +109,7 @@ main() {
     else
         dt_list=(1 1 1 1 1 1 1)
     fi
-    echo "dt_list $dt_list"
+    echo "dt_list ${dt_list[@]}"
 
     get_npu_type || { echo "invalid npu device";return $ret_failed; }
     PYTHON_COMMAND="python3"
