@@ -79,7 +79,7 @@ main() {
     dt_list=(0 0 0 0 0 0 0)
     if [[ $dt_mode=="pr" ]];then
         modify_files=$CUR_PATH/../../../../modify_files.txt
-        if [[ -f $modify_files]];then
+        if [[ -f $modify_files ]];then
             while read line
             do
                 result=""
