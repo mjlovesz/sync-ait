@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from itertools import chain
+
 import unittest
 import numpy as np
 
 from auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from testcase.refactor.test_node_common import is_ph_equal, is_ini_equal, is_node_equal
-from testcase.refactor.test_graph_basic import is_graph_equal
-from testcase.refactor.test_graph_crud import create_graph
+from test.refactor.test_node_common import is_ph_equal, is_ini_equal, is_node_equal
+from test.refactor.test_graph_basic import is_graph_equal
+from test.refactor.test_graph_crud import create_graph
 
 
 class TestGraphAdvanced(unittest.TestCase):

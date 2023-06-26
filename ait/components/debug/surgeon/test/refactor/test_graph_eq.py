@@ -22,7 +22,7 @@ from auto_optimizer.graph_refactor.onnx.node import (
     OnnxPlaceHolder, OnnxInitializer, OnnxNode
 )
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from testcase.helper import KnowledgeTestHelper
+from test.helper import KnowledgeTestHelper
 
 
 def create_test_graph(name: str = 'test_graph') -> BaseGraph:

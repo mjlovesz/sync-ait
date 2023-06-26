@@ -16,8 +16,9 @@ import unittest
 import numpy as np
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from auto_optimizer.pattern.knowledge_factory import KnowledgeType
 from auto_optimizer.pattern.knowledges.knowledge_type_cast import KnowledgeTypeCast
-from testcase.helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_type_cast_model(onnx_name, x: np.ndarray, y: np.ndarray, value_type: np.dtype):
