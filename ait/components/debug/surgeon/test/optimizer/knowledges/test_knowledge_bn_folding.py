@@ -18,7 +18,7 @@ from numpy.typing import NDArray
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges import KnowledgeBNFolding
-from testcase.helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def var_channel(arr: NDArray) -> NDArray:

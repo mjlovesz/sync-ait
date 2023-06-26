@@ -20,7 +20,8 @@ import onnx
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_modify_reflection_pad import KnowledgeModifyReflectionPad
 
-from testcase.helper import KnowledgeTestHelper, OptimizationConfig
+from auto_optimizer.graph_optimizer import GraphOptimizer
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_reflection_pad_model(model_name):

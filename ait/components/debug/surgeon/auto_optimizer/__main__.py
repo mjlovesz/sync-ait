@@ -14,22 +14,17 @@
 
 from multiprocessing import Pool
 import pathlib
-from functools import partial
-from typing import List
 
 import click
 from click_aliases import ClickAliasedGroup
 from click.exceptions import UsageError
 
-from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig, \
-    ARGS_REQUIRED_KNOWLEDGES
+from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from auto_optimizer.pattern import KnowledgeFactory
 from auto_optimizer.tools.log import logger
 from auto_optimizer.common.utils import check_output_model_path
-from auto_optimizer.common.click_utils import is_graph_input_static, optimize_onnx, evaluate_onnx, CONTEXT_SETTINGS, \
-    FormatMsg
-
+from auto_optimizer.common.click_utils import optimize_onnx, CONTEXT_SETTINGS, \
+    FormatMsg, cli_eva, list_knowledges
 
 from auto_optimizer.options import (
     arg_path,
@@ -69,10 +64,7 @@ def cli() -> None:
 
 @cli.command('list', short_help='List available Knowledges.', context_settings=CONTEXT_SETTINGS)
 def command_list() -> None:
-    registered_knowledges = KnowledgeFactory.get_knowledge_pool()
-    logger.info('Available knowledges:')
-    for idx, name in enumerate(registered_knowledges):
-        logger.info(f'  {idx:2d} {name}')
+    list_knowledges()
 
 
 @cli.command(
@@ -94,33 +86,7 @@ def command_evaluate(
     processes: int,
 ) -> None:
     path_ = pathlib.Path(path.decode()) if isinstance(path, bytes) else path
-    if path_.is_dir():
-        onnx_files = list(path_.rglob('*.onnx') if recursive else path_.glob('*.onnx'))
-    else:
-        onnx_files = [path_]
-
-    optimizer.init_knowledges()
-    for know in ARGS_REQUIRED_KNOWLEDGES:
-        if know in optimizer.knowledges:
-            optimizer.knowledges.pop(know)
-
-    if processes > 1:
-        evaluate = partial(evaluate_onnx, optimizer=optimizer, verbose=verbose)
-        with Pool(processes) as p:
-            res = p.map(evaluate, onnx_files)
-        for file, knowledges in zip(onnx_files, res):
-            if not knowledges:
-                continue
-            summary = ','.join(knowledges)
-            logger.info(f'{file}\t{summary}')
-        return
-
-    for onnx_file in onnx_files:
-        knowledges = evaluate_onnx(optimizer=optimizer, model=onnx_file, verbose=verbose)
-        if not knowledges:
-            continue
-        summary = ','.join(knowledges)
-        logger.info(f'{onnx_file}\t{summary}')
+    cli_eva(path_, optimizer, recursive, verbose, processes)
 
 
 @cli.command(

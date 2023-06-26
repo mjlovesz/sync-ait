@@ -18,7 +18,7 @@ import numpy as np
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_dynamic_reshape import KnowledgeDynamicReshape
 from auto_optimizer.pattern.utils import insert_squeeze
-from testcase.helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_dynamic_model(onnx_name, x, y, shape):
