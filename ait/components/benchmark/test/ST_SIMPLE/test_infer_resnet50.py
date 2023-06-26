@@ -25,7 +25,7 @@ import acl
 import aclruntime
 import numpy as np
 import pytest
-from test_common import TestCommonClass
+from ..test_common import TestCommonClass
 from ais_bench.infer.interface import InferSession
 
 logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')

@@ -18,7 +18,7 @@ from configparser import ConfigParser
 import aclruntime
 import numpy as np
 import pytest
-from test_common import TestCommonClass
+from ..test_common import TestCommonClass
 
 logger = logging.getLogger(__name__)
 
