@@ -24,6 +24,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=5000, help='the port of the webserver. Defaults to 5000.')
     parser.add_argument('--debug', action="store_true", default=False, help='enable debug mode.')
+    parser.add_argument('--onnx', type=str, help='onnx file path')
     
     args = parser.parse_args()
     return args
@@ -35,9 +36,9 @@ def main():
     
     @app.route('/')
     def index():
-        return render_template('electron.html')
+        return render_template('index.html')
     
-    def send_file_method(file, **kwargs):
+    def send_file_method(file, session_id, **kwargs):
         if hasattr(file, "seek"):
             file.seek(0, os.SEEK_SET)
 
@@ -47,7 +48,7 @@ def main():
         logging.getLogger().setLevel(logging.DEBUG)
 
     with tempfile.TemporaryDirectory() as temp_dir_path:
-        register_interface(app, request, send_file_method, temp_dir_path)
+        register_interface(app, request, send_file_method, temp_dir_path, args.onnx)
         app.run(host='localhost', port=args.port, debug=args.debug)
 
 if __name__ == '__main__':

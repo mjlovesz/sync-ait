@@ -148,7 +148,9 @@ class OnnxModifier:
         # remove the (model) inputs related to deleted nodes 
         for input_name in self.graph_input_names:
             if input_name not in remained_inputs:
-                self.graph.input.remove(self.node_name2module.get(input_name, None))
+                input_to_remove = self.node_name2module.get(input_name, None)
+                if input_to_remove is not None and input_name == input_to_remove.name:
+                    self.graph.input.remove(self.node_name2module.get(input_name, None))
 
     def modify_node_io_name(self, node_renamed_io):
         for node_name in node_renamed_io.keys():

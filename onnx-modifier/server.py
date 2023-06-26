@@ -60,15 +60,17 @@ class RpcServer:
         sys.stdout.flush()
         return return_str
 
-    def send_file(self, file, **kwargs):
-        file_path = os.path.join(self.temp_dir_path, "modified.onnx")
-        file.seek(0)
-        flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-        mode = stat.S_IWUSR | stat.S_IRUSR
-        with os.fdopen(os.open(file_path, flags=flags, mode=mode), "wb") as modified_file:
-            modified_file.write(file.read())
-        file.close()
-        return dict(file=file_path), 200
+    def send_file(self, file, session_id, **kwargs):
+        if isinstance(file, str):
+            return dict(file=file), 200
+        with FileAutoClear(file, lambda f: f.close()):
+            file_path = os.path.join(self.temp_dir_path, f"{session_id}_modified.onnx")
+            file.seek(0)
+            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+            mode = stat.S_IWUSR | stat.S_IRUSR
+            with os.fdopen(os.open(file_path, flags=flags, mode=mode), "wb") as modified_file:
+                modified_file.write(file.read())
+            return dict(file=file_path), 200
 
     def route(self, path, **kwargs):
         def regg(func):
@@ -198,9 +200,10 @@ class SessionInfo:
     SESSION_INDEX = 0
     SESSION_INSTENCES = dict()
 
-    def __init__(self) -> None:
+    def __init__(self, session_id="") -> None:
         self.modifier = None
         self._cache_msg = ""
+        self._session_id = session_id
 
     @classmethod
     def get_session_index(cls):
@@ -211,9 +214,12 @@ class SessionInfo:
     def get_session(cls, session_id):
         if session_id in cls.SESSION_INSTENCES:
             return cls.SESSION_INSTENCES.get(session_id)
-        session = SessionInfo()
+        session = SessionInfo(session_id)
         cls.SESSION_INSTENCES[session_id] = session
         return session
+    
+    def get_session_id(self):
+        return self._session_id
 
     def get_modifier(self):
         if self.modifier is None:
@@ -340,11 +346,23 @@ def json_modify_model(modifier, modify_infos):
             raise ServerError("unknown path", 500)
 
 
-def register_interface(app, request, send_file, temp_dir_path):
+def register_interface(app, request, send_file, temp_dir_path, init_file_path=None):
     @app.route('/get_session_index', methods=['POST'])
     def get_session_index():
         return str(SessionInfo.get_session_index()), 200
     
+    @app.route('/init', methods=['POST'])
+    def init():
+        modify_info = request.get_json()
+        session = SessionInfo.get_session(modify_info.get("session"))
+        if init_file_path:
+            if os.path.exists(init_file_path):
+                return send_file(init_file_path, session.get_session_id())
+            else:
+                logging.error(f"file path {init_file_path} is not exists")
+        
+        return "", 200
+            
     @app.route('/open_model', methods=['POST'])
     def open_model():
         onnx_file = request.files.get("file")
@@ -367,10 +385,15 @@ def register_interface(app, request, send_file, temp_dir_path):
             return error.msg, error.status
         modifier.reload()   # allow downloading for multiple times
         with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, tmp_file):
-            modify_model(modifier, modify_info, tmp_file)
-
+            try:
+                modify_model(modifier, modify_info, tmp_file)
+            except ServerError as error:
+                return error.msg, error.status
+            except Exception as ex:
+                return str(ex), 500
+            
             auto_close.set_not_close()  # file will auto close in send_file 
-            return send_file(tmp_file, download_name="modified.onnx")
+            return send_file(tmp_file, session.get_session_id(), download_name="modified.onnx")
 
     @app.route('/onnxsim', methods=['POST'])
     def modify_and_onnxsim_model():
@@ -387,9 +410,11 @@ def register_interface(app, request, send_file, temp_dir_path):
                 onnxsim_model(modifier, modify_info, tmp_file)
             except ServerError as error:
                 return error.msg, error.status
+            except Exception as ex:
+                return str(ex), 500
 
             auto_close.set_not_close()  # file will auto close in send_file 
-            return send_file(tmp_file, download_name="modified_simed.onnx")
+            return send_file(tmp_file, session.get_session_id(), download_name="modified_simed.onnx")
 
     @app.route('/auto-optimizer', methods=['POST'])
     def modify_and_optimizer_model():
@@ -406,14 +431,16 @@ def register_interface(app, request, send_file, temp_dir_path):
                 out_message = optimizer_model(modifier, modify_info, opt_tmp_file)
             except ServerError as error:
                 return error.msg, error.status
+            except Exception as ex:
+                return str(ex), 500
             
             session.cache_message(out_message)
 
             if opt_tmp_file.tell() == 0:
-                return "auto-optimizer 没有匹配到的知识库", 204
+                return "auto-optimizer 没有匹配到的知识库", 299
 
             auto_close.set_not_close()  # file will auto close in send_file 
-            return send_file(opt_tmp_file, download_name="modified_opt.onnx")
+            return send_file(opt_tmp_file, session.get_session_id(), download_name="modified_opt.onnx")
     
     @app.route('/extract', methods=['POST'])
     def modify_and_extract_model():
@@ -431,21 +458,23 @@ def register_interface(app, request, send_file, temp_dir_path):
                               modify_info.get("extract_start"), modify_info.get("extract_end"),
                               extract_tmp_file)
             except ServerError as error:
-                return error.status, error.msg
+                return error.msg, error.status
+            except Exception as ex:
+                return str(ex), 500
             
             session.cache_message(out_message)
 
             if extract_tmp_file.tell() == 0:
-                return "未正常生成子网", 204
+                return "未正常生成子网", 299
 
             auto_close.set_not_close()  # file will auto close in send_file 
-            return send_file(extract_tmp_file, download_name="extracted.onnx")
+            return send_file(extract_tmp_file, session.get_session_id(), download_name="extracted.onnx")
 
     @app.route('/load-json', methods=['POST'])
     def load_json_and_modify_model():
         json_info = request.get_json()
         session = SessionInfo.get_session(json_info.get("session"))
-        modify_infos = json_info.modify_infos
+        modify_infos = json_info.get("modify_infos", [])
 
         with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, tmp_file):
             try:
@@ -458,12 +487,14 @@ def register_interface(app, request, send_file, temp_dir_path):
                 json_modify_model(tmp_modifier, modify_infos)
             except ServerError as error:
                 return error.msg, error.status
+            except Exception as ex:
+                return str(ex), 500
 
             tmp_modifier.check_and_save_model(tmp_file)
             session.init_modifier(modifier.model_name, tmp_modifier.model_proto)
 
             auto_close.set_not_close()  # file will auto close in send_file 
-            return send_file(tmp_file, download_name="extracted.onnx")
+            return send_file(tmp_file, session.get_session_id(), download_name="extracted.onnx")
 
     @app.route('/get_output_message', methods=['POST'])
     def get_out_message():
@@ -476,7 +507,14 @@ if __name__ == '__main__':
     logger = logging.getLogger()
     logger.addHandler(logging.StreamHandler(sys.stdout))
     logging.getLogger().setLevel(logging.INFO)
+    
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--onnx', type=str, help='onnx file path')
+    
+    args, _ = parser.parse_known_args()
+
     with tempfile.TemporaryDirectory() as server_temp_dir_path:
         server = RpcServer(server_temp_dir_path)
-        register_interface(server, server.request, server.send_file, server_temp_dir_path)
+        register_interface(server, server.request, server.send_file, server_temp_dir_path, args.onnx)
         server.run()
