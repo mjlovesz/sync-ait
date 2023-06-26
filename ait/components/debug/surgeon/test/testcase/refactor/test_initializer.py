@@ -16,8 +16,7 @@ import unittest
 
 import numpy as np
 
-from auto_optimizer.graph_refactor.onnx.node import OnnxInitializer
-from test.refactor.test_node_common import create_node
+from testcase.refactor.test_node_common import create_node
 
 
 class TestInitializer(unittest.TestCase):
