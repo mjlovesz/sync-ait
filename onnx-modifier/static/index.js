@@ -769,7 +769,7 @@ host.BrowserHost = class {
 
     show_message(title, message, level) {
         let box = document.createElement("div")
-        box.classList.add("message-box", `${level}-message-box`)
+        box.classList.add("message-box", `${level}-message-box`, "message-box-disappear")
         let progressLine = document.createElement("div")
         progressLine.classList.add("message-box-progress", `message-box-progress-${level}`)
 

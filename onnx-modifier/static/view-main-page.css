@@ -153,7 +153,7 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     box-sizing: border-box;
 }
 
-.message-box {
+.message-box-disappear {
     animation: disaple 10s cubic-bezier(0.99, 0.01, 0.01, 0.99);
 }
 
