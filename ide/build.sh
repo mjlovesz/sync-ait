@@ -35,13 +35,6 @@ function init() {
     route=$(dirname "$script")
 }
 
-function gen_plugins_path() {
-  idea_package="ideaIC-$intellij_version.zip"
-  idea_ic_path="$HOME/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/$intellij_version"
-  sha_sum=$(find "${HOME}"/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ -name "${idea_package}" | head -1 | xargs sha1sum | awk '{print $1}')
-  plugins_path=$(readlink -f "$idea_ic_path/$sha_sum/ideaIC-$intellij_version/plugins")
-}
-
 function build_ascend_plugin() {
   local ascend_plugin_name=$1
   local plugin_build_task=$2
@@ -80,11 +73,7 @@ function clean() {
 
 function main() {
   init
-  gen_plugins_path
   clean
-  echo build "intellij $intellij_version"
-  echo compile only "[$compile_only]"
-  echo $plugins_path
 
   local plugin_build_task=build
   if [[ "${compile_only}" != "Y" ]]; then
