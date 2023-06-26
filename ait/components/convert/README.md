@@ -7,16 +7,18 @@ convert模型转换工具依托AIE（Ascend Inference Engine）推理引擎，�
 ## 工具安装
 
 - 工具安装请见 [ait一体化工具使用指南](../../README.md)
-- 如果使用AIE做模型转换，需要安装AIE并完成环境变量的配置:
+- 如果使用convert做模型转换，需要在安装convert前安装AIE并完成环境变量的配置:
   1. 安装AIE  
   ```bash
-  ./Ascend-cann-aie-api_6.3.RC2_linux-x86_64.run --install
+  ./Ascend-cann-aie-api_{version}_linux-{arch}.run --install
   ```
+  {version}为版本号；
+  {arch} 根据环境架构 (x86_64, aarch64) 获取对应的软件包
+  
   2. 设置相关环境变量
   ```bash
   export AIE_DIR=/xxx/Ascend-cann-aie-api/
   ```
-
 
 ## 工具使用
 
