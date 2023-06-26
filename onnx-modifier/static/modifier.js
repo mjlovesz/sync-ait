@@ -10,6 +10,7 @@ modifier.Modifier = class {
         this.name2NodeStates = new Map();
         this.namedEdges = new Map();
 
+        this.oriInputs = new Set();
         this.addedOutputs = new Set();
         this.addedInputs = new Set();
         this.addedNode = new Map();
@@ -34,6 +35,9 @@ modifier.Modifier = class {
         this.graphs = graphs;
         this.graph = this.graphs[0];
         // this.analyzeModelGraph();
+        for (const input_name of this.graph.inputs) {
+            this.oriInputs.add(input_name)
+        }
 
         this.updateAddNodeDropDown();
         this.resetGraph()
@@ -82,8 +86,9 @@ modifier.Modifier = class {
         if (this.name2NodeStates.has(input_name)) {
             this.name2NodeStates.set(input_name, 'Exist');
         }
-        
-        this.addedInputs.add(input_name)
+        if (!this.oriInputs.contains(input_name)) {
+            this.addedInputs.add(input_name)
+        }
         this.applyAndUpdateView();
     }
 

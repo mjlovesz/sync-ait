@@ -37,9 +37,6 @@ sidebar.Sidebar = class {
         this._deactivate();
         this._stack = [];
         this._hide();
-        if (this._host._view.modifier) {
-            this._host._view.modifier.clearHighlightNode()
-        }
     }
 
     push(content, title) {
@@ -68,6 +65,10 @@ sidebar.Sidebar = class {
         }
 
         document.dispatchEvent(new CustomEvent("node-clicked", {detail:{}}))
+        
+        if (this._host._view.modifier) {
+            this._host._view.modifier.clearHighlightNode()
+        }
     }
 
     _deactivate() {
@@ -223,7 +224,6 @@ sidebar.NodeSidebar = class {
         for (const elem of this._elements) {
             this._view_elements.appendChild(elem)
         }
-        this._view_elements.style.flex = 1
         
         this._modifer_element = this.add_modifer_panel()
     }
@@ -315,17 +315,21 @@ sidebar.NodeSidebar = class {
             this._host._view.modifier.setExtractStart(this._modelNodeName, is_extract_start)
             helper_extract_start.innerText = get_start_btn_text()
         })
+        helper_extract_start.classList.add("NodeExtractStart")
+
         const helper_extract_end = this.init_menu_of_helper(get_btn_text(), ()=>{
             is_extract_end = !is_extract_end
             this._host._view.modifier.setExtractEnd(this._modelNodeName, is_extract_end)
             helper_extract_end.innerText  = get_btn_text()
         })
+        helper_extract_end.classList.add("NodeExtractEnd")
 
         const helper_extract_enter = this.init_menu_of_helper("Extract", ()=>{
-            this._host.document.getElementById("extract-graph").click()
+            this._host.document.getElementById("extract-graph").dispatchEvent(new Event('dblclick'))
         })
+        helper_extract_enter.classList.add("NodeExtract")
 
-        return this.init_helper(iconElem, "Extract Helper", [helper_extract_start, helper_extract_end, helper_extract_enter])
+        return this.init_helper(iconElem, "Extract", [helper_extract_start, helper_extract_end, helper_extract_enter])
     }
 
     init_delete_helper() {
@@ -350,7 +354,7 @@ sidebar.NodeSidebar = class {
             this._host._view.modifier.deleteEnter();
         })
 
-        return this.init_helper(iconElem, "Delete Helper", [helper_delete, helper_delete_all, helper_delete_enter])
+        return this.init_helper(iconElem, "Delete", [helper_delete, helper_delete_all, helper_delete_enter])
     }
 
     init_recover_helper() {
@@ -371,7 +375,7 @@ sidebar.NodeSidebar = class {
             this._host._view.modifier.recoverNodeWithChildren(this._modelNodeName);
         })
 
-        return this.init_helper(iconElem, "Recover Helper", [helper_recover, helper_recover_all])
+        return this.init_helper(iconElem, "Recover", [helper_recover, helper_recover_all])
     }
 
     init_helper(icon, title, helpers) {

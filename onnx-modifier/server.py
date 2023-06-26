@@ -385,8 +385,13 @@ def register_interface(app, request, send_file, temp_dir_path, init_file_path=No
             return error.msg, error.status
         modifier.reload()   # allow downloading for multiple times
         with FileAutoClear(tempfile.NamedTemporaryFile(mode="w+b")) as (auto_close, tmp_file):
-            modify_model(modifier, modify_info, tmp_file)
-
+            try:
+                modify_model(modifier, modify_info, tmp_file)
+            except ServerError as error:
+                return error.msg, error.status
+            except Exception as ex:
+                return str(ex), 500
+            
             auto_close.set_not_close()  # file will auto close in send_file 
             return send_file(tmp_file, session.get_session_id(), download_name="modified.onnx")
 
@@ -405,6 +410,8 @@ def register_interface(app, request, send_file, temp_dir_path, init_file_path=No
                 onnxsim_model(modifier, modify_info, tmp_file)
             except ServerError as error:
                 return error.msg, error.status
+            except Exception as ex:
+                return str(ex), 500
 
             auto_close.set_not_close()  # file will auto close in send_file 
             return send_file(tmp_file, session.get_session_id(), download_name="modified_simed.onnx")
@@ -424,6 +431,8 @@ def register_interface(app, request, send_file, temp_dir_path, init_file_path=No
                 out_message = optimizer_model(modifier, modify_info, opt_tmp_file)
             except ServerError as error:
                 return error.msg, error.status
+            except Exception as ex:
+                return str(ex), 500
             
             session.cache_message(out_message)
 
@@ -450,6 +459,8 @@ def register_interface(app, request, send_file, temp_dir_path, init_file_path=No
                               extract_tmp_file)
             except ServerError as error:
                 return error.msg, error.status
+            except Exception as ex:
+                return str(ex), 500
             
             session.cache_message(out_message)
 
@@ -476,6 +487,8 @@ def register_interface(app, request, send_file, temp_dir_path, init_file_path=No
                 json_modify_model(tmp_modifier, modify_infos)
             except ServerError as error:
                 return error.msg, error.status
+            except Exception as ex:
+                return str(ex), 500
 
             tmp_modifier.check_and_save_model(tmp_file)
             session.init_modifier(modifier.model_name, tmp_modifier.model_proto)

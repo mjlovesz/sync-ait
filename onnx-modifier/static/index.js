@@ -353,7 +353,7 @@ host.BrowserHost = class {
         });
 
         const extract = this.document.getElementById('extract-graph');
-        extract.addEventListener('click', () => {
+        extract.addEventListener("dblclick", () => {
             let start_nodes = this._view.modifier.getExtractStart()
             let end_nodes = this._view.modifier.getExtractEnd()
             if (!start_nodes || start_nodes.size == 0 || !end_nodes || end_nodes.size == 0 ) {
@@ -374,6 +374,33 @@ host.BrowserHost = class {
                     this._view.modifier.setExtractEnd(end_name, false)
                 }
             })
+        });
+        
+        this._menu_extract = new host.Dropdown(this, 'extract-graph', 'menu-extract-dropdown');
+        this._menu_extract.add({
+            label: 'Extract',
+            accelerator: 'CmdOrCtrl+T',
+            click: () => extract.dispatchEvent(new Event('dblclick'))
+        })
+        this._menu_extract.add({})
+        this._menu_extract.add({
+            label: () =>  this.document.getElementsByClassName("NodeExtractStart")[0].innerText,
+            accelerator: 'CmdOrCtrl+S',
+            enable: () => this.document.getElementsByClassName("NodeExtractStart").length > 0,
+            click: () => this.document.getElementsByClassName("NodeExtractStart")[0].click()
+        })
+        this._menu_extract.add({
+            label: () =>  this.document.getElementsByClassName("NodeExtractEnd")[0].innerText,
+            accelerator: 'CmdOrCtrl+E',
+            enable: () => this.document.getElementsByClassName("NodeExtractEnd").length > 0,
+            click: () => this.document.getElementsByClassName("NodeExtractEnd")[0].click()
+        })
+
+        extract.addEventListener('click', (e) => {
+            let top = e.clientY
+            this.document.getElementById("menu-extract-dropdown").style.top = `${top}px`
+            this._menu_extract.toggle();
+            e.preventDefault();
         });
 
         const addNodeButton = this.document.getElementById('add-node');
@@ -488,8 +515,39 @@ host.BrowserHost = class {
                 }
             }
         });
+        this.init_dragable();
 
         this._view.show('welcome');
+    }
+
+    init_dragable() {
+        let dragable = this.document.getElementById("dragable")
+        let sidebar = this.document.getElementById("sidebar")
+        let oriX = -1
+        let minWidth = sidebar.getBoundingClientRect().width
+        let oriWidth = sidebar.getBoundingClientRect().width
+        let dragableMouseMove = function (e) {
+            if (minWidth > oriWidth + oriX - e.clientX) {
+                return
+            }
+            sidebar.style.width = `${oriWidth + oriX - e.clientX}px`
+        }
+        let dragableMouseUp = function (e) {
+            sidebar.style.transition = null
+            document.removeEventListener("mousemove", dragableMouseMove)
+            document.removeEventListener("mouseup", dragableMouseUp)
+        }
+        let dragableMouseDown = function (e) {
+            oriX = e.clientX
+            oriWidth = sidebar.getBoundingClientRect().width
+            if (minWidth == 0) {
+                minWidth = oriWidth
+            }
+            sidebar.style.transition = `none`
+            document.addEventListener("mousemove", dragableMouseMove)
+            document.addEventListener("mouseup", dragableMouseUp)
+        }
+        dragable.addEventListener("mousedown", dragableMouseDown)
     }
 
     get_default_input_shape(input_name) {
@@ -723,7 +781,7 @@ host.BrowserHost = class {
         // event
         let remove_function = () => { box.remove(); }
         boxClose.addEventListener("click", remove_function)
-        progressLine.addEventListener("animationend", remove_function)
+        box.addEventListener("animationend", remove_function)
     }
 
     show_alert_message(title, message) {
@@ -1223,6 +1281,18 @@ host.Dropdown = class {
 
         for (const item of this._items) {
             if (Object.keys(item).length > 0) {
+                let enable = true
+                if (item.enable != undefined) {
+                    if (typeof item.enable == 'function') {
+                        enable = item.enable(item)
+                    } else {
+                        enable = item.enable
+                    }
+                }
+                if (!enable) {
+                    continue
+                }
+
                 const button = this._host.document.createElement('button');
                 button.innerText = (typeof item.label == 'function') ? item.label() : item.label;
                 button.addEventListener('click', () => {

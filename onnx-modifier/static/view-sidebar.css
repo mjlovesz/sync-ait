@@ -140,9 +140,10 @@
 }
 
 .sidebar-view-item-name {
-    width: 80px;
+    min-width: 80px;
     text-overflow: ellipsis;
     outline: none;
+    flex-grow: 1;
 }
 .sidebar-view-item-name input { 
     width: 100%;
@@ -154,10 +155,10 @@
 
 
 .sidebar-view-item-value-list {
-    width: 265px;
-    display: flex;
+    min-width: 265px;
     align-items: baseline;
     font-size: 12px;
+    flex-grow: 2;
 }
 
 .sidebar-view-item-value {
@@ -187,6 +188,11 @@
     display: flex;
     align-items: center;
 }
+.sidebar-view-item-value:has(> div:only-child):before {
+    margin-left: 8px;
+    width: 16px;
+    content: "";
+}
 
 
 .sidebar-view-item-value-expander.off .off {
@@ -202,7 +208,8 @@
 }
 
 .sidebar-view-item-value-editers {
-    width: 240px;
+    min-width: 240px;
+    flex: 1;
 }
 
 .sidebar-view-item-value-editers input,textarea {
@@ -227,7 +234,7 @@
     position: absolute;
     bottom: 0px;
     background-color: #ececec;
-    width: 347px;
+    width: calc(100% - 80px);
 }
 
 .sidebar-view-modifer-buttons {
@@ -302,14 +309,18 @@
 }
 
 .sidebar-content {
-    margin-bottom: 220px;
+    position: relative;
 }
 
 .sidebar {
-    padding: 40px 0;
+    padding: 40px 0 0 0;
 }
 .sidebar-content > div, .sidebar-title {
     padding: 0 40px;
+}
+
+.sidebar-content > div:first-child {
+    padding-bottom: 220px;
 }
 
 .graph-node-highlight > .node.border{
@@ -410,6 +421,6 @@
     }
 
     .sidebar-view-modifer-toolbar path {
-        fill: white;
+        fill: rgba(255,255, 255);
     }
 }
