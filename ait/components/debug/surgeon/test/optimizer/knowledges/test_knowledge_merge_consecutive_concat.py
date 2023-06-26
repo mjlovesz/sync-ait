@@ -23,7 +23,7 @@ from onnx import (
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_merge_consecutive_concat import KnowledgeMergeConsecutiveConcat
-from testcase.helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_c2_concat_model(onnx_name, x, y, z, diff_axis=False):

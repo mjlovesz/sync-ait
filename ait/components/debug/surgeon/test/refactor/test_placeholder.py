@@ -16,7 +16,7 @@ import unittest
 
 import numpy as np
 
-from testcase.refactor.test_node_common import create_node
+from test.refactor.test_node_common import create_node
 
 
 class TestPlaceHolder(unittest.TestCase):

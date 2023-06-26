@@ -24,7 +24,7 @@ from onnx import (
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_conv1d2conv2d import KnowledgeConv1d2Conv2d
-from testcase.helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 class TestKnowledgeConv1d2Conv2d(unittest.TestCase, KnowledgeTestHelper):

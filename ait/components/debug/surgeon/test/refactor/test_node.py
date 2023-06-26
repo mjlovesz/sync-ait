@@ -14,7 +14,10 @@
 
 import unittest
 
-from testcase.refactor.test_node_common import create_node
+from onnx import helper
+
+from auto_optimizer.graph_refactor.onnx.node import OnnxNode
+from test.refactor.test_node_common import create_node
 
 
 class TestNode(unittest.TestCase):

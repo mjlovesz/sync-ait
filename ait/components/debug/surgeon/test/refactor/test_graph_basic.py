@@ -22,7 +22,7 @@ from onnx import helper, numpy_helper, GraphProto, ModelProto, OperatorSetIdProt
 
 from auto_optimizer.graph_refactor.onnx.node import OnnxPlaceHolder, OnnxInitializer, OnnxNode
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
-from testcase.refactor.test_node_common import is_ph_equal, is_ini_equal, is_node_equal
+from test.refactor.test_node_common import is_ph_equal, is_ini_equal, is_node_equal
 
 try:
     np_dtype_to_tensor_dtype = helper.np_dtype_to_tensor_dtype

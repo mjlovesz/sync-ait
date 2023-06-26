@@ -26,6 +26,7 @@ import multiprocessing
 import numpy as np
 
 from auto_optimizer.common.utils import meet_precision
+from auto_optimizer.pattern.knowledges.big_kernel.knowledge_big_kernel import KnowledgeBigKernel
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer import KnowledgeFactory
@@ -181,14 +182,9 @@ class GraphOptimizer:
             return
         queue.put(True)
 
-    def init_knowledges(self):
-        knowledges_ins = {}
-        for k_name, k_cls in self.knowledges.items():
-            if k_name not in ARGS_REQUIRED_KNOWLEDGES:
-                knowledges_ins.setdefault(k_name, k_cls())
-            else:
-                knowledges_ins.setdefault(k_name, k_cls)
-        self.knowledges = knowledges_ins
+    def register_big_kernel(self, graph, start_node, end_node):
+        knowledge_bk = KnowledgeBigKernel(graph, start_node, end_node)
+        self.knowledges.update({"KnowledgeBigKernel": knowledge_bk})
 
     def load_config(self):
         pass

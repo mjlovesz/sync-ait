@@ -18,7 +18,7 @@ from onnx import TensorProto
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_merge_casts import KnowledgeMergeCasts
-from testcase.helper import KnowledgeTestHelper, OptimizationConfig
+from test.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 class TestKnowledgeMergeCasts(unittest.TestCase, KnowledgeTestHelper):
