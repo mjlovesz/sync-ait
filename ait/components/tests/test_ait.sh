@@ -116,31 +116,31 @@ main() {
     BENCKMARK_DT_MODE="simple"
 
     all_part_test_ok=$ret_ok
-    if [[ $dt_list[0] -eq 1 ]];then
+    if [[ ${dt_list[0]} -eq 1 ]];then
         echo "run analyze DT"
         test_analyze || { echo "developer test analyze failed";all_part_test_ok=$ret_failed; }
     fi
-    if [[ $dt_list[1] -eq 1 ]];then
+    if [[ ${dt_list[1]} -eq 1 ]];then
         echo "run benchmark DT"
         test_benchmark $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE || { echo "developer test benchmark failed";all_part_test_ok=$ret_failed; }
     fi
-    if [[ $dt_list[2] -eq 1 ]];then
+    if [[ ${dt_list[2]} -eq 1 ]];then
         echo "run convert DT"
         test_convert || { echo "developer test convert failed";all_part_test_ok=$ret_failed; }
     fi
-    if [[ $dt_list[3] -eq 1 ]];then
+    if [[ ${dt_list[3]} -eq 1 ]];then
         echo "run comnpare DT"
         test_debug_compare || { echo "developer test comnpare failed";all_part_test_ok=$ret_failed; }
     fi
-    if [[ $dt_list[4] -eq 1 ]];then
+    if [[ ${dt_list[4]} -eq 1 ]];then
         echo "run surgeon DT"
         test_debug_surgeon || { echo "developer test surgeon failed";all_part_test_ok=$ret_failed; }
     fi
-    if [[ $dt_list[5] -eq 1 ]];then
+    if [[ ${dt_list[5]} -eq 1 ]];then
         echo "run profile DT"
         test_profile || { echo "developer test profile failed";all_part_test_ok=$ret_failed; }
     fi
-    if [[ $dt_list[6] -eq 1 ]];then
+    if [[ ${dt_list[6]} -eq 1 ]];then
         echo "run transplt DT"
         test_transplt || { echo "developer test transplt failed";all_part_test_ok=$ret_failed; }
     fi
