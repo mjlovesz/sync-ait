@@ -500,7 +500,6 @@ if __name__ == '__main__':
     parser.add_argument('--onnx', type=str, help='onnx file path')
     
     args, _ = parser.parse_known_args()
-    print(args)
 
     with tempfile.TemporaryDirectory() as server_temp_dir_path:
         server = RpcServer(server_temp_dir_path)
