@@ -14,7 +14,6 @@
 
 import unittest
 
-import os
 import random
 
 import numpy as np
@@ -26,7 +25,7 @@ from onnx import (
 
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.pattern.knowledges.knowledge_split_qkv_matmul import KnowledgeSplitQKVMatmul
-from test.helper import KnowledgeTestHelper, OptimizationConfig
+from testcase.helper import KnowledgeTestHelper, OptimizationConfig
 
 
 def make_basic_qkv_matmul_model(onnx_name, perm, gathers=3, axis=0, ops1=1, ops2=1,
