@@ -384,15 +384,21 @@ host.BrowserHost = class {
         })
         this._menu_extract.add({})
         this._menu_extract.add({
-            label: () =>  this.document.getElementsByClassName("NodeExtractStart")[0].innerText,
+            label: (enable) => enable ? this.document.getElementsByClassName("NodeExtractStart")[0].innerText : "Extract Net Start",
             accelerator: 'CmdOrCtrl+S',
-            enable: () => this.document.getElementsByClassName("NodeExtractStart").length > 0,
+            enable: () => {
+                return this.document.getElementById("sidebar").style.display != "none" && 
+                this.document.getElementsByClassName("NodeExtractStart").length > 0
+            },
             click: () => this.document.getElementsByClassName("NodeExtractStart")[0].click()
         })
         this._menu_extract.add({
-            label: () =>  this.document.getElementsByClassName("NodeExtractEnd")[0].innerText,
+            label: (enable) => enable ? this.document.getElementsByClassName("NodeExtractEnd")[0].innerText : "Extract Net End",
             accelerator: 'CmdOrCtrl+E',
-            enable: () => this.document.getElementsByClassName("NodeExtractEnd").length > 0,
+            enable: () => {
+                return this.document.getElementById("sidebar").style.display != "none" && 
+                    this.document.getElementsByClassName("NodeExtractEnd").length > 0
+            },
             click: () => this.document.getElementsByClassName("NodeExtractEnd")[0].click()
         })
 
@@ -1289,20 +1295,21 @@ host.Dropdown = class {
                         enable = item.enable
                     }
                 }
-                if (!enable) {
-                    continue
-                }
 
                 const button = this._host.document.createElement('button');
-                button.innerText = (typeof item.label == 'function') ? item.label() : item.label;
+                button.innerText = (typeof item.label == 'function') ? item.label(enable) : item.label;
                 button.addEventListener('click', () => {
                     this.close();
                     setTimeout(() => {
                         item.click();
                     }, 10);
                 });
+                if (!enable) {
+                    button.disabled = "disabled"
+                    button.style.cursor = "not-allowed"
+                }
                 this._dropdown.appendChild(button);
-                if (item.accelerator) {
+                if (item.accelerator && enable) {
                     const accelerator = this._host.document.createElement('span');
                     accelerator.style.float = 'right';
                     accelerator.innerHTML = item.accelerator.text;

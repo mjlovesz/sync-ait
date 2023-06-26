@@ -86,7 +86,7 @@ modifier.Modifier = class {
         if (this.name2NodeStates.has(input_name)) {
             this.name2NodeStates.set(input_name, 'Exist');
         }
-        if (!this.oriInputs.contains(input_name)) {
+        if (!this.oriInputs.has(input_name)) {
             this.addedInputs.add(input_name)
         }
         this.applyAndUpdateView();

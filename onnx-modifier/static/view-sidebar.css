@@ -77,14 +77,14 @@
 
 .sidebar {
     width: 444px;
-    position: static;
+    position: relative;
     transition: 0.2s;
     z-index: 1;
     top: 0;
     right: 0;
     background-color: #ececec;
     color: #242424;
-    overflow: auto;
+    overflow: hidden;
     padding: 40px;
 }
 
@@ -235,12 +235,13 @@
     bottom: 0px;
     background-color: #ececec;
     width: calc(100% - 80px);
+    padding: 20px 40px;
 }
 
 .sidebar-view-modifer-buttons {
     display: flex;
     flex-direction: row;
-    margin: 40px 0 40px 0;
+    margin: 20px 0 20px 0;
 }
 .sidebar-view-modifer-buttons > button {
     flex: 1;
@@ -260,7 +261,7 @@
 .sidebar-view-modifer-toolbar {
     display: flex;
     flex-direction: row;
-    margin: 10px 0 40px 0;
+    margin: 10px 0 10px 0;
     font-weight: 500;
 }
 
@@ -309,14 +310,16 @@
 }
 
 .sidebar-content {
-    position: relative;
+    height: calc(100% - 64px);
+    overflow: auto;
 }
 
 .sidebar {
     padding: 40px 0 0 0;
 }
 .sidebar-content > div, .sidebar-title {
-    padding: 0 40px;
+    padding-left: 40px;
+    padding-right: 40px;
 }
 
 .sidebar-content > div:first-child {
