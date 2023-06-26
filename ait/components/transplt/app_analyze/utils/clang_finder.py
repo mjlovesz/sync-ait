@@ -49,7 +49,9 @@ def get_lib_clang_path():
                 extract_ld_lib_dirs(os.path.join("/etc/ld.so.conf.d", f))
 
     clang_supported_version = ['14', '10', '8', '7', '6']  # support these clang versions so far
-    clang_lib_name_patterns = ['libclang-xx.so', 'libclang.so.xx', 'libclang-xx.0.so', 'libclang-xx.0.so.1']
+    clang_lib_name_patterns = [
+        'libclang-xx.so', 'libclang-xx.0.so', 'libclang.so.xx', 'libclang-xx.so.1', 'libclang-xx.0.so.1'
+    ]
     clang_lib_names = []
     for version in clang_supported_version:
         for name in clang_lib_name_patterns:
@@ -58,7 +60,7 @@ def get_lib_clang_path():
     for candidate_lib_dir in candidate_lib_dirs:
         for candidate_lib_name in clang_lib_names:
             candidate = os.path.join(candidate_lib_dir, candidate_lib_name)
-            if os.path.exists(candidate) and os.access(candidate, os.X_OK):
+            if os.path.exists(candidate) and os.access(candidate, os.R_OK):
                 return candidate
 
     logger.debug('Unable to locate libclang so file, ait transplt may not be usable.')
