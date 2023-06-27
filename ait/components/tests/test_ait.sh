@@ -85,25 +85,25 @@ main() {
             do
                 result=""
                 result=$(echo $line | grep "components/analyze")
-                [[ $result == "components/analyze" ]] || { dt_list[0]=1;echo "run analyze DT"; }
+                [[ $result == "" ]] || { dt_list[0]=1;echo "run analyze DT"; }
                 result=""
                 result=$(echo $line | grep "components/benchmark")
-                [[ $result == "components/benchmark" ]] || { dt_list[1]=1;echo "run benchmark DT"; }
+                [[ $result == "" ]] || { dt_list[1]=1;echo "run benchmark DT"; }
                 result=""
                 result=$(echo $line | grep "components/convert")
-                [[ $result == "components/convert" ]] || { dt_list[2]=1;echo "run convert DT"; }
+                [[ $result == "" ]] || { dt_list[2]=1;echo "run convert DT"; }
                 result=""
                 result=$(echo $line | grep "components/debug/compare")
-                [[ $result == "components/debug/compare" ]] || { dt_list[3]=1;echo "run compare DT"; }
+                [[ $result == "" ]] || { dt_list[3]=1;echo "run compare DT"; }
                 result=""
                 result=$(echo $line | grep "components/debug/surgeon")
-                [[ $result == "components/debug/surgeon" ]] || { dt_list[4]=1;echo "run surgeon DT"; }
+                [[ $result == "" ]] || { dt_list[4]=1;echo "run surgeon DT"; }
                 result=""
                 result=$(echo $line | grep "components/profile")
-                [[ $result == "components/profile" ]] || { dt_list[5]=1;echo "run profile DT"; }
+                [[ $result == "" ]] || { dt_list[5]=1;echo "run profile DT"; }
                 result=""
                 result=$(echo $line | grep "components/transplt")
-                [[ $result == "components/transplt" ]] || { dt_list[6]=1;echo "run transplt DT"; }
+                [[ $result == "" ]] || { dt_list[6]=1;echo "run transplt DT"; }
 
             done < $modify_files
         fi
