@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import os.path
 import pathlib
 
 import click
@@ -21,9 +21,8 @@ from click.exceptions import UsageError
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.tools.log import logger
-from auto_optimizer.common.utils import check_output_model_path
 from auto_optimizer.common.click_utils import optimize_onnx, CONTEXT_SETTINGS, \
-    FormatMsg, list_knowledges, cli_eva
+    FormatMsg, list_knowledges, cli_eva, check_input_path, check_output_model_path
 
 from auto_optimizer.ait_options import (
     opt_path,
@@ -79,13 +78,16 @@ def command_list() -> None:
 @opt_verbose
 @opt_processes
 def command_evaluate(
-    path: pathlib.Path,
+    path: str,
     optimizer: GraphOptimizer,
     recursive: bool,
     verbose: bool,
     processes: int,
 ) -> None:
-    path_ = pathlib.Path(path.decode()) if isinstance(path, bytes) else path
+    if not check_input_path(path):
+        return
+
+    path_ = pathlib.Path(path)
     cli_eva(path_, optimizer, recursive, verbose, processes)
 
 
@@ -112,8 +114,8 @@ def command_evaluate(
 @opt_dynamic_shape
 @opt_output_size
 def command_optimize(
-    input_model: pathlib.Path,
-    output_model: pathlib.Path,
+    input_model: str,
+    output_model: str,
     optimizer: GraphOptimizer,
     infer_test: bool,
     big_kernel: bool,
@@ -128,9 +130,12 @@ def command_optimize(
     dynamic_shape: str,
     output_size: str
 ) -> None:
+    if not check_input_path(input_model) or not check_output_model_path(output_model):
+        return
+
     # compatibility for click < 8.0
-    input_model_ = pathlib.Path(input_model.decode()) if isinstance(input_model, bytes) else input_model
-    output_model_ = pathlib.Path(output_model.decode()) if isinstance(output_model, bytes) else output_model
+    input_model_ = pathlib.Path(os.path.abspath(input_model))
+    output_model_ = pathlib.Path(os.path.abspath(output_model))
     if input_model_ == output_model_:
         logger.warning('output_model is input_model, refuse to overwrite origin model!')
         return
@@ -191,30 +196,32 @@ def command_optimize(
 @opt_subgraph_input_shape
 @opt_subgraph_input_dtype
 def command_extract(
-    input_model: pathlib.Path,
-    output_model: pathlib.Path,
+    input_model: str,
+    output_model: str,
     start_node_names: str,
     end_node_names: str,
     is_check_subgraph: bool,
     subgraph_input_shape: str,
     subgraph_input_dtype: str
 ) -> None:
-    if input_model == output_model:
-        logger.warning('output_model is input_model, refuse to overwrite origin model!')
+    if not check_input_path(input_model) or not check_output_model_path(output_model):
         return
-    output_model_path = output_model.as_posix()
-    if not check_output_model_path(output_model_path):
+
+    input_model_ = pathlib.Path(os.path.abspath(input_model))
+    output_model_ = pathlib.Path(os.path.abspath(output_model))
+    if input_model_ == output_model_:
+        logger.warning('output_model is input_model, refuse to overwrite origin model!')
         return
 
     # parse start node names and end node names
     start_nodes = [node_name.strip() for node_name in start_node_names.split(',')]
     end_nodes = [node_name.strip() for node_name in end_node_names.split(',')]
 
-    onnx_graph = OnnxGraph.parse(input_model.as_posix())
+    onnx_graph = OnnxGraph.parse(input_model)
     try:
         onnx_graph.extract_subgraph(
             start_nodes, end_nodes,
-            output_model_path, is_check_subgraph,
+            output_model, is_check_subgraph,
             subgraph_input_shape, subgraph_input_dtype
         )
     except ValueError as err:
