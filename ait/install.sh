@@ -26,6 +26,7 @@ arg_help=0
 while [[ "$#" -gt 0 ]]; do case $1 in
   --force-reinstall) arg_force_reinstall=--force-reinstall;;
   -f) arg_force_reinstall=--force-reinstall;;
+  --full) full_install=--full;;
   --debug) only_debug=true;;
   --benchmark) only_benchmark=true;;
   --analyze) only_analyze=true;;
@@ -67,6 +68,7 @@ if [ "$arg_help" -eq "1" ]; then
   echo " --convert : only install convert component"
   echo " --transplt : only install transplt component"
   echo " --profile : only install profile component"
+  echo " --full : using with install, install all components and dependencies, may need sudo privileges"
   echo " --uninstall : uninstall"
   echo " -y : using with uninstall, don't ask for confirmation of uninstall deletions"
   exit;
@@ -148,6 +150,7 @@ install(){
   then
     pip3 install ${CURRENT_DIR}/components/transplt \
     ${arg_force_reinstall} ${pip_source}
+    source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi
 
   if [ ! -z $only_profile ]
@@ -173,6 +176,8 @@ install(){
     else
       bash ${CURRENT_DIR}/components/convert/build.sh
     fi
+
+    source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi
 
   rm -rf ${CURRENT_DIR}/ait.egg-info
