@@ -19,7 +19,7 @@ import stat
 import shutil
 
 import pytest
-from ..test_common import TestCommonClass
+from test_common import TestCommonClass
 
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
