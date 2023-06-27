@@ -80,6 +80,7 @@ main() {
     if [[ $dt_mode == "pr" ]];then
         modify_files=$CUR_PATH/../../../../modify_files.txt
         if [[ -f $modify_files ]];then
+            echo "found modify_files"
             while read line
             do
                 result=""
