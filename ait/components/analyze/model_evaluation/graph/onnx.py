@@ -55,7 +55,7 @@ class OnnxGraph():
             return -1
         return opset_import[0].version
 
-    def check_node(self, node) -> tuple[Any, str] | str:
+    def check_node(self, node) -> tuple[Any, str]:
         check_ctx = onnx.checker.DEFAULT_CONTEXT
         ori_opset_imports = \
             deepcopy(check_ctx.opset_imports)
