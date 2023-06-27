@@ -27,7 +27,7 @@ OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 class TestClass:
     model_name = "resnet50"
-    
+
     @classmethod
     def setup_class(cls):
         """
