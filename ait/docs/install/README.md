@@ -22,12 +22,13 @@ ait推理工具的安装包括**ait包**和**依赖的组件包**的安装，其
 - 依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。(**如不使用transplt应用迁移分析功能则不需要安装**)
 - 如果使用过程中出现`No module named 'acl'`，请检验CANN包环境变量是否正确。
     > 以下是设置CANN包环境变量的通用方法(假设CANN包安装目录为`ACTUAL_CANN_PATH`)：
+    >
     > * 执行如下命令：
     ```
     source $ACTUAL_CANN_PATH/Ascend/ascend-toolkit/set_env.sh
     ```
     > * 普通用户下`ACTUAL_CANN_PATH`一般为`$HOME`，root用户下一般为`/usr/local`
-        
+    
 
 #### 源代码一键式安装
 
@@ -38,8 +39,11 @@ cd ait/ait
 # 添加执行权限
 chmod u+x install.sh
 
-# 安装ait，包括debug、profile、benchmark、transplt、analyze等组件
+# 安装ait，包括debug、profile、benchmark、transplt、analyze等组件（不安装clang等系统依赖库，只影响transplt功能）
 ./install.sh
+
+# 安装ait，包括debug、profile、benchmark、transplt、analyze等组件（安装clang等系统依赖库，需要提供sudo权限）
+./install.sh --full
 
 # 重新安装ait及其debug、profile、benchmark、transplt、analyze等组件
 ./install.sh --force-reinstall
@@ -64,13 +68,16 @@ chmod u+x install.sh
 # 3. 只安装analyze组件
 ./install.sh --analyze
 
-# 4. 只安装transplt组件
+# 4. 只安装transplt组件（不安装transplt组件依赖的clang系统库）
 ./install.sh --transplt
 
-# 5. 只安装profile组件
+# 5. 只安装transplt组件（安装transplt组件依赖的clang系统库，需要提供sudo权限）
+./install.sh --transplt --full
+
+# 6. 只安装profile组件
 ./install.sh --profile
 
-# 6. 只安装convert组件
+# 7. 只安装convert组件
 ./install.sh --convert
 ```
 
