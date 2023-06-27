@@ -13,7 +13,7 @@ ait transplt功能提供了2种安装方式，一种是宿主机安装方式，�
 宿主机方式安装目前支持ubuntu22.04、ubuntu20.04、ubuntu18.04、CentOS 7.6、SLES 12.5这些操作系统。用户可以在工程的`<ait_project_root_path>/ait`目录下使用如下命令安装ait transplt功能
 
 ```shell
-bash install.sh --transplt
+. install.sh --transplt
 ```
 
 > ait_project_root_path为ait工程的根目录

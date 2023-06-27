@@ -13,37 +13,63 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-install_clang() {
-  local SUDO=""
-  type sudo
-  ret=$?
-  if [ $ret -eq 0 ]; then
-    SUDO="sudo"
+SUDO=""
+type sudo > /dev/null 2>&1
+ret=$?
+if [ $ret -eq 0 ]; then
+  SUDO="sudo"
+fi
+
+OS_NAME=$(grep -E "^NAME=" /etc/os-release | cut -d'=' -f2 | tr -d '"')
+OS_VERSION=$(grep -E "^VERSION=" /etc/os-release | cut -d'=' -f2 | cut -d' ' -f1 | sed 's/\"//g')
+
+install_clang_on_ubuntu() {
+  if [ "$(uname -m)" = "x86_64" ]; then \
+      sed -i "s@http://.*archive.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list \
+      && sed -i "s@http://.*security.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list; \
+  elif [ "$(uname -m)" = "aarch64" ]; then \
+      sed -i "s@http://ports.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list \
+      && sed -i "s@http://ports.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list; \
   fi
 
-  $SUDO apt-get install wget unzip -y
+  $SUDO apt-get update && $SUDO apt-get install -y wget gnupg software-properties-common
 
-  os_name=$(grep -E "^NAME=" /etc/os-release | cut -d'=' -f2 | tr -d '"')
-  os_version=$(grep -E "^VERSION=" /etc/os-release | cut -d'=' -f2 | cut -d' ' -f1 | sed 's/\"//g')
-
-  if [ "$os_name" == "Ubuntu" ]; then
-    if [ -n "${os_version%%22.04*}" ] || [ -n "${os_version%%20.04*}" ]; then
-      $SUDO apt-get install libclang-14-dev clang-14 -y
-    elif [ -n "${os_version%%18.04*}" ]; then
-      $SUDO apt-get install libclang-10-dev clang-10 -y
-    fi
-  elif [ -n "${os_name%%CentOS*}" ] && [ -n "${os_version%%7*}" ]; then
-    yum install centos-release-scl-rh -y
-    yum install llvm-toolset-7.0-clang -y
-    source /opt/rh/llvm-toolset-7.0/enable
-    echo "source /opt/rh/devtoolset-7/enable" >> ~/.bashrc
-    export CPLUS_INCLUDE_PATH=/usr/local/lib/clang/7.0.0/include:$CPLUS_INCLUDE_PATH
-    echo "export CPLUS_INCLUDE_PATH=/usr/local/lib/clang/7.0.0/include:\$CPLUS_INCLUDE_PATH" >> ~/.bashrc
-  elif [ "$os_name" == "SLES" ] && [ -n "${os_version%%12*}" ]; then
-    $SUDO zypper install libclang7 clang7-devel -y
-  else
-    echo "WARNING: uncertified os type:version $os_name:$os_version. Ait transplt installation may be incorrect!!!"
+  if [[ $OS_VERSION == "22.04"* ]] || [[ $OS_VERSION == "20.04"* ]]; then
+    wget -O - http://apt.llvm.org/llvm-snapshot.gpg.key | $SUDO apt-key add -
+    $SUDO echo "deb https://mirrors.cernet.edu.cn/llvm-apt/focal/ llvm-toolchain-focal-14 main" >> /etc/apt/sources.list
+    $SUDO apt-get update
     $SUDO apt-get install libclang-14-dev clang-14 -y
+  elif [ -n "${OS_VERSION%%18.04*}" ]; then
+    $SUDO apt-get update
+    $SUDO apt-get install libclang-10-dev clang-10 -y
+  fi
+}
+
+install_clang_on_centos() {
+  echo "====================================> centos"
+  $SUDO yum install centos-release-scl-rh -y
+  $SUDO yum install llvm-toolset-7.0-clang -y
+  source /opt/rh/llvm-toolset-7.0/enable
+  echo "source /opt/rh/devtoolset-7/enable" >> ~/.bashrc
+  export CPLUS_INCLUDE_PATH=/opt/rh/llvm-toolset-7.0/root/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH
+  echo "export CPLUS_INCLUDE_PATH=/opt/rh/llvm-toolset-7.0/root/usr/lib64/clang/7.0.1/include:\$CPLUS_INCLUDE_PATH" >> ~/.bashrc
+}
+
+install_clang() {
+  if [ "$OS_NAME" == "Ubuntu" ]; then
+    $SUDO apt-get install wget unzip -y
+    install_clang_on_ubuntu
+  elif [[ $OS_NAME == "CentOS"* ]] && [[ $OS_VERSION == "7"* ]]; then
+    $SUDO yum install wget unzip -y
+    install_clang_on_centos
+  elif [[ "$OS_NAME" == "SLES"* ]] && [[ $OS_VERSION == "12"* ]]; then
+    $SUDO zypper install wget unzip libclang7 clang7-devel -y
+    export CPLUS_INCLUDE_PATH=/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH
+    echo "export CPLUS_INCLUDE_PATH=/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH" >> ~/.bashrc
+  else
+    echo "WARNING: uncertified os type:version $OS_NAME:$OS_VERSION. Ait transplt installation may be incorrect!!!"
+    # try to install clang
+    $SUDO apt-get install wget unzip libclang-14-dev clang-14 -y
   fi
 }
 
@@ -53,10 +79,10 @@ download_config_and_headers() {
   cd $(python3 -c "import app_analyze; print(app_analyze.__path__[0])") \
     && wget -O config.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip \
     && unzip -o -q config.zip \
-    && rm config.zip \
+    && rm config.zip -f \
     && wget -O headers.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip \
     && unzip -o -q headers.zip \
-    && rm headers.zip
+    && rm headers.zip -f
 }
 
 # Install clang

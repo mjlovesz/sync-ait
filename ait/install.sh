@@ -148,7 +148,7 @@ install(){
   then
     pip3 install ${CURRENT_DIR}/components/transplt \
     ${arg_force_reinstall} ${pip_source}
-    bash ${CURRENT_DIR}/components/transplt/install.sh
+    source ${CURRENT_DIR}/components/transplt/install.sh
   fi
 
   if [ ! -z $only_profile ]
@@ -175,7 +175,7 @@ install(){
       bash ${CURRENT_DIR}/components/convert/build.sh
     fi
 
-    bash ${CURRENT_DIR}/components/transplt/install.sh
+    source ${CURRENT_DIR}/components/transplt/install.sh
   fi
 
   rm -rf ${CURRENT_DIR}/ait.egg-info
