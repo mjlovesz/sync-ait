@@ -39,7 +39,7 @@ install_clang_on_ubuntu() {
     $SUDO echo "deb https://mirrors.cernet.edu.cn/llvm-apt/focal/ llvm-toolchain-focal-14 main" >> /etc/apt/sources.list
     $SUDO apt-get update
     $SUDO apt-get install libclang-14-dev clang-14 -y
-  elif [ -n "${OS_VERSION%%18.04*}" ]; then
+  elif [[ $OS_VERSION == "18.04"* ]]; then
     $SUDO apt-get update
     $SUDO apt-get install libclang-10-dev clang-10 -y
   fi
@@ -49,7 +49,7 @@ install_clang_on_centos() {
   $SUDO yum install centos-release-scl-rh -y
   $SUDO yum install llvm-toolset-7.0-clang -y
   source /opt/rh/llvm-toolset-7.0/enable
-  echo "source /opt/rh/devtoolset-7/enable" >> ~/.bashrc
+  echo "source /opt/rh/llvm-toolset-7.0/enable" >> ~/.bashrc
   export CPLUS_INCLUDE_PATH=/opt/rh/llvm-toolset-7.0/root/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH
   echo "export CPLUS_INCLUDE_PATH=/opt/rh/llvm-toolset-7.0/root/usr/lib64/clang/7.0.1/include:\$CPLUS_INCLUDE_PATH" >> ~/.bashrc
 }
@@ -75,6 +75,8 @@ install_clang() {
 
 # Download and unzip config.zip, headers.zip
 download_config_and_headers() {
+  cwd=$(pwd)
+
   cd $(python3 -c "import app_analyze; print(app_analyze.__path__[0])") \
     && wget -O config.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip \
     && unzip -o -q config.zip \
@@ -82,9 +84,15 @@ download_config_and_headers() {
     && wget -O headers.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip \
     && unzip -o -q headers.zip \
     && rm headers.zip -f
+
+  cd $cwd
 }
 
-# Install clang
-install_clang
+if [ $# -gt 0 ] && [ "$1" == '--full' ]; then
+  # Install clang
+  install_clang
+
+  bash
+fi
 
 download_config_and_headers

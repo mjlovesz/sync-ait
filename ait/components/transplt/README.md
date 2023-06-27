@@ -10,13 +10,25 @@ ait transplt功能提供了2种安装方式，一种是宿主机安装方式，�
 
 ### 宿主机方式安装
 
-宿主机方式安装目前支持ubuntu22.04、ubuntu20.04、ubuntu18.04、CentOS 7.6、SLES 12.5这些操作系统。用户可以在工程的`<ait_project_root_path>/ait`目录下使用如下命令安装ait transplt功能
-
-```shell
-. install.sh --transplt
-```
+宿主机方式安装目前支持ubuntu22.04、ubuntu20.04、ubuntu18.04、CentOS 7.6、SLES 12.5这些操作系统。用户可以在工程的`<ait_project_root_path>/ait`目录下运行install.sh安装ait transplt功能。
 
 > ait_project_root_path为ait工程的根目录
+
+#### 普通安装
+
+```shell
+bash install.sh --transplt
+```
+
+在此模式下将只安装ait tranplt功能和依赖的python库，不会安装clang工具，如需安装clang工具，请使用全量安装方式。
+
+#### 全量安装
+
+```shell
+bash install.sh --transplt --full
+```
+
+在此模式下会安装ait tranplt功能和相应的python库，以及clang工具，安装clang工具时需要提供sudo权限。
 
 具体请参见 [ait一体化工具使用指南](../../README.md)
 
@@ -177,7 +189,7 @@ yum install llvm-toolset-7.0-clang
 # 使Clang在当前Session生效
 source /opt/rh/llvm-toolset-7.0/enable
 # 可选，修改.bashrc便于Clang自动生效
-echo "source /opt/rh/devtoolset-7/enable" >> ~/.bashrc
+echo "source /opt/rh/llvm-toolset-7.0/enable" >> ~/.bashrc
 ```
 配置环境变量。为防止后续Clang无法自动找到头文件，建议添加如下环境变量。
 ```shell
