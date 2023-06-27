@@ -46,7 +46,6 @@ install_clang_on_ubuntu() {
 }
 
 install_clang_on_centos() {
-  echo "====================================> centos"
   $SUDO yum install centos-release-scl-rh -y
   $SUDO yum install llvm-toolset-7.0-clang -y
   source /opt/rh/llvm-toolset-7.0/enable
