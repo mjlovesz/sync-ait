@@ -43,7 +43,7 @@ INPUT_FORMAT_DICT = {
     "YUV420SP_U8" : 2,
     "RGB888_U8" : 1,
     "YUV400_U8" : 3,
-    "XGRB8888_U8": 3/4,
+    "XRGB8888_U8": 3/4,
 }
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
@@ -261,7 +261,7 @@ class NpuDumpData(DumpData):
             item[w_position] = int(src_image_size_w[i])
             div_input_format = INPUT_FORMAT_DICT.get(input_format[i])
             if not div_input_format:
-                utils.logger.error("aipp input format only support: YUV420SP_U8, RGB888_U8, YUV400_U8, XGRB8888_U8")
+                utils.logger.error("aipp input format only support: YUV420SP_U8, RGB888_U8, YUV400_U8, XRGB8888_U8")
                 raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
             input_data = np.random.randint(0, 256, np.prod(item)//div_input_format).astype(np.uint8)
             file_name = "input_" + str(i) + ".bin"
