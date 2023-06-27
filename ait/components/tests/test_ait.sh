@@ -78,6 +78,10 @@ main() {
     export dt_mode=${1:-"normal"} # or "pr"
     dt_list=(0 0 0 0 0 0 0)
     if [[ $dt_mode == "pr" ]];then
+        soft_link_path=/home/dcs-50/ait_test/ait/ait/components
+        [[ -f $soft_link_path ]] || { echo "can't find origin dt data";return $ret_failed; }
+        cur_testdata_path=$CUR_PATH/../benchmark/test/testdata
+        [[ -d $cur_testdata_path ]] || { `ln -s $soft_link_path/benchmark/test/testdata $cur_testdata_path` }
         modify_files=$CUR_PATH/../../../../modify_files.txt
         if [[ -f $modify_files ]];then
             echo "found modify_files"
