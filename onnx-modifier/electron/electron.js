@@ -41,7 +41,7 @@ const createWindow = () => {
     })
 
     // 加载 index.html
-    mainWindow.loadFile('static/electron.html')
+    mainWindow.loadFile('static/index.html')
 }
 
 // 这段程序将会在 Electron 结束初始化
@@ -88,7 +88,8 @@ app.on('web-contents-created', (e, webContents) => {
 class PythonIPC {
     constructor() {
         let app_path = path.join(__dirname, "..", "server.py")
-        this.process = spawn('python', [app_path])
+        console.debug('python',  [app_path, ...process.argv].join(" "))
+        this.process = spawn('python', [app_path, ...process.argv])
         this.msg_event = new EventEmitter()
         this.req_index = 9
         this.process_exit_code = null
