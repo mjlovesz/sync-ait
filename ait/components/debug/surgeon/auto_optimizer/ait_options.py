@@ -70,27 +70,19 @@ opt_output = click.option(
     '-of',
     '--output-file',
     'output_model',
-    nargs=1,
     required=True,
-    type=click.Path(path_type=pathlib.Path),
+    type=str,
     callback=check_args,
     help='Output onnx model name'
 )
 
 
 opt_input = click.option(
-    '-i',
+    '-in',
     '--input',
     'input_model',
-    nargs=1,
     required=True,
-    type=click.Path(
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        path_type=pathlib.Path
-    ),
+    type=str,
     callback=check_args,
     help='Input onnx model to be optimized'
 )
@@ -133,13 +125,7 @@ opt_path = click.option(
     'path',
     nargs=1,
     required=True,
-    type=click.Path(
-        exists=True,
-        file_okay=True,
-        dir_okay=True,
-        readable=True,
-        path_type=pathlib.Path
-    ),
+    type=str,
     callback=check_args,
     help='Target onnx file or directory containing onnx file'
 )
