@@ -43,7 +43,7 @@ INPUT_FORMAT_DICT = {
     "YUV420SP_U8" : 2,
     "RGB888_U8" : 1,
     "YUV400_U8" : 3,
-    "XRGB8888_U8": 3/4,
+    "XRGB8888_U8" : 3/4
 }
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
