@@ -259,6 +259,8 @@ class OnnxGraph(BaseGraph):
         for start_node_name in start_node_names:
             start_node = self.get_node(start_node_name, node_type=Node)
             for inp in start_node.inputs:
+                if len(inp) == 0:
+                    continue
                 if not self.get_node(inp, Initializer) and (inp not in input_name_list):
                     input_name_list.append(inp)
 
@@ -288,6 +290,8 @@ class OnnxGraph(BaseGraph):
                 if ini and ini not in initializers:
                     initializers.append(ini)
                 elif self.get_prev_node(inp) not in reachable_nodes and inp not in input_name_list:
+                    if len(inp) == 0:
+                        continue
                     input_name_list.append(inp)
                 elif self.get_node(inp, PlaceHolder) and inp not in input_name_list:
                     value_infos.append(self.get_node(inp, PlaceHolder))
