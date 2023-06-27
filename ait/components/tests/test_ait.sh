@@ -75,34 +75,34 @@ function test_transplt()
 }
 
 main() {
-    dt_mode=${1:-"normal"} # or "pr"
+    export dt_mode=${1:-"normal"} # or "pr"
     dt_list=(0 0 0 0 0 0 0)
-    if [[ $dt_mode=="pr" ]];then
+    if [[ $dt_mode == "pr" ]];then
         modify_files=$CUR_PATH/../../../../modify_files.txt
         if [[ -f $modify_files ]];then
             while read line
             do
                 result=""
                 result=$(echo $line | grep "components/analyze")
-                [[ $result!="" ]] || { dt_list[0]=1; }
+                [[ $result != "" ]] || { dt_list[0]=1;echo "run analyze DT"; }
                 result=""
                 result=$(echo $line | grep "components/benchmark")
-                [[ $result!="" ]] || { dt_list[1]=1; }
+                [[ $result != "" ]] || { dt_list[1]=1;echo "run benchmark DT"; }
                 result=""
                 result=$(echo $line | grep "components/convert")
-                [[ $result!="" ]] || { dt_list[2]=1; }
+                [[ $result != "" ]] || { dt_list[2]=1;echo "run convert DT"; }
                 result=""
                 result=$(echo $line | grep "components/debug/compare")
-                [[ $result!="" ]] || { dt_list[3]=1; }
+                [[ $result != "" ]] || { dt_list[3]=1;echo "run comnpare DT"; }
                 result=""
                 result=$(echo $line | grep "components/debug/surgeon")
-                [[ $result!="" ]] || { dt_list[4]=1; }
+                [[ $result != "" ]] || { dt_list[4]=1;echo "run surgeon DT"; }
                 result=""
                 result=$(echo $line | grep "components/profile")
-                [[ $result!="" ]] || { dt_list[5]=1; }
+                [[ $result != "" ]] || { dt_list[5]=1;echo "run profile DT"; }
                 result=""
                 result=$(echo $line | grep "components/transplt")
-                [[ $result!="" ]] || { dt_list[6]=1; }
+                [[ $result != "" ]] || { dt_list[6]=1;echo "run transplt DT"; }
 
             done < $modify_files
         fi
@@ -117,31 +117,24 @@ main() {
 
     all_part_test_ok=$ret_ok
     if [[ ${dt_list[0]} -eq 1 ]];then
-        echo "run analyze DT"
         test_analyze || { echo "developer test analyze failed";all_part_test_ok=$ret_failed; }
     fi
     if [[ ${dt_list[1]} -eq 1 ]];then
-        echo "run benchmark DT"
         test_benchmark $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE || { echo "developer test benchmark failed";all_part_test_ok=$ret_failed; }
     fi
     if [[ ${dt_list[2]} -eq 1 ]];then
-        echo "run convert DT"
         test_convert || { echo "developer test convert failed";all_part_test_ok=$ret_failed; }
     fi
     if [[ ${dt_list[3]} -eq 1 ]];then
-        echo "run comnpare DT"
         test_debug_compare || { echo "developer test comnpare failed";all_part_test_ok=$ret_failed; }
     fi
     if [[ ${dt_list[4]} -eq 1 ]];then
-        echo "run surgeon DT"
         test_debug_surgeon || { echo "developer test surgeon failed";all_part_test_ok=$ret_failed; }
     fi
     if [[ ${dt_list[5]} -eq 1 ]];then
-        echo "run profile DT"
         test_profile || { echo "developer test profile failed";all_part_test_ok=$ret_failed; }
     fi
     if [[ ${dt_list[6]} -eq 1 ]];then
-        echo "run transplt DT"
         test_transplt || { echo "developer test transplt failed";all_part_test_ok=$ret_failed; }
     fi
     cd $CUR_PATH
