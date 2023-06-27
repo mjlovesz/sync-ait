@@ -15,6 +15,7 @@
 from typing import Dict, Set, List
 
 from model_evaluation.graph.onnx import OnnxGraph
+from model_evaluation.common.enum import ONNXCheckerError
 
 
 class OnnxChecker:
@@ -65,9 +66,11 @@ class OnnxChecker:
 
     def _check_op_validation_by_onnx_checker(self, graph, err_map):
         for node in graph.node:
-            errinfo = self._graph.check_node(node)
+            errcode, errinfo = self._graph.check_node(node)
             if not isinstance(errinfo, str):
                 errinfo = str(errinfo)
+            if errcode == ONNXCheckerError.UNREGISTERED_OP:
+                continue
             if len(errinfo) == 0:
                 continue
             err_map.setdefault(node.name, []).append(errinfo)
