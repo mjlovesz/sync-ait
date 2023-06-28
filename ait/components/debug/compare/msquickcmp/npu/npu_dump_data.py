@@ -39,7 +39,7 @@ RESULT_DIR = "result"
 INPUT = "input"
 INPUT_SHAPE = "--input_shape"
 OUTPUT_SIZE = "--outputSize"
-INPUT_FORMAT_DICT = {
+INPUT_FORMAT_TO_RGB_RATIO_DICT = {
     "YUV420SP_U8" : 2,
     "RGB888_U8" : 1,
     "YUV400_U8" : 3,
@@ -259,7 +259,7 @@ class NpuDumpData(DumpData):
         for i, item in enumerate(inputs_list):
             item[h_position] = int(src_image_size_h[i])
             item[w_position] = int(src_image_size_w[i])
-            div_input_format = INPUT_FORMAT_DICT.get(input_format[i])
+            div_input_format = INPUT_FORMAT_TO_RGB_RATIO_DICT.get(input_format[i])
             if not div_input_format:
                 utils.logger.error("aipp input format only support: YUV420SP_U8, RGB888_U8, YUV400_U8, XRGB8888_U8")
                 raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
