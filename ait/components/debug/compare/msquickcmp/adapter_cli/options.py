@@ -54,9 +54,9 @@ opt_golden_model = click.option(
 )
 
 opt_om_model = click.option(
-    "-om",
-    "--om-model",
-    "om_model",
+    "-oml",
+    "--om-modell",
+    "om_modell",
     callback=check_args,
     help="The offline model (.om) file path",
     required=True
