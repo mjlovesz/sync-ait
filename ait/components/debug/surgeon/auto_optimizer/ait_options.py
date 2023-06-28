@@ -17,9 +17,8 @@ import pathlib
 import click
 
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from auto_optimizer.common.click_utils import convert_to_graph_optimizer, default_off_knowledges, \
-    validate_opt_converter, check_args
-
+from auto_optimizer.common.click_utils import default_off_knowledges, \
+    validate_opt_converter, check_args, check_node_name
 
 opt_knowledges = click.option(
     '-know',
