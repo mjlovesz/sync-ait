@@ -34,8 +34,8 @@ TOOLS = 'cmake'
 def test_app_analyze_opencv_csv(runner):
     runner.invoke(cli, ['-s', SOURCE,
                         '-f', REPORT_TYPE,
-                        '-l', LOG_LEVEL,
-                        '-t', TOOLS])
+                        '--log-level', LOG_LEVEL,
+                        '--tools', TOOLS])
     output_xlsx = os.path.join(CUR_DIR, 'resources/opencv/output.xlsx')
     assert os.path.exists(output_xlsx)
     os.remove(output_xlsx)
