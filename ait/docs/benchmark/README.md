@@ -62,6 +62,8 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
 | --aipp_config            |带有动态aipp配置的om模型在推理前需要配置的AIPP具体参数，以.config文件路径形式传入。当om模型带有动态aipp配置时，此参数为必填参数；当om模型不带有动态aipp配置时，配置此参数不影响正常推理。|否|
 | --backend                |指定trtexec开关。需要指定为trtexec。配合--perf参数使用，单独使用无效。|否|
 | --perf                   |调用trtexec开关。1或true（开启）、0或false（关闭），默认关闭。配合--backend参数使用，单独使用无效。|否|
+| --energy_consumption     |能耗采集开关。1或true（开启）、0或false（关闭），默认关闭。需要配合--npu_id参数使用，单独使用无效。|否|
+| --npu_id                 |指定npu_id开关。需要通过npu-smi info命令获取指定device说对应的npu id。配合--energy_consumption参数使用，单独使用无效。|否|
 
 ### FAQ
 使用过程中遇到问题可以参考[FAQ](FAQ.md)
@@ -70,7 +72,7 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
 请移步[benchmark使用示例](../../examples/cli/benchmark/)
   | 使用示例               | 使用场景                                 |
   |-----------------------| ---------------------------------------- |
-  | [01_basic_usage](../../examples/cli/benchmark/01_basic_usage)    | 基础示例，运行om模型的纯推理以及调试模式       |
+  |[01_basic_usage](../../examples/cli/benchmark/01_basic_usage)    | 基础示例，运行om模型的纯推理以及调试模式       |
   |[02_specify_input_data](../../examples/cli/benchmark/02_specify_input_data)|指定输入数据场景下的om模型推理|
   |[03_save_profiler_or_dump_data](../../examples/cli/benchmark/03_save_profiler_or_dump_data)|om模型推理过程中采集性能数据|
   |[04_save_output_data](../../examples/cli/benchmark/04_save_output_data)|om模型推理结束后保存输出结果|
@@ -79,3 +81,4 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
   |[07_dynamic_aipp](../../examples/cli/benchmark/07_dynamic_aipp)|动态AIPP场景下的om模型推理|
   |[08_multi_device_scenario](../../examples/cli/benchmark/08_multi_device_scenario)|采用多个npu同步进行om模型的推理|
   |[09_trtexec](../../examples/cli/benchmark/09_trtexec)|集成NVIDIA trtexec工具进行onnx模型的推理|
+  |[10_energy_consumption](../../examples/cli/benchmark/10_energy_consumption)|om模型推理获取功耗数据|
