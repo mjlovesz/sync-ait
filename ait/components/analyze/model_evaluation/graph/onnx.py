@@ -19,6 +19,8 @@ import onnx
 from onnx.onnx_cpp2py_export.checker import ValidationError
 from google.protobuf.message import DecodeError
 
+from model_evaluation.common.enum import ONNXCheckerError
+
 
 class OnnxGraph():
     def __init__(self, graph) -> None:
@@ -52,7 +54,7 @@ class OnnxGraph():
             return -1
         return opset_import[0].version
 
-    def check_node(self, node) -> str:
+    def check_node(self, node):
         check_ctx = onnx.checker.DEFAULT_CONTEXT
         ori_opset_imports = \
             deepcopy(check_ctx.opset_imports)
@@ -62,7 +64,9 @@ class OnnxGraph():
         try:
             onnx.checker.check_node(node, check_ctx)
         except ValidationError as e:
-            return f'{e}'
+            if str(e).find("No Op registered") != -1:
+                return ONNXCheckerError.UNREGISTERED_OP, str(e)
+            return ONNXCheckerError.OTHERS, str(e)
 
         check_ctx.opset_imports = ori_opset_imports
-        return ''
+        return ONNXCheckerError.SUCCESS, ""
