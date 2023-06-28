@@ -75,18 +75,73 @@ function test_transplt()
 }
 
 main() {
+    export dt_mode=${1:-"normal"} # or "pr"
+    dt_list=(0 0 0 0 0 0 0)
+    if [[ $dt_mode == "pr" ]];then
+        soft_link_path=/home/dcs-50/ait_test/ait/ait/components
+        [[ -d $soft_link_path ]] || { echo "can't find origin dt data";return $ret_failed; }
+        cur_testdata_path=$CUR_PATH/../benchmark/test/testdata
+        [[ -d $cur_testdata_path ]] || { `ln -s $soft_link_path/benchmark/test/testdata $cur_testdata_path`; }
+        modify_files=$CUR_PATH/../../../../modify_files.txt
+        if [[ -f $modify_files ]];then
+            echo "found modify_files"
+            while read line
+            do
+                result=""
+                result=$(echo $line | grep "components/analyze")
+                [[ $result == "" ]] || { dt_list[0]=1;echo "run analyze DT"; }
+                result=""
+                result=$(echo $line | grep "components/benchmark")
+                [[ $result == "" ]] || { dt_list[1]=1;echo "run benchmark DT"; }
+                result=""
+                result=$(echo $line | grep "components/convert")
+                [[ $result == "" ]] || { dt_list[2]=1;echo "run convert DT"; }
+                result=""
+                result=$(echo $line | grep "components/debug/compare")
+                [[ $result == "" ]] || { dt_list[3]=1;echo "run compare DT"; }
+                result=""
+                result=$(echo $line | grep "components/debug/surgeon")
+                [[ $result == "" ]] || { dt_list[4]=1;echo "run surgeon DT"; }
+                result=""
+                result=$(echo $line | grep "components/profile")
+                [[ $result == "" ]] || { dt_list[5]=1;echo "run profile DT"; }
+                result=""
+                result=$(echo $line | grep "components/transplt")
+                [[ $result == "" ]] || { dt_list[6]=1;echo "run transplt DT"; }
+
+            done < $modify_files
+        fi
+    else
+        dt_list=(1 1 1 1 1 1 1)
+    fi
+    echo "dt_list ${dt_list[@]}"
+
     get_npu_type || { echo "invalid npu device";return $ret_failed; }
     PYTHON_COMMAND="python3"
     BENCKMARK_DT_MODE="simple"
-    all_part_test_ok=$ret_ok
 
-    test_analyze || { echo "developer test analyze failed";all_part_test_ok=$ret_failed; }
-    test_benchmark $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE || { echo "developer test benchmark failed";all_part_test_ok=$ret_failed; }
-    test_convert || { echo "developer test convert failed";all_part_test_ok=$ret_failed; }
-    test_debug_compare || { echo "developer test comnpare failed";all_part_test_ok=$ret_failed; }
-    test_debug_surgeon || { echo "developer test surgeon failed";all_part_test_ok=$ret_failed; }
-    test_profile || { echo "developer test profile failed";all_part_test_ok=$ret_failed; }
-    test_transplt || { echo "developer test transplt failed";all_part_test_ok=$ret_failed; }
+    all_part_test_ok=$ret_ok
+    if [[ ${dt_list[0]} -eq 1 ]];then
+        test_analyze || { echo "developer test analyze failed";all_part_test_ok=$ret_failed; }
+    fi
+    if [[ ${dt_list[1]} -eq 1 ]];then
+        test_benchmark $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE || { echo "developer test benchmark failed";all_part_test_ok=$ret_failed; }
+    fi
+    if [[ ${dt_list[2]} -eq 1 ]];then
+        test_convert || { echo "developer test convert failed";all_part_test_ok=$ret_failed; }
+    fi
+    if [[ ${dt_list[3]} -eq 1 ]];then
+        test_debug_compare || { echo "developer test comnpare failed";all_part_test_ok=$ret_failed; }
+    fi
+    if [[ ${dt_list[4]} -eq 1 ]];then
+        test_debug_surgeon || { echo "developer test surgeon failed";all_part_test_ok=$ret_failed; }
+    fi
+    if [[ ${dt_list[5]} -eq 1 ]];then
+        test_profile || { echo "developer test profile failed";all_part_test_ok=$ret_failed; }
+    fi
+    if [[ ${dt_list[6]} -eq 1 ]];then
+        test_transplt || { echo "developer test transplt failed";all_part_test_ok=$ret_failed; }
+    fi
     cd $CUR_PATH
 
     return $all_part_test_ok
