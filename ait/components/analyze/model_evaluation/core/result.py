@@ -107,11 +107,11 @@ class OpResult:
         return self._details
 
     def set_details(self, err_detail: str) -> None:
-            if len(self.details) != 0:
-                if err_detail not in self.details.split(';'):
-                    self.details += ';' + err_detail
-            else:
-                self.details = err_detail
+        if len(self.details) != 0:
+            if err_detail not in self.details.split(';'):
+                self.details += ';' + err_detail
+        else:
+            self.details = err_detail
 
 
 class Result:
