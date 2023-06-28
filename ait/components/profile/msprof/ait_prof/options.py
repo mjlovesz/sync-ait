@@ -76,7 +76,7 @@ def check_args(ctx: click.Context, params: click.Option, value: str):
 
 
 opt_application = click.option(
-    "--application",
+    "--applicatio",
     required=True,
     default=None,
     type=str,
