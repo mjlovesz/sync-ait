@@ -27,15 +27,23 @@ OP_FILTER_LIST = ['Constant', 'Const', 'Input', 'Placeholder']
 
 class OpResult:
     ''' Operator analysis result '''
-    def __init__(self):
-        self._ori_op_name: str = ''
-        self._ori_op_type: str = '' # origin op type
-        self._op_name: str = ''
-        self._op_type: str = '' # inner op type
-        self._op_engine: Engine = Engine.UNKNOWN
-        self._soc_type: str = ''
-        self._is_supported: bool = True
-        self._details: str = ''
+    def __init__(self,
+                 ori_op_name='',
+                 ori_op_type='',  # origin op type
+                 op_name='',
+                 op_type='',  # inner op type
+                 op_engine=Engine.UNKNOWN,
+                 soc_type='',
+                 is_supported=True,
+                 details=''):
+        self._ori_op_name = ori_op_name
+        self._ori_op_type = ori_op_type
+        self._op_name = op_name
+        self._op_type = op_type
+        self._op_engine = op_engine
+        self._soc_type = soc_type
+        self._is_supported = is_supported
+        self._details = details
 
     def __setattr__(self, __name: str, __value: Any) -> None:
         if __name == 'is_supported':
