@@ -21,17 +21,17 @@ from auto_optimizer.common.click_utils import convert_to_graph_optimizer, defaul
     validate_opt_converter, check_args
 
 
-opt_optimizer = click.option(
-    '-k',
+opt_knowledges = click.option(
+    '-know',
     '--knowledges',
-    'optimizer',
+    'knowledges',
     default=','.join(
         knowledge
         for knowledge in KnowledgeFactory.get_knowledge_pool().keys()
         if knowledge not in default_off_knowledges
     ),
     type=str,
-    callback=convert_to_graph_optimizer,
+    callback=check_args,
     help='Knowledges(index/name) you want to apply. Seperate by comma(,), Default to all except fix knowledges.'
 )
 
@@ -209,7 +209,7 @@ opt_attention_start_node = click.option(
     'attention_start_node',
     type=str,
     default="",
-    callback=check_args,
+    callback=check_node_name,
     help='Start node of the first attention block, it must be set when apply big kernel knowledge.',
 )
 
@@ -220,7 +220,7 @@ opt_attention_end_node = click.option(
     'attention_end_node',
     type=str,
     default="",
-    callback=check_args,
+    callback=check_node_name,
     help='End node of the first attention block, it must be set when apply big kernel knowledge.',
 )
 
