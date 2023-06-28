@@ -10,6 +10,7 @@ modifier.Modifier = class {
         this.name2NodeStates = new Map();
         this.namedEdges = new Map();
 
+        this.oriInputs = new Set();
         this.addedOutputs = new Set();
         this.addedInputs = new Set();
         this.addedNode = new Map();
@@ -34,6 +35,9 @@ modifier.Modifier = class {
         this.graphs = graphs;
         this.graph = this.graphs[0];
         // this.analyzeModelGraph();
+        for (const input_name of this.graph.inputs) {
+            this.oriInputs.add(input_name)
+        }
 
         this.updateAddNodeDropDown();
         this.resetGraph()
@@ -82,8 +86,9 @@ modifier.Modifier = class {
         if (this.name2NodeStates.has(input_name)) {
             this.name2NodeStates.set(input_name, 'Exist');
         }
-        
-        this.addedInputs.add(input_name)
+        if (!this.oriInputs.has(input_name)) {
+            this.addedInputs.add(input_name)
+        }
         this.applyAndUpdateView();
     }
 
@@ -142,34 +147,24 @@ modifier.Modifier = class {
         let inside_nodes = this.getInsideNodes(start_nodes, end_nodes)
 
         for (const ori_node of this.extract_highlight_nodes) {
-            this.name2ViewNode.get(ori_node).element.getElementsByClassName("node border")[0].style.stroke = null
-            this.name2ViewNode.get(ori_node).element.getElementsByClassName("node border")[0].style.strokeWidth = null
+            this.name2ViewNode.get(ori_node).element.classList.remove("graph-node-extract-node")
+            this.name2ViewNode.get(ori_node).element.classList.remove("graph-node-extract-end")
+            this.name2ViewNode.get(ori_node).element.classList.remove("graph-node-extract-start")
         }
         this.extract_highlight_nodes = []
 
         for (const inside_node of inside_nodes) {
-            this.name2ViewNode.get(inside_node).element.getElementsByClassName("node border")[0].style.stroke = "orange"
-            this.name2ViewNode.get(inside_node).element.getElementsByClassName("node border")[0].style.strokeWidth = "6px"
-            
+            this.name2ViewNode.get(inside_node).element.classList.add("graph-node-extract-node")
             this.extract_highlight_nodes.push(inside_node)
         }
         
         for (const start_node of start_nodes) {
-            this.name2ViewNode.get(start_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-start)";
-            this.name2ViewNode.get(start_node).element.getElementsByClassName("node border")[0].style.strokeWidth = "6px"
+            this.name2ViewNode.get(start_node).element.classList.add("graph-node-extract-start")
             this.extract_highlight_nodes.push(start_node)
         }
         for (const end_node of end_nodes) {
-            this.name2ViewNode.get(end_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-end)";
-            this.name2ViewNode.get(end_node).element.getElementsByClassName("node border")[0].style.strokeWidth = "6px"
+            this.name2ViewNode.get(end_node).element.classList.add("graph-node-extract-end")
             this.extract_highlight_nodes.push(end_node)
-        }
-
-        for (const start_node of start_nodes) {
-            if (!end_nodes.has(start_node)) {
-                continue
-            }
-            this.name2ViewNode.get(end_node).element.getElementsByClassName("node border")[0].style.stroke = "url(#gradient-start-end)";
         }
     }
 
@@ -197,7 +192,7 @@ modifier.Modifier = class {
         }
 
         if (end_nodes.has(this_node_name)) {
-            return true
+            reach_node.add(this_node_name)
         }
 
         if (!this.namedEdges.has(this_node_name)) {
@@ -212,6 +207,16 @@ modifier.Modifier = class {
             }
         }
         return reach_node.has(this_node_name)
+    }
+
+    clickSingleNode(node_name) {
+        this.name2ViewNode.get(node_name).element.classList.add("graph-node-clicked")
+    }
+
+    clearHighlightNode() {
+        for (const elem of document.getElementsByClassName("graph-node-highlight")) {
+            elem.classList.remove("graph-node-highlight")
+        }
     }
 
     deleteSingleNode(node_name) {

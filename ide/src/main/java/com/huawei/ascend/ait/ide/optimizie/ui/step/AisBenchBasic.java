@@ -157,7 +157,7 @@ public class AisBenchBasic extends DialogWrapper {
     private void modelFIleAction() {
         List<String> lists = List.of(OM_MODEL_FILE_EXTENSION);
         modelFileBrowse.addActionListener(event -> {
-            String selectFile = getSelectedFile(project, lists, false);
+            String selectFile = getSelectedFile(project, lists, false, "Model File Path");
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
@@ -170,7 +170,7 @@ public class AisBenchBasic extends DialogWrapper {
     private void inputAction() {
         List<String> lists = List.of(NPY_FILE_EXTENSION, BIN_FILE_EXTENSION);
         inputFileBrowse.addActionListener(event -> {
-            String selectFile = getSelectedFile(project, lists, true);
+            String selectFile = getSelectedFile(project, lists, true, "Input Path");
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
@@ -184,7 +184,7 @@ public class AisBenchBasic extends DialogWrapper {
 
     private void outputAction() {
         outputPathBrowse.addActionListener(event -> {
-            String selectFile = getSelectedPath(project);
+            String selectFile = getSelectedPath(project, "Output Path");
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }

@@ -1,2 +1,3 @@
 numpy
 tqdm
+attrs >= 21.3.0

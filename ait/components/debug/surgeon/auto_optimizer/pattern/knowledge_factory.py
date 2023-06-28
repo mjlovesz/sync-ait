@@ -38,6 +38,6 @@ class KnowledgeFactory(object):
     def register(cls, name: str = '') -> Callable[[KnowledgeType], KnowledgeType]:
         def _deco(knowledge_cls: KnowledgeType) -> KnowledgeType:
             registered_name = name if name else knowledge_cls.__name__
-            cls.add_knowledge(registered_name, knowledge_cls)
+            cls.add_knowledge(registered_name, knowledge_cls())
             return knowledge_cls
         return _deco

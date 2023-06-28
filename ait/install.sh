@@ -26,6 +26,7 @@ arg_help=0
 while [[ "$#" -gt 0 ]]; do case $1 in
   --force-reinstall) arg_force_reinstall=--force-reinstall;;
   -f) arg_force_reinstall=--force-reinstall;;
+  --full) full_install=--full;;
   --debug) only_debug=true;;
   --benchmark) only_benchmark=true;;
   --analyze) only_analyze=true;;
@@ -34,6 +35,15 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --profile) only_profile=true;;
   --uninstall) uninstall=true;;
   -y) all_uninstall=-y;;
+  -i) shift
+    pip_source_url=$1
+    curl_ans=`curl ${pip_source_url} -s --head | head -n 1 | grep "HTTP/1.[01] [23].."`
+    if [ -z "${curl_ans}" ];then
+      echo "Error: Invalid pip source: ${pip_source_url}"
+      exit 1;
+    fi
+    echo "Info: Using pip source ${pip_source_url}"
+    pip_source="-i ${pip_source_url}";;
   -h|--help) arg_help=1;;
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
@@ -58,6 +68,7 @@ if [ "$arg_help" -eq "1" ]; then
   echo " --convert : only install convert component"
   echo " --transplt : only install transplt component"
   echo " --profile : only install profile component"
+  echo " --full : using with install, install all components and dependencies, may need sudo privileges"
   echo " --uninstall : uninstall"
   echo " -y : using with uninstall, don't ask for confirmation of uninstall deletions"
   exit;
@@ -104,46 +115,48 @@ uninstall(){
 
 
 install(){
-  pip3 install ${CURRENT_DIR} ${arg_force_reinstall}
+  pip3 install ${CURRENT_DIR} ${arg_force_reinstall} ${pip_source}
 
   if [ ! -z $only_debug ]
   then
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} ${pip_source}
   fi
 
   if [ ! -z $only_benchmark ]
   then
     pip3 install ${CURRENT_DIR}/components/benchmark/backend \
     ${CURRENT_DIR}/components/benchmark \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} ${pip_source}
     bash ${CURRENT_DIR}/components/benchmark/backend/concur/build.sh
   fi
 
   if [ ! -z $only_analyze ]
   then
     pip3 install ${CURRENT_DIR}/components/analyze \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} ${pip_source}
   fi
 
   if [ ! -z $only_convert ]
   then
     pip3 install ${CURRENT_DIR}/components/convert \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} ${pip_source}
+
     bash ${CURRENT_DIR}/components/convert/build.sh
   fi
 
   if [ ! -z $only_transplt ]
   then
     pip3 install ${CURRENT_DIR}/components/transplt \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} ${pip_source}
+    source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi
 
   if [ ! -z $only_profile ]
   then
     pip3 install ${CURRENT_DIR}/components/profile/msprof \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} ${pip_source}
   fi
 
   if [ -z $only_debug ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ]
@@ -156,14 +169,18 @@ install(){
     ${CURRENT_DIR}/components/convert \
     ${CURRENT_DIR}/components/transplt \
     ${CURRENT_DIR}/components/profile/msprof \
-    ${arg_force_reinstall}
+    ${arg_force_reinstall} ${pip_source}
 
     if [ ! ${AIE_DIR} ];then
-      echo "Ascend Inference Engine is not installed."
+      echo "Warning: Ascend Inference Engine is not installed. (convert install failed)"
     else
       bash ${CURRENT_DIR}/components/convert/build.sh
     fi
+
+    source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi
+
+  rm -rf ${CURRENT_DIR}/ait.egg-info
 }
 
 

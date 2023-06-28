@@ -32,7 +32,7 @@
         <fileEditorProvider implementation="com.huawei.ascend.ait.ide.filetype.AitFileEditorProvider"/>
         <projectService serviceImplementation="com.huawei.ascend.ait.ide.commonlib.output.OutputService"/>
         <toolWindow factoryClass="com.huawei.ascend.ait.ide.commonlib.output.OutputFactory"
-                    anchor="bottom" id="Output" order="first" doNotActivateOnStart="true"/>
+                    anchor="bottom" id="output" order="first" doNotActivateOnStart="true"/>
         <fileIconProvider implementation="com.huawei.ascend.ait.ide.filetype.AitFileEditorIconProvider"/>
         <ApplicationLoadListener implementation="com.huawei.ascend.ait.ide.service.AscendMenuAction"/>
     </extensions>
