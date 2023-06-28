@@ -30,17 +30,14 @@ class OpResult:
     def __init__(self,
                  ori_op_name,
                  ori_op_type,  # origin op type
-                 op_name='',
-                 op_type='',  # inner op type
-                 op_engine=Engine.UNKNOWN,
                  soc_type='',
                  is_supported=True,
                  details=''):
         self._ori_op_name = ori_op_name
         self._ori_op_type = ori_op_type
-        self._op_name = op_name
-        self._op_type = op_type
-        self._op_engine = op_engine
+        self._op_name = ''
+        self._op_type = ''
+        self._op_engine = Engine.UNKNOWN
         self._soc_type = soc_type
         self._is_supported = is_supported
         self._details = details
