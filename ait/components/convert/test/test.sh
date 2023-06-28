@@ -21,7 +21,7 @@ pwd_dir=$(dirname $(readlink -f "$0"))
 # copy auto_optimizer to test file, and test
 cp ${pwd_dir}/../aie_runtime ${pwd_dir}/ -rf
 
-coverage run -p -m unittest
+coverage run -p -m unittest discover testcase -p 'test_*.py'
 ret=$?
 if [ $ret != 0 ]; then
     echo "coverage run failed! "
