@@ -16,7 +16,6 @@ import os
 import csv
 
 from copy import deepcopy
-from dataclasses import dataclass
 from typing import Dict, Any
 
 from model_evaluation.common import logger, utils
@@ -26,17 +25,17 @@ from model_evaluation.common.enum import Engine
 OP_FILTER_LIST = ['Constant', 'Const', 'Input', 'Placeholder']
 
 
-@dataclass
 class OpResult:
     ''' Operator analysis result '''
-    ori_op_name: str = ''
-    ori_op_type: str = '' # origin op type
-    op_name: str = ''
-    op_type: str = '' # inner op type
-    op_engine: Engine = Engine.UNKNOWN
-    soc_type: str = ''
-    is_supported: bool = True
-    details: str = ''
+    def __init__(self):
+        self._ori_op_name: str = ''
+        self._ori_op_type: str = '' # origin op type
+        self._op_name: str = ''
+        self._op_type: str = '' # inner op type
+        self._op_engine: Engine = Engine.UNKNOWN
+        self._soc_type: str = ''
+        self._is_supported: bool = True
+        self._details: str = ''
 
     def __setattr__(self, __name: str, __value: Any) -> None:
         if __name == 'is_supported':
@@ -47,12 +46,72 @@ class OpResult:
                 return super().__setattr__(__name, self.op_type)
         return super().__setattr__(__name, __value)
 
+    @property
+    def ori_op_name(self):
+        return self._ori_op_name
+
+    @ori_op_name.setter
+    def ori_op_name(self, ori_op_name_):
+        self._ori_op_name = ori_op_name_
+
+    @property
+    def ori_op_type(self):
+        return self._ori_op_type
+
+    @ori_op_type.setter
+    def ori_op_type(self, ori_op_type_):
+        self._ori_op_type = ori_op_type_
+
+    @property
+    def op_name(self):
+        return self._op_name
+
+    @ori_op_name.setter
+    def ori_op_name(self, ori_op_name_):
+        self._ori_op_name = ori_op_name_
+
+    @property
+    def op_type(self):
+        return self._op_type
+
+    @op_type.setter
+    def op_type(self, op_type_):
+        self._op_type = op_type_
+
+    @property
+    def op_engine(self):
+        return self._op_engine
+
+    @op_engine.setter
+    def op_engine(self, op_engine_):
+        self._op_engine = op_engine_
+
+    @property
+    def soc_type(self):
+        return self._soc_type
+
+    @soc_type.setter
+    def soc_type(self, soc_type_):
+        self._soc_type = soc_type_
+
+    @property
+    def is_supported(self):
+        return self._is_supported
+
+    @is_supported.setter
+    def is_supported(self, is_supported_):
+        self._is_supported = is_supported_
+
+    @property
+    def details(self):
+        return self._details
+
     def set_details(self, err_detail: str) -> None:
-        if len(self.details) != 0:
-            if err_detail not in self.details.split(';'):
-                self.details += ';' + err_detail
-        else:
-            self.details = err_detail
+            if len(self.details) != 0:
+                if err_detail not in self.details.split(';'):
+                    self.details += ';' + err_detail
+            else:
+                self.details = err_detail
 
 
 class Result:
