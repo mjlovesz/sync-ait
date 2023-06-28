@@ -31,6 +31,31 @@ from auto_optimizer.tools.log import logger
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
+def check_input_path(input_path):
+    if not os.access(input_path, os.F_OK):
+        logger.error("Input path {} is not exist.".format(input_path))
+        return False
+
+    if not os.access(input_path, os.R_OK):
+        logger.error("Input path {} is not readable.".format(input_path))
+        return False
+
+    return True
+
+
+def check_output_model_path(output_model):
+    if os.path.isdir(output_model):
+        logger.error("Output path {} is a directory.".format(output_model))
+        return False
+
+    model_dir = os.path.dirname(os.path.abspath(output_model))
+    if not os.path.exists(model_dir):
+        logger.error("Output path {} is not exist.".format(output_model))
+        return False
+
+    return True
+
+
 def is_graph_input_static(graph: BaseGraph) -> bool:
     for input_ in graph.inputs:
         for dim in input_.shape:
