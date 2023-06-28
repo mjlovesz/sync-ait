@@ -263,7 +263,7 @@ class NpuDumpData(DumpData):
             if not div_input_format:
                 utils.logger.error("aipp input format only support: YUV420SP_U8, RGB888_U8, YUV400_U8, XRGB8888_U8")
                 raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
-            input_data = np.random.randint(0, 256, np.prod(item)//div_input_format).astype(np.uint8)
+            input_data = np.random.randint(0, 256, int(np.prod(item)/div_input_format)).astype(np.uint8)
             file_name = "input_" + str(i) + ".bin"
             input_data.tofile(os.path.join(input_dir, file_name))
 
