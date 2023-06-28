@@ -54,6 +54,18 @@ install_clang_on_centos() {
   echo "export CPLUS_INCLUDE_PATH=/opt/rh/llvm-toolset-7.0/root/usr/lib64/clang/7.0.1/include:\$CPLUS_INCLUDE_PATH" >> ~/.bashrc
 }
 
+install_clang_on_sles() {
+  $SUDO zypper addrepo -f http://mirrors.163.com/openSUSE/update/leap/15.1/non-oss update-repo-no-oss163
+  $SUDO zypper addrepo -f http://mirrors.163.com/openSUSE/update/leap/15.1/oss update-repo-oss163
+  $SUDO zypper addrepo -f http://mirrors.163.com/openSUSE/distribution/leap/15.1/repo/oss dis-repo-oss163
+  $SUDO zypper addrepo -f http://mirrors.163.com/openSUSE/distribution/leap/15.1/repo/non-oss dis-repo-non-oss163
+  $SUDO zypper refresh
+  $SUDO zypper install gcc gcc-c++
+  $SUDO zypper install unzip libclang7 clang7-devel
+  export CPLUS_INCLUDE_PATH=/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH
+  echo "export CPLUS_INCLUDE_PATH=/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH" >> ~/.bashrc
+}
+
 install_clang() {
   if [ "$OS_NAME" == "Ubuntu" ]; then
     $SUDO apt-get install wget unzip -y
@@ -62,9 +74,7 @@ install_clang() {
     $SUDO yum install wget unzip -y
     install_clang_on_centos
   elif [[ "$OS_NAME" == "SLES"* ]] && [[ $OS_VERSION == "12"* ]]; then
-    $SUDO zypper install wget unzip libclang7 clang7-devel -y
-    export CPLUS_INCLUDE_PATH=/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH
-    echo "export CPLUS_INCLUDE_PATH=/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH" >> ~/.bashrc
+    install_clang_on_sles
   else
     echo "WARNING: uncertified os type:version $OS_NAME:$OS_VERSION. Ait transplt installation may be incorrect!!!"
     # try to install clang

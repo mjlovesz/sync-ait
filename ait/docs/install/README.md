@@ -71,7 +71,7 @@ chmod u+x install.sh
 # 4. 只安装transplt组件（不安装transplt组件依赖的clang系统库）
 ./install.sh --transplt
 
-# 5. 只安装transplt组件（安装transplt组件依赖的clang系统库，需要提供sudo权限）
+# 5. 只安装transplt组件（安装transplt组件依赖的clang系统库，需要提供sudo权限,sles系统安装时，需要手动选择'y',然后继续安装）
 ./install.sh --transplt --full
 
 # 6. 只安装profile组件
