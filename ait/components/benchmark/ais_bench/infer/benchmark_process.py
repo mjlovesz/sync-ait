@@ -328,7 +328,7 @@ def main(args, index=0, msgq=None, device_list=None):
     start_time = time.time()
     start_energy_consumption = 0
     end_energy_consumption = 0
-    if args.energy_consumption:
+    if args.energy_consumption and args.npu_id:
         start_energy_consumption = get_energy_consumption(args.npu_id)
 
     if args.run_mode == "array":
@@ -341,7 +341,7 @@ def main(args, index=0, msgq=None, device_list=None):
         infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix)
     else:
         raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
-    if args.energy_consumption:
+    if args.energy_consumption and args.npu_id:
         end_energy_consumption = get_energy_consumption(args.npu_id)
     end_time = time.time()
 
@@ -351,9 +351,9 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.h2d_latency_list = MemorySummary.get_h2d_time_list()
     summary.d2h_latency_list = MemorySummary.get_d2h_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
-    if args.energy_consumption:
-        logger.info("npu_id {} energy_consumption {}".format(args.npu_id, (float(end_energy_consumption) -
-                                                                           float(start_energy_consumption)) * (
+    if args.energy_consumption and args.npu_id:
+        logger.info("NPU ID:{} energy consumption(J):{}".format(args.npu_id, ((float(end_energy_consumption) +
+                                                                           float(start_energy_consumption))/2.0 ) * (
                                                                          end_time - start_time)))
     if msgq is not None:
         # put result to msgq
