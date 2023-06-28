@@ -217,14 +217,14 @@ uint64_t PyInferenceSession::GetMaxDymBatchsize()
     return modelInfer_.GetMaxDymBatchsize();
 }
 
-int PyInferenceSession::GetDymAIPPInputExsity()
+int PyInferenceSession::GetDymAIPPInputExist()
 {
-    return modelInfer_.GetDymAIPPInputExsity();
+    return modelInfer_.GetDymAIPPInputExist();
 }
 
-int PyInferenceSession::CheckDymAIPPInputExsity()
+int PyInferenceSession::CheckDymAIPPInputExist()
 {
-    APP_ERROR ret = modelInfer_.CheckDymAIPPInputExsity();
+    APP_ERROR ret = modelInfer_.CheckDymAIPPInputExist();
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
@@ -504,8 +504,8 @@ void RegistAippConfig(py::class_<Base::PyInferenceSession, std::shared_ptr<Base:
     using namespace pybind11::literals;
 
     model.def("get_max_dym_batchsize", &Base::PyInferenceSession::GetMaxDymBatchsize);
-    model.def("get_dym_aipp_input_exsity", &Base::PyInferenceSession::GetDymAIPPInputExsity);
-    model.def("check_dym_aipp_input_exsity", &Base::PyInferenceSession::CheckDymAIPPInputExsity);
+    model.def("get_dym_aipp_input_exist", &Base::PyInferenceSession::GetDymAIPPInputExist);
+    model.def("check_dym_aipp_input_exist", &Base::PyInferenceSession::CheckDymAIPPInputExist);
     model.def("set_dym_aipp_info_set", &Base::PyInferenceSession::SetDymAIPPInfoSet);
 
     model.def("aipp_set_max_batch_size", &Base::PyInferenceSession::AippSetMaxBatchSize);

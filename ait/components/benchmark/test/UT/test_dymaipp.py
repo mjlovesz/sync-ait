@@ -405,7 +405,7 @@ class TestClass:
         session.set_staticbatch()
         # only need call this functon compare infer_simple
         self.load_aipp_config_file(session, self.get_actual_aipp_config(), 4)
-        session.check_dym_aipp_input_exsity()
+        session.check_dym_aipp_input_exist()
 
         # create new numpy data according inputs info
         barray = bytearray(session.get_inputs()[0].realsize)
@@ -432,7 +432,7 @@ class TestClass:
         session.set_dynamic_batchsize(2)
         # only need call this functon compare infer_simple
         self.load_aipp_config_file(session, self.get_actual_aipp_config(), 4)
-        session.check_dym_aipp_input_exsity()
+        session.check_dym_aipp_input_exist()
 
         # create new numpy data according inputs info
         barray = bytearray(session.get_inputs()[0].realsize)
@@ -459,7 +459,7 @@ class TestClass:
         session.set_dynamic_hw(112, 112)
         # only need call this functon compare infer_simple
         self.load_aipp_config_file(session, self.get_actual_aipp_config(), 1)
-        session.check_dym_aipp_input_exsity()
+        session.check_dym_aipp_input_exist()
 
         # create new numpy data according inputs info
         barray = bytearray(session.get_inputs()[0].realsize)
@@ -487,7 +487,7 @@ class TestClass:
         session.set_staticbatch()
         # only need call this functon compare infer_simple
         with pytest.raises(RuntimeError) as e:
-            session.check_dym_aipp_input_exsity()
+            session.check_dym_aipp_input_exist()
 
     # 模型有多个动态aipp input
     def test_infer_multi_dymaipp_input(self):
@@ -498,7 +498,7 @@ class TestClass:
         # only need call this functon compare infer_simple
         self.load_aipp_config_file(session, self.get_actual_aipp_config(), 1)
         with pytest.raises(RuntimeError) as e:
-            session.check_dym_aipp_input_exsity()
+            session.check_dym_aipp_input_exist()
             logger.info("get --aipp model wrong")
 
         # create new numpy data according inputs info
@@ -523,7 +523,7 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
         session.set_staticbatch()
         # only need call this functon compare infer_simple
-        session.check_dym_aipp_input_exsity()
+        session.check_dym_aipp_input_exist()
         with pytest.raises(RuntimeError) as e:
             self.load_aipp_config_file(session, self.get_aipp_config_lack_title(), 4)
             logger.info("get --aipp_config wrong")
@@ -536,7 +536,7 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
         session.set_staticbatch()
         # only need call this functon compare infer_simple
-        session.check_dym_aipp_input_exsity()
+        session.check_dym_aipp_input_exist()
         with pytest.raises(RuntimeError) as e:
             self.load_aipp_config_file(session, self.get_aipp_config_lack_title(), 4)
             logger.info("get --aipp_config wrong")
@@ -549,7 +549,7 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
         session.set_staticbatch()
         # only need call this functon compare infer_simple
-        session.check_dym_aipp_input_exsity()
+        session.check_dym_aipp_input_exist()
         with pytest.raises(RuntimeError) as e:
             self.load_aipp_config_file(session, self.get_aipp_config_param_overflowed(), 4)
             logger.info("get --aipp_config wrong")

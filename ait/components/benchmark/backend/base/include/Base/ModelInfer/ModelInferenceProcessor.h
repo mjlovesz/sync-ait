@@ -190,8 +190,8 @@ public:
     APP_ERROR SetCustomOutTensorsSize(std::vector<size_t> customOutSize);
 
     uint64_t GetMaxDymBatchsize();
-    int GetDymAIPPInputExsity();
-    APP_ERROR CheckDymAIPPInputExsity();
+    int GetDymAIPPInputExist();
+    APP_ERROR CheckDymAIPPInputExist();
     APP_ERROR SetDymAIPPInfoSet();
 
     APP_ERROR AippSetMaxBatchSize(uint64_t batchSize);

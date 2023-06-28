@@ -83,7 +83,7 @@ class InferSession:
     def convert_tensors_to_host(tensors):
         for tensor in tensors:
             tensor.to_host()
-    
+
     @staticmethod
     def convert_tensors_to_arrays(tensors):
         arrays = []
@@ -140,11 +140,11 @@ class InferSession:
         tensor.to_device(self.device_id)
         return tensor
 
-    def get_dym_aipp_input_exsity(self):
-        return self.session.get_dym_aipp_input_exsity()
+    def get_dym_aipp_input_exist(self):
+        return self.session.get_dym_aipp_input_exist()
 
-    def check_dym_aipp_input_exsity(self):
-        self.session.check_dym_aipp_input_exsity()
+    def check_dym_aipp_input_exist(self):
+        self.session.check_dym_aipp_input_exist()
 
     def load_aipp_config_file(self, config_file, batchsize):
         cfg = ConfigParser()
@@ -533,14 +533,14 @@ class MemorySummary:
             return aclruntime.MemorySummary().H2D_time_list
         else:
             return []
-        
+
     @staticmethod
     def get_d2h_time_list():
         if hasattr(aclruntime, 'MemorySummary'):
             return aclruntime.MemorySummary().D2H_time_list
         else:
             return []
-        
+
     @staticmethod
     def reset():
         if hasattr(aclruntime, 'MemorySummary'):

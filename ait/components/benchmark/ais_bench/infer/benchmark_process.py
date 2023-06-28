@@ -70,21 +70,21 @@ def set_session_options(session, args):
 
     # 确认模型只有一个动态 aipp input
     if args.dym_shape is not None or args.auto_set_dymshape_mode:
-        aipp_input_exsity = 0
+        aipp_input_exist = 0
     else:
-        aipp_input_exsity = session.get_dym_aipp_input_exsity()
-    logger.debug("aipp_input_exsity: {}".format(aipp_input_exsity))
-    if (args.aipp_config is not None) and (aipp_input_exsity == 1):
+        aipp_input_exist = session.get_dym_aipp_input_exist()
+    logger.debug("aipp_input_exist: {}".format(aipp_input_exist))
+    if (args.aipp_config is not None) and (aipp_input_exist == 1):
         session.load_aipp_config_file(args.aipp_config, aipp_batchsize)
-        session.check_dym_aipp_input_exsity()
-    elif (args.aipp_config is None) and (aipp_input_exsity == 1):
+        session.check_dym_aipp_input_exist()
+    elif (args.aipp_config is None) and (aipp_input_exist == 1):
         logger.error("can't find aipp config file for model with dym aipp input , please check it!")
         raise RuntimeError('aipp model without aipp config!')
-    elif (aipp_input_exsity > 1):
+    elif (aipp_input_exist > 1):
         logger.error("don't support more than one dynamic aipp input in model, amount of aipp input is {}"
-                     .format(aipp_input_exsity))
+                     .format(aipp_input_exist))
         raise RuntimeError('aipp model has more than 1 aipp input!')
-    elif (aipp_input_exsity == -1):
+    elif (aipp_input_exist == -1):
         raise RuntimeError('aclmdlGetAippType failed!')
 
     # 设置custom out tensors size
