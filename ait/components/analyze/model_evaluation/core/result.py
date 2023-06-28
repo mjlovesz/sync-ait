@@ -28,8 +28,8 @@ OP_FILTER_LIST = ['Constant', 'Const', 'Input', 'Placeholder']
 class OpResult:
     ''' Operator analysis result '''
     def __init__(self,
-                 ori_op_name='',
-                 ori_op_type='',  # origin op type
+                 ori_op_name,
+                 ori_op_type,  # origin op type
                  op_name='',
                  op_type='',  # inner op type
                  op_engine=Engine.UNKNOWN,
@@ -44,15 +44,6 @@ class OpResult:
         self._soc_type = soc_type
         self._is_supported = is_supported
         self._details = details
-
-    def __setattr__(self, __name: str, __value: Any) -> None:
-        if __name == 'is_supported':
-            if not isinstance(__value, bool) or __value:
-                return super().__setattr__(__name, self.is_supported)
-        if __name == 'op_type':
-            if self.op_type != '':
-                return super().__setattr__(__name, self.op_type)
-        return super().__setattr__(__name, __value)
 
     @property
     def ori_op_name(self):
@@ -74,9 +65,9 @@ class OpResult:
     def op_name(self):
         return self._op_name
 
-    @ori_op_name.setter
-    def ori_op_name(self, ori_op_name_):
-        self._ori_op_name = ori_op_name_
+    @op_name.setter
+    def op_name(self, op_name_):
+        self._op_name = op_name_
 
     @property
     def op_type(self):
@@ -115,11 +106,11 @@ class OpResult:
         return self._details
 
     def set_details(self, err_detail: str) -> None:
-        if len(self.details) != 0:
-            if err_detail not in self.details.split(';'):
-                self.details += ';' + err_detail
+        if len(self._details) != 0:
+            if err_detail not in self._details.split(';'):
+                self._details += ';' + err_detail
         else:
-            self.details = err_detail
+            self._details = err_detail
 
 
 class Result:
