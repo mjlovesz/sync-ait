@@ -3,7 +3,9 @@ import time
 
 from app_analyze.scan.clang_parser import *
 from app_analyze.scan.clang_utils import *
-from app_analyze.scan.sequence.seq_utils import FuncAttr, ObjInfo
+from app_analyze.scan.sequence.seq_desc import FuncAttr, ObjInfo
+from app_analyze.scan.sequence.seq_handler import SeqHandler
+from app_analyze.scan.sequence.api_filter import *
 from app_analyze.common.kit_config import KitConfig
 from app_analyze.utils.log_util import logger
 
@@ -114,8 +116,38 @@ def _visit_cxx_method(node, api_type='invalid'):
     return func_attr
 
 
+def _visit_call_expr(node, rst, pth):
+    for c in get_children(node):
+        setattr(c, 'scanned', True)
+        cursor_kind = c.kind
+
+        func_attr = None
+        if cursor_kind == CursorKind.CALL_EXPR:
+            if not c.referenced:
+                return
+
+            ref_kind = c.referenced.kind.name
+            if ref_kind in ['CXX_METHOD', 'FUNCTION_DECL']:
+                arg_dict = _get_api_type(c.referenced.location.file.name, c)
+                api_type = arg_dict['api_type']
+                if api_type != 'invalid':
+                    if ref_kind == 'CXX_METHOD':
+                        func_attr = _visit_cxx_method(c, api_type)
+                    else:
+                        func_attr = _visit_function_decl(c, api_type)
+        if func_attr:
+            cur_path = []
+            cur_path.extend(pth),
+            cur_path.append(c)
+            rst.append((func_attr, cur_path))
+        else:
+            cur_path = pth
+        _visit_call_expr(c, rst, cur_path)
+
+
 def visit(node, sub_rst, result):
-    if node.spelling in ['operator=', 'operator>>', 'operator[]', 'operator()']:
+    skip_flag = False
+    if node.spelling in GLOBAL_FILTER:
         return
 
     cursor_kind = node.kind
@@ -127,21 +159,6 @@ def visit(node, sub_rst, result):
             sub_rst.clear()
         func_attr = _visit_function_decl(node, 'usr_defined')
         sub_rst.append(func_attr)
-    elif cursor_kind == CursorKind.CALL_EXPR:
-        if not node.referenced:
-            return
-
-        ref_kind = node.referenced.kind.name
-        if ref_kind in ['CXX_METHOD', 'FUNCTION_DECL']:
-            arg_dict = _get_api_type(node.referenced.location.file.name, node)
-            api_type = arg_dict['api_type']
-            if api_type != 'invalid':
-                if ref_kind == 'CXX_METHOD':
-                    func_attr = _visit_cxx_method(node, api_type)
-                else:
-                    func_attr = _visit_function_decl(node, api_type)
-
-                sub_rst.append(func_attr)
     elif cursor_kind in [CursorKind.CONSTRUCTOR, CursorKind.CXX_METHOD]:
         if not node.referenced:
             return
@@ -159,6 +176,34 @@ def visit(node, sub_rst, result):
                 func_attr = _visit_cxx_method(node, api_type)
                 sub_rst.append(func_attr)
 
+    elif cursor_kind == CursorKind.CALL_EXPR:
+        if not node.referenced:
+            return
+
+        ref_kind = node.referenced.kind.name
+        if ref_kind in ['CXX_METHOD', 'FUNCTION_DECL']:
+            arg_dict = _get_api_type(node.referenced.location.file.name, node)
+            api_type = arg_dict['api_type']
+            if api_type != 'invalid':
+                skip_flag = True
+                if ref_kind == 'CXX_METHOD':
+                    func_attr = _visit_cxx_method(node, api_type)
+                else:
+                    func_attr = _visit_function_decl(node, api_type)
+
+                rst = [(func_attr, [node])]
+                pth = [node]
+                _visit_call_expr(node, rst, pth)
+
+                rst_size = len(rst)
+                if rst_size == 1:
+                    sub_rst.append(rst[0][0])
+                else:
+                    SeqHandler.sort_api_sequences(rst)
+                    sub_rst.extend([val[0] for val in rst])
+
+    return skip_flag
+
 
 class FuncParser(Parser):
     def __init__(self, path):
@@ -175,25 +220,30 @@ class FuncParser(Parser):
         macro_map(node, file)
         typedef_map(node, file)
 
+        skip_flag = False
         usr_code = is_user_code(file)
-        if usr_code:
-            if not getattr(node, 'scanned', False):
-                visit(node, sub_rst, result)
+        if usr_code and not getattr(node, 'scanned', False):
+            skip_flag = visit(node, sub_rst, result)
 
         children = list()
-        for c in get_children(node):
-            c_info = self._parse_api(c, sub_rst, result)
-            if c_info:
-                children.append(c_info)
-
-        info = None
-        if usr_code:
+        if skip_flag:
             info = node_debug_string(node, children)
+        else:
+            for c in get_children(node):
+                c_info = self._parse_api(c, sub_rst, result)
+                if c_info:
+                    children.append(c_info)
+
+            info = None
+            if usr_code:
+                info = node_debug_string(node, children)
 
         return info
 
-    def _handle_call_seqs(self):
-        pass
+    @staticmethod
+    def _handle_call_seqs(seqs):
+        SeqHandler.filter_api_sequences(seqs)
+        SeqHandler.union_api_sequences(seqs)
 
     def parse(self):
         for d in self.tu.diagnostics:
@@ -209,6 +259,7 @@ class FuncParser(Parser):
         if sub_rst:
             result.append(sub_rst)
         logger.debug(f'Time elapsed： {time.time() - start:.3f}s')
+        self._handle_call_seqs(result)
 
         # dump = self.tu.spelling.replace('/', '.')
         # os.makedirs('temp/', exist_ok=True)
