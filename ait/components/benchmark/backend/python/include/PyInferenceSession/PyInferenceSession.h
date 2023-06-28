@@ -72,8 +72,8 @@ public:
 
     uint64_t GetMaxDymBatchsize();
     int SetDymAIPPInfoSet();
-    int GetDymAIPPInputExsity();
-    int CheckDymAIPPInputExsity();
+    int GetDymAIPPInputExist();
+    int CheckDymAIPPInputExist();
 
     int AippSetMaxBatchSize(uint64_t batchSize);
     int SetInputFormat(std::string iptFmt);
