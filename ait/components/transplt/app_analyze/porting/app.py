@@ -65,9 +65,10 @@ opt_report_type = click.option(
 )
 
 # 添加日志级别开关，默认级别是INFO，只有添加ERROR后才能输出ERR级别日志
+# test_ait
 opt_log_level = click.option(
-    '--log-levelx',
-    'log_levelx',
+    '--log-level',
+    'log_level',
     type=click.Choice(['DEBUG', 'INFO', 'WARNING', 'ERROR']),
     default='INFO',
     help='specify log level. default is '
