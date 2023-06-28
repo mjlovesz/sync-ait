@@ -108,7 +108,7 @@ opt_check = click.option(
 
 
 arg_path = click.argument(
-    'pathasf',
+    'path',
     nargs=1,
     type=click.Path(
         exists=True,
