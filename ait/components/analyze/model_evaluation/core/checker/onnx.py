@@ -67,8 +67,6 @@ class OnnxChecker:
     def _check_op_validation_by_onnx_checker(self, graph, err_map):
         for node in graph.node:
             errcode, errinfo = self._graph.check_node(node)
-            if errcode == ONNXCheckerError.UNREGISTERED_OP:
-                continue
-            if errcode == ONNXCheckerError.SUCCESS:
+            if errcode == ONNXCheckerError.UNREGISTERED_OP or errcode == ONNXCheckerError.SUCCESS:
                 continue
             err_map.setdefault(node.name, []).append(errinfo)
