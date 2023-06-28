@@ -75,8 +75,8 @@ def check_device_range_valid(value):
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--model",
-        "-m",
+        "--modell",
+        "-ml",
         required=True,
         help="The path of the om model"
     )
