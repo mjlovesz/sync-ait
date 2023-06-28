@@ -30,9 +30,9 @@ def check_args(ctx: click.Context, params: click.Option, value: str):
 
 
 opt_model = click.option(
-    '-gm',
-    '--golden-model',
-    'input_model',
+    '-gmd',
+    '--golden-modeld',
+    'input_modeld',
     type=str,
     required=True,
     callback=check_args,
