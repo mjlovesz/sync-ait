@@ -1,7 +1,19 @@
-import click
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import os
-import logging
-import sys
+import click
 from click.testing import CliRunner
 from ais_bench.infer.benchmark_process import args_rules
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
@@ -39,9 +51,6 @@ from ais_bench.infer.options import (
     opt_perf,
     opt_pipeline
 )
-
-logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
-logger = logging.getLogger(__name__)
 
 @click.command(name="benchmark_all",
                short_help = "benchmark tool to get performance data including latency and throughput",
@@ -110,6 +119,7 @@ def benchmark_all_cmd(om_model,
                      pipeline
                      ):
     pass
+
 
 class TestClass:
     @classmethod
