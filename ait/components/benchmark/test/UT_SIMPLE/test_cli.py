@@ -119,9 +119,45 @@ class TestClass:
         """
         cls.init(TestClass)
 
+    @classmethod
+    def get_click_list(cls, cmd_adapter:BenchMarkArgsAdapter):
+        cmd_list = ["--om-model", cmd_adapter.model,
+                    "--input", cmd_adapter.input,
+                    "--output", cmd_adapter.output,
+                    "--output-dirname", cmd_adapter.output_dirname,
+                    "--outfmt", cmd_adapter.outfmt,
+                    "--loop", cmd_adapter.loop,
+                    "--debug", cmd_adapter.debug,
+                    "--device", cmd_adapter.device,
+                    "--dym-batch", cmd_adapter.dym_batch,
+                    "--dym-hw", cmd_adapter.dym_hw,
+                    "--dym-dims", cmd_adapter.dym_dims,
+                    "--dym-shape", cmd_adapter.dym_shape,
+                    "--output-size", cmd_adapter.output_size,
+                    "--auto-set-dymshape-mode", cmd_adapter.auto_set_dymshape_mode,
+                    "--auto-set-dymdims-mode", cmd_adapter.auto_set_dymdims_mode,
+                    "--batch-size", cmd_adapter.batchsize,
+                    "--pure-data-type", cmd_adapter.pure_data_type,
+                    "--profiler", cmd_adapter.profiler,
+                    "--dump", cmd_adapter.dump,
+                    "--acl-json-path", cmd_adapter.acl_json_path,
+                    "--output-batchsize-axis", cmd_adapter.output_batchsize_axis,
+                    "--run-mode", cmd_adapter.run_mode,
+                    "--display-all-summary", cmd_adapter.display_all_summary,
+                    "--warmup-count", cmd_adapter.warmup_count,
+                    "--dym-shape-range", cmd_adapter.dym_shape_range,
+                    "--aipp-config", cmd_adapter.aipp_config,
+                    "--energy_consumption", cmd_adapter.energy_consumption,
+                    "--npu_id", cmd_adapter.npu_id,
+                    "--backend", cmd_adapter.backend,
+                    "--perf", cmd_adapter.perf,
+                    "--pipeline", cmd_adapter.pipeline
+                                                    ]
+        return cmd_list
+
     def init(self):
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
-        self.all_args = BenchMarkArgsAdapter (
+        self.standard_args = BenchMarkArgsAdapter (
             model=os.path.join(self.current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
             input_path="datasets/",
             output="output/",
@@ -157,75 +193,44 @@ class TestClass:
 
     def test_check_all_full_args_legality(self):
         runner = CliRunner()
-        cmd_list = ["--om-model", self.all_args.model,
-                    "--input", self.all_args.input,
-                    "--output", self.all_args.output,
-                    "--output-dirname", self.all_args.output_dirname,
-                    "--outfmt", self.all_args.outfmt,
-                    "--loop", self.all_args.loop,
-                    "--debug", self.all_args.debug,
-                    "--device", self.all_args.device,
-                    "--dym-batch", self.all_args.dym_batch,
-                    "--dym-hw", self.all_args.dym_hw,
-                    "--dym-dims", self.all_args.dym_dims,
-                    "--dym-shape", self.all_args.dym_shape,
-                    "--output-size", self.all_args.output_size,
-                    "--auto-set-dymshape-mode", self.all_args.auto_set_dymshape_mode,
-                    "--auto-set-dymdims-mode", self.all_args.auto_set_dymdims_mode,
-                    "--batch-size", self.all_args.batchsize,
-                    "--pure-data-type", self.all_args.pure_data_type,
-                    "--profiler", self.all_args.profiler,
-                    "--dump", self.all_args.dump,
-                    "--acl-json-path", self.all_args.acl_json_path,
-                    "--output-batchsize-axis", self.all_args.output_batchsize_axis,
-                    "--run-mode", self.all_args.run_mode,
-                    "--display-all-summary", self.all_args.display_all_summary,
-                    "--warmup-count", self.all_args.warmup_count,
-                    "--dym-shape-range", self.all_args.dym_shape_range,
-                    "--aipp-config", self.all_args.aipp_config,
-                    "--energy_consumption", self.all_args.energy_consumption,
-                    "--npu_id", self.all_args.npu_id,
-                    "--backend", self.all_args.backend,
-                    "--perf", self.all_args.perf,
-                    "--pipeline", self.all_args.pipeline
-                                                    ]
+        cmd_list = self.get_click_list(self.standard_args)
         result = runner.invoke(benchmark_all_cmd, cmd_list)
         print(result.output)
         assert result.exit_code == 0
 
     def test_check_all_simple_args_legality(self):
         runner = CliRunner()
-        cmd_list = ["-om", self.all_args.model,
-                    "-i", self.all_args.input,
-                    "-o", self.all_args.output,
-                    "-od", self.all_args.output_dirname,
-                    "--outfmt", self.all_args.outfmt,
-                    "--loop", self.all_args.loop,
-                    "--debug", self.all_args.debug,
-                    "-d", self.all_args.device,
-                    "-db", self.all_args.dym_batch,
-                    "-dhw", self.all_args.dym_hw,
-                    "-dd", self.all_args.dym_dims,
-                    "-ds", self.all_args.dym_shape,
-                    "-outsize", self.all_args.output_size,
-                    "-asdsm", self.all_args.auto_set_dymshape_mode,
-                    "-asddm", self.all_args.auto_set_dymdims_mode,
-                    "--batch-size", self.all_args.batchsize,
-                    "-pdt", self.all_args.pure_data_type,
-                    "-pf", self.all_args.profiler,
-                    "--dump", self.all_args.dump,
-                    "-acl", self.all_args.acl_json_path,
-                    "-oba", self.all_args.output_batchsize_axis,
-                    "-rm", self.all_args.run_mode,
-                    "-das", self.all_args.display_all_summary,
-                    "-wcount", self.all_args.warmup_count,
-                    "-dr", self.all_args.dym_shape_range,
-                    "-aipp", self.all_args.aipp_config,
-                    "-ec", self.all_args.energy_consumption,
-                    "--npu_id", self.all_args.npu_id,
-                    "--backend", self.all_args.backend,
-                    "--perf", self.all_args.perf,
-                    "--pipeline", self.all_args.pipeline
+        cmd_list = ["-om", self.standard_args.model,
+                    "-i", self.standard_args.input,
+                    "-o", self.standard_args.output,
+                    "-od", self.standard_args.output_dirname,
+                    "--outfmt", self.standard_args.outfmt,
+                    "--loop", self.standard_args.loop,
+                    "--debug", self.standard_args.debug,
+                    "-d", self.standard_args.device,
+                    "-db", self.standard_args.dym_batch,
+                    "-dhw", self.standard_args.dym_hw,
+                    "-dd", self.standard_args.dym_dims,
+                    "-ds", self.standard_args.dym_shape,
+                    "-outsize", self.standard_args.output_size,
+                    "-asdsm", self.standard_args.auto_set_dymshape_mode,
+                    "-asddm", self.standard_args.auto_set_dymdims_mode,
+                    "--batch-size", self.standard_args.batchsize,
+                    "-pdt", self.standard_args.pure_data_type,
+                    "-pf", self.standard_args.profiler,
+                    "--dump", self.standard_args.dump,
+                    "-acl", self.standard_args.acl_json_path,
+                    "-oba", self.standard_args.output_batchsize_axis,
+                    "-rm", self.standard_args.run_mode,
+                    "-das", self.standard_args.display_all_summary,
+                    "-wcount", self.standard_args.warmup_count,
+                    "-dr", self.standard_args.dym_shape_range,
+                    "-aipp", self.standard_args.aipp_config,
+                    "-ec", self.standard_args.energy_consumption,
+                    "--npu_id", self.standard_args.npu_id,
+                    "--backend", self.standard_args.backend,
+                    "--perf", self.standard_args.perf,
+                    "--pipeline", self.standard_args.pipeline
                                                     ]
         result = runner.invoke(benchmark_all_cmd, cmd_list)
         print(result.output)
