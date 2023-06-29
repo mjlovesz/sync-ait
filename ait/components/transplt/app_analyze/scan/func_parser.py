@@ -3,8 +3,9 @@ import time
 
 from app_analyze.scan.clang_parser import *
 from app_analyze.scan.clang_utils import *
-from app_analyze.scan.sequence.seq_desc import FuncAttr, ObjInfo
+from app_analyze.scan.sequence.seq_desc import FuncDesc, ObjDesc, SeqDesc
 from app_analyze.scan.sequence.seq_handler import SeqHandler
+from app_analyze.scan.sequence.seq_utils import is_unused_api, save_api_seq, sort_apis
 from app_analyze.scan.sequence.api_filter import *
 from app_analyze.common.kit_config import KitConfig
 from app_analyze.utils.log_util import logger
@@ -40,28 +41,28 @@ def _get_input_args(node):
     if not refs:
         return args
 
-    parameters = [f'{x.type.spelling} {x.spelling}' for x in node.referenced.get_arguments()]
+    parameters = [f'{x.type.spelling}' for x in node.referenced.get_arguments()]
     arguments = list(node.get_arguments())
 
     for param, x in zip(parameters, arguments):
         x = skip_implicit(x)
         if not x:  # 有默认值的Keyword参数，如果实参未传，则为None
             continue
-        args.append(f'{x.type.spelling}')
+        args.append(param)
     return args
 
 
 def _get_obj_info(node, func_attr):
     info = call_expr(node)
-    obj = ObjInfo()
+    obj = ObjDesc()
     if info.api.endswith('.' + info.spelling):
-        obj.cxx_record_name = info.api.replace('.' + info.spelling, '')
+        obj.record_name = info.api.replace('.' + info.spelling, '')
     elif info.api.endswith('->' + info.spelling):
-        obj.cxx_record_name = info.api.replace('->' + info.spelling, '')
+        obj.record_name = info.api.replace('->' + info.spelling, '')
     elif info.api.endswith('::' + info.spelling):
-        obj.cxx_record_name = info.api.replace('::' + info.spelling, '')
+        obj.record_name = info.api.replace('::' + info.spelling, '')
     elif info.api == info.spelling:
-        obj.cxx_record_name = info.api
+        obj.record_name = info.api
     else:
         raise Exception('Error annotation!')
     func_attr.obj_info = obj
@@ -70,7 +71,7 @@ def _get_obj_info(node, func_attr):
 
 
 def _visit_function_decl(node, api_type='invalid'):
-    func_attr = FuncAttr()
+    func_attr = FuncDesc()
     func_attr.func_name = node.spelling
     func_attr.return_type = node.result_type.spelling
     func_attr.location = node.location
@@ -82,6 +83,9 @@ def _visit_function_decl(node, api_type='invalid'):
         if not c:
             break
         c = c.semantic_parent
+
+    # if func_attr.func_name == "drawText":
+    #     print()
     func_attr.parm_decl_names = _get_input_args(node)
     func_attr.parm_num = len(func_attr.parm_decl_names)
 
@@ -92,7 +96,7 @@ def _visit_function_decl(node, api_type='invalid'):
 
 
 def _visit_cxx_method(node, api_type='invalid'):
-    func_attr = FuncAttr()
+    func_attr = FuncDesc()
     func_attr.func_name = node.spelling
     func_attr.return_type = node.result_type.spelling
     func_attr.location = node.location
@@ -118,7 +122,6 @@ def _visit_cxx_method(node, api_type='invalid'):
 
 def _visit_call_expr(node, rst, pth):
     for c in get_children(node):
-        setattr(c, 'scanned', True)
         cursor_kind = c.kind
 
         func_attr = None
@@ -135,6 +138,10 @@ def _visit_call_expr(node, rst, pth):
                         func_attr = _visit_cxx_method(c, api_type)
                     else:
                         func_attr = _visit_function_decl(c, api_type)
+
+                    if is_unused_api(func_attr):
+                        func_attr = None
+
         if func_attr:
             cur_path = []
             cur_path.extend(pth),
@@ -145,36 +152,29 @@ def _visit_call_expr(node, rst, pth):
         _visit_call_expr(c, rst, cur_path)
 
 
-def visit(node, sub_rst, result):
+def visit(node, seq_desc, result):
     skip_flag = False
     if node.spelling in GLOBAL_FILTER:
         return
 
     cursor_kind = node.kind
     if cursor_kind == CursorKind.FUNCTION_DECL:
-        if sub_rst:
-            val = []
-            val.extend(sub_rst)
-            result.append(val)
-            sub_rst.clear()
+        save_api_seq(seq_desc, result)
         func_attr = _visit_function_decl(node, 'usr_defined')
-        sub_rst.append(func_attr)
+        seq_desc.api_seq.append(func_attr)
     elif cursor_kind in [CursorKind.CONSTRUCTOR, CursorKind.CXX_METHOD]:
         if not node.referenced:
             return
-        if sub_rst:
-            val = []
-            val.extend(sub_rst)
-            result.append(val)
-            sub_rst.clear()
 
+        save_api_seq(seq_desc, result)
         ref_kind = node.referenced.kind.name
         if ref_kind == cursor_kind.name:
             arg_dict = _get_api_type(node.referenced.location.file.name, node)
             api_type = arg_dict['api_type']
             if api_type == 'usr_defined':
                 func_attr = _visit_cxx_method(node, api_type)
-                sub_rst.append(func_attr)
+                seq_desc.api_seq.append(func_attr)
+                seq_desc.has_usr_def = True
 
     elif cursor_kind == CursorKind.CALL_EXPR:
         if not node.referenced:
@@ -185,22 +185,28 @@ def visit(node, sub_rst, result):
             arg_dict = _get_api_type(node.referenced.location.file.name, node)
             api_type = arg_dict['api_type']
             if api_type != 'invalid':
-                skip_flag = True
                 if ref_kind == 'CXX_METHOD':
                     func_attr = _visit_cxx_method(node, api_type)
                 else:
                     func_attr = _visit_function_decl(node, api_type)
 
+                if is_unused_api(func_attr):
+                    return skip_flag
+
+                if api_type == 'usr_defined':
+                    seq_desc.has_usr_def = True
+
+                skip_flag = True
                 rst = [(func_attr, [node])]
                 pth = [node]
                 _visit_call_expr(node, rst, pth)
 
                 rst_size = len(rst)
                 if rst_size == 1:
-                    sub_rst.append(rst[0][0])
+                    seq_desc.api_seq.append(rst[0][0])
                 else:
-                    SeqHandler.sort_api_sequences(rst)
-                    sub_rst.extend([val[0] for val in rst])
+                    sort_apis(rst)
+                    seq_desc.api_seq.extend([val[0] for val in rst])
 
     return skip_flag
 
@@ -209,7 +215,7 @@ class FuncParser(Parser):
     def __init__(self, path):
         super().__init__(path)
 
-    def _parse_api(self, node, sub_rst, result):
+    def _parse_api(self, node, seq_desc, result):
         file = None
         if node.kind == CursorKind.TRANSLATION_UNIT:
             file = node.spelling
@@ -223,14 +229,14 @@ class FuncParser(Parser):
         skip_flag = False
         usr_code = is_user_code(file)
         if usr_code and not getattr(node, 'scanned', False):
-            skip_flag = visit(node, sub_rst, result)
+            skip_flag = visit(node, seq_desc, result)
 
         children = list()
         if skip_flag:
             info = node_debug_string(node, children)
         else:
             for c in get_children(node):
-                c_info = self._parse_api(c, sub_rst, result)
+                c_info = self._parse_api(c, seq_desc, result)
                 if c_info:
                     children.append(c_info)
 
@@ -242,8 +248,8 @@ class FuncParser(Parser):
 
     @staticmethod
     def _handle_call_seqs(seqs):
-        SeqHandler.filter_api_sequences(seqs)
-        SeqHandler.union_api_sequences(seqs)
+        SeqHandler.union_api_seqs(seqs)
+        print()
 
     def parse(self):
         for d in self.tu.diagnostics:
@@ -251,13 +257,12 @@ class FuncParser(Parser):
                 logger.warning(f'Diagnostic severity {d.severity} > tolerance {KitConfig.TOLERANCE}, skip this file.')
                 return dict()
 
-        sub_rst = []
+        seq_desc = SeqDesc()
         result = []
 
         start = time.time()
-        info = self._parse_api(self.tu.cursor, sub_rst, result)
-        if sub_rst:
-            result.append(sub_rst)
+        info = self._parse_api(self.tu.cursor, seq_desc, result)
+        save_api_seq(seq_desc, result)
         logger.debug(f'Time elapsed： {time.time() - start:.3f}s')
         self._handle_call_seqs(result)
 

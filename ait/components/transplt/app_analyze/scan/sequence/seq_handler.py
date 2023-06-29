@@ -1,54 +1,32 @@
+import collections
+
+
 class SeqHandler:
     @staticmethod
-    def sort_api_sequences(seqs):
-        idx = 0
-        cnt = len(seqs)
-        i = 0
-        visited_nodes = []
-        while i < cnt:
-            idx_flag = True
-            chk_flag = False
-
-            item = seqs[idx]
-            if item in visited_nodes:
-                idx += 1
-                continue
-            visited_nodes.append(item)
-
-            item_idx = len(item[1])
-            for j in range(idx + 1, cnt):
-                cur_idx = len(seqs[j][1])
-                if item_idx < cur_idx:
-                    if j + 1 == cnt:
-                        seqs.pop(idx)
-                        seqs.insert(j, item)
-                        idx_flag = False
-                        break
-                    else:
-                        chk_flag = True
-                        continue
+    def union_api_seqs(seqs):
+        def _get_union_api(seq_obj, api_seq):
+            for api in seq_obj.api_seq:
+                if not api.is_usr_def:
+                    api_seq.append(api)
                 else:
-                    if chk_flag:
-                        seqs.pop(idx)
-                        seqs.insert(j - 1, item)
-                        idx_flag = False
-                        break
-                    else:
-                        if item_idx == cur_idx:
-                            break
-            if idx_flag:
-                idx += 1
-            i += 1
+                    usr_api = usr_def_dict.get(api.get_full_name(), None)
+                    if not usr_api:
+                        api_seq.append(api)
+                        continue
 
-    @staticmethod
-    def filter_api_sequences(seqs):
-        for seq in seqs:
-            pass
+                    usr_api['key'].has_called = True
+                    _get_union_api(usr_api['key'], api_seq)
 
-    @staticmethod
-    def format_api_sequences(seqs):
-        pass
+        usr_def_dict = dict()
+        for seq_desc in seqs:
+            usr_def_dict[seq_desc.entry_api.get_full_name()] = {'key': seq_desc}
 
-    @staticmethod
-    def union_api_sequences(seqs):
-        pass
+        for seq_desc in seqs:
+            if not seq_desc.has_usr_def:
+                continue
+
+            new_api_seq = []
+            _get_union_api(seq_desc, new_api_seq)
+            seq_desc.api_seq = new_api_seq
+
+            seq_desc.debug_string()
