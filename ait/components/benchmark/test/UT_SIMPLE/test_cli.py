@@ -193,7 +193,7 @@ class TestClass:
         print(result.output)
         assert result.exit_code == 0
 
-    def test_check_all_full_args_legality(self):
+    def test_check_all_simple_args_legality(self):
         runner = CliRunner()
         cmd_list = ["-om", self.all_args.model,
                     "-i", self.all_args.input,
