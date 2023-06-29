@@ -108,7 +108,7 @@ def benchmark_all_cmd(om_model#,
                     #  perf,
                     #  pipeline
                      ):
-    pass
+     click.echo('Hello %s!' % om_model)
 
 class TestClass:
     @classmethod
@@ -189,4 +189,5 @@ class TestClass:
                     # "--pipeline", self.all_args.pipeline
                                                     ]
         result = runner.invoke(benchmark_all_cmd, cmd_list)
+        print(result.output)
         assert result.exit_code == 0
