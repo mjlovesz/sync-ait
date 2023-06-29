@@ -56,6 +56,12 @@ def benchmark_all_cmd(om_model, input_path, output,
     pass
 
 class TestClass:
+    @classmethod
+    def setup_class(cls):
+        """
+        class level setup_class
+        """
+        cls.init(TestClass)
 
     def init():
         all_args = BenchMarkArgsAdapter (
