@@ -29,7 +29,7 @@ def update_hyperlink(path, sheet, hyperlink_cols, df=None, row_header=1):
     if df is None:
         df = pd.read_excel(path, sheet)
     ws = openpyxl.load_workbook(path)[sheet]
-    get_url = lambda c: c.hyperlink.target if c.hyperlink and c.hyperlink.target else ''
+    get_url = lambda c: c.hyperlink.target if c.hyperlink and c.hyperlink.target else c.value
     # ws的坐标从1开始
     for col_name in hyperlink_cols:
         row = row_header + 1
