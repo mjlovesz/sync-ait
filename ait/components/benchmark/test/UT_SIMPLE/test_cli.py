@@ -1,5 +1,4 @@
 import click
-import copy
 import logging
 import sys
 from click.testing import CliRunner
@@ -43,10 +42,40 @@ from ais_bench.infer.options import (
 logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
-benchmark_all_cmd = copy.copy(benchmark_cli)
-benchmark_all_cmd.__name__ = 'benchmark_all_cmd'
-
-
+@click.command(name="benchmark",
+               short_help = "benchmark tool to get performance data including latency and throughput",
+               no_args_is_help=True)
+@opt_model
+@opt_input_path
+@opt_output
+@opt_output_dirname
+@opt_outfmt
+@opt_loop
+@opt_debug
+@opt_device
+@opt_dym_batch
+@opt_dym_hw
+@opt_dym_dims
+@opt_dym_shape
+@opt_output_size
+@opt_auto_set_dymshape_mode
+@opt_auto_set_dymdims_mode
+@opt_batchsize
+@opt_pure_data_type
+@opt_profiler
+@opt_dump
+@opt_acl_json_path
+@opt_output_batchsize_axis
+@opt_run_mode
+@opt_display_all_summary
+@opt_warmup_count
+@opt_dym_shape_range
+@opt_aipp_config
+@opt_energy_consumption
+@opt_npu_id
+@opt_backend
+@opt_perf
+@opt_pipeline
 def benchmark_all_cmd(om_model, input_path, output,
                   output_dirname, outfmt, loop, debug, device,
                   dym_batch, dym_hw, dym_dims, dym_shape, output_size, auto_set_dymshape_mode,
