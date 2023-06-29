@@ -1,4 +1,5 @@
 import click
+import os
 import logging
 import sys
 from click.testing import CliRunner
@@ -120,7 +121,7 @@ class TestClass:
 
     def init(self):
         self.all_args = BenchMarkArgsAdapter (
-            model="../testdata/resnet50/model/pth_resnet50_bs4.om",
+            model=os.path.realpath("../testdata/resnet50/model/pth_resnet50_bs4.om"),
             input_path="datasets/",
             output="output/",
             output_dirname="outdir/",
