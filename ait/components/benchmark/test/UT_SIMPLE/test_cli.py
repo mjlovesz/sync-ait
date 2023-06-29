@@ -76,12 +76,38 @@ logger = logging.getLogger(__name__)
 # @opt_backend
 # @opt_perf
 # @opt_pipeline
-def benchmark_all_cmd(om_model, input_path, output,
-                  output_dirname, outfmt, loop, debug, device,
-                  dym_batch, dym_hw, dym_dims, dym_shape, output_size, auto_set_dymshape_mode,
-                  auto_set_dymdims_mode, batch_size, pure_data_type, profiler, dump,
-                  acl_json_path, output_batchsize_axis, run_mode, display_all_summary,
-                  warmup_count, dym_shape_range, aipp_config, energy_consumption, npu_id, backend, perf, pipeline):
+def benchmark_all_cmd(om_model#,
+                    #  input_path,
+                    #  output,
+                    #  output_dirname,
+                    #  outfmt,
+                    #  loop,
+                    #  debug,
+                    #  device,
+                    #  dym_batch,
+                    #  dym_hw,
+                    #  dym_dims,
+                    #  dym_shape,
+                    #  output_size,
+                    #  auto_set_dymshape_mode,
+                    #  auto_set_dymdims_mode,
+                    #  batch_size,
+                    #  pure_data_type,
+                    #  profiler,
+                    #  dump,
+                    #  acl_json_path,
+                    #  output_batchsize_axis,
+                    #  run_mode,
+                    #  display_all_summary,
+                    #  warmup_count,
+                    #  dym_shape_range,
+                    #  aipp_config,
+                    #  energy_consumption,
+                    #  npu_id,
+                    #  backend,
+                    #  perf,
+                    #  pipeline
+                     ):
     pass
 
 class TestClass:
