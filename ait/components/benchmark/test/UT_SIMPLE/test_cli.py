@@ -120,8 +120,9 @@ class TestClass:
         cls.init(TestClass)
 
     def init(self):
+        self.current_dir = os.path.dirname(os.path.abspath(__file__))
         self.all_args = BenchMarkArgsAdapter (
-            model=os.path.realpath("../testdata/resnet50/model/pth_resnet50_bs4.om"),
+            model=os.path.join(self.current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
             input_path="datasets/",
             output="output/",
             output_dirname="outdir/",
