@@ -98,11 +98,11 @@ download_config_and_headers() {
   cd $cwd
 }
 
+download_config_and_headers
+
 if [ $# -gt 0 ] && [ "$1" == '--full' ]; then
   # Install clang
   install_clang
 
   bash
 fi
-
-download_config_and_headers
