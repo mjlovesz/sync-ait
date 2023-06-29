@@ -109,7 +109,7 @@ def benchmark_all_cmd(om_model,
                      perf,
                      pipeline
                      ):
-     click.echo('Hello %s!' % om_model)
+    pass
 
 class TestClass:
     @classmethod
@@ -192,13 +192,18 @@ class TestClass:
         )
 
     def test_check_all_full_args_legality(self):
+        """
+            正确的命令，使用可选命令全称
+        """
         runner = CliRunner()
         cmd_list = self.get_click_list(self.standard_args)
         result = runner.invoke(benchmark_all_cmd, cmd_list)
-        print(result.output)
         assert result.exit_code == 0
 
     def test_check_all_simple_args_legality(self):
+        """
+            正确的命令，使用可选命令简称
+        """
         runner = CliRunner()
         cmd_list = ["-om", self.standard_args.model,
                     "-i", self.standard_args.input,
@@ -233,5 +238,92 @@ class TestClass:
                     "--pipeline", self.standard_args.pipeline
                                                     ]
         result = runner.invoke(benchmark_all_cmd, cmd_list)
-        print(result.output)
         assert result.exit_code == 0
+
+    def test_npu_id_out_of_range(self):
+        """
+            npu_id 超出范围
+        """
+        runner = CliRunner()
+        cmd = self.standard_args
+        cmd.npu_id = 256
+        cmd_list = self.get_click_list(cmd)
+        result = runner.invoke(benchmark_all_cmd, cmd_list)
+        assert result.exit_code != 0
+
+    def test_invalid_model_path(self):
+        """
+            模型路径不存在
+        """
+        runner = CliRunner()
+        cmd = self.standard_args
+        cmd.model = os.path.join(self.current_dir, "../testdata/resnet50/model/pth_ret50_bs4.om")
+        cmd_list = self.get_click_list(cmd)
+        result = runner.invoke(benchmark_all_cmd, cmd_list)
+        assert result.exit_code != 0
+
+    def test_loop_is_not_positive(self):
+        """
+            --loop为负数
+        """
+        runner = CliRunner()
+        cmd = self.standard_args
+        cmd.loop = -3
+        cmd_list = self.get_click_list(cmd)
+        result = runner.invoke(benchmark_all_cmd, cmd_list)
+        assert result.exit_code != 0
+
+    def test_batchsize_is_not_positive(self):
+        """
+            --batchsize为负数
+        """
+        runner = CliRunner()
+        cmd = self.standard_args
+        cmd.batchsize = -3
+        cmd_list = self.get_click_list(cmd)
+        result = runner.invoke(benchmark_all_cmd, cmd_list)
+        assert result.exit_code != 0
+
+    def test_warmup_count_is_not_positive(self):
+        """
+            --warmup_count为负数
+        """
+        runner = CliRunner()
+        cmd = self.standard_args
+        cmd.warmup_count = -3
+        cmd_list = self.get_click_list(cmd)
+        result = runner.invoke(benchmark_all_cmd, cmd_list)
+        assert result.exit_code != 0
+
+    def test_output_batchsize_axis_is_not_positive(self):
+        """
+            --output_batchsize_axis为负数
+        """
+        runner = CliRunner()
+        cmd = self.standard_args
+        cmd.output_batchsize_axis = -1
+        cmd_list = self.get_click_list(cmd)
+        result = runner.invoke(benchmark_all_cmd, cmd_list)
+        assert result.exit_code != 0
+
+    def test_device_id_out_of_range(self):
+        """
+            --device超出范围
+        """
+        runner = CliRunner()
+        cmd = self.standard_args
+        cmd.device = "1,234,257"
+        cmd_list = self.get_click_list(cmd)
+        result = runner.invoke(benchmark_all_cmd, cmd_list)
+        assert result.exit_code != 0
+
+    def test_illegal_outfmt(self):
+        """
+            --outfmt非法
+        """
+        runner = CliRunner()
+        cmd = self.standard_args
+        cmd.outfmt = "JSON"
+        cmd_list = self.get_click_list(cmd)
+        result = runner.invoke(benchmark_all_cmd, cmd_list)
+        assert result.exit_code != 0
