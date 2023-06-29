@@ -63,8 +63,8 @@ class TestClass:
         """
         cls.init(TestClass)
 
-    def init():
-        all_args = BenchMarkArgsAdapter (
+    def init(self):
+        self.all_args = BenchMarkArgsAdapter (
             model="resnet50.om",
             input_path="datasets/",
             output="output/",
