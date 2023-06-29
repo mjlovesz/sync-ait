@@ -123,7 +123,7 @@ class TestClass:
                     "--acl-json-path", self.all_args.acl_json_path,
                     "--output-batchsize-axis", self.all_args.output_batchsize_axis,
                     "--run-mode", self.all_args.run_mode,
-                    "--display-all-summary", self.display_all_summary,
+                    "--display-all-summary", self.all_args.display_all_summary,
                     "--warmup-count", self.all_args.warmup_count,
                     "--dym-shape-range", self.all_args.dym_shape_range,
                     "--aipp-config", self.all_args.aipp_config,
