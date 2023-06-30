@@ -36,13 +36,18 @@
 1. 安装python
     * 建议安装[miniconda3](https://docs.conda.io/en/latest/miniconda.html)
     * 注意点: 在 windows 上，命令行的python命令优先会启动 WindowsApps 目录的程序，可以在环境变量中将 %USERPROFILE%\AppData\Local\Microsoft\WindowsApps 下移到最后
-    * 验证是否安装成功:命令行输入 `python --version`。能正常输出python 版本即表示成功
-2. 安装[NodeJS](https://nodejs.org/zh-cn/download) (使用 electron 启动时需要，建议安装最新长期维护版本)
+    * 验证是否安装成功: 命令行输入 `python --version`。能正常输出 python 版本即表示成功
+2. 安装[NodeJS](https://nodejs.org/zh-cn/download) 
+    * 启动方式一和启动方式二使用 electron 启动时需要，建议安装最新长期维护版本
+    * 如果是直接解压安装的方式，请将安装后的文件夹配置到环境变量PATH中
+        - linux 需要配置 bin 目录
+        - windows 配置解压目录即可
+        - 验证是否安装成功：命令行输入 `node -v`。能正常输出 node 版本即表示成功
 3. 拉取源码：
   ```bash
   git clone https://gitee.com/ascend/ait.git
   ```
-4. 安装 ait 中的 surgeon 包, 请参考 ait 的安装流程，以下为参考步骤：
+4. 安装 ait 中的 surgeon 包, 提供 AutoOptimizer （基于知识库的整网优化） 和 Extract （子网导出） 功能, 请参考 ait 的安装流程，以下为参考步骤：
   ```bash
   cd ait/ait/components/debug/surgeon
   pip install . --force-reinstall
@@ -92,7 +97,7 @@
 
 ## 启动方式三：web服务器启动
 - 安装
-    1. 安装flask： pip install flask 
+    1. 安装flask： pip install flask==2.2.2
     2. 如果运行报错，建议升级flask。建议版本2.2.2
 - 运行，默认端口为5000（常用于调试开发）
   ```bash
@@ -234,12 +239,11 @@
 <img src="./docs/modify_export_import.gif" style="zoom:75%;" />
 
 
-## 使用OnnxSim 或者 AutoOptimizer 优化模型
+## 使用 OnnxSim 或者 AutoOptimizer 优化模型
 
 <img src="./docs/onnxsim.gif" style="zoom:75%;" />
 
 ## 子网导出
-
 
 <img src="./docs/extract.gif" style="zoom:75%;" />
 
