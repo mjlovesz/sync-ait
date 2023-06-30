@@ -196,6 +196,16 @@ default_off_knowledges = [
 ]
 
 
+def parse_opt_name(params: click.Option):
+    if len(params.opts) == 0:
+        opt_name = params.name
+    elif len(params.opts) == 1:
+        opt_name = params.opts[0]
+    else:
+        opt_name = "/".join(params.opts)
+    return opt_name
+
+
 def check_args(ctx: click.Context, params: click.Option, value: str):
     """
     check whether the param is provided
@@ -206,7 +216,8 @@ def check_args(ctx: click.Context, params: click.Option, value: str):
         for opt in param.opts
     ]
     if value in args:
-        raise click.MissingParameter()
+        opt_name = parse_opt_name(params)
+        raise click.BadOptionUsage(option_name=opt_name, message="Option {} requires an argument".format(opt_name))
     return value
 
 
@@ -217,9 +228,11 @@ def check_node_name(ctx: click.Context, params: click.Option, value: str):
         for param in ctx.command.params
         for opt in param.opts
     ]
+    opt_name = parse_opt_name(params)
     for arg in args:
         if value.startswith(arg):
-            raise click.MissingParameter()
+            raise click.BadOptionUsage(option_name=opt_name,
+                                       message="Option {} requires an argument".format(opt_name))
     return value
 
 
