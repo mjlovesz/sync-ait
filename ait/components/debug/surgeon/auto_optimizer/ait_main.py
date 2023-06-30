@@ -11,18 +11,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import os
+
+from multiprocessing import Pool
 import pathlib
+from functools import partial
+from typing import List
 
 import click
 from click_aliases import ClickAliasedGroup
 from click.exceptions import UsageError
 
-from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig
+from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig, \
+    ARGS_REQUIRED_KNOWLEDGES
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from auto_optimizer.pattern import KnowledgeFactory
 from auto_optimizer.tools.log import logger
-from auto_optimizer.common.click_utils import optimize_onnx, CONTEXT_SETTINGS, \
-    FormatMsg, list_knowledges, cli_eva, check_input_path, check_output_model_path
+from auto_optimizer.common.utils import check_output_model_path
+from auto_optimizer.common.click_utils import is_graph_input_static, optimize_onnx, evaluate_onnx, CONTEXT_SETTINGS, \
+    FormatMsg
+
 
 from auto_optimizer.ait_options import (
     opt_path,
@@ -62,7 +69,10 @@ def cli() -> None:
 
 @cli.command('list', short_help='List available Knowledges.', context_settings=CONTEXT_SETTINGS)
 def command_list() -> None:
-    list_knowledges()
+    registered_knowledges = KnowledgeFactory.get_knowledge_pool()
+    logger.info('Available knowledges:')
+    for idx, name in enumerate(registered_knowledges):
+        logger.info(f'  {idx:2d} {name}')
 
 
 @cli.command(
@@ -78,17 +88,40 @@ def command_list() -> None:
 @opt_verbose
 @opt_processes
 def command_evaluate(
-    path: str,
+    path: pathlib.Path,
     optimizer: GraphOptimizer,
     recursive: bool,
     verbose: bool,
     processes: int,
 ) -> None:
-    if not check_input_path(path):
+    path_ = pathlib.Path(path.decode()) if isinstance(path, bytes) else path
+    if path_.is_dir():
+        onnx_files = list(path_.rglob('*.onnx') if recursive else path_.glob('*.onnx'))
+    else:
+        onnx_files = [path_]
+
+    optimizer.init_knowledges()
+    for know in ARGS_REQUIRED_KNOWLEDGES:
+        if know in optimizer.knowledges:
+            optimizer.knowledges.pop(know)
+
+    if processes > 1:
+        evaluate = partial(evaluate_onnx, optimizer=optimizer, verbose=verbose)
+        with Pool(processes) as p:
+            res = p.map(evaluate, onnx_files)
+        for file, knowledges in zip(onnx_files, res):
+            if not knowledges:
+                continue
+            summary = ','.join(knowledges)
+            logger.info(f'{file}\t{summary}')
         return
 
-    path_ = pathlib.Path(path)
-    cli_eva(path_, optimizer, recursive, verbose, processes)
+    for onnx_file in onnx_files:
+        knowledges = evaluate_onnx(optimizer=optimizer, model=onnx_file, verbose=verbose)
+        if not knowledges:
+            continue
+        summary = ','.join(knowledges)
+        logger.info(f'{onnx_file}\t{summary}')
 
 
 @cli.command(
@@ -114,8 +147,8 @@ def command_evaluate(
 @opt_dynamic_shape
 @opt_output_size
 def command_optimize(
-    input_model: str,
-    output_model: str,
+    input_model: pathlib.Path,
+    output_model: pathlib.Path,
     optimizer: GraphOptimizer,
     infer_test: bool,
     big_kernel: bool,
@@ -130,12 +163,9 @@ def command_optimize(
     dynamic_shape: str,
     output_size: str
 ) -> None:
-    if not check_input_path(input_model) or not check_output_model_path(output_model):
-        return
-
     # compatibility for click < 8.0
-    input_model_ = pathlib.Path(os.path.abspath(input_model))
-    output_model_ = pathlib.Path(os.path.abspath(output_model))
+    input_model_ = pathlib.Path(input_model.decode()) if isinstance(input_model, bytes) else input_model
+    output_model_ = pathlib.Path(output_model.decode()) if isinstance(output_model, bytes) else output_model
     if input_model_ == output_model_:
         logger.warning('output_model is input_model, refuse to overwrite origin model!')
         return
@@ -196,32 +226,30 @@ def command_optimize(
 @opt_subgraph_input_shape
 @opt_subgraph_input_dtype
 def command_extract(
-    input_model: str,
-    output_model: str,
+    input_model: pathlib.Path,
+    output_model: pathlib.Path,
     start_node_names: str,
     end_node_names: str,
     is_check_subgraph: bool,
     subgraph_input_shape: str,
     subgraph_input_dtype: str
 ) -> None:
-    if not check_input_path(input_model) or not check_output_model_path(output_model):
-        return
-
-    input_model_ = pathlib.Path(os.path.abspath(input_model))
-    output_model_ = pathlib.Path(os.path.abspath(output_model))
-    if input_model_ == output_model_:
+    if input_model == output_model:
         logger.warning('output_model is input_model, refuse to overwrite origin model!')
+        return
+    output_model_path = output_model.as_posix()
+    if not check_output_model_path(output_model_path):
         return
 
     # parse start node names and end node names
     start_nodes = [node_name.strip() for node_name in start_node_names.split(',')]
     end_nodes = [node_name.strip() for node_name in end_node_names.split(',')]
 
-    onnx_graph = OnnxGraph.parse(input_model)
+    onnx_graph = OnnxGraph.parse(input_model.as_posix())
     try:
         onnx_graph.extract_subgraph(
             start_nodes, end_nodes,
-            output_model, is_check_subgraph,
+            output_model_path, is_check_subgraph,
             subgraph_input_shape, subgraph_input_dtype
         )
     except ValueError as err:
