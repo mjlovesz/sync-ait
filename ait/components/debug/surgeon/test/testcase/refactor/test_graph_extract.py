@@ -122,24 +122,24 @@ class TestGraphExtract(unittest.TestCase):
         self.subgraph_with_input_dtype = create_subgraph_with_specific_input_dtype()
         self.subgraph_with_input_shape_and_dtype = create_subgraph_with_specific_input_shape_and_dtype()
 
-    def test_extract_subgraph(self):
+    def test_extract_subgraph_when_basic_params_then_pass(self):
         sub_graph = self.graph.extract_subgraph(start_node_names=["relu1"],
                                                 end_node_names=["relu3"])
         self.assertEqual(sub_graph, self.subgraph)
 
-    def test_extract_subgraph_with_shape(self):
+    def test_extract_subgraph_when_add_input_shape_then_pass(self):
         sub_graph = self.graph.extract_subgraph(start_node_names=["relu1"],
                                                 end_node_names=["relu3"],
                                                 input_shape="sqrt0_output:4,3,640,640")
         self.assertEqual(sub_graph, self.subgraph_with_input_shape)
 
-    def test_extract_subgraph_with_dytpe(self):
+    def test_extract_subgraph_when_add_input_dytpe_then_pass(self):
         sub_graph = self.graph.extract_subgraph(start_node_names=["relu1"],
                                                 end_node_names=["relu3"],
                                                 input_dtype="sqrt0_output:int8")
         self.assertEqual(sub_graph, self.subgraph_with_input_dtype)
 
-    def test_extract_subgraph_with_shape_and_dytpe(self):
+    def test_extract_subgraph_when_add_input_shape_and_dytpe_then_pass(self):
         sub_graph = self.graph.extract_subgraph(start_node_names=["relu1"],
                                                 end_node_names=["relu3"],
                                                 input_shape="sqrt0_output:4,3,640,640",
