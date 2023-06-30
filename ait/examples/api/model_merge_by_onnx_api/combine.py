@@ -604,8 +604,8 @@ parser = argparse.ArgumentParser(description="merge two ONNX model into one")
 parser.add_argument("--previous_model_path", type=str, help="Path to the previous ONNX model")
 parser.add_argument("--following_model_path", type=str, help="Path to the following ONNX model")
 parser.add_argument("--merge_model_path", type=str, help="Path to the merged ONNX model")
-parser.add_argument("--previous_model_output", type=str, nargs='+', help="output name of previous model")
-parser.add_argument("--following_model_input", type=str, nargs='+', help="input name of following model")
+parser.add_argument("--previous_model_outputs", type=str, nargs='+', help="output name of previous model")
+parser.add_argument("--following_model_inputs", type=str, nargs='+', help="input name of following model")
 
 args = parser.parse_args()
 previous_model_path = args.previous_model_path
