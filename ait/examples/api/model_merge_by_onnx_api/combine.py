@@ -7,7 +7,7 @@ from onnx import GraphProto, ModelProto, TensorProto, checker, helper, utils
 
 
 def check_overlapping_names(
-    g1: GraphProto, g2: GraphProto, io_map: Optional[List[Tuple[str, str]]] = None
+        g1: GraphProto, g2: GraphProto, io_map: Optional[List[Tuple[str, str]]] = None
 ) -> List[Tuple[str, List[str]]]:
     """Checks whether there are name collisions between two graphs
 
@@ -76,15 +76,15 @@ def check_overlapping_names(
 
 
 def merge_graphs(  # pylint: disable=too-many-branches,too-many-statements
-    g1: GraphProto,
-    g2: GraphProto,
-    io_map: List[Tuple[str, str]],
-    inputs: Optional[List[str]] = None,
-    outputs: Optional[List[str]] = None,
-    prefix1: Optional[str] = None,
-    prefix2: Optional[str] = None,
-    name: Optional[str] = None,
-    doc_string: Optional[str] = None,
+        g1: GraphProto,
+        g2: GraphProto,
+        io_map: List[Tuple[str, str]],
+        inputs: Optional[List[str]] = None,
+        outputs: Optional[List[str]] = None,
+        prefix1: Optional[str] = None,
+        prefix2: Optional[str] = None,
+        name: Optional[str] = None,
+        doc_string: Optional[str] = None,
 ) -> GraphProto:
     """Combines two ONNX graphs into a single one.
 
@@ -248,35 +248,34 @@ def merge_graphs(  # pylint: disable=too-many-branches,too-many-statements
 
     if doc_string is None:
         doc_string = (
-            f"Graph combining {g1.name} and {g2.name}\n"
-            + g1.name
-            + "\n\n"
-            + g1.doc_string
-            + "\n\n"
-            + g2.name
-            + "\n\n"
-            + g2.doc_string
+                f"Graph combining {g1.name} and {g2.name}\n"
+                + g1.name
+                + "\n\n"
+                + g1.doc_string
+                + "\n\n"
+                + g2.name
+                + "\n\n"
+                + g2.doc_string
         )
     g.doc_string = doc_string
 
     return g
 
 
-
 def merge_models(  # pylint: disable=too-many-branches
-    m1: ModelProto,
-    m2: ModelProto,
-    io_map: List[Tuple[str, str]],
-    inputs: Optional[List[str]] = None,
-    outputs: Optional[List[str]] = None,
-    prefix1: Optional[str] = None,
-    prefix2: Optional[str] = None,
-    name: Optional[str] = None,
-    doc_string: Optional[str] = None,
-    producer_name: Optional[str] = "onnx.compose.merge_models",
-    producer_version: Optional[str] = "1.0",
-    domain: Optional[str] = "",
-    model_version: Optional[int] = 1,
+        m1: ModelProto,
+        m2: ModelProto,
+        io_map: List[Tuple[str, str]],
+        inputs: Optional[List[str]] = None,
+        outputs: Optional[List[str]] = None,
+        prefix1: Optional[str] = None,
+        prefix2: Optional[str] = None,
+        name: Optional[str] = None,
+        doc_string: Optional[str] = None,
+        producer_name: Optional[str] = "onnx.compose.merge_models",
+        producer_version: Optional[str] = "1.0",
+        domain: Optional[str] = "",
+        model_version: Optional[int] = 1,
 ) -> ModelProto:
     """Combines two ONNX models into a single one.
 
@@ -409,18 +408,17 @@ def merge_models(  # pylint: disable=too-many-branches
     return model
 
 
-
 def add_prefix_graph(  # pylint: disable=too-many-branches
-    graph: GraphProto,
-    prefix: str,
-    rename_nodes: Optional[bool] = True,
-    rename_edges: Optional[bool] = True,
-    rename_inputs: Optional[bool] = True,
-    rename_outputs: Optional[bool] = True,
-    rename_initializers: Optional[bool] = True,
-    rename_value_infos: Optional[bool] = True,
-    inplace: Optional[bool] = False,
-    name_map: Optional[Dict[str, str]] = None,
+        graph: GraphProto,
+        prefix: str,
+        rename_nodes: Optional[bool] = True,
+        rename_edges: Optional[bool] = True,
+        rename_inputs: Optional[bool] = True,
+        rename_outputs: Optional[bool] = True,
+        rename_initializers: Optional[bool] = True,
+        rename_value_infos: Optional[bool] = True,
+        inplace: Optional[bool] = False,
+        name_map: Optional[Dict[str, str]] = None,
 ) -> GraphProto:
     """Adds a prefix to names of elements in a graph: nodes, edges, inputs, outputs,
     initializers, sparse initializer, value infos.
@@ -527,18 +525,17 @@ def add_prefix_graph(  # pylint: disable=too-many-branches
     return g
 
 
-
 def add_prefix(
-    model: ModelProto,
-    prefix: str,
-    rename_nodes: Optional[bool] = True,
-    rename_edges: Optional[bool] = True,
-    rename_inputs: Optional[bool] = True,
-    rename_outputs: Optional[bool] = True,
-    rename_initializers: Optional[bool] = True,
-    rename_value_infos: Optional[bool] = True,
-    rename_functions: Optional[bool] = True,
-    inplace: Optional[bool] = False,
+        model: ModelProto,
+        prefix: str,
+        rename_nodes: Optional[bool] = True,
+        rename_edges: Optional[bool] = True,
+        rename_inputs: Optional[bool] = True,
+        rename_outputs: Optional[bool] = True,
+        rename_initializers: Optional[bool] = True,
+        rename_value_infos: Optional[bool] = True,
+        rename_functions: Optional[bool] = True,
+        inplace: Optional[bool] = False,
 ) -> ModelProto:
     """Adds a prefix to names of elements in a graph: nodes, edges, inputs, outputs,
     initializers, sparse initializer, value infos, and local functions.
@@ -602,3 +599,40 @@ def add_prefix(
     return model
 
 
+logging.basicConfig(level=logging.INFO)
+parser = argparse.ArgumentParser(description="merge two ONNX model into one")
+parser.add_argument("--previous_model_path", type=str, help="Path to the previous ONNX model")
+parser.add_argument("--following_model_path", type=str, help="Path to the following ONNX model")
+parser.add_argument("--merge_model_path", type=str, help="Path to the merged ONNX model")
+parser.add_argument("--previous_model_output", type=str, nargs='+', help="output name of previous model")
+parser.add_argument("--following_model_input", type=str, nargs='+', help="input name of following model")
+
+args = parser.parse_args()
+previous_model_path = args.previous_model_path
+following_model_path = args.following_model_path
+merge_model_path = args.merge_model_path
+previous_model_outputs = args.previous_model_outputs
+following_model_inputs = args.following_model_inputs
+
+if len(previous_model_outputs) != len(following_model_inputs):
+    raise Exception("Each input and output must match!")
+
+connection_list = []
+for i in range(len(previous_model_outputs)):
+    connection = (previous_model_outputs[i], following_model_inputs[i])
+    connection_list.append(connection)
+    logging.info("connect %s and %s ", previous_model_outputs[i], following_model_inputs[i])
+
+previous_model = onnx.load(previous_model_path)
+following_model = onnx.load(following_model_path)
+
+max_ir_version = max(previous_model.ir_version, following_model.ir_version)
+previous_model.ir_version = max_ir_version
+following_model.ir_version = max_ir_version
+
+combined_model = merge_models(
+    previous_model, following_model,
+    io_map=connection_list
+)
+onnx.save(combined_model, merge_model_path)
+logging.info("merge %s and % s into %s", previous_model_path, previous_model_path, merge_model_path)
