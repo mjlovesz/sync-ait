@@ -91,8 +91,6 @@ class GraphOptimizer:
             for name in knowledges_
             if name in registered_knowledges
         }
-        if len(knowledge_dict) == 0:
-            raise ValueError('No valid knowledge provided.')
         self.knowledges = knowledge_dict
 
     @staticmethod
