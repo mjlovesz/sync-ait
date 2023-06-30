@@ -93,7 +93,7 @@ opt_start = click.option(
     'start_node_names',
     required=True,
     type=click.STRING,
-    callback=check_args,
+    callback=check_node_name,
     help='The names of start nodes'
 )
 
@@ -104,7 +104,7 @@ opt_end = click.option(
     'end_node_names',
     required=True,
     type=click.STRING,
-    callback=check_args,
+    callback=check_node_name,
     help='The names of end nodes'
 )
 
