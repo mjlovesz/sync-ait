@@ -52,6 +52,7 @@ from ais_bench.infer.options import (
     opt_pipeline
 )
 
+
 @click.command(name="benchmark_all",
                short_help = "benchmark tool to get performance data including latency and throughput",
                no_args_is_help=True)
