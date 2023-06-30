@@ -16,7 +16,7 @@ import os
 import pathlib
 from functools import partial
 from multiprocessing import Pool
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import click
 
@@ -79,7 +79,7 @@ def list_knowledges():
 
 def cli_eva(model_path: pathlib.Path, optimizer: GraphOptimizer, recursive: bool, verbose: bool, processes: int,):
     if model_path.is_dir():
-        onnx_files = list(model_path.rglob('*.onnx') if recursive else path_.glob('*.onnx'))
+        onnx_files = list(model_path.rglob('*.onnx') if recursive else model_path.glob('*.onnx'))
     else:
         onnx_files = [model_path]
 
@@ -103,7 +103,7 @@ def cli_eva(model_path: pathlib.Path, optimizer: GraphOptimizer, recursive: bool
 
 
 def optimize_onnx(
-    optimizer: GraphOptimizer,
+    optimizer: Union[GraphOptimizer, list],
     input_model: pathlib.Path,
     output_model: pathlib.Path,
     infer_test: bool,
@@ -117,6 +117,10 @@ def optimize_onnx(
         logger.warning('%s model parse failed.', input_model.as_posix())
         logger.warning('exception: %s', exc)
         return []
+
+    if isinstance(optimizer, list):
+        knowledges = [know for know in optimizer if know not in ARGS_REQUIRED_KNOWLEDGES]
+        optimizer = GraphOptimizer(knowledges)
 
     if big_kernel_config:
         optimizer.register_big_kernel(graph, big_kernel_config.attention_start_node,
@@ -192,6 +196,16 @@ default_off_knowledges = [
 ]
 
 
+def parse_opt_name(params: click.Option):
+    if len(params.opts) == 0:
+        opt_name = params.name
+    elif len(params.opts) == 1:
+        opt_name = params.opts[0]
+    else:
+        opt_name = "/".join(params.opts)
+    return opt_name
+
+
 def check_args(ctx: click.Context, params: click.Option, value: str):
     """
     check whether the param is provided
@@ -202,7 +216,23 @@ def check_args(ctx: click.Context, params: click.Option, value: str):
         for opt in param.opts
     ]
     if value in args:
-        raise click.MissingParameter()
+        opt_name = parse_opt_name(params)
+        raise click.BadOptionUsage(option_name=opt_name, message="Option {} requires an argument".format(opt_name))
+    return value
+
+
+def check_node_name(ctx: click.Context, params: click.Option, value: str):
+    value = check_args(ctx, params, value)
+    args = [
+        opt+"="
+        for param in ctx.command.params
+        for opt in param.opts
+    ]
+    opt_name = parse_opt_name(params)
+    for arg in args:
+        if value.startswith(arg):
+            raise click.BadOptionUsage(option_name=opt_name,
+                                       message="Option {} requires an argument".format(opt_name))
     return value
 
 

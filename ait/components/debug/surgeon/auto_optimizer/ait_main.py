@@ -18,7 +18,8 @@ import click
 from click_aliases import ClickAliasedGroup
 from click.exceptions import UsageError
 
-from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig
+from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
+    ARGS_REQUIRED_KNOWLEDGES
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.tools.log import logger
 from auto_optimizer.common.click_utils import optimize_onnx, CONTEXT_SETTINGS, \
@@ -31,7 +32,7 @@ from auto_optimizer.ait_options import (
     opt_start,
     opt_end,
     opt_check,
-    opt_optimizer,
+    opt_knowledges,
     opt_recursive,
     opt_verbose,
     opt_soc,
@@ -73,13 +74,13 @@ def command_list() -> None:
     no_args_is_help=True
 )
 @opt_path
-@opt_optimizer
+@opt_knowledges
 @opt_recursive
 @opt_verbose
 @opt_processes
 def command_evaluate(
     path: str,
-    optimizer: GraphOptimizer,
+    knowledges: str,
     recursive: bool,
     verbose: bool,
     processes: int,
@@ -88,6 +89,15 @@ def command_evaluate(
         return
 
     path_ = pathlib.Path(path)
+    knowledge_list = [v.strip() for v in knowledges.split(',')]
+    for know in knowledge_list:
+        if know in ARGS_REQUIRED_KNOWLEDGES:
+            knowledge_list.remove(know)
+            logger.warning("Knowledge {} cannot be evaluate".format(know))
+
+    if not knowledge_list:
+        return
+    optimizer = GraphOptimizer(knowledge_list)
     cli_eva(path_, optimizer, recursive, verbose, processes)
 
 
@@ -100,7 +110,7 @@ def command_evaluate(
 )
 @opt_input
 @opt_output
-@opt_optimizer
+@opt_knowledges
 @opt_big_kernel
 @opt_attention_start_node
 @opt_attention_end_node
@@ -116,7 +126,7 @@ def command_evaluate(
 def command_optimize(
     input_model: str,
     output_model: str,
-    optimizer: GraphOptimizer,
+    knowledges: str,
     infer_test: bool,
     big_kernel: bool,
     attention_start_node: str,
@@ -140,6 +150,15 @@ def command_optimize(
         logger.warning('output_model is input_model, refuse to overwrite origin model!')
         return
 
+    knowledge_list = [v.strip() for v in knowledges.split(',')]
+    for know in knowledge_list:
+        if not big_kernel and know in ARGS_REQUIRED_KNOWLEDGES:
+            knowledge_list.remove(know)
+            logger.warning("Knowledge {} cannot be ran when close big_kernel config.".format(know))
+
+    if not knowledge_list:
+        return
+
     if big_kernel:
         big_kernel_config = BigKernelConfig(
             attention_start_node=attention_start_node,
@@ -160,7 +179,7 @@ def command_optimize(
         output_size=output_size,
     )
     applied_knowledges = optimize_onnx(
-        optimizer=optimizer,
+        optimizer=knowledge_list,
         input_model=input_model_,
         output_model=output_model_,
         infer_test=infer_test,
