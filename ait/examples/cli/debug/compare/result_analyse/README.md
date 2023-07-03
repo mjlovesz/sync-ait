@@ -53,9 +53,9 @@
  - [x] [GroundTruth]:om算子所对应的onnx模型算子
  - [x] [Overflow]:数据是否出现上下溢. 
  - [x] [CompareFailReason]:比对失败原因,误差可能会因为除零非法或者不对应等原因造成无法计算,变为NaN值,会列出详细原因.
- - [x] [CosineSimilarity][RelativeEuclideanDistance]...[MeanRelativeError]：这是比对的各类误差算法,主要需要看是否某一项超过精度阈值(即某项异常),若超过则需要重点关注.各对比算法说明如下：
+ - [x] [CosineSimilarity][RelativeEuclideanDistance]...[MeanRelativeError]：这是各类误差比对类型结果,主要需要看是否某一项超过精度阈值(即某项异常),若超过则需要重点关注.各对比算法说明如下：
 
-  |                  误差对比算法名称 |  说明 |
+  |                  误差比对类型名称 |  说明 |
   |:------------------------|:---------|
   |CosineSimilarity         |进行余弦相似度算法比对出来的结果。取值范围为[-1,1]，比对的结果如果越接近1，表示两者的值越相近，越接近-1意味着两者的值越相反。|
 |MaxAbsoluteError|进行最大绝对误差算法比对出来的结果。取值范围为0到无穷大，值越接近于0，表明越相近，值越大，表明差距越大。|
@@ -64,7 +64,7 @@
 |KullbackLeiblerDivergence|进行KL散度算法比对出来的结果。取值范围为0到无穷大。KL散度越小，真实分布与近似分布之间的匹配越好。|
 |StandardDeviation|进行标准差算法比对出来的结果。取值范围为0到无穷大。标准差越小，离散度越小，表明越接近平均值。该列显示My Output和Ground Truth两组数据的均值和标准差，第一组展示My Output模型dump数据的数值(均值;标准差)，第二组展示Ground Truth模型dump数据的数值(均值;标准差)。|
 |MeanAbsoluteError|表示平均绝对误差。取值范围为0到无穷大，MeanAbsoluteError趋于0，RootMeanSquareError趋于0，说明测量值与真实值越近似；MeanAbsoluteError趋于0，RootMeanSquareError越大，说明存在局部过大的异常值；MeanAbsoluteError越大，RootMeanSquareError等于或近似MeanAbsoluteError，说明整体偏差越集中；MeanAbsoluteError越大，RootMeanSquareError越大于MeanAbsoluteError，说明存在整体偏差，且整体偏差分布分散；不存在以上情况的例外情况，因为RMSE ≥ MAE恒成立。|
-|RootMeanSquareError|表示均方根误差。取值范围为0到无穷大，MeanAbsoluteError趋于0，RootMeanSquareError趋于0，说明测量值与真实值越近似；MeanAbsoluteError趋于0，RootMeanSquareError越大，说明存在局部过大的异常值；MeanAbsoluteError越大，RootMeanSquareError等于或近似MeanAbsoluteError，说明整体偏差越集中；MeanAbsoluteError越大，RootMeanSquareError越大于MeanAbsoluteError，说明存在整体偏差，且整体偏差分布分散；不存在以上情况的例外情况，因为RMSE ≥ MAE恒成立。|
+|RootMeanSquareError|表示均方根误差。取值范围为0到无穷大，MeanAbsoluteError趋于0，RootMeanSquareError趋于0，说明测量值与真实值越近似；MeanAbsoluteError趋于0，RootMeanSquareError越大，说明存在局部过大的异常值；MeanAbsoluteError越大，RootMeanSquareError等于或近似MeanAbsoluteError，说明整体偏差越集中；MeanAbsoluteError越大，RootMeanSquareError越大于MeanAbsoluteError，说明存在整体偏差，且整体偏差分布分散；不存在以上情况的例外情况，因为RMSE(RootMeanSquareError) ≥ MAE(MeanAbsoluteError)恒成立。|
 |MaxRelativeError|表示最大相对误差。取值范围为0到无穷大，值越接近于0，表明越相近，值越大，表明差距越大。|
 |MeanRelativeError|表示平均相对误差。取值范围为0到无穷大，值越接近于0，表明越相近，值越大，表明差距越大。|
 
