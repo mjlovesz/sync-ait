@@ -70,21 +70,21 @@ def set_session_options(session, args):
 
     # 确认模型只有一个动态 aipp input
     if args.dym_shape is not None or args.auto_set_dymshape_mode:
-        aipp_input_exsity = 0
+        aipp_input_exist = 0
     else:
-        aipp_input_exsity = session.get_dym_aipp_input_exsity()
-    logger.debug("aipp_input_exsity: {}".format(aipp_input_exsity))
-    if (args.aipp_config is not None) and (aipp_input_exsity == 1):
+        aipp_input_exist = session.get_dym_aipp_input_exist()
+    logger.debug("aipp_input_exist: {}".format(aipp_input_exist))
+    if (args.aipp_config is not None) and (aipp_input_exist == 1):
         session.load_aipp_config_file(args.aipp_config, aipp_batchsize)
-        session.check_dym_aipp_input_exsity()
-    elif (args.aipp_config is None) and (aipp_input_exsity == 1):
+        session.check_dym_aipp_input_exist()
+    elif (args.aipp_config is None) and (aipp_input_exist == 1):
         logger.error("can't find aipp config file for model with dym aipp input , please check it!")
         raise RuntimeError('aipp model without aipp config!')
-    elif (aipp_input_exsity > 1):
+    elif (aipp_input_exist > 1):
         logger.error("don't support more than one dynamic aipp input in model, amount of aipp input is {}"
-                     .format(aipp_input_exsity))
+                     .format(aipp_input_exist))
         raise RuntimeError('aipp model has more than 1 aipp input!')
-    elif (aipp_input_exsity == -1):
+    elif (aipp_input_exist == -1):
         raise RuntimeError('aclmdlGetAippType failed!')
 
     # 设置custom out tensors size
@@ -328,7 +328,7 @@ def main(args, index=0, msgq=None, device_list=None):
     start_time = time.time()
     start_energy_consumption = 0
     end_energy_consumption = 0
-    if args.energy_consumption:
+    if args.energy_consumption and args.npu_id:
         start_energy_consumption = get_energy_consumption(args.npu_id)
 
     if args.run_mode == "array":
@@ -341,7 +341,7 @@ def main(args, index=0, msgq=None, device_list=None):
         infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix)
     else:
         raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
-    if args.energy_consumption:
+    if args.energy_consumption and args.npu_id:
         end_energy_consumption = get_energy_consumption(args.npu_id)
     end_time = time.time()
 
@@ -351,9 +351,9 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.h2d_latency_list = MemorySummary.get_h2d_time_list()
     summary.d2h_latency_list = MemorySummary.get_d2h_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
-    if args.energy_consumption:
-        logger.info("npu_id {} energy_consumption {}".format(args.npu_id, (float(end_energy_consumption) -
-                                                                           float(start_energy_consumption)) * (
+    if args.energy_consumption and args.npu_id:
+        logger.info("NPU ID:{} energy consumption(J):{}".format(args.npu_id, ((float(end_energy_consumption) +
+                                                                           float(start_energy_consumption))/2.0 ) * (
                                                                          end_time - start_time)))
     if msgq is not None:
         # put result to msgq

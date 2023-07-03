@@ -134,7 +134,7 @@ public:
     /**
     * @brief check model the amount of dynamic aipp input
     */
-    int CheckDymAIPPInputExsity();
+    int CheckDymAIPPInputExist();
 
     /**
     * @brief free aclmdlAIPP
