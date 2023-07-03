@@ -75,9 +75,16 @@ ait transplt -s /data/examples/simple/
 
 ```
 
-在待扫描的工程目录下输出output.xlsx，会呈现工程中每个支持的加速库API的信息和支持情况，结果如下：
+在待扫描的工程目录下输出output.xlsx，会呈现工程中每个支持的加速库API的信息和支持情况。output.xlsx表格中的sheet页功能说明如下：
 
-输出数据说明：
+| sheet页名称                           | 说明      |
+| -------------- | ---------------------------------------- |
+| \*\*\*.CMakeLists.txt                    | CMakeLists.txt文件扫描结果页 |
+| \*\*\*.\*\*\*.cpp 或 \*\*\*.\*\*\*.h     | 头文件/源码文件扫描结果页 |
+| Workload                                 | 迁移工作量评估页 |
+| CUDA_APIs                                | CUDA使能API识别页 |
+
+其中头文件/源码文件扫描结果页包含了最主要的输出数据，该页面的内容说明如下：
 
 | 标题                                          | 说明      |
 | -------------- | ---------------------------------------- |
@@ -88,10 +95,10 @@ ait transplt -s /data/examples/simple/
 | AccLib                                        | API所属三方加速库 |
 | AscendAPI                                     | 推荐的昇腾API |
 | Description                                   | API描述 |
+| AscendLib | 推荐的昇腾API所在库 |
 | Workload(人/天)                               | 迁移工作量（人/天） |
 | AccAPILink | 三方加速库API文档链接 |
 | AscendAPILink | 昇腾API文档链接 |
-| AscendLib | 推荐的昇腾API所在库 |
 
 ## FAQ
 ### 如何安装Docker
