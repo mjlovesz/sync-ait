@@ -48,6 +48,8 @@ chmod u+x install.sh
 # 重新安装ait及其debug、profile、benchmark、transplt、analyze等组件
 ./install.sh --force-reinstall
 
+# 指定安装pip源
+./install.sh -i http://mirrors.tools.huawei.com/pypi/simple
 ```
 
 #### 按需手动安装不同组件

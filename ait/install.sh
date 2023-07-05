@@ -70,9 +70,19 @@ if [ "$arg_help" -eq "1" ]; then
   echo " --profile : only install profile component"
   echo " --full : using with install, install all components and dependencies, may need sudo privileges"
   echo " --uninstall : uninstall"
+  echo " -i : specify the base URL of the Python Package Index"
   echo " -y : using with uninstall, don't ask for confirmation of uninstall deletions"
   exit;
 fi
+
+
+pre_check_skl2onnx(){
+  pip_source_index_url=$(pip3 config list | grep index-url | awk -F'=' '{print $2}' | tr -d "'")
+  if [ "${pip_source_index_url}" == "https://mirrors.huaweicloud.com/repository/pypi/simple" ]
+  then
+    pip3 install skl2onnx==1.14.1 -i http://mirrors.tools.huawei.com/pypi/simple --trusted-host mirrors.tools.huawei.com
+  fi
+}
 
 
 uninstall(){
@@ -115,6 +125,8 @@ uninstall(){
 
 
 install(){
+  pre_check_skl2onnx
+
   pip3 install ${CURRENT_DIR} ${arg_force_reinstall} ${pip_source}
 
   if [ ! -z $only_debug ]
