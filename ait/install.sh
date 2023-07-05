@@ -78,9 +78,10 @@ fi
 
 pre_check_skl2onnx(){
   pip_source_index_url=$(pip3 config list | grep index-url | awk -F'=' '{print $2}' | tr -d "'")
-  if [ "${pip_source_index_url}" == "https://mirrors.huaweicloud.com/repository/pypi/simple" ]
+  if [ "${pip_source_index_url}" == "http://mirrors.huaweicloud.com/repository/pypi/simple" ||
+  "${pip_source_index_url}" == "https://mirrors.huaweicloud.com/repository/pypi/simple" ]
   then
-    pip3 install skl2onnx==1.14.1 -i http://mirrors.tools.huawei.com/pypi/simple --trusted-host mirrors.tools.huawei.com
+    pip3 install skl2onnx==1.14.1 -i https://mirrors.tools.huawei.com/pypi/simple --trusted-host mirrors.tools.huawei.com
   fi
 }
 
