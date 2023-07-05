@@ -36,13 +36,18 @@
 1. 安装python
     * 建议安装[miniconda3](https://docs.conda.io/en/latest/miniconda.html)
     * 注意点: 在 windows 上，命令行的python命令优先会启动 WindowsApps 目录的程序，可以在环境变量中将 %USERPROFILE%\AppData\Local\Microsoft\WindowsApps 下移到最后
-    * 验证是否安装成功:命令行输入 `python --version`。能正常输出python 版本即表示成功
-2. 安装[NodeJS](https://nodejs.org/zh-cn/download) (使用 electron 启动时需要，建议安装最新长期维护版本)
+    * 验证是否安装成功: 命令行输入 `python --version`。能正常输出 python 版本即表示成功
+2. 安装[NodeJS](https://nodejs.org/zh-cn/download) 
+    * 启动方式一和启动方式二使用 electron 启动时需要，建议安装最新长期维护版本
+    * 如果是直接解压安装的方式，请将安装后的文件夹配置到环境变量PATH中
+        - linux 需要配置 bin 目录
+        - windows 配置解压目录即可
+        - 验证是否安装成功：命令行输入 `node -v`。能正常输出 node 版本即表示成功
 3. 拉取源码：
   ```bash
   git clone https://gitee.com/ascend/ait.git
   ```
-4. 安装 ait 中的 surgeon 包, 请参考 ait 的安装流程，以下为参考步骤：
+4. 安装 ait 中的 surgeon 包, 提供 AutoOptimizer （基于知识库的整网优化） 和 Extract （子网导出） 功能, 请参考 ait 的安装流程，以下为参考步骤：
   ```bash
   cd ait/ait/components/debug/surgeon
   pip install . --force-reinstall
@@ -68,6 +73,8 @@
   # 切到目录 ait/onnx-modifier 运行以下命令
   electron .
   ```
+  - 命令行参数
+    - 支持指定onnx文件，参数为： --onnx [onnx文件路径]
 
 ## 启动方式二：编译成可执行程序启动
 
@@ -90,7 +97,7 @@
 
 ## 启动方式三：web服务器启动
 - 安装
-    1. 安装flask： pip install flask 
+    1. 安装flask： pip install flask==2.2.2
     2. 如果运行报错，建议升级flask。建议版本2.2.2
 - 运行，默认端口为5000（常用于调试开发）
   ```bash
@@ -102,6 +109,7 @@
 - 命令行参数
   - 支持指定端口，参数为： --port [端口号]
   - 支持debug 模式，会打印更多日志，调试信息等，常用于开发场景，参数为： --debug
+  - 支持指定默认打开的onnx文件，参数为： --onnx [onnx文件路径]
   ```bash
   # 样例
   python flaskserver.py --port 5000 --debug
@@ -154,14 +162,6 @@
 
 那在`onnx-modifer`中要怎么做呢？很简单，找到节点侧边栏的输入输出对应的输入框，键入新的名称就可以啦。图结构会根据键入的名称即时自动刷新。
 
-举个栗子，在下图所示的模型中，我们想要删除预处理对应的节点（`Sub->Mul->Sub->Transpose`），可以这样做：
-
-1. 点击首个`Conv`节点，在弹出的属性栏中，将输入名称改为*serving_default_input:0* (`data_0`节点的输出名)；
-2. 图结构自动刷新，可以发现，输入节点已经和首个`Conv`节点直接相连，几个预处理节点也已经从前向图中分离出来，将它们删除；
-3. 完工（点击`Download`就可以获得编辑后的ONNX模型啦）。
-
-> 如果我们希望通过修改，让节点$A$（比如上例中的`data_0`节点）连向节点$B$（比如上例中的首个`Conv`节点），建议的方式是：将节点$B$的输入名称修改为节点$A$的输出名称，而不是把$A$的输出名称修改为节点$B$的输入名称。 因为节点$B$的输入名称可能同时为其他节点（比如上例中的`Transpose`节点）的输出名称，会导致一些预料外的结果。
-
 上例的修改过程如下图所示：
 
 <img src="./docs/rename_io.gif" style="zoom:75%;" />
@@ -186,38 +186,36 @@
 
 在节点侧边栏对应的属性值输入框中，键入新的属性值即可。
 
-> 点击属性值输入框右侧的`+`，可显示该属性的参考信息。
-
 <img src="./docs/change_attr.gif" style="zoom:75%;" />
 
 ## 增加新节点
 
 有时候我们希望向模型中添加新节点。`onnx-modifier`已开始支持该功能。
 
-在主页面的左上方，有一个`Add node`按钮和一个selector选择器，我们可以通过这二者的配合，完成节点的添加，只需3步：
+在主页面的左方工具栏，有一个`Add node`按钮，点击之后弹出对话框，包含一个selector选择器，我们可以通过这二者的配合，完成节点的添加，只需3步：
 
-1. 在selector中选择要添加的节点类型，在点击`Add node`按钮后，一个对应类型的新节点将自动出现在图上。
+1. 在selector中选择要添加的节点类型，在点击`Confirm`按钮后，一个对应类型的新节点将自动出现在图上。
 
    > selector中包含来自`ai.onnx`(171), `ai.onnx.preview.training`(4), `ai.onnx.ml`(18) 和 `com.microsoft`(1)的所有节点类型。
 
 2. 点击这个新节点，在弹出的侧边栏中进行节点的编辑：
    - 节点属性：初始化为`null` （显示为`undefined`）。同上节，在对应的属性框中输入新值即可。
    - 修改节点输入输出名。输入输出名决定了节点将插入在图结构中的位置。
-3. 完工（点击`Download`即可获得编辑后的ONNX模型）。
+3. 完工（点击`Save`即可获得编辑后的ONNX模型）。
 
 <img src="./docs/add_new_node.gif" style="zoom:75%;" />
 
 以下是该功能的一些提醒和小tip：
 
-1. 点击节点侧边栏的`NODE PROPERTIES`的`type`框右侧的`?`，和节点属性框右侧的`+`，可以显示关于当前节点类型/属性值的参考信息。
+1. 点击节点侧边栏的`NODE PROPERTIES`的`type`框右侧的`?`，和节点属性框右侧的下拉按钮，可以显示关于当前节点类型/属性值的参考信息。
 2. 为确保正确性，节点的各属性值建议全部填写（而不是留着`undefined`）。默认值在当前版本可能支持得还不够好。
 3. 如果一个属性值是列表类型，则各元素之间使用‘`,`’分隔，无需'[]'。
 4. 在当前版本中，如果一个节点的输入/输出是一个列表类型（如`Concat`），限制最多显示8个。如果一个节点实际输入/输出小于8个，则填写对应数目的输入输出即可，多出来的应以`list_custom`开头，它们会在后续处理中自动被忽略。
 
 ## 修改模型batch size
 动态batch size和固定batch size均已支持。
-- 动态batch size：点击`Dynamic batch size`即可；
-- 静态bacth size：在`Fixed batch size`后方输入框内填入预期的batch size值；
+- 动态batch size：点击`batch Dynamic`即可；
+- 静态bacth size：在`batch Fixed`后方输入框内填入预期的batch size值；
 
 <img src="./docs/rebatch.gif" style="zoom:75%;" />
 
@@ -228,7 +226,7 @@
 
 > 如果要修改我们**新增加的**节点的initializer，除了键入其数值之外，还要键入其数据类型。（如果我们不确定数据类型，可以点击`NODE PROPERTIES->type->?`，在弹出的节点的详细介绍界面中，可能会找到线索。）
 
-`onnx-modifer`正在活跃地更新中:hammer_and_wrench:。 欢迎使用，提issue，如果有帮助的话，感谢给个:star:~
+`onnx-modifer`正在活跃地更新中。 欢迎使用，提issue，如果有帮助的话，感谢给个:star:~
 
 ## 修改模型输入
 
@@ -241,12 +239,11 @@
 <img src="./docs/modify_export_import.gif" style="zoom:75%;" />
 
 
-## 使用OnnxSim 或者 AutoOptimizer 优化模型
+## 使用 OnnxSim 或者 AutoOptimizer 优化模型
 
 <img src="./docs/onnxsim.gif" style="zoom:75%;" />
 
 ## 子网导出
-
 
 <img src="./docs/extract.gif" style="zoom:75%;" />
 

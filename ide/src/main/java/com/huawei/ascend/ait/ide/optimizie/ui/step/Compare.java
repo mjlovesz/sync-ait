@@ -22,16 +22,17 @@ import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addString;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedFile;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedPath;
 
-import com.huawei.ascend.ait.ide.commonlib.exception.CommandInjectException;
 import com.huawei.ascend.ait.ide.commonlib.output.OutputService;
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdExec;
 import com.huawei.ascend.ait.ide.commonlib.ui.SwitchButton;
 import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
 import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
 
+import com.huawei.ascend.ait.ide.optimizie.task.CompareTask;
 import com.huawei.ascend.ait.ide.util.FileChooseWithBrows;
-import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -39,6 +40,7 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,11 +51,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import java.awt.Dimension;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.regex.Pattern;
 
 /**
@@ -129,7 +129,7 @@ public class Compare extends DialogWrapper {
     private void modelFileAction() {
         List<String> lists = List.of(PB_MODEL_FILE_EXTENSION, ONNX_MODEL_FILE_EXTENSION, PROTOTXT_MODEL_FILE_EXTENSION);
         modelFileBrowse.addActionListener(event -> {
-            String selectFile = getSelectedFile(project, lists, false);
+            String selectFile = getSelectedFile(project, lists, false, "Model File");
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
@@ -141,7 +141,6 @@ public class Compare extends DialogWrapper {
                 initWeight(true);
                 setWeightPath(model, modelName);
             }
-
         });
     }
 
@@ -161,7 +160,7 @@ public class Compare extends DialogWrapper {
 
     private void weightFileAction() {
         weightBrowse.addActionListener(event -> {
-            String selectFile = getSelectedFile(project, List.of(CAFFE_MODEL_FILE_EXTENSION), false);
+            String selectFile = getSelectedFile(project, List.of(CAFFE_MODEL_FILE_EXTENSION), false, "Weight File Path");
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
@@ -172,7 +171,7 @@ public class Compare extends DialogWrapper {
     private void offlineModelAction() {
         List<String> lists = List.of(OM_MODEL_FILE_EXTENSION);
         offlineModelPathBrowse.addActionListener(event -> {
-            String selectFile = getSelectedFile(project, lists, false);
+            String selectFile = getSelectedFile(project, lists, false, "Offline Model Path");
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
@@ -198,7 +197,7 @@ public class Compare extends DialogWrapper {
 
     private void cannPathAction() {
         cannPathBrowse.addActionListener(event -> {
-            String selectFile = getSelectedPath(project);
+            String selectFile = getSelectedPath(project, "CANN Path");
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
@@ -208,7 +207,7 @@ public class Compare extends DialogWrapper {
 
     private void outputAction() {
         outputPathBrowse.addActionListener(event -> {
-            String selectFile = getSelectedPath(project);
+            String selectFile = getSelectedPath(project, "Output Path");
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
@@ -225,52 +224,9 @@ public class Compare extends DialogWrapper {
 
         CmdStrBuffer cmdStrBuffer = new CmdStrBuffer();
         cmdStrBuffer = getCmdStrBuffer();
-        OutputService.getInstance(project).print(cmdStrBuffer.toString());
-        close(0);
-        CmdExec exec = new CmdExec();
-        try {
-            exec.bashStart(cmdStrBuffer);
-            String errorRec = exec.getErrorResult();
-            if (errorRec != null) {
-                OutputService.getInstance(project).print(errorRec, ConsoleViewContentType.LOG_ERROR_OUTPUT);
-            }
-            String execRec = exec.getResult();
-            if (execRec != null) {
-                OutputService.getInstance(project).print(execRec, ConsoleViewContentType.LOG_INFO_OUTPUT);
-                showCsv();
-            }
-        } catch (IOException | CommandInjectException e) {
-            LOGGER.error(e.getMessage());
-            OutputService.getInstance(project).print(e.getMessage());
-        }
-    }
 
-    private void showCsv() {
-        if (!dumpButton.isSelected()){
-            return;
-        }
-        File path = new File(outputPathBrowse.getText());
-        File[] files = path.listFiles();
-        if (files == null) {
-            return;
-        }
-        Arrays.sort(files, new Comparator<File>() {
-            @Override
-            public int compare(File file1, File file2) {
-                return (int) (file2.lastModified() - file1.lastModified());
-            }
-        });
-
-        File[] subFiles = files[0].listFiles();
-        if (null != subFiles) {
-            for (File subFile : subFiles) {
-                if (subFile.isFile() && subFile.getName().endsWith(".csv")) {
-                    ShowResult showResulte = new ShowResult(project, subFile.getPath());
-                    showResulte.show();
-                    return;
-                }
-            }
-        }
+        ProgressManager.getInstance().run(new CompareTask(project, cmdStrBuffer, dumpButton));
+        super.doOKAction();
     }
 
     private CmdStrBuffer getCmdStrBuffer() {

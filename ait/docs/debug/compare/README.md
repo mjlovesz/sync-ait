@@ -79,7 +79,8 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
   | --dump       | 是否dump所有算子的输出并进行精度对比。默认是True，即开启全部算子输出的比对。(仅支持onnx模型)<br/>使用方式：--dump False       | 否  |
   | --convert    | 支持om比对结果文件数据格式由bin文件转为npy文件，生成的npy文件目录为./dump_data/npu/{时间戳_bin2npy} 文件夹。使用方式：--convert True | 否  |
   | -cp, --custom-op | 支持存在NPU自定义算子的模型进行精度比对，使用方式：--custom-op="op_name"，其中op_name代表onnx模型中，NPU自定义算子名称。| 否  |
-  | --locat      | 开启后,自动在每次比对结束后,对误差超阈值的首个节点(任一类误差),执行误差定位流程,自动定位误差的区间范围(无论单节点还是累计误差)。使用方式：--locat | 否  |
+  | --locat      | 开启后,自动在每次比对结束后,对误差超阈值的首个节点(任一类误差),执行误差定位流程,自动定位误差的区间范围(无论单节点还是累计误差)。使用方式：--locat True| 否  |
+  | -ofs, --onnx-fusion-switch| onnxruntime算子融合开关，默认**开启**算子融合，如存在onnx dump数据中因算子融合导致缺失的，建议关闭此开关。使用方式：--onnx-fusion-switch False| 否  |
 
 ### 使用场景
 

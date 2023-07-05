@@ -17,21 +17,20 @@ import pathlib
 import click
 
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
-from auto_optimizer.common.click_utils import convert_to_graph_optimizer, default_off_knowledges, \
-    validate_opt_converter, check_args
+from auto_optimizer.common.click_utils import default_off_knowledges, \
+    validate_opt_converter, check_args, check_node_name
 
-
-opt_optimizer = click.option(
-    '-k',
+opt_knowledges = click.option(
+    '-know',
     '--knowledges',
-    'optimizer',
+    'knowledges',
     default=','.join(
         knowledge
         for knowledge in KnowledgeFactory.get_knowledge_pool().keys()
         if knowledge not in default_off_knowledges
     ),
     type=str,
-    callback=convert_to_graph_optimizer,
+    callback=check_args,
     help='Knowledges(index/name) you want to apply. Seperate by comma(,), Default to all except fix knowledges.'
 )
 
@@ -70,27 +69,19 @@ opt_output = click.option(
     '-of',
     '--output-file',
     'output_model',
-    nargs=1,
     required=True,
-    type=click.Path(path_type=pathlib.Path),
+    type=str,
     callback=check_args,
     help='Output onnx model name'
 )
 
 
 opt_input = click.option(
-    '-i',
+    '-in',
     '--input',
     'input_model',
-    nargs=1,
     required=True,
-    type=click.Path(
-        exists=True,
-        file_okay=True,
-        dir_okay=False,
-        readable=True,
-        path_type=pathlib.Path
-    ),
+    type=str,
     callback=check_args,
     help='Input onnx model to be optimized'
 )
@@ -102,7 +93,7 @@ opt_start = click.option(
     'start_node_names',
     required=True,
     type=click.STRING,
-    callback=check_args,
+    callback=check_node_name,
     help='The names of start nodes'
 )
 
@@ -113,7 +104,7 @@ opt_end = click.option(
     'end_node_names',
     required=True,
     type=click.STRING,
-    callback=check_args,
+    callback=check_node_name,
     help='The names of end nodes'
 )
 
@@ -133,13 +124,7 @@ opt_path = click.option(
     'path',
     nargs=1,
     required=True,
-    type=click.Path(
-        exists=True,
-        file_okay=True,
-        dir_okay=True,
-        readable=True,
-        path_type=pathlib.Path
-    ),
+    type=str,
     callback=check_args,
     help='Target onnx file or directory containing onnx file'
 )
@@ -223,7 +208,7 @@ opt_attention_start_node = click.option(
     'attention_start_node',
     type=str,
     default="",
-    callback=check_args,
+    callback=check_node_name,
     help='Start node of the first attention block, it must be set when apply big kernel knowledge.',
 )
 
@@ -234,7 +219,7 @@ opt_attention_end_node = click.option(
     'attention_end_node',
     type=str,
     default="",
-    callback=check_args,
+    callback=check_node_name,
     help='End node of the first attention block, it must be set when apply big kernel knowledge.',
 )
 

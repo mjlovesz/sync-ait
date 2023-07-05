@@ -7,7 +7,7 @@
 * **注意** 使用时dump必须为True，custom-op功能暂不支持并行，使用本功能时禁止开启。
 
 ## 运行示例
-**前提**：暂不支持动态shape模型。
+**前提**：暂不支持动态shape模型，运行过程中可能出现无法加载npy文件的情况，请添加`--onnx-fusion-switch False`以解决。
 * 如果是固定过shape的动态shape模型，请先使用onnxsim将模型内所有shape信息固定.
 命令如下：
 ```

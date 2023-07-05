@@ -12,7 +12,7 @@
 ```sh
 atc --framework 5 --model=./resnet18.onnx --output=resnet18_bs8 --input_format=NCHW \
 --input_shape="image:8,3,224,224" --log=debug --soc_version=Ascend310P3 \
---insert_op_config=aipp.config --fusion_switch_file=fusionswitch.cfg
+--insert_op_conf=aipp.config --fusion_switch_file=fusionswitch.cfg
 ```
 其中fusionswitch.cfg(算子不融合)内容如下：
 ```

@@ -15,17 +15,45 @@
 import os
 import pathlib
 from functools import partial
-from typing import List, Optional
+from multiprocessing import Pool
+from typing import List, Optional, Union
 
 import click
 
-from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig
+from auto_optimizer import KnowledgeFactory
+from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig, \
+    ARGS_REQUIRED_KNOWLEDGES
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.tools.log import logger
 
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+
+def check_input_path(input_path):
+    if not os.access(input_path, os.F_OK):
+        logger.error("Input path {} is not exist.".format(input_path))
+        return False
+
+    if not os.access(input_path, os.R_OK):
+        logger.error("Input path {} is not readable.".format(input_path))
+        return False
+
+    return True
+
+
+def check_output_model_path(output_model):
+    if os.path.isdir(output_model):
+        logger.error("Output path {} is a directory.".format(output_model))
+        return False
+
+    model_dir = os.path.dirname(os.path.abspath(output_model))
+    if not os.path.exists(model_dir):
+        logger.error("Output path {} is not exist.".format(output_model))
+        return False
+
+    return True
 
 
 def is_graph_input_static(graph: BaseGraph) -> bool:
@@ -40,8 +68,42 @@ def is_graph_input_static(graph: BaseGraph) -> bool:
     return True
 
 
+def list_knowledges():
+    registered_knowledges = KnowledgeFactory.get_knowledge_pool()
+    logger.info('Available knowledges:')
+    for idx, name in enumerate(registered_knowledges):
+        logger.info(f'  {idx:2d} {name}')
+    for j, name in enumerate(ARGS_REQUIRED_KNOWLEDGES):
+        logger.info(f'  {idx+j+1:2d} {name}')
+
+
+def cli_eva(model_path: pathlib.Path, optimizer: GraphOptimizer, recursive: bool, verbose: bool, processes: int,):
+    if model_path.is_dir():
+        onnx_files = list(model_path.rglob('*.onnx') if recursive else model_path.glob('*.onnx'))
+    else:
+        onnx_files = [model_path]
+
+    if processes > 1:
+        evaluate = partial(evaluate_onnx, optimizer=optimizer, verbose=verbose)
+        with Pool(processes) as p:
+            res = p.map(evaluate, onnx_files)
+        for file, knowledges in zip(onnx_files, res):
+            if not knowledges:
+                continue
+            summary = ','.join(knowledges)
+            logger.info(f'{file}\t{summary}')
+        return
+
+    for onnx_file in onnx_files:
+        knowledges = evaluate_onnx(optimizer=optimizer, model=onnx_file, verbose=verbose)
+        if not knowledges:
+            continue
+        summary = ','.join(knowledges)
+        logger.info(f'{onnx_file}\t{summary}')
+
+
 def optimize_onnx(
-    optimizer: GraphOptimizer,
+    optimizer: Union[GraphOptimizer, list],
     input_model: pathlib.Path,
     output_model: pathlib.Path,
     infer_test: bool,
@@ -56,19 +118,13 @@ def optimize_onnx(
         logger.warning('exception: %s', exc)
         return []
 
-    optimizer.init_knowledges()
+    if isinstance(optimizer, list):
+        knowledges = [know for know in optimizer if know not in ARGS_REQUIRED_KNOWLEDGES]
+        optimizer = GraphOptimizer(knowledges)
 
     if big_kernel_config:
-        knowledge_cls = optimizer.knowledges.get("KnowledgeBigKernel")
-        if knowledge_cls:
-            knowledge_bk = knowledge_cls(
-                graph=graph,
-                start_node=big_kernel_config.attention_start_node,
-                end_node=big_kernel_config.attention_end_node
-            )
-            optimizer.knowledges.update({"KnowledgeBigKernel": knowledge_bk})
-    else:
-        optimizer.knowledges.pop("KnowledgeBigKernel")
+        optimizer.register_big_kernel(graph, big_kernel_config.attention_start_node,
+                                      big_kernel_config.attention_end_node)
 
     config.is_static = is_graph_input_static(graph)
     if infer_test:
@@ -140,6 +196,16 @@ default_off_knowledges = [
 ]
 
 
+def parse_opt_name(params: click.Option):
+    if len(params.opts) == 0:
+        opt_name = params.name
+    elif len(params.opts) == 1:
+        opt_name = params.opts[0]
+    else:
+        opt_name = "/".join(params.opts)
+    return opt_name
+
+
 def check_args(ctx: click.Context, params: click.Option, value: str):
     """
     check whether the param is provided
@@ -150,7 +216,23 @@ def check_args(ctx: click.Context, params: click.Option, value: str):
         for opt in param.opts
     ]
     if value in args:
-        raise click.MissingParameter()
+        opt_name = parse_opt_name(params)
+        raise click.BadOptionUsage(option_name=opt_name, message="Option {} requires an argument".format(opt_name))
+    return value
+
+
+def check_node_name(ctx: click.Context, params: click.Option, value: str):
+    value = check_args(ctx, params, value)
+    args = [
+        opt+"="
+        for param in ctx.command.params
+        for opt in param.opts
+    ]
+    opt_name = parse_opt_name(params)
+    for arg in args:
+        if value.startswith(arg):
+            raise click.BadOptionUsage(option_name=opt_name,
+                                       message="Option {} requires an argument".format(opt_name))
     return value
 
 

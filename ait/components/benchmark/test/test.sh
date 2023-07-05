@@ -74,8 +74,8 @@ main() {
         ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/ST/
     else
         echo "run DT in simple mode"
-        ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/UT_SIMPLE/
-        ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/ST_SIMPLE/
+        ${PYTHON_COMMAND} -m pytest -x $CUR_PATH/UT_SIMPLE/
+        ${PYTHON_COMMAND} -m pytest -x $CUR_PATH/ST_SIMPLE/
     fi
 
     return $ret_ok

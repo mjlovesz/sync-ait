@@ -74,6 +74,9 @@
 .select.edge-path { stroke: #e00; stroke-width: 2px; marker-end: url("#arrowhead-vee-select"); }
 #arrowhead-vee-select { fill: #e00; }
 
+.graph-node-delete { opacity: 0.3 }
+.graph-node-hide { opacity: 0}
+
 @keyframes pulse { from { stroke-dashoffset: 100px; } to { stroke-dashoffset: 0; } }
 
 @media (prefers-color-scheme: dark) {

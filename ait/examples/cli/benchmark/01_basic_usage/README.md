@@ -16,7 +16,7 @@ benchmark推理工具可以通过ait命令行方式启动模型测试。
 
   其中，*为OM离线模型文件名。
 - 以单个batch的静态模型`resnet50_bs1.om`为例进行推理，执行过程如下所示：
-    
+
     ```
     [INFO] acl init success
     [INFO] open device 0 success
@@ -37,7 +37,7 @@ benchmark推理工具可以通过ait命令行方式启动模型测试。
   - 打屏信息解释：
   ```
   NPU_compute_time (ms): # 推理时间，不包括H2D（host to device）和D2H（device to host）的时间
-      min = 2.4560000896453857 # 推理的最短时间 
+      min = 2.4560000896453857 # 推理的最短时间
       max = 2.4560000896453857 # 推理的最长时间
       mean = 2.4560000896453857 # 推理的平均时间
       median = 2.4560000896453857 # 推理时间中位数
@@ -60,7 +60,7 @@ benchmark推理工具可以通过ait命令行方式启动模型测试。
       [INFO] try get model batchsize:1
       [DEBUG] Input nums: 1
       [DEBUG] Model id: 1
-      [DEBUG] aipp_input_exsity: 0
+      [DEBUG] aipp_input_exist: 0
       [DEBUG] session info:<Model>
       device:	0
       input:

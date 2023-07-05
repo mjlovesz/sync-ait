@@ -16,3 +16,7 @@ TsdOpen failed, devId=0, tdt error=1[FUNC:startAicpuExecutor][FILE:runtime.cc][L
 ```
 unset ASCEND_AICPU_PATH
 ```
+
+## 2.使用locat功能时，出现`Object arrays cannot be loaded when allow_pickle=False`
+- 该错误时由于模型执行时onnxruntime对onnx模型使用了算子融合导致某些中间节点没有真实dump数据导致的。
+- **解决方法**是增加参数`--onnx-fusion-switch False`,关闭算子融合，使所有数据可用。

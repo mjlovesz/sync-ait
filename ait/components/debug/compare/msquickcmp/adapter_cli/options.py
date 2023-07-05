@@ -191,3 +191,12 @@ opt_custom_op = click.option(
     callback=check_args,
     help="Op name witch is not registered in onnxruntime, only supported by Ascend."
 )
+
+opt_onnx_fusion_switch = click.option(
+    "-ofs",
+    "--onnx-fusion-switch",
+    "onnx_fusion_switch",
+    default=True,
+    type=str2bool,
+    help="Onnxruntime fusion switch, set False for dump complete onnx data when necessary.Usage: -ofs False."
+)
