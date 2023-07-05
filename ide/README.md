@@ -26,7 +26,7 @@ AIT-IDE(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一�
 #### 3: Ais_Bench安装： [Ais_Bench安装指导](https://gitee.com/ascend/ait/tree/master/ait/components/benchmark)
 
 ### Ide插件安装
-#### 1：下载插件包：[ascend_ide-1.0-SNAPSHOT.zip]()
+#### 1：下载插件包：[ascend_ide-1.0-SNAPSHOT.zip](https://mindstudio-sample.obs.cn-north-4.myhuaweicloud.com/Ascend-Inference-Tools-IDE-plugin/Ascend-Inference-Tools-IDE-plugin-1.0.zip)
 #### 2：安装插件包
 ##### 点击File下Setting进入Plugin
 ![img.png](docs/Installation_Step0.png)
