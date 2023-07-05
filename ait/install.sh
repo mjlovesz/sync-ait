@@ -35,7 +35,7 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --profile) only_profile=true;;
   --uninstall) uninstall=true;;
   --trusted-host) shift
-    trusted_host="--trusted-host $1"
+    trusted_host="--trusted-host $1";;
   -y) all_uninstall=-y;;
   -i) shift
     pip_source_url=$1
