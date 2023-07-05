@@ -16,14 +16,16 @@ class FuncDesc:
         self.hash_code = 0
         self.is_cxx_method = False
 
-    def get_full_name(self):
-        api_str = self.get_api_name()
-        arg_str = self.get_arg_name()
+    @property
+    def full_name(self):
+        api_str = self.api_name
+        arg_str = self.arg_name
         if arg_str:
             api_str += '(' + arg_str + ')'
         return api_str
 
-    def get_api_name(self):
+    @property
+    def api_name(self):
         if self.obj_info:
             vals = [self.obj_info.record_name, self.func_name]
         else:
@@ -34,7 +36,8 @@ class FuncDesc:
 
         return '.'.join(vals)
 
-    def get_arg_name(self):
+    @property
+    def arg_name(self):
         return ','.join(self.parm_decl_names)
 
 
@@ -68,7 +71,7 @@ class SeqDesc:
         self.has_usr_def = False
 
     def debug_string(self):
-        rst = 'Entry Function is: ' + self.entry_api.get_api_name() + '\n'
-        apis = [_.get_full_name() for _ in self.api_seq]
+        rst = 'Entry Function is: ' + self.entry_api.api_name + '\n'
+        apis = [_.full_name for _ in self.api_seq]
         rst += '-->'.join(apis)
         logger.info(rst)

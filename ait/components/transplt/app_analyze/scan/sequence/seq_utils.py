@@ -4,7 +4,7 @@ from app_analyze.scan.sequence.api_filter import ACC_FILTER
 def is_unused_api(func_desc):
     val = ACC_FILTER.get(func_desc.acc_name, None)
     if val:
-        api_name = func_desc.get_api_name()
+        api_name = func_desc.api_name
         if api_name in val:
             return True
     return False
