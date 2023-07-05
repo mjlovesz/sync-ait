@@ -49,8 +49,8 @@ chmod u+x install.sh
 # c. 重新安装ait及其debug、profile、benchmark、transplt、analyze等组件
 ./install.sh --force-reinstall
   
-# d. 指定安装pip源（-i后地址请用户按需替换为所需pip源地址，不添加-i默认使用系统配置的pip源）
-./install.sh -i http://mirrors.tools.huawei.com/pypi/simple
+# d. 指定安装pip源（-i后地址请用户按需替换为所需pip源地址，不添加-i默认使用系统配置的pip源；--trusted-host为指定可以信任的主机名）
+./install.sh -i http://mirrors.tools.huawei.com/pypi/simple --trusted-host mirrors.tools.huawei.com
 ```
 
 #### 按需手动安装不同组件
