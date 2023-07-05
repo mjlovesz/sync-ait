@@ -37,20 +37,20 @@ git clone https://gitee.com/ascend/ait.git
 cd ait/ait
 
 # 1. 添加执行权限
-  chmod u+x install.sh
+chmod u+x install.sh
 
 # 2. 以下install.sh根据情况选一个执行
-  # 安装ait，包括debug、profile、benchmark、transplt、analyze等组件（不安装clang等系统依赖库，只影响transplt功能）
-  ./install.sh
+# a. 安装ait，包括debug、profile、benchmark、transplt、analyze等组件（不安装clang等系统依赖库，只影响transplt功能）
+./install.sh
   
-  # 安装ait，包括debug、profile、benchmark、transplt、analyze等组件（安装clang等系统依赖库，需要提供sudo权限）
-  ./install.sh --full
+# b. 安装ait，包括debug、profile、benchmark、transplt、analyze等组件（安装clang等系统依赖库，需要提供sudo权限）
+./install.sh --full
   
-  # 重新安装ait及其debug、profile、benchmark、transplt、analyze等组件
-  ./install.sh --force-reinstall
+# c. 重新安装ait及其debug、profile、benchmark、transplt、analyze等组件
+./install.sh --force-reinstall
   
-  # 指定安装pip源（-i后地址请用户按需替换为所需pip源地址，不添加-i默认使用系统配置的pip源）
-  ./install.sh -i http://mirrors.tools.huawei.com/pypi/simple
+# d. 指定安装pip源（-i后地址请用户按需替换为所需pip源地址，不添加-i默认使用系统配置的pip源）
+./install.sh -i http://mirrors.tools.huawei.com/pypi/simple
 ```
 
 #### 按需手动安装不同组件
