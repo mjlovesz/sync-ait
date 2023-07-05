@@ -78,7 +78,7 @@ if [ "$arg_help" -eq "1" ]; then
   exit;
 fi
 
-# 若pip源为华为云，则优先安装skl2onnx(华为云这个源不支持所需版本的skl2onnx)
+# 若pip源为华为云，则优先安装skl2onnx(当前mirrors.huaweicloud.com中skl2onnx已停止更新，不包含1.14.1及以上版本)
 pre_check_skl2onnx(){
   pip_source_index_url=$(pip3 config list | grep index-url | awk -F'=' '{print $2}' | tr -d "'")
   if [ "${pip_source_index_url}" == "http://mirrors.huaweicloud.com/repository/pypi/simple" ] || [ "${pip_source_index_url}" == "https://mirrors.huaweicloud.com/repository/pypi/simple" ]
