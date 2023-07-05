@@ -49,7 +49,7 @@ cd ait/ait
   # 重新安装ait及其debug、profile、benchmark、transplt、analyze等组件
   ./install.sh --force-reinstall
   
-  # 指定安装pip源
+  # 指定安装pip源（-i后地址请用户按需替换为所需pip源地址，不添加-i默认使用系统配置的pip源）
   ./install.sh -i http://mirrors.tools.huawei.com/pypi/simple
 ```
 
