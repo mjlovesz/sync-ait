@@ -30,6 +30,7 @@ from tqdm import tqdm
 
 from ais_bench.infer.interface import InferSession, MemorySummary
 from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
+                                          create_pipeline_fileslist_from_inputs_list,
                                           create_intensors_from_infileslist,
                                           get_narray_from_files_list,
                                           get_tensor_from_files_list,
@@ -249,18 +250,9 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             )
 
 
-def infer_pipeline_run(session, args, infileslist, intensors_desc):
+def infer_pipeline_run(session, args, infileslist):
     print(infileslist)
-    inpathlists = []
-    for _, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference array Processing')):
-        inpipeline_file_list = []
-        for j, files in enumerate(infiles):
-            pipeline_file_list = get_strings_from_files_list(files, args.pure_data_type)
-            inpipeline_file_list.append(pipeline_file_list)
-        inpathlists.append(inpipeline_file_list)
-
-    print(inpathlists)
-    run_pipeline_inference(session, args, inpathlists)
+    run_pipeline_inference(session, args, infileslist)
 
 
 def msprof_run_profiling(args, msprof_bin):
@@ -333,11 +325,17 @@ def main(args, index=0, msgq=None, device_list=None):
     # create infiles list accord inputs list
     if len(inputs_list) == 0:
         # Pure reference scenario. Create input zero data
-        infileslist = [[[PURE_INFER_FAKE_FILE] for index in intensors_desc]]
+        if not args.pipeline:
+            infileslist = [[[PURE_INFER_FAKE_FILE] for index in intensors_desc]]
+        else:
+            infileslist = [[PURE_INFER_FAKE_FILE] for index in intensors_desc]
     else:
-        infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
-
-    warmup(session, args, intensors_desc, infileslist[0])
+        if not args.pipeline:
+            infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
+        else:
+            infileslist = create_pipeline_fileslist_from_inputs_list(inputs_list, intensors_desc)
+    if not args.pipeline:
+        warmup(session, args, intensors_desc, infileslist[0])
 
     if msgq is not None:
         # wait subprocess init ready, if time eplapsed,force ready run
