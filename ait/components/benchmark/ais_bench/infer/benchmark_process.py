@@ -175,7 +175,6 @@ def run_pipeline_inference(session, args, infileslist):
         args.output = ''
     session.run_pipeline(infileslist,
                          args.output,
-                         args.device,
                          args.auto_set_dymshape_mode,
                          args.auto_set_dymdims_mode,)
 
@@ -358,7 +357,7 @@ def main(args, index=0, msgq=None, device_list=None):
     if args.energy_consumption and args.npu_id:
         start_energy_consumption = get_energy_consumption(args.npu_id)
     if args.pipeline:
-        infer_pipeline_run(session, args, infileslist, intensors_desc)
+        infer_pipeline_run(session, args, infileslist)
     else:
         if args.run_mode == "array":
             infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
