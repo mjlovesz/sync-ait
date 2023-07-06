@@ -34,6 +34,11 @@ public class PluginClassId {
     public static final String Foundation_PluginId = Ascend_id + ".foundation";
 
     /**
+     * Profiler_PluginId
+     */
+    public static final String Profiler_PluginId = Ascend_id + ".profiler";
+
+    /**
      * Inference_PluginId
      */
     public static final String Inference_PluginId = Ascend_id + ".inference";
