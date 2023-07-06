@@ -115,12 +115,12 @@ uninstall(){
 
 
 install(){
-  pre_check_skl2onnx
-
   pip3 install ${CURRENT_DIR} ${arg_force_reinstall}
 
   if [ ! -z $only_debug ]
   then
+    pre_check_skl2onnx
+
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \
     ${arg_force_reinstall}
@@ -163,6 +163,8 @@ install(){
 
   if [ -z $only_debug ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ]
   then
+    pre_check_skl2onnx
+
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \
     ${CURRENT_DIR}/components/benchmark/backend \
