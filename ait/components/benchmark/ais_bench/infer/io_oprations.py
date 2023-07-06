@@ -83,33 +83,6 @@ def get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tens
         return ndata
 
 
-def get_pure_infer_string(pure_data_type):
-    if pure_data_type == "random":
-        lst = 'pure_infer_data_random'
-    else:
-        # zero
-        lst = 'pure_infer_data_zero'
-    return lst
-
-
-def get_strings_from_files_list(files_list, pure_data_type):
-    npathlist = []
-    for i, file_path in enumerate(files_list):
-        logger.debug("get files string from filepath:{} i:{} of all:{}".format(file_path, i, len(files_list)))
-        if file_path == PURE_INFER_FAKE_FILE:
-            npath = get_pure_infer_string(pure_data_type)
-        elif file_path == PADDING_INFER_FAKE_FILE:
-            logger.debug("padding file use fileslist[0]:{}".format(files_list[0]))
-            npath = files_list[0]
-        elif file_path is None or not os.path.exists(file_path):
-            logger.error('filepath:{} not valid'.format(file_path))
-            raise RuntimeError()
-        else:
-            npath = file_path
-        npathlist.append(npath)
-    return npathlist
-
-
 # get tensors from files list combile all files
 def get_tensor_from_files_list(files_list, session, size, pure_data_type, no_combine_tensor_mode=False):
     ndata = get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tensor_mode)
