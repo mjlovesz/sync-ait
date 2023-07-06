@@ -105,7 +105,7 @@ def get_strings_from_files_list(files_list, pure_data_type):
         else:
             npath = file_path
         npathlist.append(npath)
-        return npathlist
+    return npathlist
 
 
 # get tensors from files list combile all files
