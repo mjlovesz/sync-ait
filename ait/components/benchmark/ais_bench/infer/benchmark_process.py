@@ -36,6 +36,8 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                           get_tensor_from_files_list,
                                           get_strings_from_files_list,
                                           convert_real_files,
+                                          PURE_INFER_FAKE_FILE_ZERO,
+                                          PURE_INFER_FAKE_FILE_RANDOM,
                                           PURE_INFER_FAKE_FILE, save_tensors_to_file)
 from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
@@ -327,7 +329,10 @@ def main(args, index=0, msgq=None, device_list=None):
         if not args.pipeline:
             infileslist = [[[PURE_INFER_FAKE_FILE] for index in intensors_desc]]
         else:
-            infileslist = [[PURE_INFER_FAKE_FILE] for index in intensors_desc]
+            if args.pure_data_type == 'zero':
+                infileslist = [[PURE_INFER_FAKE_FILE_ZERO] for index in intensors_desc]
+            else:
+                infileslist = [[PURE_INFER_FAKE_FILE_RANDOM] for index in intensors_desc]
     else:
         if not args.pipeline:
             infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)

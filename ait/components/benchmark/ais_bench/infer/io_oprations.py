@@ -24,6 +24,8 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                             save_data_to_files)
 
 PURE_INFER_FAKE_FILE = "pure_infer_data"
+PURE_INFER_FAKE_FILE_ZERO = "pure_infer_data_zero"
+PURE_INFER_FAKE_FILE_RANDOM = "pure_infer_data_random"
 PADDING_INFER_FAKE_FILE = "padding_infer_fake_file"
 
 
