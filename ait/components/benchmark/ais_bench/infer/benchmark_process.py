@@ -134,15 +134,17 @@ def warmup(session, args, intensors_desc, infiles):
     # prepare input data
     infeeds = []
     if args.pipeline:
-        args.pure_data_type = "zero"
+        pure_data_type = "zero"
+    else:
+        pure_data_type = args.pure_data_type
     for j, files in enumerate(infiles):
         if args.run_mode == "tensor":
             tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize,
-                                                args.pure_data_type, args.no_combine_tensor_mode)
+                                                pure_data_type, args.no_combine_tensor_mode)
             infeeds.append(tensor)
         else:
             narray = get_narray_from_files_list(files, intensors_desc[j].realsize,
-                                                args.pure_data_type, args.no_combine_tensor_mode)
+                                                pure_data_type, args.no_combine_tensor_mode)
             infeeds.append(narray)
     session.set_loop_count(1)
     # warmup
