@@ -33,6 +33,7 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                           create_intensors_from_infileslist,
                                           get_narray_from_files_list,
                                           get_tensor_from_files_list,
+                                          get_strings_from_files_list,
                                           convert_real_files,
                                           PURE_INFER_FAKE_FILE, save_tensors_to_file)
 from ais_bench.infer.summary import summary
@@ -244,9 +245,15 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             )
 
 
-def infer_pipeline_run(session, args, infileslist):
-    print(infileslist)
-    run_pipeline_inference(session, args, infileslist)
+def infer_pipeline_run(session, args, infileslist, intensors_desc):
+    for _, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference array Processing')):
+        inpipeline_file_list = []
+        for j, files in enumerate(infiles):
+            pipeline_file_list = get_strings_from_files_list(files, args.pure_data_type)
+            inpipeline_file_list.append(pipeline_file_list)
+
+    print(inpipeline_file_list)
+    run_pipeline_inference(session, args, inpipeline_file_list)
 
 
 def msprof_run_profiling(args, msprof_bin):
@@ -346,7 +353,7 @@ def main(args, index=0, msgq=None, device_list=None):
     if args.energy_consumption and args.npu_id:
         start_energy_consumption = get_energy_consumption(args.npu_id)
     if args.pipeline:
-        infer_pipeline_run(session, args, infileslist)
+        infer_pipeline_run(session, args, infileslist, intensors_desc)
     else:
         if args.run_mode == "array":
             infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
