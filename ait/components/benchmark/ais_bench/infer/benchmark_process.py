@@ -133,6 +133,8 @@ def set_dymdims_shape(session, inputs):
 def warmup(session, args, intensors_desc, infiles):
     # prepare input data
     infeeds = []
+    if args.pipeline:
+        args.pure_data_type = "zero"
     for j, files in enumerate(infiles):
         if args.run_mode == "tensor":
             tensor = get_tensor_from_files_list(files, session, intensors_desc[j].realsize,
