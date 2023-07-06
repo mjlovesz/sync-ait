@@ -310,8 +310,8 @@ void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<
     }
 }
 
-void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
-                                       bool autoDymShape, bool autoDymDim)
+void InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
+                   bool autoDymShape, bool autoDymDim)
 {
     uint32_t deviceId = GetDeviceId();
     ConcurrentQueue<std::shared_ptr<Feeds>> h2dQueue;

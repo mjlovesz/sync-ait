@@ -15,14 +15,54 @@
  */
 
 #include "Base/ModelInfer/pipeline.h"
-#include "Base/Tensor/TensorContext/TensorContext.h"
 
 namespace Base {
     void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId, Base::PyInferenceSession* session,
                      std::vector<std::vector<std::string>> &infilesList, bool autoDymShape, bool autoDymDims,
                      const std::string &outputDir)
     {
-        
+        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
+        if (ret != APP_ERR_OK) {
+            throw std::runtime_error(GetError(ret));
+        }
+        std::vector<std::string> inputNames {};
+        std::vector<std::string> outputNames {};
+        for (const auto &desc: session->GetInputs()) {
+            inputNames->emplace_back(desc.name);
+        }
+        for (const auto &desc: session->GetOutputs()) {
+            outputNames->emplace_back(desc.name);
+        }
+
+        for (auto &files : infilesList) {
+            auto feeds = std::make_shared<Feeds>();
+
+            feeds->outputNames = std::make_shared<std::vector<std::string>>(outputNames);
+            feeds->outputPrefix = GetPrefix(outputDir, files.front(), ".npy");
+            feeds->inputs = std::make_shared<std::vector<Base::BaseTensor>>();
+            feeds->arrayPtr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
+
+            for (size_t i = 0; i < files.size(); i++) {
+                auto array = std::make_shared<cnpy::NpyArray>(cnpy::NpyLoad(files[i]));
+                feeds->arrayPtr->emplace_back(array);
+                feeds->inputs->emplace_back(array->Data<void>(), array->NumBytes());
+                if (autoDymShape) {
+                    feeds->autoDynamicShape += CreateDynamicShape(inputNames[i], array->shape);
+                    if (i != files.size() - 1) {
+                        feeds->autoDynamicShape += ";";
+                    }
+                }
+                if (autoDymDims) {
+                    feeds->autoDynamicDims += CreateDynamicShape(inputNames[i], array->shape);
+                    if (i != files.size() - 1) {
+                        feeds->autoDynamicDims += ";";
+                    }
+                }
+            }
+
+            h2dQueue.push(feeds);
+        }
+        h2dQueue.push(nullptr);
     }
 
     void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
@@ -41,13 +81,14 @@ namespace Base {
             }
 
             item->memory = std::make_shared<std::vector<Base::MemoryData>>();
-            item->inputs = std::make_shared<std::vector<Base::BaseTensor>>();
+            auto inputs = std::make_shared<std::vector<Base::BaseTensor>>();
             for (auto &info : *(item->inputs)) {
                 Base::MemoryData mem = Base::CopyMemory2DeviceMemory(info.buf, info.size, deviceId);
                 item->memory->emplace_back(mem);
                 Base::BaseTensor tensor(mem.ptrData, mem.size);
-                item->inputs->emplace_back(tensor);
+                inputs->emplace_back(tensor);
             }
+            item->inputs = inputs;
 
             computeQueue.push(item);
         }

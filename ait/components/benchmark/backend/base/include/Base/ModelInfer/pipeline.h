@@ -27,7 +27,9 @@
 
 #include "Base/Tensor/TensorBase/TensorBase.h"
 #include "Base/ModelInfer/ModelInferenceProcessor.h"
+#include "Base/Tensor/TensorContext/TensorContext.h"
 #include "Base/ModelInfer/cnpy.h"
+#include "Base/ModelInfer/utils.h"
 
 using Arguments = std::unordered_map<std::string, std::string>;
 

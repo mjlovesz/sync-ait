@@ -443,3 +443,87 @@ Result Utils::FillFileContentToMemory(const std::string file, char* ptr, const s
     }
     return SUCCESS;
 }
+
+std::string MergeStr(std::vector<std::string>& list, const std::string& delimiter)
+{
+    auto res = std::accumulate(list.begin(), list.end(), std::string(),
+    [=](const std::string& a, const std::string& b) -> std::string {
+        return a + (a.length() > 0 ? delimiter : "") + b; });
+    return res;
+}
+
+std::string GetPrefix(const std::string& outputDir, std::string filePath, const std::string& removeTail)
+{
+    std::stringstream inStream(filePath);
+    std::string fileName {};
+    while (inStream.good()) {
+        std::string subStr;
+        getline(inStream, subStr, '/');
+        if (subStr == "") {
+            continue;
+        }
+        fileName = subStr;
+    }
+
+    // remove tail ".npy" or ".bin"
+    if (fileName.size() >= removeTail.size() && fileName.compare(fileName.size() - removeTail.size(), removeTail.size(), removeTail) == 0) {
+        fileName.erase(fileName.size() - removeTail.size());
+    }
+    return outputDir + "/" + res;
+}
+
+std::string RemoveSlash(const std::string& name)
+{
+    std::string res;
+    for (auto &elem: name) {
+        if (elem != '/') {
+            res.push_back(elem);
+        }
+    }
+    return res;
+}
+
+std::string CreateDynamicShapeDims(const std::string& name, std::vector<size_t>& shapes)
+{
+    std::vector<std::string> shapeStr {};
+    for (auto &shape : shapes) {
+        shapeStr.emplace_back(std::to_string(shape));
+    }
+    auto res = MergeStr(shapeStr, ",");
+    return name + ":" + res;
+}
+
+Result TensorToNumpy(const std::string& outputFileName, Base::TensorBase& output)
+{
+    auto shapeTmp = output.GetShape();
+    std::vector<size_t> shape { shapeTmp.begin(), shapeTmp.end() };
+
+    if (output.GetDataType() == Base::TENSOR_DTYPE_FLOAT32) {
+        cnpy::NpySave(outputFileName, (float*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_FLOAT16) {
+        cnpy::NpySave(outputFileName, (aclFloat16*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT8) {
+        cnpy::NpySave(outputFileName, (int8_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT32) {
+        cnpy::NpySave(outputFileName, (int32_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT8) {
+        cnpy::NpySave(outputFileName, (uint8_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT16) {
+        cnpy::NpySave(outputFileName, (int16_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT16) {
+        cnpy::NpySave(outputFileName, (uint16_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT32) {
+        cnpy::NpySave(outputFileName, (uint32_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT64) {
+        cnpy::NpySave(outputFileName, (int64_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT64) {
+        cnpy::NpySave(outputFileName, (uint64_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_DOUBLE64) {
+        cnpy::NpySave(outputFileName, (double*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_BOOL) {
+        cnpy::NpySave(outputFileName, (bool*)output.GetBuffer(), shape);
+    } else {
+        return FAILED;
+    }
+    return SUCCESS;
+}
