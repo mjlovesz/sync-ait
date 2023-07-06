@@ -462,9 +462,9 @@ class InferSession:
         else:
             return outputs
 
-    def run_pipeline(self, infilelist, output, device, auto_shape, auto_dims):
+    def run_pipeline(self, infilelist, output, auto_shape, auto_dims):
         # print("pipeline running.....")
-        self.session.run_pipeline(infilelist, output, device, auto_shape, auto_dims)
+        self.session.run_pipeline(infilelist, output, auto_shape, auto_dims)
 
     def reset_sumaryinfo(self):
         self.session.reset_sumaryinfo()
