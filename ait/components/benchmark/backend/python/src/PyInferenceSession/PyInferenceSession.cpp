@@ -25,6 +25,7 @@
 #include "Base/Tensor/TensorContext/TensorContext.h"
 #include "Base/ErrorCode/ErrorCode.h"
 #include "Base/Log/Log.h"
+#include "Base/ModelInfer/pipeline.h"
 
 namespace Base {
 PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<SessionOptions> options) : deviceId_(deviceId)
@@ -309,9 +310,10 @@ void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<
     }
 }
 
-void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& infilesList, std::string outputDir
-                                       int32_t deviceId, bool autoDymShape, bool autoDymDim)
+void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
+                                       bool autoDymShape, bool autoDymDim)
 {
+    uint32_t deviceId = GetDeviceId();
     ConcurrentQueue<std::shared_ptr<Feeds>> h2dQueue;
     ConcurrentQueue<std::shared_ptr<Feeds>> computeQueue;
     ConcurrentQueue<std::shared_ptr<Feeds>> d2hQueue;

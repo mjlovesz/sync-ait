@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef BACKEND_CNPY_H
-#define BACKEND_CNPY_H
+#ifndef _CNPY_H
+#define _CNPY_H
 
 #include <string>
 #include <stdexcept>
