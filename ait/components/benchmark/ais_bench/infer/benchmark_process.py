@@ -538,14 +538,6 @@ def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
 
-    # if args.pipeline:
-    #     concur = shutil.which("concur")
-    #     if concur is None :
-    #         logger.info("find no pipeline excutable continue normal mode")
-    #     else:
-    #         pipeline_run(args, concur)
-    #         return 0
-
     if args.perf:
         backend_run(args)
         return 0
