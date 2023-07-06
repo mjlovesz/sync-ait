@@ -444,7 +444,7 @@ Result Utils::FillFileContentToMemory(const std::string file, char* ptr, const s
     return SUCCESS;
 }
 
-std::string MergeStr(std::vector<std::string>& list, const std::string& delimiter)
+std::string Utils::MergeStr(std::vector<std::string>& list, const std::string& delimiter)
 {
     auto res = std::accumulate(list.begin(), list.end(), std::string(),
     [=](const std::string& a, const std::string& b) -> std::string {
@@ -452,7 +452,7 @@ std::string MergeStr(std::vector<std::string>& list, const std::string& delimite
     return res;
 }
 
-std::string GetPrefix(const std::string& outputDir, std::string filePath, const std::string& removeTail)
+std::string Utils::GetPrefix(const std::string& outputDir, std::string filePath, const std::string& removeTail)
 {
     std::stringstream inStream(filePath);
     std::string fileName {};
@@ -469,10 +469,10 @@ std::string GetPrefix(const std::string& outputDir, std::string filePath, const 
     if (fileName.size() >= removeTail.size() && fileName.compare(fileName.size() - removeTail.size(), removeTail.size(), removeTail) == 0) {
         fileName.erase(fileName.size() - removeTail.size());
     }
-    return outputDir + "/" + res;
+    return outputDir + "/" + fileName + "_";
 }
 
-std::string RemoveSlash(const std::string& name)
+std::string Utils::RemoveSlash(const std::string& name)
 {
     std::string res;
     for (auto &elem: name) {
@@ -483,7 +483,7 @@ std::string RemoveSlash(const std::string& name)
     return res;
 }
 
-std::string CreateDynamicShapeDims(const std::string& name, std::vector<size_t>& shapes)
+std::string Utils::CreateDynamicShapeDims(const std::string& name, std::vector<size_t>& shapes)
 {
     std::vector<std::string> shapeStr {};
     for (auto &shape : shapes) {
@@ -493,7 +493,7 @@ std::string CreateDynamicShapeDims(const std::string& name, std::vector<size_t>&
     return name + ":" + res;
 }
 
-Result TensorToNumpy(const std::string& outputFileName, Base::TensorBase& output)
+Result Utils::TensorToNumpy(const std::string& outputFileName, Base::TensorBase& output)
 {
     auto shapeTmp = output.GetShape();
     std::vector<size_t> shape { shapeTmp.begin(), shapeTmp.end() };

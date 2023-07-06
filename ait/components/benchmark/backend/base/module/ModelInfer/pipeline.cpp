@@ -47,13 +47,13 @@ namespace Base {
                 feeds->arrayPtr->emplace_back(array);
                 feeds->inputs->emplace_back(array->Data<void>(), array->NumBytes());
                 if (autoDymShape) {
-                    feeds->autoDynamicShape += CreateDynamicShape(inputNames[i], array->shape);
+                    feeds->autoDynamicShape += CreateDynamicShapeDims(inputNames[i], array->shape);
                     if (i != files.size() - 1) {
                         feeds->autoDynamicShape += ";";
                     }
                 }
                 if (autoDymDims) {
-                    feeds->autoDynamicDims += CreateDynamicShape(inputNames[i], array->shape);
+                    feeds->autoDynamicDims += CreateDynamicShapeDims(inputNames[i], array->shape);
                     if (i != files.size() - 1) {
                         feeds->autoDynamicDims += ";";
                     }
