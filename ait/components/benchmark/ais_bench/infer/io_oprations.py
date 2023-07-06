@@ -82,12 +82,11 @@ def get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tens
 
 
 def get_pure_infer_string(pure_data_type):
-    lst = []
     if pure_data_type == "random":
-        lst = ['pure_infer_data_random']
+        lst = 'pure_infer_data_random'
     else:
         # zero
-        lst = ['pure_infer_data_zero']
+        lst = 'pure_infer_data_zero'
     return lst
 
 
@@ -106,9 +105,6 @@ def get_strings_from_files_list(files_list, pure_data_type):
         else:
             npath = file_path
         npathlist.append(npath)
-    if len(npathlist) == 1:
-        return npathlist[0]
-    else:
         return npathlist
 
 
