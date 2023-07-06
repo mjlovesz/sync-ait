@@ -246,14 +246,16 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
 
 
 def infer_pipeline_run(session, args, infileslist, intensors_desc):
+    inpathlists = []
     for _, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference array Processing')):
         inpipeline_file_list = []
         for j, files in enumerate(infiles):
             pipeline_file_list = get_strings_from_files_list(files, args.pure_data_type)
             inpipeline_file_list.append(pipeline_file_list)
+        inpathlists.append(inpipeline_file_list)
 
-    print(inpipeline_file_list)
-    run_pipeline_inference(session, args, inpipeline_file_list)
+    print(inpathlists)
+    run_pipeline_inference(session, args, inpathlists)
 
 
 def msprof_run_profiling(args, msprof_bin):
