@@ -250,6 +250,7 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
 
 
 def infer_pipeline_run(session, args, infileslist, intensors_desc):
+    print(infileslist)
     inpathlists = []
     for _, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference array Processing')):
         inpipeline_file_list = []
