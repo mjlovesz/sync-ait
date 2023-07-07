@@ -61,13 +61,13 @@ class CommandLineInput(IInput):
 
     def resolve_user_input(self):
         """解析来自命令行的用户输入"""
-        self._get_source_directories()
+        self.get_source_directories()
         self._get_construct_tool()
         self._set_debug_switch()
         self._get_output_type()
         self.set_scanner_type()
 
-    def _get_source_directories(self):
+    def get_source_directories(self):
         if not self.args.source:
             raise ValueError('ait transplt: error: '
                              'the following arguments are '

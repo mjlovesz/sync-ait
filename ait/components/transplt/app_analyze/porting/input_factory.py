@@ -13,6 +13,7 @@
 
 from app_analyze.common.kit_config import InputType
 from app_analyze.porting.cmdline_input import CommandLineInput
+from app_analyze.porting.custom_input import CustomInput
 
 
 class InputFactory:
@@ -30,5 +31,7 @@ class InputFactory:
         """
         if input_type == InputType.CMD_LINE:
             return CommandLineInput(args)
+        elif input_type == InputType.CUSTOM:
+            return CustomInput(args)
         else:
             raise Exception('Not support yet!')

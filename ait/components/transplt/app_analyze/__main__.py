@@ -15,15 +15,8 @@
 import click
 
 from app_analyze.utils import log_util
+from app_analyze.common.kit_config import Args
 from app_analyze.porting.app import start_scan_kit, opt_source, opt_tools, opt_log_level, opt_report_type
-
-
-class Args:
-    def __init__(self, source, report_type, log_level, tools):
-        self.source = source
-        self.report_type = report_type
-        self.log_level = log_level
-        self.tools = tools
 
 
 @click.command(short_help='Transplant tool to analyze inference applications', no_args_is_help=True)

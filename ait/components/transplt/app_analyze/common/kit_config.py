@@ -48,6 +48,7 @@ class InputType(Enum):
     """
     CMD_LINE = 'cmd'
     RESTFUL = 'restful'
+    CUSTOM = 'custom'
 
 
 class KitConfig:
@@ -211,3 +212,11 @@ PortingResult = namedtuple(
                       'suggestion_type',
                       'replacement']
 )
+
+
+class Args:
+    def __init__(self, source, report_type, log_level, tools):
+        self.source = source
+        self.report_type = report_type
+        self.log_level = log_level
+        self.tools = tools

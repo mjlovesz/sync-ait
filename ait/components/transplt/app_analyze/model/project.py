@@ -17,6 +17,7 @@ from app_analyze.utils.log_util import logger
 from app_analyze.common.kit_config import KitConfig
 from app_analyze.report.report_factory import ReporterFactory
 from app_analyze.scan.scanner_factory import ScannerFactory
+from app_analyze.scan.clang_parser import Parser
 from app_analyze.scan.module.file_matrix import FileMatrix
 from app_analyze.solution.advisor import Advisor
 
@@ -98,6 +99,7 @@ class Project:
                 "cpp": self.file_matrix.files.get('cpp_sources'),
                 "hpp": self.file_matrix.files.get('hpp_sources'),
                 'include_path': self.file_matrix.files.get('include_path'),
+                'cxx_parser': Parser
             },
             'cmake_files': cmake_files,
         }
