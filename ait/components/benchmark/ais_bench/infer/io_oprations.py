@@ -235,7 +235,13 @@ def create_pipeline_fileslist_from_inputs_list(inputs_list, intensors_desc):
         if filesize != tensorsize:
             logger.error(f'tensor_num:{i} tensorsize:{tensorsize} filesize:{filesize} not match')
             raise RuntimeError()
-    return fileslist
+    infileslist = []
+    for i in range(len(fileslist[0])):
+        cur_input = []
+        for file_list in fileslist:
+            cur_input.append(file_list[i])
+        infileslist.append(cur_input)
+    return infileslist
 
 
 def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index, output_batchsize_axis):
