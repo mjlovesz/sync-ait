@@ -111,11 +111,55 @@ class TestClass:
         options = aclruntime.session_options()
         model_path = self.get_resnet_dymbatch_om_path()
         session = aclruntime.InferenceSession(model_path, device_id, options)
-        session.set_dynamic_batchsize(1)
+        session.set_dynamic_hw(224, 224)
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file().split(','), intensors_desc)
         output_dir = ""
         session.run_pipeline(infilespath, output_dir)
+
+    def test_infer_dym_dim_input_file(self):
+        device_id = 0
+        input_tensor_name = self.get_input_tensor_name()
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_dymbatch_om_path()
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        self.session.set_dynamic_dims(input_tensor_name + ":1,3,224,224")
+        intensors_desc = session.get_inputs()
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file().split(','), intensors_desc)
+        output_dir = ""
+        session.run_pipeline(infilespath, output_dir)
+
+    def test_infer_dym_shape_input_file(self):
+        device_id = 0
+        input_tensor_name = self.get_input_tensor_name()
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_dymshape_om_path()
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        self.session.set_dynamic_shape(input_tensor_name + ":1,3,224,224")
+        intensors_desc = session.get_inputs()
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file().split(','), intensors_desc)
+        output_dir = ""
+        session.run_pipeline(infilespath, output_dir)
+
+    def test_infer_auto_dim_input_file(self):
+        device_id = 0
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_dymbatch_om_path()
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        intensors_desc = session.get_inputs()
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file().split(','), intensors_desc)
+        output_dir = ""
+        session.run_pipeline(infilespath, output_dir, auto_shape=0, auto_dims=1)
+
+    def test_infer_dym_shape_input_file(self):
+        device_id = 0
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_dymshape_om_path()
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        intensors_desc = session.get_inputs()
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file().split(','), intensors_desc)
+        output_dir = ""
+        session.run_pipeline(infilespath, output_dir, auto_shape=1, auto_dims=0)
 
     def test_infer_intensor_infile_not_matched(self):
         device_id = 0
