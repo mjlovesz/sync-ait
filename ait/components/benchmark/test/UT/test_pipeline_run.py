@@ -42,6 +42,14 @@ class TestClass:
         logger.info('\n ---class level teardown_class')
 
     @classmethod
+    def get_input_datas_file(self):
+        return os.path.join(TestCommonClass.base_path, self.model_name, "input", "196608.bin")
+
+    @classmethod
+    def get_input_datas_dir(self):
+        return os.path.join(TestCommonClass.base_path, self.model_name, "input", "196608/10/")
+
+    @classmethod
     def get_resnet_stcshape_om_path(self, bs=1):
         return os.path.join(TestCommonClass.base_path, self.model_name, "model", f"pth_resnet50_bs{bs}.om")
 
@@ -64,17 +72,17 @@ class TestClass:
     def init(self):
         self.model_name = "resnet50"
 
-    def test_infer_dynamicshape(self):
+    def test_infer_stc_batch(self):
         device_id = 0
         options = aclruntime.session_options()
         input_tensor_name = self.get_input_tensor_name()
-        model_path = self.get_resnet_dymshape_om_path()
+        model_path = self.get_resnet_stcshape_om_path(bs=1)
         session = aclruntime.InferenceSession(model_path, device_id, options)
 
         # only need call this functon compare infer_simple
-        session.set_dynamic_shape(input_tensor_name+":1,3,224,224")
-        session.set_custom_outsize([10000])
-
+        # session.set_dynamic_shape(input_tensor_name+":1,3,224,224")
+        # session.set_custom_outsize([10000])
+        infilespath = self.get_input_datas_dir()
         # create new numpy data according inputs info
         barray = bytearray(session.get_inputs()[0].realsize)
         ndata = np.frombuffer(barray)

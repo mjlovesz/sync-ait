@@ -462,7 +462,7 @@ class InferSession:
         else:
             return outputs
 
-    def run_pipeline(self, infilelist, output, auto_shape, auto_dims):
+    def run_pipeline(self, infilelist, output, auto_shape=0, auto_dims=0):
         # print("pipeline running.....")
         self.session.run_pipeline(infilelist, output, auto_shape, auto_dims)
 
