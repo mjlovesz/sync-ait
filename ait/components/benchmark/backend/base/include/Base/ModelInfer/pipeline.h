@@ -23,7 +23,6 @@
 #include <mutex>
 #include <condition_variable>
 #include <queue>
-#include <experimental/filesystem>
 
 #include "Base/Tensor/TensorBase/TensorBase.h"
 #include "Base/ModelInfer/ModelInferenceProcessor.h"
