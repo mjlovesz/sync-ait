@@ -489,7 +489,7 @@ std::string Utils::CreateDynamicShapeDims(const std::string& name, std::vector<s
     for (auto &shape : shapes) {
         shapeStr.emplace_back(std::to_string(shape));
     }
-    auto res = MergeStr(shapeStr, ",");
+    auto res = Utils::MergeStr(shapeStr, ",");
     return name + ":" + res;
 }
 

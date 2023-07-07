@@ -24,6 +24,8 @@
 #include <condition_variable>
 #include <queue>
 
+#include "PyInferenceSession/PyInferenceSession.h"
+#include "PyTensor/PyTensor.h"
 #include "Base/Tensor/TensorBase/TensorBase.h"
 #include "Base/ModelInfer/ModelInferenceProcessor.h"
 #include "Base/Tensor/TensorContext/TensorContext.h"
@@ -93,7 +95,7 @@ namespace Base {
     void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
                  ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId);
 
-    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, const std::string &outputDir);
+    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId);
 }
 
 

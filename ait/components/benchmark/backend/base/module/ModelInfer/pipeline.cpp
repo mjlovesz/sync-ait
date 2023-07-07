@@ -28,17 +28,17 @@ namespace Base {
         std::vector<std::string> inputNames {};
         std::vector<std::string> outputNames {};
         for (const auto &desc: session->GetInputs()) {
-            inputNames->emplace_back(desc.name);
+            inputNames.emplace_back(desc.name);
         }
         for (const auto &desc: session->GetOutputs()) {
-            outputNames->emplace_back(desc.name);
+            outputNames.emplace_back(desc.name);
         }
 
         for (auto &files : infilesList) {
             auto feeds = std::make_shared<Feeds>();
 
             feeds->outputNames = std::make_shared<std::vector<std::string>>(outputNames);
-            feeds->outputPrefix = GetPrefix(outputDir, files.front(), ".npy");
+            feeds->outputPrefix = Utils::GetPrefix(outputDir, files.front(), ".npy");
             feeds->inputs = std::make_shared<std::vector<Base::BaseTensor>>();
             feeds->arrayPtr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
 
@@ -47,13 +47,13 @@ namespace Base {
                 feeds->arrayPtr->emplace_back(array);
                 feeds->inputs->emplace_back(array->Data<void>(), array->NumBytes());
                 if (autoDymShape) {
-                    feeds->autoDynamicShape += CreateDynamicShapeDims(inputNames[i], array->shape);
+                    feeds->autoDynamicShape += Utils::CreateDynamicShapeDims(inputNames[i], array->shape);
                     if (i != files.size() - 1) {
                         feeds->autoDynamicShape += ";";
                     }
                 }
                 if (autoDymDims) {
-                    feeds->autoDynamicDims += CreateDynamicShapeDims(inputNames[i], array->shape);
+                    feeds->autoDynamicDims += Utils::CreateDynamicShapeDims(inputNames[i], array->shape);
                     if (i != files.size() - 1) {
                         feeds->autoDynamicDims += ";";
                     }
@@ -166,10 +166,9 @@ namespace Base {
 
             if (item->outputPrefix != "") {
                 size_t n = item->outputs->size();
-                // std::string prefix = outputDir + "/" + RemoveSlash(RemoveTail(item->outputPrefix, ".npy") + "_");
                 for (size_t i = 0; i < n; i++) {
-                    std::string outputFileName = item->outputPrefix + RemoveSlash(item->outputNames->at(i)) + ".npy";
-                    if (TensorToNumpy(outputFileName, item->outputs->at(i)) == FAILED) {
+                    std::string outputFileName = item->outputPrefix + Utils::RemoveSlash(item->outputNames->at(i)) + ".npy";
+                    if (Utils::TensorToNumpy(outputFileName, item->outputs->at(i)) == FAILED) {
                         ERROR_LOG("%s save failed\n", outputFileName.c_str());
                     }
                 }

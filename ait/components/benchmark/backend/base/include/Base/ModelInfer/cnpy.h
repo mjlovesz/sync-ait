@@ -41,7 +41,7 @@ struct NpyArray {
         numVals = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>());
         dataHolder = std::make_shared<std::vector<char>>(numVals * wordSize);
     }
-    
+
     NpyArray() : shape(0), wordSize(0), fortranOrder(0), numVals(0) {}
 
     template <typename T> T *Data()
@@ -183,4 +183,4 @@ template <typename T> std::vector<char> CreateNpyHeader(const std::vector<size_t
 }
 } // namespace cnpy
 
-#endif // BACKEND_CNPY_H
+#endif // _CNPY_H
