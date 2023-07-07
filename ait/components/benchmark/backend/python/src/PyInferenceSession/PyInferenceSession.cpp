@@ -17,6 +17,7 @@
 #include "PyInferenceSession/PyInferenceSession.h"
 
 #include <exception>
+#include <thread>
 
 #include "Base/DeviceManager/DeviceManager.h"
 #include "Base/Tensor/TensorBuffer/TensorBuffer.h"
@@ -24,6 +25,7 @@
 #include "Base/Tensor/TensorContext/TensorContext.h"
 #include "Base/ErrorCode/ErrorCode.h"
 #include "Base/Log/Log.h"
+#include "Base/ModelInfer/pipeline.h"
 
 namespace Base {
 PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<SessionOptions> options) : deviceId_(deviceId)
@@ -308,6 +310,26 @@ void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<
     }
 }
 
+void InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
+                   bool autoDymShape, bool autoDymDim)
+{
+    uint32_t deviceId = GetDeviceId();
+    ConcurrentQueue<std::shared_ptr<Feeds>> h2dQueue;
+    ConcurrentQueue<std::shared_ptr<Feeds>> computeQueue;
+    ConcurrentQueue<std::shared_ptr<Feeds>> d2hQueue;
+    ConcurrentQueue<std::shared_ptr<Feeds>> saveQueue;
+
+    std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId);
+    std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), deviceId, this);
+    std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId);
+    std::thread saveThread(FuncSave, std::ref(saveQueue), deviceId, std::cref(outputDir));
+    FuncPrepare(h2dQueue, deviceId, this, infilesList, autoDymShape, autoDymDim);
+
+    h2dThread.join();
+    computeThread.join();
+    d2hThread.join();
+    saveThread.join();
+}
 
 int PyInferenceSession::AippSetMaxBatchSize(uint64_t batchSize)
 {
@@ -476,6 +498,7 @@ void RegistInferenceSession(py::module &m)
     model.def("run", &Base::PyInferenceSession::InferVector);
     model.def("run", &Base::PyInferenceSession::InferMap);
     model.def("run", &Base::PyInferenceSession::InferBaseTensorVector);
+    model.def("run_pipeline", &Base::PyInferenceSession::InferPipeline);
     model.def("__str__", &Base::PyInferenceSession::GetDesc);
     model.def("__repr__", &Base::PyInferenceSession::GetDesc);
 
