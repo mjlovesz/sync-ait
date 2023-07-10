@@ -46,7 +46,7 @@ class TestClass:
 
     @classmethod
     def get_input_datas_file(self):
-        return os.path.join(TestCommonClass.base_path, self.model_name, "input", "196608.bin")
+        return os.path.join(TestCommonClass.base_path, self.model_name, "input", "196608/196608.bin")
 
     @classmethod
     def get_input_datas_dir(self):
