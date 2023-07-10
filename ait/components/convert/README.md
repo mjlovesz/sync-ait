@@ -51,7 +51,7 @@ ait convert --golden-model resnet50.onnx --output-file resnet50.om --soc-version
 
 |  **序号**                  |  **onnx模型名称**                                |  **模型链接**  |
 |---------------------|----------------------------------------------------------|------|
-| 1 | resnet50 | https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer |
+| 1 | Resnet50 | https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer |
 | 2 | DBNet_MobileNetV3 | https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/DBNet_MobileNetV3 |
 | 3 | CRNN | https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/CRNN_BuiltIn_for_Pytorch |
 | 4 |YOLOX-s| https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/YoloXs_for_Pytorch |
