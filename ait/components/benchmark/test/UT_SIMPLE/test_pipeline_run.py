@@ -46,11 +46,11 @@ class TestClass:
 
     @classmethod
     def get_input_datas_file(self):
-        return os.path.join(TestCommonClass.base_path, self.model_name, "input", "196608/196608.bin")
+        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "196608/196608.bin"))
 
     @classmethod
     def get_input_datas_dir(self):
-        return os.path.join(TestCommonClass.base_path, self.model_name, "input", "196608/10/")
+        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "196608/10/"))
 
     @classmethod
     def get_resnet_stcshape_om_path(self, bs=1):
@@ -78,7 +78,7 @@ class TestClass:
     def test_infer_stc_batch_input_file(self):
         device_id = 0
         options = aclruntime.session_options()
-        model_path = os.path.realpath(self.get_resnet_stcshape_om_path(bs=1))
+        model_path = self.get_resnet_stcshape_om_path(bs=1)
         session = aclruntime.InferenceSession(model_path, device_id, options)
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file().split(','), intensors_desc)
