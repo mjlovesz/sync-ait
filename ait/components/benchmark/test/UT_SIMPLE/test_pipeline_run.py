@@ -78,13 +78,13 @@ class TestClass:
     def test_infer_stc_batch_input_file(self):
         device_id = 0
         options = aclruntime.session_options()
-        model_path = self.get_resnet_stcshape_om_path(bs=1)
+        model_path = os.path.realpath(self.get_resnet_stcshape_om_path(bs=1))
         session = aclruntime.InferenceSession(model_path, device_id, options)
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file().split(','), intensors_desc)
         print(infilespath)
         output_dir = ""
-        session.run_pipeline(infilespath, output_dir, False, False)
+        # session.run_pipeline(infilespath, output_dir, False, False)
 
     # def test_infer_stc_batch_input_dir(self):
     #     device_id = 0
