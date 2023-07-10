@@ -82,6 +82,7 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file().split(','), intensors_desc)
+        print(infilespath)
         output_dir = ""
         session.run_pipeline(infilespath, output_dir)
 
