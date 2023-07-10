@@ -149,7 +149,7 @@ class TestClass:
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file().split(','), intensors_desc)
         output_dir = ""
-        session.run_pipeline(infilespath, output_dir, auto_shape=0, auto_dims=1)
+        session.run_pipeline(infilespath, output_dir, auto_shape=False, auto_dims=True)
 
     def test_infer_dym_shape_input_file(self):
         device_id = 0
@@ -159,7 +159,7 @@ class TestClass:
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file().split(','), intensors_desc)
         output_dir = ""
-        session.run_pipeline(infilespath, output_dir, auto_shape=1, auto_dims=0)
+        session.run_pipeline(infilespath, output_dir, auto_shape=True, auto_dims=False)
 
     def test_infer_intensor_infile_not_matched(self):
         device_id = 0

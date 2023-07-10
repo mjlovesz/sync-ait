@@ -124,7 +124,7 @@ class TestClass:
         options = aclruntime.session_options()
         model_path = self.get_resnet_dymbatch_om_path()
         session = aclruntime.InferenceSession(model_path, device_id, options)
-        self.session.set_dynamic_dims(input_tensor_name + ":1,3,224,224")
+        session.set_dynamic_dims(input_tensor_name + ":1,3,224,224")
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file().split(','), intensors_desc)
         output_dir = ""
@@ -138,7 +138,7 @@ class TestClass:
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file().split(','), intensors_desc)
         output_dir = ""
-        session.run_pipeline(infilespath, output_dir, auto_shape=0, auto_dims=1)
+        session.run_pipeline(infilespath, output_dir, auto_shape=False, auto_dims=True)
 
     def test_infer_intensor_infile_not_matched(self):
         device_id = 0
