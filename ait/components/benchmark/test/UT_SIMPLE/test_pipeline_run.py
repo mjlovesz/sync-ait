@@ -84,7 +84,7 @@ class TestClass:
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file().split(','), intensors_desc)
         print(infilespath)
         output_dir = ""
-        # session.run_pipeline(infilespath, output_dir, False, False)
+        session.run_pipeline(infilespath, output_dir, False, False)
 
     # def test_infer_stc_batch_input_dir(self):
     #     device_id = 0
