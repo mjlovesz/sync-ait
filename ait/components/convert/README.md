@@ -49,11 +49,13 @@ ait convert --golden-model resnet50.onnx --output-file resnet50.om --soc-version
 1. 目前convert组件仅支持使用onnxsim后的模型；
 2. 目前convert组件支持以下4个模型：
 
-| 参数                  | 说明                                                       | 是否必选 |
+| 序号                  | onnx模型                                                       | 链接 |
 |---------------------|----------------------------------------------------------|------|
-| -gm, --golden-model | 标杆模型输入路径，支持onnx模型                                        | 是    |
-| -of, --output-file  | 输出文件，需要有后缀 .om, 当前支持基于 AIE(Ascend Inference Engine) 的模型转换 | 是    |
-| -soc, --soc-version | 芯片类型，AIE模型转换当前只支持Ascend310P3和Ascend910B3                 | 是    |
+| 1 | resnet50 | https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer |
+| 2| DBNet_MobileNetV3 | https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/DBNet_MobileNetV3 |
+| 3 | CRNN | https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/CRNN_BuiltIn_for_Pytorch |
+| 4 |YOLOX-s| https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/YoloXs_for_Pytorch |
+
 
 
 
