@@ -43,17 +43,22 @@ namespace Base {
             feeds->arrayPtr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
 
             for (size_t i = 0; i < files.size(); i++) {
-                auto array = std::make_shared<cnpy::NpyArray>(cnpy::NpyLoad(files[i]));
-                feeds->arrayPtr->emplace_back(array);
-                feeds->inputs->emplace_back(array->Data<void>(), array->NumBytes());
+                if (Utils::TailContain(files[i], ".npy")) {
+                    auto array = std::make_shared<cnpy::NpyArray>(cnpy::NpyLoad(files[i]));
+                    feeds->arrayPtr->emplace_back(array);
+                } else {
+                    auto array = std::make_shared<cnpy::NpyArray>(cnpy::BinLoad(files[i]));
+                    feeds->arrayPtr->emplace_back(array);
+                }
+                feeds->inputs->emplace_back(feeds->arrayPtr->back()->Data<void>(), feeds->arrayPtr->back()->NumBytes());
                 if (autoDymShape) {
-                    feeds->autoDynamicShape += Utils::CreateDynamicShapeDims(inputNames[i], array->shape);
+                    feeds->autoDynamicShape += Utils::CreateDynamicShapeDims(inputNames[i], feeds->arrayPtr->back()->shape);
                     if (i != files.size() - 1) {
                         feeds->autoDynamicShape += ";";
                     }
                 }
                 if (autoDymDims) {
-                    feeds->autoDynamicDims += Utils::CreateDynamicShapeDims(inputNames[i], array->shape);
+                    feeds->autoDynamicDims += Utils::CreateDynamicShapeDims(inputNames[i], feeds->arrayPtr->back()->shape);
                     if (i != files.size() - 1) {
                         feeds->autoDynamicDims += ";";
                     }
@@ -147,7 +152,7 @@ namespace Base {
         }
     }
 
-    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId)
+    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, std::string outFmt)
     {
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
         if (ret != APP_ERR_OK) {
@@ -167,9 +172,17 @@ namespace Base {
             if (item->outputPrefix != "") {
                 size_t n = item->outputs->size();
                 for (size_t i = 0; i < n; i++) {
-                    std::string outputFileName = item->outputPrefix + Utils::RemoveSlash(item->outputNames->at(i)) + ".npy";
-                    if (Utils::TensorToNumpy(outputFileName, item->outputs->at(i)) == FAILED) {
-                        ERROR_LOG("%s save failed\n", outputFileName.c_str());
+                    std::string outputFileName = item->outputPrefix + Utils::RemoveSlash(item->outputNames->at(i));
+                    if (outFmt == "BIN") {
+                        outputFileName += ".bin";
+                        if (Utils::TensorToBin(outputFileName, item->outputs->at(i)) == FAILED) {
+                            ERROR_LOG("%s save failed\n", outputFileName.c_str());
+                        }
+                    } else {
+                        outputFileName += ".npy";
+                        if (Utils::TensorToNumpy(outputFileName, item->outputs->at(i)) == FAILED) {
+                            ERROR_LOG("%s save failed\n", outputFileName.c_str());
+                        }
                     }
                 }
             }

@@ -311,7 +311,7 @@ void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<
 }
 
 void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
-                                       bool autoDymShape, bool autoDymDims)
+                                       bool autoDymShape, bool autoDymDims, const std::string& outFmt)
 {
     uint32_t deviceId = GetDeviceId();
     ConcurrentQueue<std::shared_ptr<Feeds>> h2dQueue;
@@ -322,7 +322,7 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
     std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId);
     std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), deviceId, this);
     std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId);
-    std::thread saveThread(FuncSave, std::ref(saveQueue), deviceId);
+    std::thread saveThread(FuncSave, std::ref(saveQueue), deviceId, outFmt);
     FuncPrepare(h2dQueue, deviceId, this, infilesList, autoDymShape, autoDymDims, outputDir);
 
     h2dThread.join();

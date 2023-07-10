@@ -25,6 +25,7 @@ import re
 import subprocess
 from multiprocessing import Pool
 from multiprocessing import Manager
+import numpy as np
 
 from tqdm import tqdm
 
@@ -37,9 +38,10 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                           convert_real_files,
                                           PURE_INFER_FAKE_FILE_ZERO,
                                           PURE_INFER_FAKE_FILE_RANDOM,
-                                          PURE_INFER_FAKE_FILE, save_tensors_to_file)
+                                          PURE_INFER_FAKE_FILE, save_tensors_to_file,
+                                          get_pure_infer_data)
 from ais_bench.infer.summary import summary
-from ais_bench.infer.utils import logger
+from ais_bench.infer.utils import logger, create_fake_file_name
 from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
 from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                                    get_fileslist_from_dir, list_split, list_share, logger,
@@ -173,7 +175,8 @@ def run_pipeline_inference(session, args, infileslist):
     session.run_pipeline(infileslist,
                          args.output,
                          args.auto_set_dymshape_mode,
-                         args.auto_set_dymdims_mode)
+                         args.auto_set_dymdims_mode,
+                         args.outfmt)
 
 
 # tensor to loop infer
@@ -323,10 +326,12 @@ def main(args, index=0, msgq=None, device_list=None):
         if not args.pipeline:
             infileslist = [[[PURE_INFER_FAKE_FILE] for index in intensors_desc]]
         else:
-            if args.pure_data_type == 'zero':
-                infileslist = [[PURE_INFER_FAKE_FILE_ZERO] for index in intensors_desc]
-            else:
-                infileslist = [[PURE_INFER_FAKE_FILE_RANDOM] for index in intensors_desc]
+            infileslist = [[]]
+            for i, desc in enumerate(intensors_desc):
+                fake_file_name = create_fake_file_name(args.pure_data_type, i)
+                ndata = get_pure_infer_data(desc.realsize, args.pure_data_type)
+                ndata.tofile(fake_file_name)
+                infileslist[0].append(fake_file_name)
     else:
         if not args.pipeline:
             infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
@@ -334,6 +339,12 @@ def main(args, index=0, msgq=None, device_list=None):
             infileslist = create_pipeline_fileslist_from_inputs_list(inputs_list, intensors_desc)
     if not args.pipeline:
         warmup(session, args, intensors_desc, infileslist[0])
+    else:
+        # prepare for pipeline case
+        infiles = []
+        for file in infileslist[0]:
+            infiles.append([file])
+        warmup(session, args, intensors_desc, infiles)
 
     if msgq is not None:
         # wait subprocess init ready, if time eplapsed,force ready run

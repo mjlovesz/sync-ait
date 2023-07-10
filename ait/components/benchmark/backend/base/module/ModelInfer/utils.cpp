@@ -527,3 +527,25 @@ Result Utils::TensorToNumpy(const std::string& outputFileName, Base::TensorBase&
     }
     return SUCCESS;
 }
+
+Result Utils::TensorToBin(const std::string& outputFileName, Base::TensorBase& output)
+{
+    std::ofstream outfile(outputFileName, std::ios::out | std::ios::binary);
+    if (!outfile) {
+        ERROR_LOG("TensorToBin failed");
+        return FAILED;
+    }
+
+    outfile.write(reinterpret_cast<const char*>(output.GetBuffer()), output.GetByteSize());
+    outfile.close();
+
+    return SUCCESS;
+}
+
+bool Utils::TailContain(const std::string& str, const std::string& tail)
+{
+    if (str.length() >= tail.length() && str.compare(str.length() - tail.length(), tail.length(), tail) == 0) {
+        return true;
+    }
+    return false;
+}

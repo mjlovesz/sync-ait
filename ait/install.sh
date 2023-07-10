@@ -129,7 +129,6 @@ install(){
     pip3 install ${CURRENT_DIR}/components/benchmark/backend \
     ${CURRENT_DIR}/components/benchmark \
     ${arg_force_reinstall} ${pip_source}
-    bash ${CURRENT_DIR}/components/benchmark/backend/concur/build.sh
   fi
 
   if [ ! -z $only_analyze ]

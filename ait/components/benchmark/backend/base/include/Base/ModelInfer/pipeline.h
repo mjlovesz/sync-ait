@@ -95,7 +95,7 @@ namespace Base {
     void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
                  ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId);
 
-    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId);
+    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, std::string outFmt);
 }
 
 

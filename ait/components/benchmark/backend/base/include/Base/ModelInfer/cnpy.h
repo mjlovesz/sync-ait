@@ -20,6 +20,7 @@
 #include <string>
 #include <stdexcept>
 #include <sstream>
+#include <fstream>
 #include <vector>
 #include <cstdio>
 #include <typeinfo>
@@ -42,7 +43,7 @@ struct NpyArray {
         dataHolder = std::make_shared<std::vector<char>>(numVals * wordSize);
     }
 
-    NpyArray() : shape(0), wordSize(0), fortranOrder(0), numVals(0) {}
+    NpyArray() : shape({0}), wordSize(0), fortranOrder(0), numVals(0) {}
 
     template <typename T> T *Data()
     {
@@ -80,6 +81,7 @@ template <typename T> std::vector<char> CreateNpyHeader(const std::vector<size_t
 void ParseNpyHeader(FILE *fp, size_t &wordSize, std::vector<size_t> &shape, bool &fortranOrder);
 void ParseNpyHeader(unsigned char *buffer, size_t &wordSize, std::vector<size_t> &shape, bool &fortranOrder);
 NpyArray NpyLoad(std::string fname);
+NpyArray BinLoad(std::string fname);
 
 template <typename T> std::vector<char> &operator += (std::vector<char> &lhs, const T rhs)
 {

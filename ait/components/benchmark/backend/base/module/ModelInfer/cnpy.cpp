@@ -183,10 +183,27 @@ cnpy::NpyArray cnpy::NpyLoad(std::string fname)
     if (!fp) {
         throw std::runtime_error("NpyLoad: Unable to open file" + fname);
     }
-    
+
     NpyArray arr = LoadNpyFile(fp);
 
     fclose(fp);
     return arr;
 }
 
+cnpy::NpyArray cnpy::BinLoad(std::string fname)
+{
+    std::ifstream file(fname, std::ios::binary);
+    if (!file) {
+        throw std::runtime_error("BinLoad: Unable to open file" + fname);
+    }
+
+    file.seekg(0, std::ios::end);
+    std::size_t size = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    NpyArray arr = {};
+    arr.dataHolder = std::make_shared<std::vector<char>>(size);
+    file.read(arr.dataHolder->data(), size);
+
+    return arr;
+}
