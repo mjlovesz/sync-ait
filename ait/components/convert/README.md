@@ -44,3 +44,13 @@ ait convert --golden-model resnet50.onnx --output-file resnet50.om --soc-version
 
 ## 使用案例
 请移步[convert工具使用示例](../../examples/cli/convert/)
+
+## 使用限制
+1. 目前convert组件仅支持使用onnxsim后的模型；
+2. 目前convert组件支持以下4个模型
+| 编号 | onnx模型名称 | 模型链接 |
+|----|----------|------|
+| 1  | resnet50 | 3    |
+| 2  | DB       | 4    |
+| 3  | 1        | 5    |
+| 4  | 2        | 6    |
