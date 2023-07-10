@@ -48,13 +48,12 @@ ait convert --golden-model resnet50.onnx --output-file resnet50.om --soc-version
 ## 使用限制
 1. 目前convert组件仅支持使用onnxsim后的模型；
 2. 目前convert组件支持以下4个模型：
-| · | 2 | 3 |
-|---|---|---|
-|   |   |   |
-|   |   |   |
-|   |   |   |
-|   |   |   |
 
+| 参数                  | 说明                                                       | 是否必选 |
+|---------------------|----------------------------------------------------------|------|
+| -gm, --golden-model | 标杆模型输入路径，支持onnx模型                                        | 是    |
+| -of, --output-file  | 输出文件，需要有后缀 .om, 当前支持基于 AIE(Ascend Inference Engine) 的模型转换 | 是    |
+| -soc, --soc-version | 芯片类型，AIE模型转换当前只支持Ascend310P3和Ascend910B3                 | 是    |
 
 
 
