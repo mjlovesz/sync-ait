@@ -4,23 +4,22 @@
 - [介绍](#介绍)
 - [工具安装](#工具安装)
 - [工具使用](#工具使用)
-- [参考](#参考)
 - [许可证](#许可证)
 - [免责声明](#免责声明)
 
 ## 介绍
-AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体化开发工具，支持一站式调试调优，当前包括benchmark、debug、transplt、analyze等组件。
+AIT(Ascend Inference Tools)作为昇腾统一推理工具，用于辅助用户进行模型迁移以及性能与精度的调试调优，当前包括benchmark、debug、transplt、analyze等组件。
 
 ### AIT各子功能介绍
-| 任务类型                        | 子功能                           | 说明                                      | 命令行入口             |
-|-----------------------------|-------------------------------|-----------------------------------------|-------------------|
-| [benchmark](docs/benchmark) | -                             | 用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延） | ait benchmark     |
-| debug(一站式调试)                | [surgeon](docs/debug/surgeon) | 使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能         | ait debug surgeon |
-| debug(一站式调试)                | [compare](docs/debug/compare) | 提供自动化的推理场景精度比对，用来定位问题算子                 | ait debug compare |
-| [analyze](components/analyze) | -                             | 提供其他平台模型迁移至昇腾平台的支持度分析功能                 | ait analyze       |
-| [transplt](components/transplt) | -                             | 提供NV C++推理应用迁移分析以及昇腾API推荐功能             | ait transplt      |
-| [convert](components/convert) | -                             | 提供推理模型转换功能                              | ait convert       |
-| [profile](components/profile/msprof) | - | 提供profiling，提供整网详细的性能数据及相关信息            | ait profile  |
+| 任务类型                        | 子功能                           | 说明                                      |
+|-----------------------------|-------------------------------|-----------------------------------------|
+| [benchmark](docs/benchmark) | -                             | 用来针对指定的推理模型运行推理程序，并能够测试推理模型的性能（包括吞吐率、时延） |
+| debug(一站式调试)                | [surgeon](docs/debug/surgeon) | 使能ONNX模型在昇腾芯片的优化，并提供基于ONNX的改图功能         |
+| debug(一站式调试)                | [compare](docs/debug/compare) | 提供自动化的推理场景精度比对，用来定位问题算子                 |
+| [analyze](components/analyze) | -                             | 提供其他平台模型迁移至昇腾平台的支持度分析功能                 |
+| [transplt](components/transplt) | -                             | 提供NV C++推理应用迁移分析以及昇腾API推荐功能             |
+| [convert](components/convert) | -                             | 提供推理模型转换功能                              |
+| [profile](components/profile/msprof) | - | 提供profiling，提供整网详细的性能数据及相关信息            |
 
 
 ## 工具安装
@@ -70,10 +69,6 @@ ait debug compare -h
 * [AIT transplt 快速入门指南](components/transplt/README.md)
 * [AIT convert 快速入门指南](components/convert/README.md)
 * [AIT profile 快速入门指南](components/profile/msprof/README.md)
-
-## 常见问题 Q&A
-
-参考：[Ait 安装常见问题](https://gitee.com/ascend/ait/wikis/ait%E7%9A%84%E5%AE%89%E8%A3%85%E4%B8%8E%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ait%E5%AE%89%E8%A3%85)
 
 ## 许可证
 
