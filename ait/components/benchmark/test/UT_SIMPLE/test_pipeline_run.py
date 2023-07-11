@@ -134,7 +134,7 @@ class TestClass:
     def test_infer_dym_hw_input_file(self):
         device_id = 0
         options = aclruntime.session_options()
-        model_path = self.get_resnet_dymbatch_om_path()
+        model_path = self.get_resnet_dymhw_om_path()
         session = aclruntime.InferenceSession(model_path, device_id, options)
         session.set_dynamic_hw(224, 224)
         intensors_desc = session.get_inputs()
@@ -146,7 +146,7 @@ class TestClass:
         device_id = 0
         input_tensor_name = self.get_input_tensor_name()
         options = aclruntime.session_options()
-        model_path = self.get_resnet_dymbatch_om_path()
+        model_path = self.get_resnet_dymdim_om_path()
         session = aclruntime.InferenceSession(model_path, device_id, options)
         session.set_dynamic_dims(input_tensor_name + ":1,3,224,224")
         intensors_desc = session.get_inputs()
@@ -157,7 +157,7 @@ class TestClass:
     def test_infer_auto_dim_input_file(self):
         device_id = 0
         options = aclruntime.session_options()
-        model_path = self.get_resnet_dymbatch_om_path()
+        model_path = self.get_resnet_dymdim_om_path()
         session = aclruntime.InferenceSession(model_path, device_id, options)
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_npy_nor().split(','), intensors_desc)
