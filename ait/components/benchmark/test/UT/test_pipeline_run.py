@@ -15,6 +15,8 @@
 import os
 import sys
 import logging
+import glob
+import shutil
 
 import aclruntime
 import numpy as np
@@ -43,6 +45,14 @@ class TestClass:
     @classmethod
     def teardown_class(cls):
         logger.info('\n ---class level teardown_class')
+
+    @classmethod
+    def get_output_dir_bin(self):
+        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "output", "bin_out"))
+
+    @classmethod
+    def get_output_dir_npy(self):
+        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "output", "npy_out"))
 
     @classmethod
     def get_input_datas_file_bin_nor(self):
@@ -109,6 +119,36 @@ class TestClass:
         print(infilespath)
         output_dir = ""
         session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
+
+    def test_infer_stc_batch_input_file_out_bin(self):
+        device_id = 0
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_stcshape_om_path(bs=1)
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        intensors_desc = session.get_inputs()
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
+        print(infilespath)
+        output_dir = self.get_output_dir_bin()
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
+        session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
+        bin_files = glob.glob(os.path.join(output_dir, "*.bin"))
+        assert len(bin_files) == 1
+
+    def test_infer_stc_batch_input_file_out_npy(self):
+        device_id = 0
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_stcshape_om_path(bs=1)
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        intensors_desc = session.get_inputs()
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
+        print(infilespath)
+        output_dir = self.get_output_dir_npy()
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
+        session.run_pipeline(infilespath, output_dir, False, False, 'NPY')
+        npy_files = glob.glob(os.path.join(output_dir, "*.npy"))
+        assert len(npy_files) == 1
 
     def test_infer_stc_batch_input_dir(self):
         device_id = 0
