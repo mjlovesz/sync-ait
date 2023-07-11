@@ -94,68 +94,68 @@ class TestClass:
         output_dir = ""
         session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
 
-    # def test_infer_stc_batch_input_dir(self):
-    #     device_id = 0
-    #     options = aclruntime.session_options()
-    #     model_path = self.get_resnet_stcshape_om_path(bs=1)
-    #     session = aclruntime.InferenceSession(model_path, device_id, options)
-    #     intensors_desc = session.get_inputs()
-    #     infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_dir_bin().split(','), intensors_desc)
-    #     output_dir = ""
-    #     session.run_pipeline(infilespath, output_dir)
+    def test_infer_stc_batch_input_dir(self):
+        device_id = 0
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_stcshape_om_path(bs=1)
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        intensors_desc = session.get_inputs()
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_dir_bin().split(','), intensors_desc)
+        output_dir = ""
+        session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
 
-    # def test_infer_dym_batch_input_file(self):
-    #     device_id = 0
-    #     options = aclruntime.session_options()
-    #     model_path = self.get_resnet_dymbatch_om_path()
-    #     session = aclruntime.InferenceSession(model_path, device_id, options)
-    #     session.set_dynamic_batchsize(1)
-    #     intensors_desc = session.get_inputs()
-    #     infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
-    #     output_dir = ""
-    #     session.run_pipeline(infilespath, output_dir)
+    def test_infer_dym_batch_input_file(self):
+        device_id = 0
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_dymbatch_om_path()
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        session.set_dynamic_batchsize(1)
+        intensors_desc = session.get_inputs()
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
+        output_dir = ""
+        session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
 
-    # def test_infer_dym_hw_input_file(self):
-    #     device_id = 0
-    #     options = aclruntime.session_options()
-    #     model_path = self.get_resnet_dymbatch_om_path()
-    #     session = aclruntime.InferenceSession(model_path, device_id, options)
-    #     session.set_dynamic_hw(224, 224)
-    #     intensors_desc = session.get_inputs()
-    #     infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
-    #     output_dir = ""
-    #     session.run_pipeline(infilespath, output_dir)
+    def test_infer_dym_hw_input_file(self):
+        device_id = 0
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_dymbatch_om_path()
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        session.set_dynamic_hw(224, 224)
+        intensors_desc = session.get_inputs()
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
+        output_dir = ""
+        session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
 
-    # def test_infer_dym_dim_input_file(self):
-    #     device_id = 0
-    #     input_tensor_name = self.get_input_tensor_name()
-    #     options = aclruntime.session_options()
-    #     model_path = self.get_resnet_dymbatch_om_path()
-    #     session = aclruntime.InferenceSession(model_path, device_id, options)
-    #     session.set_dynamic_dims(input_tensor_name + ":1,3,224,224")
-    #     intensors_desc = session.get_inputs()
-    #     infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
-    #     output_dir = ""
-    #     session.run_pipeline(infilespath, output_dir)
+    def test_infer_dym_dim_input_file(self):
+        device_id = 0
+        input_tensor_name = self.get_input_tensor_name()
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_dymbatch_om_path()
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        session.set_dynamic_dims(input_tensor_name + ":1,3,224,224")
+        intensors_desc = session.get_inputs()
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
+        output_dir = ""
+        session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
 
-    # def test_infer_auto_dim_input_file(self):
-    #     device_id = 0
-    #     options = aclruntime.session_options()
-    #     model_path = self.get_resnet_dymbatch_om_path()
-    #     session = aclruntime.InferenceSession(model_path, device_id, options)
-    #     intensors_desc = session.get_inputs()
-    #     infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
-    #     output_dir = ""
-    #     session.run_pipeline(infilespath, output_dir, auto_shape=False, auto_dims=True)
+    def test_infer_auto_dim_input_file(self):
+        device_id = 0
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_dymbatch_om_path()
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        intensors_desc = session.get_inputs()
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
+        output_dir = ""
+        session.run_pipeline(infilespath, output_dir, False, True, 'BIN')
 
-    # def test_infer_intensor_infile_not_matched(self):
-    #     device_id = 0
-    #     options = aclruntime.session_options()
-    #     model_path = self.get_resnet_stcshape_om_path(bs=2)
-    #     session = aclruntime.InferenceSession(model_path, device_id, options)
-    #     intensors_desc = session.get_inputs()
-    #     infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
-    #     output_dir = ""
-    #     with pytest.raises(RuntimeError) as e:
-    #         session.run_pipeline(infilespath, output_dir)
+    def test_infer_intensor_infile_not_matched(self):
+        device_id = 0
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_stcshape_om_path(bs=2)
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        intensors_desc = session.get_inputs()
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
+        output_dir = ""
+        with pytest.raises(RuntimeError) as e:
+            session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
 
