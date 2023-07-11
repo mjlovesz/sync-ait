@@ -170,8 +170,6 @@ class TestClass:
         model_path = self.get_resnet_stcshape_om_path(bs=2)
         session = aclruntime.InferenceSession(model_path, device_id, options)
         intensors_desc = session.get_inputs()
-        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
-        output_dir = ""
         with pytest.raises(RuntimeError) as e:
-            session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
+            infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
 
