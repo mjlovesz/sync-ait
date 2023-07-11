@@ -26,7 +26,7 @@ os.makedirs(cur_npy_aipp_path)
 cur_npy_nor_path = os.path.join(base_path, "testdata/resnet50/input/fake_dataset_npy_nor")
 if os.path.exists(cur_npy_nor_path):
     shutil.rmtree(cur_npy_nor_path)
-os.makedirs(cur_npy_aipp_path)
+os.makedirs(cur_npy_nor_path)
 for i,_ in enumerate(tqdm(list_k, file=sys.stdout, desc='generate dataset process:')):
     bin_aipp_name = f"{i}.bin"
     bin_nor_name = f"{i}.bin"
