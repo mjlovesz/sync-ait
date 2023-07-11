@@ -44,8 +44,8 @@ class Model:
     def train(self, path):
         dataset = self._load_data(path)
         api_seqs = self._scan_sources(dataset)
-        apis = SeqHandler.cluster_api_seqs(api_seqs)
         print()
+        # apis = SeqHandler.cluster_api_seqs(api_seqs)
 
 
 if __name__ == '__main__':
