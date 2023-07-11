@@ -45,20 +45,36 @@ class TestClass:
         logger.info('\n ---class level teardown_class')
 
     @classmethod
-    def get_input_datas_file_bin(self):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "fake_dataset_bin/1.bin"))
+    def get_input_datas_file_bin_nor(self):
+        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "fake_dataset_bin_nor/1.bin"))
 
     @classmethod
-    def get_input_datas_dir_bin(self):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "fake_dataset_bin"))
+    def get_input_datas_dir_bin_nor(self):
+        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "fake_dataset_bin_nor"))
 
     @classmethod
-    def get_input_datas_file_npy(self):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "fake_dataset_bin/1.npy"))
+    def get_input_datas_file_bin_aipp(self):
+        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "fake_dataset_bin_aipp/1.bin"))
 
     @classmethod
-    def get_input_datas_dir_npy(self):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "fake_dataset_npy"))
+    def get_input_datas_dir_bin_aipp(self):
+        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "fake_dataset_bin_aipp"))
+
+    @classmethod
+    def get_input_datas_file_npy_nor(self):
+        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "fake_dataset_npy_nor/1.npy"))
+
+    @classmethod
+    def get_input_datas_dir_npy_nor(self):
+        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "fake_dataset_npy_nor"))
+
+    @classmethod
+    def get_input_datas_file_npy_aipp(self):
+        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "fake_dataset_npy_aipp/1.npy"))
+
+    @classmethod
+    def get_input_datas_dir_npy_aipp(self):
+        return os.path.realpath(os.path.join(TestCommonClass.base_path, self.model_name, "input", "fake_dataset_npy_aipp"))
 
     @classmethod
     def get_resnet_stcshape_om_path(self, bs=1):
@@ -89,7 +105,7 @@ class TestClass:
         model_path = self.get_resnet_stcshape_om_path(bs=1)
         session = aclruntime.InferenceSession(model_path, device_id, options)
         intensors_desc = session.get_inputs()
-        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
         print(infilespath)
         output_dir = ""
         session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
@@ -100,7 +116,7 @@ class TestClass:
         model_path = self.get_resnet_stcshape_om_path(bs=1)
         session = aclruntime.InferenceSession(model_path, device_id, options)
         intensors_desc = session.get_inputs()
-        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_dir_bin().split(','), intensors_desc)
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_dir_bin_aipp().split(','), intensors_desc)
         output_dir = ""
         session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
 
@@ -111,7 +127,7 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
         session.set_dynamic_batchsize(1)
         intensors_desc = session.get_inputs()
-        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
         output_dir = ""
         session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
 
@@ -122,7 +138,7 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
         session.set_dynamic_hw(224, 224)
         intensors_desc = session.get_inputs()
-        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin_nor().split(','), intensors_desc)
         output_dir = ""
         session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
 
@@ -134,7 +150,7 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
         session.set_dynamic_dims(input_tensor_name + ":1,3,224,224")
         intensors_desc = session.get_inputs()
-        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin_nor().split(','), intensors_desc)
         output_dir = ""
         session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
 
@@ -144,7 +160,7 @@ class TestClass:
         model_path = self.get_resnet_dymbatch_om_path()
         session = aclruntime.InferenceSession(model_path, device_id, options)
         intensors_desc = session.get_inputs()
-        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_npy_nor().split(','), intensors_desc)
         output_dir = ""
         session.run_pipeline(infilespath, output_dir, False, True, 'BIN')
 
@@ -154,7 +170,7 @@ class TestClass:
         model_path = self.get_resnet_stcshape_om_path(bs=2)
         session = aclruntime.InferenceSession(model_path, device_id, options)
         intensors_desc = session.get_inputs()
-        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin().split(','), intensors_desc)
+        infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
         output_dir = ""
         with pytest.raises(RuntimeError) as e:
             session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
