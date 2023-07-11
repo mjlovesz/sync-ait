@@ -70,7 +70,7 @@ class TestClass:
 
     @classmethod
     def get_resnet_dymhw_om_path(self):
-        return os.path.join(TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_dymhw.om")
+        return os.path.join(TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_dymwh.om")
 
     @classmethod
     def get_resnet_dymdim_om_path(self):
