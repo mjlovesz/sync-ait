@@ -8,7 +8,7 @@
 - [免责声明](#免责声明)
 
 ## 介绍
-AIT(Ascend Inference Tools)作为昇腾统一推理工具，用于辅助用户进行模型迁移以及性能与精度的调试调优，当前包括benchmark、debug、transplt、analyze等组件。
+AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体化开发工具，用于辅助用户进行模型迁移以及性能与精度的调试调优，当前包括benchmark、debug、transplt、analyze等组件。
 
 ### AIT各子功能介绍
 | 任务类型                        | 子功能                           | 说明                                      |
