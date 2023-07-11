@@ -181,11 +181,11 @@ public class Choosedialog extends JFrame {
      * initMouse
      */
     private void initMouse() {
-        checkPluginsAndAddAction(modelAnalyse, StepNum.MODEL_ANALYSE, PluginClassId.Foundation_PluginId);
+        checkPluginsAndAddAction(modelAnalyse, StepNum.MODEL_ANALYSE, PluginClassId.Inference_PluginId);
         checkPluginsAndAddAction(modelConverter, StepNum.MODEL_CONVERTER, PluginClassId.AitIde_PluginId);
         checkPluginsAndAddAction(aisBench, StepNum.AIS_BENCH, PluginClassId.AitIde_PluginId);
         checkPluginsAndAddAction(compare, StepNum.COMPARE, PluginClassId.AitIde_PluginId);
-        checkPluginsAndAddAction(systemProfiler, StepNum.SYSTEM_PROFILER, PluginClassId.Inference_PluginId);
+        checkPluginsAndAddAction(systemProfiler, StepNum.SYSTEM_PROFILER, PluginClassId.Profiler_PluginId);
     }
 
     /**
@@ -204,7 +204,7 @@ public class Choosedialog extends JFrame {
     private class ModelAnalyse {
         ModelAnalyse() {
             setIcon(modelAnalyse, Icons.MODEL_ANALYSE_DARK, Icons.MODEL_ANALYSE_LIGHT);
-            setStepIcons(modelAnalyseJpanel, modelAnalyse, step1, PluginClassId.Foundation_PluginId);
+            setStepIcons(modelAnalyseJpanel, modelAnalyse, step1, PluginClassId.Inference_PluginId);
             actionMappings.put(StepNum.MODEL_ANALYSE, this::doModelAnalyse);
         }
 
@@ -264,14 +264,14 @@ public class Choosedialog extends JFrame {
     private class SystemProfiling {
         SystemProfiling() {
             setIcon(systemProfiler, Icons.SYSTEM_PROFILER_DARK, Icons.SYSTEM_PROFILER_LIGHT);
-            setStepIcons(systemProfilerJPanel, systemProfiler, step5, PluginClassId.Inference_PluginId);
+            setStepIcons(systemProfilerJPanel, systemProfiler, step5, PluginClassId.Profiler_PluginId);
             actionMappings.put(StepNum.SYSTEM_PROFILER, this::doSystemProfiling);
         }
 
         private Object doSystemProfiling(Project project){
             activeOutput();
             PluginGet pluginGet = new PluginGet(project);
-            pluginGet.getPluginClass(PluginClassId.SystemProfiler_ClassId, PluginClassId.Foundation_PluginId);
+            pluginGet.getPluginClass(PluginClassId.SystemProfiler_ClassId, PluginClassId.Profiler_PluginId);
             return Optional.empty();
         }
     }
