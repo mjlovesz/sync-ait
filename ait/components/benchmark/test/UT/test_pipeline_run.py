@@ -161,6 +161,7 @@ class TestClass:
         model_path = self.get_resnet_dymshape_om_path()
         session = aclruntime.InferenceSession(model_path, device_id, options)
         self.session.set_dynamic_shape(input_tensor_name + ":1,3,224,224")
+        session.set_custom_outsize([10000])
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_npy_nor().split(','), intensors_desc)
         output_dir = ""
@@ -181,6 +182,7 @@ class TestClass:
         options = aclruntime.session_options()
         model_path = self.get_resnet_dymshape_om_path()
         session = aclruntime.InferenceSession(model_path, device_id, options)
+        session.set_custom_outsize([10000])
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_npy_nor().split(','), intensors_desc)
         output_dir = ""
