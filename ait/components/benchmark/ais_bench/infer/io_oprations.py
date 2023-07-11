@@ -232,7 +232,11 @@ def create_pipeline_fileslist_from_inputs_list(inputs_list, intensors_desc):
     for i, files in enumerate(fileslist):
         filesize = get_file_datasize(files[i])
         tensorsize = intensors_desc[i].realsize
-        if filesize != tensorsize and tensorsize != 0:
+        auto_mode = False
+        for _, dim in enumerate(intensors_desc[i].shape):
+            if dim <= 0 and (intensors_desc[i].realsize == intensors_desc[i].size):
+                auto_mode = True
+        if filesize != tensorsize and not auto_mode:
             logger.error(f'tensor_num:{i} tensorsize:{tensorsize} filesize:{filesize} not match')
             raise RuntimeError()
     infileslist = []
