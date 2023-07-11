@@ -4,11 +4,13 @@ from app_analyze.common.kit_config import KitConfig
 from app_analyze.model.project import Project
 from app_analyze.scan.scanner_factory import ScannerFactory
 from app_analyze.scan.func_parser import FuncParser
+from app_analyze.scan.sequence.seq_handler import SeqHandler
 
 
 class APISeqProject(Project):
     def __init__(self, inputs):
         super().__init__(inputs)
+        self.api_seqs = []
 
     def setup_scanners(self):
         """
@@ -47,5 +49,18 @@ class APISeqProject(Project):
             if scanner.porting_results is not None:
                 self.scan_results.update(scanner.porting_results)
 
+        val_dict = self.scan_results.get('cxx', None)
+        if not val_dict:
+            return
+
+        # handle results
+        rst = list(val_dict.values())[0]
+        if len(val_dict) > 1:
+            SeqHandler.union_api_seqs(rst)
+        self.api_seqs = SeqHandler.clean_api_seqs(rst)
+
         eval_time = time.time() - start_time
         KitConfig.PROJECT_TIME = eval_time
+
+    def get_api_seqs(self):
+        return self.api_seqs

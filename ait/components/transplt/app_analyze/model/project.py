@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import time
+import pandas as pd
 
 from app_analyze.utils.log_util import logger
 from app_analyze.common.kit_config import KitConfig
@@ -128,7 +129,11 @@ class Project:
                 if not val_dict:
                     continue
 
-                ad = Advisor(val_dict)
+                df_dict = {}
+                for f, vals in val_dict.items():
+                    df_dict[f] = pd.DataFrame.from_dict(vals)
+
+                ad = Advisor(df_dict)
                 ad.recommend()
                 ad.workload()
                 ad.cuda_apis()

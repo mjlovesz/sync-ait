@@ -49,8 +49,7 @@ class FuncParser(Parser):
     @staticmethod
     def _handle_call_seqs(seqs):
         SeqHandler.union_api_seqs(seqs)
-        SeqHandler.format_api_seqs(seqs)
-        print()
+        # SeqHandler.format_api_seqs(seqs)
 
     def parse(self):
         for d in self.tu.diagnostics:
@@ -72,4 +71,4 @@ class FuncParser(Parser):
         # IOUtil.json_safe_dump(info, f'temp/{dump}.json')
         # logger.debug(f'Ast saved in：temp/{dump}.json')
 
-        return RESULTS
+        return result

@@ -1,5 +1,8 @@
 from app_analyze.utils.log_util import logger
 
+GLOBAl_ID_DICT = {}
+global_fid = -1
+
 
 class FuncDesc:
     def __init__(self):
@@ -40,6 +43,16 @@ class FuncDesc:
     def arg_name(self):
         return ','.join(self.parm_decl_names)
 
+    @property
+    def func_id(self):
+        fid = GLOBAl_ID_DICT.get(self.full_name, None)
+        if fid is None:
+            global global_fid
+            global_fid += 1
+            fid = global_fid
+            GLOBAl_ID_DICT[self.full_name] = fid
+        return fid
+
 
 class ObjDesc:
     def __init__(self):
@@ -69,6 +82,12 @@ class SeqDesc:
     def clear(self):
         self.api_seq = []
         self.has_usr_def = False
+
+    @staticmethod
+    def seq_str(api_seq):
+        apis = [_.full_name for _ in api_seq]
+        rst = '-->'.join(apis)
+        return rst
 
     def debug_string(self):
         rst = 'Entry Function is: ' + self.entry_api.api_name + '\n'

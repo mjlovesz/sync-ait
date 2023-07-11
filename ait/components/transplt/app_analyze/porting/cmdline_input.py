@@ -12,10 +12,9 @@
 # limitations under the License.
 
 import os
-from pathlib import Path
 
 from app_analyze.porting.porting_input import IInput
-from app_analyze.common.kit_config import KitConfig, ReporterType
+from app_analyze.common.kit_config import KitConfig, ReporterType, ScannerType
 from app_analyze.utils.io_util import IOUtil
 
 
@@ -117,3 +116,10 @@ class CommandLineInput(IInput):
             self.report_type.append(ReporterType.CSV_REPORTER)
         if out_format == 'json':
             self.report_type.append(ReporterType.JSON_REPORTER)
+
+    def set_scanner_type(self):
+        if self.construct_tool == "cmake":
+            self.scanner_type.append(ScannerType.CMAKE_SCANNER)
+            self.scanner_type.append(ScannerType.CPP_SCANNER)
+        else:
+            NotImplementedError('need to implementation.')

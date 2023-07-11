@@ -14,7 +14,7 @@
 import os
 
 from app_analyze.porting.cmdline_input import CommandLineInput
-from app_analyze.common.kit_config import KitConfig, ReporterType
+from app_analyze.common.kit_config import ScannerType
 from app_analyze.utils.io_util import IOUtil
 
 
@@ -48,3 +48,9 @@ class CustomInput(CommandLineInput):
             self.source_path = self.directories
             self.directories = \
                 IOUtil.remove_subdirectory(self.directories)
+
+    def set_scanner_type(self):
+        if self.construct_tool == "cmake":
+            self.scanner_type.append(ScannerType.CPP_SCANNER)
+        else:
+            NotImplementedError('need to implementation.')

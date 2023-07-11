@@ -12,7 +12,6 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from app_analyze.common.kit_config import ReporterType, ScannerType
 
 
 class IInput(ABC):
@@ -52,8 +51,5 @@ class IInput(ABC):
             r'abstract interface. need subclass to implementation.')
 
     def set_scanner_type(self):
-        if self.construct_tool == "cmake":
-            self.scanner_type.append(ScannerType.CMAKE_SCANNER)
-            self.scanner_type.append(ScannerType.CPP_SCANNER)
-        else:
-            NotImplementedError('need to implementation.')
+        raise NotImplementedError(
+            r'abstract interface. need subclass to implementation.')

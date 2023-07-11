@@ -64,7 +64,8 @@ def _get_obj_info(node, func_attr):
     elif info.api == info.spelling:
         obj.record_name = info.api
     else:
-        raise Exception('Error annotation!')
+        # print('---------------> ' + info.api + ', -------> ' + info.spelling)
+        obj = None
     func_attr.obj_info = obj
     if func_attr.return_type == '':
         func_attr.return_type = info.result_type
@@ -121,8 +122,10 @@ def _visit_cxx_method(node, api_type='invalid'):
 
 def _visit_call_expr(node, rst, pth):
     for c in get_children(node):
-        cursor_kind = c.kind
+        if c.spelling in GLOBAL_FILTER:
+            continue
 
+        cursor_kind = c.kind
         func_attr = None
         if cursor_kind == CursorKind.CALL_EXPR:
             if not c.referenced:
