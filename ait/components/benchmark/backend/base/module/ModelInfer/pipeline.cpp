@@ -33,17 +33,29 @@ namespace Base {
         for (const auto &desc: session->GetOutputs()) {
             outputNames.emplace_back(desc.name);
         }
+        if (outputDir != "") {
+            if (fs::is_symlink(outputDir)) {
+                fs::remove(outputDir)
+            }
+            fs::create_directories(outputDir)
+        }
 
         for (auto &files : infilesList) {
             auto feeds = std::make_shared<Feeds>();
 
             feeds->outputNames = std::make_shared<std::vector<std::string>>(outputNames);
-            feeds->outputPrefix = Utils::GetPrefix(outputDir, files.front(), ".npy");
+            if (outputDir != "") {
+                for (auto tail : {".npy", ".NPY", ".bin", ".BIN", ""}) {
+                    if (Utils::TailContain(files.front(), tail)) {
+                        feeds->outputPrefix = Utils::GetPrefix(outputDir, files.front(), tail)
+                    }
+                }
+            }
             feeds->inputs = std::make_shared<std::vector<Base::BaseTensor>>();
             feeds->arrayPtr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
 
             for (size_t i = 0; i < files.size(); i++) {
-                if (Utils::TailContain(files[i], ".npy")) {
+                if (Utils::TailContain(files[i], ".npy") || Utils::TailContain(files[i], ".NPY")) {
                     auto array = std::make_shared<cnpy::NpyArray>(cnpy::NpyLoad(files[i]));
                     feeds->arrayPtr->emplace_back(array);
                 } else {
@@ -64,7 +76,6 @@ namespace Base {
                     }
                 }
             }
-
             h2dQueue.push(feeds);
         }
         h2dQueue.push(nullptr);
@@ -173,14 +184,19 @@ namespace Base {
                 size_t n = item->outputs->size();
                 for (size_t i = 0; i < n; i++) {
                     std::string outputFileName = item->outputPrefix + Utils::RemoveSlash(item->outputNames->at(i));
-                    if (outFmt == "BIN") {
-                        outputFileName += ".bin";
-                        if (Utils::TensorToBin(outputFileName, item->outputs->at(i)) == FAILED) {
+                    if (outFmt == "NPY") {
+                        outputFileName += ".npy";
+                        if (Utils::TensorToNumpy(outputFileName, item->outputs->at(i)) == FAILED) {
+                            ERROR_LOG("%s save failed\n", outputFileName.c_str());
+                        }
+                    } else if (outFmt == "TXT") {
+                        outputFileName += ".txt";
+                        if (Utils::TensorToTxt(outputFileName, item->outputs->at(i)) == FAILED) {
                             ERROR_LOG("%s save failed\n", outputFileName.c_str());
                         }
                     } else {
-                        outputFileName += ".npy";
-                        if (Utils::TensorToNumpy(outputFileName, item->outputs->at(i)) == FAILED) {
+                        outputFileName += ".bin";
+                        if (Utils::TensorToBin(outputFileName, item->outputs->at(i)) == FAILED) {
                             ERROR_LOG("%s save failed\n", outputFileName.c_str());
                         }
                     }

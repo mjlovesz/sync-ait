@@ -169,11 +169,10 @@ def run_inference(session, args, inputs, out_array=False):
     return outputs
 
 
-def run_pipeline_inference(session, args, infileslist):
-    if args.output is None:
-        args.output = ''
+def run_pipeline_inference(session, args, infileslist, output_prefix):
+    out = output_prefix if output_prefix is not None else ""
     session.run_pipeline(infileslist,
-                         args.output,
+                         out,
                          args.auto_set_dymshape_mode,
                          args.auto_set_dymdims_mode,
                          args.outfmt)
@@ -249,8 +248,9 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             )
 
 
-def infer_pipeline_run(session, args, infileslist):
-    run_pipeline_inference(session, args, infileslist)
+def infer_pipeline_run(session, args, infileslist, output_prefix):
+    logger.info("run in pipeline mode")
+    run_pipeline_inference(session, args, infileslist, output_prefix)
 
 
 def msprof_run_profiling(args, msprof_bin):
@@ -321,6 +321,7 @@ def main(args, index=0, msgq=None, device_list=None):
     inputs_list = [] if args.input is None else args.input.split(',')
 
     # create infiles list accord inputs list
+    delete_infileslist = False
     if len(inputs_list) == 0:
         # Pure reference scenario. Create input zero data
         if not args.pipeline:
@@ -332,6 +333,7 @@ def main(args, index=0, msgq=None, device_list=None):
                 ndata = get_pure_infer_data(desc.realsize, args.pure_data_type)
                 ndata.tofile(fake_file_name)
                 infileslist[0].append(fake_file_name)
+            delete_infileslist = True
     else:
         if not args.pipeline:
             infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
@@ -345,6 +347,11 @@ def main(args, index=0, msgq=None, device_list=None):
         for file in infileslist[0]:
             infiles.append([file])
         warmup(session, args, intensors_desc, infiles)
+
+    if args.pipeline and (args.auto_set_dymshape_mode or args.auto_set_dymdims_mode):
+        for i in range(len(infileslist)):
+            input_first = np.load(infileslist[i][0])
+            summary.add_batchsize(input_first.shape[0])
 
     if msgq is not None:
         # wait subprocess init ready, if time eplapsed,force ready run
@@ -367,7 +374,7 @@ def main(args, index=0, msgq=None, device_list=None):
     if args.energy_consumption and args.npu_id:
         start_energy_consumption = get_energy_consumption(args.npu_id)
     if args.pipeline:
-        infer_pipeline_run(session, args, infileslist)
+        infer_pipeline_run(session, args, infileslist, output_prefix)
     else:
         if args.run_mode == "array":
             infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
@@ -397,6 +404,13 @@ def main(args, index=0, msgq=None, device_list=None):
     if msgq is not None:
         # put result to msgq
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
+
+    if delete_infileslist:
+        for file in infileslist[0]:
+            if (os.path.exists(file)):
+                os.remove(file)
+            else:
+                logger.error("try to delete tmp file {}, but not found.".format(file))
 
     session.finalize()
 

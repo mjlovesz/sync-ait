@@ -105,8 +105,8 @@ public:
     static std::string CreateDynamicShapeDims(const std::string& name, std::vector<size_t>& shapes);
     static Result TensorToNumpy(const std::string& outputFileName, Base::TensorBase& output);
     static Result TensorToBin(const std::string& outputFileName, Base::TensorBase& output);
+    static Result TensorToTxt(const std::string& outputFileName, Base::TensorBase& output);
     static bool TailContain(const std::string& str, const std::string& tail);
-    
 };
 
 #endif
