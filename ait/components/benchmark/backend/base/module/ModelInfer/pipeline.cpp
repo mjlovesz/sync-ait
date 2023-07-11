@@ -35,9 +35,9 @@ namespace Base {
         }
         if (outputDir != "") {
             if (fs::is_symlink(outputDir)) {
-                fs::remove(outputDir)
+                fs::remove(outputDir);
             }
-            fs::create_directories(outputDir)
+            fs::create_directories(outputDir);
         }
 
         for (auto &files : infilesList) {
@@ -47,7 +47,7 @@ namespace Base {
             if (outputDir != "") {
                 for (auto tail : {".npy", ".NPY", ".bin", ".BIN", ""}) {
                     if (Utils::TailContain(files.front(), tail)) {
-                        feeds->outputPrefix = Utils::GetPrefix(outputDir, files.front(), tail)
+                        feeds->outputPrefix = Utils::GetPrefix(outputDir, files.front(), tail);
                     }
                 }
             }
