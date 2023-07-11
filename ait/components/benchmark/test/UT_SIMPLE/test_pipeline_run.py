@@ -15,6 +15,8 @@
 import os
 import sys
 import logging
+import glob
+import shutil
 
 import aclruntime
 import numpy as np
@@ -127,7 +129,11 @@ class TestClass:
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
         print(infilespath)
         output_dir = self.get_output_dir_bin()
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
         session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
+        bin_files = glob.glob(os.path.join(output_dir, "*.bin"))
+        assert len(bin_files) == 1
 
     def test_infer_stc_batch_input_file_out_npy(self):
         device_id = 0
@@ -138,7 +144,11 @@ class TestClass:
         infilespath = create_pipeline_fileslist_from_inputs_list(self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
         print(infilespath)
         output_dir = self.get_output_dir_npy()
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
         session.run_pipeline(infilespath, output_dir, False, False, 'NPY')
+        npy_files = glob.glob(os.path.join(output_dir, "*.npy"))
+        assert len(npy_files) == 1
 
     def test_infer_stc_batch_input_dir(self):
         device_id = 0
