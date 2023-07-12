@@ -647,14 +647,14 @@ following_model_inputs = args.following_model_inputs
 
 len_previous_model_outputs = len(previous_model_outputs)
 len_following_model_inputs = len(following_model_inputs)
-if len_previous_model_outputs != len_following_model_inputs:
+if len(previous_model_outputs) != len(following_model_inputs):
     raise Exception("Each input and output must match!")
 
 connection_list = []
-for i in range(len_previous_model_outputs):
-    connection = (previous_model_outputs[i], following_model_inputs[i])
+for previous_model_output, following_model_input in zip(previous_model_outputs, following_model_inputs):
+    connection = (previous_model_output, following_model_input)
     connection_list.append(connection)
-    logging.info("connect %s and %s ", previous_model_outputs[i], following_model_inputs[i])
+    logging.info("connect %s and %s ", previous_model_output, following_model_input)
 
 previous_model = onnx.load(previous_model_path)
 following_model = onnx.load(following_model_path)
