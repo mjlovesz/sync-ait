@@ -20,6 +20,8 @@ import re
 from pickle import NONE
 import logging
 import numpy as np
+from random import sample
+from string import digits, ascii_uppercase, ascii_lowercase
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -114,3 +116,11 @@ def save_data_to_files(file_path, ndata):
                 f.write(b"\n")
     else:
         ndata.tofile(file_path)
+
+
+def create_fake_file_name(pure_data_type, index):
+    chars = ascii_lowercase + ascii_uppercase + digits
+    suffix = "_" + pure_data_type + "_" + str(index)
+    fname = os.path.join(os.getcwd(), "tmp-" + "".join(sample(chars, 8)) + suffix)
+
+    return fname if not os.path.exists(fname) else create_fake_file_name(pure_data_type, index)

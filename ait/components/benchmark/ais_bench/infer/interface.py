@@ -462,6 +462,10 @@ class InferSession:
         else:
             return outputs
 
+    def run_pipeline(self, infilelist, output, auto_shape=False, auto_dims=False, outfmt = "BIN"):
+        # print("pipeline running.....")
+        self.session.run_pipeline(infilelist, output, auto_shape, auto_dims, outfmt)
+
     def reset_sumaryinfo(self):
         self.session.reset_sumaryinfo()
 

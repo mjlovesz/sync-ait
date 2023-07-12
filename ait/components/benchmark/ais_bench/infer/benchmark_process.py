@@ -25,18 +25,23 @@ import re
 import subprocess
 from multiprocessing import Pool
 from multiprocessing import Manager
+import numpy as np
 
 from tqdm import tqdm
 
 from ais_bench.infer.interface import InferSession, MemorySummary
 from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
+                                          create_pipeline_fileslist_from_inputs_list,
                                           create_intensors_from_infileslist,
                                           get_narray_from_files_list,
                                           get_tensor_from_files_list,
                                           convert_real_files,
-                                          PURE_INFER_FAKE_FILE, save_tensors_to_file)
+                                          PURE_INFER_FAKE_FILE_ZERO,
+                                          PURE_INFER_FAKE_FILE_RANDOM,
+                                          PURE_INFER_FAKE_FILE, save_tensors_to_file,
+                                          get_pure_infer_data)
 from ais_bench.infer.summary import summary
-from ais_bench.infer.utils import logger
+from ais_bench.infer.utils import logger, create_fake_file_name
 from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
 from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                                    get_fileslist_from_dir, list_split, list_share, logger,
@@ -164,6 +169,15 @@ def run_inference(session, args, inputs, out_array=False):
     return outputs
 
 
+def run_pipeline_inference(session, args, infileslist, output_prefix):
+    out = output_prefix if output_prefix is not None else ""
+    session.run_pipeline(infileslist,
+                         out,
+                         args.auto_set_dymshape_mode,
+                         args.auto_set_dymdims_mode,
+                         args.outfmt)
+
+
 # tensor to loop infer
 def infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix):
     for i, infiles in enumerate(tqdm(infileslist, file=sys.stdout, desc='Inference tensor Processing')):
@@ -234,6 +248,11 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             )
 
 
+def infer_pipeline_run(session, args, infileslist, output_prefix):
+    logger.info("run in pipeline mode")
+    run_pipeline_inference(session, args, infileslist, output_prefix)
+
+
 def msprof_run_profiling(args, msprof_bin):
     cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
     msprof_cmd = "{} --output={}/profiler --application=\"{}\" --model-execution=on \
@@ -302,13 +321,37 @@ def main(args, index=0, msgq=None, device_list=None):
     inputs_list = [] if args.input is None else args.input.split(',')
 
     # create infiles list accord inputs list
+    delete_infileslist = False
     if len(inputs_list) == 0:
         # Pure reference scenario. Create input zero data
-        infileslist = [[[PURE_INFER_FAKE_FILE] for index in intensors_desc]]
+        if not args.pipeline:
+            infileslist = [[[PURE_INFER_FAKE_FILE] for index in intensors_desc]]
+        else:
+            infileslist = [[]]
+            for i, desc in enumerate(intensors_desc):
+                fake_file_name = create_fake_file_name(args.pure_data_type, i)
+                ndata = get_pure_infer_data(desc.realsize, args.pure_data_type)
+                ndata.tofile(fake_file_name)
+                infileslist[0].append(fake_file_name)
+            delete_infileslist = True
     else:
-        infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
+        if not args.pipeline:
+            infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
+        else:
+            infileslist = create_pipeline_fileslist_from_inputs_list(inputs_list, intensors_desc)
+    if not args.pipeline:
+        warmup(session, args, intensors_desc, infileslist[0])
+    else:
+        # prepare for pipeline case
+        infiles = []
+        for file in infileslist[0]:
+            infiles.append([file])
+        warmup(session, args, intensors_desc, infiles)
 
-    warmup(session, args, intensors_desc, infileslist[0])
+    if args.pipeline and (args.auto_set_dymshape_mode or args.auto_set_dymdims_mode):
+        for i in range(len(infileslist)):
+            input_first = np.load(infileslist[i][0])
+            summary.add_batchsize(input_first.shape[0])
 
     if msgq is not None:
         # wait subprocess init ready, if time eplapsed,force ready run
@@ -330,17 +373,19 @@ def main(args, index=0, msgq=None, device_list=None):
     end_energy_consumption = 0
     if args.energy_consumption and args.npu_id:
         start_energy_consumption = get_energy_consumption(args.npu_id)
-
-    if args.run_mode == "array":
-        infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
-    elif args.run_mode == "files":
-        infer_loop_files_run(session, args, intensors_desc, infileslist, output_prefix)
-    elif args.run_mode == "full":
-        infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix)
-    elif args.run_mode == "tensor":
-        infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix)
+    if args.pipeline:
+        infer_pipeline_run(session, args, infileslist, output_prefix)
     else:
-        raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
+        if args.run_mode == "array":
+            infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
+        elif args.run_mode == "files":
+            infer_loop_files_run(session, args, intensors_desc, infileslist, output_prefix)
+        elif args.run_mode == "full":
+            infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix)
+        elif args.run_mode == "tensor":
+            infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix)
+        else:
+            raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
     if args.energy_consumption and args.npu_id:
         end_energy_consumption = get_energy_consumption(args.npu_id)
     end_time = time.time()
@@ -351,6 +396,7 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.h2d_latency_list = MemorySummary.get_h2d_time_list()
     summary.d2h_latency_list = MemorySummary.get_d2h_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
+    logger.info("end_to_end_time (s):{}".format(end_time - start_time))
     if args.energy_consumption and args.npu_id:
         logger.info("NPU ID:{} energy consumption(J):{}".format(args.npu_id, ((float(end_energy_consumption) +
                                                                            float(start_energy_consumption))/2.0 ) * (
@@ -358,6 +404,13 @@ def main(args, index=0, msgq=None, device_list=None):
     if msgq is not None:
         # put result to msgq
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
+
+    if delete_infileslist:
+        for file in infileslist[0]:
+            if (os.path.exists(file)):
+                os.remove(file)
+            else:
+                logger.error("try to delete tmp file {}, but not found.".format(file))
 
     session.finalize()
 
@@ -506,14 +559,6 @@ def pipeline_run(args, concur):
 def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
-
-    if args.pipeline:
-        concur = shutil.which("concur")
-        if concur is None :
-            logger.info("find no pipeline excutable continue normal mode")
-        else:
-            pipeline_run(args, concur)
-            return 0
 
     if args.perf:
         backend_run(args)
