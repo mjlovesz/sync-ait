@@ -89,38 +89,14 @@ def check_overlapping_names(
     return result
 
 
-class MergeGraphsInfo:
-    def __init__(self,
-                 io_map: List[Tuple[str, str]],
-                 inputs: Optional[List[str]] = None,
-                 outputs: Optional[List[str]] = None,
-                 prefix1: Optional[str] = None,
-                 prefix2: Optional[str] = None):
-        """
-        Arguments:
-            io_map (list of pairs of string): The pairs of names [(out0, in0), (out1, in1), ...]
-                                              representing outputs of the first graph and inputs of the second
-                                              to be connected
-            inputs (list of string): Optional list of inputs to be included in the combined graph
-                                     By default, all inputs not present in the ``io_map`` argument will be
-                                     included in the combined model
-            outputs (list of string): Optional list of outputs to be included in the combined graph
-                                      By default, all outputs not present in the ``io_map`` argument will be
-                                      included in the combined model
-            prefix1 (string): Optional prefix to be added to all names in g1
-            prefix2 (string): Optional prefix to be added to all names in g2
-        """
-        self.io_map = io_map
-        self.inputs = inputs
-        self.outputs = outputs
-        self.prefix1 = prefix1
-        self.prefix2 = prefix2
-
-
 def merge_graphs(  # pylint: disable=too-many-branches,too-many-statements
         g1: GraphProto,
         g2: GraphProto,
-        merge_graphs_info: MergeGraphsInfo,
+        io_map: List[Tuple[str, str]],
+        inputs: Optional[List[str]] = None,
+        outputs: Optional[List[str]] = None,
+        prefix1: Optional[str] = None,
+        prefix2: Optional[str] = None,
         name: Optional[str] = None,
         doc_string: Optional[str] = None,
 ) -> GraphProto:
@@ -132,7 +108,17 @@ def merge_graphs(  # pylint: disable=too-many-branches,too-many-statements
     Arguments:
         g1 (GraphProto): First graph
         g2 (GraphProto): Second graph
-        merge_graphs_info (MergeGraphsInfo): merge graphs info of io_map/inputs/outputs/prefix1/prefix2
+        io_map (list of pairs of string): The pairs of names [(out0, in0), (out1, in1), ...]
+                                            representing outputs of the first graph and inputs of the second
+                                            to be connected
+        inputs (list of string): Optional list of inputs to be included in the combined graph
+                                    By default, all inputs not present in the ``io_map`` argument will be
+                                    included in the combined model
+        outputs (list of string): Optional list of outputs to be included in the combined graph
+                                    By default, all outputs not present in the ``io_map`` argument will be
+                                    included in the combined model
+        prefix1 (string): Optional prefix to be added to all names in g1
+        prefix2 (string): Optional prefix to be added to all names in g2
         name (string): Optional name for the combined graph
                        By default, the name is g1.name and g2.name concatenated with an undescore delimiter
         doc_string (string): Optional docstring for the combined graph
@@ -141,11 +127,6 @@ def merge_graphs(  # pylint: disable=too-many-branches,too-many-statements
     Returns:
         GraphProto
     """
-    io_map = merge_graphs_info.io_map
-    inputs = merge_graphs_info.inputs
-    outputs = merge_graphs_info.outputs
-    prefix1 = merge_graphs_info.prefix1
-    prefix2 = merge_graphs_info.prefix2
     if type(g1) is not GraphProto:
         raise ValueError("g1 argument is not an ONNX graph")
     if type(g2) is not GraphProto:
@@ -393,7 +374,9 @@ def merge_models(  # pylint: disable=too-many-branches
     graph = merge_graphs(
         m1.graph,
         m2.graph,
-        merge_graphs_info=merge_graphs_info,
+        io_map=io_map,
+        inputs=inputs,
+        outputs=outputs,
         name=name,
         doc_string=doc_string,
     )
