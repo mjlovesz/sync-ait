@@ -235,7 +235,7 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             )
 
 
-def check_json_content_legality(acl_json_path):
+def get_legal_json_content(acl_json_path):
     cmd_dict = {}
     with open(acl_json_path, 'r') as f:
         json_dict = json.load(f)
@@ -247,7 +247,7 @@ def check_json_content_legality(acl_json_path):
 
 def json_to_msprof_cmd(acl_json_path):
     try:
-        json_dict = check_json_content_legality(acl_json_path)
+        json_dict = get_legal_json_content(acl_json_path)
     except Exception() as err:
         logger.error("content of profiler in json file is illegal")
         raise RuntimeError from err
