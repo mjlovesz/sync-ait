@@ -1,3 +1,17 @@
+# Copyright (c) 2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import argparse
 import logging
 from typing import Dict, List, MutableMapping, Optional, Set, Tuple
@@ -30,13 +44,13 @@ def check_overlapping_names(
         if exclude is None:
             exclude = set()
         edges = []
-        for n in graph.node:
-            for i in n.input:
-                if i != "" and i not in exclude:
-                    edges.append(i)
-            for o in n.output:
-                if o != "" and o not in exclude:
-                    edges.append(o)
+        for node in graph.node:
+            for node_input in node.input:
+                if node_input != "" and node_input not in exclude:
+                    edges.append(node_input)
+            for node_output in node.output:
+                if node_output != "" and node_output not in exclude:
+                    edges.append(node_output)
         return edges
 
     result = []
@@ -75,14 +89,38 @@ def check_overlapping_names(
     return result
 
 
+class MergeGraphsInfo:
+    def __init__(self,
+                 io_map: List[Tuple[str, str]],
+                 inputs: Optional[List[str]] = None,
+                 outputs: Optional[List[str]] = None,
+                 prefix1: Optional[str] = None,
+                 prefix2: Optional[str] = None):
+        """
+        Arguments:
+            io_map (list of pairs of string): The pairs of names [(out0, in0), (out1, in1), ...]
+                                              representing outputs of the first graph and inputs of the second
+                                              to be connected
+            inputs (list of string): Optional list of inputs to be included in the combined graph
+                                     By default, all inputs not present in the ``io_map`` argument will be
+                                     included in the combined model
+            outputs (list of string): Optional list of outputs to be included in the combined graph
+                                      By default, all outputs not present in the ``io_map`` argument will be
+                                      included in the combined model
+            prefix1 (string): Optional prefix to be added to all names in g1
+            prefix2 (string): Optional prefix to be added to all names in g2
+        """
+        self.io_map = io_map
+        self.inputs = inputs
+        self.outputs = outputs
+        self.prefix1 = prefix1
+        self.prefix2 = prefix2
+
+
 def merge_graphs(  # pylint: disable=too-many-branches,too-many-statements
         g1: GraphProto,
         g2: GraphProto,
-        io_map: List[Tuple[str, str]],
-        inputs: Optional[List[str]] = None,
-        outputs: Optional[List[str]] = None,
-        prefix1: Optional[str] = None,
-        prefix2: Optional[str] = None,
+        merge_graphs_info: MergeGraphsInfo,
         name: Optional[str] = None,
         doc_string: Optional[str] = None,
 ) -> GraphProto:
@@ -94,17 +132,7 @@ def merge_graphs(  # pylint: disable=too-many-branches,too-many-statements
     Arguments:
         g1 (GraphProto): First graph
         g2 (GraphProto): Second graph
-        io_map (list of pairs of string): The pairs of names [(out0, in0), (out1, in1), ...]
-                                          representing outputs of the first graph and inputs of the second
-                                          to be connected
-        inputs (list of string): Optional list of inputs to be included in the combined graph
-                                 By default, all inputs not present in the ``io_map`` argument will be
-                                 included in the combined model
-        outputs (list of string): Optional list of outputs to be included in the combined graph
-                                  By default, all outputs not present in the ``io_map`` argument will be
-                                  included in the combined model
-        prefix1 (string): Optional prefix to be added to all names in g1
-        prefix2 (string): Optional prefix to be added to all names in g2
+        merge_graphs_info (MergeGraphsInfo): merge graphs info of io_map/inputs/outputs/prefix1/prefix2
         name (string): Optional name for the combined graph
                        By default, the name is g1.name and g2.name concatenated with an undescore delimiter
         doc_string (string): Optional docstring for the combined graph
@@ -113,6 +141,11 @@ def merge_graphs(  # pylint: disable=too-many-branches,too-many-statements
     Returns:
         GraphProto
     """
+    io_map = merge_graphs_info.io_map
+    inputs = merge_graphs_info.inputs
+    outputs = merge_graphs_info.outputs
+    prefix1 = merge_graphs_info.prefix1
+    prefix2 = merge_graphs_info.prefix2
     if type(g1) is not GraphProto:
         raise ValueError("g1 argument is not an ONNX graph")
     if type(g2) is not GraphProto:
@@ -141,34 +174,34 @@ def merge_graphs(  # pylint: disable=too-many-branches,too-many-statements
     io_map_g1_outs = {io[0] for io in io_map}
     io_map_g2_ins = {io[1] for io in io_map}
     reversed_io_map = {in_name: out_name for out_name, in_name in io_map}
-    g1_outs = {o.name for o in g1.output}
-    g2_ins = {i.name for i in g2.input}
+    g1_outs = {g1_onput.name for g1_onput in g1.output}
+    g2_ins = {g2_input.name for g2_input in g2.input}
 
     # If necessary extract subgraphs
     if inputs or outputs:
         if not inputs:
-            g1_inputs = [i.name for i in g1.input]
-            g2_inputs = [i.name for i in g2.input]
+            g1_inputs = [g1_input.name for g1_input in g1.input]
+            g2_inputs = [g2_input.name for g2_input in g2.input]
         else:
             input_set = set(inputs)
-            g1_inputs = [i.name for i in g1.input if i.name in input_set]
+            g1_inputs = [g1_input.name for g1_input in g1.input if g1_input.name in input_set]
             g2_inputs = [
-                i.name
-                for i in g2.input
-                if i.name in input_set or i.name in io_map_g2_ins
+                g2_input.name
+                for g2_input in g2.input
+                if g2_input.name in input_set or g2_input.name in io_map_g2_ins
             ]
 
         if not outputs:
-            g1_outputs = [o.name for o in g1.input]
-            g2_outputs = [o.name for o in g2.input]
+            g1_outputs = [g1_input.name for g1_input in g1.input]
+            g2_outputs = [g2_input.name for g2_input in g2.input]
         else:
             output_set = set(outputs)
             g1_outputs = [
-                o.name
-                for o in g1.output
-                if o.name in output_set or o.name in io_map_g1_outs
+                g1_output.name
+                for g1_output in g1.output
+                if g1_output.name in output_set or g1_output.name in io_map_g1_outs
             ]
-            g2_outputs = [o.name for o in g2.output if o.name in output_set]
+            g2_outputs = [g2_output.name for g2_output in g2.output if g2_output.name in output_set]
 
         if len(g1_inputs) < len(g1.input) or len(g1_outputs) < len(g1.output):
             e1 = utils.Extractor(helper.make_model(g1))
@@ -213,18 +246,18 @@ def merge_graphs(  # pylint: disable=too-many-branches,too-many-statements
 
     if inputs:
         input_set = set(inputs)
-        g.input.extend([i for i in g1.input if i.name in input_set])
-        g.input.extend([i for i in g2.input if i.name in input_set])
+        g.input.extend([g1_input for g1_input in g1.input if g1_input.name in input_set])
+        g.input.extend([g2_input for g2_input in g2.input if g2_input.name in input_set])
     else:
         g.input.extend(g1.input)
-        g.input.extend([i for i in g2.input if i.name not in io_map_g2_ins])
+        g.input.extend([g2_input for g2_input in g2.input if g2_input.name not in io_map_g2_ins])
 
     if outputs:
         output_set = set(outputs)
-        g.output.extend([o for o in g1.output if o.name in output_set])
-        g.output.extend([o for o in g2.output if o.name in output_set])
+        g.output.extend([g1_output for g1_output in g1.output if g1_output.name in output_set])
+        g.output.extend([g2_output for g2_output in g2.output if g2_output.name in output_set])
     else:
-        g.output.extend([o for o in g1.output if o.name not in io_map_g1_outs])
+        g.output.extend([g1_output for g1_output in g1.output if g1_output.name not in io_map_g1_outs])
         g.output.extend(g2.output)
 
     g.initializer.extend(g1.initializer)
@@ -328,7 +361,7 @@ def merge_models(  # pylint: disable=too-many-branches
 
     for entry in opset_imports:
         if entry.domain in opset_import_map:
-            found_version = opset_import_map[entry.domain]
+            found_version = opset_import_map.get(entry.domain, default=None)
             if entry.version != found_version:
                 raise ValueError(
                     "Can't merge two models with different operator set ids for a given domain. "
@@ -356,13 +389,11 @@ def merge_models(  # pylint: disable=too-many-branches
             )
             for io in io_map
         ]
-
+    merge_graphs_info = MergeGraphsInfo(io_map=io_map, inputs=inputs, outputs=outputs)
     graph = merge_graphs(
         m1.graph,
         m2.graph,
-        io_map,
-        inputs=inputs,
-        outputs=outputs,
+        merge_graphs_info=merge_graphs_info,
         name=name,
         doc_string=doc_string,
     )
@@ -382,7 +413,7 @@ def merge_models(  # pylint: disable=too-many-branches
         model_props[meta_entry.key] = meta_entry.value
     for meta_entry in m2.metadata_props:
         if meta_entry.key in model_props:
-            value = model_props[meta_entry.key]
+            value = model_props.get(meta_entry.key, default=None)
             if value != meta_entry.value:
                 raise ValueError(
                     "Can't merge models with different values for the same model metadata property."
@@ -404,7 +435,7 @@ def merge_models(  # pylint: disable=too-many-branches
     model.functions.MergeFrom(m1.functions)
     model.functions.MergeFrom(m2.functions)
 
-    # checker.check_model(model)
+    # remove original checker: checker.check_model(model)
     return model
 
 
@@ -457,10 +488,10 @@ def add_prefix_graph(  # pylint: disable=too-many-branches
     if name_map is None:
         name_map = {}
     if rename_edges:
-        for n in g.node:
-            for e in n.input:
+        for g_node in g.node:
+            for e in g_node.input:
                 name_map[e] = _prefixed(prefix, e)
-            for e in n.output:
+            for e in g_node.output:
                 name_map[e] = _prefixed(prefix, e)
 
     if rename_inputs:
@@ -471,9 +502,9 @@ def add_prefix_graph(  # pylint: disable=too-many-branches
             name_map[entry.name] = _prefixed(prefix, entry.name)
 
     if rename_nodes:
-        for n in g.node:
-            n.name = _prefixed(prefix, n.name)
-            for attribute in n.attribute:
+        for g_node in g.node:
+            g_node.name = _prefixed(prefix, g_node.name)
+            for attribute in g_node.attribute:
                 if attribute.g:
                     add_prefix_graph(
                         attribute.g, prefix, inplace=True, name_map=name_map
@@ -494,33 +525,33 @@ def add_prefix_graph(  # pylint: disable=too-many-branches
         for entry in g.value_info:
             name_map[entry.name] = _prefixed(prefix, entry.name)
 
-    for n in g.node:
-        for i, output in enumerate(n.output):
-            if n.output[i] in name_map:
-                n.output[i] = name_map[output]
-        for i, input_ in enumerate(n.input):
-            if n.input[i] in name_map:
-                n.input[i] = name_map[input_]
+    for g_node in g.node:
+        for idx, output in enumerate(g_node.output):
+            if g_node.output[idx] in name_map:
+                g_node.output[idx] = name_map.get(output, default=None)
+        for idx, input_ in enumerate(g_node.input):
+            if g_node.input[idx] in name_map:
+                g_node.input[idx] = name_map.get(input_, default=None)
 
     for in_desc in g.input:
         if in_desc.name in name_map:
-            in_desc.name = name_map[in_desc.name]
+            in_desc.name = name_map.get(in_desc.name, default=None)
     for out_desc in g.output:
         if out_desc.name in name_map:
-            out_desc.name = name_map[out_desc.name]
+            out_desc.name = name_map.get(out_desc.name, default=None)
 
     for initializer in g.initializer:
         if initializer.name in name_map:
-            initializer.name = name_map[initializer.name]
+            initializer.name = name_map.get(initializer.name, default=None)
     for sparse_initializer in g.sparse_initializer:
         if sparse_initializer.values.name in name_map:
-            sparse_initializer.values.name = name_map[sparse_initializer.values.name]
+            sparse_initializer.values.name = name_map.get(sparse_initializer.values.name, default=None)
         if sparse_initializer.indices.name in name_map:
-            sparse_initializer.indices.name = name_map[sparse_initializer.indices.name]
+            sparse_initializer.indices.name = name_map.get(sparse_initializer.indices.name, default=None)
 
     for value_info in g.value_info:
         if value_info.name in name_map:
-            value_info.name = name_map[value_info.name]
+            value_info.name = name_map.get(value_info.name, default=None)
 
     return g
 
@@ -590,11 +621,11 @@ def add_prefix(
         for f in model.functions:
             for n in f.node:
                 if n.op_type in f_name_map:
-                    n.op_type = f_name_map[n.op_type]
+                    n.op_type = f_name_map.get(n.op_type, default=None)
         # Adjust references to local functions in the graph
         for n in model.graph.node:
             if n.op_type in f_name_map:
-                n.op_type = f_name_map[n.op_type]
+                n.op_type = f_name_map.get(n.op_type, default=None)
 
     return model
 
@@ -614,11 +645,13 @@ merge_model_path = args.merge_model_path
 previous_model_outputs = args.previous_model_outputs
 following_model_inputs = args.following_model_inputs
 
-if len(previous_model_outputs) != len(following_model_inputs):
+len_previous_model_outputs = len(previous_model_outputs)
+len_following_model_inputs = len(following_model_inputs)
+if len_previous_model_outputs != len_following_model_inputs:
     raise Exception("Each input and output must match!")
 
 connection_list = []
-for i in range(len(previous_model_outputs)):
+for i in range(len_previous_model_outputs):
     connection = (previous_model_outputs[i], following_model_inputs[i])
     connection_list.append(connection)
     logging.info("connect %s and %s ", previous_model_outputs[i], following_model_inputs[i])
