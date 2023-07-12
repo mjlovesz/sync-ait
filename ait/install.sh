@@ -128,7 +128,7 @@ install(){
   then
     pip3 install ${CURRENT_DIR}/components/benchmark/backend \
     ${CURRENT_DIR}/components/benchmark \
-    ${arg_force_reinstall} ${pip_source}
+    ${arg_force_reinstall}
   fi
 
   if [ ! -z $only_analyze ]
