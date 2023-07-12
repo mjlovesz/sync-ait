@@ -236,8 +236,13 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
 
 
 def check_json_content_legality(acl_json_path):
-    json_dict = {}
-    return json_dict
+    cmd_dict = {}
+    with open(acl_json_path, 'r') as f:
+        json_dict = json.load(f)
+    profile_dict = json_dict.get("profiler")
+    if profile_dict.get("output") is not None:
+        profile_dict.insert("output", profile_dict.get("output"))
+    return cmd_dict
 
 
 def json_to_msprof_cmd(acl_json_path):
