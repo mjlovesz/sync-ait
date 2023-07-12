@@ -17,6 +17,7 @@ import math
 import os
 import sys
 import time
+import json
 import shutil
 import copy
 import subprocess
@@ -234,12 +235,31 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             )
 
 
+def check_json_content_legality(acl_json_path):
+    json_dict = {}
+    return json_dict
+
+def json_to_msprof_cmd(acl_json_path):
+    try:
+        json_dict = check_json_content_legality(acl_json_path)
+    except Exception() as err:
+        logger.error("content of profiler in json file is illegal")
+        raise RuntimeError from err
+    msprof_cmd = ""
+    return msprof_cmd
+
+
 def msprof_run_profiling(args, msprof_bin):
-    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
-    msprof_cmd = "{} --output={}/profiler --application=\"{}\" --model-execution=on \
-                --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off \
-                --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
-                .format(msprof_bin, args.output, cmd)
+    if args.acl_json_path is not None:
+        # acl.json to msprof cmd
+        msprof_cmd = json_to_msprof_cmd(args.acl_json_path)
+    else:
+        # default msprof cmd
+        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
+        msprof_cmd = "{} --output={}/profiler --application=\"{}\" --model-execution=on \
+                    --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off \
+                    --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
+                    .format(msprof_bin, args.output, cmd)
 
     msprof_cmd_list = shlex.split(msprof_cmd)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
@@ -506,6 +526,7 @@ def pipeline_run(args, concur):
 def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
+    acl_json_base_check(args)
 
     if args.pipeline:
         concur = shutil.which("concur")
