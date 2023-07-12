@@ -513,6 +513,8 @@ def acl_json_base_check(args):
         json_dict = json.load(f)
     if json_dict.get("profiler") is not None:
         args.profile = True
+    if json_dict.get("dump") is not None:
+        args.profile = False
     return args
 
 
@@ -565,7 +567,7 @@ def benchmark_process(args:BenchMarkArgsAdapter):
         # try use msprof to run
         msprof_bin = shutil.which('msprof')
         if msprof_bin is None or os.getenv('GE_PROFILING_TO_STD_OUT') == '1':
-            logger.info("find no msprof continue use acl.json mode")
+            logger.info("find no msprof continue use acl.json mode, result won't be parsed as csv")
         else:
             msprof_run_profiling(args, msprof_bin)
             return 0
