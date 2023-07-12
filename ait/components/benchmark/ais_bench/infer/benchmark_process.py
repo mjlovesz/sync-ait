@@ -239,6 +239,7 @@ def check_json_content_legality(acl_json_path):
     json_dict = {}
     return json_dict
 
+
 def json_to_msprof_cmd(acl_json_path):
     try:
         json_dict = check_json_content_legality(acl_json_path)
@@ -495,6 +496,10 @@ def args_rules(args):
         logger.error(
             "parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
         raise RuntimeError('error bad parameters --output_dirname')
+    return args
+
+
+def acl_json_base_check(args):
     return args
 
 
