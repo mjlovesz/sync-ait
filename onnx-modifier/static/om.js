@@ -111,7 +111,7 @@ om.Node = class {
                     let data = null;
                     if (value.data.length === 0) {
                         if (context.weights == null) {
-                            data = null;
+                            // Do nothing
                         } else if (value.desc.attr.merged_offset) {
                             const offset = value.desc.attr.merged_offset.i;
                             data = context.weights.slice(offset, offset + value.desc.weight_size);
