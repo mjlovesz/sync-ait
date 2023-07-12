@@ -361,7 +361,7 @@ def merge_models(  # pylint: disable=too-many-branches
 
     for entry in opset_imports:
         if entry.domain in opset_import_map:
-            found_version = opset_import_map.get(entry.domain, default=None)
+            found_version = opset_import_map.get(entry.domain)
             if entry.version != found_version:
                 raise ValueError(
                     "Can't merge two models with different operator set ids for a given domain. "
