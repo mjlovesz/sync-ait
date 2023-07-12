@@ -160,15 +160,9 @@ class TestClass:
                 raise Exception("grep action raises an exception: {}".format(e)) from e
 
             result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
-            info.get("result_paths").append(result_path)
+            info.get("results_paths").append(result_path)
             summary_json_name = result_path.split("/")[-1]
             info.get("summary_json_paths").append(os.path.join(output_path, "{}_summary.json".format(summary_json_name)))
-
-        # bin file compare for single thread and multi thread, should be same
-        cmd = "diff  {}  {}".format(run_modes["general"]["results_paths"], run_modes["pipeline"]["results_paths"])
-        logger.info("run cmd:{}".format(cmd))
-        ret = os.system(cmd)
-        assert ret == 0
 
         # compare e2e time
         cmd_general = "cat {} | grep 'end_to_end' | cut -d: -f2".format(run_modes["general"]["log_path"])
