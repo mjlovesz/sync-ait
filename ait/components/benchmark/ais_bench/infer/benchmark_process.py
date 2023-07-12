@@ -242,6 +242,16 @@ def get_legal_json_content(acl_json_path):
     profile_dict = json_dict.get("profiler")
     if profile_dict.get("output") is not None:
         profile_dict.insert("output", profile_dict.get("output"))
+    if profile_dict.get("output") is not None:
+        profile_dict.insert("output", profile_dict.get("output"))
+    if profile_dict.get("output") is not None:
+        profile_dict.insert("output", profile_dict.get("output"))
+    if profile_dict.get("output") is not None:
+        profile_dict.insert("output", profile_dict.get("output"))
+    if profile_dict.get("output") is not None:
+        profile_dict.insert("output", profile_dict.get("output"))
+    if profile_dict.get("output") is not None:
+        profile_dict.insert("output", profile_dict.get("output"))
     return cmd_dict
 
 
