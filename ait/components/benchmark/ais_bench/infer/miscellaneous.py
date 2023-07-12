@@ -45,10 +45,6 @@ def version_check(args):
         args.run_mode = "tensor"
 
 
-def acl_json_base_check(args):
-    return args
-
-
 def get_model_name(model):
     path_list = model.split('/')
     return path_list[-1][:-3]
