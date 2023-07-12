@@ -500,7 +500,19 @@ def args_rules(args):
 
 
 def acl_json_base_check(args):
-
+    json_path = args.acl_json_path
+    max_json_size = 8192 # 8MB 30 * 255 byte左右
+    if not os.path.exists(os.path.realpath(json_path)):
+        logger.error(f"acl_json_path:{json_path} not exsit")
+        raise FileExistsError(f"acl_json_path:{json_path} not exsit")
+    json_size = os.path.getsize(json_path)
+    if json_size > max_json_size:
+        logger.error(f"json_file_size:{json_size} byte out of max limit {max_json_size} byte")
+        raise MemoryError(f"json_file_size:{json_size} byte out of max limit")
+    with open(json_path, 'r') as f:
+        json_dict = json.load(f)
+    if json_dict.get("profiler") is not None:
+        args.profile = True
     return args
 
 
@@ -532,7 +544,10 @@ def pipeline_run(args, concur):
 def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
-    acl_json_base_check(args)
+    try:
+        acl_json_base_check(args)
+    except Exception:
+        return 1
 
     if args.pipeline:
         concur = shutil.which("concur")
