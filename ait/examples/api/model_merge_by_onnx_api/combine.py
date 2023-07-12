@@ -413,7 +413,7 @@ def merge_models(  # pylint: disable=too-many-branches
         model_props[meta_entry.key] = meta_entry.value
     for meta_entry in m2.metadata_props:
         if meta_entry.key in model_props:
-            value = model_props.get(meta_entry.key, default=None)
+            value = model_props.get(meta_entry.key)
             if value != meta_entry.value:
                 raise ValueError(
                     "Can't merge models with different values for the same model metadata property."
@@ -528,30 +528,30 @@ def add_prefix_graph(  # pylint: disable=too-many-branches
     for g_node in g.node:
         for idx, output in enumerate(g_node.output):
             if g_node.output[idx] in name_map:
-                g_node.output[idx] = name_map.get(output, default=None)
+                g_node.output[idx] = name_map.get(output)
         for idx, input_ in enumerate(g_node.input):
             if g_node.input[idx] in name_map:
-                g_node.input[idx] = name_map.get(input_, default=None)
+                g_node.input[idx] = name_map.get(input_)
 
     for in_desc in g.input:
         if in_desc.name in name_map:
-            in_desc.name = name_map.get(in_desc.name, default=None)
+            in_desc.name = name_map.get(in_desc.name)
     for out_desc in g.output:
         if out_desc.name in name_map:
-            out_desc.name = name_map.get(out_desc.name, default=None)
+            out_desc.name = name_map.get(out_desc.name)
 
     for initializer in g.initializer:
         if initializer.name in name_map:
-            initializer.name = name_map.get(initializer.name, default=None)
+            initializer.name = name_map.get(initializer.name)
     for sparse_initializer in g.sparse_initializer:
         if sparse_initializer.values.name in name_map:
-            sparse_initializer.values.name = name_map.get(sparse_initializer.values.name, default=None)
+            sparse_initializer.values.name = name_map.get(sparse_initializer.values.name)
         if sparse_initializer.indices.name in name_map:
-            sparse_initializer.indices.name = name_map.get(sparse_initializer.indices.name, default=None)
+            sparse_initializer.indices.name = name_map.get(sparse_initializer.indices.name)
 
     for value_info in g.value_info:
         if value_info.name in name_map:
-            value_info.name = name_map.get(value_info.name, default=None)
+            value_info.name = name_map.get(value_info.name)
 
     return g
 
@@ -621,11 +621,11 @@ def add_prefix(
         for f in model.functions:
             for n in f.node:
                 if n.op_type in f_name_map:
-                    n.op_type = f_name_map.get(n.op_type, default=None)
+                    n.op_type = f_name_map.get(n.op_type)
         # Adjust references to local functions in the graph
         for n in model.graph.node:
             if n.op_type in f_name_map:
-                n.op_type = f_name_map.get(n.op_type, default=None)
+                n.op_type = f_name_map.get(n.op_type)
 
     return model
 
