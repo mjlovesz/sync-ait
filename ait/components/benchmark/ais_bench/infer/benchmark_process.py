@@ -246,7 +246,7 @@ def get_legal_json_content(acl_json_path):
     profile_dict = json_dict.get("profiler")
     for _, option_cmd in enumerate(ACL_JSON_CMD_LIST):
         if profile_dict.get(option_cmd) is not None:
-            cmd_dict.update({"--".join(option_cmd.replace('_','-')): profile_dict.get(option_cmd)})
+            cmd_dict.update({"--" + option_cmd.replace('_','-'): profile_dict.get(option_cmd)})
 
     # if profile_dict.get("output") is not None:
     #     cmd_dict.update({"output": profile_dict.get("output")})
@@ -289,7 +289,7 @@ def get_legal_json_content(acl_json_path):
 
 def json_to_msprof_cmd(acl_json_path):
     json_dict = get_legal_json_content(acl_json_path)
-    msprof_option_cmd = "".join([f"{key}={value}" for key, value in json_dict.items()])
+    msprof_option_cmd = " ".join([f"{key}={value}" for key, value in json_dict.items()])
     return msprof_option_cmd
 
 
@@ -297,7 +297,7 @@ def msprof_run_profiling(args, msprof_bin):
     if args.acl_json_path is not None:
         # acl.json to msprof cmd
         cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0 --acl-json-path=None"
-        msprof_cmd = f"{msprof_bin} --application=\"{cmd}\"".join(json_to_msprof_cmd(args.acl_json_path))
+        msprof_cmd = f"{msprof_bin} --application=\"{cmd}\" " + json_to_msprof_cmd(args.acl_json_path)
     else:
         # default msprof cmd
         cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
