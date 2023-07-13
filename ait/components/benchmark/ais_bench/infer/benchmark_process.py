@@ -46,6 +46,9 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
 
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
+
 
 def set_session_options(session, args):
     # 增加校验
@@ -540,6 +543,8 @@ def args_rules(args):
 
 
 def acl_json_base_check(args):
+    if args.acl_json_path is None:
+        return args
     json_path = args.acl_json_path
     max_json_size = 8192 # 8MB 30 * 255 byte左右
     if not os.path.exists(os.path.realpath(json_path)):
