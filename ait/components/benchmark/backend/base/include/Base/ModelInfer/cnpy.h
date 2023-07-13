@@ -43,7 +43,7 @@ struct NpyArray {
         dataHolder = std::make_shared<std::vector<char>>(numVals * wordSize);
     }
 
-    NpyArray() : shape( {0} ), wordSize(0), fortranOrder(0), numVals(0) {}
+    NpyArray() : shape(0), wordSize(0), fortranOrder(0), numVals(0) {}
 
     template <typename T> T *Data()
     {
