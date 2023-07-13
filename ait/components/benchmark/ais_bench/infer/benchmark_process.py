@@ -557,9 +557,9 @@ def acl_json_base_check(args):
     with open(json_path, 'r') as f:
         json_dict = json.load(f)
     if json_dict.get("profiler") is not None and json_dict.get("profiler").get("switch") == "on":
-        args.profile = True
+        args.profiler = True
     if json_dict.get("dump") is not None:
-        args.profile = False
+        args.profiler = False
     return args
 
 
