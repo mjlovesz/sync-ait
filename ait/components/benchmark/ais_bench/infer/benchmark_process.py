@@ -247,43 +247,6 @@ def get_legal_json_content(acl_json_path):
     for _, option_cmd in enumerate(ACL_JSON_CMD_LIST):
         if profile_dict.get(option_cmd) is not None and profile_dict.get(option_cmd) != "":
             cmd_dict.update({"--" + option_cmd.replace('_','-'): profile_dict.get(option_cmd)})
-
-    # if profile_dict.get("output") is not None:
-    #     cmd_dict.update({"output": profile_dict.get("output")})
-    # if profile_dict.get("storage_limit") is not None:
-    #     cmd_dict.update({"storage_limit": profile_dict.get("storage_limit")})
-    # if profile_dict.get("ascendcl") is not None:
-    #     cmd_dict.update({"ascendcl": profile_dict.get("ascendcl")})
-    # if profile_dict.get("runtime_api") is not None:
-    #     cmd_dict.update({"runtime_api": profile_dict.get("runtime_apit")})
-    # if profile_dict.get("hccl") is not None:
-    #     cmd_dict.update({"hccl": profile_dict.get("hccl")})
-    # if profile_dict.get("task_time") is not None:
-    #     cmd_dict.update({"task_time": profile_dict.get("task_time")})
-    # if profile_dict.get("aicpu") is not None:
-    #     cmd_dict.update({"aicpu": profile_dict.get("aicpu")})
-    # if profile_dict.get("aic_metrics") is not None:
-    #     cmd_dict.update({"aic_metrics": profile_dict.get("aic_metrics")})
-    # if profile_dict.get("l2") is not None:
-    #     cmd_dict.update({"l2": profile_dict.get("l2")})
-    # if profile_dict.get("sys_hardware_mem_freq") is not None:
-    #     cmd_dict.update({"sys_hardware_mem_freq": profile_dict.get("sys_hardware_mem_freq")})
-    # if profile_dict.get("lcc_profiling") is not None:
-    #     cmd_dict.update({"lcc_profiling": profile_dict.get("lcc_profiling")})
-    # if profile_dict.get("sys_io_sampling_freq") is not None:
-    #     cmd_dict.update({"sys_io_sampling_freq": profile_dict.get("sys_io_sampling_freq")})
-    # if profile_dict.get("dvpp_freq") is not None:
-    #     cmd_dict.update({"dvpp_freq": profile_dict.get("dvpp_freq")})
-    # if profile_dict.get("host_sys") is not None:
-    #     cmd_dict.update({"host_sys": profile_dict.get("host_sys")})
-    # if profile_dict.get("host_sys_usage") is not None:
-    #     cmd_dict.update({"host_sys_usage": profile_dict.get("host_sys_usage")})
-    # if profile_dict.get("host_sys_usage_freq") is not None:
-    #     cmd_dict.update({"host_sys_usage_freq": profile_dict.get("host_sys_usage_freq")})
-    # if profile_dict.get("sys_interconnection_freq") is not None:
-    #     cmd_dict.update({"sys_interconnection_freq": profile_dict.get("sys_interconnection_freq")})
-    # if profile_dict.get("msproftx") is not None:
-    #     cmd_dict.update({"msproftx": profile_dict.get("msproftx")})
     return cmd_dict
 
 
