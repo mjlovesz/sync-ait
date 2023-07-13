@@ -302,9 +302,10 @@ def msprof_run_profiling(args, msprof_bin):
                     --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
 
     msprof_cmd_list = shlex.split(msprof_cmd)
-    logger.info("msprof cmd:{} begin run".format(msprof_cmd))
+    logger.info(f"msprof cmd:{msprof_cmd} begin run")
     ret = subprocess.call(msprof_cmd_list, shell=False)
-    logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
+    logger.info(f"msprof cmd:{msprof_cmd} end run ret:{ret}")
+    return ret
 
 
 def get_energy_consumption(npu_id):
@@ -608,8 +609,8 @@ def benchmark_process(args:BenchMarkArgsAdapter):
         if msprof_bin is None or os.getenv('GE_PROFILING_TO_STD_OUT') == '1':
             logger.info("find no msprof continue use acl.json mode, result won't be parsed as csv")
         else:
-            msprof_run_profiling(args, msprof_bin)
-            return 0
+            ret = msprof_run_profiling(args, msprof_bin)
+            return ret
 
     if args.dym_shape_range is not None and args.dym_shape is None:
         # dymshape range run,according range to run each shape infer get best shape
