@@ -41,7 +41,7 @@ int main(int argc, char** argv)
 
     BuilderConfig config;
 
-    ret = config.SetFlag(BuilderFlag::FP16);
+    config.SetFlag(BuilderFlag::FP16);
 
     auto modelData = builder->BuildModel(network, config);
 
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 
     fout.close();
 
-    std::cout << "AIE Model Convert:" << ret << std::endl;
+    std::cout << "AIE Model Convert" << std::endl;
 
     delete builder;
 }
