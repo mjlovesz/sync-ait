@@ -296,7 +296,9 @@ def json_to_msprof_cmd(acl_json_path):
 def msprof_run_profiling(args, msprof_bin):
     if args.acl_json_path is not None:
         # acl.json to msprof cmd
-        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0 --acl-json-path=\" \""
+        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
+        cmd.replace("--acl-json-path", "")
+        cmd.replace(args.acl_json_path, "")
         msprof_cmd = f"{msprof_bin} --application=\"{cmd}\" " + json_to_msprof_cmd(args.acl_json_path)
     else:
         # default msprof cmd
@@ -544,12 +546,13 @@ def args_rules(args):
 
 
 def acl_json_base_check(args):
-    if args.acl_json_path == " ":
-        args.acl_json_path = None
     if args.acl_json_path is None:
         return args
     json_path = args.acl_json_path
     max_json_size = 8192 # 8MB 30 * 255 byte左右
+    if os.path.splitext(json_path)[1] != ".json":
+        logger.error(f"acl_json_path:{json_path} not exsit")
+        raise TypeError(f"acl_json_path:{json_path} is not a .json file")
     if not os.path.exists(os.path.realpath(json_path)):
         logger.error(f"acl_json_path:{json_path} not exsit")
         raise FileExistsError(f"acl_json_path:{json_path} not exsit")
