@@ -592,7 +592,7 @@ def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
     try:
-        acl_json_base_check(args)
+        args = acl_json_base_check(args)
     except Exception:
         return 1
 
