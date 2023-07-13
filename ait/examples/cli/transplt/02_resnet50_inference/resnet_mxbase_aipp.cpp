@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     std::string img_file = "test.png";
     MxBase::ImageProcessor processor;
     MxBase::Image decoded_image;
-    processor.Decode(img_file, decoded_image);
+    processor.Decode(img_file, decoded_image, MxBase::ImageFormat::RGB_888);
     // MxBase::Image resized_image;
     // processor.Resize(decoded_image, MxBase::Size(256, 256), resized_image);
 	auto end = std::chrono::high_resolution_clock::now();

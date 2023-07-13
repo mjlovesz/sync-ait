@@ -1,6 +1,5 @@
 # OpenCV ResNet50 推理迁移
-## 介绍
-示例将 OpenCV 上 ResNet50 的 onnx 模型推理迁移到昇腾平台 MXBase 推理
+- 示例将 OpenCV 上 ResNet50 的 onnx 模型推理迁移到昇腾平台 MXBase 推理
 
 ## 导出 ResNet50 onnx 文件
 - 需要 `resnet50.onnx` 文件用于后续推理以及迁移，使用 `torchvision` 中预定义的模型导出
@@ -8,6 +7,13 @@
   import torchvision, torch
   mm = torchvision.models.resnet50(pretrained=True)
   torch.onnx.export(mm, torch.ones([1, 3, 224, 224]), 'resnet50.onnx')
+  ```
+## 准备测试图片
+- 使用 `scikit-image` 中的测试图片，也可使用自行获取的图片
+  ```py
+  import cv2
+  from skimage.data import chelsea
+  cv2.imwrite('test.png', cv2.resize(chelsea(), [256, 256])[:, :, ::-1])
   ```
 ## OpenCV ResNet50 推理
 - **相关依赖** 需要 `opencv4`
@@ -23,21 +29,20 @@
   ```
 - **编译执行**
   ```sh
-  g++ -O3 resnet_opencv.cpp -o resnet_opencv `pkg-config --cflags --libs opencv4`
-  ./resnet_opencv
+  g++ -O3 resnet50_opencv.cpp -o resnet50_opencv `pkg-config --cflags --libs opencv4`
+  ./resnet50_opencv
   # Image process time duration: 4.31935ms
   # Model inference time duration: 230.819ms
   # index: 285
-  # score: 18.4915
+  # score: 17.6409
   ```
 ## AIT Tranplt 迁移分析
-  - 安装 ait 工具后，针对待迁移项目路径 `resnet_opencv` 执行 transplt 迁移分析
+  - 安装 ait 工具后，针对待迁移项目执行 transplt 迁移分析
   ```sh
   ait transplt -s .
   # INFO - scan_api.py[123] - Scan source files...
-  # INFO - clang_parser.py[355] - Scanning file: ~/opencv_transplt_demos/resnet_opencv/resnet_opencv.cpp
-  # INFO - cxx_scanner.py[33] - Total time for scanning cxx files is 30.529629230499268s
-  # INFO - csv_report.py[46] - Report generated at: ~/opencv_transplt_demos/resnet_opencv/output.xlsx
+  # ...
+  # INFO - csv_report.py[46] - Report generated at: ./output.xlsx
   # INFO - scan_api.py[113] - **** Project analysis finished <<<
   ```
   最终分析结果文件位于当前执行路径下 `./output.xlsx`，该结果中重点关注有对应关系的接口，并参照 `AscendAPILink` 中相关接口说明辅助完成迁移
@@ -70,14 +75,14 @@
   对应 OpenCV 部分
   ```cpp
   // 模型初始化
-  cv::dnn::Net net = cv::dnn::readNet("./resnet50.onnx");
+  cv::dnn::Net net = cv::dnn::readNet("resnet50.onnx");
   net.setPreferableBackend(cv::dnn::DNN_BACKEND_OPENCV);
   net.setPreferableTarget(cv::dnn::DNN_TARGET_CPU);
   ```
   完成对应模型初始化迁移实现
   ```cpp
   uint32_t device_id = 0;
-  std::string modelPath = "./resnet50.om";
+  std::string modelPath = "resnet50.om";
   MxBase::Model net(modelPath, device_id);
   ```
 - **`Model::Infer` 模型推理** 参照 `AscendAPILink` 中链接 [mxVision 用户指南 Infer](https://www.hiascend.com/document/detail/zh/mind-sdk/300/vision/mxvisionug/mxmanufactureug_0829.html)
@@ -120,15 +125,15 @@
   ```
 - **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，参考迁移后实现 [resnet_mxbase.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/resnet_mxbase.cpp)
   ```sh
-  g++ -O3 resnet_mxbase.cpp -o resnet_mxbase -lmxbase -lopencv_world \
+  g++ -O3 resnet50_mxbase.cpp -o resnet50_mxbase -lmxbase -lopencv_world \
   -L ${MX_SDK_HOME}/lib -L ${MX_SDK_HOME}/opensource/lib -D_GLIBCXX_USE_CXX11_ABI=0 \
   -I ${MX_SDK_HOME}/include/ -I ${MX_SDK_HOME}/opensource/include/opencv4 -I ${MX_SDK_HOME}/opensource/include
 
-  ./resnet_mxbase
+  ./resnet50_mxbase
   # Image process time duration: 8.45735ms
   # Model inference time duration: 3.30807ms
   # index: 285
-  # score: 18.4844
+  # score: 17.6406
   ```
   其中在 NPU 上执行时模型推理时间 **3.30807ms** 远小于 CPU 上 OpenCV 调用时的 `230.819ms`，且输出结果 `score` 相近
 ## MXBase ResNet50 推理 + AIPP 数据处理
@@ -139,7 +144,7 @@
   | ---------- | ---------------------- | ------------------------------ |
   | cv::imread | ImageProcessor::Decode | ImageProcessor类的图片解码接口 |
   | cv::resize | ImageProcessor::Resize | ImageProcessor类的图像缩放接口 |
-- **AIPP** 详细介绍参照 [CANN AIPP使能](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC2alpha003/infacldevg/atctool/atlasatc_16_0018.html)，对于 `resnet50` 的参考实现 `aipp_resnet.config`
+- **AIPP** 详细介绍参照 [CANN AIPP使能](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC2alpha003/infacldevg/atctool/atlasatc_16_0018.html)，对于 `resnet50` 的参考实现 `aipp.config`
   ```java
   aipp_op{
       aipp_mode:static
@@ -164,7 +169,7 @@
 - **转出带 AIPP 前处理的 om 模型**，其中 AIPP 负责将输入的 `256 x 256` 图像裁剪为 `224 x 224`，以及数值规范化
   ```sh
   SOC_VERSION=`python3 -c 'import acl; print(acl.get_soc_name())'`  # Ascend310 / Ascend310P3 or others
-  atc --model resnet50.onnx --output resnet50_aipp --framework 5 --soc_version $SOC_VERSION --insert_op_conf aipp_resnet.config
+  atc --model resnet50.onnx --output resnet50_aipp --framework 5 --soc_version $SOC_VERSION --insert_op_conf aipp.config
   ```
 - **ImageProcessor::Decode 图像解码** 参照 `AscendAPILink` 中链接 [mxVision 用户指南 Decode](https://www.hiascend.com/document/detail/zh/mind-sdk/300/vision/mxvisionug/mxmanufactureug_0856.html)
   ```cpp
@@ -176,11 +181,11 @@
   ```
   对应 OpenCV 部分
   ```cpp
-  cv::Mat image = cv::imread("../assets/test.png", 1);
+  cv::Mat image = cv::imread("test.png", 1);
   ```
   完成对应图像解码迁移实现
   ```cpp
-  std::string img_file = "../assets/test.png";
+  std::string img_file = "test.png";
   MxBase::ImageProcessor processor;
   MxBase::Image decoded_image;
   processor.Decode(img_file, decoded_image, MxBase::ImageFormat::RGB_888);
@@ -205,14 +210,14 @@
   ```
 - **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，参考迁移后实现 [resnet_mxbase_aipp.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/resnet_mxbase_aipp.cpp)
   ```sh
-  g++ -O3 resnet_mxbase_aipp.cpp -o resnet_mxbase_aipp -lmxbase -lopencv_world \
+  g++ -O3 resnet50_mxbase_aipp.cpp -o resnet50_mxbase_aipp -lmxbase -lopencv_world \
   -L ${MX_SDK_HOME}/lib -L ${MX_SDK_HOME}/opensource/lib -D_GLIBCXX_USE_CXX11_ABI=0 \
   -I ${MX_SDK_HOME}/include/ -I ${MX_SDK_HOME}/opensource/include/opencv4 -I ${MX_SDK_HOME}/opensource/include
 
-  ./resnet_mxbase_aipp
+  ./resnet50_mxbase_aipp
   # Image process time duration: 16.2752ms
   # Model inference time duration: 2.8023ms
   # index: 285
-  # score: 18.5625
+  # score: 17
   ```
   其中图像处理时间基本为读取图片时间，在 NPU 上执行时模型推理时间 **2.8023ms** 远小于 CPU 上 OpenCV 调用时的 `230.819ms`，且输出结果 `score` 相近
