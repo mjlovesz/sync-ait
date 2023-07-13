@@ -47,7 +47,7 @@
   ```
   最终分析结果文件位于当前执行路径下 `./output.xlsx`，该结果中重点关注有对应关系的接口，并参照 `AscendAPILink` 中相关接口说明辅助完成迁移
 
-  ![trannsplt_resnet50_out.JPG]()
+  ![transplt_example.JPG](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/resnet50/transplt_example.JPG)
 ## MXBase ResNet50 推理 + OpenCV 图像处理
 - **完成该部分迁移，可使用 OpenCV 处理图像 -> MXBase 在昇腾 NPU 上执行模型推理**
 - 分析结果中，模型推理相关 API
@@ -123,7 +123,7 @@
   const std::vector<uint32_t> shape = {1, 3, 224, 224};
   MxBase::Tensor tensor = MxBase::Tensor((void *)blob.data, shape, MxBase::TensorDType::FLOAT32, device_id);
   ```
-- **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，参考迁移后实现 [resnet_mxbase.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/resnet_mxbase.cpp)
+- **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，参考迁移后实现 [resnet_mxbase.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/resnet50_mxbase.cpp)
   ```sh
   g++ -O3 resnet50_mxbase.cpp -o resnet50_mxbase -lmxbase -lopencv_world \
   -L ${MX_SDK_HOME}/lib -L ${MX_SDK_HOME}/opensource/lib -D_GLIBCXX_USE_CXX11_ABI=0 \
@@ -208,7 +208,7 @@
   MxBase::Image resized_image;
   processor.Resize(decoded_image, MxBase::Size(256, 256), resized_image);
   ```
-- **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，参考迁移后实现 [resnet_mxbase_aipp.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/resnet_mxbase_aipp.cpp)
+- **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，参考迁移后实现 [resnet_mxbase_aipp.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/resnet50_mxbase_aipp.cpp)
   ```sh
   g++ -O3 resnet50_mxbase_aipp.cpp -o resnet50_mxbase_aipp -lmxbase -lopencv_world \
   -L ${MX_SDK_HOME}/lib -L ${MX_SDK_HOME}/opensource/lib -D_GLIBCXX_USE_CXX11_ABI=0 \
