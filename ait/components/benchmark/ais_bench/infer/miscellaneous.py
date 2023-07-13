@@ -33,7 +33,6 @@ ACL_JSON_CMD_LIST = [
     "l2",
     "sys_hardware_mem_freq",
     "lcc_profiling",
-    "sys_io_sampling_freq",
     "dvpp_freq",
     "host_sys",
     "host_sys_usage",

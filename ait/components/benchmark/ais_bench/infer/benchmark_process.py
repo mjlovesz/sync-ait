@@ -249,8 +249,6 @@ def get_legal_json_content(acl_json_path):
             cmd_dict.update({"--" + option_cmd.replace('_','-'): profile_dict.get(option_cmd)})
         if (option_cmd == "sys_hardware_mem_freq"):
             cmd_dict.update({"--sys-hardware-mem": "on"})
-        if (option_cmd == "sys_io_sampling_freq"):
-            cmd_dict.update({"--sys-io-profiling": "on"})
         if (option_cmd == "sys_interconnection_freq"):
             cmd_dict.update({"--sys-interconnection-profiling": "on"})
     return cmd_dict
