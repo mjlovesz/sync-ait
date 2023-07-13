@@ -280,13 +280,9 @@ def get_legal_json_content(acl_json_path):
 
 
 def json_to_msprof_cmd(acl_json_path):
-    try:
-        json_dict = get_legal_json_content(acl_json_path)
-    except Exception() as err:
-        logger.error("content of profiler in json file is illegal")
-        raise RuntimeError from err
-    msprof_cmd = ""
-    return msprof_cmd
+    json_dict = get_legal_json_content(acl_json_path)
+    msprof_option_cmd = "".join([f"{key}={value}" for key, value in json_dict.items()])
+    return msprof_option_cmd
 
 
 def msprof_run_profiling(args, msprof_bin):
