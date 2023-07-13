@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 #include <opencv2/opencv.hpp>
 
 
@@ -10,10 +25,14 @@ int main(int argc, char **argv) {
     cv::Mat image = cv::imread("test.png", 1);
     if (image.empty()) return 0;
 
+    int input_height = 224;
+    int input_width = 224;
+    auto mean_channel = cv::Scalar(123.675, 116.28, 103.53);
+    auto std_channel = cv::Scalar(58.395, 57.12, 57.375);
     cv::Mat resized_image, blob;
-    cv::resize(image, resized_image, cv::Size(224, 224));
-    cv::dnn::blobFromImage(resized_image, blob, 1.0, cv::Size(224, 224), cv::Scalar(), true, false);
-    blob = (blob - cv::Scalar(123.675, 116.28, 103.53)) / cv::Scalar(58.395, 57.12, 57.375);
+    cv::resize(image, resized_image, cv::Size(input_height, input_width));
+    cv::dnn::blobFromImage(resized_image, blob, 1.0, cv::Size(input_height, input_width), cv::Scalar(), true, false);
+    blob = (blob - mean_channel) / std_channel;
 
     auto end = std::chrono::high_resolution_clock::now();
     float time_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1.0e6;
@@ -28,10 +47,11 @@ int main(int argc, char **argv) {
     time_duration= std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1.0e6;
     std::cout << "Model inference time duration: " << time_duration << "ms" << std::endl;
 
+    int total_classes = 1000;
     int argmax = 0;
     float max_score = 0;
     float *data = (float *)outputs[0].data;
-    for (int ii = 0; ii < 1000; ii++) {
+    for (int ii = 0; ii < total_classes; ii++) {
         if (data[ii] > max_score) {
             max_score = data[ii];
             argmax = ii;
