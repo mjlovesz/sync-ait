@@ -38,7 +38,8 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                           PURE_INFER_FAKE_FILE, save_tensors_to_file)
 from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
-from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
+from ais_bench.infer.miscellaneous import (dymshape_range_run, get_acl_json_path, version_check,
+                                           get_batchsize, ACL_JSON_CMD_LIST)
 from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                                    get_fileslist_from_dir, list_split, list_share, logger,
                                    save_data_to_files)
@@ -240,42 +241,46 @@ def get_legal_json_content(acl_json_path):
     with open(acl_json_path, 'r') as f:
         json_dict = json.load(f)
     profile_dict = json_dict.get("profiler")
-    if profile_dict.get("output") is not None:
-        cmd_dict.update({"output": profile_dict.get("output")})
-    if profile_dict.get("storage_limit") is not None:
-        cmd_dict.update({"storage_limit": profile_dict.get("storage_limit")})
-    if profile_dict.get("ascendcl") is not None:
-        cmd_dict.update({"ascendcl": profile_dict.get("ascendcl")})
-    if profile_dict.get("runtime_api") is not None:
-        cmd_dict.update({"runtime_api": profile_dict.get("runtime_apit")})
-    if profile_dict.get("hccl") is not None:
-        cmd_dict.update({"hccl": profile_dict.get("hccl")})
-    if profile_dict.get("task_time") is not None:
-        cmd_dict.update({"task_time": profile_dict.get("task_time")})
-    if profile_dict.get("aicpu") is not None:
-        cmd_dict.update({"aicpu": profile_dict.get("aicpu")})
-    if profile_dict.get("aic_metrics") is not None:
-        cmd_dict.update({"aic_metrics": profile_dict.get("aic_metrics")})
-    if profile_dict.get("l2") is not None:
-        cmd_dict.update({"l2": profile_dict.get("l2")})
-    if profile_dict.get("sys_hardware_mem_freq") is not None:
-        cmd_dict.update({"sys_hardware_mem_freq": profile_dict.get("sys_hardware_mem_freq")})
-    if profile_dict.get("lcc_profiling") is not None:
-        cmd_dict.update({"lcc_profiling": profile_dict.get("lcc_profiling")})
-    if profile_dict.get("sys_io_sampling_freq") is not None:
-        cmd_dict.update({"sys_io_sampling_freq": profile_dict.get("sys_io_sampling_freq")})
-    if profile_dict.get("dvpp_freq") is not None:
-        cmd_dict.update({"dvpp_freq": profile_dict.get("dvpp_freq")})
-    if profile_dict.get("host_sys") is not None:
-        cmd_dict.update({"host_sys": profile_dict.get("host_sys")})
-    if profile_dict.get("host_sys_usage") is not None:
-        cmd_dict.update({"host_sys_usage": profile_dict.get("host_sys_usage")})
-    if profile_dict.get("host_sys_usage_freq") is not None:
-        cmd_dict.update({"host_sys_usage_freq": profile_dict.get("host_sys_usage_freq")})
-    if profile_dict.get("sys_interconnection_freq") is not None:
-        cmd_dict.update({"sys_interconnection_freq": profile_dict.get("sys_interconnection_freq")})
-    if profile_dict.get("msproftx") is not None:
-        cmd_dict.update({"msproftx": profile_dict.get("msproftx")})
+    for _, option_cmd in enumerate(ACL_JSON_CMD_LIST):
+        if profile_dict.get(option_cmd) is not None:
+            cmd_dict.update({"--".join(option_cmd.replace('_','-')): profile_dict.get(option_cmd)})
+
+    # if profile_dict.get("output") is not None:
+    #     cmd_dict.update({"output": profile_dict.get("output")})
+    # if profile_dict.get("storage_limit") is not None:
+    #     cmd_dict.update({"storage_limit": profile_dict.get("storage_limit")})
+    # if profile_dict.get("ascendcl") is not None:
+    #     cmd_dict.update({"ascendcl": profile_dict.get("ascendcl")})
+    # if profile_dict.get("runtime_api") is not None:
+    #     cmd_dict.update({"runtime_api": profile_dict.get("runtime_apit")})
+    # if profile_dict.get("hccl") is not None:
+    #     cmd_dict.update({"hccl": profile_dict.get("hccl")})
+    # if profile_dict.get("task_time") is not None:
+    #     cmd_dict.update({"task_time": profile_dict.get("task_time")})
+    # if profile_dict.get("aicpu") is not None:
+    #     cmd_dict.update({"aicpu": profile_dict.get("aicpu")})
+    # if profile_dict.get("aic_metrics") is not None:
+    #     cmd_dict.update({"aic_metrics": profile_dict.get("aic_metrics")})
+    # if profile_dict.get("l2") is not None:
+    #     cmd_dict.update({"l2": profile_dict.get("l2")})
+    # if profile_dict.get("sys_hardware_mem_freq") is not None:
+    #     cmd_dict.update({"sys_hardware_mem_freq": profile_dict.get("sys_hardware_mem_freq")})
+    # if profile_dict.get("lcc_profiling") is not None:
+    #     cmd_dict.update({"lcc_profiling": profile_dict.get("lcc_profiling")})
+    # if profile_dict.get("sys_io_sampling_freq") is not None:
+    #     cmd_dict.update({"sys_io_sampling_freq": profile_dict.get("sys_io_sampling_freq")})
+    # if profile_dict.get("dvpp_freq") is not None:
+    #     cmd_dict.update({"dvpp_freq": profile_dict.get("dvpp_freq")})
+    # if profile_dict.get("host_sys") is not None:
+    #     cmd_dict.update({"host_sys": profile_dict.get("host_sys")})
+    # if profile_dict.get("host_sys_usage") is not None:
+    #     cmd_dict.update({"host_sys_usage": profile_dict.get("host_sys_usage")})
+    # if profile_dict.get("host_sys_usage_freq") is not None:
+    #     cmd_dict.update({"host_sys_usage_freq": profile_dict.get("host_sys_usage_freq")})
+    # if profile_dict.get("sys_interconnection_freq") is not None:
+    #     cmd_dict.update({"sys_interconnection_freq": profile_dict.get("sys_interconnection_freq")})
+    # if profile_dict.get("msproftx") is not None:
+    #     cmd_dict.update({"msproftx": profile_dict.get("msproftx")})
     return cmd_dict
 
 
@@ -286,16 +291,15 @@ def json_to_msprof_cmd(acl_json_path):
 
 
 def msprof_run_profiling(args, msprof_bin):
+    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
     if args.acl_json_path is not None:
         # acl.json to msprof cmd
-        msprof_cmd = json_to_msprof_cmd(args.acl_json_path)
+        msprof_cmd = f"{msprof_bin} --application=\"{cmd}\"".join(json_to_msprof_cmd(args.acl_json_path))
     else:
         # default msprof cmd
-        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
-        msprof_cmd = "{} --output={}/profiler --application=\"{}\" --model-execution=on \
+        msprof_cmd = f"{msprof_bin} --output={args.output}/profiler --application=\"{cmd}\" --model-execution=on \
                     --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off \
                     --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
-                    .format(msprof_bin, args.output, cmd)
 
     msprof_cmd_list = shlex.split(msprof_cmd)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))

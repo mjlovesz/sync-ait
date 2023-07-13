@@ -21,6 +21,28 @@ import numpy as np
 from ais_bench.infer.utils import logger
 
 
+ACL_JSON_CMD_LIST = [
+    "output",
+    "storage_limit",
+    "ascendcl",
+    "runtime_api",
+    "hccl",
+    "task_time",
+    "aicpu",
+    "aic_metrics",
+    "l2",
+    "sys_hardware_mem_freq",
+    "lcc_profiling",
+    "sys_io_sampling_freq",
+    "dvpp_freq",
+    "host_sys",
+    "host_sys_usage",
+    "host_sys_usage_freq",
+    "sys_interconnection_freq",
+    "msproftx"
+]
+
+
 def get_modules_version(name):
     try:
         import pkg_resources
