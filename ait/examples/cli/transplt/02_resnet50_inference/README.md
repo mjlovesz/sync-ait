@@ -9,11 +9,6 @@
   mm = torchvision.models.resnet50(pretrained=True)
   torch.onnx.export(mm, torch.ones([1, 3, 224, 224]), 'resnet50.onnx')
   ```
-## 获取源码
-  - 获取 [Gitee opencv_transplt_demos](https://gitee.com/wangguowei33/opencv_transplt_demos)，该项目包含使用 imagenet 预训练的 `resnet50` 在单张测试图片 `assets/test.png` 上执行模型推理，输出预测类别
-  ```sh
-  git clone https://gitee.com/wangguowei33/opencv_transplt_demos.git
-  ```
 ## OpenCV ResNet50 推理
 - **相关依赖** 需要 `opencv4`
   ```
@@ -28,22 +23,17 @@
   ```
 - **编译执行**
   ```sh
-  cd resnet_opencv
   g++ -O3 resnet_opencv.cpp -o resnet_opencv `pkg-config --cflags --libs opencv4`
-
   ./resnet_opencv
   # Image process time duration: 4.31935ms
   # Model inference time duration: 230.819ms
   # index: 285
-  # class: Egyptian_cat
   # score: 18.4915
-
-  cd ../
   ```
 ## AIT Tranplt 迁移分析
   - 安装 ait 工具后，针对待迁移项目路径 `resnet_opencv` 执行 transplt 迁移分析
   ```sh
-  ait transplt -s resnet_opencv/
+  ait transplt -s .
   # INFO - scan_api.py[123] - Scan source files...
   # INFO - clang_parser.py[355] - Scanning file: ~/opencv_transplt_demos/resnet_opencv/resnet_opencv.cpp
   # INFO - cxx_scanner.py[33] - Total time for scanning cxx files is 30.529629230499268s
@@ -68,10 +58,8 @@
   安装成功并 source 后，`echo $MX_SDK_HOME` 不为空
 - **转出 om 模型**
   ```sh
-  cd assets
   SOC_VERSION=`python3 -c 'import acl; print(acl.get_soc_name())'`  # Ascend310 / Ascend310P3 or others
   atc --model resnet50.onnx --output resnet50 --framework 5 --soc_version $SOC_VERSION
-  cd -
   ```
 - **`MXBas::Model` 模型构造** 参照 `AscendAPILink` 中链接 [mxVision 用户指南 Model](https://www.hiascend.com/document/detail/zh/mind-sdk/300/vision/mxvisionug/mxmanufactureug_0827.html)
   ```cpp
@@ -82,14 +70,14 @@
   对应 OpenCV 部分
   ```cpp
   // 模型初始化
-  cv::dnn::Net net = cv::dnn::readNet("../assets/resnet50.onnx");
+  cv::dnn::Net net = cv::dnn::readNet("./resnet50.onnx");
   net.setPreferableBackend(cv::dnn::DNN_BACKEND_OPENCV);
   net.setPreferableTarget(cv::dnn::DNN_TARGET_CPU);
   ```
   完成对应模型初始化迁移实现
   ```cpp
   uint32_t device_id = 0;
-  std::string modelPath = "../assets/resnet50.om";
+  std::string modelPath = "./resnet50.om";
   MxBase::Model net(modelPath, device_id);
   ```
 - **`Model::Infer` 模型推理** 参照 `AscendAPILink` 中链接 [mxVision 用户指南 Infer](https://www.hiascend.com/document/detail/zh/mind-sdk/300/vision/mxvisionug/mxmanufactureug_0829.html)
@@ -109,6 +97,7 @@
   ```cpp
   std::vector<MxBase::Tensor> mx_inputs = {tensor};
   std::vector<MxBase::Tensor> outputs = net.Infer(mx_inputs);  
+  outputs[0].ToHost();
   ```
 - **MXBas::Tensor 数据** 模型推理使用 `Tensor` 类型作为输入，参照 [mxVision 用户指南 Tensor](https://www.hiascend.com/document/detail/zh/mind-sdk/300/vision/mxvisionug/mxmanufactureug_0814.html) 将 OpenCV 的 `Mat` 数据迁移到 `Tensor`
   ```cpp
@@ -129,9 +118,8 @@
   const std::vector<uint32_t> shape = {1, 3, 224, 224};
   MxBase::Tensor tensor = MxBase::Tensor((void *)blob.data, shape, MxBase::TensorDType::FLOAT32, device_id);
   ```
-- **编译执行** 迁移完成后可使用 `g++` 编译，也可参照 [Gitee resnet_mxbase/CMakeLists.txt](https://gitee.com/wangguowei33/opencv_transplt_demos/blob/master/resnet_mxbase/CMakeLists.txt) 使用 `cmake` 方式。修改调整至可编译通过并正确执行，参考迁移后实现 [Gitee opencv_transplt_demos/resnet_mxbase.cpp](https://gitee.com/wangguowei33/opencv_transplt_demos/blob/master/resnet_mxbase/resnet_mxbase.cpp)
+- **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，参考迁移后实现 [resnet_mxbase.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/resnet_mxbase.cpp)
   ```sh
-  cd resnet_mxbase
   g++ -O3 resnet_mxbase.cpp -o resnet_mxbase -lmxbase -lopencv_world \
   -L ${MX_SDK_HOME}/lib -L ${MX_SDK_HOME}/opensource/lib -D_GLIBCXX_USE_CXX11_ABI=0 \
   -I ${MX_SDK_HOME}/include/ -I ${MX_SDK_HOME}/opensource/include/opencv4 -I ${MX_SDK_HOME}/opensource/include
@@ -140,10 +128,7 @@
   # Image process time duration: 8.45735ms
   # Model inference time duration: 3.30807ms
   # index: 285
-  # class: Egyptian_cat
   # score: 18.4844
-
-  cd ../
   ```
   其中在 NPU 上执行时模型推理时间 **3.30807ms** 远小于 CPU 上 OpenCV 调用时的 `230.819ms`，且输出结果 `score` 相近
 ## MXBase ResNet50 推理 + AIPP 数据处理
@@ -154,14 +139,7 @@
   | ---------- | ---------------------- | ------------------------------ |
   | cv::imread | ImageProcessor::Decode | ImageProcessor类的图片解码接口 |
   | cv::resize | ImageProcessor::Resize | ImageProcessor类的图像缩放接口 |
-- **转出带 AIPP 前处理的 om 模型**，其中 AIPP 负责将输入的 `256 x 256` 图像裁剪为 `224 x 224`，以及数值规范化
-  ```sh
-  cd assets
-  SOC_VERSION=`python3 -c 'import acl; print(acl.get_soc_name())'`  # Ascend310 / Ascend310P3 or others
-  atc --model resnet50.onnx --output resnet50_aipp --framework 5 --soc_version $SOC_VERSION --insert_op_conf aipp_resnet.config
-  cd -
-  ```
-  AIPP 详细介绍参照 [CANN AIPP使能](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC2alpha003/infacldevg/atctool/atlasatc_16_0018.html)，对于 `resnet50` 的参考实现 `aipp_resnet.config`
+- **AIPP** 详细介绍参照 [CANN AIPP使能](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC2alpha003/infacldevg/atctool/atlasatc_16_0018.html)，对于 `resnet50` 的参考实现 `aipp_resnet.config`
   ```java
   aipp_op{
       aipp_mode:static
@@ -182,6 +160,11 @@
       var_reci_chn_1: 0.0175070028011204
       var_reci_chn_2: 0.0174291938997821
   }
+  ```
+- **转出带 AIPP 前处理的 om 模型**，其中 AIPP 负责将输入的 `256 x 256` 图像裁剪为 `224 x 224`，以及数值规范化
+  ```sh
+  SOC_VERSION=`python3 -c 'import acl; print(acl.get_soc_name())'`  # Ascend310 / Ascend310P3 or others
+  atc --model resnet50.onnx --output resnet50_aipp --framework 5 --soc_version $SOC_VERSION --insert_op_conf aipp_resnet.config
   ```
 - **ImageProcessor::Decode 图像解码** 参照 `AscendAPILink` 中链接 [mxVision 用户指南 Decode](https://www.hiascend.com/document/detail/zh/mind-sdk/300/vision/mxvisionug/mxmanufactureug_0856.html)
   ```cpp
@@ -220,9 +203,8 @@
   MxBase::Image resized_image;
   processor.Resize(decoded_image, MxBase::Size(256, 256), resized_image);
   ```
-- **编译执行** 迁移完成后可使用 `g++` 编译，也可参照 [Gitee resnet_mxbase_aipp/CMakeLists.txt](https://gitee.com/wangguowei33/opencv_transplt_demos/blob/master/resnet_mxbase_aipp/CMakeLists.txt) 使用 `cmake` 方式。修改调整至可编译通过并正确执行，参考迁移后实现 [Gitee opencv_transplt_demos/resnet_mxbase_aipp.cpp](https://gitee.com/wangguowei33/opencv_transplt_demos/blob/master/resnet_mxbase_aipp/resnet_mxbase_aipp.cpp)
+- **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，参考迁移后实现 [resnet_mxbase_aipp.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/resnet_mxbase_aipp.cpp)
   ```sh
-  cd resnet_mxbase_aipp
   g++ -O3 resnet_mxbase_aipp.cpp -o resnet_mxbase_aipp -lmxbase -lopencv_world \
   -L ${MX_SDK_HOME}/lib -L ${MX_SDK_HOME}/opensource/lib -D_GLIBCXX_USE_CXX11_ABI=0 \
   -I ${MX_SDK_HOME}/include/ -I ${MX_SDK_HOME}/opensource/include/opencv4 -I ${MX_SDK_HOME}/opensource/include
@@ -231,9 +213,6 @@
   # Image process time duration: 16.2752ms
   # Model inference time duration: 2.8023ms
   # index: 285
-  # class: Egyptian_cat
   # score: 18.5625
-
-  cd ../
   ```
   其中图像处理时间基本为读取图片时间，在 NPU 上执行时模型推理时间 **2.8023ms** 远小于 CPU 上 OpenCV 调用时的 `230.819ms`，且输出结果 `score` 相近
