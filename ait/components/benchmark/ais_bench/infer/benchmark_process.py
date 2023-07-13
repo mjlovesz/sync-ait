@@ -245,7 +245,7 @@ def get_legal_json_content(acl_json_path):
         json_dict = json.load(f)
     profile_dict = json_dict.get("profiler")
     for _, option_cmd in enumerate(ACL_JSON_CMD_LIST):
-        if profile_dict.get(option_cmd) is not None:
+        if profile_dict.get(option_cmd) is not None and profile_dict.get(option_cmd) != "":
             cmd_dict.update({"--" + option_cmd.replace('_','-'): profile_dict.get(option_cmd)})
 
     # if profile_dict.get("output") is not None:
