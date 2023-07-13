@@ -540,22 +540,6 @@ def backend_run(args):
     logger.info("perf info:{}".format(perf))
 
 
-def pipeline_run(args, concur):
-    concur_args_dict = {"model": args.model, "input": args.input, "output": args.output, "loop": str(args.loop),
-                        "debug": "1" if args.debug else "0", "warmup": str(args.warmup_count),
-                        "device": str(args.device), "dymHW": args.dym_hw, "dymDims": args.dym_dims,
-                        "dymShape": args.dym_shape, "display": "1" if args.display_all_summary else "0",
-                        "outputSize": args.output_size,
-                        "auto_set_dymshape_mode": "1" if args.auto_set_dymshape_mode else "0"}
-    concur_args_list = [f"{k}={v}" for k, v in concur_args_dict.items() if v]
-    concur_cmd = "{} {}".format(concur, " ".join(concur_args_list))
-    concur_cmd_list = shlex.split(concur_cmd)
-
-    logger.info("pipeline cmd:{} begin run".format(concur_cmd))
-    ret = subprocess.call(concur_cmd_list, shell=False)
-    logger.info("pipeline cmd:{} end run ret:{}".format(concur_cmd, ret))
-
-
 def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
