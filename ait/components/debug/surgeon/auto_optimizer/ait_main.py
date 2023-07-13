@@ -235,19 +235,15 @@ def command_extract(
 
     # parse start node names and end node names
     if start_node_names:
-        start_nodes = [node_name.strip() for node_name in start_node_names.split(',')]
-    else:
-        start_nodes = []
+        start_node_names = [node_name.strip() for node_name in start_node_names.split(',')]
 
     if end_node_names:
-        end_nodes = [node_name.strip() for node_name in end_node_names.split(',')]
-    else:
-        end_nodes = []
+        end_node_names = [node_name.strip() for node_name in end_node_names.split(',')]
 
     onnx_graph = OnnxGraph.parse(input_model)
     try:
         onnx_graph.extract_subgraph(
-            start_nodes, end_nodes,
+            start_node_names, end_node_names,
             output_model, is_check_subgraph,
             subgraph_input_shape, subgraph_input_dtype
         )
