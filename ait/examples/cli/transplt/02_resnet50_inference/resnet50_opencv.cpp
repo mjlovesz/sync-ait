@@ -1,8 +1,7 @@
 #include <opencv2/opencv.hpp>
 
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     cv::dnn::Net net = cv::dnn::readNet("resnet50.onnx");
 	net.setPreferableBackend(cv::dnn::DNN_BACKEND_OPENCV);
 	net.setPreferableTarget(cv::dnn::DNN_TARGET_CPU);
@@ -16,7 +15,7 @@ int main(int argc, char **argv)
     cv::dnn::blobFromImage(resized_image, blob, 1.0, cv::Size(224, 224), cv::Scalar(), true, false);
     blob = (blob - cv::Scalar(123.675, 116.28, 103.53)) / cv::Scalar(58.395, 57.12, 57.375);
 
-	auto end = std::chrono::high_resolution_clock::now();
+    auto end = std::chrono::high_resolution_clock::now();
     float time_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1.0e6;
     std::cout << "Image process time duration: " << time_duration << "ms" << std::endl;
 
@@ -25,7 +24,7 @@ int main(int argc, char **argv)
     std::vector<cv::Mat> outputs;
     net.forward(outputs, net.getUnconnectedOutLayersNames());
 
-	end = std::chrono::high_resolution_clock::now();
+    end = std::chrono::high_resolution_clock::now();
     time_duration= std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1.0e6;
     std::cout << "Model inference time duration: " << time_duration << "ms" << std::endl;
 
