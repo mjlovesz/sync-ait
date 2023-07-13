@@ -123,7 +123,7 @@
   const std::vector<uint32_t> shape = {1, 3, 224, 224};
   MxBase::Tensor tensor = MxBase::Tensor((void *)blob.data, shape, MxBase::TensorDType::FLOAT32, device_id);
   ```
-- **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，参考迁移后实现 [resnet_mxbase.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/resnet50_mxbase.cpp)
+- **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，参考迁移后实现 [resnet50_mxbase.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/resnet50_mxbase.cpp)
   ```sh
   g++ -O3 resnet50_mxbase.cpp -o resnet50_mxbase -lmxbase -lopencv_world \
   -L ${MX_SDK_HOME}/lib -L ${MX_SDK_HOME}/opensource/lib -D_GLIBCXX_USE_CXX11_ABI=0 \
@@ -203,12 +203,12 @@
   ```cpp
   cv::resize(image, resized_image, cv::Size(224, 224));
   ```
-  完成对应图像缩放迁移实现
+  完成对应图像缩放迁移实现，其中 `256` 对应 AIPP 中定义的模型输入大小
   ```cpp
   MxBase::Image resized_image;
   processor.Resize(decoded_image, MxBase::Size(256, 256), resized_image);
   ```
-- **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，参考迁移后实现 [resnet_mxbase_aipp.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/resnet50_mxbase_aipp.cpp)
+- **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，参考迁移后实现 [resnet50_mxbase_aipp.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/resnet50_mxbase_aipp.cpp)
   ```sh
   g++ -O3 resnet50_mxbase_aipp.cpp -o resnet50_mxbase_aipp -lmxbase -lopencv_world \
   -L ${MX_SDK_HOME}/lib -L ${MX_SDK_HOME}/opensource/lib -D_GLIBCXX_USE_CXX11_ABI=0 \
