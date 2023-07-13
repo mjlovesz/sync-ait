@@ -516,9 +516,9 @@ def acl_json_base_check(args):
     if args.acl_json_path is None:
         return args
     json_path = args.acl_json_path
-    max_json_size = 8192 # 8MB 30 * 255 byte左右
+    max_json_size = 8192 # 8KB 30 * 255 byte左右
     if os.path.splitext(json_path)[1] != ".json":
-        logger.error(f"acl_json_path:{json_path} not exsit")
+        logger.error(f"acl_json_path:{json_path} is not a .json file")
         raise TypeError(f"acl_json_path:{json_path} is not a .json file")
     if not os.path.exists(os.path.realpath(json_path)):
         logger.error(f"acl_json_path:{json_path} not exsit")
