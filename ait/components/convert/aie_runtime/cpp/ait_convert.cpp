@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 
     fout.close();
 
-    std::cout << "AIE Model Convert" << std::endl;
+    std::cout << "AIE Model Convert Succeed" << std::endl;
 
     delete builder;
 }
