@@ -294,12 +294,13 @@ def json_to_msprof_cmd(acl_json_path):
 
 
 def msprof_run_profiling(args, msprof_bin):
-    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
     if args.acl_json_path is not None:
         # acl.json to msprof cmd
+        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0 --acl-json-path=None"
         msprof_cmd = f"{msprof_bin} --application=\"{cmd}\"".join(json_to_msprof_cmd(args.acl_json_path))
     else:
         # default msprof cmd
+        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
         msprof_cmd = f"{msprof_bin} --output={args.output}/profiler --application=\"{cmd}\" --model-execution=on \
                     --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off \
                     --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
