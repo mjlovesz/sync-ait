@@ -137,9 +137,9 @@ class TestClass:
         for mode, info in run_modes.items():
             output_path = info.get("output_path")
             log_path = info.get("log_path")
-            cmd = "{} --model {} --device {} --output {} --debug True \
+            cmd = "{} --model {} --device {} --output {} --debug True --pipeline {} --warmup-count {}\
                 --input {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
-                                        output_path, input_path, log_path)
+                                        output_path, mode == "pipeline", warmup_num, input_path, log_path)
             logger.info("run in {} mode. cmd:{}".format(mode, cmd))
             ret = os.system(cmd)
             assert ret == 0
@@ -162,21 +162,24 @@ class TestClass:
             result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
             info.get("results_paths").append(result_path)
             summary_json_name = result_path.split("/")[-1]
-            info.get("summary_json_paths").append(os.path.join(output_path, "{}_summary.json".format(summary_json_name)))
+            info.get("summary_json_paths").append(os.path.join(output_path,
+                                                               "{}_summary.json".format(summary_json_name)))
 
         # compare e2e time
-        cmd_general = "cat {} | grep 'end_to_end' | cut -d: -f2".format(run_modes["general"]["log_path"])
-        cmd_pipeline = "cat {} | grep 'end_to_end' | cut -d: -f2".format(run_modes["pipeline"]["log_path"])
+        cmd_general = "cat {} | grep 'end_to_end' | cut -d: -f2".format(run_modes.get("general").get("log_path"))
+        cmd_pipeline = "cat {} | grep 'end_to_end' | cut -d: -f2".format(run_modes.get("pipeline").get("log_path"))
         res_general = subprocess.Popen(cmd_general, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         res_pipeline = subprocess.Popen(cmd_pipeline, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        e2e_time_general, _ = res_general.communicate()
-        e2e_time_pipeline, _ = res_pipeline.communicate()
+        e2e_time_general, _ = res_general.communicate(timeout=5)
+        e2e_time_pipeline, _ = res_pipeline.communicate(timeout=5)
         assert float(e2e_time_general) > float(e2e_time_pipeline)
 
         # delete tmp file
-        for output_dir_path in run_modes["general"]["results_paths"] + run_modes["pipeline"]["results_paths"]:
+        for output_dir_path in run_modes.get("general").get("results_paths") + \
+                               run_modes.get("pipeline").get("results_paths"):
             shutil.rmtree(output_dir_path)
-        for summary_json_path in run_modes["general"]["summary_json_paths"] + run_modes["pipeline"]["summary_json_paths"]:
+        for summary_json_path in run_modes.get("general").get("summary_json_paths") + \
+                                 run_modes.get("pipeline").get("summary_json_paths"):
             os.remove(summary_json_path)
 
     def test_general_inference_normal_dynamic_batch(self):

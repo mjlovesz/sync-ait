@@ -313,6 +313,13 @@ void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<
 void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
                                        bool autoDymShape, bool autoDymDims, const std::string& outFmt)
 {
+    if (outputDir != "") {
+            if (fs::is_symlink(outputDir)) {
+                fs::remove(outputDir);
+            }
+            fs::create_directories(outputDir);
+        }
+
     uint32_t deviceId = GetDeviceId();
     ConcurrentQueue<std::shared_ptr<Feeds>> h2dQueue;
     ConcurrentQueue<std::shared_ptr<Feeds>> computeQueue;

@@ -19,9 +19,9 @@ import stat
 import re
 from pickle import NONE
 import logging
-import numpy as np
 from random import sample
 from string import digits, ascii_uppercase, ascii_lowercase
+import numpy as np
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)

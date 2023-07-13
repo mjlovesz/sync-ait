@@ -349,8 +349,8 @@ def main(args, index=0, msgq=None, device_list=None):
         warmup(session, args, intensors_desc, infiles)
 
     if args.pipeline and (args.auto_set_dymshape_mode or args.auto_set_dymdims_mode):
-        for i in range(len(infileslist)):
-            input_first = np.load(infileslist[i][0])
+        for file_list in infileslist:
+            input_first = np.load(file_list[0])
             summary.add_batchsize(input_first.shape[0])
 
     if msgq is not None:

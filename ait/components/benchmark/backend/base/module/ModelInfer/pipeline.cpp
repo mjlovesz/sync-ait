@@ -17,9 +17,19 @@
 #include "Base/ModelInfer/pipeline.h"
 
 namespace Base {
-    void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId, Base::PyInferenceSession* session,
-                     std::vector<std::vector<std::string>> &infilesList, bool autoDymShape, bool autoDymDims,
-                     const std::string &outputDir)
+    void AutoSetDym(std::shared_ptr<Feeds> feeds, std::string type, std::string inputName,
+                    std::vector<size_t> &shape, bool last)
+    {
+        auto &target = type == "shape" ? feeds->autoDynamicShape : feeds->autoDynamicDims;
+        target += Utils::CreateDynamicShapeDims(inputName, shape);
+        if (!last) {
+            target += ";";
+        }
+    }
+
+    void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
+                     Base::PyInferenceSession* session, std::vector<std::vector<std::string>> &infilesList,
+                     bool autoDymShape, bool autoDymDims, const std::string &outputDir)
     {
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
         if (ret != APP_ERR_OK) {
@@ -33,16 +43,8 @@ namespace Base {
         for (const auto &desc: session->GetOutputs()) {
             outputNames.emplace_back(desc.name);
         }
-        if (outputDir != "") {
-            if (fs::is_symlink(outputDir)) {
-                fs::remove(outputDir);
-            }
-            fs::create_directories(outputDir);
-        }
-
         for (auto &files : infilesList) {
             auto feeds = std::make_shared<Feeds>();
-
             feeds->outputNames = std::make_shared<std::vector<std::string>>(outputNames);
             if (outputDir != "") {
                 for (auto tail : {".npy", ".NPY", ".bin", ".BIN", ""}) {
@@ -53,7 +55,6 @@ namespace Base {
             }
             feeds->inputs = std::make_shared<std::vector<Base::BaseTensor>>();
             feeds->arrayPtr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
-
             for (size_t i = 0; i < files.size(); i++) {
                 if (Utils::TailContain(files[i], ".npy") || Utils::TailContain(files[i], ".NPY")) {
                     auto array = std::make_shared<cnpy::NpyArray>(cnpy::NpyLoad(files[i]));
@@ -64,16 +65,10 @@ namespace Base {
                 }
                 feeds->inputs->emplace_back(feeds->arrayPtr->back()->Data<void>(), feeds->arrayPtr->back()->NumBytes());
                 if (autoDymShape) {
-                    feeds->autoDynamicShape += Utils::CreateDynamicShapeDims(inputNames[i], feeds->arrayPtr->back()->shape);
-                    if (i != files.size() - 1) {
-                        feeds->autoDynamicShape += ";";
-                    }
+                    AutoSetDym(feeds, "shape", inputNames[i], feeds->arrayPtr->back()->shape, i == files.size() - 1);
                 }
                 if (autoDymDims) {
-                    feeds->autoDynamicDims += Utils::CreateDynamicShapeDims(inputNames[i], feeds->arrayPtr->back()->shape);
-                    if (i != files.size() - 1) {
-                        feeds->autoDynamicDims += ";";
-                    }
+                    AutoSetDym(feeds, "dim", inputNames[i], feeds->arrayPtr->back()->shape, i == files.size() - 1);
                 }
             }
             h2dQueue.push(feeds);
@@ -82,7 +77,7 @@ namespace Base {
     }
 
     void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
-                    ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId)
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId)
     {
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
         if (ret != APP_ERR_OK) {
@@ -111,8 +106,8 @@ namespace Base {
     }
 
     void FuncCompute(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
-                        ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
-                        Base::PyInferenceSession* session)
+                     ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
+                     Base::PyInferenceSession* session)
     {
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
         if (ret != APP_ERR_OK) {
@@ -141,7 +136,7 @@ namespace Base {
     }
 
     void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
-                    ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId)
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId)
     {
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
         if (ret != APP_ERR_OK) {
