@@ -233,23 +233,18 @@ def command_extract(
         logger.warning('output_model is input_model, refuse to overwrite origin model!')
         return
 
-    onnx_graph = OnnxGraph.parse(input_model)
-
     # parse start node names and end node names
-    if start_node_names == '1':
-        start_nodes = []
-        for inp in onnx_graph.inputs:
-            start_nodes += [node.name for node in onnx_graph.get_next_nodes(inp.name)]
-    else:
+    if start_node_names:
         start_nodes = [node_name.strip() for node_name in start_node_names.split(',')]
-
-    if end_node_names == '1':
-        end_nodes = []
-        for out in onnx_graph.outputs:
-            end_nodes.append(onnx_graph.get_prev_node(out.name).name)
     else:
-        end_nodes = [node_name.strip() for node_name in end_node_names.split(',')]
+        start_nodes = []
 
+    if end_node_names:
+        end_nodes = [node_name.strip() for node_name in end_node_names.split(',')]
+    else:
+        end_nodes = []
+
+    onnx_graph = OnnxGraph.parse(input_model)
     try:
         onnx_graph.extract_subgraph(
             start_nodes, end_nodes,
