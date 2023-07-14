@@ -52,11 +52,29 @@ class TestClass:
 
     def init(self):
         self.model_name = "resnet50"
+        self.cur_path = os.path.dirname(os.path.abspath(__file__))
 
     def test_acl_json_using_msprof(self):
-        output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "testdata/profiler", "aic_metrics": ""}}
+        output_json_dict = {"profiler": {
+            "switch": "on",
+            "aicpu": "on",
+            "output": "testdata/profiler",
+            "aic_metrics": ""
+        }}
+        os.environ['GE_PROFILING_TO_STD_OUT'] = 0
+        profile_out_path = os.path.join(self.cur_path, )
         json_path = os.path.realpath("acl_test.json")
-        self.generate_acl_json(json_path, output_json_dict)
+        if os.path.exists(profile_out_path):
+            shutil.rmtree(profile_out_path)
+        self.generate_acl_json(json_path, output_json_dict["profiler"]["output"])
+        cmd = f"{TestCommonClass.cmd_prefix} \
+                --model {self.get_resnet50_om_path()} \
+                 --acl_json_path {json_path}"
+        logger.info(f"run cmd:{cmd}")
+        ret = os.system(cmd)
+        assert ret == 0
+
+
 
     def test_acl_json_using_aclinit(self):
         pass
