@@ -9,7 +9,7 @@
   torch.onnx.export(mm, torch.ones([1, 3, 224, 224]), 'resnet50.onnx')
   ```
 ## 准备测试图片
-- 使用 `scikit-image` 中的测试图片，也可使用自行获取的图片
+- 使用 `scikit-image` 中的测试图片，也可使用自行获取的图片，**本样例中限定输入图片大小 `256 x 256`**
   ```py
   import cv2
   from skimage.data import chelsea
