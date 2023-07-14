@@ -61,7 +61,7 @@ class TestClass:
             "output": "testdata/profiler",
             "aic_metrics": ""
         }}
-        os.environ['GE_PROFILING_TO_STD_OUT'] = 0
+        os.environ['GE_PROFILING_TO_STD_OUT'] = "0"
         profile_out_path = os.path.join(self.cur_path, )
         json_path = os.path.realpath("acl_test.json")
         if os.path.exists(profile_out_path):
