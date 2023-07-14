@@ -77,13 +77,46 @@ class TestClass:
 
 
     def test_acl_json_using_aclinit(self):
-        pass
+        output_json_dict = {"profiler": {
+            "switch": "on",
+            "aicpu": "on",
+            "output": "testdata/profiler",
+            "aic_metrics": ""
+        }}
+        os.environ['GE_PROFILING_TO_STD_OUT'] = "1"
+        profile_out_path = os.path.join(self.cur_path, output_json_dict["profiler"]["output"])
+        json_path = os.path.realpath("acl_test.json")
+        if os.path.exists(profile_out_path):
+            shutil.rmtree(profile_out_path)
+        self.generate_acl_json(json_path, output_json_dict)
+        cmd = f"{TestCommonClass.cmd_prefix} \
+                --model {self.get_resnet50_om_path()} \
+                 --acl_json_path {json_path}"
+        logger.info(f"run cmd:{cmd}")
+        ret = os.system(cmd)
+        assert ret == 0
 
     def test_acl_json_over_size(self):
         pass
 
     def test_acl_json_path_not_exist(self):
-        pass
+        output_json_dict = {"profiler": {
+            "switch": "on",
+            "aicpu": "on",
+            "output": "testdata/profiler",
+            "aic_metrics": ""
+        }}
+        os.environ['GE_PROFILING_TO_STD_OUT'] = "1"
+        profile_out_path = os.path.join(self.cur_path, output_json_dict["profiler"]["output"])
+        json_path = os.path.realpath("acl_test_invalid.json")
+        if os.path.exists(profile_out_path):
+            shutil.rmtree(profile_out_path)
+        cmd = f"{TestCommonClass.cmd_prefix} \
+                --model {self.get_resnet50_om_path()} \
+                 --acl_json_path {json_path}"
+        logger.info(f"run cmd:{cmd}")
+        ret = os.system(cmd)
+        assert ret != 0
 
 
 
