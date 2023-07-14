@@ -462,6 +462,10 @@ grapher.Node.Header.Entry = class {
         if (this.events.click) {
             this.element.addEventListener('click', () => this.raise('click'));
         }
+        if (this.events.dblclick) {
+            this.element.addEventListener('dblclick', () => this.raise('dblclick'));
+        }
+
         if (this.tooltip) {
             const titleElement = document.createElementNS('http://www.w3.org/2000/svg', 'title');
             titleElement.textContent = this.tooltip;
@@ -514,6 +518,9 @@ grapher.Node.List = class {
         this.element.setAttribute('class', 'node-attribute');
         if (this.events.click) {
             this.element.addEventListener('click', () => this.raise('click'));
+        }
+        if (this.events.dblclick) {
+            this.element.addEventListener('dblclick', () => this.raise('dblclick'));
         }
         this.element.setAttribute('transform', 'translate(' + x + ',' + y + ')');
         this.background = document.createElementNS('http://www.w3.org/2000/svg', 'path');

@@ -893,8 +893,10 @@ dagre.layout = (graph, options) => {
                 }
             };
             const queue = g.children();
-            while (queue.length > 0) {
-                const v = queue.shift();
+            let queueIndex = 0
+            while (queue.length > queueIndex) {
+                const v = queue[queueIndex];
+                queueIndex += 1
                 const node = g.node(v).label;
                 if ('minRank' in node) {
                     node.borderLeft = [];
