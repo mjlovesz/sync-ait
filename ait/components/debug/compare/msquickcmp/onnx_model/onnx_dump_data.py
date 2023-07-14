@@ -78,7 +78,7 @@ class OnnxDumpData(DumpData):
         self.origin_model, self.origin_model_session = self._load_onnx_and_session(self.model_path)
 
         if self.custom_op:
-            head_model, head_model_path, tail_model, tail_model_path = self._extract_sub_models_by_custom_op()
+            (head_model, head_model_path), (tail_model, tail_model_path) = self._extract_sub_models_by_custom_op()
             self.model_before_custom_op, self.model_before_custom_op_path = head_model, head_model_path
             self.model_after_custom_op, self.model_after_custom_op_path = tail_model, tail_model_path
 
@@ -312,7 +312,7 @@ class OnnxDumpData(DumpData):
 
         head_model, head_model_path = self._extract_model_before_custom_op(origin_model_graph, custom_op_node)
         tail_model, tail_model_path = self._extract_model_after_custom_op(origin_model_graph, custom_op_node)
-        return head_model, head_model_path, tail_model, tail_model_path
+        return (head_model, head_model_path), (tail_model, tail_model_path)
 
     def _extract_model_before_custom_op(self, onnx_graph, custom_op_node):
         # start from inputs
@@ -411,7 +411,6 @@ class OnnxDumpData(DumpData):
                 inputs_info = inputs_tensor_info[index]
                 numpy_data = np.load(os.path.join(npu_dump_path, item), allow_pickle=True)
                 numpy_data = numpy_data.reshape(inputs_info['shape']).astype(inputs_info['type'])
-                # inputs_tensor_info[index]['shape'] = numpy_data.shape
                 inputs_tensor_info[index]['type'] = numpy_data.dtype
                 inputs_map[inputs_tensor_info[index]['name']] = numpy_data
 

@@ -12,10 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import shutil
 
 import pytest
 import torch
-import shutil
 import numpy as np
 
 from msquickcmp.onnx_model.onnx_dump_data import OnnxDumpData
