@@ -45,23 +45,21 @@ class TestClass:
 
     @classmethod
     def generate_acl_json(cls, json_path, json_dict):
-        # output_json_dict = json_dict
-        output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "testdata/profiler", "aic_metrics": ""}}
         if os.path.exists(json_path):
             shutil.rmtree(json_path)
-
 
         OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
         OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
         with os.fdopen(os.open(json_path, OPEN_FLAGS, OPEN_MODES), 'w') as f:
-            json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
+            json.dump(json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
 
     def init(self):
         self.model_name = "resnet50"
 
     def test_acl_json_using_msprof(self):
-        json_path = os.path.realpath("json_file/acl_test.json")
-        self.generate_acl_json(json_path, 1)
+        output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "testdata/profiler", "aic_metrics": ""}}
+        json_path = os.path.realpath("acl_test.json")
+        self.generate_acl_json(json_path, output_json_dict)
 
     def test_acl_json_using_aclinit(self):
         pass
