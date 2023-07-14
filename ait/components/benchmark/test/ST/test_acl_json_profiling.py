@@ -15,7 +15,9 @@
 import math
 import os
 import shutil
+import json
 import sys
+import stat
 import logging
 
 import pytest
@@ -41,11 +43,24 @@ class TestClass:
     def get_resnet50_om_path(cls):
         return os.path.join(TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_bs1.om")
 
+    @classmethod
+    def generate_acl_json(json_path, json_dict):
+        # output_json_dict = json_dict
+        output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "testdata/profiler", "aic_metrics": ""}}
+        if os.path.exists(json_path):
+            shutil.rmtree(json_path)
+
+        OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+        OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
+        with os.fdopen(os.open(json_path, OPEN_FLAGS, OPEN_MODES), 'w') as f:
+            json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
+
     def init(self):
         self.model_name = "resnet50"
 
     def test_acl_json_using_msprof(self):
-        pass
+        json_path = os.path.realpath("testdata/json_file/acl_test.json")
+        self.generate_acl_json(json_path, 1)
 
     def test_acl_json_using_aclinit(self):
         pass
