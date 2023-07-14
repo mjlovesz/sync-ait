@@ -527,8 +527,12 @@ def acl_json_base_check(args):
     if json_size > max_json_size:
         logger.error(f"json_file_size:{json_size} byte out of max limit {max_json_size} byte")
         raise MemoryError(f"json_file_size:{json_size} byte out of max limit")
-    with open(json_path, 'r') as f:
-        json_dict = json.load(f)
+    try:
+        with open(json_path, 'r') as f:
+            json_dict = json.load(f)
+    except Exception as err:
+        logger.error(f"can't read acl_json_path:{json_path}")
+        raise Exception from err
     if json_dict.get("profiler") is not None and json_dict.get("profiler").get("switch") == "on":
         args.profiler = True
     if json_dict.get("dump") is not None:
