@@ -68,7 +68,7 @@ ait debug compare -h
 * [AIT analyze 快速入门指南](components/analyze/README.md)
 * [AIT transplt 快速入门指南](components/transplt/README.md)
 * [AIT convert 快速入门指南](components/convert/README.md)
-* [AIT profile 快速入门指南](components/profile/msprof/README.md)
+* [AIT profile 快速入门指南](docs/profile/README.md)
 
 ## 许可证
 
