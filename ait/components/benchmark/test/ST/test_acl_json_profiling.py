@@ -62,11 +62,11 @@ class TestClass:
             "aic_metrics": ""
         }}
         os.environ['GE_PROFILING_TO_STD_OUT'] = "0"
-        profile_out_path = os.path.join(self.cur_path, )
+        profile_out_path = os.path.join(self.cur_path, output_json_dict["profiler"]["output"])
         json_path = os.path.realpath("acl_test.json")
         if os.path.exists(profile_out_path):
             shutil.rmtree(profile_out_path)
-        self.generate_acl_json(json_path, output_json_dict["profiler"]["output"])
+        self.generate_acl_json(json_path, output_json_dict)
         cmd = f"{TestCommonClass.cmd_prefix} \
                 --model {self.get_resnet50_om_path()} \
                  --acl_json_path {json_path}"
