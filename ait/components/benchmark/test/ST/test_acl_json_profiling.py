@@ -50,6 +50,7 @@ class TestClass:
         if os.path.exists(json_path):
             shutil.rmtree(json_path)
 
+
         OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
         OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
         with os.fdopen(os.open(json_path, OPEN_FLAGS, OPEN_MODES), 'w') as f:
@@ -59,7 +60,7 @@ class TestClass:
         self.model_name = "resnet50"
 
     def test_acl_json_using_msprof(self):
-        json_path = os.path.realpath("testdata/json_file/acl_test.json")
+        json_path = os.path.realpath("json_file/acl_test.json")
         self.generate_acl_json(json_path, 1)
 
     def test_acl_json_using_aclinit(self):
