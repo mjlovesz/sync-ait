@@ -44,7 +44,7 @@ class TestClass:
         return os.path.join(TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_bs1.om")
 
     @classmethod
-    def generate_acl_json(json_path, json_dict):
+    def generate_acl_json(json_path):
         # output_json_dict = json_dict
         output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "testdata/profiler", "aic_metrics": ""}}
         if os.path.exists(json_path):
@@ -60,7 +60,7 @@ class TestClass:
 
     def test_acl_json_using_msprof(self):
         json_path = os.path.realpath("testdata/json_file/acl_test.json")
-        self.generate_acl_json(json_path, 1)
+        self.generate_acl_json(json_path)
 
     def test_acl_json_using_aclinit(self):
         pass
