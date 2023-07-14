@@ -15,8 +15,8 @@
 import tempfile
 import warnings
 import os
-import re
-from typing import List, Dict, Union, Sequence, Optional
+
+from typing import List, Dict, Union, Sequence, Optional, Tuple
 from collections import deque
 
 import onnx
@@ -120,6 +120,17 @@ class OnnxGraph(BaseGraph):
 
         graph = cls(onnx_graph.name, nodes, inputs, outputs, initializers, value_infos, **meta)
         return graph
+
+    @classmethod
+    def concat_graphs(cls,
+                      g1: 'OnnxGraph',
+                      g2: 'OnnxGraph',
+                      io_map: List[Tuple[str, str]],
+                      inputs: Optional[List[str]] = None,
+                      outputs: Optional[List[str]] = None,
+                      prefix1: Optional[str] = None,
+                      prefix2: Optional[str] = None) -> 'OnnxGraph':
+        pass
 
     def add_input(self, name: str, dtype: str, shape: Sequence[Union[int, str]]) -> OnnxPlaceHolder:
         dtype = np.dtype(dtype)
@@ -320,7 +331,29 @@ class OnnxGraph(BaseGraph):
                 logger.info("Check subgraph failed, error is:", exp)
 
         return subgraph
-    
+
+    def check_overlapping_names(
+        self,
+        g1: 'OnnxGraph',
+        g2: 'OnnxGraph',
+        io_map: Optional[List[Tuple[str, str]]]
+    ) -> List[Tuple[str, str]]:
+        pass
+
+    def add_prefix_graph(
+        self,
+        prefix: str,
+        rename_nodes: Optional[bool] = True,
+        rename_edges: Optional[bool] = True,
+        rename_inputs: Optional[bool] = True,
+        rename_outputs: Optional[bool] = True,
+        rename_initializers: Optional[bool] = True,
+        rename_value_infos: Optional[bool] = True,
+        inplace: Optional[bool] = False,
+        name_map: Optional[Dict[str, str]] = None
+    ) -> 'OnnxGraph':
+        pass
+
     def simplify(self, **kwargs) -> 'OnnxGraph':
         try:
             from onnxsim import simplify
