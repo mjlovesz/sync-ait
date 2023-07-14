@@ -50,11 +50,11 @@ class TestClass:
         if os.path.exists(json_path):
             shutil.rmtree(json_path)
 
+
         OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
         OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
-        json_descriptor = os.open(json_path, OPEN_FLAGS, OPEN_MODES)
-        json_object = os.fdopen(json_descriptor, 'w')
-        json.dump(output_json_dict, json_object, indent=4, separators=(", ", ": "), sort_keys=True)
+        with os.fdopen(os.open(json_path, OPEN_FLAGS, OPEN_MODES), 'w') as f:
+            json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
 
     def init(self):
         self.model_name = "resnet50"
