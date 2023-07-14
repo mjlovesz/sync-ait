@@ -46,7 +46,8 @@
   # INFO - scan_api.py[113] - **** Project analysis finished <<<
   ```
   最终分析结果文件位于当前执行路径下 `./output.xlsx`，该结果中重点关注有对应关系的接口，并参照 `AscendAPILink` 中相关接口说明辅助完成迁移
-  ![transplt_example.JPG](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/02_resnet50_inference/transplt_example.png)
+
+  ![transplt_example.png](https://gitee.com/ascend/ait/blob/master/ait/examples/cli/transplt/02_resnet50_inference/transplt_example.png)
 ## MXBase ResNet50 推理 + OpenCV 图像处理
 - **完成该部分迁移，可使用 OpenCV 处理图像 -> MXBase 在昇腾 NPU 上执行模型推理**
 - 分析结果中，模型推理相关 API
