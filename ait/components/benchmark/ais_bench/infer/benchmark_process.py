@@ -264,7 +264,8 @@ def msprof_run_profiling(args, msprof_bin):
     if args.acl_json_path is not None:
         # acl.json to msprof cmd
         cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
-        cmd = cmd.replace("--acl?json?path", "")
+        cmd = cmd.replace("--acl-json-path", "")
+        cmd = cmd.replace("--acl_json_path", "")
         cmd = cmd.replace(args.acl_json_path, "")
         msprof_cmd = f"{msprof_bin} --application=\"{cmd}\" " + json_to_msprof_cmd(args.acl_json_path)
     else:
