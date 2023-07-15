@@ -14,6 +14,8 @@
 import click
 import pkg_resources
 
+from parser.parser import load_command_info
+
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
@@ -38,3 +40,5 @@ def load_convert_sub_task():
 
 
 convert_cli = load_convert_sub_task()
+
+convert_cmd_info = load_command_info('convert_sub_task', 'convert')

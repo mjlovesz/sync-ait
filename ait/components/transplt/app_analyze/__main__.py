@@ -14,6 +14,7 @@
 
 import click
 
+from parser.parser import CommandInfo
 from app_analyze.utils import log_util
 from app_analyze.porting.app import start_scan_kit, opt_source, opt_tools, opt_log_level, opt_report_type
 
@@ -40,3 +41,17 @@ def cli(source, report_type, log_level, tools):
 
 if __name__ == '__main__':
     cli()
+
+class TranspltCommand:
+    def add_arguments(self, parser):
+        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
+        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
+        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+
+    def handle(self, args):
+        print(vars(args))
+        print("hello from transplt")
+
+def get_cmd_info():
+    cmd_instance = TranspltCommand()
+    return CommandInfo("transplt", cmd_instance)

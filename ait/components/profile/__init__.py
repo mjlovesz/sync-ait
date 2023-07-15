@@ -15,6 +15,8 @@
 import click
 import pkg_resources
 
+from parser.parser import load_command_info
+
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
@@ -33,4 +35,6 @@ def load_profile_sub_task():
                            )
 
 
-profile_cli = load_profile_sub_task()
+# profile_cli = load_profile_sub_task()
+
+profile_cmd_info = load_command_info('profile_sub_task', 'profile')

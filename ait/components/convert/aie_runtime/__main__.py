@@ -19,6 +19,7 @@ import sys
 
 import click
 
+from parser.parser import CommandInfo
 from aie_runtime.bean import ConvertConfig
 from aie_runtime.core import Convert
 from aie_runtime.options import (
@@ -74,3 +75,18 @@ def cli(
 
 if __name__ == "__main__":
     cli()
+
+
+class ConvertCommand:
+    def add_arguments(self, parser):
+        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
+        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
+        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+
+    def handle(self, args):
+        print(vars(args))
+        print("hello from convert")
+
+def get_cmd_info():
+    cmd_instance = ConvertCommand()
+    return CommandInfo("convert", cmd_instance)

@@ -18,6 +18,7 @@ import click
 from click_aliases import ClickAliasedGroup
 from click.exceptions import UsageError
 
+from parser.parser import CommandInfo
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
     ARGS_REQUIRED_KNOWLEDGES
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
@@ -250,3 +251,52 @@ def command_extract(
 if __name__ == "__main__":
     UsageError.show = FormatMsg.show
     cli()
+
+
+class ListCommand:
+    def add_arguments(self, parser):
+        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
+        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
+        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+
+    def handle(self, args):
+        print(vars(args))
+        print("hello from surgeon list")
+
+class EvaluateCommand:
+    def add_arguments(self, parser):
+        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
+        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
+        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+
+    def handle(self, args):
+        print(vars(args))
+        print("hello from surgeon evalute")
+
+class OptimizeCommand:
+    def add_arguments(self, parser):
+        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
+        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
+        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+
+    def handle(self, args):
+        print(vars(args))
+        print("hello from surgeon optimize")
+
+class ExtractCommand:
+    def add_arguments(self, parser):
+        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
+        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
+        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+
+    def handle(self, args):
+        print(vars(args))
+        print("hello from surgeon extract")
+
+
+def get_cmd_info():
+    list_cmd_info = CommandInfo("list", ListCommand())
+    evaluate_cmd_info = CommandInfo("evalute", EvaluateCommand())
+    optimize_cmd_info = CommandInfo("optimize", OptimizeCommand())
+    extract_cmd_info = CommandInfo("extract", ExtractCommand)
+    return CommandInfo("surgeon", None, [list_cmd_info, evaluate_cmd_info, optimize_cmd_info, extract_cmd_info])

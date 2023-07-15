@@ -48,6 +48,6 @@ setup(
     ],
     python_requires='>=3.7',
     entry_points={
-        'analyze_sub_task': ['model=model_evaluation.__main__:cli'],
+        'analyze_sub_task': ['model=model_evaluation.__main__:get_cmd_info'],
     },
 )

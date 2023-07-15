@@ -15,6 +15,7 @@
 import os
 import click
 
+from parser.parser import CommandInfo
 from model_evaluation.common import utils, logger
 from model_evaluation.common.enum import Framework
 from model_evaluation.bean import ConvertConfig
@@ -86,6 +87,19 @@ def cli(
     analyzer.analyze_model()
     logger.info('analyze model finished.')
 
+class AnalyzeCommand:
+    def add_arguments(self, parser):
+        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
+        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
+        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+
+    def handle(self, args):
+        print(vars(args))
+        print("hello from analyze")
+
+def get_cmd_info():
+    cmd_instance = AnalyzeCommand()
+    return CommandInfo("analyze", cmd_instance)
 
 if __name__ == '__main__':
     cli()

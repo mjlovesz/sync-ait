@@ -15,6 +15,7 @@ import sys
 
 import click
 
+from parser.parser import CommandInfo
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.adapter_cli.options import (
     opt_golden_model,
@@ -87,3 +88,18 @@ if __name__ == '__main__':
         compare_cli()
     except utils.AccuracyCompareException as error:
         sys.exit(error.error_info)
+
+
+class CompareCommand:
+    def add_arguments(self, parser):
+        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
+        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
+        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+
+    def handle(self, args):
+        print(vars(args))
+        print("hello from compare")
+
+def get_cmd_info():
+    cmd_instance = CompareCommand()
+    return CommandInfo("compare", cmd_instance)

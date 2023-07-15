@@ -30,6 +30,6 @@ setup(
     install_requires=required,
     python_requires='>=3.7',
     entry_points={
-        'profile_sub_task': ['msprof=ait_prof.main_cli:msprof_cli']
+        'profile_sub_task': ['msprof=ait_prof.main_cli:get_cmd_info']
     }
 )

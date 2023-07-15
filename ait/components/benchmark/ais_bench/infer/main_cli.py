@@ -14,6 +14,7 @@
 
 import click
 
+from parser.parser import CommandInfo
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.options import (
@@ -99,3 +100,19 @@ def benchmark_cli(om_model, input_path, output,
                                 acl_json_path, output_batchsize_axis, run_mode, display_all_summary, warmup_count,
                                 dym_shape_range, aipp_config, energy_consumption, npu_id, backend, perf, pipeline)
     benchmark_process(args)
+
+class BenchmarkCommand:
+    def add_arguments(self, parser):
+        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
+        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
+        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+        
+
+    def handle(self, args):
+        print(vars(args))
+        print("hello from benchmark")
+
+
+def get_cmd_info():
+    cmd_instance = BenchmarkCommand()
+    return CommandInfo("benchmark", cmd_instance)

@@ -13,6 +13,7 @@
 
 import click
 import pkg_resources
+from parser.parser import load_command_info
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -32,4 +33,6 @@ def load_benchmark_sub_task():
                            )
 
 
-benchmark_cli = load_benchmark_sub_task()
+# benchmark_cli = load_benchmark_sub_task()
+
+benchmark_cmd_info = load_command_info('benchmark_sub_task', 'benchmark')

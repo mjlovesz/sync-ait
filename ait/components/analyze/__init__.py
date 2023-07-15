@@ -13,6 +13,7 @@
 
 import click
 import pkg_resources
+from parser.parser import load_command_info
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -36,4 +37,6 @@ def load_analyze_sub_task():
             context_settings=CONTEXT_SETTINGS
         )
 
-analyze_cli = load_analyze_sub_task()
+# analyze_cli = load_analyze_sub_task()
+
+analyze_cmd_info = load_command_info('analyze_sub_task', 'analyze')

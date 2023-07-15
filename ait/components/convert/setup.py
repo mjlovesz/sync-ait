@@ -45,6 +45,6 @@ setup(
     ],
     python_requires='>=3.7',
     entry_points={
-        'convert_sub_task': ['convert=aie_runtime.__main__:cli'],
+        'convert_sub_task': ['convert=aie_runtime.__main__:get_cmd_info'],
     },
 )

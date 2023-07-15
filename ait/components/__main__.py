@@ -14,25 +14,23 @@
 
 import click
 import pkg_resources
+import argparse
 
-from components.debug import debug_cli_group
-from components.profile import profile_cli
-from components.transplt import transplt_cli
-from components.benchmark import benchmark_cli
-from components.analyze import analyze_cli
-from components.convert import convert_cli
+from components.debug import debug_cmd_info
+from components.profile import profile_cmd_info
+from components.transplt import transplt_cmd_info
+from components.benchmark import benchmark_cmd_info
+from components.analyze import analyze_cmd_info
+from components.convert import convert_cmd_info
+from parser.parser import register_parser
 
-
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-
-
-cli = click.Group(context_settings=CONTEXT_SETTINGS,
-                  commands=[debug_cli_group, profile_cli,
-                            analyze_cli, benchmark_cli, 
-                            transplt_cli, convert_cli],
-                  no_args_is_help=True,
-                  help="ait(Ascend Inference Tools), "
-                  "provides one-site debugging and optimization toolkit for inference use Ascend Devices")
 
 if __name__ == "__main__":
-    cli()
+    subcommand_infos = [debug_cmd_info, profile_cmd_info, transplt_cmd_info,
+                        benchmark_cmd_info, analyze_cmd_info, convert_cmd_info]
+    parser = argparse.ArgumentParser()
+    register_parser(parser, subcommand_infos)
+    args = parser.parse_args()
+
+    if hasattr(args, 'handle'):
+        args.handle(args)
