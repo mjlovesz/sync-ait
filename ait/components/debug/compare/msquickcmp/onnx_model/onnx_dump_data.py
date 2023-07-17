@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
@@ -34,7 +33,7 @@ from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException
 from msquickcmp.common.utils import InputShapeError
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
-from msquickcmp.common.dump_data import convert_bin_file_to_npy
+from msquickcmp.common.convert import convert_bin_file_to_npy
 
 
 NODE_TYPE_TO_DTYPE_MAP = {
