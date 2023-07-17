@@ -75,7 +75,7 @@ class OnnxDumpData(DumpData):
         self.data_dir, self.onnx_dump_data_dir, self.model_dir = self._create_dir()
 
         self.net_output, self.inputs_map = {}, {}
-        self.origin_model, origin_model_contents = self._load_onnx_and_session(self.model_path)
+        self.origin_model, origin_model_contents = self._load_onnx(self.model_path)
 
         if self.custom_op:
             (head_model, head_model_path), (tail_model, tail_model_path) = self._extract_sub_models_by_custom_op()
