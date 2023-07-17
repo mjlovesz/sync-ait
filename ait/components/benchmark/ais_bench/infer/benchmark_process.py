@@ -40,7 +40,7 @@ from ais_bench.infer.utils import logger
 from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
 from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                                    get_fileslist_from_dir, list_split, list_share, logger,
-                                   save_data_to_files)
+                                   save_data_to_files, get_dump_paths, get_msaccucmp_path, get_dump_npy_path)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
 
@@ -261,6 +261,16 @@ def get_energy_consumption(npu_id):
     return power
 
 
+def convert(output_path):
+    dump_paths = get_dump_paths(output_path) # find dump dir in output_path and return the lastest timestamp dir
+    msaccucmp_path = get_msaccucmp_path()
+    if dump_path is not None and msaccucmp_path is not None:
+        for dump_path in dump_paths:
+            dump_npy_path = get_dump_npy_path(dump_path)
+            cmd = [msaccucmp_path, "convert", "-d", dump_path, "-out", dump_npy_path]
+            os.system(cmd)
+
+
 def main(args, index=0, msgq=None, device_list=None):
     # if msgq is not None,as subproces run
     if msgq is not None:
@@ -360,6 +370,9 @@ def main(args, index=0, msgq=None, device_list=None):
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
 
     session.finalize()
+
+    if args.convert and args.output is not None:
+        convert(args.output)
 
 
 def print_subproces_run_error(value):

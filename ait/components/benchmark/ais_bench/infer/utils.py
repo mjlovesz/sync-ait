@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
 WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
+MSACCUCMP_FILE_PATH =  "tools/operator_cmp/compare/msaccucmp.py"
 
 
 # Split a List Into Even Chunks of N Elements
@@ -114,3 +115,38 @@ def save_data_to_files(file_path, ndata):
                 f.write(b"\n")
     else:
         ndata.tofile(file_path)
+
+
+def get_latest_timestamp_path(dump_dir):
+    subdirs = [d for d in os.listdir(dump_dir) if os.path.isdir(os.path.join(dump_dir, d))]
+    sorted_subdirs = sorted(subdirs)
+    return os.path.join(dump_dir, sorted_subdirs[-1])
+
+
+def get_dump_paths(output_path):
+    dump_dir = os.path.join(output_path, "dump")
+    if os.path.exists(dump_dir):
+        latest_timestamp_path = get_latest_timestamp_path(dump_dir)
+        if latest_timestamp_path is None:
+            return None
+    else:
+        return None
+    dump_paths = []
+    for subdir, _, files in os.walk(latest_timestamp_path):
+        if len(files) > 0:
+            dump_paths.append((latest_timestamp_path, os.path.relpath(subdir, latest_timestamp_path)))
+    return dump_paths
+
+
+def get_msaccucmp_path():
+    ascend_toolkit_path = os.environ.get("ASCEND_TOOLKIT_HOME")
+    if ascend_toolkit_path is None:
+        return None
+    msaccucmp_path = os.path.join(str(ascend_toolkit_path), MSACCUCMP_FILE_PATH)
+    return msaccucmp_path if os.path.exists(msaccucmp_path) else None
+
+
+def get_dump_npy_path(dump_path):
+    prefix = dump_path[0] if dump_path[0][-1] != '/' else dump_path[0][:-1]
+    dump_npy_path = os.path.join(prefix + "_npy", dump_path[1])
+    return dump_npy_path
