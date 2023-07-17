@@ -21,6 +21,7 @@ from click.exceptions import UsageError
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
     ARGS_REQUIRED_KNOWLEDGES
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
+from auto_optimizer.graph_refactor.onnx.node import OnnxNode
 from auto_optimizer.tools.log import logger
 from auto_optimizer.common.click_utils import optimize_onnx, CONTEXT_SETTINGS, \
     FormatMsg, list_knowledges, cli_eva, check_input_path, check_output_model_path
@@ -233,13 +234,16 @@ def command_extract(
         return
 
     # parse start node names and end node names
-    start_nodes = [node_name.strip() for node_name in start_node_names.split(',')]
-    end_nodes = [node_name.strip() for node_name in end_node_names.split(',')]
+    if start_node_names:
+        start_node_names = [node_name.strip() for node_name in start_node_names.split(',')]
+
+    if end_node_names:
+        end_node_names = [node_name.strip() for node_name in end_node_names.split(',')]
 
     onnx_graph = OnnxGraph.parse(input_model)
     try:
         onnx_graph.extract_subgraph(
-            start_nodes, end_nodes,
+            start_node_names, end_node_names,
             output_model, is_check_subgraph,
             subgraph_input_shape, subgraph_input_dtype
         )
