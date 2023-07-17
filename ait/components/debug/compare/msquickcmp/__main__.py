@@ -15,7 +15,7 @@ import sys
 
 import click
 
-from parser.parser import CommandInfo
+from components.parser.parser import CommandInfo
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.adapter_cli.options import (
     opt_golden_model,

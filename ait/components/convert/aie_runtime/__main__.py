@@ -19,7 +19,7 @@ import sys
 
 import click
 
-from parser.parser import CommandInfo
+from components.parser.parser import CommandInfo
 from aie_runtime.bean import ConvertConfig
 from aie_runtime.core import Convert
 from aie_runtime.options import (

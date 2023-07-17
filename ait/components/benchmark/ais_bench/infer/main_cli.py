@@ -14,7 +14,7 @@
 
 import click
 
-from parser.parser import CommandInfo
+from components.parser.parser import CommandInfo
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.options import (

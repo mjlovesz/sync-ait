@@ -15,7 +15,7 @@
 import os
 import click
 
-from parser.parser import CommandInfo
+from components.parser.parser import CommandInfo
 from model_evaluation.common import utils, logger
 from model_evaluation.common.enum import Framework
 from model_evaluation.bean import ConvertConfig

@@ -13,7 +13,6 @@
 # limitations under the License.
 import argparse
 
-from parser.parser import CommandInfo
 from msprof.msprof_process import msprof_process
 from msprof.args_adapter import MsProfArgsAdapter
 
@@ -142,17 +141,3 @@ if __name__ == "__main__":
         args.runtime_api, args.task_time, args.aicpu)
     ret = msprof_process(args)
     exit(ret)
-
-class ProfileCommand:
-    def add_arguments(self, parser):
-        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
-        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
-        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
-
-    def handle(self, args):
-        print(vars(args))
-        print("hello from profile")
-
-def get_cmd_info():
-    cmd_instance = ProfileCommand()
-    return CommandInfo("profile", cmd_instance)

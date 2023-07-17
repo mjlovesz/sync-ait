@@ -14,7 +14,7 @@
 import click
 import pkg_resources
 
-from parser.parser import load_command_info
+from components.parser.parser import load_command_info
 
 debug_sub_task = {}
 for entry_point in pkg_resources.iter_entry_points('debug_sub_task'):

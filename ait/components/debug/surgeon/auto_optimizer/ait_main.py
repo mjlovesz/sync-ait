@@ -18,7 +18,7 @@ import click
 from click_aliases import ClickAliasedGroup
 from click.exceptions import UsageError
 
-from parser.parser import CommandInfo
+from components.parser.parser import CommandInfo
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
     ARGS_REQUIRED_KNOWLEDGES
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph

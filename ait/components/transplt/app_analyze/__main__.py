@@ -14,7 +14,7 @@
 
 import click
 
-from parser.parser import CommandInfo
+from components.parser.parser import CommandInfo
 from app_analyze.utils import log_util
 from app_analyze.porting.app import start_scan_kit, opt_source, opt_tools, opt_log_level, opt_report_type
 

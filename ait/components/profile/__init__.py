@@ -15,7 +15,7 @@
 import click
 import pkg_resources
 
-from parser.parser import load_command_info
+from components.parser.parser import load_command_info
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 

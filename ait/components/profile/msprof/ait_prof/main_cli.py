@@ -14,6 +14,7 @@
 
 import click
 
+from components.parser.parser import CommandInfo
 from ait_prof.msprof_process import msprof_process
 from ait_prof.args_adapter import MsProfArgsAdapter
 from ait_prof.options import (
@@ -54,3 +55,18 @@ def msprof_cli(application, output, model_execution, sys_hardware_mem, sys_cpu_p
                  sys_pid_profiling, dvpp_profiling, runtime_api, task_time, aicpu)
     ret = msprof_process(args)
     exit(ret)
+
+
+class ProfileCommand:
+    def add_arguments(self, parser):
+        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
+        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
+        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+
+    def handle(self, args):
+        print(vars(args))
+        print("hello from profile")
+
+def get_cmd_info():
+    cmd_instance = ProfileCommand()
+    return CommandInfo("profile", cmd_instance)
