@@ -1,9 +1,12 @@
 import os
+import time
+
 from app_analyze.model.api_seq_project import APISeqProject
 from app_analyze.porting.input_factory import InputFactory
 from app_analyze.common.kit_config import InputType, Args
-from app_analyze.scan.sequence.seq_handler import SeqHandler
+from app_analyze.scan.sequence.seq_handler import handle_api_seqs
 from app_analyze.utils import log_util
+from app_analyze.utils.log_util import logger
 
 
 class Model:
@@ -42,13 +45,22 @@ class Model:
         return api_seqs
 
     def train(self, path):
+        start = time.time()
         dataset = self._load_data(path)
         api_seqs = self._scan_sources(dataset)
-        print()
-        # apis = SeqHandler.cluster_api_seqs(api_seqs)
+
+        eval_time = time.time() - start
+        logger.info(f'The time of getting  is {eval_time}s.')
+
+        handle_api_seqs(api_seqs)
+        eval_time = time.time() - start
+        logger.info(f'Total time is {eval_time}.')
 
 
 if __name__ == '__main__':
+    import re
+
     model = Model()
     # "/home/liuzhe/package/opencv-4.5.4/samples/cpp"
-    model.train("/home/liuzhe/samples/opencv")
+    # "/home/liuzhe/samples/opencv"
+    model.train("/home/liuzhe/package/opencv-4.5.4/samples/cpp")

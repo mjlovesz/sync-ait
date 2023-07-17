@@ -41,6 +41,9 @@ class CustomInput(CommandLineInput):
                     self._check_path(folder)
                     if not folder.endswith('/'):
                         folder += '/'
+                else:
+                    assert os.path.isfile(folder)
+                    _, ext = os.path.splitext(folder)
 
                 self.directories.append(folder)
             self.directories = sorted(set(self.directories),

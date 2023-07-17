@@ -49,7 +49,6 @@ class FuncParser(Parser):
     @staticmethod
     def _handle_call_seqs(seqs):
         SeqHandler.union_api_seqs(seqs)
-        # SeqHandler.format_api_seqs(seqs)
 
     def parse(self):
         for d in self.tu.diagnostics:
