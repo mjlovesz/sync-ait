@@ -190,8 +190,7 @@ def test_generate_dump_data_given_custom_op_when_valid_then_pass(fake_arguments)
     fake_dump_data_path = "ReduceMeanD._3_GlobalAveragePool.time.output.0.npy"
     input_data = np.random.uniform(size=(1, 32, 1, 1)).astype("float32")
     np.save(os.path.join(OUT_PATH, fake_dump_data_path), input_data)
-    om_parser = Args()
-    om_parser.get_dynamic_scenario_info = lambda: (None, None)
+    om_parser = Args(get_dynamic_scenario_info=lambda: (None, None))
     onnx_dump_data_dir = aa.generate_dump_data(npu_dump_path=OUT_PATH, om_parser=om_parser)
 
 
@@ -207,7 +206,6 @@ def test_generate_dump_data_given_custom_op_when_not_match_then_error(fake_argum
     fake_arguments.custom_op = "/4/Flatten"
     aa = OnnxDumpData(fake_arguments)
     aa.generate_inputs_data()
-    om_parser = Args()
-    om_parser.get_dynamic_scenario_info = lambda: (None, None)
+    om_parser = Args(get_dynamic_scenario_info=lambda: (None, None))
     with pytest.raises(AccuracyCompareException):
         aa.generate_dump_data(npu_dump_path=OUT_PATH, om_parser=om_parser)
