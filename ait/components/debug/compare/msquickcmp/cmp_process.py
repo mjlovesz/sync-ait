@@ -152,7 +152,7 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
     else:
         # compare the entire network
         net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args)
-        net_compare.accuracy_network_compare()
+        net_compare.accuracy_network_compare(args.max_cmp_size)
     # Check and correct the mapping of net output node name.
     if len(expect_net_output_node) == 1:
         _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)

@@ -200,3 +200,11 @@ opt_onnx_fusion_switch = click.option(
     type=str2bool,
     help="Onnxruntime fusion switch, set False for dump complete onnx data when necessary.Usage: -ofs False."
 )
+
+opt_max_cmp_size = click.option(
+    "--max-cmp-size",
+    "max_cmp_size",
+    default=0,
+    type=int,
+    help="max size of tensor array to compare.E.g: --max-cmp-size 1024."
+)
