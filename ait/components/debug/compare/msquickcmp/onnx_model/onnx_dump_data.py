@@ -409,7 +409,11 @@ class OnnxDumpData(DumpData):
             if op_name == custom_op_name and dump_type == "output" and index < len(inputs_tensor_info):
                 inputs_info = inputs_tensor_info[index]
                 numpy_data = np.load(os.path.join(npu_dump_path, item), allow_pickle=True)
-                numpy_data = numpy_data.reshape(inputs_info['shape']).astype(inputs_info['type'])
+                if inputs_info['shape']:
+                    numpy_data = numpy_data.reshape(inputs_info['shape'])
+                if inputs_info['type']:
+                    numpy_data = numpy_data.astype(self._convert_to_numpy_type(inputs_info['type']))
+                inputs_tensor_info[index]['shape'] = numpy_data.shape
                 inputs_tensor_info[index]['type'] = numpy_data.dtype
                 inputs_map[inputs_tensor_info[index]['name']] = numpy_data
 
@@ -424,6 +428,5 @@ class OnnxDumpData(DumpData):
     def _get_after_custom_op_inputs_ternsor_info(self, session):
         inputs_tensor_info = []
         for input_item in session.get_inputs():
-            numpy_dtype = self._convert_to_numpy_type(input_item.type)
-            inputs_tensor_info.append({"name": input_item.name, "shape": input_item.shape, "type": numpy_dtype})
+            inputs_tensor_info.append({"name": input_item.name, "shape": input_item.shape, "type": input_item.type})
         return inputs_tensor_info
