@@ -28,6 +28,7 @@ import time
 import subprocess
 import onnxruntime
 import acl
+import numpy as np
 
 from auto_optimizer.graph_refactor import Node
 from auto_optimizer import OnnxGraph
@@ -107,8 +108,23 @@ def cmp_process(args:CmpArgsAdapter, use_cli:bool):
     except utils.AccuracyCompareException as error:
         raise error
 
+def _convert_npy_to_bin(args):
+    input_initial_path = args.input_path.split(",")
+    for input_item in input_initial_path:
+        input_item_path = os.path.realpath(input_item)
+        if input_item_path.endswith('.npy'):
+            bin_item = input_item[:-4] + '.bin'
+            bin_path = input_item_path[:-4] + '.bin'
+            npy_data = np.load(input_item_path)
+            if os.path.islink(bin_path):
+                os.unlink(bin_path)
+            if os.path.exists(bin_path):
+                os.remove(bin_path)
+            npy_data.tofile(bin_path)
+            args.input_path = args.input_path.replace(input_item, bin_item)
 
 def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
+    _convert_npy_to_bin(args)
     if input_shape:
         args.input_shape = input_shape
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
