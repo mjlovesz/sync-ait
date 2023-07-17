@@ -75,9 +75,8 @@ class TestClass:
         logger.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret == 0
-        out_csv_path = os.path.join(profile_out_path, "PROF*/device_*/summary/*.csv")
         csv_files = []
-        csv_files = glob.glob(out_csv_path)
+        csv_files = glob.glob("testdata/profiler/**/*.csv", recursive=True)
         assert len(csv_files) != 0
 
     def test_acl_json_using_aclinit(self):
@@ -100,6 +99,9 @@ class TestClass:
         logger.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret == 0
+        csv_files = []
+        csv_files = glob.glob("testdata/profiler/**/*.csv", recursive=True)
+        assert len(csv_files) == 0
 
         os.environ.pop('GE_PROFILING_TO_STD_OUT', None)
 
