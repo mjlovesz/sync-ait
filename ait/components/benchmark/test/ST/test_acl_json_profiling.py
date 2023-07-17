@@ -53,7 +53,7 @@ class TestClass:
     def init(self):
         self.model_name = "resnet50"
         self.cur_path = os.path.dirname(os.path.abspath(__file__))
-        self.base_path = os.path.join("../", "self.cur_path")
+        self.base_path = os.path.join("../", self.cur_path)
 
     def test_acl_json_using_msprof(self):
         output_json_dict = {"profiler": {
