@@ -75,7 +75,7 @@ class OnnxDumpData(DumpData):
         self.data_dir, self.onnx_dump_data_dir, self.model_dir = self._create_dir()
 
         self.net_output, self.inputs_map = {}, {}
-        self.origin_model, self.origin_model_session = self._load_onnx_and_session(self.model_path)
+        self.origin_model, origin_model_contents = self._load_onnx_and_session(self.model_path)
 
         if self.custom_op:
             (head_model, head_model_path), (tail_model, tail_model_path) = self._extract_sub_models_by_custom_op()
@@ -87,7 +87,8 @@ class OnnxDumpData(DumpData):
             self.model_with_inputs_session = self._load_session(self.model_with_inputs.SerializeToString())
         else:
             self.dump_model_with_inputs_path = self._new_model_save_path(self.model_path)
-            self.model_with_inputs, self.model_with_inputs_session = self.origin_model, self.origin_model_session
+            self.model_with_inputs = self.origin_model
+            self.model_with_inputs_session = self._load_session(origin_model_contents)
 
     @staticmethod
     def _check_input_shape_fix_value(op_name, model_shape, input_shape):
@@ -139,7 +140,7 @@ class OnnxDumpData(DumpData):
             options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
         return onnxruntime.InferenceSession(model_contents, options)
 
-    def _load_onnx_and_session(self, model_path):
+    def _load_onnx(self, model_path):
         # model_path str -> read as bytes -> deserialize to onnx_model
         #                                 -> onnxruntime load as session
         with open(model_path, "rb") as ff:
@@ -148,9 +149,7 @@ class OnnxDumpData(DumpData):
         for index, node in enumerate(onnx_model.graph.node):
             if not node.name:
                 node.name = node.op_type + "_" + str(index)
-
-        onnx_session = self._load_session(model_contents)
-        return onnx_model, onnx_session
+        return onnx_model, model_contents
 
     def _new_model_save_path(self, origin_path):
         save_name = "new_" + os.path.basename(origin_path)
