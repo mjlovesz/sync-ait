@@ -11,12 +11,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import copy
 import tempfile
 import warnings
 import os
 
-from typing import List, Dict, Union, Sequence, Optional, Tuple
+from typing import List, Dict, Union, Sequence, Optional, Tuple, Set
 from collections import deque
 
 import onnx
@@ -122,6 +122,157 @@ class OnnxGraph(BaseGraph):
         return graph
 
     @classmethod
+    def check_overlapping_names(
+        cls,
+        g1: 'OnnxGraph',
+        g2: 'OnnxGraph',
+        io_map: Optional[List[Tuple[str, str]]]
+    ) -> List[Tuple[str, str]]:
+        """Check whether there are name collisions between two graphs
+
+        Returns a list of tuples where the first element represents the member containing overlapping names
+        (One of: `node`, `edges`, `value_info`, `initializer`), and the second element contains a list of names
+        that appear in both graphs on that category
+
+        Optionally, it takes an io_map, representing the output/inputs to be connected. If provided, overlapping
+        present in the io_map argument will be ignored.
+
+        """
+
+        if not isinstance(g1, OnnxGraph):
+            raise ValueError("g1 argument is not OnnxGraph")
+        if not isinstance(g2, OnnxGraph):
+            raise ValueError("g2 argument is not OnnxGraph")
+
+        def _overlapping(c1: List[str], c2: List[str]) -> List[str]:
+            return list(set(c1) & set(c2))
+
+        def _edge_names(graph: OnnxGraph, exclude: Optional[Set[str]] = None) -> List[str]:
+            if not exclude:
+                exclude = set()
+            edges = []
+            for node in graph.nodes:
+                edges.extend(filter(lambda x: x and x not in exclude, node.inputs))
+                edges.extend(filter(lambda x: x and x not in exclude, node.outputs))
+            return edges
+
+        result = []
+        if not io_map:
+            io_map = []
+        io_map_inputs = {elem[1] for elem in io_map}
+
+        # check name collisions for nodes, edges, value_infos and initializers
+        overlap = _overlapping(
+            [node.name for node in g1.nodes],
+            [node.name for node in g2.nodes]
+        )
+        if overlap:
+            result.append(("nodes", overlap))
+
+        overlap = _overlapping(_edge_names(g1), _edge_names(g2, exclude=io_map_inputs))
+        if overlap:
+            result.append(("edges", overlap))
+
+        overlap = _overlapping(
+            [vi.name for vi in g1.value_infos],
+            [vi.name for vi in g2.value_infos]
+        )
+        if overlap:
+            result.append(("value_info", overlap))
+
+        overlap = _overlapping(
+            [ini.name for ini in g1.initializers],
+            [ini.name for ini in g2.initializers]
+        )
+        if overlap:
+            result.append(("initializer", overlap))
+
+        return result
+
+    @classmethod
+    def add_prefix_graph(
+        cls,
+        graph: 'OnnxGraph',
+        prefix: str,
+        inplace: Optional[bool] = False,
+        name_map: Optional[Dict[str, str]] = None
+    ) -> 'OnnxGraph':
+        """Adds a prefix to names of elements in a graph: nodes, edges, inputs, outputs,
+        initializers and value infos.
+
+        It can be used as a utility before merging graphs that have overlapping names.
+        Empty names are not prefixed.
+
+        Arguments:
+            graph (OnnxGraph): Graph
+            prefix (str): Prefix to be added to each name in the graph
+            rename_nodes (bool): Whether to prefix node names
+            ...
+            inplace (bool): If true, modify the graph directly.
+                            Otherwise, a copy will be created
+            name_map (Dict): shared name_map in subgraph
+
+        Returns:
+            OnnxGraph
+
+        """
+
+        if not isinstance(graph, OnnxGraph):
+            raise ValueError("graph argument is not OnnxGraph")
+
+        g = copy.deepcopy(graph) if not inplace else graph
+
+        def _prefix(prefix: str, name: str) -> str:
+            return prefix + name if len(name) > 0 else name
+
+        if not name_map:
+            name_map = dict()
+
+        # store prefixed names
+        for node in graph.nodes:
+            name_map.update({e: _prefix(prefix, e) for e in node.inputs})
+            name_map.update({e: _prefix(prefix, e) for e in node.outputs})
+
+        name_map.update({e.name: _prefix(prefix, e.name) for e in graph.inputs})
+        name_map.update({e.name: _prefix(prefix, e.name) for e in graph.outputs})
+
+        name_map.update({e.name: _prefix(prefix, e.name) for e in graph.nodes})
+        name_map.update({e.name: _prefix(prefix, e.name) for e in graph.initializers})
+        name_map.update({e.name: _prefix(prefix, e.name) for e in graph.value_infos})
+
+        # add prefixes to all names
+        for node in g.nodes:
+            if node.name in name_map:
+                node.name = name_map[node.name]
+            for idx, inp in enumerate(node.inputs):
+                if inp in name_map:
+                    node.inputs[idx] = name_map[inp]
+            for idx, out in enumerate(node.outputs):
+                if out in name_map:
+                    node.outputs[idx] = name_map[out]
+
+        for inp in g.inputs:
+            if inp.name in name_map:
+                inp.name = name_map[inp.name]
+
+        for inp in g.inputs:
+            if inp.name in name_map:
+                inp.name = name_map[inp.name]
+        for out in g.outputs:
+            if out.name in name_map:
+                out.name = name_map[out.name]
+
+        for ini in g.initializers:
+            if ini.name in name_map:
+                ini.name = name_map[ini.name]
+
+        for vi in g.value_infos:
+            if vi.name in name_map:
+                vi.name = name_map[vi.name]
+
+        return g
+
+    @classmethod
     def concat_graphs(cls,
                       g1: 'OnnxGraph',
                       g2: 'OnnxGraph',
@@ -129,8 +280,126 @@ class OnnxGraph(BaseGraph):
                       inputs: Optional[List[str]] = None,
                       outputs: Optional[List[str]] = None,
                       prefix1: Optional[str] = None,
-                      prefix2: Optional[str] = None) -> 'OnnxGraph':
-        pass
+                      prefix2: Optional[str] = None,
+                      graph_name: Optional[str] = None) -> 'OnnxGraph':
+        """Combine two ONNX graphss into a single one.
+
+        The combined graph is defined by connecting the specified set of outputs/inputs. Those inputs/outputs
+        not specified in the io_map argument will remain as inputs/outputs of the combined map.
+
+        Arguments:
+             g1 (OnnxGraph): First graph
+             g2 (OnnxGraph): Second graph
+             io_map (list of pairs of string): The pairs of names [(out0/in0), (out1/in0), ...]
+                                                representing outputs of the first graph and inputs of the second
+                                                to be connected
+             inputs (list of string): Optional list of inputs to be included in the combined graph
+                                      By default, all inputs not present in the `io_map` argument will be
+                                      included in the combined graph
+             outputs (list of string): Optional list of inputs to be included in the combined graph
+                                      By default, all outputs not present in the `io_map` argument will be
+                                      included in the combined graph
+             prefix1 (string): Optional prefix to be added to all names in g1
+             prefix2 (string): Optional prefix to be added to all names in g2
+             graph_name (string): Optional string for the combined graph
+                                  By default, the name is g1.name and g2.name concatenated with an underscore delimiter
+
+        Returns:
+             OnnxGraph
+
+        """
+
+        if not isinstance(g1, OnnxGraph):
+            raise ValueError("g1 argument is not an ONNX graph")
+        if not isinstance(g2, OnnxGraph):
+            raise ValueError("g2 argument is not an ONNX graph")
+
+        if prefix1 or prefix2:
+            if prefix1:
+                g1_copy = copy.deepcopy(g1)
+                g1 = g1_copy
+                g1 = cls.add_prefix_graph(g1, prefix=prefix1)
+            if prefix2:
+                g2_copy = copy.deepcopy(g2)
+                g2 = g2_copy
+                g2 = cls.add_prefix_graph(g2, prefix=prefix2)
+            io_map = [
+                (
+                    prefix1 + io[0] if prefix1 else io[0],
+                    prefix2 + io[1] if prefix2 else io[1],
+                )
+                for io in io_map
+            ]
+
+        io_map_g1_outs = {io[0] for io in io_map}
+        io_map_g2_ins = {io[1] for io in io_map}
+        reversed_io_map = {in_name: out_name for out_name, in_name in io_map}
+        g1_outs = {o.name for o in g1.outputs}
+        g2_ins = {i.name for i in g2.inputs}
+
+        # check input/output names specified in io_map argument are valid
+        for g1_out_name, g2_in_name in io_map:
+            if g1_out_name not in g1_outs:
+                raise ValueError(f"Output {g1_out_name} is not present in g1")
+            if g2_in_name not in g2_ins:
+                raise ValueError(f"Input {g2_in_name} is not present in g2")
+
+        # check for name collisions
+        overlapping_names = cls.check_overlapping_names(g1, g2, io_map)
+        if overlapping_names:
+            category, names = overlapping_names[0]
+            raise ValueError(
+                "Cant merge two graphs with overlapping names. "
+                f"Found repeated {category} names："
+                + ",".join(names)
+                + "\n"
+                + "Consider specifying prefix1 and/or prefix2 to add prefix in graphs"
+            )
+
+        g_name = graph_name if graph_name else "_".join([g1.name, g2.name])
+        g = OnnxGraph(g_name)
+        g.nodes.extend(g1.nodes)
+        g2_node_begin = len(g.nodes)
+        g.nodes.extend(g2.nodes)
+        g2_node_end = len(g.nodes)
+
+        # connecting outputs of the first graph with the inputs of the second
+        for node_idx in range(g2_node_begin, g2_node_end):
+            node = g.nodes[node_idx]
+            for idx, name_ in enumerate(node.inputs):
+                if name_ in reversed_io_map:
+                    node.inputs[idx] = reversed_io_map[name_]
+
+        # add inputs and outputs
+        if inputs:
+            input_set = set(inputs)
+            g.inputs.extend([i for i in g1.inputs if i in input_set])
+            g.inputs.extend([i for i in g2.inputs if i in input_set])
+        else:
+            g.inputs.extend(g1.inputs)
+            g.inputs.extend([i for i in g2.inputs if i not in io_map_g2_ins])
+
+        if outputs:
+            output_set = set(outputs)
+            g.outputs.extend([o for o in g1.outputs if o in output_set])
+            g.outputs.extend([o for o in g2.outputs if o in output_set])
+        else:
+            g.outputs.extend([o for o in g1.outputs if o not in io_map_g1_outs])
+            g.outputs.extend(g2.outputs)
+
+        # add initializers
+        g.initializers.extend(g1.initializers)
+        g.initializers.extend(
+            [ini for ini in g2.initializers if ini.name not in io_map_g2_ins]
+        )
+
+        # add value_infos
+        g.value_infos.extend(g1.value_infos)
+        g.value_infos.extend([
+            vi for vi in g2.value_infos if vi not in io_map_g2_ins
+        ])
+
+        return g
 
     def add_input(self, name: str, dtype: str, shape: Sequence[Union[int, str]]) -> OnnxPlaceHolder:
         dtype = np.dtype(dtype)
@@ -331,28 +600,6 @@ class OnnxGraph(BaseGraph):
                 logger.info("Check subgraph failed, error is:", exp)
 
         return subgraph
-
-    def check_overlapping_names(
-        self,
-        g1: 'OnnxGraph',
-        g2: 'OnnxGraph',
-        io_map: Optional[List[Tuple[str, str]]]
-    ) -> List[Tuple[str, str]]:
-        pass
-
-    def add_prefix_graph(
-        self,
-        prefix: str,
-        rename_nodes: Optional[bool] = True,
-        rename_edges: Optional[bool] = True,
-        rename_inputs: Optional[bool] = True,
-        rename_outputs: Optional[bool] = True,
-        rename_initializers: Optional[bool] = True,
-        rename_value_infos: Optional[bool] = True,
-        inplace: Optional[bool] = False,
-        name_map: Optional[Dict[str, str]] = None
-    ) -> 'OnnxGraph':
-        pass
 
     def simplify(self, **kwargs) -> 'OnnxGraph':
         try:
