@@ -371,7 +371,7 @@ def main(args, index=0, msgq=None, device_list=None):
 
     session.finalize()
 
-    if args.convert and args.output is not None:
+    if args.dump_npy and args.output is not None:
         convert(args.output)
 
 
