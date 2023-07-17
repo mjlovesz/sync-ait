@@ -251,6 +251,8 @@ def get_legal_json_content(acl_json_path):
                 cmd_dict.update({"--sys-hardware-mem": "on"})
             if (option_cmd == "sys_interconnection_freq"):
                 cmd_dict.update({"--sys-interconnection-profiling": "on"})
+            if (option_cmd == "dvpp_freq"):
+                cmd_dict.update({"--dvpp-profiling": "on"})
     return cmd_dict
 
 
