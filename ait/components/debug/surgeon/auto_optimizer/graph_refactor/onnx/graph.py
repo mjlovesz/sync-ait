@@ -307,6 +307,10 @@ class OnnxGraph(BaseGraph):
                 elif self.get_node(inp, PlaceHolder) and inp not in input_name_list:
                     value_infos.append(self.get_node(inp, PlaceHolder))
 
+        # remove isolated inputs
+        valid_inputs = [inp for node in self.nodes for inp in node.inputs]
+        input_name_list = list(set(valid_inputs) & set(input_name_list))
+
         # check input shape and input dtype
         self._check_input_shape_and_dtype(input_name_list, input_shape_dict, input_dtype_dict)
 
