@@ -146,6 +146,18 @@ class TestGraphExtract(unittest.TestCase):
                                                 input_dtype="sqrt0_output:int8")
         self.assertEqual(sub_graph, self.subgraph_with_input_shape_and_dtype)
 
+    def test_extract_subgraph_with_snn_enn_by_default(self):
+        subgraph = self.graph.extract_subgraph()
+        self.assertEqual(subgraph, self.subgraph)
+
+    def test_extract_subgraph_with_snn_by_default(self):
+        subgraph = self.graph.extract_subgraph(end_node_names=['relu3'])
+        self.assertEqual(subgraph, self.subgraph)
+
+    def test_extract_subgraph_with_enn_by_default(self):
+        subgraph = self.graph.extract_subgraph(start_node_names=['relu1'])
+        self.assertEqual(subgraph, self.subgraph)
+
 
 if __name__ == '__main__':
     unittest.main()
