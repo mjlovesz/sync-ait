@@ -91,9 +91,8 @@ opt_start = click.option(
     '-snn',
     '--start-node-names',
     'start_node_names',
-    required=True,
+    required=False,
     type=click.STRING,
-    callback=check_node_name,
     help='The names of start nodes'
 )
 
@@ -102,9 +101,8 @@ opt_end = click.option(
     '-enn',
     '--end-node-names',
     'end_node_names',
-    required=True,
+    required=False,
     type=click.STRING,
-    callback=check_node_name,
     help='The names of end nodes'
 )
 
