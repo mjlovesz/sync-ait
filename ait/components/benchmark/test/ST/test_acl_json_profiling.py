@@ -62,7 +62,7 @@ class TestClass:
             "output": "testdata/profiler",
             "aic_metrics": ""
         }}
-        os.environ['GE_PROFILING_TO_STD_OUT'] = "0"
+        os.environ.pop('GE_PROFILING_TO_STD_OUT', None)
         profile_out_path = os.path.join(self.base_path, output_json_dict["profiler"]["output"])
         json_path = os.path.realpath("acl_test.json")
         if os.path.exists(profile_out_path):
@@ -101,6 +101,8 @@ class TestClass:
         ret = os.system(cmd)
         assert ret == 0
 
+        os.environ.pop('GE_PROFILING_TO_STD_OUT', None)
+
     def test_acl_json_over_size(self):
         json_path = os.path.realpath("acl_oversize.json")
         output_json_dict = {"profiler": {}}
@@ -122,7 +124,7 @@ class TestClass:
             "output": "testdata/profiler",
             "aic_metrics": ""
         }}
-        os.environ['GE_PROFILING_TO_STD_OUT'] = "0"
+        os.environ.pop('GE_PROFILING_TO_STD_OUT', None)
         profile_out_path = os.path.join(self.base_path, output_json_dict["profiler"]["output"])
         json_path = os.path.realpath("acl_test_invalid.json")
         if os.path.exists(profile_out_path):
@@ -134,11 +136,6 @@ class TestClass:
         logger.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret != 0
-
-
-
-
-
 
 
 if __name__ == '__main__':
