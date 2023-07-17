@@ -100,7 +100,7 @@ class OnnxDumpData(DumpData):
             generate inputs data
         """
         if self.args.custom_op == "":
-            self.new_onnx_model_path =  self._modify_model_add_outputs_nodes(self.args.model_path)
+            self.new_onnx_model_path = self._modify_model_add_outputs_nodes(self.args.model_path)
             session = self._load_session(self.new_onnx_model_path)
         else:
             new_model_path = self._modify_model_add_outputs_nodes(self.onnx_model_before_custom_op_path)

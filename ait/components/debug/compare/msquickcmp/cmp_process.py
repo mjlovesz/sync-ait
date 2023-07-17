@@ -28,6 +28,7 @@ import time
 import subprocess
 import onnxruntime
 import acl
+import numpy as np
 
 from auto_optimizer.graph_refactor import Node
 from auto_optimizer import OnnxGraph
@@ -89,6 +90,22 @@ def _check_output_node_name_mapping(original_net_output_node, golden_net_output_
         if not match:
             utils.logger.warning("the original name: {} of net output maybe not correct!".format(node_name))
             break
+
+
+def _convert_npy_to_bin(args):
+    input_initial_path = args.input_path.split(",")
+    for input_item in input_initial_path:
+        input_item_path = os.path.realpath(input_item)
+        if input_item_path.endswith('.npy'):
+            bin_item = input_item[:-4] + '.bin'
+            bin_path = input_item_path[:-4] + '.bin'
+            npy_data = np.load(input_item_path)
+            if os.path.islink(bin_path):
+                os.unlink(bin_path)
+            if os.path.exists(bin_path):
+                os.remove(bin_path)
+            npy_data.tofile(bin_path)
+            args.input_path = args.input_path.replace(input_item, bin_item)
 
 
 def cmp_process(args:CmpArgsAdapter, use_cli:bool):
@@ -186,6 +203,7 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     args.out_path = original_out_path
+    _convert_npy_to_bin(args)
 
     if args.custom_op != "":
         args.bin2npy = True
