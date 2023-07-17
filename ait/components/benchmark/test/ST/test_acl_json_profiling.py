@@ -59,6 +59,7 @@ class TestClass:
             "switch": "on",
             "aicpu": "on",
             "output": "testdata/profiler",
+            "sys_hardware_mem_freq": "50",
             "aic_metrics": ""
         }}
         os.environ['GE_PROFILING_TO_STD_OUT'] = "0"
@@ -74,8 +75,6 @@ class TestClass:
         logger.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret == 0
-
-
 
     def test_acl_json_using_aclinit(self):
         output_json_dict = {"profiler": {
