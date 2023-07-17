@@ -53,6 +53,7 @@ class TestClass:
     def init(self):
         self.model_name = "resnet50"
         self.cur_path = os.path.dirname(os.path.abspath(__file__))
+        self.base_path = os.path.join("../", "self.cur_path")
 
     def test_acl_json_using_msprof(self):
         output_json_dict = {"profiler": {
@@ -62,7 +63,7 @@ class TestClass:
             "aic_metrics": ""
         }}
         os.environ['GE_PROFILING_TO_STD_OUT'] = "0"
-        profile_out_path = os.path.realpath(os.path.join(self.cur_path, output_json_dict["profiler"]["output"]))
+        profile_out_path = os.path.join(self.base_path, output_json_dict["profiler"]["output"])
         json_path = os.path.realpath("acl_test.json")
         if os.path.exists(profile_out_path):
             shutil.rmtree(profile_out_path)
@@ -83,7 +84,7 @@ class TestClass:
             "aic_metrics": ""
         }}
         os.environ['GE_PROFILING_TO_STD_OUT'] = "1"
-        profile_out_path = os.path.realpath(os.path.join(self.cur_path, output_json_dict["profiler"]["output"]))
+        profile_out_path = os.path.join(self.base_path, output_json_dict["profiler"]["output"])
         json_path = os.path.realpath("acl_test.json")
         if os.path.exists(profile_out_path):
             shutil.rmtree(profile_out_path)
@@ -118,7 +119,7 @@ class TestClass:
             "aic_metrics": ""
         }}
         os.environ['GE_PROFILING_TO_STD_OUT'] = "0"
-        profile_out_path = os.path.realpath(os.path.join(self.cur_path, output_json_dict["profiler"]["output"]))
+        profile_out_path = os.path.join(self.base_path, output_json_dict["profiler"]["output"])
         json_path = os.path.realpath("acl_test_invalid.json")
         if os.path.exists(profile_out_path):
             shutil.rmtree(profile_out_path)
