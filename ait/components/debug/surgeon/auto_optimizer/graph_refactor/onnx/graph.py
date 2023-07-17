@@ -308,7 +308,10 @@ class OnnxGraph(BaseGraph):
                     value_infos.append(self.get_node(inp, PlaceHolder))
 
         # remove isolated inputs
-        valid_inputs = [inp for node in self.nodes for inp in node.inputs]
+        valid_inputs = [
+            inp for node in self.nodes
+            for inp in node.inputs
+        ]
         input_name_list = list(set(valid_inputs) & set(input_name_list))
 
         # check input shape and input dtype
