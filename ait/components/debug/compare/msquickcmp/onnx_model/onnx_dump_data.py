@@ -34,7 +34,8 @@ from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException
 from msquickcmp.common.utils import InputShapeError
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
-from msquickcmp.npu.npu_dump_data_bin2npy import data_convert_file
+from msquickcmp.common.dump_data import convert_bin_file_to_npy
+
 
 NODE_TYPE_TO_DTYPE_MAP = {
     "tensor(int)": np.int32,
@@ -66,8 +67,7 @@ class OnnxDumpData(DumpData):
         self.model_path, self.out_path, self.input_path = arguments.model_path, arguments.out_path, arguments.input_path
         self.input_shape, self.dym_shape_range = arguments.input_shape, arguments.dym_shape_range
         self.custom_op, self.onnx_fusion_switch = arguments.custom_op, arguments.onnx_fusion_switch
-        self.dump = arguments.dump
-        self.args = arguments
+        self.dump, self.cann_path = arguments.dump, arguments.cann_path
 
         self._check_path_exists(self.model_path, extentions="onnx")
 
@@ -251,7 +251,7 @@ class OnnxDumpData(DumpData):
             if bin_file.startswith("Aipp"):
                 aipp_input.append(os.path.join(npu_dump_data_path, bin_file))
         for i, tensor_info in enumerate(inputs_tensor_info):
-            data_convert_file(aipp_input[i], os.path.join(self.out_path, "input"), self.args)
+            convert_bin_file_to_npy(aipp_input[i], os.path.join(self.out_path, "input"), self.cann_path)
             aipp_output_path = os.path.join(self.out_path, "input", aipp_input[i].rsplit("/", 1)[1]) + \
                                ".output.0.npy"
             aipp_output = np.load(aipp_output_path)
