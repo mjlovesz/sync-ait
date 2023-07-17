@@ -58,7 +58,7 @@ class TestClass:
         output_json_dict = {"profiler": {
             "switch": "on",
             "aicpu": "on",
-            "output": "testdata/profiler",
+            "output": "profiler",
             "aic_metrics": ""
         }}
         os.environ['GE_PROFILING_TO_STD_OUT'] = "0"
@@ -79,7 +79,7 @@ class TestClass:
         output_json_dict = {"profiler": {
             "switch": "on",
             "aicpu": "on",
-            "output": "testdata/profiler",
+            "output": "profiler",
             "aic_metrics": ""
         }}
         os.environ['GE_PROFILING_TO_STD_OUT'] = "1"
@@ -114,7 +114,7 @@ class TestClass:
         output_json_dict = {"profiler": {
             "switch": "on",
             "aicpu": "on",
-            "output": "testdata/profiler",
+            "output": "profiler",
             "aic_metrics": ""
         }}
         os.environ['GE_PROFILING_TO_STD_OUT'] = "0"
