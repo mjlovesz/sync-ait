@@ -309,7 +309,8 @@ class OnnxGraph(BaseGraph):
 
         # remove isolated inputs
         valid_inputs = [
-            inp for node in self.nodes
+            inp
+            for node in self.nodes
             for inp in node.inputs
         ]
         input_name_list = list(set(valid_inputs) & set(input_name_list))
