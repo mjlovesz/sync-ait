@@ -24,15 +24,15 @@ import pkg_resources
 class CommandInfo:
     # CASE 1. Not the ending component, e.g. debug, surgeon. cmd_instance = None, children cannot be empty
     # CASE 2. The ending component, e.g. benchmark, evalute. cmd_instance cannot be None, children = []
-    def __init__(self, cmd_name : str, cmd_instance, children : list = []):
+    def __init__(self, cmd_name : str, cmd_instance, children = None):
         self.cmd_name = cmd_name
         self.cmd_instance = cmd_instance
         self.children = children
-        if (cmd_instance is None and children == []) or (cmd_instance is not None and children != []):
+        if (cmd_instance is None and children is None) or (cmd_instance is not None and children is not None):
             print(f"subcommand {cmd_name} is set incorrectly.")
 
 def register_parser(parser, command_infos):
-    if command_infos is []:
+    if command_infos is None or (isinstance(command_infos, list) and len(command_infos) * [None] == command_infos):
         return
     subparsers = parser.add_subparsers(title="Command", help="general help")
     for cmd_info in command_infos:

@@ -22,21 +22,9 @@ from components.transplt import transplt_cmd_info
 from components.benchmark import benchmark_cmd_info
 from components.analyze import analyze_cmd_info
 from components.convert import convert_cmd_info
+from components.parser.parser import register_parser
 
-def register_parser(parser, command_infos):
-    if command_infos is []:
-        return
-    subparsers = parser.add_subparsers(title="Command", help="general help")
-    for cmd_info in command_infos:
-        if cmd_info is None:
-            continue
-        subparser = subparsers.add_parser(cmd_info.cmd_name)
-        if cmd_info.cmd_instance is not None:
-            cmd_info.cmd_instance.add_arguments(subparser)
-            subparser.set_defaults(handle=cmd_info.cmd_instance.handle)
-        register_parser(subparser, cmd_info.children)
-
-if __name__ == "__main__":
+def cli():
     subcommand_infos = [debug_cmd_info, profile_cmd_info, transplt_cmd_info,
                         benchmark_cmd_info, analyze_cmd_info, convert_cmd_info]
     parser = argparse.ArgumentParser()
@@ -45,3 +33,6 @@ if __name__ == "__main__":
 
     if hasattr(args, 'handle'):
         args.handle(args)
+
+if __name__ == "__main__":
+    cli()
