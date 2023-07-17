@@ -107,7 +107,7 @@ def _convert_npy_to_bin(args):
             npy_data.tofile(bin_path)
             args.input_path = args.input_path.replace(input_item, bin_item)
 
-            
+
 def cmp_process(args:CmpArgsAdapter, use_cli:bool):
     """
     Function Description:
@@ -126,7 +126,6 @@ def cmp_process(args:CmpArgsAdapter, use_cli:bool):
 
 
 def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
-    _convert_npy_to_bin(args)
     if input_shape:
         args.input_shape = input_shape
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
@@ -204,6 +203,7 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
     time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     args.out_path = original_out_path
+    _convert_npy_to_bin(args)
 
     if args.custom_op != "":
         args.bin2npy = True
