@@ -59,7 +59,6 @@ class TestClass:
             "switch": "on",
             "aicpu": "on",
             "output": "testdata/profiler",
-            "sys_hardware_mem_freq": "50",
             "aic_metrics": ""
         }}
         os.environ['GE_PROFILING_TO_STD_OUT'] = "0"
@@ -98,7 +97,18 @@ class TestClass:
         assert ret == 0
 
     def test_acl_json_over_size(self):
-        pass
+        json_path = os.path.realpath("acl_oversize.json")
+        output_json_dict = {"profiler": {}}
+        for i in range(5000):
+            output_json_dict["profiler"].update({f"file{i}": "fakefakefakefake"})
+        self.generate_acl_json(json_path, output_json_dict)
+        cmd = f"{TestCommonClass.cmd_prefix} \
+            --model {self.get_resnet50_om_path()} \
+            --dymDims actual_input_1:1,3,224,224 \
+            --acl_json_path {json_path}"
+        logger.info(f"run cmd:{cmd}")
+        ret = os.system(cmd)
+        assert ret != 0
 
     def test_acl_json_path_not_exist(self):
         output_json_dict = {"profiler": {
