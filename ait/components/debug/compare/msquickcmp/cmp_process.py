@@ -92,6 +92,22 @@ def _check_output_node_name_mapping(original_net_output_node, golden_net_output_
             break
 
 
+def _convert_npy_to_bin(args):
+    input_initial_path = args.input_path.split(",")
+    for input_item in input_initial_path:
+        input_item_path = os.path.realpath(input_item)
+        if input_item_path.endswith('.npy'):
+            bin_item = input_item[:-4] + '.bin'
+            bin_path = input_item_path[:-4] + '.bin'
+            npy_data = np.load(input_item_path)
+            if os.path.islink(bin_path):
+                os.unlink(bin_path)
+            if os.path.exists(bin_path):
+                os.remove(bin_path)
+            npy_data.tofile(bin_path)
+            args.input_path = args.input_path.replace(input_item, bin_item)
+
+            
 def cmp_process(args:CmpArgsAdapter, use_cli:bool):
     """
     Function Description:
@@ -108,20 +124,6 @@ def cmp_process(args:CmpArgsAdapter, use_cli:bool):
     except utils.AccuracyCompareException as error:
         raise error
 
-def _convert_npy_to_bin(args):
-    input_initial_path = args.input_path.split(",")
-    for input_item in input_initial_path:
-        input_item_path = os.path.realpath(input_item)
-        if input_item_path.endswith('.npy'):
-            bin_item = input_item[:-4] + '.bin'
-            bin_path = input_item_path[:-4] + '.bin'
-            npy_data = np.load(input_item_path)
-            if os.path.islink(bin_path):
-                os.unlink(bin_path)
-            if os.path.exists(bin_path):
-                os.remove(bin_path)
-            npy_data.tofile(bin_path)
-            args.input_path = args.input_path.replace(input_item, bin_item)
 
 def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
     _convert_npy_to_bin(args)
