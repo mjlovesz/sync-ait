@@ -65,9 +65,9 @@ class TestClass:
         json_path = os.path.realpath("acl_test.json")
         self.generate_acl_json(json_path, output_json_dict)
         cmd_dict = get_legal_json_content(json_path)
-        assert cmd_dict.get("--sys-hardware-mem") == "50"
-        assert cmd_dict.get("--sys-interconnection-profiling") == "50"
-        assert cmd_dict.get("--dvpp-profiling") == "50"
+        assert cmd_dict.get("--sys-hardware-mem") == "on"
+        assert cmd_dict.get("--sys-interconnection-profiling") == "on"
+        assert cmd_dict.get("--dvpp-profiling") == "on"
 
 
 if __name__ == '__main__':
