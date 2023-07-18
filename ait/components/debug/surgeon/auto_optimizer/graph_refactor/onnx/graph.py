@@ -130,12 +130,18 @@ class OnnxGraph(BaseGraph):
     ) -> List[Tuple[str, str]]:
         """Check whether there are name collisions between two graphs
 
-        Returns a list of tuples where the first element represents the member containing overlapping names
-        (One of: `node`, `edges`, `value_info`, `initializer`), and the second element contains a list of names
-        that appear in both graphs on that category
+        Arguments:
+            g1 (OnnxGraph): First graph
+            g2 (OnnxGraph): Second graph
+            io_map (List): pairs of output/inputs to be connected.
+                           If provided, overlapping present in the io_map argument will be ignored.
 
-        Optionally, it takes an io_map, representing the output/inputs to be connected. If provided, overlapping
-        present in the io_map argument will be ignored.
+        Returns:
+             a list of tuples where the first element represents the member containing overlapping names
+            (One of: `node`, `edges`, `value_info`, `initializer`), and the second element contains a list of names
+            that appear in both graphs on that category
+
+        Optionally, it takes an io_map, representing the output/inputs to be connected.
 
         """
 
@@ -277,10 +283,7 @@ class OnnxGraph(BaseGraph):
                       g1: 'OnnxGraph',
                       g2: 'OnnxGraph',
                       io_map: List[Tuple[str, str]],
-                      inputs: Optional[List[str]] = None,
-                      outputs: Optional[List[str]] = None,
-                      prefix1: Optional[str] = None,
-                      prefix2: Optional[str] = None,
+                      prefix: Optional[str] = 'pre_',
                       graph_name: Optional[str] = None) -> 'OnnxGraph':
         """Combine two ONNX graphss into a single one.
 
@@ -293,14 +296,8 @@ class OnnxGraph(BaseGraph):
              io_map (list of pairs of string): The pairs of names [(out0/in0), (out1/in0), ...]
                                                 representing outputs of the first graph and inputs of the second
                                                 to be connected
-             inputs (list of string): Optional list of inputs to be included in the combined graph
-                                      By default, all inputs not present in the `io_map` argument will be
-                                      included in the combined graph
-             outputs (list of string): Optional list of inputs to be included in the combined graph
-                                      By default, all outputs not present in the `io_map` argument will be
-                                      included in the combined graph
-             prefix1 (string): Optional prefix to be added to all names in g1
-             prefix2 (string): Optional prefix to be added to all names in g2
+             prefix (string): Optional prefix to be added to all names in a graph.
+                              By default, a string of `pre_` will be added to all names in g1 if necessary
              graph_name (string): Optional string for the combined graph
                                   By default, the name is g1.name and g2.name concatenated with an underscore delimiter
 
@@ -314,20 +311,24 @@ class OnnxGraph(BaseGraph):
         if not isinstance(g2, OnnxGraph):
             raise ValueError("g2 argument is not an ONNX graph")
 
-        if prefix1 or prefix2:
-            if prefix1:
-                g1_copy = copy.deepcopy(g1)
-                g1 = g1_copy
-                g1 = cls.add_prefix_graph(g1, prefix=prefix1)
-            if prefix2:
-                g2_copy = copy.deepcopy(g2)
-                g2 = g2_copy
-                g2 = cls.add_prefix_graph(g2, prefix=prefix2)
+        # check for name collisions
+        overlapping_names = cls.check_overlapping_names(g1, g2, io_map)
+        if overlapping_names:
+            category, names = overlapping_names[0]
+            logger.info(
+                "Cant merge two graphs with overlapping names. "
+                f"Found repeated {category} names："
+                + ",".join(names)
+                + "\n"
+                + f"A prefix `{prefix}` will be added to graph1"
+            )
+
+            g1_copy = copy.deepcopy(g1)
+            g1 = g1_copy
+            g1 = cls.add_prefix_graph(g1, prefix=prefix)
+
             io_map = [
-                (
-                    prefix1 + io[0] if prefix1 else io[0],
-                    prefix2 + io[1] if prefix2 else io[1],
-                )
+                (prefix + io[0], io[1])
                 for io in io_map
             ]
 
@@ -344,18 +345,6 @@ class OnnxGraph(BaseGraph):
             if g2_in_name not in g2_ins:
                 raise ValueError(f"Input {g2_in_name} is not present in g2")
 
-        # check for name collisions
-        overlapping_names = cls.check_overlapping_names(g1, g2, io_map)
-        if overlapping_names:
-            category, names = overlapping_names[0]
-            raise ValueError(
-                "Cant merge two graphs with overlapping names. "
-                f"Found repeated {category} names："
-                + ",".join(names)
-                + "\n"
-                + "Consider specifying prefix1 and/or prefix2 to add prefix in graphs"
-            )
-
         g_name = graph_name if graph_name else "_".join([g1.name, g2.name])
         g = OnnxGraph(g_name)
         g.nodes.extend(g1.nodes)
@@ -371,21 +360,11 @@ class OnnxGraph(BaseGraph):
                     node.inputs[idx] = reversed_io_map[name_]
 
         # add inputs and outputs
-        if inputs:
-            input_set = set(inputs)
-            g.inputs.extend([i for i in g1.inputs if i in input_set])
-            g.inputs.extend([i for i in g2.inputs if i in input_set])
-        else:
-            g.inputs.extend(g1.inputs)
-            g.inputs.extend([i for i in g2.inputs if i not in io_map_g2_ins])
+        g.inputs.extend(g1.inputs)
+        g.inputs.extend([i for i in g2.inputs if i not in io_map_g2_ins])
 
-        if outputs:
-            output_set = set(outputs)
-            g.outputs.extend([o for o in g1.outputs if o in output_set])
-            g.outputs.extend([o for o in g2.outputs if o in output_set])
-        else:
-            g.outputs.extend([o for o in g1.outputs if o not in io_map_g1_outs])
-            g.outputs.extend(g2.outputs)
+        g.outputs.extend([o for o in g1.outputs if o not in io_map_g1_outs])
+        g.outputs.extend(g2.outputs)
 
         # add initializers
         g.initializers.extend(g1.initializers)
