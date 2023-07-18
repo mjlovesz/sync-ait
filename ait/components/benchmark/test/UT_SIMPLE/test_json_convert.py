@@ -62,10 +62,7 @@ class TestClass:
             "dvpp_freq": "50"
         }}
         os.environ.pop('GE_PROFILING_TO_STD_OUT', None)
-        profile_out_path = os.path.join(self.base_path, "profiler")
         json_path = os.path.realpath("acl_test.json")
-        if os.path.exists(profile_out_path):
-            shutil.rmtree(profile_out_path)
         self.generate_acl_json(json_path, output_json_dict)
         cmd_dict = get_legal_json_content(json_path)
         assert cmd_dict.get("--sys-hardware-mem") == "50"
