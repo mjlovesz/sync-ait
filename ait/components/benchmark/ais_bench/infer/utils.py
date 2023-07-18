@@ -125,7 +125,7 @@ def get_dump_relative_paths(output_dir, timestamp):
     dump_relative_paths = []
     for subdir, _, files in os.walk(dump_dir):
         if len(files) > 0:
-            dump_relative_paths.append((dump_dir, os.path.relpath(subdir, dump_dir)))
+            dump_relative_paths.append(os.path.relpath(subdir, dump_dir))
     return dump_relative_paths
 
 
@@ -137,6 +137,11 @@ def get_msaccucmp_path():
     return msaccucmp_path if os.path.exists(msaccucmp_path) else None
 
 
+def make_dirs(path):
+    ret = -1
+    if not os.path.exists(path):
+        ret = os.makedirs(path, 0o755)
+    return ret
 
 
 def create_tmp_acl_json(acl_json_path):
@@ -150,15 +155,16 @@ def create_tmp_acl_json(acl_json_path):
     tmp_acl_json_path = "/".join(acl_json_path_list)
 
     # change acl_json_dict
-    if acl_json_dict.get("dump") is not None:
-        real_dump_path = acl_json_dict["dump"].get("dump_path")
-        if real_dump_path is not None:
-            dump_path_list = real_dump_path.split("/")
-            if dump_path_list[-1] == "":
-                dump_path_list.pop()
-            dump_path_list.append(str(uuid.uuid4()))
-            tmp_dump_path = "/".join(dump_path_list)
-            acl_json_dict["dump"]["dump_path"] = tmp_dump_path
+    if acl_json_dict.get("dump") is not None and acl_json_dict["dump"].get("dump_path") is not None:
+        real_dump_path = acl_json_dict["dump"]["dump_path"]
+        dump_path_list = real_dump_path.split("/")
+        if dump_path_list[-1] == "":
+            dump_path_list.pop()
+        dump_path_list.append(str(uuid.uuid4()))
+        tmp_dump_path = "/".join(dump_path_list)
+        acl_json_dict["dump"]["dump_path"] = tmp_dump_path
+        if make_dirs(tmp_dump_path) != 0:
+            tmp_dump_path = None
 
     if tmp_acl_json_path is not None:
         with open(tmp_acl_json_path, "w") as f:
@@ -167,7 +173,7 @@ def create_tmp_acl_json(acl_json_path):
     return tmp_acl_json_path, real_dump_path, tmp_dump_path
 
 
-def convert(output_dir, timestamp): # convert bin file in src path and output the npy file in dest path
+def convert_helper(output_dir, timestamp): # convert bin file in src path and output the npy file in dest path
     '''
     before:
     output_dir--|--2023***2--...  (原来可能存在的时间戳路径)
@@ -193,7 +199,7 @@ def convert(output_dir, timestamp): # convert bin file in src path and output th
                 logger.warning(f"convert failed: cannot convert binfiles in {real_dump_path} to {dump_npy_path}")
 
 
-def transfer_remove(src_dir, dest_dir): 
+def move_subdir(src_dir, dest_dir): 
     # move the subdir in src_dir to dest_dir return dest_dir/subdir
     # and remove the src_dir
     '''
@@ -213,5 +219,4 @@ def transfer_remove(src_dir, dest_dir):
     if len(subdirs) != 1:
         return None
     shutil.move(os.path.join(src_dir, subdirs[0]), os.path.join(dest_dir, subdirs[0]))
-    os.rmdir(src_dir)
     return dest_dir, subdirs[0]

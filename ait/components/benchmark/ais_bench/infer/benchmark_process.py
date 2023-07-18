@@ -40,8 +40,7 @@ from ais_bench.infer.utils import logger
 from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
 from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                                    get_fileslist_from_dir, list_split, list_share, logger,
-                                   save_data_to_files, get_dump_paths, get_msaccucmp_path, get_dump_npy_path,
-                                   create_tmp_acl_json, transfer_remove, convert)
+                                   save_data_to_files,  create_tmp_acl_json, move_subdir, convert_helper)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
 
@@ -261,8 +260,14 @@ def get_energy_consumption(npu_id):
     return power
 
 
-
-
+def convert(tmp_acl_json_path, real_dump_path, tmp_dump_path):
+    if real_dump_path is not None and tmp_dump_path is not None:
+        output_dir, timestamp = move_subdir(tmp_dump_path, real_dump_path)
+        convert_helper(output_dir, timestamp)
+    if tmp_dump_path is not None:
+        os.rmdir(tmp_dump_path)
+    if tmp_acl_json_path is not None:
+        os.remove(tmp_acl_json_path)
 
 
 def main(args, index=0, msgq=None, device_list=None):
@@ -273,7 +278,6 @@ def main(args, index=0, msgq=None, device_list=None):
     if args.debug:
         logger.setLevel(logging.DEBUG)
 
-    
     acl_json_path = get_acl_json_path(args)
     tmp_acl_json_path = None
     if args.dump_npy and acl_json_path is not None:
@@ -371,10 +375,8 @@ def main(args, index=0, msgq=None, device_list=None):
 
     session.finalize()
 
-    if args.dump_npy and acl_json_path is not None and real_dump_path is not None and tmp_dump_path is not None:
-        output_dir, timestamp = transfer_remove(tmp_dump_path, real_dump_path)
-        convert(output_dir, timestamp)
-
+    if args.dump_npy and acl_json_path is not None:
+        convert(tmp_acl_json_path, real_dump_path, tmp_dump_path)
 
 
 def print_subproces_run_error(value):
