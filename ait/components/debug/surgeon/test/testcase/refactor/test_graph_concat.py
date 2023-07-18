@@ -81,7 +81,7 @@ class TestGraphExtract(unittest.TestCase):
             self.graph, self.graph,
             [("output", "input")]
         )
-        print(self.combined_graph.next_map)
+
         self.assertEqual(combined_graph, self.combined_graph)
 
 
