@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
@@ -35,10 +34,10 @@ from auto_optimizer import OnnxGraph
 from msquickcmp.atc.atc_utils import AtcUtils
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException, get_shape_to_directory_name
+from msquickcmp.common.convert import convert_bin_dump_data_to_npy
 from msquickcmp.net_compare import analyser
 from msquickcmp.net_compare.net_compare import NetCompare
 from msquickcmp.npu.npu_dump_data import NpuDumpData
-from msquickcmp.npu.npu_dump_data_bin2npy import data_convert
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.npu.om_parser import OmParser
 from msquickcmp.accuracy_locat import accuracy_locat as al
@@ -153,7 +152,8 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
     expect_net_output_node = npu_dump.get_expect_output_name()
 
     # convert data from bin to npy if --convert is used
-    npu_dump_path = data_convert(npu_dump_data_path, npu_net_output_data_path, args)
+    if args.bin2npy:
+        npu_dump_path = convert_bin_dump_data_to_npy(npu_dump_data_path, npu_net_output_data_path, args.cann_path)
 
     # generate dump data by golden model
     golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_path, npu_dump.om_parser)

@@ -230,8 +230,8 @@ class OnnxGraph(BaseGraph):
         return OnnxGraph.parse(new_model_save_path)
 
     def extract_subgraph(self,
-                         start_node_names: List[str],
-                         end_node_names: List[str],
+                         start_node_names: List[str] = None,
+                         end_node_names: List[str] = None,
                          subgraph_path: str = None,
                          is_check_subgraph: bool = False,
                          input_shape: str = None,
@@ -242,6 +242,17 @@ class OnnxGraph(BaseGraph):
             self.infer_shape()
         except Exception as exp:
             logger.debug("Infer shape failed: %s", exp)
+
+        # construct start nodes and/or end nodes set by default
+        if not start_node_names:
+            start_node_names = []
+            for inp in self.inputs:
+                start_node_names += [node.name for node in self.get_next_nodes(inp.name)]
+
+        if not end_node_names:
+            end_node_names = []
+            for out in self.outputs:
+                end_node_names.append(self.get_prev_node(out.name).name)
 
         # parse input info from input shape and input dtype
         input_shape_dict = self._parse_input_info(input_shape)
@@ -295,6 +306,14 @@ class OnnxGraph(BaseGraph):
                     input_name_list.append(inp)
                 elif self.get_node(inp, PlaceHolder) and inp not in input_name_list:
                     value_infos.append(self.get_node(inp, PlaceHolder))
+
+        # remove isolated inputs
+        valid_inputs = [
+            inp
+            for node in self.nodes
+            for inp in node.inputs
+        ]
+        input_name_list = list(set(valid_inputs) & set(input_name_list))
 
         # check input shape and input dtype
         self._check_input_shape_and_dtype(input_name_list, input_shape_dict, input_dtype_dict)
