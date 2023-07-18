@@ -377,7 +377,9 @@ class OnnxGraph(BaseGraph):
         # add value_infos
         g.value_infos.extend(graph1.value_infos)
         g.value_infos.extend([
-            value_info for value_info in graph2.value_infos if value_info not in io_map_g2_ins
+            value_info
+            for value_info in graph2.value_infos
+            if value_info not in io_map_g2_ins
         ])
 
         return g
