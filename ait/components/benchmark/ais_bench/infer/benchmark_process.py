@@ -246,7 +246,7 @@ def get_legal_json_content(acl_json_path):
     profile_dict = json_dict.get("profiler")
     for _, option_cmd in enumerate(ACL_JSON_CMD_LIST):
         if profile_dict.get(option_cmd) is not None and profile_dict.get(option_cmd) != "":
-            cmd_dict.update({"--" + option_cmd.replace('_','-'): profile_dict.get(option_cmd)})
+            cmd_dict.update({"--" + option_cmd.replace('_', '-'): profile_dict.get(option_cmd)})
             if (option_cmd == "sys_hardware_mem_freq"):
                 cmd_dict.update({"--sys-hardware-mem": "on"})
             if (option_cmd == "sys_interconnection_freq"):
