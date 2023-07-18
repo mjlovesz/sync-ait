@@ -17,7 +17,7 @@ import warnings
 import os
 
 from typing import List, Dict, Union, Sequence, Optional, Tuple, Set
-from collections import deque
+from collections import deque, defaultdict
 
 import onnx
 import numpy as np
@@ -381,6 +381,18 @@ class OnnxGraph(BaseGraph):
             for value_info in graph2.value_infos
             if value_info not in io_map_g2_ins
         ])
+
+        # update g.node_map
+        g.node_map.update({inp.name: inp for inp in g.inputs})
+        g.node_map.update({out.name: out for out in g.outputs})
+        g.node_map.update({node.name: node for node in g.nodes})
+
+        # update g.prev_map and next_map
+        for node in g.nodes:
+            for inp in node.inputs:
+                g.next_map[inp].append(node)
+            for out in node.outputs:
+                g.prev_map[out] = node
 
         return g
 
