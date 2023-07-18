@@ -138,9 +138,13 @@ def get_msaccucmp_path():
 
 
 def make_dirs(path):
-    ret = -1
+    ret = 0
     if not os.path.exists(path):
-        ret = os.makedirs(path, 0o755)
+        try:
+            os.makedirs(path, 0o755)
+        except Exception as e:
+            logger.warning(f"make dir {path} failed")
+            ret = -1
     return ret
 
 
@@ -165,6 +169,8 @@ def create_tmp_acl_json(acl_json_path):
         acl_json_dict["dump"]["dump_path"] = tmp_dump_path
         if make_dirs(tmp_dump_path) != 0:
             tmp_dump_path = None
+            os.remove(tmp_acl_json_path)
+            tmp_acl_json_path = None
 
     if tmp_acl_json_path is not None:
         with open(tmp_acl_json_path, "w") as f:
