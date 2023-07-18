@@ -279,7 +279,7 @@ class OnnxGraph(BaseGraph):
         return g
 
     @classmethod
-    def concat_graphs(cls,
+    def concat_graph(cls,
                       graph1: 'OnnxGraph',
                       graph2: 'OnnxGraph',
                       io_map: List[Tuple[str, str]],

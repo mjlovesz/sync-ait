@@ -14,6 +14,8 @@
 import os
 import pathlib
 
+from typing import List, Tuple
+
 import click
 from click_aliases import ClickAliasedGroup
 from click.exceptions import UsageError
@@ -50,6 +52,10 @@ from auto_optimizer.ait_options import (
     opt_processes,
     opt_subgraph_input_shape,
     opt_subgraph_input_dtype,
+    opt_graph1,
+    opt_graph2,
+    opt_io_map,
+    opt_combined_graph_path
 )
 
 
@@ -243,6 +249,54 @@ def command_extract(
             output_model, is_check_subgraph,
             subgraph_input_shape, subgraph_input_dtype
         )
+    except ValueError as err:
+        logger.error(err)
+
+
+@cli.command(
+    'concatenate',
+    aliases=['concat'],
+    short_help='Concatenate two graphs into one',
+    context_settings=CONTEXT_SETTINGS,
+    no_args_is_help=True
+)
+@opt_graph1
+@opt_graph2
+@opt_io_map
+@opt_combined_graph_path
+def command_concatenate(
+    graph1: str,
+    graph2: str,
+    io_map: str,
+    combined_graph_path: str
+) -> None:
+    if not check_input_path(graph1):
+        raise ValueError(f"Invalid graph1: {graph1}")
+    if not check_input_path(graph2):
+        raise ValueError(f"Invalid graph2: {graph2}")
+
+    if not check_output_model_path(combined_graph_path):
+        raise ValueError(f"Invalid output: {combined_graph_path}")
+
+    graph1_model = pathlib.Path(os.path.abspath(graph1))
+    graph2_model = pathlib.Path(os.path.abspath(graph2))
+    onnx_graph1 = OnnxGraph.parse(graph1_model)
+    onnx_graph2 = OnnxGraph.parse(graph2_model)
+
+    # parse io_map
+    # out0:in0;out1:in1...
+    io_map_list = [
+        (elem[0], elem[1])
+        for pair in io_map.strip().split(";")
+        for elem in pair.strip().split(":")
+    ]
+
+    try:
+        combined_graph = OnnxGraph.concat_graph(
+            onnx_graph1, onnx_graph2,
+            io_map_list
+        )
+        combined_graph.save(combined_graph_path)
     except ValueError as err:
         logger.error(err)
 
