@@ -102,9 +102,9 @@ ait benchmark --om-model /home/model/resnet50_v1.om --output ./output --dump 1
 
     - 若命令存在，则使用该命令进行性能数据采集、解析并导出为可视化的timeline和summary文件。
     - 若命令不存在，则调用acl.json文件进行性能数据采集。
-    - 若环境配置了GE_PROFILING_TO_STD_OUT=1，则使用--profiler参数采集性能数据时调用的是acl.json文件。
+    - 若环境配置了NO_MSPROF_MODE=1，则使用--profiler参数采集性能数据时调用的是acl.json文件。
 
-- msprof命令不存在或环境配置了GE_PROFILING_TO_STD_OUT=1情况下，采集的性能数据文件未自动解析。参考《[CANN 开发工具指南/数据解析与导出/Profiling数据导出](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/devtools/auxiliarydevtool/atlasprofiling_16_0100.html)》，将性能数据解析并导出为可视化的timeline和summary文件。
+- msprof命令不存在或环境配置了NO_MSPROF_MODE=1情况下，采集的性能数据文件未自动解析。参考《[CANN 开发工具指南/数据解析与导出/Profiling数据导出](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/devtools/auxiliarydevtool/atlasprofiling_16_0100.html)》，将性能数据解析并导出为可视化的timeline和summary文件。
 - 更多性能数据采集参数介绍请参见《[CANN 开发工具指南/性能数据采集（msprof命令行方式）](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/devtools/auxiliarydevtool/atlasprofiling_16_0041.html)》。
 
 ### 2.2 `--profiler` `--dump` 和 `--acl-json-path` 混合使用说明

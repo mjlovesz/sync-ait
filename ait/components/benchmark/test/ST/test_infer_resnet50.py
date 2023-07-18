@@ -1350,10 +1350,10 @@ class TestClass():
         log_path = os.path.join(output_path, "profiler.log")
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
 
-        # when GE_PROFILING_TO_STD_OUT=0
-        env_label = os.getenv('GE_PROFILING_TO_STD_OUT', 'null')
+        # when NO_MSPROF_MODE=0
+        env_label = os.getenv('NO_MSPROF_MODE', 'null')
         if env_label != 'null':
-            del os.environ['GE_PROFILING_TO_STD_OUT']
+            del os.environ['NO_MSPROF_MODE']
         cmd = "{} --model {} --device {} --profiler True --output {} > {}" \
             .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, output_path, log_path)
         logger.info("run cmd:{}".format(cmd))
@@ -1373,8 +1373,8 @@ class TestClass():
         else:
             assert label_is_exist is False
 
-        # when GE_PROFILING_TO_STD_OUT=1
-        os.environ['GE_PROFILING_TO_STD_OUT'] = "1"
+        # when NO_MSPROF_MODE=1
+        os.environ['NO_MSPROF_MODE'] = "1"
         label_is_exist = False
         os.remove(log_path)
         shutil.rmtree(output_path)
@@ -1389,14 +1389,14 @@ class TestClass():
 
         with open(log_path) as f:
             for line in f:
-                if "find GE_PROFILING_TO_STD_OUT set" in line:
+                if "find NO_MSPROF_MODE set" in line:
                     label_is_exist = True
                     break
 
         assert label_is_exist is True
 
         shutil.rmtree(output_path)
-        del os.environ['GE_PROFILING_TO_STD_OUT']
+        del os.environ['NO_MSPROF_MODE']
 
 
 if __name__ == '__main__':

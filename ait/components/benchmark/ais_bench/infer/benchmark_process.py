@@ -593,10 +593,10 @@ def benchmark_process(args:BenchMarkArgsAdapter):
         msprof_bin = shutil.which('msprof')
         if msprof_bin is None:
             logger.info("find no msprof continue use acl.json mode, result won't be parsed as csv")
-        elif os.getenv('GE_PROFILING_TO_STD_OUT') == '1':
-            logger.info("find GE_PROFILING_TO_STD_OUT set, continue use acl.json mode, result won't be parsed as csv")
-            logger.warning("inorder to get profiling datas during infer, unset GE_PROFILING_TO_STD_OUT")
-            os.environ.pop('GE_PROFILING_TO_STD_OUT', None)
+        elif os.getenv('NO_MSPROF_MODE') == '1':
+            logger.info("find NO_MSPROF_MODE set, continue use acl.json mode, result won't be parsed as csv")
+            logger.warning("inorder to get profiling datas during infer, unset NO_MSPROF_MODE")
+            os.environ.pop('NO_MSPROF_MODE', None)
         else:
             ret = msprof_run_profiling(args, msprof_bin)
             return ret

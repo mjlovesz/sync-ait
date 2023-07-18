@@ -57,7 +57,7 @@ class TestClass:
             "sys_interconnection_freq": "50",
             "dvpp_freq": "50"
         }}
-        os.environ.pop('GE_PROFILING_TO_STD_OUT', None)
+        os.environ.pop('NO_MSPROF_MODE', None)
         json_path = os.path.realpath("acl_test.json")
         self.generate_acl_json(json_path, output_json_dict)
         cmd_dict = get_legal_json_content(json_path)
