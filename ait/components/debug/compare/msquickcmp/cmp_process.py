@@ -134,12 +134,14 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
 
     expect_net_output_node = npu_dump.get_expect_output_name()
 
-    # convert data from bin to npy if --convert is used
-    if args.bin2npy:
-        npu_dump_path = convert_bin_dump_data_to_npy(npu_dump_data_path, npu_net_output_data_path, args.cann_path)
+    # convert data from bin to npy if --convert is used, or if custom_op is not empty
+    if args.bin2npy or args.custom_op != "":
+        npu_dump_npy_path = convert_bin_dump_data_to_npy(npu_dump_data_path, npu_net_output_data_path, args.cann_path)
+    else:
+        npu_dump_npy_path = ""
 
     # generate dump data by golden model
-    golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_path, npu_dump.om_parser)
+    golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_npy_path, npu_dump.om_parser)
     golden_net_output_info = golden_dump.get_net_output_info()
 
     # if it's dynamic batch scenario, golden data files should be renamed
@@ -181,14 +183,11 @@ def check_and_run(args:CmpArgsAdapter, use_cli:bool):
         utils.check_file_or_directory_path(args.weight_path)
     utils.check_device_param_valid(args.device)
     utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
-    utils.check_convert_is_valid_used(args.dump, args.bin2npy)
+    utils.check_convert_is_valid_used(args.dump, args.bin2npy, args.custom_op)
     utils.check_locat_is_valid(args.dump, args.locat)
     time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     args.out_path = original_out_path
-
-    if args.custom_op != "":
-        args.bin2npy = True
 
     # convert the om model to json
     output_json_path = AtcUtils(args).convert_model_to_json()
