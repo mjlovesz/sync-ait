@@ -249,32 +249,32 @@ class OnnxGraph(BaseGraph):
         # add prefixes to all names
         for node in g.nodes:
             if node.name in name_map:
-                node.name = name_map[node.name]
+                node.name = name_map.get(node.name)
             for idx, inp in enumerate(node.inputs):
                 if inp in name_map:
-                    node.inputs[idx] = name_map[inp]
+                    node.inputs[idx] = name_map.get(inp)
             for idx, out in enumerate(node.outputs):
                 if out in name_map:
-                    node.outputs[idx] = name_map[out]
+                    node.outputs[idx] = name_map.get(out)
 
         for inp in g.inputs:
             if inp.name in name_map:
-                inp.name = name_map[inp.name]
+                inp.name = name_map.get(inp.name)
 
         for inp in g.inputs:
             if inp.name in name_map:
-                inp.name = name_map[inp.name]
+                inp.name = name_map.get(inp.name)
         for out in g.outputs:
             if out.name in name_map:
-                out.name = name_map[out.name]
+                out.name = name_map.get(out.name)
 
         for ini in g.initializers:
             if ini.name in name_map:
-                ini.name = name_map[ini.name]
+                ini.name = name_map.get(ini.name)
 
         for vi in g.value_infos:
             if vi.name in name_map:
-                vi.name = name_map[vi.name]
+                vi.name = name_map.get(vi.name)
 
         return g
 
@@ -359,7 +359,7 @@ class OnnxGraph(BaseGraph):
             node = g.nodes[node_idx]
             for idx, name_ in enumerate(node.inputs):
                 if name_ in reversed_io_map:
-                    node.inputs[idx] = reversed_io_map[name_]
+                    node.inputs[idx] = reversed_io_map.get(name_)
 
         # add inputs and outputs
         g.inputs.extend(g1.inputs)
