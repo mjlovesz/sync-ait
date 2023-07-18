@@ -36,7 +36,7 @@ def prefixspan(dataset, top_k=5, frq=2):
     # print(ps.frequent(frq, generator=True))
     # print(ps.topk(top_k, generator=True))
 
-    print(f'Top({top_k}): ', l1)
+    # print(f'Top({top_k}): ', l1)
     # print(f'frequent({frq}): ', freq)
     return l1, freq
 

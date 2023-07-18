@@ -99,7 +99,7 @@ class SeqHandler:
         return data
 
     @staticmethod
-    def split_api_seqs(seqs):
+    def _split_api_seqs(seqs):
         import random
 
         final_rst = []
@@ -120,44 +120,22 @@ class SeqHandler:
         return final_rst
 
     @staticmethod
-    def cluster_api_seqs(seqs):
-
-        # l1, support_data1 = apriori(rst, min_support=0.5)
-        # print('L(0.5): ', l1)
-        # id_dict = dict(zip(GLOBAl_ID_DICT.values(), GLOBAl_ID_DICT.keys()))
-        # for vals in l1:
-        #     for val in vals:
-        #         d_str = []
-        #         for idx in val:
-        #             d_str.append(id_dict[idx])
-        #         print('-->'.join(d_str))
-        #
-        # print('supportData(0.7): ', support_data1)
-        result = []
-        l1, freq = prefixspan(seqs, 10)
-        for item in l1:
-            seq = item[1]
-            if len(seq) > 1:
-                result.append(seq)
-        return result
-
-    @staticmethod
     def debug_string(seqs, idx_dict=None):
         if GLOBAl_ID_DICT:
             idx_dict = dict(zip(GLOBAl_ID_DICT.values(), GLOBAl_ID_DICT.keys()))
 
         assert idx_dict
         rst_str = 'The sequences result are: \n'
-        for seq in seqs:
+        for i, seq in enumerate(seqs):
             d_str = []
             for idx in seq:
                 d_str.append(idx_dict[idx])
-            rst_str += '-->'.join(d_str) + '\n'
+            rst_str += str(i) + '. ' + '-->'.join(d_str) + '\n'
 
         logger.info(f'{rst_str}')
 
     @staticmethod
-    def dedup_api_seqs(seqs):
+    def _dedup_api_seqs(seqs):
         import re
         for seq_desc in seqs:
             cnt = len(seq_desc.api_seq)
@@ -185,7 +163,7 @@ class SeqHandler:
                         rst[(i, j)] = cnt
 
     @staticmethod
-    def dig_api_seqs(seqs):
+    def mining_one_seq(seqs):
         def _len_two_lists(arr1, arr2):
             if not arr1 or not arr2:
                 return 0
@@ -196,7 +174,6 @@ class SeqHandler:
 
         result = []
         for seq in seqs:
-            sub_rst = []
             seq_len = len(seq)
 
             max_len = 1
@@ -211,13 +188,34 @@ class SeqHandler:
             for i in range(0, seq_len - 1):
                 for j in range(i + 1, seq_len):
                     tmp = _len_two_lists(arrays[i], arrays[j])
-                    if tmp > max_len:
-                        # max_len = tmp
-                        sub_rst = arrays[i][0:tmp]
+                    if tmp <= max_len:
+                        continue
 
-                        if sub_rst:
-                            result.append(sub_rst)
+                    # max_len = tmp
+                    sub_rst = arrays[i][0:tmp]
 
+                    if sub_rst:
+                        result.append(sub_rst)
+        return result
+
+    @staticmethod
+    def mining_api_seqs(seqs):
+        result = []
+
+        # min_support = 0.2
+        # l1, support_data1 = apriori(seqs, min_support)
+        # print(f'L({min_support}): ', l1)
+        # for vals in l1:
+        #     for seq in vals:
+        #         if len(seq) > 1:
+        #             result.append(seq)
+
+        top_k = 20
+        l1, freq = prefixspan(seqs, top_k)
+        for item in l1:
+            seq = item[1]
+            if len(seq) > 1:
+                result.append(seq)
         return result
 
     def format_api_seqs(self, seqs):
@@ -230,38 +228,33 @@ class SeqHandler:
         return rst
 
 
-def handle_api_seqs(api_seqs):
-    handler = SeqHandler()
-    seqs = handler.format_api_seqs(api_seqs)
-
-    dup_seqs = seq_handler.dig_api_seqs(seqs)
+def mining_api_seqs(seqs, idx_seq_dict=None):
     all_seqs = set()
-    for seq in dup_seqs:
-        if len(set(seq)) == len(seq):
-            all_seqs.add(tuple(seq))
 
-    dig_seqs = handler.cluster_api_seqs(seqs)
-    for seq in dig_seqs:
-        all_seqs.add(tuple(seq))
+    handler = SeqHandler()
+    if not idx_seq_dict:
+        seqs = handler.format_api_seqs(seqs)
 
-    seq_handler.debug_string(all_seqs)
+    dup_apis = handler.mining_one_seq(seqs)
+    for apis in dup_apis:
+        if len(set(apis)) == len(apis):
+            all_seqs.add(tuple(apis))
 
+    dig_apis = handler.mining_api_seqs(seqs)
+    for apis in dig_apis:
+        all_seqs.add(tuple(apis))
+
+    handler.debug_string(all_seqs, idx_seq_dict)
     return all_seqs
 
 
+def load_api_seqs(seqs_file, seqs_idx_file):
+    seqs = SeqHandler.load_api_seqs(seqs_file)
+    idx_seq_dict = SeqHandler.load_api_seqs(seqs_idx_file)
+
+    return seqs, idx_seq_dict
+
+
 if __name__ == "__main__":
-    seq_handler = SeqHandler()
-    dataset = seq_handler.load_api_seqs('../../model/seqs.bin')
-    idx_seq_dict = seq_handler.load_api_seqs('../../model/seqs_idx.bin')
-
-    dup_apis = seq_handler.dig_api_seqs(dataset)
-    all_apis = set()
-    for apis in dup_apis:
-        if len(set(apis)) == len(apis):
-            all_apis.add(tuple(apis))
-
-    dig_apis = seq_handler.cluster_api_seqs(dataset)
-    for apis in dig_apis:
-        all_apis.add(tuple(apis))
-
-    seq_handler.debug_string(all_apis, idx_seq_dict)
+    api_seqs, idx_seq_rels = load_api_seqs('../../model/seqs.bin', '../../model/seqs_idx.bin')
+    mining_api_seqs(api_seqs, idx_seq_rels)
