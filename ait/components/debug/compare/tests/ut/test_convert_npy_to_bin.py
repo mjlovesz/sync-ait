@@ -1,24 +1,38 @@
+import unittest
 import os
 import numpy as np
-from tempfile import TemporaryDirectory
+import argparse
 from msquickcmp.common.convert import convert_npy_to_bin
 
-def test_convert_npy_to_bin():
-    # create a temporary npy file for testing
-    test_data = np.array([1, 2, 3])
-    np.save('test.npy', test_data)
+class TestConvertNpyToBin(unittest.TestCase):
+    def setUp(self):
+        self.npy_path = 'convert_test.npy'
+        self.bin_path = 'convert_test.bin'
+        self.args = argparse.Namespace(input_path=self.npy_path)
 
-    # call the function to convert npy to bin
-    bin_file_path = convert_npy_to_bin('test.npy')
+    def tearDown(self):
+        if os.path.exists(self.npy_path):
+            os.remove(self.npy_path)
+        if os.path.exists(self.bin_path):
+            os.remove(self.bin_path)
 
-    # check if the bin file exists
-    assert os.path.exists(bin_file_path)
+    def test_convert_npy_to_bin(self):
+        # create a test npy file
+        npy_data = np.array([1, 2, 3])
+        np.save(self.npy_path, npy_data)
 
-    # read the generated bin file and compare with the expected data
-    with open(bin_file_path, 'rb') as f:
-        bin_data = np.fromfile(f, dtype=np.int32)
-    #assert np.array_equal(bin_data, test_data)
+        # call the function to convert npy to bin
+        convert_npy_to_bin(self.args.input_path)
 
-    # clean up the temporary files
-    os.remove('test.npy')
-    os.remove(bin_file_path)
+        # check if the bin file is generated
+        assert os.path.exists(self.bin_path)
+
+    def test_convert_npy_to_bin_file_not_found(self):
+        with self.assertRaises(FileNotFoundError):
+            convert_npy_to_bin('nonexistent_file.npy')
+
+    def test_convert_npy_to_bin_non_npy_file(self):
+        input_path = 'test.txt'
+        outputs = convert_npy_to_bin(input_path)
+        self.assertEqual(outputs, input_path)
+
