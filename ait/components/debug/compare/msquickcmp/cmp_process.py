@@ -27,7 +27,6 @@ import time
 import subprocess
 import onnxruntime
 import acl
-import numpy as np
 
 from auto_optimizer.graph_refactor import Node
 from auto_optimizer import OnnxGraph
@@ -35,6 +34,7 @@ from msquickcmp.atc.atc_utils import AtcUtils
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException, get_shape_to_directory_name
 from msquickcmp.common.convert import convert_bin_dump_data_to_npy
+from msquickcmp.common.convert import convert_npy_to_bin
 from msquickcmp.net_compare import analyser
 from msquickcmp.net_compare.net_compare import NetCompare
 from msquickcmp.npu.npu_dump_data import NpuDumpData
@@ -74,7 +74,7 @@ def _correct_the_wrong_order(left_index, right_index, golden_net_output_info):
         golden_net_output_info[left_index] = golden_net_output_info[right_index]
         golden_net_output_info[right_index] = tmp
         utils.logger.info("swap the {} and {} item in golden_net_output_info!"
-                             .format(left_index, right_index))
+                          .format(left_index, right_index))
 
 
 def _check_output_node_name_mapping(original_net_output_node, golden_net_output_info):
@@ -91,23 +91,7 @@ def _check_output_node_name_mapping(original_net_output_node, golden_net_output_
             break
 
 
-def _convert_npy_to_bin(args):
-    input_initial_path = args.input_path.split(",")
-    for input_item in input_initial_path:
-        input_item_path = os.path.realpath(input_item)
-        if input_item_path.endswith('.npy'):
-            bin_item = input_item[:-4] + '.bin'
-            bin_path = input_item_path[:-4] + '.bin'
-            npy_data = np.load(input_item_path)
-            if os.path.islink(bin_path):
-                os.unlink(bin_path)
-            if os.path.exists(bin_path):
-                os.remove(bin_path)
-            npy_data.tofile(bin_path)
-            args.input_path = args.input_path.replace(input_item, bin_item)
-
-
-def cmp_process(args:CmpArgsAdapter, use_cli:bool):
+def cmp_process(args: CmpArgsAdapter, use_cli: bool):
     """
     Function Description:
         main process function
@@ -118,13 +102,14 @@ def cmp_process(args:CmpArgsAdapter, use_cli:bool):
     args.weight_path = os.path.realpath(args.weight_path) if args.weight_path else None
     args.offline_model_path = os.path.realpath(args.offline_model_path)
     args.cann_path = os.path.realpath(args.cann_path)
+    args.input_path = convert_npy_to_bin(args.input_path)
     try:
         check_and_run(args, use_cli)
     except utils.AccuracyCompareException as error:
         raise error
 
 
-def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
+def run(args, input_shape, output_json_path, original_out_path, use_cli: bool):
     if input_shape:
         args.input_shape = input_shape
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
@@ -151,12 +136,14 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
 
     expect_net_output_node = npu_dump.get_expect_output_name()
 
-    # convert data from bin to npy if --convert is used
-    if args.bin2npy:
-        npu_dump_path = convert_bin_dump_data_to_npy(npu_dump_data_path, npu_net_output_data_path, args.cann_path)
+    # convert data from bin to npy if --convert is used, or if custom_op is not empty
+    if args.bin2npy or args.custom_op != "":
+        npu_dump_npy_path = convert_bin_dump_data_to_npy(npu_dump_data_path, npu_net_output_data_path, args.cann_path)
+    else:
+        npu_dump_npy_path = ""
 
     # generate dump data by golden model
-    golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_path, npu_dump.om_parser)
+    golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_npy_path, npu_dump.om_parser)
     golden_net_output_info = golden_dump.get_net_output_info()
 
     # if it's dynamic batch scenario, golden data files should be renamed
@@ -173,7 +160,7 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli:bool):
     # Check and correct the mapping of net output node name.
     if len(expect_net_output_node) == 1:
         _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
-    if not args.locat:    
+    if not args.locat:
         invalid_rows, _ = analyser.Analyser(args.out_path)()
     else:
         invalid_rows, _ = analyser.Analyser(args.out_path)('ALL_INVALID')
@@ -191,22 +178,18 @@ def print_advisor_info(out_path):
                 utils.logger.info(line.strip())
 
 
-def check_and_run(args:CmpArgsAdapter, use_cli:bool):
+def check_and_run(args: CmpArgsAdapter, use_cli: bool):
     utils.check_file_or_directory_path(args.model_path)
     utils.check_file_or_directory_path(args.offline_model_path)
     if args.weight_path:
         utils.check_file_or_directory_path(args.weight_path)
     utils.check_device_param_valid(args.device)
     utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
-    utils.check_convert_is_valid_used(args.dump, args.bin2npy)
+    utils.check_convert_is_valid_used(args.dump, args.bin2npy, args.custom_op)
     utils.check_locat_is_valid(args.dump, args.locat)
     time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     args.out_path = original_out_path
-    _convert_npy_to_bin(args)
-
-    if args.custom_op != "":
-        args.bin2npy = True
 
     # convert the om model to json
     output_json_path = AtcUtils(args).convert_model_to_json()
@@ -242,24 +225,24 @@ def find_accuracy_interval(args, endnode_name, input_shape):
     """
     if input_shape:
         args.out_path = os.path.join(args.out_path, get_shape_to_directory_name(input_shape))
-    
-    #读入onnx数据文件的路径
+
+    # 读入onnx数据文件的路径
     onnx_file_path = 'dump_data/onnx'
     onnx_data_path = os.path.join(args.out_path, onnx_file_path)
 
-    #读入onnx模型
+    # 读入onnx模型
     og = OnnxGraph.parse(args.model_path)
     og.infer_shape()
 
-    #获取精度异常节点
+    # 获取精度异常节点
     endnode = og.get_node(endnode_name, node_type=Node)
 
     output_file = './accuracy_location_log.txt'
     output_file = os.path.realpath(output_file)
     error_node_list = []
-    #验证单层算子是否有问题
+    # 验证单层算子是否有问题
     node_interval = [endnode, endnode]
-    #单层算子无问题
+    # 单层算子无问题
     if not subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
         for node in og.nodes:
             if al.check_input_node(og, node):
@@ -282,8 +265,8 @@ def subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
     utils.logger.info("Extracting model Sucess!")
     utils.logger.info("Start using atc to convert onnx to om file")
     subgraph_om_file = os.path.join(args.out_path, 'tmp_for_accuracy_locat')
-    atc_cmd = ["atc", "--framework=5", "--soc_version=" + acl.get_soc_name(), "--model=" + subgraph_onnx_file,\
-                "--output=" + subgraph_om_file]
+    atc_cmd = ["atc", "--framework=5", "--soc_version=" + acl.get_soc_name(), "--model=" + subgraph_onnx_file, \
+               "--output=" + subgraph_om_file]
     subprocess.run(atc_cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     utils.logger.info("atc conversion Success!")
     utils.logger.info("Start to loading input data")
@@ -312,7 +295,7 @@ def subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     cmg_args = CmpArgsAdapter(subgraph_onnx_file, os.path.join(args.out_path, "tmp_for_accuracy_locat.om"),
                               "", bin_files_path, args.cann_path, tmp_out_path, "", args.device,
-                              "", "", False, "", True, False, custom_op = args.custom_op, locat = True)
+                              "", "", False, "", True, False, custom_op=args.custom_op, locat=True)
     output_json_path = AtcUtils(cmg_args).convert_model_to_json()
     utils.logger.info("Start to run comparision")
     res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
@@ -343,7 +326,7 @@ def bin_divide(og, node_interval, args, onnx_data_path, input_shape):
     low = 0
     high = len(satisfied_nodes) - 1
 
-    #二分
+    # 二分
     while low < high:
         mid = (low + high + 1) // 2
         input_node_interval = [satisfied_nodes[mid], endnode]
