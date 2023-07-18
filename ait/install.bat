@@ -1,0 +1,133 @@
+::  Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+::
+::  Licensed under the Apache License, Version 2.0 (the "License");
+::  you may not use this file except in compliance with the License.
+::  You may obtain a copy of the License at
+::
+::  http://www.apache.org/licenses/LICENSE-2.0
+::
+::  Unless required by applicable law or agreed to in writing, software
+::  distributed under the License is distributed on an "AS IS" BASIS,
+::  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+::  See the License for the specific language governing permissions and
+::  limitations under the License.
+
+@ECHO OFF
+
+SET CURRENT_DIR=%~dp0
+SET arg_force_reinstall=
+SET full_install=
+SET llvm_path=
+SET mingw_w64_path=
+SET skip_check_cert=
+
+SET only_transplt=
+SET uninstall=
+SET all_uninstall=
+
+:loop
+IF NOT "%1"=="" (
+    IF "%1"=="--transplt" (
+        SET only_transplt=1
+        SHIFT
+    ) ELSE IF "%1"=="--full" (
+        SET full_install=--full
+        SHIFT
+    ) ELSE IF "%1"=="-k"  (
+        SET skip_check_cert=-k
+        SHIFT
+    ) ELSE IF "%1"=="--force-reinstall"  (
+        SET arg_force_reinstall=--force-reinstall
+        SHIFT
+    ) ELSE IF "%1"=="--uninstall"  (
+        SET uninstall=1
+        SHIFT
+    ) ELSE IF "%1"=="-y"  (
+        SET all_uninstall=-y
+        SHIFT
+    ) ELSE IF "%1"=="--llvm"  (
+        SET llvm_path=--llvm "%~2"
+        SHIFT & SHIFT
+    ) ELSE IF "%1"=="--mingw"  (
+        SET mingw_w64_path=--mingw "%~2"
+        SHIFT & SHIFT
+    ) ELSE (
+        ECHO unknown option: %1, exiting...
+		EXIT /B 0
+    )
+    GOTO :loop
+)
+
+SET PYTHON3=
+
+:: first, try get python3 version by `python3 -V`
+SET python3_version=
+FOR /F "delims=" %%i IN ('python3 -V') DO ( SET python3_version=%%i)
+ECHO "%python3_version%" | findstr /C:"Python 3." >nul && (
+    SET PYTHON3=python3
+)
+
+:: second, try get python3 version by `python -V`, because python3 may be installed as python.exe on windows
+IF NOT DEFINED PYTHON3 (
+    SET python_version=
+    FOR /F "delims=" %%i IN ('python -V') DO ( SET python_version=%%i)
+
+    SET PYTHON3=
+    ECHO "%python_version%" | findstr /C:"Python 3." >nul && (
+        SET PYTHON3=python
+    )
+)
+
+IF NOT DEFINED PYTHON3 (
+    ECHO "Error: python3 is not installed"
+    EXIT /B 0
+)
+
+FOR /F "delims=" %%I IN ("pip3.exe") DO (
+    IF NOT EXIST %%~$PATH:I (
+        ECHO "Error: pip3 is not installed"
+		EXIT /B 0
+    )
+)
+
+
+:: install or uninstall
+IF DEFINED uninstall (
+    call:uninstall_func
+) ELSE (
+    call:install_func
+)
+
+:: existing!!!
+EXIT /B 0
+
+
+:uninstall_func
+IF DEFINED only_transplt (
+    pip3 uninstall transplt %all_uninstall%
+) ELSE (
+    pip3 uninstall ait transplt %all_uninstall%
+)
+
+goto:eof
+
+
+:install_func
+:: install ait component
+pip3 install %CURRENT_DIR% %arg_force_reinstall%
+IF NOT %errorlevel%==0 (
+    ECHO pip install ait failed, please check the failure reason. Installing is existing...
+    EXIT /B 1
+)
+
+:: install transplt component
+pip3 install %CURRENT_DIR%/components/transplt %arg_force_reinstall%
+IF NOT %errorlevel%==0 (
+    ECHO pip install transplt failed, please check the failure reason. Installing is existing...
+    EXIT /B 1
+)
+
+CALL %CURRENT_DIR%/components/transplt/install.bat %skip_check_cert% %full_install% %llvm_path% %mingw_w64_path%
+)
+goto:eof
+
