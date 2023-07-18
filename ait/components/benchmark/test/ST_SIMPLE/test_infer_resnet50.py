@@ -957,7 +957,7 @@ class TestClass():
 
         with open(log_path) as f:
             for line in f:
-                if "find no msprof continue use acl.json mode" in line:
+                if "find GE_PROFILING_TO_STD_OUT set" in line:
                     label_is_exist = True
                     break
 

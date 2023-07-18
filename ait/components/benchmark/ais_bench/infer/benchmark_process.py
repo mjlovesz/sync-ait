@@ -594,7 +594,7 @@ def benchmark_process(args:BenchMarkArgsAdapter):
         if msprof_bin is None:
             logger.info("find no msprof continue use acl.json mode, result won't be parsed as csv")
         elif os.getenv('GE_PROFILING_TO_STD_OUT') == '1':
-            logger.info("find GE_PROFILING_TO_STD_OUT set, use acl.json mode, result won't be parsed as csv")
+            logger.info("find GE_PROFILING_TO_STD_OUT set, continue use acl.json mode, result won't be parsed as csv")
             logger.warning("inorder to get profiling datas during infer, unset GE_PROFILING_TO_STD_OUT")
             os.environ.pop('GE_PROFILING_TO_STD_OUT', None)
         else:
