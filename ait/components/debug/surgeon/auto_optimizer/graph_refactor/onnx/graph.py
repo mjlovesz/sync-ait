@@ -315,12 +315,13 @@ class OnnxGraph(BaseGraph):
         overlapping_names = cls.check_overlapping_names(g1, g2, io_map)
         if overlapping_names:
             category, names = overlapping_names[0]
-            logger.info(
+            logger.warning(
                 "Cant merge two graphs with overlapping names. "
                 f"Found repeated {category} names："
                 + ",".join(names)
-                + "\n"
-                + f"A prefix `{prefix}` will be added to graph1"
+            )
+            logger.info(
+                f"A prefix `{prefix}` will be added to graph1"
             )
 
             g1_copy = copy.deepcopy(g1)
@@ -350,6 +351,7 @@ class OnnxGraph(BaseGraph):
         g.nodes.extend(g1.nodes)
         g2_node_begin = len(g.nodes)
         g.nodes.extend(g2.nodes)
+
         g2_node_end = len(g.nodes)
 
         # connecting outputs of the first graph with the inputs of the second
@@ -361,9 +363,9 @@ class OnnxGraph(BaseGraph):
 
         # add inputs and outputs
         g.inputs.extend(g1.inputs)
-        g.inputs.extend([i for i in g2.inputs if i not in io_map_g2_ins])
+        g.inputs.extend([i for i in g2.inputs if i.name not in io_map_g2_ins])
 
-        g.outputs.extend([o for o in g1.outputs if o not in io_map_g1_outs])
+        g.outputs.extend([o for o in g1.outputs if o.name not in io_map_g1_outs])
         g.outputs.extend(g2.outputs)
 
         # add initializers
