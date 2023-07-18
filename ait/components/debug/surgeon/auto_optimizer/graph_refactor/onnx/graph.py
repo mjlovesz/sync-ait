@@ -169,8 +169,8 @@ class OnnxGraph(BaseGraph):
 
         # check name collisions for nodes, edges, value_infos and initializers
         overlap = _overlapping(
-            [node.name for node in g1.nodes],
-            [node.name for node in g2.nodes]
+            [node.name for node in graph1.nodes],
+            [node.name for node in graph2.nodes]
         )
         if overlap:
             result.append(("nodes", overlap))

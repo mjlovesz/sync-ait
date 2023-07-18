@@ -278,26 +278,29 @@ def command_concatenate(
     if not check_output_model_path(combined_graph_path):
         raise ValueError(f"Invalid output: {combined_graph_path}")
 
-    graph1_model = pathlib.Path(os.path.abspath(graph1))
-    graph2_model = pathlib.Path(os.path.abspath(graph2))
-    onnx_graph1 = OnnxGraph.parse(graph1_model)
-    onnx_graph2 = OnnxGraph.parse(graph2_model)
+    onnx_graph1 = OnnxGraph.parse(graph1)
+    onnx_graph2 = OnnxGraph.parse(graph2)
 
     # parse io_map
     # out0:in0;out1:in1...
-    io_map_list = [
-        (elem[0], elem[1])
-        for pair in io_map.strip().split(";")
-        for elem in pair.strip().split(":")
-    ]
+    io_map_list = []
+    for pair in io_map.strip().split(";"):
+        if not pair:
+            continue
+        out, inp = pair.strip().split(":")
+        io_map_list.append((out, inp))
 
     try:
         combined_graph = OnnxGraph.concat_graph(
             onnx_graph1, onnx_graph2,
             io_map_list
         )
+    except Exception as err:
+        logger.error(err)
+
+    try:
         combined_graph.save(combined_graph_path)
-    except ValueError as err:
+    except Exception as err:
         logger.error(err)
 
 
