@@ -14,6 +14,7 @@
 # limitations under the License.
 import os
 import sys
+import numpy as np
 
 from msquickcmp.common import utils
 
@@ -58,3 +59,29 @@ def convert_bin_file_to_npy(bin_file_path, npy_dir_path, cann_path):
     bin2npy_cmd = [python_version, msaccucmp_command_file_path, "convert", "-d", bin_file_path, "-out", npy_dir_path]
     utils.logger.info("convert dump data: %s to npy file" % (bin_file_path))
     utils.execute_command(bin2npy_cmd)
+
+
+def convert_npy_to_bin(npy_input_path):
+    """
+        Function Description:
+            convert a  file to bin file.
+        Parameter:
+            npy_file_path: the path of the npy file needed to be converted to bin
+    """
+    input_initial_path = npy_input_path.split(",")
+    outputs = []
+    for input_item in input_initial_path:
+        input_item_path = os.path.realpath(input_item)
+        if input_item_path.endswith('.npy'):
+            bin_item = input_item[:-4] + '.bin'
+            bin_path = input_item_path[:-4] + '.bin'
+            npy_data = np.load(input_item_path)
+            if os.path.islink(bin_path):
+                os.unlink(bin_path)
+            if os.path.exists(bin_path):
+                os.remove(bin_path)
+            npy_data.tofile(bin_path)
+            outputs.append(bin_item)
+        else:
+            outputs.append(input_item)
+    return ",".join(outputs)
