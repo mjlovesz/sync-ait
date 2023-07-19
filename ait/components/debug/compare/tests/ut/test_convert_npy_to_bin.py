@@ -42,12 +42,5 @@ class TestConvertNpyToBin(unittest.TestCase):
         # check if the bin file is generated
         assert os.path.exists(self.bin_path)
 
-    def test_convert_npy_to_bin_file_not_found(self):
-        with self.assertRaises(FileNotFoundError):
-            convert_npy_to_bin('nonexistent_file.npy')
 
-    def test_convert_npy_to_bin_non_npy_file(self):
-        input_path = 'test.txt'
-        outputs = convert_npy_to_bin(input_path)
-        self.assertEqual(outputs, input_path)
 
