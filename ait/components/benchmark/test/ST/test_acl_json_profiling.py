@@ -62,7 +62,7 @@ class TestClass:
             "output": "testdata/profiler",
             "aic_metrics": ""
         }}
-        os.environ.pop('NO_MSPROF_MODE', None)
+        os.environ.pop('AIT_NO_MSPROF_MODE', None)
         profile_out_path = os.path.join(self.base_path, "profiler")
         json_path = os.path.realpath("acl_test.json")
         if os.path.exists(profile_out_path):
@@ -86,7 +86,7 @@ class TestClass:
             "output": "testdata/profiler",
             "aic_metrics": ""
         }}
-        os.environ['NO_MSPROF_MODE'] = "1"
+        os.environ['AIT_NO_MSPROF_MODE'] = "1"
         profile_out_path = os.path.join(self.base_path, "profiler")
         json_path = os.path.realpath("acl_test.json")
         if os.path.exists(profile_out_path):
@@ -103,7 +103,7 @@ class TestClass:
         csv_files = glob.glob("testdata/profiler/**/*.csv", recursive=True)
         assert len(csv_files) == 0
 
-        os.environ.pop('NO_MSPROF_MODE', None)
+        os.environ.pop('AIT_NO_MSPROF_MODE', None)
 
     def test_acl_json_over_size(self):
         json_path = os.path.realpath("acl_oversize.json")
@@ -126,7 +126,7 @@ class TestClass:
             "output": "testdata/profiler",
             "aic_metrics": ""
         }}
-        os.environ.pop('NO_MSPROF_MODE', None)
+        os.environ.pop('AIT_NO_MSPROF_MODE', None)
         profile_out_path = os.path.join(self.base_path, "profiler")
         json_path = os.path.realpath("acl_test_invalid.json")
         if os.path.exists(profile_out_path):
