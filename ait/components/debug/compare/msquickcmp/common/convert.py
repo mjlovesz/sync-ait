@@ -60,13 +60,14 @@ def convert_bin_file_to_npy(bin_file_path, npy_dir_path, cann_path):
     utils.logger.info("convert dump data: %s to npy file" % (bin_file_path))
     utils.execute_command(bin2npy_cmd)
 
+
 def convert_npy_to_bin(npy_input_path):
     """
         Function Description:
             convert a  file to bin file.
         Parameter:
             npy_file_path: the path of the npy file needed to be converted to bin
-        """
+    """
     input_initial_path = npy_input_path.split(",")
     outputs = []
     for input_item in input_initial_path:
