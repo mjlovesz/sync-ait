@@ -73,8 +73,7 @@ def _correct_the_wrong_order(left_index, right_index, golden_net_output_info):
         tmp = golden_net_output_info[left_index]
         golden_net_output_info[left_index] = golden_net_output_info[right_index]
         golden_net_output_info[right_index] = tmp
-        utils.logger.info("swap the {} and {} item in golden_net_output_info!"
-                          .format(left_index, right_index))
+        utils.logger.info('swap the %s and %s item in golden_net_output_info!', left_index, right_index)
 
 
 def _check_output_node_name_mapping(original_net_output_node, golden_net_output_info):
