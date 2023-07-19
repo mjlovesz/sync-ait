@@ -244,8 +244,8 @@ def get_legal_json_content(acl_json_path):
     with open(acl_json_path, 'r') as f:
         json_dict = json.load(f)
     profile_dict = json_dict.get("profiler")
-    for _, option_cmd in enumerate(ACL_JSON_CMD_LIST):
-        if profile_dict.get(option_cmd) is not None and profile_dict.get(option_cmd) != "":
+    for option_cmd in ACL_JSON_CMD_LIST:
+        if profile_dict.get(option_cmd):
             cmd_dict.update({"--" + option_cmd.replace('_', '-'): profile_dict.get(option_cmd)})
             if (option_cmd == "sys_hardware_mem_freq"):
                 cmd_dict.update({"--sys-hardware-mem": "on"})
@@ -571,10 +571,7 @@ def pipeline_run(args, concur):
 def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
-    try:
-        args = acl_json_base_check(args)
-    except Exception:
-        return 1
+    args = acl_json_base_check(args)
 
     if args.pipeline:
         concur = shutil.which("concur")
@@ -595,7 +592,6 @@ def benchmark_process(args:BenchMarkArgsAdapter):
             logger.info("find no msprof continue use acl.json mode, result won't be parsed as csv")
         elif os.getenv('AIT_NO_MSPROF_MODE') == '1':
             logger.info("find AIT_NO_MSPROF_MODE set, continue use acl.json mode, result won't be parsed as csv")
-            os.environ.pop('AIT_NO_MSPROF_MODE', None)
         else:
             ret = msprof_run_profiling(args, msprof_bin)
             return ret
