@@ -12,11 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
 import unittest
 import os
 import numpy as np
-import argparse
 from msquickcmp.common.convert import convert_npy_to_bin
+
 
 class TestConvertNpyToBin(unittest.TestCase):
     def setUp(self):
