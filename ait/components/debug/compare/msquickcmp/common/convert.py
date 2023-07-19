@@ -14,10 +14,9 @@
 # limitations under the License.
 import os
 import sys
+import numpy as np
 
 from msquickcmp.common import utils
-import numpy as np
-import sys
 
 
 MSACCUCMP_FILE_PATH =  "toolkit/tools/operator_cmp/compare/msaccucmp.py"

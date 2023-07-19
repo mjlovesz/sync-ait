@@ -34,6 +34,7 @@ from msquickcmp.atc.atc_utils import AtcUtils
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException, get_shape_to_directory_name
 from msquickcmp.common.convert import convert_bin_dump_data_to_npy
+from msquickcmp.common.convert import convert_npy_to_bin
 from msquickcmp.net_compare import analyser
 from msquickcmp.net_compare.net_compare import NetCompare
 from msquickcmp.npu.npu_dump_data import NpuDumpData
@@ -101,6 +102,7 @@ def cmp_process(args: CmpArgsAdapter, use_cli: bool):
     args.weight_path = os.path.realpath(args.weight_path) if args.weight_path else None
     args.offline_model_path = os.path.realpath(args.offline_model_path)
     args.cann_path = os.path.realpath(args.cann_path)
+    args.input_path = convert_npy_to_bin(args.input_path)
     try:
         check_and_run(args, use_cli)
     except utils.AccuracyCompareException as error:
