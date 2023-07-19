@@ -17,6 +17,8 @@ import stat
 import pytest
 import click
 
+import torch as _  # Bypass later importing error: libgomp.so cannot allocate memory in static TLS block
+
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common import utils
