@@ -75,6 +75,7 @@ class OnnxDumpData(DumpData):
 
         self.net_output, self.inputs_map = {}, {}
         self.origin_model, origin_model_contents = self._load_onnx(self.model_path)
+        raise ValueError("Report an error")
 
         if self.custom_op:
             (head_model, head_path), (tail_model, tail_path), tail_inputs = self._extract_sub_models_by_custom_op()

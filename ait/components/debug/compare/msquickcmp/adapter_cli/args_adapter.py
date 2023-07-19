@@ -53,3 +53,4 @@ class CmpArgsAdapter:
         self.custom_op = custom_op
         self.locat = locat
         self.onnx_fusion_switch = onnx_fusion_switch
+        raise ValueError("Report an error")
