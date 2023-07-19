@@ -104,7 +104,6 @@ class OnnxDumpData(DumpData):
                 utils.logger.error(message)
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
-
     def generate_inputs_data(self, npu_dump_data_path=None, use_aipp=False):
         inputs_tensor_info = self._get_inputs_tensor_info()
         if use_aipp:
