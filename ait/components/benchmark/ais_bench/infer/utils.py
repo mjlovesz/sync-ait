@@ -121,6 +121,8 @@ def save_data_to_files(file_path, ndata):
 
 
 def get_dump_relative_paths(output_dir, timestamp):
+    if output_dir is None or timestamp is None:
+        return []
     dump_dir = os.path.join(output_dir, timestamp)
     dump_relative_paths = []
     for subdir, _, files in os.walk(dump_dir):
@@ -155,7 +157,7 @@ def create_tmp_acl_json(acl_json_path):
 
     # create tmp acl.json path
     acl_json_path_list = acl_json_path.split("/")
-    acl_json_path_list[-1] = str(uuid.uuid4()) + acl_json_path_list[-1]
+    acl_json_path_list[-1] = str(uuid.uuid4()) + "_" + acl_json_path_list[-1]
     tmp_acl_json_path = "/".join(acl_json_path_list)
 
     # change acl_json_dict
@@ -192,17 +194,25 @@ def convert_helper(output_dir, timestamp): # convert bin file in src path and ou
                 |--timestamp--...  (移动过的bin file目录)
                 |--timestamp_npy--...  (转换后npy保存的目录)
     '''
-    dump_relative_paths = get_dump_relative_paths(output_dir, timestamp) # find dump dir in output_path and return the lastest timestamp dir
+    dump_relative_paths = get_dump_relative_paths(output_dir, timestamp)
     msaccucmp_path = get_msaccucmp_path()
     python_path = sys.executable
-    if python_path is not None and dump_relative_paths != [] and msaccucmp_path is not None:
-        for dump_relative_path in dump_relative_paths:
-            dump_npy_path = os.path.join(output_dir, timestamp + "_npy", dump_relative_path)
-            real_dump_path = os.path.join(output_dir, timestamp, dump_relative_path)
-            cmd = f"{python_path} {msaccucmp_path} convert -d {real_dump_path} -out {dump_npy_path}"
-            ret = os.system(cmd)
-            if ret != 0:
-                logger.warning(f"convert failed: cannot convert binfiles in {real_dump_path} to {dump_npy_path}")
+    if python_path is not None:
+        logger.error("convert_helper failed: python executable is not found")
+        return
+    if msaccucmp_path is not None:
+        logger.error("convert_helper failed: msaccucmp.py is not found")
+        return
+    if dump_relative_paths != []:
+        logger.error("convert_helper failed: dump_relative_paths is empty")
+        return
+    for dump_relative_path in dump_relative_paths:
+        dump_npy_path = os.path.join(output_dir, timestamp + "_npy", dump_relative_path)
+        real_dump_path = os.path.join(output_dir, timestamp, dump_relative_path)
+        cmd = f"{python_path} {msaccucmp_path} convert -d {real_dump_path} -out {dump_npy_path}"
+        ret = os.system(cmd)
+        if ret != 0:
+            logger.error(f"convert_helper failed: cmd {cmd} execute failed")
 
 
 def move_subdir(src_dir, dest_dir): 
@@ -216,13 +226,13 @@ def move_subdir(src_dir, dest_dir):
               |--2023***3--...  (原来可能存在的时间戳路径)
 
     after:
-
     dest_dir--|--2023***2--...  (原来可能存在的时间戳路径)
               |--2023***3--...  (原来可能存在的时间戳路径)
               |--2023***1--...  (bin file移动到新的目录下)
     '''
     subdirs = os.listdir(src_dir)
-    if len(subdirs) != 1:
-        return None
+    if len(subdirs) != 1 or os.path.exists(os.path.join(dest_dir, subdirs[0])):
+        logger.error(f"move_subdir failed: dest dir {os.path.join(dest_dir, subdirs[0])} exists.")
+        return None, None
     shutil.move(os.path.join(src_dir, subdirs[0]), os.path.join(dest_dir, subdirs[0]))
     return dest_dir, subdirs[0]
