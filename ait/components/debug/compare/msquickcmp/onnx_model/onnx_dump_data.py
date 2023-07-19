@@ -431,4 +431,4 @@ class OnnxDumpData(DumpData):
         for input_item in session.get_inputs():
             inputs_tensor_info.append({"name": input_item.name, "shape": input_item.shape, "type": input_item.type})
         inputs_name_index_dict = {ii: id for id, ii in enumerate(self.model_after_custom_op_inputs)}
-        return sorted(inputs_tensor_info, key=lambda xx: inputs_name_index_dict.get(xx.get("name"), float("inf"))
+        return sorted(inputs_tensor_info, key=lambda xx: inputs_name_index_dict.get(xx.get("name"), float("inf")))
