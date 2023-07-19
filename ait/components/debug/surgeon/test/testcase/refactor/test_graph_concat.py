@@ -74,7 +74,9 @@ def create_combined_graph_for_multi_in_out(name: str = 'test_combined_graph'):
         'pre_add0', 'Add', inputs=['pre_sqrt0_output', 'pre_relu1_output'], outputs=['pre_add0_output'], attrs={}
     )
     g1_node_3 = OnnxNode('pre_relu3', 'Relu', inputs=['pre_add0_output'], outputs=['pre_relu3_output'], attrs={})
-    g1_node_4 = OnnxNode('pre_flatten4', 'Flatten', inputs=['pre_relu3_output'], outputs=['pre_flatten4_output'], attrs={})
+    g1_node_4 = OnnxNode(
+        'pre_flatten4', 'Flatten', inputs=['pre_relu3_output'], outputs=['pre_flatten4_output'], attrs={}
+    )
     g1_node_5 = OnnxNode(
         'pre_split0', 'Split', inputs=['pre_flatten4_output'], outputs=['pre_output1', 'pre_output2'],
         attrs={
