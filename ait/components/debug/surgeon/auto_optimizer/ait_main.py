@@ -303,6 +303,11 @@ def command_concatenate(
     except Exception as err:
         logger.error(err)
 
+    logger.info(
+        f'Concatenate ONNX model: {graph1} and ONNX model: {graph2} completed. '
+        f'Combined model saved in {combined_graph_path}'
+    )
+
 
 if __name__ == "__main__":
     UsageError.show = FormatMsg.show
