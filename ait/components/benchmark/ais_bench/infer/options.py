@@ -409,5 +409,5 @@ opt_dump_npy = click.option(
     default=False,
     type=str,
     callback=str2bool,
-    help='dump data convert to npy '
+    help='dump data convert to npy'
 )

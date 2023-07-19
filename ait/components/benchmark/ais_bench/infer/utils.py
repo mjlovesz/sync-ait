@@ -197,13 +197,13 @@ def convert_helper(output_dir, timestamp): # convert bin file in src path and ou
     dump_relative_paths = get_dump_relative_paths(output_dir, timestamp)
     msaccucmp_path = get_msaccucmp_path()
     python_path = sys.executable
-    if python_path is not None:
+    if python_path is None:
         logger.error("convert_helper failed: python executable is not found")
         return
-    if msaccucmp_path is not None:
+    if msaccucmp_path is None:
         logger.error("convert_helper failed: msaccucmp.py is not found")
         return
-    if dump_relative_paths != []:
+    if dump_relative_paths == []:
         logger.error("convert_helper failed: dump_relative_paths is empty")
         return
     for dump_relative_path in dump_relative_paths:
@@ -215,7 +215,7 @@ def convert_helper(output_dir, timestamp): # convert bin file in src path and ou
             logger.error(f"convert_helper failed: cmd {cmd} execute failed")
 
 
-def move_subdir(src_dir, dest_dir): 
+def move_subdir(src_dir, dest_dir):
     # move the subdir in src_dir to dest_dir return dest_dir/subdir
     # and remove the src_dir
     '''

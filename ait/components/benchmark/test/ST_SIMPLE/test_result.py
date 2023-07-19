@@ -170,7 +170,7 @@ class TestClass:
         for summary_json_path in summary_json_paths:
             os.remove(summary_json_path)
 
-    def test_general_inference_with_dump(self):
+    def test_general_inference_with_dump_npy(self):
         output_file_num = 17
         output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
@@ -183,7 +183,9 @@ class TestClass:
         input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(os.path.join(TestCommonClass.base_path,
                                                                                            self.model_name), "input"),
                                                      output_file_num)
-        
+        if os.path.exists(os.path.join(output_path, "dump")):
+            shutil.rmtree(os.path.join(output_path, "dump"))
+
         cmd = "{} --model {} --device {} --output {} --debug True --dump True --dump-npy True\
             --input {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                     output_path, input_path, log_path)
@@ -217,6 +219,7 @@ class TestClass:
         shutil.rmtree(os.path.join(output_path, "dump"))
         shutil.rmtree(result_path)
         os.remove(summary_json_path)
+        os.remove(os.path.join(output_path, "acl.json"))
 
 
 if __name__ == '__main__':
