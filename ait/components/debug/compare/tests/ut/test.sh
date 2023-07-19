@@ -27,7 +27,7 @@ function del_source_code_from_tests() {
     rm -rf ${cur_dir}/../msquickcmp
 }
 
-declare -i ret_ok=0
+declare -i ret_val=0
 
 main() {
     copy_source_code_dir_to_tests
@@ -35,10 +35,11 @@ main() {
     export PYTHON_COMMAND=${2:-"python3"}
 
     ${PYTHON_COMMAND} -m pytest .
+    ret_val=$?
 
     del_source_code_from_tests
 
-    return $ret_ok
+    return $ret_val
 }
 
 main "$@"
