@@ -77,9 +77,10 @@ class OnnxDumpData(DumpData):
         self.origin_model, origin_model_contents = self._load_onnx(self.model_path)
 
         if self.custom_op:
-            (head_model, head_model_path), (tail_model, tail_model_path) = self._extract_sub_models_by_custom_op()
-            self.model_before_custom_op, self.model_before_custom_op_path = head_model, head_model_path
-            self.model_after_custom_op, self.model_after_custom_op_path = tail_model, tail_model_path
+            (head_model, head_path), (tail_model, tail_path), tail_inputs = self._extract_sub_models_by_custom_op()
+            self.model_before_custom_op, self.model_before_custom_op_path = head_model, head_path
+            self.model_after_custom_op, self.model_after_custom_op_path = tail_model, tail_path
+            self.model_after_custom_op_inputs = tail_inputs
 
             self.dump_model_with_inputs_path = self._new_model_save_path(self.model_before_custom_op_path)
             self.model_with_inputs = self.model_before_custom_op
@@ -308,10 +309,11 @@ class OnnxDumpData(DumpData):
         if custom_op_node is None:
             utils.logger.error("can't find custom op: %s", self.custom_op)
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+        tail_inputs = custom_op_node.outputs
 
-        head_model, head_model_path = self._extract_model_before_custom_op(origin_model_graph, custom_op_node)
-        tail_model, tail_model_path = self._extract_model_after_custom_op(origin_model_graph, custom_op_node)
-        return (head_model, head_model_path), (tail_model, tail_model_path)
+        head_model, head_path = self._extract_model_before_custom_op(origin_model_graph, custom_op_node)
+        tail_model, tail_path = self._extract_model_after_custom_op(origin_model_graph, custom_op_node)
+        return (head_model, head_path), (tail_model, tail_path), tail_inputs
 
     def _extract_model_before_custom_op(self, onnx_graph, custom_op_node):
         # start from inputs
@@ -429,4 +431,5 @@ class OnnxDumpData(DumpData):
         inputs_tensor_info = []
         for input_item in session.get_inputs():
             inputs_tensor_info.append({"name": input_item.name, "shape": input_item.shape, "type": input_item.type})
-        return inputs_tensor_info
+        inputs_name_index_dict = {ii: id for id, ii in enumerate(self.model_after_custom_op_inputs)}
+        return sorted(inputs_tensor_info, key=lambda xx: inputs_name_index_dict.get(xx.get("name"), float("inf")))
