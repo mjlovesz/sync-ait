@@ -49,7 +49,8 @@ from ais_bench.infer.options import (
     opt_npu_id,
     opt_backend,
     opt_perf,
-    opt_pipeline
+    opt_pipeline,
+    opt_dump_npy
 )
 
 
@@ -87,6 +88,7 @@ from ais_bench.infer.options import (
 @opt_backend
 @opt_perf
 @opt_pipeline
+@opt_dump_npy
 def benchmark_all_cmd(om_model,
                      input_path,
                      output,
@@ -117,7 +119,8 @@ def benchmark_all_cmd(om_model,
                      npu_id,
                      backend,
                      perf,
-                     pipeline
+                     pipeline,
+                     dump_npy
                      ):
     pass
 
@@ -162,7 +165,8 @@ class TestClass:
                     "--npu_id", cmd_adapter.npu_id,
                     "--backend", cmd_adapter.backend,
                     "--perf", cmd_adapter.perf,
-                    "--pipeline", cmd_adapter.pipeline
+                    "--pipeline", cmd_adapter.pipeline,
+                    "--dump-npy", cmd_adapter.dump_npy
                                                     ]
         return cmd_list
 
@@ -200,6 +204,7 @@ class TestClass:
             backend="trtexec",
             perf="0",
             pipeline="0",
+            dump_npy="0",
         )
 
     def test_check_all_full_args_legality(self):
@@ -246,7 +251,8 @@ class TestClass:
                     "--npu_id", self.standard_args.npu_id,
                     "--backend", self.standard_args.backend,
                     "--perf", self.standard_args.perf,
-                    "--pipeline", self.standard_args.pipeline
+                    "--pipeline", self.standard_args.pipeline,
+                    "--dump-npy", self.standard_args.dump_npy
                                                     ]
         result = runner.invoke(benchmark_all_cmd, cmd_list)
         assert result.exit_code == 0
