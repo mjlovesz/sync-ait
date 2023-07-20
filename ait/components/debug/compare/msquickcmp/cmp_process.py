@@ -25,6 +25,7 @@ import stat
 import shutil
 import time
 import subprocess
+import logging
 import onnxruntime
 import acl
 import pandas as pd
@@ -237,7 +238,7 @@ def broken(og: OnnxGraph, subgraph_onnx_file: str):
             if inp in g_inputs or og.get_node(inp, OnnxInitializer):
                 continue
             ph = og.get_node(inp, PlaceHolder)
-            if ph is not None and inp not in input_name_list:
+            if ph and inp not in input_name_list:
                 in_placeholder = OnnxPlaceHolder(ph.name, ph.dtype, ph.shape)
                 node.inputs[idx] = in_placeholder.name
                 in_ph_list.append(in_placeholder)
@@ -266,6 +267,7 @@ def generate_single_op_dir(out_path):
     if os.path.exists(single_op_dir):
         os.rmdir(dir_path)
     os.makedirs(single_op_dir)
+    return single_op_dir
 
 
 def accumulate_shape_size(node, og):
@@ -343,7 +345,9 @@ def merge_csv(csv_list, output_dir):
         df_list.append(df)
     merged_df = pd.concat(df_list)
     merged_df = merged_df.drop_duplicates()
-    merged_df.to_csv(os.path.join(output_dir, 'single_op_summary.csv'), index=False)
+    summary_csv_path = os.path.join(output_dir, 'single_op_summary.csv')
+    merged_df.to_csv(summary_csv_path, index=False)
+    return summary_csv_path
 
 
 def find_all_csv(out_path):
@@ -360,10 +364,11 @@ def single_op_compare(args, input_shape):
     subgraph_onnx_file = os.path.join(args.out_path, "broken.onnx")
     broken(og, subgraph_onnx_file)
     subog = OnnxGraph.parse(subgraph_onnx_file)
-    generate_single_op_dir(args.out_path)
+    single_op_dir = generate_single_op_dir(args.out_path)
     # devide onnx into fixed size onnxs
     subonnx_list = dynamic_divide_onnx(args.out_path, subog)
     csv_list = []
+    onnx_data_path = os.path.join(args.out_path, 'dump_data/onnx')
     for idx, subonnx in enumerate(subonnx_list):
         subgraph_om_file = os.path.join(args.out_path, 'broken')
         atc_conversion(subonnx, subgraph_om_file)
@@ -401,8 +406,8 @@ def single_op_compare(args, input_shape):
         csv_list.extend(find_all_csv(tmp_out_path))
         utils.logger.info("Comparision finished")
         shutil.rmtree(tmp_bin_path)
-    merge_csv(csv_list, single_op_dir)
-
+    summary_csv_path = merge_csv(csv_list, single_op_dir)
+    analyser.Analyser(summary_csv_path)()
 
 def output_error_interval_info(fp_writer, error_node_list):
     for [l_node, r_node] in error_node_list:
