@@ -174,7 +174,7 @@ def get_dump_data_path(dump_dir, is_net_output=False):
     return dump_data_path, file_is_exist
 
 
-def execute_command(cmd):
+def execute_command(cmd, info_need):
     """
     Function Description:
         run the following command
@@ -185,7 +185,8 @@ def execute_command(cmd):
     Exception Description:
         when invalid command throw exception
     """
-    logger.info('Execute command:%s' % cmd)
+    if info_need:
+        logger.info('Execute command:%s' % cmd)
     process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while process.poll() is None:
         line = process.stdout.readline()
@@ -282,6 +283,19 @@ def check_locat_is_valid(dump, locat):
     if locat and not dump:
             logger.error("Dump must be True when locat is used")
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
+
+
+def check_single_op_is_valid(single_op, dump, custom_op, locat):
+    if single_op:
+        if not dump:
+            logger.error("Dump must be True when single_op is used")
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+        if custom_op != "":
+            logger.error("Custom_op is forbidden when single_op is used")
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+        if locat:
+            logger.error("Locat is useless when single_op is used")
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
 def parse_input_shape(input_shape):

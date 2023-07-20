@@ -67,6 +67,7 @@ class OnnxDumpData(DumpData):
         self.input_shape, self.dym_shape_range = arguments.input_shape, arguments.dym_shape_range
         self.custom_op, self.onnx_fusion_switch = arguments.custom_op, arguments.onnx_fusion_switch
         self.dump, self.cann_path = arguments.dump, arguments.cann_path
+        self.single_op = arguments.single_op
 
         self._check_path_exists(self.model_path, extentions="onnx")
 
@@ -291,8 +292,10 @@ class OnnxDumpData(DumpData):
                     self.net_output[net_output_node.index(output)] = file_path
                 np.save(file_path, dump_bins[res_idx])
                 res_idx += 1
-        for key, value in self.net_output.items():
-            utils.logger.info("net_output node is:{}, file path is {}".format(key, value))
+        
+        if not self.single_op:
+            for key, value in self.net_output.items():
+                utils.logger.info("net_output node is:{}, file path is {}".format(key, value))
         utils.logger.info("dump data success")
 
     def _extract_sub_models_by_custom_op(self):
