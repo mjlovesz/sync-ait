@@ -326,8 +326,9 @@ class OnnxDumpData(DumpData):
                     self.net_output[net_output_node.index(output)] = file_path
                 np.save(file_path, dump_bins[res_idx])
                 res_idx += 1
-        for key, value in self.net_output.items():
-            utils.logger.info("net_output node is:{}, file path is {}".format(key, value))
+        if not self.args.single_op:
+            for key, value in self.net_output.items():
+                utils.logger.info("net_output node is:{}, file path is {}".format(key, value))
         utils.logger.info("dump data success")
 
     def _get_net_output_node(self, onnx_model_path):
