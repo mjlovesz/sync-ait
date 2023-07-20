@@ -131,6 +131,12 @@ class ProfileCommand:
     def handle(self, args):
         print(vars(args))
         print("hello from profile")
+        args_adapter = MsProfArgsAdapter(args.application, args.output.as_posix() if args.output else None,
+                            args.model_execution, args.sys_hardware_mem, args.sys_cpu_profiling, args.sys_profiling,
+                            args.sys_pid_profiling, args.dvpp_profiling, args.runtime_api, args.task_time, args.aicpu)
+        ret = msprof_process(args_adapter)
+        exit(ret)
+
 
 def get_cmd_info():
     cmd_instance = ProfileCommand()
