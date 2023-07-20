@@ -220,6 +220,33 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
                 output_error_interval_info(fp_writer, error_node_list)
 
 
+def get_memory_size_by_soc_type():
+    npu_id = -1
+    memory_size = -1
+    pre_cmd = "npu-smi info -l"
+    res = subprocess.run(pre_cmd.split(), shell=False, stdout=subprocess.PIPE)
+
+    for line in res.stdout.decode().split('\n'):
+        if "NPU ID" in line:
+            npu_id = int(line.split()[-1])
+            break
+    
+    if npu_id == -1:
+        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
+    
+    cmd = f"npu-smi info -t memory -i {npu_id}"
+    res = subprocess.run(cmd.split(), shell=False, stdout=subprocess.PIPE)
+    
+    for line in res.stdout.decode().split('\n'):
+        if "DDR Capacity(MB)" in line:
+            memory_size = int(line.split()[-1])
+            break
+    if memory_size == -1:
+        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
+
+    # get size by Byte Unit
+    return memory_size // 4 * 1024 * 1024
+
 def broken(og: OnnxGraph, subgraph_onnx_file: str):
     """
     Function: break onnx into single operator pieces and keep in one onnx
@@ -296,7 +323,7 @@ def accumulate_shape_size(node, og):
     return ans
 
 
-def dynamic_divide_onnx(out_path: str, subog: OnnxGraph):
+def dynamic_divide_onnx(out_path: str, subog: OnnxGraph, memory_size: int):
     """
     Function:
     according to the patchsize to divide the given onnx into suitable size onnxs.
@@ -315,7 +342,7 @@ def dynamic_divide_onnx(out_path: str, subog: OnnxGraph):
         startnode_list.append(node.name)
         endnode_list.append(node.name)
         size_sum += accumulate_shape_size(node, subog)
-        if size_sum >= MAX_MEMORY_USE:
+        if size_sum >= memory_size:
             size_sum = 0
             subonnx_file_path = os.path.join(out_path, f"{idx}_broken.onnx")
             subog.extract_subgraph(startnode_list, endnode_list, subonnx_file_path)
@@ -366,8 +393,9 @@ def single_op_compare(args, input_shape):
     broken(og, subgraph_onnx_file)
     subog = OnnxGraph.parse(subgraph_onnx_file)
     single_op_dir = generate_single_op_dir(args.out_path)
+    memory_size = get_memory_size_by_soc_type()
     # devide onnx into fixed size onnxs
-    subonnx_list = dynamic_divide_onnx(args.out_path, subog)
+    subonnx_list = dynamic_divide_onnx(args.out_path, subog, memory_size)
     csv_list = []
     onnx_data_path = os.path.join(args.out_path, 'dump_data/onnx')
     for idx, subonnx in enumerate(subonnx_list):
