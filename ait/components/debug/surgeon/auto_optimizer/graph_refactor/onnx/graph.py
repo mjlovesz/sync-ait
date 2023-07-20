@@ -15,6 +15,7 @@ import copy
 import tempfile
 import warnings
 import os
+import itertools
 
 from typing import List, Dict, Union, Sequence, Optional, Tuple, Set
 from collections import deque, defaultdict
@@ -257,24 +258,9 @@ class OnnxGraph(BaseGraph):
                 if out in name_map:
                     node.outputs[idx] = name_map.get(out)
 
-        for inp in g.inputs:
-            if inp.name in name_map:
-                inp.name = name_map.get(inp.name)
-
-        for inp in g.inputs:
-            if inp.name in name_map:
-                inp.name = name_map.get(inp.name)
-        for out in g.outputs:
-            if out.name in name_map:
-                out.name = name_map.get(out.name)
-
-        for ini in g.initializers:
-            if ini.name in name_map:
-                ini.name = name_map.get(ini.name)
-
-        for vi in g.value_infos:
-            if vi.name in name_map:
-                vi.name = name_map.get(vi.name)
+        for elem in list(itertools.chain(g.inputs, g.outputs, g.initializers, g.value_infos)):
+            if elem.name in name_map:
+                elem.name = name_map.get(elem.name)
 
         return g
 
@@ -324,14 +310,9 @@ class OnnxGraph(BaseGraph):
                 f"A prefix `{prefix}` will be added to graph1"
             )
 
-            g1_copy = copy.deepcopy(graph1)
-            graph1 = g1_copy
             graph1 = cls.add_prefix_graph(graph1, prefix=prefix)
 
-            io_map = [
-                (prefix + io[0], io[1])
-                for io in io_map
-            ]
+            io_map = [(prefix + io[0], io[1]) for io in io_map]
 
         io_map_g1_outs = {io[0] for io in io_map}
         io_map_g2_ins = {io[1] for io in io_map}
@@ -351,7 +332,6 @@ class OnnxGraph(BaseGraph):
         g.nodes.extend(graph1.nodes)
         g2_node_begin = len(g.nodes)
         g.nodes.extend(graph2.nodes)
-
         g2_node_end = len(g.nodes)
 
         # connecting outputs of the first graph with the inputs of the second
