@@ -378,7 +378,8 @@ class OnnxGraph(BaseGraph):
                     name,
                     ph_dtype
                 )
-            ph_list.append(onnx_placeholder)
+            if value_info:
+                ph_list.append(onnx_placeholder)
         return ph_list
 
     def _parse_input_info(self, input_info):
