@@ -35,7 +35,7 @@ class CmpArgsAdapter:
                  bin2npy=False,
                  custom_op="",
                  locat=False,
-                 onnx_fusion_switch=True，
+                 onnx_fusion_switch=True,
                  single_op=False):
         self.model_path = gold_model
         self.offline_model_path = om_model
