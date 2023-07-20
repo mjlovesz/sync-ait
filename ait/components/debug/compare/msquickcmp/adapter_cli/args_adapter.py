@@ -35,7 +35,8 @@ class CmpArgsAdapter:
                  bin2npy=False,
                  custom_op="",
                  locat=False,
-                 onnx_fusion_switch=True):
+                 onnx_fusion_switch=True，
+                 single_op=False):
         self.model_path = gold_model
         self.offline_model_path = om_model
         self.weight_path = weight_path
@@ -53,3 +54,4 @@ class CmpArgsAdapter:
         self.custom_op = custom_op
         self.locat = locat
         self.onnx_fusion_switch = onnx_fusion_switch
+        self.single_op = single_op

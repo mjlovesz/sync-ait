@@ -45,7 +45,7 @@ from msquickcmp.accuracy_locat import accuracy_locat as al
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
 ERROR_INTERVAL_INFO_FILE = "error_interval_info.txt"
-
+MAX_MEMORY_USE = 8 * 1024 * 1024 * 1024
 
 def _generate_golden_data_model(args):
     model_name, extension = utils.get_model_name_and_extension(args.model_path)
@@ -201,6 +201,9 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
         input_shapes.append("")
     for input_shape in input_shapes:
         res = run(args, input_shape, output_json_path, original_out_path, use_cli)
+        if args.single_op:
+            single_op_compare(args, input_shape)
+            pass
         if len(res) != 0 and args.locat:
             endnode_names_list = res[0]["GroundTruth"].split(",")
             endnode_name = endnode_names_list[0]
@@ -210,6 +213,166 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
                 output_error_interval_info(fp_writer, error_node_list)
 
 
+def broken(og:OnnxGraph, subgraph_onnx_file:str):
+    g_inputs = [ph.name for ph in og.inputs]
+    g_outputs = [ph.name for ph in og.outputs]
+
+    input_name_list = []
+    for node_idx, node in enumerate(og.nodes):
+        in_ph_list = []
+        for idx, inp in enumerate(node.inputs):
+            if inp in g_inputs or og.get_node(inp, OnnxIntializer):
+                continue
+            ph = og.get_node(inp, PlaceHolder)
+            if ph is not None and inp not in input_name_list:
+                in_placeholder = OnnxPlaceHolder(ph.name, ph.dtype, ph.shape)
+                node.inputs[idx] = in_placeholder.name
+                in_ph_list.append(in_placeholder)
+                input_name_list.append(in_placeholder.name)
+        
+        out_ph_list = []
+        for idx, out in enumerate(node.outputs):
+            if out in g_outputs:
+                continue
+            new_name = f"out_{idx}_{node_idx}_{out}"
+            ph = og.get_node(out, PlaceHolder)
+            out_placeholder = OnnxPlaceHolder(new_name, ph.dtype, ph.shape)
+            node.outputs[idx] = out_placeholder.name
+            out_ph_list.append(out_placeholder)
+        
+        og.inputs.extend(in_ph_list)
+        og.outputs.extend(out_ph_list)
+    og.save(subgraph_onnx_file)
+
+
+def generate_single_op_dir(out_path):
+    single_op_dir = os.path.join(out_path, 'single_op')
+    if os.path.exists(single_op_dir):
+        os.rmdir(dir_path)
+    os.makedirs(single_op_dir)
+
+
+def accumulate_shape_size(node, og):
+    ans = 0
+    for node_input in node.inputs:
+        ph = og.get_node(node_input, PlaceHolder)
+        shape_size = ph.dtype.itemsize
+        if ph:
+            for shape in ph.shape:
+                shape_size *= shape
+            ans += shape_size
+    for node_output in node.outputs:
+        ph = og.get_node(node_output, PlaceHolder)
+        shape_size = ph.dtype.itemsize
+        if ph:
+            for shape in ph.shape:
+                shape_size *= shape
+            ans += shape_size
+    return ans
+
+
+def dynamic_divide_onnx(subog: OnnxGraph):
+    """
+    Function:
+    according to the patchsize to divide the given onnx into suitable size onnxs.
+    
+    Input:subog:OnnxGraph needed to be divided
+    
+    Output:
+    Divided onnx list which contains a series of onnx paths
+    """
+    subonnx_list = []
+    startnode_list = []
+    endnode_list = []
+    sum = 0
+    idx = 0
+    for idx, node in enumerate(subog.nodes):
+        startnode_list.append(node.name)
+        endnode_list.append(node.name)
+        sum += accumulate_shape_size(node)
+        if sum >= MAX_MEMORY_USE:
+            sum = 0
+            subonnx_file_path = os.path.join(args.out_path, f"{idx}_broken.onnx")
+            subog.extract_subgraph(startnode_list, endnode_list, subonnx_file_path)
+            startnode_list.clear()
+            endnode_list.clear()
+            subonnx_list.append(subonnx_file_path)
+
+    # process rest nodes
+    if startnode_list:
+        subonnx_file_path = os.path.join(args.out_path, f"{idx}_broken.onnx")
+        subog.extract_subgraph(startnode_list, endnode_list, subonnx_file_path)
+        subonnx_list.append(subonnx_file_path)
+    return subonnx_list
+
+
+def atc_conversion(onnx_path, om_path):
+    atc_cmd = ["atc", "--framework=5", "--soc_version=" + acl.get_soc_name(), "--model=" + onnx_path,\
+                "--output=" + om_path]
+    subprocess.run(atc_cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    utils.logger.info("atc conversion Success!")
+
+
+def merge_csv(csv_list, output_dir):
+    df_list = []
+    for csv_file in csv_list:
+        df = pd.read_csv(csv_file)
+        df_list.append(df)
+    merged_df = pd.concat(df_list)
+    merged_df = merged_df.drop_duplicates()
+    merged_df.to_csv(os.path.join(single_op_dir, 'single_op_summary.csv'),index=False)
+
+
+def single_op_compare(args, input_shape):
+    og = OnnxGraph.parse(args.model_path)
+    og.infer_shape()
+    subgraph_onnx_file = os.path.join(args.out_path, "broken.onnx")
+    broken(og, subgraph_onnx_file)
+    subog = OnnxGraph.parse(subgraph_onnx_file)
+    generate_single_op_dir(args.out_path)
+    # devide onnx into fixed size onnxs
+    subonnx_list = dynamic_divide_onnx(subog)
+    csv_list = []
+    for idx, subonnx in enumerate(subonnx_list):
+        subgraph_om_file = os.path.join(args.out_path, 'broken')
+        atc_conversion(subonnx, subgraph_om_file)
+        utils.logger.info("Start to loading input data")
+        subog = OnnxGraph.parse(subonnx)
+        inputs_list = [(ii.name, ii.shape) for ii in onnxruntime.InferenceSession(subonnx).get_inputs()]
+        input_need_list = al.input_completion(og, inputs_list)
+        pattern = '|'.join(input_need_list)
+        try:
+            matched_files = al.find_npy_files_with_prefix(onnx_data_path, pattern)
+        except Exception as e:
+            utils.logger.error("Failed to find onnx dump data, please check whether file path is right")
+            raise AccuracyCompareException(utils.ACCRACY_COMPARISON_FETCH_DATA_ERROR) from e
+        sort_matched_files = []
+        for prefix in input_need_list:
+            for match_file in matched_files:
+                file_name = os.path.basename(match_file)
+                if file_name.startswith(prefix):
+                    sort_matched_files.append(match_file)
+        bin_files_path = al.create_bin_file(args.out_path, sort_matched_files)
+        tmp_bin_path = os.path.join(args.out_path, 'tmp')
+        utils.logger.info("Loading data Finished!")
+        tmp_out_path = os.path.join(single_op_dir, f"single_op_{idx}")
+        if not os.path.exists(tmp_out_path):
+            os.makedirs(tmp_out_path)
+        time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
+        original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
+        cmg_args = CmpArgsAdapter(subonnx, os.path.join(args.out_path, "broken.om"),
+                                "", bin_files_path, args.cann_path, tmp_out_path, "", args.device,
+                                "", "", False, "", True, False, custom_op = args.custom_op, locat = True)
+        output_json_path = AtcUtils(cmg_args).convert_model_to_json()
+        utils.logger.info("Start to run comparision")
+        res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
+        for f in os.listdir(tmp_out_path):
+            if f.endswith('.csv'):
+                csv_list.append(os.path.join(tmp_out_path, f))
+        utils.logger.info("Comparision finished")
+        shutil.rmtree(tmp_bin_path)
+    merge_csv(csv_list, single_op_dir)
+     
 def output_error_interval_info(fp_writer, error_node_list):
     for [l_node, r_node] in error_node_list:
         fp_writer.write(f"{l_node}:{r_node}")

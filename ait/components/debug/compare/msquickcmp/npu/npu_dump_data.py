@@ -351,11 +351,15 @@ class NpuDumpData(DumpData):
         if self.arguments.dump:
             npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
             if not file_is_exist:
+                if self.arguments.single_op:
+                    return
                 utils.logger.error("The path {} dump data is not exist.".format(npu_dump_data_path))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         # net output data path
         npu_net_output_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir, True)
         if not file_is_exist:
+            if self.arguments.single_op:
+                return
             utils.logger.error("The path {} net output data is not exist.".format(npu_net_output_data_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
