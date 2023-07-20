@@ -19,12 +19,15 @@ This class mainly involves the main function.
 """
 
 import argparse
+import logging
 import os
 import sys
 import stat
 import shutil
 import time
 import subprocess
+import csv
+import pandas as pd
 import onnxruntime
 import acl
 
@@ -208,6 +211,7 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
             error_interval_info_file = os.path.join(args.out_path, ERROR_INTERVAL_INFO_FILE)
             with os.fdopen(os.open(error_interval_info_file, READ_WRITE_FLAGS, WRITE_MODES), "a+") as fp_writer:
                 output_error_interval_info(fp_writer, error_node_list)
+    csv_sum(original_out_path)
 
 
 def output_error_interval_info(fp_writer, error_node_list):
@@ -335,3 +339,34 @@ def bin_divide(og, node_interval, args, onnx_data_path, input_shape):
             high = mid - 1
     utils.logger.info("Binary Search for error interval ends.")
     return satisfied_nodes[low], endnode
+
+
+def csv_sum(original_out_path):
+    """
+    Function:
+        Summarize csv files under different shapes
+    """
+    csv_file_list = []
+    sheet_name_list = []
+
+    for i in os.listdir(original_out_path):
+        if i == "model":
+            continue
+        for j in os.listdir(os.path.join(original_out_path, i)):
+            if j.endswith(".csv"):
+                csv_file_list.append(os.path.join(original_out_path, i, j))
+                sheet_name_list.append(i)
+
+    csv_file_summary = os.path.join(original_out_path, "result_summary.xlsx")
+
+    if not os.path.exists(csv_file_summary):
+        with open(csv_file_summary, 'w', newline='') as file:
+            writer = csv.writer(file)
+    else:
+        logging.info("Error, file already exists!")
+    writer = pd.ExcelWriter(csv_file_summary, engine='xlsxwriter')
+
+    for i, csv_file in enumerate(csv_file_list):
+        data = pd.read_csv(csv_file, na_values=['NAN'])
+        data.to_excel(writer, sheet_name=sheet_name_list[i], index=False, na_rep='NAN')
+    writer.save()
