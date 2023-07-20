@@ -17,6 +17,7 @@ import math
 import os
 import sys
 import time
+import json
 import shutil
 import copy
 import shlex
@@ -37,12 +38,16 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
                                           PURE_INFER_FAKE_FILE, save_tensors_to_file)
 from ais_bench.infer.summary import summary
 from ais_bench.infer.utils import logger
-from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
+from ais_bench.infer.miscellaneous import (dymshape_range_run, get_acl_json_path, version_check,
+                                           get_batchsize, ACL_JSON_CMD_LIST)
 from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                                    get_fileslist_from_dir, list_split, list_share, logger,
                                    save_data_to_files)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 
 def set_session_options(session, args):
@@ -255,15 +260,44 @@ def get_file(file_path: str, suffix: str, res_file_path: list) -> list:
 
     # endswith：表示以suffix结尾。可根据需要自行修改；如：startswith：表示以suffix开头，__contains__：包含suffix字符串
     return res_file_path if suffix == '' or suffix is None else list(filter(lambda x: x.endswith(suffix), res_file_path))
+def get_legal_json_content(acl_json_path):
+    cmd_dict = {}
+    with open(acl_json_path, 'r') as f:
+        json_dict = json.load(f)
+    profile_dict = json_dict.get("profiler")
+    for option_cmd in ACL_JSON_CMD_LIST:
+        if profile_dict.get(option_cmd):
+            cmd_dict.update({"--" + option_cmd.replace('_', '-'): profile_dict.get(option_cmd)})
+            if (option_cmd == "sys_hardware_mem_freq"):
+                cmd_dict.update({"--sys-hardware-mem": "on"})
+            if (option_cmd == "sys_interconnection_freq"):
+                cmd_dict.update({"--sys-interconnection-profiling": "on"})
+            if (option_cmd == "dvpp_freq"):
+                cmd_dict.update({"--dvpp-profiling": "on"})
+    return cmd_dict
+
+
+def json_to_msprof_cmd(acl_json_path):
+    json_dict = get_legal_json_content(acl_json_path)
+    msprof_option_cmd = " ".join([f"{key}={value}" for key, value in json_dict.items()])
+    return msprof_option_cmd
 
 
 def msprof_run_profiling(args, msprof_bin):
-    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
-    msprof_cmd = "{} --output={}/profiler --application=\"{}\" --model-execution=on \
-                --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off \
-                --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
-                .format(msprof_bin, args.output, cmd)
-
+    if args.acl_json_path is not None:
+        # acl.json to msprof cmd
+        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
+        cmd = cmd.replace("--acl-json-path", "")
+        cmd = cmd.replace("--acl_json_path", "")
+        cmd = cmd.replace(args.acl_json_path, "")
+        msprof_cmd = f"{msprof_bin} --application=\"{cmd}\" " + json_to_msprof_cmd(args.acl_json_path)
+    else:
+        # default msprof cmd
+        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
+        msprof_cmd = f"{msprof_bin} --output={args.output}/profiler --application=\"{cmd}\" --model-execution=on \
+                    --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off \
+                    --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
+    ret = -1
     msprof_cmd_list = shlex.split(msprof_cmd)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
     if (args.profiler_rename):
@@ -298,9 +332,11 @@ def msprof_run_profiling(args, msprof_bin):
         for file in file_name_json:
             real_file = os.path.splitext(file)[0]
             os.rename(file, real_file + "_" + model_name + "_" + hash_str + ".json")
+        ret = 0
     else:
         ret = subprocess.call(msprof_cmd_list, shell=False)
         logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
+    return ret
 
 
 def get_energy_consumption(npu_id):
@@ -534,6 +570,34 @@ def args_rules(args):
     return args
 
 
+def acl_json_base_check(args):
+    if args.acl_json_path is None:
+        return args
+    json_path = args.acl_json_path
+    max_json_size = 8192 # 8KB 30 * 255 byte左右
+    if os.path.splitext(json_path)[1] != ".json":
+        logger.error(f"acl_json_path:{json_path} is not a .json file")
+        raise TypeError(f"acl_json_path:{json_path} is not a .json file")
+    if not os.path.exists(os.path.realpath(json_path)):
+        logger.error(f"acl_json_path:{json_path} not exsit")
+        raise FileExistsError(f"acl_json_path:{json_path} not exist")
+    json_size = os.path.getsize(json_path)
+    if json_size > max_json_size:
+        logger.error(f"json_file_size:{json_size} byte out of max limit {max_json_size} byte")
+        raise MemoryError(f"json_file_size:{json_size} byte out of max limit")
+    try:
+        with open(json_path, 'r') as f:
+            json_dict = json.load(f)
+    except Exception as err:
+        logger.error(f"can't read acl_json_path:{json_path}")
+        raise Exception from err
+    if json_dict.get("profiler") is not None and json_dict.get("profiler").get("switch") == "on":
+        args.profiler = True
+    if json_dict.get("dump") is not None:
+        args.profiler = False
+    return args
+
+
 def backend_run(args):
     backend_class = BackendFactory.create_backend(args.backend)
     backend = backend_class(args)
@@ -562,6 +626,7 @@ def pipeline_run(args, concur):
 def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
+    args = acl_json_base_check(args)
 
     if args.pipeline:
         concur = shutil.which("concur")
@@ -578,11 +643,13 @@ def benchmark_process(args:BenchMarkArgsAdapter):
     if args.profiler:
         # try use msprof to run
         msprof_bin = shutil.which('msprof')
-        if msprof_bin is None or os.getenv('GE_PROFILING_TO_STD_OUT') == '1':
-            logger.info("find no msprof continue use acl.json mode")
+        if msprof_bin is None:
+            logger.info("find no msprof continue use acl.json mode, result won't be parsed as csv")
+        elif os.getenv('AIT_NO_MSPROF_MODE') == '1':
+            logger.info("find AIT_NO_MSPROF_MODE set, continue use acl.json mode, result won't be parsed as csv")
         else:
-            msprof_run_profiling(args, msprof_bin)
-            return 0
+            ret = msprof_run_profiling(args, msprof_bin)
+            return ret
 
     if args.dym_shape_range is not None and args.dym_shape is None:
         # dymshape range run,according range to run each shape infer get best shape

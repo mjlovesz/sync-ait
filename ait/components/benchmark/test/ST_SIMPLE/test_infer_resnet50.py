@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
+MSPROF_SWITCH = 'AIT_NO_MSPROF_MODE'
 
 
 class TestClass():
@@ -918,10 +919,10 @@ class TestClass():
         log_path = os.path.join(output_path, "profiler.log")
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
 
-        # when GE_PROFILING_TO_STD_OUT=0
-        env_label = os.getenv('GE_PROFILING_TO_STD_OUT', 'null')
+        # when AIT_NO_MSPROF_MODE=0
+        env_label = os.getenv(MSPROF_SWITCH, 'null')
         if env_label != 'null':
-            del os.environ['GE_PROFILING_TO_STD_OUT']
+            del os.environ[MSPROF_SWITCH]
         cmd = "{} --model {} --device {} --profiler True --output {} > {}" \
             .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, output_path, log_path)
         logger.info("run cmd:{}".format(cmd))
@@ -941,8 +942,8 @@ class TestClass():
         else:
             assert label_is_exist is False
 
-        # when GE_PROFILING_TO_STD_OUT=1
-        os.environ['GE_PROFILING_TO_STD_OUT'] = "1"
+        # when AIT_NO_MSPROF_MODE=1
+        os.environ[MSPROF_SWITCH] = "1"
         label_is_exist = False
         os.remove(log_path)
         shutil.rmtree(output_path)
@@ -957,14 +958,14 @@ class TestClass():
 
         with open(log_path) as f:
             for line in f:
-                if "find no msprof continue use acl.json mode" in line:
+                if "find AIT_NO_MSPROF_MODE set" in line:
                     label_is_exist = True
                     break
 
         assert label_is_exist is True
 
         shutil.rmtree(output_path)
-        del os.environ['GE_PROFILING_TO_STD_OUT']
+        del os.environ[MSPROF_SWITCH]
 
 
 if __name__ == '__main__':
