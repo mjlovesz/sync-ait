@@ -249,12 +249,7 @@ def create_pipeline_fileslist_from_inputs_list(inputs_list, intensors_desc):
     except RuntimeError() as err:
         logger.error("fileslist and intensors not matched")
         raise Exception() from err
-    infileslist = []
-    for i in range(len(fileslist[0])):
-        cur_input = []
-        for file_list in fileslist:
-            cur_input.append(file_list[i])
-        infileslist.append(cur_input)
+    infileslist = list(zip(*fileslist))
     return infileslist
 
 

@@ -137,10 +137,11 @@ class TestClass:
         for mode, info in run_modes.items():
             output_path = info.get("output_path")
             log_path = info.get("log_path")
-            cmd = "{} --model {} --device {} --output {} --debug True --pipeline {} --warmup-count {}\
-                --input {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
-                                        output_path, mode == "pipeline", warmup_num, input_path, log_path)
-            logger.info("run in {} mode. cmd:{}".format(mode, cmd))
+            pipeline_switch = (mode == "pipeline")
+            cmd = f"{TestCommonClass.cmd_prefix} --model {model_path} --device {TestCommonClass.default_device_id} \
+                --output {output_path} --debug True --pipeline {pipeline_switch} --warmup-count {warmup_num}\
+                --input {input_path} > {log_path}"
+            logger.info(f"run in {mode} mode. cmd:{cmd}")
             ret = os.system(cmd)
             assert ret == 0
 
@@ -150,7 +151,8 @@ class TestClass:
                 exacute_num = math.ceil(output_file_num/batch_size)
                 assert real_execute_num == warmup_num + exacute_num
             else:
-                logger.warning("zero division!")
+                logger.error("zero division!")
+                raise ZeroDivisionError("batchsize equal to zero!")
 
             # bin file num is equal to output_file_num
             cmd = "cat {} |grep 'output path'".format(log_path)
