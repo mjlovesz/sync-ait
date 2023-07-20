@@ -132,10 +132,207 @@ def fake_om_model_with_aipp(width_onnx_model):
 def fake_om_model_dym_shape(fake_dym_shape_onnx_model):
     if not os.path.exists(FAKE_DYM_SHAPE_OM_MODEL_PATH):
         cmd = 'atc --model={}, --framework=5 --output={} \
-            --soc_version={}, --insert_op_conf={}'.format(fake_dym_shape_onnx_model, 
+            --soc_version={}, --input_shape_range={}'.format(fake_dym_shape_onnx_model, 
                                                           FAKE_DYM_SHAPE_OM_MODEL_PATH.replace(".om", ""),
                                                           acl.get_soc_name(),
-                                                          "./test_resource/aipp.config")
+                                                          "./test_resource/aipp.config",
+                                                          "input0:[1~2],3,32,32")
         subprocess.run(cmd.split(), shell=False)
 
     yield FAKE_DYM_SHAPE_OM_MODEL_PATH
+
+def test_init_given_valid_when_any_then_pass(fake_arguments):
+    aa = NpuDumpData(fake_arguments, False)
+
+    except_net_output_node = aa.get_expect_output_name()
+
+    assert len(except_net_output_node) == 1
+    
+    assert aa.om_parser is not None
+    assert aa.dynamic_input is not None
+    if os.path.exists(fake_arguments.out_path):
+        shutil.rmtree(fake_arguments.out_path)
+
+
+def test_init_given_invalid_when_any_then_pass(fake_arguments):
+    fake_arguments.model_path = ""
+
+    with pytest.raises(AccuracyCompareException):
+        aa = NpuDumpData(fake_arguments, False)
+
+    if os.path.exists(fake_arguments.out_path):
+        shutil.rmtree(fake_arguments.out_path)
+        
+def test_generate_inputs_data_given_random_when_valid_then_pass(fake_arguments):
+
+    npu_dump = NpuDumpData(fake_arguments, False)
+
+    assert npu_dump.om_parser is not None
+    assert npu_dump.dynamic_input is not None
+
+    npu_dump.generate_inputs_data()
+
+    assert os.path.exists(os.path.join(fake_arguments.out_path, "input"))
+
+    inputs_list = parse_input_shape_to_list(fake_arguments.input_shape)
+    input_bin_files = os.listdir(os.path.join(fake_arguments.out_path, "input"))
+
+    for input_file, input_shape in zip(input_bin_files, inputs_list):
+        input_data =  np.fromfile(input_file)
+        assert np.prod(input_data.shape) == np.prod(input_shape)
+
+    if os.path.exists(fake_arguments.out_path):
+        shutil.rmtree(fake_arguments.out_path)
+
+def test_generate_inputs_data_given_input_path_when_valid_then_pass(fake_arguments):
+
+    tmp_input_data = "tmp_input_data"
+    if not os.path.exists(tmp_input_data):
+        os.makedirs(tmp_input_data, mode=0o700)
+
+    input_path = os.path.join(tmp_input_data, "input_0.bin")
+    input_data = np.random.uniform(size=INPUT_SHAPE).astype("float32")
+    input_data.tofile(input_path)
+    fake_arguments.input_path = input_path
+
+    npu_dump = NpuDumpData(fake_arguments, False)
+
+    assert npu_dump.om_parser is not None
+    assert npu_dump.dynamic_input is not None
+
+    npu_dump.generate_inputs_data()
+
+    assert os.path.exists(os.path.join(fake_arguments.out_path, "input"))
+
+    inputs_list = parse_input_shape_to_list(fake_arguments.input_shape)
+    input_bin_files = os.listdir(os.path.join(fake_arguments.out_path, "input"))
+
+    for input_file, input_shape in zip(input_bin_files, inputs_list):
+        input_data =  np.fromfile(input_file)
+        assert np.prod(input_data.shape) == np.prod(input_shape)
+
+    if os.path.exists(fake_arguments.out_path):
+        shutil.rmtree(fake_arguments.out_path)
+    if os.path.exists(tmp_input_data):
+        shutil.rmtree(tmp_input_data)
+
+def test_generate_inputs_data_given_input_path_when_golden_then_pass(fake_arguments):
+
+    tmp_input_data = "tmp_input_data"
+    if not os.path.exists(tmp_input_data):
+        os.makedirs(tmp_input_data, mode=0o700)
+
+    input_path = os.path.join(tmp_input_data, "input_0.bin")
+    input_data = np.random.uniform(size=INPUT_SHAPE).astype("float32")
+    input_data.tofile(input_path)
+    fake_arguments.input_path = input_path
+
+    npu_dump = NpuDumpData(fake_arguments, True)
+
+    assert npu_dump.om_parser is not None
+    assert npu_dump.dynamic_input is not None
+
+    npu_dump.generate_inputs_data()
+
+    assert os.path.exists(os.path.join(fake_arguments.out_path, "input"))
+
+    inputs_list = parse_input_shape_to_list(fake_arguments.input_shape)
+    input_bin_files = os.listdir(os.path.join(fake_arguments.out_path, "input"))
+
+    for input_file, input_shape in zip(input_bin_files, inputs_list):
+        input_data =  np.fromfile(input_file)
+        assert np.prod(input_data.shape) == np.prod(input_shape)
+
+    if os.path.exists(fake_arguments.out_path):
+        shutil.rmtree(fake_arguments.out_path)
+    if os.path.exists(tmp_input_data):
+        shutil.rmtree(tmp_input_data)
+
+def test_generate_inputs_data_given_random_data_when_aipp_then_pass(fake_arguments, fake_om_model_with_aipp):
+    
+    fake_arguments.model_path = fake_om_model_with_aipp
+    fake_arguments.out_path = fake_om_model_with_aipp.replace(".om", "")
+
+    npu_dump = NpuDumpData(fake_arguments, False)
+
+    assert npu_dump.om_parser is not None
+    assert npu_dump.dynamic_input is not None
+
+    npu_dump.generate_inputs_data()
+
+    assert os.path.exists(os.path.join(fake_arguments.out_path, "input"))
+
+    inputs_list = parse_input_shape_to_list(fake_arguments.input_shape)
+    input_bin_files = os.listdir(os.path.join(fake_arguments.out_path, "input"))
+
+    for input_file, input_shape in zip(input_bin_files, inputs_list):
+        input_data =  np.fromfile(input_file)
+        assert np.prod(input_data.shape) == np.prod(input_shape)
+
+    if os.path.exists(fake_arguments.out_path):
+        shutil.rmtree(fake_arguments.out_path)
+
+
+def test_generate_dump_data_given_random_data_when_valid_then_pass(fake_arguments):
+
+    npu_dump = NpuDumpData(fake_arguments, False)
+    npu_dump.generate_inputs_data()
+
+    om_dump_data_dir = npu_dump.generate_dump_data()
+    assert os.path.exists(om_dump_data_dir)
+
+    assert len(os.listdir(om_dump_data_dir)) > 0
+
+    if os.path.exists(fake_arguments.out_path):
+        shutil.rmtree(fake_arguments.out_path)
+
+
+def test_generate_dump_data_given_random_data_when_dump_false_then_pass(fake_arguments):
+
+    fake_arguments.dump = False
+    npu_dump = NpuDumpData(fake_arguments, False)
+    npu_dump.generate_inputs_data()
+
+    om_dump_data_dir = npu_dump.generate_dump_data()
+    assert os.path.exists(om_dump_data_dir)
+
+    assert len(os.listdir(om_dump_data_dir)) > 0
+
+    if os.path.exists(fake_arguments.out_path):
+        shutil.rmtree(fake_arguments.out_path)
+
+
+def test_generate_dump_data_given_random_data_when_dym_shape_then_pass(fake_arguments,
+                                                                       fake_om_model_dym_shape):
+
+    fake_arguments.model_path = fake_om_model_dym_shape
+    fake_arguments.out_path = fake_om_model_dym_shape.replace(".om", "")
+
+    npu_dump = NpuDumpData(fake_arguments, False)
+    npu_dump.generate_inputs_data()
+
+    om_dump_data_dir = npu_dump.generate_dump_data()
+    assert os.path.exists(om_dump_data_dir)
+
+    assert len(os.listdir(om_dump_data_dir)) > 0
+
+    if os.path.exists(fake_arguments.out_path):
+        shutil.rmtree(fake_arguments.out_path)
+
+def test_generate_dump_data_given_any_when_dym_shape_and_golden_then_pass(fake_arguments,
+                                                                          fake_om_model_dym_shape):
+
+    fake_arguments.model_path = fake_om_model_dym_shape
+    fake_arguments.out_path = fake_om_model_dym_shape.replace(".om", "")
+
+    fake_arguments.input_shape = "input0:2,3,32,32"
+    npu_dump = NpuDumpData(fake_arguments, True)
+    npu_dump.generate_inputs_data()
+
+    om_dump_data_dir = npu_dump.generate_dump_data()
+    assert os.path.exists(om_dump_data_dir)
+
+    assert len(os.listdir(om_dump_data_dir)) > 0
+
+    if os.path.exists(fake_arguments.out_path):
+        shutil.rmtree(fake_arguments.out_path)
