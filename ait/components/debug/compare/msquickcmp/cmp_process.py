@@ -29,8 +29,9 @@ import onnxruntime
 import acl
 import pandas as pd
 
-from auto_optimizer.graph_refactor import Node, OnnxNode, OnnxPlaceHolder, OnnxIntializer
 from auto_optimizer import OnnxGraph
+from auto_optimizer.graph_refactor import Node
+from auto_optimizer.graph_refactor.onnx import OnnxNode, OnnxPlaceHolder, OnnxIntializer
 from auto_optimizer.graph_refactor.interface import PlaceHolder
 from msquickcmp.atc.atc_utils import AtcUtils
 from msquickcmp.common import utils
@@ -344,6 +345,13 @@ def merge_csv(csv_list, output_dir):
     merged_df = merged_df.drop_duplicates()
     merged_df.to_csv(os.path.join(output_dir, 'single_op_summary.csv'), index=False)
 
+def find_all_csv(out_path):
+    all_csv_list = []
+    for f in os.listdir(out_path):
+        if f.endswith('.csv'):
+            all_csv_list.append(os.path.join(out_path, f))
+    return all_csv_list
+
 
 def single_op_compare(args, input_shape):
     og = OnnxGraph.parse(args.model_path)
@@ -378,8 +386,7 @@ def single_op_compare(args, input_shape):
         tmp_bin_path = os.path.join(args.out_path, 'tmp')
         utils.logger.info("Loading data Finished!")
         tmp_out_path = os.path.join(single_op_dir, f"single_op_{idx}")
-        if not os.path.exists(tmp_out_path):
-            os.makedirs(tmp_out_path)
+        os.makedirs(tmp_out_path)
         time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
         original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
         cmg_args = CmpArgsAdapter(subonnx, os.path.join(args.out_path, "broken.om"),
@@ -387,10 +394,10 @@ def single_op_compare(args, input_shape):
                                 "", "", False, "", True, False, custom_op = args.custom_op, locat = True)
         output_json_path = AtcUtils(cmg_args).convert_model_to_json()
         utils.logger.info("Start to run comparision")
+        utils.logger.setLevel(logging.ERROR)
         res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
-        for f in os.listdir(tmp_out_path):
-            if f.endswith('.csv'):
-                csv_list.append(os.path.join(tmp_out_path, f))
+        utils.logger.setLevel(logging.INFO)
+        csv_list.extend(find_all_csv(tmp_out_path))
         utils.logger.info("Comparision finished")
         shutil.rmtree(tmp_bin_path)
     merge_csv(csv_list, single_op_dir)
