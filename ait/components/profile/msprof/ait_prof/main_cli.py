@@ -59,9 +59,74 @@ def msprof_cli(application, output, model_execution, sys_hardware_mem, sys_cpu_p
 
 class ProfileCommand:
     def add_arguments(self, parser):
-        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
-        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
-        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+        # parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
+        # parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
+        # parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+        parser.add_argument(
+            "--application",
+            required=True,
+            help="Configure to run AI task files on the environment"
+        )
+        parser.add_argument(
+            "--output",
+            default=None,
+            help="The storage path for the collected profiling data,"
+                " which defaults to the directory where the app is located"
+        )
+        parser.add_argument(
+            "--model-execution",
+            default="on",
+            choices=["on", "off"],
+            help="Control ge model execution performance data collection switch"
+        )
+        parser.add_argument(
+            "--sys-hardware-mem",
+            default="on",
+            choices=["on", "off"],
+            help="Control the read/write bandwidth data acquisition switch for ddr and llc"
+        )
+        parser.add_argument(
+            "--sys-cpu-profiling",
+            default="off",
+            choices=["on", "off"],
+            help="CPU acquisition switch"
+        )
+        parser.add_argument(
+            "--sys-profiling",
+            default="off",
+            choices=["on", "off"],
+            help="System CPU usage and system memory acquisition switch"
+        )
+        parser.add_argument(
+            "--sys-pid-profiling",
+            default="off",
+            choices=["on", "off"],
+            help="The CPU usage of the process and the memory collection switch of the process"
+        )
+        parser.add_argument(
+            "--dvpp-profiling",
+            default="on",
+            choices=["on", "off"],
+            help="DVPP acquisition switch"
+        )
+        parser.add_argument(
+            "--runtime-api",
+            default="on",
+            choices=["on", "off"],
+            help="Control runtime api performance data collection switch"
+        )
+        parser.add_argument(
+            "--task-time",
+            default="on",
+            choices=["on", "off"],
+            help="Control ts timeline performance data collection switch"
+        )
+        parser.add_argument(
+            "--aicpu",
+            default="on",
+            choices=["on", "off"],
+            help="Control aicpu performance data collection switch"
+        )
 
     def handle(self, args):
         print(vars(args))
