@@ -345,6 +345,7 @@ def merge_csv(csv_list, output_dir):
         df_list.append(df)
     merged_df = pd.concat(df_list)
     merged_df = merged_df.drop_duplicates()
+    merged_df = merged_df.fillna("NaN")
     summary_csv_path = os.path.join(output_dir, 'single_op_summary.csv')
     merged_df.to_csv(summary_csv_path, index=False)
     return summary_csv_path
