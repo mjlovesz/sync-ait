@@ -209,8 +209,8 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
         res = run(args, input_shape, output_json_path, original_out_path, use_cli)
         if args.single_op:
             single_op_compare(args, input_shape)
-            pass
-        if len(res) != 0 and args.locat:
+            continue
+        if res and args.locat:
             endnode_names_list = res[0]["GroundTruth"].split(",")
             endnode_name = endnode_names_list[0]
             error_node_list = find_accuracy_interval(args, endnode_name, input_shape)
@@ -219,7 +219,7 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
                 output_error_interval_info(fp_writer, error_node_list)
 
 
-def broken(og:OnnxGraph, subgraph_onnx_file:str):
+def broken(og: OnnxGraph, subgraph_onnx_file: str):
     """
     Function: break onnx into single operator pieces and keep in one onnx
     
