@@ -36,7 +36,7 @@ def test_csv_sum():
     df2.to_csv('./test_resource/test_csv_sum/2023072009/images-2_3_640_640/file2.csv', index=False)
 
 
-    writer = pd.ExcelWriter("./test_resource/test_csv_sum/expected_output.xlsx", engine='xlsxwriter')
+    writer = pd.ExcelWriter("./test_resource/test_csv_sum/expected_output.xlsx")
     df1.to_excel(writer, sheet_name='images-2_3_638_640', index=False)
     df2.to_excel(writer, sheet_name='images-2_3_640_640', index=False)
     writer.save()
