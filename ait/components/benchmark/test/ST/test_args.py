@@ -64,6 +64,7 @@ class TestClass:
         non-existent acl.json file
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
+        os.environ['AIT_NO_MSPROF_MODE'] = "1"
         acl_json_path = "xxx_invalid.json"
         cmd = "{} --model {} --device {} --acl_json_path {} ".format(TestCommonClass.cmd_prefix, model_path,
                                                                      TestCommonClass.default_device_id, acl_json_path)
@@ -77,6 +78,7 @@ class TestClass:
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         json_dict = {"profiler": {"wrong": "on", "aicpu": "on", "output": "", "aic_metrics": ""}}
+        os.environ['AIT_NO_MSPROF_MODE'] = "1"
         acl_json_path = os.path.join(TestCommonClass.base_path, "acl.json")
         with os.fdopen(os.open(acl_json_path, OPEN_FLAGS, OPEN_MODES), "w") as f:
             json.dump(json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
@@ -239,7 +241,7 @@ class TestClass:
         profiler_path = os.path.join(output_path, "profiler")
         TestCommonClass.prepare_dir(profiler_path)
         output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": profiler_path, "aic_metrics": ""}}
-
+        os.environ['AIT_NO_MSPROF_MODE'] = "1"
         out_json_file_path = os.path.join(TestCommonClass.base_path, "acl.json")
         with os.fdopen(os.open(out_json_file_path, OPEN_FLAGS, OPEN_MODES), "w") as f:
             json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
