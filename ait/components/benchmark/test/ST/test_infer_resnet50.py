@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
+MSPROF_SWITCH = 'AIT_NO_MSPROF_MODE'
 
 
 class TestClass():
@@ -1351,9 +1352,9 @@ class TestClass():
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
 
         # when AIT_NO_MSPROF_MODE=0
-        env_label = os.getenv('AIT_NO_MSPROF_MODE', 'null')
+        env_label = os.getenv(MSPROF_SWITCH, 'null')
         if env_label != 'null':
-            del os.environ['AIT_NO_MSPROF_MODE']
+            del os.environ[MSPROF_SWITCH]
         cmd = "{} --model {} --device {} --profiler True --output {} > {}" \
             .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, output_path, log_path)
         logger.info("run cmd:{}".format(cmd))
@@ -1374,7 +1375,7 @@ class TestClass():
             assert label_is_exist is False
 
         # when AIT_NO_MSPROF_MODE=1
-        os.environ['AIT_NO_MSPROF_MODE'] = "1"
+        os.environ[MSPROF_SWITCH] = "1"
         label_is_exist = False
         os.remove(log_path)
         shutil.rmtree(output_path)
@@ -1396,7 +1397,7 @@ class TestClass():
         assert label_is_exist is True
 
         shutil.rmtree(output_path)
-        del os.environ['AIT_NO_MSPROF_MODE']
+        del os.environ[MSPROF_SWITCH]
 
 
 if __name__ == '__main__':
