@@ -234,6 +234,10 @@ class NpuDumpData(DumpData):
             return
         
         inputs_list, data_type_list = self.om_parser.get_shape_list()
+        if self.dynamic_input.is_dynamic_shape_scenario() and not self.input_shape:
+            utils.logger.error("Please set '-s' or '--input-shape' to fix the dynamic shape.")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+
         if self.input_shape:
             inputs_list = parse_input_shape_to_list(self.input_shape)
         
@@ -449,7 +453,7 @@ class NpuDumpData(DumpData):
 
     def _check_input_path_param(self):
         if self.input_path == "":
-            input_path = os.path.join(self.argumts.out_path, INPUT)
+            input_path = os.path.join(self.out_path, INPUT)
             utils.check_file_or_directory_path(os.path.realpath(input_path), True)
             input_bin_files = os.listdir(input_path)
             input_bin_files.sort(key=lambda file: int((re.findall("\\d+", file))[0]))
