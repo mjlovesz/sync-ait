@@ -219,6 +219,13 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
 
 
 def broken(og:OnnxGraph, subgraph_onnx_file:str):
+    """
+    Function: break onnx into single operator pieces and keep in one onnx
+    
+    Input: og -> OnnxGraph, subgraph_onnx_file -> output onnx file path
+
+    Output:  single operator pieces onnx file
+    """
     g_inputs = [ph.name for ph in og.inputs]
     g_outputs = [ph.name for ph in og.outputs]
 
@@ -251,6 +258,9 @@ def broken(og:OnnxGraph, subgraph_onnx_file:str):
 
 
 def generate_single_op_dir(out_path):
+    """
+    generate the outputdir for single op comparision outputs
+    """
     single_op_dir = os.path.join(out_path, 'single_op')
     if os.path.exists(single_op_dir):
         os.rmdir(dir_path)
@@ -258,6 +268,13 @@ def generate_single_op_dir(out_path):
 
 
 def accumulate_shape_size(node, og):
+    """
+    Function: calculate the memory needed for the given node
+
+    Input: node -> node description, og -> global OnnxGraph
+
+    Output: the memory size needed for the given node
+    """
     ans = 0
     for node_input in node.inputs:
         ph = og.get_node(node_input, PlaceHolder)
@@ -294,7 +311,7 @@ def dynamic_divide_onnx(subog: OnnxGraph):
     for idx, node in enumerate(subog.nodes):
         startnode_list.append(node.name)
         endnode_list.append(node.name)
-        size_sum += accumulate_shape_size(node)
+        size_sum += accumulate_shape_size(node, subog)
         if size_sum >= MAX_MEMORY_USE:
             size_sum = 0
             subonnx_file_path = os.path.join(args.out_path, f"{idx}_broken.onnx")
@@ -325,7 +342,7 @@ def merge_csv(csv_list, output_dir):
         df_list.append(df)
     merged_df = pd.concat(df_list)
     merged_df = merged_df.drop_duplicates()
-    merged_df.to_csv(os.path.join(single_op_dir, 'single_op_summary.csv'),index=False)
+    merged_df.to_csv(os.path.join(output_dir, 'single_op_summary.csv'), index=False)
 
 
 def single_op_compare(args, input_shape):
