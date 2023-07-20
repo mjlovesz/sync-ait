@@ -31,7 +31,7 @@ import pandas as pd
 
 from auto_optimizer import OnnxGraph
 from auto_optimizer.graph_refactor import Node
-from auto_optimizer.graph_refactor.onnx import OnnxNode, OnnxPlaceHolder, OnnxIntializer
+from auto_optimizer.graph_refactor.onnx import OnnxNode, OnnxPlaceHolder, OnnxInitializer
 from auto_optimizer.graph_refactor.interface import PlaceHolder
 from msquickcmp.atc.atc_utils import AtcUtils
 from msquickcmp.common import utils
@@ -344,6 +344,7 @@ def merge_csv(csv_list, output_dir):
     merged_df = pd.concat(df_list)
     merged_df = merged_df.drop_duplicates()
     merged_df.to_csv(os.path.join(output_dir, 'single_op_summary.csv'), index=False)
+
 
 def find_all_csv(out_path):
     all_csv_list = []
