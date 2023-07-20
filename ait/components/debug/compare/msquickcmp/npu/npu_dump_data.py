@@ -305,7 +305,7 @@ class NpuDumpData(DumpData):
 
         # do install.sh command
         utils.logger.info("Run command line: cd %s && %s" % (execute_path, " ".join(install_sh_cmd)))
-        utils.execute_command(install_sh_cmd)
+        utils.execute_command(install_sh_cmd, True)
         utils.logger.info("Finish to install benchmark backend execute_path: %s." % benchmark_dir)
         os.chdir(retval)
         utils.logger.info("Run command line: cd %s (back to the working directory)" % (retval))
@@ -344,18 +344,23 @@ class NpuDumpData(DumpData):
         self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
 
         # do benchmark command
-        utils.logger.info("Run command line: %s" % (benchmark_cmd))
-        utils.execute_command(benchmark_cmd)
+        if not self.arguments.single_op:
+            utils.logger.info("Run command line: %s" % (benchmark_cmd))
+        utils.execute_command(benchmark_cmd, self.arguments.single_op)
 
         npu_dump_data_path = ""
         if self.arguments.dump:
             npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
             if not file_is_exist:
+                if self.arguments.single_op:
+                    return "", ""
                 utils.logger.error("The path {} dump data is not exist.".format(npu_dump_data_path))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         # net output data path
         npu_net_output_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir, True)
         if not file_is_exist:
+            if self.arguments.single_op:
+                return "", ""
             utils.logger.error("The path {} net output data is not exist.".format(npu_net_output_data_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
