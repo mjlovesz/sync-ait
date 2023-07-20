@@ -17,6 +17,8 @@ import os
 import logging
 import stat
 import shutil
+import subprocess
+import fcntl
 
 import pytest
 from test_common import TestCommonClass
@@ -153,7 +155,7 @@ class TestClass:
         profiler_path = os.path.join(output_path, "profiler")
         TestCommonClass.prepare_dir(output_path)
 
-        cmd = "{} --model {} --device {} --profiler true --output {}".format(TestCommonClass.cmd_prefix, model_path,
+        cmd = "{} --model {} --device {} --profiler true --profiler_rename false --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                         TestCommonClass.default_device_id, output_path)
         logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
@@ -165,6 +167,74 @@ class TestClass:
                                          "device_{}/sample.json".format(TestCommonClass.default_device_id))
 
         assert os.path.isfile(sampale_json_path)
+
+    def get_file(file_path: str, suffix: str, res_file_path: list) -> list:
+        """获取路径下的指定文件类型后缀的文件
+
+        Args:
+            file_path: 文件夹的路径
+            suffix: 要提取的文件类型的后缀
+            res_file_path: 保存返回结果的列表
+
+        Returns: 文件路径
+
+        """
+
+        for file in os.listdir(file_path):
+
+            if os.path.isdir(os.path.join(file_path, file)):
+                get_file(os.path.join(file_path, file), suffix, res_file_path)
+            else:
+                res_file_path.append(os.path.join(file_path, file))
+
+        # endswith：表示以suffix结尾。可根据需要自行修改；如：startswith：表示以suffix开头，__contains__：包含suffix字符串
+        return res_file_path if suffix == '' or suffix is None else list(
+            filter(lambda x: x.endswith(suffix), res_file_path))
+
+    def test_args_profiler_rename_ok(self):
+        model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
+        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        TestCommonClass.prepare_dir(output_path)
+        profiler_path = os.path.join(output_path, "profiler")
+        TestCommonClass.prepare_dir(output_path)
+
+        cmd = "{} --model {} --device {} --profiler true --profiler_rename true --output {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                                        TestCommonClass.default_device_id, output_path)
+        logging.info(f"run cmd:{cmd}")
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=False, bufsize=0)
+        flags = fcntl.fcntl(p.stdout, fcntl.F_GETFL)
+        fcntl.fcntl(p.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+
+        get_path_flag = True
+        sub_str = ""
+        for line in iter(p.stdout.read, b''):
+            if not line:
+                continue
+            line = line.decode()
+            if (get_path_flag and line.find("PROF_") != -1):
+                get_path_flag = False
+                start_index = line.find("PROF_")
+                sub_str = line[start_index:(start_index + 46)]
+            print(f'{line}', flush=True, end="")
+        p.stdout.close()
+        p.wait()
+
+        output_prefix = os.path.join(profiler_path, sub_str)
+        hash_str = sub_str.rsplit('_')[-1]
+        file_name_json = get_file(output_prefix, ".json", [])
+
+        model_name = os.path.basename(self.model_name).split(".")[0]
+        for file in file_name_json:
+            real_file = os.path.splitext(file)[0]
+            os.rename(file, real_file + "_" + model_name + "_" + hash_str + ".json")
+        assert os.path.exists(profiler_path)
+
+        paths = os.listdir(profiler_path)
+        sampale_json_path = os.path.join(profiler_path, paths[0],
+                                         "device_{}/sample_{}_{}.json".format(TestCommonClass.default_device_id, self.model_name,hash_str))
+
+        assert os.path.isfile(sampale_json_path)
+
 
     def test_args_dump_ok(self):
         """
