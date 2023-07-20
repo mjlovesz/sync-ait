@@ -365,7 +365,7 @@ def csv_sum(original_out_path):
             writer = csv.writer(fp_write)
     else:
         logging.info("Error, file already exists!")
-    writer = pd.ExcelWriter(csv_file_summary, engine='xlsxwriter')
+    writer = pd.ExcelWriter(csv_file_summary)
 
     for i, csv_file in enumerate(csv_file_list):
         data = pd.read_csv(csv_file, na_values=['NAN'])
