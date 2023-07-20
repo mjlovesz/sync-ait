@@ -390,7 +390,7 @@ def main(args, index=0, msgq=None, device_list=None):
             summary.add_batchsize(input_first.shape[0])
 
     if msgq is not None:
-        # wait subprocess init ready, if time eplapsed,force ready run
+        # wait subprocess init ready, if time eplapsed, force ready run
         logger.info("subprocess_{} qsize:{} now waiting".format(index, msgq.qsize()))
         msgq.put(index)
         time_sec = 0
@@ -410,7 +410,12 @@ def main(args, index=0, msgq=None, device_list=None):
     if args.energy_consumption and args.npu_id:
         start_energy_consumption = get_energy_consumption(args.npu_id)
     if args.pipeline:
-        infer_pipeline_run(session, args, infileslist, output_prefix)
+        try:
+            infer_pipeline_run(session, args, infileslist, output_prefix)
+        except Exception as err:
+            if delete_infileslist:
+                delete_infileslist(infileslist)
+            raise RuntimeError("pipeline run failed") from err
     else:
         if args.run_mode == "array":
             infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
@@ -432,7 +437,7 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.h2d_latency_list = MemorySummary.get_h2d_time_list()
     summary.d2h_latency_list = MemorySummary.get_d2h_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
-    logger.info("end_to_end_time (s):{}".format(end_time - start_time))
+    logger.info("end_to_end_time (s):%s", end_time - start_time)
     if args.energy_consumption and args.npu_id:
         logger.info("NPU ID:{} energy consumption(J):{}".format(args.npu_id, ((float(end_energy_consumption) +
                                                                            float(start_energy_consumption))/2.0 ) * (
@@ -442,13 +447,17 @@ def main(args, index=0, msgq=None, device_list=None):
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
 
     if delete_infileslist:
-        for file in infileslist[0]:
-            if (os.path.exists(file)):
-                os.remove(file)
-            else:
-                logger.error("try to delete tmp file {}, but not found.".format(file))
+        delete_infileslist(infileslist)
 
     session.finalize()
+
+
+def delete_infileslist(infileslist):
+    for file in infileslist[0]:
+        if (os.path.exists(file)):
+            os.remove(file)
+        else:
+            logger.error(f"try to delete tmp file {file}, but not found.")
 
 
 def print_subproces_run_error(value):
