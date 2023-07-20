@@ -234,7 +234,7 @@ def broken(og: OnnxGraph, subgraph_onnx_file: str):
     for node_idx, node in enumerate(og.nodes):
         in_ph_list = []
         for idx, inp in enumerate(node.inputs):
-            if inp in g_inputs or og.get_node(inp, OnnxIntializer):
+            if inp in g_inputs or og.get_node(inp, OnnxInitializer):
                 continue
             ph = og.get_node(inp, PlaceHolder)
             if ph is not None and inp not in input_name_list:
@@ -279,22 +279,22 @@ def accumulate_shape_size(node, og):
     ans = 0
     for node_input in node.inputs:
         ph = og.get_node(node_input, PlaceHolder)
-        shape_size = ph.dtype.itemsize
+        shape_size = 1
         if ph:
             for shape in ph.shape:
                 shape_size *= shape
-            ans += shape_size
+            ans += ph.dtype.itemsize * shape_size
     for node_output in node.outputs:
         ph = og.get_node(node_output, PlaceHolder)
-        shape_size = ph.dtype.itemsize
+        shape_size = 1
         if ph:
             for shape in ph.shape:
                 shape_size *= shape
-            ans += shape_size
+            ans += ph.dtype.itemsize * shape_size
     return ans
 
 
-def dynamic_divide_onnx(subog: OnnxGraph):
+def dynamic_divide_onnx(out_path: str, subog: OnnxGraph):
     """
     Function:
     according to the patchsize to divide the given onnx into suitable size onnxs.
@@ -315,7 +315,7 @@ def dynamic_divide_onnx(subog: OnnxGraph):
         size_sum += accumulate_shape_size(node, subog)
         if size_sum >= MAX_MEMORY_USE:
             size_sum = 0
-            subonnx_file_path = os.path.join(args.out_path, f"{idx}_broken.onnx")
+            subonnx_file_path = os.path.join(out_path, f"{idx}_broken.onnx")
             subog.extract_subgraph(startnode_list, endnode_list, subonnx_file_path)
             startnode_list.clear()
             endnode_list.clear()
@@ -323,7 +323,7 @@ def dynamic_divide_onnx(subog: OnnxGraph):
 
     # process rest nodes
     if startnode_list:
-        subonnx_file_path = os.path.join(args.out_path, f"{idx}_broken.onnx")
+        subonnx_file_path = os.path.join(out_path, f"{idx}_broken.onnx")
         subog.extract_subgraph(startnode_list, endnode_list, subonnx_file_path)
         subonnx_list.append(subonnx_file_path)
     return subonnx_list
@@ -362,7 +362,7 @@ def single_op_compare(args, input_shape):
     subog = OnnxGraph.parse(subgraph_onnx_file)
     generate_single_op_dir(args.out_path)
     # devide onnx into fixed size onnxs
-    subonnx_list = dynamic_divide_onnx(subog)
+    subonnx_list = dynamic_divide_onnx(args.out_path, subog)
     csv_list = []
     for idx, subonnx in enumerate(subonnx_list):
         subgraph_om_file = os.path.join(args.out_path, 'broken')
@@ -392,7 +392,7 @@ def single_op_compare(args, input_shape):
         original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
         cmg_args = CmpArgsAdapter(subonnx, os.path.join(args.out_path, "broken.om"),
                                 "", bin_files_path, args.cann_path, tmp_out_path, "", args.device,
-                                "", "", False, "", True, False, custom_op = args.custom_op, locat = True)
+                                "", "", False, "", True, False, custom_op="", locat=False)
         output_json_path = AtcUtils(cmg_args).convert_model_to_json()
         utils.logger.info("Start to run comparision")
         utils.logger.setLevel(logging.ERROR)
