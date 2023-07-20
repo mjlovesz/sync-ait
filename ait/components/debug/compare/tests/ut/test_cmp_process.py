@@ -13,11 +13,12 @@
 # limitations under the License.
 
 import os
+import shutil
 import pandas as pd
 import openpyxl
-import shutil
 
 from msquickcmp.cmp_process import csv_sum
+
 
 def test_csv_sum():
     if os.path.exists('./test_resource/test_csv_sum'):
