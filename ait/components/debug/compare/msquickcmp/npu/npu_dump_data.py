@@ -25,7 +25,7 @@ import re
 import shutil
 import numpy as np
 
-
+from msquickcmp.atc import atc_utils
 from msquickcmp.common import utils
 from msquickcmp.common.dump_data import DumpData
 from msquickcmp.common.utils import AccuracyCompareException, parse_input_shape_to_list
@@ -35,6 +35,7 @@ from msquickcmp.npu.om_parser import OmParser
 BENCHMARK_DIR = "benchmark"
 ACL_JSON_PATH = "acl.json"
 NPU_DUMP_DATA_BASE_PATH = "dump_data/npu"
+NPU_DUMP_DATA_GOLDEN_PATH = "dump_data/npu_golden"
 RESULT_DIR = "result"
 INPUT = "input"
 INPUT_SHAPE = "--input_shape"
@@ -51,11 +52,11 @@ OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 class DynamicInput(object):
 
-    def __init__(self, om_parser, arguments):
-        self.arguments = arguments
+    def __init__(self, om_parser, input_shape):
+        self.input_shape = input_shape
         self.om_parser = om_parser
         self.atc_dynamic_arg, self.cur_dynamic_arg = self.get_dynamic_arg_from_om(om_parser)
-        self.dynamic_arg_value = self.get_arg_value(om_parser, arguments)
+        self.dynamic_arg_value = self.get_arg_value(om_parser, input_shape)
 
     @staticmethod
     def get_dynamic_arg_from_om(om_parser):
@@ -82,18 +83,18 @@ class DynamicInput(object):
         return atc_input_shape
 
     @staticmethod
-    def get_arg_value(om_parser, arguments):
+    def get_arg_value(om_parser, input_shape):
         is_dynamic_scenario, scenario = om_parser.get_dynamic_scenario_info()
         if not is_dynamic_scenario:
             utils.logger.info("The input of model is not dynamic.")
             return ""
         if om_parser.shape_range or scenario == DynamicArgumentEnum.DYM_DIMS:
-            return getattr(arguments, DynamicArgumentEnum.DYM_SHAPE.value.msquickcmp_arg)
+            return input_shape
         atc_input_shape = DynamicInput.get_input_shape_from_om(om_parser)
         # from atc input shape and current input shape to get input batch size
         # if dim in shape is -1, the shape in the index of current input shape is the batch size
         atc_input_shape_dict = utils.parse_input_shape(atc_input_shape)
-        quickcmp_input_shape_dict = utils.parse_input_shape(arguments.input_shape)
+        quickcmp_input_shape_dict = utils.parse_input_shape(input_shape)
         batch_size_set = set()
         for op_name in atc_input_shape_dict.keys():
             DynamicInput.get_dynamic_dim_values(atc_input_shape_dict.get(op_name),
@@ -182,12 +183,19 @@ class NpuDumpData(DumpData):
     Class for generate npu dump data
     """
 
-    def __init__(self, arguments, output_json_path):
+    def __init__(self, arguments, is_golden=False):
         super().__init__()
-        self.arguments = arguments
+        self.offline_model_path, self.out_path = arguments.offline_model_path, arguments.out_path
+        self.input_shape, self.input_path = arguments.input_shape, arguments.input_path
+        self.dump, self.output_size = arguments.dump, arguments.output_size
+        self.device, self.is_golden = arguments.device, is_golden
+        
+        self.benchmark_input_path = ""
+        output_json_path = atc_utils.convert_model_to_json(arguments.cann_path, self.offline_model_path, self.out_path)
         self.om_parser = OmParser(output_json_path)
-        self.dynamic_input = DynamicInput(self.om_parser, self.arguments)
+        self.dynamic_input = DynamicInput(self.om_parser, self.input_shape)
         self.python_version = sys.executable or "python3"
+        self.data_dir = self._create_dir()
 
     @staticmethod
     def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir):
@@ -215,17 +223,27 @@ class NpuDumpData(DumpData):
                 "The path {} does not have permission to write.Please check the path permission".format(acl_json_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
-    def generate_inputs_data(self):
-        if self.arguments.input_path:
-            input_path = self.arguments.input_path.split(",")
-            for i, input_file in enumerate(input_path):
-                if not os.path.isfile(input_file):
-                    utils.logger.error("no such file exists: {}".format(input_file))
-                    raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-                file_name = "input_" + str(i) + ".bin"
-                dest_file = os.path.join(self.arguments.out_path, "input", file_name)
-                shutil.copy(input_file, dest_file)
+    def _create_dir(self):
+        data_dir = os.path.join(self.out_path, "input")
+        utils.create_directory(data_dir)
+        return data_dir
+    
+    def _generate_inputs_data_without_aipp(self, input_dir):
+        input_bin_files = os.listdir(input_dir)
+        if len(input_bin_files) > 0:
             return
+        
+        inputs_list, data_type_list = self.om_parser.get_shape_list()
+        if self.input_shape:
+            inputs_list = parse_input_shape_to_list(self.input_shape)
+        
+        for i, (input_shape, data_type) in enumerate(zip(inputs_list, data_type_list)):
+            input_data = np.random.random(input_shape).astype(data_type)
+            file_name = "input_" +  str(i) + ".bin"
+            input_data.tofile(os.path.join(input_dir, file_name))
+        return 
+    
+    def _generate_inputs_data_for_aipp(self, input_dir):
         aipp_content = self.om_parser.get_aipp_config_content()
         aipp_list = aipp_content.split(",")
         src_image_size_h = []
@@ -245,8 +263,8 @@ class NpuDumpData(DumpData):
             utils.logger.error("atc insert_op_config file's src_image_size_h number "
                                   "does not equal src_image_size_w")
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
-        if self.arguments.input_shape:
-            inputs_list = parse_input_shape_to_list(self.arguments.input_shape)
+        if self.input_shape:
+            inputs_list = parse_input_shape_to_list(self.input_shape)
         else:
             inputs_list = self.om_parser.get_shape_list()
         if len(inputs_list) != len(src_image_size_h):
@@ -255,7 +273,7 @@ class NpuDumpData(DumpData):
         # currently, onnx only support input format nchw
         h_position = 2
         w_position = 3
-        input_dir = os.path.join(self.arguments.out_path, "input")
+        input_dir = os.path.join(self.out_path, "input")
         for i, item in enumerate(inputs_list):
             item[h_position] = int(src_image_size_h[i])
             item[w_position] = int(src_image_size_w[i])
@@ -267,7 +285,24 @@ class NpuDumpData(DumpData):
             file_name = "input_" + str(i) + ".bin"
             input_data.tofile(os.path.join(input_dir, file_name))
 
-    def generate_dump_data(self, use_cli):
+    def generate_inputs_data(self, npu_dump_data_path=None, use_aipp=False):
+        if self.input_path:
+            input_path = self.input_path.split(",")
+            for i, input_file in enumerate(input_path):
+                if not os.path.isfile(input_file):
+                    utils.logger.error("no such file exists: {}".format(input_file))
+                    raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+                file_name = "input_" + str(i) + ".bin"
+                dest_file = os.path.join(self.out_path, "input", file_name)
+                shutil.copy(input_file, dest_file)
+            return
+        if use_aipp:
+            self._generate_inputs_data_for_aipp(self.data_dir)
+        else:
+            self._generate_inputs_data_without_aipp(self.data_dir)
+
+
+    def generate_dump_data(self, npu_dump_path=None, om_parser=None, use_cli=True):
         """
         Function Description:
             compile and rum benchmark project
@@ -324,17 +359,18 @@ class NpuDumpData(DumpData):
         except ModuleNotFoundError as err:
             raise err
 
-        self._compare_shape_vs_file()
-        npu_data_output_dir = os.path.join(self.arguments.out_path, NPU_DUMP_DATA_BASE_PATH)
+        self._compare_shape_vs_file()    
+        npu_data_output_dir = os.path.join(self.out_path, 
+                                           NPU_DUMP_DATA_GOLDEN_PATH if self.is_golden else NPU_DUMP_DATA_BASE_PATH)
         utils.create_directory(npu_data_output_dir)
-        model_name, extension = utils.get_model_name_and_extension(self.arguments.offline_model_path)
+        model_name, extension = utils.get_model_name_and_extension(self.offline_model_path)
         acl_json_path = os.path.join(npu_data_output_dir, ACL_JSON_PATH)
         if not os.path.exists(acl_json_path):
             os.mknod(acl_json_path, mode=0o600)
-        benchmark_cmd = [self.python_version, "-m", "ais_bench", "--model", self.arguments.offline_model_path,
-                         "--input", self.arguments.benchmark_input_path, "--device", self.arguments.device,
+        benchmark_cmd = [self.python_version, "-m", "ais_bench", "--model", self.offline_model_path,
+                         "--input", self.benchmark_input_path, "--device", self.device,
                          "--output", npu_data_output_dir]
-        if self.arguments.dump:
+        if self.dump:
             cur_dir = os.getcwd()
             acl_json_path = os.path.join(cur_dir, acl_json_path)
             self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
@@ -348,7 +384,7 @@ class NpuDumpData(DumpData):
         utils.execute_command(benchmark_cmd)
 
         npu_dump_data_path = ""
-        if self.arguments.dump:
+        if self.dump:
             npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
             if not file_is_exist:
                 utils.logger.error("The path {} dump data is not exist.".format(npu_dump_data_path))
@@ -359,19 +395,19 @@ class NpuDumpData(DumpData):
             utils.logger.error("The path {} net output data is not exist.".format(npu_net_output_data_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
-        return npu_dump_data_path, npu_net_output_data_path
+        return npu_dump_data_path if self.dump else npu_net_output_data_path
 
     def _make_benchmark_cmd_for_shape_range(self, benchmark_cmd):
         pattern = re.compile(r'^[0-9]+$')
         count = self.om_parser.get_net_output_count()
-        if not self.arguments.output_size:
+        if not self.output_size:
             if count > 0:
                 count_list = []
                 for _ in range(count):
                     count_list.append("90000000")
-                self.arguments.output_size = ",".join(count_list)
-        if self.arguments.output_size:
-            output_size_list = self.arguments.output_size.split(',')
+                self.output_size = ",".join(count_list)
+        if self.output_size:
+            output_size_list = self.output_size.split(',')
             if len(output_size_list) != count:
                 utils.logger.error(
                     'The output size (%d) is not equal %d in model. Please check the "--output-size" argument.'
@@ -382,14 +418,14 @@ class NpuDumpData(DumpData):
                 match = pattern.match(item)
                 if match is None:
                     utils.logger.error("The size (%s) is invalid. Please check the output size."
-                                          % self.arguments.output_size)
+                                          % self.output_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
                 if int(item) <= 0:
                     utils.logger.error("The size (%s) must be large than zero. Please check the output size."
-                                          % self.arguments.output_size)
+                                          % self.output_size)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             benchmark_cmd.append(OUTPUT_SIZE)
-            benchmark_cmd.append(self.arguments.output_size)
+            benchmark_cmd.append(self.output_size)
 
     def _convert_net_output_to_numpy(self, npu_net_output_data_path, npu_dump_data_path):
         net_output_data = None
@@ -412,18 +448,18 @@ class NpuDumpData(DumpData):
                 utils.save_numpy_data(numpy_file_path, net_output_data)
 
     def _check_input_path_param(self):
-        if self.arguments.input_path == "":
-            input_path = os.path.join(self.arguments.out_path, INPUT)
+        if self.input_path == "":
+            input_path = os.path.join(self.argumts.out_path, INPUT)
             utils.check_file_or_directory_path(os.path.realpath(input_path), True)
             input_bin_files = os.listdir(input_path)
             input_bin_files.sort(key=lambda file: int((re.findall("\\d+", file))[0]))
             bin_file_path_array = []
             for item in input_bin_files:
                 bin_file_path_array.append(os.path.join(input_path, item))
-            self.arguments.benchmark_input_path = ",".join(bin_file_path_array)
+            self.benchmark_input_path = ",".join(bin_file_path_array)
         else:
-            bin_file_path_array = utils.check_input_bin_file_path(self.arguments.input_path)
-            self.arguments.benchmark_input_path = ",".join(bin_file_path_array)
+            bin_file_path_array = utils.check_input_bin_file_path(self.input_path)
+            self.benchmark_input_path = ",".join(bin_file_path_array)
 
     def _compare_shape_vs_file(self):
         shape_size_array = self.om_parser.get_shape_size()
@@ -435,7 +471,7 @@ class NpuDumpData(DumpData):
 
     def _get_file_size(self):
         file_size = []
-        files = self.arguments.benchmark_input_path.split(",")
+        files = self.benchmark_input_path.split(",")
         for item in files:
             if item.endswith("bin") or item.endswith("BIN"):
                 file_size.append(os.path.getsize(item))

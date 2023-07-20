@@ -30,7 +30,7 @@ import acl
 
 from auto_optimizer.graph_refactor import Node
 from auto_optimizer import OnnxGraph
-from msquickcmp.atc.atc_utils import AtcUtils
+from msquickcmp.atc import atc_utils
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException, get_shape_to_directory_name
 from msquickcmp.common.convert import convert_bin_dump_data_to_npy
@@ -61,6 +61,9 @@ def _generate_golden_data_model(args):
         from msquickcmp.onnx_model.onnx_dump_data import OnnxDumpData
 
         return OnnxDumpData(args)
+    elif ".om" == extension:
+        return NpuDumpData(arguments=args, is_golden=True)
+
     else:
         utils.logger.error("Only model files whose names end with .pb or .onnx or .prototxt are supported")
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_MODEL_TYPE_ERROR)
@@ -108,36 +111,37 @@ def cmp_process(args: CmpArgsAdapter, use_cli: bool):
         raise error
 
 
-def run(args, input_shape, output_json_path, original_out_path, use_cli: bool):
+def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
     if input_shape:
         args.input_shape = input_shape
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
 
     # whether use aipp
+    output_json_path = atc_utils.convert_model_to_json(args.cann_path, args.offline_model_path, args.out_path)
     temp_om_parser = OmParser(output_json_path)
     use_aipp = True if temp_om_parser.get_aipp_config_content() else False
 
-    golden_dump = _generate_golden_data_model(args)
-    npu_dump = NpuDumpData(args, output_json_path)
+    if use_aipp and args.fusion_switch_file is not None:
+        utils.logger.error("if .om model is using aipp config, --fusion-switch-file arg is not support.")
+        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
-    if use_aipp:
-        # generate npu inputs data
-        npu_dump.generate_inputs_data()
-        # generate npu dump data
-        npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
-        # generate onnx inputs data
-        golden_dump.generate_inputs_data(npu_dump_data_path, use_aipp)
-    else:
-        # generate onnx and npu inputs data
-        golden_dump.generate_inputs_data('', use_aipp)
-        # generate npu dump data
-        npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli)
+    golden_dump = _generate_golden_data_model(args)
+    npu_dump = NpuDumpData(args, is_golden=False)
+
+    # generate npu inputs data
+    npu_dump.generate_inputs_data(use_aipp=use_aipp)
+
+    # generate npu dump data
+    npu_dump_data_path = npu_dump.generate_dump_data(use_cli=use_cli)
+
+    # generate onnx inputs data
+    golden_dump.generate_inputs_data(npu_dump_data_path, use_aipp)
 
     expect_net_output_node = npu_dump.get_expect_output_name()
 
     # convert data from bin to npy if --convert is used, or if custom_op is not empty
     if args.bin2npy or args.custom_op != "":
-        npu_dump_npy_path = convert_bin_dump_data_to_npy(npu_dump_data_path, npu_net_output_data_path, args.cann_path)
+        npu_dump_npy_path = convert_bin_dump_data_to_npy(npu_dump_data_path, args.cann_path)
     else:
         npu_dump_npy_path = ""
 
@@ -147,15 +151,15 @@ def run(args, input_shape, output_json_path, original_out_path, use_cli: bool):
 
     # if it's dynamic batch scenario, golden data files should be renamed
     utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
-
+    
+    net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args)
     if not args.dump:
         # only compare the final output
-        net_compare = NetCompare(npu_net_output_data_path, golden_dump_data_path, output_json_path, args)
-        net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
+        net_compare.net_output_compare(npu_dump_data_path, golden_net_output_info)
     else:
         # compare the entire network
-        net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args)
         net_compare.accuracy_network_compare()
+    
     # Check and correct the mapping of net output node name.
     if len(expect_net_output_node) == 1:
         _check_output_node_name_mapping(expect_net_output_node, golden_net_output_info)
@@ -176,6 +180,17 @@ def print_advisor_info(out_path):
             for line in lines:
                 utils.logger.info(line.strip())
 
+def fusion_close_model_convert(args:CmpArgsAdapter):
+    if args.fusion_switch_file:
+        args.fusion_switch_file = os.path.realpath(args.fusion_switch_file)
+        utils.check_file_or_directory_path(args.fusion_switch_file)
+        
+        close_fusion_om_file = os.path.join(args.out_path, 'close_fusion_om_model')
+        atc_command_file_path = atc_utils.get_atc_path(args.cann_path)
+        atc_cmd = [atc_command_file_path, "--framework=5", "--soc_version=" + acl.get_soc_name(), "--model=" + args.model_path, \
+                   "--output=" + close_fusion_om_file, "--fusion_switch_file=" + args.fusion_switch_file]
+        utils.execute_command(atc_cmd)
+        args.model_path = close_fusion_om_file
 
 def check_and_run(args: CmpArgsAdapter, use_cli: bool):
     utils.check_file_or_directory_path(args.model_path)
@@ -190,9 +205,8 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     args.out_path = original_out_path
 
-    # convert the om model to json
-    output_json_path = AtcUtils(args).convert_model_to_json()
-
+    fusion_close_model_convert(args)
+    
     # deal with the dymShape_range param if exists
     input_shapes = []
     if args.dym_shape_range:
@@ -200,7 +214,7 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
     if not input_shapes:
         input_shapes.append("")
     for input_shape in input_shapes:
-        res = run(args, input_shape, output_json_path, original_out_path, use_cli)
+        res = run(args, input_shape, original_out_path, use_cli)
         if len(res) != 0 and args.locat:
             endnode_names_list = res[0]["GroundTruth"].split(",")
             endnode_name = endnode_names_list[0]
@@ -295,9 +309,8 @@ def subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
     cmg_args = CmpArgsAdapter(subgraph_onnx_file, os.path.join(args.out_path, "tmp_for_accuracy_locat.om"),
                               "", bin_files_path, args.cann_path, tmp_out_path, "", args.device,
                               "", "", False, "", True, False, custom_op=args.custom_op, locat=True)
-    output_json_path = AtcUtils(cmg_args).convert_model_to_json()
     utils.logger.info("Start to run comparision")
-    res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
+    res = run(cmg_args, input_shape, original_out_path, True)
     utils.logger.info("Comparision finished")
     shutil.rmtree(tmp_out_path)
     shutil.rmtree(tmp_bin_path)

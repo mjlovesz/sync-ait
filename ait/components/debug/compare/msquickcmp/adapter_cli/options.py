@@ -200,3 +200,10 @@ opt_onnx_fusion_switch = click.option(
     type=str2bool,
     help="Onnxruntime fusion switch, set False for dump complete onnx data when necessary.Usage: -ofs False."
 )
+
+
+opt_fusion_switch_file = click.option(
+    "--fusion-switch-file",
+    "fusion_switch_file",
+    help="You can disable selected fusion patterns in the configuration file"
+)

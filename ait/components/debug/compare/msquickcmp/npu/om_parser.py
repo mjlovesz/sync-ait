@@ -320,6 +320,7 @@ class OmParser(object):
 
     def _process_inputs_to_list(self, input_desc_array):
         shape_lists = []
+        data_type_list = []
         for input_object in input_desc_array:
             shape_list = []
             if SHAPE_OBJECT not in input_object:
@@ -330,15 +331,12 @@ class OmParser(object):
                 utils.logger.error(
                     "The dtype attribute does not support {} value.".format(input_object[DTYPE_OBJECT]))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_KEY_ERROR)
-            data_type_size = np.dtype(data_type).itemsize
-            if self.shape_range:
-                utils.logger.error("Please specify the input shape of om model through -is param")
-                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-            else:
-                input_format = input_object.get(LAYOUT_OBJECT, "NCHW")
-                input_format_index = [input_format.index(x) for x in "NCHW"]
-                for num in input_object.get(SHAPE_OBJECT).get(DIM_OBJECT):
-                    shape_list.append(num)
-                shape_list = list(np.array(shape_list)[input_format_index])
-                shape_lists.append(shape_list)
-        return shape_lists
+            data_type_list.append(data_type)
+            input_format = input_object.get(LAYOUT_OBJECT, "NCHW")
+            input_format_index = [input_format.index(x) for x in "NCHW"]
+            for num in input_object.get(SHAPE_OBJECT).get(DIM_OBJECT):
+                shape_list.append(num)
+            shape_list = list(np.array(shape_list)[input_format_index])
+            shape_lists.append(shape_list)
+
+        return shape_lists, data_type_list

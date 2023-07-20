@@ -22,14 +22,14 @@ from msquickcmp.common import utils
 MSACCUCMP_FILE_PATH =  "toolkit/tools/operator_cmp/compare/msaccucmp.py"
 
 
-def convert_bin_dump_data_to_npy(npu_dump_data_path, npu_net_output_data_path, cann_path):
+def convert_bin_dump_data_to_npy(npu_dump_data_path, cann_path):
     """
     Function Description:
         provide the interface for dump data conversion
     Exception Description:
         when invalid msaccucmp command throw exception
     """
-    common_path = os.path.commonprefix([npu_dump_data_path, npu_net_output_data_path])
+    common_path = os.path.commonprefix([npu_dump_data_path])
     npu_dump_data_path_diff = os.path.relpath(npu_dump_data_path, common_path)
     time_stamp_file_path = npu_dump_data_path_diff.split(os.path.sep)[1]
     convert_dir_path = npu_dump_data_path.replace(time_stamp_file_path, time_stamp_file_path+'_bin2npy')
