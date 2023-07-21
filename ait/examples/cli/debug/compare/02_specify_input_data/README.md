@@ -18,4 +18,4 @@
   ait debug compare -gm /home/HwHiAiUser/onnx_prouce_data/resnet_offical.onnx -om /home/HwHiAiUser/onnx_prouce_data/model/resnet50.om \
   -i /home/HwHiAiUser/result/test/input_0.npy -c /usr/local/Ascend/ascend-toolkit/latest -o /home/HwHiAiUser/result/test
   ```
-- `-i，–-input` 如果存在npy文件，现在支持自动将npy文件转化为bin文件，而不需要手动转化为bin文件，例如：`/home/input_0.npy,/home/input_1.npy`
+- `-i，–-input` 如果存在npy文件，支持自动将npy文件转化为bin文件，而不需要手动转化为bin文件，例如：`/home/input_0.npy,/home/input_1.npy`
