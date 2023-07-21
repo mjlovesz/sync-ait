@@ -60,6 +60,7 @@ class Args:
 @pytest.fixture(scope="function")
 def fake_arguments():
     return Args(
+        model_path=FAKE_OM_MODEL_PATH,
         offline_model_path=FAKE_OM_MODEL_PATH,
         out_path=OM_OUT_PATH,
         cann_path=CANN_PATH,

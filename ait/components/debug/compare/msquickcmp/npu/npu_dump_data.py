@@ -185,7 +185,8 @@ class NpuDumpData(DumpData):
 
     def __init__(self, arguments, is_golden=False):
         super().__init__()
-        self.offline_model_path, self.out_path = arguments.offline_model_path, arguments.out_path
+        self.offline_model_path = arguments.model_path if is_golden else arguments.offline_model_path
+        self.out_path = arguments.out_path
         self.input_shape, self.input_path = arguments.input_shape, arguments.input_path
         self.dump, self.output_size = arguments.dump, arguments.output_size
         self.device, self.is_golden = arguments.device, is_golden

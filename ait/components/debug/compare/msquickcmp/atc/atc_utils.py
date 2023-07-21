@@ -44,6 +44,10 @@ def convert_model_to_json(cann_path, offline_model_path, out_path):
     atc_command_file_path = get_atc_path(cann_path)
     utils.check_file_or_directory_path(atc_command_file_path)
     output_json_path = os.path.join(out_path, "model", model_name + ".json")
+    if os.path.exists(output_json_path):
+        utils.logger.info("The {} file is exists.".format(output_json_path))
+        return output_json_path
+
     # do the atc command to convert om to json
     utils.logger.info('Start to converting the model to json')
     atc_cmd = [atc_command_file_path, "--mode=1", "--om=" + offline_model_path,

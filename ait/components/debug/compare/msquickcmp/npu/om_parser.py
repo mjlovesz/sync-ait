@@ -332,11 +332,15 @@ class OmParser(object):
                     "The dtype attribute does not support {} value.".format(input_object[DTYPE_OBJECT]))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_KEY_ERROR)
             data_type_list.append(data_type)
-            input_format = input_object.get(LAYOUT_OBJECT, "NCHW")
-            input_format_index = [input_format.index(x) for x in "NCHW"]
+
             for num in input_object.get(SHAPE_OBJECT).get(DIM_OBJECT):
                 shape_list.append(num)
-            shape_list = list(np.array(shape_list)[input_format_index])
+            
+            input_format = input_object.get(LAYOUT_OBJECT, "NCHW")
+            if input_format != "NCHW":
+                input_format_index = [input_format.index(x) for x in "NCHW"]
+                shape_list = list(np.array(shape_list)[input_format_index])
+
             shape_lists.append(shape_list)
 
         return shape_lists, data_type_list

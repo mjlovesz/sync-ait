@@ -37,7 +37,7 @@ from msquickcmp.common.convert import convert_bin_dump_data_to_npy
 from msquickcmp.common.convert import convert_npy_to_bin
 from msquickcmp.net_compare import analyser
 from msquickcmp.net_compare.net_compare import NetCompare
-from msquickcmp.npu.npu_dump_data import NpuDumpData
+from msquickcmp.npu.npu_dump_data import NpuDumpData, DynamicInput
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.npu.om_parser import OmParser
 from msquickcmp.accuracy_locat import accuracy_locat as al
@@ -118,8 +118,8 @@ def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
 
     # whether use aipp
     output_json_path = atc_utils.convert_model_to_json(args.cann_path, args.offline_model_path, args.out_path)    
-    golden_json_path = atc_utils.convert_model_to_json(args.cann_path, args.model_path, args.out_path) \
-        if args.model_path.endswith('.om') else None
+    golden_json_path = atc_utils.convert_model_to_json(args.cann_path, args.model_path, 
+                                                       args.out_path) if args.model_path.endswith('.om') else None
 
     temp_om_parser = OmParser(output_json_path)
     use_aipp = True if temp_om_parser.get_aipp_config_content() else False
@@ -189,6 +189,10 @@ def fusion_close_model_convert(args:CmpArgsAdapter):
         args.fusion_switch_file = os.path.realpath(args.fusion_switch_file)
         utils.check_file_or_directory_path(args.fusion_switch_file)
         
+        om_json_path = atc_utils.convert_model_to_json(args.cann_path, args.offline_model_path, args.out_path)
+        om_parser = OmParser(om_json_path)
+        atc_input_shape_in_offline_model = DynamicInput(om_parser)
+
         close_fusion_om_file = os.path.join(args.out_path, 'close_fusion_om_model')
         atc_command_file_path = atc_utils.get_atc_path(args.cann_path)
         atc_cmd = [atc_command_file_path, "--framework=5", 
@@ -196,6 +200,9 @@ def fusion_close_model_convert(args:CmpArgsAdapter):
                    "--model=" + args.model_path, 
                    "--output=" + close_fusion_om_file, 
                    "--fusion_switch_file=" + args.fusion_switch_file]
+        if atc_input_shape_in_offline_model:
+            atc_cmd.extend(["--input_shape", atc_input_shape_in_offline_model])
+
         utils.execute_command(atc_cmd)
         args.model_path = close_fusion_om_file + ".om"
 
