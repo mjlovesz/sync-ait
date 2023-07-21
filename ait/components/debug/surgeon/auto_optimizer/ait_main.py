@@ -278,7 +278,7 @@ def command_concatenate(
     if not check_input_path(graph2):
         raise TypeError(f"Invalid graph2: {graph2}")
 
-    if combined_graph_path and not check_output_model_path(combined_graph_path):
+    if not check_output_model_path(combined_graph_path):
         raise TypeError(f"Invalid output: {combined_graph_path}")
 
     onnx_graph1 = OnnxGraph.parse(graph1)

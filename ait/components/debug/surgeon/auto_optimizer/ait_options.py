@@ -115,6 +115,7 @@ opt_prefix = click.option(
     'graph_prefix',
     required=False,
     type=str,
+    default='pre_',
     help='Prefix added to all names in a graph'
 )
 
@@ -123,7 +124,7 @@ opt_combined_graph_path = click.option(
     '-cgp',
     '--combined-graph-path',
     'combined_graph_path',
-    required=False,
+    required=True,
     type=str,
     callback=check_args,
     help='Output combined onnx graph path'
