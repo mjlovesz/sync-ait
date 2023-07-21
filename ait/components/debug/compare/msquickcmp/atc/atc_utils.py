@@ -37,9 +37,8 @@ def convert_model_to_json(cann_path, offline_model_path, out_path):
     """
     model_name, extension = utils.get_model_name_and_extension(offline_model_path)
     if ".om" != extension:
-        utils.logger.error("The offline model file not ends with '.om', Please check {} file.".format(
-            offline_model_path))
-        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_MODEL_TYPE_ERROR)
+        utils.logger.info("The offline model file not ends with '.om'")
+        return None
     utils.check_file_or_directory_path((os.path.realpath(cann_path)), True)
     atc_command_file_path = get_atc_path(cann_path)
     utils.check_file_or_directory_path(atc_command_file_path)

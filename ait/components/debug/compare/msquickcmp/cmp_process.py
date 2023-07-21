@@ -118,6 +118,8 @@ def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
 
     # whether use aipp
     output_json_path = atc_utils.convert_model_to_json(args.cann_path, args.offline_model_path, args.out_path)
+    golden_json_path = atc_utils.convert_model_to_json(args.cann_path, args.model_path, args.out_path)
+
     temp_om_parser = OmParser(output_json_path)
     use_aipp = True if temp_om_parser.get_aipp_config_content() else False
 
@@ -152,7 +154,7 @@ def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
     # if it's dynamic batch scenario, golden data files should be renamed
     utils.handle_ground_truth_files(npu_dump.om_parser, npu_dump_data_path, golden_dump_data_path)
     
-    net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args)
+    net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args, golden_json_path)
     if not args.dump:
         # only compare the final output
         net_compare.net_output_compare(npu_dump_data_path, golden_net_output_info)
@@ -194,7 +196,7 @@ def fusion_close_model_convert(args:CmpArgsAdapter):
                    "--output=" + close_fusion_om_file, 
                    "--fusion_switch_file=" + args.fusion_switch_file]
         utils.execute_command(atc_cmd)
-        args.model_path = close_fusion_om_file
+        args.model_path = close_fusion_om_file + ".om"
 
 
 def check_and_run(args: CmpArgsAdapter, use_cli: bool):
