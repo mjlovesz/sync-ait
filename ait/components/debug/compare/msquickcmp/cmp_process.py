@@ -426,7 +426,7 @@ def single_op_compare(args, input_shape):
         original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
         cmg_args = CmpArgsAdapter(subonnx, os.path.join(args.out_path, "broken.om"),
                                 "", bin_files_path, args.cann_path, tmp_out_path, "", args.device,
-                                "", "", False, "", True, False, custom_op="", locat=False)
+                                "", "", False, "", True, False, custom_op="", locat=False, single_op=True)
         output_json_path = AtcUtils(cmg_args).convert_model_to_json()
         utils.logger.info("Start to run comparision")
         utils.logger.setLevel(logging.ERROR)
