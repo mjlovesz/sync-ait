@@ -278,6 +278,7 @@ g.save('model_fix.onnx')
 - `graph1`(OnnxGraph): 第一幅ONNX图
 - `graph2`(OnnxGraph): 第二幅ONNX图
 - `io_map`(List[Tuple[str, str]]): 第一幅ONNX图的输出与第二幅ONNX图的输入的映射关系
+- `prefix`(str): 添加到第一幅ONNX图所有名称的前缀。若不指定，则默认为`pre_`
 - `graph_name`(str): 拼接之后ONNX图的名称。若不指定，则默认为以下划线连接的两幅图的名称
 
 <details>
