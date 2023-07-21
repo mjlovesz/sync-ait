@@ -21,8 +21,8 @@ from pickle import NONE
 import logging
 import json
 import shutil
-import numpy as np
 import uuid
+import numpy as np
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -133,8 +133,6 @@ def get_dump_relative_paths(output_dir, timestamp):
 
 def get_msaccucmp_path():
     ascend_toolkit_path = os.environ.get("ASCEND_TOOLKIT_HOME")
-    if ascend_toolkit_path is None:
-        return None
     msaccucmp_path = os.path.join(str(ascend_toolkit_path), MSACCUCMP_FILE_PATH)
     return msaccucmp_path if os.path.exists(msaccucmp_path) else None
 
@@ -175,7 +173,7 @@ def create_tmp_acl_json(acl_json_path):
             tmp_acl_json_path = None
 
     if tmp_acl_json_path is not None:
-        with open(tmp_acl_json_path, "w") as f:
+        with os.fdopen(os.open(tmp_acl_json_path, WRITE_FLAGS, WRITE_MODES), 'w') as f:
             json.dump(acl_json_dict, f)
 
     return tmp_acl_json_path, real_dump_path, tmp_dump_path
