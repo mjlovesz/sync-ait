@@ -34,7 +34,7 @@ main() {
 
     export PYTHON_COMMAND=${2:-"python3"}
 
-    ${PYTHON_COMMAND} -m pytest .
+    ${PYTHON_COMMAND} -m pytest . -s
     ret_val=$?
 
     del_source_code_from_tests
