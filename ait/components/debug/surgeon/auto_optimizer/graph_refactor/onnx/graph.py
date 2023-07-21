@@ -238,7 +238,6 @@ class OnnxGraph(BaseGraph):
 
         name_map.update({e.name: _prefix(prefix, e.name) for e in graph.nodes})
         name_map.update({e.name: _prefix(prefix, e.name) for e in graph.initializers})
-        # name_map.update({e.name: _prefix(prefix, e.name) for e in graph.value_infos})
 
         # add prefixes to all names
         for node in g.nodes:
