@@ -298,5 +298,5 @@ def get_cmd_info():
     list_cmd_info = CommandInfo("list", ListCommand())
     evaluate_cmd_info = CommandInfo("evalute", EvaluateCommand())
     optimize_cmd_info = CommandInfo("optimize", OptimizeCommand())
-    extract_cmd_info = CommandInfo("extract", ExtractCommand)
+    extract_cmd_info = CommandInfo("extract", ExtractCommand())
     return CommandInfo("surgeon", None, [list_cmd_info, evaluate_cmd_info, optimize_cmd_info, extract_cmd_info])
