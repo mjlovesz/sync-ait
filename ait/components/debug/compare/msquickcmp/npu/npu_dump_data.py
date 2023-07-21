@@ -341,7 +341,8 @@ class NpuDumpData(DumpData):
             benchmark_cmd.extend(["--acl_json_path", acl_json_path])
 
         self.dynamic_input.add_dynamic_arg_for_benchmark(benchmark_cmd)
-        self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
+        if not self.arguments.single_op:
+            self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
 
         # do benchmark command
         if not self.arguments.single_op:
@@ -360,7 +361,8 @@ class NpuDumpData(DumpData):
         npu_net_output_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir, True)
         if not file_is_exist:
             if self.arguments.single_op:
-                return "", ""
+                return "", "
+                "
             utils.logger.error("The path {} net output data is not exist.".format(npu_net_output_data_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
