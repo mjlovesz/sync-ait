@@ -113,7 +113,7 @@ class OnnxDumpData(DumpData):
             self._check_path_exists(npu_dump_data_path)
             self.inputs_map = self._get_inputs_data_aipp(self.data_dir, inputs_tensor_info, npu_dump_data_path)
         else:
-            self.inputs_map = self._get_inputs_data(self.data_dir, inputs_tensor_info)
+            self.inputs_map = self._get_inputs_data(inputs_tensor_info)
 
     def generate_dump_data(self, npu_dump_path=None, om_parser=None):
         dump_model_with_inputs_contents = self._modify_model_add_outputs_nodes(
@@ -224,7 +224,7 @@ class OnnxDumpData(DumpData):
         utils.logger.info("model inputs tensor info:\n{}\n".format(inputs_tensor_info))
         return inputs_tensor_info
 
-    def _get_inputs_data(self, data_dir, inputs_tensor_info):
+    def _get_inputs_data(self, inputs_tensor_info):
         names = [ii["name"] for ii in inputs_tensor_info]
         shapes = [ii["shape"] for ii in inputs_tensor_info]
         dtypes = [self._convert_to_numpy_type(ii["type"]) for ii in inputs_tensor_info]
@@ -233,6 +233,8 @@ class OnnxDumpData(DumpData):
         if "" == self.input_path:
             utils.check_file_or_directory_path(os.path.realpath(self.data_dir), True)
             input_bin_files = os.listdir(self.data_dir)
+            if len(input_bin_files) == 0:
+                return self._generate_random_input_data(self.data_dir, names, shapes, dtypes)
             input_bin_files.sort(key=lambda file: int((re.findall("\\d+", file))[0]))
             bin_file_path_array = [os.path.join(self.data_dir, item) for item in input_bin_files]
 
