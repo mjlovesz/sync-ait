@@ -247,6 +247,7 @@ def get_memory_size_by_soc_type():
     # get size by Byte Unit
     return memory_size // 4 * 1024 * 1024
 
+
 def broken(og: OnnxGraph, subgraph_onnx_file: str):
     """
     Function: break onnx into single operator pieces and keep in one onnx
@@ -437,6 +438,7 @@ def single_op_compare(args, input_shape):
         shutil.rmtree(tmp_bin_path)
     summary_csv_path = merge_csv(csv_list, single_op_dir)
     analyser.Analyser(summary_csv_path)()
+
 
 def output_error_interval_info(fp_writer, error_node_list):
     for [l_node, r_node] in error_node_list:
