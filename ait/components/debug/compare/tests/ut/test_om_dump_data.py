@@ -120,6 +120,9 @@ def fake_om_model(width_onnx_model):
 
     yield FAKE_OM_MODEL_PATH
 
+    if os.path.exists(FAKE_OM_MODEL_PATH):
+        os.remove(FAKE_OM_MODEL_PATH)
+
 
 @pytest.fixture(scope="module", autouse=True)
 def fake_om_model_with_aipp(width_onnx_model):
