@@ -17,6 +17,7 @@ import os
 import sys
 import stat
 import re
+import uuid
 from pickle import NONE
 import logging
 from random import sample
@@ -121,6 +122,6 @@ def save_data_to_files(file_path, ndata):
 def create_fake_file_name(pure_data_type, index):
     chars = ascii_lowercase + ascii_uppercase + digits
     suffix = "_" + pure_data_type + "_" + str(index)
-    fname = os.path.join(os.getcwd(), "tmp-" + "".join(sample(chars, 8)) + suffix)
+    fname = os.path.join(os.getcwd(), "tmp-" + "".join(str(uuid.uuid4())) + suffix)
 
     return fname if not os.path.exists(fname) else create_fake_file_name(pure_data_type, index)
