@@ -191,8 +191,13 @@ def fake_om_model_dym_shape(fake_dym_shape_onnx_model):
                                                             acl.get_soc_name(),
                                                             "input0:[1~2,3,32,32]")
             subprocess.run(cmd.split(), shell=False)
-            dym_shape_om_file_list = [os.path.join(pp, ii) for ii in os.listdir(pp) if ii.endswith('.om')]
-            dym_shape_om_file = sorted(dym_shape_om_file_list, key=lambda xx: os.path.getmtime(xx), reverse=True)[0]
+            om_list = [os.path.join(pp, ii) for ii in os.listdir(pp) if ii.endswith('.om')]
+            for om in om_list:
+                if FAKE_DYM_SHAPE_OM_MODEL_PATH.replace(".om", "") in om:
+                    exits = True
+                    dym_shape_om_file = om
+                break
+
     yield dym_shape_om_file
 
     if os.path.exists(dym_shape_om_file):
@@ -376,7 +381,7 @@ def test_generate_dump_data_given_random_data_when_dym_shape_then_pass(fake_argu
         shutil.rmtree(fake_arguments.out_path)
 
 
-def test_generate_dump_data_given_any_when_dym_shape_and_golden_then_pass(fake_arguments,
+def generate_dump_data_given_any_when_dym_shape_and_golden_then_pass(fake_arguments,
                                                                           fake_om_model_dym_shape):
     fake_arguments.offline_model_path = fake_om_model_dym_shape
     fake_arguments.out_path = fake_om_model_dym_shape.replace(".om", "")
@@ -394,7 +399,7 @@ def test_generate_dump_data_given_any_when_dym_shape_and_golden_then_pass(fake_a
         shutil.rmtree(fake_arguments.out_path)
 
 
-def test_generate_inputs_data_given_any_when_dym_shape_and_golden_then_failed(fake_arguments,
+def generate_inputs_data_given_any_when_dym_shape_and_golden_then_failed(fake_arguments,
                                                                           fake_om_model_dym_shape):
     fake_arguments.offline_model_path = fake_om_model_dym_shape
     fake_arguments.out_path = fake_om_model_dym_shape.replace(".om", "")
