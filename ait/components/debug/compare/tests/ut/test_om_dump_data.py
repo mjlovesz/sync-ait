@@ -120,7 +120,7 @@ def fake_dym_shape_onnx_model():
 @pytest.fixture(scope="module", autouse=True)
 def fake_om_model(width_onnx_model):
     if not os.path.exists(FAKE_OM_MODEL_PATH):
-        cmd = 'atc --model={}  --framework=5 --output={}, \
+        cmd = 'atc --model={}  --framework=5 --output={} \
             --soc_version={}'.format(width_onnx_model, 
                                      OM_OUT_PATH,
                                      acl.get_soc_name())
