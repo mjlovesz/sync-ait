@@ -170,40 +170,6 @@ def fake_om_model_with_aipp(width_onnx_model):
             os.remove("fake_aipp.config")
 
 
-@pytest.fixture(scope="module", autouse=True)
-def fake_om_model_dym_shape(fake_dym_shape_onnx_model):
-
-    pp = "./"
-    om_list = [os.path.join(pp, ii) for ii in os.listdir(pp) if ii.endswith('.om')]
-    dym_shape_om_file = FAKE_DYM_SHAPE_OM_MODEL_PATH
-    exits = False
-    for om in om_list:
-        if FAKE_DYM_SHAPE_OM_MODEL_PATH.replace(".om", "") in om:
-            exits = True
-            dym_shape_om_file = om
-            break
-    
-    if not exits:
-        if not os.path.exists(FAKE_DYM_SHAPE_OM_MODEL_PATH):
-            cmd = 'atc --model={} --framework=5 --output={} \
-                --soc_version={} --input_shape_range={}'.format(fake_dym_shape_onnx_model, 
-                                                            FAKE_DYM_SHAPE_OM_MODEL_PATH.replace(".om", ""),
-                                                            acl.get_soc_name(),
-                                                            "input0:[1~2,3,32,32]")
-            subprocess.run(cmd.split(), shell=False)
-            om_list = [os.path.join(pp, ii) for ii in os.listdir(pp) if ii.endswith('.om')]
-            for om in om_list:
-                if FAKE_DYM_SHAPE_OM_MODEL_PATH.replace(".om", "") in om:
-                    exits = True
-                    dym_shape_om_file = om
-                break
-
-    yield dym_shape_om_file
-
-    if os.path.exists(dym_shape_om_file):
-        os.remove(dym_shape_om_file)
-
-
 def test_init_given_valid_when_any_then_pass(fake_arguments):
     aa = NpuDumpData(fake_arguments, False)
 
@@ -361,50 +327,3 @@ def test_generate_dump_data_given_random_data_when_dump_false_then_pass(fake_arg
 
     if os.path.exists(fake_arguments.out_path):
         shutil.rmtree(fake_arguments.out_path)
-
-
-def generate_dump_data_given_random_data_when_dym_shape_then_pass(fake_arguments,
-                                                                       fake_om_model_dym_shape):
-    fake_arguments.offline_model_path = fake_om_model_dym_shape
-    fake_arguments.out_path = fake_om_model_dym_shape.replace(".om", "")
-    fake_arguments.input_shape = "input0:1,3,32,32"
-
-    npu_dump = NpuDumpData(fake_arguments, False)
-    npu_dump.generate_inputs_data()
-
-    om_dump_data_dir = npu_dump.generate_dump_data()
-    assert os.path.exists(om_dump_data_dir)
-
-    assert len(os.listdir(om_dump_data_dir)) > 0
-
-    if os.path.exists(fake_arguments.out_path):
-        shutil.rmtree(fake_arguments.out_path)
-
-
-def generate_dump_data_given_any_when_dym_shape_and_golden_then_pass(fake_arguments,
-                                                                          fake_om_model_dym_shape):
-    fake_arguments.offline_model_path = fake_om_model_dym_shape
-    fake_arguments.out_path = fake_om_model_dym_shape.replace(".om", "")
-
-    fake_arguments.input_shape = "input0:2,3,32,32"
-    npu_dump = NpuDumpData(fake_arguments, True)
-    npu_dump.generate_inputs_data()
-
-    om_dump_data_dir = npu_dump.generate_dump_data()
-    assert os.path.exists(om_dump_data_dir)
-
-    assert len(os.listdir(om_dump_data_dir)) > 0
-
-    if os.path.exists(fake_arguments.out_path):
-        shutil.rmtree(fake_arguments.out_path)
-
-
-def generate_inputs_data_given_any_when_dym_shape_and_golden_then_failed(fake_arguments,
-                                                                          fake_om_model_dym_shape):
-    fake_arguments.offline_model_path = fake_om_model_dym_shape
-    fake_arguments.out_path = fake_om_model_dym_shape.replace(".om", "")
-    
-    npu_dump = NpuDumpData(fake_arguments, True)
-    with pytest.raises(AccuracyCompareException):
-        npu_dump.generate_inputs_data()
-
