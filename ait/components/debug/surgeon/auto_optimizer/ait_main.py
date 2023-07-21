@@ -55,7 +55,8 @@ from auto_optimizer.ait_options import (
     opt_graph1,
     opt_graph2,
     opt_io_map,
-    opt_combined_graph_path
+    opt_prefix,
+    opt_combined_graph_path,
 )
 
 
@@ -263,20 +264,22 @@ def command_extract(
 @opt_graph1
 @opt_graph2
 @opt_io_map
+@opt_prefix
 @opt_combined_graph_path
 def command_concatenate(
     graph1: str,
     graph2: str,
     io_map: str,
+    graph_prefix: str,
     combined_graph_path: str
 ) -> None:
     if not check_input_path(graph1):
-        raise ValueError(f"Invalid graph1: {graph1}")
+        raise TypeError(f"Invalid graph1: {graph1}")
     if not check_input_path(graph2):
-        raise ValueError(f"Invalid graph2: {graph2}")
+        raise TypeError(f"Invalid graph2: {graph2}")
 
     if not check_output_model_path(combined_graph_path):
-        raise ValueError(f"Invalid output: {combined_graph_path}")
+        raise TypeError(f"Invalid output: {combined_graph_path}")
 
     onnx_graph1 = OnnxGraph.parse(graph1)
     onnx_graph2 = OnnxGraph.parse(graph2)
@@ -293,7 +296,9 @@ def command_concatenate(
     try:
         combined_graph = OnnxGraph.concat_graph(
             onnx_graph1, onnx_graph2,
-            io_map_list
+            io_map_list,
+            prefix=graph_prefix,
+            graph_name=combined_graph_path
         )
     except Exception as err:
         logger.error(err)
