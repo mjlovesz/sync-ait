@@ -308,9 +308,6 @@ class OnnxGraph(BaseGraph):
 
             io_map = [(prefix + io[0], io[1]) for io in io_map]
 
-        io_map_g1_outs = {io[0] for io in io_map}
-        io_map_g2_ins = {io[1] for io in io_map}
-        reversed_io_map = {in_name: out_name for out_name, in_name in io_map}
         g1_outs = {out.name for out in graph1.outputs}
         g2_ins = {inp.name for inp in graph2.inputs}
 
@@ -321,16 +318,45 @@ class OnnxGraph(BaseGraph):
             if g2_in_name not in g2_ins:
                 raise ValueError(f"Input {g2_in_name} is not present in g2")
 
-        if graph_name:
-            g_name = graph_name
-        else:
-            g_name = "_".join([graph1.name, graph2.name])
+        # connecting two graphs
+        graph = OnnxGraph.connect_graph(graph1, graph2, io_map, graph_name)
 
+        return graph
+
+    @staticmethod
+    def connect_graph(graph1: 'OnnxGraph',
+                      graph2: 'OnnxGraph',
+                      io_map: List[str],
+                      graph_name: str):
+        """Implementation of concatenating two graphs based on the io_map.
+
+        1. Connect the outputs of the first graph and inputs of the second one.
+        2. Update value_infos, initializers, nodes, node_map, prev_map, next_map
+
+        Arguments:
+            graph1 (OnnxGraph): The first ONNX graph
+            graph2 (OnnxGraph): The second ONNX graph
+            io_map (list of pairs of string): The pairs of names [(out0/in0), (out1/in0), ...]
+                                                representing outputs of the first graph and inputs of the second
+                                                to be connected
+            graph_name (str): name of the combined graph.
+                              If not provided, the name is graph1.name and graph2.name connected by "_"
+
+        Returns:
+            graph (OnnxGraph): Combined graph
+
+        """
+
+        g_name = graph_name if graph_name else "_".join([graph1.name, graph2.name])
         graph = OnnxGraph(g_name)
         graph.nodes.extend(graph1.nodes)
         g2_node_begin = len(graph.nodes)
         graph.nodes.extend(graph2.nodes)
         g2_node_end = len(graph.nodes)
+
+        io_map_g1_outs = {io[0] for io in io_map}
+        io_map_g2_ins = {io[1] for io in io_map}
+        reversed_io_map = {in_name: out_name for out_name, in_name in io_map}
 
         # connecting outputs of the first graph with the inputs of the second
         for node_idx in range(g2_node_begin, g2_node_end):
