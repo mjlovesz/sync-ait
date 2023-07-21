@@ -53,6 +53,7 @@ def convert_model_to_json(cann_path, offline_model_path, out_path):
     utils.logger.info("Complete model conversion to json %s." % output_json_path)
     return output_json_path
 
+
 def get_atc_path(cann_path):
     atc_command_file_path = os.path.join(cann_path, ATC_FILE_PATH)
     if os.path.exists(atc_command_file_path):

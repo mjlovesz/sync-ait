@@ -14,6 +14,7 @@
 import os
 import shutil
 import subprocess
+import stat
 
 import pytest
 import torch
@@ -36,13 +37,19 @@ FAKE_ONNX_MODEL_PATH = "fake_msquickcmp_test_onnx_model.onnx"
 OUT_PATH = FAKE_ONNX_MODEL_PATH.replace(".onnx", "")
 INPUT_SHAPE = (1, 3, 32, 32)
 
+WRITE_FLAGS = os.O_WRONLY | os.O_CREAT  # 注意根据具体业务的需要设置文件读写方式
+WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR  # 注意根据具体业务的需要设置文件权限
+
+
 def get_cann_path():
     result = subprocess.run(['which', 'atc'], stdout=subprocess.PIPE)
     atc_path = result.stdout.decode('utf-8').strip()
     cann_path = atc_path[:-8]
     return cann_path
 
+
 CANN_PATH = get_cann_path()
+
 
 class Args:
     def __init__(self, **kwargs):
@@ -82,6 +89,7 @@ def width_onnx_model():
         os.remove(FAKE_ONNX_MODEL_PATH)
     if os.path.exists(OUT_PATH):
         shutil.rmtree(OUT_PATH)
+
 
 @pytest.fixture(scope="module", autouse=True)
 def fake_dym_shape_onnx_model():
@@ -126,40 +134,40 @@ def fake_om_model(width_onnx_model):
 
 @pytest.fixture(scope="module", autouse=True)
 def fake_om_model_with_aipp(width_onnx_model):
-    file = open("fake_aipp.config", "w")
-    if file is not None:
-        L = ["aipp_op{\n"
-                "    aipp_mode:static\n"
-                "    input_format : RGB888_U8\n"
-                "    src_image_size_w : 32\n"
-                "    src_image_size_h : 32\n"
-                "    crop:false\n"
-                "    min_chn_0 : 123.675\n"
-                "    min_chn_1 : 116.28\n"
-                "    min_chn_2 : 103.53\n"
-                "    var_reci_chn_0 : 0.0171247538316637\n"
-                "    var_reci_chn_1 : 0.0175070028011204\n"
-                "    var_reci_chn_2 : 0.0174291938997821\n"
-                "}"
-            ]
-        file.writelines(L)
-        file.close()
+    with os.fdopen(os.open("fake_aipp.config", WRITE_FLAGS, WRITE_MODES), 'w') as file:
+        if file is not None:
+            aipp_lines = ["aipp_op{\n"
+                    "    aipp_mode:static\n"
+                    "    input_format : RGB888_U8\n"
+                    "    src_image_size_w : 32\n"
+                    "    src_image_size_h : 32\n"
+                    "    crop:false\n"
+                    "    min_chn_0 : 123.675\n"
+                    "    min_chn_1 : 116.28\n"
+                    "    min_chn_2 : 103.53\n"
+                    "    var_reci_chn_0 : 0.0171247538316637\n"
+                    "    var_reci_chn_1 : 0.0175070028011204\n"
+                    "    var_reci_chn_2 : 0.0174291938997821\n"
+                    "}"
+                ]
+            file.writelines(aipp_lines)
+            file.close()
 
-    if not os.path.exists(FAKE_OM_MODEL_WITH_AIPP_PATH):
-        cmd = 'atc --model={} --framework=5 --output={} \
-            --soc_version={} --insert_op_conf={}'.format(width_onnx_model, 
-                                                          FAKE_OM_MODEL_WITH_AIPP_PATH.replace(".om", ""),
-                                                          acl.get_soc_name(),
-                                                          "./fake_aipp.config")
-        subprocess.run(cmd.split(), shell=False)
+        if not os.path.exists(FAKE_OM_MODEL_WITH_AIPP_PATH):
+            cmd = 'atc --model={} --framework=5 --output={} \
+                --soc_version={} --insert_op_conf={}'.format(width_onnx_model, 
+                                                            FAKE_OM_MODEL_WITH_AIPP_PATH.replace(".om", ""),
+                                                            acl.get_soc_name(),
+                                                            "./fake_aipp.config")
+            subprocess.run(cmd.split(), shell=False)
 
-    yield FAKE_OM_MODEL_WITH_AIPP_PATH
+        yield FAKE_OM_MODEL_WITH_AIPP_PATH
 
-    if os.path.exists(FAKE_OM_MODEL_WITH_AIPP_PATH):
-        os.remove(FAKE_OM_MODEL_WITH_AIPP_PATH)
-    
-    if os.path.exists("fake_aipp.config"):
-        os.remove("fake_aipp.config")
+        if os.path.exists(FAKE_OM_MODEL_WITH_AIPP_PATH):
+            os.remove(FAKE_OM_MODEL_WITH_AIPP_PATH)
+        
+        if os.path.exists("fake_aipp.config"):
+            os.remove("fake_aipp.config")
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -188,8 +196,9 @@ def fake_om_model_dym_shape(fake_dym_shape_onnx_model):
             dym_shape_om_file = sorted(dym_shape_om_file_list, key=lambda xx: os.path.getmtime(xx), reverse=True)[0]
     yield dym_shape_om_file
 
-    # if os.path.exists(dym_shape_om_file):
-    #     os.remove(dym_shape_om_file)
+    if os.path.exists(dym_shape_om_file):
+        os.remove(dym_shape_om_file)
+
 
 def test_init_given_valid_when_any_then_pass(fake_arguments):
     aa = NpuDumpData(fake_arguments, False)
@@ -212,9 +221,9 @@ def test_init_given_invalid_when_any_then_failed(fake_arguments):
 
     if os.path.exists(fake_arguments.out_path):
         shutil.rmtree(fake_arguments.out_path)
+
         
 def test_generate_inputs_data_given_random_when_valid_then_pass(fake_arguments):
-
     npu_dump = NpuDumpData(fake_arguments, False)
 
     assert npu_dump.om_parser is not None
@@ -234,8 +243,8 @@ def test_generate_inputs_data_given_random_when_valid_then_pass(fake_arguments):
     if os.path.exists(fake_arguments.out_path):
         shutil.rmtree(fake_arguments.out_path)
 
-def test_generate_inputs_data_given_input_path_when_valid_then_pass(fake_arguments):
 
+def test_generate_inputs_data_given_input_path_when_valid_then_pass(fake_arguments):
     tmp_input_data = "tmp_input_data"
     if not os.path.exists(tmp_input_data):
         os.makedirs(tmp_input_data, mode=0o700)
@@ -266,8 +275,8 @@ def test_generate_inputs_data_given_input_path_when_valid_then_pass(fake_argumen
     if os.path.exists(tmp_input_data):
         shutil.rmtree(tmp_input_data)
 
-def test_generate_inputs_data_given_input_path_when_golden_then_pass(fake_arguments):
 
+def test_generate_inputs_data_given_input_path_when_golden_then_pass(fake_arguments):
     tmp_input_data = "tmp_input_data"
     if not os.path.exists(tmp_input_data):
         os.makedirs(tmp_input_data, mode=0o700)
@@ -298,8 +307,8 @@ def test_generate_inputs_data_given_input_path_when_golden_then_pass(fake_argume
     if os.path.exists(tmp_input_data):
         shutil.rmtree(tmp_input_data)
 
-def test_generate_inputs_data_given_random_data_when_aipp_then_pass(fake_arguments, fake_om_model_with_aipp):
-    
+
+def test_generate_inputs_data_given_random_data_when_aipp_then_pass(fake_arguments, fake_om_model_with_aipp):    
     fake_arguments.offline_model_path = fake_om_model_with_aipp
     fake_arguments.out_path = fake_om_model_with_aipp.replace(".om", "")
 
@@ -324,7 +333,6 @@ def test_generate_inputs_data_given_random_data_when_aipp_then_pass(fake_argumen
 
 
 def test_generate_dump_data_given_random_data_when_valid_then_pass(fake_arguments):
-
     npu_dump = NpuDumpData(fake_arguments, False)
     npu_dump.generate_inputs_data()
 
@@ -338,7 +346,6 @@ def test_generate_dump_data_given_random_data_when_valid_then_pass(fake_argument
 
 
 def test_generate_dump_data_given_random_data_when_dump_false_then_pass(fake_arguments):
-
     fake_arguments.dump = False
     npu_dump = NpuDumpData(fake_arguments, False)
     npu_dump.generate_inputs_data()
@@ -354,7 +361,6 @@ def test_generate_dump_data_given_random_data_when_dump_false_then_pass(fake_arg
 
 def test_generate_dump_data_given_random_data_when_dym_shape_then_pass(fake_arguments,
                                                                        fake_om_model_dym_shape):
-
     fake_arguments.offline_model_path = fake_om_model_dym_shape
     fake_arguments.out_path = fake_om_model_dym_shape.replace(".om", "")
     fake_arguments.input_shape = "input0:1,3,32,32"
@@ -370,9 +376,9 @@ def test_generate_dump_data_given_random_data_when_dym_shape_then_pass(fake_argu
     if os.path.exists(fake_arguments.out_path):
         shutil.rmtree(fake_arguments.out_path)
 
+
 def test_generate_dump_data_given_any_when_dym_shape_and_golden_then_pass(fake_arguments,
                                                                           fake_om_model_dym_shape):
-
     fake_arguments.offline_model_path = fake_om_model_dym_shape
     fake_arguments.out_path = fake_om_model_dym_shape.replace(".om", "")
 
@@ -391,7 +397,6 @@ def test_generate_dump_data_given_any_when_dym_shape_and_golden_then_pass(fake_a
 
 def test_generate_inputs_data_given_any_when_dym_shape_and_golden_then_failed(fake_arguments,
                                                                           fake_om_model_dym_shape):
-
     fake_arguments.offline_model_path = fake_om_model_dym_shape
     fake_arguments.out_path = fake_om_model_dym_shape.replace(".om", "")
     

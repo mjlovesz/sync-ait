@@ -223,71 +223,6 @@ class NpuDumpData(DumpData):
                 "The path {} does not have permission to write.Please check the path permission".format(acl_json_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
-    def _create_dir(self):
-        data_dir = os.path.join(self.out_path, "input")
-        utils.create_directory(data_dir)
-        return data_dir
-    
-    def _generate_inputs_data_without_aipp(self, input_dir):
-        input_bin_files = os.listdir(input_dir)
-        if len(input_bin_files) > 0:
-            return
-        
-        inputs_list, data_type_list = self.om_parser.get_shape_list()
-        if self.dynamic_input.is_dynamic_shape_scenario() and not self.input_shape:
-            utils.logger.error("Please set '-s' or '--input-shape' to fix the dynamic shape.")
-            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-
-        if self.input_shape:
-            inputs_list = parse_input_shape_to_list(self.input_shape)
-        
-        for i, (input_shape, data_type) in enumerate(zip(inputs_list, data_type_list)):
-            input_data = np.random.random(input_shape).astype(data_type)
-            file_name = "input_" +  str(i) + ".bin"
-            input_data.tofile(os.path.join(input_dir, file_name))
-        return 
-    
-    def _generate_inputs_data_for_aipp(self, input_dir):
-        aipp_content = self.om_parser.get_aipp_config_content()
-        aipp_list = aipp_content.split(",")
-        src_image_size_h = []
-        src_image_size_w = []
-        input_format = []
-        for aipp_info in aipp_list:
-            if "src_image_size_h" in aipp_info:
-                src_image_size_h.append(aipp_info.split(":")[1])
-            if "src_image_size_w" in aipp_info:
-                src_image_size_w.append(aipp_info.split(":")[1])
-            if "input_format" in aipp_info:
-                input_format.append(aipp_info.split(":")[1].strip('\\"'))
-        if not src_image_size_h or not src_image_size_w:
-            utils.logger.error("atc insert_op_config file contains no src_image_size_h or src_image_size_w")
-            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
-        if len(src_image_size_h) != len(src_image_size_w):
-            utils.logger.error("atc insert_op_config file's src_image_size_h number "
-                                  "does not equal src_image_size_w")
-            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
-        if self.input_shape:
-            inputs_list = parse_input_shape_to_list(self.input_shape)
-        else:
-            inputs_list = self.om_parser.get_shape_list()
-        if len(inputs_list) != len(src_image_size_h):
-            utils.logger.error("inputs number is not equal to aipp inputs number, please check the -is param")
-            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
-        # currently, onnx only support input format nchw
-        h_position = 2
-        w_position = 3
-        input_dir = os.path.join(self.out_path, "input")
-        for i, item in enumerate(inputs_list):
-            item[h_position] = int(src_image_size_h[i])
-            item[w_position] = int(src_image_size_w[i])
-            div_input_format = INPUT_FORMAT_TO_RGB_RATIO_DICT.get(input_format[i])
-            if not div_input_format:
-                utils.logger.error("aipp input format only support: YUV420SP_U8, RGB888_U8, YUV400_U8, XRGB8888_U8")
-                raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
-            input_data = np.random.randint(0, 256, int(np.prod(item)/div_input_format)).astype(np.uint8)
-            file_name = "input_" + str(i) + ".bin"
-            input_data.tofile(os.path.join(input_dir, file_name))
 
     def generate_inputs_data(self, npu_dump_data_path=None, use_aipp=False):
         if self.input_path:
@@ -400,6 +335,71 @@ class NpuDumpData(DumpData):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
         return npu_dump_data_path if self.dump else npu_net_output_data_path
+    def _create_dir(self):
+        data_dir = os.path.join(self.out_path, "input")
+        utils.create_directory(data_dir)
+        return data_dir
+    
+    def _generate_inputs_data_without_aipp(self, input_dir):
+        input_bin_files = os.listdir(input_dir)
+        if len(input_bin_files) > 0:
+            return
+        
+        inputs_list, data_type_list = self.om_parser.get_shape_list()
+        if self.dynamic_input.is_dynamic_shape_scenario() and not self.input_shape:
+            utils.logger.error("Please set '-s' or '--input-shape' to fix the dynamic shape.")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+
+        if self.input_shape:
+            inputs_list = parse_input_shape_to_list(self.input_shape)
+        
+        for i, (input_shape, data_type) in enumerate(zip(inputs_list, data_type_list)):
+            input_data = np.random.random(input_shape).astype(data_type)
+            file_name = "input_" +  str(i) + ".bin"
+            input_data.tofile(os.path.join(input_dir, file_name))
+        return 
+    
+    def _generate_inputs_data_for_aipp(self, input_dir):
+        aipp_content = self.om_parser.get_aipp_config_content()
+        aipp_list = aipp_content.split(",")
+        src_image_size_h = []
+        src_image_size_w = []
+        input_format = []
+        for aipp_info in aipp_list:
+            if "src_image_size_h" in aipp_info:
+                src_image_size_h.append(aipp_info.split(":")[1])
+            if "src_image_size_w" in aipp_info:
+                src_image_size_w.append(aipp_info.split(":")[1])
+            if "input_format" in aipp_info:
+                input_format.append(aipp_info.split(":")[1].strip('\\"'))
+        if not src_image_size_h or not src_image_size_w:
+            utils.logger.error("atc insert_op_config file contains no src_image_size_h or src_image_size_w")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
+        if len(src_image_size_h) != len(src_image_size_w):
+            utils.logger.error("atc insert_op_config file's src_image_size_h number "
+                                  "does not equal src_image_size_w")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
+        if self.input_shape:
+            inputs_list = parse_input_shape_to_list(self.input_shape)
+        else:
+            inputs_list = self.om_parser.get_shape_list()
+        if len(inputs_list) != len(src_image_size_h):
+            utils.logger.error("inputs number is not equal to aipp inputs number, please check the -is param")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
+        # currently, onnx only support input format nchw
+        h_position = 2
+        w_position = 3
+        input_dir = os.path.join(self.out_path, "input")
+        for i, item in enumerate(inputs_list):
+            item[h_position] = int(src_image_size_h[i])
+            item[w_position] = int(src_image_size_w[i])
+            div_input_format = INPUT_FORMAT_TO_RGB_RATIO_DICT.get(input_format[i])
+            if not div_input_format:
+                utils.logger.error("aipp input format only support: YUV420SP_U8, RGB888_U8, YUV400_U8, XRGB8888_U8")
+                raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
+            input_data = np.random.randint(0, 256, int(np.prod(item)/div_input_format)).astype(np.uint8)
+            file_name = "input_" + str(i) + ".bin"
+            input_data.tofile(os.path.join(input_dir, file_name))
 
     def _make_benchmark_cmd_for_shape_range(self, benchmark_cmd):
         pattern = re.compile(r'^[0-9]+$')

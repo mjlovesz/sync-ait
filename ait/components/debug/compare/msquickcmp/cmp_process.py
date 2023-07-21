@@ -180,6 +180,7 @@ def print_advisor_info(out_path):
             for line in lines:
                 utils.logger.info(line.strip())
 
+
 def fusion_close_model_convert(args:CmpArgsAdapter):
     if args.fusion_switch_file:
         args.fusion_switch_file = os.path.realpath(args.fusion_switch_file)
@@ -187,10 +188,11 @@ def fusion_close_model_convert(args:CmpArgsAdapter):
         
         close_fusion_om_file = os.path.join(args.out_path, 'close_fusion_om_model')
         atc_command_file_path = atc_utils.get_atc_path(args.cann_path)
-        atc_cmd = [atc_command_file_path, "--framework=5", "--soc_version=" + acl.get_soc_name(), "--model=" + args.model_path, \
-                   "--output=" + close_fusion_om_file, "--fusion_switch_file=" + args.fusion_switch_file]
+        atc_cmd = [atc_command_file_path, "--framework=5", "--soc_version=" + acl.get_soc_name(), "--model=" + \
+                   args.model_path, "--output=" + close_fusion_om_file, "--fusion_switch_file=" + args.fusion_switch_file]
         utils.execute_command(atc_cmd)
         args.model_path = close_fusion_om_file
+
 
 def check_and_run(args: CmpArgsAdapter, use_cli: bool):
     utils.check_file_or_directory_path(args.model_path)
@@ -206,7 +208,7 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
     args.out_path = original_out_path
 
     fusion_close_model_convert(args)
-    
+
     # deal with the dymShape_range param if exists
     input_shapes = []
     if args.dym_shape_range:

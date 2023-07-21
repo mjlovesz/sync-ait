@@ -107,7 +107,7 @@ class TfDumpData(DumpData):
 
     def _make_inputs_data(self, inputs_tensor):
         if self.args.input_path == "":
-            if len(os.listdir(self.important_dirs.get("input"))):
+            if os.listdir(self.important_dirs.get("input")):
                 return
 
             input_path_list = []
