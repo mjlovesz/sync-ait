@@ -188,8 +188,11 @@ def fusion_close_model_convert(args:CmpArgsAdapter):
         
         close_fusion_om_file = os.path.join(args.out_path, 'close_fusion_om_model')
         atc_command_file_path = atc_utils.get_atc_path(args.cann_path)
-        atc_cmd = [atc_command_file_path, "--framework=5", "--soc_version=" + acl.get_soc_name(), "--model=" + \
-                   args.model_path, "--output=" + close_fusion_om_file, "--fusion_switch_file=" + args.fusion_switch_file]
+        atc_cmd = [atc_command_file_path, "--framework=5", 
+                   "--soc_version=" + acl.get_soc_name(), 
+                   "--model=" + args.model_path, 
+                   "--output=" + close_fusion_om_file, 
+                   "--fusion_switch_file=" + args.fusion_switch_file]
         utils.execute_command(atc_cmd)
         args.model_path = close_fusion_om_file
 

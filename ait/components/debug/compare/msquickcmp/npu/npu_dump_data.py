@@ -335,16 +335,13 @@ class NpuDumpData(DumpData):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
         return npu_dump_data_path if self.dump else npu_net_output_data_path
+    
     def _create_dir(self):
         data_dir = os.path.join(self.out_path, "input")
         utils.create_directory(data_dir)
         return data_dir
     
-    def _generate_inputs_data_without_aipp(self, input_dir):
-        input_bin_files = os.listdir(input_dir)
-        if len(input_bin_files) > 0:
-            return
-        
+    def _generate_inputs_data_without_aipp(self, input_dir):      
         inputs_list, data_type_list = self.om_parser.get_shape_list()
         if self.dynamic_input.is_dynamic_shape_scenario() and not self.input_shape:
             utils.logger.error("Please set '-s' or '--input-shape' to fix the dynamic shape.")
