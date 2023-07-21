@@ -15,6 +15,7 @@
 
 import os
 import subprocess
+import acl
 
 from auto_optimizer import OnnxGraph
 from auto_optimizer.graph_refactor import Node
