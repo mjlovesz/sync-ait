@@ -28,6 +28,7 @@ import itertools
 import argparse
 
 import numpy as np
+import pandas as pd
 
 from msquickcmp.common.dynamic_argument_bean import DynamicArgumentEnum
 
@@ -564,3 +565,16 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
+
+
+def merge_csv(csv_list, output_dir, output_csv_name):
+    df_list = []
+    for csv_file in csv_list:
+        df = pd.read_csv(csv_file)
+        df_list.append(df)
+    merged_df = pd.concat(df_list)
+    merged_df = merged_df.drop_duplicates()
+    merged_df = merged_df.fillna("NaN")
+    summary_csv_path = os.path.join(output_dir, output_csv_name)
+    merged_df.to_csv(summary_csv_path, index=False)
+    return summary_csv_path
