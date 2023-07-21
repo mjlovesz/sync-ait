@@ -19,16 +19,17 @@ This class mainly involves the main function.
 """
 
 import argparse
+import logging
 import os
 import sys
 import stat
 import shutil
 import time
 import subprocess
+import csv
+import pandas as pd
 import onnxruntime
 import acl
-import pandas as pd
-import csv
 
 from auto_optimizer.graph_refactor import Node
 from auto_optimizer import OnnxGraph
@@ -339,6 +340,7 @@ def bin_divide(og, node_interval, args, onnx_data_path, input_shape):
     utils.logger.info("Binary Search for error interval ends.")
     return satisfied_nodes[low], endnode
 
+
 def csv_sum(original_out_path):
     """
     Function:
@@ -361,7 +363,7 @@ def csv_sum(original_out_path):
         with open(csv_file_summary, 'w', newline='') as file:
             writer = csv.writer(file)
     else:
-        print("Error, file already exists!")
+        logging.info("Error, file already exists!")
     writer = pd.ExcelWriter(csv_file_summary, engine='xlsxwriter')
 
     for i, csv_file in enumerate(csv_file_list):
