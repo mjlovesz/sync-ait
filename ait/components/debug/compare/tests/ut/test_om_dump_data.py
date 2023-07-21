@@ -189,8 +189,7 @@ def fake_om_model_dym_shape(fake_dym_shape_onnx_model):
                 --soc_version={} --input_shape_range={}'.format(fake_dym_shape_onnx_model, 
                                                             FAKE_DYM_SHAPE_OM_MODEL_PATH.replace(".om", ""),
                                                             acl.get_soc_name(),
-                                                            "./test_resource/aipp.config",
-                                                            "input0:[1~2],3,32,32")
+                                                            "input0:[1~2,3,32,32]")
             subprocess.run(cmd.split(), shell=False)
             dym_shape_om_file_list = [os.path.join(pp, ii) for ii in os.listdir(pp) if ii.endswith('.om')]
             dym_shape_om_file = sorted(dym_shape_om_file_list, key=lambda xx: os.path.getmtime(xx), reverse=True)[0]
