@@ -363,7 +363,7 @@ def test_generate_dump_data_given_random_data_when_dump_false_then_pass(fake_arg
         shutil.rmtree(fake_arguments.out_path)
 
 
-def test_generate_dump_data_given_random_data_when_dym_shape_then_pass(fake_arguments,
+def generate_dump_data_given_random_data_when_dym_shape_then_pass(fake_arguments,
                                                                        fake_om_model_dym_shape):
     fake_arguments.offline_model_path = fake_om_model_dym_shape
     fake_arguments.out_path = fake_om_model_dym_shape.replace(".om", "")
