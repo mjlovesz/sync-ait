@@ -71,6 +71,7 @@ class TestClass:
                                                                      TestCommonClass.default_device_id, acl_json_path)
         logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
+        os.environ['AIT_NO_MSPROF_MODE'] = "0"
         assert ret != 0
 
     def test_args_invalid_acl_json_2(self):
@@ -87,6 +88,7 @@ class TestClass:
                                                                      TestCommonClass.default_device_id, acl_json_path)
         logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
+        os.environ['AIT_NO_MSPROF_MODE'] = "0"
         assert ret == 0
 
     def test_args_ok(self):
@@ -282,6 +284,7 @@ class TestClass:
                                                                                 out_json_file_path, output_path)
         logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
+        os.environ['AIT_NO_MSPROF_MODE'] = "0"
         assert os.path.exists(profiler_path)
 
         paths = os.listdir(profiler_path)
