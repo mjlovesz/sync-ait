@@ -239,7 +239,7 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             )
 
 
-def get_file(file_path: str, suffix: str, res_file_path: list) -> list:
+def get_file_name(file_path: str, suffix: str, res_file_path: list) -> list:
     """获取路径下的指定文件类型后缀的文件
 
     Args:
@@ -254,7 +254,7 @@ def get_file(file_path: str, suffix: str, res_file_path: list) -> list:
     for file in os.listdir(file_path):
 
         if os.path.isdir(os.path.join(file_path, file)):
-            get_file(os.path.join(file_path, file), suffix, res_file_path)
+            get_file_name(os.path.join(file_path, file), suffix, res_file_path)
         else:
             res_file_path.append(os.path.join(file_path, file))
 
@@ -324,8 +324,8 @@ def msprof_run_profiling(args, msprof_bin):
         output_prefix = os.path.join(args.output, "profiler")
         output_prefix = os.path.join(output_prefix, sub_str)
         hash_str = sub_str.rsplit('_')[-1]
-        file_name = get_file(output_prefix, ".csv", [])
-        file_name_json = get_file(output_prefix, ".json", [])
+        file_name = get_file_name(output_prefix, ".csv", [])
+        file_name_json = get_file_name(output_prefix, ".json", [])
 
         model_name = os.path.basename(args.model).split(".")[0]
         for file in file_name:
