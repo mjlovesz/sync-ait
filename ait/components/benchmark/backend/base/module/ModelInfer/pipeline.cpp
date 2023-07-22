@@ -30,7 +30,7 @@ namespace Base {
     cnpy::NpyArray CreatePureInferArray(std::string fname, Base::TensorDesc inTensor)
     {
         size_t size = inTensor.realsize;
-        cnpy::NpyArray arr = {}
+        cnpy::NpyArray arr = {};
         arr.dataHolder = std::make_shared<std::vector<char>>(size);
         cnpy::DataUnion tmpTrans;
         srand(time(NULL));
