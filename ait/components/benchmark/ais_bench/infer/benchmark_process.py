@@ -20,10 +20,10 @@ import time
 import json
 import shutil
 import copy
-import subprocess
 import shlex
 import re
 import subprocess
+import fcntl
 from multiprocessing import Pool
 from multiprocessing import Manager
 
@@ -239,6 +239,24 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             )
 
 
+def get_file_name(file_path: str, suffix: str, res_file_path: list) -> list:
+    """获取路径下的指定文件类型后缀的文件
+    Args:
+        file_path: 文件夹的路径
+        suffix: 要提取的文件类型的后缀
+        res_file_path: 保存返回结果的列表
+    Returns: 文件路径
+    """
+    for file in os.listdir(file_path):
+
+        if os.path.isdir(os.path.join(file_path, file)):
+            get_file_name(os.path.join(file_path, file), suffix, res_file_path)
+        else:
+            res_file_path.append(os.path.join(file_path, file))
+    # endswith：表示以suffix结尾。可根据需要自行修改；如：startswith：表示以suffix开头，__contains__：包含suffix字符串
+    return res_file_path if suffix == '' or suffix is None else list(filter(lambda x: x.endswith(suffix), res_file_path))
+
+
 def get_legal_json_content(acl_json_path):
     cmd_dict = {}
     with open(acl_json_path, 'r') as f:
@@ -265,6 +283,7 @@ def json_to_msprof_cmd(acl_json_path):
 def msprof_run_profiling(args, msprof_bin):
     if args.acl_json_path is not None:
         # acl.json to msprof cmd
+        args.profiler_rename = False
         cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
         cmd = cmd.replace("--acl-json-path", "")
         cmd = cmd.replace("--acl_json_path", "")
@@ -277,10 +296,45 @@ def msprof_run_profiling(args, msprof_bin):
                     --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off \
                     --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
 
+    ret = -1
     msprof_cmd_list = shlex.split(msprof_cmd)
-    logger.info(f"msprof cmd:{msprof_cmd} begin run")
-    ret = subprocess.call(msprof_cmd_list, shell=False)
-    logger.info(f"msprof cmd:{msprof_cmd} end run ret:{ret}")
+    logger.info("msprof cmd:{} begin run".format(msprof_cmd))
+    if (args.profiler_rename):
+        p = subprocess.Popen(msprof_cmd_list, stdout=subprocess.PIPE, shell=False, bufsize=0)
+        flags = fcntl.fcntl(p.stdout, fcntl.F_GETFL)
+        fcntl.fcntl(p.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+
+        get_path_flag = True
+        sub_str = ""
+        for line in iter(p.stdout.read, b''):
+            if not line:
+                continue
+            line = line.decode()
+            if (get_path_flag and line.find("PROF_") != -1):
+                get_path_flag = False
+                start_index = line.find("PROF_")
+                sub_str = line[start_index:(start_index + 46)] # PROF_XXXX的目录长度为46
+            print(f'{line}', flush=True, end="")
+        p.stdout.close()
+        p.wait()
+
+        output_prefix = os.path.join(args.output, "profiler")
+        output_prefix = os.path.join(output_prefix, sub_str)
+        hash_str = sub_str.rsplit('_')[-1]
+        file_name = get_file_name(output_prefix, ".csv", [])
+        file_name_json = get_file_name(output_prefix, ".json", [])
+
+        model_name = os.path.basename(args.model).split(".")[0]
+        for file in file_name:
+            real_file = os.path.splitext(file)[0]
+            os.rename(file, real_file + "_" + model_name + "_" + hash_str + ".csv")
+        for file in file_name_json:
+            real_file = os.path.splitext(file)[0]
+            os.rename(file, real_file + "_" + model_name + "_" + hash_str + ".json")
+        ret = 0
+    else:
+        ret = subprocess.call(msprof_cmd_list, shell=False)
+        logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
     return ret
 
 
