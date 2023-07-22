@@ -77,7 +77,8 @@ namespace Base {
             feeds->arrayPtr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
             for (size_t i = 0; i < files.size(); i++) {
                 if (pure_infer) {
-                    auto array = std::make_shared<cnpy::NpyArray>(CreatePureInferArray());
+                    auto array = std::make_shared<cnpy::NpyArray>(CreatePureInferArray(files[i],
+                                                                    modelDesc_.inTensorsDesc[i]));
                     feeds->arrayPtr->emplace_back(array);
                 } else {
                     if (Utils::TailContain(files[i], ".npy") || Utils::TailContain(files[i], ".NPY")) {
