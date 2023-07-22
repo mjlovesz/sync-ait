@@ -201,7 +201,7 @@ def fusion_close_model_convert(args:CmpArgsAdapter):
                    "--output=" + close_fusion_om_file, 
                    "--fusion_switch_file=" + args.fusion_switch_file]
         if atc_input_shape_in_offline_model:
-            atc_cmd.extend(["--input_shape", atc_input_shape_in_offline_model])
+            atc_cmd.append("--input_shape" + atc_input_shape_in_offline_model)
 
         utils.execute_command(atc_cmd)
         args.model_path = close_fusion_om_file + ".om"
