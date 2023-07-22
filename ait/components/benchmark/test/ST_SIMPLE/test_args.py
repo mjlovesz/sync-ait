@@ -181,7 +181,7 @@ class TestClass:
         cmd = "{} --model {} --device {} --profiler true --profiler_rename true --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                         TestCommonClass.default_device_id, output_path)
         logging.info(f"run cmd:{cmd}")
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=False, bufsize=0)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True, bufsize=0)
         flags = fcntl.fcntl(p.stdout, fcntl.F_GETFL)
         fcntl.fcntl(p.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
 
