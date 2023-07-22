@@ -297,6 +297,7 @@ def msprof_run_profiling(args, msprof_bin):
         msprof_cmd = f"{msprof_bin} --output={args.output}/profiler --application=\"{cmd}\" --model-execution=on \
                     --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off \
                     --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
+
     ret = -1
     msprof_cmd_list = shlex.split(msprof_cmd)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
