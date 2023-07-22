@@ -31,6 +31,11 @@ namespace Base {
     {
         size_t size = inTensor.realsize;
         cnpy::NpyArray arr = {};
+        try {
+            arr.dataHolder = std::make_shared<std::vector<char>>(size);
+        } catch (exception &e) {
+            throw std::runtime_error("Create pure data: make dataHolder failed");
+        }
         arr.dataHolder = std::make_shared<std::vector<char>>(size);
         cnpy::DataUnion tmpTrans;
         srand(time(NULL));
@@ -64,11 +69,16 @@ namespace Base {
             outputNames.emplace_back(desc.name);
         }
         for (auto &files : infilesList) {
-            auto feeds = std::make_shared<Feeds>();
+            try {
+                auto feeds = std::make_shared<Feeds>();
+            } catch (exception &e) {
+                throw std::runtime_error("Create pure data: make dataHolder failed");
+            }
+
             feeds->outputNames = std::make_shared<std::vector<std::string>>(outputNames);
             if (outputDir != "") {
-                for (auto tail : {".npy", ".NPY", ".bin", ".BIN", ""}) {
-                    if (Utils::TailContain(files.front(), tail)) {
+                for (auto tail : {".npy", ".bin", ""}) {
+                    if (Utils::TailContain(files.front().to_lower(), tail)) {
                         feeds->outputPrefix = Utils::GetPrefix(outputDir, files.front(), tail);
                     }
                 }
@@ -92,10 +102,10 @@ namespace Base {
 
                 feeds->inputs->emplace_back(feeds->arrayPtr->back()->Data<void>(), feeds->arrayPtr->back()->NumBytes());
                 if (autoDymShape) {
-                    AutoSetDym(feeds, "shape", inputNames[i], feeds->arrayPtr->back()->shape, i == files.size() - 1);
+                    AutoSetDym(feeds, "shape", inputNames[i], feeds->arrayPtr->back()->shape, i == (files.size() - 1));
                 }
                 if (autoDymDims) {
-                    AutoSetDym(feeds, "dim", inputNames[i], feeds->arrayPtr->back()->shape, i == files.size() - 1);
+                    AutoSetDym(feeds, "dim", inputNames[i], feeds->arrayPtr->back()->shape, i == (files.size() - 1));
                 }
             }
             h2dQueue.push(feeds);

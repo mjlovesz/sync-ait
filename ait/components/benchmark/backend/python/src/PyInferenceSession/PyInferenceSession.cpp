@@ -315,11 +315,11 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
                                        const bool pureInferMode)
 {
     if (outputDir != "") {
-            if (fs::is_symlink(outputDir)) {
-                fs::remove(outputDir);
-            }
-            fs::create_directories(outputDir);
+        if (fs::is_symlink(outputDir)) {
+            fs::remove(outputDir);
         }
+        fs::create_directories(outputDir);
+    }
 
     uint32_t deviceId = GetDeviceId();
     ConcurrentQueue<std::shared_ptr<Feeds>> h2dQueue;
