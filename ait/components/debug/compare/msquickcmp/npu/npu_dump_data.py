@@ -48,7 +48,9 @@ INPUT_FORMAT_TO_RGB_RATIO_DICT = {
 }
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
-
+DTYPE_MAP = {"dtype.float32": np.float32, "dtype.float16": np.float16, "dtype.float64": np.float64, "dtype.int8": np.int8,
+             "dtype.int16": np.int16, "dtype.int32": np.int32, "dtype.int64": np.int64, "dtype.uint8": np.uint8,
+             "dtype.uint16": np.uint16, "dtype.uint32": np.uint32, "dtype.uint64": np.uint64, "dtype.bool": np.bool}
 
 class DynamicInput(object):
 
@@ -335,15 +337,22 @@ class NpuDumpData(DumpData):
             utils.logger.error("The path {} net output data is not exist.".format(npu_net_output_data_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
-        return npu_dump_data_path if self.dump else npu_net_output_data_path
+        return npu_dump_data_path if self.is_golden else npu_dump_data_path, npu_net_output_data_path
     
     def _create_dir(self):
         data_dir = os.path.join(self.out_path, "input")
         utils.create_directory(data_dir)
         return data_dir
     
+    def _get_inputs_info_from_aclruntime(self):
+        import aclruntime
+        options = aclruntime.session_options()
+        session = aclruntime.InferenceSession(self.offline_model_path, int(self.device), options)
+        intensors_desc = session.get_inputs()
+        return [input.shape for input in intensors_desc], [DTYPE_MAP.get(str(input.datatype)) for input in intensors_desc]
+
     def _generate_inputs_data_without_aipp(self, input_dir):      
-        inputs_list, data_type_list = self.om_parser.get_shape_list()
+        inputs_list, data_type_list = self._get_inputs_info_from_aclruntime()
         if self.dynamic_input.is_dynamic_shape_scenario() and not self.input_shape:
             utils.logger.error("Please set '-s' or '--input-shape' to fix the dynamic shape.")
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
@@ -355,7 +364,7 @@ class NpuDumpData(DumpData):
             input_data = np.random.random(input_shape).astype(data_type)
             file_name = "input_" +  str(i) + ".bin"
             input_data.tofile(os.path.join(input_dir, file_name))
-        return 
+        return
     
     def _generate_inputs_data_for_aipp(self, input_dir):
         aipp_content = self.om_parser.get_aipp_config_content()

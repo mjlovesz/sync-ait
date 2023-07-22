@@ -135,7 +135,7 @@ def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
     npu_dump.generate_inputs_data(use_aipp=use_aipp)
 
     # generate npu dump data
-    npu_dump_data_path = npu_dump.generate_dump_data(use_cli=use_cli)
+    npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli=use_cli)
 
     # generate onnx inputs data
     golden_dump.generate_inputs_data(npu_dump_data_path, use_aipp)
