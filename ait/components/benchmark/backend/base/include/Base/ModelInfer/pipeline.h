@@ -86,7 +86,7 @@ private:
 namespace Base {
     void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId, Base::PyInferenceSession* session,
                      std::vector<std::vector<std::string>> &infilesList, bool autoDymShape, bool autoDymDims,
-                     const std::string &outputDir, const bool pure_infer=false);
+                     const std::string &outputDir, const bool pure_infer);
 
     void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
                  ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId);

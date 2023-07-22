@@ -49,7 +49,7 @@ namespace Base {
 
     void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
                      Base::PyInferenceSession* session, std::vector<std::vector<std::string>> &infilesList,
-                     bool autoDymShape, bool autoDymDims, const std::string &outputDir, const bool pure_infer=false)
+                     bool autoDymShape, bool autoDymDims, const std::string &outputDir, const bool pure_infer)
     {
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
         if (ret != APP_ERR_OK) {

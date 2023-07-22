@@ -330,7 +330,7 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
     std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), deviceId, this);
     std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId);
     std::thread saveThread(FuncSave, std::ref(saveQueue), deviceId, outFmt);
-    FuncPrepare(h2dQueue, deviceId, this, infilesList, autoDymShape, autoDymDims, outputDir);
+    FuncPrepare(h2dQueue, deviceId, this, infilesList, autoDymShape, autoDymDims, outputDir, true);
 
     h2dThread.join();
     computeThread.join();
