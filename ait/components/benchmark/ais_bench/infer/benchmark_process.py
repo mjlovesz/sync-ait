@@ -175,11 +175,15 @@ def run_inference(session, args, inputs, out_array=False):
 
 def run_pipeline_inference(session, args, infileslist, output_prefix):
     out = output_prefix if output_prefix is not None else ""
+    pure_infer_mode = False
+    if args.input is None:
+        pure_infer_mode = True
     session.run_pipeline(infileslist,
                          out,
                          args.auto_set_dymshape_mode,
                          args.auto_set_dymdims_mode,
-                         args.outfmt)
+                         args.outfmt,
+                         pure_infer_mode)
 
 
 # tensor to loop infer
@@ -357,7 +361,6 @@ def main(args, index=0, msgq=None, device_list=None):
     inputs_list = [] if args.input is None else args.input.split(',')
 
     # create infiles list accord inputs list
-    delete_infileslist = False
     if len(inputs_list) == 0:
         # Pure reference scenario. Create input zero data
         if not args.pipeline:
@@ -367,12 +370,6 @@ def main(args, index=0, msgq=None, device_list=None):
             pure_file = PURE_INFER_FAKE_FILE_ZERO if args.pure_data_type == "zero" else PURE_INFER_FAKE_FILE_RANDOM
             for _ in intensors_desc:
                 infileslist[0].append(pure_file)
-            for i, desc in enumerate(intensors_desc):
-                fake_file_name = create_fake_file_name(args.pure_data_type, i)
-                ndata = get_pure_infer_data(desc.realsize, args.pure_data_type)
-                ndata.tofile(fake_file_name)
-                infileslist[0].append(fake_file_name)
-            delete_infileslist = True
     else:
         if not args.pipeline:
             infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
@@ -413,12 +410,7 @@ def main(args, index=0, msgq=None, device_list=None):
     if args.energy_consumption and args.npu_id:
         start_energy_consumption = get_energy_consumption(args.npu_id)
     if args.pipeline:
-        try:
-            infer_pipeline_run(session, args, infileslist, output_prefix)
-        except Exception as err:
-            if delete_infileslist:
-                delete_infileslist(infileslist)
-            raise RuntimeError("pipeline run failed") from err
+        infer_pipeline_run(session, args, infileslist, output_prefix)
     else:
         if args.run_mode == "array":
             infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
@@ -449,18 +441,7 @@ def main(args, index=0, msgq=None, device_list=None):
         # put result to msgq
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
 
-    if delete_infileslist:
-        delete_infileslist(infileslist)
-
     session.finalize()
-
-
-def delete_infileslist(infileslist):
-    for file in infileslist[0]:
-        if (os.path.exists(file)):
-            os.remove(file)
-        else:
-            logger.error(f"try to delete tmp file {file}, but not found.")
 
 
 def print_subproces_run_error(value):
