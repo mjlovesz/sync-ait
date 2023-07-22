@@ -316,7 +316,7 @@ def msprof_run_profiling(args, msprof_bin):
             if (get_path_flag and line.find("PROF_") != -1):
                 get_path_flag = False
                 start_index = line.find("PROF_")
-                sub_str = line[start_index:(start_index + 46)]
+                sub_str = line[start_index:(start_index + 46)] # PROF_XXXX的目录长度为46
             print(f'{line}', flush=True, end="")
         p.stdout.close()
         p.wait()
