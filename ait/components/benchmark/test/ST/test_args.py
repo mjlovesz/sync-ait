@@ -171,28 +171,6 @@ class TestClass:
 
         assert os.path.isfile(sampale_json_path)
 
-    def get_file(file_path: str, suffix: str, res_file_path: list) -> list:
-        """获取路径下的指定文件类型后缀的文件
-
-        Args:
-            file_path: 文件夹的路径
-            suffix: 要提取的文件类型的后缀
-            res_file_path: 保存返回结果的列表
-
-        Returns: 文件路径
-
-        """
-
-        for file in os.listdir(file_path):
-
-            if os.path.isdir(os.path.join(file_path, file)):
-                get_file(os.path.join(file_path, file), suffix, res_file_path)
-            else:
-                res_file_path.append(os.path.join(file_path, file))
-
-        # endswith：表示以suffix结尾。可根据需要自行修改；如：startswith：表示以suffix开头，__contains__：包含suffix字符串
-        return res_file_path if suffix == '' or suffix is None else list(
-            filter(lambda x: x.endswith(suffix), res_file_path))
 
     def test_args_profiler_rename_ok(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
@@ -222,20 +200,14 @@ class TestClass:
         p.stdout.close()
         p.wait()
 
-        output_prefix = os.path.join(profiler_path, sub_str)
         hash_str = sub_str.rsplit('_')[-1]
-        file_name_json = get_file(output_prefix, ".json", [])
 
-        model_name = os.path.basename(self.model_name).split(".")[0]
-        for file in file_name_json:
-            real_file = os.path.splitext(file)[0]
-            os.rename(file, real_file + "_" + model_name + "_" + hash_str + ".json")
+        model_name = os.path.basename(model_path).split(".")[0]
         assert os.path.exists(profiler_path)
 
         paths = os.listdir(profiler_path)
         sampale_json_path = os.path.join(profiler_path, paths[0],
-                                         "device_{}/sample_{}_{}.json".format(TestCommonClass.default_device_id, self.model_name,hash_str))
-
+                                         "device_{}/sample_{}_{}.json".format(TestCommonClass.default_device_id, model_name, hash_str))
         assert os.path.isfile(sampale_json_path)
 
     def test_args_dump_ok(self):
