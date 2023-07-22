@@ -241,25 +241,22 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
 
 def get_file_name(file_path: str, suffix: str, res_file_path: list) -> list:
     """获取路径下的指定文件类型后缀的文件
-
     Args:
         file_path: 文件夹的路径
         suffix: 要提取的文件类型的后缀
         res_file_path: 保存返回结果的列表
-
     Returns: 文件路径
-
     """
-
     for file in os.listdir(file_path):
 
         if os.path.isdir(os.path.join(file_path, file)):
             get_file_name(os.path.join(file_path, file), suffix, res_file_path)
         else:
             res_file_path.append(os.path.join(file_path, file))
-
     # endswith：表示以suffix结尾。可根据需要自行修改；如：startswith：表示以suffix开头，__contains__：包含suffix字符串
     return res_file_path if suffix == '' or suffix is None else list(filter(lambda x: x.endswith(suffix), res_file_path))
+
+
 def get_legal_json_content(acl_json_path):
     cmd_dict = {}
     with open(acl_json_path, 'r') as f:
