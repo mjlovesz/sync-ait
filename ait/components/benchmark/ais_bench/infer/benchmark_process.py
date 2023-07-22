@@ -361,9 +361,12 @@ def main(args, index=0, msgq=None, device_list=None):
     if len(inputs_list) == 0:
         # Pure reference scenario. Create input zero data
         if not args.pipeline:
-            infileslist = [[[PURE_INFER_FAKE_FILE] for index in intensors_desc]]
+            infileslist = [[[PURE_INFER_FAKE_FILE] for _ in intensors_desc]]
         else:
             infileslist = [[]]
+            pure_file = PURE_INFER_FAKE_FILE_ZERO if args.pure_data_type == "zero" else PURE_INFER_FAKE_FILE_RANDOM
+            for _ in intensors_desc:
+                infileslist[0].append(pure_file)
             for i, desc in enumerate(intensors_desc):
                 fake_file_name = create_fake_file_name(args.pure_data_type, i)
                 ndata = get_pure_infer_data(desc.realsize, args.pure_data_type)

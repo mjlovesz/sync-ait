@@ -23,7 +23,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <queue>
-#include <sstream>
+#include <stdint.h>
 #include <experimental/filesystem>
 
 #include "PyInferenceSession/PyInferenceSession.h"

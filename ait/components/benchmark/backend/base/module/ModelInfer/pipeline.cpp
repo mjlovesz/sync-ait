@@ -29,10 +29,22 @@ namespace Base {
 
     cnpy::NpyArray CreatePureInferArray(std::string fname, Base::TensorDesc inTensor)
     {
-        std::string typeName = DATA_TYPE_TO_STRING_MAP.at(inTensor.datatype);
-        std::stringstream ss(typeName);
-        cnpy::DataUnion<ss> tmpTrans;
-
+        size_t size = inTensor.realsize;
+        cnpy::NpyArray arr = {}
+        arr.dataHolder = std::make_shared<std::vector<char>>(size);
+        cnpy::DataUnion tmpTrans;
+        srand(time(NULL));
+        for (size_t i = 0; i < size; ++i) {
+            if (fname == "pure_infer_data_zero") {
+                tmpTrans.value = 0;
+            } else if (fname == "pure_infer_data_random") {
+                uint8_t min = 0;
+                uint8_t max = UINT8_MAX - 1;// avoid float ±inf
+                tmpTrans.value = (rand() % (max - min + 1)) + min;
+            }
+            arr.dataHolder->data()[i] = tmpTrans.bytes;
+        }
+        return arr;
     }
 
     void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,

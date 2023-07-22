@@ -30,6 +30,8 @@
 #include <memory>
 #include <stdint.h>
 #include <numeric>
+#include <cstdlib>
+#include <ctime>
 
 #include "Base/Log/Log.h"
 
@@ -73,11 +75,10 @@ struct NpyArray {
     size_t numVals;
 };
 
-template <typename T>
 union DataUnion {
-    T value;
-    char bytes[sizeof(T)];
-}
+    uint8_t value;
+    char bytes;
+};
 
 using npz_t = std::map<std::string, NpyArray>;
 
