@@ -144,7 +144,7 @@ def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
 
     # convert data from bin to npy if --convert is used, or if custom_op is not empty
     if args.bin2npy or args.custom_op != "":
-        npu_dump_npy_path = convert_bin_dump_data_to_npy(npu_dump_data_path, args.cann_path)
+        npu_dump_npy_path = convert_bin_dump_data_to_npy(npu_dump_data_path, npu_net_output_data_path, args.cann_path)
     else:
         npu_dump_npy_path = ""
 

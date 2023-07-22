@@ -337,7 +337,10 @@ class NpuDumpData(DumpData):
             utils.logger.error("The path {} net output data is not exist.".format(npu_net_output_data_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
-        return npu_dump_data_path if self.is_golden else npu_dump_data_path, npu_net_output_data_path
+        if self.is_golden:
+            return npu_dump_data_path 
+        else:
+            return npu_dump_data_path, npu_net_output_data_path
     
     def _create_dir(self):
         data_dir = os.path.join(self.out_path, "input")
