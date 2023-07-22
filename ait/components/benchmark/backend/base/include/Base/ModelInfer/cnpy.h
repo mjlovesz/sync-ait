@@ -73,6 +73,12 @@ struct NpyArray {
     size_t numVals;
 };
 
+template <typename T>
+union DataUnion {
+    T value;
+    char bytes[sizeof(T)];
+}
+
 using npz_t = std::map<std::string, NpyArray>;
 
 char BigEndianTest();

@@ -27,9 +27,17 @@ namespace Base {
         }
     }
 
+    cnpy::NpyArray CreatePureInferArray(std::string fname, Base::TensorDesc inTensor)
+    {
+        std::string typeName = DATA_TYPE_TO_STRING_MAP.at(inTensor.datatype);
+        std::stringstream ss(typeName);
+        cnpy::DataUnion<ss> tmpTrans;
+
+    }
+
     void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
                      Base::PyInferenceSession* session, std::vector<std::vector<std::string>> &infilesList,
-                     bool autoDymShape, bool autoDymDims, const std::string &outputDir)
+                     bool autoDymShape, bool autoDymDims, const std::string &outputDir, const bool pure_infer=false)
     {
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
         if (ret != APP_ERR_OK) {
@@ -56,13 +64,19 @@ namespace Base {
             feeds->inputs = std::make_shared<std::vector<Base::BaseTensor>>();
             feeds->arrayPtr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
             for (size_t i = 0; i < files.size(); i++) {
-                if (Utils::TailContain(files[i], ".npy") || Utils::TailContain(files[i], ".NPY")) {
-                    auto array = std::make_shared<cnpy::NpyArray>(cnpy::NpyLoad(files[i]));
+                if (pure_infer) {
+                    auto array = std::make_shared<cnpy::NpyArray>(CreatePureInferArray());
                     feeds->arrayPtr->emplace_back(array);
                 } else {
-                    auto array = std::make_shared<cnpy::NpyArray>(cnpy::BinLoad(files[i]));
-                    feeds->arrayPtr->emplace_back(array);
+                    if (Utils::TailContain(files[i], ".npy") || Utils::TailContain(files[i], ".NPY")) {
+                        auto array = std::make_shared<cnpy::NpyArray>(cnpy::NpyLoad(files[i]));
+                        feeds->arrayPtr->emplace_back(array);
+                    } else {
+                        auto array = std::make_shared<cnpy::NpyArray>(cnpy::BinLoad(files[i]));
+                        feeds->arrayPtr->emplace_back(array);
+                    }
                 }
+
                 feeds->inputs->emplace_back(feeds->arrayPtr->back()->Data<void>(), feeds->arrayPtr->back()->NumBytes());
                 if (autoDymShape) {
                     AutoSetDym(feeds, "shape", inputNames[i], feeds->arrayPtr->back()->shape, i == files.size() - 1);
