@@ -24,6 +24,7 @@ import stat
 import re
 import shutil
 import numpy as np
+import subprocess
 
 from msquickcmp.atc import atc_utils
 from msquickcmp.common import utils
@@ -348,11 +349,18 @@ class NpuDumpData(DumpData):
         return data_dir
     
     def _get_inputs_info_from_aclruntime(self):
-        import aclruntime
-        options = aclruntime.session_options()
-        session = aclruntime.InferenceSession(self.offline_model_path, int(self.device), options)
-        intensors_desc = session.get_inputs()
-        return [input.shape for input in intensors_desc], [DTYPE_MAP.get(str(input.datatype)) for input in intensors_desc]
+        import shlex
+        cmd = 'python3 -c \'import aclruntime;options = aclruntime.session_options();' \
+              'aa = aclruntime.InferenceSession("%s", %d, options); ' \
+              'print([{"shape":ii.shape, "dtype":ii.datatype.name} for ii in aa.get_inputs()])\'' \
+              % (self.offline_model_path, self.device)
+
+        pp = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, shell=False)
+        out, ret = pp.communicate
+        result = json.load(out.decode().split('\n')[0].replace("'",'"'))
+        shape_list = [ii["shape"] for ii in result]
+        dtype_list = [ii["dtype"] for ii in result]
+        return shape_list, dtype_list
 
     def _generate_inputs_data_without_aipp(self, input_dir):      
         inputs_list, data_type_list = self._get_inputs_info_from_aclruntime()
