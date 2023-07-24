@@ -378,7 +378,10 @@ class NpuDumpData(DumpData):
         dtype_list = [ii["dtype"] for ii in result]
         return shape_list, dtype_list
 
-    def _generate_inputs_data_without_aipp(self, input_dir):      
+    def _generate_inputs_data_without_aipp(self, input_dir):
+        if os.listdir(input_dir):
+            return
+        
         inputs_list, data_type_list = self._get_inputs_info_from_aclruntime()
         if self.dynamic_input.is_dynamic_shape_scenario() and not self.input_shape:
             utils.logger.error("Please set '-s' or '--input-shape' to fix the dynamic shape.")
