@@ -360,9 +360,12 @@ class NpuDumpData(DumpData):
 
         proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, shell=False)
         try:
-            out, ret = proc.communicate(timeout=(60 * 5))
+            out, errs = proc.communicate(timeout=(60 * 5))
         except subprocess.TimeoutExpired:
             proc.kill()
+        if proc.returncode != 0:
+            utils.logger.error('Failed to execute command:%s, returncode:%d' % (cmd, proc.returncode))
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
         result = json.loads(out.decode().split('\n')[0].replace("'", '"'))
         shape_list = [ii["shape"] for ii in result]
         dtype_list = [ii["dtype"] for ii in result]
@@ -381,7 +384,6 @@ class NpuDumpData(DumpData):
             input_data = np.random.random(input_shape).astype(data_type)
             file_name = "input_" +  str(i) + ".bin"
             input_data.tofile(os.path.join(input_dir, file_name))
-        return
     
     def _generate_inputs_data_for_aipp(self, input_dir):
         aipp_content = self.om_parser.get_aipp_config_content()
@@ -390,12 +392,15 @@ class NpuDumpData(DumpData):
         src_image_size_w = []
         input_format = []
         for aipp_info in aipp_list:
+            aipp_infos_split_by_colon = aipp_info.split(":")
+            if len(aipp_infos_split_by_colon) < 2:
+                continue
             if "src_image_size_h" in aipp_info:
-                src_image_size_h.append(aipp_info.split(":")[1])
+                src_image_size_h.append(aipp_infos_split_by_colon[1])
             if "src_image_size_w" in aipp_info:
-                src_image_size_w.append(aipp_info.split(":")[1])
+                src_image_size_w.append(aipp_infos_split_by_colon[1])
             if "input_format" in aipp_info:
-                input_format.append(aipp_info.split(":")[1].strip('\\"'))
+                input_format.append(aipp_infos_split_by_colon[1].strip('\\"'))
         if not src_image_size_h or not src_image_size_w:
             utils.logger.error("atc insert_op_config file contains no src_image_size_h or src_image_size_w")
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_WRONG_AIPP_CONTENT)
