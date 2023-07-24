@@ -45,10 +45,11 @@ def msprof_run_profiling(args, msprof_bin):
 
 
 def args_rules(args):
-    if args.output is None and len(args.output) > PATH_MAX_LENGTH:
-        logger.error("parameter --output length out of range. "
-                     "Please use it together with the parameter --output!\n")
-        raise RuntimeError('error bad parameters --output')
+    if args.output is None:
+        if len(args.output) > PATH_MAX_LENGTH:
+            logger.error("parameter --output length out of range. "
+                        "Please use it together with the parameter --output!\n")
+            raise RuntimeError('error bad parameters --output')
     return args
 
 
