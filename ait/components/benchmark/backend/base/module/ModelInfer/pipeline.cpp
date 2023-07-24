@@ -44,12 +44,49 @@ namespace Base {
                 tmpTrans.value = 0;
             } else if (fname == "pure_infer_data_random") {
                 uint8_t min = 0;
-                uint8_t max = UINT8_MAX - 1;// avoid float ±inf
+                uint8_t max = UINT8_MAX - 1; // avoid float ±inf
                 tmpTrans.value = (rand() % (max - min + 1)) + min;
             }
             arr.dataHolder->data()[i] = tmpTrans.bytes;
         }
         return arr;
+    }
+
+    void PrepareInputData(auto &files, Base::PyInferenceSession* session, auto &feeds, bool autoDymShape,
+         bool autoDymDims, const bool pure_infer, std::vector<std::string> &inputNames)
+    {
+        for (size_t i = 0; i < files.size(); i++) {
+            if (pure_infer) {
+                auto array = std::make_shared<cnpy::NpyArray>(CreatePureInferArray(files[i],
+                    session->GetInputs()[i]));
+                if (array == nullptr) {
+                    throw std::runtime_error("files: create pure_file failed");
+                }
+                feeds->arrayPtr->emplace_back(array);
+            } else {
+                if (Utils::TailContain(files[i], ".npy") || Utils::TailContain(files[i], ".NPY")) {
+                    auto array = std::make_shared<cnpy::NpyArray>(cnpy::NpyLoad(files[i]));
+                    if (array == nullptr) {
+                        throw std::runtime_error("files: create file_array failed");
+                    }
+                    feeds->arrayPtr->emplace_back(array);
+                } else {
+                    auto array = std::make_shared<cnpy::NpyArray>(cnpy::BinLoad(files[i]));
+                    if (array == nullptr) {
+                        throw std::runtime_error("files: create file_array failed");
+                    }
+                    feeds->arrayPtr->emplace_back(array);
+                }
+            }
+
+            feeds->inputs->emplace_back(feeds->arrayPtr->back()->Data<void>(), feeds->arrayPtr->back()->NumBytes());
+            if (autoDymShape) {
+                AutoSetDym(feeds, "shape", inputNames[i], feeds->arrayPtr->back()->shape, i == (files.size() - 1));
+            }
+            if (autoDymDims) {
+                AutoSetDym(feeds, "dim", inputNames[i], feeds->arrayPtr->back()->shape, i == (files.size() - 1));
+            }
+        }
     }
 
     void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
@@ -79,7 +116,7 @@ namespace Base {
                 throw std::runtime_error("files: create feeds->outputNames failed");
             }
             if (outputDir != "") {
-                for (auto tail : {".npy", ".bin", ".NPY", ".BIN",""}) {
+                for (auto tail : {".npy", ".bin", ".NPY", ".BIN", ""}) {
                     if (Utils::TailContain(files.front(), tail)) {
                         feeds->outputPrefix = Utils::GetPrefix(outputDir, files.front(), tail);
                     }
@@ -93,38 +130,7 @@ namespace Base {
             if (feeds->arrayPtr == nullptr) {
                 throw std::runtime_error("files: create feeds->arrayPtr failed");
             }
-            for (size_t i = 0; i < files.size(); i++) {
-                if (pure_infer) {
-                    auto array = std::make_shared<cnpy::NpyArray>(CreatePureInferArray(files[i],
-                                                                    session->GetInputs()[i]));
-                    if (array == nullptr) {
-                        throw std::runtime_error("files: create pure_file failed");
-                    }
-                    feeds->arrayPtr->emplace_back(array);
-                } else {
-                    if (Utils::TailContain(files[i], ".npy") || Utils::TailContain(files[i], ".NPY")) {
-                        auto array = std::make_shared<cnpy::NpyArray>(cnpy::NpyLoad(files[i]));
-                        if (array == nullptr) {
-                            throw std::runtime_error("files: create file_array failed");
-                        }
-                        feeds->arrayPtr->emplace_back(array);
-                    } else {
-                        auto array = std::make_shared<cnpy::NpyArray>(cnpy::BinLoad(files[i]));
-                        if (array == nullptr) {
-                            throw std::runtime_error("files: create file_array failed");
-                        }
-                        feeds->arrayPtr->emplace_back(array);
-                    }
-                }
-
-                feeds->inputs->emplace_back(feeds->arrayPtr->back()->Data<void>(), feeds->arrayPtr->back()->NumBytes());
-                if (autoDymShape) {
-                    AutoSetDym(feeds, "shape", inputNames[i], feeds->arrayPtr->back()->shape, i == (files.size() - 1));
-                }
-                if (autoDymDims) {
-                    AutoSetDym(feeds, "dim", inputNames[i], feeds->arrayPtr->back()->shape, i == (files.size() - 1));
-                }
-            }
+            PrepareInputData(files, session, feeds, autoDymShape, autoDymDims, pure_infer, inputNames);
             h2dQueue.push(feeds);
         }
         h2dQueue.push(nullptr);
