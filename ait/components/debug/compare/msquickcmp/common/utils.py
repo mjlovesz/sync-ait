@@ -260,13 +260,13 @@ def check_dynamic_shape(shape):
     return dynamic_shape
 
 
-def check_convert_is_valid_used(dump, bin2npy):
+def check_convert_is_valid_used(dump, bin2npy, custom_op):
     """
     check dump is True while using convert
     """
-    if not dump and bin2npy:
+    if not dump and (bin2npy or custom_op != ""):
         logger.error(
-            "Convert option is forbidden when dump is False!\
+            "Convert option or custom_op is forbidden when dump is False!\
             Please keep dump True while using convert."
         )
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)

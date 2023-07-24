@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding=utf-8
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
@@ -34,7 +33,8 @@ from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException
 from msquickcmp.common.utils import InputShapeError
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
-from msquickcmp.npu.npu_dump_data_bin2npy import data_convert_file
+from msquickcmp.common.convert import convert_bin_file_to_npy
+
 
 NODE_TYPE_TO_DTYPE_MAP = {
     "tensor(int)": np.int32,
@@ -58,27 +58,37 @@ MAX_PROTOBUF = 2000000000
 
 class OnnxDumpData(DumpData):
     """
-    This class is used to generate GUP dump data of the ONNX model.
+    This class is used to generate dump data of the ONNX model.
     """
 
     def __init__(self, arguments:CmpArgsAdapter):
         super().__init__()
-        self.args = arguments
-        self.input_shapes = utils.parse_input_shape(self.args.input_shape)
-        self.net_output = {}
+        self.model_path, self.out_path, self.input_path = arguments.model_path, arguments.out_path, arguments.input_path
+        self.input_shape, self.dym_shape_range = arguments.input_shape, arguments.dym_shape_range
+        self.custom_op, self.onnx_fusion_switch = arguments.custom_op, arguments.onnx_fusion_switch
+        self.dump, self.cann_path = arguments.dump, arguments.cann_path
 
-        self.data_dir = ""
-        self.onnx_dump_data_dir = ""
-        self.model_dir = ""
-        self.old_onnx_model = onnx.load(self.args.model_path)
-        self.new_onnx_model_path = ""
-        self.inputs_map = {}
+        self._check_path_exists(self.model_path, extentions="onnx")
 
-        self._create_dir()
-        self.onnx_model_before_custom_op_path = ""
-        self.new_onnx_model_before_custom_op_path = ""
-        self.onnx_model_after_custom_op_path = ""
-        self._extract_sub_models_by_custom_op()
+        self.input_shapes = utils.parse_input_shape(self.input_shape)
+        self.data_dir, self.onnx_dump_data_dir, self.model_dir = self._create_dir()
+
+        self.net_output, self.inputs_map = {}, {}
+        self.origin_model, origin_model_contents = self._load_onnx(self.model_path)
+
+        if self.custom_op:
+            (head_model, head_path), (tail_model, tail_path), tail_inputs = self._extract_sub_models_by_custom_op()
+            self.model_before_custom_op, self.model_before_custom_op_path = head_model, head_path
+            self.model_after_custom_op, self.model_after_custom_op_path = tail_model, tail_path
+            self.model_after_custom_op_inputs = tail_inputs
+
+            self.dump_model_with_inputs_path = self._new_model_save_path(self.model_before_custom_op_path)
+            self.model_with_inputs = self.model_before_custom_op
+            self.model_with_inputs_session = self._load_session(self.model_with_inputs.SerializeToString())
+        else:
+            self.dump_model_with_inputs_path = self._new_model_save_path(self.model_path)
+            self.model_with_inputs = self.origin_model
+            self.model_with_inputs_session = self._load_session(origin_model_contents)
 
     @staticmethod
     def _check_input_shape_fix_value(op_name, model_shape, input_shape):
@@ -94,119 +104,100 @@ class OnnxDumpData(DumpData):
                 utils.logger.error(message)
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
-    def generate_inputs_data(self, npu_dump_data_path, use_aipp):
-        """
-        Function Description:
-            generate inputs data
-        """
-        if self.args.custom_op == "":
-            self.new_onnx_model_path =  self._modify_model_add_outputs_nodes(self.args.model_path)
-            session = self._load_session(self.new_onnx_model_path)
+    def generate_inputs_data(self, npu_dump_data_path=None, use_aipp=False):
+        inputs_tensor_info = self._get_inputs_tensor_info()
+        if use_aipp:
+            if not npu_dump_data_path:
+                utils.logger.error("find no aipp op in dump data, please check if --dump is True")
+                raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+            self._check_path_exists(npu_dump_data_path)
+            self.inputs_map = self._get_inputs_data_aipp(self.data_dir, inputs_tensor_info, npu_dump_data_path)
         else:
-            new_model_path = self._modify_model_add_outputs_nodes(self.onnx_model_before_custom_op_path)
-            self.new_onnx_model_before_custom_op_path = new_model_path
-            session = self._load_session(self.new_onnx_model_before_custom_op_path)
+            self.inputs_map = self._get_inputs_data(self.data_dir, inputs_tensor_info)
 
-        inputs_tensor_info = self._get_inputs_tensor_info(session)
-        self.inputs_map = self._get_inputs_data(self.data_dir, inputs_tensor_info, npu_dump_data_path, use_aipp)
+    def generate_dump_data(self, npu_dump_path=None, om_parser=None):
+        dump_model_with_inputs_contents = self._modify_model_add_outputs_nodes(
+            self.model_with_inputs, self.dump_model_with_inputs_path
+        )
+        session = self._load_session(dump_model_with_inputs_contents)
+        dump_bins = self._run_model(session, self.inputs_map)
 
-    def generate_dump_data(self, npu_dump_path, om_parser):
-        """
-        Function description:
-            generate onnx model dump data
-        Parameter:
-            none
-        Return Value:
-            onnx model dump data directory
-        Exception Description:
-            none
-        """
-        if self.args.custom_op == "":
-            onnx_dump_data_dir = self._generate_onnx_model_dump_data(self.new_onnx_model_path, 
-                                                                     self.args.model_path)
-        else:
-            # 1. dump data before custom op
-            onnx_dump_data_dir = self._generate_onnx_model_dump_data(self.new_onnx_model_before_custom_op_path, 
-                                                                     self.onnx_model_before_custom_op_path)
-            
-            # 2. dump data before custom op
+        net_output_node = [output_item.name for output_item in self.model_with_inputs_session.get_outputs()]
+        self._save_dump_data(dump_bins, self.model_with_inputs, net_output_node)
+
+        if self.custom_op:
+            # dump data before custom op
+            if not npu_dump_path:
+                utils.logger.error("npu_dump_path not provided, please check if --dump is True")
+                raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+            self._check_path_exists(npu_dump_path)
             self._gen_after_custom_op_dump_data(npu_dump_path, om_parser)
-        return onnx_dump_data_dir
+        return self.onnx_dump_data_dir
 
-    def get_net_output_info(self):
-        """
-        get_net_output_info
-        """
-        return self.net_output
+    def _load_session(self, model_contents):
+        options = onnxruntime.SessionOptions()
+        if not self.onnx_fusion_switch:
+            options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
+        return onnxruntime.InferenceSession(model_contents, options)
+
+    def _load_onnx(self, model_path):
+        # model_path str -> read as bytes -> deserialize to onnx_model
+        #                                 -> onnxruntime load as session
+        with open(model_path, "rb") as ff:
+            model_contents = ff.read()
+        onnx_model = onnx.load_model_from_string(model_contents)
+        for index, node in enumerate(onnx_model.graph.node):
+            if not node.name:
+                node.name = node.op_type + "_" + str(index)
+        return onnx_model, model_contents
+
+    def _new_model_save_path(self, origin_path):
+        save_name = "new_" + os.path.basename(origin_path)
+        return os.path.join(self.model_dir, save_name)
 
     def _create_dir(self):
         # create input directory
-        self.data_dir = os.path.join(self.args.out_path, "input")
-        utils.create_directory(self.data_dir)
+        data_dir = os.path.join(self.out_path, "input")
+        utils.create_directory(data_dir)
 
         # create dump_data/onnx directory
-        self.onnx_dump_data_dir = os.path.join(self.args.out_path, "dump_data/onnx")
-        utils.create_directory(self.onnx_dump_data_dir)
+        onnx_dump_data_dir = os.path.join(self.out_path, "dump_data/onnx")
+        utils.create_directory(onnx_dump_data_dir)
 
         # create model directory
-        self.model_dir = ""
-        if self.args.dym_shape_range:
+        model_dir = ""
+        if self.dym_shape_range:
             model_relative_name = "../model"
         else:
             model_relative_name = "model"
-            if self.args.dump:
-                self.model_dir = os.path.join(self.args.out_path, model_relative_name)
-                utils.create_directory(self.model_dir)
+            if self.dump:
+                model_dir = os.path.join(self.out_path, model_relative_name)
+                utils.create_directory(model_dir)
+        return data_dir, onnx_dump_data_dir, model_dir
 
-    def _generate_onnx_model_dump_data(self, onnx_model_witch_outputs_path, origin_onnx_model_path):
-        """
-        Function description:
-            generate onnx model dump data
-        Parameter:
-            none
-        Return Value:
-            onnx model dump data directory
-        Exception Description:
-            none
-        """
-        session = self._load_session(onnx_model_witch_outputs_path)
-        net_output_node = self._get_net_output_node(origin_onnx_model_path)
-        dump_bins = self._run_model(session, self.inputs_map)
-        origin_onnx_model = onnx.load(origin_onnx_model_path)
-        self._save_dump_data(dump_bins, self.onnx_dump_data_dir, origin_onnx_model, net_output_node)
-        return self.onnx_dump_data_dir
-    
-    def _modify_model_add_outputs_nodes(self, onnx_model_path):
-        old_onnx_model = onnx.load(onnx_model_path)
-        utils.logger.info("load model success")
-        for index, node in enumerate(old_onnx_model.graph.node):
-            if not node.name:
-                node.name = node.op_type + "_" + str(index)
-        if not self.args.dump:
-            old_onnx_model_graph_output = old_onnx_model.graph.output
-            outputs_name_list = [output_node.name for output_node in old_onnx_model_graph_output]
-            outputs_name = [name for name in enumerate_model_node_outputs(old_onnx_model) if name in outputs_name_list]
+    def _modify_model_add_outputs_nodes(self, onnx_model, save_path):
+        if not self.dump:
+            origin_model_graph_output = onnx_model.graph.output
+            outputs_name_list = [output_node.name for output_node in origin_model_graph_output]
+            outputs_name = [name for name in enumerate_model_node_outputs(onnx_model) if name in outputs_name_list]
         else:
-            outputs_name = [name for name in enumerate_model_node_outputs(old_onnx_model)]
-        new_onnx_model = select_model_inputs_outputs(old_onnx_model, outputs_name)
-        new_onnx_model_path = os.path.join(self.model_dir, "new_" + os.path.basename(onnx_model_path))
+            outputs_name = [name for name in enumerate_model_node_outputs(onnx_model)]
+        new_onnx_model = select_model_inputs_outputs(onnx_model, outputs_name)
         bytes_model = new_onnx_model.SerializeToString()
         save_as_external_data_switch = sys.getsizeof(bytes_model) > MAX_PROTOBUF
         onnx.save_model(new_onnx_model,
-                        new_onnx_model_path,
+                        save_path,
                         save_as_external_data=save_as_external_data_switch,
                         location=self.model_dir if save_as_external_data_switch else None)
-        utils.logger.info("modify model outputs success: %s", new_onnx_model_path)
-        return new_onnx_model_path
+        utils.logger.info("modify model outputs success: %s", save_path)
+        return bytes_model
 
-    def _get_inputs_tensor_info(self, session):
+    def _get_inputs_tensor_info(self):
         inputs_tensor_info = []
-        # 'session' is a class of 'onnxruntime.InferenceSession'
-        # 'input' is a class of 'onnxruntime.NodeArg'
-        input_tensor_names = [item.name for item in session.get_inputs()]
+        input_tensor_names = [item.name for item in self.model_with_inputs_session.get_inputs()]
         for _, tensor_name in enumerate(self.input_shapes):
             utils.check_input_name_in_model(input_tensor_names, tensor_name)
-        for input_item in session.get_inputs():
+        for input_item in self.model_with_inputs_session.get_inputs():
             tensor_name = input_item.name
             tensor_type = input_item.type
             tensor_shape = tuple(input_item.shape)
@@ -222,7 +213,7 @@ class OnnxDumpData(DumpData):
                     number_shape = [int(dim) for dim in input_shape]
                 except (ValueError, TypeError) as error:
                     utils.logger.error(utils.get_shape_not_match_message(
-                        InputShapeError.FORMAT_NOT_MATCH, self.args.input_shape))
+                        InputShapeError.FORMAT_NOT_MATCH, self.input_shape))
                     raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR) from error
                 self._check_input_shape_fix_value(tensor_name, tensor_shape, number_shape)
                 tensor_info = {"name": tensor_name, "shape": tuple(number_shape), "type": tensor_type}
@@ -233,54 +224,35 @@ class OnnxDumpData(DumpData):
         utils.logger.info("model inputs tensor info:\n{}\n".format(inputs_tensor_info))
         return inputs_tensor_info
 
-    def _get_inputs_data(self, data_dir, inputs_tensor_info, npu_dump_data_path, use_aipp):
-        inputs_map = {}
-        if use_aipp:
-            inputs_map = self._get_inputs_data_aipp(data_dir, inputs_tensor_info, npu_dump_data_path)
-            return inputs_map
-        if "" == self.args.input_path:
-            for i, tensor_info in enumerate(inputs_tensor_info):
-                input_data = np.random.random(tensor_info["shape"]).astype(
-                    self._convert_to_numpy_type(tensor_info["type"]))
-                inputs_map[tensor_info["name"]] = input_data
-                file_name = "input_" + str(i) + ".bin"
-                input_data.tofile(os.path.join(data_dir, file_name))
-                utils.logger.info("save input file name: {}, shape: {}, dtype: {}".format(
-                    file_name, input_data.shape, input_data.dtype))
-            return inputs_map
+    def _get_inputs_data(self, data_dir, inputs_tensor_info):
+        names = [ii["name"] for ii in inputs_tensor_info]
+        shapes = [ii["shape"] for ii in inputs_tensor_info]
+        dtypes = [self._convert_to_numpy_type(ii["type"]) for ii in inputs_tensor_info]
+
+        if "" == self.input_path:
+            return self._generate_random_input_data(data_dir, names, shapes, dtypes)
+
         input_path = []
-        input_initial_path = self.args.input_path.split(",")
+        input_initial_path = self.input_path.split(",")
         for input_item in input_initial_path:
             input_item_path = os.path.realpath(input_item)
             if input_item_path.endswith('.bin'):
                 input_path.append(input_item_path)
             else:
                 utils.get_input_path(input_item_path, input_path)
-        if len(inputs_tensor_info) != len(input_path):
-            utils.logger.error("the number of model inputs tensor_info is not equal the number of "
-                                "inputs data, inputs tensor_info is: {}, inputs data is: {}".format(
-                len(inputs_tensor_info), len(input_path)))
-            raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
-        for i, tensor_info in enumerate(inputs_tensor_info):
-            input_data = np.fromfile(input_path[i], self._convert_to_numpy_type(tensor_info["type"])).reshape(
-                tensor_info["shape"])
-            inputs_map[tensor_info["name"]] = input_data
-            utils.logger.info("load input file name: {}, shape: {}, dtype: {}".format(
-                os.path.basename(input_path[i]), input_data.shape, input_data.dtype))
-        return inputs_map
-    
+
+        self._check_input_data_path(input_path, inputs_tensor_info)
+        return self._read_input_data(input_path, names, shapes, dtypes)
+
     def _get_inputs_data_aipp(self, data_dir, inputs_tensor_info, npu_dump_data_path):
         inputs_map = {}
         aipp_input = []
-        if not npu_dump_data_path:
-            utils.logger.error("find no aipp op in dump data, please check --dump is True")
-            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
         for bin_file in os.listdir(npu_dump_data_path):
             if bin_file.startswith("Aipp"):
                 aipp_input.append(os.path.join(npu_dump_data_path, bin_file))
         for i, tensor_info in enumerate(inputs_tensor_info):
-            data_convert_file(aipp_input[i], os.path.join(self.args.out_path, "input"), self.args)
-            aipp_output_path = os.path.join(self.args.out_path, "input", aipp_input[i].rsplit("/", 1)[1]) + \
+            convert_bin_file_to_npy(aipp_input[i], os.path.join(self.out_path, "input"), self.cann_path)
+            aipp_output_path = os.path.join(self.out_path, "input", aipp_input[i].rsplit("/", 1)[1]) + \
                                ".output.0.npy"
             aipp_output = np.load(aipp_output_path)
             nchw_prod = np.prod(tensor_info["shape"])
@@ -303,25 +275,18 @@ class OnnxDumpData(DumpData):
                 "unsupported tensor type: {}".format(tensor_type))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_TENSOR_TYPE_ERROR)
 
-    def _load_session(self, new_onnx_model_path):
-        options = onnxruntime.SessionOptions()
-        if not self.args.onnx_fusion_switch:
-            options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
-        return onnxruntime.InferenceSession(new_onnx_model_path, options)
-
     def _run_model(self, session, inputs_map):
         outputs_name = [node.name for node in session.get_outputs()]
         return session.run(outputs_name, inputs_map)
 
-    def _save_dump_data(self, dump_bins, onnx_dump_data_dir, old_onnx_model, net_output_node):
+    def _save_dump_data(self, dump_bins, old_onnx_model, net_output_node):
         res_idx = 0
         for node in old_onnx_model.graph.node:
             for j, output in enumerate(node.output):
-                if not self.args.dump and output not in net_output_node:
+                if not self.dump and output not in net_output_node:
                     continue
-                file_name = node.name.replace('.', '_').replace('/', '_') + "." + str(j) + "." \
-                            + str(round(time.time() * 1000000)) + ".npy"
-                file_path = os.path.join(onnx_dump_data_dir, file_name)
+                file_name = self._generate_dump_data_file_name(node.name, j)
+                file_path = os.path.join(self.onnx_dump_data_dir, file_name)
                 if output in net_output_node:
                     self.net_output[net_output_node.index(output)] = file_path
                 np.save(file_path, dump_bins[res_idx])
@@ -330,40 +295,30 @@ class OnnxDumpData(DumpData):
             utils.logger.info("net_output node is:{}, file path is {}".format(key, value))
         utils.logger.info("dump data success")
 
-    def _get_net_output_node(self, onnx_model_path):
-        """
-        get net output name
-        """
-        net_output_node = []
-        session = self._load_session(onnx_model_path)
-        for output_item in session.get_outputs():
-            net_output_node.append(output_item.name)
-        return net_output_node
-
     def _extract_sub_models_by_custom_op(self):
-        if self.args.custom_op == "":
-            return
         try:
             from auto_optimizer import OnnxGraph
         except ModuleNotFoundError as err:
             utils.logger.error("auto_optimizer is not install!")
             raise err
-        
-        old_onnx_graph = OnnxGraph.parse(self.args.model_path)
-        old_onnx_graph.infer_shape()
-        custom_op_node = old_onnx_graph[self.args.custom_op]
-        if custom_op_node is None:
-            utils.logger.error("can't find custom op: %s", self.args.custom_op)
-            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-        
-        self._extract_model_before_custom_op(old_onnx_graph, custom_op_node)
-        self._extract_model_after_custom_op(old_onnx_graph, custom_op_node)
 
-    def _extract_model_before_custom_op(self, old_onnx_graph, custom_op_node):
+        origin_model_graph = OnnxGraph.parse(self.origin_model)
+        origin_model_graph.infer_shape()
+        custom_op_node = origin_model_graph[self.custom_op]
+        if custom_op_node is None:
+            utils.logger.error("can't find custom op: %s", self.custom_op)
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+        tail_inputs = custom_op_node.outputs
+
+        head_model, head_path = self._extract_model_before_custom_op(origin_model_graph, custom_op_node)
+        tail_model, tail_path = self._extract_model_after_custom_op(origin_model_graph, custom_op_node)
+        return (head_model, head_path), (tail_model, tail_path), tail_inputs
+
+    def _extract_model_before_custom_op(self, onnx_graph, custom_op_node):
         # start from inputs
         start_nodes_name = []
-        for onnx_model_input in old_onnx_graph.inputs:
-            start_nodes = old_onnx_graph.get_next_nodes(onnx_model_input.name)
+        for onnx_model_input in onnx_graph.inputs:
+            start_nodes = onnx_graph.get_next_nodes(onnx_model_input.name)
             for start_node in start_nodes:
                 if start_node is not None:
                     start_nodes_name.append(start_node.name)
@@ -371,108 +326,109 @@ class OnnxDumpData(DumpData):
         # end before custom op node
         end_nodes_name = []
         for custom_op_input in custom_op_node.inputs:
-            end_node = old_onnx_graph.get_prev_node(custom_op_input)
+            end_node = onnx_graph.get_prev_node(custom_op_input)
             end_nodes_name.append(end_node.name)
-        
-        onnx_model_before_custom_op = old_onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
-        self.onnx_model_before_custom_op_path = os.path.join(
-            self.model_dir, "before_custom_op_" + os.path.basename(self.args.model_path))
-        onnx_model_before_custom_op.save(self.onnx_model_before_custom_op_path)
-        utils.logger.info("extract model before custom op sucessed, save path: %s", 
-                          self.onnx_model_before_custom_op_path)
-        
-    def _extract_model_after_custom_op(self, old_onnx_graph, custom_op_node):
 
+        model_before_custom_op = onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
+        filename = "before_custom_op_" + os.path.basename(self.model_path)
+        model_before_custom_op_path = os.path.join(self.model_dir, filename)
+        model_before_custom_op.save(model_before_custom_op_path)
+        utils.logger.info("extract model before custom op sucessed, save path: %s", model_before_custom_op_path)
+        return model_before_custom_op.model(), model_before_custom_op_path
+
+    def _extract_model_after_custom_op(self, onnx_graph, custom_op_node):
         # start from custom op outputs
         start_nodes_name = []
-
         for output in custom_op_node.outputs:
-            start_nodes = old_onnx_graph.get_next_nodes(output)
+            start_nodes = onnx_graph.get_next_nodes(output)
             for start_node in start_nodes:
                 if start_node is not None:
                     start_nodes_name.append(start_node.name)
-                    utils.logger.info("start_node.name: %s", 
-                                    start_node.name)
+                    utils.logger.info("start_node.name: %s", start_node.name)
 
         # end by old onnx graph outputs
         end_nodes_name = []
-        for graph_output in old_onnx_graph.outputs:
-            end_node = old_onnx_graph.get_prev_node(graph_output.name)
+        for graph_output in onnx_graph.outputs:
+            end_node = onnx_graph.get_prev_node(graph_output.name)
             end_nodes_name.append(end_node.name)
 
-        onnx_model_after_custom_op = old_onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
-        self.onnx_model_after_custom_op_path = os.path.join(
-            self.model_dir, "after_custom_op_" + os.path.basename(self.args.model_path))
-        onnx_model_after_custom_op.save(self.onnx_model_after_custom_op_path)
-        utils.logger.info("extract model after custom op sucessed, save path: %s", 
-                          self.onnx_model_after_custom_op_path)
-        
+        model_after_custom_op = onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
+        filename = "after_custom_op_" + os.path.basename(self.model_path)
+        model_after_custom_op_path = os.path.join(self.model_dir, filename)
+        model_after_custom_op.save(model_after_custom_op_path)
+        utils.logger.info("extract model after custom op sucessed, save path: %s", model_after_custom_op_path)
+        return model_after_custom_op.model(), model_after_custom_op_path
+
     def _gen_after_custom_op_dump_data(self, npu_dump_path, om_parser):
         try:
             from auto_optimizer import OnnxGraph
         except ModuleNotFoundError as err:
             utils.logger.error("auto_optimizer is not install!")
             raise err
-        
-        inputs_tensor_info = self._get_after_custom_op_inputs_ternsor_info()
+
+        model_after_custom_op_session = self._load_session(self.model_after_custom_op.SerializeToString())
+        inputs_tensor_info = self._get_after_custom_op_inputs_ternsor_info(model_after_custom_op_session)
         inputs_map, inputs_tensor_info = self._get_npu_dump_data_by_custom_op(
             npu_dump_path, inputs_tensor_info, om_parser)
-        # fix inputs info 
-        onnx_model_after_custom_op = OnnxGraph.parse(self.onnx_model_after_custom_op_path)
 
-        def _update_sub_model_input(onnx_model, input_tensor_info):
-            for model_input in onnx_model.inputs:
-                if model_input.name == input_tensor_info['name']:
-                    model_input.shape = input_tensor_info['shape']
-                    model_input.dtype = input_tensor_info['type']
+        # fix inputs info
+        model_after_custom_op_graph = OnnxGraph.parse(self.model_after_custom_op)
+        inputs_tensor_dict = {ii["name"]: ii for ii in inputs_tensor_info}
+        for model_input in model_after_custom_op_graph.inputs:
+            input_tensor_info = inputs_tensor_dict.get(model_input.name)
+            if input_tensor_info:
+                model_input.shape = input_tensor_info['shape']
+                model_input.dtype = input_tensor_info['type']
 
-        for input_tensor_info in inputs_tensor_info:
-            _update_sub_model_input(onnx_model_after_custom_op, input_tensor_info)
-
-        onnx_model_after_custom_op.infer_shape()
-        onnx_model_after_custom_op.save(self.onnx_model_after_custom_op_path)
+        model_after_custom_op_graph.infer_shape()
+        model_after_custom_op_graph.save(self.model_after_custom_op_path)
 
         # gen dump data
-        new_model_path = self._modify_model_add_outputs_nodes(self.onnx_model_after_custom_op_path)        
-        session = self._load_session(new_model_path)
-        net_output_node = self._get_net_output_node(self.onnx_model_after_custom_op_path)
-        dump_bins = self._run_model(session, inputs_map)
-        self._save_dump_data(dump_bins, self.onnx_dump_data_dir, 
-                             onnx.load(self.onnx_model_after_custom_op_path), 
-                             net_output_node)
+        save_path = self._new_model_save_path(self.model_after_custom_op_path)
+        dump_model_with_inputs_contents = self._modify_model_add_outputs_nodes(self.model_after_custom_op, save_path)
+        dump_model_with_inputs_session = self._load_session(dump_model_with_inputs_contents)
+        dump_bins = self._run_model(dump_model_with_inputs_session, inputs_map)
+
+        net_output_node = [output_item.name for output_item in model_after_custom_op_session.get_outputs()]
+        self._save_dump_data(dump_bins, self.model_after_custom_op, net_output_node)
 
     def _get_npu_dump_data_by_custom_op(self, npu_dump_path, inputs_tensor_info, om_parser):
         inputs_map = {}
 
         # 动态bs和动态dim场景，om中的op都会加上_ascend_mbatch_batch_后缀，需要转化下才能匹配上
-        custom_op_name = utils.get_mbatch_op_name(om_parser, self.args.custom_op, npu_dump_path)
+        custom_op_name = utils.get_mbatch_op_name(om_parser, self._to_valid_name(self.custom_op), npu_dump_path)
         utils.logger.info("custom_op_name in npu model:%s", custom_op_name)
 
         for item in os.listdir(npu_dump_path):
             # file name format: [Optype].[OpName].{time}.[dump_type].[index].npy
             file_name_info = item.split('.')
+            if len(file_name_info) < 5:
+                continue
             op_name = file_name_info[1]
             dump_type = file_name_info[-3]
             index = int(file_name_info[-2])
             if op_name == custom_op_name and dump_type == "output" and index < len(inputs_tensor_info):
-                numpy_data = np.load(os.path.join(npu_dump_path, item))
+                inputs_info = inputs_tensor_info[index]
+                numpy_data = np.load(os.path.join(npu_dump_path, item), allow_pickle=True)
+                if inputs_info['shape']:
+                    numpy_data = numpy_data.reshape(inputs_info['shape'])
+                if inputs_info['type']:
+                    numpy_data = numpy_data.astype(self._convert_to_numpy_type(inputs_info['type']))
                 inputs_tensor_info[index]['shape'] = numpy_data.shape
                 inputs_tensor_info[index]['type'] = numpy_data.dtype
                 inputs_map[inputs_tensor_info[index]['name']] = numpy_data
 
+        if len(inputs_map) != len(inputs_tensor_info):
+            required, found = [ii['name'] for ii in inputs_tensor_info], list(inputs_map.keys())
+            utils.logger.error(f"Can not find all input_data for custom_op, required: {required}, found: {found}")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
+
         utils.logger.info("extract model after custom op inputs tensor info:\n{}\n".format(inputs_tensor_info))
         return inputs_map, inputs_tensor_info
 
-    def _get_after_custom_op_inputs_ternsor_info(self):
+    def _get_after_custom_op_inputs_ternsor_info(self, session):
         inputs_tensor_info = []
-
-        session = self._load_session(self.onnx_model_after_custom_op_path)
         for input_item in session.get_inputs():
-            tensor_name = input_item.name
-            tensor_shape = input_item.shape
-            tensor_type = input_item.type
-
-            tensor_info = {"name": tensor_name, "shape": tensor_shape, "type": tensor_type}
-            inputs_tensor_info.append(tensor_info)
-        return inputs_tensor_info
-
+            inputs_tensor_info.append({"name": input_item.name, "shape": input_item.shape, "type": input_item.type})
+        inputs_name_index_dict = {ii: id for id, ii in enumerate(self.model_after_custom_op_inputs)}
+        return sorted(inputs_tensor_info, key=lambda xx: inputs_name_index_dict.get(xx.get("name"), float("inf")))

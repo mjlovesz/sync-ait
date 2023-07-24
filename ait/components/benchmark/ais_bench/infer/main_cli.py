@@ -48,7 +48,8 @@ from ais_bench.infer.options import (
     opt_npu_id,
     opt_backend,
     opt_perf,
-    opt_pipeline
+    opt_pipeline,
+    opt_profiler_rename
 )
 
 
@@ -86,19 +87,20 @@ from ais_bench.infer.options import (
 @opt_backend
 @opt_perf
 @opt_pipeline
+@opt_profiler_rename
 def benchmark_cli(om_model, input_path, output, 
                   output_dirname, outfmt, loop, debug, device,
                   dym_batch, dym_hw, dym_dims, dym_shape, output_size, auto_set_dymshape_mode,
                   auto_set_dymdims_mode, batch_size, pure_data_type, profiler, dump,
                   acl_json_path, output_batchsize_axis, run_mode, display_all_summary,
-                  warmup_count, dym_shape_range, aipp_config, energy_consumption, npu_id, backend, perf, pipeline):
+                  warmup_count, dym_shape_range, aipp_config, energy_consumption, npu_id, backend, perf, pipeline, profiler_rename):
 
     args = BenchMarkArgsAdapter(om_model.as_posix(), input_path, output.as_posix() if output else None, 
                                 output_dirname, outfmt, loop, debug, device,
                                 dym_batch, dym_hw, dym_dims, dym_shape, output_size, auto_set_dymshape_mode,
                                 auto_set_dymdims_mode, batch_size, pure_data_type, profiler, dump,
                                 acl_json_path, output_batchsize_axis, run_mode, display_all_summary, warmup_count,
-                                dym_shape_range, aipp_config, energy_consumption, npu_id, backend, perf, pipeline)
+                                dym_shape_range, aipp_config, energy_consumption, npu_id, backend, perf, pipeline, profiler_rename)
     benchmark_process(args)
 
 class BenchmarkCommand:

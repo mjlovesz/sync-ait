@@ -19,7 +19,7 @@ AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体�
 | [analyze](components/analyze) | -                             | 提供其他平台模型迁移至昇腾平台的支持度分析功能                 |
 | [transplt](components/transplt) | -                             | 提供NV C++推理应用迁移分析以及昇腾API推荐功能             |
 | [convert](components/convert) | -                             | 提供推理模型转换功能                              |
-| [profile](components/profile/msprof) | - | 提供profiling，提供整网详细的性能数据及相关信息            |
+| [profile](docs/profile) | - | 提供profiling，提供整网详细的性能数据及相关信息            |
 
 
 ## 工具安装
@@ -68,7 +68,7 @@ ait debug compare -h
 * [AIT analyze 快速入门指南](components/analyze/README.md)
 * [AIT transplt 快速入门指南](components/transplt/README.md)
 * [AIT convert 快速入门指南](components/convert/README.md)
-* [AIT profile 快速入门指南](components/profile/msprof/README.md)
+* [AIT profile 快速入门指南](docs/profile/README.md)
 
 ## 许可证
 
