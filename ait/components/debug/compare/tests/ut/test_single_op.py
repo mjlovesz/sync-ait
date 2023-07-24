@@ -95,7 +95,7 @@ def test_dynamic_divide_onnx(create_dynamic_divide_onnx_graph):
     memory_size = 2 * 8 * 3 * 768 * 768
     subonnx_list = sp.dynamic_divide_onnx(out_path, create_dynamic_divide_onnx_graph, memory_size)
     shutil.rmtree(out_path)
-    assert subonnx_list = ['./test_dynamic_divide_onnx/0_broken.onnx', './test_dynamic_divide_onnx/1_broken.onnx']
+    assert subonnx_list == ['./test_dynamic_divide_onnx/0_broken.onnx', './test_dynamic_divide_onnx/1_broken.onnx']
 
 
 def test_accumulate_shape_size(create_accumulate_shape_size_graph):
