@@ -273,6 +273,14 @@ g.save('model_fix.onnx')
 - `save_path(str)` - 指定截取后模型 onnx 文件的保存路径。
 - `input_name_list(List[str])` - 指定模型截取的输入边。
 - `output_name_list(List[str])` - 指定模型截取的输出边。
+
+**concat_graph(graph1, graph2, io_map, graph_name=None) -> OnnxGraph**
+- `graph1`(OnnxGraph): 第一幅ONNX图
+- `graph2`(OnnxGraph): 第二幅ONNX图
+- `io_map`(List[Tuple[str, str]]): 第一幅ONNX图的输出与第二幅ONNX图的输入的映射关系
+- `prefix`(str): 添加到第一幅ONNX图所有名称的前缀。若不指定，则默认为`pre_`
+- `graph_name`(str): 拼接之后ONNX图的名称。若不指定，则默认为以下划线连接的两幅图的名称
+
 <details>
   <summary> sample code </summary>
 
@@ -287,6 +295,15 @@ g_sim.save('simplified_model.onnx')
 
 # 模型截取并保存
 g.extract('extracted_model.onnx', ['5'], ['12'])
+
+# 拼接ONNX图
+g1 = OnnxGraph.parse("g1.onnx")
+g2 = OnnxGraph.parse("g2.onnx")
+combined_graph = OnnxGraph.concat_graph(
+  graph1=g1,
+  graph2=g2,
+  io_map=[("g1_output", "g2_input")]  # 两幅图的映射关系按照实际边的名称指定
+)
 
 ```
 

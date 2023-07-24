@@ -286,6 +286,13 @@ opt_profiler = click.option(
     help='Profiler switch'
 )
 
+opt_profiler_rename = click.option(
+    '--profiler_rename',
+    default=True,
+    type=str,
+    callback=str2bool,
+    help='Profiler rename switch'
+)
 
 opt_dump = click.option(
     '--dump',

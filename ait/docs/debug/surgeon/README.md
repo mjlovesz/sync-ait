@@ -112,12 +112,28 @@ extract 可简写为ext
 
 参数说明：
 
-| 参数                    | 说明                                                                                                                                                                                                                                                                                                                                 | 是否必选 |
-|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------|
-| OPTIONS               | 额外参数。可取值：<br/>    -ck/--is-check-subgraph：是否校验子图。启用这个选项时，会校验切分后的子图。<br/>    -sis/--subgraph-input-shape：额外参数。可指定截取子图之后的输入shape。多节点的输入shape指定按照以下格式，"input1:n1,c1,h1,w1;input2:n2,c2,h2,w2"。<br/>    -sit/--subgraph_input_dtype：额外参数。可指定截取子图之后的输入dtype。多节点的输入dtype指定按照以下格式，"input1:dtype1;input2:dtype2"。<br/>    --help：工具使用帮助信息。 | 否    |
-| REQUIRED              | -in/--input：输入ONNX待优化模型，必须为.onnx文件。 <br/>    -of/--output-file：切分后的子图ONNX模型名称，用户自定义，必须为.onnx文件。<br/>    -snn/--start-node-names：起始节点名称。可指定多个输入节点，节点之间使用","分隔。<br/>     -enn/--end-node-names：结束节点名称。可指定多个输出节点，节点之间使用","分隔。                                                                                                         | 是    |
+| 参数                    | 说明                                                                                                                                                                                                                                                                                                                                                                                                                                                             | 是否必选 |
+|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------|
+| OPTIONS               | 额外参数。可取值：<br/>    -snn/--start-node-names：起始算子名称。可指定多个输入算子名称，节点之间使用","分隔。<br/>     -enn/--end-node-names：结束算子名称。可指定多个输出算子名称，节点之间使用","分隔。<br/> -ck/--is-check-subgraph：是否校验子图。启用这个选项时，会校验切分后的子图。<br/>    -sis/--subgraph-input-shape：额外参数。可指定截取子图之后的输入shape。多节点的输入shape指定按照以下格式，"input1:n1,c1,h1,w1;input2:n2,c2,h2,w2"。<br/>    -sit/--subgraph_input_dtype：额外参数。可指定截取子图之后的输入dtype。多节点的输入dtype指定按照以下格式，"input1:dtype1;input2:dtype2"。<br/>    --help：工具使用帮助信息。 | 否    |
+| REQUIRED              | -in/--input：输入ONNX待优化模型，必须为.onnx文件。 <br/>    -of/--output-file：切分后的子图ONNX模型名称，用户自定义，必须为.onnx文件。<br/>                                                                                                                                                                                                                                                                                                                                                           | 是    |
 
 使用特别说明：为保证子图切分功能正常使用且不影响推理性能，请勿指定存在**父子关系**的输入或输出节点作为切分参数。
+
+
+### concatenate命令
+命令格式如下：
+
+```bash
+ait debug surgeon concat [OPTIONS]
+```
+
+参数说明：
+
+| 参数                    | 说明                                                                                                                                                                                       | 是否必选 |
+|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------|
+| OPTIONS               | 额外参数。可取值：<br/>    -cgp/--combined-graph-path：拼接之后结构图的名称。默认为以下划线连接的两幅图的名称<br/>    <br/>    --help：工具使用帮助信息。                                                                               | 否    |
+| REQUIRED              | -g1/--graph2：输入的第一个ONNX模型，必须为.onnx文件。 <br/>    -g1/--graph2：输入的第一个ONNX模型，必须为.onnx文件。<br/>    -io/--io-map：拼接时第一幅图的输出与第二幅图的输入的映射关系 | 是    |
+
 
 
 ## 2. 改图工具API使用入口
@@ -173,6 +189,15 @@ g.extract_subgraph(
     input_shape="input1:1,3,224,224;input2:1,3,64,64",
     input_dtype="input1:float16;input2:int8"
 )
+
+# 拼接子图
+g1 = OnnxGraph.parse("g1.onnx")
+g2 = OnnxGraph.parse("g2.onnx")
+combined_graph = OnnxGraph.concat_graph(
+  graph1=g1,
+  graph2=g2,
+  io_map=[("g1_output", "g2_input")]  # 两幅图的映射关系按照实际边的名称指定
+)
 ```
 
 ### 详细使用方法
@@ -187,11 +212,12 @@ g.extract_subgraph(
 
 请移步[surgeon使用示例](../../../examples/cli/debug/surgeon/)
 
-  | 使用示例                                                                                  | 使用场景                    |
-  |---------------------------------------------------------------------------------------|-------------------------|
-  | [01_basic_usage](../../../examples/cli/debug/surgeon/01_basic_usage)                  | 基础示例，介绍surgeon各功能       | 
-  | [02_list_command](../../../examples/cli/debug/surgeon/02_list_command)                | 列举当前支持自动调优的所有知识库        | 
-  | [03_evaluate_command](../../../examples/cli/debug/surgeon/03_evaluate_command)        | 搜索可以被指定知识库优化的ONNX模型     | 
-  | [04_optimize_command](../../../examples/cli/debug/surgeon/04_optimize_command)        | 使用指定的知识库优化ONNX模型        | 
-  | [05_extract_command](../../../examples/cli/debug/surgeon/05_extract_command)          | 对ONNX模型进行子图切分           | 
+  | 使用示例                                                                                  | 使用场景                   |
+  |---------------------------------------------------------------------------------------|------------------------|
+  | [01_basic_usage](../../../examples/cli/debug/surgeon/01_basic_usage)                  | 基础示例，介绍surgeon各功能      | 
+  | [02_list_command](../../../examples/cli/debug/surgeon/02_list_command)                | 列举当前支持自动调优的所有知识库       | 
+  | [03_evaluate_command](../../../examples/cli/debug/surgeon/03_evaluate_command)        | 搜索可以被指定知识库优化的ONNX模型    | 
+  | [04_optimize_command](../../../examples/cli/debug/surgeon/04_optimize_command)        | 使用指定的知识库优化ONNX模型       | 
+  | [05_extract_command](../../../examples/cli/debug/surgeon/05_extract_command)          | 对ONNX模型进行子图切分          | 
   | [06_big_kernel_optimize](../../../examples/cli/debug/surgeon/06_big_kernel_optimize)  | Transformer类模型大kernel优化 |
+  | [07_concatenate_command](../../../examples/cli/debug/surgeon/07_concatenate_command)  | 对两幅ONNX图进行拼接           |

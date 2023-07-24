@@ -48,3 +48,4 @@ BaseGraph 类提供了基本的接口用于增删改查节点：
 | [实用功能](./graph_refactor_API.md#实用功能) | 模型截断           | g.extract(save_path, input_name_list, output_name_list) |
 |                                              | 维度推断           | g.infer_shape()                                         |
 |                                              | 模型简化           | g.simplify(**kwargs)                                    |
+ |                                              | 模型拼接          | OnnxGraph.concat_graph(g1, g2, io_map)               |
