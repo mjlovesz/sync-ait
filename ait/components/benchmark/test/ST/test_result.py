@@ -188,7 +188,7 @@ class TestClass:
         cmd = "{} --model {} --device {} --output {} --debug True --dump True --dump-npy True\
             --input {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                     output_path, input_path, log_path)
-        logger.info("run cmd:%s",cmd)
+        logger.info("run cmd:%s", cmd)
         ret = os.system(cmd)
         assert ret == 0
 
