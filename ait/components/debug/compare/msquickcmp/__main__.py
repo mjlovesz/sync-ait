@@ -34,11 +34,8 @@ from msquickcmp.adapter_cli.options import (
     opt_custom_op,
     opt_locat,
     opt_onnx_fusion_switch,
-<<<<<<< HEAD
-    opt_fusion_switch_file
-=======
+    opt_fusion_switch_file,
     opt_single_op
->>>>>>> 2c0ab193235f9fa891fa39fa8427fabf8839e124
 )
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common import utils
