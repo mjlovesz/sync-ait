@@ -69,8 +69,9 @@ namespace Base {
             outputNames.emplace_back(desc.name);
         }
         for (auto &files : infilesList) {
+            auto feeds;
             try {
-                auto feeds = std::make_shared<Feeds>();
+                feeds = std::make_shared<Feeds>();
             } catch (exception &e) {
                 throw std::runtime_error("Create pure data: make dataHolder failed");
             }
