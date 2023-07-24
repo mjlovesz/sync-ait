@@ -69,6 +69,7 @@ def fake_arguments():
         dump=True,
         output_size="",
         device="0",
+        single_op=False
     )
 
 

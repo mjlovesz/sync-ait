@@ -196,7 +196,8 @@ class NpuDumpData(DumpData):
         self.input_shape, self.input_path = arguments.input_shape, arguments.input_path
         self.dump, self.output_size = arguments.dump, arguments.output_size
         self.device, self.is_golden = arguments.device, is_golden
-        
+        self.single_op = arguments.single_op
+
         self.benchmark_input_path = ""
         output_json_path = atc_utils.convert_model_to_json(arguments.cann_path, self.offline_model_path, self.out_path)
         self.om_parser = OmParser(output_json_path)
@@ -323,24 +324,24 @@ class NpuDumpData(DumpData):
             benchmark_cmd.extend(["--acl_json_path", acl_json_path])
 
         self.dynamic_input.add_dynamic_arg_for_benchmark(benchmark_cmd)
-        if not self.arguments.single_op:
+        if not self.single_op:
             self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
 
         # do benchmark command
-        utils.execute_command(benchmark_cmd, not self.arguments.single_op)
+        utils.execute_command(benchmark_cmd, not self.single_op)
 
         npu_dump_data_path = ""
         if self.dump:
             npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
             if not file_is_exist:
-                if self.arguments.single_op:
+                if self.single_op:
                     return "", ""
                 utils.logger.error("The path {} dump data is not exist.".format(npu_dump_data_path))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         # net output data path
         npu_net_output_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir, True)
         if not file_is_exist:
-            if self.arguments.single_op:
+            if self.single_op:
                 return "", ""
             utils.logger.error("The path {} net output data is not exist.".format(npu_net_output_data_path))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
