@@ -307,7 +307,7 @@ def test_generate_dump_data_given_random_data_when_valid_then_pass(fake_argument
     npu_dump = NpuDumpData(fake_arguments, False)
     npu_dump.generate_inputs_data()
 
-    om_dump_data_dir = npu_dump.generate_dump_data()
+    om_dump_data_dir, _ = npu_dump.generate_dump_data()
     assert os.path.exists(om_dump_data_dir)
 
     assert len(os.listdir(om_dump_data_dir)) > 0
@@ -321,10 +321,10 @@ def test_generate_dump_data_given_random_data_when_dump_false_then_pass(fake_arg
     npu_dump = NpuDumpData(fake_arguments, False)
     npu_dump.generate_inputs_data()
 
-    om_dump_data_dir = npu_dump.generate_dump_data()
-    assert os.path.exists(om_dump_data_dir)
+    _, npu_net_output_data_path = npu_dump.generate_dump_data()
+    assert os.path.exists(npu_net_output_data_path)
 
-    assert len(os.listdir(om_dump_data_dir)) > 0
+    assert len(os.listdir(npu_net_output_data_path)) > 0
 
     if os.path.exists(fake_arguments.out_path):
         shutil.rmtree(fake_arguments.out_path)

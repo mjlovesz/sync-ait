@@ -351,13 +351,13 @@ class NpuDumpData(DumpData):
     def _get_inputs_info_from_aclruntime(self):
         import shlex
         cmd = 'python3 -c \'import aclruntime;options = aclruntime.session_options();' \
-              'aa = aclruntime.InferenceSession("%s", %d, options); ' \
+              'aa = aclruntime.InferenceSession("%s", %s, options); ' \
               'print([{"shape":ii.shape, "dtype":ii.datatype.name} for ii in aa.get_inputs()])\'' \
               % (self.offline_model_path, self.device)
 
         pp = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, shell=False)
-        out, ret = pp.communicate
-        result = json.load(out.decode().split('\n')[0].replace("'",'"'))
+        out, ret = pp.communicate()
+        result = json.loads(out.decode().split('\n')[0].replace("'", '"'))
         shape_list = [ii["shape"] for ii in result]
         dtype_list = [ii["dtype"] for ii in result]
         return shape_list, dtype_list
