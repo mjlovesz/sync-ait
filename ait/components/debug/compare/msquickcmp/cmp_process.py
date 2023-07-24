@@ -192,7 +192,7 @@ def fusion_close_model_convert(args:CmpArgsAdapter):
         
         om_json_path = atc_utils.convert_model_to_json(args.cann_path, args.offline_model_path, args.out_path)
         om_parser = OmParser(om_json_path)
-        atc_input_shape_in_offline_model = DynamicInput(om_parser)
+        atc_input_shape_in_offline_model = DynamicInput.get_input_shape_from_om(om_parser)
 
         close_fusion_om_file = os.path.join(args.out_path, 'close_fusion_om_model')
         atc_command_file_path = atc_utils.get_atc_path(args.cann_path)
