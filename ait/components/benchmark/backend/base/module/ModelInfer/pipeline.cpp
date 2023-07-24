@@ -52,8 +52,9 @@ namespace Base {
         return arr;
     }
 
-    void PrepareInputData(auto &files, Base::PyInferenceSession* session, auto &feeds, bool autoDymShape,
-         bool autoDymDims, const bool pure_infer, std::vector<std::string> &inputNames)
+    void PrepareInputData(std::vector<std::string> &files, Base::PyInferenceSession* session,
+        std::shared_ptr<Feeds> &feeds, bool autoDymShape,
+        bool autoDymDims, const bool pure_infer, std::vector<std::string> &inputNames)
     {
         for (size_t i = 0; i < files.size(); i++) {
             if (pure_infer) {

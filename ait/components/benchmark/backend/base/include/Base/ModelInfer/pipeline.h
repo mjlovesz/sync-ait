@@ -84,7 +84,8 @@ private:
 
 
 namespace Base {
-    void PrepareInputData(auto &files, Base::PyInferenceSession* session, auto &feeds, bool autoDymShape,
+    void PrepareInputData(std::vector<std::string> &files, Base::PyInferenceSession* session,
+        std::shared_ptr<Feeds> &feeds, bool autoDymShape,
         bool autoDymDims, const bool pure_infer, std::vector<std::string> &inputNames);
     void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId, Base::PyInferenceSession* session,
                      std::vector<std::vector<std::string>> &infilesList, bool autoDymShape, bool autoDymDims,
