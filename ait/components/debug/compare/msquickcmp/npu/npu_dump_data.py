@@ -358,6 +358,8 @@ class NpuDumpData(DumpData):
               'print([{"shape":ii.shape, "dtype":ii.datatype.name} for ii in aa.get_inputs()])\'' \
               % (self.offline_model_path, self.device)
 
+        # aclruntime can't get another session after the first session.finalize(), so setup a sub process
+        # to execute cmd, that to avoid this problem.
         proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, shell=False)
         try:
             out, errs = proc.communicate(timeout=(60 * 5))
