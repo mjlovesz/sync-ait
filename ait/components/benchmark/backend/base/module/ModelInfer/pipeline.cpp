@@ -79,8 +79,8 @@ namespace Base {
                 throw std::runtime_error("files: create feeds->outputNames failed");
             }
             if (outputDir != "") {
-                for (auto tail : {".npy", ".bin", ""}) {
-                    if (Utils::TailContain(files.front().to_lower(), tail)) {
+                for (auto tail : {".npy", ".bin", ".NPY", ".BIN",""}) {
+                    if (Utils::TailContain(files.front(), tail)) {
                         feeds->outputPrefix = Utils::GetPrefix(outputDir, files.front(), tail);
                     }
                 }
