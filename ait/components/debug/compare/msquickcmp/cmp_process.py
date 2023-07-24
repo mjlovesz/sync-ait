@@ -367,7 +367,7 @@ def csv_sum(original_out_path):
 
     with os.fdopen(os.open(csv_file_summary, WRITE_FLAGS, WRITE_MODES), 'w',
                                 newline="") as fp_write:
-        with pd.ExcelWriter(fp_write) as writer:
+        with pd.ExcelWriter(csv_file_summary) as csv.writer(fp_write):
             for i, csv_file in enumerate(csv_file_list):
                 data = pd.read_csv(csv_file, na_values=['NAN'])
                 data.to_excel(writer, sheet_name=sheet_name_list[i], index=False, na_rep='NAN')
