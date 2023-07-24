@@ -209,7 +209,7 @@ cnpy::NpyArray cnpy::BinLoad(std::string fname)
 
     NpyArray arr = {};
     try {
-        arr.dataHolder = std::make_shared<std::vector<char>>(filesize);
+        arr.dataHolder = std::make_shared<std::vector<char>>(fileSize);
     } catch (exception &e) {
         throw std::runtime_error("BinLoad: make dataHolder failed");
     }
