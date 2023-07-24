@@ -180,16 +180,15 @@ class TestClass:
         batch_size = 1
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
         input_size = TestCommonClass.get_model_inputs_size(model_path)[0]
-        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(os.path.join(TestCommonClass.base_path,
-                                                                                           self.model_name), "input"),
-                                                     output_file_num)
+        input_dir = os.path.join(TestCommonClass.base_path, self.model_name, "input")
+        input_path = TestCommonClass.get_inputs_path(input_size, input_dir, output_file_num)
         if os.path.exists(os.path.join(output_path, "dump")):
             shutil.rmtree(os.path.join(output_path, "dump"))
 
         cmd = "{} --model {} --device {} --output {} --debug True --dump True --dump-npy True\
             --input {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                     output_path, input_path, log_path)
-        logger.info("run cmd:{}".format(cmd))
+        logger.info("run cmd:%s",cmd)
         ret = os.system(cmd)
         assert ret == 0
 

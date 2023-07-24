@@ -22,6 +22,8 @@ import logging
 import json
 import shutil
 import uuid
+import shlex
+import subprocess
 import numpy as np
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
@@ -32,6 +34,7 @@ READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
 WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 MSACCUCMP_FILE_PATH =  "tools/operator_cmp/compare/msaccucmp.py"
+CANN_PATH = "/usr/local/Ascend/ascend-toolkit/latest"
 
 
 # Split a List Into Even Chunks of N Elements
@@ -133,7 +136,9 @@ def get_dump_relative_paths(output_dir, timestamp):
 
 def get_msaccucmp_path():
     ascend_toolkit_path = os.environ.get("ASCEND_TOOLKIT_HOME")
-    msaccucmp_path = os.path.join(str(ascend_toolkit_path), MSACCUCMP_FILE_PATH)
+    if ascend_toolkit_path is None:
+        ascend_toolkit_path = CANN_PATH
+    msaccucmp_path = os.path.join(ascend_toolkit_path, MSACCUCMP_FILE_PATH)
     return msaccucmp_path if os.path.exists(msaccucmp_path) else None
 
 
@@ -196,21 +201,22 @@ def convert_helper(output_dir, timestamp): # convert bin file in src path and ou
     msaccucmp_path = get_msaccucmp_path()
     python_path = sys.executable
     if python_path is None:
-        logger.error("convert_helper failed: python executable is not found")
+        logger.error("convert_helper failed: python executable is not found. NPY file transfer failed.")
         return
     if msaccucmp_path is None:
-        logger.error("convert_helper failed: msaccucmp.py is not found")
+        logger.error("convert_helper failed: msaccucmp.py is not found. NPY file transfer failed.")
         return
     if dump_relative_paths == []:
-        logger.error("convert_helper failed: dump_relative_paths is empty")
+        logger.error("convert_helper failed: dump_relative_paths is empty. NPY file transfer failed.")
         return
     for dump_relative_path in dump_relative_paths:
         dump_npy_path = os.path.join(output_dir, timestamp + "_npy", dump_relative_path)
         real_dump_path = os.path.join(output_dir, timestamp, dump_relative_path)
-        cmd = f"{python_path} {msaccucmp_path} convert -d {real_dump_path} -out {dump_npy_path}"
-        ret = os.system(cmd)
+        convert_cmd = f"{python_path} {msaccucmp_path} convert -d {real_dump_path} -out {dump_npy_path}"
+        convert_cmd_list = shlex.split(convert_cmd)
+        ret = subprocess.call(convert_cmd_list, shell=False)
         if ret != 0:
-            logger.error(f"convert_helper failed: cmd {cmd} execute failed")
+            logger.error(f"convert_helper failed: cmd {convert_cmd} execute failed")
 
 
 def move_subdir(src_dir, dest_dir):
@@ -228,9 +234,11 @@ def move_subdir(src_dir, dest_dir):
               |--2023***3--...  (原来可能存在的时间戳路径)
               |--2023***1--...  (bin file移动到新的目录下)
     '''
+    res_dest, res_subdir = None, None
     subdirs = os.listdir(src_dir)
     if len(subdirs) != 1 or os.path.exists(os.path.join(dest_dir, subdirs[0])):
         logger.error(f"move_subdir failed: dest dir {os.path.join(dest_dir, subdirs[0])} exists.")
-        return None, None
-    shutil.move(os.path.join(src_dir, subdirs[0]), os.path.join(dest_dir, subdirs[0]))
-    return dest_dir, subdirs[0]
+    else:
+        shutil.move(os.path.join(src_dir, subdirs[0]), os.path.join(dest_dir, subdirs[0]))
+        res_dest, res_subdir = dest_dir, subdirs[0]
+    return res_dest, res_subdir

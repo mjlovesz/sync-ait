@@ -356,7 +356,7 @@ def convert(tmp_acl_json_path, real_dump_path, tmp_dump_path):
         output_dir, timestamp = move_subdir(tmp_dump_path, real_dump_path)
         convert_helper(output_dir, timestamp)
     if tmp_dump_path is not None:
-        os.rmdir(tmp_dump_path)
+        shutil.rmtree(tmp_dump_path)
     if tmp_acl_json_path is not None:
         os.remove(tmp_acl_json_path)
 
