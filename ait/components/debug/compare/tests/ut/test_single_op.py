@@ -29,6 +29,7 @@ from msquickcmp.common.utils import AccuracyCompareException
 from msquickcmp.single_op import single_op as sp
 
 
+@pytest.fixture(scope="function")
 def create_broken_graph(name: str = 'test_broken'):
     input_ = OnnxPlaceHolder('input', np.dtype('float32'), [1, 3, 224, 224])
     output = OnnxPlaceHolder('output', np.dtype('float32'), [1, 3, 224, 224])
@@ -45,6 +46,7 @@ def create_broken_graph(name: str = 'test_broken'):
     )
 
 
+@pytest.fixture(scope="function")
 def create_dynamic_divide_onnx_graph(name: str = 'test_dynamic_divide_onnx'):
     input_1 = OnnxPlaceHolder('input', np.dtype('float32'), [8, 3, 768, 768])
     input_2 = OnnxPlaceHolder('sqrt0_output', np.dtype('float32'), [8, 3, 768, 768])
@@ -59,6 +61,7 @@ def create_dynamic_divide_onnx_graph(name: str = 'test_dynamic_divide_onnx'):
     )
 
 
+@pytest.fixture(scope="function")
 def create_accumulate_shape_size_graph(name: str = 'test_accumulate_shape_size'):
     input_ = OnnxPlaceHolder('input', np.dtype('float32'), [1, 3, 224, 224])
     output = OnnxPlaceHolder('output', np.dtype('float32'), [1, 3, 224, 224])
@@ -74,36 +77,33 @@ def create_accumulate_shape_size_graph(name: str = 'test_accumulate_shape_size')
     )
 
 
-def test_broken():
-    og = create_broken_graph()
-    og.infer_shape()
+def test_broken(create_broken_graph):
+    create_broken_graph.infer_shape()
     subgraph_onnx_file = './broken.onnx'
-    sp.broken(og, subgraph_onnx_file)
-    os,remove(subgraph_onnx_file)
-    assert len(og.inputs) == 5
-    assert len(og.outputs) == 6
+    sp.broken(create_broken_graph, subgraph_onnx_file)
+    os.remove(subgraph_onnx_file)
+    assert len(create_broken_graph.inputs) == 5
+    assert len(create_broken_graph.outputs) == 6
 
 
-def test_dynamic_divide_onnx():
-    subog = create_dynamic_divide_onnx_graph()
-    subog.infer_shape()
+def test_dynamic_divide_onnx(create_dynamic_divide_onnx_graph):
+    create_dynamic_divide_onnx_graph.infer_shape()
     out_path = './test_dynamic_divide_onnx/'
     if os.path.exists(out_path):
         shutil.rmtree(out_path)
     os.makedirs(out_path)
     memory_size = 2 * 8 * 3 * 768 * 768
-    subonnx_list = sp.dynamic_divide_onnx(out_path, subog, memory_size)
+    subonnx_list = sp.dynamic_divide_onnx(out_path, create_dynamic_divide_onnx_graph, memory_size)
     shutil.rmtree(out_path)
     assert subonnx_list = ['./test_dynamic_divide_onnx/0_broken.onnx', './test_dynamic_divide_onnx/1_broken.onnx']
 
 
-def test_accumulate_shape_size():
-    og = create_accumulate_shape_size_graph()
-    og.infer_shape()
+def test_accumulate_shape_size(create_accumulate_shape_size_graph):
+    create_accumulate_shape_size_graph.infer_shape()
     node_0 = OnnxNode('sqrt0', 'Sqrt', inputs=['input'], outputs=['output'], attrs={})
     node_1 = OnnxNode('sqrt1', 'Sqrt', inputs=['input_1'], outputs=['output_1'], attrs={})
-    ans_1 = sp.accumulate_shape_size(node_0, og)
-    ans_2 = sp.accumulate_shape_size(node_1, og)
+    ans_1 = sp.accumulate_shape_size(node_0, create_accumulate_shape_size_graph)
+    ans_2 = sp.accumulate_shape_size(node_1, create_accumulate_shape_size_graph)
     assert ans_1 == np.dtype('float32').itemsize * 2 * 1 * 3 * 224 * 224
     assert ans_2 == np.dtype('float32').itemsize * 2 * 8 * 3 * 768 * 768
 
