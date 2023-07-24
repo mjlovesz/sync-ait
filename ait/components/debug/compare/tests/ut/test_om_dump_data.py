@@ -285,6 +285,10 @@ def test_generate_inputs_data_given_random_data_when_aipp_then_pass(fake_argumen
 
     npu_dump = NpuDumpData(fake_arguments, False)
 
+    shape_list, dtype_list = npu_dump._get_inputs_info_from_aclruntime()
+    assert shape_list == [[1, 32, 32, 3]]
+    assert dtype_list == ['uint8']
+
     assert npu_dump.om_parser is not None
     assert npu_dump.dynamic_input is not None
 

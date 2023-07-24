@@ -117,10 +117,10 @@ def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
         args.out_path = os.path.join(original_out_path, get_shape_to_directory_name(args.input_shape))
 
     # whether use aipp
-    output_json_path = atc_utils.convert_model_to_json(args.cann_path, args.offline_model_path, args.out_path)    
-    golden_json_path = atc_utils.convert_model_to_json(
-        args.cann_path, args.model_path, args.out_path
-        ) if args.model_path.endswith('.om') else None
+    output_json_path = atc_utils.convert_model_to_json(args.cann_path, args.offline_model_path, args.out_path)
+    golden_json_path = None
+    if args.model_path.endswith('.om'):
+        golden_json_path = atc_utils.convert_model_to_json(args.cann_path, args.model_path, args.out_path)
 
     temp_om_parser = OmParser(output_json_path)
     use_aipp = True if temp_om_parser.get_aipp_config_content() else False

@@ -51,7 +51,7 @@ INPUT_FORMAT_TO_RGB_RATIO_DICT = {
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 DTYPE_MAP = {"dtype.float32": np.float32, "dtype.float16": np.float16, "dtype.float64": np.float64, 
-             "dtype.int8": np.int8,"dtype.int16": np.int16, "dtype.int32": np.int32, 
+             "dtype.int8": np.int8, "dtype.int16": np.int16, "dtype.int32": np.int32, 
              "dtype.int64": np.int64, "dtype.uint8": np.uint8, "dtype.uint16": np.uint16, 
              "dtype.uint32": np.uint32, "dtype.uint64": np.uint64, "dtype.bool": np.bool}
 
@@ -358,8 +358,11 @@ class NpuDumpData(DumpData):
               'print([{"shape":ii.shape, "dtype":ii.datatype.name} for ii in aa.get_inputs()])\'' \
               % (self.offline_model_path, self.device)
 
-        pp = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, shell=False)
-        out, ret = pp.communicate()
+        proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, shell=False)
+        try:
+            out, ret = proc.communicate(timeout=(60 * 5))
+        except subprocess.TimeoutExpired:
+            proc.kill()
         result = json.loads(out.decode().split('\n')[0].replace("'", '"'))
         shape_list = [ii["shape"] for ii in result]
         dtype_list = [ii["dtype"] for ii in result]
