@@ -26,11 +26,10 @@ import shutil
 import time
 import subprocess
 import csv
-import pandas as pd
 import logging
+import pandas as pd
 import onnxruntime
 import acl
-import pandas as pd
 
 from auto_optimizer import OnnxGraph
 from auto_optimizer.graph_refactor import Node
