@@ -175,7 +175,7 @@ def get_dump_data_path(dump_dir, is_net_output=False):
     return dump_data_path, file_is_exist
 
 
-def execute_command(cmd, info_need):
+def execute_command(cmd, info_need=True):
     """
     Function Description:
         run the following command
@@ -291,7 +291,7 @@ def check_single_op_is_valid(single_op, dump, custom_op, locat):
         if not dump:
             logger.error("Dump must be True when single_op is used")
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-        if custom_op != "":
+        if custom_op:
             logger.error("Custom_op is forbidden when single_op is used")
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
         if locat:

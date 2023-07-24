@@ -159,11 +159,12 @@ def dynamic_divide_onnx(out_path: str, subog: OnnxGraph, memory_size: int):
     endnode_list = []
     size_sum = 0
     idx = 0
+
     for idx, node in enumerate(subog.nodes):
         startnode_list.append(node.name)
         endnode_list.append(node.name)
         size_sum += accumulate_shape_size(node, subog)
-        if size_sum >= memory_size:
+        if size_sum >= memory_size or idx == len(subog.nodes) - 1:
             size_sum = 0
             subonnx_file_path = os.path.join(out_path, f"{idx}_broken.onnx")
             subog.extract_subgraph(startnode_list, endnode_list, subonnx_file_path)
@@ -171,9 +172,4 @@ def dynamic_divide_onnx(out_path: str, subog: OnnxGraph, memory_size: int):
             endnode_list.clear()
             subonnx_list.append(subonnx_file_path)
 
-    # process rest nodes
-    if startnode_list:
-        subonnx_file_path = os.path.join(out_path, f"{idx}_broken.onnx")
-        subog.extract_subgraph(startnode_list, endnode_list, subonnx_file_path)
-        subonnx_list.append(subonnx_file_path)
     return subonnx_list

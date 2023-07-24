@@ -228,7 +228,7 @@ def single_op_compare(args, input_shape):
     sp.broken(og, subgraph_onnx_file)
     subog = OnnxGraph.parse(subgraph_onnx_file)
     single_op_dir = sp.generate_single_op_dir(args.out_path)
-    memory_size = sp.get_memory_size_by_soc_type()
+    memory_size = sp.get_memory_size_by_soc_type(args.device)
     # devide onnx into fixed size onnxs
     subonnx_list = sp.dynamic_divide_onnx(args.out_path, subog, memory_size)
     csv_list = []
