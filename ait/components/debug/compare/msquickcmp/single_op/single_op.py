@@ -127,8 +127,13 @@ def find_all_csv(out_path):
 def atc_conversion(onnx_path, om_path):
     atc_cmd = ["atc", "--framework=5", "--soc_version=" + acl.get_soc_name(), "--model=" + onnx_path,\
                 "--output=" + om_path]
-    subprocess.run(atc_cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    utils.logger.info("atc conversion Success!")
+    res = subprocess.run(atc_cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+    if res.returncode == 0:
+        utils.logger.info("atc conversion Success!")
+    else:
+        utils.logger.error("atc run failed!")
+        raise  AccuracyCompareException(utils.ACCURACY_COMPARISON_ATC_RUN_ERROR)
 
 
 def accumulate_shape_size(node, og):

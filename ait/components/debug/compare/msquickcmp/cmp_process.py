@@ -222,23 +222,43 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
 
 
 def single_op_compare(args, input_shape):
+    # load onnx model
     og = OnnxGraph.parse(args.model_path)
     og.infer_shape()
+
+    # set broken single operator onnx file path
     subgraph_onnx_file = os.path.join(args.out_path, "broken.onnx")
     sp.broken(og, subgraph_onnx_file)
+
+    # load broken single operator onnx
     subog = OnnxGraph.parse(subgraph_onnx_file)
     single_op_dir = sp.generate_single_op_dir(args.out_path)
     memory_size = sp.get_memory_size_by_soc_type(args.device)
+
     # devide onnx into fixed size onnxs
     subonnx_list = sp.dynamic_divide_onnx(args.out_path, subog, memory_size)
+    
+    # set csv list
     csv_list = []
+
+    # set golden dump data source file
     onnx_data_path = os.path.join(args.out_path, 'dump_data/onnx')
+    
+    # for each onnx run compare
     for idx, subonnx in enumerate(subonnx_list):
+        # run atc to get om file
         subgraph_om_file = os.path.join(args.out_path, 'broken')
         sp.atc_conversion(subonnx, subgraph_om_file)
+
+        # get onnx input data from golden dump data
+        # load single operator onnx
         utils.logger.info("Start to loading input data")
         subog = OnnxGraph.parse(subonnx)
+        
+        # load onnx input description
         inputs_list = [(ii.name, ii.shape) for ii in onnxruntime.InferenceSession(subonnx).get_inputs()]
+
+        # find all the data needed
         input_need_list = al.input_completion(og, inputs_list)
         pattern = '|'.join(input_need_list)
         try:
@@ -255,22 +275,32 @@ def single_op_compare(args, input_shape):
         bin_files_path = al.create_bin_file(args.out_path, sort_matched_files)
         tmp_bin_path = os.path.join(args.out_path, 'tmp')
         utils.logger.info("Loading data Finished!")
+
+        # set single op output data
         tmp_out_path = os.path.join(single_op_dir, f"single_op_{idx}")
         os.makedirs(tmp_out_path)
         time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
         original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
+
+        # set compare run args
         cmg_args = CmpArgsAdapter(subonnx, os.path.join(args.out_path, "broken.om"),
                                 "", bin_files_path, args.cann_path, tmp_out_path, "", args.device,
                                 "", "", False, "", True, False, custom_op="", locat=False, single_op=True)
         output_json_path = AtcUtils(cmg_args).convert_model_to_json()
         utils.logger.info("Start to run comparision")
+
+        # run compare
         utils.logger.setLevel(logging.ERROR)
         res = run(cmg_args, input_shape, output_json_path, original_out_path, True)
         utils.logger.setLevel(logging.INFO)
         csv_list.extend(sp.find_all_csv(tmp_out_path))
         utils.logger.info("Comparision finished")
+        # remove temp bin files
         shutil.rmtree(tmp_bin_path)
+    
+    # merge csv
     summary_csv_path = utils.merge_csv(csv_list, single_op_dir, 'single_op_summary.csv')
+    # analyze csv and print
     analyser.Analyser(summary_csv_path)()
 
 
