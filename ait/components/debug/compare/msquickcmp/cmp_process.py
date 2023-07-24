@@ -360,14 +360,14 @@ def csv_sum(original_out_path):
     csv_file_summary = os.path.join(original_out_path, "result_summary.xlsx")
 
     if not os.path.exists(csv_file_summary):
-        with os.fdopen(os.open(csv_file_summary, WRITE_FLAGS, WRITE_MODES), 'w',
-                                   newline="") as fp_write:
-            writer = csv.writer(fp_write)
+        pass
     else:
         logging.error("Error, file already exists!")
         os.remove(csv_file_summary)
 
-    with pd.ExcelWriter(csv_file_summary) as writer:
-        for i, csv_file in enumerate(csv_file_list):
-            data = pd.read_csv(csv_file, na_values=['NAN'])
-            data.to_excel(writer, sheet_name=sheet_name_list[i], index=False, na_rep='NAN')
+    with os.fdopen(os.open(csv_file_summary, WRITE_FLAGS, WRITE_MODES), 'w',
+                                newline="") as fp_write:
+        with pd.ExcelWriter(fp_write) as writer:
+            for i, csv_file in enumerate(csv_file_list):
+                data = pd.read_csv(csv_file, na_values=['NAN'])
+                data.to_excel(writer, sheet_name=sheet_name_list[i], index=False, na_rep='NAN')
