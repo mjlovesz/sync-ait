@@ -158,11 +158,13 @@ def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
     
     if not args.dump:
         # only compare the final output
-        net_compare = NetCompare(npu_net_output_data_path, golden_dump_data_path, output_json_path, args, golden_json_path)
+        net_compare = NetCompare(npu_net_output_data_path, golden_dump_data_path, 
+                                 output_json_path, args, golden_json_path)
         net_compare.net_output_compare(npu_net_output_data_path, golden_net_output_info)
     else:
         # compare the entire network
-        net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, output_json_path, args, golden_json_path)
+        net_compare = NetCompare(npu_dump_data_path, golden_dump_data_path, 
+                                 output_json_path, args, golden_json_path)
         net_compare.accuracy_network_compare()
     
     # Check and correct the mapping of net output node name.
