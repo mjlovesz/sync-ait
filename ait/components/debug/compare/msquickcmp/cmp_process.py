@@ -20,25 +20,18 @@ This class mainly involves the main function.
 
 import argparse
 import os
-import sys
 import stat
 import shutil
 import time
 import subprocess
 import logging
+
 import onnxruntime
 import acl
-import pandas as pd
 
 from auto_optimizer import OnnxGraph
-<<<<<<< HEAD
 from msquickcmp.atc import atc_utils
-=======
 from auto_optimizer.graph_refactor import Node
-from auto_optimizer.graph_refactor.onnx import OnnxNode, OnnxPlaceHolder, OnnxInitializer
-from auto_optimizer.graph_refactor.interface import PlaceHolder
-from msquickcmp.atc.atc_utils import AtcUtils
->>>>>>> 2c0ab193235f9fa891fa39fa8427fabf8839e124
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException, get_shape_to_directory_name
 from msquickcmp.common.convert import convert_bin_dump_data_to_npy
