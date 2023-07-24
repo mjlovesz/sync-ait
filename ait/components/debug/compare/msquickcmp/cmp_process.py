@@ -453,9 +453,7 @@ def csv_sum(original_out_path):
 
     xlsx_file_summary = os.path.join(original_out_path, "result_summary.xlsx")
 
-    if not os.path.exists(xlsx_file_summary):
-        pass
-    else:
+    if os.path.exists(xlsx_file_summary):
         logging.error("Error, file already exists!")
         os.remove(xlsx_file_summary)
 
