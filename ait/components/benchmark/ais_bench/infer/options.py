@@ -409,3 +409,12 @@ opt_pipeline = click.option(
     callback=str2bool,
     help='Pipeline switch'
 )
+
+opt_dump_npy = click.option(
+    '--dump-npy',
+    'dump_npy',
+    default=False,
+    type=str,
+    callback=str2bool,
+    help='dump data convert to npy'
+)
