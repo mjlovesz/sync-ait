@@ -357,15 +357,15 @@ def csv_sum(original_out_path):
                 csv_file_list.append(os.path.join(original_out_path, files, sub_file))
                 sheet_name_list.append(files)
 
-    csv_file_summary = os.path.join(original_out_path, "result_summary.xlsx")
+    xlsx_file_summary = os.path.join(original_out_path, "result_summary.xlsx")
 
-    if not os.path.exists(csv_file_summary):
+    if not os.path.exists(xlsx_file_summary):
         pass
     else:
         logging.error("Error, file already exists!")
-        os.remove(csv_file_summary)
+        os.remove(xlsx_file_summary)
 
-    with os.fdopen(os.open(csv_file_summary, WRITE_FLAGS, WRITE_MODES), 'wb') as fp_write:
+    with os.fdopen(os.open(xlsx_file_summary, WRITE_FLAGS, WRITE_MODES), 'wb') as fp_write:
         with pd.ExcelWriter(fp_write) as writer:
             for i, csv_file in enumerate(csv_file_list):
                 data = pd.read_csv(csv_file, na_values=['NAN'])
