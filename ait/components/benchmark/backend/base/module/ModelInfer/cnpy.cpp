@@ -196,13 +196,15 @@ cnpy::NpyArray cnpy::BinLoad(std::string fname)
     if (!file) {
         throw std::runtime_error("BinLoad: Unable to open file" + fname);
     }
-
+    std::size_t fileSize = 0;
     file.seekg(0, std::ios::end);
     try {
         std::size_t size = file.tellg();
+        fileSize = size;
     } catch (exception &e) {
         throw std::runtime_error("BinLoad: file size out of range");
     }
+
     file.seekg(0, std::ios::beg);
 
     NpyArray arr = {};
