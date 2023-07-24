@@ -23,6 +23,7 @@ import subprocess
 from ait_prof.utils import logger
 from ait_prof.args_adapter import MsProfArgsAdapter
 
+PATH_MAX_LENGTH = 255
 
 def msprof_run_profiling(args, msprof_bin):
     bin_path = ' '.join(sys.argv).split(" ")[0]
@@ -44,10 +45,10 @@ def msprof_run_profiling(args, msprof_bin):
 
 
 def args_rules(args):
-    if args.output is None and args.output_dirname is not None:
-        logger.error("parameter --output_dirname cann't be used alone. "
+    if args.output is None and len(args.output) > PATH_MAX_LENGTH:
+        logger.error("parameter --output length out of range. "
                      "Please use it together with the parameter --output!\n")
-        raise RuntimeError('error bad parameters --output_dirname')
+        raise RuntimeError('error bad parameters --output')
     return args
 
 
