@@ -70,12 +70,12 @@ namespace Base {
         }
         for (auto &files : infilesList) {
             auto feeds = std::make_shared<Feeds>();
-            if (feeds = nullptr) {
+            if (feeds == nullptr) {
                 throw std::runtime_error("files: create feeds failed");
             }
 
             feeds->outputNames = std::make_shared<std::vector<std::string>>(outputNames);
-            if (feeds->outputNames = nullptr) {
+            if (feeds->outputNames == nullptr) {
                 throw std::runtime_error("files: create feeds->outputNames failed");
             }
             if (outputDir != "") {
@@ -86,31 +86,31 @@ namespace Base {
                 }
             }
             feeds->inputs = std::make_shared<std::vector<Base::BaseTensor>>();
-            if (feeds->inputs = nullptr) {
+            if (feeds->inputs == nullptr) {
                 throw std::runtime_error("files: create feeds->inputs failed");
             }
             feeds->arrayPtr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
-            if (feeds->arrayPtr = nullptr) {
+            if (feeds->arrayPtr == nullptr) {
                 throw std::runtime_error("files: create feeds->arrayPtr failed");
             }
             for (size_t i = 0; i < files.size(); i++) {
                 if (pure_infer) {
                     auto array = std::make_shared<cnpy::NpyArray>(CreatePureInferArray(files[i],
                                                                     session->GetInputs()[i]));
-                    if (array = nullptr) {
+                    if (array == nullptr) {
                         throw std::runtime_error("files: create pure_file failed");
                     }
                     feeds->arrayPtr->emplace_back(array);
                 } else {
                     if (Utils::TailContain(files[i], ".npy") || Utils::TailContain(files[i], ".NPY")) {
                         auto array = std::make_shared<cnpy::NpyArray>(cnpy::NpyLoad(files[i]));
-                        if (array = nullptr) {
+                        if (array == nullptr) {
                             throw std::runtime_error("files: create file_array failed");
                         }
                         feeds->arrayPtr->emplace_back(array);
                     } else {
                         auto array = std::make_shared<cnpy::NpyArray>(cnpy::BinLoad(files[i]));
-                        if (array = nullptr) {
+                        if (array == nullptr) {
                             throw std::runtime_error("files: create file_array failed");
                         }
                         feeds->arrayPtr->emplace_back(array);
