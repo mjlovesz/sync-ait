@@ -14,35 +14,40 @@
 
 import os
 import shutil
+
 import pandas as pd
 import openpyxl
+import pytest
 
 from msquickcmp.cmp_process import csv_sum
 
+FAKE_CSV_PATH = "./test_resource/test_csv_sum"
 
-def test_csv_sum():
-    if os.path.exists('./test_resource/test_csv_sum'):
-        shutil.rmtree('./test_resource/test_csv_sum')
+
+@pytest.fixture(scope="function")
+def fake_arguments():
     
-    os.mkdir('./test_resource/test_csv_sum')
-    os.mkdir('./test_resource/test_csv_sum/2023072009')
+    os.mkdir(FAKE_CSV_PATH)
+    sub_folder_name = os.path.join(FAKE_CSV_PATH, "2023072009")
+    os.mkdir(sub_folder_name)
     os.mkdir('./test_resource/test_csv_sum/2023072009/images-2_3_638_640')
     os.mkdir('./test_resource/test_csv_sum/2023072009/images-2_3_640_640')
 
     df1 = pd.DataFrame({'A': [1, 2, 3], 'B': ['a', 'b', 'c']})
     df1.to_csv('./test_resource/test_csv_sum/2023072009/images-2_3_638_640/file1.csv', index=False)
     
-    df2 = pd.DataFrame({'A': [1, 2, 3], 'B': ['b', 'c', 'd']})
+    df2 = pd.DataFrame({'A': [1, 2, 3], 'B': ['a', 'b', 'c']})
     df2.to_csv('./test_resource/test_csv_sum/2023072009/images-2_3_640_640/file2.csv', index=False)
 
+    with pd.ExcelWriter("./test_resource/test_csv_sum/expected_output.xlsx") as writer:
+        df1.to_excel(writer, sheet_name='images-2_3_638_640', index=False)
+        df2.to_excel(writer, sheet_name='images-2_3_640_640', index=False)
 
-    writer = pd.ExcelWriter("./test_resource/test_csv_sum/expected_output.xlsx")
-    df1.to_excel(writer, sheet_name='images-2_3_638_640', index=False)
-    df2.to_excel(writer, sheet_name='images-2_3_640_640', index=False)
-    writer.save()
+    yield sub_folder_name
+    shutil.rmtree(FAKE_CSV_PATH)
 
-    csv_sum("./test_resource/test_csv_sum/2023072009")
-
+def test_folder_exists(fake_arguments):
+    csv_sum(fake_arguments)
     result_summary = openpyxl.load_workbook('./test_resource/test_csv_sum/2023072009/result_summary.xlsx')
     expected_output = openpyxl.load_workbook('./test_resource/test_csv_sum/expected_output.xlsx')
 
@@ -61,5 +66,3 @@ def test_csv_sum():
         for row in range(1, sheet1.max_row + 1):
             for col in range(1, sheet1.max_column + 1):
                 assert sheet1.cell(row=row, column=col).value == sheet2.cell(row=row, column=col).value
-
-    shutil.rmtree('./test_resource/test_csv_sum')

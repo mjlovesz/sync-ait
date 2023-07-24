@@ -349,25 +349,25 @@ def csv_sum(original_out_path):
     csv_file_list = []
     sheet_name_list = []
 
-    for i in os.listdir(original_out_path):
-        if i == "model":
+    for files in os.listdir(original_out_path):
+        if files == "model":
             continue
-        for j in os.listdir(os.path.join(original_out_path, i)):
-            if j.endswith(".csv"):
-                csv_file_list.append(os.path.join(original_out_path, i, j))
-                sheet_name_list.append(i)
+        for sub_file in os.listdir(os.path.join(original_out_path, files)):
+            if sub_file.endswith(".csv"):
+                csv_file_list.append(os.path.join(original_out_path, files, sub_file))
+                sheet_name_list.append(files)
 
-    csv_file_summary = os.path.join(original_out_path, "result_summary.xlsx")
+    csv_file_summary = os.path.join(original_out_path, "result_summary.csv")
 
     if not os.path.exists(csv_file_summary):
         with os.fdopen(os.open(csv_file_summary, WRITE_FLAGS, WRITE_MODES), 'w',
                                    newline="") as fp_write:
             writer = csv.writer(fp_write)
     else:
-        logging.info("Error, file already exists!")
-    writer = pd.ExcelWriter(csv_file_summary)
+        logging.error("Error, file already exists!")
+        shutil.rmtree(csv_file_summary)
 
-    for i, csv_file in enumerate(csv_file_list):
-        data = pd.read_csv(csv_file, na_values=['NAN'])
-        data.to_excel(writer, sheet_name=sheet_name_list[i], index=False, na_rep='NAN')
-    writer.save()
+    with pd.ExcelWriter(csv_file_summary) as writer:
+        for i, csv_file in enumerate(csv_file_list):
+            data = pd.read_csv(csv_file, na_values=['NAN'])
+            data.to_excel(writer, sheet_name=sheet_name_list[i], index=False, na_rep='NAN')
