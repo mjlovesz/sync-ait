@@ -46,7 +46,8 @@ def fake_arguments():
     yield sub_folder_name
     shutil.rmtree(FAKE_CSV_PATH)
 
-def test_folder_exists(fake_arguments):
+
+def test_csv_sum_given_path_when_valid_then_pass(fake_arguments):
     csv_sum(fake_arguments)
     result_summary = openpyxl.load_workbook('./test_resource/test_csv_sum/2023072009/result_summary.xlsx')
     expected_output = openpyxl.load_workbook('./test_resource/test_csv_sum/expected_output.xlsx')
