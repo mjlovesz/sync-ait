@@ -365,7 +365,7 @@ def csv_sum(original_out_path):
             writer = csv.writer(fp_write)
     else:
         logging.error("Error, file already exists!")
-        shutil.rmtree(csv_file_summary)
+        os.remove(csv_file_summary)
 
     with pd.ExcelWriter(csv_file_summary) as writer:
         for i, csv_file in enumerate(csv_file_list):

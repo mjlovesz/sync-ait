@@ -25,7 +25,7 @@ FAKE_CSV_PATH = "./test_resource/test_csv_sum"
 
 
 @pytest.fixture(scope="function")
-def fake_arguments():
+def generate_fake_path():
     
     os.mkdir(FAKE_CSV_PATH)
     sub_folder_name = os.path.join(FAKE_CSV_PATH, "2023072009")
@@ -47,8 +47,8 @@ def fake_arguments():
     shutil.rmtree(FAKE_CSV_PATH)
 
 
-def test_csv_sum_given_path_when_valid_then_pass(fake_arguments):
-    csv_sum(fake_arguments)
+def test_csv_sum_given_path_when_valid_then_pass(generate_fake_path):
+    csv_sum(generate_fake_path)
     result_summary = openpyxl.load_workbook('./test_resource/test_csv_sum/2023072009/result_summary.xlsx')
     expected_output = openpyxl.load_workbook('./test_resource/test_csv_sum/expected_output.xlsx')
 
