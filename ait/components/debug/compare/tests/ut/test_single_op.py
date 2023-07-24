@@ -157,7 +157,7 @@ def test_find_all_csv():
     df1.to_csv(df1_path, index=False)
     df2 = pd.DataFrame({'value' : [1, 2, 3], 'name' : ['a', 'b', 'c']})
     df2_path = os.path.join(out_path, 'file2.csv')
-    df2.to_csv(df1_path, index=False)
+    df2.to_csv(df2_path, index=False)
     all_csv_list = sp.find_all_csv(out_path)
     shutil.rmtree(out_path)
     assert all_csv_list == ['find_all_csv_test_path/file1.csv', 'find_all_csv_test_path/file2.csv']
