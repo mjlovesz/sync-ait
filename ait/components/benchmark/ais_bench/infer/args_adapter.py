@@ -19,7 +19,7 @@ class BenchMarkArgsAdapter():
                  auto_set_dymdims_mode, batchsize, pure_data_type,
                  profiler, dump, acl_json_path, output_batchsize_axis,
                  run_mode, display_all_summary, warmup_count, dym_shape_range, aipp_config,
-                 energy_consumption, npu_id, backend, perf, pipeline):
+                 energy_consumption, npu_id, backend, perf, pipeline, profiler_rename):
         self.model = model
         self.input = input_path
         self.output = output
@@ -51,3 +51,4 @@ class BenchMarkArgsAdapter():
         self.backend = backend
         self.perf = perf
         self.pipeline = pipeline
+        self.profiler_rename = profiler_rename
