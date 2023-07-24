@@ -192,7 +192,7 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
     utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
     utils.check_convert_is_valid_used(args.dump, args.bin2npy, args.custom_op)
     utils.check_locat_is_valid(args.dump, args.locat)
-    utils.check_single_op_is_valid(args.single_op, args.dump, args.custom_op, args.locat)
+    sp.check_single_op_is_valid(args.single_op, args.dump, args.custom_op, args.locat)
 
     time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
