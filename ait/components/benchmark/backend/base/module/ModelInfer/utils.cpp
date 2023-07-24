@@ -495,8 +495,8 @@ std::string Utils::CreateDynamicShapeDims(const std::string& name, std::vector<s
 
 Result Utils::TensorToNumpy(const std::string& outputFileName, Base::TensorBase& output)
 {
-    // auto shapeTmp = output.GetShape();
-    // std::vector<size_t> shape { shapeTmp.begin(), shapeTmp.end() };
+    auto shapeTmp = output.GetShape();
+    std::vector<size_t> shape {shapeTmp.begin(), shapeTmp.end()};
     // std::string typeName = DATA_TYPE_TO_STRING_MAP.at(output.GetDataType());
     // std::stringstream stype(typeName);
     // cnpy::NpySave(outputFileName, (stype*)output.GetBuffer(), shape);
