@@ -14,6 +14,8 @@
 import os
 import pathlib
 
+from typing import List, Tuple
+
 import click
 from click_aliases import ClickAliasedGroup
 from click.exceptions import UsageError
@@ -51,6 +53,11 @@ from auto_optimizer.ait_options import (
     opt_processes,
     opt_subgraph_input_shape,
     opt_subgraph_input_dtype,
+    opt_graph1,
+    opt_graph2,
+    opt_io_map,
+    opt_prefix,
+    opt_combined_graph_path,
 )
 
 
@@ -249,6 +256,66 @@ def command_extract(
         )
     except ValueError as err:
         logger.error(err)
+
+
+@cli.command(
+    'concatenate',
+    aliases=['concat'],
+    short_help='Concatenate two graphs into one',
+    context_settings=CONTEXT_SETTINGS,
+    no_args_is_help=True
+)
+@opt_graph1
+@opt_graph2
+@opt_io_map
+@opt_prefix
+@opt_combined_graph_path
+def command_concatenate(
+    graph1: str,
+    graph2: str,
+    io_map: str,
+    graph_prefix: str,
+    combined_graph_path: str
+) -> None:
+    if not check_input_path(graph1):
+        raise TypeError(f"Invalid graph1: {graph1}")
+    if not check_input_path(graph2):
+        raise TypeError(f"Invalid graph2: {graph2}")
+
+    if not check_output_model_path(combined_graph_path):
+        raise TypeError(f"Invalid output: {combined_graph_path}")
+
+    onnx_graph1 = OnnxGraph.parse(graph1)
+    onnx_graph2 = OnnxGraph.parse(graph2)
+
+    # parse io_map
+    # out0:in0;out1:in1...
+    io_map_list = []
+    for pair in io_map.strip().split(";"):
+        if not pair:
+            continue
+        out, inp = pair.strip().split(":")
+        io_map_list.append((out, inp))
+
+    try:
+        combined_graph = OnnxGraph.concat_graph(
+            onnx_graph1, onnx_graph2,
+            io_map_list,
+            prefix=graph_prefix,
+            graph_name=combined_graph_path
+        )
+    except Exception as err:
+        logger.error(err)
+
+    try:
+        combined_graph.save(combined_graph_path)
+    except Exception as err:
+        logger.error(err)
+
+    logger.info(
+        f'Concatenate ONNX model: {graph1} and ONNX model: {graph2} completed. '
+        f'Combined model saved in {combined_graph_path}'
+    )
 
 
 if __name__ == "__main__":

@@ -25,12 +25,20 @@ import stat
 import shutil
 import time
 import subprocess
+import logging
 import onnxruntime
 import acl
+import pandas as pd
 
-from auto_optimizer.graph_refactor import Node
 from auto_optimizer import OnnxGraph
+<<<<<<< HEAD
 from msquickcmp.atc import atc_utils
+=======
+from auto_optimizer.graph_refactor import Node
+from auto_optimizer.graph_refactor.onnx import OnnxNode, OnnxPlaceHolder, OnnxInitializer
+from auto_optimizer.graph_refactor.interface import PlaceHolder
+from msquickcmp.atc.atc_utils import AtcUtils
+>>>>>>> 2c0ab193235f9fa891fa39fa8427fabf8839e124
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException, get_shape_to_directory_name
 from msquickcmp.common.convert import convert_bin_dump_data_to_npy
@@ -41,10 +49,12 @@ from msquickcmp.npu.npu_dump_data import NpuDumpData, DynamicInput
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.npu.om_parser import OmParser
 from msquickcmp.accuracy_locat import accuracy_locat as al
+from msquickcmp.single_op import single_op as sp
 
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
 ERROR_INTERVAL_INFO_FILE = "error_interval_info.txt"
+MAX_MEMORY_USE = 6 * 1024 * 1024 * 1024
 
 
 def _generate_golden_data_model(args):
@@ -220,6 +230,8 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
     utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
     utils.check_convert_is_valid_used(args.dump, args.bin2npy, args.custom_op)
     utils.check_locat_is_valid(args.dump, args.locat)
+    sp.check_single_op_is_valid(args.single_op, args.dump, args.custom_op, args.locat)
+
     time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
     args.out_path = original_out_path
@@ -234,13 +246,99 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
         input_shapes.append("")
     for input_shape in input_shapes:
         res = run(args, input_shape, original_out_path, use_cli)
-        if len(res) != 0 and args.locat:
+        if args.single_op:
+            single_op_compare(args, input_shape)
+            continue
+        if res and args.locat:
             endnode_names_list = res[0]["GroundTruth"].split(",")
             endnode_name = endnode_names_list[0]
             error_node_list = find_accuracy_interval(args, endnode_name, input_shape)
             error_interval_info_file = os.path.join(args.out_path, ERROR_INTERVAL_INFO_FILE)
             with os.fdopen(os.open(error_interval_info_file, READ_WRITE_FLAGS, WRITE_MODES), "a+") as fp_writer:
                 output_error_interval_info(fp_writer, error_node_list)
+
+
+def single_op_compare(args, input_shape):
+    # load onnx model
+    og = OnnxGraph.parse(args.model_path)
+    og.infer_shape()
+
+    # set broken single operator onnx file path
+    subgraph_onnx_file = os.path.join(args.out_path, "broken.onnx")
+    sp.broken(og, subgraph_onnx_file)
+
+    # load broken single operator onnx
+    subog = OnnxGraph.parse(subgraph_onnx_file)
+    single_op_dir = sp.generate_single_op_dir(args.out_path)
+    memory_size = sp.get_memory_size_by_soc_type(args.device)
+
+    # devide onnx into fixed size onnxs
+    subonnx_list = sp.dynamic_divide_onnx(args.out_path, subog, memory_size)
+    
+    # set csv list
+    csv_list = []
+
+    # set golden dump data source file
+    onnx_data_path = os.path.join(args.out_path, 'dump_data/onnx')
+    
+    # for each onnx run compare
+    for idx, subonnx in enumerate(subonnx_list):
+        # run atc to get om file
+        subgraph_om_file = os.path.join(args.out_path, 'broken')
+        sp.atc_conversion(subonnx, subgraph_om_file)
+
+        # get onnx input data from golden dump data
+        # load single operator onnx
+        utils.logger.info("Start to loading input data")
+        subog = OnnxGraph.parse(subonnx)
+        
+        # load onnx input description
+        inputs_list = [(ii.name, ii.shape) for ii in onnxruntime.InferenceSession(subonnx).get_inputs()]
+
+        # find all the data needed
+        input_need_list = al.input_completion(og, inputs_list)
+        pattern = '|'.join(input_need_list)
+        try:
+            matched_files = al.find_npy_files_with_prefix(onnx_data_path, pattern)
+        except Exception as e:
+            utils.logger.error("Failed to find onnx dump data, please check whether file path is right")
+            raise AccuracyCompareException(utils.ACCRACY_COMPARISON_FETCH_DATA_ERROR) from e
+        sort_matched_files = []
+        for prefix in input_need_list:
+            for match_file in matched_files:
+                file_name = os.path.basename(match_file)
+                if file_name.startswith(prefix):
+                    sort_matched_files.append(match_file)
+        bin_files_path = al.create_bin_file(args.out_path, sort_matched_files)
+        tmp_bin_path = os.path.join(args.out_path, 'tmp')
+        utils.logger.info("Loading data Finished!")
+
+        # set single op output data
+        tmp_out_path = os.path.join(single_op_dir, f"single_op_{idx}")
+        os.makedirs(tmp_out_path)
+        time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
+        original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))
+
+        # set compare run args
+        cmg_args = CmpArgsAdapter(subonnx, os.path.join(args.out_path, "broken.om"),
+                                "", bin_files_path, args.cann_path, tmp_out_path, "", args.device,
+                                "", "", False, "", True, False, custom_op="", locat=False, single_op=True)
+
+        utils.logger.info("Start to run comparision")
+
+        # run compare
+        utils.logger.setLevel(logging.ERROR)
+        res = run(cmg_args, input_shape, original_out_path, True)
+        utils.logger.setLevel(logging.INFO)
+        csv_list.extend(sp.find_all_csv(tmp_out_path))
+        utils.logger.info("Comparision finished")
+        # remove temp bin files
+        shutil.rmtree(tmp_bin_path)
+    
+    # merge csv
+    summary_csv_path = utils.merge_csv(csv_list, single_op_dir, 'single_op_summary.csv')
+    # analyze csv and print
+    analyser.Analyser(summary_csv_path)()
 
 
 def output_error_interval_info(fp_writer, error_node_list):

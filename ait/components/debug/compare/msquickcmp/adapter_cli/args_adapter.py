@@ -36,7 +36,9 @@ class CmpArgsAdapter:
                  custom_op="",
                  locat=False,
                  onnx_fusion_switch=True,
-                 fusion_switch_file=""):
+                 single_op=False,
+                 fusion_switch_file=""
+                 ):
         self.model_path = gold_model
         self.offline_model_path = om_model
         self.weight_path = weight_path
@@ -55,3 +57,4 @@ class CmpArgsAdapter:
         self.locat = locat
         self.onnx_fusion_switch = onnx_fusion_switch
         self.fusion_switch_file = fusion_switch_file
+        self.single_op = single_op

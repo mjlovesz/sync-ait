@@ -207,3 +207,13 @@ opt_fusion_switch_file = click.option(
     "fusion_switch_file",
     help="You can disable selected fusion patterns in the configuration file"
 )
+
+
+opt_single_op = click.option(
+    "-single",
+    "--single-op",
+    "single_op",
+    default=False,
+    type=str2bool,
+    help="Comparision mode:single operator compare, default false.Usage: -single True"
+)
