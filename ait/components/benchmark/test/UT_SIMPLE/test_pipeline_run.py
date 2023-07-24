@@ -128,7 +128,7 @@ class TestClass:
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
         output_dir = ""
-        session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
+        session.run_pipeline(infilespath, output_dir, False, False, 'BIN', False)
 
     def test_infer_stc_batch_input_file_out_bin(self):
         device_id = 0
@@ -141,7 +141,7 @@ class TestClass:
         output_dir = self.get_output_dir_bin()
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
-        session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
+        session.run_pipeline(infilespath, output_dir, False, False, 'BIN', False)
         bin_files = glob.glob(os.path.join(output_dir, "*.bin"))
         assert len(bin_files) == 1
 
@@ -156,7 +156,7 @@ class TestClass:
         output_dir = self.get_output_dir_npy()
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
-        session.run_pipeline(infilespath, output_dir, False, False, 'NPY')
+        session.run_pipeline(infilespath, output_dir, False, False, 'NPY', False)
         npy_files = glob.glob(os.path.join(output_dir, "*.npy"))
         assert len(npy_files) == 1
 
@@ -169,7 +169,7 @@ class TestClass:
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_dir_bin_aipp().split(','), intensors_desc)
         output_dir = ""
-        session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
+        session.run_pipeline(infilespath, output_dir, False, False, 'BIN', False)
 
     def test_infer_dym_batch_input_file(self):
         device_id = 0
@@ -181,7 +181,7 @@ class TestClass:
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
         output_dir = ""
-        session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
+        session.run_pipeline(infilespath, output_dir, False, False, 'BIN', False)
 
     def test_infer_dym_hw_input_file(self):
         device_id = 0
@@ -193,7 +193,7 @@ class TestClass:
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_file_bin_nor().split(','), intensors_desc)
         output_dir = ""
-        session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
+        session.run_pipeline(infilespath, output_dir, False, False, 'BIN', False)
 
     def test_infer_dym_dim_input_file(self):
         device_id = 0
@@ -206,7 +206,7 @@ class TestClass:
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_file_bin_nor().split(','), intensors_desc)
         output_dir = ""
-        session.run_pipeline(infilespath, output_dir, False, False, 'BIN')
+        session.run_pipeline(infilespath, output_dir, False, False, 'BIN', False)
 
     def test_infer_auto_dim_input_file(self):
         device_id = 0
@@ -217,7 +217,7 @@ class TestClass:
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_file_npy_nor().split(','), intensors_desc)
         output_dir = ""
-        session.run_pipeline(infilespath, output_dir, False, True, 'BIN')
+        session.run_pipeline(infilespath, output_dir, False, True, 'BIN', False)
 
     def test_infer_intensor_infile_not_matched(self):
         device_id = 0
