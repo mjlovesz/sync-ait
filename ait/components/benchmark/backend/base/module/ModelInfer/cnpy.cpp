@@ -214,7 +214,7 @@ cnpy::NpyArray cnpy::BinLoad(std::string fname)
         throw std::runtime_error("BinLoad: make dataHolder failed");
     }
 
-    file.read(arr.dataHolder->data(), size);
+    file.read(arr.dataHolder->data(), fileSize);
 
     return arr;
 }
