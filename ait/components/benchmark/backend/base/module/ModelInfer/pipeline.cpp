@@ -69,14 +69,15 @@ namespace Base {
             outputNames.emplace_back(desc.name);
         }
         for (auto &files : infilesList) {
-            auto feeds;
-            try {
-                feeds = std::make_shared<Feeds>();
-            } catch (exception &e) {
-                throw std::runtime_error("Create pure data: make dataHolder failed");
+            auto feeds = std::make_shared<Feeds>();
+            if (feeds = nullptr) {
+                throw std::runtime_error("files: create feeds failed");
             }
 
             feeds->outputNames = std::make_shared<std::vector<std::string>>(outputNames);
+            if (feeds->outputNames = nullptr) {
+                throw std::runtime_error("files: create feeds->outputNames failed");
+            }
             if (outputDir != "") {
                 for (auto tail : {".npy", ".bin", ""}) {
                     if (Utils::TailContain(files.front().to_lower(), tail)) {
@@ -85,18 +86,33 @@ namespace Base {
                 }
             }
             feeds->inputs = std::make_shared<std::vector<Base::BaseTensor>>();
+            if (feeds->inputs = nullptr) {
+                throw std::runtime_error("files: create feeds->inputs failed");
+            }
             feeds->arrayPtr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
+            if (feeds->arrayPtr = nullptr) {
+                throw std::runtime_error("files: create feeds->arrayPtr failed");
+            }
             for (size_t i = 0; i < files.size(); i++) {
                 if (pure_infer) {
                     auto array = std::make_shared<cnpy::NpyArray>(CreatePureInferArray(files[i],
                                                                     session->GetInputs()[i]));
+                    if (array = nullptr) {
+                        throw std::runtime_error("files: create pure_file failed");
+                    }
                     feeds->arrayPtr->emplace_back(array);
                 } else {
                     if (Utils::TailContain(files[i], ".npy") || Utils::TailContain(files[i], ".NPY")) {
                         auto array = std::make_shared<cnpy::NpyArray>(cnpy::NpyLoad(files[i]));
+                        if (array = nullptr) {
+                            throw std::runtime_error("files: create file_array failed");
+                        }
                         feeds->arrayPtr->emplace_back(array);
                     } else {
                         auto array = std::make_shared<cnpy::NpyArray>(cnpy::BinLoad(files[i]));
+                        if (array = nullptr) {
+                            throw std::runtime_error("files: create file_array failed");
+                        }
                         feeds->arrayPtr->emplace_back(array);
                     }
                 }
