@@ -110,7 +110,7 @@ def test_accumulate_shape_size(create_accumulate_shape_size_graph):
 
 def test_generate_single_op_dir():
     out_path = 'fake_test_path'
-    single_op_dir = sp.generate_single_op_dir()
+    single_op_dir = sp.generate_single_op_dir(out_path)
     shutil.rmtree(out_path)
     assert single_op_dir == 'fake_test_path/single_op'
 
