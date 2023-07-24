@@ -357,7 +357,7 @@ def csv_sum(original_out_path):
                 csv_file_list.append(os.path.join(original_out_path, files, sub_file))
                 sheet_name_list.append(files)
 
-    csv_file_summary = os.path.join(original_out_path, "result_summary.csv")
+    csv_file_summary = os.path.join(original_out_path, "result_summary.xlsx")
 
     if not os.path.exists(csv_file_summary):
         with os.fdopen(os.open(csv_file_summary, WRITE_FLAGS, WRITE_MODES), 'w',
