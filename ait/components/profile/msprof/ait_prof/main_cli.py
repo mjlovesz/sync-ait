@@ -59,9 +59,6 @@ def msprof_cli(application, output, model_execution, sys_hardware_mem, sys_cpu_p
 
 class ProfileCommand:
     def add_arguments(self, parser):
-        # parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
-        # parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
-        # parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
         parser.add_argument(
             "--application",
             required=True,
@@ -129,8 +126,6 @@ class ProfileCommand:
         )
 
     def handle(self, args):
-        print(vars(args))
-        print("hello from profile")
         args_adapter = MsProfArgsAdapter(args.application, args.output.as_posix() if args.output else None,
                             args.model_execution, args.sys_hardware_mem, args.sys_cpu_profiling, args.sys_profiling,
                             args.sys_pid_profiling, args.dvpp_profiling, args.runtime_api, args.task_time, args.aicpu)
