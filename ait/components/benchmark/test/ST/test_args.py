@@ -17,7 +17,8 @@ import os
 import logging
 import stat
 import shutil
-
+import subprocess
+import fcntl
 import pytest
 from test_common import TestCommonClass
 
@@ -70,6 +71,7 @@ class TestClass:
                                                                      TestCommonClass.default_device_id, acl_json_path)
         logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
+        os.environ['AIT_NO_MSPROF_MODE'] = "0"
         assert ret != 0
 
     def test_args_invalid_acl_json_2(self):
@@ -86,6 +88,7 @@ class TestClass:
                                                                      TestCommonClass.default_device_id, acl_json_path)
         logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
+        os.environ['AIT_NO_MSPROF_MODE'] = "0"
         assert ret == 0
 
     def test_args_ok(self):
@@ -165,7 +168,7 @@ class TestClass:
         profiler_path = os.path.join(output_path, "profiler")
         TestCommonClass.prepare_dir(output_path)
 
-        cmd = "{} --model {} --device {} --profiler true --output {}".format(TestCommonClass.cmd_prefix, model_path,
+        cmd = "{} --model {} --device {} --profiler true --profiler_rename false --output {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                         TestCommonClass.default_device_id, output_path)
         logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
@@ -176,6 +179,45 @@ class TestClass:
         sampale_json_path = os.path.join(profiler_path, paths[0],
                                          "device_{}/sample.json".format(TestCommonClass.default_device_id))
 
+        assert os.path.isfile(sampale_json_path)
+
+
+    def test_args_profiler_rename_ok(self):
+        model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
+        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        TestCommonClass.prepare_dir(output_path)
+        profiler_path = os.path.join(output_path, "profiler")
+        TestCommonClass.prepare_dir(output_path)
+
+        cmd = "{} --model {} --device {} --profiler true --profiler_rename true --output {}".format(TestCommonClass.cmd_prefix, model_path,
+                                                                        TestCommonClass.default_device_id, output_path)
+        logging.info(f"run cmd:{cmd}")
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True, bufsize=0)
+        flags = fcntl.fcntl(p.stdout, fcntl.F_GETFL)
+        fcntl.fcntl(p.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+
+        get_path_flag = True
+        sub_str = ""
+        for line in iter(p.stdout.read, b''):
+            if not line:
+                continue
+            line = line.decode()
+            if (get_path_flag and line.find("PROF_") != -1):
+                get_path_flag = False
+                start_index = line.find("PROF_")
+                sub_str = line[start_index:(start_index + 46)] # PROF_XXXX的目录长度为46
+            print(f'{line}', flush=True, end="")
+        p.stdout.close()
+        p.wait()
+
+        hash_str = sub_str.rsplit('_')[-1]
+
+        model_name = os.path.basename(model_path).split(".")[0]
+        assert os.path.exists(profiler_path)
+
+        paths = os.listdir(profiler_path)
+        sampale_json_path = os.path.join(profiler_path, paths[0],
+                                         "device_{}/sample_{}_{}.json".format(TestCommonClass.default_device_id, model_name, hash_str))
         assert os.path.isfile(sampale_json_path)
 
     def test_args_dump_ok(self):
@@ -250,6 +292,7 @@ class TestClass:
                                                                                 out_json_file_path, output_path)
         logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
+        os.environ['AIT_NO_MSPROF_MODE'] = "0"
         assert os.path.exists(profiler_path)
 
         paths = os.listdir(profiler_path)
