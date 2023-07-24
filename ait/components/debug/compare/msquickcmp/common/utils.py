@@ -286,19 +286,6 @@ def check_locat_is_valid(dump, locat):
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
 
 
-def check_single_op_is_valid(single_op, dump, custom_op, locat):
-    if single_op:
-        if not dump:
-            logger.error("Dump must be True when single_op is used")
-            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-        if custom_op:
-            logger.error("Custom_op is forbidden when single_op is used")
-            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-        if locat:
-            logger.error("Locat is useless when single_op is used")
-            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
-
-
 def parse_input_shape(input_shape):
     """
     Function Description:
