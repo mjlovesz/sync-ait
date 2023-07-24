@@ -65,6 +65,7 @@ def fake_arguments():
         onnx_fusion_switch=False,
         dump=True,
         cann_path="",
+        single_op=False
     )
 
 
