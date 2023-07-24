@@ -16,8 +16,8 @@ import os
 import subprocess
 import shutil
 
-import pytest
 from unittest import mock
+import pytest
 import numpy as np
 import pandas as pd
 import acl
