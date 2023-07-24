@@ -117,7 +117,7 @@ def test_generate_single_op_dir():
 
 def test_get_memory_size_by_soc_type_invalid_npu_id():
     with pytest.raises(AccuracyCompareException):
-        with mock.patch("subprocess.run", return_value=subprocess.CompleteProcess(
+        with mock.patch("subprocess.run", return_value=subprocess.CompletedProcess(
                         args=[''],
                         returncode=0,
                         stdout=b'NPU ID -1'
@@ -128,7 +128,7 @@ def test_get_memory_size_by_soc_type_invalid_npu_id():
 
 def test_get_memory_size_by_soc_type_invalid_memory_size():
     with pytest.raises(AccuracyCompareException):
-        with mock.patch("subprocess.run", return_value=subprocess.CompleteProcess(
+        with mock.patch("subprocess.run", return_value=subprocess.CompletedProcess(
                         args=[''],
                         returncode=0,
                         stdout=b'NPU ID 1\nDDR Capacity(MB) -1\n'
@@ -138,7 +138,7 @@ def test_get_memory_size_by_soc_type_invalid_memory_size():
 
 
 def test_get_memory_size_by_soc_type_normal():
-    with mock.patch("subprocess.run", return_value=subprocess.CompleteProcess(
+    with mock.patch("subprocess.run", return_value=subprocess.CompletedProcess(
                         args=[''],
                         returncode=0,
                         stdout=b'NPU ID 1\nDDR Capacity(MB) 4\n'
