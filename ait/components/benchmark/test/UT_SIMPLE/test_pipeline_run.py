@@ -23,7 +23,9 @@ import numpy as np
 import pytest
 from test_common import TestCommonClass
 
-from ais_bench.infer.io_oprations import create_pipeline_fileslist_from_inputs_list
+from ais_bench.infer.io_oprations import (create_pipeline_fileslist_from_inputs_list,
+                                          PURE_INFER_FAKE_FILE_ZERO,
+                                          PURE_INFER_FAKE_FILE_RANDOM)
 
 
 logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
@@ -118,6 +120,32 @@ class TestClass:
 
     def init(self):
         self.model_name = "resnet50"
+
+    def test_pure_infer_stc_batch_zero(self):
+        device_id = 0
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_stcshape_om_path(bs=1)
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        intensors_desc = session.get_inputs()
+        infileslist = [[]]
+        pure_file = PURE_INFER_FAKE_FILE_ZERO
+        for _ in intensors_desc:
+            infileslist[0].append(pure_file)
+        output_dir = ""
+        session.run_pipeline(infileslist, output_dir, False, False, 'BIN', True)
+
+    def test_pure_infer_stc_batch_random(self):
+        device_id = 0
+        options = aclruntime.session_options()
+        model_path = self.get_resnet_stcshape_om_path(bs=1)
+        session = aclruntime.InferenceSession(model_path, device_id, options)
+        intensors_desc = session.get_inputs()
+        infileslist = [[]]
+        pure_file = PURE_INFER_FAKE_FILE_RANDOM
+        for _ in intensors_desc:
+            infileslist[0].append(pure_file)
+        output_dir = ""
+        session.run_pipeline(infileslist, output_dir, False, False, 'BIN', True)
 
     def test_infer_stc_batch_input_file(self):
         device_id = 0
