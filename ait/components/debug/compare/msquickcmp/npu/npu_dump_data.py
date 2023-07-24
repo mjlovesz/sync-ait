@@ -23,8 +23,9 @@ import os
 import stat
 import re
 import shutil
-import numpy as np
 import subprocess
+
+import numpy as np
 
 from msquickcmp.atc import atc_utils
 from msquickcmp.common import utils
@@ -49,9 +50,11 @@ INPUT_FORMAT_TO_RGB_RATIO_DICT = {
 }
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
-DTYPE_MAP = {"dtype.float32": np.float32, "dtype.float16": np.float16, "dtype.float64": np.float64, "dtype.int8": np.int8,
-             "dtype.int16": np.int16, "dtype.int32": np.int32, "dtype.int64": np.int64, "dtype.uint8": np.uint8,
-             "dtype.uint16": np.uint16, "dtype.uint32": np.uint32, "dtype.uint64": np.uint64, "dtype.bool": np.bool}
+DTYPE_MAP = {"dtype.float32": np.float32, "dtype.float16": np.float16, "dtype.float64": np.float64, 
+             "dtype.int8": np.int8,"dtype.int16": np.int16, "dtype.int32": np.int32, 
+             "dtype.int64": np.int64, "dtype.uint8": np.uint8, "dtype.uint16": np.uint16, 
+             "dtype.uint32": np.uint32, "dtype.uint64": np.uint64, "dtype.bool": np.bool}
+
 
 class DynamicInput(object):
 
