@@ -123,7 +123,7 @@ def benchmark_all_cmd(om_model,
                      perf,
                      pipeline,
                      profiler_rename,
-                     dumy_npy
+                     dump_npy
                      ):
     pass
 
@@ -258,7 +258,7 @@ class TestClass:
                     "--perf", self.standard_args.perf,
                     "--pipeline", self.standard_args.pipeline,
                     "--profiler_rename", self.standard_args.profiler_rename,
-                    "--dumy-npy", self.standard_args.dump_npy
+                    "--dump-npy", self.standard_args.dump_npy
                                                     ]
         result = runner.invoke(benchmark_all_cmd, cmd_list)
         assert result.exit_code == 0
