@@ -38,3 +38,7 @@ ait profile --application "ait benchmark -om *.om" --output <some path>
   | 使用示例               | 使用场景                                 |
   |-----------------------| ---------------------------------------- |
   | [01_basic_usage](../../examples/cli/profile/01_basic_usage)    | 基础示例，对benchmark推理om模型执行性能分析       |
+  | [02_collect_ai_task_data](../../examples/cli/profile/02_collect_ai_task_data) | 采集AI任务运行性能数据 |
+  | [03_collect_ascend_ai_processor_data](../../examples/cli/profile/03_collect_ascend_ai_processor_data) | 采集昇腾AI处理器系统数据 |
+  | [04_collect_host_data](../../examples/cli/profile/04_collect_host_data) | 采集Host侧数据 |
+  | [05_collect_msproftx_data](../../examples/cli/profile/05_collect_msproftx_data) | 采集msproftx数据 |

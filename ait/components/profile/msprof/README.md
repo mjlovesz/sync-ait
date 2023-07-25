@@ -49,3 +49,8 @@
   | --aicpu                  | aicpu开关，可选on或off，默认为on。 | 否  |
   | -h, --help               | 工具使用帮助信息。               | 否  |
 
+  ### 使用场景
+请移步[profile使用示例](../../../examples/cli/profile/)
+  | 使用示例               | 使用场景                                 |
+  |-----------------------| ---------------------------------------- |
+  | [01_basic_usage](../../../examples/cli/profile/01_basic_usage)    | 基础示例，对benchmark推理om模型执行性能分析       |
