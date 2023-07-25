@@ -568,11 +568,10 @@ def multidevice_run(args):
     npu_id_list = args.npu_id
     p = Pool(len(device_list))
     msgq = Manager().Queue()
-
     args.subprocess_count = len(device_list)
-    jobs = args.subprocess_count
     splits = None
-    if (args.input is not None):
+    if (args.input is not None and args.divide_input):
+        jobs = args.subprocess_count
         splits = seg_input_data_for_multi_process(args, args.input, jobs)
 
     for i, device in enumerate(device_list):
@@ -580,7 +579,8 @@ def multidevice_run(args):
         cur_args.device = int(device)
         if args.energy_consumption:
             cur_args.npu_id = int(npu_id_list[i])
-        cur_args.input = None if splits is None else list(splits)[i]
+        if args.divide_input:
+            cur_args.input = None if splits == None else list(splits)[i]
         p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
 
     p.close()

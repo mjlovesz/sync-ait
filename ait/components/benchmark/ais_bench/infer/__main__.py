@@ -289,6 +289,13 @@ def get_args():
         default=False,
         help="dump data convert to npy"
     )
+    parser.add_argument(
+        "--divide_input",
+        type=str2bool,
+        default=False,
+        help="Input datas need to be divided to match multi devices or not, \
+            --device should be list, default False"
+    )
     benchmark_args = parser.parse_args()
 
     return benchmark_args

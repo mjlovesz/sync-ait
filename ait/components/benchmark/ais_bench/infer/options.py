@@ -418,3 +418,13 @@ opt_dump_npy = click.option(
     callback=str2bool,
     help='dump data convert to npy'
 )
+
+opt_divide_input = click.option(
+    '--dump-npy',
+    'dump_npy',
+    default=False,
+    type=str,
+    callback=str2bool,
+    help='Input datas need to be divided to match multi devices or not, \
+        --device should be list, default False'
+)
