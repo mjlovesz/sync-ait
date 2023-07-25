@@ -24,7 +24,9 @@ import stat
 import shutil
 import time
 import subprocess
+import csv
 import logging
+import pandas as pd
 
 import onnxruntime
 import acl
@@ -46,6 +48,7 @@ from msquickcmp.single_op import single_op as sp
 
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
+WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 ERROR_INTERVAL_INFO_FILE = "error_interval_info.txt"
 MAX_MEMORY_USE = 6 * 1024 * 1024 * 1024
 
@@ -249,6 +252,7 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
             error_interval_info_file = os.path.join(args.out_path, ERROR_INTERVAL_INFO_FILE)
             with os.fdopen(os.open(error_interval_info_file, READ_WRITE_FLAGS, WRITE_MODES), "a+") as fp_writer:
                 output_error_interval_info(fp_writer, error_node_list)
+    csv_sum(original_out_path)
 
 
 def single_op_compare(args, input_shape):
@@ -458,3 +462,33 @@ def bin_divide(og, node_interval, args, onnx_data_path, input_shape):
             high = mid - 1
     utils.logger.info("Binary Search for error interval ends.")
     return satisfied_nodes[low], endnode
+
+
+def csv_sum(original_out_path):
+    """
+    Function:
+        Summarize csv files under different shapes
+        genrate a xlsx file   
+    """
+    csv_file_list = []
+    sheet_name_list = []
+
+    for files in os.listdir(original_out_path):
+        if files == "model":
+            continue
+        for sub_file in os.listdir(os.path.join(original_out_path, files)):
+            if sub_file.endswith(".csv"):
+                csv_file_list.append(os.path.join(original_out_path, files, sub_file))
+                sheet_name_list.append(files)
+
+    xlsx_file_summary = os.path.join(original_out_path, "result_summary.xlsx")
+
+    if os.path.exists(xlsx_file_summary):
+        logging.error("Error, file already exists!")
+        os.remove(xlsx_file_summary)
+
+    with os.fdopen(os.open(xlsx_file_summary, WRITE_FLAGS, WRITE_MODES), 'wb') as fp_write:
+        with pd.ExcelWriter(fp_write) as writer:
+            for i, csv_file in enumerate(csv_file_list):
+                data = pd.read_csv(csv_file, na_values=['NAN'])
+                data.to_excel(writer, sheet_name=sheet_name_list[i], index=False, na_rep='NAN')

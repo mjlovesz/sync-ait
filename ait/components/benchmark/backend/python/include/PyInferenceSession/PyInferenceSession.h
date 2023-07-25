@@ -21,6 +21,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <thread>
 
 #ifdef COMPILE_PYTHON_MODULE
 #include <pybind11/pybind11.h>
@@ -47,6 +48,8 @@ public:
 
     std::vector<TensorBase> InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
     void OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names, std::vector<TensorBase>& outputs);
+    void InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
+                       bool autoDymShape, bool autoDymDims, const std::string& outFmt, const bool pureInferMode);
 
     std::vector<std::vector<uint64_t>> GetDynamicHW();
     std::vector<int64_t> GetDynamicBatch();
