@@ -60,13 +60,13 @@ def get_pure_infer_data(size, pure_data_type):
 # get numpy array from files list combile all files
 def get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tensor_mode=False):
     ndatalist = []
+    file_path_switch = {
+        PURE_INFER_FAKE_FILE: pure_data_type,
+        PURE_INFER_FAKE_FILE_ZERO: "zero",
+        PURE_INFER_FAKE_FILE_RANDOM: "random"
+    }
     for i, file_path in enumerate(files_list):
         logger.debug("get tensor from filepath:{} i:{} of all:{}".format(file_path, i, len(files_list)))
-        file_path_switch = {
-            PURE_INFER_FAKE_FILE: pure_data_type,
-            PURE_INFER_FAKE_FILE_ZERO: "zero",
-            PURE_INFER_FAKE_FILE_RANDOM: "random"
-        }
         if file_path_switch.get(file_path) is not None:
             ndata = get_pure_infer_data(size, file_path_switch.get(file_path))
         elif file_path == PADDING_INFER_FAKE_FILE:
