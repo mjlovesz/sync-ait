@@ -96,10 +96,13 @@ class TestClass:
     def test_check_all_full_args_legality(self):
         cmd_dict = self.base_cmd_dict
         self.case_cmd_list = self.cmd_dict_to_list(cmd_dict)
-        self.cmdline_legal_args
-        parser = argparse.ArgumentParser()
-        self.benchmark_command.add_arguments(parser)
-        args = parser.parse_args()
-        assert args.input == "datasets/"
+        def run(func):
+            parser = argparse.ArgumentParser()
+            self.benchmark_command.add_arguments(parser)
+            args = parser.parse_args()
+            assert args.input == "datasets/"
+        run(self.cmdline_legal_args)
+
+
 
 
