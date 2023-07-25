@@ -13,7 +13,7 @@
 # limitations under the License.
 import os
 import pathlib
-
+import subprocess
 from typing import List, Tuple
 
 import click
@@ -64,17 +64,25 @@ from auto_optimizer.ait_options import (
 )
 
 
+def check_soc(value):
+    ivalue = int(value)
+    pre_cmd = "npu-smi info -l"
+    res = subprocess.run(pre_cmd.split(), shell=False, stdout=subprocess.PIPE)
+
+    sum = 0
+    for line in res.stdout.decode().splie('\n'):
+        if "Chip Count" in line:
+            chip_count = int(line.split()[-1])
+            sum += chip_count
+    if ivalue >= sum or ivalue < 0:
+        raise argparse.ArgumentTypeError(f"{value} is not a valid value.Please check device id.")
+    return ivalue
+
+
 def check_range(value):
     ivalue = int(value)
     if ivalue < 1 or value > 64:
         raise argparse.ArgumentTypeError(f"{value} is not a valid value.Range 1 ~ 64.")
-    return ivalue
-
-
-def check_min_num_0(value):
-    ivalue = int(value)
-    if ivalue < 0:
-        raise argparse.ArgumentTypeError(f"{value} is not a valid value.Minimum value 0.")
     return ivalue
 
 
@@ -442,7 +450,7 @@ class OptimizeCommand(BaseCommand):
                             it must be set when apply big kernel knowledge.',)
         parser.add_argument('-soc', '--soc-version', dest='soc', default='Ascend310P3', type=str,
                             help='Soc_version, default to Ascend310P3.')
-        parser.add_argument('-d', '--device', default=0, type=check_min_num_0,
+        parser.add_argument('-d', '--device', default=0, type=check_soc,
                             help='Device_id, default to 0.')
         parser.add_argument('--loop', default=100, type=check_min_num_1,
                             help='How many times to run the test inference, default to 100.')
