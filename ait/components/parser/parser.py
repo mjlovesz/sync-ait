@@ -15,10 +15,13 @@
 import pkg_resources
 
 class BaseCommand:
-    def __init__(self, name = "", help = "", children = []):
+    def __init__(self, name = "", help = "", children = None):
         self.name = name
         self.help = help
-        self.children = children
+        if not children:
+            self.children = []
+        else:
+            self.children = children
 
     def add_arguments(self, parser, **kwargs):
         pass
