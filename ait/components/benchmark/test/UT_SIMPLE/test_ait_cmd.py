@@ -79,10 +79,13 @@ class TestClass:
             "--npu_id": "0",
             "--backend": "trtexec",
             "--perf": "0",
-            "--pipeline": "0"
+            "--pipeline": "0",
+            "--profiler-rename": "0",
+            "--dump-npy": "0"
         }
         self.case_cmd_list = []
 
     def test_check_all_full_args_legality(self):
-
+        cmd_dict = self.base_cmd_dict
+        self.case_cmd_list
 
