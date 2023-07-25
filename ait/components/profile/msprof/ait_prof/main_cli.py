@@ -14,7 +14,7 @@
 
 import click
 
-from components.parser.parser import CommandInfo
+from components.parser.parser import BaseCommand
 from ait_prof.msprof_process import msprof_process
 from ait_prof.args_adapter import MsProfArgsAdapter
 from ait_prof.options import (
@@ -57,7 +57,10 @@ def msprof_cli(application, output, model_execution, sys_hardware_mem, sys_cpu_p
     exit(ret)
 
 
-class ProfileCommand:
+class ProfileCommand(BaseCommand):
+    def __init__(self, name="", help="", children=[]):
+        super().__init__(name, help, children)
+
     def add_arguments(self, parser):
         parser.add_argument(
             "--application",
@@ -134,5 +137,6 @@ class ProfileCommand:
 
 
 def get_cmd_info():
-    cmd_instance = ProfileCommand()
-    return CommandInfo("profile", cmd_instance)
+    help_info = "get profiling data of a given programma"
+    cmd_instance = ProfileCommand("profile", help_info)
+    return cmd_instance
