@@ -15,11 +15,12 @@
 
 import logging
 import os
+from symbol import del_stmt
 import sys
 
 import click
 
-from components.parser.parser import CommandInfo
+from components.parser.parser import BaseCommand
 from aie_runtime.bean import ConvertConfig
 from aie_runtime.core import Convert
 from aie_runtime.options import (
@@ -77,16 +78,37 @@ if __name__ == "__main__":
     cli()
 
 
-class ConvertCommand:
+class ConvertCommand(BaseCommand):
+    def __init__(self, name="", help="", children=[]):
+        super().__init__(name, help, children)
+
     def add_arguments(self, parser):
-        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
-        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
-        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+        parser.add_argument("-gm", "--golden-model", dest="model", required=True, default=None, help="the path of the onnx model")
+        parser.add_argument("-of", "--output-file", dest="output", required=True, default=None, help="Output file path&name(needn\'t .om suffix for ATC, need .om suffix for AIE)")
+        parser.add_argument("-soc", "--soc-version", dest='soc_version', required=True, default=None, help="The soc version.")
 
     def handle(self, args):
-        print(vars(args))
-        print("hello from convert")
+        if not os.path.isfile(args.model):
+            logger.error('Input model is not a file.')
+            return
+
+        try:
+            config = parse_input_param(
+                args.model, args.output, args.soc_version
+            )
+        except ValueError as e:
+            logger.error(f'{e}')
+            return
+
+        converter = Convert(config)
+        if converter is None:
+            logger.error('The object of \'convert\' create failed.')
+            return
+
+        converter.convert_model()
+        logger.info('convert model finished.')
 
 def get_cmd_info():
-    cmd_instance = ConvertCommand()
-    return CommandInfo("convert", cmd_instance)
+    help_info = "convert tool converts the model from ONNX to OM."
+    cmd_instance = ConvertCommand("convert", help_info)
+    return cmd_instance
