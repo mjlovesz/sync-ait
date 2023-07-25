@@ -161,4 +161,5 @@ def test_find_all_csv_when_valid_then_pass():
     df2.to_csv(df2_path, index=False)
     all_csv_list = sp.find_all_csv(out_path)
     shutil.rmtree(out_path)
+    all_csv_list.sort()
     assert all_csv_list == ['find_all_csv_test_path/file1.csv', 'find_all_csv_test_path/file2.csv']
