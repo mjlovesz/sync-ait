@@ -17,6 +17,7 @@ import os
 import shutil
 import sys
 import logging
+import subprocess
 
 import pytest
 from test_common import TestCommonClass
@@ -111,6 +112,75 @@ class TestClass:
         for output_dir_path in result_paths:
             shutil.rmtree(output_dir_path)
         for summary_json_path in summary_json_paths:
+            os.remove(summary_json_path)
+
+    def test_pipeline_inference_normal_static_batch(self):
+        warmup_num = 5
+        output_file_num = 20
+        general_output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output_general")
+        pipeline_output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output_pipeline")
+        TestCommonClass.prepare_dir(general_output_path)
+        TestCommonClass.prepare_dir(pipeline_output_path)
+        general_log_path = os.path.join(general_output_path, "log.txt")
+        pipeline_log_path = os.path.join(pipeline_output_path, "log.txt")
+        run_modes = {"general" : {"output_path" : general_output_path, "log_path" : general_log_path,
+                                  "results_paths" : [], "summary_json_paths" : []},
+                     "pipeline" : {"output_path" : pipeline_output_path, "log_path" : pipeline_log_path,
+                                  "results_paths" : [], "summary_json_paths" : []}}
+        batch_size = 1
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        input_size = TestCommonClass.get_model_inputs_size(model_path)[0]
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(os.path.join(TestCommonClass.base_path,
+                                                                                           self.model_name), "input"),
+                                                     output_file_num)
+
+        for mode, info in run_modes.items():
+            output_path = info.get("output_path")
+            log_path = info.get("log_path")
+            cmd = f"{TestCommonClass.cmd_prefix} --model {model_path} --device {TestCommonClass.default_device_id} \
+                --output {output_path} --debug True --pipeline {pipeline_switch} --warmup-count {warmup_num}\
+                --input {input_path} > {log_path}"
+            logger.info(f"run in {mode} mode. cmd:{cmd}")
+            ret = os.system(cmd)
+            assert ret == 0
+
+            # inference times should be  fit to given rule
+            real_execute_num = TestCommonClass.get_inference_execute_num(log_path)
+            if batch_size != 0:
+                exacute_num = math.ceil(output_file_num/batch_size)
+                assert real_execute_num == warmup_num + exacute_num
+            else:
+                logger.error("zero division!")
+                raise ZeroDivisionError("batchsize equal to zero!")
+
+            # bin file num is equal to output_file_num
+            cmd = "cat {} |grep 'output path'".format(log_path)
+            try:
+                outval = os.popen(cmd).read()
+            except Exception as e:
+                raise Exception("grep action raises an exception: {}".format(e)) from e
+
+            result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
+            info.get("results_paths").append(result_path)
+            summary_json_name = result_path.split("/")[-1]
+            info.get("summary_json_paths").append(os.path.join(output_path,
+                                                               "{}_summary.json".format(summary_json_name)))
+
+        # compare e2e time
+        cmd_general = "cat {} | grep 'end_to_end' | cut -d: -f2".format(run_modes.get("general").get("log_path"))
+        cmd_pipeline = "cat {} | grep 'end_to_end' | cut -d: -f2".format(run_modes.get("pipeline").get("log_path"))
+        res_general = subprocess.Popen(cmd_general, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        res_pipeline = subprocess.Popen(cmd_pipeline, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        e2e_time_general, _ = res_general.communicate(timeout=5)
+        e2e_time_pipeline, _ = res_pipeline.communicate(timeout=5)
+        assert float(e2e_time_general) > float(e2e_time_pipeline)
+
+        # delete tmp file
+        for output_dir_path in run_modes.get("general").get("results_paths") + \
+                               run_modes.get("pipeline").get("results_paths"):
+            shutil.rmtree(output_dir_path)
+        for summary_json_path in run_modes.get("general").get("summary_json_paths") + \
+                                 run_modes.get("pipeline").get("summary_json_paths"):
             os.remove(summary_json_path)
 
     def test_general_inference_normal_dynamic_batch(self):

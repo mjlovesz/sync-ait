@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-#ifndef BACKEND_CNPY_H
-#define BACKEND_CNPY_H
+#ifndef _CNPY_H
+#define _CNPY_H
 
 #include <string>
 #include <stdexcept>
 #include <sstream>
+#include <fstream>
 #include <vector>
 #include <cstdio>
 #include <typeinfo>
@@ -29,6 +30,8 @@
 #include <memory>
 #include <stdint.h>
 #include <numeric>
+#include <cstdlib>
+#include <ctime>
 
 #include "Base/Log/Log.h"
 
@@ -41,7 +44,7 @@ struct NpyArray {
         numVals = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>());
         dataHolder = std::make_shared<std::vector<char>>(numVals * wordSize);
     }
-    
+
     NpyArray() : shape(0), wordSize(0), fortranOrder(0), numVals(0) {}
 
     template <typename T> T *Data()
@@ -72,6 +75,11 @@ struct NpyArray {
     size_t numVals;
 };
 
+union DataUnion {
+    uint8_t value;
+    char bytes;
+};
+
 using npz_t = std::map<std::string, NpyArray>;
 
 char BigEndianTest();
@@ -80,6 +88,7 @@ template <typename T> std::vector<char> CreateNpyHeader(const std::vector<size_t
 void ParseNpyHeader(FILE *fp, size_t &wordSize, std::vector<size_t> &shape, bool &fortranOrder);
 void ParseNpyHeader(unsigned char *buffer, size_t &wordSize, std::vector<size_t> &shape, bool &fortranOrder);
 NpyArray NpyLoad(std::string fname);
+NpyArray BinLoad(std::string fname);
 
 template <typename T> std::vector<char> &operator += (std::vector<char> &lhs, const T rhs)
 {
@@ -183,4 +192,4 @@ template <typename T> std::vector<char> CreateNpyHeader(const std::vector<size_t
 }
 } // namespace cnpy
 
-#endif // BACKEND_CNPY_H
+#endif // _CNPY_H
