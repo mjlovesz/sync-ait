@@ -33,6 +33,8 @@
 #include <vector>
 
 #include "Base/Log/Log.h"
+#include "Base/Tensor/TensorBase/TensorBase.h"
+#include "Base/ModelInfer/cnpy.h"
 
 typedef enum Result {
     SUCCESS = 0,
@@ -96,6 +98,15 @@ public:
 
     static Result ReadBinFileToMemory(const std::string fileName,  char *ptr, const size_t size, size_t &offset);
     static Result FillFileContentToMemory(const std::string file, char* ptr, const size_t size, size_t &offset);
+
+    static std::string MergeStr(std::vector<std::string>& list, const std::string& delimiter);
+    static std::string GetPrefix(const std::string& outputDir, std::string filePath, const std::string& removeTail);
+    static std::string RemoveSlash(const std::string& name);
+    static std::string CreateDynamicShapeDims(const std::string& name, std::vector<size_t>& shapes);
+    static Result TensorToNumpy(const std::string& outputFileName, Base::TensorBase& output);
+    static Result TensorToBin(const std::string& outputFileName, Base::TensorBase& output);
+    static Result TensorToTxt(const std::string& outputFileName, Base::TensorBase& output);
+    static bool TailContain(const std::string& str, const std::string& tail);
 };
 
 #endif

@@ -17,11 +17,13 @@ import os
 import sys
 import stat
 import re
+import uuid
 from pickle import NONE
 import logging
+from random import sample
+from string import digits, ascii_uppercase, ascii_lowercase
 import json
 import shutil
-import uuid
 import shlex
 import subprocess
 import numpy as np
@@ -121,6 +123,17 @@ def save_data_to_files(file_path, ndata):
                 f.write(b"\n")
     else:
         ndata.tofile(file_path)
+
+
+def create_fake_file_name(pure_data_type, index):
+    chars = ascii_lowercase + ascii_uppercase + digits
+    suffix = "_" + pure_data_type + "_" + str(index)
+    fname = os.path.join(os.getcwd(), "tmp-" + "".join(str(uuid.uuid4())) + suffix)
+
+    if not os.path.exists(fname):
+        return fname
+    else:
+        create_fake_file_name(pure_data_type, index)
 
 
 def get_dump_relative_paths(output_dir, timestamp):

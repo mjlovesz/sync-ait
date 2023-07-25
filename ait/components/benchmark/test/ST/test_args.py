@@ -99,6 +99,14 @@ class TestClass:
         ret = os.system(cmd)
         assert ret == 0
 
+    def test_args_pipeline_ok(self):
+        model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
+        cmd = f"{TestCommonClass.cmd_prefix} --model {model_path} \
+                --device {TestCommonClass.default_device_id} --pipeline 1"
+        logging.info(f"run cmd:{cmd}")
+        ret = os.system(cmd)
+        assert ret == 0
+
     def test_args_invalid_loop(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         loops = [-3, 0]
