@@ -14,8 +14,9 @@
 import sys
 
 import click
+import os
 
-from components.parser.parser import CommandInfo
+from components.parser.parser import BaseCommand
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.adapter_cli.options import (
     opt_golden_model,
@@ -96,7 +97,9 @@ if __name__ == '__main__':
         sys.exit(error.error_info)
 
 
-class CompareCommand:
+class CompareCommand(BaseCommand):
+    def __init__(self, name="", help="", children=[]):
+        super().__init__(name, help, children)
     def add_arguments(self, parser):
         parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
         parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
@@ -105,7 +108,14 @@ class CompareCommand:
     def handle(self, args):
         print(vars(args))
         print("hello from compare")
+        # cmp_args = CmpArgsAdapter(args.golden_model, args.om_model, args.weight_path, args.input_data_path,
+        #                           args.cann_path, args.out_path,
+        #                           args.input_shape, args.device, args.output_size, args.output_nodes, args.advisor,
+        #                           args.dym_shape_range,
+        #                           args.dump, args.bin2npy, args.custom_op, args.locat, args.onnx_fusion_switch)
+        # cmp_process(cmp_args, True)
 
 def get_cmd_info():
-    cmd_instance = CompareCommand()
-    return CommandInfo("compare", cmd_instance)
+    help_info = "one-click network-wide accuracy analysis of golden models."
+    cmd_instance = CompareCommand("compare", help_info)
+    return cmd_instance

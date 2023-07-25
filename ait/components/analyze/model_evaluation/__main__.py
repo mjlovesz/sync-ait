@@ -15,7 +15,7 @@
 import os
 import click
 
-from components.parser.parser import CommandInfo
+from components.parser.parser import BaseCommand
 from model_evaluation.common import utils, logger
 from model_evaluation.common.enum import Framework
 from model_evaluation.bean import ConvertConfig
@@ -88,7 +88,10 @@ def cli(
     logger.info('analyze model finished.')
 
 
-class AnalyzeCommand:
+class AnalyzeCommand(BaseCommand):
+    def __init__(self, name='', help='', children=None):
+        super().__init__(name, help, children)
+    
     def add_arguments(self, parser):
         parser.add_argument(
             "-gm", "--golden-model", type=str,
@@ -145,8 +148,9 @@ class AnalyzeCommand:
 
 
 def get_cmd_info():
-    cmd_instance = AnalyzeCommand()
-    return CommandInfo("analyze", cmd_instance)
+    help_info = "Analyze tool to evaluate compatibility of model conversion"
+    cmd_instance = AnalyzeCommand("analyze", help_info)
+    return cmd_instance
 
 
 if __name__ == '__main__':

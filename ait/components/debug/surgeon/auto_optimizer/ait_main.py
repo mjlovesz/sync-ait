@@ -13,7 +13,7 @@
 # limitations under the License.
 import os
 import pathlib
-
+import subprocess
 from typing import List, Tuple
 
 import click
@@ -28,6 +28,8 @@ from auto_optimizer.graph_refactor.onnx.node import OnnxNode
 from auto_optimizer.tools.log import logger
 from auto_optimizer.common.click_utils import optimize_onnx, CONTEXT_SETTINGS, \
     FormatMsg, list_knowledges, cli_eva, check_input_path, check_output_model_path
+from auto_optimizer.common.click_utils import default_off_knowledges
+from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 
 from auto_optimizer.ait_options import (
     opt_path,
@@ -60,6 +62,42 @@ from auto_optimizer.ait_options import (
     opt_prefix,
     opt_combined_graph_path,
 )
+
+
+def check_soc(value):
+    ivalue = int(value)
+    pre_cmd = "npu-smi info -l"
+    res = subprocess.run(pre_cmd.split(), shell=False, stdout=subprocess.PIPE)
+
+    sum = 0
+    for line in res.stdout.decode().splie('\n'):
+        if "Chip Count" in line:
+            chip_count = int(line.split()[-1])
+            sum += chip_count
+    if ivalue >= sum or ivalue < 0:
+        raise argparse.ArgumentTypeError(f"{value} is not a valid value.Please check device id.")
+    return ivalue
+
+
+def check_range(value):
+    ivalue = int(value)
+    if ivalue < 1 or value > 64:
+        raise argparse.ArgumentTypeError(f"{value} is not a valid value.Range 1 ~ 64.")
+    return ivalue
+
+
+def check_min_num_1(value):
+    ivalue = int(value)
+    if ivalue < 1:
+        raise argparse.ArgumentTypeError(f"{value} is not a valid value.Minimum value 1.")
+    return ivalue
+
+
+def check_min_num_2(value):
+    ivalue = int(value)
+    if ivalue < -1:
+        raise argparse.ArgumentTypeError(f"{value} is not a valid value.Minimum value -1.")
+    return ivalue
 
 
 @click.group(cls=ClickAliasedGroup, context_settings=CONTEXT_SETTINGS,
@@ -329,57 +367,287 @@ class ListCommand(BaseCommand):
         super().__init__(name, help, children)
 
     def add_arguments(self, parser):
-        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
-        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
-        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+        pass
 
     def handle(self, args):
         print(vars(args))
         print("hello from surgeon list")
+        list_knowledges()
+
 
 class EvaluateCommand(BaseCommand):
     def __init__(self, name="", help="", children=[]):
         super().__init__(name, help, children)
 
     def add_arguments(self, parser):
-        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
-        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
-        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+        parser.add_argument('--path', required=True, type=str,
+                            help='Target onnx file or directory containing onnx file')
+        parser.add_argument('-know', '--knowledges',
+                            default=','.join(
+                                knowledge
+                                for knowledge in KnowledgeFactory.get_knowledge_pool().keys()
+                                if knowledge not in default_off_knowledges
+                            ),
+                            type=str,
+                            help='Knowledges(index/name) you want to apply. Seperate by comma(,), \
+                            Default to all except fix knowledges.')
+        parser.add_argument('-r', '--recursive', action="store_true", default=False,
+                            help='Process onnx in a folder recursively if any folder provided \
+                            as PATH. Default to false.')
+        parser.add_argument('-v', '--verbose', action="store_true", default=False,
+                            help='Show progress in evaluate mode. Default to false.')
+        parser.add_argument('-p', '--processes', default=1, type=check_range, 
+                            help='Use multiprocessing in evaluate mode, \
+                            determine how many processes should be spawned. Default to 1')
 
     def handle(self, args):
         print(vars(args))
         print("hello from surgeon evalute")
+        if not check_input_path(args.path):
+            return
+
+        path_ = pathlib.Path(args.path)
+        knowledge_list = [v.strip() for v in args.knowledges.split(',')]
+        for know in knowledge_list:
+            if know in ARGS_REQUIRED_KNOWLEDGES:
+                knowledge_list.remove(know)
+                logger.warning("Knowledge {} cannot be evaluate".format(know))
+
+        if not knowledge_list:
+            return
+        optimizer = GraphOptimizer(knowledge_list)
+        cli_eva(path_, optimizer, args.recursive, args.verbose, args.processes)
+
 
 class OptimizeCommand(BaseCommand):
     def __init__(self, name="", help="", children=[]):
         super().__init__(name, help, children)
 
     def add_arguments(self, parser):
-        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
-        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
-        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+        parser.add_argument('-in', '--input', dest='input_model', required=True, type=str,
+                            help='Input onnx model to be optimized')
+        parser.add_argument('-of', '--output-file', dest='output_model', required=True, type=str,
+                            help='Output onnx model name')
+        parser.add_argument('-know', '--knowledges',
+                            default=','.join(
+                                knowledge
+                                for knowledge in KnowledgeFactory.get_knowledge_pool().keys()
+                                if knowledge not in default_off_knowledges
+                            ),
+                            type=str,
+                            help='Knowledges(index/name) you want to apply. Seperate by comma(,), \
+                            Default to all except fix knowledges.')
+        parser.add_argument('-t', '--infer-test', action="store_true", default=False,
+                            help='Run inference to determine whether to apply knowledges \
+                            optimization. Default to False.')
+        parser.add_argument('-bk', '--big-kernel', action="store_true", default=False,
+                            help='Whether to apply big kernel optimize knowledge. Default to False.')
+        parser.add_argument('-as', '--attention-start-node', type=str, default="",
+                            help='Start node of the first attention block, \
+                            it must be set when apply big kernel knowledge.')
+        parser.add_argument('-ae', '--attention-end-node', type=str, default="",
+                            help='End node of the first attention block, \
+                            it must be set when apply big kernel knowledge.',)
+        parser.add_argument('-soc', '--soc-version', dest='soc', default='Ascend310P3', type=str,
+                            help='Soc_version, default to Ascend310P3.')
+        parser.add_argument('-d', '--device', default=0, type=check_soc,
+                            help='Device_id, default to 0.')
+        parser.add_argument('--loop', default=100, type=check_min_num_1,
+                            help='How many times to run the test inference, default to 100.')
+        parser.add_argument('--threshold', default=0, type=check_min_num_2,
+                            help='Threshold of inference speed improvement,'
+                            'knowledges with less improvement won\'t be used.'
+                            'Can be a negative number, which means accept'
+                            'negative optimization, default: 0')
+        parser.add_argument('-is', '--input-shape', type=str,
+                            help='Input shape of onnx graph.',)
+        parser.add_argument('--input-shape-range', type=str,
+                            help='Specify input shape range for OM converter.')
+        parser.add_argument('--dynamic-shape', type=str,
+                            help='Specify input shape for dynamic onnx in inference.')
+        parser.add_argument('-outsize', '--output-size', type=str,
+                            help='Specify real size of graph output.')
 
     def handle(self, args):
         print(vars(args))
         print("hello from surgeon optimize")
+        if not check_input_path(args.input_model) or not check_output_model_path(args.output_model):
+            return
+
+        # compatibility for click < 8.0
+        input_model_ = pathlib.Path(os.path.abspath(args.input_model))
+        output_model_ = pathlib.Path(os.path.abspath(args.output_model))
+        if input_model_ == output_model_:
+            logger.warning('output_model is input_model, refuse to overwrite origin model!')
+            return
+
+        knowledge_list = [v.strip() for v in args.knowledges.split(',')]
+        for know in knowledge_list:
+            if not args.big_kernel and know in ARGS_REQUIRED_KNOWLEDGES:
+                knowledge_list.remove(know)
+                logger.warning("Knowledge {} cannot be ran when close big_kernel config.".format(know))
+
+        if not knowledge_list:
+            return
+
+        if args.big_kernel:
+            big_kernel_config = BigKernelConfig(
+                attention_start_node=args.attention_start_node,
+                attention_end_node=args.attention_end_node
+            )
+        else:
+            big_kernel_config = None
+
+        config = InferTestConfig(
+            converter='atc',
+            soc=args.soc,
+            device=args.device,
+            loop=args.loop,
+            threshold=args.threshold,
+            input_shape=args.input_shape,
+            input_shape_range=args.input_shape_range,
+            dynamic_shape=args.dynamic_shape,
+            output_size=args.output_size,
+        )
+        applied_knowledges = optimize_onnx(
+            optimizer=knowledge_list,
+            input_model=input_model_,
+            output_model=output_model_,
+            infer_test=args.infer_test,
+            config=config,
+            big_kernel_config=big_kernel_config
+        )
+        if args.infer_test:
+            logger.info('=' * 100)
+        if applied_knowledges:
+            logger.info('Result: Success')
+            logger.info('Applied knowledges: ')
+            for knowledge in applied_knowledges:
+                logger.info(f'  {knowledge}')
+            logger.info(f'Path: {input_model_} -> {output_model_}')
+        else:
+            logger.info('Result: Unable to optimize, no knowledges matched.')
+        if args.infer_test:
+            logger.info('=' * 100)
 
 class ExtractCommand(BaseCommand):
     def __init__(self, name="", help="", children=[]):
         super().__init__(name, help, children)
 
     def add_arguments(self, parser):
-        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
-        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
-        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+        parser.add_argument('-in', '--input', dest='input_model', required=True, type=str,
+                            help='Input onnx model to be optimized')
+        parser.add_argument('-of', '--output-file', dest='output_model', required=True, type=str,
+                            help='Output onnx model name')
+        parser.add_argument('-snn', '--start-node-names', required=False, type=str,
+                            help='The names of start nodes')
+        parser.add_argument('-enn', '--end-node-names', required=False, type=str,
+                            help='The names of end nodes')
+        parser.add_argument('-ck', '--is-check-subgraph', action="store_true", default=False,
+                            help='Whether to check subgraph. Default to False.')
+        parser.add_argument('-sis', '--subgraph-input-shape', type=str,
+                            help='Specify the input shape of subgraph')
+        parser.add_argument('-sit', '--subgraph-input-dtype', type=str,
+                            help='Specify the input dtype of subgraph')
 
     def handle(self, args):
         print(vars(args))
         print("hello from surgeon extract")
+        if not check_input_path(args.input_model) or not check_output_model_path(args.output_model):
+            return
+
+        input_model_ = pathlib.Path(os.path.abspath(args.input_model))
+        output_model_ = pathlib.Path(os.path.abspath(args.output_model))
+        if input_model_ == output_model_:
+            logger.warning('output_model is input_model, refuse to overwrite origin model!')
+            return
+
+        # parse start node names and end node names
+        if args.start_node_names:
+            start_node_names = [node_name.strip() for node_name in args.start_node_names.split(',')]
+
+        if args.end_node_names:
+            end_node_names = [node_name.strip() for node_name in args.end_node_names.split(',')]
+
+        onnx_graph = OnnxGraph.parse(args.input_model)
+        try:
+            onnx_graph.extract_subgraph(
+                start_node_names, end_node_names,
+                args.output_model, args.is_check_subgraph,
+                args.subgraph_input_shape, args.subgraph_input_dtype
+            )
+        except ValueError as err:
+            logger.error(err)
+
+class ConcatenateCommand(BaseCommand):
+    def __init__(self, name="", help="", children=[]):
+        super().__init__(name, help, children)
+
+    def add_arguments(self, parser):
+        parser.add_argument('-g1', '--graph1', required=True, type=str,
+                            help='First onnx model to be consolidated')
+        parser.add_argument('-g2', '--graph2', required=True, type=str,
+                            help='Second onnx model to be consolidated')
+        parser.add_argument('-io', '--io-map', required=True, type=str,
+                            help='Pairs of output/inputs representing outputs \
+                            of the first graph and inputs of the second graph to be connected')
+        parser.add_argument('-pref', '--prefix', dest='graph_prefix', 
+                            required=False, type=str, default='pre_',
+                            help='Prefix added to all names in a graph')
+        parser.add_argument('-cgp', '--combined-graph-path', required=True, type=str,
+                            help='Output combined onnx graph path')
+
+    def handle(self, args):
+        print(vars(args))
+        print("hello from surgeon extract")
+        if not check_input_path(args.graph1):
+            raise TypeError(f"Invalid graph1: {args.graph1}")
+        if not check_input_path(args.graph2):
+            raise TypeError(f"Invalid graph2: {args.graph2}")
+
+        if not check_output_model_path(args.combined_graph_path):
+            raise TypeError(f"Invalid output: {args.combined_graph_path}")
+
+        onnx_graph1 = OnnxGraph.parse(args.graph1)
+        onnx_graph2 = OnnxGraph.parse(args.graph2)
+
+        # parse io_map
+        # out0:in0;out1:in1...
+        io_map_list = []
+        for pair in args.io_map.strip().split(";"):
+            if not pair:
+                continue
+            out, inp = pair.strip().split(":")
+            io_map_list.append((out, inp))
+
+        try:
+            combined_graph = OnnxGraph.concat_graph(
+                onnx_graph1, onnx_graph2,
+                io_map_list,
+                prefix=args.graph_prefix,
+                graph_name=args.combined_graph_path
+            )
+        except Exception as err:
+            logger.error(err)
+
+        try:
+            combined_graph.save(args.combined_graph_path)
+        except Exception as err:
+            logger.error(err)
+
+        logger.info(
+            f'Concatenate ONNX model: {args.graph1} and ONNX model: {args.graph2} completed. '
+            f'Combined model saved in {args.combined_graph_path}'
+        )
 
 
 def get_cmd_info():
+    surgeon_help_info = "surgeon tool for onnx modifying functions."
     list_cmd_instance = ListCommand("list")
     evaluate_cmd_instance = EvaluateCommand("evaluate")
     optimize_cmd_instance = OptimizeCommand("optimize")
     extract_cmd_instance = ExtractCommand("extract")
-    return BaseCommand("surgeon", "surgeon help info", [list_cmd_instance, evaluate_cmd_instance, optimize_cmd_instance, extract_cmd_instance])
+    concatenate_cmd_instance = ConcatenateCommand("concatenate")
+    return BaseCommand("surgeon", surgeon_help_info, [list_cmd_instance, evaluate_cmd_instance, 
+                                                      optimize_cmd_instance, extract_cmd_instance,
+                                                      concatenate_cmd_instance])
