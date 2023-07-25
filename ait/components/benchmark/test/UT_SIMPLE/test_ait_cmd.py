@@ -49,6 +49,7 @@ class TestClass:
 
     def init(self):
         self.model_name = "resnet50"
+        self.current_dir = os.path.dirname(os.path.abspath(__file__))
         self.base_cmd_dict = {
             "--om-model": os.path.join(self.current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
             "--input": "datasets/",
