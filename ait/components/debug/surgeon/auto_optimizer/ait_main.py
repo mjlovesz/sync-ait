@@ -29,6 +29,7 @@ from auto_optimizer.tools.log import logger
 from auto_optimizer.common.click_utils import optimize_onnx, CONTEXT_SETTINGS, \
     FormatMsg, list_knowledges, cli_eva, check_input_path, check_output_model_path
 from auto_optimizer.common.click_utils import default_off_knowledges
+from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 
 from auto_optimizer.ait_options import (
     opt_path,
@@ -61,6 +62,13 @@ from auto_optimizer.ait_options import (
     opt_prefix,
     opt_combined_graph_path,
 )
+
+
+def check_range(value):
+    ivalue = int(value)
+    if ivalue < 1 or value > 64:
+        raise argparse.ArgumentTypeError(f"{value} is not a valid value.Range 1 ~ 64.")
+    return ivalue
 
 
 def check_min_num_0(value):
@@ -360,16 +368,11 @@ class ListCommand(BaseCommand):
 
 
 class EvaluateCommand(BaseCommand):
-    path: str,
-    knowledges: str,
-    recursive: bool,
-    verbose: bool,
-    processes: int,
     def __init__(self, name="", help="", children=[]):
         super().__init__(name, help, children)
 
     def add_arguments(self, parser):
-        parser.add_argument('--path', 'path', required=True, type=str,
+        parser.add_argument('--path', required=True, type=str,
                             help='Target onnx file or directory containing onnx file')
         parser.add_argument('-know', '--knowledges',
                             default=','.join(
@@ -385,7 +388,7 @@ class EvaluateCommand(BaseCommand):
                             as PATH. Default to false.')
         parser.add_argument('-v', '--verbose', action="store_true", default=False,
                             help='Show progress in evaluate mode. Default to false.')
-        parser.add_argument('-p', '--processes', default=1, type=int, choices=range(1, 64), 
+        parser.add_argument('-p', '--processes', default=1, type=check_range, 
                             help='Use multiprocessing in evaluate mode, \
                             determine how many processes should be spawned. Default to 1')
 
@@ -472,14 +475,14 @@ class OptimizeCommand(BaseCommand):
 
         knowledge_list = [v.strip() for v in args.knowledges.split(',')]
         for know in knowledge_list:
-            if not big_kernel and know in ARGS_REQUIRED_KNOWLEDGES:
+            if not args.big_kernel and know in ARGS_REQUIRED_KNOWLEDGES:
                 knowledge_list.remove(know)
                 logger.warning("Knowledge {} cannot be ran when close big_kernel config.".format(know))
 
         if not knowledge_list:
             return
 
-        if big_kernel:
+        if args.big_kernel:
             big_kernel_config = BigKernelConfig(
                 attention_start_node=args.attention_start_node,
                 attention_end_node=args.attention_end_node
@@ -590,7 +593,7 @@ class ConcatenateCommand(BaseCommand):
         print(vars(args))
         print("hello from surgeon extract")
         if not check_input_path(args.graph1):
-        raise TypeError(f"Invalid graph1: {args.graph1}")
+            raise TypeError(f"Invalid graph1: {args.graph1}")
         if not check_input_path(args.graph2):
             raise TypeError(f"Invalid graph2: {args.graph2}")
 
