@@ -60,7 +60,7 @@ def msprof_process(args:MsProfArgsAdapter):
     except RuntimeError:
         return 1
     msprof_bin = shutil.which('msprof')
-    if msprof_bin is None or os.getenv('GE_PROFILING_TO_STD_OUT') == '1':
+    if msprof_bin is None or os.getenv('AIT_NO_MSPROF_MODE') == '1':
         logger.info("find no msprof continue use acl.json mode")
     else:
         try:

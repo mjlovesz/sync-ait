@@ -28,6 +28,7 @@ import itertools
 import argparse
 
 import numpy as np
+import pandas as pd
 
 from msquickcmp.common.dynamic_argument_bean import DynamicArgumentEnum
 
@@ -54,6 +55,7 @@ ACCURACY_COMPARISON_INVALID_DEVICE_ERROR = 17
 ACCURACY_COMPARISON_WRONG_AIPP_CONTENT = 18
 ACCRACY_COMPARISON_EXTRACT_ERROR = 19
 ACCRACY_COMPARISON_FETCH_DATA_ERROR = 20
+ACCURACY_COMPARISON_ATC_RUN_ERROR = 21
 MODEL_TYPE = ['.onnx', '.pb', '.om', '.prototxt']
 DIM_PATTERN = r"^(-?[0-9]{1,100})(,-?[0-9]{1,100}){0,100}"
 DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+){0,3}"
@@ -174,7 +176,7 @@ def get_dump_data_path(dump_dir, is_net_output=False):
     return dump_data_path, file_is_exist
 
 
-def execute_command(cmd):
+def execute_command(cmd, info_need=True):
     """
     Function Description:
         run the following command
@@ -185,7 +187,8 @@ def execute_command(cmd):
     Exception Description:
         when invalid command throw exception
     """
-    logger.info('Execute command:%s' % cmd)
+    if info_need:
+        logger.info('Execute command:%s' % cmd)
     process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while process.poll() is None:
         line = process.stdout.readline()
@@ -260,13 +263,13 @@ def check_dynamic_shape(shape):
     return dynamic_shape
 
 
-def check_convert_is_valid_used(dump, bin2npy):
+def check_convert_is_valid_used(dump, bin2npy, custom_op):
     """
     check dump is True while using convert
     """
-    if not dump and bin2npy:
+    if not dump and (bin2npy or custom_op != ""):
         logger.error(
-            "Convert option is forbidden when dump is False!\
+            "Convert option or custom_op is forbidden when dump is False!\
             Please keep dump True while using convert."
         )
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
@@ -550,3 +553,16 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
+
+
+def merge_csv(csv_list, output_dir, output_csv_name):
+    df_list = []
+    for csv_file in csv_list:
+        df = pd.read_csv(csv_file)
+        df_list.append(df)
+    merged_df = pd.concat(df_list)
+    merged_df = merged_df.drop_duplicates()
+    merged_df = merged_df.fillna("NaN")
+    summary_csv_path = os.path.join(output_dir, output_csv_name)
+    merged_df.to_csv(summary_csv_path, index=False)
+    return summary_csv_path

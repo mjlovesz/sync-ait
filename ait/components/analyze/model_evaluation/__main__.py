@@ -87,19 +87,67 @@ def cli(
     analyzer.analyze_model()
     logger.info('analyze model finished.')
 
+
 class AnalyzeCommand:
     def add_arguments(self, parser):
-        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
-        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
-        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+        parser.add_argument(
+            "-gm", "--golden-model", type=str,
+            required=True, default=None,
+            help="model path, support caffe, onnx, tensorflow."
+        )
+        parser.add_argument(
+            "--framework", type=str,
+            choices=['0', '3', '5'],
+            default=None, help="Framework type: 0:Caffe; 3:Tensorflow; 5:Onnx."
+        )
+        parser.add_argument(
+            "-w", "--weight", type=str,
+            required=False, default='',
+            help="Weight file. Required when framework is Caffe."
+        )
+        parser.add_argument(
+            "-soc", "--soc-version", type=str,
+            required=False, default='',
+            help="The soc version."
+        )
+        parser.add_argument(
+            "-o", "--output", type=str,
+            required=True, default='',
+            help="Output path."
+        )
 
     def handle(self, args):
-        print(vars(args))
-        print("hello from analyze")
+        input_model = args.golden_model
+        framework = args.framework
+        weight = args.weight
+        soc_version = args.soc_version
+        output = args.output
+
+        if not os.path.isfile(input_model):
+            logger.error('input model is not file.')
+            return
+
+        try:
+            config = parse_input_param(
+                input_model, framework, weight, soc_version
+            )
+        except ValueError as e:
+            logger.error(f'{e}')
+            return
+
+        analyzer = Analyze(input_model, output, config)
+        if analyzer is None:
+            logger.error('the object of \'Analyze\' create failed.')
+            return
+
+        analyzer.analyze_model()
+        logger.info('analyze model finished.')
+
 
 def get_cmd_info():
     cmd_instance = AnalyzeCommand()
     return CommandInfo("analyze", cmd_instance)
+
 
 if __name__ == '__main__':
     cli()

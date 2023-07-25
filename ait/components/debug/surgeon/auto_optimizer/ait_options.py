@@ -87,13 +87,65 @@ opt_input = click.option(
 )
 
 
+opt_graph1 = click.option(
+    '-g1',
+    '--graph1',
+    'graph1',
+    required=True,
+    type=str,
+    callback=check_args,
+    help='First onnx model to be consolidated'
+)
+
+
+opt_graph2 = click.option(
+    '-g2',
+    '--graph2',
+    'graph2',
+    required=True,
+    type=str,
+    callback=check_args,
+    help='Second onnx model to be consolidated'
+)
+
+
+opt_prefix = click.option(
+    '-pref',
+    '--prefix',
+    'graph_prefix',
+    required=False,
+    type=str,
+    default='pre_',
+    help='Prefix added to all names in a graph'
+)
+
+
+opt_combined_graph_path = click.option(
+    '-cgp',
+    '--combined-graph-path',
+    'combined_graph_path',
+    required=True,
+    type=str,
+    callback=check_args,
+    help='Output combined onnx graph path'
+)
+
+
+opt_io_map = click.option(
+    '-io',
+    '--io-map',
+    'io_map',
+    required=True,
+    type=str,
+    help='Pairs of output/inputs representing outputs of the first graph and inputs of the second graph to be connected'
+)
+
 opt_start = click.option(
     '-snn',
     '--start-node-names',
     'start_node_names',
-    required=True,
+    required=False,
     type=click.STRING,
-    callback=check_node_name,
     help='The names of start nodes'
 )
 
@@ -102,9 +154,8 @@ opt_end = click.option(
     '-enn',
     '--end-node-names',
     'end_node_names',
-    required=True,
+    required=False,
     type=click.STRING,
-    callback=check_node_name,
     help='The names of end nodes'
 )
 

@@ -286,6 +286,13 @@ opt_profiler = click.option(
     help='Profiler switch'
 )
 
+opt_profiler_rename = click.option(
+    '--profiler_rename',
+    default=True,
+    type=str,
+    callback=str2bool,
+    help='Profiler rename switch'
+)
 
 opt_dump = click.option(
     '--dump',
@@ -401,4 +408,13 @@ opt_pipeline = click.option(
     type=str,
     callback=str2bool,
     help='Pipeline switch'
+)
+
+opt_dump_npy = click.option(
+    '--dump-npy',
+    'dump_npy',
+    default=False,
+    type=str,
+    callback=str2bool,
+    help='dump data convert to npy'
 )

@@ -71,7 +71,7 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
   | -gm，--golden-model | 模型文件 [.pb, .onnx, .prototxt] 路径，分别对应 TF, ONNX, Caffe 模型       | 是  |
   | -om，--om-model | 昇腾AI处理器的离线模型（.om）                        | 是  |
   | -w，--weight  | -gm 为 Caffe 模型时对应的权重文件（.caffemodel）                        | 否  |
-  | -i，--input   | 模型的输入数据路径，默认根据模型的input随机生成，多个输入以逗号分隔，例如：/home/input\_0.bin,/home/input\_1.bin。注意：使用aipp模型时该输入为om模型的输入 | 否  |
+  | -i，--input   | 模型的输入数据路径，默认根据模型的input随机生成，多个输入以逗号分隔，例如：/home/input\_0.bin,/home/input\_1.bin,/home/input\_2.npy。注意：使用aipp模型时该输入为om模型的输入,且支持自动将npy文件转为bin文件 | 否  |
   | -c，--cann-path | CANN包安装完后路径，默认会从从系统环境变量`ASCEND_TOOLKIT_HOME`中获取`CANN` 包路径，如果不存在则默认为 `/usr/local/Ascend/ascend-toolkit/latest` | 否  |
   | -o，--output  | 输出文件路径，默认为当前路径                           | 否  |
   | -is，--input-shape | 模型输入的shape信息，默认为空，例如"input_name1:1,224,224,3;input_name2:3,300",节点中间使用英文分号隔开。input_name必须是转换前的网络模型中的节点名称 | 否  |
@@ -85,6 +85,7 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
   | -cp, --custom-op | 支持存在NPU自定义算子的模型进行精度比对，使用方式：--custom-op="op_name"，其中op_name代表onnx模型中，NPU自定义算子名称。| 否  |
   | --locat      | 开启后,自动在每次比对结束后,对误差超阈值的首个节点(任一类误差),执行误差定位流程,自动定位误差的区间范围(无论单节点还是累计误差)。使用方式：--locat True| 否  |
   | -ofs, --onnx-fusion-switch| onnxruntime算子融合开关，默认**开启**算子融合，如存在onnx dump数据中因算子融合导致缺失的，建议关闭此开关。使用方式：--onnx-fusion-switch False| 否  |
+  | -single, --single-op| 单算子比对模式，默认关闭，开启时在输出路径下会生成single op目录，存放单算子比对结果文件使用方式：-single True| 否  |
 
 ### 使用场景
 
@@ -100,3 +101,4 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
   | [06_npu_custom_op](../../../examples/cli/debug/compare/06_npu_custom_op)    | onnx模型中存在NPU自定义算子场景 | 
   | [07_caffe_model](../../../examples/cli/debug/compare/07_caffe_model)    | 标杆模型为Caffe框架的一键式精度比对 | 
   | [08_accuracy_error_location](../../../examples/cli/debug/compare/08_accuracy_error_location)    | 误差及累计误差一键式自动定位 |
+  | [09_single_op](../../../examples/cli/debug/compare/09_single_op)    | 单算子比对模式 |
