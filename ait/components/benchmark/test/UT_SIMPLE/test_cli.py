@@ -51,7 +51,8 @@ from ais_bench.infer.options import (
     opt_perf,
     opt_pipeline,
     opt_profiler_rename,
-    opt_dump_npy
+    opt_dump_npy,
+    opt_divide_input
 )
 
 
@@ -91,6 +92,7 @@ from ais_bench.infer.options import (
 @opt_pipeline
 @opt_profiler_rename
 @opt_dump_npy
+@opt_divide_input
 def benchmark_all_cmd(om_model,
                      input_path,
                      output,
@@ -123,7 +125,8 @@ def benchmark_all_cmd(om_model,
                      perf,
                      pipeline,
                      profiler_rename,
-                     dump_npy
+                     dump_npy,
+                     divide_input
                      ):
     pass
 
@@ -170,7 +173,8 @@ class TestClass:
                     "--perf", cmd_adapter.perf,
                     "--pipeline", cmd_adapter.pipeline,
                     "--profiler_rename", cmd_adapter.profiler_rename,
-                    "--dump-npy", cmd_adapter.dump_npy
+                    "--dump-npy", cmd_adapter.dump_npy,
+                    "--divide-input", cmd_adapter.divide_input,
                                                     ]
         return cmd_list
 
@@ -210,6 +214,7 @@ class TestClass:
             pipeline="0",
             profiler_rename="1",
             dump_npy="0",
+            divide_input="0",
         )
 
     def test_check_all_full_args_legality(self):
