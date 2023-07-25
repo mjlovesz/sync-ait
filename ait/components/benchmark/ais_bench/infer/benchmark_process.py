@@ -46,7 +46,8 @@ from ais_bench.infer.miscellaneous import (dymshape_range_run, get_acl_json_path
                                            get_batchsize, ACL_JSON_CMD_LIST)
 from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                                    get_fileslist_from_dir, list_split, list_share, logger,
-                                   save_data_to_files, create_fake_file_name)
+                                   save_data_to_files, create_fake_file_name,
+                                   create_tmp_acl_json, move_subdir, convert_helper)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
 
@@ -103,8 +104,7 @@ def set_session_options(session, args):
         session.set_custom_outsize(customsizes)
 
 
-def init_inference_session(args):
-    acl_json_path = get_acl_json_path(args)
+def init_inference_session(args, acl_json_path):
     session = InferSession(args.device, args.model, acl_json_path, args.debug, args.loop)
 
     set_session_options(session, args)
@@ -374,6 +374,16 @@ def get_energy_consumption(npu_id):
     return power
 
 
+def convert(tmp_acl_json_path, real_dump_path, tmp_dump_path):
+    if real_dump_path is not None and tmp_dump_path is not None:
+        output_dir, timestamp = move_subdir(tmp_dump_path, real_dump_path)
+        convert_helper(output_dir, timestamp)
+    if tmp_dump_path is not None:
+        shutil.rmtree(tmp_dump_path)
+    if tmp_acl_json_path is not None:
+        os.remove(tmp_acl_json_path)
+
+
 def main(args, index=0, msgq=None, device_list=None):
     # if msgq is not None,as subproces run
     if msgq is not None:
@@ -382,7 +392,12 @@ def main(args, index=0, msgq=None, device_list=None):
     if args.debug:
         logger.setLevel(logging.DEBUG)
 
-    session = init_inference_session(args)
+    acl_json_path = get_acl_json_path(args)
+    tmp_acl_json_path = None
+    if args.dump_npy and acl_json_path is not None:
+        tmp_acl_json_path, real_dump_path, tmp_dump_path = create_tmp_acl_json(acl_json_path)
+
+    session = init_inference_session(args, tmp_acl_json_path if tmp_acl_json_path is not None else acl_json_path)
 
     intensors_desc = session.get_inputs()
     if device_list is not None and len(device_list) > 1:
@@ -497,6 +512,9 @@ def main(args, index=0, msgq=None, device_list=None):
 
     session.finalize()
 
+    if args.dump_npy and acl_json_path is not None:
+        convert(tmp_acl_json_path, real_dump_path, tmp_dump_path)
+
 
 def print_subproces_run_error(value):
     logger.error("subprocess run failed error_callback:{}".format(value))
@@ -518,7 +536,8 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
         raise RuntimeError()
 
     args.device = 0
-    session = init_inference_session(args)
+    acl_json_path = get_acl_json_path(args)
+    session = init_inference_session(args, acl_json_path)
     intensors_desc = session.get_inputs()
     try:
         chunks_elements = math.ceil(len(fileslist) / len(intensors_desc))

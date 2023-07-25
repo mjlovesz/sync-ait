@@ -240,6 +240,56 @@ class TestClass:
         for summary_json_path in summary_json_paths:
             os.remove(summary_json_path)
 
+    def test_general_inference_with_dump_npy(self):
+        output_file_num = 17
+        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        TestCommonClass.prepare_dir(output_path)
+        log_path = os.path.join(output_path, "log.txt")
+        result_path = None
+        summary_json_path = None
+        batch_size = 1
+        model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        input_size = TestCommonClass.get_model_inputs_size(model_path)[0]
+        input_dir = os.path.join(TestCommonClass.base_path, self.model_name, "input")
+        input_path = TestCommonClass.get_inputs_path(input_size, input_dir, output_file_num)
+        if os.path.exists(os.path.join(output_path, "dump")):
+            shutil.rmtree(os.path.join(output_path, "dump"))
+
+        cmd = "{} --model {} --device {} --output {} --debug True --dump True --dump-npy True\
+            --input {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+                                    output_path, input_path, log_path)
+        logger.info("run cmd:%s", cmd)
+        ret = os.system(cmd)
+        assert ret == 0
+
+        cmd = "cat {} |grep 'output path'".format(log_path)
+        try:
+            outval = os.popen(cmd).read()
+        except Exception as e:
+            raise Exception("grep action raises an exception: {}".format(e)) from e
+
+        result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
+        summary_json_name = result_path.split("/")[-1]
+        summary_json_path = os.path.join(output_path, "{}_summary.json".format(summary_json_name))
+
+        dump_subdirs = os.listdir(os.path.join(output_path, "dump"))
+        assert len(dump_subdirs) == 2
+        assert dump_subdirs[0] + "_npy" == dump_subdirs[1] or dump_subdirs[1] + "_npy" == dump_subdirs[0]
+        relative_dump_path_set = []
+        for i, dump_subdir in enumerate(dump_subdirs):
+            relative_dump_path_set.append(set())
+            dump_path = os.path.join(output_path, "dump", dump_subdir)
+            for subdir, _, files in os.walk(dump_path):
+                if len(files) > 0:
+                    relative_dump_path_set[i].add(os.path.relpath(subdir, dump_path))
+        assert len(relative_dump_path_set) == 2
+        assert relative_dump_path_set[0] == relative_dump_path_set[1]
+
+        shutil.rmtree(os.path.join(output_path, "dump"))
+        shutil.rmtree(result_path)
+        os.remove(summary_json_path)
+        os.remove(os.path.join(output_path, "acl.json"))
+
 
 if __name__ == '__main__':
     pytest.main(['test_result.py', '-vs'])
