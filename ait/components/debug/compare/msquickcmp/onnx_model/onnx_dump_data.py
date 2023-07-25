@@ -17,7 +17,6 @@ Function:
 This class is used to generate GUP dump data of the ONNX model.
 """
 import sys
-import time
 import os
 import re
 
@@ -26,7 +25,6 @@ import onnxruntime
 import numpy as np
 from skl2onnx.helpers.onnx_helper import enumerate_model_node_outputs
 from skl2onnx.helpers.onnx_helper import select_model_inputs_outputs
-from skl2onnx.helpers.onnx_helper import save_onnx_model
 
 from msquickcmp.common.dump_data import DumpData
 from msquickcmp.common import utils
@@ -67,6 +65,7 @@ class OnnxDumpData(DumpData):
         self.input_shape, self.dym_shape_range = arguments.input_shape, arguments.dym_shape_range
         self.custom_op, self.onnx_fusion_switch = arguments.custom_op, arguments.onnx_fusion_switch
         self.dump, self.cann_path = arguments.dump, arguments.cann_path
+        self.single_op = arguments.single_op
 
         self._check_path_exists(self.model_path, extentions="onnx")
 
@@ -113,7 +112,7 @@ class OnnxDumpData(DumpData):
             self._check_path_exists(npu_dump_data_path)
             self.inputs_map = self._get_inputs_data_aipp(self.data_dir, inputs_tensor_info, npu_dump_data_path)
         else:
-            self.inputs_map = self._get_inputs_data(self.data_dir, inputs_tensor_info)
+            self.inputs_map = self._get_inputs_data(inputs_tensor_info)
 
     def generate_dump_data(self, npu_dump_path=None, om_parser=None):
         dump_model_with_inputs_contents = self._modify_model_add_outputs_nodes(
@@ -224,25 +223,31 @@ class OnnxDumpData(DumpData):
         utils.logger.info("model inputs tensor info:\n{}\n".format(inputs_tensor_info))
         return inputs_tensor_info
 
-    def _get_inputs_data(self, data_dir, inputs_tensor_info):
+    def _get_inputs_data(self, inputs_tensor_info):
         names = [ii["name"] for ii in inputs_tensor_info]
         shapes = [ii["shape"] for ii in inputs_tensor_info]
         dtypes = [self._convert_to_numpy_type(ii["type"]) for ii in inputs_tensor_info]
 
+        bin_file_path_array = []
         if "" == self.input_path:
-            return self._generate_random_input_data(data_dir, names, shapes, dtypes)
+            utils.check_file_or_directory_path(os.path.realpath(self.data_dir), True)
+            input_bin_files = os.listdir(self.data_dir)
+            if len(input_bin_files) == 0:
+                return self._generate_random_input_data(self.data_dir, names, shapes, dtypes)
+            input_bin_files.sort(key=lambda file: int((re.findall("\\d+", file))[0]))
+            bin_file_path_array = [os.path.join(self.data_dir, item) for item in input_bin_files]
 
-        input_path = []
-        input_initial_path = self.input_path.split(",")
-        for input_item in input_initial_path:
-            input_item_path = os.path.realpath(input_item)
-            if input_item_path.endswith('.bin'):
-                input_path.append(input_item_path)
-            else:
-                utils.get_input_path(input_item_path, input_path)
+        else:
+            input_initial_path = self.input_path.split(",")
+            for input_item in input_initial_path:
+                input_item_path = os.path.realpath(input_item)
+                if input_item_path.endswith('.bin'):
+                    bin_file_path_array.append(input_item_path)
+                else:
+                    utils.get_input_path(input_item_path, bin_file_path_array)
 
-        self._check_input_data_path(input_path, inputs_tensor_info)
-        return self._read_input_data(input_path, names, shapes, dtypes)
+        self._check_input_data_path(bin_file_path_array, inputs_tensor_info)
+        return self._read_input_data(bin_file_path_array, names, shapes, dtypes)
 
     def _get_inputs_data_aipp(self, data_dir, inputs_tensor_info, npu_dump_data_path):
         inputs_map = {}
@@ -291,8 +296,10 @@ class OnnxDumpData(DumpData):
                     self.net_output[net_output_node.index(output)] = file_path
                 np.save(file_path, dump_bins[res_idx])
                 res_idx += 1
-        for key, value in self.net_output.items():
-            utils.logger.info("net_output node is:{}, file path is {}".format(key, value))
+        
+        if not self.single_op:
+            for key, value in self.net_output.items():
+                utils.logger.info("net_output node is:{}, file path is {}".format(key, value))
         utils.logger.info("dump data success")
 
     def _extract_sub_models_by_custom_op(self):

@@ -443,3 +443,168 @@ Result Utils::FillFileContentToMemory(const std::string file, char* ptr, const s
     }
     return SUCCESS;
 }
+
+std::string Utils::MergeStr(std::vector<std::string>& list, const std::string& delimiter)
+{
+    auto res = std::accumulate(list.begin(), list.end(), std::string(),
+    [=](const std::string& a, const std::string& b) -> std::string {
+        return a + (a.length() > 0 ? delimiter : "") + b; });
+    return res;
+}
+
+std::string Utils::GetPrefix(const std::string& outputDir, std::string filePath, const std::string& removeTail)
+{
+    std::stringstream inStream(filePath);
+    std::string fileName {};
+    while (inStream.good()) {
+        std::string subStr = "";
+        getline(inStream, subStr, '/');
+        if (subStr == "") {
+            continue;
+        }
+        fileName = subStr;
+    }
+
+    // remove tail ".npy" or ".bin"
+    if (fileName.size() >= removeTail.size() && fileName.compare(fileName.size() - removeTail.size(), removeTail.size(), removeTail) == 0) {
+        fileName.erase(fileName.size() - removeTail.size());
+    }
+    return outputDir + "/" + fileName + "_";
+}
+
+std::string Utils::RemoveSlash(const std::string& name)
+{
+    std::string res;
+    for (auto &elem: name) {
+        if (elem != '/') {
+            res.push_back(elem);
+        }
+    }
+    return res;
+}
+
+std::string Utils::CreateDynamicShapeDims(const std::string& name, std::vector<size_t>& shapes)
+{
+    std::vector<std::string> shapeStr {};
+    for (auto &shape : shapes) {
+        shapeStr.emplace_back(std::to_string(shape));
+    }
+    auto res = Utils::MergeStr(shapeStr, ",");
+    return name + ":" + res;
+}
+
+Result Utils::TensorToNumpy(const std::string& outputFileName, Base::TensorBase& output)
+{
+    auto shapeTmp = output.GetShape();
+    std::vector<size_t> shape {shapeTmp.begin(), shapeTmp.end()};
+    // std::string typeName = DATA_TYPE_TO_STRING_MAP.at(output.GetDataType());
+    // std::stringstream stype(typeName);
+    // cnpy::NpySave(outputFileName, (stype*)output.GetBuffer(), shape);
+    if (output.GetDataType() == Base::TENSOR_DTYPE_FLOAT32) {
+        cnpy::NpySave(outputFileName, (float*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_FLOAT16) {
+        cnpy::NpySave(outputFileName, (aclFloat16*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT8) {
+        cnpy::NpySave(outputFileName, (int8_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT32) {
+        cnpy::NpySave(outputFileName, (int32_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT8) {
+        cnpy::NpySave(outputFileName, (uint8_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT16) {
+        cnpy::NpySave(outputFileName, (int16_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT16) {
+        cnpy::NpySave(outputFileName, (uint16_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT32) {
+        cnpy::NpySave(outputFileName, (uint32_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT64) {
+        cnpy::NpySave(outputFileName, (int64_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT64) {
+        cnpy::NpySave(outputFileName, (uint64_t*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_DOUBLE64) {
+        cnpy::NpySave(outputFileName, (double*)output.GetBuffer(), shape);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_BOOL) {
+        cnpy::NpySave(outputFileName, (bool*)output.GetBuffer(), shape);
+    } else {
+        ERROR_LOG("TensorToNumpy: output data type unrecognized.");
+        return FAILED;
+    }
+    return SUCCESS;
+}
+
+Result Utils::TensorToBin(const std::string& outputFileName, Base::TensorBase& output)
+{
+    std::ofstream outfile(outputFileName, std::ios::out | std::ios::binary);
+    if (!outfile) {
+        ERROR_LOG("TensorToBin: open file %s failed.", outputFileName.c_str());
+        return FAILED;
+    }
+
+    outfile.write(reinterpret_cast<const char*>(output.GetBuffer()), output.GetByteSize());
+    outfile.close();
+
+    return SUCCESS;
+}
+
+template <typename T>
+static void SaveTxt(std::ofstream& outFile, const T* p, size_t size, size_t rowCount)
+{
+    std::vector<T> nums (p, p + size);
+    size_t count = 0;
+    for (auto num: nums) {
+        outFile << num << " ";
+        count++;
+        if (count == rowCount) {
+            outFile << std::endl;
+            count = 0;
+        }
+    }
+}
+
+Result Utils::TensorToTxt(const std::string& outputFileName, Base::TensorBase& output)
+{
+    std::ofstream outFile(outputFileName);
+    if (!outFile) {
+        ERROR_LOG("TensorToTxt: open file %s failed.", outputFileName.c_str());
+        return FAILED;
+    }
+    size_t size = output.GetSize();
+    size_t rowCount = output.GetShape().back();
+
+    if (output.GetDataType() == Base::TENSOR_DTYPE_FLOAT32) {
+        SaveTxt(outFile, (float*)output.GetBuffer(), size, rowCount);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_FLOAT16) {
+        SaveTxt(outFile, (aclFloat16*)output.GetBuffer(), size, rowCount);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT8) {
+        SaveTxt(outFile, (int8_t*)output.GetBuffer(), size, rowCount);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT32) {
+        SaveTxt(outFile, (int32_t*)output.GetBuffer(), size, rowCount);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT8) {
+        SaveTxt(outFile, (uint8_t*)output.GetBuffer(), size, rowCount);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT16) {
+        SaveTxt(outFile, (int16_t*)output.GetBuffer(), size, rowCount);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT16) {
+        SaveTxt(outFile, (uint16_t*)output.GetBuffer(), size, rowCount);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT32) {
+        SaveTxt(outFile, (uint32_t*)output.GetBuffer(), size, rowCount);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_INT64) {
+        SaveTxt(outFile, (int64_t*)output.GetBuffer(), size, rowCount);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_UINT64) {
+        SaveTxt(outFile, (uint64_t*)output.GetBuffer(), size, rowCount);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_DOUBLE64) {
+        SaveTxt(outFile, (double*)output.GetBuffer(), size, rowCount);
+    } else if (output.GetDataType() == Base::TENSOR_DTYPE_BOOL) {
+        SaveTxt(outFile, (bool*)output.GetBuffer(), size, rowCount);
+    } else {
+        ERROR_LOG("TensorToBin: output data type unrecognized.");
+        return FAILED;
+    }
+    return SUCCESS;
+}
+
+bool Utils::TailContain(const std::string& str, const std::string& tail)
+{
+    if (str.length() >= tail.length() && str.compare(str.length() - tail.length(), tail.length(), tail) == 0) {
+        return true;
+    }
+    return false;
+}

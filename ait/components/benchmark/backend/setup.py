@@ -115,6 +115,8 @@ ext_modules = [
             'base/module/ModelInfer/SessionOptions.cpp',
             'base/module/ModelInfer/ModelInferenceProcessor.cpp',
             'base/module/ModelInfer/DynamicAippConfig.cpp',
+            'base/module/ModelInfer/cnpy.cpp',
+            'base/module/ModelInfer/pipeline.cpp',
             'python/src/PyInterface/PyInterface.cpp',
             'python/src/PyTensor/PyTensor.cpp',
             'python/src/PyInferenceSession/PyInferenceSession.cpp',
@@ -129,9 +131,9 @@ ext_modules = [
         ],
         library_dirs = [cann_lib_path, ],
 
-        extra_compile_args = ['--std=c++11', '-g3'],
+        extra_compile_args = ['--std=c++11', '-g3', '-lstdc++fs'],
 
-        libraries=['ascendcl', 'acl_dvpp', 'acl_cblas'],
+        libraries=['ascendcl', 'acl_dvpp', 'acl_cblas', 'stdc++fs'],
         language='c++',
         define_macros = [('ENABLE_DVPP_INTERFACE', 1), ('COMPILE_PYTHON_MODULE', 1)],
     ),

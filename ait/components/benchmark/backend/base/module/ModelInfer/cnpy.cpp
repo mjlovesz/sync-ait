@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-#include "cnpy.h"
 #include <typeinfo>
 #include <complex>
 #include <cstdlib>
 #include <algorithm>
 #include <cstring>
 #include <regex>
+
+#include "Base/ModelInfer/cnpy.h"
 
 #define UPPER_BOUND_FILE 1 << 30
 
@@ -182,10 +183,37 @@ cnpy::NpyArray cnpy::NpyLoad(std::string fname)
     if (!fp) {
         throw std::runtime_error("NpyLoad: Unable to open file" + fname);
     }
-    
+
     NpyArray arr = LoadNpyFile(fp);
 
     fclose(fp);
     return arr;
 }
 
+cnpy::NpyArray cnpy::BinLoad(std::string fname)
+{
+    std::ifstream file(fname, std::ios::binary);
+    if (!file) {
+        throw std::runtime_error("BinLoad: Unable to open file" + fname);
+    }
+    std::size_t size = 0;
+    file.seekg(0, std::ios::end);
+    try {
+        size = file.tellg();
+    } catch (exception &e) {
+        throw std::runtime_error("BinLoad: file size out of range");
+    }
+
+    file.seekg(0, std::ios::beg);
+
+    NpyArray arr = {};
+    try {
+        arr.dataHolder = std::make_shared<std::vector<char>>(size);
+    } catch (exception &e) {
+        throw std::runtime_error("BinLoad: make dataHolder failed");
+    }
+
+    file.read(arr.dataHolder->data(), size);
+
+    return arr;
+}
