@@ -580,7 +580,7 @@ def multidevice_run(args):
         if args.energy_consumption:
             cur_args.npu_id = int(npu_id_list[i])
         if args.divide_input:
-            cur_args.input = None if splits == None else list(splits)[i]
+            cur_args.input = None if splits is None else list(splits)[i]
         p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
 
     p.close()
