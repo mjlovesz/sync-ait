@@ -39,4 +39,4 @@ def load_analyze_sub_task():
 
 # analyze_cli = load_analyze_sub_task()
 
-analyze_cmd_info = load_command_info('analyze_sub_task', 'analyze')
+analyze_cmd_info = load_command_info('analyze_sub_task')

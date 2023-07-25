@@ -14,7 +14,7 @@
 
 import click
 
-from components.parser.parser import CommandInfo
+from components.parser.parser import BaseCommand
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.options import (
@@ -107,7 +107,10 @@ def benchmark_cli(om_model, input_path, output,
                                 profiler_rename, dump_npy)
     benchmark_process(args)
 
-class BenchmarkCommand:
+class BenchmarkCommand(BaseCommand):
+    def __init__(self, name="", help="", children=[]):
+        super().__init__(name, help, children)
+
     def add_arguments(self, parser):
         parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
         parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
@@ -120,5 +123,6 @@ class BenchmarkCommand:
 
 
 def get_cmd_info():
-    cmd_instance = BenchmarkCommand()
-    return CommandInfo("benchmark", cmd_instance)
+    help_info = "benchmark tool to get performance data including latency and throughput"
+    cmd_instance = BenchmarkCommand("benchmark", help_info)
+    return cmd_instance

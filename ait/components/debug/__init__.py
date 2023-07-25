@@ -14,7 +14,7 @@
 import click
 import pkg_resources
 
-from components.parser.parser import load_command_info
+from components.parser.parser import load_command_info, BaseCommand
 
 debug_sub_task = {}
 for entry_point in pkg_resources.iter_entry_points('debug_sub_task'):
@@ -25,4 +25,8 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 #                               commands=debug_sub_task, no_args_is_help=True,
 #                               short_help="Debug a wide variety of model issues")
 
-debug_cmd_info = load_command_info('debug_sub_task', 'debug')
+debug_cmd_info = None
+debug_cmd_info_group = load_command_info('debug_sub_task')
+if debug_cmd_info_group:
+    help_info = "debug a wide variety of model issues"
+    debug_cmd_info = BaseCommand("debug", help_info, debug_cmd_info_group)

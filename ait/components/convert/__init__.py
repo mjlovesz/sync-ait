@@ -41,4 +41,4 @@ def load_convert_sub_task():
 
 convert_cli = load_convert_sub_task()
 
-convert_cmd_info = load_command_info('convert_sub_task', 'convert')
+convert_cmd_info = load_command_info('convert_sub_task')
