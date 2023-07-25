@@ -124,4 +124,7 @@ def create_fake_file_name(pure_data_type, index):
     suffix = "_" + pure_data_type + "_" + str(index)
     fname = os.path.join(os.getcwd(), "tmp-" + "".join(str(uuid.uuid4())) + suffix)
 
-    return fname if not os.path.exists(fname) else create_fake_file_name(pure_data_type, index)
+    if not os.path.exists(fname):
+        return fname
+    else:
+        create_fake_file_name(pure_data_type, index)

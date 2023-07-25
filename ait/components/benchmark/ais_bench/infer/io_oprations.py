@@ -62,12 +62,13 @@ def get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tens
     ndatalist = []
     for i, file_path in enumerate(files_list):
         logger.debug("get tensor from filepath:{} i:{} of all:{}".format(file_path, i, len(files_list)))
-        if file_path == PURE_INFER_FAKE_FILE:
-            ndata = get_pure_infer_data(size, pure_data_type)
-        elif file_path == PURE_INFER_FAKE_FILE_ZERO:
-            ndata = get_pure_infer_data(size, "zero")
-        elif file_path == PURE_INFER_FAKE_FILE_RANDOM:
-            ndata = get_pure_infer_data(size, "random")
+        file_path_switch = {
+            PURE_INFER_FAKE_FILE: pure_data_type,
+            PURE_INFER_FAKE_FILE_ZERO: "zero",
+            PURE_INFER_FAKE_FILE_RANDOM: "random"
+        }
+        if file_path_switch.get(file_path) is not None:
+            ndata = get_pure_infer_data(size, file_path_switch.get(file_path))
         elif file_path == PADDING_INFER_FAKE_FILE:
             logger.debug("padding file use fileslist[0]:{}".format(files_list[0]))
             ndata = get_file_content(files_list[0])

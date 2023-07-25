@@ -466,14 +466,14 @@ def main(args, index=0, msgq=None, device_list=None):
     if args.pipeline:
         infer_pipeline_run(session, args, infileslist, output_prefix)
     else:
-        if args.run_mode == "array":
-            infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
-        elif args.run_mode == "files":
-            infer_loop_files_run(session, args, intensors_desc, infileslist, output_prefix)
-        elif args.run_mode == "full":
-            infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix)
-        elif args.run_mode == "tensor":
-            infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix)
+        run_mode_switch = {
+            "array": infer_loop_array_run,
+            "files": infer_loop_files_run,
+            "full": infer_fulltensors_run,
+            "tensor": infer_loop_tensor_run
+        }
+        if run_mode_switch.get(args.run_mode) is not None:
+            run_mode_switch.get(args.run_mode)(session, args, intensors_desc, infileslist, output_prefix)
         else:
             raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
     if args.energy_consumption and args.npu_id:
