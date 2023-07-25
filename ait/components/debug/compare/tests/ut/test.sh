@@ -30,6 +30,9 @@ function del_source_code_from_tests() {
 declare -i ret_val=0
 
 main() {
+    echo ">>>>"
+    ${PYTHON_COMMAND} -c 'import acl; print(">>>> acl.get_soc_name():", acl.get_soc_name())'
+    echo ">>>>"
     copy_source_code_dir_to_tests
 
     export PYTHON_COMMAND=${2:-"python3"}
