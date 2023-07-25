@@ -420,8 +420,8 @@ opt_dump_npy = click.option(
 )
 
 opt_divide_input = click.option(
-    '--dump-npy',
-    'dump_npy',
+    '--divide-input',
+    'divide_input',
     default=False,
     type=str,
     callback=str2bool,
