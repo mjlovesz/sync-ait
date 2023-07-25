@@ -37,4 +37,4 @@ def load_profile_sub_task():
 
 # profile_cli = load_profile_sub_task()
 
-profile_cmd_info = load_command_info('profile_sub_task', 'profile')
+profile_cmd_info = load_command_info('profile_sub_task')

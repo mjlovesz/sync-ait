@@ -36,4 +36,4 @@ def load_transplt_sub_task():
 
 # transplt_cli = load_transplt_sub_task()
 
-transplt_cmd_info = load_command_info('transplt_sub_task', 'transplt')
+transplt_cmd_info = load_command_info('transplt_sub_task')

@@ -108,7 +108,7 @@ def benchmark_cli(om_model, input_path, output,
     benchmark_process(args)
 
 class BenchmarkCommand(BaseCommand):
-    def __init__(self, name="", help="", children=...):
+    def __init__(self, name="", help="", children=[]):
         super().__init__(name, help, children)
 
     def add_arguments(self, parser):
