@@ -13,6 +13,8 @@
 # limitations under the License.
 
 import pkg_resources
+import argparse
+
 
 class BaseCommand:
     def __init__(self, name = "", help = "", children = []):
@@ -26,15 +28,6 @@ class BaseCommand:
     def handle(self, args, **kwargs):
         pass
 
-# class CommandInfo:
-#     # CASE 1. Not the ending component, e.g. debug, surgeon. cmd_instance = None, children cannot be empty
-#     # CASE 2. The ending component, e.g. benchmark, evalute. cmd_instance cannot be None, children = []
-#     def __init__(self, cmd_name : str, cmd_instance, children = None):
-#         self.cmd_name = cmd_name
-#         self.cmd_instance = cmd_instance
-#         self.children = children
-#         if (cmd_instance is None and children is None) or (cmd_instance is not None and children is not None):
-#             print(f"subcommand {cmd_name} is set incorrectly.")
 
 def register_parser(parser, commands):
     if commands is None or (isinstance(commands, list) and len(commands) * [None] == commands):
@@ -43,7 +36,9 @@ def register_parser(parser, commands):
     for command in commands:
         if command is None:
             continue
-        subparser = subparsers.add_parser(command.name, help=command.help)
+        subparser = subparsers.add_parser(
+            command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help
+        )
         command.add_arguments(subparser)
         subparser.set_defaults(handle=command.handle)
         register_parser(subparser, command.children)
