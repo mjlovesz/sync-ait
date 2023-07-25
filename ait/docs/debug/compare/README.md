@@ -86,6 +86,7 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
   | --locat      | 开启后,自动在每次比对结束后,对误差超阈值的首个节点(任一类误差),执行误差定位流程,自动定位误差的区间范围(无论单节点还是累计误差)。使用方式：--locat True| 否  |
   | -ofs, --onnx-fusion-switch| onnxruntime算子融合开关，默认**开启**算子融合，如存在onnx dump数据中因算子融合导致缺失的，建议关闭此开关。使用方式：--onnx-fusion-switch False| 否  |
   | -single, --single-op| 单算子比对模式，默认关闭，开启时在输出路径下会生成single op目录，存放单算子比对结果文件使用方式：-single True| 否  |
+  | --fusion-switch-file| 昇腾模型融合规则配置文件，传入该文件后，compare工具会根据传入的融合规则配置文件，重新生成一个om文件，和--om-model传入的模型进行精度比较，例如：--fusion-switch-file ./fusion_switch.cfg，其中fusion_switch.cfg文件配置方法参见：[如何关闭/开启融合规则](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/reference/graphubfusionref/graphubfusionref_000003.html) | 否  |
 
 ### 使用场景
 
@@ -102,3 +103,4 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
   | [07_caffe_model](../../../examples/cli/debug/compare/07_caffe_model)    | 标杆模型为Caffe框架的一键式精度比对 | 
   | [08_accuracy_error_location](../../../examples/cli/debug/compare/08_accuracy_error_location)    | 误差及累计误差一键式自动定位 |
   | [09_single_op](../../../examples/cli/debug/compare/09_single_op)    | 单算子比对模式 |
+  | [10_fusion_switch_file](../../../examples/cli/debug/compare/10_fusion_switch_file)    | 关闭融合规则.om模型和原始.om模型精度比对 |
