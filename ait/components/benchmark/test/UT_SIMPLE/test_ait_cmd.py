@@ -75,7 +75,7 @@ def cmdline_legal_args(monkeypatch):
     monkeypatch.setattr('sys.argv', case_cmd_list)
 
 
-def cmd_dict_to_list(cls, cmd_dict):
+def cmd_dict_to_list(cmd_dict):
     cmd_list = ['test_ait_cmd.py']
     for key, value in cmd_dict.items():
         cmd_list.append(key)
