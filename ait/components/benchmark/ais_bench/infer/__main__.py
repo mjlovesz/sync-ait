@@ -311,6 +311,6 @@ if __name__ == "__main__":
                 args.profiler, args.dump, args.acl_json_path, args.output_batchsize_axis, args.run_mode,
                 args.display_all_summary, args.warmup_count, args.dym_shape_range, args.aipp_config,
                 args.energy_consumption, args.npu_id, args.backend, args.perf, args.pipeline, args.profiler_rename,
-                args.dump_npy)
+                args.dump_npy, args.divide_input)
     ret = benchmark_process(args)
     exit(ret)
