@@ -49,6 +49,7 @@ class TestClass:
 
     def init(self):
         self.model_name = "resnet50"
+        self.benchmark_command = BenchmarkCommand()
         self.current_dir = os.path.dirname(os.path.abspath(__file__))
         self.base_cmd_dict = {
             "--om-model": os.path.join(self.current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
@@ -97,7 +98,7 @@ class TestClass:
         self.case_cmd_list = self.cmd_dict_to_list(cmd_dict)
         self.cmdline_legal_args
         parser = argparse.ArgumentParser()
-        BenchmarkCommand.add_arguments(parser)
+        self.benchmark_command.add_arguments(parser)
         args = parser.parse_args()
         assert args.input == "datasets/"
 
