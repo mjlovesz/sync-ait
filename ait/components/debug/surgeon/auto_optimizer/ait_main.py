@@ -20,7 +20,7 @@ import click
 from click_aliases import ClickAliasedGroup
 from click.exceptions import UsageError
 
-from components.parser.parser import CommandInfo
+from components.parser.parser import BaseCommand
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
     ARGS_REQUIRED_KNOWLEDGES
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
@@ -324,7 +324,10 @@ if __name__ == "__main__":
     cli()
 
 
-class ListCommand:
+class ListCommand(BaseCommand):
+    def __init__(self, name="", help="", children=[]):
+        super().__init__(name, help, children)
+
     def add_arguments(self, parser):
         parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
         parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
@@ -334,7 +337,10 @@ class ListCommand:
         print(vars(args))
         print("hello from surgeon list")
 
-class EvaluateCommand:
+class EvaluateCommand(BaseCommand):
+    def __init__(self, name="", help="", children=[]):
+        super().__init__(name, help, children)
+
     def add_arguments(self, parser):
         parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
         parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
@@ -344,7 +350,10 @@ class EvaluateCommand:
         print(vars(args))
         print("hello from surgeon evalute")
 
-class OptimizeCommand:
+class OptimizeCommand(BaseCommand):
+    def __init__(self, name="", help="", children=[]):
+        super().__init__(name, help, children)
+
     def add_arguments(self, parser):
         parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
         parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
@@ -354,7 +363,10 @@ class OptimizeCommand:
         print(vars(args))
         print("hello from surgeon optimize")
 
-class ExtractCommand:
+class ExtractCommand(BaseCommand):
+    def __init__(self, name="", help="", children=[]):
+        super().__init__(name, help, children)
+
     def add_arguments(self, parser):
         parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
         parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
@@ -366,8 +378,8 @@ class ExtractCommand:
 
 
 def get_cmd_info():
-    list_cmd_info = CommandInfo("list", ListCommand())
-    evaluate_cmd_info = CommandInfo("evalute", EvaluateCommand())
-    optimize_cmd_info = CommandInfo("optimize", OptimizeCommand())
-    extract_cmd_info = CommandInfo("extract", ExtractCommand())
-    return CommandInfo("surgeon", None, [list_cmd_info, evaluate_cmd_info, optimize_cmd_info, extract_cmd_info])
+    list_cmd_instance = ListCommand("list")
+    evaluate_cmd_instance = EvaluateCommand("evaluate")
+    optimize_cmd_instance = OptimizeCommand("optimize")
+    extract_cmd_instance = ExtractCommand("extract")
+    return BaseCommand("surgeon", "surgeon help info", [list_cmd_instance, evaluate_cmd_instance, optimize_cmd_instance, extract_cmd_instance])
