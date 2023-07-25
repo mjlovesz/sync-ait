@@ -15,6 +15,7 @@
 # limitations under the License.
 
 declare -i ret_ok=0
+declare -i ret_failed=0
 declare -i ret_invalid_args=1
 CUR_PATH=$(dirname $(readlink -f "$0"))
 . $CUR_PATH/utils.sh
@@ -76,8 +77,8 @@ main() {
         ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/ST/
     else
         echo "run DT in simple mode"
-        ${PYTHON_COMMAND} -m pytest -x $CUR_PATH/UT_SIMPLE/
-        ${PYTHON_COMMAND} -m pytest -x $CUR_PATH/ST_SIMPLE/
+        ${PYTHON_COMMAND} -m pytest -x $CUR_PATH/UT_SIMPLE/ || { return $ret_failed; }
+        ${PYTHON_COMMAND} -m pytest -x $CUR_PATH/ST_SIMPLE/ || { return $ret_failed; }
     fi
 
     return $ret_ok
