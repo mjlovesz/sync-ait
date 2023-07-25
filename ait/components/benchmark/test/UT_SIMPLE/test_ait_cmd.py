@@ -69,10 +69,10 @@ case_cmd_list = []
 
 
 @pytest.fixture
-def cmdline_legal_args(self, monkeypatch):
-    cmd_dict = self.base_cmd_dict
-    self.case_cmd_list = self.cmd_dict_to_list(cmd_dict)
-    monkeypatch.setattr('sys.argv', self.case_cmd_list)
+def cmdline_legal_args(monkeypatch):
+    cmd_dict = base_cmd_dict
+    case_cmd_list = cmd_dict_to_list(cmd_dict)
+    monkeypatch.setattr('sys.argv', case_cmd_list)
 
 
 def cmd_dict_to_list(cls, cmd_dict):
