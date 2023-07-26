@@ -112,9 +112,6 @@ if __name__ == '__main__':
 
 
 class CompareCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
-        super().__init__(name, help, children)
-
     def add_arguments(self, parser):
         parser.add_argument(
             '-gm',
@@ -238,8 +235,6 @@ class CompareCommand(BaseCommand):
             help='Comparision mode:single operator compare, default false.Usage: -single True')
 
     def handle(self, args):
-        print(vars(args))
-        print("hello from compare")
         cmp_args = CmpArgsAdapter(args.golden_model, args.om_model, args.weight_path, args.input_data_path,
                                   args.cann_path, args.out_path,
                                   args.input_shape, args.device, args.output_size, args.output_nodes, args.advisor,

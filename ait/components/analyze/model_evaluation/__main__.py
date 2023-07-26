@@ -89,9 +89,6 @@ def cli(
 
 
 class AnalyzeCommand(BaseCommand):
-    def __init__(self, name='', help='', children=None):
-        super().__init__(name, help, children)
-    
     def add_arguments(self, parser):
         parser.add_argument(
             "-gm", "--golden-model", type=str,

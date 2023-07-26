@@ -83,8 +83,6 @@ def check_om_path_valid(value):
                                          readability and property of this path")
 
 class BenchmarkCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
-        super().__init__(name, help, children)
 
     def add_arguments(self, parser):
         parser.add_argument(
