@@ -363,7 +363,7 @@ if __name__ == "__main__":
 
 
 class ListCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
+    def __init__(self, name="", help="List available Knowledges", children=[]):
         super().__init__(name, help, children)
 
     def add_arguments(self, parser):
@@ -376,7 +376,7 @@ class ListCommand(BaseCommand):
 
 
 class EvaluateCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
+    def __init__(self, name="", help="Evaluate model matching specified knowledges", children=[]):
         super().__init__(name, help, children)
 
     def add_arguments(self, parser):
@@ -420,7 +420,7 @@ class EvaluateCommand(BaseCommand):
 
 
 class OptimizeCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
+    def __init__(self, name="", help="Optimize model with specified knowledges", children=[]):
         super().__init__(name, help, children)
 
     def add_arguments(self, parser):
@@ -531,7 +531,7 @@ class OptimizeCommand(BaseCommand):
             logger.info('=' * 100)
 
 class ExtractCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
+    def __init__(self, name="", help="Extract subgraph from onnx model", children=[]):
         super().__init__(name, help, children)
 
     def add_arguments(self, parser):
@@ -580,7 +580,7 @@ class ExtractCommand(BaseCommand):
             logger.error(err)
 
 class ConcatenateCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
+    def __init__(self, name="", help="Concatenate two onnxgraph into combined one onnxgraph", children=[]):
         super().__init__(name, help, children)
 
     def add_arguments(self, parser):
