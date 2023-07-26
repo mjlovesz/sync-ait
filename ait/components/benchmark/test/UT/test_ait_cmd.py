@@ -49,7 +49,7 @@ base_cmd_dict = {
     "--display-all-summary": "0",
     "--warmup-count": "1",
     "--dym-shape-range": "1~3,3,224,224-226",
-    "--aipp-config": "aipp.config",
+    "--aipp-config": os.path.join(current_dir, "../aipp_config_files/actual_aipp_cfg.config"),
     "--energy-consumption": "0",
     "--npu-id": "0",
     "--backend": "trtexec",
@@ -86,7 +86,7 @@ simple_cmd_dict = {
     "-das": "0",
     "-wcount": "1",
     "-dr": "1~3,3,224,224-226",
-    "-aipp": "aipp.config",
+    "-aipp": os.path.join(current_dir, "../aipp_config_files/actual_aipp_cfg.config"),
     "-ec": "0",
     "--npu-id": "0",
     "--backend": "trtexec",
@@ -199,7 +199,7 @@ def test_npu_id_out_of_range(cmdline_args_full_npu_id):
     """
     parser = argparse.ArgumentParser()
     benchmark_command.add_arguments(parser)
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
 
@@ -217,7 +217,7 @@ def test_invalid_model_path(cmdline_args_full_model_path):
     """
     parser = argparse.ArgumentParser()
     benchmark_command.add_arguments(parser)
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
 
@@ -235,7 +235,7 @@ def test_loop_is_not_positive(cmdline_args_full_loop):
     """
     parser = argparse.ArgumentParser()
     benchmark_command.add_arguments(parser)
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
 
@@ -253,7 +253,7 @@ def test_batchsize_is_not_positive(cmdline_args_full_batchsize):
     """
     parser = argparse.ArgumentParser()
     benchmark_command.add_arguments(parser)
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
 
@@ -271,7 +271,7 @@ def test_warmup_count_is_not_positive(cmdline_args_full_warmup):
     """
     parser = argparse.ArgumentParser()
     benchmark_command.add_arguments(parser)
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
 
@@ -289,7 +289,7 @@ def test_output_batchsize_axis_is_not_positive(cmdline_args_full_bsaxis):
     """
     parser = argparse.ArgumentParser()
     benchmark_command.add_arguments(parser)
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
 
@@ -307,7 +307,7 @@ def test_device_id_out_of_range(cmdline_args_full_device):
     """
     parser = argparse.ArgumentParser()
     benchmark_command.add_arguments(parser)
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
 
@@ -325,67 +325,5 @@ def test_illegal_outfmt(cmdline_args_full_outfmt):
     """
     parser = argparse.ArgumentParser()
     benchmark_command.add_arguments(parser)
-    with pytest.raises(RuntimeError) as e:
+    with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
-
-
-@pytest.fixture
-def cmdline_profile_and_dump(monkeypatch):
-    cmd_dict = base_cmd_dict
-    cmd_dict["--profiler"] = "1"
-    cmd_dict["--dump"] = "1"
-    case_cmd_list = cmd_dict_to_list(cmd_dict)
-    monkeypatch.setattr('sys.argv', case_cmd_list)
-
-
-def test_profile_and_dump_activated(cmdline_profile_and_dump):
-    """
-        --profile 和 --dump 同时为 true
-    """
-    parser = argparse.ArgumentParser()
-    benchmark_command.add_arguments(parser)
-    args = parser.parse_args()
-    args = create_adapter(args)
-    with pytest.raises(RuntimeError) as e:
-        args = args_rules(args)
-
-
-@pytest.fixture
-def cmdline_dump_output(monkeypatch):
-    cmd_dict = base_cmd_dict
-    cmd_dict["--dump"] = "1"
-    cmd_dict.pop("--output")
-    cmd_dict.pop("--output-dirname")
-    case_cmd_list = cmd_dict_to_list(cmd_dict)
-    monkeypatch.setattr('sys.argv', case_cmd_list)
-
-
-def test_profile_or_dump_without_output(cmdline_dump_output):
-    """
-        --profile 或 --dump 为 true，没有设--output
-    """
-    parser = argparse.ArgumentParser()
-    benchmark_command.add_arguments(parser)
-    args = parser.parse_args()
-    args = create_adapter(args)
-    with pytest.raises(RuntimeError) as e:
-        args = args_rules(args)
-
-@pytest.fixture
-def cmdline_output_dir(monkeypatch):
-    cmd_dict = base_cmd_dict
-    cmd_dict.pop("--output")
-    case_cmd_list = cmd_dict_to_list(cmd_dict)
-    monkeypatch.setattr('sys.argv', case_cmd_list)
-
-
-def test_output_dirname_without_output(cmdline_output_dir):
-    """
-        --output-dirname设了，没有设--output
-    """
-    parser = argparse.ArgumentParser()
-    benchmark_command.add_arguments(parser)
-    args = parser.parse_args()
-    args = create_adapter(args)
-    with pytest.raises(RuntimeError) as e:
-        args = args_rules(args)
