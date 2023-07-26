@@ -27,5 +27,5 @@
 |    |    |    |    |--- summary/
 |    |    |    |    |--- data/
 ```
-  - 输出的性能数据文件`timeline/`、`summary/`和`data/`中数据的含义参见《[CANN 开发工具指南/数据解析与导出/性能数据说明](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/devtools/auxiliarydevtool/atlasprofiling_16_0112.html)》
+  - 输出的性能数据文件`timeline/`、`summary/`和`data/`中数据的含义参见[profile使用示例](../../examples/cli/profile/)中的其他使用示例
 
