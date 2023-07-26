@@ -43,6 +43,9 @@ from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common import utils
 
 
+CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
+
+
 @click.command(name="compare", short_help='one-click network-wide accuracy analysis of golden models.',
                no_args_is_help=True)
 @opt_golden_model
@@ -101,19 +104,57 @@ class CompareCommand(BaseCommand):
     def __init__(self, name="", help="", children=[]):
         super().__init__(name, help, children)
     def add_arguments(self, parser):
-        parser.add_argument("-om", "--om-model", required=True, default=None, help="the path of the om model")
-        parser.add_argument("-i", "--input", default=None, help="the path of the input file or dir")
-        parser.add_argument("-o", "--output", default=None, help="the path of the output dir")
+        parser.add_argument('-gm', '--golden-model', required=True, dest="golden_model", default='',
+                            help='The original model (.onnx or .pb or .prototxt) file path')
+        parser.add_argument('-om', '--om-model', required=True, dest="om_model", default=None, help='The offline model (.om) file path')
+        parser.add_argument('-w', '--weight', dest="weight_path", default=None,
+                            help='Required when framework is Caffe (.cafemodel)')
+        parser.add_argument('-i', '--input', default='', dest="input_data_path",
+                            help='The input data path of the model. Separate multiple inputs with commas(,).' ' E.g: input_0.bin,input_1.bin')
+        parser.add_argument('-c', '--cann-path', default=CANN_PATH, dest="cann_path",
+                            help='The CANN installation path')
+        parser.add_argument('-o', '--output', dest="out_path", default='', help='The output path')
+        parser.add_argument('-is', '--input-shape', type=str, dest="input_shape", default='',
+                            help="Shape of input shape. Separate multiple nodes with semicolons(;)."
+                                 " E.g: \"input_name1:1,224,224,3;input_name2:3,300\"")
+        parser.add_argument('-d', '--device', dest="device", default='0',
+                            help='Input device ID [0, 255], default is 0.')
+        parser.add_argument('-outsize', '--output-size', dest="output_size", default='',
+                            help='The size of output. Separate multiple sizes with commas(,). E.g: 10200,34000')
+        parser.add_argument('-n', '--output-nodes', type=str, dest="output_nodes", default='',
+                            help="Output nodes designated by user. Separate multiple nodes with semicolons(;)."
+                                 " E.g: \"node_name1:0;node_name2:1;node_name3:0\"")
+        parser.add_argument('--advisor', action='store_true', dest="advisor", help='Enable advisor after compare.')
+        parser.add_argument('-dr', '--dym-shape-range', type=str, dest="dym_shape_range", default='',
+                            help="Dynamic shape range using in dynamic model, "
+                                 "using this means ignore input_shape"
+                                 " E.g: \"input_name1:1,3,200\~224,224-230;input_name2:1,300\"")
+        parser.add_argument('--dump', dest="dump", default=True,
+                            help="Whether to dump all the operations' ouput. Default True.")
+        parser.add_argument('--convert', default=False, dest="bin2npy",
+                            help='Enable npu dump data conversion from bin to npy after compare.Usage: --convert True.')
+        parser.add_argument('--locat', default=False, dest="locat",
+                            help='Enable accuracy interval location when needed.E.g: --locat True.')
+        parser.add_argument('-cp', '--custom-op', type=str, dest="custom_op", default='',
+                            help='Op name witch is not registered in onnxruntime, only supported by Ascend.')
+        parser.add_argument('-ofs', '--onnx-fusion-switch', dest="onnx_fusion_switch", default=True,
+                            help='Onnxruntime fusion switch, set False for dump complete onnx data when '
+                                 'necessary.Usage: -ofs False.')
+        parser.add_argument('--fusion-switch-file', dest="fusion_switch_file",
+                            help='You can disable selected fusion patterns in the configuration file')
+        parser.add_argument("-single", "--single-op", dest="single_op",
+                            help='Comparision mode:single operator compare, default false.Usage: -single True')
 
     def handle(self, args):
         print(vars(args))
         print("hello from compare")
-        # cmp_args = CmpArgsAdapter(args.golden_model, args.om_model, args.weight_path, args.input_data_path,
-        #                           args.cann_path, args.out_path,
-        #                           args.input_shape, args.device, args.output_size, args.output_nodes, args.advisor,
-        #                           args.dym_shape_range,
-        #                           args.dump, args.bin2npy, args.custom_op, args.locat, args.onnx_fusion_switch)
-        # cmp_process(cmp_args, True)
+        cmp_args = CmpArgsAdapter(args.golden_model, args.om_model, args.weight_path, args.input_data_path,
+                                  args.cann_path, args.out_path,
+                                  args.input_shape, args.device, args.output_size, args.output_nodes, args.advisor,
+                                  args.dym_shape_range,
+                                  args.dump, args.bin2npy, args.custom_op, args.locat,
+                                  args.onnx_fusion_switch, args.fusion_switch_file, args.single_op)
+        cmp_process(cmp_args, True)
 
 def get_cmd_info():
     help_info = "one-click network-wide accuracy analysis of golden models."
