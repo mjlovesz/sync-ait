@@ -108,6 +108,7 @@ class BenchmarkCommand(BaseCommand):
                 the subdirectory named current date under given output path"
         )
         parser.add_argument(
+            '-od',
             "--output-dirname",
             type=str,
             default=None,

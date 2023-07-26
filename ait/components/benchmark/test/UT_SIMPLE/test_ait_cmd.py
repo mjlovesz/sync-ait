@@ -109,8 +109,8 @@ def cmd_dict_to_list(cmd_dict):
 
 def create_adapter(args):
     args_adapter = BenchMarkArgsAdapter (
-            model=args.model,
-            input_path=args.input_path,
+            model=args.om_model,
+            input_path=args.input,
             output=args.output,
             output_dirname=args.output_dirname,
             outfmt=args.outfmt,
@@ -124,7 +124,7 @@ def create_adapter(args):
             output_size=args.output_size,
             auto_set_dymshape_mode=args.auto_set_dymshape_mode,
             auto_set_dymdims_mode=args.auto_set_dymdims_mode,
-            batchsize=args.batchsize,
+            batchsize=args.batch_size,
             pure_data_type=args.pure_data_type,
             profiler=args.profiler,
             dump=args.dump,
