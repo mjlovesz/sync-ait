@@ -38,3 +38,17 @@ ait profile --application "ait benchmark -om /home/HwHiAiUser/resnet101_bs1.om" 
 |acl_*.json|默认存在|AscendCL接口耗时数据。文件详情请参见[AscendCL接口耗时数据](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/developmenttools/devtool/atlasprofiling_16_0119.html)|
 |ge_*.json|--model-execution|GE接口耗时数据。文件详情请参见[GE接口耗时数据](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/developmenttools/devtool/atlasprofiling_16_0121.html)|
 |step_trace_*.json|默认存在|迭代轨迹数据，每轮迭代的耗时。文件详情请参见[迭代轨迹数据](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/developmenttools/devtool/atlasprofiling_16_0123.html)|
+
+- **采集内容（summary文件夹内）**
+
+| summary文件名 | 关联参数 | 说明 |
+| ----- | ----- | ----- |
+|acl*.json|默认存在|AscendCL接口的耗时。详情请参见[AscendCL接口耗时数据](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/developmenttools/devtool/atlasprofiling_16_0149.html)|
+|acl_statistic_*.csv|配置--task-time生成AI Core算子信息；配置--aicpu生成AI CPU算子信息。 |AI Core和AI CPU算子信息。详情请参见[AI Core和AI CPU算子数据](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/developmenttools/devtool/atlasprofiling_16_0151.html)|
+|op_statistic_*.csv|配置--task-time生成AI Core算子信息；配置--aicpu生成AI CPU算子信息。|AI Core和AI CPU算子调用次数及耗时，从算子类型维度找出耗时最大的算子类型。详情请参见[AI Core和AI CPU算子调用次数及耗时数据](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/developmenttools/devtool/atlasprofiling_16_0152.html)|
+|step_trace_*.csv|默认存在|迭代轨迹数据。文件详情请参见[迭代轨迹数据](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/developmenttools/devtool/atlasprofiling_16_0153.html)|
+|ai_stack_time_*.csv|默认存在|每个组件（AscendCL、GE、Runtime、Task Scheduler）的耗时。详情请参见[各个组件的耗时数据](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/developmenttools/devtool/atlasprofiling_16_0154.html)|
+|fusion_op_*.csv|默认存在|模型中算子融合前后信息。详情请参见[模型中算子融合前后信息数据](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/developmenttools/devtool/atlasprofiling_16_0159.html)|
+|task_time_*.csv|--task-time|Task Scheduler的任务调度信息数据。详情请参见：[Task Scheduler的任务调度信息数据](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/developmenttools/devtool/atlasprofiling_16_0160.html)和[Task Scheduler的任务调度信息数据](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/developmenttools/devtool/atlasprofiling_16_0161.html)|
+|aicpu_*.csv|--aicpu|AI CPU数据。文件详情请参见[AI CPU数据](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/developmenttools/devtool/atlasprofiling_16_0157.html)|
+|prof_rule_0.json|默认存在|调优建议。无需指定Profiling参数自动生成，完成后打屏显示结果，详细介绍请参见[性能调优建议](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC1alpha002/developmenttools/devtool/atlasprofiling_16_0148.html)|
