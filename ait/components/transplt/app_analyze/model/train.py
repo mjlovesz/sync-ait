@@ -47,7 +47,7 @@ class Model:
     def train(self, **kwargs):
         start = time.time()
 
-        seqs = None
+        api_seqs = seqs = None
         samples = kwargs.get('samples', None)
         if samples:
             dataset = self._load_data(samples)
@@ -66,7 +66,7 @@ class Model:
                 eval_time = time.time() - start
                 logger.info(f'Total time is {eval_time}.')
 
-        return seqs
+        return api_seqs, seqs
 
 
 if __name__ == '__main__':
