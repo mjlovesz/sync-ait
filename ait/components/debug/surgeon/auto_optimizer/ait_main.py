@@ -20,6 +20,7 @@ import click
 from click_aliases import ClickAliasedGroup
 from click.exceptions import UsageError
 
+import argparse
 from components.parser.parser import BaseCommand
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
     ARGS_REQUIRED_KNOWLEDGES
@@ -70,7 +71,7 @@ def check_soc(value):
     res = subprocess.run(pre_cmd.split(), shell=False, stdout=subprocess.PIPE)
 
     sum = 0
-    for line in res.stdout.decode().splie('\n'):
+    for line in res.stdout.decode().split('\n'):
         if "Chip Count" in line:
             chip_count = int(line.split()[-1])
             sum += chip_count
@@ -81,7 +82,7 @@ def check_soc(value):
 
 def check_range(value):
     ivalue = int(value)
-    if ivalue < 1 or value > 64:
+    if ivalue < 1 or ivalue > 64:
         raise argparse.ArgumentTypeError(f"{value} is not a valid value.Range 1 ~ 64.")
     return ivalue
 
