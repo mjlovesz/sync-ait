@@ -175,14 +175,6 @@ class BenchmarkCommand(BaseCommand):
             help="Dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\""
         )
         parser.add_argument(
-            '-dr',
-            '--dym-shape-range',
-            dest="dym_shape_range",
-            type=str,
-            default=None,
-            help='Dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
-        )
-        parser.add_argument(
             '-outsize',
             '--output-size',
             dest="output_size",
@@ -274,7 +266,15 @@ class BenchmarkCommand(BaseCommand):
             type=check_nonnegative_integer,
             default=1,
             help="Warmup count before inference"
-            )
+        )
+        parser.add_argument(
+            '-dr',
+            '--dym-shape-range',
+            dest="dym_shape_range",
+            type=str,
+            default=None,
+            help='Dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
+        )
         parser.add_argument(
             '-aipp',
             '--aipp-config',
@@ -338,7 +338,7 @@ class BenchmarkCommand(BaseCommand):
         )
 
     def handle(self, args):
-        args = BenchMarkArgsAdapter(args.om_model, args.input_path, args.output, args.output_dirname, args.outfmt,
+        args = BenchMarkArgsAdapter(args.om_model, args.input, args.output, args.output_dirname, args.outfmt,
                                     args.loop, args.debug, args.device, args.dym_batch, args.dym_hw, args.dym_dims,
                                     args.dym_shape, args.output_size, args.auto_set_dymshape_mode,
                                     args.auto_set_dymdims_mode, args.batch_size, args.pure_data_type, args.profiler,
