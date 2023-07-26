@@ -252,8 +252,7 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
             error_interval_info_file = os.path.join(args.out_path, ERROR_INTERVAL_INFO_FILE)
             with os.fdopen(os.open(error_interval_info_file, READ_WRITE_FLAGS, WRITE_MODES), "a+") as fp_writer:
                 output_error_interval_info(fp_writer, error_node_list)
-    if args.dym_shape_range:
-        csv_sum(original_out_path)
+    csv_sum(original_out_path)
 
 
 def single_op_compare(args, input_shape):
