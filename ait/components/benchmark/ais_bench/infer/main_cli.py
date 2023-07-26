@@ -108,7 +108,7 @@ class BenchmarkCommand(BaseCommand):
                 the subdirectory named current date under given output path"
         )
         parser.add_argument(
-            "--output_dirname",
+            "--output-dirname",
             type=str,
             default=None,
             help="Actual output directory name. \
@@ -285,14 +285,14 @@ class BenchmarkCommand(BaseCommand):
         )
         parser.add_argument(
             '-ec',
-            '--energy_consumption',
+            '--energy-consumption',
             dest='energy_consumption',
             type=str,
             default=None,
             help="Obtain power consumption data for model inference"
         )
         parser.add_argument(
-            '--npu_id',
+            '--npu-id',
             dest='npu_id',
             type=check_device_range_valid,
             default=0,
@@ -317,7 +317,7 @@ class BenchmarkCommand(BaseCommand):
             help="Pipeline switch"
         )
         parser.add_argument(
-            "--profiler_rename",
+            "--profiler-rename",
             type=str2bool,
             default=True,
             help="Profiler rename switch"
