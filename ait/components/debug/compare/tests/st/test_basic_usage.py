@@ -19,15 +19,7 @@ import stat
 import pytest
 import torch
 import acl
-import numpy as np
 
-from msquickcmp.npu.npu_dump_data import NpuDumpData
-from msquickcmp.common.utils import AccuracyCompareException, parse_input_shape_to_list
-
-FAKE_DYM_SHAPE_ONNX_MODEL_PATH = "fake_dym_shape_test_onnx_model.onnx"
-FAKE_DYM_SHAPE_OM_MODEL_PATH = "fake_dym_shape_test_onnx_model.om"
-
-FAKE_OM_MODEL_WITH_AIPP_PATH = "fake_with_aipp_test_onnx_model.om"
 
 FAKE_OM_MODEL_PATH = "fake_test_onnx_model.om"
 OM_OUT_PATH = FAKE_OM_MODEL_PATH.replace(".om", "")
@@ -91,7 +83,6 @@ def test_basic_usage_then_pass(width_onnx_model, fake_om_model):
                                                     fake_om_model,
                                                     CANN_PATH,
                                                     OUT_PATH)
-    print("cmd:", cmd)
     if not os.path.exists(OUT_PATH):
         os.mkdir(OUT_PATH)
 
