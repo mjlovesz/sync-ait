@@ -60,6 +60,6 @@ setup(
     python_requires='>=3.7',
     entry_points={
         'console_scripts': ['auto_optimizer=auto_optimizer.__main__:cli'],
-        'debug_sub_task': ['surgeon=auto_optimizer.ait_main:get_cmd_info'],
+        'debug_sub_task': ['surgeon=auto_optimizer.ait_main:get_cmd_instance'],
     },
 )

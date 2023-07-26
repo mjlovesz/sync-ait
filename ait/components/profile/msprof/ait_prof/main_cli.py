@@ -133,7 +133,7 @@ class ProfileCommand(BaseCommand):
         exit(ret)
 
 
-def get_cmd_info():
+def get_cmd_instance():
     help_info = "get profiling data of a given programma"
     cmd_instance = ProfileCommand("profile", help_info)
     return cmd_instance

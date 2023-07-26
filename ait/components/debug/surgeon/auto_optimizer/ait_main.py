@@ -616,8 +616,18 @@ class ConcatenateCommand(BaseCommand):
             f'Combined model saved in {args.combined_graph_path}'
         )
 
+class SurgeonCommand(BaseCommand):
+    def __init__(self, name="", help="", children=None):
+        super().__init__(name, help, children)
 
-def get_cmd_info():
+    def add_arguments(self, parser, **kwargs):
+        return super().add_arguments(parser, **kwargs)
+
+    def handle(self, args, **kwargs):
+        return super().handle(args, **kwargs)
+
+
+def get_cmd_instance():
     surgeon_help_info = "surgeon tool for onnx modifying functions."
     list_cmd_instance = ListCommand("list", "List available Knowledges")
     evaluate_cmd_instance = EvaluateCommand("evaluate", "Evaluate model matching specified knowledges")
@@ -625,6 +635,6 @@ def get_cmd_info():
     extract_cmd_instance = ExtractCommand("extract", "Extract subgraph from onnx model")
     concatenate_cmd_instance = ConcatenateCommand("concatenate",
                                                   "Concatenate two onnxgraph into combined one onnxgraph")
-    return BaseCommand("surgeon", surgeon_help_info, [list_cmd_instance, evaluate_cmd_instance, 
-                                                      optimize_cmd_instance, extract_cmd_instance,
-                                                      concatenate_cmd_instance])
+    return SurgeonCommand("surgeon", surgeon_help_info, [list_cmd_instance, evaluate_cmd_instance, 
+                                                         optimize_cmd_instance, extract_cmd_instance,
+                                                         concatenate_cmd_instance])

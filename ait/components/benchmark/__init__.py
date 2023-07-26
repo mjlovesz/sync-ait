@@ -11,7 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pkg_resources
-from components.parser.parser import load_command_info
+from components.parser.parser import load_command_instance
 
-benchmark_cmd_info = load_command_info('benchmark_sub_task')
+benchmark_cmd = load_command_instance('benchmark_sub_task')

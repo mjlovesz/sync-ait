@@ -44,6 +44,6 @@ setup(
     ],
     python_requires='>=3.7',
     entry_points={
-        'transplt_sub_task': ['transplt=app_analyze.__main__:get_cmd_info'],
+        'transplt_sub_task': ['transplt=app_analyze.__main__:get_cmd_instance'],
     },
 )

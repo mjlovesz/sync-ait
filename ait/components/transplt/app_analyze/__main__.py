@@ -40,7 +40,7 @@ class TranspltCommand(BaseCommand):
         start_scan_kit(args)
 
 
-def get_cmd_info():
+def get_cmd_instance():
     help_info = "Transplant tool to analyze inference applications"
     cmd_instance = TranspltCommand("transplt", help_info)
     return cmd_instance

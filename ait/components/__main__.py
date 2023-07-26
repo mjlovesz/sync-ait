@@ -16,23 +16,23 @@ import click
 import pkg_resources
 import argparse
 
-from components.debug import debug_cmd_info
-from components.profile import profile_cmd_info
-from components.transplt import transplt_cmd_info
-from components.benchmark import benchmark_cmd_info
-from components.analyze import analyze_cmd_info
-from components.convert import convert_cmd_info
+from components.debug import debug_cmd
+from components.profile import profile_cmd
+from components.transplt import transplt_cmd
+from components.benchmark import benchmark_cmd
+from components.analyze import analyze_cmd
+from components.convert import convert_cmd
 from components.parser.parser import register_parser
 
-def cli():
-    subcommand_infos = [debug_cmd_info, profile_cmd_info, transplt_cmd_info,
-                        benchmark_cmd_info, analyze_cmd_info, convert_cmd_info]
+def main():
+    subcommands = [debug_cmd, profile_cmd, transplt_cmd,
+                   benchmark_cmd, analyze_cmd, convert_cmd]
     parser = argparse.ArgumentParser()
-    register_parser(parser, subcommand_infos)
+    register_parser(parser, subcommands)
     args = parser.parse_args()
 
     if hasattr(args, 'handle'):
         args.handle(args)
 
 if __name__ == "__main__":
-    cli()
+    main()

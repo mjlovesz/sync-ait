@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import click
 import os
 import argparse
 
@@ -348,7 +347,7 @@ class BenchmarkCommand(BaseCommand):
         benchmark_process(args)
 
 
-def get_cmd_info():
+def get_cmd_instance():
     help_info = "benchmark tool to get performance data including latency and throughput"
     cmd_instance = BenchmarkCommand("benchmark", help_info)
     return cmd_instance

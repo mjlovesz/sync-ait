@@ -105,7 +105,7 @@ class ConvertCommand(BaseCommand):
         converter.convert_model()
         logger.info('convert model finished.')
 
-def get_cmd_info():
+def get_cmd_instance():
     help_info = "convert tool converts the model from ONNX to OM."
     cmd_instance = ConvertCommand("convert", help_info)
     return cmd_instance

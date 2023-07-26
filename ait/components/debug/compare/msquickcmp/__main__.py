@@ -243,7 +243,7 @@ class CompareCommand(BaseCommand):
                                   args.onnx_fusion_switch, args.fusion_switch_file, args.single_op)
         cmp_process(cmp_args, True)
 
-def get_cmd_info():
+def get_cmd_instance():
     help_info = "one-click network-wide accuracy analysis of golden models."
     cmd_instance = CompareCommand("compare", help_info)
     return cmd_instance
