@@ -6,6 +6,8 @@
 指定模型输入的shape信息(动态场景必须进行指定)。
 
 ## 运行示例
+**注意**：当输入存在类似scalar向量（shape为()时)，不需要指定其shape，直接跳过即可。
+
 1. 指定-is或--input-shape进行精度对比。
   ```sh
   ait debug compare -gm /home/HwHiAiUser/onnx_prouce_data/resnet_offical.onnx -om /home/HwHiAiUser/onnx_prouce_data/model/resnet50.om \
