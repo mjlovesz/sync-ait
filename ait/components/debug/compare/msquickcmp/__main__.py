@@ -35,7 +35,8 @@ from msquickcmp.adapter_cli.options import (
     opt_locat,
     opt_onnx_fusion_switch,
     opt_fusion_switch_file,
-    opt_single_op
+    opt_single_op,
+    opt_max_cmp_size
 )
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common import utils
@@ -62,6 +63,7 @@ from msquickcmp.common import utils
 @opt_onnx_fusion_switch
 @opt_fusion_switch_file
 @opt_single_op
+@opt_max_cmp_size
 def compare_cli(
     golden_model,
     om_model,
@@ -81,11 +83,13 @@ def compare_cli(
     locat,
     onnx_fusion_switch,
     single_op,
-    fusion_switch_file
+    fusion_switch_file,
+    max_cmp_size
 ) -> None:
     cmp_args = CmpArgsAdapter(golden_model, om_model, weight_path, input_data_path, cann_path, out_path,
                               input_shape, device, output_size, output_nodes, advisor, dym_shape_range,
-                              dump, bin2npy, custom_op, locat, onnx_fusion_switch, single_op, fusion_switch_file)
+                              dump, bin2npy, custom_op, locat, onnx_fusion_switch, single_op, fusion_switch_file,
+                              max_cmp_size)
     return cmp_process(cmp_args, True)
 
 if __name__ == '__main__':
