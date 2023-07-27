@@ -11,15 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import click
-import pkg_resources
 
+from components.parser.parser import load_command_instance, BaseCommand
 
-debug_sub_task = {}
-for entry_point in pkg_resources.iter_entry_points('debug_sub_task'):
-    debug_sub_task[entry_point.name] = entry_point.load()
+class DebugCommand(BaseCommand):
+    def add_arguments(self, parser, **kwargs):
+        return super().add_arguments(parser, **kwargs)
 
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
-debug_cli_group = click.Group(context_settings=CONTEXT_SETTINGS, name="debug", 
-                              commands=debug_sub_task, no_args_is_help=True,
-                              short_help="Debug a wide variety of model issues")
+    def handle(self, args, **kwargs):
+        return super().handle(args, **kwargs)
+
+help_info = "debug a wide variety of model issues"
+debug_cmd = load_command_instance('debug_sub_task', "debug", help_info, DebugCommand)
