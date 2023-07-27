@@ -33,6 +33,9 @@ main() {
     copy_source_code_dir_to_tests
 
     export PYTHON_COMMAND=${2:-"python3"}
+    echo ">>>>"
+    ${PYTHON_COMMAND} -c 'import acl; print(">>>> acl.get_soc_name():", acl.get_soc_name())'
+    echo ">>>>"
 
     ${PYTHON_COMMAND} -m pytest . -s
     ret_val=$?
