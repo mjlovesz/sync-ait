@@ -16,11 +16,11 @@ import pathlib
 import subprocess
 from typing import List, Tuple
 
+import argparse
 import click
 from click_aliases import ClickAliasedGroup
 from click.exceptions import UsageError
 
-import argparse
 from components.parser.parser import BaseCommand
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
     ARGS_REQUIRED_KNOWLEDGES
@@ -70,12 +70,12 @@ def check_soc(value):
     pre_cmd = "npu-smi info -l"
     res = subprocess.run(pre_cmd.split(), shell=False, stdout=subprocess.PIPE)
 
-    sum = 0
+    tsum = 0
     for line in res.stdout.decode().split('\n'):
         if "Chip Count" in line:
             chip_count = int(line.split()[-1])
-            sum += chip_count
-    if ivalue >= sum or ivalue < 0:
+            tsum += chip_count
+    if ivalue >= tsum or ivalue < 0:
         raise argparse.ArgumentTypeError(f"{value} is not a valid value.Please check device id.")
     return ivalue
 
@@ -141,7 +141,7 @@ def command_evaluate(
     for know in knowledge_list:
         if know in ARGS_REQUIRED_KNOWLEDGES:
             knowledge_list.remove(know)
-            logger.warning("Knowledge {} cannot be evaluate".format(know))
+            logger.warning(f"Knowledge {know} cannot be evaluate")
 
     if not knowledge_list:
         return
@@ -202,7 +202,7 @@ def command_optimize(
     for know in knowledge_list:
         if not big_kernel and know in ARGS_REQUIRED_KNOWLEDGES:
             knowledge_list.remove(know)
-            logger.warning("Knowledge {} cannot be ran when close big_kernel config.".format(know))
+            logger.warning(f"Knowledge {know} cannot be ran when close big_kernel config.")
 
     if not knowledge_list:
         return
