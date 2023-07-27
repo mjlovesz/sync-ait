@@ -15,9 +15,6 @@
 from components.parser.parser import load_command_instance, BaseCommand
 
 class DebugCommand(BaseCommand):
-    def __init__(self, name="", help="", children=None):
-        super().__init__(name, help, children)
-
     def add_arguments(self, parser, **kwargs):
         return super().add_arguments(parser, **kwargs)
 

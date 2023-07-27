@@ -17,9 +17,9 @@ import argparse
 
 
 class BaseCommand:
-    def __init__(self, name = "", help = "", children = None):
+    def __init__(self, name = "", help_info = "", children = None):
         self.name = name
-        self.help = help
+        self.help_info = help_info
         if not children:
             self.children = []
         else:
@@ -40,7 +40,7 @@ def register_parser(parser, commands):
         if command is None:
             continue
         subparser = subparsers.add_parser(
-            command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help
+            command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help_info
         )
         command.add_arguments(subparser)
         subparser.set_defaults(handle=command.handle)
