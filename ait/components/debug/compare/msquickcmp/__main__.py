@@ -240,7 +240,7 @@ class CompareCommand(BaseCommand):
                                   args.input_shape, args.device, args.output_size, args.output_nodes, args.advisor,
                                   args.dym_shape_range,
                                   args.dump, args.bin2npy, args.custom_op, args.locat,
-                                  args.onnx_fusion_switch, args.fusion_switch_file, args.single_op)
+                                  args.onnx_fusion_switch, args.single_op, args.fusion_switch_file)
         cmp_process(cmp_args, True)
 
 def get_cmd_instance():
