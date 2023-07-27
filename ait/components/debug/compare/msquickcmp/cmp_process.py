@@ -28,6 +28,7 @@ import csv
 import logging
 import pandas as pd
 
+import sklearn as _ # import first, bypassing error libgomp-xxx.so.xxx: cannot allocate memory in static TLS block
 import onnxruntime
 import acl
 
