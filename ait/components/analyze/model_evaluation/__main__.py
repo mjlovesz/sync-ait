@@ -13,23 +13,12 @@
 # limitations under the License.
 
 import os
-import click
 
 from components.parser.parser import BaseCommand
 from model_evaluation.common import utils, logger
 from model_evaluation.common.enum import Framework
 from model_evaluation.bean import ConvertConfig
 from model_evaluation.core import Analyze
-from model_evaluation.options import (
-    opt_model,
-    opt_out_path,
-    opt_soc,
-    opt_weight,
-    opt_framework
-)
-
-
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 def parse_input_param(model: str,
@@ -54,38 +43,6 @@ def parse_input_param(model: str,
         weight=weight,
         soc_type=soc
     )
-
-
-@click.command(short_help='Analyze tool to analyze model support', no_args_is_help=True,
-               context_settings=CONTEXT_SETTINGS)
-@opt_model
-@opt_framework
-@opt_weight
-@opt_soc
-@opt_out_path
-def cli(
-    input_model: str, framework: str, weight: str,
-    soc: str, output: str
-) -> None:
-    if not os.path.isfile(input_model):
-        logger.error('input model is not file.')
-        return
-
-    try:
-        config = parse_input_param(
-            input_model, framework, weight, soc
-        )
-    except ValueError as e:
-        logger.error(f'{e}')
-        return
-
-    analyzer = Analyze(input_model, output, config)
-    if analyzer is None:
-        logger.error('the object of \'Analyze\' create failed.')
-        return
-
-    analyzer.analyze_model()
-    logger.info('analyze model finished.')
 
 
 class AnalyzeCommand(BaseCommand):
@@ -148,7 +105,3 @@ def get_cmd_instance():
     help_info = "Analyze tool to evaluate compatibility of model conversion"
     cmd_instance = AnalyzeCommand("analyze", help_info)
     return cmd_instance
-
-
-if __name__ == '__main__':
-    cli()
