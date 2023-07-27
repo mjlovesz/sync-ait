@@ -10,7 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from components.parser.parser import load_command_info
+from components.parser.parser import load_command_instance
 
 
-transplt_cmd_info = load_command_info('transplt_sub_task')
+transplt_cmd = load_command_instance('transplt_sub_task')

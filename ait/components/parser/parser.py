@@ -47,16 +47,17 @@ def register_parser(parser, commands):
         register_parser(subparser, command.children)
 
 
-def load_command_info(entry_points : str, name = None, help_info = None):
-    cmd_infos = []
+def load_command_instance(entry_points : str, name = None, help_info = None, CommandClass = None):
+    cmd_instances = []
     for entry_point in pkg_resources.iter_entry_points(entry_points):
-        cmd_infos.append(entry_point.load()())
+        cmd_instances.append(entry_point.load()())
 
-    if len(cmd_infos) == 1:
-        return cmd_infos[0]
-    elif len(cmd_infos) > 1:
-        if not isinstance(name, str) or not isinstance(help_info, str):
-            print(f"load subcommands from entry point {entry_points} failed, lack of name or help_info")
+    if len(cmd_instances) == 1:
+        return cmd_instances[0]
+    elif len(cmd_instances) > 1:
+        if not isinstance(name, str) or not isinstance(help_info, str) or CommandClass is None:
+            print(f"load subcommands from entry point {entry_points} failed, \
+                  lack of name or help_info or subcommand class")
         else:
-            return BaseCommand(name, help_info, cmd_infos)
+            return CommandClass(name, help_info, cmd_instances)
 

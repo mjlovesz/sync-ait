@@ -79,9 +79,6 @@ if __name__ == "__main__":
 
 
 class ConvertCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
-        super().__init__(name, help, children)
-
     def add_arguments(self, parser):
         parser.add_argument("-gm", "--golden-model", dest="model", required=True, default=None, help="the path of the onnx model")
         parser.add_argument("-of", "--output-file", dest="output", required=True, default=None, help="Output file path&name(needn\'t .om suffix for ATC, need .om suffix for AIE)")
@@ -108,7 +105,7 @@ class ConvertCommand(BaseCommand):
         converter.convert_model()
         logger.info('convert model finished.')
 
-def get_cmd_info():
+def get_cmd_instance():
     help_info = "convert tool converts the model from ONNX to OM."
     cmd_instance = ConvertCommand("convert", help_info)
     return cmd_instance

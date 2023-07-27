@@ -12,102 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import click
 import os
 import argparse
 
 from components.parser.parser import BaseCommand
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
-from ais_bench.infer.options import (
-    opt_model,
-    opt_input_path,
-    opt_output,
-    opt_output_dirname,
-    opt_outfmt,
-    opt_loop,
-    opt_debug,
-    opt_device,
-    opt_dym_batch,
-    opt_dym_hw,
-    opt_dym_dims,
-    opt_dym_shape,
-    opt_output_size,
-    opt_auto_set_dymshape_mode,
-    opt_auto_set_dymdims_mode,
-    opt_batchsize,
-    opt_pure_data_type,
-    opt_profiler,
-    opt_dump,
-    opt_acl_json_path,
-    opt_output_batchsize_axis,
-    opt_run_mode,
-    opt_display_all_summary,
-    opt_warmup_count,
-    opt_dym_shape_range,
-    opt_aipp_config,
-    opt_energy_consumption,
-    opt_npu_id,
-    opt_backend,
-    opt_perf,
-    opt_pipeline,
-    opt_profiler_rename,
-    opt_dump_npy
-)
-
-
-@click.command(name="benchmark", 
-               short_help = "benchmark tool to get performance data including latency and throughput",
-               no_args_is_help=True)
-@opt_model
-@opt_input_path
-@opt_output
-@opt_output_dirname
-@opt_outfmt
-@opt_loop
-@opt_debug
-@opt_device
-@opt_dym_batch
-@opt_dym_hw
-@opt_dym_dims
-@opt_dym_shape
-@opt_output_size
-@opt_auto_set_dymshape_mode
-@opt_auto_set_dymdims_mode
-@opt_batchsize
-@opt_pure_data_type
-@opt_profiler
-@opt_dump
-@opt_acl_json_path
-@opt_output_batchsize_axis
-@opt_run_mode
-@opt_display_all_summary
-@opt_warmup_count
-@opt_dym_shape_range
-@opt_aipp_config
-@opt_energy_consumption
-@opt_npu_id
-@opt_backend
-@opt_perf
-@opt_pipeline
-@opt_profiler_rename
-@opt_dump_npy
-def benchmark_cli(om_model, input_path, output, 
-                  output_dirname, outfmt, loop, debug, device,
-                  dym_batch, dym_hw, dym_dims, dym_shape, output_size, auto_set_dymshape_mode,
-                  auto_set_dymdims_mode, batch_size, pure_data_type, profiler, dump,
-                  acl_json_path, output_batchsize_axis, run_mode, display_all_summary,
-                  warmup_count, dym_shape_range, aipp_config, energy_consumption, npu_id, backend, perf, pipeline,
-                  profiler_rename, dump_npy):
-
-    args = BenchMarkArgsAdapter(om_model.as_posix(), input_path, output.as_posix() if output else None, 
-                                output_dirname, outfmt, loop, debug, device,
-                                dym_batch, dym_hw, dym_dims, dym_shape, output_size, auto_set_dymshape_mode,
-                                auto_set_dymdims_mode, batch_size, pure_data_type, profiler, dump,
-                                acl_json_path, output_batchsize_axis, run_mode, display_all_summary, warmup_count,
-                                dym_shape_range, aipp_config, energy_consumption, npu_id, backend, perf, pipeline,
-                                profiler_rename, dump_npy)
-    benchmark_process(args)
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -172,8 +82,6 @@ def check_om_path_valid(value):
                                          readability and property of this path")
 
 class BenchmarkCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
-        super().__init__(name, help, children)
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -197,7 +105,8 @@ class BenchmarkCommand(BaseCommand):
                 the subdirectory named current date under given output path"
         )
         parser.add_argument(
-            "--output_dirname",
+            '-od',
+            "--output-dirname",
             type=str,
             default=None,
             help="Actual output directory name. \
@@ -262,14 +171,6 @@ class BenchmarkCommand(BaseCommand):
             type=str,
             default=None,
             help="Dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\""
-        )
-        parser.add_argument(
-            '-dr',
-            '--dym-shape-range',
-            dest="dym_shape_range",
-            type=str,
-            default=None,
-            help='Dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
         )
         parser.add_argument(
             '-outsize',
@@ -363,7 +264,15 @@ class BenchmarkCommand(BaseCommand):
             type=check_nonnegative_integer,
             default=1,
             help="Warmup count before inference"
-            )
+        )
+        parser.add_argument(
+            '-dr',
+            '--dym-shape-range',
+            dest="dym_shape_range",
+            type=str,
+            default=None,
+            help='Dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
+        )
         parser.add_argument(
             '-aipp',
             '--aipp-config',
@@ -374,14 +283,14 @@ class BenchmarkCommand(BaseCommand):
         )
         parser.add_argument(
             '-ec',
-            '--energy_consumption',
+            '--energy-consumption',
             dest='energy_consumption',
             type=str,
             default=None,
             help="Obtain power consumption data for model inference"
         )
         parser.add_argument(
-            '--npu_id',
+            '--npu-id',
             dest='npu_id',
             type=check_device_range_valid,
             default=0,
@@ -406,7 +315,7 @@ class BenchmarkCommand(BaseCommand):
             help="Pipeline switch"
         )
         parser.add_argument(
-            "--profiler_rename",
+            "--profiler-rename",
             type=str2bool,
             default=True,
             help="Profiler rename switch"
@@ -417,20 +326,28 @@ class BenchmarkCommand(BaseCommand):
             default=False,
             help="dump data convert to npy"
         )
+        parser.add_argument(
+            '--divide-input',
+            dest='divide_input',
+            default=False,
+            type=str2bool,
+            help='Input datas need to be divided to match multi devices or not, \
+                --device should be list, default False'
+        )
 
     def handle(self, args):
-        args = BenchMarkArgsAdapter(args.om_model, args.input_path, args.output, args.output_dirname, args.outfmt,
+        args = BenchMarkArgsAdapter(args.om_model, args.input, args.output, args.output_dirname, args.outfmt,
                                     args.loop, args.debug, args.device, args.dym_batch, args.dym_hw, args.dym_dims,
                                     args.dym_shape, args.output_size, args.auto_set_dymshape_mode,
                                     args.auto_set_dymdims_mode, args.batch_size, args.pure_data_type, args.profiler,
                                     args.dump, args.acl_json_path, args.output_batchsize_axis, args.run_mode,
                                     args.display_all_summary, args.warmup_count, args.dym_shape_range,
                                     args.aipp_config, args.energy_consumption, args.npu_id, args.backend, args.perf,
-                                    args.pipeline, args.profiler_rename, args.dump_npy)
+                                    args.pipeline, args.profiler_rename, args.dump_npy, args.divide_input)
         benchmark_process(args)
 
 
-def get_cmd_info():
+def get_cmd_instance():
     help_info = "benchmark tool to get performance data including latency and throughput"
     cmd_instance = BenchmarkCommand("benchmark", help_info)
     return cmd_instance

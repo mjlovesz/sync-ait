@@ -89,9 +89,6 @@ def cli(
 
 
 class AnalyzeCommand(BaseCommand):
-    def __init__(self, name='', help='', children=None):
-        super().__init__(name, help, children)
-    
     def add_arguments(self, parser):
         parser.add_argument(
             "-gm", "--golden-model", type=str,
@@ -147,7 +144,7 @@ class AnalyzeCommand(BaseCommand):
         logger.info('analyze model finished.')
 
 
-def get_cmd_info():
+def get_cmd_instance():
     help_info = "Analyze tool to evaluate compatibility of model conversion"
     cmd_instance = AnalyzeCommand("analyze", help_info)
     return cmd_instance

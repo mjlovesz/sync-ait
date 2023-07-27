@@ -26,84 +26,76 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 base_cmd_dict = {
     "--om-model": os.path.join(current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
     "--input": "datasets/",
-    "--output": "output/"
+    "--output": "output/",
+    "--output-dirname": "outdir/",
+    "--outfmt": "NPY",
+    "--loop": "100",
+    "--debug": "0",
+    "--device": "0,1",
+    "--dym-batch": "16",
+    "--dym-hw": "224,224",
+    "--dym-dims": "1,3,224,224",
+    "--dym-shape": "1,3,224,224",
+    "--output-size": "10000",
+    "--auto-set-dymshape-mode": "0",
+    "--auto-set-dymdims-mode": "0",
+    "--batch-size": "16",
+    "--pure-data-type": "zero",
+    "--profiler": "0",
+    "--dump": "0",
+    "--acl-json-path": "acl.json",
+    "--output-batchsize-axis": "1",
+    "--run-mode": "array",
+    "--display-all-summary": "0",
+    "--warmup-count": "1",
+    "--dym-shape-range": "1~3,3,224,224-226",
+    "--aipp-config": os.path.join(current_dir, "../aipp_config_files/actual_aipp_cfg.config"),
+    "--energy-consumption": "0",
+    "--npu-id": "0",
+    "--backend": "trtexec",
+    "--perf": "0",
+    "--pipeline": "0",
+    "--profiler-rename": "0",
+    "--dump-npy": "0",
+    "--divide-input": "0"
 }
+
 simple_cmd_dict = {
     "-om": os.path.join(current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
     "-i": "datasets/",
-    "-o": "output/"
+    "-o": "output/",
+    "-od": "outdir/",
+    "--outfmt": "NPY",
+    "--loop": "100",
+    "--debug": "0",
+    "-d": "0,1",
+    "-db": "16",
+    "-dhw": "224,224",
+    "-dd": "1,3,224,224",
+    "-ds": "1,3,224,224",
+    "-outsize": "10000",
+    "-asdsm": "0",
+    "-asddm": "0",
+    "--batch-size": "16",
+    "-pdt": "zero",
+    "-pf": "0",
+    "--dump": "0",
+    "-acl": "acl.json",
+    "-oba": "1",
+    "-rm": "array",
+    "-das": "0",
+    "-wcount": "1",
+    "-dr": "1~3,3,224,224-226",
+    "-aipp": os.path.join(current_dir, "../aipp_config_files/actual_aipp_cfg.config"),
+    "-ec": "0",
+    "--npu-id": "0",
+    "--backend": "trtexec",
+    "--perf": "0",
+    "--pipeline": "0",
+    "--profiler-rename": "0",
+    "--dump-npy": "0",
+    "--divide-input": "0"
 }
-# base_cmd_dict = {
-#     "--om-model": os.path.join(current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
-#     "--input": "datasets/",
-#     "--output": "output/",
-#     "--output-dirname": "outdir/",
-#     "--outfmt": "NPY",
-#     "--loop": "100",
-#     "--debug": "0",
-#     "--device": "0,1",
-#     "--dym-batch": "16",
-#     "--dym-hw": "224,224",
-#     "--dym-dims": "1,3,224,224",
-#     "--dym-shape": "1,3,224,224",
-#     "--output-size": "10000",
-#     "--auto-set-dymshape-mode": "0",
-#     "--auto-set-dymdims-mode": "0",
-#     "--batch-size": "16",
-#     "--pure-data-type": "zero",
-#     "--profiler": "0",
-#     "--dump": "0",
-#     "--acl-json-path": "acl.json",
-#     "--output-batchsize-axis": "1",
-#     "--run-mode": "array",
-#     "--display-all-summary": "0",
-#     "--warmup-count": "1",
-#     "--dym-shape-range": "1~3,3,224,224-226",
-#     "--aipp-config": "aipp.config",
-#     "--energy_consumption": "0",
-#     "--npu_id": "0",
-#     "--backend": "trtexec",
-#     "--perf": "0",
-#     "--pipeline": "0",
-#     "--profiler-rename": "0",
-#     "--dump-npy": "0"
-# }
-
-# simple_cmd_dict = {
-#     "-om": os.path.join(current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
-#     "-i": "datasets/",
-#     "-o": "output/",
-#     "-od": "outdir/",
-#     "--outfmt": "NPY",
-#     "--loop": "100",
-#     "--debug": "0",
-#     "-d": "0,1",
-#     "-db": "16",
-#     "-dhw": "224,224",
-#     "-dd": "1,3,224,224",
-#     "-ds": "1,3,224,224",
-#     "-outsize": "10000",
-#     "-asdsm": "0",
-#     "-asddm": "0",
-#     "--batch-size": "16",
-#     "--pdt": "zero",
-#     "--pf": "0",
-#     "--dump": "0",
-#     "--acl": "acl.json",
-#     "--oba": "1",
-#     "-rm": "array",
-#     "-das": "0",
-#     "-wcount": "1",
-#     "-dr": "1~3,3,224,224-226",
-#     "-aipp": "aipp.config",
-#     "-ec": "0",
-#     "--npu_id": "0",
-#     "--backend": "trtexec",
-#     "--perf": "0",
-#     "--pipeline": "0",
-#     "--profiler-rename": "0",
-#     "--dump-npy": "0"
-# }
 case_cmd_list = []
 
 
@@ -117,8 +109,8 @@ def cmd_dict_to_list(cmd_dict):
 
 def create_adapter(args):
     args_adapter = BenchMarkArgsAdapter (
-            model=args.model,
-            input_path=args.input_path,
+            model=args.om_model,
+            input_path=args.input,
             output=args.output,
             output_dirname=args.output_dirname,
             outfmt=args.outfmt,
@@ -132,7 +124,7 @@ def create_adapter(args):
             output_size=args.output_size,
             auto_set_dymshape_mode=args.auto_set_dymshape_mode,
             auto_set_dymdims_mode=args.auto_set_dymdims_mode,
-            batchsize=args.batchsize,
+            batchsize=args.batch_size,
             pure_data_type=args.pure_data_type,
             profiler=args.profiler,
             dump=args.dump,
@@ -150,6 +142,7 @@ def create_adapter(args):
             pipeline=args.pipeline,
             profiler_rename=args.profiler_rename,
             dump_npy=args.dump_npy,
+            divide_input = args.divide_input
     )
     return args_adapter
 
@@ -168,8 +161,8 @@ def test_check_all_full_args_legality(cmdline_legal_args_full):
     parser = argparse.ArgumentParser()
     benchmark_command.add_arguments(parser)
     args = parser.parse_args()
-    # args = create_adapter(args)
-    # args = args_rules(args)
+    args = create_adapter(args)
+    args = args_rules(args)
     assert args.input == "datasets/"
 
 
@@ -187,216 +180,150 @@ def test_check_all_simple_args_legality(cmdline_legal_args_simple):
     parser = argparse.ArgumentParser()
     benchmark_command.add_arguments(parser)
     args = parser.parse_args()
-    # args = create_adapter(args)
-    # args = args_rules(args)
+    args = create_adapter(args)
+    args = args_rules(args)
     assert args.input == "datasets/"
 
 
-# @pytest.fixture
-# def cmdline_args_full_npu_id(monkeypatch):
-#     cmd_dict = base_cmd_dict
-#     cmd_dict["--npu-id"] = "256"
-#     case_cmd_list = cmd_dict_to_list(cmd_dict)
-#     monkeypatch.setattr('sys.argv', case_cmd_list)
+@pytest.fixture
+def cmdline_args_full_npu_id(monkeypatch):
+    cmd_dict = base_cmd_dict
+    cmd_dict["--npu-id"] = "256"
+    case_cmd_list = cmd_dict_to_list(cmd_dict)
+    monkeypatch.setattr('sys.argv', case_cmd_list)
 
 
-# def test_npu_id_out_of_range(cmdline_args_full_npu_id):
-#     """
-#         npu_id 超出范围
-#     """
-#     parser = argparse.ArgumentParser()
-#     benchmark_command.add_arguments(parser)
-#     with pytest.raises(RuntimeError) as e:
-#         args = parser.parse_args()
+def test_npu_id_out_of_range(cmdline_args_full_npu_id):
+    """
+        npu_id 超出范围
+    """
+    parser = argparse.ArgumentParser()
+    benchmark_command.add_arguments(parser)
+    with pytest.raises(SystemExit) as e:
+        args = parser.parse_args()
 
 
-# @pytest.fixture
-# def cmdline_args_full_model_path(monkeypatch):
-#     cmd_dict = base_cmd_dict
-#     cmd_dict["--model"] = os.path.join(current_dir, "../testdata/resnet50/model/pth_ret50_bs4.om")
-#     case_cmd_list = cmd_dict_to_list(cmd_dict)
-#     monkeypatch.setattr('sys.argv', case_cmd_list)
+@pytest.fixture
+def cmdline_args_full_model_path(monkeypatch):
+    cmd_dict = base_cmd_dict
+    cmd_dict["--model"] = os.path.join(current_dir, "../testdata/resnet50/model/pth_ret50_bs4.om")
+    case_cmd_list = cmd_dict_to_list(cmd_dict)
+    monkeypatch.setattr('sys.argv', case_cmd_list)
 
 
-# def test_invalid_model_path(cmdline_args_full_model_path):
-#     """
-#         模型路径不存在
-#     """
-#     parser = argparse.ArgumentParser()
-#     benchmark_command.add_arguments(parser)
-#     with pytest.raises(RuntimeError) as e:
-#         args = parser.parse_args()
+def test_invalid_model_path(cmdline_args_full_model_path):
+    """
+        模型路径不存在
+    """
+    parser = argparse.ArgumentParser()
+    benchmark_command.add_arguments(parser)
+    with pytest.raises(SystemExit) as e:
+        args = parser.parse_args()
 
 
-# @pytest.fixture
-# def cmdline_args_full_loop(monkeypatch):
-#     cmd_dict = base_cmd_dict
-#     cmd_dict["--loop"] = "-3"
-#     case_cmd_list = cmd_dict_to_list(cmd_dict)
-#     monkeypatch.setattr('sys.argv', case_cmd_list)
+@pytest.fixture
+def cmdline_args_full_loop(monkeypatch):
+    cmd_dict = base_cmd_dict
+    cmd_dict["--loop"] = "-3"
+    case_cmd_list = cmd_dict_to_list(cmd_dict)
+    monkeypatch.setattr('sys.argv', case_cmd_list)
 
 
-# def test_loop_is_not_positive(cmdline_args_full_loop):
-#     """
-#         --loop为负数
-#     """
-#     parser = argparse.ArgumentParser()
-#     benchmark_command.add_arguments(parser)
-#     with pytest.raises(RuntimeError) as e:
-#         args = parser.parse_args()
+def test_loop_is_not_positive(cmdline_args_full_loop):
+    """
+        --loop为负数
+    """
+    parser = argparse.ArgumentParser()
+    benchmark_command.add_arguments(parser)
+    with pytest.raises(SystemExit) as e:
+        args = parser.parse_args()
 
 
-# @pytest.fixture
-# def cmdline_args_full_batchsize(monkeypatch):
-#     cmd_dict = base_cmd_dict
-#     cmd_dict["--batch-size"] = "-3"
-#     case_cmd_list = cmd_dict_to_list(cmd_dict)
-#     monkeypatch.setattr('sys.argv', case_cmd_list)
+@pytest.fixture
+def cmdline_args_full_batchsize(monkeypatch):
+    cmd_dict = base_cmd_dict
+    cmd_dict["--batch-size"] = "-3"
+    case_cmd_list = cmd_dict_to_list(cmd_dict)
+    monkeypatch.setattr('sys.argv', case_cmd_list)
 
 
-# def test_batchsize_is_not_positive(cmdline_args_full_batchsize):
-#     """
-#         --batchsize为负数
-#     """
-#     parser = argparse.ArgumentParser()
-#     benchmark_command.add_arguments(parser)
-#     with pytest.raises(RuntimeError) as e:
-#         args = parser.parse_args()
+def test_batchsize_is_not_positive(cmdline_args_full_batchsize):
+    """
+        --batchsize为负数
+    """
+    parser = argparse.ArgumentParser()
+    benchmark_command.add_arguments(parser)
+    with pytest.raises(SystemExit) as e:
+        args = parser.parse_args()
 
 
-# @pytest.fixture
-# def cmdline_args_full_warmup(monkeypatch):
-#     cmd_dict = base_cmd_dict
-#     cmd_dict["--warmup-count"] = "-3"
-#     case_cmd_list = cmd_dict_to_list(cmd_dict)
-#     monkeypatch.setattr('sys.argv', case_cmd_list)
+@pytest.fixture
+def cmdline_args_full_warmup(monkeypatch):
+    cmd_dict = base_cmd_dict
+    cmd_dict["--warmup-count"] = "-3"
+    case_cmd_list = cmd_dict_to_list(cmd_dict)
+    monkeypatch.setattr('sys.argv', case_cmd_list)
 
 
-# def test_warmup_count_is_not_positive(cmdline_args_full_warmup):
-#     """
-#         --warmup_count为负数
-#     """
-#     parser = argparse.ArgumentParser()
-#     benchmark_command.add_arguments(parser)
-#     with pytest.raises(RuntimeError) as e:
-#         args = parser.parse_args()
+def test_warmup_count_is_not_positive(cmdline_args_full_warmup):
+    """
+        --warmup_count为负数
+    """
+    parser = argparse.ArgumentParser()
+    benchmark_command.add_arguments(parser)
+    with pytest.raises(SystemExit) as e:
+        args = parser.parse_args()
 
 
-# @pytest.fixture
-# def cmdline_args_full_bsaxis(monkeypatch):
-#     cmd_dict = base_cmd_dict
-#     cmd_dict["--output-batchsize-axis"] = "-3"
-#     case_cmd_list = cmd_dict_to_list(cmd_dict)
-#     monkeypatch.setattr('sys.argv', case_cmd_list)
+@pytest.fixture
+def cmdline_args_full_bsaxis(monkeypatch):
+    cmd_dict = base_cmd_dict
+    cmd_dict["--output-batchsize-axis"] = "-3"
+    case_cmd_list = cmd_dict_to_list(cmd_dict)
+    monkeypatch.setattr('sys.argv', case_cmd_list)
 
 
-# def test_output_batchsize_axis_is_not_positive(cmdline_args_full_bsaxis):
-#     """
-#         --output_batchsize_axis为负数
-#     """
-#     parser = argparse.ArgumentParser()
-#     benchmark_command.add_arguments(parser)
-#     with pytest.raises(RuntimeError) as e:
-#         args = parser.parse_args()
+def test_output_batchsize_axis_is_not_positive(cmdline_args_full_bsaxis):
+    """
+        --output_batchsize_axis为负数
+    """
+    parser = argparse.ArgumentParser()
+    benchmark_command.add_arguments(parser)
+    with pytest.raises(SystemExit) as e:
+        args = parser.parse_args()
 
 
-# @pytest.fixture
-# def cmdline_args_full_device(monkeypatch):
-#     cmd_dict = base_cmd_dict
-#     cmd_dict["--device"] = "1,234,257"
-#     case_cmd_list = cmd_dict_to_list(cmd_dict)
-#     monkeypatch.setattr('sys.argv', case_cmd_list)
+@pytest.fixture
+def cmdline_args_full_device(monkeypatch):
+    cmd_dict = base_cmd_dict
+    cmd_dict["--device"] = "1,234,257"
+    case_cmd_list = cmd_dict_to_list(cmd_dict)
+    monkeypatch.setattr('sys.argv', case_cmd_list)
 
 
-# def test_device_id_out_of_range(cmdline_args_full_device):
-#     """
-#         --device超出范围
-#     """
-#     parser = argparse.ArgumentParser()
-#     benchmark_command.add_arguments(parser)
-#     with pytest.raises(RuntimeError) as e:
-#         args = parser.parse_args()
+def test_device_id_out_of_range(cmdline_args_full_device):
+    """
+        --device超出范围
+    """
+    parser = argparse.ArgumentParser()
+    benchmark_command.add_arguments(parser)
+    with pytest.raises(SystemExit) as e:
+        args = parser.parse_args()
 
 
-# @pytest.fixture
-# def cmdline_args_full_outfmt(monkeypatch):
-#     cmd_dict = base_cmd_dict
-#     cmd_dict["--outfmt"] = "JSON"
-#     case_cmd_list = cmd_dict_to_list(cmd_dict)
-#     monkeypatch.setattr('sys.argv', case_cmd_list)
+@pytest.fixture
+def cmdline_args_full_outfmt(monkeypatch):
+    cmd_dict = base_cmd_dict
+    cmd_dict["--outfmt"] = "JSON"
+    case_cmd_list = cmd_dict_to_list(cmd_dict)
+    monkeypatch.setattr('sys.argv', case_cmd_list)
 
 
-# def test_illegal_outfmt(cmdline_args_full_outfmt):
-#     """
-#         --outfmt非法
-#     """
-#     parser = argparse.ArgumentParser()
-#     benchmark_command.add_arguments(parser)
-#     with pytest.raises(RuntimeError) as e:
-#         args = parser.parse_args()
-
-
-# @pytest.fixture
-# def cmdline_profile_and_dump(monkeypatch):
-#     cmd_dict = base_cmd_dict
-#     cmd_dict["--profiler"] = "1"
-#     cmd_dict["--dump"] = "1"
-#     case_cmd_list = cmd_dict_to_list(cmd_dict)
-#     monkeypatch.setattr('sys.argv', case_cmd_list)
-
-
-# def test_profile_and_dump_activated(cmdline_profile_and_dump):
-#     """
-#         --profile 和 --dump 同时为 true
-#     """
-#     parser = argparse.ArgumentParser()
-#     benchmark_command.add_arguments(parser)
-#     args = parser.parse_args()
-#     args = create_adapter(args)
-#     with pytest.raises(RuntimeError) as e:
-#         args = args_rules(args)
-
-
-# @pytest.fixture
-# def cmdline_dump_output(monkeypatch):
-#     cmd_dict = base_cmd_dict
-#     cmd_dict["--dump"] = "1"
-#     cmd_dict.pop("--output")
-#     cmd_dict.pop("--output-dirname")
-#     case_cmd_list = cmd_dict_to_list(cmd_dict)
-#     monkeypatch.setattr('sys.argv', case_cmd_list)
-
-
-# def test_profile_or_dump_without_output(cmdline_dump_output):
-#     """
-#         --profile 或 --dump 为 true，没有设--output
-#     """
-#     parser = argparse.ArgumentParser()
-#     benchmark_command.add_arguments(parser)
-#     args = parser.parse_args()
-#     args = create_adapter(args)
-#     with pytest.raises(RuntimeError) as e:
-#         args = args_rules(args)
-
-# @pytest.fixture
-# def cmdline_output_dir(monkeypatch):
-#     cmd_dict = base_cmd_dict
-#     cmd_dict.pop("--output")
-#     case_cmd_list = cmd_dict_to_list(cmd_dict)
-#     monkeypatch.setattr('sys.argv', case_cmd_list)
-
-
-# def test_output_dirname_without_output(cmdline_output_dir):
-#     """
-#         --output-dirname设了，没有设--output
-#     """
-#     parser = argparse.ArgumentParser()
-#     benchmark_command.add_arguments(parser)
-#     args = parser.parse_args()
-#     args = create_adapter(args)
-#     with pytest.raises(RuntimeError) as e:
-#         args = args_rules(args)
-
-
-
-
+def test_illegal_outfmt(cmdline_args_full_outfmt):
+    """
+        --outfmt非法
+    """
+    parser = argparse.ArgumentParser()
+    benchmark_command.add_arguments(parser)
+    with pytest.raises(SystemExit) as e:
+        args = parser.parse_args()

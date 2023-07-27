@@ -20,6 +20,7 @@ import click
 from click_aliases import ClickAliasedGroup
 from click.exceptions import UsageError
 
+import argparse
 from components.parser.parser import BaseCommand
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
     ARGS_REQUIRED_KNOWLEDGES
@@ -70,7 +71,7 @@ def check_soc(value):
     res = subprocess.run(pre_cmd.split(), shell=False, stdout=subprocess.PIPE)
 
     sum = 0
-    for line in res.stdout.decode().splie('\n'):
+    for line in res.stdout.decode().split('\n'):
         if "Chip Count" in line:
             chip_count = int(line.split()[-1])
             sum += chip_count
@@ -81,7 +82,7 @@ def check_soc(value):
 
 def check_range(value):
     ivalue = int(value)
-    if ivalue < 1 or value > 64:
+    if ivalue < 1 or ivalue > 64:
         raise argparse.ArgumentTypeError(f"{value} is not a valid value.Range 1 ~ 64.")
     return ivalue
 
@@ -363,22 +364,14 @@ if __name__ == "__main__":
 
 
 class ListCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
-        super().__init__(name, help, children)
-
     def add_arguments(self, parser):
         pass
 
     def handle(self, args):
-        print(vars(args))
-        print("hello from surgeon list")
         list_knowledges()
 
 
 class EvaluateCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
-        super().__init__(name, help, children)
-
     def add_arguments(self, parser):
         parser.add_argument('--path', required=True, type=str,
                             help='Target onnx file or directory containing onnx file')
@@ -401,8 +394,6 @@ class EvaluateCommand(BaseCommand):
                             determine how many processes should be spawned. Default to 1')
 
     def handle(self, args):
-        print(vars(args))
-        print("hello from surgeon evalute")
         if not check_input_path(args.path):
             return
 
@@ -420,9 +411,6 @@ class EvaluateCommand(BaseCommand):
 
 
 class OptimizeCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
-        super().__init__(name, help, children)
-
     def add_arguments(self, parser):
         parser.add_argument('-in', '--input', dest='input_model', required=True, type=str,
                             help='Input onnx model to be optimized')
@@ -469,8 +457,6 @@ class OptimizeCommand(BaseCommand):
                             help='Specify real size of graph output.')
 
     def handle(self, args):
-        print(vars(args))
-        print("hello from surgeon optimize")
         if not check_input_path(args.input_model) or not check_output_model_path(args.output_model):
             return
 
@@ -531,9 +517,6 @@ class OptimizeCommand(BaseCommand):
             logger.info('=' * 100)
 
 class ExtractCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
-        super().__init__(name, help, children)
-
     def add_arguments(self, parser):
         parser.add_argument('-in', '--input', dest='input_model', required=True, type=str,
                             help='Input onnx model to be optimized')
@@ -551,8 +534,6 @@ class ExtractCommand(BaseCommand):
                             help='Specify the input dtype of subgraph')
 
     def handle(self, args):
-        print(vars(args))
-        print("hello from surgeon extract")
         if not check_input_path(args.input_model) or not check_output_model_path(args.output_model):
             return
 
@@ -580,9 +561,6 @@ class ExtractCommand(BaseCommand):
             logger.error(err)
 
 class ConcatenateCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
-        super().__init__(name, help, children)
-
     def add_arguments(self, parser):
         parser.add_argument('-g1', '--graph1', required=True, type=str,
                             help='First onnx model to be consolidated')
@@ -598,8 +576,6 @@ class ConcatenateCommand(BaseCommand):
                             help='Output combined onnx graph path')
 
     def handle(self, args):
-        print(vars(args))
-        print("hello from surgeon extract")
         if not check_input_path(args.graph1):
             raise TypeError(f"Invalid graph1: {args.graph1}")
         if not check_input_path(args.graph2):
@@ -640,14 +616,25 @@ class ConcatenateCommand(BaseCommand):
             f'Combined model saved in {args.combined_graph_path}'
         )
 
+class SurgeonCommand(BaseCommand):
+    def __init__(self, name="", help="", children=None):
+        super().__init__(name, help, children)
 
-def get_cmd_info():
+    def add_arguments(self, parser, **kwargs):
+        return super().add_arguments(parser, **kwargs)
+
+    def handle(self, args, **kwargs):
+        return super().handle(args, **kwargs)
+
+
+def get_cmd_instance():
     surgeon_help_info = "surgeon tool for onnx modifying functions."
-    list_cmd_instance = ListCommand("list")
-    evaluate_cmd_instance = EvaluateCommand("evaluate")
-    optimize_cmd_instance = OptimizeCommand("optimize")
-    extract_cmd_instance = ExtractCommand("extract")
-    concatenate_cmd_instance = ConcatenateCommand("concatenate")
-    return BaseCommand("surgeon", surgeon_help_info, [list_cmd_instance, evaluate_cmd_instance, 
-                                                      optimize_cmd_instance, extract_cmd_instance,
-                                                      concatenate_cmd_instance])
+    list_cmd_instance = ListCommand("list", "List available Knowledges")
+    evaluate_cmd_instance = EvaluateCommand("evaluate", "Evaluate model matching specified knowledges")
+    optimize_cmd_instance = OptimizeCommand("optimize", "Optimize model with specified knowledges")
+    extract_cmd_instance = ExtractCommand("extract", "Extract subgraph from onnx model")
+    concatenate_cmd_instance = ConcatenateCommand("concatenate",
+                                                  "Concatenate two onnxgraph into combined one onnxgraph")
+    return SurgeonCommand("surgeon", surgeon_help_info, [list_cmd_instance, evaluate_cmd_instance, 
+                                                         optimize_cmd_instance, extract_cmd_instance,
+                                                         concatenate_cmd_instance])

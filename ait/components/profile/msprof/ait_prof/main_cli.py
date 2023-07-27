@@ -58,9 +58,6 @@ def msprof_cli(application, output, model_execution, sys_hardware_mem, sys_cpu_p
 
 
 class ProfileCommand(BaseCommand):
-    def __init__(self, name="", help="", children=[]):
-        super().__init__(name, help, children)
-
     def add_arguments(self, parser):
         parser.add_argument(
             "--application",
@@ -129,14 +126,14 @@ class ProfileCommand(BaseCommand):
         )
 
     def handle(self, args):
-        args_adapter = MsProfArgsAdapter(args.application, args.output.as_posix() if args.output else None,
-                            args.model_execution, args.sys_hardware_mem, args.sys_cpu_profiling, args.sys_profiling,
-                            args.sys_pid_profiling, args.dvpp_profiling, args.runtime_api, args.task_time, args.aicpu)
+        args_adapter = MsProfArgsAdapter(args.application, args.output, args.model_execution, args.sys_hardware_mem,
+                                         args.sys_cpu_profiling, args.sys_profiling, args.sys_pid_profiling,
+                                         args.dvpp_profiling, args.runtime_api, args.task_time, args.aicpu)
         ret = msprof_process(args_adapter)
         exit(ret)
 
 
-def get_cmd_info():
+def get_cmd_instance():
     help_info = "get profiling data of a given programma"
     cmd_instance = ProfileCommand("profile", help_info)
     return cmd_instance

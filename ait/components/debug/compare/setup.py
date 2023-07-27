@@ -44,6 +44,6 @@ setup(
     ],
     python_requires='>=3.7',
     entry_points={
-        'debug_sub_task': ['compare=msquickcmp.__main__:get_cmd_info'],
+        'debug_sub_task': ['compare=msquickcmp.__main__:get_cmd_instance'],
     },
 )
