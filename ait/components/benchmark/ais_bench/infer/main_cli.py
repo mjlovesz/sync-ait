@@ -19,6 +19,7 @@ from components.parser.parser import BaseCommand
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 
+
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -58,19 +59,20 @@ def check_device_range_valid(value):
     min_value = 0
     max_value = 255
     if ',' in value:
-        ilist = [ int(v) for v in value.split(',') ]
+        ilist = [int(v) for v in value.split(',')]
         for ivalue in ilist:
             if ivalue < min_value or ivalue > max_value:
                 raise argparse.ArgumentTypeError("{} of device:{} is invalid. valid value range is [{}, {}]".format(
                     ivalue, value, min_value, max_value))
         return ilist
     else:
-		# default as single int value
+        # default as single int value
         ivalue = int(value)
         if ivalue < min_value or ivalue > max_value:
             raise argparse.ArgumentTypeError("device:{} is invalid. valid value range is [{}, {}]".format(
                 ivalue, min_value, max_value))
         return ivalue
+
 
 def check_om_path_valid(value):
     path_value = str(value)
@@ -81,8 +83,8 @@ def check_om_path_valid(value):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is invalid. Please check the existency, \
                                          readability and property of this path")
 
-class BenchmarkCommand(BaseCommand):
 
+class BenchmarkCommand(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "-om",

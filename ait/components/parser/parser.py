@@ -12,12 +12,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pkg_resources
+import logging
 import argparse
+import pkg_resources
+
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 
 class BaseCommand:
-    def __init__(self, name = "", help_info = "", children = None):
+    def __init__(self, name="", help_info="", children=None):
         self.name = name
         self.help_info = help_info
         if not children:
@@ -47,7 +52,7 @@ def register_parser(parser, commands):
         register_parser(subparser, command.children)
 
 
-def load_command_instance(entry_points : str, name = None, help_info = None, CommandClass = None):
+def load_command_instance(entry_points : str, name=None, help_info=None, derived_command=None):
     cmd_instances = []
     for entry_point in pkg_resources.iter_entry_points(entry_points):
         cmd_instances.append(entry_point.load()())
@@ -55,9 +60,8 @@ def load_command_instance(entry_points : str, name = None, help_info = None, Com
     if len(cmd_instances) == 1:
         return cmd_instances[0]
     elif len(cmd_instances) > 1:
-        if not isinstance(name, str) or not isinstance(help_info, str) or CommandClass is None:
-            print(f"load subcommands from entry point {entry_points} failed, \
-                  lack of name or help_info or subcommand class")
+        if not isinstance(name, str) or not isinstance(help_info, str) or derived_command is None:
+            logger.warning("load subcommands from entry point %s failed, \
+                           lack of name or help_info or subcommand class", entry_points)
         else:
-            return CommandClass(name, help_info, cmd_instances)
-
+            return derived_command(name, help_info, cmd_instances)
