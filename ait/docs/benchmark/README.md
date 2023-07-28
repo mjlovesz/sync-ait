@@ -66,6 +66,8 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
 | --perf                   |调用trtexec开关。1或true（开启）、0或false（关闭），默认关闭。配合--backend参数使用，单独使用无效。|否|
 | --energy_consumption     |能耗采集开关。1或true（开启）、0或false（关闭），默认关闭。需要配合--npu_id参数使用，单独使用无效。|否|
 | --npu_id                 |指定npu_id开关。需要通过npu-smi info命令获取指定device说对应的npu id。配合--energy_consumption参数使用，单独使用无效。|否|
+| --pipeline               |指定pipeline开关，用于开启多线程推理功能。1或true（开启）、0或false（关闭），默认关闭。|否|
+| --dump-npy               |指定dump-npy开关，用于开启dump结果自动转换功能。1或true（开启）、0或false（关闭），默认关闭。需要配合--output和--dump/--acl-json-path参数使用，单独使用无效。|否|
 
 ### FAQ
 使用过程中遇到问题可以参考[FAQ](FAQ.md)
@@ -84,3 +86,5 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
   |[08_multi_device_scenario](../../examples/cli/benchmark/08_multi_device_scenario)|采用多个npu同步进行om模型的推理|
   |[09_trtexec](../../examples/cli/benchmark/09_trtexec)|集成NVIDIA trtexec工具进行onnx模型的推理|
   |[10_energy_consumption](../../examples/cli/benchmark/10_energy_consumption)|om模型推理获取功耗数据|
+  |[11_multi_thread](../../examples/cli/benchmark/11_multi_thread)|多线程推理场景|
+  |[12_dump_data_convert](../../examples/cli/benchmark/12_dump_data_convert)|dump数据自动转换|
