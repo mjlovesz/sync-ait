@@ -818,53 +818,6 @@ Result ModelProcess::CreateOutput()
     return SUCCESS;
 }
 
-void* ModelProcess::get_out_data(aclDataType datatype, void* outHostData)
-{
-    void* outData;
-    switch (datatype) {
-        case TYPE_FLOAT:
-            outData = reinterpret_cast<float*>(outHostData);
-            break;
-        case TYPE_ACLFLOAT16:
-            outData = reinterpret_cast<aclFloat16*>(outHostData);
-            break;
-        case TYPE_INT8_T:
-            outData = reinterpret_cast<int8_t*>(outHostData);
-            break;
-        case TYPE_INT:
-            outData = reinterpret_cast<int*>(outHostData);
-            break;
-        case TYPE_UINT8_T:
-            outData = reinterpret_cast<uint8_t*>(outHostData);
-            break;
-        case TYPE_INT16_T:
-            outData = reinterpret_cast<int16_t*>(outHostData);
-            break;
-        case TYPE_UINT16_T:
-            outData = reinterpret_cast<uint16_t*>(outHostData);
-            break;
-        case TYPE_UINT32_T:
-            outData = reinterpret_cast<uint32_t*>(outHostData);
-            break;
-        case TYPE_INT64_T:
-            outData = reinterpret_cast<int64_t*>(outHostData);
-            break;
-        case TYPE_UINT64_T:
-            outData = reinterpret_cast<uint64_t*>(outHostData);
-            break;
-        case TYPE_DOUBLE:
-            outData = reinterpret_cast<double*>(outHostData);
-            break;
-        case TYPE_BOOL:
-            outData = reinterpret_cast<bool*>(outHostData);
-            break;
-        default:
-            printf("undefined data type!\n");
-            break;
-        }
-    return outData;
-}
-
 void ModelProcess::print_float_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
     for (size_t i = 1; i <= len / sizeof(float); i++)
@@ -1130,57 +1083,6 @@ void ModelProcess::print_error_log(aclError ret)
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclrtMemcpy failed, ret[%d]", ret);
     }
-    return;
-}
-
-void ModelProcess::OutputModelResult(std::string& s, std::string& modelName, std::uint64_t dymbatch_size, bool is_dymshape) {
-    void* data = nullptr;
-    void* outHostData = nullptr;
-    void* outData = nullptr;
-    aclError ret = ACL_SUCCESS;
-    uint64_t maxBatchSize = 0;
-    size_t len = 0;
-    ret = GetMaxBatchSize(maxBatchSize);
-    print_error_log(ret);
-    for (size_t i = 0; i < aclmdlGetDatasetNumBuffers(output_); ++i) {
-        aclDataBuffer* dataBuffer = aclmdlGetDatasetBuffer(output_, i);
-        data = aclGetDataBufferAddr(dataBuffer);
-        if (is_dymshape) {
-	    aclTensorDesc *outputDesc = aclmdlGetDatasetTensorDesc(output_, i);
-	    len = aclGetTensorDescSize(outputDesc);
-	    }
-        else {
-	        len = aclGetDataBufferSizeV2(dataBuffer);
-            if (dymbatch_size > 0 && maxBatchSize > 0) {
-                len = len / (maxBatchSize / dymbatch_size);
-            }
-	    }
-        aclDataType datatype = aclmdlGetOutputDataType(modelDesc_, i);
-        if (!g_is_device) {
-            ret = aclrtMallocHost(&outHostData, len);
-            print_error_log(ret);
-            ret = aclrtMemcpy(outHostData, len, data, len, ACL_MEMCPY_DEVICE_TO_HOST);
-            print_error_log(ret);
-            outData = get_out_data(datatype, outHostData);
-        } else {
-            outData = reinterpret_cast<float*>(data);
-        }
-        if (g_is_txt) {
-            vector<int64_t> curOutputDimsMul;
-            ret = GetCurOutputDimsMul(i, curOutputDimsMul);
-            ofstream outstr(s + "/" + modelName + "_output_" + to_string(i) + ".txt", ios::out);
-            print_data_log(datatype, len, outstr, outData, curOutputDimsMul);
-            outstr.close();
-        } else {
-            ofstream outstr(s + "/" + modelName + "_output_" + to_string(i) + ".bin", ios::out | ios::binary);
-            outstr.write((char*)outData, len);
-            outstr.close();
-        }
-        if (Free_Host_Try(ret, outHostData) == FAILED) {
-            return;
-        }
-    }
-    INFO_LOG("output data success");
     return;
 }
 
