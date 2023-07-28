@@ -93,7 +93,10 @@ class DumpData(object):
     def _read_input_data(self, input_pathes, names, shapes, dtypes):
         inputs_map = {}
         for input_path, name, shape, dtype in zip(input_pathes, names, shapes, dtypes):
-            input_data = np.fromfile(input_path, dtype=dtype)
+            if dtype == np.float32 and os.path.getsize(input_path) == np.prod(shape) * 2:
+                input_data = np.fromfile(input_path, dtype=np.float16).astype(np.float32)
+            else:
+                input_data = np.fromfile(input_path, dtype=dtype)
             if np.prod(input_data.shape) != np.prod(shape):
                 cur = input_data.shape
                 logger.error(f"input data shape not match, input_path: {input_path}, shape: {cur}, target: {shape}")
