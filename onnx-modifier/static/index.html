@@ -46,7 +46,7 @@
         <div class="title"> Download </div>
         <img src="svg/save.svg"/>
     </div>
-    
+
 
     <div id="reset-graph" class="icon toolbar-button" title="Roll back all modifications to the original model">
         <div class="title"> Reset </div>
@@ -57,34 +57,34 @@
         <div class="title"> Extract Sub Network </div>
         <img src="svg/extract to.svg"/>
     </div>
-    
+
     <img src="svg/分割线.svg" style="margin: 0 20px ;"/>
 
     <div id="add-node" class="icon toolbar-button">
         <div class="title"> Add Node </div>
         <img src="svg/add node.svg"/>
     </div>
-    
+
     <img src="svg/分割线.svg" style="margin: 0 20px ;"/>
 
     <div id="onnxsim-graph" class="icon toolbar-button" title="Invoke onnxsim to optimize the entire network">
         <div class="title"> OnnxSim </div>
         <img src="svg/onnx_sim.svg"/>
     </div>
-    
+
 
     <div id="auto-optimizer-graph" class="icon toolbar-button" title="Invoke AutoOptimizer(surgeon) to optimize the entire network. It is an optimization tool based on the knowledge base. For details, see the AIT description document">
         <div class="title"> AutoOptimizer </div>
         <img src="svg/auto_optimizer.svg"/>
     </div>
-    
+
     <img src="svg/分割线.svg" style="margin: 0 20px ;"/>
 
     <div id="modify-export" class="icon toolbar-button" title="Export the current modification to a JSON file. You can import and apply these changes later">
         <div class="title"> Modifier Info Export </div>
         <img src="svg/modify-import.svg"/>
     </div>
-    
+
 
     <div id="modify-import" class="icon toolbar-button" title="Import the JSON file and apply the saved modification steps">
         <div class="title"> Modifier Info Import </div>
@@ -92,7 +92,7 @@
     </div>
 </div>
 <div id="graph" class="graph" tabindex="0">
-    <svg id="canvas" class="canvas" preserveaspectratio="xMidYMid meet" width="100%" height="100%">   
+    <svg id="canvas" class="canvas" preserveaspectratio="xMidYMid meet" width="100%" height="100%">
         <g id="linecolor">
             <linearGradient id="gradient-start">
                 <stop stop-color="#0077FF"></stop>
@@ -173,7 +173,7 @@
         <svg class="" viewbox="0 0 5120 300">
            <g style="font-size:240pt" >
                <text class="logo-fill" x=200 y=260 textLength="2560">Ascend's</text>
-           </g>        
+           </g>
        </svg>
    </a>
     <a href="https://gitee.com/ascend/ait/tree/master/onnx-modifier" target="blank_">
@@ -184,7 +184,7 @@
 
     <button id="open-file-button-logo" class="center open-file-button">Open Model&hellip;</button>
     <button id="github-button" class="center github-button">Gitee repo</button>
-    <input type="file" id="open-file-dialog" class="open-file-dialog" multiple="false" accept=".onnx, .ort, .pb, .meta, .tflite, .lite, .tfl, .keras, .h5, .hd5, .hdf5, .json, .model, .mar, .params, .param, .armnn, .mnn, .ncnn, .tnnproto, .tmfile, .ms, .nn, .uff, .rknn, .xmodel, .kmodel, .paddle, .pdmodel, .pdparams, .nb, .dnn, .cmf, .mlmodel, .mlpackage, .caffemodel, .pbtxt, .prototxt, .pkl, .pt, .pth, .ptl, .t7, .joblib, .cfg, .xml, .zip, .tar">
+    <input type="file" id="open-file-dialog" class="open-file-dialog" multiple="false" accept=".onnx, .om ,.ort, .pb, .meta, .tflite, .lite, .tfl, .keras, .h5, .hd5, .hdf5, .json, .model, .mar, .params, .param, .armnn, .mnn, .ncnn, .tnnproto, .tmfile, .ms, .nn, .uff, .rknn, .xmodel, .kmodel, .paddle, .pdmodel, .pdparams, .nb, .dnn, .cmf, .mlmodel, .mlpackage, .caffemodel, .pbtxt, .prototxt, .pkl, .pt, .pth, .ptl, .t7, .joblib, .cfg, .xml, .zip, .tar">
     <input type="file" id="open-modify-json-dialog" class="open-file-dialog" multiple="false" accept=".json">
     <!-- Preload fonts to workaround Chrome SVG layout issue -->
     <div style="font-weight: normal; color: rgba(0, 0, 0, 0.01); user-select: none;">.</div>
@@ -193,12 +193,12 @@
 </div>
 <div id="transparent" class="transparent"></div>
 <!-- dialogs -->
-<dialog id="show-message-alert" class="message-box dialog"> 
+<dialog id="show-message-alert" class="message-box dialog">
     <h1> </h1>
     <div class="text"> </div>
     <div class="footer"><button onclick="document.getElementById('show-message-alert').close()">OK</button></div>
 </dialog>
-<dialog id="show-message-confirm" class="message-box confirm-message-box dialog"> 
+<dialog id="show-message-confirm" class="message-box confirm-message-box dialog">
     <h1> </h1>
     <div class="text"> </div>
     <div class="footer">
@@ -212,7 +212,7 @@
         <svg class="logo-name" viewbox="0 0 5120 300">
            <g style="font-size:240pt" >
                <text class="logo-fill" x=200 y=260 textLength="2560">Ascend's</text>
-           </g>        
+           </g>
        </svg>
    </a>
     <a href="https://gitee.com/ascend/ait/tree/master/onnx-modifier" target="blank_">
@@ -226,21 +226,21 @@
         <div style="height: 30px; text-align: center;">Copyright &copy; <a href="https://gitee.com/ascend/ait/" target="blank_">Ascend</a></div>
         <div style="height: 30px; text-align: center;">Thanks <a href="https://github.com/ZhangGe6" target="blank_">ZhangGe6</a></div>
     </div>
-    
+
     <div class="footer"><button onclick="document.getElementById('show-about').close()">OK</button></div>
 </dialog>
 
-<dialog id="download-dialog" class="dialog message-box"> 
-    <input type="checkbox" id="shapeInference" class="download-checkbox-shapeInference"/> 
+<dialog id="download-dialog" class="dialog message-box">
+    <input type="checkbox" id="shapeInference" class="download-checkbox-shapeInference"/>
     <input type="text" value="shape inference" class="download-anno-shapeInference" readonly/> </td>
-    <input type="checkbox" id="cleanUp" class="download-checkbox-cleanUp"/> 
+    <input type="checkbox" id="cleanUp" class="download-checkbox-cleanUp"/>
     <input type="text" value="clean up" class="download-anno-cleanUp" readonly/> </td>
     <div class="footer">
         <button>Cancel</button>
         <button>OK</button>
     </div>
 </dialog>
-<dialog id="addnode-dialog" class="dialog message-box"> 
+<dialog id="addnode-dialog" class="dialog message-box">
     <p class="title"> Add New Node </p>
     <div class="dialog-content">
         <div class="message"> Please choose node type </div>
@@ -258,7 +258,7 @@
         <button>Confirm</button>
     </div>
 </dialog>
-<dialog id="addinput-dialog" class="dialog message-box"> 
+<dialog id="addinput-dialog" class="dialog message-box">
     <p class="title"> Add New Input </p>
     <div class="dialog-content">
         <div class="message"> Please choose input </div>
@@ -275,7 +275,7 @@
         <button>Confirm</button>
     </div>
 </dialog>
-<dialog id="change-input-shape-dialog" class="dialog message-box"> 
+<dialog id="change-input-shape-dialog" class="dialog message-box">
     <p class="title"> Change Input Shape </p>
     <div class="dialog-content">
         <div class="message"> Please enter batchsize </div>
@@ -288,7 +288,7 @@
         </div>
         <div class="content-item">
             <div class="input">
-                <input type="checkbox" class="checkbox-shape-change" checked /> 
+                <input type="checkbox" class="checkbox-shape-change" checked />
                 <span class="download-anno-cleanUp"> shape inference  </span>
             </div>
         </div>
@@ -298,12 +298,12 @@
         <button id="change-input-shape-input-ok">Confirm</button>
     </div>
 </dialog>
-<dialog id="dynamic-batch-size-dialog" class="dialog message-box"> 
+<dialog id="dynamic-batch-size-dialog" class="dialog message-box">
     <p class="title"> Dynamic Input Batch Size </p>
     <div class="dialog-content">
         <div class="content-item">
             <div class="input">
-                <input type="checkbox" class="checkbox-shape-change" checked /> 
+                <input type="checkbox" class="checkbox-shape-change" checked />
                 <span class="download-anno-cleanUp"> shape inference  </span>
             </div>
         </div>
@@ -313,7 +313,7 @@
         <button id="dynamic-batch-size-input-ok">Confirm</button>
     </div>
 </dialog>
-<dialog id="fixed-batch-size-dialog" class="dialog message-box"> 
+<dialog id="fixed-batch-size-dialog" class="dialog message-box">
     <p class="title"> Fixed Input Batch Size </p>
     <div class="dialog-content">
         <div class="message"> Please enter batchsize </div>
@@ -326,7 +326,7 @@
         </div>
         <div class="content-item">
             <div class="input">
-                <input type="checkbox" class="checkbox-shape-change" checked /> 
+                <input type="checkbox" class="checkbox-shape-change" checked />
                 <span class="download-anno-cleanUp"> shape inference  </span>
             </div>
         </div>
