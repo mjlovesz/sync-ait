@@ -40,37 +40,60 @@ def call_transplt_cmd(argv):
     return aa.handle(args)
 
 
-def test_transplt_argparse_given_valid_when_any_then_pass():
+def test_transplt_argparse_given_valid_when_short_then_pass():
     argv = ["-s", SOURCE, "-f", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS]
     transplt_argparse(argv)
 
 
-def test_transplt_argparse_given_no_source_when_any_then_error():
+def test_transplt_argparse_given_no_source_when_short_then_error():
     argv = ["-f", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS]
     with pytest.raises(SystemExit):
         transplt_argparse(argv)
 
 
-def test_transplt_argparse_given_empty_source_when_any_then_error():
+def test_transplt_argparse_given_empty_source_when_short_then_error():
     argv = ["-s", "-f", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS]
     with pytest.raises(SystemExit):
         transplt_argparse(argv)
 
 
-def test_transplt_argparse_given_invalid_report_type_when_any_then_error():
+def test_transplt_argparse_given_invalid_report_type_when_short_then_error():
     argv = ["-s", SOURCE, "-f", INVALID_ARG, "--log-level", LOG_LEVEL, "--tools", TOOLS]
     with pytest.raises(SystemExit):
         transplt_argparse(argv)
 
 
-def test_transplt_argparse_given_invalid_log_level_when_any_then_error():
+def test_transplt_argparse_given_invalid_log_level_when_short_then_error():
     argv = ["-s", SOURCE, "-f", REPORT_TYPE, "--log-level", INVALID_ARG, "--tools", TOOLS]
     with pytest.raises(SystemExit):
         transplt_argparse(argv)
 
 
-def test_transplt_argparse_given_invalid_tools_when_any_then_error():
+def test_transplt_argparse_given_invalid_tools_when_short_then_error():
     argv = ["-s", SOURCE, "-f", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", INVALID_ARG]
+    with pytest.raises(SystemExit):
+        transplt_argparse(argv)
+
+
+def test_transplt_argparse_given_valid_when_long_then_pass():
+    argv = ["--source", SOURCE, "--report-type", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS]
+    transplt_argparse(argv)
+
+
+def test_transplt_argparse_given_no_source_when_long_then_error():
+    argv = ["--report-type", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS]
+    with pytest.raises(SystemExit):
+        transplt_argparse(argv)
+
+
+def test_transplt_argparse_given_empty_source_when_long_then_error():
+    argv = ["--source", "--report-type", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS]
+    with pytest.raises(SystemExit):
+        transplt_argparse(argv)
+
+
+def test_transplt_argparse_given_invalid_report_type_when_long_then_error():
+    argv = ["--source", SOURCE, "--report-type", INVALID_ARG, "--log-level", LOG_LEVEL, "--tools", TOOLS]
     with pytest.raises(SystemExit):
         transplt_argparse(argv)
 
