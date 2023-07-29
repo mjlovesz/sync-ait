@@ -23,7 +23,20 @@ logger = logging.getLogger(__name__)
 
 
 class BaseCommand:
-    def __init__(self, name="", help_info="", children=None):
+    '''
+    for a ending command, a derived class need to be created inherienting this BaseCommand,
+    then modify the add_arguments and handle method
+    '''
+    def __init__(self, name="", help_info="", children=None, **kwargs):
+        '''
+        parameters:
+            name: (string) name of the command
+            help_info: (string) help infomation of the command
+            children: (list[BaseCommand]) list of BaseCommand instance
+            kwargs: for extension in the future
+        return:
+            None
+        '''
         self.name = name
         self.help_info = help_info
         if not children:
@@ -32,9 +45,23 @@ class BaseCommand:
             self.children = children
 
     def add_arguments(self, parser, **kwargs):
+        '''
+        parameters:
+            parser: (argparse.ArgumentParser) parser to be added parameters
+            kwargs: for extension in the future
+        return:
+            None
+        '''
         pass
 
     def handle(self, args, **kwargs):
+        '''
+        parameters:
+            args: (argparse.Namespace) argument aggregation
+            kwargs: for extension in the future
+        return:
+            None
+        '''
         pass
 
 
@@ -66,3 +93,4 @@ def load_command_instance(entry_points : str, name=None, help_info=None, derived
                            lack of name or help_info or subcommand class", entry_points)
         else:
             return derived_command(name, help_info, cmd_instances)
+    return None

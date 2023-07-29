@@ -16,6 +16,7 @@ import pathlib
 import subprocess
 import argparse
 
+
 from components.parser.parser import BaseCommand
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
     ARGS_REQUIRED_KNOWLEDGES
@@ -25,6 +26,7 @@ from auto_optimizer.common.click_utils import optimize_onnx, list_knowledges, \
     cli_eva, check_input_path, check_output_model_path
 from auto_optimizer.common.click_utils import default_off_knowledges
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
+
 
 def check_soc(value):
     ivalue = int(value)
@@ -101,7 +103,7 @@ class EvaluateCommand(BaseCommand):
         for know in knowledge_list:
             if know in ARGS_REQUIRED_KNOWLEDGES:
                 knowledge_list.remove(know)
-                logger.warning("Knowledge {} cannot be evaluate".format(know))
+                logger.warning(f"Knowledge {know} cannot be evaluate")
 
         if not knowledge_list:
             return
@@ -215,6 +217,7 @@ class OptimizeCommand(BaseCommand):
         if args.infer_test:
             logger.info('=' * 100)
 
+
 class ExtractCommand(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('-in', '--input', dest='input_model', required=True, type=str,
@@ -258,6 +261,7 @@ class ExtractCommand(BaseCommand):
             )
         except ValueError as err:
             logger.error(err)
+
 
 class ConcatenateCommand(BaseCommand):
     def add_arguments(self, parser):
@@ -311,6 +315,7 @@ class ConcatenateCommand(BaseCommand):
             f'Concatenate ONNX model: {args.graph1} and ONNX model: {args.graph2} completed. '
             f'Combined model saved in {args.combined_graph_path}'
         )
+
 
 class SurgeonCommand(BaseCommand):
     def add_arguments(self, parser, **kwargs):
