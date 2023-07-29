@@ -12,16 +12,11 @@
 # limitations under the License.
 
 import os.path
+import argparse
 
-import click.testing
 import pytest
 
-from app_analyze.__main__ import cli
-
-
-@pytest.fixture
-def runner():
-    yield click.testing.CliRunner()
+from app_analyze.__main__ import get_cmd_instance
 
 
 CUR_DIR = f'{os.path.dirname(__file__)}/'
@@ -31,11 +26,64 @@ LOG_LEVEL = 'INFO'
 TOOLS = 'cmake'
 
 
-def test_app_analyze_opencv_csv(runner):
-    runner.invoke(cli, ['-s', SOURCE,
-                        '-f', REPORT_TYPE,
-                        '--log-level', LOG_LEVEL,
-                        '--tools', TOOLS])
+def transplt_argparse(argv):
+    aa = get_cmd_instance()
+    parser = argparse.ArgumentParser()
+    aa.add_arguments(parser)
+    return parser.parse_args(argv)
+
+
+def call_transplt_cmd(argv):
+    aa = get_cmd_instance()
+    args = transplt_argparse(argv)
+    return aa.handle(args)
+
+
+def test_transplt_argparse_given_valid_when_any_then_pass():
+    argv = '-s {} -f {} --log-level {} --tools {}'.format(SOURCE, REPORT_TYPE, LOG_LEVEL, TOOLS)
+    transplt_argparse(argv.split())
+
+
+def test_transplt_argparse_given_no_source_when_any_then_error():
+    argv = '-f {} --log-level {} --tools {}'.format(REPORT_TYPE, LOG_LEVEL, TOOLS)
+    with pytest.raises(SystemExit):
+        transplt_argparse(argv.split())
+
+
+def test_transplt_argparse_given_empty_source_when_any_then_error():
+    argv = '-s -f {} --log-level {} --tools {}'.format(REPORT_TYPE, LOG_LEVEL, TOOLS)
+    with pytest.raises(SystemExit):
+        transplt_argparse(argv.split())
+
+
+def test_transplt_argparse_given_invalid_report_type_when_any_then_error():
+    argv = '-s {} -f {} --log-level {} --tools {}'.format(SOURCE, "foo", LOG_LEVEL, TOOLS)
+    with pytest.raises(SystemExit):
+        transplt_argparse(argv.split())
+
+
+def test_transplt_argparse_given_invalid_log_level_when_any_then_error():
+    argv = '-s {} -f {} --log-level {} --tools {}'.format(SOURCE, REPORT_TYPE, "foo", TOOLS)
+    with pytest.raises(SystemExit):
+        transplt_argparse(argv.split())
+
+
+def test_transplt_argparse_given_invalid_tools_when_any_then_error():
+    argv = '-s {} -f {} --log-level {} --tools {}'.format(SOURCE, REPORT_TYPE, LOG_LEVEL, "foo")
+    with pytest.raises(SystemExit):
+        transplt_argparse(argv.split())
+
+
+def test_app_analyze_given_opencv_csv_when_any_then_pass():
+    argv = '-s {} -f {} --log-level {} --tools {}'.format(SOURCE, REPORT_TYPE, LOG_LEVEL, TOOLS)
+    call_transplt_cmd(argv.split())
+
     output_xlsx = os.path.join(CUR_DIR, 'resources/opencv/output.xlsx')
     assert os.path.exists(output_xlsx)
     os.remove(output_xlsx)
+
+
+def test_app_analyze_given_opencv_csv_when_any_then_pass():
+    argv = '-s {} -f {} --log-level {} --tools {}'.format("not_exists", REPORT_TYPE, LOG_LEVEL, TOOLS)
+    with pytest.raises(Exception, match='Source directory is not existed!'):
+        call_transplt_cmd(argv.split())
