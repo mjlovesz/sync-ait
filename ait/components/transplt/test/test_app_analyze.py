@@ -24,6 +24,7 @@ SOURCE = os.path.join(CUR_DIR, 'resources/opencv/')
 REPORT_TYPE = 'csv'
 LOG_LEVEL = 'INFO'
 TOOLS = 'cmake'
+INVALID_ARG = "not_valid"
 
 
 def transplt_argparse(argv):
@@ -57,19 +58,19 @@ def test_transplt_argparse_given_empty_source_when_any_then_error():
 
 
 def test_transplt_argparse_given_invalid_report_type_when_any_then_error():
-    argv = '-s {} -f {} --log-level {} --tools {}'.format(SOURCE, "foo", LOG_LEVEL, TOOLS)
+    argv = '-s {} -f {} --log-level {} --tools {}'.format(SOURCE, INVALID_ARG, LOG_LEVEL, TOOLS)
     with pytest.raises(SystemExit):
         transplt_argparse(argv.split())
 
 
 def test_transplt_argparse_given_invalid_log_level_when_any_then_error():
-    argv = '-s {} -f {} --log-level {} --tools {}'.format(SOURCE, REPORT_TYPE, "foo", TOOLS)
+    argv = '-s {} -f {} --log-level {} --tools {}'.format(SOURCE, REPORT_TYPE, INVALID_ARG, TOOLS)
     with pytest.raises(SystemExit):
         transplt_argparse(argv.split())
 
 
 def test_transplt_argparse_given_invalid_tools_when_any_then_error():
-    argv = '-s {} -f {} --log-level {} --tools {}'.format(SOURCE, REPORT_TYPE, LOG_LEVEL, "foo")
+    argv = '-s {} -f {} --log-level {} --tools {}'.format(SOURCE, REPORT_TYPE, LOG_LEVEL, INVALID_ARG)
     with pytest.raises(SystemExit):
         transplt_argparse(argv.split())
 
