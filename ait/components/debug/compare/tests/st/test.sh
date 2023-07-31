@@ -17,27 +17,14 @@ set -u
 
 cur_dir=$(dirname $(readlink -f "$0"))
 
-
-# copy source code to tests, and test
-function copy_source_code_dir_to_tests() {
-    cp -rf ${cur_dir}/../../msquickcmp ${cur_dir}/
-}
-
-function del_source_code_from_tests() {
-    rm -rf ${cur_dir}/../msquickcmp
-}
-
 declare -i ret_val=0
 
 main() {
-    copy_source_code_dir_to_tests
 
     export PYTHON_COMMAND=${2:-"python3"}
 
     ${PYTHON_COMMAND} -m pytest . -s
     ret_val=$?
-
-    del_source_code_from_tests
 
     return $ret_val
 }
