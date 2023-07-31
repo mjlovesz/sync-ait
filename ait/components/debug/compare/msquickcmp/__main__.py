@@ -234,6 +234,7 @@ class CompareCommand(BaseCommand):
             type=str2bool,
             help='Comparision mode:single operator compare, default false.Usage: -single True')
         parser.add_argument(
+            "-max",
             "--max-cmp-size",
             dest="max_cmp_size",
             default=0,
