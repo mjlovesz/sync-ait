@@ -318,6 +318,9 @@ class ConcatenateCommand(BaseCommand):
 
 
 class SurgeonCommand(BaseCommand):
+    def __init__(self, name="", help_info="", children=None, has_handle=False, **kwargs):
+        super().__init__(name, help_info, children, has_handle, **kwargs)
+
     def add_arguments(self, parser, **kwargs):
         return super().add_arguments(parser, **kwargs)
 
@@ -333,6 +336,6 @@ def get_cmd_instance():
     extract_cmd_instance = ExtractCommand("extract", "Extract subgraph from onnx model")
     concatenate_cmd_instance = ConcatenateCommand("concatenate",
                                                   "Concatenate two onnxgraph into combined one onnxgraph")
-    return SurgeonCommand("surgeon", surgeon_help_info, [list_cmd_instance, evaluate_cmd_instance, 
+    return SurgeonCommand("surgeon", surgeon_help_info, [list_cmd_instance, evaluate_cmd_instance,
                                                          optimize_cmd_instance, extract_cmd_instance,
                                                          concatenate_cmd_instance])

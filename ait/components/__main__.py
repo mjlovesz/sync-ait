@@ -25,12 +25,16 @@ from components.parser.parser import register_parser
 
 def main():
     subcommands = [debug_cmd, profile_cmd, transplt_cmd, benchmark_cmd, analyze_cmd, convert_cmd]
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(description="ait(Ascend Inference Tools), provides one-site debugging "
+                                     "and optimization toolkit for inference use Ascend Devices")
     register_parser(parser, subcommands)
+    parser.set_defaults(print_help=parser.print_help)
     args = parser.parse_args()
 
     if hasattr(args, 'handle'):
         args.handle(args)
+    elif hasattr(args, "print_help"):
+        args.print_help()
 
 if __name__ == "__main__":
     main()

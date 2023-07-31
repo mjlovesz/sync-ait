@@ -27,12 +27,13 @@ class BaseCommand:
     for a ending command, a derived class need to be created inherienting this BaseCommand,
     then modify the add_arguments and handle method
     '''
-    def __init__(self, name="", help_info="", children=None, **kwargs):
+    def __init__(self, name="", help_info="", children=None, has_handle=True, **kwargs):
         '''
         parameters:
             name: (string) name of the command
             help_info: (string) help infomation of the command
             children: (list[BaseCommand]) list of BaseCommand instance
+            has_handle: (bool) boolean indicating whether this command has handle function
             kwargs: for extension in the future
         return:
             None
@@ -43,6 +44,7 @@ class BaseCommand:
             self.children = []
         else:
             self.children = children
+        self.has_handle = has_handle
 
     def add_arguments(self, parser, **kwargs):
         '''
@@ -73,10 +75,14 @@ def register_parser(parser, commands):
         if command is None:
             continue
         subparser = subparsers.add_parser(
-            command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help_info
+            command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help_info,
+            description=command.help_info
         )
         command.add_arguments(subparser)
-        subparser.set_defaults(handle=command.handle)
+        if command.has_handle:
+            subparser.set_defaults(handle=command.handle)
+        else:
+            subparser.set_defaults(print_help=subparser.print_help)
         register_parser(subparser, command.children)
 
 
