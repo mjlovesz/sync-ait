@@ -314,7 +314,7 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
                                        bool autoDymShape, bool autoDymDims, const std::string& outFmt,
                                        const bool pureInferMode)
 {
-        if (outputDir != "") {
+    if (outputDir != "") {
         if (fs::is_symlink(outputDir)) {
             fs::remove(outputDir);
         }
