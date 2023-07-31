@@ -28,6 +28,7 @@ import csv
 import logging
 import pandas as pd
 
+import sklearn as _ # import first, bypassing error libgomp-xxx.so.xxx: cannot allocate memory in static TLS block
 import onnxruntime
 import acl
 
@@ -268,7 +269,7 @@ def single_op_compare(args, input_shape):
     # load broken single operator onnx
     subog = OnnxGraph.parse(subgraph_onnx_file)
     single_op_dir = sp.generate_single_op_dir(args.out_path)
-    memory_size = sp.get_memory_size_by_soc_type(args.device)
+    memory_size = sp.get_memory_size_by_soc_type()
 
     # devide onnx into fixed size onnxs
     subonnx_list = sp.dynamic_divide_onnx(args.out_path, subog, memory_size)

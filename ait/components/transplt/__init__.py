@@ -10,26 +10,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-import click
-import pkg_resources
-
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+from components.parser.parser import load_command_instance
 
 
-def load_transplt_sub_task():
-    sub_tasks = {}
-    for entry_point in pkg_resources.iter_entry_points('transplt_sub_task'):
-        sub_tasks[entry_point.name] = entry_point.load()
-
-    if len(sub_tasks) == 1:
-        sub_task = list(sub_tasks.values())[0]
-        sub_task.name = 'transplt'
-        return sub_task
-    else:
-        return click.Group(name='transplt',
-                           context_settings=CONTEXT_SETTINGS
-                           )
-
-
-transplt_cli = load_transplt_sub_task()
+transplt_cmd = load_command_instance('transplt_sub_task')

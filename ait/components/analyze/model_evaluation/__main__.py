@@ -13,22 +13,12 @@
 # limitations under the License.
 
 import os
-import click
 
+from components.parser.parser import BaseCommand
 from model_evaluation.common import utils, logger
 from model_evaluation.common.enum import Framework
 from model_evaluation.bean import ConvertConfig
 from model_evaluation.core import Analyze
-from model_evaluation.options import (
-    opt_model,
-    opt_out_path,
-    opt_soc,
-    opt_weight,
-    opt_framework
-)
-
-
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 def parse_input_param(model: str,
@@ -55,37 +45,63 @@ def parse_input_param(model: str,
     )
 
 
-@click.command(short_help='Analyze tool to analyze model support', no_args_is_help=True,
-               context_settings=CONTEXT_SETTINGS)
-@opt_model
-@opt_framework
-@opt_weight
-@opt_soc
-@opt_out_path
-def cli(
-    input_model: str, framework: str, weight: str,
-    soc: str, output: str
-) -> None:
-    if not os.path.isfile(input_model):
-        logger.error('input model is not file.')
-        return
-
-    try:
-        config = parse_input_param(
-            input_model, framework, weight, soc
+class AnalyzeCommand(BaseCommand):
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "-gm", "--golden-model", type=str,
+            required=True, default=None,
+            help="model path, support caffe, onnx, tensorflow."
         )
-    except ValueError as e:
-        logger.error(f'{e}')
-        return
+        parser.add_argument(
+            "--framework", type=str,
+            choices=['0', '3', '5'],
+            default=None, help="Framework type: 0:Caffe; 3:Tensorflow; 5:Onnx."
+        )
+        parser.add_argument(
+            "-w", "--weight", type=str,
+            required=False, default='',
+            help="Weight file. Required when framework is Caffe."
+        )
+        parser.add_argument(
+            "-soc", "--soc-version", type=str,
+            required=False, default='',
+            help="The soc version."
+        )
+        parser.add_argument(
+            "-o", "--output", type=str,
+            required=True, default='',
+            help="Output path."
+        )
 
-    analyzer = Analyze(input_model, output, config)
-    if analyzer is None:
-        logger.error('the object of \'Analyze\' create failed.')
-        return
+    def handle(self, args):
+        input_model = args.golden_model
+        framework = args.framework
+        weight = args.weight
+        soc_version = args.soc_version
+        output = args.output
 
-    analyzer.analyze_model()
-    logger.info('analyze model finished.')
+        if not os.path.isfile(input_model):
+            logger.error('input model is not file.')
+            return
+
+        try:
+            config = parse_input_param(
+                input_model, framework, weight, soc_version
+            )
+        except ValueError as e:
+            logger.error(f'{e}')
+            return
+
+        analyzer = Analyze(input_model, output, config)
+        if analyzer is None:
+            logger.error('the object of \'Analyze\' create failed.')
+            return
+
+        analyzer.analyze_model()
+        logger.info('analyze model finished.')
 
 
-if __name__ == '__main__':
-    cli()
+def get_cmd_instance():
+    help_info = "Analyze tool to evaluate compatibility of model conversion"
+    cmd_instance = AnalyzeCommand("analyze", help_info)
+    return cmd_instance
