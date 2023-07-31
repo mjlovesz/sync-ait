@@ -233,6 +233,13 @@ class CompareCommand(BaseCommand):
             dest="single_op",
             type=str2bool,
             help='Comparision mode:single operator compare, default false.Usage: -single True')
+        parser.add_argument(
+            "-max",
+            "--max-cmp-size",
+            dest="max_cmp_size",
+            default=0,
+            type=int,
+            help="Max size of tensor array to compare, default 0. Usage: --max-cmp-size 1024")
 
     def handle(self, args):
         cmp_args = CmpArgsAdapter(args.golden_model, args.om_model, args.weight_path, args.input_data_path,
@@ -240,7 +247,8 @@ class CompareCommand(BaseCommand):
                                   args.input_shape, args.device, args.output_size, args.output_nodes, args.advisor,
                                   args.dym_shape_range,
                                   args.dump, args.bin2npy, args.custom_op, args.locat,
-                                  args.onnx_fusion_switch, args.single_op, args.fusion_switch_file)
+                                  args.onnx_fusion_switch, args.single_op, args.fusion_switch_file,
+                                  args.max_cmp_size)
         cmp_process(cmp_args, True)
 
 def get_cmd_instance():

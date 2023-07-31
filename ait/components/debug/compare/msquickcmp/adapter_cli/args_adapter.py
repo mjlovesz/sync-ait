@@ -37,7 +37,8 @@ class CmpArgsAdapter:
                  locat=False,
                  onnx_fusion_switch=True,
                  single_op=False,
-                 fusion_switch_file=""
+                 fusion_switch_file="",
+                 max_cmp_size=0
                  ):
         self.model_path = gold_model
         self.offline_model_path = om_model
@@ -58,3 +59,4 @@ class CmpArgsAdapter:
         self.onnx_fusion_switch = onnx_fusion_switch
         self.fusion_switch_file = fusion_switch_file
         self.single_op = single_op
+        self.max_cmp_size = max_cmp_size
