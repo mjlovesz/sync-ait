@@ -20,7 +20,6 @@ from ais_bench.infer.benchmark_process import args_rules
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.main_cli import BenchmarkCommand
 
-model_name = "resnet50"
 benchmark_command = BenchmarkCommand()
 current_dir = os.path.dirname(os.path.abspath(__file__))
 base_cmd_dict = {
@@ -96,7 +95,6 @@ simple_cmd_dict = {
     "--dump-npy": "0",
     "--divide-input": "0"
 }
-case_cmd_list = []
 
 
 def cmd_dict_to_list(cmd_dict):
@@ -108,7 +106,7 @@ def cmd_dict_to_list(cmd_dict):
 
 
 def create_adapter(args):
-    args_adapter = BenchMarkArgsAdapter (
+    args_adapter = BenchMarkArgsAdapter(
             model=args.om_model,
             input_path=args.input,
             output=args.output,
@@ -142,7 +140,7 @@ def create_adapter(args):
             pipeline=args.pipeline,
             profiler_rename=args.profiler_rename,
             dump_npy=args.dump_npy,
-            divide_input = args.divide_input
+            divide_input=args.divide_input
     )
     return args_adapter
 

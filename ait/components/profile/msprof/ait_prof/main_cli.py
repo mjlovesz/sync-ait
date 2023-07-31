@@ -25,6 +25,7 @@ class ProfileCommand(BaseCommand):
             help="Configure to run AI task files on the environment"
         )
         parser.add_argument(
+            "-o",
             "--output",
             default=None,
             help="The storage path for the collected profiling data,"
