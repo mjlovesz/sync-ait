@@ -43,6 +43,7 @@ NPU_DUMP_TAG = "NPUDump"
 GROUND_TRUTH_TAG = "GroundTruth"
 MIN_ELEMENT_NUM = 3
 ADVISOR_ARGS = "-advisor"
+MAX_CMP_SIZE_ARGS = "--max_cmp_size"
 
 
 class NetCompare(object):
@@ -115,7 +116,7 @@ class NetCompare(object):
         finally:
             pass
 
-    def accuracy_network_compare(self):
+    def accuracy_network_compare(self, max_cmp_size=0):
         """
         Function Description:
             invoke the interface for network-wide comparsion
@@ -128,9 +129,12 @@ class NetCompare(object):
                          self.cpu_dump_data_path, "-f", self.output_json_path, "-out", self.arguments.out_path]
         if self._check_msaccucmp_compare_support_advisor():
             msaccucmp_cmd.append(ADVISOR_ARGS)
+        if self._check_msaccucmp_compare_support_max_cmp_size():
+            msaccucmp_cmd.extend([MAX_CMP_SIZE_ARGS, max_cmp_size])
 
         if self.golden_json_path is not None:
             msaccucmp_cmd.extend(["-cf", self.golden_json_path])
+        
 
         utils.logger.info("msaccucmp command line: %s " % " ".join(msaccucmp_cmd))
         status_code, _, _ = self.execute_msaccucmp_command(msaccucmp_cmd)
@@ -286,6 +290,9 @@ class NetCompare(object):
     def _check_msaccucmp_compare_support_advisor(self):
         return self.arguments.advisor and \
                self._check_msaccucmp_compare_support_args(ADVISOR_ARGS)
+    
+    def _check_msaccucmp_compare_support_max_cmp_size(self):
+        return self._check_msaccucmp_compare_support_args(MAX_CMP_SIZE_ARGS)
 
 
     def _process_result_to_csv(self, fp_write, csv_info):

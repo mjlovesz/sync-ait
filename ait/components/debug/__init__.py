@@ -18,6 +18,9 @@ import model_convert.cmd_utils
 
 
 class DebugCommand(BaseCommand):
+    def __init__(self, name="", help_info="", children=None, has_handle=False, **kwargs):
+        super().__init__(name, help_info, children, has_handle, **kwargs)
+
     def add_arguments(self, parser, **kwargs):
         return model_convert.cmd_utils.add_arguments(parser, **kwargs)
 

@@ -76,8 +76,7 @@ def check_device_range_valid(value):
 
 def check_om_path_valid(value):
     path_value = str(value)
-    if os.path.exists(path_value) and os.path.isfile(path_value) and \
-       (not os.path.isdir(path_value)) and os.access(path_value, os.R_OK):
+    if os.path.isfile(path_value) and (not os.path.isdir(path_value)) and os.access(path_value, os.R_OK):
         return path_value
     else:
         raise argparse.ArgumentTypeError(f"om path:{path_value} is invalid. Please check the existency, \

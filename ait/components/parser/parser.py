@@ -17,25 +17,53 @@ import logging
 import argparse
 import pkg_resources
 
-import model_convert.cmd_utils
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
 class BaseCommand:
-    def __init__(self, name="", help_info="", children=None):
+    '''
+    for a ending command, a derived class need to be created inherienting this BaseCommand,
+    then modify the add_arguments and handle method
+    '''
+    def __init__(self, name="", help_info="", children=None, has_handle=True, **kwargs):
+        '''
+        parameters:
+            name: (string) name of the command
+            help_info: (string) help infomation of the command
+            children: (list[BaseCommand]) list of BaseCommand instance
+            has_handle: (bool) boolean indicating whether this command has handle function
+            kwargs: for extension in the future
+        return:
+            None
+        '''
         self.name = name
         self.help_info = help_info
         if not children:
             self.children = []
         else:
             self.children = children
+        self.has_handle = has_handle
 
     def add_arguments(self, parser, **kwargs):
+        '''
+        parameters:
+            parser: (argparse.ArgumentParser) parser to be added parameters
+            kwargs: for extension in the future
+        return:
+            None
+        '''
         pass
 
     def handle(self, args, **kwargs):
+        '''
+        parameters:
+            args: (argparse.Namespace) argument aggregation
+            kwargs: for extension in the future
+        return:
+            None
+        '''
         pass
 
 
@@ -47,10 +75,14 @@ def register_parser(parser, commands):
         if command is None:
             continue
         subparser = subparsers.add_parser(
-            command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help_info
+            command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help_info,
+            description=command.help_info
         )
-        model_convert.cmd_utils.add_arguments(subparser)
-        subparser.set_defaults(handle=command.handle)
+        command.add_arguments(subparser)
+        if command.has_handle:
+            subparser.set_defaults(handle=command.handle)
+        else:
+            subparser.set_defaults(print_help=subparser.print_help)
         register_parser(subparser, command.children)
 
 
@@ -67,3 +99,4 @@ def load_command_instance(entry_points : str, name=None, help_info=None, derived
                            lack of name or help_info or subcommand class", entry_points)
         else:
             return derived_command(name, help_info, cmd_instances)
+    return None
