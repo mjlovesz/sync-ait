@@ -28,6 +28,7 @@ import csv
 import logging
 import pandas as pd
 
+import sklearn as _ # import first, bypassing error libgomp-xxx.so.xxx: cannot allocate memory in static TLS block
 import onnxruntime
 import acl
 
@@ -252,7 +253,8 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
             error_interval_info_file = os.path.join(args.out_path, ERROR_INTERVAL_INFO_FILE)
             with os.fdopen(os.open(error_interval_info_file, READ_WRITE_FLAGS, WRITE_MODES), "a+") as fp_writer:
                 output_error_interval_info(fp_writer, error_node_list)
-    csv_sum(original_out_path)
+    if args.dym_shape_range:
+        csv_sum(original_out_path)
 
 
 def single_op_compare(args, input_shape):
@@ -267,7 +269,7 @@ def single_op_compare(args, input_shape):
     # load broken single operator onnx
     subog = OnnxGraph.parse(subgraph_onnx_file)
     single_op_dir = sp.generate_single_op_dir(args.out_path)
-    memory_size = sp.get_memory_size_by_soc_type(args.device)
+    memory_size = sp.get_memory_size_by_soc_type()
 
     # devide onnx into fixed size onnxs
     subonnx_list = sp.dynamic_divide_onnx(args.out_path, subog, memory_size)
@@ -474,7 +476,7 @@ def csv_sum(original_out_path):
     sheet_name_list = []
 
     for files in os.listdir(original_out_path):
-        if files == "model":
+        if not os.path.isdir(os.path.join(original_out_path, files)):
             continue
         for sub_file in os.listdir(os.path.join(original_out_path, files)):
             if sub_file.endswith(".csv"):

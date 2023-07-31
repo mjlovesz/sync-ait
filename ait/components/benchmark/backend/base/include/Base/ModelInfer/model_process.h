@@ -249,11 +249,6 @@ public:
     void DumpModelOutputResult();
 
     /**
-    * @brief get model output result
-    */
-    void OutputModelResult(std::string& s, std::string& modelName, std::uint64_t dymbatch_size, bool is_dymshape);
-
-    /**
     * @brief get current output dims mul
     */
     Result GetCurOutputDimsMul(size_t index,  std::vector<int64_t>& curOutputDimsMul);
@@ -287,7 +282,6 @@ private:
     Result check_ret(aclError ret, size_t buffer_size_zero);
     Result check_create_buffer(aclDataBuffer* inputData, void* inBufferDev);
     Result check_add_buffer(aclError ret, void* inBufferDev, aclDataBuffer* inputData);
-    void* get_out_data(aclDataType datatype, void* outHostData);
     void print_aclFloat16_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
     void print_float_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
     void print_int8_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);

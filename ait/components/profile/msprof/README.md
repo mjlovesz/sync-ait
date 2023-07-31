@@ -49,3 +49,13 @@
   | --aicpu                  | aicpu开关，可选on或off，默认为on。 | 否  |
   | -h, --help               | 工具使用帮助信息。               | 否  |
 
+  ### 使用场景
+请移步[profile使用示例](../../../examples/cli/profile/)
+  | 使用示例               | 使用场景                                 |
+  |-----------------------| ---------------------------------------- |
+  | [01_basic_usage](../../../examples/cli/profile/01_basic_usage)    | 基础示例，对benchmark推理om模型执行性能分析       |
+  | [02_collect_ai_task_data](../../../examples/cli/profile/02_collect_ai_task_data) | 采集AI任务运行性能数据 |
+  | [03_collect_ascend_ai_processor_data](../../../examples/cli/profile/03_collect_ascend_ai_processor_data) | 采集昇腾AI处理器系统数据 |
+
+  ### 性能分析实践案例
+应用ait profile 进行性能分析可以参考案例:[基于ait的性能调优案例](https://gitee.com/ascend/ait/wikis/%E6%A1%88%E4%BE%8B%E5%88%86%E4%BA%AB/%E5%9F%BA%E4%BA%8Eait%E7%9A%84%E6%80%A7%E8%83%BD%E8%B0%83%E4%BC%98%E6%A1%88%E4%BE%8B)
