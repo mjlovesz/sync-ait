@@ -239,7 +239,7 @@ class CompareCommand(BaseCommand):
             help='Comparision mode:single operator compare, default false.Usage: -single True')
         parser.add_argument(
             "--max-cmp-size",
-            "max_cmp_size",
+            dest="max_cmp_size",
             default=0,
             type=int,
             help="Max size of tensor array to compare, default 0. Usage: --max-cmp-size 1024")
