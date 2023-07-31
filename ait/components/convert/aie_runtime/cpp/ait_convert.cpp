@@ -22,12 +22,12 @@ using namespace AscendIE;
 int main(int argc, char** argv)
 {
     const int inputIndex = 4;
-    std::string onnxModelPath = argv[1];
-    std::string outputPath = argv[2];
-    std::string socVersion = argv[3];
     if (argc != inputIndex) {
         std::cout << "For AIE model convert, only three parameters: model, output and soc_version are needed." << std::endl;
     }
+    std::string onnxModelPath = argv[1];
+    std::string outputPath = argv[2];
+    std::string socVersion = argv[3];
 
     Builder* builder = Builder::CreateInferBuilder(socVersion);
 
