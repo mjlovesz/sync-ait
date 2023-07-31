@@ -15,8 +15,8 @@
 import unittest
 from unittest import mock
 
-from aie_runtime.bean.config import ConvertConfig
-from aie_runtime.core import Convert
+from model_convert.aie.bean import ConvertConfig
+from model_convert.aie.core import Convert
 
 
 class TestConvert(unittest.TestCase):

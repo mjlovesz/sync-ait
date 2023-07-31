@@ -17,6 +17,8 @@ import subprocess
 import argparse
 
 from components.parser.parser import BaseCommand
+
+import model_convert.cmd_utils
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
     ARGS_REQUIRED_KNOWLEDGES
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
@@ -314,7 +316,7 @@ class ConcatenateCommand(BaseCommand):
 
 class SurgeonCommand(BaseCommand):
     def add_arguments(self, parser, **kwargs):
-        return super().add_arguments(parser, **kwargs)
+        return model_convert.cmd_utils.add_arguments(parser, **kwargs)
 
     def handle(self, args, **kwargs):
         return super().handle(args, **kwargs)

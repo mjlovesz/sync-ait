@@ -3,7 +3,7 @@ import yaml
 
 
 if __name__ == "__main__":
-    conf_file = "bean/aoe_args_map.yml"
+    conf_file = "aoe/aoe_args_map.yml"
     with open(conf_file, 'r', encoding='utf-8') as f:
         args_conf = yaml.load(f, yaml.Loader)
     print(type(args_conf))

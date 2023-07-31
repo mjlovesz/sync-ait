@@ -19,10 +19,10 @@ if [ ! ${AIE_DIR} ];then
 fi
 
 CONVERT_DIR=$(dirname $(readlink -f $0))
-cd ${CONVERT_DIR}/aie_runtime/cpp
+cd ${CONVERT_DIR}/model_convert/cpp
 rm -rf build && mkdir build && cd build && cmake .. && make -j
 
-AIT_CONVERT=${CONVERT_DIR}/aie_runtime/cpp/build/ait_convert
+AIE_CONVERT=${CONVERT_DIR}/model_convert/cpp/build/aie_convert
 
 if [ ! "$(command -v pip3)" ];then
   echo "Error: pip3 is not installed."
@@ -35,8 +35,8 @@ PYTHON=${PIP3_DIR}/python
 
 AIE_RUNTIME_PATH=$(dirname $(${PYTHON} -c "import aie_runtime;print(aie_runtime.__file__)"))
 
-if [ -f ${AIT_CONVERT} ];then
+if [ -f ${AIE_CONVERT} ];then
   cp ${AIT_CONVERT} ${AIE_RUNTIME_PATH}
   else
-    echo "Error: Build ait_convert failed."
+    echo "Error: Build aie_convert failed."
 fi

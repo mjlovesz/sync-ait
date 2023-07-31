@@ -1,4 +1,4 @@
-atc_args: [
+args: [
   {
     name: '--mode',
     desc: "Run mode. 0(default): generate offline model; 1: convert model to JSON format; 3: only pre-check; 

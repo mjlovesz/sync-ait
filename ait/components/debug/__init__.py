@@ -14,9 +14,12 @@
 
 from components.parser.parser import load_command_instance, BaseCommand
 
+import model_convert.cmd_utils
+
+
 class DebugCommand(BaseCommand):
     def add_arguments(self, parser, **kwargs):
-        return super().add_arguments(parser, **kwargs)
+        return model_convert.cmd_utils.add_arguments(parser, **kwargs)
 
     def handle(self, args, **kwargs):
         return super().handle(args, **kwargs)

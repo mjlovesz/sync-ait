@@ -12,4 +12,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from aie_runtime.bean.config import ConvertConfig
+from model_convert.aie.bean.config import ConvertConfig

@@ -1,4 +1,4 @@
-aoe_args: [
+args: [
   {
     name: '--model',
     abbr_name: '-m',

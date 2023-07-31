@@ -17,6 +17,7 @@ import logging
 import argparse
 import pkg_resources
 
+import model_convert.cmd_utils
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -48,7 +49,7 @@ def register_parser(parser, commands):
         subparser = subparsers.add_parser(
             command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help_info
         )
-        command.add_arguments(subparser)
+        model_convert.cmd_utils.add_arguments(subparser)
         subparser.set_defaults(handle=command.handle)
         register_parser(subparser, command.children)
 
