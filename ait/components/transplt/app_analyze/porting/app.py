@@ -13,8 +13,6 @@
 
 import os
 
-import click
-
 from app_analyze.common.kit_config import KitConfig
 from app_analyze.scan.scan_api import ScanApi
 
