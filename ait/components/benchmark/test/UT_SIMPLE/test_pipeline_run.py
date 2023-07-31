@@ -167,8 +167,8 @@ class TestClass:
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
         output_dir = self.get_output_dir_bin()
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir, 0o755)
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
         session.run_pipeline(infilespath, output_dir, False, False, 'BIN', False)
         bin_files = glob.glob(os.path.join(output_dir, "*.bin"))
         assert len(bin_files) == 1
@@ -182,8 +182,8 @@ class TestClass:
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
         output_dir = self.get_output_dir_npy()
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir, 0o755)
+        if os.path.exists(output_dir):
+            shutil.rmtree(output_dir)
         session.run_pipeline(infilespath, output_dir, False, False, 'NPY', False)
         npy_files = glob.glob(os.path.join(output_dir, "*.npy"))
         assert len(npy_files) == 1
