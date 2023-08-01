@@ -13,6 +13,7 @@ om.ModelFactory = class {
     }
 
     open(context, target) {
+        context.require('./om-proto');
         target.open();
         return om.Metadata.open(context).then((metadata) => {
             return new om.Model(metadata, target);
@@ -453,9 +454,10 @@ om.Container = class {
                 if (!this.model) {
                     throw new om.Error('File does not contain a model definition.');
                 }
-                this._context.require('./om-proto');
+                // this._context.require('./om-proto');
                 try {
                     om.proto = protobuf.get('om').om;
+                    var tmp = om.proto;
                     const reader = protobuf.BinaryReader.open(this.model);
                     this.model = om.proto.ModelDef.decode(reader);
                 } catch (error) {
