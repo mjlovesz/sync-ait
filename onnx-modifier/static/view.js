@@ -1881,16 +1881,16 @@ view.ModelFactoryService = class {
         const nextModule = () => {
             if (modules.length > 0) {
                 const id = modules.shift();
-                // console.log(id)
+                console.log(id)
                 return this._host.require(id).then((module) => {
-                    // console.log(module)
+                    console.log(module)
                     const updateErrorContext = (error, context) => {
                         const content = " in '" + context.identifier + "'.";
                         if (error && typeof error.message === 'string' && !error.message.endsWith(content) && (error.context === undefined || error.context === true)) {
                             error.message = error.message.replace(/\.$/, '') + content;
                         }
                     };
-                    // console.log(module.ModelFactory)
+                    console.log(module.ModelFactory)
                     if (!module.ModelFactory) {
                         throw new view.Error("Failed to load module '" + id + "'.");
                     }
