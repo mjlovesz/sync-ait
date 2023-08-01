@@ -131,9 +131,9 @@ ext_modules = [
         ],
         library_dirs = [cann_lib_path, ],
 
-        extra_compile_args = ['--std=c++11', '-g3', '-lstdc++fs'],
+        extra_compile_args = ['--std=c++11', '-g3'],
 
-        libraries=['ascendcl', 'acl_dvpp', 'acl_cblas', 'stdc++fs'],
+        libraries=['ascendcl', 'acl_dvpp', 'acl_cblas'],
         language='c++',
         define_macros = [('ENABLE_DVPP_INTERFACE', 1), ('COMPILE_PYTHON_MODULE', 1)],
     ),

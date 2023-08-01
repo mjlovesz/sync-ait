@@ -24,7 +24,6 @@
 #include <condition_variable>
 #include <queue>
 #include <stdint.h>
-#include <experimental/filesystem>
 
 #include "PyInferenceSession/PyInferenceSession.h"
 #include "PyTensor/PyTensor.h"
@@ -35,7 +34,6 @@
 #include "Base/ModelInfer/utils.h"
 
 using Arguments = std::unordered_map<std::string, std::string>;
-namespace fs = std::experimental::filesystem;
 
 struct Feeds {
     std::shared_ptr<std::vector<std::string>> outputNames = nullptr;

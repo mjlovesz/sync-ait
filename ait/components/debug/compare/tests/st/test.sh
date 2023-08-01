@@ -1,4 +1,6 @@
+#!/bin/bash
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -11,17 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
+set -u
 
-from app_analyze.common.kit_config import KitConfig
-from app_analyze.scan.scan_api import ScanApi
+cur_dir=$(dirname $(readlink -f "$0"))
 
+declare -i ret_val=0
 
-def start_scan_kit(args):
-    if not os.path.exists(args.source):
-        raise Exception("Source directory is not existed!")
-    args.source = os.path.abspath(args.source)
+main() {
 
-    KitConfig.SOURCE_DIRECTORY = args.source
-    scan_api = ScanApi()
-    scan_api.scan_source(args)
+    export PYTHON_COMMAND=${2:-"python3"}
+
+    ${PYTHON_COMMAND} -m pytest . -s
+    ret_val=$?
+
+    return $ret_val
+}
+
+main "$@"
+exit $?
+

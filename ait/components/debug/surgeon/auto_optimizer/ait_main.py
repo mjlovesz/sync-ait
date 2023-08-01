@@ -16,6 +16,7 @@ import pathlib
 import subprocess
 import argparse
 
+
 from components.parser.parser import BaseCommand
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
     ARGS_REQUIRED_KNOWLEDGES
@@ -25,6 +26,7 @@ from auto_optimizer.common.click_utils import optimize_onnx, list_knowledges, \
     cli_eva, check_input_path, check_output_model_path
 from auto_optimizer.common.click_utils import default_off_knowledges
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
+
 
 def check_soc(value):
     ivalue = int(value)
@@ -101,7 +103,7 @@ class EvaluateCommand(BaseCommand):
         for know in knowledge_list:
             if know in ARGS_REQUIRED_KNOWLEDGES:
                 knowledge_list.remove(know)
-                logger.warning("Knowledge {} cannot be evaluate".format(know))
+                logger.warning(f"Knowledge {know} cannot be evaluate")
 
         if not knowledge_list:
             return
@@ -215,6 +217,7 @@ class OptimizeCommand(BaseCommand):
         if args.infer_test:
             logger.info('=' * 100)
 
+
 class ExtractCommand(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('-in', '--input', dest='input_model', required=True, type=str,
@@ -259,6 +262,7 @@ class ExtractCommand(BaseCommand):
         except ValueError as err:
             logger.error(err)
 
+
 class ConcatenateCommand(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('-g1', '--graph1', required=True, type=str,
@@ -271,7 +275,7 @@ class ConcatenateCommand(BaseCommand):
         parser.add_argument('-pref', '--prefix', dest='graph_prefix', 
                             required=False, type=str, default='pre_',
                             help='Prefix added to all names in a graph')
-        parser.add_argument('-cgp', '--combined-graph-path', required=True, type=str,
+        parser.add_argument('-cgp', '--combined-graph-path', default='', type=str,
                             help='Output combined onnx graph path')
 
     def handle(self, args):
@@ -279,9 +283,6 @@ class ConcatenateCommand(BaseCommand):
             raise TypeError(f"Invalid graph1: {args.graph1}")
         if not check_input_path(args.graph2):
             raise TypeError(f"Invalid graph2: {args.graph2}")
-
-        if not check_output_model_path(args.combined_graph_path):
-            raise TypeError(f"Invalid output: {args.combined_graph_path}")
 
         onnx_graph1 = OnnxGraph.parse(args.graph1)
         onnx_graph2 = OnnxGraph.parse(args.graph2)
@@ -315,7 +316,11 @@ class ConcatenateCommand(BaseCommand):
             f'Combined model saved in {args.combined_graph_path}'
         )
 
+
 class SurgeonCommand(BaseCommand):
+    def __init__(self, name="", help_info="", children=None, has_handle=False, **kwargs):
+        super().__init__(name, help_info, children, has_handle, **kwargs)
+
     def add_arguments(self, parser, **kwargs):
         return super().add_arguments(parser, **kwargs)
 
@@ -331,6 +336,6 @@ def get_cmd_instance():
     extract_cmd_instance = ExtractCommand("extract", "Extract subgraph from onnx model")
     concatenate_cmd_instance = ConcatenateCommand("concatenate",
                                                   "Concatenate two onnxgraph into combined one onnxgraph")
-    return SurgeonCommand("surgeon", surgeon_help_info, [list_cmd_instance, evaluate_cmd_instance, 
+    return SurgeonCommand("surgeon", surgeon_help_info, [list_cmd_instance, evaluate_cmd_instance,
                                                          optimize_cmd_instance, extract_cmd_instance,
                                                          concatenate_cmd_instance])

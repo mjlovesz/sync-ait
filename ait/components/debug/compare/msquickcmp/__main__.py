@@ -11,88 +11,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import sys
-
-import click
 import os
 import argparse
 
 from components.parser.parser import BaseCommand
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
-from msquickcmp.adapter_cli.options import (
-    opt_golden_model,
-    opt_om_model,
-    opt_weight_path,
-    opt_input,
-    opt_cann_path,
-    opt_out_path,
-    opt_input_shape,
-    opt_device,
-    opt_output_size,
-    opt_output_nodes,
-    opt_advisor,
-    opt_dym_shape_range,
-    opt_dump,
-    opt_bin2npy,
-    opt_custom_op,
-    opt_locat,
-    opt_onnx_fusion_switch,
-    opt_fusion_switch_file,
-    opt_single_op
-)
 from msquickcmp.cmp_process import cmp_process
-from msquickcmp.common import utils
 
 
 CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
 
-
-@click.command(name="compare", short_help='one-click network-wide accuracy analysis of golden models.',
-               no_args_is_help=True)
-@opt_golden_model
-@opt_om_model
-@opt_weight_path
-@opt_input
-@opt_cann_path
-@opt_out_path
-@opt_input_shape
-@opt_device
-@opt_output_size
-@opt_output_nodes
-@opt_advisor
-@opt_dym_shape_range
-@opt_dump
-@opt_bin2npy
-@opt_custom_op
-@opt_locat
-@opt_onnx_fusion_switch
-@opt_fusion_switch_file
-@opt_single_op
-def compare_cli(
-    golden_model,
-    om_model,
-    weight_path,
-    input_data_path,
-    cann_path,
-    out_path,
-    input_shape,
-    device,
-    output_size,
-    output_nodes,
-    advisor,
-    dym_shape_range,
-    dump,
-    bin2npy,
-    custom_op,
-    locat,
-    onnx_fusion_switch,
-    single_op,
-    fusion_switch_file
-) -> None:
-    cmp_args = CmpArgsAdapter(golden_model, om_model, weight_path, input_data_path, cann_path, out_path,
-                              input_shape, device, output_size, output_nodes, advisor, dym_shape_range,
-                              dump, bin2npy, custom_op, locat, onnx_fusion_switch, single_op, fusion_switch_file)
-    return cmp_process(cmp_args, True)
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -103,12 +31,6 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
-
-if __name__ == '__main__':
-    try:
-        compare_cli()
-    except utils.AccuracyCompareException as error:
-        sys.exit(error.error_info)
 
 
 class CompareCommand(BaseCommand):
@@ -233,6 +155,13 @@ class CompareCommand(BaseCommand):
             dest="single_op",
             type=str2bool,
             help='Comparision mode:single operator compare, default false.Usage: -single True')
+        parser.add_argument(
+            "-max",
+            "--max-cmp-size",
+            dest="max_cmp_size",
+            default=0,
+            type=int,
+            help="Max size of tensor array to compare, default 0. Usage: --max-cmp-size 1024")
 
     def handle(self, args):
         cmp_args = CmpArgsAdapter(args.golden_model, args.om_model, args.weight_path, args.input_data_path,
@@ -240,8 +169,10 @@ class CompareCommand(BaseCommand):
                                   args.input_shape, args.device, args.output_size, args.output_nodes, args.advisor,
                                   args.dym_shape_range,
                                   args.dump, args.bin2npy, args.custom_op, args.locat,
-                                  args.onnx_fusion_switch, args.single_op, args.fusion_switch_file)
+                                  args.onnx_fusion_switch, args.single_op, args.fusion_switch_file,
+                                  args.max_cmp_size)
         cmp_process(cmp_args, True)
+
 
 def get_cmd_instance():
     help_info = "one-click network-wide accuracy analysis of golden models."
