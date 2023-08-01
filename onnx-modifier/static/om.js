@@ -12,12 +12,51 @@ om.ModelFactory = class {
         return om.Container.open(context);
     }
 
-    async open(context, target) {
-        await target.open();
-        const metadata = await context.metadata('om-metadata.json');
-        return new om.Model(metadata, target);
+    open(context, target) {
+        target.open();
+        return om.Metadata.open(context).then((metadata) => {
+            return new om.Model(metadata, target);
+        });
     }
 };
+
+om.Metadata = class {
+    static open(context) {
+        om.Metadata._metadata = om.Metadata._metadata || new Map();
+        if (om.Metadata._metadata) {
+            return Promise.resolve(om.Metadata._metadata);
+        }
+        return context.request('./om-metadata.json', 'utf-8', null).then((data) => {
+            om.Metadata._metadata = new om.Metadata(data);
+            return om.Metadata._metadata;
+        }).catch(() => {
+            om.Metadata._metadata = new om.Metadata(null);
+            return om.Metadata._metadata;
+        });
+    }
+
+    constructor(data) {
+        if (data) {
+            const metadata = JSON.parse(data);
+            this._types = new Map();
+            this._attributes = new Map();
+            this._inputs = new Map();
+            for (const item of metadata || []) {
+                this._types.set(item.name, item);
+                if (item.identifier !== undefined) {
+                    this._types.set(item.identifier, item);
+                }
+            }
+        }
+    }
+
+    type(name) {
+        if (!this._types.has(name)) {
+            this._types.set(name, { name: name.toString() });
+        }
+        return this._types.get(name);
+    }
+}
 
 om.Model = class {
 
@@ -339,7 +378,7 @@ om.Container = class {
         this._signature = signature;
     }
 
-    async open() {
+    open() {
         const stream = this._context.stream;
         const reader = new base.BinaryReader(stream);
         const buffer = reader.read(4);
@@ -414,7 +453,7 @@ om.Container = class {
                 if (!this.model) {
                     throw new om.Error('File does not contain a model definition.');
                 }
-                await this._context.require('./om-proto');
+                this._context.require('./om-proto');
                 try {
                     om.proto = protobuf.get('om').ge.proto;
                     const reader = protobuf.BinaryReader.open(this.model);
