@@ -455,7 +455,7 @@ om.Container = class {
                 }
                 this._context.require('./om-proto');
                 try {
-                    om.proto = protobuf.get('om').ge.proto;
+                    om.proto = protobuf.get('om').om;
                     const reader = protobuf.BinaryReader.open(this.model);
                     this.model = om.proto.ModelDef.decode(reader);
                 } catch (error) {
