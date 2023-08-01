@@ -9,6 +9,8 @@ var base = base || require('./base');
 om.ModelFactory = class {
 
     match(context) {
+        context.require('./om-proto');
+        om.proto = protobuf.get('om').om;
         return om.Container.open(context);
     }
 
