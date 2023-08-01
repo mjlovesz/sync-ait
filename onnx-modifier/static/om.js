@@ -378,7 +378,7 @@ om.Container = class {
         this._signature = signature;
     }
 
-    open() {
+    async open() {
         const stream = this._context.stream;
         const reader = new base.BinaryReader(stream);
         const buffer = reader.read(4);
@@ -453,7 +453,7 @@ om.Container = class {
                 if (!this.model) {
                     throw new om.Error('File does not contain a model definition.');
                 }
-                this._context.require('./om-proto');
+                await this._context.require('./om-proto');
                 try {
                     om.proto = protobuf.get('om').om;
                     const reader = protobuf.BinaryReader.open(this.model);
