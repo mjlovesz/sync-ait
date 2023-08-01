@@ -14,14 +14,14 @@ benchmark推理工具目前提供多线程推理功能
     ```bash
     ait benchmark -om ./pth_resnet50_bs1.om --pipeline 1
     ```
-    其中，model为OM离线模型文件路径。
+    其中，-om为OM离线模型文件路径。
   
 2. 带数据推理场景。默认情况下，输出信息仅打屏显示。
 
     ```bash
     ait benchmark -om ./pth_resnet50_bs1.om --input=./data --pipeline 1
     ```
-    其中，model为OM离线模型文件路径，input为输入路径,以","分割。
+    其中，--input为输入路径,以","分割。
 
 3. 调试模式。开启debug调试模式。
 
@@ -54,7 +54,7 @@ benchmark推理工具目前提供多线程推理功能
     ait benchmark -om ./pth_resnet50_bs1.om --input=./data --output=./result/ --pipeline 1
     ```
 
-    其中output为保存文件夹路径。
+    其中--output为保存文件夹路径。
 
    - 示例
 
