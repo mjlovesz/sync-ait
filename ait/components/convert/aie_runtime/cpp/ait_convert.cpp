@@ -24,6 +24,7 @@ int main(int argc, char** argv)
     const int inputIndex = 4;
     if (argc != inputIndex) {
         std::cout << "For AIE model convert, only three parameters: model, output and soc_version are needed." << std::endl;
+        exit(1);
     }
     std::string onnxModelPath = argv[1];
     std::string outputPath = argv[2];
