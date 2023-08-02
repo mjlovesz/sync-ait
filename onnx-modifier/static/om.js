@@ -177,7 +177,7 @@ om.Container = class {
         this.type = 2;
         reader.seek(param_offset);
         this.param = reader.read(param_size);
-        const buffer = reader.read(tfm_offset - reader.position);
+        buffer = reader.read(tfm_offset - reader.position);
         this.model = new svp.ModelDef(buffer);
     }
 };
