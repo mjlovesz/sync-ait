@@ -442,7 +442,7 @@ om.Argument = class {
 
     constructor(name, value) {
         this.name = name;
-        this.argument = value;
+        this.arguments = value;
     }
 };
 
