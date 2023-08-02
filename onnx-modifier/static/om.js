@@ -131,11 +131,21 @@ om.Container = class {
                     this.weights = buffer;
                     break;
                 }
-                case MODEL_TASK: // TASK_INFO
-                case MODEL_SIGNATURE: // TBE_KERNELS
-                case MODEL_UNKNOWN1: // CUST_AICPU_KERNELS
-                case MODEL_UNKNOWN2:
-                case MODEL_UNKNOWN3:
+                case MODEL_TASK: {// TASK_INFO
+                    break;
+                }
+                case MODEL_SIGNATURE: { // TBE_KERNELS
+                    break;
+                }
+                case MODEL_UNKNOWN1: { // CUST_AICPU_KERNELS
+                    break;
+                }
+                case MODEL_UNKNOWN2: {
+                    break;
+                }
+                case MODEL_UNKNOWN3: {
+                    break;
+                }
                 case DEVICE_CONFIG: { // DEVICE_CONFIG
                     this.devices = new Map();
                     const decoder = new TextDecoder('ascii');
