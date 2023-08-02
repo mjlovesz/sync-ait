@@ -14,7 +14,7 @@ om.ModelFactory = class {
 
     open(context, match) {
         var metadata = om.Metadata.open(context);
-        var target = om.Container(context, match);
+        var target = new om.Container(context, match);
         switch (match) {
             case 'IMOD':
                 return context.require('./om-proto').then(() => {
