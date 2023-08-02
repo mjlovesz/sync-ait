@@ -29,10 +29,13 @@ from app_analyze.scan.clang_utils import auto_match, read_cursor, TYPEDEF_MAP, i
 SCANNED_FILES = list()
 RESULTS = list()
 MACRO_MAP = dict()
-# set the config
-if not Config.loaded:
-    # 或指定目录：Config.set_library_path("/usr/lib/x86_64-linux-gnu")
-    Config.set_library_file(KitConfig.lib_clang_path)
+
+
+# set the clang lib file path
+def init_clang_lib_path():
+    if not Config.loaded:
+        # 或指定目录：Config.set_library_path("/usr/lib/x86_64-linux-gnu")
+        Config.set_library_file(KitConfig.lib_clang_path())
 
 
 def get_diag_info(diag):
@@ -355,6 +358,9 @@ def parse_info(node, cwd=None):
 class Parser:
     # creates the object, does the inital parse
     def __init__(self, path):
+        # delay init clang lib file path to here
+        init_clang_lib_path()
+
         logger.info(f'Scanning file: {path}')
         self.index = Index.create()  # 若为单例模型，是否有加速作用
         # args: '-Xclang', '-ast-dump', '-fsyntax-only', '-std=c++17', "-I/path/to/include"

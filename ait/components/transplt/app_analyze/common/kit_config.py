@@ -58,8 +58,7 @@ class KitConfig:
     ARCH = platform.machine()
 
     @classmethod
-    @property
-    def lib_clang_path(self):
+    def lib_clang_path(cls):
         return get_lib_clang_path()
 
     CXX_STD = 'c++17'  # c++11、c++14、c++17、c++20等，或者None，表示使用clang默认值
