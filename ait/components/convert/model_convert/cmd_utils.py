@@ -2,6 +2,7 @@ import argparse
 import logging
 import subprocess
 import sys
+import os
 
 import yaml
 
@@ -12,9 +13,13 @@ def get_logger(name=__name__):
     return logger
 
 
+logger = get_logger()
+
+CUR_PATH = os.path.join(os.path.relpath(__file__))
+
 BACKEND_CONF_MAPPING = {
-    "atc": "atc/atc_args_map.yml",
-    "aoe": "aoe/aoe_args_map.yml"
+    "atc": os.path.join(CUR_PATH, "atc/atc_args_map.yml"),
+    "aoe": os.path.join(CUR_PATH, "aoe/aoe_args_map.yml")
 }
 BACKEND_CMD_MAPPING = {
     "atc": ["atc"],
@@ -49,9 +54,9 @@ def gen_convert_cmd(conf_args: list, parse_args: argparse.Namespace, backend: st
         raise ValueError("Backend must be atc or aoe!")
 
     for arg in conf_args:
-        arg_name = arg[2:]
+        arg_name = arg.get("name")[2:]
         if hasattr(parse_args, arg_name) and getattr(parse_args, arg_name):
-            cmds.append(arg + "=" + str(getattr(parse_args, arg_name)))
+            cmds.append(arg.get("name") + "=" + str(getattr(parse_args, arg_name)))
 
     return cmds
 

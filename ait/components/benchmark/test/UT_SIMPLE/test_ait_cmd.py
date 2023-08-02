@@ -20,8 +20,6 @@ from ais_bench.infer.benchmark_process import args_rules
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.main_cli import BenchmarkCommand
 
-import model_convert.cmd_utils
-
 model_name = "resnet50"
 benchmark_command = BenchmarkCommand()
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -161,7 +159,7 @@ def test_check_all_full_args_legality(cmdline_legal_args_full):
         正确的命令，使用可选命令全称
     """
     parser = argparse.ArgumentParser()
-    model_convert.cmd_utils.add_arguments(parser)
+    benchmark_command.add_arguments(parser)
     args = parser.parse_args()
     args = create_adapter(args)
     args = args_rules(args)
@@ -180,7 +178,7 @@ def test_check_all_simple_args_legality(cmdline_legal_args_simple):
         正确的命令，使用可选命令简称
     """
     parser = argparse.ArgumentParser()
-    model_convert.cmd_utils.add_arguments(parser)
+    benchmark_command.add_arguments(parser)
     args = parser.parse_args()
     args = create_adapter(args)
     args = args_rules(args)
@@ -200,7 +198,7 @@ def test_npu_id_out_of_range(cmdline_args_full_npu_id):
         npu_id 超出范围
     """
     parser = argparse.ArgumentParser()
-    model_convert.cmd_utils.add_arguments(parser)
+    benchmark_command.add_arguments(parser)
     with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
@@ -218,7 +216,7 @@ def test_invalid_model_path(cmdline_args_full_model_path):
         模型路径不存在
     """
     parser = argparse.ArgumentParser()
-    model_convert.cmd_utils.add_arguments(parser)
+    benchmark_command.add_arguments(parser)
     with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
@@ -236,7 +234,7 @@ def test_loop_is_not_positive(cmdline_args_full_loop):
         --loop为负数
     """
     parser = argparse.ArgumentParser()
-    model_convert.cmd_utils.add_arguments(parser)
+    benchmark_command.add_arguments(parser)
     with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
@@ -254,7 +252,7 @@ def test_batchsize_is_not_positive(cmdline_args_full_batchsize):
         --batchsize为负数
     """
     parser = argparse.ArgumentParser()
-    model_convert.cmd_utils.add_arguments(parser)
+    benchmark_command.add_arguments(parser)
     with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
@@ -272,7 +270,7 @@ def test_warmup_count_is_not_positive(cmdline_args_full_warmup):
         --warmup_count为负数
     """
     parser = argparse.ArgumentParser()
-    model_convert.cmd_utils.add_arguments(parser)
+    benchmark_command.add_arguments(parser)
     with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
@@ -290,7 +288,7 @@ def test_output_batchsize_axis_is_not_positive(cmdline_args_full_bsaxis):
         --output_batchsize_axis为负数
     """
     parser = argparse.ArgumentParser()
-    model_convert.cmd_utils.add_arguments(parser)
+    benchmark_command.add_arguments(parser)
     with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
@@ -308,7 +306,7 @@ def test_device_id_out_of_range(cmdline_args_full_device):
         --device超出范围
     """
     parser = argparse.ArgumentParser()
-    model_convert.cmd_utils.add_arguments(parser)
+    benchmark_command.add_arguments(parser)
     with pytest.raises(SystemExit) as e:
         args = parser.parse_args()
 
@@ -326,6 +324,6 @@ def test_illegal_outfmt(cmdline_args_full_outfmt):
         --outfmt非法
     """
     parser = argparse.ArgumentParser()
-    model_convert.cmd_utils.add_arguments(parser)
+    benchmark_command.add_arguments(parser)
     with pytest.raises(SystemExit) as e:
         args = parser.parse_args()

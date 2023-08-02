@@ -18,8 +18,6 @@ import argparse
 
 
 from components.parser.parser import BaseCommand
-
-import model_convert.cmd_utils
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
     ARGS_REQUIRED_KNOWLEDGES
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
@@ -324,7 +322,7 @@ class SurgeonCommand(BaseCommand):
         super().__init__(name, help_info, children, has_handle, **kwargs)
 
     def add_arguments(self, parser, **kwargs):
-        return model_convert.cmd_utils.add_arguments(parser, **kwargs)
+        return super().add_arguments(parser, **kwargs)
 
     def handle(self, args, **kwargs):
         return super().handle(args, **kwargs)

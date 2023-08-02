@@ -8,7 +8,7 @@ args: [
   },
   {
     name: '--model',
-    desc: 'Model file',
+    desc: 'Required. Model file',
     is_required: True,
   },
   {
@@ -21,7 +21,7 @@ args: [
     },
     {
         name: "--framework",
-        desc: "Framework type. 0:Caffe; 1:MindSpore; 3:Tensorflow; 5:Onnx",
+        desc: "Required. Framework type. 0:Caffe; 1:MindSpore; 3:Tensorflow; 5:Onnx",
         is_required: True,
     },
     {
@@ -60,7 +60,7 @@ args: [
     },
     {
         name: '--output',
-        desc: "Output file path&name(needn't suffix, will add .om/.exeom automatically).\n
+        desc: "Required. Output file path&name(needn't suffix, will add .om/.exeom automatically).\n
         If --model is set to 30, an additional dbg file will be generated.\n
         If --singleop is set, this arg specifies the directory to which the single op offline model will be generated.",
         is_required: True
@@ -80,7 +80,7 @@ args: [
     },
     {
         name: '--soc_version',
-        desc: "The soc version.",
+        desc: "Required. The soc version.",
         is_required: True
     },
     {

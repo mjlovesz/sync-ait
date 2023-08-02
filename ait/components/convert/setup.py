@@ -19,10 +19,6 @@ with open('requirements.txt', encoding='utf-8') as f:
     required = f.read().splitlines()
 
 
-with open('requirements.txt', encoding='utf-8') as f:
-    required = f.read().splitlines()
-
-
 setup(
     name='convert_tool',
     version='0.1.0',

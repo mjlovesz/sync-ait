@@ -2,7 +2,7 @@ args: [
   {
     name: '--model',
     abbr_name: '-m',
-    desc: 'Model file',
+    desc: 'Required. Model file',
     is_required: True,
   },
   {
@@ -63,7 +63,8 @@ args: [
     {
       name: '--job_type',
       abbr_name: '-j',
-      desc: "Job type (sgat: 1, opat: 2, )",
+      desc: "Required. Job type (sgat: 1, opat: 2, )",
+      is_required: True,
     },
   {
     name: '--progress_bar',
