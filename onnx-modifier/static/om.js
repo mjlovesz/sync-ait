@@ -12,12 +12,173 @@ om.ModelFactory = class {
         return om.Container.open(context);
     }
 
-    open(context, target) {
-        context.require('./om-proto');
-        target.open();
-        return om.Metadata.open(context).then((metadata) => {
-            return new om.Model(metadata, target);
-        });
+    open(context, match) {
+        var metadata = om.Metadata.open(context);
+        var target = om.Container(context, match);
+        switch (match) {
+            case 'IMOD':
+                return context.require('./om-proto').then(() => {
+                    target._loadIMOD(context, false);
+                    return new om.Model(metadata, target);
+                });
+            case 'PICO':
+                return context.require('./om-proto').then(() => {
+                    target._loadPICO(context);
+                    return new om.Model(metadata, target);
+                })
+            default: {
+                throw new om.Error('Unsupported DaVinci OM ' + this.signature + ' signature.');
+            }
+        }
+    }
+};
+
+om.Container = class {
+
+    static open(context) {
+        const stream = context.stream;
+        if (stream && stream.length >= 256) {
+            const buffer = stream.peek(4);
+            const signature = Array.from(buffer).map((c) => String.fromCharCode(c)).join('');
+            if (signature === 'IMOD' || signature === 'PICO') {
+                return signature;
+            }
+        }
+        return null;
+    }
+
+    constructor(context, signature) {
+        this._context = context;
+        this._signature = signature;
+    }
+
+    _loadIMOD(context, isHugeModel) {
+        const MODEL_DEF = 0;
+        const MODEL_WEIGHT = 1;
+        const MODEL_TASK = 2;
+        const MODEL_SIGNATURE = 3;
+        const MODEL_UNKNOWN = 4;
+        const DEVICE_CONFIG = 5;
+        const HEADER_SIZE = 256;
+        var TABLE_INDEX_SIZE;
+        var MODEL_PARTITION_MEM_INFO_SIZE;
+        if (isHugeModel) {
+            TABLE_INDEX_SIZE = 8;
+            MODEL_PARTITION_MEM_INFO_SIZE = 24;
+        } else {
+            TABLE_INDEX_SIZE = 4;
+            MODEL_PARTITION_MEM_INFO_SIZE = 12;
+        }
+        const stream = context.stream;
+        const reader = new base.BinaryReader(stream);
+        const buffer = reader.read(4);
+        this.format = 'DaVinci OM';
+        const decoder = new TextDecoder('utf-8');
+        const size = reader.uint32();
+        this.version = reader.uint32();
+        this.checksum = reader.read(64);
+        reader.skip(4);
+        this.is_encrypt = reader.byte();
+        this.is_checksum = reader.byte();
+        this.type = reader.byte(); // 0=IR model, 1=standard model, 2=OM Tiny model
+        this.mode = reader.byte(); // 0=offline, 1=online
+        this.name = decoder.decode(reader.read(32));
+        this.ops = reader.uint32();
+        this.userdefineinfo = reader.read(32);
+        this.ir_version = reader.uint32();
+        this.model_num = reader.uint32();
+        this.platform_version = reader.read(20);
+        this.platform_type = reader.byte();
+        reader.seek(0);
+        reader.skip(size); // skip(HAEDER_SIZE)
+        var partitions;
+        if (isHugeModel) {
+            partitions = new Array(reader.uint64());
+            for (let i = 0; i < partitions.length; i++) {
+                partitions[i] = {
+                    type: reader.uint64(),
+                    offset: reader.uint64(),
+                    size: reader.uint64()
+                };
+            }
+        } else {
+            partitions = new Array(reader.uint32());
+            for (let i = 0; i < partitions.length; i++) {
+                partitions[i] = {
+                    type: reader.uint32(),
+                    offset: reader.uint32(),
+                    size: reader.uint32()
+                };
+            }
+        }
+        const offset = HEADER_SIZE + TABLE_INDEX_SIZE + MODEL_PARTITION_MEM_INFO_SIZE * partitions.length;
+        for (const partition of partitions) {
+            reader.seek(offset + partition.offset);
+            const buffer = reader.read(partition.size);
+            switch (partition.type) {
+                case MODEL_DEF: { // MODEL_DEF
+                    this.model = buffer;
+                    break;
+                }
+                case MODEL_WEIGHT: { // WEIGHTS_DATA
+                    this.weights = buffer;
+                    break;
+                }
+                case MODEL_TASK: // TASK_INFO
+                case MODEL_SIGNATURE: // TBE_KERNELS
+                case MODEL_UNKNOWN: { // CUST_AICPU_KERNELS
+                    break;
+                }
+                case DEVICE_CONFIG: { // DEVICE_CONFIG
+                    this.devices = new Map();
+                    const decoder = new TextDecoder('ascii');
+                    const reader = new base.BinaryReader(buffer);
+                    reader.uint32();
+                    for (let position = 4; position < partition.size;) {
+                        const length = reader.uint32();
+                        const buffer = reader.read(length);
+                        const name = decoder.decode(buffer);
+                        const device = reader.uint32();
+                        this.devices.set(name, device);
+                        position += 4 + length + 4;
+                    }
+                    break;
+                }
+                default: {
+                    throw new om.Error("Unsupported partition type '" + partition.type + "'.");
+                }
+            }
+        }
+        if (!this.model) {
+            throw new om.Error('File does not contain a model definition.');
+        }
+        try{
+            om.proto = protobuf.get('om').om;
+            const omReader = protobuf.BinaryReader.open(this.model);
+            this.model = om.proto.ModelDef.decode(omReader);
+        } catch (error) {
+            const message = error && error.message ? error.message : error.toString();
+            throw new om.Error('File format is not ge.proto.ModelDef (' + message.replace(/\.$/, '') + ').');
+        }
+    }
+
+    _loadPICO(context) {
+        const stream = context.stream;
+        const reader = new base.BinaryReader(stream);
+        var buffer = reader.read(4);
+        this.format = 'DaVinci OM SVP'; // SVP = Smart Vision PICO
+        reader.uint32(); // reserved
+        this.size = reader.uint32();
+        const param_size = reader.uint32();
+        const param_offset = reader.uint32();
+        reader.uint32(); // tmp_bufsize
+        const tfm_offset = reader.uint32();
+        reader.uint32(); // tfm_size
+        this.type = 2;
+        reader.seek(param_offset);
+        this.param = reader.read(param_size);
+        const buffer = reader.read(tfm_offset - reader.position);
+        this.model = new svp.ModelDef(buffer);
     }
 };
 
@@ -57,7 +218,7 @@ om.Metadata = class {
         }
         return this._types.get(name);
     }
-}
+};
 
 om.Model = class {
 
@@ -357,137 +518,6 @@ om.TensorShape = class {
             return '[' + this.dimensions.map((dim) => dim ? dim.toString() : '?').join(',') + ']';
         }
         return '';
-    }
-};
-
-om.Container = class {
-
-    static open(context) {
-        const stream = context.stream;
-        if (stream && stream.length >= 256) {
-            const buffer = stream.peek(4);
-            const signature = Array.from(buffer).map((c) => String.fromCharCode(c)).join('');
-            if (signature === 'IMOD' || signature === 'PICO') {
-                return new om.Container(context, signature);
-            }
-        }
-        return null;
-    }
-
-    constructor(context, signature) {
-        this._context = context;
-        this._signature = signature;
-    }
-
-    open() {
-        const stream = this._context.stream;
-        const reader = new base.BinaryReader(stream);
-        const buffer = reader.read(4);
-        this.signature = Array.from(buffer).map((c) => String.fromCharCode(c)).join('');
-        switch (this.signature) {
-            case 'IMOD': {
-                this.format = 'DaVinci OM';
-                const decoder = new TextDecoder('utf-8');
-                const size = reader.uint32();
-                this.version = reader.uint32();
-                this.checksum = reader.read(64);
-                reader.skip(4);
-                this.is_encrypt = reader.byte();
-                this.is_checksum = reader.byte();
-                this.type = reader.byte(); // 0=IR model, 1=standard model, 2=OM Tiny model
-                this.mode = reader.byte(); // 0=offline, 1=online
-                this.name = decoder.decode(reader.read(32));
-                this.ops = reader.uint32();
-                this.userdefineinfo = reader.read(32);
-                this.ir_version = reader.uint32();
-                this.model_num = reader.uint32();
-                this.platform_version = reader.read(20);
-                this.platform_type = reader.byte();
-                reader.seek(0);
-                reader.skip(size);
-                const partitions = new Array(reader.uint32());
-                for (let i = 0; i < partitions.length; i++) {
-                    partitions[i] = {
-                        type: reader.uint32(),
-                        offset: reader.uint32(),
-                        size: reader.uint32()
-                    };
-                }
-                const offset = 256 + 4 + 12 * partitions.length;
-                for (const partition of partitions) {
-                    reader.seek(offset + partition.offset);
-                    const buffer = reader.read(partition.size);
-                    switch (partition.type) {
-                        case 0: { // MODEL_DEF
-                            this.model = buffer;
-                            break;
-                        }
-                        case 1: { // WEIGHTS_DATA
-                            this.weights = buffer;
-                            break;
-                        }
-                        case 2: // TASK_INFO
-                        case 3: // TBE_KERNELS
-                        case 4: { // CUST_AICPU_KERNELS
-                            break;
-                        }
-                        case 5: { // DEVICE_CONFIG
-                            this.devices = new Map();
-                            const decoder = new TextDecoder('ascii');
-                            const reader = new base.BinaryReader(buffer);
-                            reader.uint32();
-                            for (let position = 4; position < partition.size;) {
-                                const length = reader.uint32();
-                                const buffer = reader.read(length);
-                                const name = decoder.decode(buffer);
-                                const device = reader.uint32();
-                                this.devices.set(name, device);
-                                position += 4 + length + 4;
-                            }
-                            break;
-                        }
-                        default: {
-                            throw new om.Error("Unsupported partition type '" + partition.type + "'.");
-                        }
-                    }
-                }
-                if (!this.model) {
-                    throw new om.Error('File does not contain a model definition.');
-                }
-                this._context.require('./om-proto');
-                try {
-                    do {
-                        om.proto = protobuf.get('om').om;
-                        var tmp = om.proto;
-                    } while (tmp == undefined)
-                    const reader = protobuf.BinaryReader.open(this.model);
-                    this.model = om.proto.ModelDef.decode(reader);
-                } catch (error) {
-                    const message = error && error.message ? error.message : error.toString();
-                    throw new om.Error('File format is not ge.proto.ModelDef (' + message.replace(/\.$/, '') + ').');
-                }
-                break;
-            }
-            case 'PICO': {
-                this.format = 'DaVinci OM SVP'; // SVP = Smart Vision PICO
-                reader.uint32(); // reserved
-                this.size = reader.uint32();
-                const param_size = reader.uint32();
-                const param_offset = reader.uint32();
-                reader.uint32(); // tmp_bufsize
-                const tfm_offset = reader.uint32();
-                reader.uint32(); // tfm_size
-                this.type = 2;
-                reader.seek(param_offset);
-                this.param = reader.read(param_size);
-                const buffer = reader.read(tfm_offset - reader.position);
-                this.model = new svp.ModelDef(buffer);
-                break;
-            }
-            default: {
-                throw new om.Error('Unsupported DaVinci OM ' + this.signature + ' signature.');
-            }
-        }
     }
 };
 
