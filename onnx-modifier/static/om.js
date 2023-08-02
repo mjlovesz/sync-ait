@@ -311,7 +311,9 @@ om.Node = class {
                 if (input === '') {
                     continue;
                 }
-                const name = this.type.inputs && i < this.type.inputs.length ? this.type.inputs[i].name : 'input' + (i === 0 ? '' : i.toString());
+                var name = this.type.inputs && i < this.type.inputs.length ? this.type.inputs[i].name : 'input' + (i === 0 ? '' : i.toString());
+                name = (name == 'weights') ? 'W' : name;
+                name = (name == 'bias') ? 'B' : name;
                 const index = input.lastIndexOf(':');
                 const identifier = input.substring(0, index);
                 const src_index = input.substring(index + 1);
