@@ -173,6 +173,9 @@ om.Container = class {
             om.proto = protobuf.get('om').om;
             const omReader = protobuf.BinaryReader.open(this.model);
             this.model = om.proto.ModelDef.decode(omReader);
+            if (!this.model) {
+                throw new om.Error('File does not contain a model definition.');
+            }
         } catch (error) {
             const message = error && error.message ? error.message : error.toString();
             throw new om.Error('File format is not ge.proto.ModelDef (' + message.replace(/\.$/, '') + ').');
