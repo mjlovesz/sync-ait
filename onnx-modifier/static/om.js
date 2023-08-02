@@ -14,22 +14,24 @@ om.ModelFactory = class {
 
     open(context, match) {
         var metadata = om.Metadata.open(context);
-        var target = new om.Container(context, match);
-        switch (match) {
-            case 'IMOD':
-                return context.require('./om-proto').then(() => {
-                    target._loadIMOD(context, false);
-                    return new om.Model(metadata, target);
-                });
-            case 'PICO':
-                return context.require('./om-proto').then(() => {
-                    target._loadPICO(context);
-                    return new om.Model(metadata, target);
-                })
-            default: {
-                throw new om.Error('Unsupported DaVinci OM ' + this.signature + ' signature.');
+        return om.Metadata.open(context).then((metadata) => {
+            var target = new om.Container(context, match);
+            switch (match) {
+                case 'IMOD':
+                    return context.require('./om-proto').then(() => {
+                        target._loadIMOD(context, false);
+                        return new om.Model(metadata, target);
+                    });
+                case 'PICO':
+                    return context.require('./om-proto').then(() => {
+                        target._loadPICO(context);
+                        return new om.Model(metadata, target);
+                    })
+                default: {
+                    throw new om.Error('Unsupported DaVinci OM ' + this.signature + ' signature.');
+                }
             }
-        }
+        });
     }
 };
 
