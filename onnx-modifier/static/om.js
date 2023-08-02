@@ -18,7 +18,11 @@ om.ModelFactory = class {
             switch (match) {
                 case 'IMOD':
                     return context.require('./om-proto').then(() => {
-                        target._loadIMOD(context, false);
+                        try {
+                            target._loadIMOD(context, false);
+                        } catch {
+                            target._loadIMOD(context, true);
+                        }
                         return new om.Model(metadata, target);
                     });
                 case 'PICO':
@@ -58,7 +62,9 @@ om.Container = class {
         const MODEL_WEIGHT = 1;
         const MODEL_TASK = 2;
         const MODEL_SIGNATURE = 3;
-        const MODEL_UNKNOWN = 4;
+        const MODEL_UNKNOWN1 = 4;
+        const MODEL_UNKNOWN2 = 8;
+        const MODEL_UNKNOWN3 = 238;
         const DEVICE_CONFIG = 5;
         const HEADER_SIZE = 256;
         var TABLE_INDEX_SIZE;
@@ -127,9 +133,9 @@ om.Container = class {
                 }
                 case MODEL_TASK: // TASK_INFO
                 case MODEL_SIGNATURE: // TBE_KERNELS
-                case MODEL_UNKNOWN: { // CUST_AICPU_KERNELS
-                    break;
-                }
+                case MODEL_UNKNOWN1: // CUST_AICPU_KERNELS
+                case MODEL_UNKNOWN2:
+                case MODEL_UNKNOWN3:
                 case DEVICE_CONFIG: { // DEVICE_CONFIG
                     this.devices = new Map();
                     const decoder = new TextDecoder('ascii');
