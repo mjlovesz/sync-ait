@@ -166,7 +166,7 @@ om.Container = class {
                 }
             }
         }
-        if (!this.model) {
+        if (!this.model.graph) {
             throw new om.Error('File does not contain a model definition.');
         }
         try{
