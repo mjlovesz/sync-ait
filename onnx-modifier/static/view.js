@@ -413,7 +413,9 @@ view.View = class {
                 }
                 return this._timeout(20).then(() => {
                     const graphs = Array.isArray(model.graphs) && model.graphs.length > 0 ? [ model.graphs[0] ] : [];
-                    this.modifier.loadModelGraph(model, graphs);
+                    if (model.format != "DaVinci OM") {
+                        this.modifier.loadModelGraph(model, graphs);
+                    }
                     return this._updateGraph(model, graphs);
                 });
             });
