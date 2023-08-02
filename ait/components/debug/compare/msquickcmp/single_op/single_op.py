@@ -28,13 +28,13 @@ from msquickcmp.common.utils import AccuracyCompareException
 def check_single_op_is_valid(single_op, dump, custom_op, locat):
     if single_op:
         if not dump:
-            logger.error("Dump must be True when single_op is used")
+            utils.logger.error("Dump must be True when single_op is used")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
         if custom_op:
-            logger.error("Custom_op is forbidden when single_op is used")
+            utils.logger.error("Custom_op is forbidden when single_op is used")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
         if locat:
-            logger.error("Locat is useless when single_op is used")
+            utils.logger.error("Locat is useless when single_op is used")
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
