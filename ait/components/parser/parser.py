@@ -78,7 +78,7 @@ def register_parser(parser, commands):
         cmd_alias_name = [command.alias_name] if command.alias_name else []
         subparser = subparsers.add_parser(
             command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help_info,
-            aliases=cmd_alias_name
+            aliases=cmd_alias_name,
             description=command.help_info
         )
         command.add_arguments(subparser)
