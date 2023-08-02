@@ -15,7 +15,7 @@ def get_logger(name=__name__):
 
 logger = get_logger()
 
-CUR_PATH = os.path.join(os.path.relpath(__file__))
+CUR_PATH = os.path.dirname(os.path.relpath(__file__))
 
 BACKEND_CONF_MAPPING = {
     "atc": os.path.join(CUR_PATH, "atc/atc_args_map.yml"),
