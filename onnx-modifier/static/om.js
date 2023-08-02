@@ -13,7 +13,6 @@ om.ModelFactory = class {
     }
 
     open(context, match) {
-        var metadata = om.Metadata.open(context);
         return om.Metadata.open(context).then((metadata) => {
             var target = new om.Container(context, match);
             switch (match) {
