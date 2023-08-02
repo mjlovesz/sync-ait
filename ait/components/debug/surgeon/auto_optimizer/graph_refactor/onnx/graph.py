@@ -321,14 +321,6 @@ class OnnxGraph(BaseGraph):
         # connecting two graphs
         graph = OnnxGraph.connect_graph(graph1, graph2, io_map, graph_name)
 
-        if graph_name:
-            combined_graph_path = graph_name
-        else:
-            combined_graph_path = "_".join([graph1.name, graph2.name]) + ".onnx"
-
-        graph.save(combined_graph_path)
-        logger.info(f'Extract the model completed, model saved in {combined_graph_path}.')
-
         return graph
 
     @staticmethod

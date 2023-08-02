@@ -297,7 +297,7 @@ class ConcatenateCommand(BaseCommand):
             io_map_list.append((out, inp))
 
         try:
-            OnnxGraph.concat_graph(
+            combined_graph = OnnxGraph.concat_graph(
                 onnx_graph1, onnx_graph2,
                 io_map_list,
                 prefix=args.graph_prefix,
@@ -306,6 +306,18 @@ class ConcatenateCommand(BaseCommand):
         except Exception as err:
             logger.error(err)
 
+        if args.combined_graph_path:
+            combined_graph_path = args.combined_graph_path
+        else:
+            combined_graph_path = args.graph1[:-5] + args.graph2[:-5] + ".onnx"
+            combined_graph_path = combined_graph_path.replace("/", "_")
+
+        try:
+            combined_graph.save(combined_graph_path)
+        except Exception as err:
+            logger.error(err)
+
+        logger.info(f"Combined ONNX model saved in: {combined_graph_path}")
 
 
 class SurgeonCommand(BaseCommand):
