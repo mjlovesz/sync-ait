@@ -20,7 +20,7 @@ om.ModelFactory = class {
                     return context.require('./om-proto').then(() => {
                         try {
                             target._loadIMOD(context, false);
-                        } catch {
+                        } catch (error) {
                             target._loadIMOD(context, true);
                         }
                         return new om.Model(metadata, target);
@@ -166,16 +166,13 @@ om.Container = class {
                 }
             }
         }
-        if (!this.model) {
+        if (!this.model.length) {
             throw new om.Error('File does not contain a model definition.');
         }
         try{
             om.proto = protobuf.get('om').om;
             const omReader = protobuf.BinaryReader.open(this.model);
             this.model = om.proto.ModelDef.decode(omReader);
-            if (!this.model.graph) {
-                throw new om.Error('File does not contain a model definition.');
-            }
         } catch (error) {
             const message = error && error.message ? error.message : error.toString();
             throw new om.Error('File format is not ge.proto.ModelDef (' + message.replace(/\.$/, '') + ').');
