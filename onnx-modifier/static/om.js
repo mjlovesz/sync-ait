@@ -186,9 +186,6 @@ om.Container = class {
 om.Metadata = class {
     static open(context) {
         om.Metadata._metadata = om.Metadata._metadata || new Map();
-        if (om.Metadata._metadata) {
-            return Promise.resolve(om.Metadata._metadata);
-        }
         return context.request('./om-metadata.json', 'utf-8', null).then((data) => {
             om.Metadata._metadata = new om.Metadata(data);
             return om.Metadata._metadata;
