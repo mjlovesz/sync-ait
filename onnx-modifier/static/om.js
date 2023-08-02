@@ -462,6 +462,10 @@ om.Argument = class {
         this.name = name;
         this.arguments = value;
     }
+
+    get visible() {
+        return true;
+    }
 };
 
 om.Value = class {
