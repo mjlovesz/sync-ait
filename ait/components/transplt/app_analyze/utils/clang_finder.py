@@ -25,7 +25,7 @@ def _get_lib_clang_path_win():
         if os.path.exists(lib_clang_candidate) and os.access(lib_clang_candidate, os.R_OK):
             return lib_clang_candidate
 
-    logger.debug('Unable to locate libclang.dll file, ait transplt may not be usable.')
+    logger.warning('Unable to locate libclang.dll file, ait transplt may not be usable.')
     return "D:\\Program Files\\LLVM\\bin\\libclang.dll"
 
 
@@ -75,7 +75,7 @@ def _get_lib_clang_path_linux():
             if os.path.exists(candidate) and os.access(candidate, os.R_OK):
                 return candidate
 
-    logger.debug('Unable to locate libclang so file, ait transplt may not be usable.')
+    logger.warning('Unable to locate libclang so file, ait transplt may not be usable.')
     return f"/usr/lib/{platform.machine()}-linux-gnu/libclang-14.so"
 
 
