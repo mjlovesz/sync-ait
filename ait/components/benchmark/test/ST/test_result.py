@@ -255,7 +255,7 @@ class TestClass:
         if os.path.exists(os.path.join(output_path, "dump")):
             shutil.rmtree(os.path.join(output_path, "dump"))
 
-        cmd = "{} --model {} --device {} --output {} --debug True --dump True --dump-npy True\
+        cmd = "{} --model {} --device {} --output {} --debug True --dump True --dump_npy True\
             --input {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
                                     output_path, input_path, log_path)
         logger.info("run cmd:%s", cmd)
