@@ -166,14 +166,14 @@ om.Container = class {
                 }
             }
         }
-        if (!this.model.graph) {
+        if (!this.model) {
             throw new om.Error('File does not contain a model definition.');
         }
         try{
             om.proto = protobuf.get('om').om;
             const omReader = protobuf.BinaryReader.open(this.model);
             this.model = om.proto.ModelDef.decode(omReader);
-            if (!this.model) {
+            if (!this.model.graph) {
                 throw new om.Error('File does not contain a model definition.');
             }
         } catch (error) {
