@@ -1,5 +1,18 @@
 ## 工具安装
 
+### tips
+ait工具于2023/08/01完成框架重构，需要全量卸载之前环境中安装的ait以及各子工具，再进行安装。
+
+```bash
+cd ait/ait
+
+chmod u+x install.sh
+
+./install.sh --uninstall -y
+
+./install.sh
+```
+
 ### 环境和依赖
 
 - 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit软件包。建议安装CANN商业版6.3.RC1以上版本。
