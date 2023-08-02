@@ -69,36 +69,28 @@ class CommandLineInput(IInput):
 
     def _get_source_directories(self):
         if not self.args.source:
-            raise ValueError('ait transplt: error: '
-                             'the following arguments are '
-                             'required: s/--source')
-        else:
-            for folder in self.args.source.split(','):
-                folder = folder.strip()
-                folder.replace('\\', '/')
-                folder = os.path.realpath(folder)
-                self._check_path(folder)
-                if not folder.endswith('/'):
-                    folder += '/'
-                self.directories.append(folder)
-            self.directories = sorted(set(self.directories),
-                                      key=self.directories.index)
-            self.source_path = self.directories
-            self.directories = \
-                IOUtil.remove_subdirectory(self.directories)
+            raise ValueError('ait transplt: error: the following arguments are required: -s/--source')
+
+        for folder in self.args.source.split(','):
+            folder = folder.strip()
+            folder.replace('\\', os.path.sep)
+            folder = os.path.realpath(folder)
+            self._check_path(folder)
+            if not folder.endswith(os.path.sep):
+                folder += os.path.sep
+            self.directories.append(folder)
+        self.directories = sorted(set(self.directories), key=self.directories.index)
+        self.source_path = self.directories
+        self.directories = IOUtil.remove_subdirectory(self.directories)
 
     def _get_construct_tool(self):
         """获取构建工具类型"""
         if not self.args.tools:
             self.args.tools = 'make'
         if self.args.tools not in KitConfig.VALID_CONSTRUCT_TOOLS:
-            raise ValueError('{} ait transplt: error: construct '
-                             'tool {} is not supported. supported '
-                             'input are '
-                             '{}.'.format(KitConfig.PORTING_CONTENT,
-                                          self.args.tools,
-                                          ' or '.join(KitConfig.
-                                                      VALID_CONSTRUCT_TOOLS)))
+            raise ValueError('{} ait transplt: error: construct tool {} is not supported. supported input are {}.'
+                             .format(KitConfig.PORTING_CONTENT, self.args.tools,
+                                     ' or '.join(KitConfig. VALID_CONSTRUCT_TOOLS)))
         self.construct_tool = self.args.tools
 
     def _set_debug_switch(self):
@@ -109,9 +101,8 @@ class CommandLineInput(IInput):
         """获取输出报告格式"""
         out_format = self.args.report_type.lower()
         if out_format not in KitConfig.VALID_REPORT_TYPE:
-            raise ValueError('ait transplt: error: output type {} is not '
-                             'supported. supported input '
-                             'is csv/json.'.format(self.args.report_type))
+            raise ValueError('ait transplt: error: output type {} is not supported. '
+                             'supported input is csv/json.'.format(self.args.report_type))
 
         if out_format == 'csv':
             self.report_type.append(ReporterType.CSV_REPORTER)

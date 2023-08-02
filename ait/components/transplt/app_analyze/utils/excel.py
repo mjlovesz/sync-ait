@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import re
+
 import pandas as pd
 import openpyxl
 
@@ -66,7 +68,7 @@ def write_excel(df_dict, path='output.xlsx'):
     # 创建一个 Excel 文件
     excel = pd.ExcelWriter(path)
     for key, df in df_dict.items():
-        key = key.replace('/', '.')[-31:]  # 最大支持31个字符
+        key = re.sub(r"\W", ".", key)[-31:]  # 最大支持31个字符
         df.to_excel(excel, sheet_name=key, index=False)
 
     # 保存 Excel 文件

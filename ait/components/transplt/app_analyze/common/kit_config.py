@@ -20,6 +20,9 @@ import platform
 from app_analyze.utils.clang_finder import get_lib_clang_path
 
 
+_sep = os.path.sep
+
+
 @unique
 class ScannerType(Enum):
     """
@@ -54,7 +57,10 @@ class KitConfig:
     # 1. 工具运行相关配置
     ARCH = platform.machine()
 
-    LIB_CLANG_PATH = get_lib_clang_path()
+    @classmethod
+    @property
+    def lib_clang_path(self):
+        return get_lib_clang_path()
 
     CXX_STD = 'c++17'  # c++11、c++14、c++17、c++20等，或者None，表示使用clang默认值
 
@@ -83,12 +89,12 @@ class KitConfig:
     # b.加速库路径
     HEADERS_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'headers'))
     INCLUDES = {
-        OPENCV: f'{HEADERS_FOLDER}/opencv/include/opencv4',
-        FFMPEG: f'{HEADERS_FOLDER}/ffmpeg/include',
-        CUDA: f'{HEADERS_FOLDER}/cuda/include',
-        CVCUDA: f'{HEADERS_FOLDER}/cvcuda/include',
-        TENSORRT: f'{HEADERS_FOLDER}/tensorrt/include',
-        CODEC: f'{HEADERS_FOLDER}/codec/include',
+        OPENCV: os.path.join(HEADERS_FOLDER, 'opencv', 'include', 'opencv4'),
+        FFMPEG: os.path.join(HEADERS_FOLDER, 'ffmpeg', 'include'),
+        CUDA: os.path.join(HEADERS_FOLDER, 'cuda', 'include'),
+        CVCUDA: os.path.join(HEADERS_FOLDER, 'cvcuda', 'include'),
+        TENSORRT: os.path.join(HEADERS_FOLDER, 'tensorrt', 'include'),
+        CODEC: os.path.join(HEADERS_FOLDER, 'codec', 'include'),
     }
     # c.如果用户已经安装，选取用户安装的路径，否则选取默认配置
     OPENCV_HOME = os.environ.get('OPENCV_HOME', INCLUDES.get(OPENCV, None))
@@ -111,16 +117,16 @@ class KitConfig:
     # "libavcodec/nvenc.h"
     ACC_LIBS = {
         # OpenCV
-        OPENCV_HOME: ['cv', '/cuda', ['cuda', 'gpu'], OPENCV],
+        OPENCV_HOME: ['cv', _sep + 'cuda', ['cuda', 'gpu'], OPENCV],
         # FFmpeg
-        '/libavcodec/': ['', '/nv', '', FFMPEG],
-        '/libavfilter/': ['', ['/cuda/', '_cuda'], '', FFMPEG],
+        _sep + 'libavcodec' + _sep: ['', _sep + 'nv', '', FFMPEG],
+        _sep + 'libavfilter' + _sep: ['', [_sep + 'cuda' + _sep, '_cuda'], '', FFMPEG],
         'libavformat': ['', '', '', FFMPEG],
-        '/libavdevice/': ['', '', '', FFMPEG],
-        '/libavutil/': ['', ['/cuda_', '_cuda/', '_cuda_'], '', FFMPEG],
-        '/libswresample/': ['', '', '', FFMPEG],
-        '/libpostproc/': ['', '', '', FFMPEG],
-        '/libswscale/': ['', '', '', FFMPEG],
+        _sep + 'libavdevice' + _sep: ['', '', '', FFMPEG],
+        _sep + 'libavutil' + _sep: ['', [_sep + 'cuda_', '_cuda' + _sep, '_cuda_'], '', FFMPEG],
+        _sep + 'libswresample' + _sep: ['', '', '', FFMPEG],
+        _sep + 'libpostproc' + _sep: ['', '', '', FFMPEG],
+        _sep + 'libswscale' + _sep: ['', '', '', FFMPEG],
         # DALI
         'dali': ['dali', 1, '', DALI],
         # CUDA
@@ -135,12 +141,12 @@ class KitConfig:
     # e.API映射表，文件名第一个'_'前为加速库名；内部工作表/Sheet名以'-APIMap'结尾，其他工作表会被忽略。
     API_MAP_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'config'))
     API_MAP = {
-        OPENCV: f'{API_MAP_FOLDER}/mxBase_OpenCV_API_MAP.xlsx',
-        FFMPEG: f'{API_MAP_FOLDER}/DVPP_FFMPEG_API_MAP.xlsx',
-        CUDA: f'{API_MAP_FOLDER}/ACL_CUDA_API_MAP.xlsx',
-        CVCUDA: f'{API_MAP_FOLDER}/mxBase_CVCUDA_API_MAP.xlsx',
-        TENSORRT: f'{API_MAP_FOLDER}/ACLMDL_TRT_API_MAP.xlsx',
-        CODEC: f'{API_MAP_FOLDER}/DVPP_Codec_API_MAP.xlsx',
+        OPENCV: os.path.join(API_MAP_FOLDER, 'mxBase_OpenCV_API_MAP.xlsx'),
+        FFMPEG: os.path.join(API_MAP_FOLDER, 'DVPP_FFMPEG_API_MAP.xlsx'),
+        CUDA: os.path.join(API_MAP_FOLDER, 'ACL_CUDA_API_MAP.xlsx'),
+        CVCUDA: os.path.join(API_MAP_FOLDER, 'mxBase_CVCUDA_API_MAP.xlsx'),
+        TENSORRT: os.path.join(API_MAP_FOLDER, 'ACLMDL_TRT_API_MAP.xlsx'),
+        CODEC: os.path.join(API_MAP_FOLDER, 'DVPP_Codec_API_MAP.xlsx'),
     }
 
     # 3.CMake加速库模式匹配
