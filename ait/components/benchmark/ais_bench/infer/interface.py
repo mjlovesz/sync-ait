@@ -476,6 +476,56 @@ class InferSession:
         if hasattr(self.session, 'finalize'):
             self.session.finalize()
 
+    def infer_pipeline(self, feeds_list, mode = 'static', custom_sizes = 100000):
+        '''
+        Parameters:
+            feeds_list: input data list
+            mode: static dymdims dymshapes
+        '''
+        inputs_list = []
+        shapes_list = []
+        torch_tensor_list = ['torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor',
+            'torch.BFloat16Tensor', 'torch.ByteTensor', 'torch.CharTensor', 'torch.ShortTensor',
+            'torch.LongTensor', 'torch.BoolTensor', 'torch.IntTensor' ]
+        np_type_list = [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, \
+                      np.float32, np.float64]
+        for feeds in feeds_list:
+            inputs = []
+            shapes = []
+            for feed in feeds:
+                if type(feed) is np.ndarray:
+                    infer_input = feed
+                    shape = feed.shape
+                elif type(feed) in np_type_list:
+                    infer_input = np.array(feed)
+                    shape = [feed.size]
+                # elif type(feed) is aclruntime.Tensor:
+                #     infer_input = feed
+                elif hasattr(feed, 'type') and feed.type() in torch_tensor_list:
+                    infer_input = feed.numpy()
+                    if not feed.is_contiguous():
+                        infer_input = np.ascontiguousarray(infer_input)
+                    shape = infer_input.shape
+                else:
+                    raise RuntimeError('type:{} invalid'.format(type(feed)))
+                basetensor = aclruntime.BaseTensor(infer_input.__array_interface__['data'][0], infer_input.nbytes)
+                inputs.append(basetensor)
+                shapes.append(shape)
+            inputs_list.append(inputs)
+            shapes_list.append(shapes)
+
+        if mode == 'dymshape':
+            if isinstance(custom_sizes, int):
+                custom_sizes = [custom_sizes]*len(self.get_outputs())
+            elif isinstance(custom_sizes, list) is False:
+                raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
+                    custom_sizes, type(custom_sizes)))
+            self.session.set_custom_outsize(custom_sizes)
+
+        outputs = self.session.run_pipeline(self.outputs_names, inputs_list, shapes_list,
+                                            mode == 'dymshape', mode == 'dymdims')
+        return self.convert_tensors_to_arrays(outputs)
+
     def infer(self, feeds, mode = 'static', custom_sizes = 100000):
         '''
         Parameters:
