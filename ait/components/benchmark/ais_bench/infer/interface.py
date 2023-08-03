@@ -17,6 +17,9 @@ import time
 from configparser import ConfigParser
 import numpy as np
 import aclruntime
+import sys
+from multiprocessing import Pool
+from multiprocessing import Manager
 
 SRC_IMAGE_SIZE_W_MIN = 2
 SRC_IMAGE_SIZE_W_MAX = 4096
@@ -52,6 +55,28 @@ PIXEL_VAR_RECI_CHN_MIN = -65504
 PIXEL_VAR_RECI_CHN_MAX = 65504
 
 logger = logging.getLogger(__name__)
+
+def infer_multidevice(device_id, i, msgq, ndata, acl_json_path: str = None, debug: bool = False, loop: int = 1,
+                      mode = 'static', custom_sizes = 100000):
+    session = InferSession(device_id, i, msgq, ndata, acl_json_path, debug, loop)
+    outputs = session.infer([ndata], mode, custom_sizes)
+    msgq.put((i, outputs))
+
+
+def multidevice_run(device_list, model_path, ndata, acl_json_path: str = None, debug: bool = False, loop: int = 1,
+                      mode = 'static', custom_sizes = 100000):
+    p = Pool(len(device_list))
+    msgq = Manager().Queue()
+    ret_dict = {}
+    for i in range(len(device_list)):
+        device_id = int(device_list[i])
+        p.apply_async(infer_multidevice, args=(device_id, i, msgq, ndata[device_id], acl_json_path, debug, loop, mode, custom_sizes))
+    p.close()
+    p.join()
+    while msgq.qsize() != 0:
+        ret = msgq.get()
+        ret_dict.update({ret[0] : ret[1]})
+    return ret_dict
 
 
 class InferSession:
