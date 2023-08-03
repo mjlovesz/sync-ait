@@ -116,7 +116,7 @@ class NetCompare(object):
         finally:
             pass
 
-    def accuracy_network_compare(self, max_cmp_size=0):
+    def accuracy_network_compare(self):
         """
         Function Description:
             invoke the interface for network-wide comparsion
@@ -130,7 +130,7 @@ class NetCompare(object):
         if self._check_msaccucmp_compare_support_advisor():
             msaccucmp_cmd.append(ADVISOR_ARGS)
         if self._check_msaccucmp_compare_support_max_cmp_size():
-            msaccucmp_cmd.extend([MAX_CMP_SIZE_ARGS, max_cmp_size])
+            msaccucmp_cmd.extend([MAX_CMP_SIZE_ARGS, str(self.arguments.max_cmp_size)])
 
         if self.golden_json_path is not None:
             msaccucmp_cmd.extend(["-cf", self.golden_json_path])
@@ -292,7 +292,8 @@ class NetCompare(object):
                self._check_msaccucmp_compare_support_args(ADVISOR_ARGS)
     
     def _check_msaccucmp_compare_support_max_cmp_size(self):
-        return self._check_msaccucmp_compare_support_args(MAX_CMP_SIZE_ARGS)
+        return self.arguments.max_cmp_size and \
+               self._check_msaccucmp_compare_support_args(MAX_CMP_SIZE_ARGS)
 
 
     def _process_result_to_csv(self, fp_write, csv_info):
