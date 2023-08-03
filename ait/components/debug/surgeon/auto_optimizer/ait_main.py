@@ -334,11 +334,12 @@ class SurgeonCommand(BaseCommand):
 def get_cmd_instance():
     surgeon_help_info = "surgeon tool for onnx modifying functions."
     list_cmd_instance = ListCommand("list", "List available Knowledges")
-    evaluate_cmd_instance = EvaluateCommand("evaluate", "Evaluate model matching specified knowledges")
-    optimize_cmd_instance = OptimizeCommand("optimize", "Optimize model with specified knowledges")
-    extract_cmd_instance = ExtractCommand("extract", "Extract subgraph from onnx model")
+    evaluate_cmd_instance = EvaluateCommand("evaluate", "Evaluate model matching specified knowledges", alias_name="eva")
+    optimize_cmd_instance = OptimizeCommand("optimize", "Optimize model with specified knowledges", alias_name="opt")
+    extract_cmd_instance = ExtractCommand("extract", "Extract subgraph from onnx model", alias_name="ext")
     concatenate_cmd_instance = ConcatenateCommand("concatenate",
-                                                  "Concatenate two onnxgraph into combined one onnxgraph")
+                                                  "Concatenate two onnxgraph into combined one onnxgraph",
+                                                  alias_name="concat")
     return SurgeonCommand("surgeon", surgeon_help_info, [list_cmd_instance, evaluate_cmd_instance,
                                                          optimize_cmd_instance, extract_cmd_instance,
                                                          concatenate_cmd_instance])
