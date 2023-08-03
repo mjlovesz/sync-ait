@@ -56,9 +56,9 @@ PIXEL_VAR_RECI_CHN_MAX = 65504
 
 logger = logging.getLogger(__name__)
 
-def infer_multidevice(device_id, i, msgq, ndata, acl_json_path: str = None, debug: bool = False, loop: int = 1,
+def infer_multidevice(device_id, i, msgq, model_path, ndata, acl_json_path: str = None, debug: bool = False, loop: int = 1,
                       mode = 'static', custom_sizes = 100000):
-    session = InferSession(device_id, i, msgq, ndata, acl_json_path, debug, loop)
+    session = InferSession(device_id, model_path, acl_json_path, debug, loop)
     outputs = session.infer([ndata], mode, custom_sizes)
     msgq.put((i, outputs))
 
@@ -70,7 +70,7 @@ def multidevice_run(device_list, model_path, ndata, acl_json_path: str = None, d
     ret_dict = {}
     for i in range(len(device_list)):
         device_id = int(device_list[i])
-        p.apply_async(infer_multidevice, args=(device_id, i, msgq, ndata[device_id], acl_json_path, debug, loop, mode, custom_sizes))
+        p.apply_async(infer_multidevice, args=(device_id, i, msgq, model_path, ndata[device_id], acl_json_path, debug, loop, mode, custom_sizes))
     p.close()
     p.join()
     while msgq.qsize() != 0:
