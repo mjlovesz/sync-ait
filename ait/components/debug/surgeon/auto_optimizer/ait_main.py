@@ -306,15 +306,18 @@ class ConcatenateCommand(BaseCommand):
         except Exception as err:
             logger.error(err)
 
+        if args.combined_graph_path:
+            combined_graph_path = args.combined_graph_path
+        else:
+            combined_graph_path = args.graph1[:-5] + args.graph2[:-5] + ".onnx"
+            combined_graph_path = combined_graph_path.replace("/", "_")
+
         try:
-            combined_graph.save(args.combined_graph_path)
+            combined_graph.save(combined_graph_path)
         except Exception as err:
             logger.error(err)
 
-        logger.info(
-            f'Concatenate ONNX model: {args.graph1} and ONNX model: {args.graph2} completed. '
-            f'Combined model saved in {args.combined_graph_path}'
-        )
+        logger.info(f"Combined ONNX model saved in: {combined_graph_path}")
 
 
 class SurgeonCommand(BaseCommand):
