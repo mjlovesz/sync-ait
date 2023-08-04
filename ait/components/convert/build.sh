@@ -35,12 +35,12 @@ build_aie_convert(){
   if [ -f ${AIE_CONVERT} ];then
     cp ${AIE_CONVERT} ${MODEL_CONVERT_PATH}/aie
     else
-      echo "Error: Build aie_convert failed."
+      echo "WARNING: Build aie_convert failed. aie command cannot be used."
   fi
 }
 
 if [ ${AIE_DIR} ];then
   build_aie_convert
   else
-    echo "Error: Ascend Inference Engine is not installed."
+    echo "WARNING: Ascend Inference Engine is not installed. aie command cannot be used."
 fi

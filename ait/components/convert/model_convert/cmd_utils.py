@@ -62,5 +62,11 @@ def gen_convert_cmd(conf_args: list, parse_args: argparse.Namespace, backend: st
 
 
 def execute_cmd(cmd: list):
-    result = subprocess.run(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    logger.info(result.stdout.decode('utf-8'))
+    result = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    while result.poll() is None:
+        line = result.stdout.readline()
+        if line:
+            line = line.strip()
+            print(line.decode('utf-8'))
+
+    return result.returncode
