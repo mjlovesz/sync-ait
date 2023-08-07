@@ -205,30 +205,14 @@ om.Container = class {
             throw new om.Error('File format is not ge.proto.ModelDef (' + message.replace(/\.$/, '') + ').');
         }
     }
-
-    _loadPICO(context) {
-        const stream = context.stream;
-        const reader = new base.BinaryReader(stream);
-        var buffer = reader.read(4);
-        this.format = 'DaVinci OM SVP'; // SVP = Smart Vision PICO
-        reader.uint32(); // reserved
-        this.size = reader.uint32();
-        const param_size = reader.uint32();
-        const param_offset = reader.uint32();
-        reader.uint32(); // tmp_bufsize
-        const tfm_offset = reader.uint32();
-        reader.uint32(); // tfm_size
-        this.type = 2;
-        reader.seek(param_offset);
-        this.param = reader.read(param_size);
-        buffer = reader.read(tfm_offset - reader.position);
-        this.model = new svp.ModelDef(buffer);
-    }
 };
 
 om.Metadata = class {
     static open(context) {
-        om.Metadata._metadata = om.Metadata._metadata || new Map();
+        om.Metadata.textDecoder = om.Metadata.textDecoder || new TextDecoder('utf-8');
+        if (om.Metadata._metadata) {
+            return Promise.resolve(om.Metadata._metadata);
+        }
         return context.request('./om-metadata.json', 'utf-8', null).then((data) => {
             om.Metadata._metadata = new om.Metadata(data);
             return om.Metadata._metadata;
@@ -239,25 +223,41 @@ om.Metadata = class {
     }
 
     constructor(data) {
+        this._map = {};
+        this._attributeCache = {};
         if (data) {
-            const metadata = JSON.parse(data);
-            this._types = new Map();
-            this._attributes = new Map();
-            this._inputs = new Map();
-            for (const item of metadata || []) {
-                this._types.set(item.name, item);
-                if (item.identifier !== undefined) {
-                    this._types.set(item.identifier, item);
+            let items = JSON.parse(data);
+            if (items) {
+                for (let item of items) {
+                    if (item.name && item.schema) {
+                        this._map[item.name] = item.schema;
+                        this._map[item.name].attributes.push({"name": "format", "type": "Format"});
+                    }
                 }
             }
         }
     }
 
-    type(name) {
-        if (!this._types.has(name)) {
-            this._types.set(name, { name: name.toString() });
+    type(type) {
+        var nodeType = this._map[type] || null;
+        if (nodeType) {
+            nodeType["name"] = type;
         }
-        return this._types.get(name);
+        return nodeType;
+    }
+
+    attribute(type, name) {
+        let map = this._attributeCache[type];
+        if (!map) {
+            map = {};
+            const schema = this.type(type);
+            if (schema && schema.attributes && schema.attributes.length > 0) {
+                for (let attribute of schema.attributes) {
+                    map[attribute.name] = attribute;
+                }
+            }
+            this._attributeCache[type] = map;
+        }
     }
 };
 
