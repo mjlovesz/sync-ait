@@ -524,7 +524,9 @@ class InferSession:
 
         outputs = self.session.run_pipeline(self.outputs_names, inputs_list, shapes_list,
                                             mode == 'dymshape', mode == 'dymdims')
-        return self.convert_tensors_to_arrays(outputs)
+        for i in range(len(outputs)):
+            outputs[i] = self.convert_tensors_to_arrays(outputs[i])
+        return outputs
 
     def infer(self, feeds, mode = 'static', custom_sizes = 100000):
         '''

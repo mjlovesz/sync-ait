@@ -139,7 +139,7 @@ namespace Base {
 
     void FuncPrepareBaseTensor(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
                                Base::PyInferenceSession* session, std::vector<std::vector<Base::BaseTensor>>& inputsList,
-                               std::vector<std::vector<size_t>>& shapesList, bool autoDymShape,
+                               std::vector<std::vector<std::vector<size_t>>>& shapesList, bool autoDymShape,
                                bool autoDymDims, std::vector<std::string>& outputNames)
     {
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
@@ -150,11 +150,11 @@ namespace Base {
         for (const auto &desc: session->GetInputs()) {
             inputNames.emplace_back(desc.name);
         }
-        for (int i = 0; i < inputsList.size(); i++){
+        for (size_t i = 0; i < inputsList.size(); i++){
             auto feeds = std::make_shared<Feeds>();
             feeds->inputs = std::make_shared<std::vector<Base::BaseTensor>>(inputsList[i]);
             feeds->outputNames = std::make_shared<std::vector<std::string>>(outputNames);
-            for (int j = 0; j < inputNames.size(); j++){
+            for (size_t j = 0; j < inputNames.size(); j++){
                 if (autoDymShape) {
                     AutoSetDym(feeds, "shape", inputNames[j], shapesList[i][j], j == (inputNames.size() - 1));
                 }
@@ -308,7 +308,7 @@ namespace Base {
             for (auto &mem : *(item->memory)) {
                 Base::MemoryHelper::Free(mem);
             }
-            result.emplace_back(item->outputs);
+            result.emplace_back(*(item->outputs));
         }
     }
 }
