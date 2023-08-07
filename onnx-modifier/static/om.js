@@ -551,7 +551,9 @@ om.Node = class {
             }
         }
 
+        if (op.type == "Convolution" || op.type == "ConvolutionDepthwise" || op.type == "ConvTranspose") {
 
+        }
     }
 };
 
