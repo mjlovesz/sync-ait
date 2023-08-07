@@ -263,13 +263,128 @@ om.Metadata = class {
 
 om.Model = class {
 
-    constructor(metadata, target) {
-        this.graphs = [];
+    constructor(metadata, nets, weights, deviceConfigMap) {
+        this._deviceConfigMap = deviceConfigMap;
+        this._weights = weights;
+        this._format = "DaVinci OM";
+        this._flops = 0;
+        this._npuFlops = 0;
+        this._graphs = [];
         this.format = target.format;
-        const context = { metadata: metadata, weights: target.weights };
-        for (const graph of target.model.graph) {
-            this.graphs.push(new om.Graph(context, graph));
+
+        for (let i=0; i<nets.length; ++i) {
+            let index = nets.length == 1 ? undefined : i+1;
+            let net = nets[i];
+            let mainGraph = net.graph[0];
+            let weight = this._weights[i];
+
+            if (nets.length > 1) {
+                this._modelType = "Multi-shape model";
+            } else {
+                if ("graph_infershaped_flag" in mainGraph.attr && mainGraph.attr["graph_infershaped_flag"].b) {
+                    this._modelType = "Shape Infered By NPU IR Model";
+                } else if ("ir_infershaped" in mainGraph.attr && mainGraph.attr["ir_infershaped"].b) {
+                    this._modelType = "Shape Infered By DDK IR Model";
+                } else if ("hiai_version" in mainGraph.attr && new TextDecoder("utf-8").decode(mainGraph.attr["hiai_version"].s) == "ir") {
+                    this._modelType = "Shape Uninfered IR Model";
+                } else if ("memory_size" in mainGraph.attr) {
+                    this._modelType = `Compiled Model`;
+                    this._description = `memory: ${mainGraph.attr["memory_size"].i}`;
+                    if ("weight_size" in mainGraph.attr) {
+                        this._description |= `, weight: ${mainGraph.attr["weight_size"].i}`;
+                    }
+                } else if ("memory_size" in net.attr) {
+                    this._modelType = `Legacy Model`;
+                    this._description = `memory: ${net.attr["memory_size"].i}, weight: ${net.attr["weight_size"].i}`;
+
+                } else {
+                    this._modelType = `Unknown format`;
+                }
+            }
+
+            for (var j=0; j<net.graph.length; ++j) {
+                this._extractGraph(metadata, net.graph[j], net, this, weight, index, "");
+            }
         }
+    }
+
+    _extractGraph(metadata, graph, net, model, weight, index, parentName) {
+        for (let op of graph.op) {
+            for (let item in op.attr) {
+                if (Object.prototype.hasOwnProperty.call(op.attr[item], 'g')) {
+                    let subgraph = op.attr[item].g;
+                    if (index != undefined) {
+                        subgraph.name = subgraph.name + "-shape: " + index;
+                    }
+                    this._extractGraph(metadata, subgraph, net, model, weight, index, subgraph.name);
+                    delete op.attr[item];
+                } else if (item == "subgraph" && Object.prototype.hasOwnProperty.call(op.attr[item], 'bt')) {
+                    let sb = op.attr[item].bt;
+                    let subgraph = om.proto.GraphDef.decode(sb);
+                    subgraph.name = parentName + "/" + subgraph.name;
+                    this._extractGraph(metadata, subgraph, net, model, weight, index, subgraph.name);
+                }
+            }
+
+            if (this._deviceConfigMap.has(op.name)) {
+                let config = this._deviceConfigMap.get(op.name);
+                var candidate_devices = [];
+                if (config & 0x1) {
+                    candidate_devices.push("NPU");
+                }
+                if ((config >> 1) & 0x1) {
+                    candidate_devices.push("CPU");
+                }
+                op.attr["device"] = candidate_devices.join(" && ");
+            }
+        }
+        if (index != undefined) {
+            graph.name = graph.name + "-shape: " + index;
+        }
+        this._graphs.unshift(new om.Graph(metadata, graph, weight, model));
+    }
+
+    get format() {
+        return this._format || "DaVinci OM";
+    }
+
+    get _modelType() {
+        return this._modelType || "DaVinci OM";
+    }
+
+    get producer() {
+        return this._producer || '';
+    }
+
+    set flops(v) {
+        this._flops = v;
+    }
+
+    set _npuFlops(v) {
+        this._npuFlops = v;
+    }
+
+    get flops() {
+        return this._flops;
+    }
+
+    get npuFlops() {
+        return this._npuFlops;
+    }
+
+    get description() {
+        if (!this._description) {
+            return `FLOPs: ${flopsToString(this.flops)} NPU FLOPs: ${flopsToString(this.npuFlops)}`;
+        }
+        return `FLOPs: ${flopsToString(this.flops)} NPU FLOPs: ${flopsToString(this.npuFlops)}, ${this._description}`;
+    }
+
+    get source() {
+        return this._source || '';
+    }
+
+    get graphs() {
+        return this._graphs;
     }
 };
 
