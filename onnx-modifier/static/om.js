@@ -59,7 +59,7 @@ om.Container = class {
         if (stream && stream.length >= 256) {
             const buffer = stream.peek(4);
             const signature = Array.from(buffer).map((c) => String.fromCharCode(c)).join('');
-            if (signature === 'IMOD' || signature === 'PICO') {
+            if (signature === 'IMOD' || signature === 'CUST') {
                 return signature;
             }
         }
@@ -69,9 +69,16 @@ om.Container = class {
     constructor(context, signature) {
         this._context = context;
         this._signature = signature;
+        this.device = new Map();
+        if (signature == 'IMOD') {
+            this._offset = 0;
+        } else if (signature == 'CUST') {
+            var reader = new base.BinaryReader(context.stream);
+            this._offset = reader.view.getUint32(4, true) + 16;
+        }
     }
 
-    _loadIMOD(context, isHugeModel) {
+    _loadModel(context, isHugeModel) {
         const MODEL_DEF = 0;
         const MODEL_WEIGHT = 1;
         const MODEL_TASK = 2;
@@ -132,7 +139,7 @@ om.Container = class {
                 };
             }
         }
-        const offset = HEADER_SIZE + TABLE_INDEX_SIZE + MODEL_PARTITION_MEM_INFO_SIZE * partitions.length;
+        const offset = this._offset + HEADER_SIZE + TABLE_INDEX_SIZE + MODEL_PARTITION_MEM_INFO_SIZE * partitions.length;
         for (const partition of partitions) {
             reader.seek(offset + partition.offset);
             const buffer = reader.read(partition.size);
@@ -161,17 +168,23 @@ om.Container = class {
                     break;
                 }
                 case DEVICE_CONFIG: { // DEVICE_CONFIG
-                    this.devices = new Map();
+                    let reader = new base.BinaryReader(this._context.stream);
+                    let content = reader.view;
                     const decoder = new TextDecoder('ascii');
-                    const reader = new base.BinaryReader(buffer);
-                    reader.uint32();
-                    for (let position = 4; position < partition.size;) {
-                        const length = reader.uint32();
-                        const buffer = reader.read(length);
-                        const name = decoder.decode(buffer);
-                        const device = reader.uint32();
-                        this.devices.set(name, device);
-                        position += 4 + length + 4;
+                    try {
+                        let position = 4;
+                        while (position < partition.size) {
+                            let length = content.getUint32(offset - this._offset + position, true);
+                            reader.seek(0);
+                            reader.skip(position + 4);
+                            let buffer = reader.read(length);
+                            let name = decoder.decode(buffer);
+                            let device = content.getUint32(offset - this.offset + position + 4 + length, true);
+                            position += length + 8;
+                            this.devices.set(name, device);
+                        }
+                    } catch {
+                        // Ignore if failed to parse device config
                     }
                     break;
                 }
