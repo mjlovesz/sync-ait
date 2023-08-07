@@ -250,8 +250,8 @@ def move_subdir(src_dir, dest_dir):
     res_dest, res_subdir = None, None
     subdirs = os.listdir(src_dir)
     if len(subdirs) != 1:
-        logger.error("move_subdir failed: multiple or none directory under src dir %s. \
-                     The reason might be dump failed."% src_dir)
+        logger.error("move_subdir failed: multiple or none directory under src dir %s. "
+                     "The reason might be dump failed.", src_dir)
     else:
         if os.path.exists(os.path.join(dest_dir, subdirs[0])):
             logger.error("move_subdir failed: dest dir %s exists"% os.path.join(dest_dir, subdirs[0]))
