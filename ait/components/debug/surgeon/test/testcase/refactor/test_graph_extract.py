@@ -38,6 +38,20 @@ def create_graph(name: str = 'test_graph'):
     )
 
 
+def create_graph2(name: str = 'test_graph2'):
+    input_ = OnnxPlaceHolder('input', np.dtype('float32'), [1, 3, 224, 224])
+    output = OnnxPlaceHolder('output', np.dtype('float32'), [1, 3, 224, 224])
+    node_0 = OnnxNode('sqrt0', 'Sqrt', inputs=['input'], outputs=['sqrt0_output'], attrs={})
+    node_1 = OnnxNode('relu1', 'Relu', inputs=['sqrt0_output'], outputs=['relu1_output'], attrs={})
+    node_2 = OnnxNode('sqrt2', 'Sqrt', inputs=['relu1_output'], outputs=['output'], attrs={})
+    return OnnxGraph(
+        name=name,
+        nodes=[node_0, node_1, node_2],
+        inputs=[input_],
+        outputs=[output],
+    )
+
+
 def create_subgraph(name: str = "test_subgraph"):
     input_ = OnnxPlaceHolder('sqrt0_output', np.dtype('float32'), [1, 3, 224, 224])
     output = OnnxPlaceHolder('relu3_output', np.dtype('float32'), [1, 3, 224, 224])
@@ -117,34 +131,47 @@ class TestGraphExtract(unittest.TestCase):
         self.addTypeEqualityFunc(OnnxInitializer, is_ini_equal)
         self.addTypeEqualityFunc(OnnxGraph, is_graph_equal)
         self.graph = create_graph()
+        self.graph2 = create_graph2()
         self.subgraph = create_subgraph()
         self.subgraph_with_input_shape = create_subgraph_with_specific_input_shape()
         self.subgraph_with_input_dtype = create_subgraph_with_specific_input_dtype()
         self.subgraph_with_input_shape_and_dtype = create_subgraph_with_specific_input_shape_and_dtype()
 
-    def test_extract_subgraph(self):
+    def test_extract_subgraph_when_basic_params_then_pass(self):
         sub_graph = self.graph.extract_subgraph(start_node_names=["relu1"],
                                                 end_node_names=["relu3"])
         self.assertEqual(sub_graph, self.subgraph)
 
-    def test_extract_subgraph_with_shape(self):
+    def test_extract_subgraph_when_add_input_shape_then_pass(self):
         sub_graph = self.graph.extract_subgraph(start_node_names=["relu1"],
                                                 end_node_names=["relu3"],
                                                 input_shape="sqrt0_output:4,3,640,640")
         self.assertEqual(sub_graph, self.subgraph_with_input_shape)
 
-    def test_extract_subgraph_with_dytpe(self):
+    def test_extract_subgraph_when_add_input_dytpe_then_pass(self):
         sub_graph = self.graph.extract_subgraph(start_node_names=["relu1"],
                                                 end_node_names=["relu3"],
                                                 input_dtype="sqrt0_output:int8")
         self.assertEqual(sub_graph, self.subgraph_with_input_dtype)
 
-    def test_extract_subgraph_with_shape_and_dytpe(self):
+    def test_extract_subgraph_when_add_input_shape_and_dytpe_then_pass(self):
         sub_graph = self.graph.extract_subgraph(start_node_names=["relu1"],
                                                 end_node_names=["relu3"],
                                                 input_shape="sqrt0_output:4,3,640,640",
                                                 input_dtype="sqrt0_output:int8")
         self.assertEqual(sub_graph, self.subgraph_with_input_shape_and_dtype)
+
+    def test_extract_graph_by_default_snn_enn(self):
+        subgraph = self.graph2.extract_subgraph()
+        self.assertEqual(subgraph, self.graph2)
+
+    def test_extract_graph_by_default_snn(self):
+        subgraph = self.graph2.extract_subgraph(end_node_names=['sqrt2'])
+        self.assertEqual(subgraph, self.graph2)
+
+    def test_extract_graph_by_default_enn(self):
+        subgraph = self.graph2.extract_subgraph(start_node_names=['sqrt0'])
+        self.assertEqual(subgraph, self.graph2)
 
 
 if __name__ == '__main__':

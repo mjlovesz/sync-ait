@@ -11,6 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
+
 from app_analyze.report.report import Report
 from app_analyze.utils.excel import write_excel
 from app_analyze.utils.log_util import logger
@@ -40,7 +42,7 @@ class CsvReport(Report):
 
     def generate(self):
         if self.report_path == '':
-            self.report_path = KitConfig.SOURCE_DIRECTORY + '/' + 'output.xlsx'
+            self.report_path = os.path.join(KitConfig.SOURCE_DIRECTORY, 'output.xlsx')
 
         write_excel(self.report_content, self.report_path)
         logger.info(f'Report generated at: {self.report_path}')

@@ -35,15 +35,6 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --profile) only_profile=true;;
   --uninstall) uninstall=true;;
   -y) all_uninstall=-y;;
-  -i) shift
-    pip_source_url=$1
-    curl_ans=`curl ${pip_source_url} -s --head | head -n 1 | grep "HTTP/1.[01] [23].."`
-    if [ -z "${curl_ans}" ];then
-      echo "Error: Invalid pip source: ${pip_source_url}"
-      exit 1;
-    fi
-    echo "Info: Using pip source ${pip_source_url}"
-    pip_source="-i ${pip_source_url}";;
   -h|--help) arg_help=1;;
   *) echo "Unknown parameter: $1";exit 1;
 esac; shift; done
@@ -73,6 +64,15 @@ if [ "$arg_help" -eq "1" ]; then
   echo " -y : using with uninstall, don't ask for confirmation of uninstall deletions"
   exit;
 fi
+
+# 若pip源为华为云，则优先安装skl2onnx(当前mirrors.huaweicloud.com中skl2onnx已停止更新，不包含1.14.1及以上版本)
+pre_check_skl2onnx(){
+  pip_source_index_url=$(pip3 config list | grep index-url | awk -F'=' '{print $2}' | tr -d "'")
+  if [ "${pip_source_index_url}" == "http://mirrors.huaweicloud.com/repository/pypi/simple" ] || [ "${pip_source_index_url}" == "https://mirrors.huaweicloud.com/repository/pypi/simple" ]
+  then
+    pip3 install skl2onnx==1.14.1 -i https://mirrors.tools.huawei.com/pypi/simple --trusted-host mirrors.tools.huawei.com
+  fi
+}
 
 
 uninstall(){
@@ -115,33 +115,34 @@ uninstall(){
 
 
 install(){
-  pip3 install ${CURRENT_DIR} ${arg_force_reinstall} ${pip_source}
+  pip3 install ${CURRENT_DIR} ${arg_force_reinstall}
 
   if [ ! -z $only_debug ]
   then
+    pre_check_skl2onnx
+
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \
-    ${arg_force_reinstall} ${pip_source}
+    ${arg_force_reinstall}
   fi
 
   if [ ! -z $only_benchmark ]
   then
     pip3 install ${CURRENT_DIR}/components/benchmark/backend \
     ${CURRENT_DIR}/components/benchmark \
-    ${arg_force_reinstall} ${pip_source}
-    bash ${CURRENT_DIR}/components/benchmark/backend/concur/build.sh
+    ${arg_force_reinstall}
   fi
 
   if [ ! -z $only_analyze ]
   then
     pip3 install ${CURRENT_DIR}/components/analyze \
-    ${arg_force_reinstall} ${pip_source}
+    ${arg_force_reinstall}
   fi
 
   if [ ! -z $only_convert ]
   then
     pip3 install ${CURRENT_DIR}/components/convert \
-    ${arg_force_reinstall} ${pip_source}
+    ${arg_force_reinstall}
 
     bash ${CURRENT_DIR}/components/convert/build.sh
   fi
@@ -149,18 +150,20 @@ install(){
   if [ ! -z $only_transplt ]
   then
     pip3 install ${CURRENT_DIR}/components/transplt \
-    ${arg_force_reinstall} ${pip_source}
+    ${arg_force_reinstall}
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi
 
   if [ ! -z $only_profile ]
   then
     pip3 install ${CURRENT_DIR}/components/profile/msprof \
-    ${arg_force_reinstall} ${pip_source}
+    ${arg_force_reinstall}
   fi
 
   if [ -z $only_debug ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ]
   then
+    pre_check_skl2onnx
+
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \
     ${CURRENT_DIR}/components/benchmark/backend \
@@ -169,13 +172,9 @@ install(){
     ${CURRENT_DIR}/components/convert \
     ${CURRENT_DIR}/components/transplt \
     ${CURRENT_DIR}/components/profile/msprof \
-    ${arg_force_reinstall} ${pip_source}
+    ${arg_force_reinstall}
 
-    if [ ! ${AIE_DIR} ];then
-      echo "Warning: Ascend Inference Engine is not installed. (convert install failed)"
-    else
-      bash ${CURRENT_DIR}/components/convert/build.sh
-    fi
+    bash ${CURRENT_DIR}/components/convert/build.sh
 
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi

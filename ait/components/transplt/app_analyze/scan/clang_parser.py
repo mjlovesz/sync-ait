@@ -14,6 +14,7 @@
 import logging
 import re
 import os
+import platform
 import time
 
 from clang.cindex import Index, CursorKind, TranslationUnit, Config
@@ -31,7 +32,7 @@ MACRO_MAP = dict()
 # set the config
 if not Config.loaded:
     # 或指定目录：Config.set_library_path("/usr/lib/x86_64-linux-gnu")
-    Config.set_library_file(KitConfig.LIB_CLANG_PATH)
+    Config.set_library_file(KitConfig.lib_clang_path)
 
 
 def get_diag_info(diag):
@@ -101,18 +102,20 @@ def in_acc_lib(file, cursor):
     """判断该文件是否为加速库文件。"""
     if not file:
         return False, False, ''
+    file = file.replace("\\", os.path.sep).replace("/", os.path.sep)
     for lib, v in KitConfig.ACC_LIBS.items():
-        if lib in file:  # 待ACC_LIBS的Pattern改为全路径后，可以使用file.startswith(lib)
-            if not v:
-                cuda_en = False
-                usr_ns = ''
-            else:
-                # get relative path
-                new_file = file if not file.startswith(lib) else file.replace(lib, '')
-                cuda_en = cuda_enabled(new_file, v[1])
-                usr_ns = usr_namespace(cursor, v[0])
-                cursor.lib = v[3]
-            return True, cuda_en, usr_ns
+        if lib not in file:  # 待ACC_LIBS的Pattern改为全路径后，可以使用file.startswith(lib)
+            continue
+        if not v:
+            cuda_en = False
+            usr_ns = ''
+        else:
+            # get relative path
+            new_file = file if not file.startswith(lib) else file.replace(lib, '')
+            cuda_en = cuda_enabled(new_file, v[1])
+            usr_ns = usr_namespace(cursor, v[0])
+            cursor.lib = v[3]
+        return True, cuda_en, usr_ns
     return False, False, ''
 
 
@@ -357,6 +360,8 @@ class Parser:
         # args: '-Xclang', '-ast-dump', '-fsyntax-only', '-std=c++17', "-I/path/to/include"
         # option: TranslationUnit.PARSE_PRECOMPILED_PREAMBLE, TranslationUnit.PARSE_DETAILED_PROCESSING_RECORD
         args = [f'-I{x}' for x in KitConfig.INCLUDES.values() if x]
+        if platform.system() == "Windows":
+            args.append("--target=x86_64-w64-windows-gnu")
         if KitConfig.CXX_STD:
             args.append(f'-std={KitConfig.CXX_STD}')
         self.tu = self.index.parse(path,

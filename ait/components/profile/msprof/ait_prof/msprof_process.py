@@ -23,6 +23,7 @@ import subprocess
 from ait_prof.utils import logger
 from ait_prof.args_adapter import MsProfArgsAdapter
 
+PATH_MAX_LENGTH = 255
 
 def msprof_run_profiling(args, msprof_bin):
     bin_path = ' '.join(sys.argv).split(" ")[0]
@@ -44,10 +45,12 @@ def msprof_run_profiling(args, msprof_bin):
 
 
 def args_rules(args):
-    if args.output is None and args.output_dirname is not None:
-        logger.error("parameter --output_dirname cann't be used alone. "
-                     "Please use it together with the parameter --output!\n")
-        raise RuntimeError('error bad parameters --output_dirname')
+    if args.output is not None and len(args.output) > PATH_MAX_LENGTH:
+        logger.error("parameter --output length out of range. "
+                    "Please use it together with the parameter --output!\n")
+        raise RuntimeError('error bad parameters --output')
+    if args.output is None:
+        args.output = os.getcwd()
     return args
 
 
@@ -57,7 +60,7 @@ def msprof_process(args:MsProfArgsAdapter):
     except RuntimeError:
         return 1
     msprof_bin = shutil.which('msprof')
-    if msprof_bin is None or os.getenv('GE_PROFILING_TO_STD_OUT') == '1':
+    if msprof_bin is None or os.getenv('AIT_NO_MSPROF_MODE') == '1':
         logger.info("find no msprof continue use acl.json mode")
     else:
         try:

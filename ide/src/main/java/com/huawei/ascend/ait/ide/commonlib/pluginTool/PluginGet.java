@@ -16,9 +16,13 @@
 
 package com.huawei.ascend.ait.ide.commonlib.pluginTool;
 
+import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -31,6 +35,7 @@ import java.lang.reflect.Method;
  * @date 2023/06/03
  */
 public class PluginGet {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PluginGet.class);
     private final Project project;
     public PluginGet(Project project) {
         this.project = project;
@@ -45,14 +50,23 @@ public class PluginGet {
     public void getPluginClass(String className, String id) {
         PluginId pluginId = PluginId.getId(id);
         try {
-            Class a = PluginManager.getInstance().findEnabledPlugin(pluginId).getPluginClassLoader().loadClass(className);
+            IdeaPluginDescriptor descriptor = PluginManager.getInstance().findEnabledPlugin(pluginId);
+            if (descriptor == null) {
+                LOGGER.warn(pluginId + "is not installed.");
+                return;
+            }
+            if (descriptor.getPluginClassLoader() == null) {
+                LOGGER.warn(pluginId + "is not enable.");
+                return;
+            }
+            Class<?> a = descriptor.getPluginClassLoader().loadClass(className);
             Method method = a.getMethod("openNewPage", Project.class);
-            Constructor constructor = a.getConstructor();
+            Constructor<?> constructor = a.getConstructor();
             Object object = constructor.newInstance();
             method.invoke(object, project);
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
                  IllegalAccessException | InstantiationException e) {
-            throw new RuntimeException(e);
+            LOGGER.warn(e.getMessage());
         }
     }
 }

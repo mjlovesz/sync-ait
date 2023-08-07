@@ -24,6 +24,8 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                             save_data_to_files)
 
 PURE_INFER_FAKE_FILE = "pure_infer_data"
+PURE_INFER_FAKE_FILE_ZERO = "pure_infer_data_zero"
+PURE_INFER_FAKE_FILE_RANDOM = "pure_infer_data_random"
 PADDING_INFER_FAKE_FILE = "padding_infer_fake_file"
 
 
@@ -58,10 +60,15 @@ def get_pure_infer_data(size, pure_data_type):
 # get numpy array from files list combile all files
 def get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tensor_mode=False):
     ndatalist = []
+    file_path_switch = {
+        PURE_INFER_FAKE_FILE: pure_data_type,
+        PURE_INFER_FAKE_FILE_ZERO: "zero",
+        PURE_INFER_FAKE_FILE_RANDOM: "random"
+    }
     for i, file_path in enumerate(files_list):
         logger.debug("get tensor from filepath:{} i:{} of all:{}".format(file_path, i, len(files_list)))
-        if file_path == PURE_INFER_FAKE_FILE:
-            ndata = get_pure_infer_data(size, pure_data_type)
+        if file_path_switch.get(file_path) is not None:
+            ndata = get_pure_infer_data(size, file_path_switch.get(file_path))
         elif file_path == PADDING_INFER_FAKE_FILE:
             logger.debug("padding file use fileslist[0]:{}".format(files_list[0]))
             ndata = get_file_content(files_list[0])
@@ -202,6 +209,52 @@ def create_infileslist_from_inputs_list(inputs_list, intensors_desc, no_combine_
         logger.error('create_infileslist_from_fileslist return infileslist size: {}'.format(len(infileslist)))
         raise RuntimeError()
 
+    return infileslist
+
+
+def check_pipeline_fileslist_match_intensors(fileslist, intensors_desc):
+    # check intensor amount matched
+    if len(intensors_desc) != len(fileslist):
+        logger.error('fileslist:{} intensor:{} not match'.format(len(fileslist), len(intensors_desc)))
+        raise RuntimeError()
+    # check intensor size matched
+    for i, files in enumerate(fileslist):
+        filesize = get_file_datasize(files[i])
+        tensorsize = intensors_desc[i].realsize
+        auto_mode = False
+        # auto_dim_mode & auto_shape_mode are exceptional cases
+        if intensors_desc[i].realsize == intensors_desc[i].size:
+            if any(dim <= 0 for dim in intensors_desc[i].shape):
+                auto_mode = True
+        if filesize != tensorsize and not auto_mode:
+            logger.error(f'tensor_num:{i} tensorsize:{tensorsize} filesize:{filesize} not match')
+            raise RuntimeError()
+
+
+# 不组batch的情况
+def create_pipeline_fileslist_from_inputs_list(inputs_list, intensors_desc):
+    check_input_parameter(inputs_list, intensors_desc)
+    fileslist = []
+    inputlistcount = len(inputs_list)
+    intensorcount = len(intensors_desc)
+    if os.path.isfile(inputs_list[0]):
+        chunks = inputlistcount // intensorcount
+        fileslist = list(list_split(inputs_list, chunks, PADDING_INFER_FAKE_FILE))
+        logger.debug(f"create intensors list file type inlistcount:{inputlistcount} \
+                     intensorcont:{intensorcount} chunks:{chunks} files_size:{len(fileslist)}")
+    elif os.path.isdir(inputs_list[0]) and inputlistcount == intensorcount:
+        fileslist = [get_fileslist_from_dir(dir_) for dir_ in inputs_list]
+        logger.debug(f"create intensors list dictionary type inlistcount:{inputlistcount} \
+                     intensorcont:{intensorcount} files_size:{len(fileslist)}")
+    else:
+        logger.error('create intensors list filelists:{inputlistcount} intensorcont:{intensorcount} error create')
+        raise RuntimeError()
+    try:
+        check_pipeline_fileslist_match_intensors(fileslist, intensors_desc)
+    except Exception as err:
+        logger.error("fileslist and intensors not matched")
+        raise RuntimeError from err
+    infileslist = list(zip(*fileslist))
     return infileslist
 
 

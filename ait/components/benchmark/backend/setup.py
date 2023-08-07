@@ -115,6 +115,8 @@ ext_modules = [
             'base/module/ModelInfer/SessionOptions.cpp',
             'base/module/ModelInfer/ModelInferenceProcessor.cpp',
             'base/module/ModelInfer/DynamicAippConfig.cpp',
+            'base/module/ModelInfer/cnpy.cpp',
+            'base/module/ModelInfer/pipeline.cpp',
             'python/src/PyInterface/PyInterface.cpp',
             'python/src/PyTensor/PyTensor.cpp',
             'python/src/PyInferenceSession/PyInferenceSession.cpp',

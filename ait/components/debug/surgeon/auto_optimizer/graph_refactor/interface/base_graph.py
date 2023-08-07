@@ -13,7 +13,7 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from collections import deque
+from collections import deque, defaultdict
 from itertools import chain
 from typing import Deque, List, Dict, Sequence, Set, Tuple, Union, Optional, Type, TypeVar
 
@@ -56,7 +56,7 @@ class BaseGraph(ABC):
         self._node_map: Dict[str, NodeType] = {}
         self._value_map: Dict[str, PlaceHolder] = {}
         self._prev_map: Dict[str, Node] = {}
-        self._next_map: Dict[str, List[Node]] = {}
+        self._next_map: Dict[str, List[Node]] = defaultdict(list)
 
         self.update_map()
 
