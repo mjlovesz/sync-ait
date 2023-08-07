@@ -18,7 +18,7 @@ import subprocess
 
 import logging
 
-from aie_runtime.bean import ConvertConfig
+from model_convert.aie.bean import ConvertConfig
 
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
@@ -56,9 +56,9 @@ class Convert:
 
     def convert_model(self) -> None:
         cur_dir = os.path.dirname(__file__)
-        ait_convert = os.path.join(cur_dir, "../ait_convert")
+        aie_convert = os.path.join(cur_dir, "../aie_convert")
         if not self._config.output.endswith(".om"):
             self._config.output += ".om"
-        run_cmd = [ait_convert, self._config.model, self._config.output, self._config.soc_version]
+        run_cmd = [aie_convert, self._config.model, self._config.output, self._config.soc_version]
         self.execute_command(run_cmd)
         logger.info("AIE model convert finished, the command: %s", run_cmd)
