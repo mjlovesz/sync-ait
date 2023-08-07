@@ -6,6 +6,27 @@ var svp = {};
 var protobuf = protobuf || require('./protobuf');
 var base = base || require('./base');
 
+function formatEnumToString(i) {
+    const FORMAT_LIST = ["NCHW", "NHWC", "ND", "NC1HWC0", "Fractal-Z", "NC1C0HW Pad", "NHWC1C0", "FSR_NCHW",
+                        "Fractal-Deconv", "C1HWNC0", "Fractal-Deconv-Transposed", "Fractal-Deconv-SP-Stride-Trans",
+                        "NC1HWC0(C04)", "Fractal-Z(C04)", "CHWN", "Fractal-Deconv-SP-Stride8-Trans", "HWCN",
+                        "NC1KHKWHWC0", "BN", "Filter HWCK"];
+    return FORMAT_LIST[i];
+}
+
+function flopsToString(flops) {
+    let result = new Number(flops / 1e6).toFixed(1) + "M";
+    if (flops >= 1e12) {
+        result = new Number(flops / 1e12).toFixed(1) + "T";
+    } else if (flops > 1e9) {
+        result = new Number(flops / 1e9).toFixed(1) + "G";
+    }
+}
+
+function inNodeConst(op) {
+    return op.type == "Const" || op.type == "QuantizedConst";
+}
+
 om.ModelFactory = class {
 
     match(context) {
@@ -14,25 +35,18 @@ om.ModelFactory = class {
 
     open(context, match) {
         return om.Metadata.open(context).then((metadata) => {
-            var target = new om.Container(context, match);
-            switch (match) {
-                case 'IMOD':
-                    return context.require('./om-proto').then(() => {
-                        try {
-                            target._loadIMOD(context, false);
-                        } catch (error) {
-                            target._loadIMOD(context, true);
-                        }
-                        return new om.Model(metadata, target);
-                    });
-                case 'PICO':
-                    return context.require('./om-proto').then(() => {
-                        target._loadPICO(context);
-                        return new om.Model(metadata, target);
-                    })
-                default: {
-                    throw new om.Error('Unsupported DaVinci OM ' + this.signature + ' signature.');
-                }
+            if (match === 'IMOD' || match === 'CUST') {
+                var target = new om.Container(context, match);
+                return context.require('./om-proto').then(() => {
+                    try {
+                        target._loadmodel(context, false);
+                    } catch (error) {
+                        target._loadModel(context, true);
+                    }
+                    return new om.Model(metadata, [target.model], [target.weights], target.device);
+                });
+            } else {
+                throw new om.Error('Unsupported DaVinci OM ' + this.signature + ' signature.');
             }
         });
     }
