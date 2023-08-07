@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(ait_convert VERSION 0.1.0)
+project(aie_convert VERSION 0.1.0)
 
 #compile options
 add_compile_options(-std=c++11)
@@ -18,10 +18,10 @@ LINK_DIRECTORIES(
     $ENV{CANN_HOME}/aarch64-linux/lib64
 )
 
-ADD_EXECUTABLE(ait_convert ait_convert.cpp)
+ADD_EXECUTABLE(aie_convert aie_convert.cpp)
 
-TARGET_INCLUDE_DIRECTORIES(ait_convert PUBLIC
+TARGET_INCLUDE_DIRECTORIES(aie_convert PUBLIC
     $ENV{AIE_DIR}/include
 )
 
-TARGET_LINK_LIBRARIES(ait_convert PUBLIC ascendie)
+TARGET_LINK_LIBRARIES(aie_convert PUBLIC ascendie)

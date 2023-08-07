@@ -32,9 +32,9 @@ ait convert --golden-model resnet50.onnx --output-file resnet50.om --soc-version
 [INFO] b'-- Detecting CXX compiler features - done'
 [INFO] b'-- Configuring done'
 [INFO] b'-- Generating done'
-[INFO] b'-- Building files have been written to: /xxx/ait/components/convert/aie_runtime/cpp/build'
+[INFO] b'-- Building files have been written to: /xxx/ait/components/convert/model_convert/cpp/build'
 [INFO] b'Scanning dependencies of target ait_convert'
-[INFO] b'[ 50%] Building CXX object CMakeFiles/ait_convert.dir/ait_convert.cpp.o'
+[INFO] b'[ 50%] Building CXX object CMakeFiles/ait_convert.dir/aie_convert.cpp.o'
 [INFO] b'[100%] Linking CXX executable ait_convert'
 [INFO] b'[100%] Built target ait_convert'
 [INFO] Run command line: ['sh', 'build.sh', '-p', '/usr/bin/python3']

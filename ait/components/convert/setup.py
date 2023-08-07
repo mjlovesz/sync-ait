@@ -19,10 +19,6 @@ with open('requirements.txt', encoding='utf-8') as f:
     required = f.read().splitlines()
 
 
-with open('requirements.txt', encoding='utf-8') as f:
-    required = f.read().splitlines()
-
-
 setup(
     name='convert_tool',
     version='0.1.0',
@@ -45,6 +41,6 @@ setup(
     ],
     python_requires='>=3.7',
     entry_points={
-        'convert_sub_task': ['convert=aie_runtime.__main__:get_cmd_instance'],
+        'convert_sub_task': ['convert=model_convert.__main__:get_cmd_instance'],
     },
 )
