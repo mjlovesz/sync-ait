@@ -23,7 +23,7 @@ function flopsToString(flops) {
     }
 }
 
-function inNodeConst(op) {
+function isNodeConst(op) {
     return op.type == "Const" || op.type == "QuantizedConst";
 }
 
@@ -272,7 +272,7 @@ om.Model = class {
         this._graphs = [];
         this.format = target.format;
 
-        for (let i=0; i<nets.length; ++i) {
+        for (let i = 0; i < nets.length; ++i) {
             let index = nets.length == 1 ? undefined : i+1;
             let net = nets[i];
             let mainGraph = net.graph[0];
@@ -302,7 +302,7 @@ om.Model = class {
                 }
             }
 
-            for (var j=0; j<net.graph.length; ++j) {
+            for (var j = 0; j < net.graph.length; ++j) {
                 this._extractGraph(metadata, net.graph[j], net, this, weight, index, "");
             }
         }
@@ -401,7 +401,7 @@ om.Graph = class {
         this._npuFlops = 0;
         var mainGraph = graph;
         for (var op of mainGraph.op) {
-            if (!inNodeConst(op)) {
+            if (!isNodeConst(op)) {
                 op.name = (op.name == "") ? "internal_unnamed" : op.name;
                 this._nodes.push(new om.Node(metadata, op, mainGraph, this._weight, model));
             }
@@ -430,64 +430,128 @@ om.Graph = class {
 };
 
 om.Node = class {
-
+    static enum2Dtype(val) {
+        const TYPE_LIST = ["undefined", "float32", "float16", "int8", "uint8", "int16", "uint16", "int32",
+                            "uint32", "int64", "uint64", "bool", "float64"];
+        return TYPE_LIST[val];
+    }
+    static enum2DtypeInner(val) {
+        const TYPE_LIST = ["float32", "float16", "int8", "int32", "uint8", "", "int16", "uint16", "uint32",
+                            "int64", "uint64", "float64", "bool", "dual", "dual int8", "dual uint8"];
+        return TYPE_LIST[val];
+    }
     constructor(context, op, graph, value, tensors) {
-        this.name = op.name || '';
-        this.type = context.metadata.type(op.type) || { name: op.type };
-        this.inputs = [];
-        this.outputs = [];
-        this.attributes = [];
-        this.chain = [];
-        this.controlDependencies = [];
-        this.device = null;
-        if (op.input) {
-            for (let i = 0; i < op.input.length; i++) {
-                const input = op.input[i];
-                if (input === '') {
+        this._model = model;
+        this._name = op.name;
+        this._weight = weight;
+        this._metadata = metadata;
+        this._type = metadata.type(op.type) || { name: op.type };
+        this._attributes = [];
+        this._inputs = [];
+        this._outputs = [];
+        this._chains = [];
+        this._controlDependencies = [];
+        this._device = null;
+
+        const ATTR_BLACK_LIST = [];
+
+        var schema = metadata.type(this._type.name);
+
+        if (!schema) {
+            schema = metadata.type("Undefined");
+        }
+
+        let inputIdx = 0; //The length of input might not equal to input_desc, empty items in input refer to optional inputs, which are not in input_desc.
+        let weightDims = null;
+        for (let i = 0; i < op.input.length; ++i) {
+            if (op.input[i] == "") {
+                continue;
+            }
+            let pos = op.input[i].lastIndexOf(":");
+            let name = (pos == 0) ? "internal_unnamed" : op.input[i].slice(0, pos);
+            var src_index = op.input[i].slice(pos+1);
+            if (src_index == -1) {
+                this._controlDependencies.push(name);
+                continue;
+            }
+            let schemaName = (i < schema.inputs.length) ? schema.inputs[i].name : schema.inputs[schema.inputs.length-1].name;
+            let inputNode = graph.op.find(node => node.name == name);
+            let inputFormat = op.input_desc[inputIdx].layout;
+
+            if (isNodeConst(inputNode)) {
+                var inputDims = null;
+                if (inputNode.attr["value"].t.desc.shape != null) {
+                    inputDims = inputNode.attr["value"].t.desc.shape.dim;
+                }
+                // For a compiled model, the shape may be a raw shape or a fractal-z shape. The following lines ensure getting the raw shape.
+                if ('origin_shape' in inputNode.attr["value"].t.desc.attr) {
+                    inputDims = inputNode.attr["value"].t.desc.attr["origin_shape"].list.i;
+                }
+                let inputDtype = om.Node.enum2Dtype(inputNode.attr["value"].t.desc.dtype);
+                if (!weightDims) { //Save the first const as weight
+                    weightDims = inputDims;
+                }
+
+                var data = null;
+
+                if (inputNode.attr["value"].t.data == '') {
+                    if (this._weight == null) {
+                        data = null;
+                    } else if ('merged_offset' in inputNode.attr['value'].t.desc.attr) {
+                        let offset = inputNode.attr['value'].t.desc.attr['merged_offset'].i;
+                        data = this._weight.slice(offset, offset + inputNode.attr['value'].t.desc.weight_size);
+                    } else {
+                        let offset = inputNode.attr['value'].t.desc.data_offset;
+                        data = this._weight.slice(offset, offset + inputNode.attr['value'].t.desc.weight_size);
+                    }
+                } else {
+                    data = inputNode.attr["value"].t.data;
+                }
+                let datalength = (data == null) ? 0 : data.length;
+                let tensor = new om.Argument(name,
+                    null,
+                    new om.Tensor('Constant', new om.TensorType(inputDtype, inputDims, inputFormat, inputNode.attr['value'].t.desc.layout, datalength), data)
+                );
+                this._inputs.push(new om.Parameter(schemaName, true, [tensor]));
+            } else {
+                let inputDims = op.input_desc[inputIdx].shape ? op.input_desc[inputIdx].shape.dim : undefined;
+                let inputDtype = op.input_desc[i] ? om.Node.enum2Dtype(op.input_desc[i].dtype) : "undefined";
+                let inputName = src_index == 0 ? name : name + ":" + src_index;
+                this._inputs.push(new om.Parameter(schemaName, true, [new om.Argument(inputName, new om.TensorType(inputDtype, inputDims, inputFormat, null), null)]));
+            }
+            ++inputIdx;
+        }
+
+        var outputIdx = 0;
+        for (let outputDesc of op.output_desc) {
+            let outputDims = outputDesc.shape ? outputDesc.shape.dim : undefined;
+            let outputDtype = om.Node.enum2Dtype(outputDesc.dtype);
+            let outputFormat = outputDesc.layout;
+            let outputName = (outputIdx == 0) ? this._name : this._name + ":" + outputIdx;
+            let outputSchemaName = outputIdx < schema.outputs.length ? schema.outputs[outputIdx].name : schema.outputs[schema.output.length-1].name;
+            this._outputs.push(new om.Parameter(outputSchemaName, true, [new om.Argument(outputName, new om.TensorType(outputDtype, outputDims, outputFormat), null)]));
+            ++outputIdx;
+        }
+
+        for (var attr in op.attr) {
+            if (!ATTR_BLACK_LIST.includes(attr)) {
+                var value = op.attr[attr];
+                if (attr == "device") {
+                    this._device = value;
                     continue;
                 }
-                var name = this.type.inputs && i < this.type.inputs.length ? this.type.inputs[i].name : 'input' + (i === 0 ? '' : i.toString());
-                name = (name == 'weights') ? 'W' : name;
-                name = (name == 'bias') ? 'B' : name;
-                const index = input.lastIndexOf(':');
-                const identifier = input.substring(0, index);
-                const src_index = input.substring(index + 1);
-                if (src_index === '-1') {
-                    this.controlDependencies.push(value(name));
+                if (Object.prototype.hasOwnProperty.call(value, 'func')) {
+                    let attrInFunc = this._extractGraph(value.func, attr+".");
+                    for (let [k, v] of attrInFunc) {
+                        this._attributes.push(new om.Attribute(null, k, v, schema, true));
+                    }
                     continue;
                 }
-                const type = om.Utility.tensorType(op.input_desc[i]);
-                const tensor = tensors.get(identifier);
-                const argument = new om.Argument(name, [ value(input, type, tensor) ]);
-                this.inputs.push(argument);
+                this._attributes.push(new om.Attribute(null, attr, value, schema, true));
             }
         }
-        if (op.output_desc) {
-            for (let i = 0; i < op.output_desc.length; i++) {
-                const identifier = this.name + ':' + i.toString();
-                const type = om.Utility.tensorType(op.output_desc[i]);
-                const name = this.type.outputs && i < this.type.outputs.length ? this.type.outputs[i].name : 'output' + (i === 0 ? '' : i.toString());
-                const argument = new om.Argument(name, [ value(identifier, type) ]);
-                this.outputs.push(argument);
-            }
-        }
-        for (const attr of Object.entries(op.attr || {})) {
-            const name = attr[0];
-            const value = attr[1];
-            if (name === 'device') {
-                this.device = value;
-                continue;
-            }
-            if (name === 'original_op_names') {
-                continue;
-            }
-            if (name === 'relu_flag' && value.b) {
-                this.chain.push(new om.Node(context, { type: 'ReLU' }, graph, value));
-                continue;
-            }
-            const attribute = new om.Attribute(context, name, value);
-            this.attributes.push(attribute);
-        }
+
+
     }
 };
 
