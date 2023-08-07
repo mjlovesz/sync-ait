@@ -391,48 +391,41 @@ om.Model = class {
 om.Graph = class {
 
     constructor(context, graph) {
-        this.name = graph.name;
-        this.nodes = [];
-        this.inputs = [];
-        this.outputs = [];
-        const values = new Map();
-        const value = (name, type, tensor) => {
-            if (!values.has(name)) {
-                values.set(name, new om.Value(name, type || null, tensor || null));
-            } else if ((type && !type.equals(values.get(name).type)) ||
-                       (tensor && tensor !== values.get(name).initializer)) {
-                throw new om.Error("Duplicate value '" + name + "'.");
+        this._model = model;
+        this._node = [];
+        this._inputs = [];
+        this._outputs = [];
+        this._name = graph.name;
+        this._weight = weight;
+        this._flops = 0;
+        this._npuFlops = 0;
+        var mainGraph = graph;
+        for (var op of mainGraph.op) {
+            if (!inNodeConst(op)) {
+                op.name = (op.name == "") ? "internal_unnamed" : op.name;
+                this._nodes.push(new om.Node(metadata, op, mainGraph, this._weight, model));
             }
-            return values.get(name);
-        };
-        const tensors = new Map();
-        const ops = [];
-        for (const op of graph.op) {
-            if (op.type === 'Const' && op.attr && op.attr.value) {
-                const desc = op.attr.value.t.desc;
-                let data = null;
-                if (op.attr.value.t.data.length !== 0) {
-                    data = op.attr.value.t.data;
-                } else if (context.weights == null) {
-                    data = null;
-                } else if (desc.attr.merged_offset) {
-                    const offset = desc.attr.merged_offset.i;
-                    data = context.weights.slice(offset, offset + desc.weight_size);
-                } else {
-                    const offset = desc.data_offset;
-                    data = context.weights.slice(offset, offset + desc.weight_size);
-                }
-                const type = om.Utility.tensorType(desc);
-                const tensor = new om.Tensor('Constant', type, data);
-                tensors.set(op.name, tensor);
-                continue;
-            }
-            ops.push(op);
         }
-        for (const op of ops) {
-            const node = new om.Node(context, op, graph, value, tensors);
-            this.nodes.push(node);
-        }
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    get groups() {
+        return false;
+    }
+
+    get nodes() {
+        return this._nodes;
+    }
+
+    get outputs() {
+        return this._outputs;
+    }
+
+    get inputs() {
+        return this._inputs;
     }
 };
 
