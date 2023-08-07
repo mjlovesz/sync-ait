@@ -17,30 +17,7 @@ ait convert aie --golden-model resnet50.onnx --output-file resnet50.om --soc-ver
 
 结果输出如下：
 ```shell
-[INFO] Execute command:['sh', 'build.sh', '-p', '/usr/bin/python3']
-[INFO] b'-- The C compiler identification is GNU 11.3.0'
-[INFO] b'-- The Cxx compiler identification is GNU 11.3.0'
-[INFO] b'-- Detecting C compiler ABI info'
-[INFO] b'-- Detecting C compiler ABI info - done'
-[INFO] b'-- Checking for working C compiler: /usr/bin/cc - skipped'
-[INFO] b'-- Detecting C compiler features'
-[INFO] b'-- Detecting C compiler features - done'
-[INFO] b'-- Detecting C compiler ABI info'
-[INFO] b'-- Detecting C compiler ABI info - done'
-[INFO] b'-- Checking for working CXX compiler: /usr/bin/c++ - skipped'
-[INFO] b'-- Detecting CXX compiler features'
-[INFO] b'-- Detecting CXX compiler features - done'
-[INFO] b'-- Configuring done'
-[INFO] b'-- Generating done'
-[INFO] b'-- Building files have been written to: /xxx/ait/components/convert/model_convert/cpp/build'
-[INFO] b'Scanning dependencies of target ait_convert'
-[INFO] b'[ 50%] Building CXX object CMakeFiles/ait_convert.dir/aie_convert.cpp.o'
-[INFO] b'[100%] Linking CXX executable ait_convert'
-[INFO] b'[100%] Built target ait_convert'
-[INFO] Run command line: ['sh', 'build.sh', '-p', '/usr/bin/python3']
-[INFO] Execute command:['./ait_convert', 'resnet50.onnx', 'resnet50.om', 'Ascend310']
-[INFO] b'AIE Model Convert:1'
-[INFO] Execute command:['cp', 'resnet50.om', '/xxx/ait']
-[INFO] AIE model convert finished, the command: ['./ait_convert', 'resnet50.onnx', 'resnet50.om', 'Ascend310']
+[INFO] Execute command:['./ait_convert', 'resnet50.onnx', 'resnet50.om', 'Ascend310P3']
+[INFO] AIE model convert finished, the command: ['./ait_convert', 'resnet50.onnx', 'resnet50.om', 'Ascend310P3']
 [INFO] convert model finished.
 ```
