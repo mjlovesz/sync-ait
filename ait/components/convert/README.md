@@ -40,6 +40,7 @@ ait convert目前支持以下3种子命令：
 ait convert atc [args]
 ```
 参数定义严格遵从ATC的参数定义，由于参数较多，详情可参考：https://www.hiascend.com/document/detail/zh/canncommercial/63RC2/inferapplicationdev/atctool/atctool_000041.html
+
 使用示例：
 ```shell
 ait convert atc --model resnet50.onnx --framework 5 --soc_version 310P3 --output resnet50
@@ -50,6 +51,7 @@ ait convert atc --model resnet50.onnx --framework 5 --soc_version 310P3 --output
 ait convert aoe [args]
 ```
 参数定义严格遵从AOE的参数定义，由于参数较多，详情可参考：https://www.hiascend.com/document/detail/zh/canncommercial/63RC2/devtools/auxiliarydevtool/aoepar_16_001.html
+
 使用示例：
 ```shell
 ait convert aoe --model resnet50.onnx --job_type 2 --output resnet50
@@ -73,10 +75,10 @@ ait convert aie [args]
 ait convert aie --golden-model resnet50.onnx --output-file resnet50.om --soc-version Ascend310P3 
 ```
 
-## 使用案例
+#### 使用案例
 请移步[convert工具使用示例](../../examples/cli/convert/)
 
-## 使用限制
+#### 使用限制
 1. 目前convert组件仅支持使用onnxsim后的模型；
 2. 目前convert组件支持以下4个模型：
 
