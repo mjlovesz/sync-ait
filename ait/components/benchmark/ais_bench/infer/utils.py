@@ -249,9 +249,13 @@ def move_subdir(src_dir, dest_dir):
     '''
     res_dest, res_subdir = None, None
     subdirs = os.listdir(src_dir)
-    if len(subdirs) != 1 or os.path.exists(os.path.join(dest_dir, subdirs[0])):
-        logger.error(f"move_subdir failed: dest dir {os.path.join(dest_dir, subdirs[0])} exists.")
+    if len(subdirs) != 1:
+        logger.error("move_subdir failed: multiple or none directory under src dir %s. \
+                     The reason might be dump failed."% src_dir)
     else:
-        shutil.move(os.path.join(src_dir, subdirs[0]), os.path.join(dest_dir, subdirs[0]))
-        res_dest, res_subdir = dest_dir, subdirs[0]
+        if os.path.exists(os.path.join(dest_dir, subdirs[0])):
+            logger.error("move_subdir failed: dest dir %s exists"% os.path.join(dest_dir, subdirs[0]))
+        else:
+            shutil.move(os.path.join(src_dir, subdirs[0]), os.path.join(dest_dir, subdirs[0]))
+            res_dest, res_subdir = dest_dir, subdirs[0]
     return res_dest, res_subdir
