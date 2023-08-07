@@ -1,5 +1,8 @@
 import numpy as np
+import os
+import multiprocessing
 import time
+from functools import partial
 from sklearn.cluster import DBSCAN
 from dtaidistance import dtw, dtw_ndim
 
@@ -15,14 +18,51 @@ def jaccard_dist(a, b):
     return dist
 
 
-def calc_dist_mat(func, list1, list2=None):
-    if not list2:
-        list2 = list1
-    dist_mat = np.ones((len(list1), len(list2))) * np.inf
-    for i, acc_api in enumerate(list1):
-        for j, asd_api in enumerate(list2):
-            dist_mat[i, j] = func(acc_api, asd_api)
-    return dist_mat
+# 进程池initializer函数
+def init_pool(array):
+    global glob_array  # 共享全局变量
+    glob_array = array
+
+
+# 子进程函数
+def process_fn(ij, func=None, array_width=None):
+    i, j, ai, aj = ij
+    # 子进程读取全局变量glob_array，对齐一维glob_array与原始二维array的对应位置关系
+    glob_array[i * array_width + j] = func(ai, aj)
+
+
+def calc_relation_mat(func, list1, list2=None, relation='dist'):
+    len1 = len(list1)
+    len2 = len1 if list2 is None else len(list2)
+    array = np.zeros((len1, len2))
+    # Pool.map仅支持一个入参，使用偏函数functools.partial，预先传入其他参数
+    fn_partial = partial(process_fn, func=func, array_width=array.shape[0])
+    # array为展平的矩阵（即multiprocessing.RawArray, 多进程不支持二维矩阵）
+    array_shared = multiprocessing.RawArray('d', array.ravel())
+    # 由于各进程改动对应矩阵位置(即内存地址)处的值，无冲突，故无需加进程锁
+    # 定义进程池，指定进程数量（processes），初始化函数（initializer）及其参数（initargs）
+    n_proc = max(os.cpu_count(), 16)
+    p = multiprocessing.Pool(processes=n_proc, initializer=init_pool, initargs=(array_shared,))
+    # 若list1==list2，先计算下三角矩阵，然后转置后复值到上三角位置，否则全部计算
+    if list2 is None:
+        it = [(i, j, list1[i], list1[j]) for i in range(len1) for j in range(i)]
+    else:
+        it = [(i, j, list1[i], list2[j]) for i in range(len1) for j in range(len2)]
+    # map函数向子进程函数分配不同的参数
+    p.map(fn_partial, it)
+    p.close()
+    p.join()
+    # glob_array为子进程中的全局变量，在主进程中并未被定义，主进程中的array_shared与子进程中的glob_array指向同一内存地址
+    array = np.frombuffer(array_shared, np.double).reshape(array.shape)
+    if list2 is None:
+        if relation == 'dist':
+            # 无需 - np.diag(np.diag(dist_mat))，因为对角线为0
+            array = array + array.T
+        elif relation == 'sim':
+            # 对角线为1
+            array = array + array.T + np.eye(len(list1))
+
+    return array
 
 
 def try_dbscan(embed=False):
@@ -35,7 +75,7 @@ def try_dbscan(embed=False):
 
     if not embed:
         ##### Jaccard距离 + 无API Embedding
-        dist_mat = calc_dist_mat(jaccard_dist, api_seqs)
+        dist_mat = calc_relation_mat(jaccard_dist, api_seqs, relation='dist')
         tik1 = time.time()
         logger.info(f"2. time: {tik1 - tik}")
         clustering = DBSCAN(eps=0.4, min_samples=2, metric='precomputed').fit(dist_mat)
@@ -63,7 +103,7 @@ def try_dbscan(embed=False):
         logger.info(f"3. time: {tik1 - tik}")
 
         # 非padding模式，不等长。dtw参考：https://dtaidistance.readthedocs.io/en/latest/usage/dtw.html
-        dist_mat = calc_dist_mat(dtw_ndim.distance, embedding)
+        dist_mat = calc_relation_mat(dtw_ndim.distance, embedding, relation='dist')
         clustering = DBSCAN(eps=0.4, min_samples=2, metric='precomputed').fit(dist_mat)
         tik1 = time.time()
         logger.info(f"4. time: {tik1 - tik}")
