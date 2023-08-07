@@ -2,12 +2,12 @@
 
 ## 简介
 
-convert模型转换工具依托AIE（Ascend Inference Engine）推理引擎，提供由ONNX模型转换至om模型的功能。
+convert模型转换工具依托ATC（Ascend Tensor Compiler），AOE（Ascend Optimization Engine），AIE（Ascend Inference Engine）推理引擎，提供由ONNX、TensorFlow、Caffe、MindSpore模型至om模型的转换及调优功能。
 
 ## 工具安装
 
 - 工具安装请见 [ait一体化工具使用指南](../../README.md)
-- 如果使用convert做模型转换，需要在安装convert前安装AIE并完成环境变量的配置:
+- 如果使用aie做模型转换，需要在安装convert前安装AIE并完成环境变量的配置:
   1. 安装AIE  
   ```bash
   ./Ascend-cann-aie-api_{version}_linux-{arch}.run --install
@@ -23,12 +23,43 @@ convert模型转换工具依托AIE（Ascend Inference Engine）推理引擎，�
 ## 工具使用
 
 一站式ait工具使用命令格式说明如下：
-
 ```shell
-ait convert [OPTIONS]
+ait convert [subcommand]
 ```
+ait convert目前支持以下3种子命令：
 
-OPTIONS参数说明如下：
+| subcommand | 说明                      |
+| ---------- | ------------------------- |
+| atc        | 使用atc进行模型转换       |
+| aoe        | 使用aoe进行模型转换及调优 |
+| aie        | 使用aie进行模型转换       |
+
+### atc命令
+使用ATC后端进行模型转换，命令格式如下：
+```shell
+ait convert atc [args]
+```
+参数定义严格遵从ATC的参数定义，由于参数较多，详情可参考：https://www.hiascend.com/document/detail/zh/canncommercial/63RC2/inferapplicationdev/atctool/atctool_000041.html
+使用示例：
+```shell
+ait convert atc --model resnet50.onnx --framework 5 --soc_version 310P3 --output resnet50
+```
+### aoe命令
+使用AOE后端进行模型转换，命令格式如下：
+```shell
+ait convert aoe [args]
+```
+参数定义严格遵从AOE的参数定义，由于参数较多，详情可参考：https://www.hiascend.com/document/detail/zh/canncommercial/63RC2/devtools/auxiliarydevtool/aoepar_16_001.html
+使用示例：
+```shell
+ait convert aoe --model resnet50.onnx --job_type 2 --output resnet50
+```
+### aie命令
+使用AIE后端进行模型转换，目前仅支持ONNX模型的转换，命令格式如下：
+```shell
+ait convert aie [args]
+```
+参数说明如下：
 
 | 参数                  | 说明                                                       | 是否必选 |
 |---------------------|----------------------------------------------------------|------|
@@ -39,7 +70,7 @@ OPTIONS参数说明如下：
 命令示例如下：
 
 ```shell
-ait convert --golden-model resnet50.onnx --output-file resnet50.om --soc-version Ascend310P3 
+ait convert aie --golden-model resnet50.onnx --output-file resnet50.om --soc-version Ascend310P3 
 ```
 
 ## 使用案例

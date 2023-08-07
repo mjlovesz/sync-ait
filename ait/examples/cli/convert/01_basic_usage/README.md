@@ -12,7 +12,7 @@ Convert模型转换工具依托AIE（Ascend Inference Engine）推理引擎，�
 ## 运行示例
 
 ```shell
-ait convert --golden-model resnet50.onnx --output-file resnet50.om --soc-version Ascend310P3
+ait convert aie --golden-model resnet50.onnx --output-file resnet50.om --soc-version Ascend310P3
 ```
 
 结果输出如下：
