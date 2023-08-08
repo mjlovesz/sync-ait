@@ -37,9 +37,9 @@ bash install.sh --transplt --full
 
 #### Windows系统安装
 
-windows系统下依赖[LLVM](https://llvm.org/)和[MinGW-W64](https://www.mingw-w64.org/)，目前在win10操作系统下验证过的版本为[LLVM 12.0.0](https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/LLVM-12.0.0-win64.exe)与[MinGW-W64 GCC-8.1.0](https://nchc.dl.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/8.1.0/threads-posix/seh/x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z)，用户须安装这两者才能使用ait transplt功能。**注意：目前ait工具链只有transplt功能提供了windows安装方式，请在cmd命令行窗口进入到`<ait_project_root_path>\ait\components\transplt`目录进行安装**
+windows系统下依赖[LLVM](https://llvm.org/)和[MinGW-W64](https://www.mingw-w64.org/)，目前在win10操作系统下验证过的版本为[LLVM 12.0.0](https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/LLVM-12.0.0-win64.exe)与[MinGW-W64 GCC-8.1.0](https://nchc.dl.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/8.1.0/threads-posix/seh/x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z)，用户须安装这两者才能使用ait transplt功能。**注意：目前ait工具链只有transplt功能提供了windows安装方式，请在cmd命令行窗口进入到`<ait_project_root_path>\ait`目录进行安装**
 
-> clang工具在windows系统下打包在LLVM工具包中，LLVM是clang的后端服务，clang是LLVM的前段工具，下面统称为LLVM。
+> clang工具在windows系统下打包在LLVM工具包中，LLVM是clang的后端服务，clang是LLVM的前端工具，下面统称为LLVM。
 
 ##### 普通安装
 
@@ -52,7 +52,7 @@ install.bat --transplt
 已安装ait transplt，想要重新安装时，可以添加`--force-reinstall`参数
 
 ```commandline
-instal.bat --transplt --force-resinstall
+install.bat --transplt --force-reinstall
 ```
 
 ##### 全量安装
@@ -66,7 +66,7 @@ install.bat --transplt --full
 已安装ait transplt，想要重新安装时，可以添加`--force-reinstall`参数
 
 ```commandline
-install.bat --transplt --force-resinstall
+install.bat --transplt --force-reinstall
 ```
 
 由于要实时下载LLVM和MinGW-W64安装包，下载时间会比较长，下载也可能失败，用户可以单独下载这两个安装包：[LLVM 12.0.0](https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/LLVM-12.0.0-win64.exe)与[MinGW-W64 GCC-8.1.0](https://nchc.dl.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/8.1.0/threads-posix/seh/x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z)，然后在安装时指定这两个安装包的位置，如下所示：
@@ -362,34 +362,32 @@ install.bat --full -k
 
 #### LLVM安装
 
-1、用户下载LLVM安装包[`LLVM-12.0.0-win64.exe`](https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/LLVM-12.0.0-win64.exe)，并双击打开；   
-2、如果之前已经安装过其他版本的LLVM，会提示是否卸载之前安装的其他版本LLVM，选择“是(Y)"；  
-3、等待安装包解压完成并弹出安装向导界面，依次点击“下一步” -> “我接受”；  
-4、在是否添加LLVM安装目录到系统PATH的界面，选择第2或第3个选项（为所有用户/当前用户添加LLVM安装目录到系统PATH），点击“下一步”；  
-5、选择合适的安装文件夹，依次点击“下一步” -> “安装”，并等待安装完成；  
-6、安装结束之后，重新打开cmd命令行界面输入`clang -v`查看clang命令是否能正常运行，如果输出了`clang version 12.0.0`等信息则表示LLVM安装成功；  
-7、添加include文件夹路径到系统环境变量，比如LLVM安装在`C:\Program Files\LLVM`目录下，那么需要新建一个环境变量`CPLUS_INCLUDE_PATH`，其值为`C:\Program Files\LLVM\lib\clang\12.0.0\include`。具体方法为：  
-a) 在windows主界面依次点击“开始” -> "设置" -> “系统”按钮；  
-b) 在系统界面下滑选择栏，再点击“关于”按钮；  
-c) 在关于界面下滑窗口到底部，再点击“高级系统设置”；  
-d) 依次选择”高级“ -> ”环境变量“按钮；  
-e) 在环境变量界面的“系统变量”框中，点击“新建”按钮，在“变量名”一栏输入``CPLUS_INCLUDE_PATH``，在“变量值”一栏输入`C:\Program Files\LLVM\lib\clang\12.0.0\include`，再依次点击“确定”按钮关闭环境变量界面。  
+1、用户下载LLVM安装包[`LLVM-12.0.0-win64.exe`](https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/LLVM-12.0.0-win64.exe)，并双击打开；
+2、如果之前已经安装过其他版本的LLVM，会提示是否卸载之前安装的其他版本LLVM，选择“是(Y)"；
+3、等待安装包解压完成并弹出安装向导界面，依次点击“下一步” -> “我接受”；
+4、在是否添加LLVM安装目录到系统PATH的界面，选择第2或第3个选项（为所有用户/当前用户添加LLVM安装目录到系统PATH），点击“下一步”；
+5、选择合适的安装文件夹，依次点击“下一步” -> “安装”，并等待安装完成；
+6、安装结束之后，重新打开cmd命令行界面输入`clang -v`查看clang命令是否能正常运行，如果输出了`clang version 12.0.0`等信息则表示LLVM安装成功；
+7、添加include文件夹路径到系统环境变量，比如LLVM安装在`C:\Program Files\LLVM`目录下，那么需要新建一个环境变量`CPLUS_INCLUDE_PATH`，其值为`C:\Program Files\LLVM\lib\clang\12.0.0\include`。具体方法为：
+a) 在windows主界面依次点击“开始” -> "设置" -> “系统”按钮；
+b) 在系统界面下滑选择栏，再点击“关于”按钮；
+c) 在关于界面下滑窗口到底部，再点击“高级系统设置”；
+d) 依次选择”高级“ -> ”环境变量“按钮；
+e) 在环境变量界面的“系统变量”框中，点击“新建”按钮，在“变量名”一栏输入``CPLUS_INCLUDE_PATH``，在“变量值”一栏输入`C:\Program Files\LLVM\lib\clang\12.0.0\include`，再依次点击“确定”按钮关闭环境变量界面。
 8、重新打开cmd命令行界面输入`clang -v`查看clang命令是否能正常运行，如果输出了`clang version 12.0.0`等信息则表示LLVM安装成功。
 
 #### MinGW-W64安装
 
-1、用户下载MinGW-W64安装包[`x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z`](https://nchc.dl.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/8.1.0/threads-posix/seh/x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z)；  
-2、使用7-zip等压缩工具解压该文件到合适的目录，比如：`C:\Program Files\mingw64`；  
-3、添加MinGW-W64的bin目录（比如`C:\Program Files\mingw64\bin`）到系统PATH。具体方法为：  
-a) 在windows主界面依次点击“开始” -> "设置" -> “系统”按钮；  
-b) 在系统界面下滑选择栏，再点击“关于”按钮；  
-c) 在关于界面下滑窗口到底部，再点击“高级系统设置”；  
-d) 依次选择”高级“ -> ”环境变量“按钮；  
-e) 在环境变量界面的“系统变量”框中，双击Path，再点击“新建”按钮，输入`C:\Program Files\mingw64\bin`，再依次点击“确定”按钮关闭环境变量界面；  
+1、用户下载MinGW-W64安装包[`x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z`](https://nchc.dl.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/8.1.0/threads-posix/seh/x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z)；
+2、使用7-zip等压缩工具解压该文件到合适的目录，比如：`C:\Program Files\mingw64`；
+3、添加MinGW-W64的bin目录（比如`C:\Program Files\mingw64\bin`）到系统PATH。具体方法为：
+a) 在windows主界面依次点击“开始” -> "设置" -> “系统”按钮；
+b) 在系统界面下滑选择栏，再点击“关于”按钮；
+c) 在关于界面下滑窗口到底部，再点击“高级系统设置”；
+d) 依次选择”高级“ -> ”环境变量“按钮；
+e) 在环境变量界面的“系统变量”框中，双击Path，再点击“新建”按钮，输入`C:\Program Files\mingw64\bin`，再依次点击“确定”按钮关闭环境变量界面；
 4、重新打开cmd命令行界面输入`gcc -v`查看gcc命令是否能正常运行，如果输出了`gcc version 8.1.0`等信息则表示MinGW-W64安装成功。
 
 ### Windows系统下全量安装时告警WARNING: downloading mingw patch file float.h failed 如何处理
 
-出现该告警的原因是用户的网络访问github网站不通畅导致，缺失这个patch文件有可能会导致扫描过程中报错，从而使得生成的报告不完成。
-用户可以手动用浏览器打开[该文件网址](https://raw.githubusercontent.com/mirror/mingw-w64/v8.x/mingw-w64-headers/crt/float.h),
-并将该文件另存为float.h，然后再替换到mingw安装目录的对应位置。比如mingw安装在`C:\Program Files\mingw64`，则需要替换到`C:\Program Files\mingw64\x86_64-w64-mingw32\include\float.h`。
+出现该告警的原因是用户的网络访问github网站不通畅导致，缺失这个patch文件有可能会导致扫描过程中报错，从而使得生成的报告不完成。用户可以手动用浏览器打开[该文件网址](https://raw.githubusercontent.com/mirror/mingw-w64/v8.x/mingw-w64-headers/crt/float.h), 并将该文件另存为float.h，然后再替换到mingw安装目录的对应位置。比如mingw安装在`C:\Program Files\mingw64`，则需要替换到`C:\Program Files\mingw64\x86_64-w64-mingw32\include\float.h`。
