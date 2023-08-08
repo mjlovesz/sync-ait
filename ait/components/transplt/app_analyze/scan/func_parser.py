@@ -15,6 +15,11 @@ class FuncParser(Parser):
     def __init__(self, path):
         super().__init__(path)
 
+    def _get_info(self, node, depth=0):
+        children = [self._get_info(c, depth + 1) for c in node.get_children()]
+        info = node_debug_string(node, children)
+        return info
+
     def _parse_api(self, node, seq_desc, result):
         file = None
         if node.kind == CursorKind.TRANSLATION_UNIT:
@@ -56,9 +61,9 @@ class FuncParser(Parser):
                 logger.warning(f'Diagnostic severity {d.severity} > tolerance {KitConfig.TOLERANCE}, skip this file.')
                 return dict()
 
-        seq_desc = SeqDesc()
         result = []
 
+        seq_desc = SeqDesc()
         start = time.time()
         info = self._parse_api(self.tu.cursor, seq_desc, result)
         save_api_seq(seq_desc, result)

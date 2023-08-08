@@ -461,6 +461,9 @@ def call_expr(c):
                     break
             for ci in children[:ref_end + 1]:
                 ci.scanned = True
+        elif get_attr(c, 'referenced.kind') == CursorKind.CXX_METHOD:
+            if c.parent and get_attr(c, 'referenced.kind') == CursorKind.CLASS_DECL:
+                api = c.parent.spelling + '::' + spelling
     c.info = Info(result_type, spelling, api, definition, source)
     return c.info
 

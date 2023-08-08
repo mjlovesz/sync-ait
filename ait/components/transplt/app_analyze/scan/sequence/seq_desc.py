@@ -1,7 +1,10 @@
 from app_analyze.utils.log_util import logger
 
-GLOBAl_ID_DICT = {}
-global_fid = -1
+GLOBAl_FUNC_ID_DICT = dict()
+FUNC_ID_COUNTER = -1
+
+GLOBAL_FILE_ID_DICT = dict()
+FILE_ID_COUNTER = -1
 
 
 class FuncDesc:
@@ -12,12 +15,20 @@ class FuncDesc:
         self.namespace = ''
         self.func_name = ''
         self.parm_num = 0
-        self.parm_decl_names = []
+        self.parm_decl_names = list()
         self.return_type = ''
         self.is_usr_def = False
+        self.root_file = None  # which file function define
 
         self.hash_code = 0
         self.is_cxx_method = False
+
+    @property
+    def unique_name(self):
+        full_str = self.full_name
+        if self.acc_name:
+            full_str = '[' + self.acc_name + ']' + full_str
+        return full_str
 
     @property
     def full_name(self):
@@ -30,14 +41,14 @@ class FuncDesc:
     @property
     def api_name(self):
         if self.obj_info:
-            vals = [self.obj_info.record_name, self.func_name]
+            names = [self.obj_info.record_name, self.func_name]
         else:
             if self.namespace:
-                vals = [self.namespace, self.func_name]
+                names = [self.namespace, self.func_name]
             else:
-                vals = [self.func_name]
+                names = [self.func_name]
 
-        return '.'.join(vals)
+        return '.'.join(names)
 
     @property
     def arg_name(self):
@@ -45,12 +56,28 @@ class FuncDesc:
 
     @property
     def func_id(self):
-        fid = GLOBAl_ID_DICT.get(self.full_name, None)
+        if self.is_usr_def:
+            return -1
+
+        fid = GLOBAl_FUNC_ID_DICT.get(self.unique_name, None)
         if fid is None:
-            global global_fid
-            global_fid += 1
-            fid = global_fid
-            GLOBAl_ID_DICT[self.full_name] = fid
+            global FUNC_ID_COUNTER
+            FUNC_ID_COUNTER += 1
+            fid = FUNC_ID_COUNTER
+            GLOBAl_FUNC_ID_DICT[self.unique_name] = fid
+        return fid
+
+    @property
+    def file_id(self):
+        if not self.is_usr_def:
+            return -1
+
+        fid = GLOBAL_FILE_ID_DICT.get(self.root_file, None)
+        if fid is None:
+            global FILE_ID_COUNTER
+            FILE_ID_COUNTER += 1
+            fid = FILE_ID_COUNTER
+            GLOBAL_FILE_ID_DICT[self.root_file] = fid
         return fid
 
 
@@ -67,7 +94,7 @@ class SeqDesc:
         self.seq = ''
         self.seq_count = 0
         self.entry_api = ''
-        self.api_seq = []
+        self.api_seq = list()
         self.has_usr_def = False
         self.has_called = False
 
@@ -80,17 +107,17 @@ class SeqDesc:
         return new_desc
 
     def clear(self):
-        self.api_seq = []
+        self.api_seq = list()
         self.has_usr_def = False
 
     @staticmethod
     def seq_str(api_seq):
-        apis = [_.full_name for _ in api_seq]
+        apis = [_.unique_name for _ in api_seq]
         rst = '-->'.join(apis)
         return rst
 
     def debug_string(self):
         rst = 'Entry Function is: ' + self.entry_api.api_name + '\n'
-        apis = [_.full_name for _ in self.api_seq]
+        apis = [_.unique_name for _ in self.api_seq]
         rst += '-->'.join(apis)
         logger.info(rst)

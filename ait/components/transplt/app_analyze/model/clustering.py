@@ -1,5 +1,6 @@
 import numpy as np
 import time
+import re
 from sklearn.cluster import DBSCAN
 from dtaidistance import dtw, dtw_ndim
 
@@ -28,8 +29,8 @@ def calc_dist_mat(func, list1, list2=None):
 def try_dbscan(embed=False):
     tik = time.time()
     model = Model()
-    api_corpus, api_seqs = model.train(seqs='./seqs.bin', seqs_idx='./seqs_idx.bin')
-    api_seqs = list(api_seqs)[:50]
+    api_corpus, api_seqs, idx_seq_dict = model.train(seqs='./mxbase.seqs.bin', seqs_idx='./mxbase.seqs_idx.bin')
+    api_seqs = list(api_seqs)#[:50]
     tik1 = time.time()
     logger.info(f"1. time: {tik1 - tik}")
 
@@ -70,6 +71,17 @@ def try_dbscan(embed=False):
 
     logger.info([f'{i}:{x}' for i, x in enumerate(clustering.labels_) if x >= 0])
     logger.info([f'{api_seqs[i]}:{x}' for i, x in enumerate(clustering.labels_) if x >= 0])
+
+    rst = dict()
+    for i, x in enumerate(clustering.labels_):
+        if not rst.get(x, None):
+            rst[x] = []
+        ext = re.sub(r'\(.*?\)', '', '-->'.join([idx_seq_dict[_] for _ in api_seqs[i]]))
+        rst[x].append(ext)
+
+    for key, val in rst.items():
+        d_str = '\n'.join(val)
+        logger.info(f'{key}:\n{d_str}')
 
 
 if __name__ == '__main__':

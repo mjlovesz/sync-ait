@@ -8,8 +8,9 @@ from app_analyze.scan.sequence.seq_handler import SeqHandler
 
 
 class APISeqProject(Project):
-    def __init__(self, inputs):
+    def __init__(self, inputs, train_flag=True):
         super().__init__(inputs)
+        self.train_flag = train_flag
         self.api_seqs = []
 
     def setup_scanners(self):
@@ -54,10 +55,16 @@ class APISeqProject(Project):
             return
 
         # handle results
-        rst = list(val_dict.values())[0]
+        rst = []
+        for _, seqs in val_dict.items():
+            rst += seqs
+
         if len(val_dict) > 1:
             SeqHandler.union_api_seqs(rst)
-        self.api_seqs = SeqHandler.clean_api_seqs(rst)
+
+        self.api_seqs = SeqHandler.clean_api_seqs(rst, self.train_flag)
+        if not self.train_flag:
+            pass
 
         eval_time = time.time() - start_time
         KitConfig.PROJECT_TIME = eval_time
