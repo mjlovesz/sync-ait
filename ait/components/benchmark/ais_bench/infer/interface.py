@@ -50,6 +50,13 @@ PIXEL_MIN_CHN_MIN = 0
 PIXEL_MIN_CHN_MAX = 255
 PIXEL_VAR_RECI_CHN_MIN = -65504
 PIXEL_VAR_RECI_CHN_MAX = 65504
+MAX_MEMORY = 1024*1024*1024
+
+TORCH_TENSOR_LIST = ['torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor', 'torch.BFloat16Tensor',
+                     'torch.ByteTensor', 'torch.CharTensor', 'torch.ShortTensor', 'torch.LongTensor',
+                     'torch.BoolTensor', 'torch.IntTensor' ]
+NP_TYPE_LIST = [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16,
+                np.uint32, np.float16,np.float32, np.float64]
 
 logger = logging.getLogger(__name__)
 
@@ -476,7 +483,7 @@ class InferSession:
         if hasattr(self.session, 'finalize'):
             self.session.finalize()
 
-    def infer_pipeline(self, feeds_list, mode = 'static', custom_sizes = 100000):
+    def infer_pipeline(self, feeds_list, mode = 'static', custom_sizes = 100000, max_memory = MAX_MEMORY):
         '''
         Parameters:
             feeds_list: input data list
@@ -484,11 +491,7 @@ class InferSession:
         '''
         inputs_list = []
         shapes_list = []
-        torch_tensor_list = ['torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor',
-            'torch.BFloat16Tensor', 'torch.ByteTensor', 'torch.CharTensor', 'torch.ShortTensor',
-            'torch.LongTensor', 'torch.BoolTensor', 'torch.IntTensor' ]
-        np_type_list = [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, \
-                      np.float32, np.float64]
+        memory_used = 0
         for feeds in feeds_list:
             inputs = []
             shapes = []
@@ -496,24 +499,27 @@ class InferSession:
                 if type(feed) is np.ndarray:
                     infer_input = feed
                     shape = feed.shape
-                elif type(feed) in np_type_list:
+                elif type(feed) in NP_TYPE_LIST:
                     infer_input = np.array(feed)
                     shape = [feed.size]
-                # elif type(feed) is aclruntime.Tensor:
-                #     infer_input = feed
-                elif hasattr(feed, 'type') and feed.type() in torch_tensor_list:
+                elif type(feed) is aclruntime.Tensor:
+                    infer_input = np.array(feed)
+                    shape = infer_input.shape
+                elif hasattr(feed, 'type') and feed.type() in TORCH_TENSOR_LIST:
                     infer_input = feed.numpy()
                     if not feed.is_contiguous():
                         infer_input = np.ascontiguousarray(infer_input)
                     shape = infer_input.shape
                 else:
                     raise RuntimeError('type:{} invalid'.format(type(feed)))
+                memory_used += infer_input.nbytes
                 basetensor = aclruntime.BaseTensor(infer_input.__array_interface__['data'][0], infer_input.nbytes)
                 inputs.append(basetensor)
                 shapes.append(shape)
+            if memory_used > max_memory:
+                raise RuntimeError('memory used: {} exceeds the higher bound: {}'.format(memory_used, max_memory))
             inputs_list.append(inputs)
             shapes_list.append(shapes)
-
         if mode == 'dymshape':
             if isinstance(custom_sizes, int):
                 custom_sizes = [custom_sizes]*len(self.get_outputs())
@@ -521,7 +527,6 @@ class InferSession:
                 raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
                     custom_sizes, type(custom_sizes)))
             self.session.set_custom_outsize(custom_sizes)
-
         outputs = self.session.run_pipeline(self.outputs_names, inputs_list, shapes_list,
                                             mode == 'dymshape', mode == 'dymdims')
         for i in range(len(outputs)):
@@ -536,22 +541,17 @@ class InferSession:
         '''
         inputs = []
         shapes = []
-        torch_tensor_list = ['torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor',
-            'torch.BFloat16Tensor', 'torch.ByteTensor', 'torch.CharTensor', 'torch.ShortTensor',
-            'torch.LongTensor', 'torch.BoolTensor', 'torch.IntTensor' ]
-        np_type_list = [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, \
-                      np.float32, np.float64]
         for feed in feeds:
             if type(feed) is np.ndarray:
                 infer_input = feed
                 shapes.append(infer_input.shape)
-            elif type(feed) in np_type_list:
+            elif type(feed) in NP_TYPE_LIST:
                 infer_input = np.array(feed)
                 shapes.append([feed.size])
             elif type(feed) is aclruntime.Tensor:
                 infer_input = feed
                 shapes.append(infer_input.shape)
-            elif hasattr(feed, 'type') and feed.type() in torch_tensor_list:
+            elif hasattr(feed, 'type') and feed.type() in TORCH_TENSOR_LIST:
                 infer_input = feed.numpy()
                 if not feed.is_contiguous():
                     infer_input = np.ascontiguousarray(infer_input)
