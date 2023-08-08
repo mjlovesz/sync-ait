@@ -32,6 +32,8 @@ view.View = class {
         this._host.initialize(this).then(() => {
             this._model = null;
             this._graphs = [];
+            this._showSubGraphNodeCount = 100;
+            this._showSubGraph = null;
             this._selection = [];
             this._sidebar = new sidebar.Sidebar(this._host, id);
             this._searchText = '';
@@ -48,6 +50,20 @@ view.View = class {
             this._getElementById('name-button').addEventListener('click', () => {
                 this.showDocumentation(this.activeGraph);
             });
+            this._getElementById('sub-graph-name-button').addEventListener('click', () => {
+                let dialog = this._host.document.getElementById("set-show-node-count")
+                this._host.show_confirm_dialog(dialog).then((btnValue)=> {
+                    if (!btnValue) {
+                        return 
+                    }
+                    let select_elem = this._host.document.getElementById("input-show-node-count")
+                    if (select_elem) {
+                        this._showSubGraphNodeCount = parseInt(select_elem.options[select_elem.selectedIndex].value)
+                        this._updateGraph(this._model, this._graphs)
+                    }
+                })
+            });
+            
             this._getElementById('sidebar').addEventListener('mousewheel', (e) => {
                 this._preventDefault(e);
             }, { passive: true });
@@ -123,16 +139,38 @@ view.View = class {
         if (this._graph) {
             this.clearSelection();
             const graphElement = this._getElementById('canvas');
-            const view = new sidebar.FindSidebar(this._host, graphElement, this._graph);
-            view.on('search-text-changed', (sender, text) => {
+            const sidebarView = new sidebar.FindSidebar(this._host, graphElement, this._graph);
+            sidebarView.on('search-text-changed', (sender, text) => {
                 this._searchText = text;
             });
-            view.on('select', (sender, selection) => {
+            sidebarView.on('select', (sender, selection) => {
                 this.select(selection);
             });
-            this._sidebar.open(view.content, 'Find');
-            view.focus(this._searchText);
+            sidebarView.on('dblclick-not-in-graph', (sender, data, event) => {
+                this.showSubGraphByNodeName(data.graph_node_name)
+            })
+            this._sidebar.open(sidebarView.content, 'Find');
+            sidebarView.focus(this._searchText);
         }
+    }
+
+    showSubGraphByNodeName(node_name) {
+        if (!this._showSubGraph) {
+            return
+        }
+        this._showSubGraph.setShowNode(node_name)
+        return this._updateGraph(this._model, this._graphs).then(() => {
+            let elem = document.getElementById(`node-name-${node_name}`)
+            if (elem) {
+                this.select([elem])
+            }
+        })
+    }
+
+    clearSubGraph() {
+        this._showSubGraph = null;
+        this._showSubGraphNodeCount = 100;
+        this.confirmed = true;
     }
 
     get model() {
@@ -453,12 +491,13 @@ view.View = class {
         
         return this._timeout(100).then(() => {
             if (graph && graph != lastGraphs[0]) {
-                if (nodes.length > 1000) {
+                if (nodes.length > 1500) {
                     this.confirmed = false
                     return this._host.confirm(
                         'Large model detected.', 
-                        'This graph contains a large number of nodes and might take a long time to render. Do you want to continue?'
-                        ).then((confirmed)=>{
+                        `This graph contains a large number of nodes (${nodes.length}) and might take a long time to render. Do you want to continue ?`,
+                        {"Cancel": "", "Displays partial networks": "partial", "Comfirm": "Comfirm"}
+                        ).then((confirmed) => {
                             this.confirmed = confirmed
                             return confirmed
                         })
@@ -485,7 +524,23 @@ view.View = class {
                     nameButton.style.opacity = 0;
                 }
             };
-            return this.renderGraph(this._model, this.activeGraph).then(() => {
+
+            if (confirmed == "partial") {
+                this._showSubGraph = new view.ShowSubGraph(graph, this._showSubGraph, this._showSubGraphNodeCount)
+            } else {
+                this._showSubGraph = null
+            }
+
+            
+            if (this._showSubGraph) {
+                document.getElementById("sub-graph-name-button").style.display = null
+                document.getElementById("sub-graph-name-button").getElementsByTagName("b")[0].innerText = this._showSubGraphNodeCount
+                document.getElementById("sub-graph-name-button").getElementsByTagName("span")[0].innerText = this._showSubGraph.showNodes
+            } else {
+                document.getElementById("sub-graph-name-button").style.display = "none"
+            }
+
+            return this.renderGraph(this._model, this.activeGraph, this._showSubGraph).then(() => {
                 if (this._page !== 'default') {
                     this.show('default');
                 }
@@ -494,7 +549,7 @@ view.View = class {
             }).catch((error) => {
                 this._model = lastModel;
                 this._graphs = lastGraphs;
-                return this.renderGraph(this._model, this.activeGraph).then(() => {
+                return this.renderGraph(this._model, this.activeGraph, this._showSubGraph).then(() => {
                     if (this._page !== 'default') {
                         this.show('default');
                     }
@@ -519,7 +574,7 @@ view.View = class {
         }
     }
 
-    renderGraph(model, graph) {
+    renderGraph(model, graph, showSubGraphIns) {
         try {
             this._graph = null;
 
@@ -571,13 +626,23 @@ view.View = class {
                 origin.setAttribute('id', 'origin');
                 canvas.appendChild(origin);
 
-                viewGraph.build(this._host.document, origin);
+                let subViewGraph = null
+                if (showSubGraphIns) {
+                    subViewGraph = showSubGraphIns.getShowSubGraph(viewGraph)
+                }
 
-                // this._zoom = 1;
+                if (showSubGraphIns && subViewGraph) { 
+                    subViewGraph.build(this._host.document, origin);
+                } else {
+                    viewGraph.build(this._host.document, origin);
+                }
 
                 return this._timeout(20).then(() => {
-
-                    viewGraph.update();
+                    if (showSubGraphIns && subViewGraph) {
+                        subViewGraph.update();
+                    } else {
+                        viewGraph.update();
+                    }
                     
                     const elements = Array.from(canvas.getElementsByClassName('graph-input') || []);
                     if (elements.length === 0) {
@@ -1084,6 +1149,9 @@ view.Node = class extends grapher.Node {
         const tooltip = this.context.view.options.names && (node.name || node.location) ? type.name : (node.name || node.location);
         const title = header.add(null, styles, content, tooltip);
         title.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
+        title.on('dblclick', () => {
+            this.context.view.showSubGraphByNodeName(this.modelNodeName)
+        });
         if (node.type.nodes && node.type.nodes.length > 0) {
             const definition = header.add(null, styles, '\u0192', 'Show Function Definition');
             definition.on('click', () => this.context.view.pushGraph(node.type));
@@ -1119,6 +1187,9 @@ view.Node = class extends grapher.Node {
         if (initializers.length > 0 || hiddenInitializers || sortedAttributes.length > 0) {
             const list = this.list();
             list.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
+            list.on('dblclick', () => {
+                this.context.view.showSubGraphByNodeName(this.modelNodeName)
+            });
             for (const initializer of initializers) {
                 const argument = initializer.arguments[0];
                 const type = argument.type;
@@ -2152,3 +2223,215 @@ if (typeof module !== 'undefined' && typeof module.exports === 'object') {
     module.exports.View = view.View;
     module.exports.ModelFactoryService = view.ModelFactoryService;
 }
+
+view.ShowSubGraph = class {
+    constructor(graph, lastShowSubGraph, showSubGraphNodeCount) {
+        this._showSubGraphNodeCount = showSubGraphNodeCount
+        this._oriGraph = graph
+        this._showGraph = null
+        this._edgeNeighbors = new Map()    // edgeName -> name of nodes around
+        this._nodes = new Map()             // nodeName -> Node
+        this._edges = new Map()             // argumentName -> Argument
+        this._startNodes = new Map()   // start nodeName -> input Set
+        this._endNodes = new Map()     // end nodeName -> output Set
+        this._showNodes = []
+        this.initNodesAndEdges()
+        this.initStartAndEndNodeInfo()
+        this._showNodes = lastShowSubGraph && lastShowSubGraph._oriGraph == graph ? lastShowSubGraph.showNodes : this.setShowNode()
+    }
+
+    setShowNode(nodeName) {
+        // 1. 获取所有的邻居节点
+        this._showNodes = nodeName ? [nodeName] : [...this._startNodes.keys()]
+        return this._showNodes
+    }
+
+    get showNodes() {
+        return this._showNodes
+    }
+
+    addEdgeInfo(edgeName, nodeName) {
+        if(!this._edgeNeighbors.has(edgeName)) {
+            this._edgeNeighbors.set(edgeName, new Set())
+        }
+        this._edgeNeighbors.get(edgeName).add(nodeName)
+    }
+
+    getNodeEdges(node) {
+        let edges = new Set()
+        for (const inputParam of node.inputs) {
+            for (const args of inputParam.arguments) {
+                edges.add(args.name)
+                this._edges.set(args.name, args)
+            }
+        }
+        for (const outputParam of node.outputs) {
+            for (const args of outputParam.arguments) {
+                edges.add(args.name)
+                this._edges.set(args.name, args)
+            }
+        }
+        return edges
+    }
+
+    initNodesAndEdges() {
+        for (const node of this._oriGraph.nodes) {
+            this._nodes.set(node.name, node)
+            for (const edgeName of this.getNodeEdges(node)) {
+                if (edgeName == "") {
+                    continue
+                }
+                this.addEdgeInfo(edgeName, node.name)
+            }
+        }
+    }
+
+    initStartAndEndNodeInfo() {
+        for (const inputInfo of this._oriGraph.inputs) {
+            for (const inNode of this._edgeNeighbors.get(inputInfo.name)) {
+                if (!this._startNodes.has(inNode)) {
+                    this._startNodes.set(inNode, new Set())
+                }
+                this._startNodes.get(inNode).add(inputInfo)
+            }
+        }
+        for (const outputInfo of this._oriGraph.outputs) {
+            for (const outNode of this._edgeNeighbors.get(outputInfo.name)) {
+                if (!this._endNodes.has(outNode)) {
+                    this._endNodes.set(outNode, new Set())
+                }
+                this._endNodes.get(outNode).add(outputInfo)
+            }
+        }
+    }
+
+    getShowSubGraph(viewGraph) {
+        // 获取上下的邻居节点
+        let showNeighbors = this.getNeighbor(this._showNodes, this._showSubGraphNodeCount) // 上下N个节点
+
+        // 获取边缘节点，边缘节点显示为[...]
+        let withHideNeighbors = this.getNeighbor(showNeighbors, Number.MAX_VALUE, true) // 上下N个节点
+
+        // 获取inputs 和 outputs
+        let showInputs = []
+        let showOutputs = []
+        for(const showNodeName of showNeighbors) {
+            if (this._startNodes.has(showNodeName)) {
+                showInputs.push(...this._startNodes.get(showNodeName))
+            }
+            if (this._endNodes.has(showNodeName)) {
+                showOutputs.push(...this._endNodes.get(showNodeName))
+            }
+        }
+        
+        let allNodeNames = new Set([...showNeighbors, ...withHideNeighbors, ...showInputs.map(x=>x.name), 
+                                    ...showOutputs.map(x=>x.name), ...showOutputs.map(x=>`out_${x.name}`)])
+        let allHideNodeIds = new Set([...viewGraph.nodes].filter(([_, node])=> {
+            return withHideNeighbors.has(node.label.modelNodeName) && !showNeighbors.has(node.label.modelNodeName)
+        }).map(([id, _]) => id))
+
+
+        // 构建显示对象
+        function get_proxy(obj, targetProperty, getValue) {
+            return new Proxy(obj, {
+                get:(target, property) => {
+                    let ori = target[property]
+                    if (property != targetProperty) {
+                        return ori
+                    }
+                    return getValue(ori, target, property)
+                }
+            })
+        }
+        function apply_proxy(func, applyFunction) {
+            return new Proxy(func, {
+                apply:(target, thisArg, argumentsList) => {
+                    return applyFunction.apply(thisArg, [target, argumentsList])
+                }
+            })
+        } 
+            
+        class ShowGraph {
+            node(nodeId) {
+                let nodeInfo = super.node(nodeId)
+                if (!allHideNodeIds.has(nodeId)) {
+                    return nodeInfo
+                }
+                // 隐藏的节点显示为 [...]
+                return get_proxy(nodeInfo, "label", (label) => get_proxy(label, "build", (build) => {
+                    return apply_proxy(build, function(oriBuild, argumentsList) {
+                        if (!this._blocks || this._blocks.length == 0) {
+                            return oriBuild.apply(this, argumentsList)
+                        }
+                        let bak_blocks = this._blocks
+                        let header = new grapher.Node.Header()
+                        let title = header.add(this.id, ['node-item-type', "node-item-type-more"], "...", 
+                            `double click to show more nodes around ${this.value.type.name}(${this.modelNodeName})`)
+                        title.on('dblclick', () => {this.context.view.showSubGraphByNodeName(this.modelNodeName)})
+                        this._blocks = [header];
+                        oriBuild.apply(this, argumentsList)
+                        this._blocks = bak_blocks
+                    })
+                }))
+            }
+            get nodes() {
+                let withHideNeighborNodes = [...super.nodes].filter(
+                        ([_, v]) => allNodeNames.has(v.label.modelNodeName))
+
+                return new Map([...withHideNeighborNodes]);
+            }
+            get edges() {
+                return new Map([...super.edges].filter(([_, v]) => allNodeNames.has(v.label.from.modelNodeName) 
+                                                                    && allNodeNames.has(v.label.to.modelNodeName)));
+            }
+        }
+        let sg = new ShowGraph()
+
+        sg.__proto__.__proto__ = viewGraph
+        return sg; 
+    }
+
+    getNeighbor(nodeNames, max_node_count, just_nearest_neighbor) {
+        let reachEdges = new Set()
+        let reachNodes = new Set() 
+        let nodeList = []
+        let nodeListIndex = 0;
+        let max_node_length = Number.MAX_VALUE
+
+        for (const nodeName of nodeNames) {
+            reachNodes.add(nodeName)
+            nodeList.push(nodeName)
+        }
+        if (just_nearest_neighbor) {
+            // 只原始节点的邻居节点，不做更多扩展
+            max_node_length = reachNodes.size
+        }
+
+        while(reachNodes.size < max_node_count && nodeListIndex < nodeList.length && nodeListIndex < max_node_length) {
+            let thisNode = this._nodes.get(nodeList[nodeListIndex])
+            nodeListIndex += 1
+
+            let edges = this.getNodeEdges(thisNode)
+
+            for (const edgeName of edges) {
+                if (edgeName == "") {
+                    continue
+                }
+                reachEdges.add(edgeName)
+                if (this._edges.has(edgeName) && this._edges.get(edgeName).initializer) {
+                    continue
+                }
+                for (const neighborNodeName of this._edgeNeighbors.get(edgeName)) {
+                    if (reachNodes.has(neighborNodeName) || !neighborNodeName) {
+                        continue
+                    }
+                    reachNodes.add(neighborNodeName)
+                    nodeList.push(neighborNodeName)
+                } 
+            }
+        }
+
+        return reachNodes
+    }
+}
+
