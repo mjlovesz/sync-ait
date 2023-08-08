@@ -73,8 +73,8 @@ class TestClass:
         model = onnx.load(self.args.model_path)
         graph = model.graph
 
-        startnode_name = graph.node[0].NAME
-        endnode_name = graph.node[-1].NAME
+        startnode_name = graph.node[0].name
+        endnode_name = graph.node[-1].name
 
         og = OnnxGraph.parse(self.args.model_path)
         startnode: Node = og.get_node(startnode_name, node_type=Node)

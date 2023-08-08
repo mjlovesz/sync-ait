@@ -115,7 +115,7 @@ class TestAnalyze(unittest.TestCase):
         model = self.onnx_model
         config = ConvertConfig(
             framework=Framework.ONNX,
-            soc_type=SocType.Ascend310.NAME
+            soc_type=SocType.Ascend310.name
         )
         analyze = Analyze(model, self.cur_dir, config)
 
@@ -149,7 +149,7 @@ class TestAnalyze(unittest.TestCase):
         model = self.onnx_model
         config = ConvertConfig(
             framework=Framework.ONNX,
-            soc_type=SocType.Ascend310.NAME
+            soc_type=SocType.Ascend310.name
         )
         analyze = Analyze(model, self.cur_dir, config)
 
@@ -175,7 +175,7 @@ class TestAnalyze(unittest.TestCase):
         model = self.onnx_model
         config = ConvertConfig(
             framework=Framework.ONNX,
-            soc_type=SocType.Ascend310.NAME
+            soc_type=SocType.Ascend310.name
         )
         analyze = Analyze(model, self.cur_dir, config)
 
@@ -209,7 +209,7 @@ class TestAnalyze(unittest.TestCase):
         model = os.path.join(self.cur_dir, 'test.pb')
         config = ConvertConfig(
             framework=Framework.TF,
-            soc_type=SocType.Ascend310.NAME
+            soc_type=SocType.Ascend310.name
         )
         analyze = Analyze(model, self.cur_dir, config)
 
@@ -243,14 +243,14 @@ class TestAnalyze(unittest.TestCase):
         model = self.onnx_model
         config = ConvertConfig(
             framework=Framework.ONNX,
-            soc_type=SocType.Ascend310.NAME
+            soc_type=SocType.Ascend310.name
         )
         analyze = Analyze(model, self.cur_dir, config)
 
         graph = analyze._graph.graph
         for node in graph.node:
             analyze._result.insert(
-                OpResult(ori_op_name=node.NAME, ori_op_type=node.op_type)
+                OpResult(ori_op_name=node.name, ori_op_type=node.op_type)
             )
         analyze._check_op_constraint()
 
@@ -266,7 +266,7 @@ class TestAnalyze(unittest.TestCase):
         model = self.onnx_model
         config = ConvertConfig(
             framework=Framework.ONNX,
-            soc_type=SocType.Ascend310.NAME
+            soc_type=SocType.Ascend310.name
         )
         analyze = Analyze(model, self.cur_dir, config)
 

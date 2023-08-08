@@ -203,12 +203,12 @@ class TransformRefactor:
             # 在第一个layernorm的第一个节点（add, transpose）之后插入reshape，将layer norm以及后面的attention的inputreshape成2维
             # atc的标准pattern要求输入的shape必须得是2维
             if i == 0:
-                self.insert_reshape_node(first_node.NAME, reshape_name, [-1, ori_shape[-1]])
+                self.insert_reshape_node(first_node.name, reshape_name, [-1, ori_shape[-1]])
 
             #在最后一个layer norm的最后一个节点之后插入reshape，将reshape重新reshape原来的shape，否则后面的计算shape会对不上
             if i + 1 == len(match_nodes):
                 last_node = ln_nodes[-1][0]
-                self.insert_reshape_node(last_node.NAME, reshape_name, ori_shape)
+                self.insert_reshape_node(last_node.name, reshape_name, ori_shape)
                 if first_node.op_type == "Transpose":
                     transpose_node = self.graph.add_node(name=str(i) + "_transpose", op_type="Transpose",
                                                          attrs=first_node.attrs)
@@ -227,7 +227,7 @@ class TransformRefactor:
                         reshape_s.value = np.array([-1, reshape_s.value[-1]])
 
             if first_node.op_type == "Transpose":
-                self.graph.remove(first_node.NAME)
+                self.graph.remove(first_node.name)
 
     def update_mask_add_node(self, attention_num):
         for i in range(attention_num):

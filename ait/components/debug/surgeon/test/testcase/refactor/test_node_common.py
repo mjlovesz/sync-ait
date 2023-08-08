@@ -31,7 +31,7 @@ except AttributeError as e:
 
 
 def is_node_equal(node1, node2, msg=None):
-    ret = node1.NAME == node2.NAME and \
+    ret = node1.name == node2.name and \
           node1.op_type == node2.op_type and \
           node1.inputs == node2.inputs and \
           node1.outputs == node2.outputs and \
@@ -44,7 +44,7 @@ def is_node_equal(node1, node2, msg=None):
 
 
 def is_ph_equal(ph1, ph2, msg=None):
-    ret = ph1.NAME == ph2.NAME and \
+    ret = ph1.name == ph2.name and \
           ph1.dtype == ph2.dtype and \
           ph1.shape == ph2.shape
     if not ret:
@@ -54,7 +54,7 @@ def is_ph_equal(ph1, ph2, msg=None):
 
 
 def is_ini_equal(ini1, ini2, msg=None):
-    ret = ini1.NAME == ini2.NAME and \
+    ret = ini1.name == ini2.name and \
           np.array_equal(ini1.value, ini2.value, equal_nan=True) and \
           ini1.value.dtype == ini2.value.dtype
     if not ret:

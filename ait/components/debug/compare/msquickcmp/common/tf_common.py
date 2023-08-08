@@ -137,20 +137,20 @@ def get_inputs_tensor(global_graph, input_shape_str):
     inputs_tensor = []
     tensor_index = {}
     operations = global_graph.get_operations()
-    op_names = [op.NAME for op in operations if "Placeholder" == op.type]
+    op_names = [op.name for op in operations if "Placeholder" == op.type]
     utils.logger.info(op_names)
     for _, tensor_name in enumerate(input_shapes):
         utils.check_input_name_in_model(op_names, tensor_name)
     for op in operations:
         # the operator with the 'Placeholder' type is the input operator of the model
         if "Placeholder" == op.type:
-            op_name = op.NAME
+            op_name = op.name
             if op_name in tensor_index:
                 tensor_index[op_name] += 1
             else:
                 tensor_index[op_name] = 0
-            tensor = global_graph.get_tensor_by_name(op.NAME + ":" + str(tensor_index.get(op_name)))
-            tensor = verify_and_adapt_dynamic_shape(input_shapes, op.NAME, tensor)
+            tensor = global_graph.get_tensor_by_name(op.name + ":" + str(tensor_index.get(op_name)))
+            tensor = verify_and_adapt_dynamic_shape(input_shapes, op.name, tensor)
             inputs_tensor.append(tensor)
     utils.logger.info("model inputs tensor:\n{}\n".format(inputs_tensor))
     return inputs_tensor

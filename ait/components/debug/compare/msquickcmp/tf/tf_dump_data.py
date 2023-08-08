@@ -115,7 +115,7 @@ class TfDumpData(DumpData):
             for index, tensor in enumerate(inputs_tensor):
                 if not tensor.shape:
                     utils.logger.error(
-                        "The shape of %s is unknown. Please usr -i to assign the input path." % tensor.NAME)
+                        "The shape of %s is unknown. Please usr -i to assign the input path." % tensor.name)
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_BIN_FILE_ERROR)
                 input_data = np.random.random(tf_common.convert_tensor_shape(tensor.shape)) \
                     .astype(tf_common.convert_to_numpy_type(tensor.dtype))
@@ -218,9 +218,9 @@ class TfDumpData(DumpData):
         node_list = []
         operations = self.global_graph.get_operations()
         for op in operations:
-            node_list.append(op.NAME)
+            node_list.append(op.name)
             for tensor in op.inputs:
-                input_name = tensor.NAME.split(':')[0]
+                input_name = tensor.name.split(':')[0]
                 if input_name not in input_nodes:
                     input_nodes.append(input_name)
         return input_nodes, node_list

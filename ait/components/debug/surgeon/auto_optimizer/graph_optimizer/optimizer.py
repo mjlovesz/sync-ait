@@ -131,7 +131,7 @@ class GraphOptimizer:
             for k, v in [inp.split(':') for inp in cfg.dynamic_shape.split(';')]:
                 dyn_shape[k] = [int(n) for n in v.split(',')]
             input_ = [
-                np.random.randn(*dyn_shape.get(inp.NAME))
+                np.random.randn(*dyn_shape.get(inp.name))
                          .astype(tensor_type_to_numpy_type.get(inp.datatype))
                 for inp in sess_ori.get_inputs()
             ]

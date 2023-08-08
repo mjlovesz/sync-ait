@@ -153,7 +153,7 @@ def get_batchsize(session, args):
         elems = instr.split(';')
         for elem in elems:
             name, shapestr = elem.split(':')
-            if name == intensors_desc[0].NAME:
+            if name == intensors_desc[0].name:
                 batchsize = int(shapestr.split(',')[0])
     return batchsize
 

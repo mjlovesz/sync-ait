@@ -73,7 +73,7 @@ class KnowledgeTestHelper:
     def inference(onnx_path: str, feeds: List[Dict[str, NDArray]]) -> List[List[NDArray]]:
         '''Inference a onnx model with a list of feeds'''
         session = ort.InferenceSession(onnx_path)
-        outputs_name = [meta.NAME for meta in session.get_outputs()]
+        outputs_name = [meta.name for meta in session.get_outputs()]
         return [session.run(outputs_name, feed) for feed in feeds]
 
     @staticmethod

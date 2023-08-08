@@ -75,7 +75,7 @@ class InferSession:
         options.log_level = 1 if debug else 2
         options.loop = self.loop
         self.session = aclruntime.InferenceSession(self.model_path, self.device_id, options)
-        self.outputs_names = [meta.NAME for meta in self.session.get_outputs()]
+        self.outputs_names = [meta.name for meta in self.session.get_outputs()]
         self.intensors_desc = self.session.get_inputs()
         self.outtensors_desc = self.session.get_outputs()
 
@@ -514,7 +514,7 @@ class InferSession:
             outdesc = self.get_outputs()
             for i, shape in enumerate(shapes):
                 str_shape = [ str(val) for val in shape ]
-                dyshape = "{}:{}".format(indesc[i].NAME, ",".join(str_shape))
+                dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
                 dym_list.append(dyshape)
             dyshapes = ';'.join(dym_list)
             if mode == 'dymshape':

@@ -601,7 +601,7 @@ def inclusion_directive(c):
     except AssertionError as e:
         c.info = Info(None, c.spelling, c.spelling, None, None)
     else:
-        c.info = Info(None, c.spelling, c.spelling, None, file.NAME)
+        c.info = Info(None, c.spelling, c.spelling, None, file.name)
 
     return c.info
 
@@ -655,11 +655,11 @@ if KitConfig.LEVEL == 'large':
 
 
 def auto_match(c):
-    if c.kind.NAME in whole_dict:
-        return whole_dict.get(c.kind.NAME)(c)
-    elif c.kind.NAME.endswith('LITERAL'):
+    if c.kind.name in whole_dict:
+        return whole_dict.get(c.kind.name)(c)
+    elif c.kind.name.endswith('LITERAL'):
         return literal(c)
-    elif c.kind.NAME.endswith('OPERATOR'):
+    elif c.kind.name.endswith('OPERATOR'):
         return operator(c)
     else:
         return default(c)

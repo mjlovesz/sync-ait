@@ -22,7 +22,7 @@ from model_evaluation.common.enum import Framework, SocType
 
 
 def get_soc_type() -> str:
-    default_soc = SocType.Ascend310.NAME
+    default_soc = SocType.Ascend310.name
     try:
         import acl
         return acl.get_soc_name()

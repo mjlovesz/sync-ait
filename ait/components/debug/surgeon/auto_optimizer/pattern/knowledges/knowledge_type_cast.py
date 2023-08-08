@@ -177,7 +177,7 @@ class TypeConstraintQuery(object):
                 output_constraints.append(set(map(self._str_to_elem_type, _output.types)))
             op_type_constraint.set_constraints(IOType.NODE_INPUT, input_constraints)
             op_type_constraint.set_constraints(IOType.NODE_OUTPUT, output_constraints)
-            constraint_map[op_schema.NAME] = op_type_constraint
+            constraint_map[op_schema.name] = op_type_constraint
         return constraint_map
 
     def _custom_constraint(self, constraint_map: ConstraintMap) -> ConstraintMap:
@@ -357,7 +357,7 @@ class TypeCastApply(object):
                         casts = list(filter(lambda node: node.op_type == 'Cast' and
                             node['to'] == numpy_onnx_type_map.get(cast_to, ElemType.UNDEFINED), next_nodes))
                         if casts:
-                            graph[node.NAME].inputs[input_index] = casts[0].outputs[0]
+                            graph[node.name].inputs[input_index] = casts[0].outputs[0]
                             graph.update_map()
                         else:
                             self._insert_cast_node(graph, node, 'before', input_index, cast_to)
@@ -394,7 +394,7 @@ class TypeCastApply(object):
                     input_index = next_node.inputs.index(node_output)
                     # 后继节点为子图外部节点或后继节点当前的输入为非泛型输入，则需要将当前节点输出转回原始类型
                     _is_generic_input = self._match.is_generic_io(next_node, IOType.NODE_INPUT, input_index)
-                    if next_node.NAME not in node_map or not _is_generic_input:
+                    if next_node.name not in node_map or not _is_generic_input:
                         # 后继节点为 Cast 节点时再插入 Cast 节点没有意义
                         if next_node.op_type == 'Cast':
                             continue
@@ -410,7 +410,7 @@ class TypeCastApply(object):
 
                 # 节点输出为图输出时转换为原始类型再输出
                 for output_node in graph.outputs:
-                    if node_output == output_node.NAME:
+                    if node_output == output_node.name:
                         self._insert_cast_node(graph, output_node, 'before', 0, cast_from)
 
     def _make_edge_type_dict(self, graph: BaseGraph) -> Dict[str, np.dtype]:
@@ -486,10 +486,10 @@ class TypeCastApply(object):
             return
 
         # 如果常量输入后面任意一个节点输入不支持泛型则不能直接将常量进行类型转换
-        next_nodes = graph.get_next_nodes(const_node.NAME)
+        next_nodes = graph.get_next_nodes(const_node.name)
         cast_const_directly = True
         for next_node in next_nodes:
-            next_input_index = next_node.inputs.index(const_node.NAME)
+            next_input_index = next_node.inputs.index(const_node.name)
             if not self._match.is_generic_io(next_node, IOType.NODE_INPUT, next_input_index):
                 cast_const_directly = False
                 break
@@ -501,7 +501,7 @@ class TypeCastApply(object):
 
         # 构造的新常量输入节点的名字
         elem_type = numpy_onnx_type_map.get(cast_to, ElemType.UNDEFINED)
-        new_const_name = f'{const_node.NAME}_{elem_type.NAME}'
+        new_const_name = f'{const_node.name}_{elem_type.name}'
         if new_const_name in const_map:
             return
 

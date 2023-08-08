@@ -61,11 +61,11 @@ class KnowledgeBigKernel(KnowledgeBase):
         pattern = Pattern()
 
         for node in subgraph.nodes:
-            pattern.add_node(node.NAME, [node.op_type])
+            pattern.add_node(node.name, [node.op_type])
             for inp in node.inputs:
                 prev_node = subgraph.get_prev_node(inp)
-                if prev_node and prev_node.NAME in pattern.node_dict:
-                    pattern.add_edge(prev_node.NAME, node.NAME)
+                if prev_node and prev_node.name in pattern.node_dict:
+                    pattern.add_edge(prev_node.name, node.name)
         pattern.set_loop(MatchPattern.MATCH_ONCE_OR_MORE)
         return pattern
 
@@ -77,7 +77,7 @@ class KnowledgeBigKernel(KnowledgeBase):
         if not atten_start_node or not atten_end_node or not softmax:
             raise ValueError("Cann\'t get attention start node or softmax node or attention end node.")
 
-        attention = refactor.graph.extract_subgraph([atten_start_node.NAME], [atten_end_node.NAME])
+        attention = refactor.graph.extract_subgraph([atten_start_node.name], [atten_end_node.name])
         attention_parser = AttentionParser(graph=attention, start_node=atten_start_node,
                                            end_node=atten_end_node,
                                            softmax=softmax)

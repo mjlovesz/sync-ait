@@ -100,7 +100,7 @@ class KnowledgeConv1d2Conv2d(KnowledgeBase):
                         node_outputs.add(node_output)
         # 构建常量输入集合
         for node in graph.initializers:
-            const_inputs.add(node.NAME)
+            const_inputs.add(node.name)
 
         attrs = {'axes': [2]}
         for node in node_map.values():

@@ -80,8 +80,8 @@ class Opp:
             return {}
 
         def handle_soc_type(soc_type):
-            if soc_type.startswith(SocType.Ascend310P.NAME):
-                return SocType.Ascend310P.NAME
+            if soc_type.startswith(SocType.Ascend310P.name):
+                return SocType.Ascend310P.name
             return soc_type
 
         op_infos = data.get('ops')

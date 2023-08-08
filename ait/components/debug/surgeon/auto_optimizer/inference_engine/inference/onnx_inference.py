@@ -58,10 +58,10 @@ class ONNXInference(InferenceBase, ABC):
         session = rt.InferenceSession(model)
         input_name = []
         for n in session.get_inputs():
-            input_name.append(n.NAME)
+            input_name.append(n.name)
         output_name = []
         for n in session.get_outputs():
-            output_name.append(n.NAME)
+            output_name.append(n.name)
 
         return session, input_name, output_name
 
