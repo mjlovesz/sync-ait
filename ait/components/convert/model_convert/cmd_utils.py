@@ -6,6 +6,9 @@ import os
 
 import yaml
 
+from model_convert.aoe.aoe_args_map import aoe_args
+from model_convert.atc.atc_args_map import atc_args
+
 
 def get_logger(name=__name__):
     logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
@@ -17,9 +20,9 @@ logger = get_logger()
 
 CUR_PATH = os.path.dirname(os.path.relpath(__file__))
 
-BACKEND_CONF_MAPPING = {
-    "atc": os.path.join(CUR_PATH, "atc/atc_args_map.py"),
-    "aoe": os.path.join(CUR_PATH, "aoe/aoe_args_map.py")
+BACKEND_ARGS_MAPPING = {
+    "atc": atc_args,
+    "aoe": aoe_args
 }
 BACKEND_CMD_MAPPING = {
     "atc": ["atc"],
@@ -28,14 +31,10 @@ BACKEND_CMD_MAPPING = {
 
 
 def add_arguments(parser, backend="atc"):
-    conf_file = BACKEND_CONF_MAPPING.get(backend)
-    if not conf_file:
+    args = BACKEND_ARGS_MAPPING.get(backend)
+    if not args:
         raise ValueError("Backend must be atc or aoe!")
 
-    with open(conf_file, 'r', encoding='utf-8') as f:
-        args_conf = yaml.load(f, yaml.Loader)
-
-    args = args_conf.get('args')
     for arg in args:
         abbr_name = arg.get('abbr_name') if arg.get('abbr_name') else ""
         is_required = arg.get('is_required') if arg.get('is_required') else False

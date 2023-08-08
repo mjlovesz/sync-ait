@@ -16,11 +16,6 @@ ABBR_NAME = "abbr_name"
 DESC = "desc"
 IS_REQUIRED = "is_required"
 
-NAME = NAME
-ABBR_NAME = ABBR_NAME
-DESC = DESC
-IS_REQUIRED = IS_REQUIRED
-
 aoe_args = [
     {
         NAME: '--model',
