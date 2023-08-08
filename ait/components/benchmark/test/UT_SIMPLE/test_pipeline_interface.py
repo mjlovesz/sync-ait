@@ -104,7 +104,7 @@ class TestClass:
 
     def test_oom(self):
         session = InferSession(self.device_id, self.model_path)
-        ndatas_list = self.generate_input(session, 5000)
+        ndatas_list = self.generate_input(session, 10000)
 
         with pytest.raises(RuntimeError) as e:
             outputs = session.infer_pipeline(ndatas_list)
