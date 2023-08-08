@@ -18,7 +18,7 @@ function flopsToString(flops) {
     let result = new Number(flops / 1e6).toFixed(1) + "M";
     if (flops >= 1e12) {
         result = new Number(flops / 1e12).toFixed(1) + "T";
-    } else if (flops > 1e9) {
+    } else if (flops >= 1e9) {
         result = new Number(flops / 1e9).toFixed(1) + "G";
     }
 }
@@ -46,7 +46,7 @@ om.ModelFactory = class {
                     return new om.Model(metadata, [target.model], [target.weights], target.device);
                 });
             } else {
-                throw new om.Error('Unsupported DaVinci OM ' + this.signature + ' signature.');
+                throw new om.Error('Unsupported DaVinci OM ' + this.match + ' signature.');
             }
         });
     }
@@ -179,7 +179,7 @@ om.Container = class {
                             reader.skip(position + 4);
                             let buffer = reader.read(length);
                             let name = decoder.decode(buffer);
-                            let device = content.getUint32(offset - this.offset + position + 4 + length, true);
+                            let device = content.getUint32(offset - this._offset + position + 4 + length, true);
                             position += length + 8;
                             this.devices.set(name, device);
                         }
@@ -258,6 +258,7 @@ om.Metadata = class {
             }
             this._attributeCache[type] = map;
         }
+        return map[name] || null;
     }
 };
 
@@ -270,7 +271,6 @@ om.Model = class {
         this._flops = 0;
         this._npuFlops = 0;
         this._graphs = [];
-        this.format = target.format;
 
         for (let i = 0; i < nets.length; ++i) {
             let index = nets.length == 1 ? undefined : i+1;
@@ -323,6 +323,7 @@ om.Model = class {
                     let subgraph = om.proto.GraphDef.decode(sb);
                     subgraph.name = parentName + "/" + subgraph.name;
                     this._extractGraph(metadata, subgraph, net, model, weight, index, subgraph.name);
+                    delete op.attr[item];
                 }
             }
 
@@ -345,11 +346,11 @@ om.Model = class {
     }
 
     get format() {
-        return this._format || "DaVinci OM";
+        return this._format || 'DaVinci OM';
     }
 
-    get _modelType() {
-        return this._modelType || "DaVinci OM";
+    get modelType() {
+        return this._modelType || 'DaVinci OM';
     }
 
     get producer() {
@@ -360,7 +361,7 @@ om.Model = class {
         this._flops = v;
     }
 
-    set _npuFlops(v) {
+    set npuFlops(v) {
         this._npuFlops = v;
     }
 
@@ -390,9 +391,9 @@ om.Model = class {
 
 om.Graph = class {
 
-    constructor(context, graph) {
+    constructor(metadata, graph, weight, model) {
         this._model = model;
-        this._node = [];
+        this._nodes = [];
         this._inputs = [];
         this._outputs = [];
         this._name = graph.name;
@@ -440,7 +441,7 @@ om.Node = class {
                             "int64", "uint64", "float64", "bool", "dual", "dual int8", "dual uint8"];
         return TYPE_LIST[val];
     }
-    constructor(context, op, graph, value, tensors) {
+    constructor(metadata, op, graph, weight, model) {
         this._model = model;
         this._name = op.name;
         this._weight = weight;
@@ -507,10 +508,10 @@ om.Node = class {
                 } else {
                     data = inputNode.attr["value"].t.data;
                 }
-                let datalength = (data == null) ? 0 : data.length;
+                let dataLength = (data == null) ? 0 : data.length;
                 let tensor = new om.Argument(name,
                     null,
-                    new om.Tensor('Constant', new om.TensorType(inputDtype, inputDims, inputFormat, inputNode.attr['value'].t.desc.layout, datalength), data)
+                    new om.Tensor('Constant', new om.TensorType(inputDtype, inputDims, inputFormat, inputNode.attr['value'].t.desc.layout, dataLength), data)
                 );
                 this._inputs.push(new om.Parameter(schemaName, true, [tensor]));
             } else {
@@ -541,7 +542,7 @@ om.Node = class {
                     continue;
                 }
                 if (Object.prototype.hasOwnProperty.call(value, 'func')) {
-                    let attrInFunc = this._extractGraph(value.func, attr+".");
+                    let attrInFunc = this._extractFunc(value.func, attr+".");
                     for (let [k, v] of attrInFunc) {
                         this._attributes.push(new om.Attribute(null, k, v, schema, true));
                     }
