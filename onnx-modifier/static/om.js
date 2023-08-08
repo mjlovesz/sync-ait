@@ -643,9 +643,79 @@ om.Node = class {
     }
 
     _extractFunc(func, prefix="") {
+        var result = new Map;
+        for (let key in func.attr) {
+            let value = func.attr[key];
+            if (Object.prototype.hasOwnProperty.call(value, 'func')) {
+                let resultNextLevel = this._extractFunc(value.func, prefix+key+".");
+                for (let [key2, value2] of resultNextLevel) {
+                    result.set(key2, value2);
+                }
+                continue;
+            }
+            result.set(key2, value2);
+        }
+        return result;
+    }
 
+    get name() {
+        return this._name || '';
+    }
+
+    get type() {
+        return this._type;
+    }
+
+    get metadata() {
+        let schema = this ._metadata.type(this.type);
+        return schema;
+    }
+
+    get inputs() {
+        return this._inputs;
+    }
+
+    get outputs() {
+        return this._outputs;
+    }
+
+    get attributes() {
+        return this._attributes;
+    }
+
+    get chains() {
+        return this._chains;
+    }
+
+    get device() {
+        return this._device;
+    }
+
+    get controlDependencies() {
+        return this._controlDependencies;
     }
 };
+
+om.Parameter = class {
+
+    constructor(name, visible, args) {
+        this._name = name;
+        this._visible = visible;
+        this._arguments = args;
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    get visible() {
+        return this._visible;
+    }
+
+    get arguments() {
+        return this._arguments;
+    }
+}
 
 om.Attribute = class {
 
