@@ -215,8 +215,16 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "output_num"
+        },
+        {
+          "name": "slice_point"
+        },
+        {
+          "name": "size_split"
         }
       ]
     }
@@ -224,10 +232,17 @@
   {
     "name": "SplitV",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "size_splits",
+          "dynamic": false
+        },
+        {
+          "name": "split_dim",
           "dynamic": false
         }
       ],
@@ -239,8 +254,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "num_split"
         }
       ]
     }
@@ -248,7 +262,6 @@
   {
     "name": "Unpack",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -263,8 +276,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "num"
         }
       ]
     }
@@ -272,7 +287,6 @@
   {
     "name": "Flatten",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -285,21 +299,23 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Slice",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "input",
+          "dynamic": false
+        },
+        {
+          "name": "offsets",
+          "dynamic": false
+        },
+        {
+          "name": "size",
           "dynamic": false
         }
       ],
@@ -311,8 +327,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
         }
       ]
     }
@@ -320,10 +335,13 @@
   {
     "name": "ExpandDims",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "axis",
           "dynamic": false
         }
       ],
@@ -333,21 +351,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Gather",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "params",
+          "dynamic": false
+        },
+        {
+          "name": "indices",
           "dynamic": false
         }
       ],
@@ -359,8 +375,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
         }
       ]
     }
@@ -368,10 +383,13 @@
   {
     "name": "GatherNd",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "params",
+          "dynamic": false
+        },
+        {
+          "name": "indices",
           "dynamic": false
         }
       ],
@@ -381,21 +399,15 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Pack",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "values",
           "dynamic": false
         }
       ],
@@ -407,8 +419,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "N"
         }
       ]
     }
@@ -416,7 +430,6 @@
   {
     "name": "SpaceToDepth",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -431,8 +444,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "block_size"
         }
       ]
     }
@@ -440,10 +452,21 @@
   {
     "name": "StridedSlice",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "begin",
+          "dynamic": false
+        },
+        {
+          "name": "end",
+          "dynamic": false
+        },
+        {
+          "name": "strides",
           "dynamic": false
         }
       ],
@@ -455,8 +478,19 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "begin_mask"
+        },
+        {
+          "name": "end_mask"
+        },
+        {
+          "name": "ellipsis_mask"
+        },
+        {
+          "name": "new_axis_mask"
+        },
+        {
+          "name": "shrink_axis_mask"
         }
       ]
     }
@@ -464,10 +498,17 @@
   {
     "name": "SpaceToBatchND",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "block_shape",
+          "dynamic": false
+        },
+        {
+          "name": "paddings",
           "dynamic": false
         }
       ],
@@ -477,45 +518,23 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
-    }
-  },
-  {
-    "name": "SpaceToSpaceND",
-    "schema": {
-      "catagory": "Data",
-      "inputs": [
-        {
-          "name": "x",
-          "dynamic": false
-        }
-      ],
-      "outputs": [
-        {
-          "name": "y",
-          "dynamic": false
-        }
-      ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "BatchToSpaceND",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "block_shape",
+          "dynamic": false
+        },
+        {
+          "name": "crops",
           "dynamic": false
         }
       ],
@@ -525,21 +544,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Tile",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "w",
           "dynamic": false
         }
       ],
@@ -549,18 +566,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Size",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -573,21 +584,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Fill",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "dims",
+          "dynamic": false
+        },
+        {
+          "name": "value",
           "dynamic": false
         }
       ],
@@ -597,18 +606,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "InvertPermutation",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -621,21 +624,23 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Pad",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "padding",
+          "dynamic": false
+        },
+        {
+          "name": "constant_values",
           "dynamic": false
         }
       ],
@@ -647,8 +652,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "mode"
         }
       ]
     }
@@ -656,10 +660,13 @@
   {
     "name": "ReverseSequence",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "seq_lengths",
           "dynamic": false
         }
       ],
@@ -671,8 +678,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "seq_dim"
+        },
+        {
+          "name": "batch_dim"
         }
       ]
     }
@@ -680,10 +689,17 @@
   {
     "name": "PadV2",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "paddings",
+          "dynamic": false
+        },
+        {
+          "name": "constant_values",
           "dynamic": false
         }
       ],
@@ -693,18 +709,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "DepthToSpace",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -719,8 +729,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "block_size"
+        },
+        {
+          "name": "data_format"
         }
       ]
     }
@@ -728,10 +740,9 @@
   {
     "name": "ExtractImagePatches",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "images",
           "dynamic": false
         }
       ],
@@ -743,8 +754,16 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "ksizes"
+        },
+        {
+          "name": "strides"
+        },
+        {
+          "name": "rates"
+        },
+        {
+          "name": "padding"
         }
       ]
     }
@@ -752,7 +771,6 @@
   {
     "name": "Shape",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -765,18 +783,13 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Squeeze",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Shape",
       "inputs": [
         {
           "name": "x",
@@ -791,8 +804,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
         }
       ]
     }
@@ -800,10 +812,17 @@
   {
     "name": "ScatterNd",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "indices",
+          "dynamic": false
+        },
+        {
+          "name": "updates",
+          "dynamic": false
+        },
+        {
+          "name": "shape",
           "dynamic": false
         }
       ],
@@ -813,12 +832,7 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
