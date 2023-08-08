@@ -105,8 +105,16 @@ IF DEFINED mingw_md5 (
 C: && cd C:\
 
 :: get python3 executable filename
+SET PYTHON3=
+python3 -V 2>nul | findstr /C:"Python 3." >nul && ( SET PYTHON3=python3 )
+
 IF NOT DEFINED PYTHON3 (
-    SET PYTHON3=python3
+    python -V 2>nul | findstr /C:"Python 3." >nul && ( SET PYTHON3=python )
+)
+
+IF NOT DEFINED PYTHON3 (
+    ECHO "Error: python3 is not installed"
+    %cwd:~0,2% && cd "%cwd%" && EXIT /B 1
 )
 
 :: get dir of installed app_analyze module
@@ -114,18 +122,21 @@ SET app_analyze_pos=
 FOR /F "delims=" %%i IN ('%PYTHON3% -c "import app_analyze; print(app_analyze.__path__[0])"') DO ( SET app_analyze_pos=%%i)
 IF NOT DEFINED app_analyze_pos (
     ECHO Cannot find python module: transplt, please make sure it is correctly installed.
-    ECHO Installing is existing.
-    EXIT /B 1
+    %cwd:~0,2% && cd "%cwd%" && EXIT /B 1
 )
 
 :: download and unzip config.zip & headers.zip
 ECHO ============ downloading ait transplt config and headers ============
 %app_analyze_pos:~0,2% && cd "%app_analyze_pos%"
 curl %skip_check_cert% %download_config_zip_link% -o config.zip
+IF NOT %errorlevel%==0 ( %cwd:~0,2% && cd "%cwd%" && EXIT /B 1 )
 tar -zxf config.zip
+IF NOT %errorlevel%==0 ( %cwd:~0,2% && cd "%cwd%" && EXIT /B 1 )
 del config.zip
 curl %skip_check_cert% %download_headers_zip_link% -o headers.zip
+IF NOT %errorlevel%==0 ( %cwd:~0,2% && cd "%cwd%" && EXIT /B 1 )
 tar -zxf headers.zip
+IF NOT %errorlevel%==0 ( %cwd:~0,2% && cd "%cwd%" && EXIT /B 1 )
 del headers.zip
 
 :: go to original working dir
@@ -133,7 +144,6 @@ del headers.zip
 
 :: if not full install, exit now.
 IF %full_install%==0 (
-    echo Installing finished.
     EXIT /B 0
 )
 
@@ -163,11 +173,10 @@ net.exe session 1>NUL 2>NUL && (
 :: download and install LLVM
 IF %llvm_path%=="" (
     ECHO ============ downloading llvm installation package ==================
-    curl %skip_check_cert% -LJo %llvm_file_name% %download_llvm_link%
+    curl %skip_check_cert% --connect-timeout 30 -LJo %llvm_file_name% %download_llvm_link%
     IF NOT %errorlevel%==0 (
         ECHO Downloading llvm failed, please try again or manually download it.
-        ECHO Installing is existing now.
-        EXIT /B 1
+        %cwd:~0,2% && cd "%cwd%" && EXIT /B 1
     )
 )
 
@@ -179,8 +188,7 @@ IF %llvm_path%=="" (
         SET llvm_path=%llvm_file_name%
     ) ELSE (
         ECHO The downloaded llvm installation file is incomplete, please try again or manually download it.
-        ECHO Installing is existing now.
-        EXIT /B 1
+        %cwd:~0,2% && cd "%cwd%" && EXIT /B 1
     )
 )
 
@@ -231,11 +239,10 @@ SET Path=%Path%;%llvm_install_path%\bin
 :: download and install mingw-w64
 IF %mingw_w64_path%=="" (
     ECHO ============ downloading mingw-w64 installation package =============
-    curl %skip_check_cert% -LJo %mingw_w64_file_name% %download_mingw_link%
+    curl %skip_check_cert% --connect-timeout 30 -LJo %mingw_w64_file_name% %download_mingw_link%
     IF NOT %errorlevel%==0 (
         ECHO Downloading mingw-w64 failed, please try again or manually download it.
-        ECHO Installing is existing now.
-        EXIT /B 1
+        %cwd:~0,2% && cd "%cwd%" && EXIT /B 1
     )
 )
 
@@ -247,8 +254,7 @@ IF %mingw_w64_path%=="" (
         SET mingw_w64_path=%mingw_w64_file_name%
     ) ELSE (
         ECHO The downloaded mingw-w64 installation file is incomplete, please try again or manually download it.
-        ECHO Installing is existing now.
-        EXIT /B 1
+        %cwd:~0,2% && cd "%cwd%" && EXIT /B 1
     )
 )
 
@@ -289,7 +295,7 @@ SET Path=%Path%;%mingw_w64_install_path%\mingw64\bin
 
 
 ECHO ============ downloading patch file float.h of mingw-w64 ============
-curl %skip_check_cert% -LJo "%mingw_w64_install_path%\mingw64\x86_64-w64-mingw32\include\float.h" %download_float_h_link%
+curl %skip_check_cert% --connect-timeout 30 -LJo "%mingw_w64_install_path%\mingw64\x86_64-w64-mingw32\include\float.h" %download_float_h_link%
 IF NOT %errorlevel%==0 (
     ECHO WARNING: downloading mingw patch file float.h failed. This may cause ait transplt meets error when scanning projects.
     ECHO Please manually download it from %download_float_h_link%
@@ -305,5 +311,4 @@ IF zip_exists==0 (
 %cwd:~0,2% && cd "%cwd%"
 
 :: finished.
-echo installing finished.
 EXIT /B 0
