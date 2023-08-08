@@ -32,11 +32,11 @@ except AttributeError as e:
 
 def is_node_equal(node1, node2, msg=None):
     ret = node1.name == node2.name and \
-          node1.op_type == node2.op_type and \
-          node1.inputs == node2.inputs and \
-          node1.outputs == node2.outputs and \
-          node1.attrs == node2.attrs and \
-          node1.domain == node2.domain
+        node1.op_type == node2.op_type and \
+        node1.inputs == node2.inputs and \
+        node1.outputs == node2.outputs and \
+        node1.attrs == node2.attrs and \
+        node1.domain == node2.domain
     if not ret:
         msg = 'two nodes are not equal!'
         raise unittest.TestCase.failureException(msg)

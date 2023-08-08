@@ -186,7 +186,7 @@ class FileAutoClear:
 
     @staticmethod
     def close(file):
-        file_path = file.NAME
+        file_path = file.name
         if not file.closed:
             file.close()
         if os.path.islink(file_path):
@@ -281,12 +281,12 @@ def call_auto_optimizer(modifier, modify_info, output_suffix, make_cmd):
     import subprocess
     
     with FileAutoClear(tempfile.NamedTemporaryFile(mode="wb", delete=False, suffix=".onnx")) as (_, modified_file):
-        opt_file_path = modified_file.NAME + output_suffix
+        opt_file_path = modified_file.name + output_suffix
         modify_model(modifier, modify_info, modified_file)
         modified_file.close()
 
         python_path = sys.executable
-        cmd = make_cmd(py_path=python_path, in_path=modified_file.NAME, out_path=opt_file_path)
+        cmd = make_cmd(py_path=python_path, in_path=modified_file.name, out_path=opt_file_path)
 
         out_res = subprocess.run(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if out_res.returncode != 0:
