@@ -1620,7 +1620,6 @@
   {
     "name": "ReduceAll",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1629,14 +1628,16 @@
       ],
       "outputs": [
         {
-          "name": "y",
+          "name": "output",
           "dynamic": false
         }
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axes"
+        },
+        {
+          "name": "keep_dims"
         }
       ]
     }
@@ -1644,7 +1645,6 @@
   {
     "name": "Cast",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1659,7 +1659,11 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
+          "name": "SrcT",
+          "type": "DataTypeInner"
+        },
+        {
+          "name": "DstT",
           "type": "DataTypeInner"
         }
       ]
@@ -1668,7 +1672,6 @@
   {
     "name": "CastT",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1683,7 +1686,11 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
+          "name": "src_dtype",
+          "type": "DataTypeInner"
+        },
+        {
+          "name": "dst_dtype",
           "type": "DataTypeInner"
         }
       ]
@@ -1692,7 +1699,6 @@
   {
     "name": "Sign",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1705,18 +1711,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Cosh",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1729,18 +1729,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Exp",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1753,21 +1747,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "FloorMod",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -1777,21 +1769,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "GreaterEqual",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -1801,21 +1791,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Less",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -1825,21 +1813,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "MatMul",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -1851,8 +1837,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "transpose_x1"
+        },
+        {
+          "name": "transpose_x2"
         }
       ]
     }
@@ -1860,10 +1848,13 @@
   {
     "name": "RealDiv",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -1873,18 +1864,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Rint",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1897,18 +1882,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Round",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1921,18 +1900,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Rsqrt",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1945,18 +1918,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Sinh",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1969,21 +1936,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Sub",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -1993,21 +1958,23 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Range",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "start",
+          "dynamic": false
+        },
+        {
+          "name": "limit",
+          "dynamic": false
+        },
+        {
+          "name": "delta",
           "dynamic": false
         }
       ],
@@ -2017,18 +1984,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Acos",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -2041,18 +2002,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Asin",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -2065,18 +2020,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Atanh",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -2089,18 +2038,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Log",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -2113,21 +2056,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "LogicalOr",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -2137,18 +2078,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Neg",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -2161,18 +2096,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "ReduceProd",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -2187,8 +2116,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "keep_dims"
+        },
+        {
+          "name": "axes"
         }
       ]
     }
@@ -2196,10 +2127,13 @@
   {
     "name": "ReduceSum",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "w",
           "dynamic": false
         }
       ],
@@ -2211,8 +2145,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "keep_dims"
         }
       ]
     }
@@ -2220,10 +2153,13 @@
   {
     "name": "ReduceMean",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "axes",
           "dynamic": false
         }
       ],
@@ -2235,8 +2171,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "keep_dims"
         }
       ]
     }
@@ -2244,7 +2179,6 @@
   {
     "name": "Tan",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -2257,21 +2191,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "ArgMax",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -2283,8 +2215,19 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "output_type"
+        },
+        {
+          "name": "keep_dims"
+        },
+        {
+          "name": "outmaxval"
+        },
+        {
+          "name": "topk"
         }
       ]
     }
@@ -2292,10 +2235,13 @@
   {
     "name": "ArgMaxExt2",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "axis",
           "dynamic": false
         }
       ],
@@ -2307,8 +2253,16 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "output_type"
+        },
+        {
+          "name": "keep_dims"
+        },
+        {
+          "name": "outmaxval"
+        },
+        {
+          "name": "topk"
         }
       ]
     }
@@ -2316,10 +2270,13 @@
   {
     "name": "ArgMin",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "axis",
           "dynamic": false
         }
       ],
@@ -2329,21 +2286,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "NotEqual",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -2353,21 +2308,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "LessEqual",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -2377,21 +2330,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "FloorDiv",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -2401,21 +2352,23 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "UnsortedSegmentSum",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "segment_ids",
+          "dynamic": false
+        },
+        {
+          "name": "num_segments",
           "dynamic": false
         }
       ],
@@ -2425,21 +2378,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Cumsum",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "axis",
           "dynamic": false
         }
       ],
@@ -2451,8 +2402,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "exclusive"
+        },
+        {
+          "name": "reverse"
         }
       ]
     }
@@ -2460,10 +2413,13 @@
   {
     "name": "Cumprod",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "axis",
           "dynamic": false
         }
       ],
@@ -2475,8 +2431,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "exclusive"
+        },
+        {
+          "name": "reverse"
         }
       ]
     }
@@ -2484,10 +2442,13 @@
   {
     "name": "TruncatedMod",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -2497,18 +2458,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "ReduceMin",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -2523,8 +2478,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "keep_dims"
         }
       ]
     }
@@ -2532,10 +2489,18 @@
   {
     "name": "LayerNorm",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Normalization",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        }
+        {
+          "name": "scale",
+          "dynamic": false
+        }
+        {
+          "name": "bias",
           "dynamic": false
         }
       ],
@@ -2547,8 +2512,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "reduction_indices"
+        },
+        {
+          "name": "epsilon"
         }
       ]
     }
@@ -2556,10 +2523,17 @@
   {
     "name": "InstanceNorm",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "scale",
+          "dynamic": false
+        }
+        {
+          "name": "bias",
           "dynamic": false
         }
       ],
@@ -2571,8 +2545,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "reduction_indices"
+        },
+        {
+          "name": "epsilon"
         }
       ]
     }
@@ -2580,7 +2556,6 @@
   {
     "name": "L2Normalize",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -2595,8 +2570,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "eps"
         }
       ]
     }
@@ -2604,10 +2581,13 @@
   {
     "name": "Pow",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -2617,18 +2597,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Power",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -2643,8 +2617,13 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "scale"
+        },
+        {
+          "name": "shift"
+        },
+        {
+          "name": "power"
         }
       ]
     }
@@ -2652,10 +2631,17 @@
   {
     "name": "ChannelAxpy",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
+          "dynamic": false
+        },
+        {
+          "name": "x3",
           "dynamic": false
         }
       ],
@@ -2665,21 +2651,23 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Clip",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "clip_value_min",
+          "dynamic": false
+        },
+        {
+          "name": "clip_value_max",
           "dynamic": false
         }
       ],
@@ -2689,12 +2677,7 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
