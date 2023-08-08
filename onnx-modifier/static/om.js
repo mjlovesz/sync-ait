@@ -1002,18 +1002,83 @@ om.Tensor = class {
 
 om.TensorType = class {
 
-    constructor(dataType, shape, denotation) {
-        this.dataType = dataType;
-        this.shape = shape;
-        this.denotation = denotation;
+    constructor(dtype, shape, format, denotation, size) {
+        this._dtype = dtype;
+        this._shape = new om.TensorShape(shape);
+        this._format = format;
+        this._denotation = denotation;
+        this._size = size;
     }
 
-    equals(obj) {
-        return obj && this.dataType === obj.dataType && this.shape && this.shape.equals(obj.shape);
+    get dataType() {
+        return this._dtype;
+    }
+
+    set shape(dims) {
+        this._shape = dims;
+    }
+
+    get shape() {
+        return this._shape;
+    }
+
+    get size() {
+        let typeOf8Bytes = ["float64", "int64", "uint64"];
+        let typeOf4Bytes = ["float32", "int32", "uint32"];
+        let typeOf2Bytes = ["float16", "int16", "uint16"];
+        let typeOf1Bytes = ["int8", "uint8", "bool"];
+        if (typeOf1Bytes.indexOf(this.dataType) >= 0) {
+            return this.size;
+        }
+        if (typeOf2Bytes.indexOf(this.dataType) >= 0) {
+            return this._size / 2;
+        }
+        if (typeOf4Bytes.indexOf(this.dataType) >= 0) {
+            return this._size / 4;
+        }
+        if (typeOf8Bytes.indexOf(this.dataType) >= 0) {
+            return this._size / 8;
+        }
+        return -1;
+    }
+
+    get rawShape() {
+        if (this.denotation == "NCHW" || this.denotation == "NHWC" || this.denotation == "ND") {
+            return this.shape;
+        }
+        let dims = this._shape.dimensions;
+        if (this._dtype == "float16") {
+            if (dims.length == 1) {
+                dims = [1, dims[0], 1, 1];
+            }
+            if (this._denotation == "NC1HWC0") {
+                return new om.TensorShape([dims[0], ~~((parseInt(dims[1])+15)/16), dims[2], dims[3], 16]);
+            } else if (this._denotation == "FRACTAL_Z") {
+                return new om.TensorShape([~~((parseInt(dims[1])+15)/16), dims[2], dims[3], (~~((parseInt(dims[0])+15)/16))*16, 16]);
+            }
+        }
+        if (this._dtype == "int8") {
+            if (this._denotation == "FRACTAL_Z") {
+                return new om.TensorShape([~~((parseInt(dims[1])+31)/32), dims[2], dims[3], (~~((parseInt(dims[0])+15)/16))*16, 32]);
+            }
+        }
+        return new om.TensorShape([this.size], true);
+    }
+
+    get denotation() {
+        return this._denotation;
+    }
+
+    get format() {
+        return this._format;
     }
 
     toString() {
-        return this.dataType + this.shape.toString();
+        if (this._format) {
+            return this.dataType + " " + this._shape.toString() + '   &lt;' + this._format + "&gt;";
+        } else {
+            return this.dataType + " " + this._shape.toString();
+        }
     }
 };
 
