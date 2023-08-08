@@ -41,6 +41,9 @@
       "attributes": [
         {
           "name": "axis"
+        },
+        {
+          "name": "N"
         }
       ]
     }
@@ -48,11 +51,10 @@
   {
     "name": "ConcatD",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
-          "dynamic": false
+          "dynamic": true
         }
       ],
       "outputs": [
@@ -63,8 +65,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "N"
         }
       ]
     }
@@ -72,7 +76,6 @@
   {
     "name": "Rank",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -85,21 +88,23 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Dequantize",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "min",
+          "dynamic": false
+        },
+        {
+          "name": "max",
           "dynamic": false
         }
       ],
@@ -111,8 +116,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "scale"
+        },
+        {
+          "name": "offset"
         }
       ]
     }
@@ -120,10 +127,17 @@
   {
     "name": "Quantize",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "min",
+          "dynamic": false
+        },
+        {
+          "name": "max",
           "dynamic": false
         }
       ],
@@ -135,8 +149,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "scale"
+        },
+        {
+          "name": "offset"
         }
       ]
     }
@@ -144,23 +160,40 @@
   {
     "name": "Reshape",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Shape",
       "inputs": [
         {
-          "name": "x",
+          "name": "tensor",
+          "dynamic": false
+        },
+        {
+          "name": "w",
           "dynamic": false
         }
       ],
       "outputs": [
         {
-          "name": "y",
+          "name": "output",
           "dynamic": false
         }
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "input_format",
+          "type": "Format"
+        },
+        {
+          "name": "output_format",
+          "type": "Format"
+        },
+        {
+          "name": "shape"
+        },
+        {
+          "name": "axis"
+        },
+        {
+          "name": "num_axes"
         }
       ]
     }
@@ -168,7 +201,6 @@
   {
     "name": "Split",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
