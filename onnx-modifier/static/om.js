@@ -529,7 +529,7 @@ om.Node = class {
             let outputDtype = om.Node.enum2Dtype(outputDesc.dtype);
             let outputFormat = outputDesc.layout;
             let outputName = (outputIdx == 0) ? this._name : this._name + ":" + outputIdx;
-            let outputSchemaName = outputIdx < schema.outputs.length ? schema.outputs[outputIdx].name : schema.outputs[schema.output.length-1].name;
+            let outputSchemaName = outputIdx < schema.outputs.length ? schema.outputs[outputIdx].name : schema.outputs[schema.outputs.length-1].name;
             this._outputs.push(new om.Parameter(outputSchemaName, true, [new om.Argument(outputName, new om.TensorType(outputDtype, outputDims, outputFormat), null)]));
             ++outputIdx;
         }
