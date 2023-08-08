@@ -30,11 +30,11 @@ class OnnxChecker:
 
         model_inputs: Set[str] = set()
         for input_ in graph.input:
-            model_inputs.add(input_.name)
+            model_inputs.add(input_.NAME)
 
         initializers: Set[str] = set()
         for initializer in graph.initializer:
-            initializers.add(initializer.name)
+            initializers.add(initializer.NAME)
 
         def is_valid(input_: str) -> bool:
             return input_ in nodes_outputs or \
@@ -50,7 +50,7 @@ class OnnxChecker:
             if len(empty_input) == 0:
                 continue
             s = ','.join(empty_input)
-            err_map.setdefault(node.name, []) \
+            err_map.setdefault(node.NAME, []) \
                 .append(f'input {s} is empty.')
 
     def check_ops(self) -> Dict[str, List[str]]:
@@ -69,4 +69,4 @@ class OnnxChecker:
             errcode, errinfo = self._graph.check_node(node)
             if errcode == ONNXCheckerError.UNREGISTERED_OP or errcode == ONNXCheckerError.SUCCESS:
                 continue
-            err_map.setdefault(node.name, []).append(errinfo)
+            err_map.setdefault(node.NAME, []).append(errinfo)

@@ -18,8 +18,8 @@ logger = get_logger()
 CUR_PATH = os.path.dirname(os.path.relpath(__file__))
 
 BACKEND_CONF_MAPPING = {
-    "atc": os.path.join(CUR_PATH, "atc/atc_args_map.yml"),
-    "aoe": os.path.join(CUR_PATH, "aoe/aoe_args_map.yml")
+    "atc": os.path.join(CUR_PATH, "atc/atc_args_map.py"),
+    "aoe": os.path.join(CUR_PATH, "aoe/aoe_args_map.py")
 }
 BACKEND_CMD_MAPPING = {
     "atc": ["atc"],

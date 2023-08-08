@@ -144,10 +144,10 @@ def filter_acc(cursor):
     cuda_en = False
     ns = ''
 
-    if cursor.kind.name in helper_dict:  # 用于提前对节点进行处理，比如VAR_DECL的命名空间、FUNCTIONPROTO的参数等
-        result_type, spelling, api, definition, source = helper_dict[cursor.kind.name](cursor)
-    if cursor.kind.name in filter_dict:
-        result_type, spelling, api, definition, source = filter_dict[cursor.kind.name](cursor)
+    if cursor.kind.NAME in helper_dict:  # 用于提前对节点进行处理，比如VAR_DECL的命名空间、FUNCTIONPROTO的参数等
+        result_type, spelling, api, definition, source = helper_dict[cursor.kind.NAME](cursor)
+    if cursor.kind.NAME in filter_dict:
+        result_type, spelling, api, definition, source = filter_dict[cursor.kind.NAME](cursor)
         hit, cuda_en, ns = in_acc_lib(source, cursor)
 
     # 从get_usr中解析的namespace（连续的(?:@N@\w+)），Cursor解析得到的API，前者更完整。
@@ -185,9 +185,9 @@ def get_includes(tu):
     srcs = list()
     for x in includes:
         if x.depth < 2:  # 1,2,3...
-            logger.debug(x.depth, x.include.name, get_attr(x, 'location.line'),
+            logger.debug(x.depth, x.include.NAME, get_attr(x, 'location.line'),
                          get_attr(x, 'location.column'), x.source)
-            srcs.append(x.include.name)
+            srcs.append(x.include.NAME)
     return srcs
 
 
@@ -203,7 +203,7 @@ def macro_map(cursor, file=None):
             return
 
         tk = list(cursor.get_tokens())
-        if len(tk) == 2 and not tk[0].spelling.startswith('_') and tk[1].kind.name == 'IDENTIFIER':
+        if len(tk) == 2 and not tk[0].spelling.startswith('_') and tk[1].kind.NAME == 'IDENTIFIER':
             MACRO_MAP[tk[1].spelling] = tk[0].spelling
 
 
@@ -227,7 +227,7 @@ def actual_arg(cursor):
     """
     for _ in range(KitConfig.CURSOR_DEPTH):
         # CursorKind: MEMBER_REF_EXPR, DECL_REF_EXPR, TYPE_REF, STRING_LITERAL, INTEGER_LITERAL ...
-        if 'REF' in cursor.kind.name or 'LITERAL' in cursor.kind.name:
+        if 'REF' in cursor.kind.NAME or 'LITERAL' in cursor.kind.NAME:
             break
         children = get_children(cursor)
         if children:
@@ -239,7 +239,7 @@ def parent_stmt(cursor):
     """获取所属Statement对应的代码"""
     for _ in range(KitConfig.CURSOR_DEPTH):
         # CursorKind: DECL_STMT, DEFAULT_STMT ...
-        if cursor.kind.name.endswith('STMT'):
+        if cursor.kind.NAME.endswith('STMT'):
             break
         parent = get_attr(cursor, 'parent')
         if parent:
@@ -295,7 +295,7 @@ def parse_info(node, cwd=None):
         if not get_attr(node, 'location.file'):
             file = None
         else:
-            file = os.path.normpath(node.location.file.name)
+            file = os.path.normpath(node.location.file.NAME)
 
     macro_map(node, file)
     typedef_map(node, file)
@@ -340,8 +340,8 @@ def parse_info(node, cwd=None):
     # node的属性和方法：kind.name/type.kind.name/get_usr()/displayname/spelling/type.spelling/hash
     # 其他可记录信息：get_attr(node, 'referenced.kind.name')/api/result_type/source/definition/get_ref_def(node)/children
     info = {
-        'kind': node.kind.name,
-        'type_kind': node.type.kind.name,
+        'kind': node.kind.NAME,
+        'type_kind': node.type.kind.NAME,
         'ref_kind': get_attr(node, 'referenced.kind.name'),
         'spelling': node.spelling,
         'type': node.type.spelling,

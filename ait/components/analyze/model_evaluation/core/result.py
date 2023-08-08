@@ -154,7 +154,7 @@ class Result:
                 'op_name': op_result.op_name,
                 'op_type': op_result.op_type,
                 'soc_type': op_result.soc_type,
-                'engine': op_result.op_engine.name,
+                'engine': op_result.op_engine.NAME,
                 'is_supported': op_result.is_supported,
                 'details': op_result.details
             }

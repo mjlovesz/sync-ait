@@ -542,8 +542,8 @@ class BaseGraph(ABC):
 
         # remove unused graph inputs and initializers
         inputs = [inp for n in self._nodes for inp in n.inputs]
-        self._inputs = list(filter(lambda x: x.name in inputs, self._inputs))
-        self._initializers = list(filter(lambda x: x.name in inputs, self._initializers))
+        self._inputs = list(filter(lambda x: x.NAME in inputs, self._inputs))
+        self._initializers = list(filter(lambda x: x.NAME in inputs, self._initializers))
 
         self.update_map()
 

@@ -52,7 +52,7 @@ class TestOpp(unittest.TestCase):
     def test_load_opp_fail_case(self):
         opp = None
         try:
-            opp = Opp.load_opp(SocType.Ascend310.name, self.cur_dir)
+            opp = Opp.load_opp(SocType.Ascend310.NAME, self.cur_dir)
         except RuntimeError:
             pass
         self.assertIsNone(opp)
@@ -61,14 +61,14 @@ class TestOpp(unittest.TestCase):
         os.environ['ASCEND_TOOLKIT_HOME'] = self.cur_dir
         os.environ['ASCEND_OPP_PATH'] = self.cur_dir
 
-        opp = Opp.load_opp(SocType.Ascend310.name, self.cur_dir)
+        opp = Opp.load_opp(SocType.Ascend310.NAME, self.cur_dir)
         self.assertIsNotNone(opp)
 
     def test_query_op_info_success_case(self):
         os.environ['ASCEND_TOOLKIT_HOME'] = self.cur_dir
         os.environ['ASCEND_OPP_PATH'] = self.cur_dir
 
-        opp = Opp.load_opp(SocType.Ascend310.name, self.cur_dir)
+        opp = Opp.load_opp(SocType.Ascend310.NAME, self.cur_dir)
         self.assertIsNotNone(opp)
 
         op_info = opp.query_op_info('Abs')
@@ -79,7 +79,7 @@ class TestOpp(unittest.TestCase):
         os.environ['ASCEND_TOOLKIT_HOME'] = self.cur_dir
         os.environ['ASCEND_OPP_PATH'] = self.cur_dir
 
-        opp = Opp.load_opp(SocType.Ascend310.name, self.cur_dir)
+        opp = Opp.load_opp(SocType.Ascend310.NAME, self.cur_dir)
         self.assertIsNotNone(opp)
 
         op_info = opp.query_op_info('NoneOp')
@@ -89,7 +89,7 @@ class TestOpp(unittest.TestCase):
         os.environ['ASCEND_TOOLKIT_HOME'] = self.cur_dir
         os.environ['ASCEND_OPP_PATH'] = self.cur_dir
 
-        opp = Opp.load_opp(SocType.Ascend310P.name, self.cur_dir)
+        opp = Opp.load_opp(SocType.Ascend310P.NAME, self.cur_dir)
         self.assertIsNotNone(opp)
 
         engine = opp.query_op_engine('SparseSoftmax')
@@ -102,7 +102,7 @@ class TestOpp(unittest.TestCase):
         os.environ['ASCEND_TOOLKIT_HOME'] = self.cur_dir
         os.environ['ASCEND_OPP_PATH'] = self.cur_dir
 
-        opp = Opp.load_opp(SocType.Ascend310.name, self.cur_dir)
+        opp = Opp.load_opp(SocType.Ascend310.NAME, self.cur_dir)
         self.assertIsNotNone(opp)
 
         engine = opp.query_op_engine('Abs')
@@ -115,7 +115,7 @@ class TestOpp(unittest.TestCase):
         os.environ['ASCEND_TOOLKIT_HOME'] = self.cur_dir
         os.environ['ASCEND_OPP_PATH'] = self.cur_dir
 
-        opp = Opp.load_opp(SocType.Ascend310.name, self.cur_dir)
+        opp = Opp.load_opp(SocType.Ascend310.NAME, self.cur_dir)
         self.assertIsNotNone(opp)
 
         engine = opp.query_op_engine('NoneOp')

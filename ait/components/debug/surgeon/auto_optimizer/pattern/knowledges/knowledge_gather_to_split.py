@@ -235,7 +235,7 @@ class KnowledgeGatherToSplit(KnowledgeBase):
         return outputs
 
     def _match_apply(self, graph: BaseGraph, matchinfo) -> bool:
-        pre_node = graph.get_node(matchinfo['PreNode'][0].name, node_type=Node)
+        pre_node = graph.get_node(matchinfo['PreNode'][0].NAME, node_type=Node)
         if pre_node is None:
             return False
 

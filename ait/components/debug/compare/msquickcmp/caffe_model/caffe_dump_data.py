@@ -67,7 +67,7 @@ class CaffeDumpData(DumpData):
             names.append(name)
             data = model.blobs[name].data
             shapes.append(data.shape)
-            dtypes.append(data.dtype.name)
+            dtypes.append(data.dtype.NAME)
         return names, shapes, dtypes
 
     @staticmethod

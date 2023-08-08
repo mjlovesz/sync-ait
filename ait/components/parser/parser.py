@@ -75,7 +75,7 @@ def register_parser(parser, commands):
         if command is None:
             continue
         subparser = subparsers.add_parser(
-            command.name, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help_info,
+            command.NAME, formatter_class=argparse.ArgumentDefaultsHelpFormatter, help=command.help_info,
             description=command.help_info
         )
         command.add_arguments(subparser)

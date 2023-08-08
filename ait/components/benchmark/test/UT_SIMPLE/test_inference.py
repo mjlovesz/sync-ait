@@ -56,8 +56,8 @@ class TestClass:
         tensor = aclruntime.Tensor(ndata)
         tensor.to_device(device_id)
 
-        outnames = [session.get_outputs()[0].name]
-        feeds = {session.get_inputs()[0].name: tensor}
+        outnames = [session.get_outputs()[0].NAME]
+        feeds = {session.get_inputs()[0].NAME: tensor}
 
         outputs = session.run(outnames, feeds)
         logger.info("outputs:", outputs)
@@ -79,7 +79,7 @@ class TestClass:
         tensor = aclruntime.Tensor(ndata)
         tensor.to_device(device_id)
 
-        outnames = [session.get_outputs()[0].name]
+        outnames = [session.get_outputs()[0].NAME]
         feeds = [tensor]
 
         outputs = session.run(outnames, feeds)
@@ -145,8 +145,8 @@ class TestClass:
         tensor = aclruntime.Tensor(ndata)
         tensor.to_device(device_id)
 
-        outnames = [session.get_outputs()[0].name]
-        feeds = {session.get_inputs()[0].name: tensor}
+        outnames = [session.get_outputs()[0].NAME]
+        feeds = {session.get_inputs()[0].NAME: tensor}
 
         outputs = session.run(outnames, feeds)
         logger.info("outputs:", outputs)
@@ -168,7 +168,7 @@ class TestClass:
         tensor = aclruntime.Tensor(ndata)
         tensor.to_device(device_id)
 
-        outnames = [session.get_outputs()[0].name]
+        outnames = [session.get_outputs()[0].NAME]
         feeds = [tensor]
 
         outputs = session.run(outnames, feeds)
@@ -191,8 +191,8 @@ class TestClass:
         tensor = aclruntime.Tensor(ndata)
         tensor.to_device(device_id)
 
-        outnames = [session.get_outputs()[0].name]
-        feeds = {session.get_inputs()[0].name: tensor}
+        outnames = [session.get_outputs()[0].NAME]
+        feeds = {session.get_inputs()[0].NAME: tensor}
 
         with pytest.raises(RuntimeError) as e:
             outputs = session.run(outnames, feeds)
@@ -208,8 +208,8 @@ class TestClass:
         barray = bytearray(session.get_inputs()[0].realsize)
         ndata = np.frombuffer(barray)
 
-        outnames = [session.get_outputs()[0].name]
-        feeds = {session.get_inputs()[0].name: ndata}
+        outnames = [session.get_outputs()[0].NAME]
+        feeds = {session.get_inputs()[0].NAME: ndata}
 
         with pytest.raises(TypeError) as e:
             outputs = session.run(outnames, feeds)
@@ -228,8 +228,8 @@ class TestClass:
         tensor = aclruntime.Tensor(ndata)
         tensor.to_device(device_id)
 
-        outnames = [session.get_outputs()[0].name + "xxx"]
-        feeds = {session.get_inputs()[0].name: tensor}
+        outnames = [session.get_outputs()[0].NAME + "xxx"]
+        feeds = {session.get_inputs()[0].NAME: tensor}
 
         with pytest.raises(RuntimeError) as e:
             outputs = session.run(outnames, feeds)

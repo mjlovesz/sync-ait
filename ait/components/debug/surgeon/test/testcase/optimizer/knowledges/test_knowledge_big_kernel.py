@@ -32,7 +32,7 @@ def gen_bert_attention():
     start_add_b = graph.add_initializer(name=START_ADD + "_b", value=np.ones(([768])))
 
     graph.add_input(name="input1", dtype=np.dtype('float32'), shape=[16, 384, 768])
-    start_add.inputs = ['input1', start_add_b.name]
+    start_add.inputs = ['input1', start_add_b.NAME]
 
     init_w = np.ones((768, 768)).astype("float32")
     init_bias = np.ones(768).astype("float32")

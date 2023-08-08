@@ -73,16 +73,16 @@ def make_attr_changed_node(node, attr_change_info):
         
     new_attr = dict()
     for attr in node.attribute:
-        if attr.name in attr_change_info.keys():            
-            new_attr[attr.name] = make_type_value(attr_change_info[attr.name][0], attr.type)
+        if attr.NAME in attr_change_info.keys():
+            new_attr[attr.NAME] = make_type_value(attr_change_info[attr.NAME][0], attr.type)
         else:
-            new_attr[attr.name] = onnx.helper.get_attribute_value(attr)
+            new_attr[attr.NAME] = onnx.helper.get_attribute_value(attr)
         
     node = onnx.helper.make_node(
         op_type=node.op_type,
         inputs=node.input,
         outputs=node.output,
-        name=node.name,
+        name=node.NAME,
         **new_attr
     )
         

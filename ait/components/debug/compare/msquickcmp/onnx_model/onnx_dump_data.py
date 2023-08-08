@@ -121,7 +121,7 @@ class OnnxDumpData(DumpData):
         session = self._load_session(dump_model_with_inputs_contents)
         dump_bins = self._run_model(session, self.inputs_map)
 
-        net_output_node = [output_item.name for output_item in self.model_with_inputs_session.get_outputs()]
+        net_output_node = [output_item.NAME for output_item in self.model_with_inputs_session.get_outputs()]
         self._save_dump_data(dump_bins, self.model_with_inputs, net_output_node)
 
         if self.custom_op:
@@ -177,7 +177,7 @@ class OnnxDumpData(DumpData):
     def _modify_model_add_outputs_nodes(self, onnx_model, save_path):
         if not self.dump:
             origin_model_graph_output = onnx_model.graph.output
-            outputs_name_list = [output_node.name for output_node in origin_model_graph_output]
+            outputs_name_list = [output_node.NAME for output_node in origin_model_graph_output]
             outputs_name = [name for name in enumerate_model_node_outputs(onnx_model) if name in outputs_name_list]
         else:
             outputs_name = [name for name in enumerate_model_node_outputs(onnx_model)]
@@ -193,11 +193,11 @@ class OnnxDumpData(DumpData):
 
     def _get_inputs_tensor_info(self):
         inputs_tensor_info = []
-        input_tensor_names = [item.name for item in self.model_with_inputs_session.get_inputs()]
+        input_tensor_names = [item.NAME for item in self.model_with_inputs_session.get_inputs()]
         for _, tensor_name in enumerate(self.input_shapes):
             utils.check_input_name_in_model(input_tensor_names, tensor_name)
         for input_item in self.model_with_inputs_session.get_inputs():
-            tensor_name = input_item.name
+            tensor_name = input_item.NAME
             tensor_type = input_item.type
             tensor_shape = tuple(input_item.shape)
             if utils.check_dynamic_shape(tensor_shape):
@@ -281,7 +281,7 @@ class OnnxDumpData(DumpData):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_TENSOR_TYPE_ERROR)
 
     def _run_model(self, session, inputs_map):
-        outputs_name = [node.name for node in session.get_outputs()]
+        outputs_name = [node.NAME for node in session.get_outputs()]
         return session.run(outputs_name, inputs_map)
 
     def _save_dump_data(self, dump_bins, old_onnx_model, net_output_node):
@@ -290,7 +290,7 @@ class OnnxDumpData(DumpData):
             for j, output in enumerate(node.output):
                 if not self.dump and output not in net_output_node:
                     continue
-                file_name = self._generate_dump_data_file_name(node.name, j)
+                file_name = self._generate_dump_data_file_name(node.NAME, j)
                 file_path = os.path.join(self.onnx_dump_data_dir, file_name)
                 if output in net_output_node:
                     self.net_output[net_output_node.index(output)] = file_path
@@ -325,16 +325,16 @@ class OnnxDumpData(DumpData):
         # start from inputs
         start_nodes_name = []
         for onnx_model_input in onnx_graph.inputs:
-            start_nodes = onnx_graph.get_next_nodes(onnx_model_input.name)
+            start_nodes = onnx_graph.get_next_nodes(onnx_model_input.NAME)
             for start_node in start_nodes:
                 if start_node is not None:
-                    start_nodes_name.append(start_node.name)
+                    start_nodes_name.append(start_node.NAME)
 
         # end before custom op node
         end_nodes_name = []
         for custom_op_input in custom_op_node.inputs:
             end_node = onnx_graph.get_prev_node(custom_op_input)
-            end_nodes_name.append(end_node.name)
+            end_nodes_name.append(end_node.NAME)
 
         model_before_custom_op = onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
         filename = "before_custom_op_" + os.path.basename(self.model_path)
@@ -350,14 +350,14 @@ class OnnxDumpData(DumpData):
             start_nodes = onnx_graph.get_next_nodes(output)
             for start_node in start_nodes:
                 if start_node is not None:
-                    start_nodes_name.append(start_node.name)
-                    utils.logger.info("start_node.name: %s", start_node.name)
+                    start_nodes_name.append(start_node.NAME)
+                    utils.logger.info("start_node.name: %s", start_node.NAME)
 
         # end by old onnx graph outputs
         end_nodes_name = []
         for graph_output in onnx_graph.outputs:
-            end_node = onnx_graph.get_prev_node(graph_output.name)
-            end_nodes_name.append(end_node.name)
+            end_node = onnx_graph.get_prev_node(graph_output.NAME)
+            end_nodes_name.append(end_node.NAME)
 
         model_after_custom_op = onnx_graph.extract_subgraph(start_nodes_name, end_nodes_name)
         filename = "after_custom_op_" + os.path.basename(self.model_path)
@@ -396,7 +396,7 @@ class OnnxDumpData(DumpData):
         dump_model_with_inputs_session = self._load_session(dump_model_with_inputs_contents)
         dump_bins = self._run_model(dump_model_with_inputs_session, inputs_map)
 
-        net_output_node = [output_item.name for output_item in model_after_custom_op_session.get_outputs()]
+        net_output_node = [output_item.NAME for output_item in model_after_custom_op_session.get_outputs()]
         self._save_dump_data(dump_bins, self.model_after_custom_op, net_output_node)
 
     def _get_npu_dump_data_by_custom_op(self, npu_dump_path, inputs_tensor_info, om_parser):
@@ -436,6 +436,6 @@ class OnnxDumpData(DumpData):
     def _get_after_custom_op_inputs_ternsor_info(self, session):
         inputs_tensor_info = []
         for input_item in session.get_inputs():
-            inputs_tensor_info.append({"name": input_item.name, "shape": input_item.shape, "type": input_item.type})
+            inputs_tensor_info.append({"name": input_item.NAME, "shape": input_item.shape, "type": input_item.type})
         inputs_name_index_dict = {ii: id for id, ii in enumerate(self.model_after_custom_op_inputs)}
         return sorted(inputs_tensor_info, key=lambda xx: inputs_name_index_dict.get(xx.get("name"), float("inf")))

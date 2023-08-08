@@ -40,12 +40,12 @@ def calculate_flow(graph, startnode, endnode):
     flow = {}
     incnt = {}
     for node in graph.nodes:
-        flow[node.name] = float(0)
-        incnt[node.name] = len(node.inputs)
-    flow[startnode.name] = float(lin)
+        flow[node.NAME] = float(0)
+        incnt[node.NAME] = len(node.inputs)
+    flow[startnode.NAME] = float(lin)
     satisfied_nodes = []
     visited = set()
-    queue = deque([(startnode, flow.get(startnode.name))])
+    queue = deque([(startnode, flow.get(startnode.NAME))])
     visited.add(startnode)
     while queue:
         current_node, current_flow = queue.popleft()
@@ -62,10 +62,10 @@ def calculate_flow(graph, startnode, endnode):
         for output_name in current_node.outputs:
             for next_node in graph.get_next_nodes(output_name):
                 if next_node is not None:
-                    flow[next_node.name] += flow_increment
-                    incnt[next_node.name] -= 1
+                    flow[next_node.NAME] += flow_increment
+                    incnt[next_node.NAME] -= 1
                 if next_node is not None and check_node_valid(incnt, graph, next_node):
-                    queue.append([next_node, flow.get(next_node.name)])
+                    queue.append([next_node, flow.get(next_node.NAME)])
                     visited.add(next_node)
     return satisfied_nodes
 
@@ -129,7 +129,7 @@ def input_completion(og, inputs_list):
             if pre_input == node_input[0]:
                 index = i
                 break
-        input_need_list.append(f"{input_node.name}.{index}.")
+        input_need_list.append(f"{input_node.NAME}.{index}.")
     input_need_list = list(OrderedDict.fromkeys(input_need_list))
     return input_need_list
 
@@ -143,7 +143,7 @@ def check_node_valid(incnt, graph, node):
         true if node is the current input node of graph
         false otherwise
     """
-    if incnt.get(node.name) == 0:
+    if incnt.get(node.NAME) == 0:
         return True
     else:
         emp_cnt = 0
@@ -151,7 +151,7 @@ def check_node_valid(incnt, graph, node):
             input_node = graph.get_prev_node(node_input)
             if input_node is None:
                 emp_cnt += 1
-        if emp_cnt == incnt.get(node.name):
+        if emp_cnt == incnt.get(node.NAME):
             return True
     return False
 
@@ -182,6 +182,6 @@ def check_res(res, endnode):
     for row in res:
         gdt_name_list = row["GroundTruth"].split(",")
         for ground_truth_name in gdt_name_list:
-            if ground_truth_name == endnode.name:
+            if ground_truth_name == endnode.NAME:
                 return True
     return False

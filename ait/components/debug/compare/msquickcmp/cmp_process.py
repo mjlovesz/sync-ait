@@ -292,7 +292,7 @@ def single_op_compare(args, input_shape):
         subog = OnnxGraph.parse(subonnx)
         
         # load onnx input description
-        inputs_list = [(ii.name, ii.shape) for ii in onnxruntime.InferenceSession(subonnx).get_inputs()]
+        inputs_list = [(ii.NAME, ii.shape) for ii in onnxruntime.InferenceSession(subonnx).get_inputs()]
 
         # find all the data needed
         input_need_list = al.input_completion(og, inputs_list)
@@ -387,7 +387,7 @@ def subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
     startnode, endnode = node_interval
     subgraph_onnx_file = os.path.join(args.out_path, 'tmp_for_accuracy_locat.onnx')
     try:
-        og.extract_subgraph([startnode.name], [endnode.name], subgraph_onnx_file)
+        og.extract_subgraph([startnode.NAME], [endnode.NAME], subgraph_onnx_file)
     except Exception as e:
         utils.logger.error("Failed to extract subgraph model")
         raise AccuracyCompareException(utils.ACCRACY_COMPARISON_EXTRACT_ERROR) from e
@@ -400,7 +400,7 @@ def subgraph_check(og, node_interval, args, onnx_data_path, input_shape):
     utils.logger.info("atc conversion Success!")
     utils.logger.info("Start to loading input data")
     subog = OnnxGraph.parse(subgraph_onnx_file)
-    inputs_list = [(ii.name, ii.shape) for ii in onnxruntime.InferenceSession(subgraph_onnx_file).get_inputs()]
+    inputs_list = [(ii.NAME, ii.shape) for ii in onnxruntime.InferenceSession(subgraph_onnx_file).get_inputs()]
     input_need_list = al.input_completion(og, inputs_list)
     pattern = '|'.join(input_need_list)
     try:
@@ -444,7 +444,7 @@ def bin_divide(og, node_interval, args, onnx_data_path, input_shape):
     """
     startnode, endnode = node_interval
     subgraph_model_path = os.path.join(args.out_path, 'tmp_for_subgraph.onnx')
-    og.extract_subgraph([startnode.name], [endnode.name], subgraph_model_path)
+    og.extract_subgraph([startnode.NAME], [endnode.NAME], subgraph_model_path)
     subog = OnnxGraph.parse(subgraph_model_path)
 
     utils.logger.info("Binary Search for error interval starts.")

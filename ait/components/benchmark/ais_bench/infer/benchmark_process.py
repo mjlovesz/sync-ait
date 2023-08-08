@@ -117,7 +117,7 @@ def set_dymshape_shape(session, inputs):
     intensors_desc = session.get_inputs()
     for i, input_ in enumerate(inputs):
         str_shape = [str(shape) for shape in input_.shape]
-        dyshape = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
+        dyshape = "{}:{}".format(intensors_desc[i].NAME, ",".join(str_shape))
         shape_list.append(dyshape)
     dyshapes = ';'.join(shape_list)
     logger.debug("set dymshape shape:{}".format(dyshapes))
@@ -130,7 +130,7 @@ def set_dymdims_shape(session, inputs):
     intensors_desc = session.get_inputs()
     for i, input_ in enumerate(inputs):
         str_shape = [str(shape) for shape in input_.shape]
-        dydim = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
+        dydim = "{}:{}".format(intensors_desc[i].NAME, ",".join(str_shape))
         shape_list.append(dydim)
     dydims = ';'.join(shape_list)
     logger.debug("set dymdims shape:{}".format(dydims))

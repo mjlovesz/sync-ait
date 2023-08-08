@@ -44,8 +44,8 @@ def is_elem_equal(elem1, elem2):
 
 
 def is_list_equal(list1, list2):
-    list1 = sorted(list1, key=lambda ele: ele.name)
-    list2 = sorted(list2, key=lambda ele: ele.name)
+    list1 = sorted(list1, key=lambda ele: ele.NAME)
+    list2 = sorted(list2, key=lambda ele: ele.NAME)
     flag = True
     if len(list1) != len(list2):
         return False

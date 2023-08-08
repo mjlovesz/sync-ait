@@ -54,24 +54,24 @@ class OnnxModifier:
         self.node_name2module = dict()
         node_idx = 0
         for node in self.graph.node:
-            if node.name == '':
-                node.name = str(node.op_type) + str(node_idx)
+            if node.NAME == '':
+                node.NAME = str(node.op_type) + str(node_idx)
             node_idx += 1
-            self.node_name2module[node.name] = node
+            self.node_name2module[node.NAME] = node
 
         for inp in self.graph.input:
-            self.node_name2module[inp.name] = inp
-        self.graph_input_names = [inp.name for inp in self.graph.input]
+            self.node_name2module[inp.NAME] = inp
+        self.graph_input_names = [inp.NAME for inp in self.graph.input]
 
         for out in self.graph.output:
             # add `out_` in case the output has the same name with the last node
-            self.node_name2module["out_" + out.name] = out
-        self.graph_output_names = ["out_" + out.name for out in self.graph.output]
+            self.node_name2module["out_" + out.NAME] = out
+        self.graph_output_names = ["out_" + out.NAME for out in self.graph.output]
 
         # initializer name => initializer
         self.initializer_name2module = dict()
         for initializer in self.initializer:
-            self.initializer_name2module[initializer.name] = initializer
+            self.initializer_name2module[initializer.NAME] = initializer
     
     def change_batch_size(self, rebatch_info):
         if not (rebatch_info): 
@@ -98,7 +98,7 @@ class OnnxModifier:
                 continue
             for init in self.graph.initializer:
                 # node.input[1] is expected to be a reshape
-                if init.name != node.input[1]:
+                if init.NAME != node.input[1]:
                     continue
 
                 v = rebatch_value if rebatch_type == 'fixed' else -1
@@ -115,9 +115,9 @@ class OnnxModifier:
     
     def change_input_size(self, input_size_info):
         for tensor in self.graph.input:
-            if tensor.name not in input_size_info:
+            if tensor.NAME not in input_size_info:
                 continue
-            tensor.type.CopyFrom(helper.make_tensor_type_proto(onnx.TensorProto.FLOAT, input_size_info[tensor.name]))
+            tensor.type.CopyFrom(helper.make_tensor_type_proto(onnx.TensorProto.FLOAT, input_size_info[tensor.NAME]))
 
     def remove_node_by_node_states(self, node_states):
         # remove node from graph
@@ -179,7 +179,7 @@ class OnnxModifier:
                         init = self.initializer_name2module.get(src_name, None)
                         if init is None:
                             raise ValueError("cannot get initializer by name")
-                        init.name = dst_name
+                        init.NAME = dst_name
                         self.initializer_name2module[dst_name] = init
                         del self.initializer_name2module[src_name]
 
@@ -233,7 +233,7 @@ class OnnxModifier:
             self.graph.node.append(node)
 
             # update the node_name2module
-            self.node_name2module[node.name] = node
+            self.node_name2module[node.NAME] = node
 
     def add_outputs(self, added_outputs):
         added_output_names = added_outputs.values()
@@ -326,7 +326,7 @@ class OnnxModifier:
             tail_outputs = set()
             traversed_nodes = []
             for inp in self.graph.input:
-                collect_backtrack(inp.name)
+                collect_backtrack(inp.NAME)
             return tail_outputs
             
         def remove_isolated_nodes():
@@ -355,9 +355,9 @@ class OnnxModifier:
             graph_connected_initializers = []
             for node in self.graph.node:
                 if node in connected_nodes:
-                    if node.name not in self.node_name2module:
+                    if node.NAME not in self.node_name2module:
                         raise ValueError("cannot found node by name")
-                    graph_connected_nodes.append(copy.deepcopy(self.node_name2module[node.name]))
+                    graph_connected_nodes.append(copy.deepcopy(self.node_name2module[node.NAME]))
                     for inp in node.input:
                         if inp in self.initializer_name2module:
                             graph_connected_initializers.append(copy.deepcopy(self.initializer_name2module[inp]))
@@ -382,7 +382,7 @@ class OnnxModifier:
             for value_info in inferred_shape_info.graph.value_info:
                 if "out_" + value_info.name in self.graph_output_names:
                     inferred_output.append(value_info)
-                    graph_output_bk = [out for out in graph_output_bk if out.name != value_info.name]
+                    graph_output_bk = [out for out in graph_output_bk if out.NAME != value_info.name]
             self.graph.output.extend(inferred_output)
             # when infer_shapes() is not complete, some output would lost
             # this is a workround. Note that the outputs which are not infered will stay UNCHANGED
@@ -453,7 +453,7 @@ class OnnxModifier:
                 index += 1
 
     def check_and_save_model(self, save_file):
-        save_path = save_file.name
+        save_path = save_file.NAME
         # adding new node like self.add_nodes() and self.modify_node_attr() can not 
         # guarantee the nodes are topologically sorted
         # so `onnx.onnx_cpp2py_export.checker.ValidationError: Nodes in a graph 
@@ -479,8 +479,8 @@ class OnnxModifier:
             output_name = self.graph.node[-1].output[0]
             output_value_info = onnx.helper.make_tensor_value_info(output_name, onnx.TensorProto.FLOAT, shape=[])
             self.graph.output.append(output_value_info)
-            output_names = [inference_session.get_outputs()[0].name]
+            output_names = [inference_session.get_outputs()[0].NAME]
 
-        input_name = inference_session.get_inputs()[0].name
+        input_name = inference_session.get_inputs()[0].NAME
         out = inference_session.run(output_names, {input_name: x})[0]
         logging.info(out.shape, out.dtype)

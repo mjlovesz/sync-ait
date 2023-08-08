@@ -31,12 +31,12 @@ except AttributeError as e:
 
 
 def is_node_equal(node1, node2, msg=None):
-    ret = node1.name == node2.name and \
-        node1.op_type == node2.op_type and \
-        node1.inputs == node2.inputs and \
-        node1.outputs == node2.outputs and \
-        node1.attrs == node2.attrs and \
-        node1.domain == node2.domain
+    ret = node1.NAME == node2.NAME and \
+          node1.op_type == node2.op_type and \
+          node1.inputs == node2.inputs and \
+          node1.outputs == node2.outputs and \
+          node1.attrs == node2.attrs and \
+          node1.domain == node2.domain
     if not ret:
         msg = 'two nodes are not equal!'
         raise unittest.TestCase.failureException(msg)
@@ -44,9 +44,9 @@ def is_node_equal(node1, node2, msg=None):
 
 
 def is_ph_equal(ph1, ph2, msg=None):
-    ret = ph1.name == ph2.name and \
-        ph1.dtype == ph2.dtype and \
-        ph1.shape == ph2.shape
+    ret = ph1.NAME == ph2.NAME and \
+          ph1.dtype == ph2.dtype and \
+          ph1.shape == ph2.shape
     if not ret:
         msg = 'two nodes are not equal!'
         raise unittest.TestCase.failureException(msg)
@@ -54,9 +54,9 @@ def is_ph_equal(ph1, ph2, msg=None):
 
 
 def is_ini_equal(ini1, ini2, msg=None):
-    ret = ini1.name == ini2.name and \
-        np.array_equal(ini1.value, ini2.value, equal_nan=True) and \
-        ini1.value.dtype == ini2.value.dtype
+    ret = ini1.NAME == ini2.NAME and \
+          np.array_equal(ini1.value, ini2.value, equal_nan=True) and \
+          ini1.value.dtype == ini2.value.dtype
     if not ret:
         msg = 'two nodes are not equal!'
         raise unittest.TestCase.failureException(msg)

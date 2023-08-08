@@ -71,8 +71,8 @@ def dump_op_outputs(graph, input_data, dump_path, outputs=None):
 
     def _run(model, input_data):
         sess = rt.InferenceSession(model)
-        inputs = [ipt.name for ipt in sess.get_inputs()]
-        outputs = [out.name for out in sess.get_outputs()]
+        inputs = [ipt.NAME for ipt in sess.get_inputs()]
+        outputs = [out.NAME for out in sess.get_outputs()]
         ret = sess.run(outputs, {name: data for name, data in zip(inputs, input_data)})
         return ret
 
@@ -90,7 +90,7 @@ def dump_op_outputs(graph, input_data, dump_path, outputs=None):
         os.makedirs(dump_path, mode=0o700)
     for node in ori_model.graph.node:
         for i, _ in enumerate(node.output):
-            fname = f'{node.name}_{i}.npy'
+            fname = f'{node.NAME}_{i}.npy'
             np.save(os.path.join(dump_path, fname), arrs[idx])
             idx += 1
 

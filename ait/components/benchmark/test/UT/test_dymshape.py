@@ -65,8 +65,8 @@ class TestClass:
         tensor = aclruntime.Tensor(ndata)
         tensor.to_device(device_id)
 
-        outnames = [session.get_outputs()[0].name]
-        feeds = {session.get_inputs()[0].name: tensor}
+        outnames = [session.get_outputs()[0].NAME]
+        feeds = {session.get_inputs()[0].NAME: tensor}
 
         outputs = session.run(outnames, feeds)
         logger.info("outputs:", outputs)
@@ -94,8 +94,8 @@ class TestClass:
         tensor = aclruntime.Tensor(ndata)
         tensor.to_device(device_id)
 
-        outnames = [session.get_outputs()[0].name]
-        feeds = {session.get_inputs()[0].name: tensor}
+        outnames = [session.get_outputs()[0].NAME]
+        feeds = {session.get_inputs()[0].NAME: tensor}
 
         outputs = session.run(outnames, feeds)
         logger.info("outputs:", outputs)
@@ -122,8 +122,8 @@ class TestClass:
         tensor = aclruntime.Tensor(ndata)
         tensor.to_device(device_id)
 
-        outnames = [session.get_outputs()[0].name]
-        feeds = {session.get_inputs()[0].name: tensor}
+        outnames = [session.get_outputs()[0].NAME]
+        feeds = {session.get_inputs()[0].NAME: tensor}
 
         outputs = session.run(outnames, feeds)
         logger.info("outputs:", outputs)
@@ -148,8 +148,8 @@ class TestClass:
         tensor = aclruntime.Tensor(ndata)
         tensor.to_device(device_id)
 
-        outnames = [session.get_outputs()[0].name]
-        feeds = {session.get_inputs()[0].name: tensor}
+        outnames = [session.get_outputs()[0].NAME]
+        feeds = {session.get_inputs()[0].NAME: tensor}
 
         with pytest.raises(RuntimeError) as e:
             outputs = session.run(outnames, feeds)
@@ -172,8 +172,8 @@ class TestClass:
         tensor = aclruntime.Tensor(ndata)
         tensor.to_device(device_id)
 
-        outnames = [ session.get_outputs()[0].name ]
-        feeds = { session.get_inputs()[0].name : tensor}
+        outnames = [session.get_outputs()[0].NAME]
+        feeds = {session.get_inputs()[0].NAME : tensor}
 
         with pytest.raises(RuntimeError) as e:
             outputs = session.run(outnames, feeds)
