@@ -45,8 +45,8 @@ def is_node_equal(node1, node2, msg=None):
 
 def is_ph_equal(ph1, ph2, msg=None):
     ret = ph1.name == ph2.name and \
-          ph1.dtype == ph2.dtype and \
-          ph1.shape == ph2.shape
+        ph1.dtype == ph2.dtype and \
+        ph1.shape == ph2.shape
     if not ret:
         msg = 'two nodes are not equal!'
         raise unittest.TestCase.failureException(msg)
@@ -55,8 +55,8 @@ def is_ph_equal(ph1, ph2, msg=None):
 
 def is_ini_equal(ini1, ini2, msg=None):
     ret = ini1.name == ini2.name and \
-          np.array_equal(ini1.value, ini2.value, equal_nan=True) and \
-          ini1.value.dtype == ini2.value.dtype
+        np.array_equal(ini1.value, ini2.value, equal_nan=True) and \
+        ini1.value.dtype == ini2.value.dtype
     if not ret:
         msg = 'two nodes are not equal!'
         raise unittest.TestCase.failureException(msg)
