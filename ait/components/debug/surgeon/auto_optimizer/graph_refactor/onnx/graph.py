@@ -318,6 +318,7 @@ class OnnxGraph(BaseGraph):
             if g2_in_name not in g2_ins:
                 raise ValueError(f"Input {g2_in_name} is not present in g2")
 
+
         # connecting two graphs
         graph = OnnxGraph.connect_graph(graph1, graph2, io_map, graph_name)
 
