@@ -838,10 +838,13 @@
   {
     "name": "BatchReindex",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "reindex",
           "dynamic": false
         }
       ],
@@ -851,18 +854,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Copy",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -875,21 +872,23 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "FakeQuantWithMinMaxVarsPerChannel",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "input",
+          "dynamic": false
+        },
+        {
+          "name": "min",
+          "dynamic": false
+        },
+        {
+          "name": "max",
           "dynamic": false
         }
       ],
@@ -901,8 +900,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "num_bits"
+        },
+        {
+          "name": "narrow_range"
         }
       ]
     }
@@ -910,10 +911,21 @@
   {
     "name": "OneHot",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "indices",
+          "dynamic": false
+        },
+        {
+          "name": "depth",
+          "dynamic": false
+        },
+        {
+          "name": "on_value",
+          "dynamic": false
+        },
+        {
+          "name": "off_value",
           "dynamic": false
         }
       ],
@@ -925,8 +937,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "T"
         }
       ]
     }
@@ -934,7 +948,6 @@
   {
     "name": "StopGradient",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -947,21 +960,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Crop",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "size",
           "dynamic": false
         }
       ],
@@ -973,8 +984,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "offsets"
         }
       ]
     }
@@ -982,10 +995,13 @@
   {
     "name": "Reverse",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "axis",
           "dynamic": false
         }
       ],
@@ -995,21 +1011,20 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Permute",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Shape",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "w",
           "dynamic": false
         }
       ],
@@ -1021,8 +1036,15 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "input_format",
+          "type": "Format"
+        },
+        {
+          "name": "output_format",
+          "type": "Format"
+        },
+        {
+          "name": "order"
         }
       ]
     }
@@ -1030,10 +1052,14 @@
   {
     "name": "Transpose",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Shape",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "w",
           "dynamic": false
         }
       ],
@@ -1045,8 +1071,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "order"
         }
       ]
     }
@@ -1054,23 +1079,71 @@
   {
     "name": "DetectionPostprocessing",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
+          "dynamic": false
+        },
+        {
+          "name": "x3",
           "dynamic": false
         }
       ],
       "outputs": [
         {
-          "name": "y",
+          "name": "y1",
+          "dynamic": false
+        },
+        {
+          "name": "y2",
+          "dynamic": false
+        },
+        {
+          "name": "y3",
+          "dynamic": false
+        },
+        {
+          "name": "y4",
           "dynamic": false
         }
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "scale_y"
+        },
+        {
+          "name": "scale_x"
+        },
+        {
+          "name": "scale_h"
+        },
+        {
+          "name": "scale_w"
+        },
+        {
+          "name": "max_num_detections"
+        },
+        {
+          "name": "score_threshold"
+        },
+        {
+          "name": "iou_threshold"
+        },
+        {
+          "name": "use_regular_nms"
+        },
+        {
+          "name": "max_classes_per_detection"
+        },
+        {
+          "name": "max_detections_per_class"
+        },
+        {
+          "name": "is_bg_in_label"
         }
       ]
     }
@@ -1078,23 +1151,46 @@
   {
     "name": "MsrGenerateRpnProposals",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "scores",
+          "dynamic": false
+        },
+        {
+          "name": "boxes",
+          "dynamic": false
+        },
+        {
+          "name": "img_shape",
           "dynamic": false
         }
       ],
       "outputs": [
         {
-          "name": "y",
+          "name": "proposal_scores",
+          "dynamic": false
+        },
+        {
+          "name": "proposal_boxes",
+          "dynamic": false
+        },
+        {
+          "name": "proposal_num",
           "dynamic": false
         }
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "pre_nms_topk"
+        },
+        {
+          "name": "post_nms_topk"
+        },
+        {
+          "name": "rpn_mini_size"
+        },
+        {
+          "name": "rpn_proposal_nms_thresh"
         }
       ]
     }
@@ -1102,23 +1198,48 @@
   {
     "name": "FSRDetectionOutput",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "score",
+          "dynamic": false
+        },
+        {
+          "name": "bbox_pred",
+          "dynamic": false
+        },
+        {
+          "name": "rois",
           "dynamic": false
         }
       ],
       "outputs": [
         {
-          "name": "y",
+          "name": "out_box_num",
+          "dynamic": false
+        },
+        {
+          "name": "box",
           "dynamic": false
         }
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "num_classes"
+        },
+        {
+          "name": "nms_threshold"
+        },
+        {
+          "name": "confidence_threshold"
+        },
+        {
+          "name": "img_h"
+        },
+        {
+          "name": "img_w"
+        },
+        {
+          "name": "batch_size"
         }
       ]
     }
@@ -1126,10 +1247,13 @@
   {
     "name": "Add",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -1139,42 +1263,34 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Mul",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
           "dynamic": false
-        }
-      ],
-      "outputs": [
+        },
         {
           "name": "y",
           "dynamic": false
         }
       ],
-      "attributes": [
+      "outputs": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "z",
+          "dynamic": false
         }
-      ]
+      ],
+      "attributes": []
     }
   },
   {
-    "name": "Expml",
+    "name": "Expm1",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1187,18 +1303,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Ceil",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1211,18 +1321,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Sin",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1235,18 +1339,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Cos",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1259,18 +1357,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Floor",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1283,18 +1375,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Log1p",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1307,21 +1393,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "LogicalAnd",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -1331,18 +1415,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "LogicalNot",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1355,21 +1433,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Maximum",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -1379,21 +1455,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Mininum",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -1403,18 +1477,13 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Acosh",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Activation",
       "inputs": [
         {
           "name": "x",
@@ -1427,18 +1496,13 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Asinh",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Activation",
       "inputs": [
         {
           "name": "x",
@@ -1451,21 +1515,20 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "PReLU",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Activation",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "param",
           "dynamic": false
         }
       ],
@@ -1475,21 +1538,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Equal",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -1499,18 +1560,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Reciprocal",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1523,18 +1578,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Sqrt",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1547,18 +1596,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Square",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -1571,12 +1614,7 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
