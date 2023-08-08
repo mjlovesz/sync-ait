@@ -568,7 +568,7 @@ om.Node = class {
             }
             let group = 1;
             if ("groups" in op.attr) {
-                group = op.attr["group"].i;
+                group = op.attr["groups"].i;
             }
 
             if (inputDims == undefined || outputDims == undefined) {
@@ -588,7 +588,7 @@ om.Node = class {
 
             var strideH = 0;
             var strideW = 0;
-            if (op.attr["stride"] != null) {
+            if (op.attr["strides"] != null) {
                 strideH = op.attr["strides"].list.i[0];
                 strideW = op.attr["strides"].list.i[1];
             } else {
@@ -632,7 +632,7 @@ om.Node = class {
                 let N = 1;
                 let K = kh * kw;
                 let flops = ci * M * N * K *2;
-                this._attributes.push(new om.Attribute(null, "FLOPs (CPU)", flopsToString(flops_), schema, true));
+                this._attributes.push(new om.Attribute(null, "FLOPs (CPU)", flopsToString(flops), schema, true));
                 model.flops = model.flops + flops_;
                 let flops_ = (~~((ci + 15) / 16)) * 16 * M * N * K * 2;
                 this._attributes.push(new om.Attribute(null, "FLOPs (NPU)", flopsToString(flops_), schema, true));
@@ -654,7 +654,7 @@ om.Node = class {
                 }
                 continue;
             }
-            result.set(key2, value2);
+            result.set(prefix+key, value);
         }
         return result;
     }
@@ -668,7 +668,7 @@ om.Node = class {
     }
 
     get metadata() {
-        let schema = this ._metadata.type(this.type);
+        let schema = this._metadata.type(this.type);
         return schema;
     }
 
@@ -775,7 +775,7 @@ om.Attribute = class {
             let list = value.list;
             this._value = [];
             if (list.s && list.s.length > 0) {
-                this._value = list.i;
+                this._value = list.s.map(v => String.fromCharCode.apply(null, new Uint16Array(v))).join(', ');
             } else if (list.i && list.i.length > 0) {
                 this._value = list.i;
             } else if (list.f && list.f.length > 0) {
@@ -879,7 +879,7 @@ om.Tensor = class {
         let context = {};
         context.state = null;
         if (this._data == null) {
-            context.state = "Tensor data is empty.";
+            context.state = 'Tensor data is empty.';
             return context;
         }
 
@@ -979,7 +979,7 @@ om.Tensor = class {
     }
 
     toString() {
-        if (this,_type.shape != this._type.rawShape) {
+        if (this._type.shape != this._type.rawShape) {
             if (this._type.rawShape.unknown) {
                 return 'Unresolved format, export as 1-D array';
             } else {
@@ -1029,7 +1029,7 @@ om.TensorType = class {
         let typeOf2Bytes = ["float16", "int16", "uint16"];
         let typeOf1Bytes = ["int8", "uint8", "bool"];
         if (typeOf1Bytes.indexOf(this.dataType) >= 0) {
-            return this.size;
+            return this._size;
         }
         if (typeOf2Bytes.indexOf(this.dataType) >= 0) {
             return this._size / 2;
