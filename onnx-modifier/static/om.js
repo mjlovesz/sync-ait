@@ -2,7 +2,6 @@
 // Experimental
 
 var om = om || {};
-var svp = {};
 var protobuf = protobuf || require('./protobuf');
 var base = base || require('./base');
 
@@ -21,6 +20,7 @@ function flopsToString(flops) {
     } else if (flops >= 1e9) {
         result = new Number(flops / 1e9).toFixed(1) + "G";
     }
+    return result + " (" + flops + ")";
 }
 
 function isNodeConst(op) {
@@ -39,7 +39,7 @@ om.ModelFactory = class {
                 var target = new om.Container(context, match);
                 return context.require('./om-proto').then(() => {
                     try {
-                        target._loadmodel(context, false);
+                        target._loadModel(context, false);
                     } catch (error) {
                         target._loadModel(context, true);
                     }
@@ -633,7 +633,7 @@ om.Node = class {
                 let K = kh * kw;
                 let flops = ci * M * N * K *2;
                 this._attributes.push(new om.Attribute(null, "FLOPs (CPU)", flopsToString(flops), schema, true));
-                model.flops = model.flops + flops_;
+                model.flops = model.flops + flops;
                 let flops_ = (~~((ci + 15) / 16)) * 16 * M * N * K * 2;
                 this._attributes.push(new om.Attribute(null, "FLOPs (NPU)", flopsToString(flops_), schema, true));
                 model.npuFlops = model.npuFlops + flops_;
