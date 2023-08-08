@@ -715,145 +715,288 @@ om.Parameter = class {
     get arguments() {
         return this._arguments;
     }
-}
-
-om.Attribute = class {
-
-    constructor(context, name, value) {
-        this.name = name;
-        this.value = value;
-        switch (value.value) {
-            case 'i': {
-                this.value = value.i;
-                this.type = 'int64';
-                break;
-            }
-            case 'f': {
-                this.value = value.f;
-                this.type = 'float32';
-                break;
-            }
-            case 'b': {
-                this.value = value.b;
-                this.type = 'boolean';
-                break;
-            }
-            case 'bt': {
-                this.value = null;
-                if (value.bt.length !== 0) {
-                    this.type = 'tensor';
-                    const shape = new om.TensorShape([ value.bt.length / 4 ]);
-                    const type = new om.TensorType('float32', shape);
-                    this.value = new om.Tensor('Constant', type, value.bt);
-                }
-                break;
-            }
-            case 'dt': {
-                this.type = 'DataType';
-                this.value = om.Utility.dtype(value.dt.toNumber());
-                break;
-            }
-            case 's': {
-                if (typeof value.s === 'string') {
-                    this.value = value.s;
-                } else if (value.s.filter(c => c <= 32 && c >= 128).length === 0) {
-                    this.value = om.Utility.decodeText(value.s);
-                } else {
-                    this.value = value.s;
-                }
-                this.type = 'string';
-                break;
-            }
-            case 'g': {
-                this.type = 'graph';
-                this.value = new om.Graph(context, value.g);
-                break;
-            }
-            case 'func': {
-                break;
-            }
-            case 'list': {
-                const list = value.list;
-                this.value = [];
-                if (list.s && list.s.length > 0) {
-                    this.value = list.s.map(v => String.fromCharCode.apply(null, new Uint16Array(v))).join(', ');
-                    this.type = 'string[]';
-                } else if (list.b && list.b.length > 0) {
-                    this.value = list.b;
-                    this.type = 'boolean[]';
-                } else if (list.i && list.i.length > 0) {
-                    this.value = list.i;
-                    this.type = 'int64[]';
-                } else if (list.f && list.f.length > 0) {
-                    this.value = list.f;
-                    this.type = 'float32[]';
-                } else if (list.type && list.type.length > 0) {
-                    this.type = 'type[]';
-                    this.value = list.type.map((type) => om.Node.enum2Dtype(type) || '?');
-                } else if (list.shape && list.shape.length > 0) {
-                    this.type = 'shape[]';
-                    this.value = list.shape.map((shape) => new om.TensorShape(shape));
-                }
-                break;
-            }
-            case 'list_list_int': {
-                this.value = value.list_list_int.list_list_i.map((list) => list.list_i);
-                break;
-            }
-            case 't': {
-                const type = om.Utility.tensorType(value.t.desc);
-                this.value = new om.Tensor('Constant', type, value.t.bytes);
-                this.type = 'tensor';
-                break;
-            }
-            case undefined: {
-                this.value = null;
-                break;
-            }
-            default: {
-                throw new om.Error("Unsupported attribute type '" + JSON.stringify(value).substring(0, 32) + "'.");
-            }
-        }
-    }
 };
 
 om.Argument = class {
 
-    constructor(name, value) {
-        this.name = name;
-        this.arguments = value;
-    }
-
-    get visible() {
-        return true;
-    }
-};
-
-om.Value = class {
-
     constructor(name, type, initializer) {
-        if (typeof name !== 'string') {
-            throw new om.Error("Invalid value identifier '" + JSON.stringify(name) + "'.");
-        }
-        this.name = name;
+        this._name = name;
         this._type = type || null;
-        this.initializer = initializer || null;
+        this._initializer = initializer || null;
+    }
+
+    get name() {
+        return this._name;
     }
 
     get type() {
-        if (this.initializer) {
-            return this.initializer.type;
+        if (this._initializer) {
+            return this._initializer.type;
         }
         return this._type;
+    }
+
+    get initializer() {
+        return this._initializer;
+    }
+};
+
+om.Attribute = class {
+
+    constructor(type, name, value, schema, visible) {
+        this._type = type;
+        this._value = value;
+        this._name = name;
+        this._visible = visible;
+
+        if (Object.prototype.hasOwnProperty.call(value, 'i')) {
+            this._value = value.i;
+        } else if (Object.prototype.hasOwnProperty.call(value, 'f')) {
+            this._value = value.f;
+        } else if (Object.prototype.hasOwnProperty.call(value, 'b')) {
+            this._value = value.b;
+        } else if (Object.prototype.hasOwnProperty.call(value, 'bt')) {
+            if (0 != value.bt.length) {
+                this._type = "tensor";
+                this._value = new om.Tensor('Constant', new om.TensorType("float32", [value.bt.length/4], null), value.bt);
+            } else {
+                this._value = "NIL";
+            }
+        } else if (Object.prototype.hasOwnProperty.call(value, 's')) {
+            if (typeof value.s === "string") {
+                this._value = value.s;
+            } else if (value.s.filter(c => c <= 32 && c >= 128).length == 0) {
+                this._value = om.Metadata.textDecoder.decode(value.s);
+            } else {
+                this._value = value.s;
+            }
+        } else if (Object.prototype.hasOwnProperty.call(value, 'list')) {
+            let list = value.list;
+            this._value = [];
+            if (list.s && list.s.length > 0) {
+                this._value = list.i;
+            } else if (list.i && list.i.length > 0) {
+                this._value = list.i;
+            } else if (list.f && list.f.length > 0) {
+                this._value = list.f;
+            } else if (list.type && list.type.length > 0) {
+                this._type = 'type[]';
+                this._value = list.type.map((type) => om.Tensor.formatDataType(type));
+            } else if (list.shape && list.shape.length > 0) {
+                this._type = 'shape[]';
+                this._value = list.shape.map((shape) => new om.TensorShape(shape));
+            }
+        }
+
+        let attrMeta = schema.attributes.find(item => item.name == name);
+        if (attrMeta && attrMeta.type) {
+            if (attrMeta.type == "Enum") {
+                this._value = attrMeta.enum[this._value];
+            }
+            if (attrMeta.type == "DataType") {
+                this._value = om.Node.enum2Dtype(this._value);
+            }
+            if (attrMeta.type == "DataTypeInner") {
+                this._value = om.Node.enum2DtypeInner(this._value);
+            }
+            if (attrMeta.type == "Format") {
+                const FORMAT_LIST = ["NCHW", "NHWC", "ND", "NC1HWC0", "Fractal-Z", "NC1C0HW Pad", "NHWC1C0", "FSR_NCHW",
+                    "Fractal-Deconv", "C1HWNC0", "Fractal-Deconv-Transposed", "Fractal-Deconv-SP-Stride-Trans",
+                    "NC1HWC0(C04)", "Fractal-Z(C04)", "CHWN", "Fractal-Deconc-SP-Stride8-Trans", "HWCN", "NC1KHKWHWC0",
+                    "BN", "Filter HWCK"];
+                this._value = FORMAT_LIST[this._value];
+            }
+            if (attrMeta.type == "Padding") {
+                const PADDING_LIST = ["Ceil (Legacy)", "Direct Assign", "Valid (Legacy)", "Same (Legacy)", "Ceil",
+                    "Valid", "Same"];
+                this._value = PADDING_LIST[this._value];
+            }
+        }
+    }
+
+    toString() {
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    get type() {
+        return this._type;
+    }
+
+    get value() {
+        return this._value;
+    }
+
+    get visible() {
+        return this._visible;
     }
 };
 
 om.Tensor = class {
 
-    constructor(category, type, value) {
-        this.category = category;
-        this.type = type;
-        this.data = value;
+    constructor(kind, type, value) {
+        this._type = type;
+        this._name = "";
+        this._kind = kind;
+        this._data = value;
+        this._shape = type.shape.dimensions;
+    }
+
+    get name() {
+        return this._name;
+    }
+
+    get type() {
+        return this._type;
+    }
+
+    get kind() {
+        return this._kind;
+    }
+
+    set kind(value) {
+        this._kind = value;
+    }
+
+    get state() {
+        return this._context().state;
+    }
+
+    get value() {
+        let context = this._context();
+        if (context.state) {
+            return null;
+        }
+        context.limit = Number.MAX_SAFE_INTEGER;
+        context.shape = this._type.rawShape.dimensions;
+        return this._decode(context, 0);
+    }
+
+    _context() {
+        let context = {};
+        context.state = null;
+        if (this._data == null) {
+            context.state = "Tensor data is empty.";
+            return context;
+        }
+
+        context.index = 0;
+        context.count = 0;
+        context.dataType = this._type.dataType;
+        context.shape = this._shape;
+        context.rawData = this._data;
+        return context;
+    }
+
+    _decode(context, dimension) {
+        let shape = context.shape;
+        if (shape.length == 0) {
+            shape = [ 1 ];
+        }
+        let results = [];
+        let size = shape[dimension];
+        if (dimension == shape.length - 1) {
+            for (let i = 0; i < size; ++i) {
+                if (context.count > context.limit) {
+                    results.push('...');
+                    return results;
+                }
+                if (context.data) {
+                    results.push(this._decodeDataValue(context));
+                    context.count++;
+                } else {
+                    if (context.rawData) {
+                        const view = new DataView(context.rawData.buffer, context.rawData.byteOffset, context.rawData.length);
+                        switch (context.dataType) {
+                            case "float32":
+                                var v = view.getFloat32(context.index, true);
+                                results.push(v);
+                                context.index += 4;
+                                context.count++;
+                                break;
+                            case "int32":
+                                var v = view.getInt32(context.index, true);
+                                results.push(v);
+                                context.index += 4;
+                                context.count++;
+                                break;
+                            case "int64":
+                                var v = view.getBigInt64(context.index, true);
+                                results.push(Number(v));
+                                context.index += 8;
+                                context.count++;
+                                break;
+                            case "uint64":
+                                var v = view.getBigUint64(context.index, true);
+                                results.push(Number(v));
+                                context.index += 8;
+                                context.count++;
+                                break;
+                            case "uint32":
+                                var v = view.getUint32(context.index, true);
+                                results.push(v);
+                                context.index += 4;
+                                context.count++;
+                                break;
+                            case "float16":
+                                var v = view.getFloat16(context.index, true);
+                                results.push(v);
+                                context.index += 2;
+                                context.count++;
+                                break;
+                            case "int8":
+                                var v = view.getInt8(context.index, true);
+                                results.push(v);
+                                context.index += 1;
+                                context.count++;
+                                break;
+                            case "uint8":
+                                var v = view.getUint8(context.index, true);
+                                results.push(v);
+                                context.index += 1;
+                                context.count++;
+                                break;
+                        }
+                    }
+                }
+            }
+        } else {
+            for (let j = 0; j < size; ++j) {
+                if (context.count > context.limit) {
+                    results.push('...');
+                    return results;
+                }
+                results.push(this._decode(context, dimension + 1));
+            }
+        }
+        if (context.shape.length == 0) {
+            return results[0];
+        }
+        return results;
+    }
+
+    toString() {
+        if (this,_type.shape != this._type.rawShape) {
+            if (this._type.rawShape.unknown) {
+                return 'Unresolved format, export as 1-D array';
+            } else {
+                return 'Visualization unavailable, export for checking out';
+            }
+        }
+
+        let context = this._context();
+        if (context.state) {
+            return '';
+        }
+
+        if (context.rawData.length == 0) {
+            return 'Internal Error';
+        }
+        context.limit = 50;
+        let value = this._decode(context, 0);
+        return JSON.stringify(value, null, 4);
     }
 };
 
