@@ -26,79 +26,6 @@
   {
     "name": "Concat",
     "schema": {
-      "catagory": "Data",
-      "inputs": [
-        {
-          "name": "x",
-          "dynamic": false
-        }
-      ],
-      "outputs": [
-        {
-          "name": "y",
-          "dynamic": false
-        }
-      ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
-    }
-  },
-  {
-    "name": "Data",
-    "schema": {
-      "catagory": "Data",
-      "inputs": [
-        {
-          "name": "x",
-          "dynamic": false
-        }
-      ],
-      "outputs": [
-        {
-          "name": "y",
-          "dynamic": false
-        }
-      ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
-    }
-  },
-  {
-    "name": "Data",
-    "schema": {
-      "catagory": "Data",
-      "inputs": [
-        {
-          "name": "x",
-          "dynamic": false
-        }
-      ],
-      "outputs": [
-        {
-          "name": "y",
-          "dynamic": false
-        }
-      ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
-    }
-  },
-  {
-    "name": "Data",
-    "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -113,86 +40,13 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
-    }
-  },
-  {
-    "name": "Data",
-    "schema": {
-      "catagory": "Data",
-      "inputs": [
-        {
-          "name": "x",
-          "dynamic": false
-        }
-      ],
-      "outputs": [
-        {
-          "name": "y",
-          "dynamic": false
-        }
-      ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
-    }
-  },
-  {
-    "name": "Data",
-    "schema": {
-      "catagory": "Data",
-      "inputs": [
-        {
-          "name": "x",
-          "dynamic": false
-        }
-      ],
-      "outputs": [
-        {
-          "name": "y",
-          "dynamic": false
-        }
-      ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
-    }
-  },
-  {
-    "name": "Data",
-    "schema": {
-      "catagory": "Data",
-      "inputs": [
-        {
-          "name": "x",
-          "dynamic": false
-        }
-      ],
-      "outputs": [
-        {
-          "name": "y",
-          "dynamic": false
-        }
-      ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
         }
       ]
     }
   },
   {
-    "name": "Data",
+    "name": "ConcatD",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -216,7 +70,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Rank",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -240,7 +94,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Dequantize",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -264,7 +118,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Quantize",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -288,7 +142,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Reshape",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -312,7 +166,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Split",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -336,7 +190,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "SplitV",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -360,7 +214,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Unpack",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -384,7 +238,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Flatten",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -408,7 +262,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Slice",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -432,7 +286,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ExpandDims",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -456,7 +310,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Gather",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -480,7 +334,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "GatherNd",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -504,7 +358,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Pack",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -528,7 +382,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "SpaceToDepth",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -552,7 +406,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "StridedSlice",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -576,7 +430,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "SpaceToBatchND",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -600,7 +454,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "SpaceToSpaceND",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -624,7 +478,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "BatchToSpaceND",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -648,7 +502,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Tile",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -672,7 +526,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Size",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -696,7 +550,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Fill",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -720,7 +574,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "InvertPermutation",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -744,7 +598,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Pad",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -768,7 +622,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ReverseSequence",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -792,7 +646,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "PadV2",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -816,7 +670,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "DepthToSpace",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -840,7 +694,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ExtractImagePatches",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -864,7 +718,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Shape",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -888,7 +742,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Squeeze",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -912,7 +766,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ScatterNd",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -936,7 +790,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "BatchReindex",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -960,7 +814,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Copy",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -984,7 +838,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "FakeQuantWithMinMaxVarsPerChannel",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1008,7 +862,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "OneHot",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1032,7 +886,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "StopGradient",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1056,7 +910,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Crop",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1080,7 +934,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Reverse",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1104,7 +958,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Permute",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1128,7 +982,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Transpose",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1152,7 +1006,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "DetectionPostprocessing",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1176,7 +1030,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "MsrGenerateRpnProposals",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1200,7 +1054,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "FSRDetectionOutput",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1224,7 +1078,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Add",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1248,7 +1102,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Mul",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1272,7 +1126,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Expml",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1296,7 +1150,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Ceil",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1320,7 +1174,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Sin",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1344,7 +1198,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Cos",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1368,7 +1222,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Floor",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1392,7 +1246,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Log1p",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1416,7 +1270,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "LogicalAnd",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1440,7 +1294,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "LogicalNot",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1464,7 +1318,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Maximum",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1488,7 +1342,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Mininum",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1512,7 +1366,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Acosh",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1536,7 +1390,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Asinh",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1560,7 +1414,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "PReLU",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1584,7 +1438,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Equal",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1608,7 +1462,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Reciprocal",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1632,7 +1486,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Sqrt",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1656,7 +1510,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Square",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1680,7 +1534,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ReduceAll",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1704,7 +1558,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Cast",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1728,7 +1582,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "CastT",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1752,7 +1606,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Sign",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1776,7 +1630,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Cosh",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1800,7 +1654,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Exp",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1824,7 +1678,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "FloorMod",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1848,7 +1702,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "GreaterEqual",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1872,7 +1726,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Less",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1896,7 +1750,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "MatMul",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1920,7 +1774,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "RealDiv",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1944,7 +1798,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Rint",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1968,7 +1822,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Round",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -1992,7 +1846,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Rsqrt",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2016,7 +1870,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Sinh",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2040,7 +1894,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Sub",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2064,7 +1918,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Range",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2088,7 +1942,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Acos",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2112,7 +1966,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Asin",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2136,7 +1990,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Atanh",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2160,7 +2014,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Log",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2184,7 +2038,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "LogicalOr",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2208,7 +2062,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Neg",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2232,7 +2086,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ReduceProd",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2256,7 +2110,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ReduceSum",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2280,7 +2134,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ReduceMean",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2304,7 +2158,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Tan",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2328,7 +2182,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ArgMax",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2352,7 +2206,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ArgMaxExt2",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2376,7 +2230,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ArgMin",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2400,7 +2254,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "NotEqual",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2424,7 +2278,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "LessEqual",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2448,7 +2302,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "FloorDiv",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2472,7 +2326,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "UnsortedSegmentSum",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2496,7 +2350,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Cumsum",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2520,7 +2374,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Cumprod",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2544,7 +2398,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "TruncatedMod",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2568,7 +2422,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ReduceMin",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2592,7 +2446,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "LayerNorm",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2616,7 +2470,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "InstanceNorm",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2640,7 +2494,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "L2Normalize",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2664,7 +2518,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Pow",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2688,7 +2542,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Power",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2712,7 +2566,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ChannelAxpy",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2736,7 +2590,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Clip",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2760,7 +2614,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ReduceMax",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2784,7 +2638,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "SquaredDifference",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2808,7 +2662,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Atan",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2832,7 +2686,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ReduceAny",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2856,7 +2710,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "LogicalXor",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2880,7 +2734,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "SegmentMax",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2904,7 +2758,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "SegmentMin",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2928,7 +2782,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "SegmentMean",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2952,7 +2806,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "SegmentSum",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -2976,7 +2830,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "SegmentProd",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3000,7 +2854,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "BatchMatMul",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3024,7 +2878,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Select",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3048,7 +2902,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Activation",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3072,7 +2926,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "BatchNorm",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3096,7 +2950,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "BatchNormExt2",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3120,7 +2974,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Convolution",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3144,7 +2998,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Conv2D",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3168,7 +3022,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "QuantizedConvolutionDepthwise",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3192,7 +3046,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "FullConnection",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3216,7 +3070,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "FullyConnection",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3240,7 +3094,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "QuantizedFullConnection",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3264,7 +3118,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Pooling",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3288,7 +3142,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "PoolingD",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3312,7 +3166,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Scale",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3336,7 +3190,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ShuffleChannel",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3360,7 +3214,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Softmax",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3384,7 +3238,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "TopK",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3408,7 +3262,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "LogSoftmax",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3432,7 +3286,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ChannelShuffle",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3456,7 +3310,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Upsample",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3480,7 +3334,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ROIPooling",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3504,7 +3358,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Clipboxes",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3528,7 +3382,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Normalize",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3552,7 +3406,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "PriorBox",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3576,7 +3430,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "DecodeBBox",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3600,7 +3454,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Proposal",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3624,7 +3478,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "PSROIPooling",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3648,7 +3502,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "SVDF",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3672,7 +3526,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "FractionalPooling",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3696,7 +3550,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "SPP",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3720,7 +3574,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Threshold",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3744,7 +3598,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "MVN",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3768,7 +3622,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "BNLL",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3792,7 +3646,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Swish",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3816,7 +3670,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "LSTM",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3840,7 +3694,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "BidirectionLSTM",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3864,7 +3718,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Bias",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3888,7 +3742,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "AxisAlignedBboxTransform",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3912,7 +3766,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "RandomUniform",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3936,7 +3790,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "RandomUniformInt",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3960,7 +3814,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "RandomNormal",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3984,7 +3838,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Multinomial",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4008,7 +3862,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "RandomShuffle",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4032,7 +3886,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ImageData",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4056,7 +3910,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "DynamicImageData",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4080,7 +3934,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ImageCrop",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4104,7 +3958,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ImageChannelSwap",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4128,7 +3982,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ImageColorSpaceConvertion",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4152,7 +4006,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ImageResize",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4176,7 +4030,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ImageDataTypeConversion",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4200,7 +4054,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ImagePadding",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4224,7 +4078,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "CropAndResize",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4248,7 +4102,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ResizeBilinear",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4272,7 +4126,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "ResizeNearestNeighbor",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4296,7 +4150,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "HeatmapMaxKeypoint",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4320,7 +4174,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "NonMaxSuppression",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4344,7 +4198,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Interp",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4368,7 +4222,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "TransData",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4392,7 +4246,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "GraphOp",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4416,7 +4270,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "TensorArray",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4440,7 +4294,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "TensorArrayGather",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4464,7 +4318,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "TensorArrayScatter",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4488,7 +4342,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "NetOutput",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -4512,7 +4366,7 @@
     }
   },
   {
-    "name": "Data",
+    "name": "Undefined",
     "schema": {
       "catagory": "Data",
       "inputs": [
