@@ -293,7 +293,7 @@ class ConcatenateCommand(BaseCommand):
         for pair in args.io_map.strip().split(";"):
             if not pair:
                 continue
-            out, inp = pair.strip().split(":")
+            out, inp = pair.strip().split(",")
             io_map_list.append((out, inp))
 
         try:
