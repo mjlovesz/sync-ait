@@ -552,8 +552,98 @@ om.Node = class {
         }
 
         if (op.type == "Convolution" || op.type == "ConvolutionDepthwise" || op.type == "ConvTranspose") {
+            let outputDims = op.output_desc[0].shape ? op.output_desc[0].shape.dim : undefined;
+            let inputDims = op.input_desc[0].shape ? op.input_desc[0].shape.dim : undefined;
+            let format = "Unknown";
 
+            if ("format" in op.attr) {
+                format = formatEnumToString(op.attr["format"].i);
+            } else if ("data_format" in op.attr) {
+                format = new TextDecoder("utf-8").decode(op.attr["data_format"].s);
+            } else if ("NHWC_FORMAT" in op.attr) {
+                format = formatEnumToString(op.attr["NHWC_FORMAT"].b) ? "NHWC" : "NCHW";
+            } else if (op.input_desc[0].layout != undefined) {
+                format = op.input_desc[0].layout;
+            }
+            let group = 1;
+            if ("groups" in op.attr) {
+                group = op.attr["group"].i;
+            }
+
+            if (inputDims == undefined || outputDims == undefined) {
+                format = "Unknown shape";
+            }
+
+            weightDims = op.input_desc[1].shape.dim; // To confirm the format of filter
+
+            var ho = 0;
+            var wo = 0;
+            var co = 0;
+            var ci = 0;
+            var kh = 0;
+            var kw = 0;
+            var hi = 0;
+            var wi = 0;
+
+            var strideH = 0;
+            var strideW = 0;
+            if (op.attr["stride"] != null) {
+                strideH = op.attr["strides"].list.i[0];
+                strideW = op.attr["strides"].list.i[1];
+            } else {
+                strideH = op.attr["stride"].list.i[0];
+                strideW = op.attr["stride"].list.i[1];
+            }
+
+            if (format == "NCHW") {
+                ho = outputDims[2];
+                wo = outputDims[3];
+                co = outputDims[1];
+                ci = inputDims[1];
+                hi = inputDims[2];
+                wi = inputDims[3];
+                kh = weightDims[2];
+                kw = weightDims[3];
+            } else if (format == "NHWC" ) {
+                ho = outputDims[1];
+                wo = outputDims[2];
+                co = outputDims[3];
+                ci = inputDims[3];
+                hi = inputDims[1];
+                wi = inputDims[2];
+                kh = weightDims[2];
+                kw = weightDims[3];
+            }
+            let M = ho * wo;
+            if (op.type == "Convolution") {
+                let N = co;
+                let K = kh * kw * ci;
+                let flops = M * N * K * 2 / group;
+                this._attributes.push(new om.Attribute(null, "FLOPs (CPU)", flopsToString(flops), schema, true));
+                model.flops = model.flops + flops;
+
+                let K_ = kh * kw * (~~((ci + 15) / 16)) * 16;
+                let N_ = (~~((N + 15) / 16)) * 16;
+                let flops_ = M * N_ * K_ * 2 / group;
+                this._attributes.push(new om.Attribute(null, "FLOPs (NPU)", flopsToString(flops_), schema, true));
+                model.npuFlops = model.npuFlops + flops_;
+            } else if (op.type == "ConvolutionDepthwise") {
+                let N = 1;
+                let K = kh * kw;
+                let flops = ci * M * N * K *2;
+                this._attributes.push(new om.Attribute(null, "FLOPs (CPU)", flopsToString(flops_), schema, true));
+                model.flops = model.flops + flops_;
+                let flops_ = (~~((ci + 15) / 16)) * 16 * M * N * K * 2;
+                this._attributes.push(new om.Attribute(null, "FLOPs (NPU)", flopsToString(flops_), schema, true));
+                model.npuFlops = model.npuFlops + flops_;
+            } else if (op.type == "ConvTranspose") {
+                /* Todo */
+            }
         }
+    }
+
+    _extractFunc(func, prefix="") {
+
     }
 };
 
