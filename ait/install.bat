@@ -14,6 +14,7 @@
 
 @ECHO OFF
 
+SET cwd=%cd%
 SET CURRENT_DIR=%~dp0
 SET arg_force_reinstall=
 SET full_install=
@@ -61,46 +62,40 @@ IF NOT "%1"=="" (
 SET PYTHON3=
 
 :: first, try get python3 version by `python3 -V`
-SET python3_version=
-FOR /F "delims=" %%i IN ('python3 -V') DO ( SET python3_version=%%i)
-ECHO "%python3_version%" | findstr /C:"Python 3." >nul && (
-    SET PYTHON3=python3
-)
+python3 -V 2>nul | findstr /C:"Python 3." >nul && ( SET PYTHON3=python3 )
 
 :: second, try get python3 version by `python -V`, because python3 may be installed as python.exe on windows
-IF NOT DEFINED PYTHON3 (
-    SET python_version=
-    FOR /F "delims=" %%i IN ('python -V') DO ( SET python_version=%%i)
-
-    SET PYTHON3=
-    ECHO "%python_version%" | findstr /C:"Python 3." >nul && (
-        SET PYTHON3=python
-    )
-)
+python -V 2>nul | findstr /C:"Python 3." >nul && ( SET PYTHON3=python )
 
 IF NOT DEFINED PYTHON3 (
     ECHO "Error: python3 is not installed"
-    EXIT /B 0
+    ECHO Installing aborted. && %cwd:~0,2% && cd "%cwd%" && EXIT /B 1
 )
 
 FOR /F "delims=" %%I IN ("pip3.exe") DO (
     IF NOT EXIST %%~$PATH:I (
         ECHO "Error: pip3 is not installed"
-		EXIT /B 0
+        ECHO Installing aborted. && %cwd:~0,2% && cd "%cwd%" && EXIT /B 1
     )
 )
 
 
 :: install or uninstall
 IF DEFINED uninstall (
-    call:uninstall_func
+    CALL:uninstall_func
 ) ELSE (
-    call:install_func
+    CALL:install_func
 )
 
 :: existing!!!
-EXIT /B 0
+IF NOT %errorlevel%==0 (
+    ECHO Installing aborted. && %cwd:~0,2% && cd "%cwd%" && EXIT /B 1
+) ELSE (
+    ECHO Installing finished. && %cwd:~0,2% && cd "%cwd%" && EXIT /B 0
+)
 
+
+:: function definitions
 
 :uninstall_func
 IF DEFINED only_transplt (
@@ -109,25 +104,26 @@ IF DEFINED only_transplt (
     pip3 uninstall ait transplt %all_uninstall%
 )
 
-goto:eof
+GOTO:eof
 
 
 :install_func
 :: install ait component
 pip3 install %CURRENT_DIR% %arg_force_reinstall%
 IF NOT %errorlevel%==0 (
-    ECHO pip install ait failed, please check the failure reason. Installing is existing...
+    ECHO pip install ait failed, please check the failure reason.
     EXIT /B 1
 )
 
 :: install transplt component
 pip3 install %CURRENT_DIR%/components/transplt %arg_force_reinstall%
 IF NOT %errorlevel%==0 (
-    ECHO pip install transplt failed, please check the failure reason. Installing is existing...
+    ECHO pip install transplt failed, please check the failure reason.
     EXIT /B 1
 )
 
 CALL %CURRENT_DIR%/components/transplt/install.bat %skip_check_cert% %full_install% %llvm_path% %mingw_w64_path%
+IF NOT %errorlevel%==0 (
+    EXIT /B 1
 )
-goto:eof
-
+GOTO:eof

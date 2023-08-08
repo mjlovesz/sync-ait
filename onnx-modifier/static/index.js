@@ -474,7 +474,7 @@ host.BrowserHost = class {
 
 
                     if (file) {
-                        this._open(file, files);
+                        this._open(file, files, true);
                     }
                 }
             });
@@ -517,7 +517,7 @@ host.BrowserHost = class {
                     console.log(text);
                 });
                 if (file) {
-                    this._open(file, files);
+                    this._open(file, files, true);
                 }
             }
         });
@@ -797,35 +797,47 @@ host.BrowserHost = class {
         alert_element.showModal()
     }
 
-    show_confirm_message(title, message) {
+    show_confirm_message(title, message, buttons) {
         let confirm_element = document.getElementById('show-message-confirm')
         confirm_element.getElementsByTagName("h1")[0].innerText = title
         confirm_element.getElementsByClassName("text")[0].innerText = message
+        if (!buttons) {
+            buttons = {"Cancel":"", "OK":"OK"}
+        }
+        let footer = confirm_element.getElementsByClassName("footer")[0]
+        while (footer.lastChild) {
+            footer.removeChild(footer.lastChild);
+        }
+        for (const btnText in buttons) {
+            const value = buttons[btnText];
+            let buttonElem = this.document.createElement('button')
+            buttonElem.innerText = btnText
+            buttonElem.dataset.value = value
+            footer.appendChild(buttonElem)
+        }
 
         return this.show_confirm_dialog(confirm_element)
     }
 
     show_confirm_dialog(dialogElem) {
         return new Promise((resolve)=>{
-            let [cancelBtn, okBtn] = dialogElem.getElementsByTagName("button")
+            let btns = dialogElem.getElementsByTagName("button")
             let listener = []
             let remove_listener = () => {
-                let [cancel_listener, ok_listener] = listener
-                cancelBtn.removeEventListener("click", cancel_listener)
-                okBtn.removeEventListener("click", ok_listener)
+                for (const [btn, cancel_listener] of listener) {
+                    btn.removeEventListener("click", cancel_listener)
+                }
             }
-            
-            let cancel_event_listener = cancelBtn.addEventListener("click", ()=> {
-                dialogElem.close()
-                remove_listener()
-                resolve(false)
-            })
-            let ok_event_listener = okBtn.addEventListener("click", ()=> {
-                dialogElem.close()
-                remove_listener()
-                resolve(true)
-            })
-            listener = [cancel_event_listener, ok_event_listener]
+
+            for (const btn of btns) {
+                listener.push([
+                    btn, btn.addEventListener("click", () => {
+                        dialogElem.close()
+                        remove_listener()
+                        resolve(btn.dataset.value)
+                    })
+                ])
+            }
             dialogElem.showModal()
         }) 
     }
@@ -834,8 +846,8 @@ host.BrowserHost = class {
         this.show_alert_message(message, detail)
     }
 
-    confirm(message, detail) {
-        return this.show_confirm_message(message, detail);
+    confirm(message, detail, buttons) {
+        return this.show_confirm_message(message, detail, buttons);
     }
 
     require(id) {
@@ -1019,7 +1031,10 @@ host.BrowserHost = class {
         });
     }
 
-    _open(file, files) {
+    _open(file, files, cleanSubGraph) {
+        if (cleanSubGraph) {
+            this._view.clearSubGraph()
+        }
         this._view.show('welcome spinner');
         const context = new host.BrowserHost.BrowserFileContext(this, file, files);
         context.open().then(() => {

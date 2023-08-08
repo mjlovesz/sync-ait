@@ -284,7 +284,7 @@ def get_args():
         help="Profiler rename switch"
     )
     parser.add_argument(
-        "--dump-npy",
+        "--dump_npy",
         type=str2bool,
         default=False,
         help="dump data convert to npy"

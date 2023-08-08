@@ -27,5 +27,5 @@
 |    |    |    |    |--- summary/
 |    |    |    |    |--- data/
 ```
-  - 输出的性能数据文件`timeline/`、`summary/`和`data/`中数据的含义参见[profile使用示例](../../examples/cli/profile/)中的其他使用示例
+  - 输出的性能数据文件`timeline/`、`summary/`和`data/`中数据的含义参见[profile使用示例](../)中的其他使用示例
 

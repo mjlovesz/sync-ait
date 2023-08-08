@@ -11,6 +11,7 @@
 .node-item-function:hover path { fill: #eee; }
 
 .node-item-type path { fill: #000; }
+.node-item-type-more path { fill: #2ea7b7; }
 .node-item-type text { fill: #fff; }
 .node-item-type:hover { cursor: pointer; }
 .node-item-type:hover path { fill: #fff; }
