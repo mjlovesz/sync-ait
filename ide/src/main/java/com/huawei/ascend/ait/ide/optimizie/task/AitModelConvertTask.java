@@ -114,6 +114,7 @@ public class AitModelConvertTask extends Backgroundable {
                 .append(CMD_CONNECTOIN).append(CmdStrWordStatic.SPACE)
                 .append("ait").append(CmdStrWordStatic.SPACE)
                 .append("convert").append(CmdStrWordStatic.SPACE)
+                .append("aie").append(CmdStrWordStatic.SPACE)
                 .append("--golden-model").append(CmdStrWordStatic.SPACE)
                 .append(modelFile).append(CmdStrWordStatic.SPACE)
                 .append("--output-file").append(CmdStrWordStatic.SPACE)
