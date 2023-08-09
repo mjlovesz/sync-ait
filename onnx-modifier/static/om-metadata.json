@@ -3246,6 +3246,14 @@
         {
           "name": "x",
           "dynamic": false
+        },
+        {
+          "name": "filter",
+          "dynamic": false
+        },
+        {
+          "name": "bias",
+          "dynamic": false
         }
       ],
       "outputs": [
@@ -3256,8 +3264,41 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "group"
+        },
+        {
+          "name": "num_output"
+        },
+        {
+          "name": "pad"
+        },
+        {
+          "name": "stride"
+        },
+        {
+          "name": "dilation"
+        },
+        {
+          "name": "kernel"
+        },
+        {
+          "name": "pad_mode",
+          "type": "Padding"
+        },
+        {
+          "name": "x_quant_type"
+        },
+        {
+          "name": "filter_quant_type"
+        },
+        {
+          "name": "x_quant_scale"
+        },
+        {
+          "name": "x_quant_offset"
+        },
+        {
+          "name": "filter_quant_scales"
         }
       ]
     }
@@ -3265,8 +3306,15 @@
   {
     "name": "Deconvolution",
     "schema": {
-      "catagory": "Data",
       "inputs": [
+        {
+          "name": "input_sizes",
+          "dynamic": false
+        },
+        {
+          "name": "filter",
+          "dynamic": false
+        },
         {
           "name": "x",
           "dynamic": false
@@ -3280,8 +3328,29 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "group"
+        },
+        {
+          "name": "num_output"
+        },
+        {
+          "name": "pad"
+        },
+        {
+          "name": "stride"
+        },
+        {
+          "name": "dilation"
+        },
+        {
+          "name": "pad_mode",
+          "type": "Padding"
+        },
+        {
+          "name": "bias_term"
+        },
+        {
+          "name": "kernel"
         }
       ]
     }
@@ -3289,10 +3358,26 @@
   {
     "name": "ConvTranspose",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Layer",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "filter",
+          "dynamic": false
+        },
+        {
+          "name": "output_shape",
+          "dynamic": false
+        },
+        {
+          "name": "bias",
+          "dynamic": false
+        },
+        {
+          "name": "offset_W",
           "dynamic": false
         }
       ],
@@ -3304,8 +3389,29 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "group"
+        },
+        {
+          "name": "num_output"
+        },
+        {
+          "name": "pad"
+        },
+        {
+          "name": "stride"
+        },
+        {
+          "name": "dilation"
+        },
+        {
+          "name": "pad_mode",
+          "type": "Padding"
+        },
+        {
+          "name": "bias_term"
+        },
+        {
+          "name": "kernel"
         }
       ]
     }
@@ -3313,10 +3419,14 @@
   {
     "name": "BiasAdd",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Layer",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "bias",
           "dynamic": false
         }
       ],
@@ -3326,21 +3436,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Eltwise",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -3352,8 +3460,19 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "mode",
+          "type": "Enum",
+          "enum": [
+            "Product",
+            "Sum",
+            "Max"
+          ]
+        },
+        {
+          "name": "coeff"
+        },
+        {
+          "name": "weight"
         }
       ]
     }
@@ -3361,10 +3480,13 @@
   {
     "name": "LRN",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "w",
           "dynamic": false
         }
       ],
@@ -3376,8 +3498,16 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "lrn_localsize"
+        },
+        {
+          "name": "lrn_alpha"
+        },
+        {
+          "name": "lrn_beta"
+        },
+        {
+          "name": "lrn_k"
         }
       ]
     }
@@ -3385,10 +3515,18 @@
   {
     "name": "ConvolutionDepthwise",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Layer",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "filter",
+          "dynamic": false
+        },
+        {
+          "name": "bias",
           "dynamic": false
         }
       ],
@@ -3400,8 +3538,32 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "num_output"
+        },
+        {
+          "name": "group"
+        },
+        {
+          "name": "pad_mode",
+          "type": "Padding"
+        },
+        {
+          "name": "mode"
+        },
+        {
+          "name": "algo"
+        },
+        {
+          "name": "pad"
+        },
+        {
+          "name": "stride"
+        },
+        {
+          "name": "dilation"
+        },
+        {
+          "name": "kernel"
         }
       ]
     }
@@ -3409,10 +3571,18 @@
   {
     "name": "QuantizedConvolutionDepthwise",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Layer",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "filter",
+          "dynamic": false
+        },
+        {
+          "name": "bias",
           "dynamic": false
         }
       ],
@@ -3424,8 +3594,44 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "num_output"
+        },
+        {
+          "name": "group"
+        },
+        {
+          "name": "pad_mode",
+          "type": "Padding"
+        },
+        {
+          "name": "algo"
+        },
+        {
+          "name": "pad"
+        },
+        {
+          "name": "stride"
+        },
+        {
+          "name": "dilation"
+        },
+        {
+          "name": "kernel"
+        },
+        {
+          "name": "x_quant_type"
+        },
+        {
+          "name": "filter_quant_type"
+        },
+        {
+          "name": "x_quant_scale"
+        },
+        {
+          "name": "x_quant_offset"
+        },
+        {
+          "name": "filter_quant_scales"
         }
       ]
     }
@@ -3433,10 +3639,18 @@
   {
     "name": "FullConnection",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Layer",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "w",
+          "dynamic": false
+        },
+        {
+          "name": "b",
           "dynamic": false
         }
       ],
@@ -3448,8 +3662,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "num_output"
         }
       ]
     }
@@ -3457,10 +3670,18 @@
   {
     "name": "FullyConnection",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Layer",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "w",
+          "dynamic": false
+        },
+        {
+          "name": "b",
           "dynamic": false
         }
       ],
@@ -3472,8 +3693,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "num_output"
         }
       ]
     }
@@ -3481,10 +3701,17 @@
   {
     "name": "QuantizedFullConnection",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "filter",
+          "dynamic": false
+        },
+        {
+          "name": "bias",
           "dynamic": false
         }
       ],
@@ -3496,8 +3723,22 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "num_output"
+        },
+        {
+          "name": "x_quant_type"
+        },
+        {
+          "name": "filter_quant_type"
+        },
+        {
+          "name": "x_quant_scale"
+        },
+        {
+          "name": "x_quant_offset"
+        },
+        {
+          "name": "filter_quant_scales"
         }
       ]
     }
@@ -3505,7 +3746,7 @@
   {
     "name": "Pooling",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Pool",
       "inputs": [
         {
           "name": "x",
@@ -3520,8 +3761,29 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "mode"
+        },
+        {
+          "name": "pad_mode",
+          "type": "Padding"
+        },
+        {
+          "name": "global_pooling"
+        },
+        {
+          "name": "window"
+        },
+        {
+          "name": "pad"
+        },
+        {
+          "name": "stride"
+        },
+        {
+          "name": "ceil_mode"
+        },
+        {
+          "name": "data_mode"
         }
       ]
     }
@@ -3529,7 +3791,7 @@
   {
     "name": "PoolingD",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Pool",
       "inputs": [
         {
           "name": "x",
@@ -3544,8 +3806,29 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "mode"
+        },
+        {
+          "name": "pad_mode",
+          "type": "Padding"
+        },
+        {
+          "name": "global_pooling"
+        },
+        {
+          "name": "window"
+        },
+        {
+          "name": "pad"
+        },
+        {
+          "name": "stride"
+        },
+        {
+          "name": "ceil_mode"
+        },
+        {
+          "name": "data_mode"
         }
       ]
     }
@@ -3553,10 +3836,17 @@
   {
     "name": "Scale",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "filter",
+          "dynamic": false
+        },
+        {
+          "name": "bias",
           "dynamic": false
         }
       ],
@@ -3568,8 +3858,19 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "bias_term"
+        },
+        {
+          "name": "has_bias_value"
+        },
+        {
+          "name": "filler_type"
+        },
+        {
+          "name": "filler_value"
         }
       ]
     }
@@ -3577,7 +3878,6 @@
   {
     "name": "ShuffleChannel",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -3592,8 +3892,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "group"
         }
       ]
     }
@@ -3601,7 +3900,7 @@
   {
     "name": "Softmax",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Activation",
       "inputs": [
         {
           "name": "x",
@@ -3616,8 +3915,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "algo"
         }
       ]
     }
@@ -3625,23 +3926,29 @@
   {
     "name": "TopK",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "k",
           "dynamic": false
         }
       ],
       "outputs": [
         {
-          "name": "y",
+          "name": "y1",
+          "dynamic": false
+        },
+        {
+          "name": "y2",
           "dynamic": false
         }
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "sorted"
         }
       ]
     }
@@ -3649,7 +3956,6 @@
   {
     "name": "LogSoftmax",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -3664,8 +3970,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "algo"
         }
       ]
     }
@@ -3673,7 +3981,6 @@
   {
     "name": "ChannelShuffle",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -3688,8 +3995,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "num_group"
         }
       ]
     }
