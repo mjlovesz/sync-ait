@@ -488,11 +488,11 @@ class InferSession:
             self.session.set_custom_outsize(custom_sizes)
         outputs = self.session.run_pipeline(self.outputs_names, inputs_list, shapes_list,
                                             mode == 'dymshape', mode == 'dymdims')
-        for i in range(len(outputs)):
-            outputs[i] = self.convert_tensors_to_arrays(outputs[i])
+        for i, output in enumerate(outputs):
+            outputs[i] = self.convert_tensors_to_arrays(output)
         return outputs
 
-    def infer(self, feeds, mode = 'static', custom_sizes = 100000):
+    def infer(self, feeds, mode='static', custom_sizes=100000):
         '''
         Parameters:
             feeds: input data
