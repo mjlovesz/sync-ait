@@ -828,6 +828,8 @@ def infer_dymshape():
 
 多线程推理：
 
+使用多线程推理接口时需要注意内存的使用情况，传入的input和预计output总和内存需要小于可用内存，否则程序将会异常退出。
+
 ```python
 def infer_pipeline():
   device_id = 0
