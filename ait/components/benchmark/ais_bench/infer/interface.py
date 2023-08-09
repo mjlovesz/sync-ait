@@ -482,7 +482,7 @@ class InferSession:
         if mode == 'dymshape':
             if isinstance(custom_sizes, int):
                 custom_sizes = [custom_sizes] * len(self.get_outputs())
-            elif isinstance(custom_sizes, list) is False:
+            elif not isinstance(custom_sizes, list):
                 raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
                     custom_sizes, type(custom_sizes)))
             self.session.set_custom_outsize(custom_sizes)
@@ -532,7 +532,7 @@ class InferSession:
                 self.session.set_dynamic_shape(dyshapes)
                 if isinstance(custom_sizes, int):
                     custom_sizes = [custom_sizes] * len(outdesc)
-                elif isinstance(custom_sizes, list) is False:
+                elif not isinstance(custom_sizes, list):
                     raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
                         custom_sizes, type(custom_sizes)))
                 self.session.set_custom_outsize(custom_sizes)
