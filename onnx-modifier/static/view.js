@@ -1874,25 +1874,20 @@ view.ModelFactoryService = class {
 
     _openContext(context) {
         const modules = this._filter(context).filter((module) => module && module.length > 0);
-        // console.log(modules)  // ['./onnx', './tensorrt', './rknn', './om']
 
         const errors = [];
         let success = false;
 
-        // TODO: to simplify the logic here since this tool is used for only onnx
         const nextModule = () => {
             if (modules.length > 0) {
                 const id = modules.shift();
-                console.log(id)
                 return this._host.require(id).then((module) => {
-                    console.log(module)
                     const updateErrorContext = (error, context) => {
                         const content = " in '" + context.identifier + "'.";
                         if (error && typeof error.message === 'string' && !error.message.endsWith(content) && (error.context === undefined || error.context === true)) {
                             error.message = error.message.replace(/\.$/, '') + content;
                         }
                     };
-                    console.log(module.ModelFactory)
                     if (!module.ModelFactory) {
                         throw new view.Error("Failed to load module '" + id + "'.");
                     }
@@ -1900,7 +1895,6 @@ view.ModelFactoryService = class {
                     let match = undefined;
                     try {
                         match = modelFactory.match(context);
-                        // console.log(match)    // onnx.pb.ModelProto
                         if (!match) {
                             return nextModule();
                         }
