@@ -5,13 +5,15 @@ var om = om || {};
 var protobuf = protobuf || require('./protobuf');
 var base = base || require('./base');
 
+
 function formatEnumToString(i) {
     const FORMAT_LIST = ["NCHW", "NHWC", "ND", "NC1HWC0", "Fractal-Z", "NC1C0HW Pad", "NHWC1C0", "FSR_NCHW",
-                        "Fractal-Deconv", "C1HWNC0", "Fractal-Deconv-Transposed", "Fractal-Deconv-SP-Stride-Trans",
-                        "NC1HWC0(C04)", "Fractal-Z(C04)", "CHWN", "Fractal-Deconv-SP-Stride8-Trans", "HWCN",
-                        "NC1KHKWHWC0", "BN", "Filter HWCK"];
+        "Fractal-Deconv", "C1HWNC0", "Fractal-Deconv-Transposed", "Fractal-Deconv-SP-Stride-Trans",
+        "NC1HWC0(C04)", "Fractal-Z(C04)", "CHWN", "Fractal-Deconv-SP-Stride8-Trans", "HWCN",
+        "NC1KHKWHWC0", "BN", "Filter HWCK"];
     return FORMAT_LIST[i];
 }
+
 
 function flopsToString(flops) {
     let result = new Number(flops / 1e6).toFixed(1) + "M";
@@ -23,9 +25,11 @@ function flopsToString(flops) {
     return result + " (" + flops + ")";
 }
 
+
 function isNodeConst(op) {
     return op.type == "Const" || op.type == "QuantizedConst";
 }
+
 
 om.ModelFactory = class {
 
@@ -99,26 +103,26 @@ om.Container = class {
         }
         const stream = context.stream;
         const reader = new base.BinaryReader(stream);
-        const buffer = reader.read(4);
-        this.format = 'DaVinci OM';
-        const decoder = new TextDecoder('utf-8');
-        const size = reader.uint32();
-        this.version = reader.uint32();
-        this.checksum = reader.read(64);
-        reader.skip(4);
-        this.is_encrypt = reader.byte();
-        this.is_checksum = reader.byte();
-        this.type = reader.byte(); // 0=IR model, 1=standard model, 2=OM Tiny model
-        this.mode = reader.byte(); // 0=offline, 1=online
-        this.name = decoder.decode(reader.read(32));
-        this.ops = reader.uint32();
-        this.userdefineinfo = reader.read(32);
-        this.ir_version = reader.uint32();
-        this.model_num = reader.uint32();
-        this.platform_version = reader.read(20);
-        this.platform_type = reader.byte();
+        // const buffer = reader.read(4);
+        // this.format = 'DaVinci OM';
+        // const decoder = new TextDecoder('utf-8');
+        // const size = reader.uint32();
+        // this.version = reader.uint32();
+        // this.checksum = reader.read(64);
+        // reader.skip(4);
+        // this.is_encrypt = reader.byte();
+        // this.is_checksum = reader.byte();
+        // this.type = reader.byte(); // 0=IR model, 1=standard model, 2=OM Tiny model
+        // this.mode = reader.byte(); // 0=offline, 1=online
+        // this.name = decoder.decode(reader.read(32));
+        // this.ops = reader.uint32();
+        // this.userdefineinfo = reader.read(32);
+        // this.ir_version = reader.uint32();
+        // this.model_num = reader.uint32();
+        // this.platform_version = reader.read(20);
+        // this.platform_type = reader.byte();
         reader.seek(0);
-        reader.skip(size); // skip(HAEDER_SIZE)
+        reader.skip(HEADER_SIZE);
         var partitions;
         if (isHugeModel) {
             partitions = new Array(reader.uint64());
