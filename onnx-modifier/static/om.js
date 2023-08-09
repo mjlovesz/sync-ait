@@ -126,7 +126,8 @@ om.Container = class {
                 };
             }
         }
-        const offset = this._offset + HEADER_SIZE + TABLE_INDEX_SIZE + MODEL_PARTITION_MEM_INFO_SIZE * partitions.length;
+        const offset = this._offset + HEADER_SIZE + TABLE_INDEX_SIZE +
+            MODEL_PARTITION_MEM_INFO_SIZE * partitions.length;
         for (const partition of partitions) {
             reader.seek(offset + partition.offset);
             const buffer = reader.read(partition.size);
@@ -274,8 +275,10 @@ om.Model = class {
                     this._modelType = "Shape Infered By NPU IR Model";
                 } else if ("ir_infershaped" in mainGraph.attr && mainGraph.attr["ir_infershaped"].b) {
                     this._modelType = "Shape Infered By DDK IR Model";
-                } else if ("hiai_version" in mainGraph.attr && new TextDecoder("utf-8").decode(mainGraph.attr["hiai_version"].s) == "ir") {
-                    this._modelType = "Shape Uninfered IR Model";
+                } else if ("hiai_version" in mainGraph.attr) {
+                    if (new TextDecoder("utf-8").decode(mainGraph.attr["hiai_version"].s) == "ir") {
+                        this._modelType = "Shape Uninfered IR Model";
+                    }
                 } else if ("memory_size" in mainGraph.attr) {
                     this._modelType = `Compiled Model`;
                     this._description = `memory: ${mainGraph.attr["memory_size"].i}`;
@@ -467,7 +470,12 @@ om.Node = class {
                 this._controlDependencies.push(name);
                 continue;
             }
-            let schemaName = (i < schema.inputs.length) ? schema.inputs[i].name : schema.inputs[schema.inputs.length-1].name;
+            let schemaName = '';
+            if (i < schema.inputs.length) {
+                schemaName = schema.inputs[i].name;
+            } else {
+                schemaName = schema.inputs[schema.inputs.length-1].name;
+            }
             let inputNode = graph.op.find(node => node.name == name);
             let inputFormat = op.input_desc[inputIdx].layout;
 
