@@ -56,6 +56,7 @@ om.ModelFactory = class {
     }
 };
 
+
 om.Container = class {
 
     static open(context) {
@@ -103,24 +104,6 @@ om.Container = class {
         }
         const stream = context.stream;
         const reader = new base.BinaryReader(stream);
-        // const buffer = reader.read(4);
-        // this.format = 'DaVinci OM';
-        // const decoder = new TextDecoder('utf-8');
-        // const size = reader.uint32();
-        // this.version = reader.uint32();
-        // this.checksum = reader.read(64);
-        // reader.skip(4);
-        // this.is_encrypt = reader.byte();
-        // this.is_checksum = reader.byte();
-        // this.type = reader.byte(); // 0=IR model, 1=standard model, 2=OM Tiny model
-        // this.mode = reader.byte(); // 0=offline, 1=online
-        // this.name = decoder.decode(reader.read(32));
-        // this.ops = reader.uint32();
-        // this.userdefineinfo = reader.read(32);
-        // this.ir_version = reader.uint32();
-        // this.model_num = reader.uint32();
-        // this.platform_version = reader.read(20);
-        // this.platform_type = reader.byte();
         reader.seek(0);
         reader.skip(HEADER_SIZE);
         var partitions;
@@ -211,6 +194,7 @@ om.Container = class {
     }
 };
 
+
 om.Metadata = class {
     static open(context) {
         om.Metadata.textDecoder = om.Metadata.textDecoder || new TextDecoder('utf-8');
@@ -265,6 +249,7 @@ om.Metadata = class {
         return map[name] || null;
     }
 };
+
 
 om.Model = class {
 
@@ -393,6 +378,7 @@ om.Model = class {
     }
 };
 
+
 om.Graph = class {
 
     constructor(metadata, graph, weight, model) {
@@ -434,15 +420,16 @@ om.Graph = class {
     }
 };
 
+
 om.Node = class {
     static enum2Dtype(val) {
         const TYPE_LIST = ["undefined", "float32", "float16", "int8", "uint8", "int16", "uint16", "int32",
-                            "uint32", "int64", "uint64", "bool", "float64"];
+            "uint32", "int64", "uint64", "bool", "float64"];
         return TYPE_LIST[val];
     }
     static enum2DtypeInner(val) {
         const TYPE_LIST = ["float32", "float16", "int8", "int32", "uint8", "", "int16", "uint16", "uint32",
-                            "int64", "uint64", "float64", "bool", "dual", "dual int8", "dual uint8"];
+            "int64", "uint64", "float64", "bool", "dual", "dual int8", "dual uint8"];
         return TYPE_LIST[val];
     }
     constructor(metadata, op, graph, weight, model) {
@@ -465,8 +452,9 @@ om.Node = class {
         if (!schema) {
             schema = metadata.type("Undefined");
         }
-
-        let inputIdx = 0; //The length of input might not equal to input_desc, empty items in input refer to optional inputs, which are not in input_desc.
+        /* The length of input might not equal to input_desc, empty items in input refer to optional inputs,
+        which are not in input_desc. */
+        let inputIdx = 0;
         let weightDims = null;
         for (let i = 0; i < op.input.length; ++i) {
             if (op.input[i] == "") {
@@ -488,7 +476,8 @@ om.Node = class {
                 if (inputNode.attr["value"].t.desc.shape != null) {
                     inputDims = inputNode.attr["value"].t.desc.shape.dim;
                 }
-                // For a compiled model, the shape may be a raw shape or a fractal-z shape. The following lines ensure getting the raw shape.
+                /* For a compiled model, the shape may be a raw shape or a fractal-z shape.
+                The following lines ensure getting the raw shape. */
                 if ('origin_shape' in inputNode.attr["value"].t.desc.attr) {
                     inputDims = inputNode.attr["value"].t.desc.attr["origin_shape"].list.i;
                 }
@@ -513,16 +502,18 @@ om.Node = class {
                     data = inputNode.attr["value"].t.data;
                 }
                 let dataLength = (data == null) ? 0 : data.length;
-                let tensor = new om.Argument(name,
-                    null,
-                    new om.Tensor('Constant', new om.TensorType(inputDtype, inputDims, inputFormat, inputNode.attr['value'].t.desc.layout, dataLength), data)
-                );
+                let tmpTensorType = new om.TensorType(inputDtype, inputDims, inputFormat,
+                    inputNode.attr['value'].t.desc.layout, dataLength);
+                let tmpTensor = new om.Tensor('Constant', tmpTensorType, data);
+                let tensor = new om.Argument(name, null, tmpTensor);
                 this._inputs.push(new om.Parameter(schemaName, true, [tensor]));
             } else {
                 let inputDims = op.input_desc[inputIdx].shape ? op.input_desc[inputIdx].shape.dim : undefined;
                 let inputDtype = op.input_desc[i] ? om.Node.enum2Dtype(op.input_desc[i].dtype) : "undefined";
                 let inputName = src_index == 0 ? name : name + ":" + src_index;
-                this._inputs.push(new om.Parameter(schemaName, true, [new om.Argument(inputName, new om.TensorType(inputDtype, inputDims, inputFormat, null), null)]));
+                let tmpTensorType = new om.TensorType(inputDtype, inputDims, inputFormat, null);
+                let tmpArgument = new om.Argument(inputName, tmpTensorType, null)
+                this._inputs.push(new om.Parameter(schemaName, true, [tmpArgument]));
             }
             ++inputIdx;
         }
@@ -533,8 +524,15 @@ om.Node = class {
             let outputDtype = om.Node.enum2Dtype(outputDesc.dtype);
             let outputFormat = outputDesc.layout;
             let outputName = (outputIdx == 0) ? this._name : this._name + ":" + outputIdx;
-            let outputSchemaName = outputIdx < schema.outputs.length ? schema.outputs[outputIdx].name : schema.outputs[schema.outputs.length-1].name;
-            this._outputs.push(new om.Parameter(outputSchemaName, true, [new om.Argument(outputName, new om.TensorType(outputDtype, outputDims, outputFormat), null)]));
+            let outputSchemaName = '';
+            if (outputIdx < schema.outputs.length) {
+                outputSchemaName = schema.outputs[outputIdx].name;
+            } else {
+                outputSchemaName = schema.outputs[schema.outputs.length-1].name
+            }
+            let tmpTensorType = new om.TensorType(outputDtype, outputDims, outputFormat)
+            let tmpArgument = new om.Argument(outputName, tmpTensorType, null)
+            this._outputs.push(new om.Parameter(outputSchemaName, true, [tmpArgument]));
             ++outputIdx;
         }
 
@@ -763,7 +761,8 @@ om.Attribute = class {
         } else if (Object.prototype.hasOwnProperty.call(value, 'bt')) {
             if (0 != value.bt.length) {
                 this._type = "tensor";
-                this._value = new om.Tensor('Constant', new om.TensorType("float32", [value.bt.length/4], null), value.bt);
+                let tmpTensorType = new om.TensorType("float32", [value.bt.length/4], null);
+                this._value = new om.Tensor('Constant', tmpTensorType, value.bt);
             } else {
                 this._value = "NIL";
             }
@@ -805,10 +804,10 @@ om.Attribute = class {
                 this._value = om.Node.enum2DtypeInner(this._value);
             }
             if (attrMeta.type == "Format") {
-                const FORMAT_LIST = ["NCHW", "NHWC", "ND", "NC1HWC0", "Fractal-Z", "NC1C0HW Pad", "NHWC1C0", "FSR_NCHW",
-                    "Fractal-Deconv", "C1HWNC0", "Fractal-Deconv-Transposed", "Fractal-Deconv-SP-Stride-Trans",
-                    "NC1HWC0(C04)", "Fractal-Z(C04)", "CHWN", "Fractal-Deconc-SP-Stride8-Trans", "HWCN", "NC1KHKWHWC0",
-                    "BN", "Filter HWCK"];
+                const FORMAT_LIST = ["NCHW", "NHWC", "ND", "NC1HWC0", "Fractal-Z", "NC1C0HW Pad", "NHWC1C0",
+                    "FSR_NCHW", "Fractal-Deconv", "C1HWNC0", "Fractal-Deconv-Transposed", "NC1HWC0(C04)",
+                    "Fractal-Z(C04)", "CHWN", "Fractal-Deconc-SP-Stride8-Trans", "HWCN", "NC1KHKWHWC0",
+                    "Fractal-Deconv-SP-Stride-Trans", "BN", "Filter HWCK"];
                 this._value = FORMAT_LIST[this._value];
             }
             if (attrMeta.type == "Padding") {
@@ -913,7 +912,8 @@ om.Tensor = class {
                     context.count++;
                 } else {
                     if (context.rawData) {
-                        const view = new DataView(context.rawData.buffer, context.rawData.byteOffset, context.rawData.length);
+                        const view = new DataView(context.rawData.buffer, context.rawData.byteOffset,
+                            context.rawData.length);
                         switch (context.dataType) {
                             case "float32":
                                 var v = view.getFloat32(context.index, true);
@@ -1059,12 +1059,14 @@ om.TensorType = class {
             if (this._denotation == "NC1HWC0") {
                 return new om.TensorShape([dims[0], ~~((parseInt(dims[1])+15)/16), dims[2], dims[3], 16]);
             } else if (this._denotation == "FRACTAL_Z") {
-                return new om.TensorShape([~~((parseInt(dims[1])+15)/16), dims[2], dims[3], (~~((parseInt(dims[0])+15)/16))*16, 16]);
+                return new om.TensorShape([~~((parseInt(dims[1])+15)/16), dims[2], dims[3],
+                    (~~((parseInt(dims[0])+15)/16))*16, 16]);
             }
         }
         if (this._dtype == "int8") {
             if (this._denotation == "FRACTAL_Z") {
-                return new om.TensorShape([~~((parseInt(dims[1])+31)/32), dims[2], dims[3], (~~((parseInt(dims[0])+15)/16))*16, 32]);
+                return new om.TensorShape([~~((parseInt(dims[1])+31)/32), dims[2], dims[3],
+                    (~~((parseInt(dims[0])+15)/16))*16, 32]);
             }
         }
         return new om.TensorShape([this.size], true);
