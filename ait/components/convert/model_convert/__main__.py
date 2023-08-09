@@ -11,24 +11,20 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 import logging
 import os
-import sys
 
 from components.parser.parser import BaseCommand
-from aie_runtime.bean import ConvertConfig
-from aie_runtime.core import Convert
+from model_convert.aie.bean import ConvertConfig
+from model_convert.aie.core.convert import Convert
+from model_convert.cmd_utils import add_arguments, gen_convert_cmd, execute_cmd, get_logger
 
-logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def parse_input_param(model: str,
                       output: str,
                       soc_version: str) -> ConvertConfig:
-
     return ConvertConfig(
         model=model,
         output=output,
@@ -37,7 +33,25 @@ def parse_input_param(model: str,
 
 
 class ConvertCommand(BaseCommand):
-    def add_arguments(self, parser):
+    pass
+
+
+class ModelConvertCommand(BaseCommand):
+    def __init__(self, backend, *args, **kwargs):
+        super(ModelConvertCommand, self).__init__(*args, **kwargs)
+        self.conf_args = None
+        self.backend = backend
+
+    def add_arguments(self, parser, **kwargs):
+        self.conf_args = add_arguments(parser, backend=self.backend)
+
+    def handle(self, args, **kwargs):
+        convert_cmd = gen_convert_cmd(self.conf_args, args, backend=self.backend)
+        execute_cmd(convert_cmd)
+
+
+class AieCommand(BaseCommand):
+    def add_arguments(self, parser, **kwargs):
         parser.add_argument("-gm",
                             "--golden-model",
                             dest="model",
@@ -57,7 +71,7 @@ class ConvertCommand(BaseCommand):
                             default=None,
                             help="The soc version.")
 
-    def handle(self, args):
+    def handle(self, args, **kwargs):
         if not os.path.isfile(args.model):
             logger.error('Input model is not a file.')
             return
@@ -80,6 +94,12 @@ class ConvertCommand(BaseCommand):
 
 
 def get_cmd_instance():
-    help_info = "convert tool converts the model from ONNX to OM."
-    cmd_instance = ConvertCommand("convert", help_info)
-    return cmd_instance
+    aie_cmd = AieCommand("aie", help_info="Convert onnx to om by aie.")
+    atc_cmd = ModelConvertCommand(name="atc", help_info="Convert onnx to om by atc.", backend="atc")
+    aoe_cmd = ModelConvertCommand(name="aoe", help_info="Convert onnx to om by aoe.", backend="aoe")
+    convert_cmd = ConvertCommand(
+        name="convert",
+        help_info="convert tool converts the model from ONNX to OM. It supports atc, aoe and aie.",
+        children=[atc_cmd, aoe_cmd, aie_cmd]
+    )
+    return convert_cmd

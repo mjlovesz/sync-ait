@@ -163,6 +163,9 @@
     </button>
     <button id="name-button" class="toolbar-name-button" title="Name">
     </button>
+    <button id="sub-graph-name-button" class="toolbar-name-button" title="Sub" style="display: none;">
+        showing <b> 100 </b> nodes around node named "<span> input </span> "
+    </button>
     <div id="menu-dropdown" class="dropdown"></div>
     <div id="menu-extract-dropdown" class="dropdown"></div>
 </div>
@@ -202,8 +205,6 @@
     <h1> </h1>
     <div class="text"> </div>
     <div class="footer">
-        <button>Cancel</button>
-        <button>OK</button>
     </div>
 </dialog>
 <dialog id="show-message-info" open></dialog>
@@ -236,8 +237,8 @@
     <input type="checkbox" id="cleanUp" class="download-checkbox-cleanUp"/>
     <input type="text" value="clean up" class="download-anno-cleanUp" readonly/> </td>
     <div class="footer">
-        <button>Cancel</button>
-        <button>OK</button>
+        <button data-value="">Cancel</button>
+        <button data-value="OK">OK</button>
     </div>
 </dialog>
 <dialog id="addnode-dialog" class="dialog message-box">
@@ -254,8 +255,8 @@
     </div>
 
     <div class="footer">
-        <button>Cancel</button>
-        <button>Confirm</button>
+        <button data-value="">Cancel</button>
+        <button data-value="Confirm">Confirm</button>
     </div>
 </dialog>
 <dialog id="addinput-dialog" class="dialog message-box">
@@ -271,8 +272,8 @@
         </div>
     </div>
     <div class="footer">
-        <button>Cancel</button>
-        <button>Confirm</button>
+        <button data-value="">Cancel</button>
+        <button data-value="Confirm">Confirm</button>
     </div>
 </dialog>
 <dialog id="change-input-shape-dialog" class="dialog message-box">
@@ -294,8 +295,8 @@
         </div>
     </div>
     <div class="footer">
-        <button>Cancel</button>
-        <button id="change-input-shape-input-ok">Confirm</button>
+        <button data-value="">Cancel</button>
+        <button id="change-input-shape-input-ok" data-value="Confirm">Confirm</button>
     </div>
 </dialog>
 <dialog id="dynamic-batch-size-dialog" class="dialog message-box">
@@ -309,8 +310,8 @@
         </div>
     </div>
     <div class="footer">
-        <button>Cancel</button>
-        <button id="dynamic-batch-size-input-ok">Confirm</button>
+        <button data-value="">Cancel</button>
+        <button id="dynamic-batch-size-input-ok" data-value="Confirm">Confirm</button>
     </div>
 </dialog>
 <dialog id="fixed-batch-size-dialog" class="dialog message-box">
@@ -332,10 +333,31 @@
         </div>
     </div>
     <div class="footer">
-        <button>Cancel</button>
-        <button id="fixed-batch-size-input-ok">Confirm</button>
+        <button data-value="">Cancel</button>
+        <button id="fixed-batch-size-input-ok" data-value="Confirm">Confirm</button>
     </div>
-
+</dialog>
+<dialog id="set-show-node-count" class="dialog message-box"> 
+    <p class="title"> Set The Number Of Nodes Displayed </p>
+    <div class="dialog-content">
+        <div class="message"> Please Enter The Number Of Nodes Displayed </div>
+        <div class="content-item">
+            <p class="item-title"> Number of Nodes Displayed: </p>
+            <div class="input">
+                <select id="input-show-node-count" class="graph-op-add-node-dropdown">
+                        <option value="100"> 100 </option>
+                        <option value="200"> 200 </option>
+                        <option value="300"> 300 </option>
+                        <option value="400"> 400 </option>
+                        <option value="50"> 50 </option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="footer">
+        <button data-value="">Cancel</button>
+        <button data-value="Confirm">Confirm</button>
+    </div>
 </dialog>
 </body>
 </html>

@@ -174,11 +174,7 @@ install(){
     ${CURRENT_DIR}/components/profile/msprof \
     ${arg_force_reinstall}
 
-    if [ ! ${AIE_DIR} ];then
-      echo "Warning: Ascend Inference Engine is not installed. (convert install failed)"
-    else
-      bash ${CURRENT_DIR}/components/convert/build.sh
-    fi
+    bash ${CURRENT_DIR}/components/convert/build.sh
 
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi

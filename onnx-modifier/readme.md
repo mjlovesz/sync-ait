@@ -13,6 +13,7 @@
 
 目前已支持下列操作：
 
+:white_check_mark: 支持打开较大Onnx模型，超过1500个节点，可以使用局部图显示方式 <br>
 :white_check_mark: 删除/恢复节点<br>
 :white_check_mark: 修改节点输入输出名<br>
 :white_check_mark: 修改模型输入输出名<br>
@@ -27,6 +28,9 @@
 `onnx-modifier`基于流行的模型可视化工具 [Netron](https://github.com/lutzroeder/netron) 和[Electron](https://www.electronjs.org/)。希望它能给社区带来一些贡献~
 
 # 安装与运行
+您可以使用我们已经打包好的程序: [已打包程序](https://gitee.com/ascend/ait/wikis/OnnxModifier/%E6%89%93%E5%8C%85%20OnnxModifier%20)
+
+
 目前支持三种方法运行`onnx-modifier`, Linux与windows安装流程一致，以下为安装运行说明：
 
 ## 源码拉取及第三方库安装
@@ -59,27 +63,11 @@
   pip install -r requirements.txt
   ```
 
-## 启动方式一：命令行启动
-- 安装
-    1. 方式1：
-        1. 下载electron: [v24.1.3版本下载地址](https://registry.npmmirror.com/binary.html?path=electron/24.1.3/)
-            * linux 下载 electron-v24.1.3-linux-x64.zip 或 electron-v24.1.3-linux-arm64.zip
-            * windows 下载 electron-v24.1.3-win32-x64.zip 或 electron-v24.1.3-win32-arm64.zip
-        2. zip解压之后，将解压路径配置到环境变量的PATH中 
-    2. 方式2：
-        直接 `npm install` , npm是NodeJS的包管理器。如果遇到electron 无法安装失败问题，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85) 
-- 运行（该方式启动常用于调试开发）
-  ```bash
-  # 切到目录 ait/onnx-modifier 运行以下命令
-  electron .
-  ```
-  - 命令行参数
-    - 支持指定onnx文件，参数为： --onnx [onnx文件路径]
+## 启动方式一：编译成可执行程序启动
+您可以使用我们已经打包好的程序: [已打包程序](https://gitee.com/ascend/ait/wikis/OnnxModifier/%E6%89%93%E5%8C%85%20OnnxModifier%20)
 
-## 启动方式二：编译成可执行程序启动
 
-编译对环境网络要求较高, 如果遇到electron 无法安装失败问题，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85) 
-
+也可以选择自行编译，编译对环境网络要求较高, 如果遇到electron 无法安装失败问题，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85) 
 
 - 安装
 
@@ -95,7 +83,7 @@
 - 安装运行
   编译之后，可以在out中看到打包的程序，解压运行即可
 
-## 启动方式三：web服务器启动
+## 启动方式二：web服务器启动
 - 安装
     1. 安装flask： pip install flask==2.2.2
     2. 如果运行报错，建议升级flask。建议版本2.2.2
@@ -125,6 +113,23 @@
     ssh -L 8080:localhost:5000 username@serverhost
     ```
     * 本地windows浏览器打开 localhost:8080 端口即可访问到linux服务器上的 onnx-modifier 服务
+
+## 启动方式三：electron 命令行启动
+- 安装
+    1. 方式1：
+        1. 下载electron: [v24.1.3版本下载地址](https://registry.npmmirror.com/binary.html?path=electron/24.1.3/)
+            * linux 下载 electron-v24.1.3-linux-x64.zip 或 electron-v24.1.3-linux-arm64.zip
+            * windows 下载 electron-v24.1.3-win32-x64.zip 或 electron-v24.1.3-win32-arm64.zip
+        2. zip解压之后，将解压路径配置到环境变量的PATH中 
+    2. 方式2：
+        直接 `npm install` , npm是NodeJS的包管理器。如果遇到electron 无法安装，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85) 
+- 运行（该方式启动常用于调试开发）
+  ```bash
+  # 切到目录 ait/onnx-modifier 运行以下命令
+  electron .
+  ```
+  - 命令行参数
+    - 支持指定onnx文件，参数为： --onnx [onnx文件路径]
 
 # 用法
 
@@ -247,7 +252,14 @@
 
 <img src="./docs/extract.gif" style="zoom:75%;" />
 
-
+## 打开大模型
+* 如果节点数量大于1500，可以选择使用局部图方式显示。可以大大加快模型打开速度。实测 30000 个节点模型，在 netron 中直接卡死，本程序可以使用局部图方式秒级打开
+* 局部图是指针对某个节点，显示其前后的 100 个节点。可以选择显示前后的 50/100/200/300/400 个节点
+* 显示其他节点局部图方式：
+  - 如果该节点在当前图中，可以双击对应节点。会自动刷新显示对应节点的局部图，并定位到对应节点
+  - 如果在当前图中没有显示，可以使用 Ctrl+F 显示所有的节点列表。双击要显示的节点，既可以显示对应的局部图
+* 不建议在显示局部图时，对onnx进行修改操作
+<img src="./docs/big-onnx.gif" style="zoom:75%;" />
 
 # 外部链接网址
 

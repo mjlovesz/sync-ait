@@ -2021,6 +2021,9 @@ sidebar.FindSidebar = class {
         this._resultElement.addEventListener('click', (e) => {
             this.select(e);
         });
+        this._resultElement.addEventListener('dblclick', (e) => {
+            this.select(e);
+        });
         this._contentElement.appendChild(this._searchElement);
         this._contentElement.appendChild(this._resultElement);
     }
@@ -2031,17 +2034,18 @@ sidebar.FindSidebar = class {
         this._events[event].push(callback);
     }
 
-    _raise(event, data) {
+    _raise(event, data, e) {
         if (this._events && this._events[event]) {
             for (const callback of this._events[event]) {
-                callback(this, data);
+                callback(this, data, e);
             }
         }
     }
 
     select(e) {
         const selection = [];
-        const id = e.target.id;
+        const data = e.target.dataset;
+        const id = data.id;
 
         const nodesElement = this._graphElement.getElementById('nodes');
         let nodeElement = nodesElement.firstChild;
@@ -2072,8 +2076,12 @@ sidebar.FindSidebar = class {
             }
         }
 
-        if (selection.length > 0) {
+        if (e.type == "dblclick") {
+            this._raise("dblclick-not-in-graph", data, e)
+        } else if (selection.length > 0) {
             this._raise('select', selection);
+        } else {
+            this._raise("select-not-in-graph", data)
         }
     }
 
@@ -2145,12 +2153,15 @@ sidebar.FindSidebar = class {
                                 if (!argument.initializer) {
                                     const inputItem = this._host.document.createElement('li');
                                     inputItem.innerText = '\u2192 ' + argument.name.split('\n').shift(); // custom argument id
-                                    inputItem.id = 'edge-' + argument.name;
+                                    inputItem.dataset.id = 'edge-' + argument.name;
+                                    inputItem.dataset.type = "edge"
+                                    inputItem.dataset.graph_node_name = label.modelNodeName.split('\n').shift()
+
                                     this._resultElement.appendChild(inputItem);
                                     edges.add(argument.name);
                                 }
                                 else {
-                                    initializers.push(argument);
+                                    initializers.push([argument, label.modelNodeName]);
                                 }
                             }
                         }
@@ -2164,16 +2175,20 @@ sidebar.FindSidebar = class {
                     ((name && callback(name) || (type && callback(type))))) {
                     const nameItem = this._host.document.createElement('li');
                     nameItem.innerText = '\u25A2 ' + (name || '[' + type + ']');
-                    nameItem.id = label.id;
+                    nameItem.dataset.id = label.id;
+                    nameItem.dataset.type = "node"
+                    nameItem.dataset.graph_node_name = name
                     this._resultElement.appendChild(nameItem);
                     nodes.add(label.id);
                 }
             }
-            for (const argument of initializers) {
+            for (const [argument, node_name] of initializers) {
                 if (argument.name) {
                     const initializeItem = this._host.document.createElement('li');
                     initializeItem.innerText = '\u25A0 ' + argument.name.split('\n').shift(); // custom argument id
-                    initializeItem.id = 'initializer-' + argument.name;
+                    initializeItem.dataset.id = 'initializer-' + argument.name;
+                    initializeItem.dataset.type = "initializer"
+                    initializeItem.dataset.graph_node_name = node_name.split('\n').shift(); 
                     this._resultElement.appendChild(initializeItem);
                 }
             }
@@ -2187,7 +2202,9 @@ sidebar.FindSidebar = class {
                         if (argument.name && !edges.has(argument.name) && terms.every((term) => argument.name.toLowerCase().indexOf(term) != -1)) {
                             const outputItem = this._host.document.createElement('li');
                             outputItem.innerText = '\u2192 ' + argument.name.split('\n').shift(); // custom argument id
-                            outputItem.id = 'edge-' + argument.name;
+                            outputItem.dataset.id = 'edge-' + argument.name;
+                            outputItem.dataset.type = "output"
+                            outputItem.dataset.graph_node_name = label.modelNodeName.split('\n').shift()
                             this._resultElement.appendChild(outputItem);
                             edges.add(argument.name);
                         }

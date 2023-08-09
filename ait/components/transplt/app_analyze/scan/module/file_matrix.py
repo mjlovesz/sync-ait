@@ -78,10 +78,8 @@ class FileMatrix:
         :return:
         """
         for working_dir in self.inputs.directories:
-            for root, _, files in \
-                    os.walk(working_dir, onerror=self._walk_error):
-
-                ex_flag = list(set(root.split('/')).intersection(set(self.excluded_dir_list)))
+            for root, _, files in os.walk(working_dir, onerror=self._walk_error):
+                ex_flag = list(set(root.split(os.path.sep)).intersection(set(self.excluded_dir_list)))
                 if ex_flag:
                     continue
 
