@@ -61,8 +61,10 @@ def init_file_logger():
             return
 
     log_file_path = os.path.realpath(LOG_FILE_PATH)
-    if os.path.exists(LOG_FILE_PATH) and not not os.path.isfile(log_file_path):
-        raise OSError(f"log file {log_file_path} exists, and may be a link or directory")
+    if os.path.exists(LOG_FILE_PATH) 
+        if not os.path.isfile(log_file_path):
+            raise OSError(f"log file {log_file_path} exists, and may be a link or directory")
+        os.remove(log_file_path)
     
     with os.fdopen(os.open(log_file_path, OPEN_FLAGS, OPEN_MODES), 'w') as log_file:
         pass
