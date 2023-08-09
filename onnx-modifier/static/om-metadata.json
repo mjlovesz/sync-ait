@@ -1459,7 +1459,7 @@
     }
   },
   {
-    "name": "Mininum",
+    "name": "Minimum",
     "schema": {
       "inputs": [
         {
@@ -2440,7 +2440,7 @@
     }
   },
   {
-    "name": "TruncatedMod",
+    "name": "TruncateMod",
     "schema": {
       "inputs": [
         {
@@ -2494,11 +2494,11 @@
         {
           "name": "x",
           "dynamic": false
-        }
+        },
         {
           "name": "scale",
           "dynamic": false
-        }
+        },
         {
           "name": "bias",
           "dynamic": false
@@ -2993,7 +2993,7 @@
             "Threshold ReLU",
             "SELU",
             "Linear",
-            "RELU6",
+            "ReLU6",
             "GELU"
           ]
         },
@@ -3161,7 +3161,7 @@
           "name": "dilation"
         },
         {
-          "name": "kernal"
+          "name": "kernel"
         },
         {
           "name": "pad_mode",
@@ -3230,7 +3230,7 @@
           "name": "dilation"
         },
         {
-          "name": "kernal"
+          "name": "kernel"
         },
         {
           "name": "pad_mode",
@@ -3377,7 +3377,7 @@
           "dynamic": false
         },
         {
-          "name": "offset_W",
+          "name": "offset_w",
           "dynamic": false
         }
       ],
@@ -4119,7 +4119,7 @@
           "name": "channel_shared"
         },
         {
-          "name": "eqs"
+          "name": "eps"
         }
       ]
     }
@@ -4590,7 +4590,7 @@
           "dynamic": false
         },
         {
-          "name": "w_backend",
+          "name": "w_backward",
           "dynamic": false
         },
         {
@@ -5310,7 +5310,7 @@
       ],
       "outputs": [
         {
-          "name": "y",
+          "name": "output",
           "dynamic": true
         }
       ],
