@@ -2683,7 +2683,6 @@
   {
     "name": "ReduceMax",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -2698,8 +2697,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "axis"
+        },
+        {
+          "name": "keep_dims"
         }
       ]
     }
@@ -2707,10 +2708,13 @@
   {
     "name": "SquaredDifference",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -2720,18 +2724,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Atan",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -2744,21 +2742,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "ReduceAny",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "axes",
           "dynamic": false
         }
       ],
@@ -2770,8 +2766,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "keep_dims"
         }
       ]
     }
@@ -2779,10 +2774,13 @@
   {
     "name": "LogicalXor",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -2792,21 +2790,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "SegmentMax",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "segment_ids",
           "dynamic": false
         }
       ],
@@ -2816,21 +2812,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "SegmentMin",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "segment_ids",
           "dynamic": false
         }
       ],
@@ -2840,21 +2834,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "SegmentMean",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "segment_ids",
           "dynamic": false
         }
       ],
@@ -2864,21 +2856,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "SegmentSum",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "segment_ids",
           "dynamic": false
         }
       ],
@@ -2888,21 +2878,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "SegmentProd",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "segment_ids",
           "dynamic": false
         }
       ],
@@ -2912,34 +2900,34 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "BatchMatMul",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
           "dynamic": false
-        }
-      ],
-      "outputs": [
+        },
         {
           "name": "y",
           "dynamic": false
         }
       ],
+      "outputs": [
+        {
+          "name": "z",
+          "dynamic": false
+        }
+      ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "adj_x"
+        },
+        {
+          "name": "adj_y"
         }
       ]
     }
@@ -2947,10 +2935,17 @@
   {
     "name": "Select",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "condition",
+          "dynamic": false
+        },
+        {
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -2960,18 +2955,13 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Activation",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Activation",
       "inputs": [
         {
           "name": "x",
@@ -2986,8 +2976,32 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "mode",
+          "type": "Enum",
+          "enum": [
+            "Sigmoid",
+            "ReLU",
+            "Tanh",
+            "Clipped ReLU",
+            "ELU",
+            "PReLU",
+            "Abs",
+            "ReLU1",
+            "Softsign",
+            "Softplus",
+            "Hard Sigmoid",
+            "Threshold ReLU",
+            "SELU",
+            "Linear",
+            "RELU6",
+            "GELU"
+          ]
+        },
+        {
+          "name": "coef"
+        },
+        {
+          "name": "negative_slope"
         }
       ]
     }
@@ -2995,10 +3009,26 @@
   {
     "name": "BatchNorm",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Normalization",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "scale",
+          "dynamic": false
+        },
+        {
+          "name": "b",
+          "dynamic": false
+        },
+        {
+          "name": "mean",
+          "dynamic": false
+        },
+        {
+          "name": "variance",
           "dynamic": false
         }
       ],
@@ -3010,8 +3040,16 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "momentum"
+        },
+        {
+          "name": "epsilon"
+        },
+        {
+          "name": "mode"
+        },
+        {
+          "name": "use_global_stats"
         }
       ]
     }
@@ -3019,7 +3057,191 @@
   {
     "name": "BatchNormExt2",
     "schema": {
-      "catagory": "Data",
+      "inputs": [
+        {
+          "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "scale",
+          "dynamic": false
+        },
+        {
+          "name": "offset",
+          "dynamic": false
+        },
+        {
+          "name": "mean",
+          "dynamic": false
+        },
+        {
+          "name": "variance",
+          "dynamic": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "y",
+          "dynamic": false
+        }
+      ],
+      "attributes": [
+        {
+          "name": "momentum"
+        },
+        {
+          "name": "epsilon"
+        },
+        {
+          "name": "mode"
+        },
+        {
+          "name": "use_global_stats"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Convolution",
+    "schema": {
+      "catagory": "Layer",
+      "inputs": [
+        {
+          "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "w",
+          "dynamic": false
+        },
+        {
+          "name": "b",
+          "dynamic": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "y",
+          "dynamic": false
+        }
+      ],
+      "attributes": [
+        {
+          "name": "algo",
+          "type": "Enum",
+          "enum": [
+            "GEMM",
+            "Winograd",
+            "GEMM_ACCU_Float32"
+          ]
+        },
+        {
+          "name": "mode",
+          "type": "Enum",
+          "enum": [
+            "Convolution",
+            "Cross Correlation",
+            "Deconvolution",
+            "Depthwise"
+          ]
+        },
+        {
+          "name": "group"
+        },
+        {
+          "name": "num_output"
+        },
+        {
+          "name": "pad"
+        },
+        {
+          "name": "stride"
+        },
+        {
+          "name": "dilation"
+        },
+        {
+          "name": "kernal"
+        },
+        {
+          "name": "pad_mode",
+          "type": "Padding"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Conv2D",
+    "schema": {
+      "catagory": "Layer",
+      "inputs": [
+        {
+          "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "w",
+          "dynamic": false
+        },
+        {
+          "name": "b",
+          "dynamic": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "y",
+          "dynamic": false
+        }
+      ],
+      "attributes": [
+        {
+          "name": "algo",
+          "type": "Enum",
+          "enum": [
+            "GEMM",
+            "Winograd",
+            "GEMM_ACCU_Float32"
+          ]
+        },
+        {
+          "name": "mode",
+          "type": "Enum",
+          "enum": [
+            "Convolution",
+            "Cross Correlation",
+            "Deconvolution",
+            "Depthwise"
+          ]
+        },
+        {
+          "name": "group"
+        },
+        {
+          "name": "num_output"
+        },
+        {
+          "name": "pad"
+        },
+        {
+          "name": "stride"
+        },
+        {
+          "name": "dilation"
+        },
+        {
+          "name": "kernal"
+        },
+        {
+          "name": "pad_mode",
+          "type": "Padding"
+        }
+      ]
+    }
+  },
+  {
+    "name": "QuantizedConvolution",
+    "schema": {
       "inputs": [
         {
           "name": "x",
@@ -3041,7 +3263,7 @@
     }
   },
   {
-    "name": "Convolution",
+    "name": "Deconvolution",
     "schema": {
       "catagory": "Data",
       "inputs": [
@@ -3065,7 +3287,103 @@
     }
   },
   {
-    "name": "Conv2D",
+    "name": "ConvTranspose",
+    "schema": {
+      "catagory": "Data",
+      "inputs": [
+        {
+          "name": "x",
+          "dynamic": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "y",
+          "dynamic": false
+        }
+      ],
+      "attributes": [
+        {
+          "name": "data_type",
+          "type": "DataTypeInner"
+        }
+      ]
+    }
+  },
+  {
+    "name": "BiasAdd",
+    "schema": {
+      "catagory": "Data",
+      "inputs": [
+        {
+          "name": "x",
+          "dynamic": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "y",
+          "dynamic": false
+        }
+      ],
+      "attributes": [
+        {
+          "name": "data_type",
+          "type": "DataTypeInner"
+        }
+      ]
+    }
+  },
+  {
+    "name": "Eltwise",
+    "schema": {
+      "catagory": "Data",
+      "inputs": [
+        {
+          "name": "x",
+          "dynamic": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "y",
+          "dynamic": false
+        }
+      ],
+      "attributes": [
+        {
+          "name": "data_type",
+          "type": "DataTypeInner"
+        }
+      ]
+    }
+  },
+  {
+    "name": "LRN",
+    "schema": {
+      "catagory": "Data",
+      "inputs": [
+        {
+          "name": "x",
+          "dynamic": false
+        }
+      ],
+      "outputs": [
+        {
+          "name": "y",
+          "dynamic": false
+        }
+      ],
+      "attributes": [
+        {
+          "name": "data_type",
+          "type": "DataTypeInner"
+        }
+      ]
+    }
+  },
+  {
+    "name": "ConvolutionDepthwise",
     "schema": {
       "catagory": "Data",
       "inputs": [
