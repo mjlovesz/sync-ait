@@ -736,7 +736,7 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
   在dump场景上加上--dump_npy 1开启自动转换dump数据模式, 需要配合--dump或者--acl_json_path参数。
 
   转换后dump目录
- 
+
   ```bash
   result/
   |-- 2023_01_03-06_35_53/
@@ -826,6 +826,21 @@ def infer_dymshape():
   print("dymshape infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 ```
 
+多线程推理：
+
+```python
+def infer_pipeline():
+  device_id = 0
+  session = InferSession(device_id, model_path)
+
+  barray = bytearray(session.get_inputs()[0].realsize)
+  ndata = np.frombuffer(barray)
+
+  outputs = session.infer([[ndata]])
+  print("outputs:{} type:{}".format(outputs, type(outputs)))
+
+  print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
+```
 
 
 ### 推理异常保存文件功能

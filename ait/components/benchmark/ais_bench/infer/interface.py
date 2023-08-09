@@ -50,7 +50,6 @@ PIXEL_MIN_CHN_MIN = 0
 PIXEL_MIN_CHN_MAX = 255
 PIXEL_VAR_RECI_CHN_MIN = -65504
 PIXEL_VAR_RECI_CHN_MAX = 65504
-MAX_MEMORY = 1024 * 1024 * 1024
 
 TORCH_TENSOR_LIST = ['torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor', 'torch.BFloat16Tensor',
                      'torch.ByteTensor', 'torch.CharTensor', 'torch.ShortTensor', 'torch.LongTensor',
@@ -443,7 +442,7 @@ class InferSession:
         if hasattr(self.session, 'finalize'):
             self.session.finalize()
 
-    def infer_pipeline(self, feeds_list, mode='static', custom_sizes=100000, max_memory=MAX_MEMORY):
+    def infer_pipeline(self, feeds_list, mode='static', custom_sizes=100000):
         '''
         Parameters:
             feeds_list: input data list
@@ -451,7 +450,6 @@ class InferSession:
         '''
         inputs_list = []
         shapes_list = []
-        memory_used = 0
         for feeds in feeds_list:
             inputs = []
             shapes = []
@@ -471,12 +469,9 @@ class InferSession:
                     shape = infer_input.shape
                 else:
                     raise RuntimeError('type:{} invalid'.format(type(feed)))
-                memory_used += infer_input.nbytes
                 basetensor = aclruntime.BaseTensor(infer_input.__array_interface__['data'][0], infer_input.nbytes)
                 inputs.append(basetensor)
                 shapes.append(shape)
-            if memory_used > max_memory:
-                raise RuntimeError('memory used: {} exceeds the higher bound: {}'.format(memory_used, max_memory))
             inputs_list.append(inputs)
             shapes_list.append(shapes)
         if mode == 'dymshape':

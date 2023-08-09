@@ -102,13 +102,6 @@ class TestClass:
 
         assert end_multi - start_multi < end_single - start_single
 
-    def test_oom(self):
-        session = InferSession(self.device_id, self.model_path)
-        ndatas_list = self.generate_input(session, 10000)
-
-        with pytest.raises(RuntimeError) as e:
-            outputs = session.infer_pipeline(ndatas_list)
-
 
 if __name__ == '__main__':
     pytest.main(['test_pipeline_interface.py', '-vs'])
