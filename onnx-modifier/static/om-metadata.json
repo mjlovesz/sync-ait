@@ -2,7 +2,7 @@
   {
     "name": "Data",
     "schema": {
-      "catagory": "Data",
+      "category": "Data",
       "inputs": [
         {
           "name": "x",
@@ -160,7 +160,7 @@
   {
     "name": "Reshape",
     "schema": {
-      "catagory": "Shape",
+      "category": "Shape",
       "inputs": [
         {
           "name": "tensor",
@@ -789,7 +789,7 @@
   {
     "name": "Squeeze",
     "schema": {
-      "catagory": "Shape",
+      "category": "Shape",
       "inputs": [
         {
           "name": "x",
@@ -1017,7 +1017,7 @@
   {
     "name": "Permute",
     "schema": {
-      "catagory": "Shape",
+      "category": "Shape",
       "inputs": [
         {
           "name": "x",
@@ -1052,7 +1052,7 @@
   {
     "name": "Transpose",
     "schema": {
-      "catagory": "Shape",
+      "category": "Shape",
       "inputs": [
         {
           "name": "x",
@@ -1483,7 +1483,7 @@
   {
     "name": "Acosh",
     "schema": {
-      "catagory": "Activation",
+      "category": "Activation",
       "inputs": [
         {
           "name": "x",
@@ -1502,7 +1502,7 @@
   {
     "name": "Asinh",
     "schema": {
-      "catagory": "Activation",
+      "category": "Activation",
       "inputs": [
         {
           "name": "x",
@@ -1521,7 +1521,7 @@
   {
     "name": "PReLU",
     "schema": {
-      "catagory": "Activation",
+      "category": "Activation",
       "inputs": [
         {
           "name": "x",
@@ -2489,7 +2489,7 @@
   {
     "name": "LayerNorm",
     "schema": {
-      "catagory": "Normalization",
+      "category": "Normalization",
       "inputs": [
         {
           "name": "x",
@@ -2961,7 +2961,7 @@
   {
     "name": "Activation",
     "schema": {
-      "catagory": "Activation",
+      "category": "Activation",
       "inputs": [
         {
           "name": "x",
@@ -3009,7 +3009,7 @@
   {
     "name": "BatchNorm",
     "schema": {
-      "catagory": "Normalization",
+      "category": "Normalization",
       "inputs": [
         {
           "name": "x",
@@ -3104,7 +3104,7 @@
   {
     "name": "Convolution",
     "schema": {
-      "catagory": "Layer",
+      "category": "Layer",
       "inputs": [
         {
           "name": "x",
@@ -3173,7 +3173,7 @@
   {
     "name": "Conv2D",
     "schema": {
-      "catagory": "Layer",
+      "category": "Layer",
       "inputs": [
         {
           "name": "x",
@@ -3358,7 +3358,7 @@
   {
     "name": "ConvTranspose",
     "schema": {
-      "catagory": "Layer",
+      "category": "Layer",
       "inputs": [
         {
           "name": "x",
@@ -3419,7 +3419,7 @@
   {
     "name": "BiasAdd",
     "schema": {
-      "catagory": "Layer",
+      "category": "Layer",
       "inputs": [
         {
           "name": "x",
@@ -3515,7 +3515,7 @@
   {
     "name": "ConvolutionDepthwise",
     "schema": {
-      "catagory": "Layer",
+      "category": "Layer",
       "inputs": [
         {
           "name": "x",
@@ -3571,7 +3571,7 @@
   {
     "name": "QuantizedConvolutionDepthwise",
     "schema": {
-      "catagory": "Layer",
+      "category": "Layer",
       "inputs": [
         {
           "name": "x",
@@ -3639,7 +3639,7 @@
   {
     "name": "FullConnection",
     "schema": {
-      "catagory": "Layer",
+      "category": "Layer",
       "inputs": [
         {
           "name": "x",
@@ -3670,7 +3670,7 @@
   {
     "name": "FullyConnection",
     "schema": {
-      "catagory": "Layer",
+      "category": "Layer",
       "inputs": [
         {
           "name": "x",
@@ -3746,7 +3746,7 @@
   {
     "name": "Pooling",
     "schema": {
-      "catagory": "Pool",
+      "category": "Pool",
       "inputs": [
         {
           "name": "x",
@@ -3791,7 +3791,7 @@
   {
     "name": "PoolingD",
     "schema": {
-      "catagory": "Pool",
+      "category": "Pool",
       "inputs": [
         {
           "name": "x",
@@ -3900,7 +3900,7 @@
   {
     "name": "Softmax",
     "schema": {
-      "catagory": "Activation",
+      "category": "Activation",
       "inputs": [
         {
           "name": "x",
@@ -4034,7 +4034,7 @@
   {
     "name": "ROIPooling",
     "schema": {
-      "catagory": "Pool",
+      "category": "Pool",
       "inputs": [
         {
           "name": "x1",
@@ -5273,7 +5273,7 @@
   {
     "name": "TransData",
     "schema": {
-      "catagory": "Shape",
+      "category": "Shape",
       "inputs": [
         {
           "name": "input",
@@ -5301,7 +5301,7 @@
   {
     "name": "GraphOp",
     "schema": {
-      "catagory": "Layer",
+      "category": "Layer",
       "inputs": [
         {
           "name": "input",
@@ -5402,7 +5402,7 @@
   {
     "name": "NetOutput",
     "schema": {
-      "catagory": "Data",
+      "category": "Data",
       "inputs": [
         {
           "name": "input",
