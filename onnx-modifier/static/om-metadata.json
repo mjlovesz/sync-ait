@@ -4006,7 +4006,6 @@
   {
     "name": "Upsample",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -4021,8 +4020,13 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "scale_h"
+        },
+        {
+          "name": "scale_w"
+        },
+        {
+          "name": "scale"
         }
       ]
     }
@@ -4030,10 +4034,14 @@
   {
     "name": "ROIPooling",
     "schema": {
-      "catagory": "Data",
+      "catagory": "Pool",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -4045,8 +4053,19 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "pooled_h"
+        },
+        {
+          "name": "pooled_w"
+        },
+        {
+          "name": "spatial_scale"
+        },
+        {
+          "name": "spatial_scale_h"
+        },
+        {
+          "name": "spatial_scale_w"
         }
       ]
     }
@@ -4054,10 +4073,13 @@
   {
     "name": "Clipboxes",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "im_info",
           "dynamic": false
         }
       ],
@@ -4067,21 +4089,19 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Normalize",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -4093,8 +4113,13 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "across_spatial"
+        },
+        {
+          "name": "channel_shared"
+        },
+        {
+          "name": "eqs"
         }
       ]
     }
@@ -4102,10 +4127,13 @@
   {
     "name": "PriorBox",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "im_info",
           "dynamic": false
         }
       ],
@@ -4117,8 +4145,49 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "min_size"
+        },
+        {
+          "name": "max_size"
+        },
+        {
+          "name": "min_size_num"
+        },
+        {
+          "name": "max_size_num"
+        },
+        {
+          "name": "aspect_ratio"
+        },
+        {
+          "name": "aspect_ratio_num"
+        },
+        {
+          "name": "img_h"
+        },
+        {
+          "name": "img_w"
+        },
+        {
+          "name": "flip"
+        },
+        {
+          "name": "clip"
+        },
+        {
+          "name": "step_h"
+        },
+        {
+          "name": "step_w"
+        },
+        {
+          "name": "offset"
+        },
+        {
+          "name": "variance"
+        },
+        {
+          "name": "variance_num"
         }
       ]
     }
@@ -4126,10 +4195,13 @@
   {
     "name": "DecodeBBox",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
           "dynamic": false
         }
       ],
@@ -4141,8 +4213,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "decode_clip"
         }
       ]
     }
@@ -4150,23 +4221,50 @@
   {
     "name": "Proposal",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "cls_prob",
+          "dynamic": false
+        },
+        {
+          "name": "bbox_pred",
+          "dynamic": false
+        },
+        {
+          "name": "im_info",
           "dynamic": false
         }
       ],
       "outputs": [
         {
-          "name": "y",
+          "name": "rois",
           "dynamic": false
         }
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "feat_stride"
+        },
+        {
+          "name": "base_size"
+        },
+        {
+          "name": "min_size"
+        },
+        {
+          "name": "ratio"
+        },
+        {
+          "name": "scale"
+        },
+        {
+          "name": "pre_nms_topn"
+        },
+        {
+          "name": "post_nms_topn"
+        },
+        {
+          "name": "nms_thresh"
         }
       ]
     }
@@ -4174,10 +4272,13 @@
   {
     "name": "PSROIPooling",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "rois",
           "dynamic": false
         }
       ],
@@ -4189,8 +4290,13 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "spatial_scale"
+        },
+        {
+          "name": "output_dim"
+        },
+        {
+          "name": "group_size"
         }
       ]
     }
@@ -4198,23 +4304,44 @@
   {
     "name": "SVDF",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
-          "name": "x",
+          "name": "x1",
+          "dynamic": false
+        },
+        {
+          "name": "x2",
+          "dynamic": false
+        },
+        {
+          "name": "x3",
+          "dynamic": false
+        },
+        {
+          "name": "x4",
+          "dynamic": false
+        },
+        {
+          "name": "x5",
           "dynamic": false
         }
       ],
       "outputs": [
         {
-          "name": "y",
+          "name": "y1",
+          "dynamic": false
+        },
+        {
+          "name": "y2",
           "dynamic": false
         }
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "rank"
+        },
+        {
+          "name": "use_bias"
         }
       ]
     }
@@ -4222,7 +4349,6 @@
   {
     "name": "FractionalPooling",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -4233,12 +4359,37 @@
         {
           "name": "y",
           "dynamic": false
+        },
+        {
+          "name": "row_pooling_sequence",
+          "dynamic": false
+        },
+        {
+          "name": "col_pooling_sequence",
+          "dynamic": false
         }
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "mode"
+        },
+        {
+          "name": "pooling_ratio"
+        },
+        {
+          "name": "pseudo_random"
+        },
+        {
+          "name": "overlapping"
+        },
+        {
+          "name": "deterministic"
+        },
+        {
+          "name": "seed"
+        },
+        {
+          "name": "seed2"
         }
       ]
     }
@@ -4246,7 +4397,6 @@
   {
     "name": "SPP",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -4261,8 +4411,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "pyramidHeight"
+        },
+        {
+          "name": "poolingMode"
         }
       ]
     }
@@ -4270,7 +4422,6 @@
   {
     "name": "Threshold",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -4285,8 +4436,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "threshold"
         }
       ]
     }
@@ -4294,7 +4444,6 @@
   {
     "name": "MVN",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -4309,8 +4458,10 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "normalizeVariance"
+        },
+        {
+          "name": "acrossChannel"
         }
       ]
     }
@@ -4318,7 +4469,6 @@
   {
     "name": "BNLL",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -4331,18 +4481,12 @@
           "dynamic": false
         }
       ],
-      "attributes": [
-        {
-          "name": "data_type",
-          "type": "DataTypeInner"
-        }
-      ]
+      "attributes": []
     }
   },
   {
     "name": "Swish",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
@@ -4357,8 +4501,7 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "scale"
         }
       ]
     }
@@ -4366,10 +4509,33 @@
   {
     "name": "LSTM",
     "schema": {
-      "catagory": "Data",
       "inputs": [
         {
           "name": "x",
+          "dynamic": false
+        },
+        {
+          "name": "cont",
+          "dynamic": false
+        },
+        {
+          "name": "xstatic",
+          "dynamic": false
+        },
+        {
+          "name": "w_x",
+          "dynamic": false
+        },
+        {
+          "name": "bias",
+          "dynamic": false
+        },
+        {
+          "name": "w_h",
+          "dynamic": false
+        },
+        {
+          "name": "w_xstatic",
           "dynamic": false
         }
       ],
@@ -4381,8 +4547,28 @@
       ],
       "attributes": [
         {
-          "name": "data_type",
-          "type": "DataTypeInner"
+          "name": "hidden_size"
+        },
+        {
+          "name": "forget_bias"
+        },
+        {
+          "name": "num_layers"
+        },
+        {
+          "name": "activation"
+        },
+        {
+          "name": "time_major"
+        },
+        {
+          "name": "support_cont"
+        },
+        {
+          "name": "support_xstatic"
+        },
+        {
+          "name": "num_output"
         }
       ]
     }
