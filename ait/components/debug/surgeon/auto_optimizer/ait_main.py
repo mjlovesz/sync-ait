@@ -309,7 +309,7 @@ class ConcatenateCommand(BaseCommand):
         if args.combined_graph_path:
             combined_graph_path = args.combined_graph_path
         else:
-            combined_graph_path = args.graph1[:-5] + args.graph2[:-5] + ".onnx"
+            combined_graph_path = args.graph1[:-5] + "_" + args.graph2[:-5] + ".onnx"
             combined_graph_path = combined_graph_path.replace("/", "_")
 
         try:
