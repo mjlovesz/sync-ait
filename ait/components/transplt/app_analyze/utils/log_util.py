@@ -13,6 +13,7 @@
 
 import sys
 import os
+import stat
 import logging
 from logging import handlers
 
@@ -29,6 +30,9 @@ LOG_LEVEL = {
     "fatal": logging.FATAL,
     "critical": logging.CRITICAL
 }
+
+OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 
 def get_logger():
@@ -56,11 +60,15 @@ def init_file_logger():
         if isinstance(ii, handlers.TimedRotatingFileHandler) and os.path.basename(ii.stream.name) == LOG_FILE_PATH:
             return
 
-    if os.path.exists(LOG_FILE_PATH):
-        os.remove(LOG_FILE_PATH)
+    log_file_path = os.path.realpath(LOG_FILE_PATH)
+    if os.path.exists(LOG_FILE_PATH) and not not os.path.isfile(log_file_path):
+        raise OSError(f"log file {log_file_path} exists, and may be a link or directory")
+    
+    with os.fdopen(os.open(log_file_path, OPEN_FLAGS, OPEN_MODES), 'w') as log_file:
+        pass
 
     # create console handler and formatter for logger
-    fh = handlers.TimedRotatingFileHandler(LOG_FILE_PATH, when='midnight', interval=1, backupCount=7)
+    fh = handlers.TimedRotatingFileHandler(log_file_path, when='midnight', interval=1, backupCount=7)
     formatter = logging.Formatter(LOG_FORMAT)
     fh.setFormatter(formatter)
     logger.addHandler(fh)
