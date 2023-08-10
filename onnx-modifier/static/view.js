@@ -455,8 +455,10 @@ view.View = class {
                     const graphs = Array.isArray(model.graphs) && model.graphs.length > 0 ? [ model.graphs[0] ] : [];
                     if (model.format != "DaVinci OM") {
                         this.modifier.loadModelGraph(model, graphs);
+                        DISPLAY_OM_MODEL = false;
                     } else {
                         this._host.show_alert_message("Warning", "Detect om model, modification is not supported");
+                        DISPLAY_OM_MODEL = true;
                     }
                     return this._updateGraph(model, graphs);
                 });
@@ -1982,11 +1984,6 @@ view.ModelFactoryService = class {
                     return modelFactory.open(context, match).then((model) => {
                         if (!model.identifier) {
                             model.identifier = context.identifier;
-                        }
-                        if (id == "./om") {
-                            DISPLAY_OM_MODEL = true;
-                        } else {
-                            DISPLAY_OM_MODEL = false;
                         }
                         return model;
                     }).catch((error) => {

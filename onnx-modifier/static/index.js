@@ -169,6 +169,10 @@ host.BrowserHost = class {
         });
 
         this.document.getElementById("modify-export").addEventListener("click", ()=> {
+            if (window.DISPLAY_OM_MODEL) {
+                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
+                return;
+            }
             let export_name = "modify_info.json"
             if (this._ori_model_file) {
                 export_name = `${this._ori_model_file.name}.${export_name}`
@@ -178,6 +182,10 @@ host.BrowserHost = class {
         })
 
         this.document.getElementById("modify-import").addEventListener("click", ()=> {
+            if (window.DISPLAY_OM_MODEL) {
+                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
+                return;
+            }
             this.document.getElementById('open-modify-json-dialog').click();
         })
 
@@ -203,6 +211,10 @@ host.BrowserHost = class {
 
         const resetButton = this.document.getElementById('reset-graph');
         resetButton.addEventListener('click', () => {
+            if (window.DISPLAY_OM_MODEL) {
+                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
+                return;
+            }
             // this._view._graph.resetGraph();
             // this._view._updateGraph();
             this.confirm("Comfirm", "are you sure to reset? All modifications cannot be reverted").then((confirmed)=>{
@@ -230,7 +242,6 @@ host.BrowserHost = class {
         })
 
         const downloadButton = this.document.getElementById('download-graph');
-
 
         if (this.window.is_electron && this.window.fetch_electron) {
             class Response {
@@ -330,7 +341,7 @@ host.BrowserHost = class {
 
         downloadButton.addEventListener('click', () => {
             if (window.DISPLAY_OM_MODEL) {
-                this.show_alert_message("disabled", "this button is disabled when displaying om model");
+                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
                 return;
             }
             let dialog = this.document.getElementById("download-dialog")
@@ -348,16 +359,28 @@ host.BrowserHost = class {
 
         const onnxSimButton = this.document.getElementById('onnxsim-graph');
         onnxSimButton.addEventListener('click', () => {
+            if (window.DISPLAY_OM_MODEL) {
+                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
+                return;
+            }
             this.take_effect_modify("/onnxsim", this.build_download_data(true), true)
         });
 
         const onnxOptimizer = this.document.getElementById('auto-optimizer-graph');
         onnxOptimizer.addEventListener('click', () => {
+            if (window.DISPLAY_OM_MODEL) {
+                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
+                return;
+            }
             this.take_effect_modify("/auto-optimizer", this.build_download_data(true), true)
         });
 
         const extract = this.document.getElementById('extract-graph');
         extract.addEventListener("dblclick", () => {
+            if (window.DISPLAY_OM_MODEL) {
+                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
+                return;
+            }
             let start_nodes = this._view.modifier.getExtractStart()
             let end_nodes = this._view.modifier.getExtractEnd()
             if (!start_nodes || start_nodes.size == 0 || !end_nodes || end_nodes.size == 0 ) {
@@ -407,6 +430,10 @@ host.BrowserHost = class {
         })
 
         extract.addEventListener('click', (e) => {
+            if (window.DISPLAY_OM_MODEL) {
+                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
+                return;
+            }
             let top = e.clientY
             this.document.getElementById("menu-extract-dropdown").style.top = `${top}px`
             this._menu_extract.toggle();
@@ -415,6 +442,10 @@ host.BrowserHost = class {
 
         const addNodeButton = this.document.getElementById('add-node');
         addNodeButton.addEventListener('click', () => {
+            if (window.DISPLAY_OM_MODEL) {
+                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
+                return;
+            }
             let dialog = this.document.getElementById("addnode-dialog")
             this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
                 if (!is_not_cancel) {
@@ -1044,12 +1075,53 @@ host.BrowserHost = class {
         context.open().then(() => {
             return this._view.open(context).then((model) => {
                 this._view.show(null);
+                this._updateButtons();
                 this.document.title = files[0].name;
                 return model;
             });
         }).catch((error) => {
             this._view.error(error, null, null);
         });
+    }
+
+    _updateButtons() {
+        if (window.DISPLAY_OM_MODEL) {
+            // change the color of disabled buttons
+            let idList = [
+                "download-graph",
+                "reset-graph",
+                "extract-graph",
+                "add-node",
+                "onnxsim-graph",
+                "auto-optimizer-graph",
+                "modify-export",
+                "modify-import"
+            ];
+            for (var id of idList) {
+                let tmpButton = this.document.getElementById(id);
+                let title = tmpButton.getElementsByClassName('title');
+                title[0].innerHTML = 'disabled';
+            }
+        } else {
+            let idList = [
+                "download-graph"
+            ];
+            let name ={
+                "download-graph": "Download",
+                "reset-graph": "Reset",
+                "extract-graph": "Extract Sub Network",
+                "add-node": "Add Node",
+                "onnxsim-graph": "OnnxSim",
+                "auto-optimizer-graph": "AutoOptimizer",
+                "modify-export": "Modifier Info Export",
+                "modify-import": "Modifier Info Import"
+            }
+            for (var id of idList) {
+                let tmpButton = this.document.getElementById(id);
+                let title = tmpButton.getElementsByClassName('title');
+                title[0].innerHTML = name[id];
+            }
+        }
     }
 
     _setCookie(name, value, days) {
@@ -1731,8 +1803,4 @@ if (!('scrollBehavior' in window.document.documentElement.style)) {
 
 window.addEventListener('load', () => {
     window.__view__ = new view.View(new host.BrowserHost());
-    if (window.DISPLAY_OM_MODEL) {
-        // change the color of disabled buttons
-
-    }
 });
