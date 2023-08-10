@@ -289,8 +289,8 @@ host.BrowserHost = class {
             }
         }
 
-        fetch("/get_session_index", {method: 'POST', 
-            headers: { 'Content-Type': 'application/json' }, 
+        fetch("/get_session_index", {method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({session:this.session})
         }).then((response) => {
             this.check_res_status(response.status)
@@ -299,8 +299,8 @@ host.BrowserHost = class {
             })
         }).then(() => {
             fetch("/init", {
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({session:this.session})
             }).then((response) => {
                 this.check_res_status(response.status)
@@ -329,10 +329,14 @@ host.BrowserHost = class {
         })
 
         downloadButton.addEventListener('click', () => {
+            if (window.DISPLAY_OM_MODEL) {
+                this.show_alert_message("disabled", "this button is disabled when displaying om model");
+                return;
+            }
             let dialog = this.document.getElementById("download-dialog")
             this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
                 if (!is_not_cancel) {
-                    return 
+                    return
                 }
 
                 this.take_effect_modify("/download", this.build_download_data(true), false, (blob)=> {
@@ -358,7 +362,7 @@ host.BrowserHost = class {
             let end_nodes = this._view.modifier.getExtractEnd()
             if (!start_nodes || start_nodes.size == 0 || !end_nodes || end_nodes.size == 0 ) {
                 this.show_message("Select Extract Net Start And End", "Select the start node and end node for the subnet export", "warn");
-                return 
+                return
             }
             let download_data = this.build_download_data(true)
             download_data["extract_start"] = Array.from(start_nodes).join(",")
@@ -375,7 +379,7 @@ host.BrowserHost = class {
                 }
             })
         });
-        
+
         this._menu_extract = new host.Dropdown(this, 'extract-graph', 'menu-extract-dropdown');
         this._menu_extract.add({
             label: 'Extract',
@@ -387,7 +391,7 @@ host.BrowserHost = class {
             label: (enable) => enable ? this.document.getElementsByClassName("NodeExtractStart")[0].innerText : "Extract Net Start",
             accelerator: 'CmdOrCtrl+S',
             enable: () => {
-                return this.document.getElementById("sidebar").style.display != "none" && 
+                return this.document.getElementById("sidebar").style.display != "none" &&
                 this.document.getElementsByClassName("NodeExtractStart").length > 0
             },
             click: () => this.document.getElementsByClassName("NodeExtractStart")[0].click()
@@ -396,7 +400,7 @@ host.BrowserHost = class {
             label: (enable) => enable ? this.document.getElementsByClassName("NodeExtractEnd")[0].innerText : "Extract Net End",
             accelerator: 'CmdOrCtrl+E',
             enable: () => {
-                return this.document.getElementById("sidebar").style.display != "none" && 
+                return this.document.getElementById("sidebar").style.display != "none" &&
                     this.document.getElementsByClassName("NodeExtractEnd").length > 0
             },
             click: () => this.document.getElementsByClassName("NodeExtractEnd")[0].click()
@@ -414,7 +418,7 @@ host.BrowserHost = class {
             let dialog = this.document.getElementById("addnode-dialog")
             this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
                 if (!is_not_cancel) {
-                    return 
+                    return
                 }
 
                 var addNodeDropDown = this.document.getElementById('add-node-dropdown');
@@ -560,9 +564,9 @@ host.BrowserHost = class {
         let default_shape = ""
         for (var input_info of this._view.modifier.graph.inputs) {
             if (input_name == input_info.name) {
-                if (input_info.arguments 
-                    && input_info.arguments.length > 0 
-                    && input_info.arguments[0].type 
+                if (input_info.arguments
+                    && input_info.arguments.length > 0
+                    && input_info.arguments[0].type
                     && input_info.arguments[0].type.shape
                     && input_info.arguments[0].type.shape.dimensions
                     && input_info.arguments[0].type.shape.dimensions.length > 0) {
@@ -594,9 +598,9 @@ host.BrowserHost = class {
 
     change_batch_size(batch_value) {
         for (var input_info of this._view.modifier.graph.inputs) {
-            if (input_info.arguments 
-                && input_info.arguments.length > 0 
-                && input_info.arguments[0].type 
+            if (input_info.arguments
+                && input_info.arguments.length > 0
+                && input_info.arguments[0].type
                 && input_info.arguments[0].type.shape
                 && input_info.arguments[0].type.shape.dimensions
                 && input_info.arguments[0].type.shape.dimensions.length > 0) {
@@ -615,7 +619,7 @@ host.BrowserHost = class {
         let input_change = this.document.getElementById("change-input-shape-input")
         input_change.addEventListener('input', (e) => {
             let value = e.target.value.trim()
-            
+
             let [dims, has_error] = this.dimStr2dimArray(value)
 
             if (has_error) {
@@ -665,14 +669,14 @@ host.BrowserHost = class {
             body: typeof (data_body) == "string" ? data_body : JSON.stringify(data_body),
         }).then((response) => {
             if (this.check_res_status(response.status)) {
-                return 
+                return
             } else if (response.status == 299) {
                 return response.text().then((text) => {
                     this.show_message("Nothing happens!", text, "info");
                 })
             } else if (!response.ok) {
                 return response.text().then((text) => {
-                    this.show_message("Error happens!", 
+                    this.show_message("Error happens!",
                         `You are kindly to check the log and create an issue on https://gitee.com/ascend/ait\n${text}`,
                         "error");
                 })
@@ -753,8 +757,8 @@ host.BrowserHost = class {
                 this._view.modifier.renameMap, this._view.modifier.name2NodeStates)),
             'rebatch_info': this.mapToObjectRec(this._view.modifier.reBatchInfo),
             'changed_initializer': this.mapToObjectRec(this._view.modifier.initializerEditInfo),
-            'postprocess_args': { 
-                'shapeInf': this._view.modifier.downloadWithShapeInf, 
+            'postprocess_args': {
+                'shapeInf': this._view.modifier.downloadWithShapeInf,
                 'cleanUp': this._view.modifier.downloadWithCleanUp },
             "model_properties": this.mapToObjectRec(this._view.modifier.modelProperties),
             'input_size_info': this.mapToObjectRec(this._view.modifier.inputSizeInfo),
@@ -839,7 +843,7 @@ host.BrowserHost = class {
                 ])
             }
             dialogElem.showModal()
-        }) 
+        })
     }
 
     error(message, detail) {
@@ -1093,7 +1097,7 @@ host.BrowserHost = class {
     // this function does 2 things:
     // 1. rename the addedOutputs with their new names using renameMap. Because addedOutputs are stored in lists,
     //    it may be not easy to rename them while editing. (Of course there may be a better way to do this)
-    // 2. filter out the custom output which is added, but deleted later 
+    // 2. filter out the custom output which is added, but deleted later
     process_added_outputs(addedOutputs, renameMap, modelNodeName2State) {
         var processed = []
         for (var out of addedOutputs) {
@@ -1727,4 +1731,8 @@ if (!('scrollBehavior' in window.document.documentElement.style)) {
 
 window.addEventListener('load', () => {
     window.__view__ = new view.View(new host.BrowserHost());
+    if (window.DISPLAY_OM_MODEL) {
+        // change the color of disabled buttons
+
+    }
 });

@@ -1985,6 +1985,8 @@ view.ModelFactoryService = class {
                         }
                         if (id == "./om") {
                             DISPLAY_OM_MODEL = true;
+                        } else {
+                            DISPLAY_OM_MODEL = false;
                         }
                         return model;
                     }).catch((error) => {
