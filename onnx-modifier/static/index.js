@@ -169,10 +169,6 @@ host.BrowserHost = class {
         });
 
         this.document.getElementById("modify-export").addEventListener("click", ()=> {
-            if (window.DISPLAY_OM_MODEL) {
-                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
-                return;
-            }
             let export_name = "modify_info.json"
             if (this._ori_model_file) {
                 export_name = `${this._ori_model_file.name}.${export_name}`
@@ -182,10 +178,6 @@ host.BrowserHost = class {
         })
 
         this.document.getElementById("modify-import").addEventListener("click", ()=> {
-            if (window.DISPLAY_OM_MODEL) {
-                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
-                return;
-            }
             this.document.getElementById('open-modify-json-dialog').click();
         })
 
@@ -1099,27 +1091,22 @@ host.BrowserHost = class {
             ];
             for (var id of idList) {
                 let tmpButton = this.document.getElementById(id);
-                let title = tmpButton.getElementsByClassName('title');
-                title[0].innerHTML = 'disabled';
+                tmpButton.style.display = "none";
             }
         } else {
             let idList = [
-                "download-graph"
+                "download-graph",
+                "reset-graph",
+                "extract-graph",
+                "add-node",
+                "onnxsim-graph",
+                "auto-optimizer-graph",
+                "modify-export",
+                "modify-import"
             ];
-            let name ={
-                "download-graph": "Download",
-                "reset-graph": "Reset",
-                "extract-graph": "Extract Sub Network",
-                "add-node": "Add Node",
-                "onnxsim-graph": "OnnxSim",
-                "auto-optimizer-graph": "AutoOptimizer",
-                "modify-export": "Modifier Info Export",
-                "modify-import": "Modifier Info Import"
-            }
             for (var id of idList) {
                 let tmpButton = this.document.getElementById(id);
-                let title = tmpButton.getElementsByClassName('title');
-                title[0].innerHTML = name[id];
+                tmpButton.style.display = "block";
             }
         }
     }
