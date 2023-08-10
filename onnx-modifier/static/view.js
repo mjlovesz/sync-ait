@@ -455,6 +455,7 @@ view.View = class {
                     const graphs = Array.isArray(model.graphs) && model.graphs.length > 0 ? [ model.graphs[0] ] : [];
                     if (model.format != "DaVinci OM") {
                         this.modifier.loadModelGraph(model, graphs);
+                    } else {
                         this._host.show_alert_message("Warning", "Detect om model, modification is not supported");
                     }
                     return this._updateGraph(model, graphs);
