@@ -14,6 +14,8 @@ var sidebar = sidebar || require('./view-sidebar');
 var grapher = grapher || require('./view-grapher');
 // var modifier = modifier || require('./modifier');
 
+var DISPLAY_OM_MODEL = false;
+
 view.View = class {
 
     constructor(host, id) {
@@ -54,7 +56,7 @@ view.View = class {
                 let dialog = this._host.document.getElementById("set-show-node-count")
                 this._host.show_confirm_dialog(dialog).then((btnValue)=> {
                     if (!btnValue) {
-                        return 
+                        return
                     }
                     let select_elem = this._host.document.getElementById("input-show-node-count")
                     if (select_elem) {
@@ -63,7 +65,7 @@ view.View = class {
                     }
                 })
             });
-            
+
             this._getElementById('sidebar').addEventListener('mousewheel', (e) => {
                 this._preventDefault(e);
             }, { passive: true });
@@ -452,7 +454,13 @@ view.View = class {
                 }
                 return this._timeout(20).then(() => {
                     const graphs = Array.isArray(model.graphs) && model.graphs.length > 0 ? [ model.graphs[0] ] : [];
-                    this.modifier.loadModelGraph(model, graphs);
+                    if (model.format != "DaVinci OM") {
+                        this.modifier.loadModelGraph(model, graphs);
+                        DISPLAY_OM_MODEL = false;
+                    } else {
+                        this._host.show_alert_message("Warning", "Detect om model, modification is not supported");
+                        DISPLAY_OM_MODEL = true;
+                    }
                     return this._updateGraph(model, graphs);
                 });
             });
@@ -486,16 +494,16 @@ view.View = class {
             this._model = model;
             this._graphs = graphs;
         }
-        this.lastViewGraph = this._graph; 
+        this.lastViewGraph = this._graph;
         const graph = this.activeGraph;
         const nodes = graph.nodes;
-        
+
         return this._timeout(100).then(() => {
             if (graph && graph != lastGraphs[0]) {
                 if (nodes.length > 1500) {
                     this.confirmed = false
                     return this._host.confirm(
-                        'Large model detected.', 
+                        'Large model detected.',
                         `This graph contains a large number of nodes (${nodes.length}) and might take a long time to render. Do you want to continue ?`,
                         {"Cancel": "", "Displays partial networks": "partial", "Comfirm": "Comfirm"}
                         ).then((confirmed) => {
@@ -598,7 +606,7 @@ view.View = class {
                     this.lastScrollLeft = container.scrollLeft;
                     this.lastScrollTop = container.scrollTop;
                 }
-                
+
                 viewGraph.add(graph);
 
                 // Workaround for Safari background drag/zoom issue:
@@ -621,7 +629,7 @@ view.View = class {
                 } else {
                     this._showSubGraph = null
                 }
-                
+
                 if (this._showSubGraph) {
                     document.getElementById("sub-graph-name-button").style.display = null
                     document.getElementById("sub-graph-name-button").getElementsByTagName("b")[0].innerText = this._showSubGraphNodeCount
@@ -629,12 +637,12 @@ view.View = class {
                 } else {
                     document.getElementById("sub-graph-name-button").style.display = "none"
                 }
-                
+
                 if (this._showSubGraph) {
                     subViewGraph = this._showSubGraph.getShowSubGraph()
                 }
 
-                if (this._showSubGraph && subViewGraph) { 
+                if (this._showSubGraph && subViewGraph) {
                     subViewGraph.build(this._host.document, origin);
                 } else {
                     viewGraph.build(this._host.document, origin);
@@ -646,7 +654,7 @@ view.View = class {
                     } else {
                         viewGraph.update();
                     }
-                    
+
                     const elements = Array.from(canvas.getElementsByClassName('graph-input') || []);
                     if (elements.length === 0) {
                         const nodeElements = Array.from(canvas.getElementsByClassName('graph-node') || []);
@@ -676,8 +684,8 @@ view.View = class {
                         // console.log("scrolling")
                         this._updateZoom(this._zoom);
                         container.scrollTo({ left: this.lastScrollLeft, top: this.lastScrollTop, behavior: 'auto' });
-                    } 
-                    else {   
+                    }
+                    else {
                         this._zoom = 1;
                         this._updateZoom(this._zoom);
 
@@ -825,12 +833,12 @@ view.View = class {
                 if (clicked_output_name) {
                     this._host._view.modifier.clickSingleNode(clicked_output_name)
                 }
-                
+
                 const content = modelSidebar.render();
                 this._sidebar.open(content, 'Model Properties');
-                
+
                 document.dispatchEvent(new CustomEvent("node-clicked", {detail:{
-                    is_input:clicked_input_name, 
+                    is_input:clicked_input_name,
                     input_name: clicked_input_name,
                     is_output:clicked_output_name,
                     output_name: clicked_output_name,
@@ -899,7 +907,7 @@ view.View = class {
                     nodeSidebar.toggleInput(input.name);
                 }
                 this._sidebar.open(nodeSidebar.render(), 'Node Properties');
-                
+
                 document.dispatchEvent(new CustomEvent("node-clicked", {detail:{is_node:true, node:node, node_name:modelNodeName}}))
             }
             catch (error) {
@@ -935,7 +943,7 @@ view.Graph = class extends grapher.Graph {
         this.model = model;
         this._arguments = new Map();
         this._nodeKey = 0;
-        
+
         // the node key of custom added node
         this._add_nodeKey = 0;
     }
@@ -952,7 +960,7 @@ view.Graph = class extends grapher.Graph {
     }
 
     createInput(input) {
-        var show_name = input.name; 
+        var show_name = input.name;
         if (this.modifier.renameMap.get(input.name)) {
             var show_name = this.modifier.renameMap.get(input.name).get(input.name);
         }
@@ -960,7 +968,7 @@ view.Graph = class extends grapher.Graph {
         const value = new view.Input(this, input, modelNodeName, show_name);
         // value.name = (this._nodeKey++).toString();
 
-        value.name = input.name; 
+        value.name = input.name;
         // console.log(value.name)
         input.modelNodeName = input.name;
         this.setNode(value);
@@ -974,7 +982,7 @@ view.Graph = class extends grapher.Graph {
             var show_name = this.modifier.renameMap.get(modelNodeName).get(output.name);
         }
         const value = new view.Output(this, output, modelNodeName, show_name);
-        // value.name = (this._nodeKey++).toString();  
+        // value.name = (this._nodeKey++).toString();
         value.name = "out_" + output.name;   // output nodes should have name
         output.modelNodeName = "out_" + output.name;
         this.setNode(value);
@@ -1012,7 +1020,7 @@ view.Graph = class extends grapher.Graph {
                 }
             }
         }
-        
+
         for (const input of graph.inputs) {
             const viewInput = this.createInput(input);
             for (const argument of input.arguments) {
@@ -1027,8 +1035,8 @@ view.Graph = class extends grapher.Graph {
             var inputs = node.inputs;
             for (var input of inputs) {
                 for (var argument of input.arguments) {
-                    if (argument.name != '' && !argument.initializer) { 
-                        this.createArgument(argument).to(viewNode);    
+                    if (argument.name != '' && !argument.initializer) {
+                        this.createArgument(argument).to(viewNode);
                     }
                 }
             }
@@ -1112,7 +1120,7 @@ view.Node = class extends grapher.Node {
 
     // 这里的value是一个onnx.Node，这里正在构建的是view.Node
     // context 是指Graph
-    constructor(context, value, modelNodeName) {    
+    constructor(context, value, modelNodeName) {
         super();
         this.context = context;
         this.value = value;
@@ -1136,7 +1144,7 @@ view.Node = class extends grapher.Node {
 
     _add(node) {
 
-        // header 
+        // header
         const header =  this.header();
         const styles = [ 'node-item-type' ];
         const type = node.type;
@@ -1226,7 +1234,7 @@ view.Node = class extends grapher.Node {
             if (hiddenInitializers) {
                 list.add(null, '\u3008' + '\u2026' + '\u3009', '', null, '');
             }
-            
+
             // 节点属性（侧边栏显示）
             for (const attribute of sortedAttributes) {
                 if (attribute.visible) {
@@ -1377,7 +1385,7 @@ view.Argument = class {
                 }
                 const edge = this.context.createEdge(this._from, to);
                 edge.v = this._from.name;
-                edge.w = to.name;             
+                edge.w = to.name;
                 if (content) {
                     edge.label = content;
                 }
@@ -1388,7 +1396,7 @@ view.Argument = class {
                 this.context.setEdge(edge);
                 this._edges.push(edge);
                 // console.log(this.context._namedEdges);
-                
+
                 // this argument occurs in both sides of the edge, so it is a `path` argument
                 // this.context._pathArgumentNames.add(this._argument.name);
             }
@@ -1673,6 +1681,7 @@ view.ModelFactoryService = class {
         this._extensions = new Set([ '.zip', '.tar', '.tar.gz', '.tgz', '.gz' ]);
         this._factories = [];
         this.register('./onnx', [ '.onnx', '.onn', '.pb', '.onnxtxt', '.pbtxt', '.prototxt', '.txt', '.model', '.pt', '.pth', '.pkl', '.ort', '.ort.onnx' ]);
+        this.register('./om', [ '.om', '.onnx', '.pb', '.engine' ]);
     }
 
     register(id, factories, containers) {
@@ -1852,7 +1861,7 @@ view.ModelFactoryService = class {
                     { name: 'sentencepiece.ModelProto data', tags: [[1,[[1,2],[2,5],[3,0]]],[2,[[1,2],[2,2],[3,0],[4,0],[5,2],[6,0],[7,2],[10,5],[16,0],[40,0],[41,0],[42,0],[43,0]]],[3,[]],[4,[]],[5,[]]] },
                     { name: 'mediapipe.BoxDetectorIndex data', tags: [[1,[[1,[[1,[[1,5],[2,5],[3,5],[4,5],[6,0],[7,5],[8,5],[10,5],[11,0],[12,0]]],[2,5],[3,[]]]],[2,false],[3,false],[4,false],[5,false]]],[2,false],[3,false]] },
                     { name: 'third_party.tensorflow.python.keras.protobuf.SavedMetadata data', tags: [[1,[[1,[[1,0],[2,0]]],[2,0],[3,2],[4,2],[5,2]]]] },
-                    { name: 'pblczero.Net data', tags: [[1,5],[2,2],[3,[[1,0],[2,0],[3,0]],[10,[[1,[]],[2,[]],[3,[]],[4,[]],[5,[]],[6,[]]]],[11,[]]]] } 
+                    { name: 'pblczero.Net data', tags: [[1,5],[2,2],[3,[[1,0],[2,0],[3,0]],[10,[[1,[]],[2,[]],[3,[]],[4,[]],[5,[]],[6,[]]]],[11,[]]]] }
                 ];
                 const match = (tags, schema) => {
                     for (const pair of schema) {
@@ -1945,25 +1954,20 @@ view.ModelFactoryService = class {
 
     _openContext(context) {
         const modules = this._filter(context).filter((module) => module && module.length > 0);
-        // console.log(modules)  // ['./onnx', './tensorrt', './rknn', './om']
 
         const errors = [];
         let success = false;
 
-        // TODO: to simplify the logic here since this tool is used for only onnx
         const nextModule = () => {
             if (modules.length > 0) {
                 const id = modules.shift();
-                // console.log(id)
                 return this._host.require(id).then((module) => {
-                    // console.log(module)
                     const updateErrorContext = (error, context) => {
                         const content = " in '" + context.identifier + "'.";
                         if (error && typeof error.message === 'string' && !error.message.endsWith(content) && (error.context === undefined || error.context === true)) {
                             error.message = error.message.replace(/\.$/, '') + content;
                         }
                     };
-                    // console.log(module.ModelFactory)
                     if (!module.ModelFactory) {
                         throw new view.Error("Failed to load module '" + id + "'.");
                     }
@@ -1971,7 +1975,6 @@ view.ModelFactoryService = class {
                     let match = undefined;
                     try {
                         match = modelFactory.match(context);
-                        // console.log(match)    // onnx.pb.ModelProto
                         if (!match) {
                             return nextModule();
                         }
@@ -2325,8 +2328,8 @@ view.ShowSubGraph = class {
                     return applyFunction.apply(thisArg, [target, argumentsList])
                 }
             })
-        } 
-            
+        }
+
         class ShowGraph {
             node(nodeId) {
                 let nodeInfo = super.node(nodeId)
@@ -2341,7 +2344,7 @@ view.ShowSubGraph = class {
                         }
                         let bak_blocks = this._blocks
                         let header = new grapher.Node.Header()
-                        let title = header.add(this.id, ['node-item-type', "node-item-type-more"], "...", 
+                        let title = header.add(this.id, ['node-item-type', "node-item-type-more"], "...",
                             `double click to show more nodes around ${this.value.type.name}(${this.modelNodeName})`)
                         title.on('dblclick', () => {this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName)})
                         this._blocks = [header];
@@ -2356,19 +2359,19 @@ view.ShowSubGraph = class {
                 return new Map([...withHideNeighborNodes]);
             }
             get edges() {
-                return new Map([...super.edges].filter(([_, e]) => withHideNeighbors.has(e.v) 
+                return new Map([...super.edges].filter(([_, e]) => withHideNeighbors.has(e.v)
                                                                     && withHideNeighbors.has(e.w)));
             }
         }
         let sg = new ShowGraph()
 
         sg.__proto__.__proto__ = this._oriViewGraph
-        return sg; 
+        return sg;
     }
 
     getNeighbor(nodeIDs, max_node_count, just_nearest_neighbor) {
         let reachEdges = new Set()
-        let reachNodes = new Set() 
+        let reachNodes = new Set()
         let nodeList = []
         let nodeListIndex = 0;
         let max_node_length = Number.MAX_VALUE
@@ -2399,7 +2402,7 @@ view.ShowSubGraph = class {
                     }
                     reachNodes.add(neighborNodeId)
                     nodeList.push(neighborNodeId)
-                } 
+                }
             }
         }
 
