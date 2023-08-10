@@ -14,6 +14,8 @@ var sidebar = sidebar || require('./view-sidebar');
 var grapher = grapher || require('./view-grapher');
 // var modifier = modifier || require('./modifier');
 
+var DISPLAY_OM_MODEL = false;
+
 view.View = class {
 
     constructor(host, id) {
@@ -453,6 +455,7 @@ view.View = class {
                     const graphs = Array.isArray(model.graphs) && model.graphs.length > 0 ? [ model.graphs[0] ] : [];
                     if (model.format != "DaVinci OM") {
                         this.modifier.loadModelGraph(model, graphs);
+                        this._host.show_alert_message("Warning", "Detect om model, modification is not supported");
                     }
                     return this._updateGraph(model, graphs);
                 });
@@ -1978,6 +1981,9 @@ view.ModelFactoryService = class {
                     return modelFactory.open(context, match).then((model) => {
                         if (!model.identifier) {
                             model.identifier = context.identifier;
+                        }
+                        if (id == "./om") {
+                            DISPLAY_OM_MODEL = true;
                         }
                         return model;
                     }).catch((error) => {
