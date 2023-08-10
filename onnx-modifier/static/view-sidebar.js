@@ -1132,10 +1132,12 @@ sidebar.ArgumentView = class {
                 }
 
                 if (initializer) {
-                    const editInitializerVal = this._host.document.createElement('div');
-                    editInitializerVal.className = 'sidebar-view-item-value-line-border';
-                    editInitializerVal.innerHTML = 'This is an initializer, you can input a new value for it here:';
-                    this._valueEditers.appendChild(editInitializerVal);
+                    if (window.DISPLAY_OM_MODEL) {
+                        const editInitializerVal = this._host.document.createElement('div');
+                        editInitializerVal.className = 'sidebar-view-item-value-line-border';
+                        editInitializerVal.innerHTML = 'This is an initializer, you can input a new value for it here:';
+                        this._valueEditers.appendChild(editInitializerVal);
+                    }
 
                     var inputInitializerVal = document.createElement("textarea");
                     inputInitializerVal.setAttribute("type", "text");
