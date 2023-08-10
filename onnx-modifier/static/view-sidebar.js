@@ -2077,7 +2077,7 @@ sidebar.FindSidebar = class {
         }
 
         if (e.type == "dblclick") {
-            this._raise("dblclick-not-in-graph", data, e)
+            this._raise("dblclick-list", data, e)
         } else if (selection.length > 0) {
             this._raise('select', selection);
         } else {
@@ -2155,13 +2155,14 @@ sidebar.FindSidebar = class {
                                     inputItem.innerText = '\u2192 ' + argument.name.split('\n').shift(); // custom argument id
                                     inputItem.dataset.id = 'edge-' + argument.name;
                                     inputItem.dataset.type = "edge"
+                                    inputItem.dataset.name = label.name
                                     inputItem.dataset.graph_node_name = label.modelNodeName.split('\n').shift()
 
                                     this._resultElement.appendChild(inputItem);
                                     edges.add(argument.name);
                                 }
                                 else {
-                                    initializers.push([argument, label.modelNodeName]);
+                                    initializers.push([argument, label.name, label.modelNodeName]);
                                 }
                             }
                         }
@@ -2177,17 +2178,19 @@ sidebar.FindSidebar = class {
                     nameItem.innerText = '\u25A2 ' + (name || '[' + type + ']');
                     nameItem.dataset.id = label.id;
                     nameItem.dataset.type = "node"
+                    nameItem.dataset.name = label.name
                     nameItem.dataset.graph_node_name = name
                     this._resultElement.appendChild(nameItem);
                     nodes.add(label.id);
                 }
             }
-            for (const [argument, node_name] of initializers) {
+            for (const [argument, name, node_name] of initializers) {
                 if (argument.name) {
                     const initializeItem = this._host.document.createElement('li');
                     initializeItem.innerText = '\u25A0 ' + argument.name.split('\n').shift(); // custom argument id
                     initializeItem.dataset.id = 'initializer-' + argument.name;
                     initializeItem.dataset.type = "initializer"
+                    initializeItem.dataset.name = name
                     initializeItem.dataset.graph_node_name = node_name.split('\n').shift(); 
                     this._resultElement.appendChild(initializeItem);
                 }
@@ -2204,6 +2207,7 @@ sidebar.FindSidebar = class {
                             outputItem.innerText = '\u2192 ' + argument.name.split('\n').shift(); // custom argument id
                             outputItem.dataset.id = 'edge-' + argument.name;
                             outputItem.dataset.type = "output"
+                            outputItem.dataset.name = label.name
                             outputItem.dataset.graph_node_name = label.modelNodeName.split('\n').shift()
                             this._resultElement.appendChild(outputItem);
                             edges.add(argument.name);
