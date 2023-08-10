@@ -23,9 +23,6 @@ PYTHON=${PIP3_DIR}/python
 MODEL_CONVERT_PATH=$(dirname $(${PYTHON} -c "import model_convert;print(model_convert.__file__)"))
 CUR_PATH=$(dirname $(readlink -f $0))
 
-cp ${CUR_PATH}/model_convert/atc/atc_args_map.yml ${MODEL_CONVERT_PATH}/atc/
-cp ${CUR_PATH}/model_convert/aoe/aoe_args_map.yml ${MODEL_CONVERT_PATH}/aoe/
-
 build_aie_convert(){
   cd ${CUR_PATH}/model_convert/aie/cpp
   rm -rf build && mkdir build && cd build && cmake .. && make -j
