@@ -137,6 +137,37 @@ namespace Base {
         h2dQueue.push(nullptr);
     }
 
+    void FuncPrepareBaseTensor(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
+                               Base::PyInferenceSession* session,
+                               std::vector<std::vector<Base::BaseTensor>>& inputsList,
+                               std::vector<std::vector<std::vector<size_t>>>& shapesList, bool autoDymShape,
+                               bool autoDymDims, std::vector<std::string>& outputNames)
+    {
+        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
+        if (ret != APP_ERR_OK) {
+            throw std::runtime_error(GetError(ret));
+        }
+        std::vector<std::string> inputNames {};
+        for (const auto &desc: session->GetInputs()) {
+            inputNames.emplace_back(desc.name);
+        }
+        for (size_t i = 0; i < inputsList.size(); i++) {
+            auto feeds = std::make_shared<Feeds>();
+            feeds->inputs = std::make_shared<std::vector<Base::BaseTensor>>(inputsList[i]);
+            feeds->outputNames = std::make_shared<std::vector<std::string>>(outputNames);
+            for (size_t j = 0; j < inputNames.size(); j++) {
+                if (autoDymShape) {
+                    AutoSetDym(feeds, "shape", inputNames[j], shapesList[i][j], j == (inputNames.size() - 1));
+                }
+                if (autoDymDims) {
+                    AutoSetDym(feeds, "dim", inputNames[j], shapesList[i][j], j == (inputNames.size() - 1));
+                }
+            }
+            h2dQueue.push(feeds);
+        }
+        h2dQueue.push(nullptr);
+    }
+
     void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
                  ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId)
     {
@@ -144,8 +175,7 @@ namespace Base {
         if (ret != APP_ERR_OK) {
             throw std::runtime_error(GetError(ret));
         }
-        while (true)
-        {
+        while (true) {
             auto item = h2dQueue.pop();
             if (!item) {
                 computeQueue.push(nullptr);
@@ -174,8 +204,7 @@ namespace Base {
         if (ret != APP_ERR_OK) {
             throw std::runtime_error(GetError(ret));
         }
-        while (true)
-        {
+        while (true) {
             auto item = computeQueue.pop();
             if (!item) {
                 d2hQueue.push(nullptr);
@@ -203,8 +232,7 @@ namespace Base {
         if (ret != APP_ERR_OK) {
             throw std::runtime_error(GetError(ret));
         }
-        while (true)
-        {
+        while (true) {
             auto item = d2hQueue.pop();
             if (!item) {
                 saveQueue.push(nullptr);
@@ -226,8 +254,7 @@ namespace Base {
             throw std::runtime_error(GetError(ret));
         }
 
-        while (true)
-        {
+        while (true) {
             auto item = saveQueue.pop();
             if (!item) {
                 break;
@@ -258,6 +285,26 @@ namespace Base {
                     }
                 }
             }
+        }
+    }
+
+    void FuncSaveTensorBase(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId,
+                            std::vector<std::vector<TensorBase>> &result)
+    {
+        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
+        if (ret != APP_ERR_OK) {
+            throw std::runtime_error(GetError(ret));
+        }
+
+        while (true) {
+            auto item = saveQueue.pop();
+            if (!item) {
+                break;
+            }
+            for (auto &mem : *(item->memory)) {
+                Base::MemoryHelper::Free(mem);
+            }
+            result.emplace_back(*(item->outputs));
         }
     }
 }
