@@ -40,6 +40,12 @@ def convert_model_to_json(cann_path, offline_model_path, out_path):
         utils.logger.error('The offline model file not ends with .om, Please check {} file.'.format(
             offline_model_path))
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_MODEL_TYPE_ERROR)
+    
+    cann_path = os.path.realpath(cann_path)
+    if not os.path.isdir(cann_path):
+        utils.logger.error(f'The cann path {cann_path} is not a directory.Please check.')
+        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+    
     atc_command_file_path = get_atc_path(cann_path)
     utils.check_file_or_directory_path(atc_command_file_path)
     output_json_path = os.path.join(out_path, "model", model_name + ".json")
