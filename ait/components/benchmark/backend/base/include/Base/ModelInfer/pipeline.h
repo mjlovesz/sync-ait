@@ -85,9 +85,15 @@ namespace Base {
     void PrepareInputData(std::vector<std::string> &files, Base::PyInferenceSession* session,
         std::shared_ptr<Feeds> &feeds, bool autoDymShape,
         bool autoDymDims, const bool pure_infer, std::vector<std::string> &inputNames);
-    void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId, Base::PyInferenceSession* session,
-                     std::vector<std::vector<std::string>> &infilesList, bool autoDymShape, bool autoDymDims,
-                     const std::string &outputDir, const bool pure_infer);
+    void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
+                     Base::PyInferenceSession* session, std::vector<std::vector<std::string>> &infilesList,
+                     bool autoDymShape, bool autoDymDims, const std::string &outputDir, const bool pure_infer);
+
+    void FuncPrepareBaseTensor(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
+                               Base::PyInferenceSession* session,
+                               std::vector<std::vector<Base::BaseTensor>>& inputsList,
+                               std::vector<std::vector<std::vector<size_t>>>& shapesList, bool autoDymShape,
+                               bool autoDymDims, std::vector<std::string>& outputNames);
 
     void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
                  ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId);
@@ -100,6 +106,9 @@ namespace Base {
                  ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId);
 
     void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, std::string outFmt);
+
+    void FuncSaveTensorBase(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId,
+                            std::vector<std::vector<TensorBase>> &result);
 
     cnpy::NpyArray CreatePureInferArray(std::string fname, Base::TensorDesc inTensor);
 }
