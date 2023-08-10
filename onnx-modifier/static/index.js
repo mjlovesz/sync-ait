@@ -1077,33 +1077,22 @@ host.BrowserHost = class {
     }
 
     _updateButtons() {
+        let idList = [
+            "download-graph",
+            "reset-graph",
+            "extract-graph",
+            "add-node",
+            "onnxsim-graph",
+            "auto-optimizer-graph",
+            "modify-export",
+            "modify-import"
+        ];
         if (window.DISPLAY_OM_MODEL) {
-            // change the color of disabled buttons
-            let idList = [
-                "download-graph",
-                "reset-graph",
-                "extract-graph",
-                "add-node",
-                "onnxsim-graph",
-                "auto-optimizer-graph",
-                "modify-export",
-                "modify-import"
-            ];
             for (var id of idList) {
                 let tmpButton = this.document.getElementById(id);
                 tmpButton.style.display = "none";
             }
         } else {
-            let idList = [
-                "download-graph",
-                "reset-graph",
-                "extract-graph",
-                "add-node",
-                "onnxsim-graph",
-                "auto-optimizer-graph",
-                "modify-export",
-                "modify-import"
-            ];
             for (var id of idList) {
                 let tmpButton = this.document.getElementById(id);
                 tmpButton.style.display = "block";
