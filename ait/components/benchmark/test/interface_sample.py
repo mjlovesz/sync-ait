@@ -37,6 +37,19 @@ def infer_simple():
     logging.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
+def infer_pipeline():
+    device_id = 0
+    session = InferSession(device_id, model_path)
+
+    barray = bytearray(session.get_inputs()[0].realsize)
+    ndata = np.frombuffer(barray)
+
+    outputs = session.infer([[ndata]])
+    print("outputs:{} type:{}".format(outputs, type(outputs)))
+
+    print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
+
+
 def infer_torch_tensor():
     import torch
     device_id = 0

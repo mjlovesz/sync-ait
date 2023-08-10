@@ -148,21 +148,22 @@ view.View = class {
             sidebarView.on('select', (sender, selection) => {
                 this.select(selection);
             });
-            sidebarView.on('dblclick-not-in-graph', (sender, data, event) => {
-                this.showSubGraphByNodeName(data.graph_node_name)
+            sidebarView.on('dblclick-list', (sender, data, event) => {
+                this.showSubGraphByNodeName(data.name, data.graph_node_name)
             })
             this._sidebar.open(sidebarView.content, 'Find');
             sidebarView.focus(this._searchText);
         }
     }
 
-    showSubGraphByNodeName(node_name) {
+    showSubGraphByNodeName(nodeId, nodeName) {
         if (!this._showSubGraph) {
             return
         }
-        this._showSubGraph.setShowNode(node_name)
+        this._showSubGraph.setShowNode(nodeId)
         return this._updateGraph(this._model, this._graphs).then(() => {
-            let elem = document.getElementById(`node-name-${node_name}`)
+            let elem = document.getElementById(`node-name-${nodeName}`)
+                || document.getElementById(`node-id-${nodeId}`)
             if (elem) {
                 this.select([elem])
             }
@@ -533,21 +534,6 @@ view.View = class {
                 }
             };
 
-            if (confirmed == "partial") {
-                this._showSubGraph = new view.ShowSubGraph(graph, this._showSubGraph, this._showSubGraphNodeCount)
-            } else {
-                this._showSubGraph = null
-            }
-
-
-            if (this._showSubGraph) {
-                document.getElementById("sub-graph-name-button").style.display = null
-                document.getElementById("sub-graph-name-button").getElementsByTagName("b")[0].innerText = this._showSubGraphNodeCount
-                document.getElementById("sub-graph-name-button").getElementsByTagName("span")[0].innerText = this._showSubGraph.showNodes
-            } else {
-                document.getElementById("sub-graph-name-button").style.display = "none"
-            }
-
             return this.renderGraph(this._model, this.activeGraph, this._showSubGraph).then(() => {
                 if (this._page !== 'default') {
                     this.show('default');
@@ -582,7 +568,7 @@ view.View = class {
         }
     }
 
-    renderGraph(model, graph, showSubGraphIns) {
+    renderGraph(model, graph) {
         try {
             this._graph = null;
 
@@ -635,18 +621,35 @@ view.View = class {
                 canvas.appendChild(origin);
 
                 let subViewGraph = null
-                if (showSubGraphIns) {
-                    subViewGraph = showSubGraphIns.getShowSubGraph(viewGraph)
+
+                if (this.confirmed == "partial") {
+                    this._showSubGraph = new view.ShowSubGraph(viewGraph,
+                        this._showSubGraph ? this._showSubGraph.showNodes: null,
+                        this._showSubGraphNodeCount)
+                } else {
+                    this._showSubGraph = null
                 }
 
-                if (showSubGraphIns && subViewGraph) {
+                if (this._showSubGraph) {
+                    document.getElementById("sub-graph-name-button").style.display = null
+                    document.getElementById("sub-graph-name-button").getElementsByTagName("b")[0].innerText = this._showSubGraphNodeCount
+                    document.getElementById("sub-graph-name-button").getElementsByTagName("span")[0].innerText = this._showSubGraph.showNodes
+                } else {
+                    document.getElementById("sub-graph-name-button").style.display = "none"
+                }
+
+                if (this._showSubGraph) {
+                    subViewGraph = this._showSubGraph.getShowSubGraph()
+                }
+
+                if (this._showSubGraph && subViewGraph) {
                     subViewGraph.build(this._host.document, origin);
                 } else {
                     viewGraph.build(this._host.document, origin);
                 }
 
                 return this._timeout(20).then(() => {
-                    if (showSubGraphIns && subViewGraph) {
+                    if (this._showSubGraph && subViewGraph) {
                         subViewGraph.update();
                     } else {
                         viewGraph.update();
@@ -1158,7 +1161,7 @@ view.Node = class extends grapher.Node {
         const title = header.add(null, styles, content, tooltip);
         title.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
         title.on('dblclick', () => {
-            this.context.view.showSubGraphByNodeName(this.modelNodeName)
+            this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName)
         });
         if (node.type.nodes && node.type.nodes.length > 0) {
             const definition = header.add(null, styles, '\u0192', 'Show Function Definition');
@@ -1196,7 +1199,7 @@ view.Node = class extends grapher.Node {
             const list = this.list();
             list.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
             list.on('dblclick', () => {
-                this.context.view.showSubGraphByNodeName(this.modelNodeName)
+                this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName)
             });
             for (const initializer of initializers) {
                 const argument = initializer.arguments[0];
@@ -2228,42 +2231,42 @@ if (typeof module !== 'undefined' && typeof module.exports === 'object') {
 }
 
 view.ShowSubGraph = class {
-    constructor(graph, lastShowSubGraph, showSubGraphNodeCount) {
+    constructor(viewGraph, showNodes, showSubGraphNodeCount) {
         this._showSubGraphNodeCount = showSubGraphNodeCount
-        this._oriGraph = graph
+        this._oriViewGraph = viewGraph
         this._showGraph = null
-        this._edgeNeighbors = new Map()    // edgeName -> name of nodes around
-        this._nodes = new Map()             // nodeName -> Node
+        this._edgeNeighbors = new Map()    // edgeName -> id of nodes around
         this._edges = new Map()             // argumentName -> Argument
         this._startNodes = new Map()   // start nodeName -> input Set
         this._endNodes = new Map()     // end nodeName -> output Set
-        this._showNodes = []
         this.initNodesAndEdges()
-        this.initStartAndEndNodeInfo()
-        this._showNodes = lastShowSubGraph && lastShowSubGraph._oriGraph == graph ? lastShowSubGraph.showNodes : this.setShowNode()
+        this._showNodes = showNodes || this.setShowNode()
     }
 
-    setShowNode(nodeName) {
+    setShowNode(nodeId) {
         // 1. 获取所有的邻居节点
-        this._showNodes = nodeName ? [nodeName] : [...this._startNodes.keys()]
+        this._showNodes = nodeId ? [nodeId] : [...this._startNodes.keys()]
         return this._showNodes
     }
 
     get showNodes() {
-        return this._showNodes
+        return this._showNodes.map(id=>this._oriViewGraph.nodes.get(id).label.name)
     }
 
-    addEdgeInfo(edgeName, nodeName) {
+    addEdgeInfo(edgeName, nodeId) {
         if(!this._edgeNeighbors.has(edgeName)) {
             this._edgeNeighbors.set(edgeName, new Set())
         }
-        this._edgeNeighbors.get(edgeName).add(nodeName)
+        this._edgeNeighbors.get(edgeName).add(nodeId)
     }
 
     getNodeEdges(node) {
         let edges = new Set()
         for (const inputParam of node.inputs) {
             for (const args of inputParam.arguments) {
+                if (args.initializer) {
+                    continue
+                }
                 edges.add(args.name)
                 this._edges.set(args.name, args)
             }
@@ -2278,60 +2281,33 @@ view.ShowSubGraph = class {
     }
 
     initNodesAndEdges() {
-        for (const node of this._oriGraph.nodes) {
-            this._nodes.set(node.name, node)
-            for (const edgeName of this.getNodeEdges(node)) {
+        for (const [nodeId, node] of this._oriViewGraph.nodes) {
+            if (node.label instanceof view.Input) {
+                this._startNodes.set(nodeId, node)
+            }
+            if (node.label instanceof view.Output) {
+                this._endNodes.set(nodeId, node)
+            }
+            for (const edgeName of this.getNodeEdges(node.label)) {
                 if (edgeName == "") {
                     continue
                 }
-                this.addEdgeInfo(edgeName, node.name)
+                this.addEdgeInfo(edgeName, nodeId)
             }
         }
     }
 
-    initStartAndEndNodeInfo() {
-        for (const inputInfo of this._oriGraph.inputs) {
-            for (const inNode of this._edgeNeighbors.get(inputInfo.name)) {
-                if (!this._startNodes.has(inNode)) {
-                    this._startNodes.set(inNode, new Set())
-                }
-                this._startNodes.get(inNode).add(inputInfo)
-            }
-        }
-        for (const outputInfo of this._oriGraph.outputs) {
-            for (const outNode of this._edgeNeighbors.get(outputInfo.name)) {
-                if (!this._endNodes.has(outNode)) {
-                    this._endNodes.set(outNode, new Set())
-                }
-                this._endNodes.get(outNode).add(outputInfo)
-            }
-        }
-    }
-
-    getShowSubGraph(viewGraph) {
+    getShowSubGraph() {
         // 获取上下的邻居节点
         let showNeighbors = this.getNeighbor(this._showNodes, this._showSubGraphNodeCount) // 上下N个节点
 
         // 获取边缘节点，边缘节点显示为[...]
         let withHideNeighbors = this.getNeighbor(showNeighbors, Number.MAX_VALUE, true) // 上下N个节点
 
-        // 获取inputs 和 outputs
-        let showInputs = []
-        let showOutputs = []
-        for(const showNodeName of showNeighbors) {
-            if (this._startNodes.has(showNodeName)) {
-                showInputs.push(...this._startNodes.get(showNodeName))
-            }
-            if (this._endNodes.has(showNodeName)) {
-                showOutputs.push(...this._endNodes.get(showNodeName))
-            }
-        }
-
-        let allNodeNames = new Set([...showNeighbors, ...withHideNeighbors, ...showInputs.map(x=>x.name),
-                                    ...showOutputs.map(x=>x.name), ...showOutputs.map(x=>`out_${x.name}`)])
-        let allHideNodeIds = new Set([...viewGraph.nodes].filter(([_, node])=> {
-            return withHideNeighbors.has(node.label.modelNodeName) && !showNeighbors.has(node.label.modelNodeName)
-        }).map(([id, _]) => id))
+        let allHideNodeIds = new Set([...this._oriViewGraph.nodes.keys()].filter((nodeId)=> {
+            return withHideNeighbors.has(nodeId) && !showNeighbors.has(nodeId)
+                && !this._startNodes.has(nodeId) && !this._startNodes.has(nodeId)
+        }))
 
 
         // 构建显示对象
@@ -2370,7 +2346,7 @@ view.ShowSubGraph = class {
                         let header = new grapher.Node.Header()
                         let title = header.add(this.id, ['node-item-type', "node-item-type-more"], "...",
                             `double click to show more nodes around ${this.value.type.name}(${this.modelNodeName})`)
-                        title.on('dblclick', () => {this.context.view.showSubGraphByNodeName(this.modelNodeName)})
+                        title.on('dblclick', () => {this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName)})
                         this._blocks = [header];
                         oriBuild.apply(this, argumentsList)
                         this._blocks = bak_blocks
@@ -2378,32 +2354,31 @@ view.ShowSubGraph = class {
                 }))
             }
             get nodes() {
-                let withHideNeighborNodes = [...super.nodes].filter(
-                        ([_, v]) => allNodeNames.has(v.label.modelNodeName))
+                let withHideNeighborNodes = [...super.nodes].filter(([nodeID, _]) => withHideNeighbors.has(nodeID))
 
                 return new Map([...withHideNeighborNodes]);
             }
             get edges() {
-                return new Map([...super.edges].filter(([_, v]) => allNodeNames.has(v.label.from.modelNodeName)
-                                                                    && allNodeNames.has(v.label.to.modelNodeName)));
+                return new Map([...super.edges].filter(([_, e]) => withHideNeighbors.has(e.v)
+                                                                    && withHideNeighbors.has(e.w)));
             }
         }
         let sg = new ShowGraph()
 
-        sg.__proto__.__proto__ = viewGraph
+        sg.__proto__.__proto__ = this._oriViewGraph
         return sg;
     }
 
-    getNeighbor(nodeNames, max_node_count, just_nearest_neighbor) {
+    getNeighbor(nodeIDs, max_node_count, just_nearest_neighbor) {
         let reachEdges = new Set()
         let reachNodes = new Set()
         let nodeList = []
         let nodeListIndex = 0;
         let max_node_length = Number.MAX_VALUE
 
-        for (const nodeName of nodeNames) {
-            reachNodes.add(nodeName)
-            nodeList.push(nodeName)
+        for (const nodeId of nodeIDs) {
+            reachNodes.add(nodeId)
+            nodeList.push(nodeId)
         }
         if (just_nearest_neighbor) {
             // 只原始节点的邻居节点，不做更多扩展
@@ -2411,25 +2386,22 @@ view.ShowSubGraph = class {
         }
 
         while(reachNodes.size < max_node_count && nodeListIndex < nodeList.length && nodeListIndex < max_node_length) {
-            let thisNode = this._nodes.get(nodeList[nodeListIndex])
+            let thisNode = this._oriViewGraph.nodes.get(nodeList[nodeListIndex])
             nodeListIndex += 1
 
-            let edges = this.getNodeEdges(thisNode)
+            let edges = this.getNodeEdges(thisNode.label)
 
             for (const edgeName of edges) {
                 if (edgeName == "") {
                     continue
                 }
                 reachEdges.add(edgeName)
-                if (this._edges.has(edgeName) && this._edges.get(edgeName).initializer) {
-                    continue
-                }
-                for (const neighborNodeName of this._edgeNeighbors.get(edgeName)) {
-                    if (reachNodes.has(neighborNodeName) || !neighborNodeName) {
+                for (const neighborNodeId of this._edgeNeighbors.get(edgeName)) {
+                    if (reachNodes.has(neighborNodeId) || !neighborNodeId) {
                         continue
                     }
-                    reachNodes.add(neighborNodeName)
-                    nodeList.push(neighborNodeName)
+                    reachNodes.add(neighborNodeId)
+                    nodeList.push(neighborNodeId)
                 }
             }
         }
