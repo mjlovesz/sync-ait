@@ -26,7 +26,7 @@ sidebar.Sidebar = class {
     open(content, title) {
         this.close();
         this.push(content, title);
-        
+
         for (const elem of document.getElementsByClassName("graph-node-clicked")) {
             elem.classList.remove("graph-node-clicked")
             elem.classList.add("graph-node-highlight")
@@ -65,7 +65,7 @@ sidebar.Sidebar = class {
         }
 
         document.dispatchEvent(new CustomEvent("node-clicked", {detail:{}}))
-        
+
         if (this._host._view.modifier) {
             this._host._view.modifier.clearHighlightNode()
         }
@@ -133,10 +133,10 @@ function checkInputValidChars(name, allow_empty) {
 
 function checkInputShowErr(elem, has_error) {
     if (has_error) {
-        if (!(elem.previousElementSibling 
+        if (!(elem.previousElementSibling
                 && elem.previousElementSibling.tagName.toLowerCase() == "err_msg")) {
             let element = document.createElement("err_msg")
-            elem.parentElement.insertBefore(element, elem) 
+            elem.parentElement.insertBefore(element, elem)
         }
         elem.classList.add("input_error")
     } else {
@@ -219,13 +219,12 @@ sidebar.NodeSidebar = class {
                 this._addOutput(output.name, output, index);
             }
         }
-        
+
         this._view_elements = this._host.document.createElement('div')
         for (const elem of this._elements) {
             this._view_elements.appendChild(elem)
         }
-        
-        this._modifer_element = this.add_modifer_panel()
+        this._modifer_element = this.add_modifer_panel();
     }
 
     add_separator(elment, className) {
@@ -238,7 +237,7 @@ sidebar.NodeSidebar = class {
         const span = this._host.document.createElement('span');
         span.innerHTML = "&nbsp;&nbsp;&nbsp;"; // (if this doesn't work, try " ")
         span.className = className;
-        this._elements.push(span); 
+        this._elements.push(span);
     }
 
     render() {
@@ -248,9 +247,10 @@ sidebar.NodeSidebar = class {
     add_modifer_panel() {
         const modiferPanelElem = this._host.document.createElement('div');
         modiferPanelElem.className = 'sidebar-view-modifer-panel';
-
-        modiferPanelElem.appendChild(this.init_modifer_button())
-        modiferPanelElem.appendChild(this.init_modifer_toolbar())
+        if (!window.DISPLAY_OM_MODEL) {
+            modiferPanelElem.appendChild(this.init_modifer_button());
+            modiferPanelElem.appendChild(this.init_modifer_toolbar());
+        }
         return modiferPanelElem;
     }
 
@@ -272,7 +272,7 @@ sidebar.NodeSidebar = class {
             dialog.getElementsByClassName("message")[0].innerText = `Choose a input of Node ${this._modelNodeName} :`
             this._host.show_confirm_dialog(dialog).then((is_not_cancel)=> {
                 if (!is_not_cancel) {
-                    return 
+                    return
                 }
                 let select_input = select_elem.options[select_elem.selectedIndex].value;
                 this._host._view.modifier.addModelInput(this._modelNodeName, select_input);
@@ -293,8 +293,8 @@ sidebar.NodeSidebar = class {
     init_modifer_toolbar() {
         const modiferToolbarElem = this._host.document.createElement('div');
         modiferToolbarElem.className = 'sidebar-view-modifer-toolbar';
-    
-        modiferToolbarElem.appendChild(this.init_extract_helper()) 
+
+        modiferToolbarElem.appendChild(this.init_extract_helper())
         modiferToolbarElem.appendChild(this.init_delete_helper())
         modiferToolbarElem.appendChild(this.init_recover_helper())
 
@@ -335,11 +335,11 @@ sidebar.NodeSidebar = class {
     init_delete_helper() {
         const iconElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', `M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 
-            0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 
-            16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 
-            10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 
-            0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 
+        path.setAttribute('d', `M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5
+            0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885
+            16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846
+            10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5
+            0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5
             0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z`);
         iconElem.appendChild(path)
         iconElem.setAttribute("ViewBox", "0 0 16 16")
@@ -447,14 +447,14 @@ sidebar.NodeSidebar = class {
             const item = new sidebar.NameValueView(this._host, name, view, checkInputValidChars);
             this._inputs.push(item);
             this._elements.push(item.render());
-    
+
         }
     }
 
     _addOutput(name, output, param_idx) {
         if (output.arguments.length > 0) {
             // console.log(this._modelNodeName)
-            const item = new sidebar.NameValueView(this._host, name, 
+            const item = new sidebar.NameValueView(this._host, name,
                 new sidebar.ParameterView(this._host, output, 'output', param_idx, this._modelNodeName),
                 checkInputValidChars);
             this._outputs.push(item);
@@ -469,9 +469,9 @@ sidebar.NodeSidebar = class {
         if (title == "Enter") {buttonElement.className = "sidebar-view-button-bold"}
         buttonElement.innerText = title;
         this._elements.push(buttonElement);
-        
+
         if (click_callback) {
-            buttonElement.addEventListener('click', click_callback);  
+            buttonElement.addEventListener('click', click_callback);
         }
         return buttonElement
     }
@@ -619,9 +619,9 @@ sidebar.NameValueView = class {
 
         const nameElement = this._host.document.createElement('div');
         nameElement.className = 'sidebar-view-item-name';
-        
+
         // ===> 这一段是input框前的名称，如attributte的pad，（不包含后面的小白块！！！）
-        // console.log(name)  
+        // console.log(name)
         const nameInputElement = this._host.document.createElement('input');
         nameInputElement.setAttribute('type', 'text');
         nameInputElement.setAttribute('value', name);
@@ -716,7 +716,7 @@ sidebar.ValueTextView = class {
         this._host = host;
         this._elements = [];
         const element = this._host.document.createElement('div');
-        element.className = 'sidebar-view-item-value';  
+        element.className = 'sidebar-view-item-value';
         this._elements.push(element);
 
         if (action) {
@@ -918,7 +918,7 @@ class NodeAttributeView {
                     val.push(parseInt(v))
                 }
                 return val
-            
+
             case "float32":
                 return parseFloat(value)
             case "float32[]":
@@ -927,7 +927,7 @@ class NodeAttributeView {
                     val.push(parseFloat(v))
                 }
                 return val
-            
+
             default:
                 return value
 
@@ -1022,7 +1022,7 @@ sidebar.ArgumentView = class {
             this._element.appendChild(this._expander);
         }
 
-        
+
         const valueEditers = this._host.document.createElement('div');
         valueEditers.className = 'sidebar-view-item-value-editers';
         this._element.appendChild(valueEditers);
@@ -1130,13 +1130,13 @@ sidebar.ArgumentView = class {
                     location.innerHTML = 'location: ' + '<b>' + this._argument.location + '</b>';
                     this._valueEditers.appendChild(location);
                 }
-                
+
                 if (initializer) {
                     const editInitializerVal = this._host.document.createElement('div');
                     editInitializerVal.className = 'sidebar-view-item-value-line-border';
                     editInitializerVal.innerHTML = 'This is an initializer, you can input a new value for it here:';
                     this._valueEditers.appendChild(editInitializerVal);
-    
+
                     var inputInitializerVal = document.createElement("textarea");
                     inputInitializerVal.setAttribute("type", "text");
                     inputInitializerVal.rows = 8;
@@ -1169,7 +1169,7 @@ sidebar.ArgumentView = class {
                     editInitializerVal.className = 'sidebar-view-item-value-line-border';
                     editInitializerVal.innerHTML = 'If this is an initializer, you can input new value for it here:';
                     this._valueEditers.appendChild(editInitializerVal);
-    
+
                     var inputInitializerVal = document.createElement("textarea");
                     inputInitializerVal.setAttribute("type", "text");
                     inputInitializerVal.rows = 8;
@@ -1181,13 +1181,13 @@ sidebar.ArgumentView = class {
                     });
                     this._valueEditers.appendChild(inputInitializerVal);
                     // <====== input value ======
-                    
+
                     // ====== input type ======>
                     const editInitializerType = this._host.document.createElement('div');
                     editInitializerType.className = 'sidebar-view-item-value-line-border';
                     editInitializerType.innerHTML = 'and input its type for it here <b>' + '(see properties->type->?' + '</b>' + ' for more info):';
                     this._valueEditers.appendChild(editInitializerType);
-    
+
                     var inputInitializerType = document.createElement("textarea");
                     inputInitializerType.setAttribute("type", "text");
                     inputInitializerType.rows = 1;
@@ -1196,7 +1196,7 @@ sidebar.ArgumentView = class {
                     if (this._host._view.modifier.initializerEditInfo.get(arg_name)) {
                         // [type, value]
                         inputInitializerType.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[0];
-                        inputInitializerVal.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[1];                      
+                        inputInitializerVal.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[1];
                     }
 
                     inputInitializerType.addEventListener('input', (e) => {
@@ -1387,22 +1387,22 @@ sidebar.ModelSidebar = class {
             this._view_elements.appendChild(elem)
         }
         this._view_elements.style.flex = 1
-        
-        this._modifer_element = this.add_modifer_panel()
+
+        this._modifer_element = this.add_modifer_panel();
     }
 
     render() {
         return [this._view_elements, this._modifer_element];
     }
 
-    
+
     add_separator(elment, className) {
         const separator = this._host.document.createElement('div');
         separator.className = className;
         elment.push(separator);
     }
 
-    
+
     add_modifer_panel() {
         const modiferPanelElem = this._host.document.createElement('div');
         modiferPanelElem.className = 'sidebar-view-modifer-panel';
@@ -1444,18 +1444,18 @@ sidebar.ModelSidebar = class {
 
         const icon_shape = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', `M8.932.727c-.243-.97-1.62-.97-1.864 0l-.071.286a.96.96 0 0 
-            1-1.622.434l-.205-.211c-.695-.719-1.888-.03-1.613.931l.08.284a.96.96 0 0 1-1.186 
-            1.187l-.284-.081c-.96-.275-1.65.918-.931 1.613l.211.205a.96.96 0 0 1-.434 1.622l-.286.071c-.97.243-.97 
-            1.62 0 1.864l.286.071a.96.96 0 0 1 .434 1.622l-.211.205c-.719.695-.03 1.888.931 1.613l.284-.08a.96.96 
-            0 0 1 1.187 1.187l-.081.283c-.275.96.918 1.65 1.613.931l.205-.211a.96.96 0 0 1 1.622.434l.071.286c.243.97 
-            1.62.97 1.864 0l.071-.286a.96.96 0 0 1 1.622-.434l.205.211c.695.719 1.888.03 1.613-.931l-.08-.284a.96.96 
-            0 0 1 1.187-1.187l.283.081c.96.275 1.65-.918.931-1.613l-.211-.205a.96.96 0 0 1 
-            .434-1.622l.286-.071c.97-.243.97-1.62 0-1.864l-.286-.071a.96.96 0 0 
-            1-.434-1.622l.211-.205c.719-.695.03-1.888-.931-1.613l-.284.08a.96.96 0 0 
-            1-1.187-1.186l.081-.284c.275-.96-.918-1.65-1.613-.931l-.205.211a.96.96 0 0 
+        path.setAttribute('d', `M8.932.727c-.243-.97-1.62-.97-1.864 0l-.071.286a.96.96 0 0
+            1-1.622.434l-.205-.211c-.695-.719-1.888-.03-1.613.931l.08.284a.96.96 0 0 1-1.186
+            1.187l-.284-.081c-.96-.275-1.65.918-.931 1.613l.211.205a.96.96 0 0 1-.434 1.622l-.286.071c-.97.243-.97
+            1.62 0 1.864l.286.071a.96.96 0 0 1 .434 1.622l-.211.205c-.719.695-.03 1.888.931 1.613l.284-.08a.96.96
+            0 0 1 1.187 1.187l-.081.283c-.275.96.918 1.65 1.613.931l.205-.211a.96.96 0 0 1 1.622.434l.071.286c.243.97
+            1.62.97 1.864 0l.071-.286a.96.96 0 0 1 1.622-.434l.205.211c.695.719 1.888.03 1.613-.931l-.08-.284a.96.96
+            0 0 1 1.187-1.187l.283.081c.96.275 1.65-.918.931-1.613l-.211-.205a.96.96 0 0 1
+            .434-1.622l.286-.071c.97-.243.97-1.62 0-1.864l-.286-.071a.96.96 0 0
+            1-.434-1.622l.211-.205c.719-.695.03-1.888-.931-1.613l-.284.08a.96.96 0 0
+            1-1.187-1.186l.081-.284c.275-.96-.918-1.65-1.613-.931l-.205.211a.96.96 0 0
             1-1.622-.434L8.932.727zM8 12.997a4.998 4.998 0 1 1 0-9.995 4.998 4.998 0 0 1 0 9.996z`);
-    
+
         icon_shape.appendChild(path)
         icon_shape.setAttribute("ViewBox", "0 0 16 16")
         modiferToolbarElem.appendChild(this.init_helper(icon_shape, "Set Input Shape", () => {
@@ -1468,9 +1468,9 @@ sidebar.ModelSidebar = class {
             dialog.getElementsByClassName("message")[0].innerText = `Change the shape of input: ${this.clicked_input_name}`
             this._host.show_confirm_dialog(dialog).then((is_not_cancel)=> {
                 if (!is_not_cancel) {
-                    return 
+                    return
                 }
-                
+
                 this._host.view.modifier.changeInputSize(this.clicked_input_name, input_change.dims);
                 this._view.modifier.refreshModelInputOutput()
 
@@ -1485,15 +1485,15 @@ sidebar.ModelSidebar = class {
 
         let icon_dynamic = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         const path_dynamic = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path_dynamic.setAttribute('d', `M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 
-            1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023 
-            1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 
-            2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 
-            1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 
-            1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464 
-            1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 
+        path_dynamic.setAttribute('d', `M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464
+            1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023
+            1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872
+            2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413
+            1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705
+            1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464
+            1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0
             1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z`);
-    
+
         icon_dynamic.appendChild(path_dynamic)
         icon_dynamic.setAttribute("ViewBox", "0 0 16 16")
 
@@ -1501,7 +1501,7 @@ sidebar.ModelSidebar = class {
             let dialog = this._host.document.getElementById("dynamic-batch-size-dialog")
             this._host.show_confirm_dialog(dialog).then((is_not_cancel)=> {
                 if (!is_not_cancel) {
-                    return 
+                    return
                 }
                 this._host.change_batch_size("dynamic")
                 this._view.modifier.changeBatchSize("dynamic");
@@ -1516,23 +1516,23 @@ sidebar.ModelSidebar = class {
 
         let icon_fix =  document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         const path_fix1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path_fix1.setAttribute('d', `M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 
+        path_fix1.setAttribute('d', `M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0
             0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z`);
 
         const path_fix2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path_fix2.setAttribute('d', `M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 
-            1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 
-            1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 
+        path_fix2.setAttribute('d', `M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0
+            1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52
+            1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901
             3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873
-             0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 
-             .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 
-             1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 
-             1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 
-             1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 
-             1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 
+             0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1
+             .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0
+             1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0
+             1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693
+             1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835
+             1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873
              1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0
-              0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 
-              8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 
+              0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945
+              8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06
               4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z`);
 
         icon_fix.appendChild(path_fix1)
@@ -1543,7 +1543,7 @@ sidebar.ModelSidebar = class {
             let dialog = this._host.document.getElementById("fixed-batch-size-dialog")
             this._host.show_confirm_dialog(dialog).then((is_not_cancel)=> {
                 if (!is_not_cancel) {
-                    return 
+                    return
                 }
                 let input_change = this._host.document.getElementById("fixed-batch-size-input")
                 this._host.change_batch_size(input_change.value)
@@ -1558,20 +1558,20 @@ sidebar.ModelSidebar = class {
             })
         }))
 
-        return modiferToolbarElem 
+        return modiferToolbarElem
     }
 
     init_helper(icon, title, callback) {
             const helperElem = this._host.document.createElement('div');
             helperElem.style.cursor = "default"
-    
+
             const iconElem = this._host.document.createElement('div')
             iconElem.classList.add("icon")
             iconElem.appendChild(icon)
             icon.setAttribute("width", 16)
             icon.setAttribute("height", 16)
             helperElem.appendChild(iconElem)
-    
+
             const titleElem = this._host.document.createElement('div')
             titleElem.classList.add("title")
             titleElem.innerText = title
@@ -1616,7 +1616,7 @@ sidebar.ModelSidebar = class {
         buttonElement.className = 'sidebar-view-button';
         buttonElement.innerText = title;
         this._elements.push(buttonElement);
-        
+
         if (title === 'Dynamic batch size') {
             buttonElement.addEventListener('click', () => {
                 this._host._view.modifier.changeBatchSize("dynamic");
@@ -1637,7 +1637,7 @@ sidebar.ModelSidebar = class {
     }
 
     _addInput(title, default_value, input_event, placeholder) {
-        
+
         var fixed_batch_size_title = this._host.document.createElement('span');
         fixed_batch_size_title.innerHTML = `${title}&nbsp;&nbsp;&nbsp;`;
         fixed_batch_size_title.setAttribute('style','font-size:14px');
@@ -2188,7 +2188,7 @@ sidebar.FindSidebar = class {
                     initializeItem.innerText = '\u25A0 ' + argument.name.split('\n').shift(); // custom argument id
                     initializeItem.dataset.id = 'initializer-' + argument.name;
                     initializeItem.dataset.type = "initializer"
-                    initializeItem.dataset.graph_node_name = node_name.split('\n').shift(); 
+                    initializeItem.dataset.graph_node_name = node_name.split('\n').shift();
                     this._resultElement.appendChild(initializeItem);
                 }
             }
