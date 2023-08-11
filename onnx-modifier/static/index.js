@@ -95,6 +95,16 @@ host.BrowserHost = class {
 
         this._menu.add({});
         this._menu.add({
+            label: 'Undo',
+            accelerator: 'CmdOrCtrl+Z',
+            click: () => this._view.modifier.undo()
+        })
+        this._menu.add({
+            label: 'Redo',
+            accelerator: 'CmdOrCtrl+Y',
+            click: () => this._view.modifier.redo()
+        })
+        this._menu.add({
             label: 'Properties...',
             accelerator: 'CmdOrCtrl+Enter',
             click: () => this._view.showModelProperties()
