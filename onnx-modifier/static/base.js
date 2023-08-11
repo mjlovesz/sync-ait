@@ -572,6 +572,14 @@ base.BinaryReader = class {
         return this._position;
     }
 
+    get view() {
+        return this._view;
+    }
+
+    get buffer() {
+        return this._buffer;
+    }
+
     seek(position) {
         this._position = position >= 0 ? position : this._length + position;
         if (this._position > this._length || this._position < 0) {

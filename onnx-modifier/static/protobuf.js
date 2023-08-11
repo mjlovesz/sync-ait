@@ -194,6 +194,10 @@ protobuf.BinaryReader = class {
         return this._position;
     }
 
+    get buffer() {
+        return this._buffer;
+    }
+
     seek(position) {
         this._position = position >= 0 ? position : this._length + position;
     }
@@ -742,7 +746,7 @@ protobuf.TextReader = class {
         let value = NaN;
         let token = this._token;
         switch (token) {
-            case 'nan': break; //value is NaN; 
+            case 'nan': break; //value is NaN;
             case 'inf': value = Infinity; break;
             case '-inf': value = -Infinity; break;
             default:

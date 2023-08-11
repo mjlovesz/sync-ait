@@ -14,6 +14,8 @@ var sidebar = sidebar || require('./view-sidebar');
 var grapher = grapher || require('./view-grapher');
 // var modifier = modifier || require('./modifier');
 
+var DISPLAY_OM_MODEL = false;
+
 view.View = class {
 
     constructor(host, id) {
@@ -54,7 +56,7 @@ view.View = class {
                 let dialog = this._host.document.getElementById("set-show-node-count")
                 this._host.show_confirm_dialog(dialog).then((btnValue)=> {
                     if (!btnValue) {
-                        return 
+                        return
                     }
                     let select_elem = this._host.document.getElementById("input-show-node-count")
                     if (select_elem) {
@@ -63,7 +65,7 @@ view.View = class {
                     }
                 })
             });
-            
+
             this._getElementById('sidebar').addEventListener('mousewheel', (e) => {
                 this._preventDefault(e);
             }, { passive: true });
@@ -146,21 +148,22 @@ view.View = class {
             sidebarView.on('select', (sender, selection) => {
                 this.select(selection);
             });
-            sidebarView.on('dblclick-not-in-graph', (sender, data, event) => {
-                this.showSubGraphByNodeName(data.graph_node_name)
+            sidebarView.on('dblclick-list', (sender, data, event) => {
+                this.showSubGraphByNodeName(data.name, data.graph_node_name)
             })
             this._sidebar.open(sidebarView.content, 'Find');
             sidebarView.focus(this._searchText);
         }
     }
 
-    showSubGraphByNodeName(node_name) {
+    showSubGraphByNodeName(nodeId, nodeName) {
         if (!this._showSubGraph) {
             return
         }
-        this._showSubGraph.setShowNode(node_name)
+        this._showSubGraph.setShowNode(nodeId)
         return this._updateGraph(this._model, this._graphs).then(() => {
-            let elem = document.getElementById(`node-name-${node_name}`)
+            let elem = document.getElementById(`node-name-${nodeName}`)
+                || document.getElementById(`node-id-${nodeId}`)
             if (elem) {
                 this.select([elem])
             }
@@ -451,7 +454,13 @@ view.View = class {
                 }
                 return this._timeout(20).then(() => {
                     const graphs = Array.isArray(model.graphs) && model.graphs.length > 0 ? [ model.graphs[0] ] : [];
-                    this.modifier.loadModelGraph(model, graphs);
+                    if (model.format != "DaVinci OM") {
+                        this.modifier.loadModelGraph(model, graphs);
+                        DISPLAY_OM_MODEL = false;
+                    } else {
+                        this._host.show_alert_message("Warning", "Detect om model, modification is not supported");
+                        DISPLAY_OM_MODEL = true;
+                    }
                     return this._updateGraph(model, graphs);
                 });
             });
@@ -485,16 +494,16 @@ view.View = class {
             this._model = model;
             this._graphs = graphs;
         }
-        this.lastViewGraph = this._graph; 
+        this.lastViewGraph = this._graph;
         const graph = this.activeGraph;
         const nodes = graph.nodes;
-        
+
         return this._timeout(100).then(() => {
             if (graph && graph != lastGraphs[0]) {
                 if (nodes.length > 1500) {
                     this.confirmed = false
                     return this._host.confirm(
-                        'Large model detected.', 
+                        'Large model detected.',
                         `This graph contains a large number of nodes (${nodes.length}) and might take a long time to render. Do you want to continue ?`,
                         {"Cancel": "", "Displays partial networks": "partial", "Comfirm": "Comfirm"}
                         ).then((confirmed) => {
@@ -524,21 +533,6 @@ view.View = class {
                     nameButton.style.opacity = 0;
                 }
             };
-
-            if (confirmed == "partial") {
-                this._showSubGraph = new view.ShowSubGraph(graph, this._showSubGraph, this._showSubGraphNodeCount)
-            } else {
-                this._showSubGraph = null
-            }
-
-            
-            if (this._showSubGraph) {
-                document.getElementById("sub-graph-name-button").style.display = null
-                document.getElementById("sub-graph-name-button").getElementsByTagName("b")[0].innerText = this._showSubGraphNodeCount
-                document.getElementById("sub-graph-name-button").getElementsByTagName("span")[0].innerText = this._showSubGraph.showNodes
-            } else {
-                document.getElementById("sub-graph-name-button").style.display = "none"
-            }
 
             return this.renderGraph(this._model, this.activeGraph, this._showSubGraph).then(() => {
                 if (this._page !== 'default') {
@@ -574,7 +568,7 @@ view.View = class {
         }
     }
 
-    renderGraph(model, graph, showSubGraphIns) {
+    renderGraph(model, graph) {
         try {
             this._graph = null;
 
@@ -612,7 +606,7 @@ view.View = class {
                     this.lastScrollLeft = container.scrollLeft;
                     this.lastScrollTop = container.scrollTop;
                 }
-                
+
                 viewGraph.add(graph);
 
                 // Workaround for Safari background drag/zoom issue:
@@ -627,23 +621,40 @@ view.View = class {
                 canvas.appendChild(origin);
 
                 let subViewGraph = null
-                if (showSubGraphIns) {
-                    subViewGraph = showSubGraphIns.getShowSubGraph(viewGraph)
+
+                if (this.confirmed == "partial") {
+                    this._showSubGraph = new view.ShowSubGraph(viewGraph,
+                        this._showSubGraph ? this._showSubGraph.showNodes: null,
+                        this._showSubGraphNodeCount)
+                } else {
+                    this._showSubGraph = null
                 }
 
-                if (showSubGraphIns && subViewGraph) { 
+                if (this._showSubGraph) {
+                    document.getElementById("sub-graph-name-button").style.display = null
+                    document.getElementById("sub-graph-name-button").getElementsByTagName("b")[0].innerText = this._showSubGraphNodeCount
+                    document.getElementById("sub-graph-name-button").getElementsByTagName("span")[0].innerText = this._showSubGraph.showNodes
+                } else {
+                    document.getElementById("sub-graph-name-button").style.display = "none"
+                }
+
+                if (this._showSubGraph) {
+                    subViewGraph = this._showSubGraph.getShowSubGraph()
+                }
+
+                if (this._showSubGraph && subViewGraph) {
                     subViewGraph.build(this._host.document, origin);
                 } else {
                     viewGraph.build(this._host.document, origin);
                 }
 
                 return this._timeout(20).then(() => {
-                    if (showSubGraphIns && subViewGraph) {
+                    if (this._showSubGraph && subViewGraph) {
                         subViewGraph.update();
                     } else {
                         viewGraph.update();
                     }
-                    
+
                     const elements = Array.from(canvas.getElementsByClassName('graph-input') || []);
                     if (elements.length === 0) {
                         const nodeElements = Array.from(canvas.getElementsByClassName('graph-node') || []);
@@ -673,8 +684,8 @@ view.View = class {
                         // console.log("scrolling")
                         this._updateZoom(this._zoom);
                         container.scrollTo({ left: this.lastScrollLeft, top: this.lastScrollTop, behavior: 'auto' });
-                    } 
-                    else {   
+                    }
+                    else {
                         this._zoom = 1;
                         this._updateZoom(this._zoom);
 
@@ -822,12 +833,12 @@ view.View = class {
                 if (clicked_output_name) {
                     this._host._view.modifier.clickSingleNode(clicked_output_name)
                 }
-                
+
                 const content = modelSidebar.render();
                 this._sidebar.open(content, 'Model Properties');
-                
+
                 document.dispatchEvent(new CustomEvent("node-clicked", {detail:{
-                    is_input:clicked_input_name, 
+                    is_input:clicked_input_name,
                     input_name: clicked_input_name,
                     is_output:clicked_output_name,
                     output_name: clicked_output_name,
@@ -896,7 +907,7 @@ view.View = class {
                     nodeSidebar.toggleInput(input.name);
                 }
                 this._sidebar.open(nodeSidebar.render(), 'Node Properties');
-                
+
                 document.dispatchEvent(new CustomEvent("node-clicked", {detail:{is_node:true, node:node, node_name:modelNodeName}}))
             }
             catch (error) {
@@ -932,7 +943,7 @@ view.Graph = class extends grapher.Graph {
         this.model = model;
         this._arguments = new Map();
         this._nodeKey = 0;
-        
+
         // the node key of custom added node
         this._add_nodeKey = 0;
     }
@@ -949,7 +960,7 @@ view.Graph = class extends grapher.Graph {
     }
 
     createInput(input) {
-        var show_name = input.name; 
+        var show_name = input.name;
         if (this.modifier.renameMap.get(input.name)) {
             var show_name = this.modifier.renameMap.get(input.name).get(input.name);
         }
@@ -957,7 +968,7 @@ view.Graph = class extends grapher.Graph {
         const value = new view.Input(this, input, modelNodeName, show_name);
         // value.name = (this._nodeKey++).toString();
 
-        value.name = input.name; 
+        value.name = input.name;
         // console.log(value.name)
         input.modelNodeName = input.name;
         this.setNode(value);
@@ -971,7 +982,7 @@ view.Graph = class extends grapher.Graph {
             var show_name = this.modifier.renameMap.get(modelNodeName).get(output.name);
         }
         const value = new view.Output(this, output, modelNodeName, show_name);
-        // value.name = (this._nodeKey++).toString();  
+        // value.name = (this._nodeKey++).toString();
         value.name = "out_" + output.name;   // output nodes should have name
         output.modelNodeName = "out_" + output.name;
         this.setNode(value);
@@ -1009,7 +1020,7 @@ view.Graph = class extends grapher.Graph {
                 }
             }
         }
-        
+
         for (const input of graph.inputs) {
             const viewInput = this.createInput(input);
             for (const argument of input.arguments) {
@@ -1024,8 +1035,8 @@ view.Graph = class extends grapher.Graph {
             var inputs = node.inputs;
             for (var input of inputs) {
                 for (var argument of input.arguments) {
-                    if (argument.name != '' && !argument.initializer) { 
-                        this.createArgument(argument).to(viewNode);    
+                    if (argument.name != '' && !argument.initializer) {
+                        this.createArgument(argument).to(viewNode);
                     }
                 }
             }
@@ -1109,7 +1120,7 @@ view.Node = class extends grapher.Node {
 
     // 这里的value是一个onnx.Node，这里正在构建的是view.Node
     // context 是指Graph
-    constructor(context, value, modelNodeName) {    
+    constructor(context, value, modelNodeName) {
         super();
         this.context = context;
         this.value = value;
@@ -1133,7 +1144,7 @@ view.Node = class extends grapher.Node {
 
     _add(node) {
 
-        // header 
+        // header
         const header =  this.header();
         const styles = [ 'node-item-type' ];
         const type = node.type;
@@ -1150,7 +1161,7 @@ view.Node = class extends grapher.Node {
         const title = header.add(null, styles, content, tooltip);
         title.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
         title.on('dblclick', () => {
-            this.context.view.showSubGraphByNodeName(this.modelNodeName)
+            this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName)
         });
         if (node.type.nodes && node.type.nodes.length > 0) {
             const definition = header.add(null, styles, '\u0192', 'Show Function Definition');
@@ -1188,7 +1199,7 @@ view.Node = class extends grapher.Node {
             const list = this.list();
             list.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
             list.on('dblclick', () => {
-                this.context.view.showSubGraphByNodeName(this.modelNodeName)
+                this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName)
             });
             for (const initializer of initializers) {
                 const argument = initializer.arguments[0];
@@ -1223,7 +1234,7 @@ view.Node = class extends grapher.Node {
             if (hiddenInitializers) {
                 list.add(null, '\u3008' + '\u2026' + '\u3009', '', null, '');
             }
-            
+
             // 节点属性（侧边栏显示）
             for (const attribute of sortedAttributes) {
                 if (attribute.visible) {
@@ -1374,7 +1385,7 @@ view.Argument = class {
                 }
                 const edge = this.context.createEdge(this._from, to);
                 edge.v = this._from.name;
-                edge.w = to.name;             
+                edge.w = to.name;
                 if (content) {
                     edge.label = content;
                 }
@@ -1385,7 +1396,7 @@ view.Argument = class {
                 this.context.setEdge(edge);
                 this._edges.push(edge);
                 // console.log(this.context._namedEdges);
-                
+
                 // this argument occurs in both sides of the edge, so it is a `path` argument
                 // this.context._pathArgumentNames.add(this._argument.name);
             }
@@ -1670,6 +1681,7 @@ view.ModelFactoryService = class {
         this._extensions = new Set([ '.zip', '.tar', '.tar.gz', '.tgz', '.gz' ]);
         this._factories = [];
         this.register('./onnx', [ '.onnx', '.onn', '.pb', '.onnxtxt', '.pbtxt', '.prototxt', '.txt', '.model', '.pt', '.pth', '.pkl', '.ort', '.ort.onnx' ]);
+        this.register('./om', [ '.om', '.onnx', '.pb', '.engine' ]);
     }
 
     register(id, factories, containers) {
@@ -1849,7 +1861,7 @@ view.ModelFactoryService = class {
                     { name: 'sentencepiece.ModelProto data', tags: [[1,[[1,2],[2,5],[3,0]]],[2,[[1,2],[2,2],[3,0],[4,0],[5,2],[6,0],[7,2],[10,5],[16,0],[40,0],[41,0],[42,0],[43,0]]],[3,[]],[4,[]],[5,[]]] },
                     { name: 'mediapipe.BoxDetectorIndex data', tags: [[1,[[1,[[1,[[1,5],[2,5],[3,5],[4,5],[6,0],[7,5],[8,5],[10,5],[11,0],[12,0]]],[2,5],[3,[]]]],[2,false],[3,false],[4,false],[5,false]]],[2,false],[3,false]] },
                     { name: 'third_party.tensorflow.python.keras.protobuf.SavedMetadata data', tags: [[1,[[1,[[1,0],[2,0]]],[2,0],[3,2],[4,2],[5,2]]]] },
-                    { name: 'pblczero.Net data', tags: [[1,5],[2,2],[3,[[1,0],[2,0],[3,0]],[10,[[1,[]],[2,[]],[3,[]],[4,[]],[5,[]],[6,[]]]],[11,[]]]] } 
+                    { name: 'pblczero.Net data', tags: [[1,5],[2,2],[3,[[1,0],[2,0],[3,0]],[10,[[1,[]],[2,[]],[3,[]],[4,[]],[5,[]],[6,[]]]],[11,[]]]] }
                 ];
                 const match = (tags, schema) => {
                     for (const pair of schema) {
@@ -1942,25 +1954,20 @@ view.ModelFactoryService = class {
 
     _openContext(context) {
         const modules = this._filter(context).filter((module) => module && module.length > 0);
-        // console.log(modules)  // ['./onnx', './tensorrt', './rknn', './om']
 
         const errors = [];
         let success = false;
 
-        // TODO: to simplify the logic here since this tool is used for only onnx
         const nextModule = () => {
             if (modules.length > 0) {
                 const id = modules.shift();
-                // console.log(id)
                 return this._host.require(id).then((module) => {
-                    // console.log(module)
                     const updateErrorContext = (error, context) => {
                         const content = " in '" + context.identifier + "'.";
                         if (error && typeof error.message === 'string' && !error.message.endsWith(content) && (error.context === undefined || error.context === true)) {
                             error.message = error.message.replace(/\.$/, '') + content;
                         }
                     };
-                    // console.log(module.ModelFactory)
                     if (!module.ModelFactory) {
                         throw new view.Error("Failed to load module '" + id + "'.");
                     }
@@ -1968,7 +1975,6 @@ view.ModelFactoryService = class {
                     let match = undefined;
                     try {
                         match = modelFactory.match(context);
-                        // console.log(match)    // onnx.pb.ModelProto
                         if (!match) {
                             return nextModule();
                         }
@@ -2225,42 +2231,42 @@ if (typeof module !== 'undefined' && typeof module.exports === 'object') {
 }
 
 view.ShowSubGraph = class {
-    constructor(graph, lastShowSubGraph, showSubGraphNodeCount) {
+    constructor(viewGraph, showNodes, showSubGraphNodeCount) {
         this._showSubGraphNodeCount = showSubGraphNodeCount
-        this._oriGraph = graph
+        this._oriViewGraph = viewGraph
         this._showGraph = null
-        this._edgeNeighbors = new Map()    // edgeName -> name of nodes around
-        this._nodes = new Map()             // nodeName -> Node
+        this._edgeNeighbors = new Map()    // edgeName -> id of nodes around
         this._edges = new Map()             // argumentName -> Argument
         this._startNodes = new Map()   // start nodeName -> input Set
         this._endNodes = new Map()     // end nodeName -> output Set
-        this._showNodes = []
         this.initNodesAndEdges()
-        this.initStartAndEndNodeInfo()
-        this._showNodes = lastShowSubGraph && lastShowSubGraph._oriGraph == graph ? lastShowSubGraph.showNodes : this.setShowNode()
+        this._showNodes = showNodes || this.setShowNode()
     }
 
-    setShowNode(nodeName) {
+    setShowNode(nodeId) {
         // 1. 获取所有的邻居节点
-        this._showNodes = nodeName ? [nodeName] : [...this._startNodes.keys()]
+        this._showNodes = nodeId ? [nodeId] : [...this._startNodes.keys()]
         return this._showNodes
     }
 
     get showNodes() {
-        return this._showNodes
+        return this._showNodes.map(id=>this._oriViewGraph.nodes.get(id).label.name)
     }
 
-    addEdgeInfo(edgeName, nodeName) {
+    addEdgeInfo(edgeName, nodeId) {
         if(!this._edgeNeighbors.has(edgeName)) {
             this._edgeNeighbors.set(edgeName, new Set())
         }
-        this._edgeNeighbors.get(edgeName).add(nodeName)
+        this._edgeNeighbors.get(edgeName).add(nodeId)
     }
 
     getNodeEdges(node) {
         let edges = new Set()
         for (const inputParam of node.inputs) {
             for (const args of inputParam.arguments) {
+                if (args.initializer) {
+                    continue
+                }
                 edges.add(args.name)
                 this._edges.set(args.name, args)
             }
@@ -2275,60 +2281,33 @@ view.ShowSubGraph = class {
     }
 
     initNodesAndEdges() {
-        for (const node of this._oriGraph.nodes) {
-            this._nodes.set(node.name, node)
-            for (const edgeName of this.getNodeEdges(node)) {
+        for (const [nodeId, node] of this._oriViewGraph.nodes) {
+            if (node.label instanceof view.Input) {
+                this._startNodes.set(nodeId, node)
+            }
+            if (node.label instanceof view.Output) {
+                this._endNodes.set(nodeId, node)
+            }
+            for (const edgeName of this.getNodeEdges(node.label)) {
                 if (edgeName == "") {
                     continue
                 }
-                this.addEdgeInfo(edgeName, node.name)
+                this.addEdgeInfo(edgeName, nodeId)
             }
         }
     }
 
-    initStartAndEndNodeInfo() {
-        for (const inputInfo of this._oriGraph.inputs) {
-            for (const inNode of this._edgeNeighbors.get(inputInfo.name)) {
-                if (!this._startNodes.has(inNode)) {
-                    this._startNodes.set(inNode, new Set())
-                }
-                this._startNodes.get(inNode).add(inputInfo)
-            }
-        }
-        for (const outputInfo of this._oriGraph.outputs) {
-            for (const outNode of this._edgeNeighbors.get(outputInfo.name)) {
-                if (!this._endNodes.has(outNode)) {
-                    this._endNodes.set(outNode, new Set())
-                }
-                this._endNodes.get(outNode).add(outputInfo)
-            }
-        }
-    }
-
-    getShowSubGraph(viewGraph) {
+    getShowSubGraph() {
         // 获取上下的邻居节点
         let showNeighbors = this.getNeighbor(this._showNodes, this._showSubGraphNodeCount) // 上下N个节点
 
         // 获取边缘节点，边缘节点显示为[...]
         let withHideNeighbors = this.getNeighbor(showNeighbors, Number.MAX_VALUE, true) // 上下N个节点
 
-        // 获取inputs 和 outputs
-        let showInputs = []
-        let showOutputs = []
-        for(const showNodeName of showNeighbors) {
-            if (this._startNodes.has(showNodeName)) {
-                showInputs.push(...this._startNodes.get(showNodeName))
-            }
-            if (this._endNodes.has(showNodeName)) {
-                showOutputs.push(...this._endNodes.get(showNodeName))
-            }
-        }
-        
-        let allNodeNames = new Set([...showNeighbors, ...withHideNeighbors, ...showInputs.map(x=>x.name), 
-                                    ...showOutputs.map(x=>x.name), ...showOutputs.map(x=>`out_${x.name}`)])
-        let allHideNodeIds = new Set([...viewGraph.nodes].filter(([_, node])=> {
-            return withHideNeighbors.has(node.label.modelNodeName) && !showNeighbors.has(node.label.modelNodeName)
-        }).map(([id, _]) => id))
+        let allHideNodeIds = new Set([...this._oriViewGraph.nodes.keys()].filter((nodeId)=> {
+            return withHideNeighbors.has(nodeId) && !showNeighbors.has(nodeId)
+                && !this._startNodes.has(nodeId) && !this._startNodes.has(nodeId)
+        }))
 
 
         // 构建显示对象
@@ -2349,8 +2328,8 @@ view.ShowSubGraph = class {
                     return applyFunction.apply(thisArg, [target, argumentsList])
                 }
             })
-        } 
-            
+        }
+
         class ShowGraph {
             node(nodeId) {
                 let nodeInfo = super.node(nodeId)
@@ -2365,9 +2344,9 @@ view.ShowSubGraph = class {
                         }
                         let bak_blocks = this._blocks
                         let header = new grapher.Node.Header()
-                        let title = header.add(this.id, ['node-item-type', "node-item-type-more"], "...", 
+                        let title = header.add(this.id, ['node-item-type', "node-item-type-more"], "...",
                             `double click to show more nodes around ${this.value.type.name}(${this.modelNodeName})`)
-                        title.on('dblclick', () => {this.context.view.showSubGraphByNodeName(this.modelNodeName)})
+                        title.on('dblclick', () => {this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName)})
                         this._blocks = [header];
                         oriBuild.apply(this, argumentsList)
                         this._blocks = bak_blocks
@@ -2375,32 +2354,31 @@ view.ShowSubGraph = class {
                 }))
             }
             get nodes() {
-                let withHideNeighborNodes = [...super.nodes].filter(
-                        ([_, v]) => allNodeNames.has(v.label.modelNodeName))
+                let withHideNeighborNodes = [...super.nodes].filter(([nodeID, _]) => withHideNeighbors.has(nodeID))
 
                 return new Map([...withHideNeighborNodes]);
             }
             get edges() {
-                return new Map([...super.edges].filter(([_, v]) => allNodeNames.has(v.label.from.modelNodeName) 
-                                                                    && allNodeNames.has(v.label.to.modelNodeName)));
+                return new Map([...super.edges].filter(([_, e]) => withHideNeighbors.has(e.v)
+                                                                    && withHideNeighbors.has(e.w)));
             }
         }
         let sg = new ShowGraph()
 
-        sg.__proto__.__proto__ = viewGraph
-        return sg; 
+        sg.__proto__.__proto__ = this._oriViewGraph
+        return sg;
     }
 
-    getNeighbor(nodeNames, max_node_count, just_nearest_neighbor) {
+    getNeighbor(nodeIDs, max_node_count, just_nearest_neighbor) {
         let reachEdges = new Set()
-        let reachNodes = new Set() 
+        let reachNodes = new Set()
         let nodeList = []
         let nodeListIndex = 0;
         let max_node_length = Number.MAX_VALUE
 
-        for (const nodeName of nodeNames) {
-            reachNodes.add(nodeName)
-            nodeList.push(nodeName)
+        for (const nodeId of nodeIDs) {
+            reachNodes.add(nodeId)
+            nodeList.push(nodeId)
         }
         if (just_nearest_neighbor) {
             // 只原始节点的邻居节点，不做更多扩展
@@ -2408,26 +2386,23 @@ view.ShowSubGraph = class {
         }
 
         while(reachNodes.size < max_node_count && nodeListIndex < nodeList.length && nodeListIndex < max_node_length) {
-            let thisNode = this._nodes.get(nodeList[nodeListIndex])
+            let thisNode = this._oriViewGraph.nodes.get(nodeList[nodeListIndex])
             nodeListIndex += 1
 
-            let edges = this.getNodeEdges(thisNode)
+            let edges = this.getNodeEdges(thisNode.label)
 
             for (const edgeName of edges) {
                 if (edgeName == "") {
                     continue
                 }
                 reachEdges.add(edgeName)
-                if (this._edges.has(edgeName) && this._edges.get(edgeName).initializer) {
-                    continue
-                }
-                for (const neighborNodeName of this._edgeNeighbors.get(edgeName)) {
-                    if (reachNodes.has(neighborNodeName) || !neighborNodeName) {
+                for (const neighborNodeId of this._edgeNeighbors.get(edgeName)) {
+                    if (reachNodes.has(neighborNodeId) || !neighborNodeId) {
                         continue
                     }
-                    reachNodes.add(neighborNodeName)
-                    nodeList.push(neighborNodeName)
-                } 
+                    reachNodes.add(neighborNodeId)
+                    nodeList.push(neighborNodeId)
+                }
             }
         }
 

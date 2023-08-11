@@ -41,7 +41,7 @@
     * 建议安装[miniconda3](https://docs.conda.io/en/latest/miniconda.html)
     * 注意点: 在 windows 上，命令行的python命令优先会启动 WindowsApps 目录的程序，可以在环境变量中将 %USERPROFILE%\AppData\Local\Microsoft\WindowsApps 下移到最后
     * 验证是否安装成功: 命令行输入 `python --version`。能正常输出 python 版本即表示成功
-2. 安装[NodeJS](https://nodejs.org/zh-cn/download) 
+2. 安装[NodeJS](https://nodejs.org/zh-cn/download)
     * 启动方式一和启动方式二使用 electron 启动时需要，建议安装最新长期维护版本
     * 如果是直接解压安装的方式，请将安装后的文件夹配置到环境变量PATH中
         - linux 需要配置 bin 目录
@@ -67,7 +67,7 @@
 您可以使用我们已经打包好的程序: [已打包程序](https://gitee.com/ascend/ait/wikis/OnnxModifier/%E6%89%93%E5%8C%85%20OnnxModifier%20)
 
 
-也可以选择自行编译，编译对环境网络要求较高, 如果遇到electron 无法安装失败问题，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85) 
+也可以选择自行编译，编译对环境网络要求较高, 如果遇到electron 无法安装失败问题，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85)
 
 - 安装
 
@@ -90,7 +90,7 @@
 - 运行，默认端口为5000（常用于调试开发）
   ```bash
   # 切到目录 ait/onnx-modifier 运行以下命令
-  python flaskserver.py 
+  python flaskserver.py
   # 然后打开浏览器，打开 localhost:5000 即可访问到 onnx-modifier。
   # 因为安全考虑。仅支持运行命令的主机访问该端口，如果需要其他机器访问，建议使用ssh端口转发功能
   ```
@@ -120,9 +120,9 @@
         1. 下载electron: [v24.1.3版本下载地址](https://registry.npmmirror.com/binary.html?path=electron/24.1.3/)
             * linux 下载 electron-v24.1.3-linux-x64.zip 或 electron-v24.1.3-linux-arm64.zip
             * windows 下载 electron-v24.1.3-win32-x64.zip 或 electron-v24.1.3-win32-arm64.zip
-        2. zip解压之后，将解压路径配置到环境变量的PATH中 
+        2. zip解压之后，将解压路径配置到环境变量的PATH中
     2. 方式2：
-        直接 `npm install` , npm是NodeJS的包管理器。如果遇到electron 无法安装，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85) 
+        直接 `npm install` , npm是NodeJS的包管理器。如果遇到electron 无法安装，可以参考wiki: [electron 安装](https://gitee.com/ascend/ait/wikis/OnnxModifier/electron%20%E5%AE%89%E8%A3%85)
 - 运行（该方式启动常用于调试开发）
   ```bash
   # 切到目录 ait/onnx-modifier 运行以下命令
@@ -261,9 +261,14 @@
 * 不建议在显示局部图时，对onnx进行修改操作
 <img src="./docs/big-onnx.gif" style="zoom:75%;" />
 
+# 其他功能
+
+## 打开om模型
+.om格式的模型是昇腾AI处理器支持的离线模型。onnx-modifier在打开模型的过程中可以选择.om后缀的模型文件，onnx-modifier能够可视化其模型结构。注意，对于om模型**仅支持可视化，不支持改图操作**。
+
 # 外部链接网址
 
-| 网址                                      | 功能                                     | 
+| 网址                                      | 功能                                     |
 |-------------------------------------------|-----------------------------------------|
 | https://gitee.com/ascend/ait               | 本仓库位置      |
 | https://github.com/ZhangGe6               | 该仓库原始仓库位置，在About菜单中展示      |

@@ -310,6 +310,33 @@ void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<
     }
 }
 
+std::vector<std::vector<TensorBase>> PyInferenceSession::InferPipelineBaseTensor(
+    std::vector<std::string>& outputNames, std::vector<std::vector<Base::BaseTensor>>& inputsList,
+    std::vector<std::vector<std::vector<size_t>>>& shapesList, bool autoDymShape, bool autoDymDims)
+{
+    DEBUG_LOG("start to ModelInference base_tensor in pipeline");
+    std::vector<std::vector<TensorBase>> result{};
+
+    uint32_t deviceId = GetDeviceId();
+    ConcurrentQueue<std::shared_ptr<Feeds>> h2dQueue;
+    ConcurrentQueue<std::shared_ptr<Feeds>> computeQueue;
+    ConcurrentQueue<std::shared_ptr<Feeds>> d2hQueue;
+    ConcurrentQueue<std::shared_ptr<Feeds>> saveQueue;
+
+    std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId);
+    std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), deviceId, this);
+    std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId);
+    std::thread saveThread(FuncSaveTensorBase, std::ref(saveQueue), deviceId, std::ref(result));
+    FuncPrepareBaseTensor(h2dQueue, deviceId, this, inputsList, shapesList, autoDymShape, autoDymDims, outputNames);
+
+    h2dThread.join();
+    computeThread.join();
+    d2hThread.join();
+    saveThread.join();
+
+    return result;
+}
+
 void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
                                        bool autoDymShape, bool autoDymDims, const std::string& outFmt,
                                        const bool pureInferMode)
@@ -500,6 +527,7 @@ void RegistInferenceSession(py::module &m)
     model.def("run", &Base::PyInferenceSession::InferMap);
     model.def("run", &Base::PyInferenceSession::InferBaseTensorVector);
     model.def("run_pipeline", &Base::PyInferenceSession::InferPipeline);
+    model.def("run_pipeline", &Base::PyInferenceSession::InferPipelineBaseTensor);
     model.def("__str__", &Base::PyInferenceSession::GetDesc);
     model.def("__repr__", &Base::PyInferenceSession::GetDesc);
 
