@@ -8,6 +8,8 @@ var cmd_map = {
     'delete_output' : 'add_output',
     'change_prop' : 'change_prop',
     'delete_child' : 'add_child',
+    'add_child' : 'delete_child',
+    'recover_node' : 'delete_node',
     'change_ori_ini' : 'change_ori_ini',
     'change_add_ini' : 'change_add_ini',
     'change_node_attr' : 'change_node_attr',
@@ -126,6 +128,12 @@ modifier.Modifier = class {
             case 'recover_node':
             this.recoverSingleNode(un_content[0], false)
             this.idx --
+            break
+            case 'delete_node':
+            this.deleteSingleNode(un_content[0], false)
+            break
+            case 'delete_child':
+            this.deleteNodeWithChildren(un_content[0], false)
             break
             case 'add_child':
             this.recoverNodeWithChildren(un_content[0], false)
