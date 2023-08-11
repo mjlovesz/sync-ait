@@ -639,10 +639,11 @@ host.BrowserHost = class {
                 && input_info.arguments[0].type.shape.dimensions.length > 0) {
                 let dims = input_info.arguments[0].type.shape.dimensions
                 if (dims.length > 0) {
-                    dims[0] = batch_value
+                    let [ori_value, pp] = this.dimStr2dimArray(dims.concat().map((dim) => dim ? dim.toString() : '?').join(','))
+                    dims[0] = batch_value.toString()
                     let dim_str = dims.map((dim) => dim ? dim.toString() : '?').join(',')
                     let [input_dims, has_error] = this.dimStr2dimArray(dim_str)
-                    this._view.modifier.changeInputSize(input_info.name, input_dims);
+                    this._view.modifier.changeInputSize(input_info.name, input_dims, ori_value);
                 }
             }
         }

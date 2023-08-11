@@ -626,21 +626,6 @@ modifier.Modifier = class {
         this.applyAndUpdateView();
     }
 
-    changeBatchSize(type, value, is_valid=true) {
-        if (type === "fixed") {
-            this.reBatchInfo.set("type", "fixed");
-            this.reBatchInfo.set("value", value);
-        }
-        else {  // dynamic
-            this.reBatchInfo.set("type", "dynamic");
-            this.reBatchInfo.set("value", "dynamic");
-        }
-        if (is_valid)
-        {this.cmd_list.length = this.idx + 1
-        this.idx ++
-        this.cmd_list.push(['change_bs', [type, value], [type, value]])}
-    }
-
     changeInputSize(input_name, value, ori_value, is_valid=true) {
         this.inputSizeInfo.set(input_name, value)
         if (is_valid) {
