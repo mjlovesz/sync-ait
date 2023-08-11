@@ -21,8 +21,8 @@ Caffe 一键式精度比对
   ```sh
   atc --model=caffe_demo.prototxt --weight=caffe_demo.caffemodel --framework=0 --soc_version=Ascend310P3 --output=caffe_demo
   ```
-- 注：执行量化原始模型（GPU/CPU） vs 量化离线模型 （**关闭融合规则**）（NPU）
-  由于ATC工具的模型转换操作默认开启了算子融合功能，故为了排除融合后算子无法直接进行精度比对，模型转换先关闭算子融合。
+- 注：执行量化原始模型（GPU/CPU） vs 量化离线模型 （**关闭融合规则**）（NPU） 
+- 由于ATC工具的模型转换操作默认开启了算子融合功能，故为了排除融合后算子无法直接进行精度比对，模型转换先关闭算子融合。
   ```sh
   atc --model=$HOME/module/resnet50_deploy_model.prototxt --weight=$HOME/module/resnet50_deploy_weights.caffemodel --framework=0  --output=$HOME/module/out/caffe_resnet50_off --soc_version=Ascend310P3  --input_fp16_nodes="data"  --enable_single_stream=true --fusion_switch_file=$HOME/module/fusion_switch.cfg
   ```  
