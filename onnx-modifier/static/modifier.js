@@ -10,7 +10,7 @@ var cmd_map = {
     'delete_child' : 'add_child',
     'change_ori_ini' : 'change_ori_ini',
     'change_add_ini' : 'change_add_ini',
-    'change_attr' : 'change_attr',
+    'change_node_attr' : 'change_node_attr',
     'change_input_size' : 'change_input_size',
     'change_node_io' : 'change_node_io'
 }
@@ -167,6 +167,9 @@ modifier.Modifier = class {
             this.idx --
             break
             case 'change_node_attr':
+            var modelNodeName = un_content[0], attributeName = un_content[1], ori_value = un_content[2], type = un_content[3]
+            this.changeNodeAttribute(modelNodeName, attributeName, ori_value, type, false)
+            this.idx --
             break
             default:
             break
@@ -215,6 +218,16 @@ modifier.Modifier = class {
             case 'change_prop':
             this.changeModelProperties(op_content[0], op_content[1], op_content[2], false)
             this.applyAndUpdateView();
+            break
+            case 'change_node_attr':
+            this.changeNodeAttribute(op_content[0], op_content[1], op_content[2], op_content[3], false)
+            break
+            case 'change_prop':
+            this.changeModelProperties(op_content[0], op_content[1], op_content[2], false)
+            this.applyAndUpdateView();
+            break
+            case 'change_node_io':
+            this.changeNodeInputOutput(op_content[0], op_content[1], op_content[2], op_content[3], op_content[4], op_content[5], false)
             break
             default:
             break
@@ -573,8 +586,10 @@ modifier.Modifier = class {
         this.applyAndUpdateView();
     }
 
-    changeNodeAttribute(modelNodeName, attributeName, targetValue, type) {
+    changeNodeAttribute(modelNodeName, attributeName, targetValue, type, is_valid=true) {
+        var ori_value = undefined, ori_type = undefined
         if (this.addedNode.has(modelNodeName)) {
+            ori_value, ori_type = this.addedNode.get(modelNodeName).attributes.get(attributeName)
             this.addedNode.get(modelNodeName).attributes.set(attributeName, [targetValue, type]);
         }
         // console.log(this._addedNode)
@@ -583,10 +598,22 @@ modifier.Modifier = class {
             if (!this.changedAttributes.get(modelNodeName)) {
                 this.changedAttributes.set(modelNodeName, new Map());
             }
+            var node = this.name2ModelNode.get(modelNodeName);
+            for (var i = 0; i < node._attributes.length; ++i) {
+                if (attributeName == node._attributes[i].name) {
+                    // [val, type]
+                    ori_value = node._attributes[i]._value
+                    ori_type = node._attributes[i]._type
+                }
+            }
             this.changedAttributes.get(modelNodeName).set(attributeName, [targetValue, type]);
-
         }
 
+        if (is_valid) {
+            this.cmd_list.length = this.idx + 1
+            this.idx ++
+            this.cmd_list.push(['change_node_attr', [modelNodeName, attributeName, targetValue, type], [modelNodeName, attributeName, ori_value, ori_type]])
+        }
         // this.view._updateGraph()
         this.applyAndUpdateView();
     }
