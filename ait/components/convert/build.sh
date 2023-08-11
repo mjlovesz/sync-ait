@@ -20,6 +20,11 @@ fi
 PIP3=$(readlink -f $(which pip3))
 PIP3_DIR=$(dirname ${PIP3})
 PYTHON=${PIP3_DIR}/python
+if [ ! -f ${PYTHON} ];then
+  PIP_HEAD=$(head -n 1 ${PIP3})
+  PYTHON=${PIP_HEAD:2}
+fi
+
 MODEL_CONVERT_PATH=$(dirname $(${PYTHON} -c "import model_convert;print(model_convert.__file__)"))
 CUR_PATH=$(dirname $(readlink -f $0))
 
