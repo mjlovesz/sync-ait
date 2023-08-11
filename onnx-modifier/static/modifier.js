@@ -81,35 +81,40 @@ modifier.Modifier = class {
 
             // delete node only when add node by user
             case 'delete_node' : 
-            this.addedNode.delete(un_content[0])
+            var modelNodeName = un_content[0]
+            this.addedNode.delete(modelNodeName)
             this.addNodeKey --
-            this.deleteSingleNode(un_content[0], false)
+            this.deleteSingleNode(modelNodeName, false)
             this.idx --
             break
 
             // delete output when add output by user
             case 'delete_output' : 
-            this.addedOutputs.delete(un_content[0])
-            this.deleteModelOutput('out_' + un_content[0], false)
+            var ori_output_name = un_content[0]
+            this.addedOutputs.delete(ori_output_name)
+            this.deleteModelOutput('out_' + ori_output_name, false)
             this.idx --
             break
 
             // delete input when add input by user
             case 'delete_input' : 
-            this.addedInputs.delete(un_content[0])
-            this.deleteModelInput(un_content[0], false)
+            var input_name = un_content[0]
+            this.addedInputs.delete(input_name)
+            this.deleteModelInput(input_name, false)
             this.idx --
             break
 
             // add output when output is deleted
             case 'add_output' :
+            const OUT_POS = 4
+            var output_name = un_content[0]
             // set visible
-            this.name2NodeStates.set(un_content[0], 'Exist');
+            this.name2NodeStates.set(output_name, 'Exist');
             // check whether original output
             var flag = false
             for (const ori_output of this.graph._outputs) {
                 const model_name = ori_output.modelNodeName
-                if (model_name == un_content[0]) {
+                if (model_name == output_name) {
                     flag = true
                     break
                 }
@@ -117,7 +122,8 @@ modifier.Modifier = class {
 
             // not original output, update addedoutputs
             if (!flag) {
-                this.addedOutputs.add(un_content[0].substring(4))// out_ + xxx
+                // out_ + xxx
+                this.addedOutputs.add(output_name.substring(OUT_POS))
             }
             this.idx --
             this.applyAndUpdateView();
@@ -125,20 +131,21 @@ modifier.Modifier = class {
 
             // add input when delete input
             case 'add_input':
+            var input_name = un_content[0]
             // set input visible
-            this.name2NodeStates.set(un_content[0], 'Exist')
+            this.name2NodeStates.set(input_name, 'Exist')
             // check whether originial input
             var flag = false
             for (const ori_input of this.graph._inputs) {
                 const model_name = ori_input.modelNodeName
-                if (model_name == un_content[0]) {
+                if (model_name == input_name) {
                     flag = true
                     break
                 }
             }
             // not originial input, update addedinputs
             if (!flag){
-                this.addedInputs.add(un_content[0])
+                this.addedInputs.add(input_name)
             }
             this.idx --
             this.applyAndUpdateView()
@@ -146,41 +153,47 @@ modifier.Modifier = class {
 
             // recover node when delete node happened
             case 'recover_node':
-            this.recoverSingleNode(un_content[0], false)
+            var node_name = un_content[0]
+            this.recoverSingleNode(node_name, false)
             this.idx --
             break
 
             // delete node if recover node happened
             case 'delete_node':
-            this.deleteSingleNode(un_content[0], false)
+            var node_name = un_content[0]
+            this.deleteSingleNode(node_name, false)
             break
 
             // delete child if recover child happened
             case 'delete_child':
-            this.deleteNodeWithChildren(un_content[0], false)
+            var node_name = un_content[0]
+            this.deleteNodeWithChildren(node_name, false)
             break
 
             // add child when delete child happened
             case 'add_child':
-            this.recoverNodeWithChildren(un_content[0], false)
+            var node_name = un_content[0]
+            this.recoverNodeWithChildren(node_name, false)
             this.idx --
             break
 
             // set input size to previous value when input size is changed
             case 'change_input_size':
-            this.changeInputSize(un_content[0], un_content[1], [], false)
+            var input_name = un_content[0], ori_value = un_content[1]
+            this.changeInputSize(input_name, ori_value, [], false)
             this.idx --
             this.applyAndUpdateView();
             break
 
             // set original node initializer to previous value when initializer is changed
             case 'change_ori_ini':
+            var arg_name = un_content[0], ori_value = un_content[1]
             // if previous is none
-            if (un_content[1] == undefined) {
-                this.initializerEditInfo.set(un_content[0], [])
+            if (ori_value == undefined) {
+                this.initializerEditInfo.set(arg_name, [])
             }
             else {
-                this.initializerEditInfo.set(un_content[0], un_content[1])
+                this.initializerEditInfo.set(arg_name, ori_value)
             }
             this.idx --
             this.applyAndUpdateView();
@@ -188,12 +201,13 @@ modifier.Modifier = class {
 
             // set added node initializer to previous value when initializer is changed
             case 'change_add_ini':
+            var arg_name = un_content[0], ori_value = un_content[1]
             // if previous value is none
-            if (un_content[1] == undefined) {
-                this.initializerEditInfo.set(un_content[0], [])
+            if (ori_value == undefined) {
+                this.initializerEditInfo.set(arg_name, [])
             }
             else {
-                this.initializerEditInfo.set(un_content[0], un_content[1])
+                this.initializerEditInfo.set(arg_name, ori_value)
             }
             this.idx --
             this.applyAndUpdateView();
@@ -201,15 +215,19 @@ modifier.Modifier = class {
 
             // set model properties to previous value when properties is changed
             case 'change_prop':
-            this.changeModelProperties(un_content[0], un_content[1], un_content[2], false)
+            var prop_name = un_content[0], pre_value = un_content[1], index = un_content[2]
+            this.changeModelProperties(prop_name, pre_value, index, false)
             this.idx --
             this.applyAndUpdateView();
             break
 
             // set node input/output to previous value when node input/output is changed
             case 'change_node_io':
-            this.changeNodeInputOutput(un_content[0], un_content[1], un_content[2], un_content[3],
-                un_content[4], un_content[5], false)
+            var modelNodeName = un_content[0], parameterName = un_content[1],
+            param_type = un_content[2], param_index = un_content[3],
+            arg_index = un_content[4], targetValue = un_content[5]
+            this.changeNodeInputOutput(modelNodeName, parameterName, param_type, param_index,
+                arg_index, targetValue, false)
             this.idx --
             break
 
