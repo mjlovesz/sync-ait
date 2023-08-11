@@ -96,14 +96,18 @@ namespace Base {
                                bool autoDymDims, std::vector<std::string>& outputNames);
 
     void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId);
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId, size_t num_threads);
 
     void FuncCompute(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
                      ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
                      Base::PyInferenceSession* session);
 
+    void FuncComputeWithoutSession(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
+                     ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
+                     std::string modelPath);
+
     void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId);
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, size_t num_threads);
 
     void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, std::string outFmt);
 

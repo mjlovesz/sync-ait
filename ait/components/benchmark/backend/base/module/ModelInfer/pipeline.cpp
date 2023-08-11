@@ -169,7 +169,7 @@ namespace Base {
     }
 
     void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId)
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId, size_t num_threads = 1)
     {
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
         if (ret != APP_ERR_OK) {
@@ -178,7 +178,9 @@ namespace Base {
         while (true) {
             auto item = h2dQueue.pop();
             if (!item) {
-                computeQueue.push(nullptr);
+                for (size_t i = 0; i < num_threads; i++) {
+                    computeQueue.push(nullptr);
+                }
                 break;
             }
 
@@ -225,18 +227,55 @@ namespace Base {
         }
     }
 
-    void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId)
+    void FuncComputeWithoutSession(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
+                     ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
+                     std::string modelPath)
     {
+        std::shared_ptr<Base::SessionOptions> options = std::make_shared<Base::SessionOptions>();
+        auto session = std::make_shared<Base::PyInferenceSession>(modelPath, deviceId, options);
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
         if (ret != APP_ERR_OK) {
             throw std::runtime_error(GetError(ret));
         }
         while (true) {
+            auto item = computeQueue.pop();
+            if (!item) {
+                d2hQueue.push(nullptr);
+                break;
+            }
+
+            if (item->autoDynamicShape != "") {
+                session->SetDynamicShape(item->autoDynamicShape);
+            }
+            if (item->autoDynamicDims != "") {
+                session->SetDynamicDims(item->autoDynamicDims);
+            }
+
+            item->outputs = std::make_shared<std::vector<Base::TensorBase>>();
+            session->OnlyInfer(*(item->inputs), *(item->outputNames), *(item->outputs));
+
+            d2hQueue.push(item);
+        }
+    }
+
+    void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, size_t num_threads = 1)
+    {
+        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
+        if (ret != APP_ERR_OK) {
+            throw std::runtime_error(GetError(ret));
+        }
+        size_t count = 1;
+        while (true) {
             auto item = d2hQueue.pop();
             if (!item) {
-                saveQueue.push(nullptr);
-                break;
+                if (count < num_threads) {
+                    count++;
+                    continue;
+                } else {
+                    saveQueue.push(nullptr);
+                    break;
+                }
             }
 
             for (auto &output : *(item->outputs)) {

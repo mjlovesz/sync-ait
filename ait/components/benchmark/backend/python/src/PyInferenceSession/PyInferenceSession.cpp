@@ -28,7 +28,7 @@
 #include "Base/ModelInfer/pipeline.h"
 
 namespace Base {
-PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<SessionOptions> options) : deviceId_(deviceId)
+PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<SessionOptions> options) : deviceId_(deviceId), modelPath_(modelPath)
 {
     Init(modelPath, options);
 }
@@ -339,22 +339,30 @@ std::vector<std::vector<TensorBase>> PyInferenceSession::InferPipelineBaseTensor
 
 void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
                                        bool autoDymShape, bool autoDymDims, const std::string& outFmt,
-                                       const bool pureInferMode)
+                                       const bool pureInferMode, size_t num_threads = 1)
 {
     uint32_t deviceId = GetDeviceId();
     ConcurrentQueue<std::shared_ptr<Feeds>> h2dQueue;
     ConcurrentQueue<std::shared_ptr<Feeds>> computeQueue;
     ConcurrentQueue<std::shared_ptr<Feeds>> d2hQueue;
     ConcurrentQueue<std::shared_ptr<Feeds>> saveQueue;
+    std::vector<std::thread> computeThreadGroup{};
+    computeThreadGroup.reserve(num_threads-1);
 
-    std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId);
+    std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId, num_threads);
     std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), deviceId, this);
-    std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId);
+    for (size_t i = 0; i < num_threads - 1; i++) {
+        computeThreadGroup.emplace_back(FuncComputeWithoutSession, std::ref(computeQueue), std::ref(d2hQueue), deviceId, modelPath_)
+    }
+    std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId, num_threads);
     std::thread saveThread(FuncSave, std::ref(saveQueue), deviceId, outFmt);
     FuncPrepare(h2dQueue, deviceId, this, infilesList, autoDymShape, autoDymDims, outputDir, pureInferMode);
 
     h2dThread.join();
     computeThread.join();
+    for (auto &elem : computeThreadGroup) {
+        elem.join();
+    }
     d2hThread.join();
     saveThread.join();
 }

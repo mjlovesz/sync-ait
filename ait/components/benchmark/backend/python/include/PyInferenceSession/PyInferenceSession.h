@@ -49,7 +49,7 @@ public:
     std::vector<TensorBase> InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
     void OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names, std::vector<TensorBase>& outputs);
     void InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
-                       bool autoDymShape, bool autoDymDims, const std::string& outFmt, const bool pureInferMode);
+                       bool autoDymShape, bool autoDymDims, const std::string& outFmt, const bool pureInferMode, size_t num_threads);
     std::vector<std::vector<TensorBase>> InferPipelineBaseTensor(std::vector<std::string>& outputNames,
                                                                  std::vector<std::vector<Base::BaseTensor>>& inputsList,
                                                                  std::vector<std::vector<std::vector<size_t>>>& shapesList,
@@ -108,6 +108,7 @@ private:
     uint32_t deviceId_ = 0;
     Base::ModelDesc modelDesc_ = {};
     bool InitFlag_ = false;
+    std::string modelPath_ = "";
 };
 }
 
