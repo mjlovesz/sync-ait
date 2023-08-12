@@ -76,8 +76,8 @@ modifier.Modifier = class {
     undo() {
         if (this.idx == -1) return
         let op = this.opSeries[this.idx]
-        let un_op_type = cmd_map[op[0]], opContent = op[1], unContent = op[2];
-        switch (un_op_type) {
+        let revertOpType = cmd_map[op[0]], opContent = op[1], unContent = op[2];
+        switch (revertOpType) {
 
             // delete node only when add node by user
             case 'delete_node': {
@@ -111,17 +111,17 @@ modifier.Modifier = class {
                 // set visible
                 this.name2NodeStates.set(outputName, 'Exist');
                 // check whether original output
-                let is_original = false
+                let isOriginal = false
                 for (const ori_output of this.graph._outputs) {
                     const model_name = ori_output.modelNodeName
                     if (model_name == outputName) {
-                        is_original = true
+                        isOriginal = true
                         break
                     }
                 }
 
                 // not original output, update addedoutputs
-                if (!is_original) {
+                if (!isOriginal) {
                     // out_ + xxx
                     this.addedOutputs.add(outputName.substring(OUT_POS))
                 }
@@ -135,16 +135,16 @@ modifier.Modifier = class {
                 // set input visible
                 this.name2NodeStates.set(inputName, 'Exist')
                 // check whether originial input
-                let is_original = false
+                let isOriginal = false
                 for (const ori_input of this.graph._inputs) {
                     const model_name = ori_input.modelNodeName
                     if (model_name == inputName) {
-                        is_original = true
+                        isOriginal = true
                         break
                     }
                 }
                 // not originial input, update addedinputs
-                if (!is_original) {
+                if (!isOriginal) {
                     this.addedInputs.add(inputName)
                 }
                 this.idx--
