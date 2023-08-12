@@ -23,7 +23,7 @@ chmod u+x install.sh
 
 ait推理工具的安装包括**ait包**和**依赖的组件包**的安装，其中依赖包可以根据需求只添加所需要的组件包。
 
-安装方式包括：**源代码一键式安装**和**按需手动安装不同组件**，用户可以按需选取。
+安装方式包括：**源代码一键式安装**,**按需手动安装不同组件**以及**容器安装方式（支持caffe）**，用户可以按需选取。
 
 **说明**：
 
@@ -94,6 +94,27 @@ chmod u+x install.sh
 ./install.sh --convert
 ```
 
+
+### 容器方式安装
+容器方式安装目前提供了Ubuntu 18.04的docker镜像。在`<ait_project_root_path>/ait/components/debug/compare`目录下运行以下命令以构建镜像：
+```shell
+docker build --build-arg CANN_TOOLKIT_PATH=Ascend-cann-tookit<version+arch>.run --build-arg CANN_AMCT_PATH=Ascend-cann-amct_5.1.RC1.1_linux-aarch64.tar.gz \ 
+--build-arg CAFFE_SRC=caffe-ascend-amct.zip -f Dockerfile . -t ait-caffe:latest
+```
+注意:
+1. 非root用户请加上sudo
+2. 请将Ascend-cann-tookit<version+arch>.run改为实际上的toolkit路径(必须是相对路径)
+3. 从这个[仓库](https://github.com/lenLRX/caffe)下载zip[代码](https://github.com/lenLRX/caffe/archive/refs/heads/ascend-amct.zip),得到的zip包可能叫ascend-amct.zip或caffe-ascend-amct.zip
+4. 从[这里](https://support.huawei.com/enterprise/zh/ascend-computing/cann-pid-251168373/software)下载amct的包Ascend-cann-amct_5.1.RC1.1_linux-aarch64.tar.gz(注意下载对应需要的版本如：X86，aarch64等)
+5. 执行命令构建docker镜像,要求:
+   * CANN_AMCT_PATH=步骤4下载的amct包名字
+   * CAFFE_SRC=步骤3下载的caffe代码zip包
+运行以下命令以上述镜像启动容器：
+```shell
+docker run -it -v=`pwd`:/work   -v /usr/local/Ascend/driver:/usr/local/Ascend/driver -v /usr/bin/npu-smi:/usr/bin/npu-smi \
+-v /usr/local/Ascend/add-ons:/usr/local/Ascend/add-ons --device /dev/davinci0 --device /dev/davinci_manager --device /dev/hisi_hdc --device /dev/devmm_svm  ait-caffe:latest
+```
+在启动容器时将driver路径挂载到容器中，指定映射的device设备。
 
 #### 卸载
 ```shell
