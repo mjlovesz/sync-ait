@@ -1,21 +1,21 @@
 var modifier = modifier || {};
 // op - revertop table
 var cmd_map = {
-    'add_node' : 'delete_node',
-    'delete_node' : 'recover_node',
-    'add_input' : 'delete_input',
-    'delete_input' : 'add_input',
-    'add_output' : 'delete_output',
-    'delete_output' : 'add_output',
-    'change_prop' : 'change_prop',
-    'delete_child' : 'add_child',
-    'add_child' : 'delete_child',
-    'recover_node' : 'delete_node',
-    'change_ori_ini' : 'change_ori_ini',
-    'change_add_ini' : 'change_add_ini',
-    'change_node_attr' : 'change_node_attr',
-    'change_input_size' : 'change_input_size',
-    'change_node_io' : 'change_node_io'
+    'add_node': 'delete_node',
+    'delete_node': 'recover_node',
+    'add_input': 'delete_input',
+    'delete_input': 'add_input',
+    'add_output': 'delete_output',
+    'delete_output': 'add_output',
+    'change_prop': 'change_prop',
+    'delete_child': 'add_child',
+    'add_child': 'delete_child',
+    'recover_node': 'delete_node',
+    'change_ori_ini': 'change_ori_ini',
+    'change_add_ini': 'change_add_ini',
+    'change_node_attr': 'change_node_attr',
+    'change_input_size': 'change_input_size',
+    'change_node_io': 'change_node_io'
 }
 
 modifier.Modifier = class {
@@ -55,8 +55,8 @@ modifier.Modifier = class {
         this.graphs = graphs;
         this.graph = this.graphs[0];
         // this.analyzeModelGraph();
-        for (const input_name of this.graph.inputs) {
-            this.oriInputs.add(input_name)
+        for (const inputName of this.graph.inputs) {
+            this.oriInputs.add(inputName)
         }
         this.updateAddNodeDropDown();
         this.resetGraph()
@@ -75,247 +75,262 @@ modifier.Modifier = class {
 
     undo() {
         if (this.idx == -1) return
-        var op = this.cmd_list[this.idx]
-        var un_op_type = cmd_map[op[0]], op_content = op[1], un_content = op[2];
-        switch(un_op_type) {
+        let op = this.cmd_list[this.idx]
+        let un_op_type = cmd_map[op[0]], op_content = op[1], un_content = op[2];
+        switch (un_op_type) {
 
             // delete node only when add node by user
-            case 'delete_node' : 
-            var modelNodeName = un_content[0]
-            this.addedNode.delete(modelNodeName)
-            this.addNodeKey --
-            this.deleteSingleNode(modelNodeName, false)
-            this.idx --
-            break
-
+            case 'delete_node': {
+                let modelNodeName = un_content[0]
+                this.addedNode.delete(modelNodeName)
+                this.addNodeKey--
+                this.deleteSingleNode(modelNodeName, false)
+                this.idx--
+                break
+            }
             // delete output when add output by user
-            case 'delete_output' : 
-            var ori_output_name = un_content[0]
-            this.addedOutputs.delete(ori_output_name)
-            this.deleteModelOutput('out_' + ori_output_name, false)
-            this.idx --
-            break
-
+            case 'delete_output': {
+                let ori_output_name = un_content[0]
+                this.addedOutputs.delete(ori_output_name)
+                this.deleteModelOutput('out_' + ori_output_name, false)
+                this.idx--
+                break
+            }
             // delete input when add input by user
-            case 'delete_input' : 
-            var input_name = un_content[0]
-            this.addedInputs.delete(input_name)
-            this.deleteModelInput(input_name, false)
-            this.idx --
-            break
-
+            case 'delete_input': {
+                let inputName = un_content[0]
+                this.addedInputs.delete(inputName)
+                this.deleteModelInput(inputName, false)
+                this.idx--
+                break
+            }
             // add output when output is deleted
-            case 'add_output' :
-            const OUT_POS = 4
-            var output_name = un_content[0]
-            // set visible
-            this.name2NodeStates.set(output_name, 'Exist');
-            // check whether original output
-            var flag = false
-            for (const ori_output of this.graph._outputs) {
-                const model_name = ori_output.modelNodeName
-                if (model_name == output_name) {
-                    flag = true
-                    break
+            case 'add_output': {
+                const OUT_POS = 4
+                let outputName = un_content[0]
+                // set visible
+                this.name2NodeStates.set(outputName, 'Exist');
+                // check whether original output
+                let is_original = false
+                for (const ori_output of this.graph._outputs) {
+                    const model_name = ori_output.modelNodeName
+                    if (model_name == outputName) {
+                        is_original = true
+                        break
+                    }
                 }
-            }
 
-            // not original output, update addedoutputs
-            if (!flag) {
-                // out_ + xxx
-                this.addedOutputs.add(output_name.substring(OUT_POS))
+                // not original output, update addedoutputs
+                if (!is_original) {
+                    // out_ + xxx
+                    this.addedOutputs.add(outputName.substring(OUT_POS))
+                }
+                this.idx--
+                this.applyAndUpdateView();
+                break
             }
-            this.idx --
-            this.applyAndUpdateView();
-            break
-
             // add input when delete input
-            case 'add_input':
-            var input_name = un_content[0]
-            // set input visible
-            this.name2NodeStates.set(input_name, 'Exist')
-            // check whether originial input
-            var flag = false
-            for (const ori_input of this.graph._inputs) {
-                const model_name = ori_input.modelNodeName
-                if (model_name == input_name) {
-                    flag = true
-                    break
+            case 'add_input': {
+                let inputName = un_content[0]
+                // set input visible
+                this.name2NodeStates.set(inputName, 'Exist')
+                // check whether originial input
+                let is_original = false
+                for (const ori_input of this.graph._inputs) {
+                    const model_name = ori_input.modelNodeName
+                    if (model_name == inputName) {
+                        is_original = true
+                        break
+                    }
                 }
+                // not originial input, update addedinputs
+                if (!is_original) {
+                    this.addedInputs.add(inputName)
+                }
+                this.idx--
+                this.applyAndUpdateView()
+                break
             }
-            // not originial input, update addedinputs
-            if (!flag){
-                this.addedInputs.add(input_name)
-            }
-            this.idx --
-            this.applyAndUpdateView()
-            break
-
             // recover node when delete node happened
-            case 'recover_node':
-            var node_name = un_content[0]
-            this.recoverSingleNode(node_name, false)
-            this.idx --
-            break
-
+            case 'recover_node': {
+                let nodeName = un_content[0]
+                this.recoverSingleNode(nodeName, false)
+                this.idx--
+                break
+            }
             // delete node if recover node happened
-            case 'delete_node':
-            var node_name = un_content[0]
-            this.deleteSingleNode(node_name, false)
-            break
-
+            case 'delete_node': {
+                let nodeName = un_content[0]
+                this.deleteSingleNode(nodeName, false)
+                break
+            }
             // delete child if recover child happened
-            case 'delete_child':
-            var node_name = un_content[0]
-            this.deleteNodeWithChildren(node_name, false)
-            break
-
+            case 'delete_child': {
+                let nodeName = un_content[0]
+                this.deleteNodeWithChildren(nodeName, false)
+                break
+            }
             // add child when delete child happened
-            case 'add_child':
-            var node_name = un_content[0]
-            this.recoverNodeWithChildren(node_name, false)
-            this.idx --
-            break
-
+            case 'add_child': {
+                let nodeName = un_content[0]
+                this.recoverNodeWithChildren(nodeName, false)
+                this.idx--
+                break
+            }
             // set input size to previous value when input size is changed
-            case 'change_input_size':
-            var input_name = un_content[0], ori_value = un_content[1]
-            this.changeInputSize(input_name, ori_value, [], false)
-            this.idx --
-            this.applyAndUpdateView();
-            break
-
+            case 'change_input_size': {
+                let inputName = un_content[0], ori_value = un_content[1]
+                this.changeInputSize(inputName, ori_value, [], false)
+                this.idx--
+                this.applyAndUpdateView();
+                break
+            }
             // set original node initializer to previous value when initializer is changed
-            case 'change_ori_ini':
-            var arg_name = un_content[0], ori_value = un_content[1]
-            // if previous is none
-            if (ori_value == undefined) {
-                this.initializerEditInfo.set(arg_name, [])
+            case 'change_ori_ini': {
+                let arg_name = un_content[0], ori_value = un_content[1]
+                // if previous is none
+                if (ori_value == undefined) {
+                    this.initializerEditInfo.set(arg_name, [])
+                }
+                else {
+                    this.initializerEditInfo.set(arg_name, ori_value)
+                }
+                this.idx--
+                this.applyAndUpdateView();
+                break
             }
-            else {
-                this.initializerEditInfo.set(arg_name, ori_value)
-            }
-            this.idx --
-            this.applyAndUpdateView();
-            break
-
             // set added node initializer to previous value when initializer is changed
-            case 'change_add_ini':
-            var arg_name = un_content[0], ori_value = un_content[1]
-            // if previous value is none
-            if (ori_value == undefined) {
-                this.initializerEditInfo.set(arg_name, [])
+            case 'change_add_ini': {
+                let arg_name = un_content[0], ori_value = un_content[1]
+                // if previous value is none
+                if (ori_value == undefined) {
+                    this.initializerEditInfo.set(arg_name, [])
+                }
+                else {
+                    this.initializerEditInfo.set(arg_name, ori_value)
+                }
+                this.idx--
+                this.applyAndUpdateView();
+                break
             }
-            else {
-                this.initializerEditInfo.set(arg_name, ori_value)
-            }
-            this.idx --
-            this.applyAndUpdateView();
-            break
-
             // set model properties to previous value when properties is changed
-            case 'change_prop':
-            var prop_name = un_content[0], pre_value = un_content[1], index = un_content[2]
-            this.changeModelProperties(prop_name, pre_value, index, false)
-            this.idx --
-            this.applyAndUpdateView();
-            break
-
+            case 'change_prop': {
+                let prop_name = un_content[0], pre_value = un_content[1], index = un_content[2]
+                this.changeModelProperties(prop_name, pre_value, index, false)
+                this.idx--
+                this.applyAndUpdateView();
+                break
+            }
             // set node input/output to previous value when node input/output is changed
-            case 'change_node_io':
-            var modelNodeName = un_content[0], parameterName = un_content[1],
-            param_type = un_content[2], param_index = un_content[3],
-            arg_index = un_content[4], targetValue = un_content[5]
-            this.changeNodeInputOutput(modelNodeName, parameterName, param_type, param_index,
-                arg_index, targetValue, false)
-            this.idx --
-            break
-
+            case 'change_node_io': {
+                let [modelNodeName, parameterName, param_type, param_index, arg_index, targetValue] = un_content
+                this.changeNodeInputOutput(modelNodeName, parameterName, param_type, param_index,
+                                           arg_index, targetValue, false)
+                this.idx--
+                break
+            }
             // set node attribute to previous value when node attribute is changed
-            case 'change_node_attr':
-            var modelNodeName = un_content[0], attributeName = un_content[1], ori_value = un_content[2], type = un_content[3]
-            this.changeNodeAttribute(modelNodeName, attributeName, ori_value, type, false)
-            this.idx --
-            break
-            default:
-            break
+            case 'change_node_attr': {
+                let modelNodeName = un_content[0], attributeName = un_content[1], ori_value = un_content[2], type = un_content[3]
+                this.changeNodeAttribute(modelNodeName, attributeName, ori_value, type, false)
+                this.idx--
+                break
+            }
+            default:{
+                break
+            }
         }
     }
 
     redo() {
         // if at the latest op, can't redo
-        if(this.idx == this.cmd_list.length - 1) return
+        if (this.idx == this.cmd_list.length - 1) return
         //index move forward
-        this.idx ++
-        var op = this.cmd_list[this.idx]
-        var op_type = op[0], op_content = op[1], un_content = op[2];
+        this.idx++
+        let op = this.cmd_list[this.idx]
+        let op_type = op[0], op_content = op[1], un_content = op[2];
         // redo op according to the op content
-        switch(op_type) {
-            case 'add_node':
-            this.addNode(op_content[0], op_content[1],false)
-            break
-            case 'add_output':
-            this.addModelOutput(op_content[0], false)
-            break
-            case 'add_input':
-            this.addModelInput(op_content[0], false)
-            break
-            case 'delete_node':
-            this.deleteSingleNode(op_content[0], false)
-            break
-            case 'delete_output':
-            this.deleteModelOutput(op_content[0], false)
-            break
-            case 'delete_input':
-            this.deleteModelInput(op_content[0], false)
-            break
-            case 'delete_child':
-            this.deleteNodeWithChildren(op_content[0], false)
-            break
-            case 'change_input_size':
-            this.changeInputSize(op_content[0], op_content[1], [], false)
-            this.applyAndUpdateView();
-            break
-            case 'change_ori_ini':
-            this.changeInitializer(op_content[0], op_content[1], op_content[2], op_content[3], op_content[4], op_content[5], op_content[6], false)
-            this.applyAndUpdateView();
-            break
-            case 'change_add_ini':
-            this.changeAddedNodeInitializer(op_content[0], op_content[1], op_content[2], op_content[3], op_content[4], op_content[5], op_content[6], false)
-            this.applyAndUpdateView();
-            break
-            case 'change_prop':
-            this.changeModelProperties(op_content[0], op_content[1], op_content[2], false)
-            this.applyAndUpdateView();
-            break
-            case 'change_node_attr':
-            this.changeNodeAttribute(op_content[0], op_content[1], op_content[2], op_content[3], false)
-            break
-            case 'change_prop':
-            this.changeModelProperties(op_content[0], op_content[1], op_content[2], false)
-            this.applyAndUpdateView();
-            break
-            case 'change_node_io':
-            this.changeNodeInputOutput(op_content[0], op_content[1], op_content[2], op_content[3], op_content[4], op_content[5], false)
-            break
-            default:
-            break
+        switch (op_type) {
+            case 'add_node': {
+                this.addNode(op_content[0], op_content[1], false)
+                break
+            }
+            case 'add_output': {
+                this.addModelOutput(op_content[0], false)
+                break
+            }
+            case 'add_input': {
+                this.addModelInput(op_content[0], false)
+                break
+            }
+            case 'delete_node': {
+                this.deleteSingleNode(op_content[0], false)
+                break
+            }
+            case 'delete_output': {
+                this.deleteModelOutput(op_content[0], false)
+                break
+            }
+            case 'delete_input': {
+                this.deleteModelInput(op_content[0], false)
+                break
+            }
+            case 'delete_child': {
+                this.deleteNodeWithChildren(op_content[0], false)
+                break
+            }
+            case 'change_input_size': {
+                this.changeInputSize(op_content[0], op_content[1], [], false)
+                this.applyAndUpdateView();
+                break
+            }
+            case 'change_ori_ini': {
+                this.changeInitializer(op_content[0], op_content[1], op_content[2], op_content[3], op_content[4], op_content[5], op_content[6], false)
+                this.applyAndUpdateView();
+                break
+            }
+            case 'change_add_ini': {
+                this.changeAddedNodeInitializer(op_content[0], op_content[1], op_content[2], op_content[3], op_content[4], op_content[5], op_content[6], false)
+                this.applyAndUpdateView();
+                break
+            }
+            case 'change_prop': {
+                this.changeModelProperties(op_content[0], op_content[1], op_content[2], false)
+                this.applyAndUpdateView();
+                break
+            }
+            case 'change_node_attr': {
+                this.changeNodeAttribute(op_content[0], op_content[1], op_content[2], op_content[3], false)
+                break
+            }
+            case 'change_prop': {
+                this.changeModelProperties(op_content[0], op_content[1], op_content[2], false)
+                this.applyAndUpdateView();
+                break
+            }
+            case 'change_node_io': {
+                this.changeNodeInputOutput(op_content[0], op_content[1], op_content[2], op_content[3], op_content[4], op_content[5], false)
+                break
+            }
+            default: {
+                break
+            }
         }
     }
 
     // ======= Record modified info =======> //
-    addNode(op_domain, op_type, is_valid=true) {
-        var node_id = (this.addNodeKey++).toString();  // in case input (onnx) node has no name
-        var modelNodeName = 'custom_added_' + op_type + node_id;
+    addNode(op_domain, op_type, opByUser = true) {
+        let node_id = (this.addNodeKey++).toString();  // in case input (onnx) node has no name
+        let modelNodeName = 'custom_added_' + op_type + node_id;
 
-        var properties = new Map();
+        let properties = new Map();
         properties.set('domain', op_domain);
         properties.set('op_type', op_type);
         properties.set('name', modelNodeName);
         // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-        if (is_valid) {
+        if (opByUser) {
             this.cmd_list.length = this.idx + 1
-            this.idx ++
+            this.idx++
             this.cmd_list.push(['add_node', [op_domain, op_type], [modelNodeName]])
         }
         this.addedNode.set(modelNodeName, new view.LightNodeInfo(properties));
@@ -323,105 +338,106 @@ modifier.Modifier = class {
         this.applyAndUpdateView();
     }
 
-    addModelOutput(node_name, is_valid=true) {
-        var modelNode = this.name2ModelNode.get(node_name);
+    addModelOutput(nodeName, opByUser = true) {
+        let modelNode = this.name2ModelNode.get(nodeName);
         // use a output argument as a proxy
         let name2NodeOutput = 'out_' + modelNode.outputs[0].arguments[0].name
         if (this.name2NodeStates.has(name2NodeOutput)) {
             this.name2NodeStates.set(name2NodeOutput, 'Exist');
         }
         // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-        if (is_valid) {
+        if (opByUser) {
             this.cmd_list.length = this.idx + 1
-            this.idx ++
-            this.cmd_list.push(['add_output', [node_name], [modelNode.outputs[0].arguments[0].name]])
-            
+            this.idx++
+            this.cmd_list.push(['add_output', [nodeName], [modelNode.outputs[0].arguments[0].name]])
+
         }
         this.addedOutputs.add(modelNode.outputs[0].arguments[0].name);
         this.applyAndUpdateView();
     }
-    addModelInput(input_name, is_valid=true) {
+    addModelInput(inputName, opByUser = true) {
         // use a input argument as a proxy
         // this.addedInputs.add(modelNode.inputs[0].arguments[0].name);
-        if (this.name2NodeStates.has(input_name)) {
-            this.name2NodeStates.set(input_name, 'Exist');
+        if (this.name2NodeStates.has(inputName)) {
+            this.name2NodeStates.set(inputName, 'Exist');
         }
         // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-        if (!this.oriInputs.has(input_name)) {
-            if (is_valid) {
+        if (!this.oriInputs.has(inputName)) {
+            if (opByUser) {
                 this.cmd_list.length = this.idx + 1
-                this.cmd_list.push(['add_input', [input_name], [input_name]])
-                this.idx ++
+                this.cmd_list.push(['add_input', [inputName], [inputName]])
+                this.idx++
             }
-            this.addedInputs.add(input_name)
+            this.addedInputs.add(inputName)
         }
         this.applyAndUpdateView();
     }
 
-    deleteModelOutput(output_name, is_valid=true) {
-        this.name2NodeStates.set(output_name, 'Deleted');  // "out_" + xxx
+    deleteModelOutput(outputName, opByUser = true) {
+        this.name2NodeStates.set(outputName, 'Deleted');  // "out_" + xxx
         // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-        if (is_valid) {
+        if (opByUser) {
             this.cmd_list.length = this.idx + 1
-            this.idx ++
-            this.cmd_list.push(['delete_output', [output_name], [output_name]])
+            this.idx++
+            this.cmd_list.push(['delete_output', [outputName], [outputName]])
         }
         this.applyAndUpdateView();
     }
 
-    deleteModelInput(input_name, is_valid=true) {
-        this.name2NodeStates.set(input_name, 'Deleted');  // "out_" + xxx
+    deleteModelInput(inputName, opByUser = true) {
+        this.name2NodeStates.set(inputName, 'Deleted');  // "out_" + xxx
         // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-        if (is_valid) {
+        if (opByUser) {
             this.cmd_list.length = this.idx + 1
-            this.idx ++
-            this.cmd_list.push(['delete_input', [input_name], [input_name]])
+            this.idx++
+            this.cmd_list.push(['delete_input', [inputName], [inputName]])
         }
         this.applyAndUpdateView();
     }
 
-    changeModelProperties(prop_name, prop_value, index=undefined, is_valid=true) {
+    changeModelProperties(prop_name, prop_value, index = undefined, opByUser = true) {
         if (index !== undefined) {
             if (!this.modelProperties.has(prop_name)) {
                 this.modelProperties.set(prop_name, [])
             }
-            var ori_value = this.modelProperties.get(prop_name)[index]
+            let ori_value = this.modelProperties.get(prop_name)[index]
             // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-            if (is_valid) {
+            if (opByUser) {
                 this.cmd_list.length = this.idx + 1
-                this.idx ++
+                this.idx++
                 this.cmd_list.push(['change_prop', [prop_name, prop_value, index], [prop_name, ori_value, index]])
             }
             this.modelProperties.get(prop_name)[index] = prop_value
         } else {
-            var pre_value = this.modelProperties.get(prop_name)
+            let pre_value = this.modelProperties.get(prop_name)
             this.modelProperties.set(prop_name, prop_value)
             // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-            if (is_valid) 
-            {this.cmd_list.length = this.idx + 1
-            this.idx ++
-            this.cmd_list.push(['change_prop', [prop_name, prop_value, index], [prop_name, pre_value, index]])}
+            if (opByUser) {
+                this.cmd_list.length = this.idx + 1
+                this.idx++
+                this.cmd_list.push(['change_prop', [prop_name, prop_value, index], [prop_name, pre_value, index]])
+            }
         }
     }
-    
-    setExtractStart(node_name, is_start) {
+
+    setExtractStart(nodeName, is_start) {
         if (is_start) {
-            this.extract_start.add(node_name)
+            this.extract_start.add(nodeName)
         } else {
-            this.extract_start.delete(node_name)
+            this.extract_start.delete(nodeName)
         }
         this.highLightExtractNodes()
     }
-    
-    setExtractEnd(node_name, is_end) {
+
+    setExtractEnd(nodeName, is_end) {
         if (is_end) {
-            this.extract_end.add(node_name)
+            this.extract_end.add(nodeName)
         } else {
-            this.extract_end.delete(node_name)
+            this.extract_end.delete(nodeName)
         }
         this.highLightExtractNodes()
     }
-    
+
     getExtractStart() {
         return this.extract_start
     }
@@ -447,7 +463,7 @@ modifier.Modifier = class {
             this.name2ViewNode.get(inside_node).element.classList.add("graph-node-extract-node")
             this.extract_highlight_nodes.push(inside_node)
         }
-        
+
         for (const start_node of start_nodes) {
             this.name2ViewNode.get(start_node).element.classList.add("graph-node-extract-start")
             this.extract_highlight_nodes.push(start_node)
@@ -468,7 +484,7 @@ modifier.Modifier = class {
 
         let cached_node = new Map()
         let reach_node = new Set()
-        
+
         for (const start_node of start_nodes) {
             this.is_reach_end_node(start_node, end_nodes, cached_node, reach_node)
         }
@@ -499,8 +515,8 @@ modifier.Modifier = class {
         return reach_node.has(this_node_name)
     }
 
-    clickSingleNode(node_name) {
-        this.name2ViewNode.get(node_name).element.classList.add("graph-node-clicked")
+    clickSingleNode(nodeName) {
+        this.name2ViewNode.get(nodeName).element.classList.add("graph-node-clicked")
     }
 
     clearHighlightNode() {
@@ -509,67 +525,67 @@ modifier.Modifier = class {
         }
     }
 
-    deleteSingleNode(node_name, is_valid=true) {
-        this.name2NodeStates.set(node_name, 'Deleted');
+    deleteSingleNode(nodeName, opByUser = true) {
+        this.name2NodeStates.set(nodeName, 'Deleted');
         // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-        if (is_valid) {
+        if (opByUser) {
             this.cmd_list.length = this.idx + 1
-            this.idx ++
-            this.cmd_list.push(['delete_node', [node_name], [node_name]])
+            this.idx++
+            this.cmd_list.push(['delete_node', [nodeName], [nodeName]])
         }
         this.applyAndUpdateView();
     }
 
-    deleteNodeWithChildren(node_name, is_valid=true) {
-        if (this.name2NodeStates.get(node_name) == 'Deleted') return;
+    deleteNodeWithChildren(nodeName, opByUser = true) {
+        if (this.name2NodeStates.get(nodeName) == 'Deleted') return;
 
-        this.name2NodeStates.set(node_name, 'Deleted');
+        this.name2NodeStates.set(nodeName, 'Deleted');
 
-        if (!this.namedEdges.has(node_name)) return; // for leaf node
+        if (!this.namedEdges.has(nodeName)) return; // for leaf node
 
-        for (var i = 0; i < this.namedEdges.get(node_name).length; i++) {
-            this.deleteNodeWithChildren(this.namedEdges.get(node_name)[i]);
+        for (var i = 0; i < this.namedEdges.get(nodeName).length; i++) {
+            this.deleteNodeWithChildren(this.namedEdges.get(nodeName)[i]);
         }
         // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-        if (is_valid) {
+        if (opByUser) {
             this.cmd_list.length = this.idx + 1
-            this.idx ++
-            this.cmd_list.push(['delete_child', [node_name], [node_name]])
+            this.idx++
+            this.cmd_list.push(['delete_child', [nodeName], [nodeName]])
         }
         this.applyAndUpdateView();
     }
 
-    recoverSingleNode(node_name, is_valid=true) {
-        this.name2NodeStates.set(node_name, 'Exist');
+    recoverSingleNode(nodeName, opByUser = true) {
+        this.name2NodeStates.set(nodeName, 'Exist');
         // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-        if (is_valid) {
+        if (opByUser) {
             this.cmd_list.length = this.idx + 1
-            this.idx ++
-            this.cmd_list.push(['recover_node', [node_name], [node_name]])
+            this.idx++
+            this.cmd_list.push(['recover_node', [nodeName], [nodeName]])
         }
         this.applyAndUpdateView();
     }
 
-    recoverNodeWithChildren(node_name, is_valid=true) {
-        if (this.name2NodeStates.get(node_name) == 'Exist') return;
+    recoverNodeWithChildren(nodeName, opByUser = true) {
+        if (this.name2NodeStates.get(nodeName) == 'Exist') return;
 
-        this.name2NodeStates.set(node_name, 'Exist');
+        this.name2NodeStates.set(nodeName, 'Exist');
 
-        if (!this.namedEdges.has(node_name)) return; // for leaf node
+        if (!this.namedEdges.has(nodeName)) return; // for leaf node
 
-        for (var i = 0; i < this.namedEdges.get(node_name).length; i++) {
-            this.recoverNodeWithChildren(this.namedEdges.get(node_name)[i]);
+        for (var i = 0; i < this.namedEdges.get(nodeName).length; i++) {
+            this.recoverNodeWithChildren(this.namedEdges.get(nodeName)[i]);
         }
         // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-        if (is_valid) {
+        if (opByUser) {
             this.cmd_list.length = this.idx + 1
-            this.idx ++
-            this.cmd_list.push(['add_child', [node_name], [node_name]])
+            this.idx++
+            this.cmd_list.push(['add_child', [nodeName], [nodeName]])
         }
         this.applyAndUpdateView();
     }
 
-    changeNodeInputOutput(modelNodeName, parameterName, param_type, param_index, arg_index, targetValue, is_valid=true) {
+    changeNodeInputOutput(modelNodeName, parameterName, param_type, param_index, arg_index, targetValue, opByUser = true) {
         var arg_name = ""
         if (this.addedNode.has(modelNodeName)) {  // for custom added node 
             if (this.addedNode.get(modelNodeName).inputs.has(parameterName)) {
@@ -589,9 +605,9 @@ modifier.Modifier = class {
                 this.addedNode.get(modelNodeName).outputs.get(parameterName)[arg_index][0] = targetValue;
             }
             // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-            if (is_valid) {
+            if (opByUser) {
                 this.cmd_list.length = this.idx + 1
-                this.idx ++
+                this.idx++
                 this.cmd_list.push(['change_node_io', [modelNodeName, parameterName, param_type, param_index, arg_index, targetValue], [modelNodeName, parameterName, param_type, param_index, arg_index, arg_name]])
             }
         }
@@ -606,9 +622,9 @@ modifier.Modifier = class {
             }
             this.renameMap.get(modelNodeName).set(orig_arg_name, targetValue);
             // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-            if (is_valid) {
+            if (opByUser) {
                 this.cmd_list.length = this.idx + 1
-                this.idx ++
+                this.idx++
                 this.cmd_list.push(['change_node_io', [modelNodeName, parameterName, param_type, param_index, arg_index, targetValue], [modelNodeName, parameterName, param_type, param_index, arg_index, orig_arg_name]])
             }
             // console.log(this.modifier.renameMap)
@@ -616,7 +632,7 @@ modifier.Modifier = class {
 
         this.applyAndUpdateView();
     }
-    
+
 
     getOriginalName(param_type, modelNodeName, param_index, arg_index) {
         if (param_type == 'model_input') {
@@ -642,28 +658,28 @@ modifier.Modifier = class {
         return orig_arg_name;
     }
 
-    changeInitializer(modelNodeName, parameterName, param_type, param_index, arg_index, type, targetValue, is_valid=true) {
+    changeInitializer(modelNodeName, parameterName, param_type, param_index, arg_index, type, targetValue, opByUser = true) {
         var arg_name = this.getOriginalName(param_type, modelNodeName, param_index, arg_index);
         var ori_value = this.initializerEditInfo.get(arg_name)
         this.initializerEditInfo.set(arg_name, [type, targetValue]);
         // this.view._updateGraph()
         // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-        if (is_valid) {
+        if (opByUser) {
             this.cmd_list.length = this.idx + 1
-            this.idx ++
+            this.idx++
             this.cmd_list.push(['change_ori_ini', [modelNodeName, parameterName, param_type, param_index, arg_index, type, targetValue], [arg_name, ori_value]])
         }
         this.applyAndUpdateView();
     }
 
-    changeAddedNodeInitializer(modelNodeName, parameterName, param_type, param_index, arg_index, type, targetValue, is_valid=true) {
+    changeAddedNodeInitializer(modelNodeName, parameterName, param_type, param_index, arg_index, type, targetValue, opByUser = true) {
         var arg_name = this.addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index][0];
         var ori_value = this.initializerEditInfo.get(arg_name)
         this.initializerEditInfo.set(arg_name, [type, targetValue]);
         // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-        if (is_valid) {
+        if (opByUser) {
             this.cmd_list.length = this.idx + 1
-            this.idx ++
+            this.idx++
             this.cmd_list.push(['change_add_ini', [modelNodeName, parameterName, param_type, param_index, arg_index, type, targetValue], [arg_name, ori_value]])
         }
         // this.view._updateGraph()
@@ -671,7 +687,7 @@ modifier.Modifier = class {
         this.applyAndUpdateView();
     }
 
-    changeNodeAttribute(modelNodeName, attributeName, targetValue, type, is_valid=true) {
+    changeNodeAttribute(modelNodeName, attributeName, targetValue, type, opByUser = true) {
         var ori_value = undefined, ori_type = undefined
         if (this.addedNode.has(modelNodeName)) {
             ori_value, ori_type = this.addedNode.get(modelNodeName).attributes.get(attributeName)
@@ -695,32 +711,32 @@ modifier.Modifier = class {
         }
 
         // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-        if (is_valid) {
+        if (opByUser) {
             this.cmd_list.length = this.idx + 1
-            this.idx ++
+            this.idx++
             this.cmd_list.push(['change_node_attr', [modelNodeName, attributeName, targetValue, type], [modelNodeName, attributeName, ori_value, ori_type]])
         }
         // this.view._updateGraph()
         this.applyAndUpdateView();
     }
 
-    changeInputSize(input_name, value, ori_value, is_valid=true) {
-        this.inputSizeInfo.set(input_name, value)
+    changeInputSize(inputName, value, ori_value, opByUser = true) {
+        this.inputSizeInfo.set(inputName, value)
         // if is operated by user, add to cmd_list([op_type, op_content, revertop_content])
-        if (is_valid) {
+        if (opByUser) {
             this.cmd_list.length = this.idx + 1
-            this.idx ++
-            this.cmd_list.push(['change_input_size', [input_name, value], [input_name, ori_value]])
+            this.idx++
+            this.cmd_list.push(['change_input_size', [inputName, value], [inputName, ori_value]])
         }
     }
 
     onOffShapeInf(turnedOn) {
-        if (turnedOn)  this.downloadWithShapeInf = true;
+        if (turnedOn) this.downloadWithShapeInf = true;
         else this.downloadWithShapeInf = false;
     }
 
     onOffCleanUp(turnedOn) {
-        if (turnedOn)  this.downloadWithCleanUp= true;
+        if (turnedOn) this.downloadWithCleanUp = true;
         else this.downloadWithCleanUp = false;
     }
     // <======= Record modified info ======= //
@@ -766,11 +782,11 @@ modifier.Modifier = class {
         // console.log(this.graph.outputs)
         // create and add new output to graph
         this.graph.reset_custom_modified_outputs();
-        for (var output_name of this.addedOutputs) {
-            this.graph.add_output(output_name);
+        for (var outputName of this.addedOutputs) {
+            this.graph.add_output(outputName);
         }
-        for (var input_name of this.addedInputs) {
-            this.graph.add_input(input_name, this.inputSizeInfo.get(input_name));
+        for (var inputName of this.addedInputs) {
+            this.graph.add_input(inputName, this.inputSizeInfo.get(inputName));
         }
         for (let [name, size_info] of this.inputSizeInfo) {
             this.graph.modify_input_shape(name, size_info);
@@ -810,14 +826,14 @@ modifier.Modifier = class {
                 }
             }
         }
-        
+
         for (var output of this.graph.outputs) {
             var output_orig_name = output.arguments[0].original_name;
             if (this.name2NodeStates.get('out_' + output_orig_name) == "Deleted") {
                 this.graph.delete_output(output_orig_name);
             }
         }
-        
+
         for (var input_info of this.graph.inputs) {
             var input_orig_name = input_info.arguments[0].original_name;
             if (this.name2NodeStates.get(input_orig_name) == "Deleted") {
@@ -890,9 +906,9 @@ modifier.Modifier = class {
     }
 
     refreshNodeAttributes() {
-        for (const node_name of this.changedAttributes.keys()) {
-            var attr_change_map = this.changedAttributes.get(node_name);
-            var node = this.name2ModelNode.get(node_name);
+        for (const nodeName of this.changedAttributes.keys()) {
+            var attr_change_map = this.changedAttributes.get(nodeName);
+            var node = this.name2ModelNode.get(nodeName);
 
             for (var i = 0; i < node._attributes.length; ++i) {
                 if (attr_change_map.get(node._attributes[i].name)) {
