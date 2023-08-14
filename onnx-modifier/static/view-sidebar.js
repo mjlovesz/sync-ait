@@ -275,7 +275,7 @@ sidebar.NodeSidebar = class {
                     return
                 }
                 let select_input = select_elem.options[select_elem.selectedIndex].value;
-                this._host._view.modifier.addModelInput(this._modelNodeName, select_input);
+                this._host._view.modifier.addModelInput(select_input);
             })
         })
         const addOutputElem = this._host.document.createElement('button');
