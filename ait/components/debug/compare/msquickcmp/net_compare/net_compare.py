@@ -56,6 +56,7 @@ class NetCompare(object):
         self.cpu_dump_data_path = cpu_dump_data_path
         self.output_json_path = output_json_path
         self.golden_json_path = golden_json_path
+        self.quant_fusion_rule_file = arguments.quant_fusion_rule_file
         self.arguments = arguments
         self.msaccucmp_command_dir_path = os.path.join(self.arguments.cann_path, MSACCUCMP_DIR_PATH)
         self.msaccucmp_command_file_path = self._check_msaccucmp_file(self.msaccucmp_command_dir_path)
