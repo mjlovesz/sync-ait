@@ -25,7 +25,7 @@ def infer_sample():
     ndata1 = np.frombuffer(barray1)
     outputs1 = session1.infer([ndata1])
 
-    session1.finalize()
+    session1.releaseDevice()
 
     session2 = InferSession(device_id, model_path)
     barray2 = bytearray(session2.get_inputs()[0].realsize)
