@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #include <iostream>
 #include <memory>
 #include "acl/acl.h"
@@ -120,6 +120,53 @@ APP_ERROR DeviceManager::DestroyDevices()
         }
         INFO_LOG("end to finalize acl");
         return APP_ERR_OK;
+    }
+    if (initCounter_ > 0) {
+        return APP_ERR_OK;
+    }
+
+    return APP_ERR_OK;
+}
+
+/**
+ * @description: release all devices
+ * @param: void
+ * @return: destory_devices_result
+ */
+APP_ERROR DeviceManager::DestroyContext()
+{
+    std::lock_guard<std::mutex> lock(mtx_);
+    if (initCounter_ == 0) {
+        return APP_ERR_COMM_OUT_OF_RANGE;
+    }
+    initCounter_--;
+    if (initCounter_ == 0) {
+        for (auto item : contexts_) {
+            APP_ERROR ret = aclrtDestroyContext(item.second.get());
+            if (ret != APP_ERR_OK) {
+                cout << aclGetRecentErrMsg() << endl;
+                ERROR_LOG("destroy context failed");
+                return ret;
+            }
+            INFO_LOG("end to destroy context");
+
+            ret = aclrtResetDevice(item.first);
+            if (ret != ACL_SUCCESS) {
+                cout << aclGetRecentErrMsg() << endl;
+                ERROR_LOG("reset device failed");
+            }
+            INFO_LOG("end to reset device is %d", item.first);
+        }
+
+        contexts_.clear();
+        // APP_ERROR ret = aclFinalize();
+        // if (ret != APP_ERR_OK) {
+        //     cout << aclGetRecentErrMsg() << endl;
+        //     ERROR_LOG("finalize acl failed");
+        //     return ret;
+        // }
+        // INFO_LOG("end to finalize acl");
+        // return APP_ERR_OK;
     }
     if (initCounter_ > 0) {
         return APP_ERR_OK;

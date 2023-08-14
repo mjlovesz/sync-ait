@@ -75,6 +75,28 @@ int PyInferenceSession::Finalize()
     return APP_ERR_OK;
 }
 
+int PyInferenceSession::ReleaseDevice()
+{
+    APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_);
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("TensorContext::SetContext failed. ret=%d", ret);
+        return ret;
+    }
+
+    ret = Destroy();
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("TensorContext::Finalize. ret=%d", ret);
+        return ret;
+    }
+    ret = TensorContext::GetInstance()->ReleaseSource();
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("TensorContext::ReleaseSource. ret=%d", ret);
+        return ret;
+    }
+    DEBUG_LOG("PyInferSession ReleaseDeviceSource successfully!");
+    return APP_ERR_OK;
+}
+
 PyInferenceSession::~PyInferenceSession()
 {
     Destroy();
@@ -546,6 +568,8 @@ void RegistInferenceSession(py::module &m)
 
     model.def("create_tensor_from_fileslist", &Base::PyInferenceSession::CreateTensorFromFilesList);
     model.def("finalize", &Base::PyInferenceSession::Finalize);
+    model.def("releaseDevice", &Base::PyInferenceSession::ReleaseDevice);
+
     RegistAippConfig(model);
 
     m.def("model", &CreateModelInstance, "modelPath"_a, "deviceId"_a = 0, "options"_a=py::none());
