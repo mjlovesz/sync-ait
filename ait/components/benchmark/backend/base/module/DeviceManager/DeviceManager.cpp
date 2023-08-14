@@ -136,9 +136,9 @@ APP_ERROR DeviceManager::DestroyDevices()
 APP_ERROR DeviceManager::DestroyContext()
 {
     std::lock_guard<std::mutex> lock(mtx_);
-    if (initCounter_ == 0) {
-        return APP_ERR_COMM_OUT_OF_RANGE;
-    }
+    // if (initCounter_ == 0) {
+    //     return APP_ERR_COMM_OUT_OF_RANGE;
+    // }
     if (initCounter_ > 0) {
         initCounter_--;
     }
