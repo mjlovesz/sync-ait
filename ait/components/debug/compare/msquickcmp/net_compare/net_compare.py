@@ -134,6 +134,9 @@ class NetCompare(object):
 
         if self.golden_json_path is not None:
             msaccucmp_cmd.extend(["-cf", self.golden_json_path])
+
+        if self.quant_fusion_rule_file:
+            msaccucmp_cmd.extend(["-q", self.quant_fusion_rule_file])
         
 
         utils.logger.info("msaccucmp command line: %s " % " ".join(msaccucmp_cmd))
