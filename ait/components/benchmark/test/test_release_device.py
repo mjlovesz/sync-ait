@@ -12,11 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import sys
+from tqdm import tqdm
 import numpy as np
 
 from ais_bench.infer.interface import InferSession
 
 model_path = sys.argv[1]
+loop = sys.argv[2]
 
 def infer_sample():
     device_id = 0
@@ -31,10 +33,18 @@ def infer_sample():
     barray2 = bytearray(session2.get_inputs()[0].realsize)
     ndata2 = np.frombuffer(barray2)
     outputs2 = session2.infer([ndata2])
-    print(f"outputs1:{outputs1} type:{type(outputs1)}")
-    print(f"outputs2:{outputs2} type:{type(outputs2)}")
+#    print(f"outputs1:{outputs1} type:{type(outputs1)}")
+#    print(f"outputs2:{outputs2} type:{type(outputs2)}")
 
     print(f"static infer avg 1:{np.mean(session1.sumary().exec_time_list)} ms")
     print(f"static infer avg 2:{np.mean(session2.sumary().exec_time_list)} ms")
 
-infer_sample()
+def infer_loop_create_session(loop_times):
+    device_id = 0
+    loop_list = list(range(loop_times))
+    for _, _ in enumerate(tqdm(loop_list, file=sys.stdout, desc='constructing new InferSession:')):
+        session = InferSession(device_id, model_path)
+        session.releaseDevice()
+
+# infer_sample()
+infer_loop_create_session(loop)
