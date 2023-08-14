@@ -134,34 +134,35 @@ g++ -std=c++11 ffmpeg_decode.cpp -lavcodec -lavdevice -lavfilter -lavformat -lav
 
 - **发送视频帧到解码器并从解码器接收解码后的数据**
   
+
 FFmpeg的解码相关API如下：
-  
-  | AccAPI                | Description                           |
-  | --------------------- | ------------------------------------- |
-  | avcodec_send_packet   | 发送视频帧数据到解码器                |
-  | avcodec_receive_frame | 从解码器接收解码后的帧数据            |
-  | 保存文件API           | 保存解码后图片到pgm文件（用户自定义） |
-  
+
+| AccAPI                | Description                           |
+| --------------------- | ------------------------------------- |
+| avcodec_send_packet   | 发送视频帧数据到解码器                |
+| avcodec_receive_frame | 从解码器接收解码后的帧数据            |
+| 保存文件API           | 保存解码后图片到pgm文件（用户自定义） |
+
   而DVPP的视频解码部分使用的是多线程运行方式，其中一个线程负责向Device发送待解码的视频帧，另一个线程负责从Device接收解码后的数据。因此需要使用pthread_create函数创建2个不同的子线程来完成视频解码工作。
-  
+
   其中发送待解码视频帧的线程相关调用API如下：
-  
-  | AscendAPI                         | Description                                          |
-  | --------------------------------- | ---------------------------------------------------- |
+
+| AscendAPI                         | Description                                          |
+| --------------------------------- | ---------------------------------------------------- |
 | aclrtSetCurrentContext            | 设置线程的Context                                    |
-  | 上面步骤中的读取视频帧数据相关API | 读取视频帧数据                                       |
-  | hi_mpi_vdec_send_stream           | 解码前，向解码通道发送码流数据及存放解码结果的buffer |
-  | hi_mpi_dvpp_free                  | 释放Device上的内存                                   |
-  
+| 上面步骤中的读取视频帧数据相关API | 读取视频帧数据                                       |
+| hi_mpi_vdec_send_stream           | 解码前，向解码通道发送码流数据及存放解码结果的buffer |
+| hi_mpi_dvpp_free                  | 释放Device上的内存                                   |
+
   而接收已解码视频帧的线程相关调用API如下：
-  
-  | AscendAPI                 | Description                                |
-  | ------------------------- | ------------------------------------------ |
-  | aclrtSetCurrentContext    | 设置线程的Context                          |
-  | hi_mpi_vdec_get_frame     | 解码后，获取解码通道的解码图像及输入Stream |
-  | 保存文件API               | 保存解码后图片到pgm文件（用户自定义）      |
-  | hi_mpi_vdec_release_frame | 解码之后，释放资源                         |
-  
+
+| AscendAPI                 | Description                                |
+| ------------------------- | ------------------------------------------ |
+| aclrtSetCurrentContext    | 设置线程的Context                          |
+| hi_mpi_vdec_get_frame     | 解码后，获取解码通道的解码图像及输入Stream |
+| 保存文件API               | 保存解码后图片到pgm文件（用户自定义）      |
+| hi_mpi_vdec_release_frame | 解码之后，释放资源                         |
+
 - **资源释放**
   
   FFmpeg在解码完成后，资源释放相关API如下：
@@ -182,12 +183,11 @@ FFmpeg的解码相关API如下：
   | aclrtResetDevice    | 复位当前运算的Device，释放Device上的资源                     |
   | aclFinalize         | AscendCL去初始化函数，用于释放进程内的AscendCL相关资源       |
   
-- **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，参考迁移后实现 acl_decode.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/03_ffmpeg_decode/acl_decode.cpp)
+- **编译执行** 迁移完成后可使用 `g++` 编译，也可自行编写 `cmake` 文件，修改调整至可编译通过并正确执行，迁移后的代码实现可以参考[acl_decode.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/03_ffmpeg_decode/acl_decode.cpp)。另外还有一个简化版本的实现[acl_decode_simplified.cpp](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/transplt/03_ffmpeg_decode/acl_decode_simplified.cpp)，简化版本阉割了多线程解码能力，并且删除了许多错误检查代码，简化版代码只是为了让用户更方便的理解ACL视频解码的流程，实际运行过程中可能会存在未知问题。
   
   ```sh
   g++ -O3 -std=c++11 acl_decode.cpp -o acl_decode -I$ASCEND_TOOLKIT_HOME/runtime/include/acl -I$ASCEND_TOOLKIT_HOME/runtime/include/acl/dvpp -L $ASCEND_TOOLKIT_HOME/runtime/lib64/stub -lascendcl -lpthread -lstdc++
-  
-./acl_decode dvpp_vdec_h264_1frame_bp_51_1920x1080.h264 dvpp_vdec_h264_1frame_bp_51_1920x1080_decoded
+  ./acl_decode dvpp_vdec_h264_1frame_bp_51_1920x1080.h264 dvpp_vdec_h264_1frame_bp_51_1920x1080_decoded
   # [hi_dvpp_init][676] aclInit Success.
   # [hi_dvpp_init][684] aclrtSetDevice 0 Success.
   # [hi_dvpp_init][693] aclrtCreateContext Success
@@ -195,6 +195,5 @@ FFmpeg的解码相关API如下：
   # [send_stream][532] Chn 0 send_stream Thread Exit
   # [get_pic][574] Chn 0 GetFrame Success, Decode Success[1]
   # [get_pic][608] Chn 0 get_pic Thread Exit
-  # [hi_dvpp_deinit][730] Dvpp system exit success
+  # [hi_dvpp_deinit][730] Dvpp system exit success  
   ```
-  
