@@ -27,7 +27,7 @@ def infer_sample():
     ndata1 = np.frombuffer(barray1)
     outputs1 = session1.infer([ndata1])
 
-    session1.releaseDevice()
+    session1.release_device()
 
     session2 = InferSession(device_id, model_path)
     barray2 = bytearray(session2.get_inputs()[0].realsize)
@@ -44,8 +44,8 @@ def infer_loop_create_session(loop_times):
     loop_list = list(range(loop_times))
     for _, _ in enumerate(tqdm(loop_list, file=sys.stdout, desc='constructing new InferSession:')):
         session = InferSession(device_id, model_path)
-        session.destroy()
-        # session.releaseDevice()
+        session.release_model()
+        # session.release_device()
 
 # infer_sample()
 infer_loop_create_session(loop)

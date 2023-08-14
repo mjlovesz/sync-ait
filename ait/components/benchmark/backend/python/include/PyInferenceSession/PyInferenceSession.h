@@ -98,6 +98,7 @@ public:
 
     int Finalize();
     int ReleaseDevice();
+    int ReleaseModel();
 
     Base::ModelInferenceProcessor modelInfer_ = {};
 

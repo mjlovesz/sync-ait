@@ -97,6 +97,12 @@ int PyInferenceSession::ReleaseDevice()
     return APP_ERR_OK;
 }
 
+int PyInferenceSession::ReleaseModel()
+{
+    Destroy();
+    return APP_ERR_OK;
+}
+
 PyInferenceSession::~PyInferenceSession()
 {
     Destroy();
@@ -568,8 +574,8 @@ void RegistInferenceSession(py::module &m)
 
     model.def("create_tensor_from_fileslist", &Base::PyInferenceSession::CreateTensorFromFilesList);
     model.def("finalize", &Base::PyInferenceSession::Finalize);
-    model.def("releaseDevice", &Base::PyInferenceSession::ReleaseDevice);
-    model.def("destroy", &Base::PyInferenceSession::Destroy);
+    model.def("release_device", &Base::PyInferenceSession::ReleaseDevice);
+    model.def("release_model", &Base::PyInferenceSession::ReleaseModel);
 
     RegistAippConfig(model);
 

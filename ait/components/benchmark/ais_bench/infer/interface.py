@@ -442,13 +442,13 @@ class InferSession:
         if hasattr(self.session, 'finalize'):
             self.session.finalize()
 
-    def releaseDevice(self):
-        if hasattr(self.session, 'releaseDevice'):
-            self.session.releaseDevice()
+    def release_device(self):
+        if hasattr(self.session, 'release_device'):
+            self.session.release_device()
 
-    def destroy(self):
-        if hasattr(self.session, 'destroy'):
-            self.session.destroy()
+    def release_model(self):
+        if hasattr(self.session, 'release_model'):
+            self.session.release_model()
 
     def infer_pipeline(self, feeds_list, mode='static', custom_sizes=100000):
         '''
