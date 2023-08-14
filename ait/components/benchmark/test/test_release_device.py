@@ -37,3 +37,5 @@ def infer_sample():
 
     print(f"static infer avg 1:{np.mean(session1.sumary().exec_time_list)} ms")
     print(f"static infer avg 2:{np.mean(session2.sumary().exec_time_list)} ms")
+
+infer_sample()
