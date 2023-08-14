@@ -12,9 +12,6 @@ ARG DEBIAN_FRONTEND=noninteractive
 
 #安装python、CANN_TOOLKIT,软件包、依赖，并配置环境变量写入.bashrc
 RUN groupadd HwHiAiUser && useradd -rm -d /home/HwHiAiUser -s /bin/bash -g HwHiAiUser -G HwHiAiUser -u 1001 HwHiAiUser  &&\
-    export http_proxy="http://p_atlas:proxy%40123@proxy.huawei.com:8080" &&\
-    export https_proxy="http://p_atlas:proxy%40123@proxy.huawei.com:8080" &&\
-    export no_proxy=127.0.0.1,.huawei.com,localhost,local,.local &&\
     if [ "$(uname -m)" = "x86_64" ]; then \
         sed -i "s@http://.*archive.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list \
         && sed -i "s@http://.*security.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list; \
@@ -26,7 +23,7 @@ RUN groupadd HwHiAiUser && useradd -rm -d /home/HwHiAiUser -s /bin/bash -g HwHiA
     apt-get install liblzma-dev -y &&\
     apt-get install -y wget gnupg software-properties-common && \
     apt-get install -y sudo gcc g++ make cmake zlib1g zlib1g-dev openssl libsqlite3-dev libssl-dev libffi-dev unzip pciutils net-tools libblas-dev gfortran libblas3 libopenblas-dev libncursesw5-dev wget dkms &&\
-    wget https://npm.taobao.org/mirrors/python/3.7.5/Python-3.7.5.tgz --no-check-certificate -c && \
+    wget https://npm.taobao.org/mirrors/python/3.7.5/Python-3.7.5.tgz --no-check-certificate -c  && \
     tar -zxvf Python-3.7.5.tgz &&\
     cd Python-3.7.5 &&\
     ./configure --prefix=/usr/local/python3.7.5 --enable-loadable-sqlite-extensions --enable-shared &&\
@@ -66,34 +63,8 @@ RUN groupadd HwHiAiUser && useradd -rm -d /home/HwHiAiUser -s /bin/bash -g HwHiA
     echo "export TOOLCHAIN_HOME=/usr/local/Ascend/ascend-toolkit/latest/toolkit" >> /root/.bashrc && \
     rm Ascend-*.run && rm -rf Python-3.7.5*
 
-
-#安装ait以及依赖
-RUN export http_proxy="http://p_atlas:proxy%40123@proxy.huawei.com:8080" &&\
-    export https_proxy="http://p_atlas:proxy%40123@proxy.huawei.com:8080" &&\
-    export no_proxy=127.0.0.1,.huawei.com,localhost,local,.local &&\
-    apt-get install -y git &&\
-    export http_proxy="http://p_atlas:proxy%40123@proxy.huawei.com:8080" &&\
-    export https_proxy="http://p_atlas:proxy%40123@proxy.huawei.com:8080" &&\
-    export no_proxy=127.0.0.1,.huawei.com,localhost,local,.local &&\
-    git config --global http.proxy $https_proxy &&\
-    git config --global https.proxy $https_proxy &&\
-    git -c http.sslVerify=false clone https://gitee.com/ascend/ait.git &&\
-    export LD_LIBRARY_PATH=/usr/local/python3.7.5/lib:$LD_LIBRARY_PATH &&\
-    export PATH=/usr/local/python3.7.5/bin:$PATH &&\
-    export LD_LIBRARY_PATH=/usr/local/python3.7.5/lib:$LD_LIBRARY_PATH &&\
-    export PATH=/usr/local/python3.7.5/bin:$PATH &&\
-    pip3.7 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/ &&\
-    pip3.7 install skl2onnx==1.14.1 &&\
-    cd ait/ait &&\
-    chmod +x install.sh &&\
-    ./install.sh
-
-
 #CANN AMCT 量化工具
-RUN export http_proxy="http://p_atlas:proxy%40123@proxy.huawei.com:8080" &&\
-    export https_proxy="http://p_atlas:proxy%40123@proxy.huawei.com:8080" &&\
-    export no_proxy=127.0.0.1,.huawei.com,localhost,local,.local &&\
-    apt-get update &&\
+RUN apt-get update &&\
     apt install -y vim libatlas-base-dev libgflags-dev libgoogle-glog-dev liblmdb-dev git libprotobuf-dev libleveldb-dev libsnappy-dev libopencv-dev libhdf5-serial-dev protobuf-compiler &&\
     apt install -y --no-install-recommends libboost-all-dev &&\
     export LD_LIBRARY_PATH=/usr/local/python3.7.5/lib:$LD_LIBRARY_PATH &&\
@@ -125,4 +96,19 @@ RUN export http_proxy="http://p_atlas:proxy%40123@proxy.huawei.com:8080" &&\
     echo "unset ASCEND_AICPU_PATH" >> ~/.bashrc &&\
     source /usr/local/Ascend/ascend-toolkit/set_env.sh &&\
     source ~/.bashrc
+
+#安装ait以及依赖
+RUN apt-get install -y git &&\
+    git -c http.sslVerify=false clone https://gitee.com/ascend/ait.git &&\
+    export LD_LIBRARY_PATH=/usr/local/python3.7.5/lib:$LD_LIBRARY_PATH &&\
+    export PATH=/usr/local/python3.7.5/bin:$PATH &&\
+    export LD_LIBRARY_PATH=/usr/local/python3.7.5/lib:$LD_LIBRARY_PATH &&\
+    export PATH=/usr/local/python3.7.5/bin:$PATH &&\
+    pip3.7 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/ &&\
+    pip3.7 install skl2onnx==1.14.1 &&\
+    cd ait/ait &&\
+    chmod +x install.sh &&\
+    ./install.sh
+
+
 
