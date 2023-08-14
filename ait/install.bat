@@ -62,10 +62,10 @@ IF NOT "%1"=="" (
 SET PYTHON3=
 
 :: first, try get python3 version by `python3 -V`
-python3 -V 2>nul | findstr /C:"Python 3." >nul && ( SET PYTHON3=python3 )
+python3 -V 2>nul ^| findstr /C:"Python 3." >nul && ( SET PYTHON3=python3 )
 
 :: second, try get python3 version by `python -V`, because python3 may be installed as python.exe on windows
-python -V 2>nul | findstr /C:"Python 3." >nul && ( SET PYTHON3=python )
+python -V 2>nul ^| findstr /C:"Python 3." >nul && ( SET PYTHON3=python )
 
 IF NOT DEFINED PYTHON3 (
     ECHO "Error: python3 is not installed"

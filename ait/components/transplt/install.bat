@@ -106,10 +106,10 @@ C: && cd C:\
 
 :: get python3 executable filename
 SET PYTHON3=
-python3 -V 2>nul | findstr /C:"Python 3." >nul && ( SET PYTHON3=python3 )
+python3 -V 2>nul ^| findstr /C:"Python 3." >nul && ( SET PYTHON3=python3 )
 
 IF NOT DEFINED PYTHON3 (
-    python -V 2>nul | findstr /C:"Python 3." >nul && ( SET PYTHON3=python )
+    python -V 2>nul ^| findstr /C:"Python 3." >nul && ( SET PYTHON3=python )
 )
 
 IF NOT DEFINED PYTHON3 (
