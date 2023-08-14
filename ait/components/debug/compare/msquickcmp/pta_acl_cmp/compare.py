@@ -1,9 +1,14 @@
 import os
+import subprocess
+import time
+import inspect
 
 import pandas as pd
 import numpy as np
+import torch
 
 from msquickcmp.pta_acl_cmp.cmp_algorithm import cmp_alg_map
+from msquickcmp.common.utils import execute_command
 
 ATTR_VERSION = "$Version"
 ATTR_END = "$End"
@@ -17,13 +22,32 @@ DATA_ID = 'data_id'
 PTA_DATA_PATH = 'pta_data_path'
 ACL_DATA_PATH = 'acl_data_path'
 PTA_DTYPE = "pta_dtype"
+PTA_STACK = "pta_stack"
 ACL_DTYPE = "acl_dtype"
+ACL_STACK = "acl_stack"
 CMP_FLAG = "cmp_flag"
-CSV_HEADER = [DATA_ID, PTA_DATA_PATH, PTA_DTYPE, ACL_DATA_PATH, ACL_DTYPE, CMP_FLAG]
+CSV_HEADER = [DATA_ID, PTA_DATA_PATH, PTA_DTYPE, PTA_STACK, ACL_DATA_PATH, ACL_DTYPE, ACL_STACK, CMP_FLAG]
 CSV_HEADER.extend(list(cmp_alg_map.keys()))
+
+token_counts = 1
+
+
+def set_task_id():
+    pid = os.getpid()
+    global token_counts
+    token_counts += 1
+    task_id = str(pid) + "_" + str(token_counts)
+    cmd = ["export", "AIT_CMP_TASK_ID"+"="+task_id]
+    execute_command(cmd)
+
+
+def gen_id():
+    return "data_" + str(time.time())
 
 
 def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
+    stacks = inspect.stack()
+    stack_line = stacks[1][1] + ":" + str(stacks[1][2])
     # task_id = os.getenv("CMP_TASK_ID")
     task_id = str(0)
     csv_dir = os.path.join(".", task_id)
@@ -49,24 +73,7 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
         data = pd.read_csv(csv_path, header=0)
 
     mapping_data = data[data[DATA_ID] == data_id]
-    if not mapping_data.empty:
-        index = mapping_data.index.values[0]
-        if data_src == PTA and data_val is not None:
-            pta_data_path = os.path.join(pta_data_dir, data_id + '_tensor.bin')
-            data_val.cpu().numpy().tofile(pta_data_path)
-            data[PTA_DATA_PATH][index] = pta_data_path
-            data[PTA_DTYPE][index] = data_val.cpu().numpy().dtype
-            data = compare_tensor(csv_data=data)
-        elif data_src == ACL and tensor_path:
-            data[ACL_DATA_PATH][index] = tensor_path
-        elif data_src == ACL and data_val is not None:
-            acl_data_path = os.path.join(acl_data_dir, data_id + '_tensor.bin')
-            data_val.cpu().numpy().tofile(acl_data_path)
-            data[ACL_DATA_PATH][index] = acl_data_path
-            data[ACL_DTYPE][index] = data_val.cpu().numpy().dtype
-            # 触发精度比对
-            data = compare_tensor(csv_data=data)
-    else:
+    if mapping_data.empty:
         if data_src == PTA and data_val is not None:
             pta_data_path = os.path.join(pta_data_dir, data_id + '_tensor.bin')
             data_val.cpu().numpy().tofile(pta_data_path)
@@ -74,6 +81,7 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
                 DATA_ID: [data_id],
                 PTA_DATA_PATH: [pta_data_path],
                 PTA_DTYPE: [data_val.cpu().numpy().dtype],
+                PTA_STACK: [stack_line],
                 CMP_FLAG: [False]
             })
             data = pd.concat([data, row_data], ignore_index=True)
@@ -85,6 +93,7 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
                 DATA_ID: [data_id],
                 ACL_DATA_PATH: [acl_data_path],
                 ACL_DTYPE: [data_val.cpu().numpy().dtype],
+                ACL_STACK: [stack_line],
                 CMP_FLAG: [False]
             })
             data = pd.concat([data, row_data], ignore_index=True)
@@ -92,6 +101,26 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
         elif data_src == ACL and tensor_path:
             row_data = pd.DataFrame({DATA_ID: [data_id], ACL_DATA_PATH: [tensor_path], CMP_FLAG: [False]})
             data = pd.concat([data, row_data], ignore_index=True)
+    else:
+        index = mapping_data.index.values[0]
+        if data_src == PTA and data_val is not None:
+            pta_data_path = os.path.join(pta_data_dir, data_id + '_tensor.bin')
+            data_val.cpu().numpy().tofile(pta_data_path)
+            data[PTA_DATA_PATH][index] = pta_data_path
+            data[PTA_DTYPE][index] = data_val.cpu().numpy().dtype
+            data[PTA_STACK][index] = stack_line
+            data = compare_tensor(csv_data=data)
+        elif data_src == ACL and tensor_path:
+            data[ACL_DATA_PATH][index] = tensor_path
+            data[ACL_STACK][index] = stack_line
+        elif data_src == ACL and data_val is not None:
+            acl_data_path = os.path.join(acl_data_dir, data_id + '_tensor.bin')
+            data_val.cpu().numpy().tofile(acl_data_path)
+            data[ACL_DATA_PATH][index] = acl_data_path
+            data[ACL_DTYPE][index] = data_val.cpu().numpy().dtype
+            data[ACL_STACK][index] = stack_line
+            # 触发精度比对
+            data = compare_tensor(csv_data=data)
 
     data.to_csv(csv_path, index=False)
 
