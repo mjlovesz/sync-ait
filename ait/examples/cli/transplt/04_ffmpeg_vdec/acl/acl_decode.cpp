@@ -556,7 +556,7 @@ void* get_pic(void* const chanNum)
     int32_t writeFileCnt = 1;
     hi_vdec_supplement_info stSupplement{};
 
-    while (1) {
+    while (true) {
         if (g_get_exit_state == 1) {
             break;
         }
