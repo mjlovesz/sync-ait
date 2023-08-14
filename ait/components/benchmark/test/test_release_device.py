@@ -18,7 +18,7 @@ import numpy as np
 from ais_bench.infer.interface import InferSession
 
 model_path = sys.argv[1]
-loop = sys.argv[2]
+loop = int(sys.argv[2])
 
 def infer_sample():
     device_id = 0
