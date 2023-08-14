@@ -44,7 +44,8 @@ def infer_loop_create_session(loop_times):
     loop_list = list(range(loop_times))
     for _, _ in enumerate(tqdm(loop_list, file=sys.stdout, desc='constructing new InferSession:')):
         session = InferSession(device_id, model_path)
-        session.releaseDevice()
+        session.destroy()
+        # session.releaseDevice()
 
 # infer_sample()
 infer_loop_create_session(loop)
