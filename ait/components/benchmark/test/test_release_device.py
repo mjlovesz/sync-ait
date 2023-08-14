@@ -21,16 +21,15 @@ model_path = sys.argv[1]
 def infer_sample():
     device_id = 0
     session1 = InferSession(device_id, model_path)
-    session2 = InferSession(device_id, model_path)
-
-    # create new numpy data according inputs info
     barray1 = bytearray(session1.get_inputs()[0].realsize)
     ndata1 = np.frombuffer(barray1)
+    outputs1 = session1.infer([ndata1])
+
+    session1.finalize()
+
+    session2 = InferSession(device_id, model_path)
     barray2 = bytearray(session2.get_inputs()[0].realsize)
     ndata2 = np.frombuffer(barray2)
-
-    # in is numpy list and ouput is numpy list
-    outputs1 = session1.infer([ndata1])
     outputs2 = session2.infer([ndata2])
     print(f"outputs1:{outputs1} type:{type(outputs1)}")
     print(f"outputs2:{outputs2} type:{type(outputs2)}")
