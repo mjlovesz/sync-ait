@@ -139,7 +139,9 @@ APP_ERROR DeviceManager::DestroyContext()
     if (initCounter_ == 0) {
         return APP_ERR_COMM_OUT_OF_RANGE;
     }
-    initCounter_--;
+    if (initCounter_ > 0) {
+        initCounter_--;
+    }
     if (initCounter_ == 0) {
         for (auto item : contexts_) {
             APP_ERROR ret = aclrtDestroyContext(item.second.get());
