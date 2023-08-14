@@ -430,7 +430,7 @@ class InferSession:
 
     def run_pipeline(self, infilelist, output, auto_shape=False,
                      auto_dims=False, outfmt="BIN", pure_infer_mode=False):
-        self.session.run_pipeline(infilelist, output, auto_shape, auto_dims, outfmt, pure_infer_mode)
+        self.session.run_pipeline(infilelist, output, auto_shape, auto_dims, outfmt, pure_infer_mode, 1)
 
     def reset_sumaryinfo(self):
         self.session.reset_sumaryinfo()
