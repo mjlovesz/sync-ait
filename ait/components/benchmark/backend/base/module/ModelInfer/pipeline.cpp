@@ -169,7 +169,7 @@ namespace Base {
     }
 
     void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId, size_t num_threads = 1)
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId, size_t num_threads)
     {
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
         if (ret != APP_ERR_OK) {
@@ -259,7 +259,7 @@ namespace Base {
     }
 
     void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, size_t num_threads = 1)
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, size_t num_threads)
     {
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
         if (ret != APP_ERR_OK) {

@@ -323,9 +323,9 @@ std::vector<std::vector<TensorBase>> PyInferenceSession::InferPipelineBaseTensor
     ConcurrentQueue<std::shared_ptr<Feeds>> d2hQueue;
     ConcurrentQueue<std::shared_ptr<Feeds>> saveQueue;
 
-    std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId);
+    std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId, 1);
     std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), deviceId, this);
-    std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId);
+    std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId, 1);
     std::thread saveThread(FuncSaveTensorBase, std::ref(saveQueue), deviceId, std::ref(result));
     FuncPrepareBaseTensor(h2dQueue, deviceId, this, inputsList, shapesList, autoDymShape, autoDymDims, outputNames);
 
@@ -339,7 +339,7 @@ std::vector<std::vector<TensorBase>> PyInferenceSession::InferPipelineBaseTensor
 
 void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
                                        bool autoDymShape, bool autoDymDims, const std::string& outFmt,
-                                       const bool pureInferMode, size_t num_threads = 1)
+                                       const bool pureInferMode, size_t num_threads)
 {
     uint32_t deviceId = GetDeviceId();
     ConcurrentQueue<std::shared_ptr<Feeds>> h2dQueue;
