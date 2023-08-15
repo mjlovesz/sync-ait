@@ -53,6 +53,7 @@
  - [x] [GroundTruth]:om算子所对应的onnx模型算子
  - [x] [Overflow]:数据是否出现上下溢. 
  - [x] [CompareFailReason]:比对失败原因,误差可能会因为除零非法或者不对应等原因造成无法计算,变为NaN值,会列出详细原因.
+ - [x] [IsNpuOps]:用于过滤是否是npu独有节点.
  - [x] [CosineSimilarity][RelativeEuclideanDistance]...[MeanRelativeError]：这是各类误差比对类型结果,主要需要看是否某一项超过精度阈值(即某项异常),若超过则需要重点关注.各对比算法说明如下：
 
   |                  误差比对类型名称 |  说明 |
