@@ -8,7 +8,31 @@
 
 
 ## 工具安装
-- 工具安装请见 [ait一体化工具使用指南](../../../README.md)
+- 一般工具安装请见 [ait一体化工具使用指南](../../../README.md)
+- 此外还提供容器安装方式（支持caffe精度比对）
+
+### 容器方式安装
+容器方式安装目前提供了Ubuntu 18.04的docker镜像。在`<ait_project_root_path>/ait/components/debug/compare`目录下运行以下命令以构建镜像：
+```shell
+docker build --build-arg CANN_TOOLKIT_PATH=Ascend-cann-tookit<version+arch>.run --build-arg CANN_AMCT_PATH=Ascend-cann-amctt<version+arch>.tar.gz \ 
+--build-arg CAFFE_SRC=caffe-ascend-amct.zip -f Dockerfile . -t ait-caffe:latest
+```
+注意:
+1. 非root用户请加上sudo
+2. 请将Ascend-cann-tookit<version+arch>.run改为实际上的toolkit路径(必须是相对路径)
+3. 从这个[仓库](https://github.com/lenLRX/caffe)下载zip[代码](https://github.com/lenLRX/caffe/archive/refs/heads/ascend-amct.zip),得到的zip包可能叫ascend-amct.zip或caffe-ascend-amct.zip
+4. 从[这里](https://support.huawei.com/enterprise/zh/ascend-computing/cann-pid-251168373/software)下载amct的包Ascend-cann-amct_5.1.RC1.1_linux-aarch64.tar.gz(注意下载对应需要的版本如：X86，aarch64等)
+5. 执行命令构建docker镜像,要求:
+   * CANN_AMCT_PATH=步骤4下载的amct包名字
+   * CAFFE_SRC=步骤3下载的caffe代码zip包
+运行以下命令以上述镜像启动容器：
+```shell
+docker run -it -v=`pwd`:/work   -v /usr/local/Ascend/driver:/usr/local/Ascend/driver -v /usr/bin/npu-smi:/usr/bin/npu-smi \
+-v /usr/local/Ascend/add-ons:/usr/local/Ascend/add-ons --device /dev/davinci0 --device /dev/davinci_manager --device /dev/hisi_hdc --device /dev/devmm_svm  ait-caffe:latest
+```
+在启动容器时将driver路径挂载到容器中，指定映射的device设备。
+` -v=`pwd`:/work `为将当前目录映射到容器work目录下（非必须）。
+
 
 ## 使用方法
 ### 功能介绍
@@ -88,6 +112,7 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
   | -single, --single-op| 单算子比对模式，默认关闭，开启时在输出路径下会生成single op目录，存放单算子比对结果文件使用方式：-single True| 否  |
   | --fusion-switch-file| 昇腾模型融合规则配置文件，传入该文件后，compare工具会根据传入的融合规则配置文件，重新生成一个om文件，和--om-model传入的模型进行精度比较，例如：--fusion-switch-file ./fusion_switch.cfg，其中fusion_switch.cfg文件配置方法参见：[如何关闭/开启融合规则](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/reference/graphubfusionref/graphubfusionref_000003.html) | 否  |
   | -max, --max-cmp-size| 表示每个dump数据比较的最大字节数，用于精度比对过程提速，默认0(0表示全量比较)，当模型中算子的输出存在较大shape的、比较过于耗时情况，可以尝试打开。注意：需要使用最新cann版本(>=6.3.RC3)。使用方式：--max-cmp-size 1024| 否  |
+  | -q,--quant_fusion_rule_file|量化算子映射关系文件（昇腾模型压缩输出的json文件）。仅推理场景支持本参数。使用方式：--quant_fusion_rule_file| 否  |
 
 ### 使用场景
 
