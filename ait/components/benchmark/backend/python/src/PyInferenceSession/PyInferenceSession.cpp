@@ -574,8 +574,8 @@ void RegistInferenceSession(py::module &m)
 
     model.def("create_tensor_from_fileslist", &Base::PyInferenceSession::CreateTensorFromFilesList);
     model.def("finalize", &Base::PyInferenceSession::Finalize);
-    model.def("release_device", &Base::PyInferenceSession::ReleaseDevice);
-    model.def("release_model", &Base::PyInferenceSession::ReleaseModel);
+    model.def("release_device", &Base::PyInferenceSession::FreeDevice);
+    model.def("release_model", &Base::PyInferenceSession::FreeModel);
 
     RegistAippConfig(model);
 
