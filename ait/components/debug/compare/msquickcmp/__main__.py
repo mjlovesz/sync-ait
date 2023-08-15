@@ -162,6 +162,15 @@ class CompareCommand(BaseCommand):
             default=0,
             type=int,
             help="Max size of tensor array to compare, default 0. Usage: --max-cmp-size 1024")
+        parser.add_argument(
+            '-q',
+            '--quant-fusion-rule-file',
+            type=str,
+            dest="quant_fusion_rule_file",
+            default='',
+            help="the quant fusion rule file path")
+
+
 
     def handle(self, args):
         cmp_args = CmpArgsAdapter(args.golden_model, args.om_model, args.weight_path, args.input_data_path,
@@ -170,7 +179,7 @@ class CompareCommand(BaseCommand):
                                   args.dym_shape_range,
                                   args.dump, args.bin2npy, args.custom_op, args.locat,
                                   args.onnx_fusion_switch, args.single_op, args.fusion_switch_file,
-                                  args.max_cmp_size)
+                                  args.max_cmp_size, args.quant_fusion_rule_file)
         cmp_process(cmp_args, True)
 
 
