@@ -71,7 +71,7 @@ Caffe 一键式精度比对
    atc --om caffe_demo.om --mode 1 --json=caffe_demo.json
   ```
 - **精度比对调用**
-- 使用量化前caffe模型：
+- 使用**量化前**caffe模型：
   ```sh
   mkdir -p test  # dump 数据以及比对结果输出路径
   ASCEND_TOOLKIT=$HOME/Ascend/ascend-toolkit/latest  # 必须为可写的 CANN 包路径
