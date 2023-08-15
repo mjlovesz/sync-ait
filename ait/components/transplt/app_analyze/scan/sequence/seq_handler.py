@@ -1,9 +1,10 @@
 import pickle
+import numpy as np
 
 from app_analyze.utils.log_util import logger
+from app_analyze.common.kit_config import SeqArgs
 from app_analyze.scan.sequence.aprioriv2 import apriori
-from app_analyze.scan.sequence.seq_desc import GLOBAl_FUNC_ID_DICT
-from app_analyze.scan.sequence.acc_libs import GLOBAl_EXPERT_LIBS_DICT
+from app_analyze.scan.sequence.seq_desc import get_idx_tbl
 from app_analyze.scan.sequence.prefix_span import prefixspan
 
 
@@ -16,7 +17,7 @@ class SeqHandler:
                     api_seq.append(api)
                 else:
                     # if usr defined api in seq, check if api can union
-                    usr_api = usr_def_dict.get(api.unique_name, None)
+                    usr_api = usr_def_dict.get(api.full_name, None)
                     if not usr_api:
                         api_seq.append(api)
                         continue
@@ -31,7 +32,7 @@ class SeqHandler:
 
         usr_def_dict = dict()
         for seq_desc in seqs:
-            usr_def_dict[seq_desc.entry_api.unique_name] = {'key': seq_desc}
+            usr_def_dict[seq_desc.entry_api.full_name] = {'key': seq_desc}
 
         for seq_desc in seqs:
             if not seq_desc.has_usr_def:
@@ -47,17 +48,17 @@ class SeqHandler:
     def clean_api_seqs(seqs, deep_flag):
         def _compact_apis(api_seq):
             apis = []
-            pre_api_name = None
+            pre_api_id = None
             for api in api_seq:
-                if not pre_api_name:
-                    pre_api_name = api.unique_name
+                if not pre_api_id:
+                    pre_api_id = api.func_id
                     apis.append(api)
                 else:
-                    if pre_api_name == api.unique_name:
+                    if pre_api_id == api.func_id:
                         continue
 
                     apis.append(api)
-                    pre_api_name = api.unique_name
+                    pre_api_id = api.func_id
             return apis
 
         rst = []
@@ -92,13 +93,15 @@ class SeqHandler:
         return rst
 
     @staticmethod
-    def _store_api_seqs(seqs, path='./'):
+    def store_api_seqs(seqs, id_dict=None, path='./'):
         seqs_txt = path + 'seqs.tmp.bin'
         with open(seqs_txt, 'wb') as f:
             pickle.dump(seqs, f)
 
         seqs_idx_txt = path + 'seqs_idx.tmp.bin'
-        id_dict = dict(zip(GLOBAl_FUNC_ID_DICT.values(), GLOBAl_FUNC_ID_DICT.keys()))
+        if not id_dict:
+            id_dict = get_idx_tbl()
+
         with open(seqs_idx_txt, 'wb') as f:
             pickle.dump(id_dict, f)
 
@@ -110,10 +113,9 @@ class SeqHandler:
 
     @staticmethod
     def debug_string(seqs, idx_dict=None):
-        if GLOBAl_FUNC_ID_DICT:
-            idx_dict = dict(zip(GLOBAl_FUNC_ID_DICT.values(), GLOBAl_FUNC_ID_DICT.keys()))
+        if not idx_dict:
+            idx_dict = get_idx_tbl()
 
-        assert idx_dict
         rst_str = 'The sequences result are: \n'
         for i, seq in enumerate(seqs):
             d_str = []
@@ -180,10 +182,9 @@ class SeqHandler:
                     if tmp <= max_len:
                         continue
 
-                    # max_len = tmp
                     sub_rst = arrays[i][0:tmp]
 
-                    if sub_rst and len(sub_rst) >= 4:
+                    if sub_rst and len(sub_rst) >= SeqArgs.SEQ_MIN_LEN:
                         result.append(sub_rst)
         return result
 
@@ -191,19 +192,17 @@ class SeqHandler:
     def mining_api_seqs(seqs):
         result = []
 
-        # min_support = 0.2
-        # l1, support_data1 = apriori(seqs, min_support)
-        # print(f'L({min_support}): ', l1)
+        # l1, support_data1 = apriori(seqs, SeqArgs.APRIORI_MIN_SUPPORT)
+        # print(f'L({SeqArgs.APRIORI_MIN_SUPPORT}): ', l1)
         # for vals in l1:
         #     for seq in vals:
-        #         if len(seq) > 1:
+        #         if len(seq) >= SeqArgs.SEQ_MIN_LEN:
         #             result.append(seq)
 
-        top_k = 200
-        l1, freq = prefixspan(seqs, top_k)
+        l1, freq = prefixspan(seqs, SeqArgs.PREFIX_SPAN_TOP_K)
         for item in l1:
             seq = item[1]
-            if len(seq) >= 4:
+            if len(seq) >= SeqArgs.SEQ_MIN_LEN:
                 result.append(seq)
         return result
 
@@ -214,33 +213,85 @@ class SeqHandler:
             if cur_idx_list:
                 rst.append(cur_idx_list)
 
-        self._store_api_seqs(rst)
+        self.store_api_seqs(rst)
         return rst
 
+    @staticmethod
+    def group_api_seqs(seqs, expert_libs):
+        def _group(seq, lib_seqs, sim):
+            def _jaccard_dist(a, b):
+                union = np.union1d(a, b)
+                intersection = np.intersect1d(a, b)
+                dist = len(intersection) * 1.0 / len(union)
+                return dist
 
-def get_idx_tbl():
-    idx_dict = dict(zip(GLOBAl_FUNC_ID_DICT.values(), GLOBAl_FUNC_ID_DICT.keys()))
-    return idx_dict
+            for lib_seq in lib_seqs:
+                if lib_seq.dst_seq[0] == -1:
+                    continue
+                for src_seq in lib_seq.src_seqs:
+                    val = _jaccard_dist(seq, src_seq)
+                    if val == sim:
+                        dst_lib_seqs[lib_seq] = sim
+                    elif val > sim:
+                        sim = val
+                        dst_lib_seqs.clear()
+                        dst_lib_seqs[lib_seq] = sim
+
+            return sim
+
+        result = dict()
+        for seq_desc in seqs:
+            sim_val = -1
+            dst_lib_seqs = dict()
+
+            acc_names = set([_.acc_name for _ in seq_desc.api_seq if _.acc_name])
+            cur_idx_list = [_.func_id for _ in seq_desc.api_seq]
+            for acc_name in acc_names:
+                seq_info = expert_libs.acc_lib_dict.get(acc_name, None)
+                if seq_info:
+                    sim_val = _group(cur_idx_list, seq_info.seqs, sim_val)
+
+            result[seq_desc] = dst_lib_seqs
+        return result
 
 
-def set_idx_tbl(idx_dict):
-    GLOBAl_FUNC_ID_DICT.update(dict(zip(idx_dict.values(), idx_dict.keys())))
+def filter_api_seqs(seqs, idx_seq_dict=None):
+    all_seqs = list()
+    handler = SeqHandler()
+    if not idx_seq_dict:
+        seqs = handler.format_api_seqs(seqs)
 
+    logger.info('===============Sequences Before Filtering===============')
+    handler.debug_string(seqs, idx_seq_dict)
 
-def set_expert_libs_tbl(expert_libs):
-    GLOBAl_EXPERT_LIBS_DICT.update(expert_libs)
+    for seq in seqs:
+        if len(seq) >= SeqArgs.SEQ_MIN_LEN:
+            all_seqs.append(seq)
+
+    logger.info('===============Sequences After Filtering===============')
+    handler.debug_string(all_seqs, idx_seq_dict)
+    return all_seqs
 
 
 def mining_api_seqs(seqs, idx_seq_dict=None):
-    all_seqs = set()
-
     handler = SeqHandler()
+
+    # new_idx_seq_dict = dict()
+    # base = KitConfig.ACC_LIB_ID_PREFIX['mxBase'] * KitConfig.ACC_ID_BASE
+    # for idx, name in idx_seq_dict.items():
+    #     new_idx_seq_dict[idx + base] = name
+    # new_api_seqs = []
+    # for seq in seqs:
+    #     new_api_seqs.append([base + _ for _ in seq])
+    # handler.store_api_seqs(new_api_seqs, new_idx_seq_dict)
+
     if not idx_seq_dict:
         seqs = handler.format_api_seqs(seqs)
 
     logger.info('===============Sequences Before Mining===============')
     handler.debug_string(seqs, idx_seq_dict)
 
+    all_seqs = set()
     dup_apis = handler.mining_one_seq(seqs)
     for apis in dup_apis:
         if len(set(apis)) == len(apis):
@@ -249,10 +300,6 @@ def mining_api_seqs(seqs, idx_seq_dict=None):
     dig_apis = handler.mining_api_seqs(seqs)
     for apis in dig_apis:
         all_seqs.add(tuple(apis))
-
-    # for apis in seqs:
-    #     if len(apis) > 3:
-    #         all_seqs.add(tuple(apis))
 
     logger.info('===============Sequences After Mining===============')
     handler.debug_string(all_seqs, idx_seq_dict)

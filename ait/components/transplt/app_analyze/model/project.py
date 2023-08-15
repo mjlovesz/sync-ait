@@ -71,7 +71,7 @@ class Project:
         说明：第一阶段这里的参数传递暂时做成这个样子，方便随时增减参数内容。
         但是问题是被调用方知道参数的内容才可以顺利取出。所以没做被调用方的取
         值失败的异常情况。要特别小心。后续可以考虑将参数包装成类进行传递。
-        :return: NA
+        :return: N
         """
         report_params = {
             'directory': self.inputs.project_directory,

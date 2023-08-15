@@ -5,9 +5,12 @@ from app_analyze.model.project import Project
 from app_analyze.scan.scanner_factory import ScannerFactory
 from app_analyze.scan.func_parser import FuncParser
 from app_analyze.scan.sequence.seq_handler import SeqHandler
+from app_analyze.scan.sequence.acc_libs import get_expert_libs
+from app_analyze.scan.sequence.seq_desc import get_idx_tbl
+from app_analyze.solution.seq_advisor import SeqAdvisor
 
 
-class APISeqProject(Project):
+class SeqProject(Project):
     def __init__(self, inputs, train_flag=True):
         super().__init__(inputs)
         self.train_flag = train_flag
@@ -64,7 +67,13 @@ class APISeqProject(Project):
 
         self.api_seqs = SeqHandler.clean_api_seqs(rst, self.train_flag)
         if not self.train_flag:
-            pass
+            expert_libs = get_expert_libs()
+            cluster_result = SeqHandler.group_api_seqs(self.api_seqs, expert_libs)
+            advisor = SeqAdvisor(cluster_result, get_idx_tbl())
+            rd_rst = advisor.recommend()
+            self.report_results.update(rd_rst)
+            self.dump()
+            self.generate_report(True)
 
         eval_time = time.time() - start_time
         KitConfig.PROJECT_TIME = eval_time

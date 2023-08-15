@@ -99,6 +99,11 @@ def _visit_function_decl(node, api_type='invalid'):
         func_attr.acc_name = get_attr(node, 'lib')
 
     func_attr.root_file = node.referenced.location.file.name
+    if is_unused_api(func_attr):
+        func_attr = None
+    else:
+        func_attr.set_func_id()
+
     return func_attr
 
 
@@ -119,6 +124,11 @@ def _visit_cxx_method(node, api_type='invalid'):
         func_attr.acc_name = get_attr(node, 'lib')
 
     func_attr.root_file = node.referenced.location.file.name
+    if is_unused_api(func_attr):
+        func_attr = None
+    else:
+        func_attr.set_func_id()
+
     return func_attr
 
 
@@ -142,9 +152,6 @@ def _visit_call_expr(node, rst, pth):
                         func_attr = _visit_cxx_method(c, api_type)
                     else:
                         func_attr = _visit_function_decl(c, api_type)
-
-                    if is_unused_api(func_attr):
-                        func_attr = None
 
         if func_attr:
             cur_path = []
@@ -194,7 +201,7 @@ def visit(node, seq_desc, result):
                 else:
                     func_attr = _visit_function_decl(node, api_type)
 
-                if is_unused_api(func_attr):
+                if not func_attr:
                     return skip_flag
 
                 if api_type == 'usr_defined':

@@ -1,10 +1,13 @@
 import os
 import time
+import json
 
-from app_analyze.model.api_seq_project import APISeqProject
+from app_analyze.model.seq_project import SeqProject
 from app_analyze.porting.input_factory import InputFactory
 from app_analyze.common.kit_config import InputType, Args, KitConfig
-from app_analyze.scan.sequence.seq_handler import load_api_seqs, set_idx_tbl, set_expert_libs_tbl
+from app_analyze.scan.sequence.seq_handler import load_api_seqs
+from app_analyze.scan.sequence.acc_libs import set_expert_libs
+from app_analyze.scan.sequence.seq_desc import set_api_lut
 from app_analyze.utils import log_util
 from app_analyze.utils.log_util import logger
 
@@ -14,16 +17,22 @@ class Model:
     @staticmethod
     def _load_data():
         # load expert libs and idx dict
-        idx_path = './seqs_idx.bin'
-        if not os.path.exists(idx_path):
-            raise Exception('Source directory is not existed!')
+        all_idx_dict = dict()
+        idx_path = ['./opencv.seqs_idx.bin', './mxbase.seqs_idx.bin']
+        for val in idx_path:
+            if not os.path.exists(val):
+                raise Exception('Source directory is not existed!')
 
-        idx_seq_dict = load_api_seqs(idx_path)
-        set_idx_tbl(idx_seq_dict)
+            idx_seq_dict = load_api_seqs(val)
+            all_idx_dict.update(idx_seq_dict)
 
-        expert_libs_path = './expert_libs.bin'
-        expert_libs = load_api_seqs(expert_libs_path)
-        set_expert_libs_tbl(expert_libs)
+        set_api_lut(all_idx_dict)
+
+        # expert_libs_path = './expert_libs.bin'
+        # expert_libs = load_api_seqs(expert_libs_path)
+        with open('./expert_libs.json', 'r') as f:
+            expert_libs = json.load(f)
+            set_expert_libs(expert_libs)
 
     @staticmethod
     def _scan_sources(path):
@@ -31,11 +40,12 @@ class Model:
         log_util.set_logger_level(logger_level)
         log_util.init_file_logger()
 
-        args = Args(path, 'json', logger_level, 'cmake')
+        args = Args(path, 'csv', logger_level, 'cmake')
         inputs = InputFactory.get_input(InputType.CUSTOM, args)
         inputs.resolve_user_input()
 
-        project = APISeqProject(inputs, train_flag=False)
+        project = SeqProject(inputs, train_flag=False)
+        project.setup_reporters(None)
         project.setup_file_matrix()
         project.setup_scanners()
         project.scan()
@@ -58,6 +68,4 @@ if __name__ == '__main__':
     model = Model()
     '/home/liuzhe/package/opencv-4.5.4/samples/cpp'
     # '/home/liuzhe/samples/opencv'
-    # model.train(samples='/home/liuzhe/samples/api-union-test')
-    # model.train(seqs='./mxbase.seqs.bin', seqs_idx='./mxbase.seqs_idx.bin')
-    model.predict('/home/liuzhe/package/opencv-4.5.4/samples/cpp')
+    model.predict('/home/liuzhe/samples/opencv-one')

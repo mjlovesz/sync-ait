@@ -1,10 +1,10 @@
 from app_analyze.utils.log_util import logger
+from app_analyze.common.kit_config import KitConfig
 
-GLOBAl_FUNC_ID_DICT = dict()
-FUNC_ID_COUNTER = -1
+_GLOBAl_FUNC_ID_DICT = dict()
 
-GLOBAL_FILE_ID_DICT = dict()
-FILE_ID_COUNTER = -1
+_GLOBAL_FILE_ID_DICT = dict()
+_FILE_ID_COUNTER = -1
 
 
 class FuncDesc:
@@ -22,6 +22,8 @@ class FuncDesc:
 
         self.hash_code = 0
         self.is_cxx_method = False
+
+        self._func_id = None
 
     @property
     def unique_name(self):
@@ -54,30 +56,41 @@ class FuncDesc:
     def arg_name(self):
         return ','.join(self.parm_decl_names)
 
+    def set_func_id(self):
+        if self.is_usr_def:
+            self._func_id = -1
+        else:
+            name_id_tbl = _GLOBAl_FUNC_ID_DICT.get(self.acc_name, None)
+            no_fid_flag = False
+            if name_id_tbl:
+                self._func_id = name_id_tbl.get(self.full_name, None)  # TODO, file_name + full_name
+                if self._func_id is None:
+                    no_fid_flag = True
+            else:
+                _GLOBAl_FUNC_ID_DICT[self.acc_name] = {}
+                no_fid_flag = True
+
+            if no_fid_flag:
+                base = KitConfig.ACC_LIB_ID_PREFIX[self.acc_name] * KitConfig.ACC_ID_BASE
+                offset = len(_GLOBAl_FUNC_ID_DICT[self.acc_name])
+                self._func_id = base + offset
+                _GLOBAl_FUNC_ID_DICT[self.acc_name][self.full_name] = self._func_id
+
     @property
     def func_id(self):
-        if self.is_usr_def:
-            return -1
-
-        fid = GLOBAl_FUNC_ID_DICT.get(self.unique_name, None)
-        if fid is None:
-            global FUNC_ID_COUNTER
-            FUNC_ID_COUNTER += 1
-            fid = FUNC_ID_COUNTER
-            GLOBAl_FUNC_ID_DICT[self.unique_name] = fid
-        return fid
+        return self._func_id
 
     @property
     def file_id(self):
         if not self.is_usr_def:
             return -1
 
-        fid = GLOBAL_FILE_ID_DICT.get(self.root_file, None)
+        fid = _GLOBAL_FILE_ID_DICT.get(self.root_file, None)
         if fid is None:
-            global FILE_ID_COUNTER
-            FILE_ID_COUNTER += 1
-            fid = FILE_ID_COUNTER
-            GLOBAL_FILE_ID_DICT[self.root_file] = fid
+            global _FILE_ID_COUNTER
+            _FILE_ID_COUNTER += 1
+            fid = _FILE_ID_COUNTER
+            _GLOBAL_FILE_ID_DICT[self.root_file] = fid
         return fid
 
 
@@ -110,14 +123,33 @@ class SeqDesc:
         self.api_seq = list()
         self.has_usr_def = False
 
-    @staticmethod
-    def seq_str(api_seq):
-        apis = [_.unique_name for _ in api_seq]
-        rst = '-->'.join(apis)
-        return rst
-
     def debug_string(self):
         rst = 'Entry Function is: ' + self.entry_api.api_name + '\n'
-        apis = [_.unique_name for _ in self.api_seq]
+        apis = [_.full_name for _ in self.api_seq]
         rst += '-->'.join(apis)
         logger.info(rst)
+
+
+def get_idx_tbl():
+    idx_dict = dict()
+    for _, val in _GLOBAl_FUNC_ID_DICT.items():
+        idx_dict.update(dict(zip(val.values(), val.keys())))
+
+    return idx_dict
+
+
+def get_api_lut():
+    return _GLOBAl_FUNC_ID_DICT
+
+
+def set_api_lut(idx_dict):
+    base_id_dict = dict(zip(KitConfig.ACC_LIB_ID_PREFIX.values(), KitConfig.ACC_LIB_ID_PREFIX.keys()))
+    for idx, name in idx_dict.items():
+        res = idx // KitConfig.ACC_ID_BASE
+        acc_name = base_id_dict[res]
+
+        acc_libs = _GLOBAl_FUNC_ID_DICT.get(acc_name, None)
+        if acc_libs:
+            _GLOBAl_FUNC_ID_DICT[acc_name][name] = idx
+        else:
+            _GLOBAl_FUNC_ID_DICT[acc_name] = {name: idx}

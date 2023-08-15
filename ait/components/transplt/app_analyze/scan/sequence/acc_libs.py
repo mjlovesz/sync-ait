@@ -1,6 +1,6 @@
 from app_analyze.common.kit_config import KitConfig
 
-GLOBAl_EXPERT_LIBS_DICT = dict()
+_GLOBAl_EXPERT_LIBS_DICT = dict()
 
 
 def from_int(x):
@@ -49,21 +49,24 @@ def from_union(fs, x):
 
 
 class Seq:
-    def __init__(self, src_seqs, dst_seq):
+    def __init__(self, src_seqs, dst_seq, function):
         self.src_seqs = src_seqs
         self.dst_seq = dst_seq
+        self.function = function
 
     @staticmethod
     def from_dict(obj):
         assert isinstance(obj, dict)
         src_seqs = from_list(lambda x: from_list(from_int, x), obj.get('src_seqs'))
         dst_seq = from_list(from_int, obj.get('dst_seq'))
-        return Seq(src_seqs, dst_seq)
+        function = from_str(obj.get('function'))
+        return Seq(src_seqs, dst_seq, function)
 
     def to_dict(self):
         result = dict()
         result['src_seqs'] = from_list(lambda x: from_list(from_int, x), self.src_seqs)
         result['dst_seq'] = from_list(from_int, self.dst_seq)
+        result['function'] = from_str(self.function)
         return result
 
 
@@ -85,22 +88,23 @@ class SeqInfo:
 
 class ExpertLibs:
     def __init__(self, acc_lib_dict):
-        self.opencv = acc_lib_dict.get(KitConfig.OPENCV, None)
+        self.acc_lib_dict = acc_lib_dict
 
     @staticmethod
     def from_dict(obj):
         assert isinstance(obj, dict)
         acc_lib_dict = dict()
-        if obj.get('opencv', None):
-            opencv = SeqInfo.from_dict(obj.get('opencv'))
-            acc_lib_dict['opencv'] = opencv
+        for lib, _ in KitConfig.ACC_LIB_ID_PREFIX.items():
+            if obj.get(lib, None):
+                lib_content = SeqInfo.from_dict(obj.get(lib))
+                acc_lib_dict[lib] = lib_content
 
-        return SeqInfo(acc_lib_dict)
+        return ExpertLibs(acc_lib_dict)
 
     def to_dict(self):
         result = dict()
-        if self.opencv:
-            result['opencv'] = to_class(SeqInfo, self.opencv)
+        for lib, _ in KitConfig.ACC_LIB_ID_PREFIX.items():
+            result[lib] = to_class(SeqInfo, self.acc_lib_dict[lib])
         return result
 
 
@@ -110,3 +114,11 @@ def expert_libs_from_dict(s):
 
 def expert_libs_to_dict(x):
     return to_class(ExpertLibs, x)
+
+
+def get_expert_libs():
+    return expert_libs_from_dict(_GLOBAl_EXPERT_LIBS_DICT)
+
+
+def set_expert_libs(expert_libs):
+    _GLOBAl_EXPERT_LIBS_DICT.update(expert_libs)
