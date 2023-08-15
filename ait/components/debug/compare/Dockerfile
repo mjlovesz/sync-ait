@@ -110,5 +110,9 @@ RUN apt-get install -y git &&\
     chmod +x install.sh &&\
     ./install.sh
 
+RUN apt-get autoclean &&\
+    apt-get clean &&\
+    apt-get autoremove
+
 
 
