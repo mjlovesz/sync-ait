@@ -109,6 +109,8 @@ def _get_single_csv_in_folder(csv_path):
 
 def _append_is_npu_ops_to_csv(csv_path):
     csv_path = _get_single_csv_in_folder(csv_path)
+    if os.path.islink(csv_path):
+        os.unlink(csv_path)
     if os.path.exists(csv_path):
         with open(csv_path, 'r') as f:
             reader = csv.reader(f)
