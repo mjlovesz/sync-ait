@@ -227,6 +227,7 @@ APP_ERROR DeviceManager::SetDeviceSimple(DeviceContext device)
  */
 APP_ERROR DeviceManager::SetDevice(DeviceContext device)
 {
+    INFO_LOG("ready to set context");
     std::lock_guard<std::mutex> lock(mtx_);
     auto deviceId = device.devId;
     if (contexts_.find(device.devId) == contexts_.end()) {
