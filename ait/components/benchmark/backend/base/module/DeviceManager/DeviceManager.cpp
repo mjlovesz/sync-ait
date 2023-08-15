@@ -139,28 +139,28 @@ APP_ERROR DeviceManager::DestroyContext()
     // if (initCounter_ == 0) {
     //     return APP_ERR_COMM_OUT_OF_RANGE;
     // }
-    if (initCounter_ > 0) {
-        initCounter_--;
-    }
-    if (initCounter_ == 0) {
-        for (auto item : contexts_) {
-            APP_ERROR ret = aclrtDestroyContext(item.second.get());
-            if (ret != APP_ERR_OK) {
-                cout << aclGetRecentErrMsg() << endl;
-                ERROR_LOG("destroy context failed");
-                return ret;
-            }
-            INFO_LOG("end to destroy context");
-
-            ret = aclrtResetDevice(item.first);
-            if (ret != ACL_SUCCESS) {
-                cout << aclGetRecentErrMsg() << endl;
-                ERROR_LOG("reset device failed");
-            }
-            INFO_LOG("end to reset device is %d", item.first);
+    // if (initCounter_ > 0) {
+    //     initCounter_--;
+    // }
+    // if (initCounter_ == 0) {
+    for (auto item : contexts_) {
+        APP_ERROR ret = aclrtDestroyContext(item.second.get());
+        if (ret != APP_ERR_OK) {
+            cout << aclGetRecentErrMsg() << endl;
+            ERROR_LOG("destroy context failed");
+            return ret;
         }
+        INFO_LOG("end to destroy context");
 
-        contexts_.clear();
+        ret = aclrtResetDevice(item.first);
+        if (ret != ACL_SUCCESS) {
+            cout << aclGetRecentErrMsg() << endl;
+            ERROR_LOG("reset device failed");
+        }
+        INFO_LOG("end to reset device is %d", item.first);
+    }
+
+    contexts_.clear();
         // APP_ERROR ret = aclFinalize();
         // if (ret != APP_ERR_OK) {
         //     cout << aclGetRecentErrMsg() << endl;
@@ -169,11 +169,10 @@ APP_ERROR DeviceManager::DestroyContext()
         // }
         // INFO_LOG("end to finalize acl");
         // return APP_ERR_OK;
-    }
-    if (initCounter_ > 0) {
-        return APP_ERR_OK;
-    }
-
+    // }
+    // if (initCounter_ > 0) {
+    //     return APP_ERR_OK;
+    // }
     return APP_ERR_OK;
 }
 
