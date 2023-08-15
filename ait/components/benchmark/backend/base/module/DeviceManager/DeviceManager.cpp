@@ -129,7 +129,7 @@ APP_ERROR DeviceManager::DestroyDevices()
 }
 
 /**
- * @description: release all devices
+ * @description: release all context
  * @param: void
  * @return: destory_devices_result
  */
