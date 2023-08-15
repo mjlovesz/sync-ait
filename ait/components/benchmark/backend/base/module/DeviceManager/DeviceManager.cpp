@@ -209,7 +209,6 @@ APP_ERROR DeviceManager::SetDevice(DeviceContext device)
 {
     std::lock_guard<std::mutex> lock(mtx_);
     auto deviceId = device.devId;
-    std::cout << contexts_.size();
     if (contexts_.find(device.devId) == contexts_.end()) {
         // open device
         APP_ERROR ret = aclrtSetDevice(device.devId);
