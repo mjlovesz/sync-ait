@@ -45,6 +45,9 @@ def infer_loop_create_session(loop_times):
     loop_list = list(range(loop_times))
     for _, _ in enumerate(tqdm(loop_list, file=sys.stdout, desc='constructing new InferSession:')):
         session = InferSession(device_id, model_path)
+        barray = bytearray(session.get_inputs()[0].realsize)
+        ndata = np.frombuffer(barray)
+        outputs = session.infer([ndata])
         session_list.append(session)
         session.release_model()
         # session.release_device()
