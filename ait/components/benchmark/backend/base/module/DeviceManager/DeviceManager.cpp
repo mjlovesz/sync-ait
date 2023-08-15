@@ -129,21 +129,14 @@ APP_ERROR DeviceManager::DestroyDevices()
 }
 
 /**
- * @description: release all context
+ * @description: release all contexts
  * @param: void
- * @return: destory_devices_result
+ * @return: destory_contexts_result
  */
 APP_ERROR DeviceManager::DestroyContext()
 {
     INFO_LOG("in destroy context");
     std::lock_guard<std::mutex> lock(mtx_);
-    // if (initCounter_ == 0) {
-    //     return APP_ERR_COMM_OUT_OF_RANGE;
-    // }
-    // if (initCounter_ > 0) {
-    //     initCounter_--;
-    // }
-    // if (initCounter_ == 0) {
     for (auto item : contexts_) {
         APP_ERROR ret = aclrtDestroyContext(item.second.get());
         if (ret != APP_ERR_OK) {
@@ -160,20 +153,7 @@ APP_ERROR DeviceManager::DestroyContext()
         }
         INFO_LOG("end to reset device is %d", item.first);
     }
-
     contexts_.clear();
-        // APP_ERROR ret = aclFinalize();
-        // if (ret != APP_ERR_OK) {
-        //     cout << aclGetRecentErrMsg() << endl;
-        //     ERROR_LOG("finalize acl failed");
-        //     return ret;
-        // }
-        // INFO_LOG("end to finalize acl");
-        // return APP_ERR_OK;
-    // }
-    // if (initCounter_ > 0) {
-    //     return APP_ERR_OK;
-    // }
     return APP_ERR_OK;
 }
 
@@ -250,7 +230,6 @@ APP_ERROR DeviceManager::SetDevice(DeviceContext device)
         std::shared_ptr<void> context(newContext, [] (void *c) {});
         contexts_[device.devId] = context;
     } else {
-        INFO_LOG("ready to set current context");
         APP_ERROR ret = aclrtSetCurrentContext(contexts_[deviceId].get());
         if (ret != APP_ERR_OK) {
             cout << aclGetRecentErrMsg() << endl;

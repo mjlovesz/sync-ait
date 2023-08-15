@@ -75,7 +75,7 @@ int PyInferenceSession::Finalize()
     return APP_ERR_OK;
 }
 
-int PyInferenceSession::ReleaseDevice()
+int PyInferenceSession::FreeDevice()
 {
     APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_);
     if (ret != APP_ERR_OK) {
@@ -88,7 +88,7 @@ int PyInferenceSession::ReleaseDevice()
         ERROR_LOG("TensorContext::Finalize. ret=%d", ret);
         return ret;
     }
-    ret = TensorContext::GetInstance()->ReleaseSource();
+    ret = TensorContext::GetInstance()->FreeSource();
     if (ret != APP_ERR_OK) {
         ERROR_LOG("TensorContext::ReleaseSource. ret=%d", ret);
         return ret;
@@ -97,7 +97,7 @@ int PyInferenceSession::ReleaseDevice()
     return APP_ERR_OK;
 }
 
-int PyInferenceSession::ReleaseModel()
+int PyInferenceSession::FreeModel()
 {
     Destroy();
     return APP_ERR_OK;

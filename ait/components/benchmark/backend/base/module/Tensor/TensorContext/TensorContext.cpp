@@ -51,7 +51,7 @@ APP_ERROR TensorContext::Finalize()
     return APP_ERR_OK;
 }
 
-APP_ERROR TensorContext::ReleaseSource()
+APP_ERROR TensorContext::FreeSource()
 {
     APP_ERROR ret = DeviceManager::GetInstance()->DestroyContext();
     if (ret != APP_ERR_OK) {
