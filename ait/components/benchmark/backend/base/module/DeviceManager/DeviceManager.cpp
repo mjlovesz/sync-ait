@@ -226,7 +226,6 @@ APP_ERROR DeviceManager::SetDeviceSimple(DeviceContext device)
  */
 APP_ERROR DeviceManager::SetDevice(DeviceContext device)
 {
-    INFO_LOG("ready to set context");
     std::lock_guard<std::mutex> lock(mtx_);
     auto deviceId = device.devId;
     if (contexts_.find(device.devId) == contexts_.end()) {
@@ -249,6 +248,7 @@ APP_ERROR DeviceManager::SetDevice(DeviceContext device)
         std::shared_ptr<void> context(newContext, [] (void *c) {});
         contexts_[device.devId] = context;
     } else {
+        INFO_LOG("ready to set current context");
         APP_ERROR ret = aclrtSetCurrentContext(contexts_[deviceId].get());
         if (ret != APP_ERR_OK) {
             cout << aclGetRecentErrMsg() << endl;
