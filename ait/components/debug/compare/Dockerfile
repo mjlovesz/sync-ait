@@ -1,14 +1,12 @@
 FROM ubuntu:18.04
 SHELL ["/bin/bash", "-c"]
 ARG CANN_TOOLKIT_PATH
-COPY pip.conf /root/.pip/pip.conf
 ADD $CANN_TOOLKIT_PATH ./
 ARG CANN_AMCT_PATH
 COPY $CANN_AMCT_PATH ./
 ARG CAFFE_SRC
 COPY $CAFFE_SRC ./
 ARG DEBIAN_FRONTEND=noninteractive
-
 
 #安装python、CANN_TOOLKIT,软件包、依赖，并配置环境变量写入.bashrc
 RUN groupadd HwHiAiUser && useradd -rm -d /home/HwHiAiUser -s /bin/bash -g HwHiAiUser -G HwHiAiUser -u 1001 HwHiAiUser  &&\
@@ -36,6 +34,9 @@ RUN groupadd HwHiAiUser && useradd -rm -d /home/HwHiAiUser -s /bin/bash -g HwHiA
     echo "export PATH=/usr/local/python3.7.5/bin:\$PATH" >> /root/.bashrc &&\
     export LD_LIBRARY_PATH=/usr/local/python3.7.5/lib:$LD_LIBRARY_PATH &&\
     export PATH=/usr/local/python3.7.5/bin:$PATH &&\
+    pip3.7 config set global.index-url https://repo.huaweicloud.com/repository/pypi/simple && \
+    pip3.7 config set global.trusted-host repo.huaweicloud.com && \
+    pip3.7 config set global.timeout 600 && \
     pip3.7 install --upgrade pip &&\
     pip3.7 install attrs &&\
     pip3.7 install numpy==1.17.2 &&\
