@@ -53,13 +53,10 @@ APP_ERROR TensorContext::Finalize()
 
 APP_ERROR TensorContext::ReleaseSource()
 {
-    if (InitDeviceFlag_) {
-        APP_ERROR ret = DeviceManager::GetInstance()->DestroyContext();
-        if (ret != APP_ERR_OK) {
-            LogError << "DeviceManager DestroyContext failed. ret=" << ret << std::endl;
-            return ret;
-        }
-        InitDeviceFlag_ = false;
+    APP_ERROR ret = DeviceManager::GetInstance()->DestroyContext();
+    if (ret != APP_ERR_OK) {
+        LogError << "DeviceManager DestroyContext failed. ret=" << ret << std::endl;
+        return ret;
     }
     return APP_ERR_OK;
 }
