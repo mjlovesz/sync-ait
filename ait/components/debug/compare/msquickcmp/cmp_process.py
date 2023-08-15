@@ -107,7 +107,7 @@ def _get_single_csv_in_folder(csv_path):
     raise IOError(f"None csv file exists in folder {csv_path}")
 
 
-def _is_npu_ops(csv_path):
+def _append_is_npu_ops_to_csv(csv_path):
     csv_path = _get_single_csv_in_folder(csv_path)
     if os.path.exists(csv_path):
         with open(csv_path, 'r') as f:
@@ -115,15 +115,10 @@ def _is_npu_ops(csv_path):
             rows = [row for row in reader]
         header = rows[0]
         ground_truth_col = header.index("GroundTruth")
-        ground_truth = []
+        header.append('IsNpuOps')
         for row in rows[1:]:
-            ground_truth.append(row[ground_truth_col])
-        rows[0].append('IsNpuOps')
-        for i in range(1, len(rows)):
-            if ground_truth[i - 1] == '*':
-                rows[i].append('YES')
-            else:
-                rows[i].append('NO')
+            is_npu_ops = "YES" if row[ground_truth_col] == "*" else "NO"
+            row.append(is_npu_ops)
         with open(csv_path, 'w', newline='') as f:
             writer = csv.writer(f)
             writer.writerows(rows)
@@ -211,7 +206,7 @@ def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
     else:
         invalid_rows, _ = analyser.Analyser(args.out_path)('ALL_INVALID')
     print_advisor_info(args.out_path)
-    _is_npu_ops(args.out_path)
+    _append_is_npu_ops_to_csv(args.out_path)
     return invalid_rows
 
 

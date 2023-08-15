@@ -26,6 +26,8 @@ Caffe 一键式精度比对
   atc --model=resnet50_deploy_model.prototxt --weight=resnet50_deploy_weights.caffemodel --framework=0   \
   --output=caffe_resnet50_off --soc_version=Ascend310P3  --fusion_switch_file=fusion_switch.cfg
   ```  
+  
+
 说明： 关闭算子融合功能需要通过`--fusion_switch_file`参数指定算子融合规则配置文件（如fusion_switch.cfg），并在配置文件中关闭算子融合。 融合规则配置文件关闭配置如下：
 ```
 {
