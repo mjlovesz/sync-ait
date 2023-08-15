@@ -95,7 +95,6 @@ chmod u+x install.sh
 ```
 
 
-
 #### 卸载
 ```shell
 # 1. 一个个询问式卸载
