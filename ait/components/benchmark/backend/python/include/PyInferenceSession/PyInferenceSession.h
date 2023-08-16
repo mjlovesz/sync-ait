@@ -63,7 +63,7 @@ public:
 
     uint32_t GetDeviceId() const;
     std::string GetDesc();
-
+    std::string GetModelPath();
     std::shared_ptr<SessionOptions> GetOptions();
 
     const InferSumaryInfo& GetSumaryInfo();

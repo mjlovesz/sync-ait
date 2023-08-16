@@ -183,7 +183,8 @@ def run_pipeline_inference(session, args, infileslist, output_prefix):
                          args.auto_set_dymshape_mode,
                          args.auto_set_dymdims_mode,
                          args.outfmt,
-                         pure_infer_mode)
+                         pure_infer_mode,
+                         args.thread)
 
 
 # tensor to loop infer
@@ -257,7 +258,7 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
 
 
 def infer_pipeline_run(session, args, infileslist, output_prefix):
-    logger.info("run in pipeline mode")
+    logger.info(f"run in pipeline mode with {args.thread} computing threads.")
     run_pipeline_inference(session, args, infileslist, output_prefix)
 
 
@@ -497,7 +498,7 @@ def main(args, index=0, msgq=None, device_list=None):
 
     summary.add_args(sys.argv)
     s = session.sumary()
-    summary.npu_compute_time_list = s.exec_time_list
+    summary.npu_compute_time_list = [time / args.thread for time in s.exec_time_list]
     summary.h2d_latency_list = MemorySummary.get_h2d_time_list()
     summary.d2h_latency_list = MemorySummary.get_d2h_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
@@ -630,6 +631,11 @@ def args_rules(args):
         logger.error(
             "parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
         raise RuntimeError('error bad parameters --output_dirname')
+
+    if args.thread > 1 and not args.pipeline:
+        logger.info("need to set --pipeline when setting thread number to be more than one.")
+        args.thread = 1
+
     return args
 
 

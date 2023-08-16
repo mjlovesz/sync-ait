@@ -160,6 +160,11 @@ std::shared_ptr<SessionOptions> PyInferenceSession::GetOptions()
     return modelInfer_.GetOptions();
 }
 
+std::string  PyInferenceSession::GetModelPath()
+{
+    return modelPath_;
+}
+
 std::string PyInferenceSession::GetDesc()
 {
     std::string inputStr = "input:\n";
@@ -352,7 +357,8 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
     std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId, num_threads);
     std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), deviceId, this);
     for (size_t i = 0; i < num_threads - 1; i++) {
-        computeThreadGroup.emplace_back(FuncComputeWithoutSession, std::ref(computeQueue), std::ref(d2hQueue), deviceId, modelPath_);
+        computeThreadGroup.emplace_back(FuncComputeWithoutSession, std::ref(computeQueue),
+                                        std::ref(d2hQueue), deviceId, this);
     }
     std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId, num_threads);
     std::thread saveThread(FuncSave, std::ref(saveQueue), deviceId, outFmt);

@@ -229,10 +229,10 @@ namespace Base {
 
     void FuncComputeWithoutSession(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
                      ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
-                     std::string modelPath)
+                     Base::PyInferenceSession* existingSession)
     {
-        std::shared_ptr<Base::SessionOptions> options = std::make_shared<Base::SessionOptions>();
-        auto session = std::make_shared<Base::PyInferenceSession>(modelPath, deviceId, options);
+        auto session = std::make_shared<Base::PyInferenceSession>(existingSession->GetModelPath(),
+                                                                  deviceId, existingSession->GetOptions);
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
         if (ret != APP_ERR_OK) {
             throw std::runtime_error(GetError(ret));

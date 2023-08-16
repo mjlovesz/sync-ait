@@ -104,7 +104,7 @@ namespace Base {
 
     void FuncComputeWithoutSession(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
                      ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
-                     std::string modelPath);
+                     Base::PyInferenceSession* existingSession);
 
     void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
                  ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, size_t num_threads);
