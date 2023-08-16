@@ -232,7 +232,7 @@ namespace Base {
                      Base::PyInferenceSession* existingSession)
     {
         auto session = std::make_shared<Base::PyInferenceSession>(existingSession->GetModelPath(),
-                                                                  deviceId, existingSession->GetOptions);
+                                                                  deviceId, existingSession->GetOptions());
         APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
         if (ret != APP_ERR_OK) {
             throw std::runtime_error(GetError(ret));
