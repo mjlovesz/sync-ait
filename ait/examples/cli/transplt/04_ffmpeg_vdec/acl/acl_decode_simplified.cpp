@@ -267,8 +267,6 @@ int32_t decode(std::string input_file_name, std::string output_file_name)
     int32_t failCnt = 0;
     hi_vdec_supplement_info stSupplement{};
 
-    std::cout << frameCount << std::endl;
-
     while (decodeCount < frameCount) {
         stream.addr = g_frame_addr[decodeCount]; // Configure input stream address
         stream.len = g_frame_len[decodeCount]; // Configure input stream size
