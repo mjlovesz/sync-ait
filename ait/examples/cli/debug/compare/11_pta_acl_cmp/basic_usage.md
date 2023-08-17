@@ -135,18 +135,18 @@ ait debug compare aclcmp xx_args
 
    csv各列名称解释如下：
 
-   | 列名          | 含义              |
-   | ------------- | ----------------- |
-   | data_id       | 数据的id          |
-   | pta_data_path | pta数据的dump路径 |
-   | pta_dtype     | pta数据的类型     |
-   | pta_shape     | pta数据的shape    |
-   |               |                   |
-   |               |                   |
-   |               |                   |
-   |               |                   |
-   |               |                   |
-   |               |                   |
-   |               |                   |
-   |               |                   |
-   |               |                   |
+   | 列名                        | 含义                       |
+   | --------------------------- | -------------------------- |
+   | data_id                     | 数据的id                   |
+   | pta_data_path               | pta数据的dump路径          |
+   | pta_dtype                   | pta数据的类型              |
+   | pta_shape                   | pta数据的shape             |
+   | acl_data_path               | acl数据的dump路径          |
+   | acl_dtype                   | acl数据的类型              |
+   | acl_shape                   | acl数据的shape             |
+   | cmp_flag                    | 是否比较                   |
+   | cosine_similarity           | pta与acl数据的余弦相似度值 |
+   | max_relative_error          | pta与acl数据的最大相对误差 |
+   | mean_relative_error         | pta与acl数据的绝对相对误差 |
+   | relative_euclidean_distance | pta与acl数据的相对欧式距离 |
+   | cmp_fail_reason             | 比对失败的原因             |
