@@ -130,8 +130,7 @@ ait debug compare aclcmp xx_args
 5. 结果分析
 
    生成的csv报告如下：
-
-   ![1692278209153](C:\Users\C00562~1\AppData\Local\Temp\1692278209153.png)
+    ![输入图片说明](%E6%AF%94%E5%AF%B9%E6%8A%A5%E5%91%8A.PNG)
 
    csv各列名称解释如下：
 
