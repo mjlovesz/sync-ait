@@ -2,8 +2,10 @@ import numpy as np
 
 
 def cosine_similarity(pta_data: np.ndarray, acl_data: np.ndarray):
-    acl_data_norm = np.linalg.norm(acl_data)
-    pta_data_norm = np.linalg.norm(pta_data)
+    pta_data = pta_data.reshape(-1)
+    acl_data = acl_data.reshape(-1)
+    acl_data_norm = np.linalg.norm(acl_data, axis=-1)
+    pta_data_norm = np.linalg.norm(pta_data, axis=-1)
     result = pta_data.dot(acl_data) / (acl_data_norm * pta_data_norm)
     return result
 
@@ -30,7 +32,7 @@ def relative_euclidean_distance(pta_data: np.ndarray, acl_data: np.ndarray):
 
 
 cmp_alg_map = {
-    "cosine_similarity": cosine_similarity,
+    # "cosine_similarity": cosine_similarity,
     "max_relative_error": max_relative_error,
     "mean_relative_error": mean_relative_error,
     "relative_euclidean_distance": relative_euclidean_distance
