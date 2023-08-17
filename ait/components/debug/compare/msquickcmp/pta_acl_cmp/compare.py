@@ -172,7 +172,7 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
         if data_val is not None:
             data_path = os.path.join(acl_data_dir, data_id + '_tensor.bin')
             data = save_acl_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=data_path)
-        elif tensor_path:
+        elif tensor_path:  # low-level
             pid = os.getpid()
             dump_path = str(pid) + "_DUMP_PATH"
             tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
@@ -262,14 +262,13 @@ class TensorBinFile:
         elif self.dtype == 12:
             dtype = np.bool8
         else:
-            print("error, unsupport dtype:", self.dtype)
+            logger.error("Unsupport dtype:", self.dtype)
             pass
         tensor = torch.tensor(np.frombuffer(self.obj_buffer, dtype=dtype))
         tensor = tensor.view(self.dims)
         return tensor
 
     def __parse_bin_file(self):
-        end_str = f"{ATTR_END}=1"
         with open(self.file_path, "rb") as fd:
             file_data = fd.read()
 
