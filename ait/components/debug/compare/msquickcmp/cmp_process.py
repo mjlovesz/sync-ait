@@ -118,21 +118,6 @@ def cmp_process(args: CmpArgsAdapter, use_cli: bool):
         raise error
 
 
-def execute_cmd(command):
-    result = subprocess.Popen(command, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-    while result.poll() is None:
-        line = result.stdout.readline()
-        if line:
-            line = line.strip()
-            print(line.decode('utf-8'))
-
-    return result.returncode
-
-
-def pta_acl_compare(command):
-    execute_cmd()
-
-
 def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
     if input_shape:
         args.input_shape = input_shape
