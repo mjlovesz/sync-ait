@@ -174,7 +174,33 @@ class CompareCommand(BaseCommand):
         cmp_process(cmp_args, True)
 
 
+class AclCompare(BaseCommand):
+    def add_arguments(self, parser, **kwargs):
+        parser.add_argument(
+            '--exec',
+            dest="exec",
+            required=True,
+            default='',
+            help='Exec command to run acltransformer model inference. ')
+
+    def handle(self, args, **kwargs):
+        os.system(args.exec)
+
+
 def get_cmd_instance():
     help_info = "one-click network-wide accuracy analysis of golden models."
-    cmd_instance = CompareCommand("compare", help_info)
+    acl_cmp = AclCompare("aclcmp", help_info="Ascend transformer acceleration accuracy compare.")
+    cmd_instance = CompareCommand("compare", help_info, children=[acl_cmp])
     return cmd_instance
+
+
+def pta_acl_cmp(exc_cmd):
+    os.system(exc_cmd)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    cmd = AclCompare()
+    cmd.add_arguments(parser)
+    args = parser.parse_args()
+    cmd.handle(args)
