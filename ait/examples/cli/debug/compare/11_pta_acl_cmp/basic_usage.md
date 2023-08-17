@@ -69,7 +69,7 @@ ait debug compare aclcmp xx_args
 | --exec | 执行命令，用于拉起大模型推理脚本。建议使用bash xx.sh args或者python3 xx.py的方式拉起。 |
 
 # 3. 使用示例
-使用前请安装ait工具，安装指导参考：https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md以[chatglm-6b](https://gitee.com/ascend/ascend-transformer-acceleration/tree/master/examples/chatglm6b)为例，介绍下如何使用加速库精度比对工具。
+使用前请安装ait工具，安装指导参考：https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md以[chatglm-6b](https://gitee.com/ascend/ascend-transformer-acceleration/tree/master/examples/chatglm6b) 为例，介绍下如何使用加速库精度比对工具。
 
 1.  设置task_id
 
