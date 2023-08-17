@@ -209,8 +209,10 @@ def compare_tensor(csv_data: pd.DataFrame):
             csv_data[CMP_FLAG][idx] = True
             continue
 
+        pta_data_fp32 = pta_data.reshape(-1).astype("float32")
+        acl_data_fp32 = acl_data.reshape(-1).astype("float32")
         for name, cmp_func in cmp_alg_map.items():
-            result = cmp_func(pta_data, acl_data)
+            result = cmp_func(pta_data_fp32, acl_data_fp32)
             csv_data[name][idx] = result
             csv_data[CMP_FLAG][idx] = True
 

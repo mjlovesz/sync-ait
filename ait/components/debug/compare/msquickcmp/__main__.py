@@ -189,9 +189,9 @@ class AclCompare(BaseCommand):
             help='Exec command to run acltransformer model inference. ')
 
     def handle(self, args, **kwargs):
-        check_exec_cmd(args.exec)
-        # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
-        os.system(args.exec)
+        if check_exec_cmd(args.exec):
+            # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
+            os.system(args.exec)
 
 
 def get_cmd_instance():

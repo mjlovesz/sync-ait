@@ -20,9 +20,6 @@ NAN = 'NaN'
 
 
 def cosine_similarity(pta_data: np.ndarray, acl_data: np.ndarray):
-    pta_data = pta_data.reshape(-1).astype("float32")
-    acl_data = acl_data.reshape(-1).astype("float32")
-
     acl_data_norm = np.linalg.norm(acl_data, axis=-1, keepdims=True)
     pta_data_norm = np.linalg.norm(pta_data, axis=-1, keepdims=True)
     if acl_data_norm <= FLOAT_EPSILON and pta_data_norm < FLOAT_EPSILON:
