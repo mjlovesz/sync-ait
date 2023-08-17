@@ -69,7 +69,64 @@ ait debug compare aclcmp xx_args
 | --exec | 执行命令，用于拉起大模型推理脚本。建议使用bash xx.sh args或者python3 xx.py的方式拉起。 |
 
 # 3. 使用示例
+使用前请安装ait工具，安装指导参考：https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md以[chatglm-6b](https://gitee.com/ascend/ascend-transformer-acceleration/tree/master/examples/chatglm6b)为例，介绍下如何使用加速库精度比对工具。
 
-以chatglm-6b为例，介绍下如何使用加速库精度比对工具。
+1.  设置task_id
 
- 
+   在每轮对话开始前设置task_id，修改main_performance.py
+
+   ```
+       while True:
+           set_task_id()
+           query = input("\n用户：")
+           if query.strip() == "stop":
+               break
+           if query.strip() == "clear":
+               history = []
+   ```
+
+2. 在pta代码中打标签
+
+   以patches/models/modeling_chatglm_model.py为例，该脚本是model粒度的替换。
+
+   high-level比对，比对model的输出与pta对应的model的输出的精度，找到相应的代码段，添加以下代码
+
+   ```
+   from msquickcmp.pta_acl_cmp.compare import set_label, gen_id
+   data_id = gen_id()
+   set_label("pta", data_id, hidden_states)
+   set_label("acl", data_id, acl_model_out[0])
+   ```
+
+   low-level比对，比对model内部的SelfAttentionOpsChatglm6bRunner的数据与pta侧相应算子的差异，找到相应的代码段，添加以下代码：
+
+   ```python
+   from msquickcmp.pta_acl_cmp.compare import set_label, gen_id
+   data_id = gen_id()
+   set_label("pta", data_id, data_val=attention_output)
+   set_label("acl", data_id, tensor_path="0_ChatGlm6BModelEncoderTorch/"
+   "0_ChatGlm6BLayerEncoderOperationGraphRunner"
+                   "/3_SelfAttentionOpsChatglm6bRunner/after/outTensor0.bin")
+   ```
+
+3. 设置加速库dump数据的环境变量
+
+   若进行low-level的比对，则需要设置加速库dump数据的环境变量：
+
+   ```
+   export ACLTRANSFORMER_SAVE_TENSOR=1
+   export ACLTRANSFORMER_SAVE_TENSOR_MAX=2  #dump数据的轮数（执行推理的token数），按需设置
+   #要比对的runner。加速库dump数据runner白名单，默认为空，空时为全量dump，非空时只dump白名单中包含的runner数据。
+   export ACLTRANSFORMER_SAVE_TENSOR_RUNNER=SelfAttentionOpsChatglm6bRunner
+   ```
+
+4. 执行比对命令
+   安装[加速库](https://gitee.com/ascend/ascend-transformer-acceleration)的指导文档下载编译好加速库代码，进入example/chatglm6b目录，执行比对命令：
+
+   ```shell
+   ait debug compare aclcmp --exec "bash run_performance.sh patches/models/modeling_chatglm_model.py"
+   ```
+
+5. 结果分析
+
+
