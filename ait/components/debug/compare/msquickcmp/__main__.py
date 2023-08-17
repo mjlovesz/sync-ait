@@ -17,6 +17,7 @@ import argparse
 from components.parser.parser import BaseCommand
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import cmp_process
+from msquickcmp.common.utils import logger, check_exec_cmd
 
 
 CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
@@ -38,7 +39,7 @@ class CompareCommand(BaseCommand):
         parser.add_argument(
             '-gm',
             '--golden-model',
-            required=True,
+            required=False,
             dest="golden_model",
             help='The original model (.onnx or .pb or .prototxt) file path')
         parser.add_argument(
@@ -173,6 +174,10 @@ class CompareCommand(BaseCommand):
 
 
     def handle(self, args):
+        if not args.golden_model:
+            logger.error("The following arguments are required: -gm/--golden-model")
+            return
+
         cmp_args = CmpArgsAdapter(args.golden_model, args.om_model, args.weight_path, args.input_data_path,
                                   args.cann_path, args.out_path,
                                   args.input_shape, args.device, args.output_size, args.output_nodes, args.advisor,
@@ -183,7 +188,23 @@ class CompareCommand(BaseCommand):
         cmp_process(cmp_args, True)
 
 
+class AclCompare(BaseCommand):
+    def add_arguments(self, parser, **kwargs):
+        parser.add_argument(
+            '--exec',
+            dest="exec",
+            required=True,
+            default='',
+            help='Exec command to run acltransformer model inference. ')
+
+    def handle(self, args, **kwargs):
+        if check_exec_cmd(args.exec):
+            # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
+            os.system(args.exec)
+
+
 def get_cmd_instance():
     help_info = "one-click network-wide accuracy analysis of golden models."
-    cmd_instance = CompareCommand("compare", help_info)
+    acl_cmp = AclCompare("aclcmp", help_info="Ascend transformer acceleration accuracy compare.")
+    cmd_instance = CompareCommand("compare", help_info, children=[acl_cmp])
     return cmd_instance

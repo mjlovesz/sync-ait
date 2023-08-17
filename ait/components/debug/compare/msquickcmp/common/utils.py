@@ -67,6 +67,7 @@ COMMA = ","
 DOT = "."
 ASCEND_BATCH_FIELD = "ascend_mbatch_batch_"
 BATCH_SCENARIO_OP_NAME = "{0}_ascend_mbatch_batch_{1}"
+INVALID_CHARS = ['|', ';', '&', '&&', '||', '>', '>>', '<', '`', '\\', '!', '\n']
 
 
 class AccuracyCompareException(Exception):
@@ -87,6 +88,47 @@ class InputShapeError(enum.Enum):
     VALUE_TYPE_NOT_MATCH = 1
     NAME_NOT_MATCH = 2
     TOO_LONG_PARAMS = 3
+
+
+def check_exec_cmd(command: str):
+    if command.startswith("bash") or command.startswith("python"):
+        cmds = command.split()
+        if len(cmds) < 2:
+            logger.error("Command {} is invalid.".format(command))
+            return False
+        elif len(cmds) == 2:
+            script_file = cmds[1]
+            return check_exec_script_file(script_file)
+        else:
+            result = check_exec_script_file(cmds[1])
+            if not result:
+                return result
+
+            args = cmds[2:]
+            result = check_input_args(args)
+
+        return result
+
+
+def check_input_args(args: list):
+    for arg in args:
+        if arg in INVALID_CHARS:
+            logger.error("Arg {} is invalid.".format(arg))
+            return False
+
+    return True
+
+
+def check_exec_script_file(script_path: str):
+    if not os.path.exists(script_path):
+        logger.error("File {} is not exist.".format(script_path))
+        return False
+
+    if not os.access(script_path, os.X_OK):
+        logger.error("Script {} don't has X authority.".format(script_path))
+        return False
+
+    return True
 
 
 def check_file_or_directory_path(path, isdir=False):
