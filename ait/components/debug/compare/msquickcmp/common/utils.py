@@ -109,6 +109,7 @@ def check_exec_cmd(command: str):
 
         return result
 
+    return True
 
 def check_input_args(args: list):
     for arg in args:
