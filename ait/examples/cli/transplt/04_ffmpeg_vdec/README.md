@@ -183,7 +183,7 @@ DVPP在解码完成后，资源释放相关API如下：
 > **注意**： 迁移后的代码使用了ACL数据媒体处理V2版本的接口，该接口目前只支持昇腾310P AI处理器，请在310P的机器上编译运行迁移后的代码。
   
 ```sh
-g++ -O3 -std=c++11 acl_decode.cpp -o acl_decode -I$ASCEND_TOOLKIT_HOME/runtime/include/acl -I$ASCEND_TOOLKIT_HOME/runtime/include/acl/dvpp -L $ASCEND_TOOLKIT_HOME/runtime/lib64/stub -lascendcl -lpthread -lstdc++
+g++ -O3 -std=c++11 acl_decode.cpp -o acl_decode -I$ASCEND_TOOLKIT_HOME/runtime/include/acl -I$ASCEND_TOOLKIT_HOME/runtime/include/acl/dvpp -L $ASCEND_TOOLKIT_HOME/runtime/lib64/stub -lacl_dvpp_mpi -lascendcl -lpthread -lstdc++
 ./acl_decode dvpp_vdec_h264_1frame_bp_51_1920x1080.h264 dvpp_vdec_h264_1frame_bp_51_1920x1080_decoded
 # [hi_dvpp_init][676] aclInit Success.
 # [hi_dvpp_init][684] aclrtSetDevice 0 Success.
