@@ -129,4 +129,24 @@ ait debug compare aclcmp xx_args
 
 5. 结果分析
 
+   生成的csv报告如下：
 
+   ![1692278209153](C:\Users\C00562~1\AppData\Local\Temp\1692278209153.png)
+
+   csv各列名称解释如下：
+
+   | 列名          | 含义              |
+   | ------------- | ----------------- |
+   | data_id       | 数据的id          |
+   | pta_data_path | pta数据的dump路径 |
+   | pta_dtype     | pta数据的类型     |
+   | pta_shape     | pta数据的shape    |
+   |               |                   |
+   |               |                   |
+   |               |                   |
+   |               |                   |
+   |               |                   |
+   |               |                   |
+   |               |                   |
+   |               |                   |
+   |               |                   |
