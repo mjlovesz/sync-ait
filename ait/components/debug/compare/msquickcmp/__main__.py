@@ -17,6 +17,7 @@ import argparse
 from components.parser.parser import BaseCommand
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import cmp_process
+from msquickcmp.common.utils import logger
 
 
 CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
@@ -38,7 +39,7 @@ class CompareCommand(BaseCommand):
         parser.add_argument(
             '-gm',
             '--golden-model',
-            required=True,
+            required=False,
             dest="golden_model",
             help='The original model (.onnx or .pb or .prototxt) file path')
         parser.add_argument(
@@ -164,6 +165,10 @@ class CompareCommand(BaseCommand):
             help="Max size of tensor array to compare, default 0. Usage: --max-cmp-size 1024")
 
     def handle(self, args):
+        if not args.golden_model:
+            logger.error("The following arguments are required: -gm/--golden-model")
+            return
+
         cmp_args = CmpArgsAdapter(args.golden_model, args.om_model, args.weight_path, args.input_data_path,
                                   args.cann_path, args.out_path,
                                   args.input_shape, args.device, args.output_size, args.output_nodes, args.advisor,
@@ -192,15 +197,3 @@ def get_cmd_instance():
     acl_cmp = AclCompare("aclcmp", help_info="Ascend transformer acceleration accuracy compare.")
     cmd_instance = CompareCommand("compare", help_info, children=[acl_cmp])
     return cmd_instance
-
-
-def pta_acl_cmp(exc_cmd):
-    os.system(exc_cmd)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    cmd = AclCompare()
-    cmd.add_arguments(parser)
-    args = parser.parse_args()
-    cmd.handle(args)
