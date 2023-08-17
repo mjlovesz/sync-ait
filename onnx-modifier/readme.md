@@ -241,7 +241,7 @@
 ## 操作回退重做
 
 我们需要撤销操作或者重做操作的时候，可以在左侧菜单栏中点击`Undo`或者`Redo`来执行对应的操作，也可以使用`Ctrl+Z`快捷键执行回退及`Ctrl+Y`快捷键执行重做。(文件导出或存储类操作无法恢复)
-<img src="./docs/undo&redo.png" style="zoom:75%;" />
+<img src="./docs/undo_redo.png" style="zoom:75%;" />
 
 ## 修改导入导出
 
