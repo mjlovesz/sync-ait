@@ -20,7 +20,7 @@ from components.transplt import transplt_cmd
 from components.benchmark import benchmark_cmd
 from components.analyze import analyze_cmd
 from components.convert import convert_cmd
-from components.parser.parser import register_parser
+from components.utils.parser import register_parser
 
 
 def main():

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from components.parser.parser import load_command_instance, BaseCommand
+from components.utils.parser import load_command_instance, BaseCommand
 
 class DebugCommand(BaseCommand):
     def __init__(self, name="", help_info="", children=None, has_handle=False, **kwargs):

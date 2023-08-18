@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from components.parser.parser import BaseCommand
+from components.utils.parser import BaseCommand
 from ait_prof.msprof_process import msprof_process
 from ait_prof.args_adapter import MsProfArgsAdapter
 
