@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-import pytest 
+import pytest
 from file_open import ms_open, FileStat, OpenException
 from file_open import PERMISSION_NORMAL, PERMISSION_KEY
+
 
 @pytest.fixture(scope="function")
 def not_exists_file_name():
@@ -25,6 +26,7 @@ def not_exists_file_name():
     if os.path.exists(file_name):
         os.remove(file_name)
 
+
 @pytest.fixture(scope="function")
 def file_name_which_content_is_abcd():
     file_name = ".test_open_file_abcd"
@@ -33,6 +35,7 @@ def file_name_which_content_is_abcd():
     yield file_name
     if os.path.exists(file_name):
         os.remove(file_name)
+
 
 @pytest.fixture(scope="function")
 def file_name_which_permission_777():
@@ -45,14 +48,16 @@ def file_name_which_permission_777():
     if os.path.exists(file_name):
         os.remove(file_name)
 
+
 @pytest.fixture(scope="function")
 def file_name_which_is_softlink():
     file_name = ".test_open_file_softlink"
-    os.symlink( f"{file_name}_src", file_name)
+    os.symlink(f"{file_name}_src", file_name)
 
     yield file_name
     if os.path.exists(file_name):
         os.remove(file_name)
+
 
 def test_msopen_given_mode_w_plus_when_write_4_lettle_then_file_writed_and_read_case(not_exists_file_name):
     with ms_open(not_exists_file_name, "w+") as aa:
@@ -64,6 +69,7 @@ def test_msopen_given_mode_w_plus_when_write_4_lettle_then_file_writed_and_read_
     assert FileStat(not_exists_file_name).permission == PERMISSION_NORMAL
     assert FileStat(not_exists_file_name).is_owner
 
+
 def test_msopen_given_mode_w_when_write_4_lettle_then_file_writed_case(not_exists_file_name):
     with ms_open(not_exists_file_name, "w") as aa:
         aa.write("1234")
@@ -72,7 +78,10 @@ def test_msopen_given_mode_w_when_write_4_lettle_then_file_writed_case(not_exist
     assert FileStat(not_exists_file_name).permission == PERMISSION_NORMAL
     assert FileStat(not_exists_file_name).is_owner
 
-def test_msopen_given_mode_w_when_exists_file_and_write_4_lettle_then_file_writed_and_read_case(file_name_which_content_is_abcd):
+
+def test_msopen_given_mode_w_when_exists_file_and_write_4_lettle_then_file_writed_and_read_case(
+    file_name_which_content_is_abcd,
+):
     with ms_open(file_name_which_content_is_abcd, "w+") as aa:
         aa.write("1234")
         aa.seek(os.SEEK_SET)
@@ -82,10 +91,12 @@ def test_msopen_given_mode_w_when_exists_file_and_write_4_lettle_then_file_write
     assert FileStat(file_name_which_content_is_abcd).permission == PERMISSION_NORMAL
     assert FileStat(file_name_which_content_is_abcd).is_owner
 
+
 def test_msopen_given_mode_r_when_none_then_file_read_out_case(file_name_which_content_is_abcd):
     with ms_open(file_name_which_content_is_abcd, "r", max_size=100) as aa:
         content = aa.read()
         assert content == "abcd"
+
 
 def test_msopen_given_mode_r_plus_when_none_then_file_read_out_and_write_case(file_name_which_content_is_abcd):
     with ms_open(file_name_which_content_is_abcd, "r+", max_size=100) as aa:
@@ -93,10 +104,11 @@ def test_msopen_given_mode_r_plus_when_none_then_file_read_out_and_write_case(fi
         assert content == "abcd"
         aa.write("1234")
 
+
 def test_msopen_given_mode_a_when_none_then_file_writed_case(file_name_which_content_is_abcd):
     with ms_open(file_name_which_content_is_abcd, "a", max_size=100) as aa:
         aa.write("1234")
-    
+
     assert FileStat(file_name_which_content_is_abcd).permission == PERMISSION_NORMAL
     assert FileStat(file_name_which_content_is_abcd).is_owner
 
@@ -115,6 +127,7 @@ def test_msopen_given_mode_a_plus_when_none_then_file_write_and_read_out_case(fi
     assert FileStat(file_name_which_content_is_abcd).permission == PERMISSION_NORMAL
     assert FileStat(file_name_which_content_is_abcd).is_owner
 
+
 def test_msopen_given_mode_r_when_file_not_exits_then_file_read_failed_case(not_exists_file_name):
     try:
         with ms_open(not_exists_file_name, "r", max_size=100) as aa:
@@ -123,12 +136,14 @@ def test_msopen_given_mode_r_when_file_not_exits_then_file_read_failed_case(not_
     except OpenException as ignore:
         assert True
 
+
 def test_msopen_given_mode_r_no_max_length_when_none_then_file_read_failed_case(file_name_which_content_is_abcd):
     try:
         with ms_open(file_name_which_content_is_abcd, "r") as aa:
             assert False
     except OpenException as ignore:
         assert True
+
 
 def test_msopen_given_mode_r_max_size_2_when_none_then_file_failed_read_out_case(file_name_which_content_is_abcd):
     try:
@@ -137,24 +152,30 @@ def test_msopen_given_mode_r_max_size_2_when_none_then_file_failed_read_out_case
     except OpenException as ignore:
         assert True
 
-def test_msopen_given_mode_w_when_file_permission_777_then_file_delete_before_write_case(file_name_which_permission_777):
+
+def test_msopen_given_mode_w_when_file_permission_777_then_file_delete_before_write_case(
+    file_name_which_permission_777,
+):
     with ms_open(file_name_which_permission_777, mode="w") as aa:
         aa.write("1234")
-    
+
     assert FileStat(file_name_which_permission_777).permission == PERMISSION_NORMAL
+
 
 def test_msopen_given_mode_a_when_file_permission_777_then_file_chmod_before_write_case(file_name_which_permission_777):
     with ms_open(file_name_which_permission_777, mode="a") as aa:
         aa.write("1234")
-    
+
     assert FileStat(file_name_which_permission_777).permission == PERMISSION_NORMAL
+
 
 def test_msopen_given_mode_w_when_file_softlink_then_file_delete_before_write_case(file_name_which_is_softlink):
     with ms_open(file_name_which_is_softlink, mode="w") as aa:
         aa.write("1234")
-    
+
     assert FileStat(file_name_which_is_softlink).permission == PERMISSION_NORMAL
     assert not FileStat(file_name_which_is_softlink).is_softlink
+
 
 def test_msopen_given_mode_a_when_file_softlink_then_write_failed_case(file_name_which_is_softlink):
     try:
@@ -162,12 +183,14 @@ def test_msopen_given_mode_a_when_file_softlink_then_write_failed_case(file_name
             aa.write("1234")
     except OpenException as ignore:
         assert True
-    
+
+
 def test_msopen_given_mode_w_p_600_when_file_softlink_then_file_delete_before_write_case(file_name_which_is_softlink):
     with ms_open(file_name_which_is_softlink, mode="w", write_permission=0o600) as aa:
         aa.write("1234")
-    
+
     assert FileStat(file_name_which_is_softlink).permission == 0o600
+
 
 if __name__ == "main":
     pytest.main()
