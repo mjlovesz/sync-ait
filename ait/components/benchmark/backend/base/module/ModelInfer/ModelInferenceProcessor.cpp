@@ -483,7 +483,12 @@ APP_ERROR ModelInferenceProcessor::ResetSumaryInfo()
     return APP_ERR_OK;
 }
 
-const InferSumaryInfo& ModelInferenceProcessor::GetSumaryInfo()
+const InferSumaryInfo& ModelInferenceProcessor::GetSumaryInfo() const
+{
+    return sumaryInfo_;
+}
+
+InferSumaryInfo& ModelInferenceProcessor::GetMutableSumaryInfo()
 {
     return sumaryInfo_;
 }

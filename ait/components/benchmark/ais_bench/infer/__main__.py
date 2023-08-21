@@ -296,6 +296,14 @@ def get_args():
         help="Input datas need to be divided to match multi devices or not, \
             --device should be list, default False"
     )
+    parser.add_argument(
+        '--thread',
+        dest='thread',
+        type=check_positive_integer,
+        default=1,
+        help="number of thread for computing. \
+            need to set --pipeline when setting thread number to be more than one."
+    )
     benchmark_args = parser.parse_args()
 
     return benchmark_args

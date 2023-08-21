@@ -28,7 +28,9 @@
 #include "Base/ModelInfer/pipeline.h"
 
 namespace Base {
-PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<SessionOptions> options) : deviceId_(deviceId)
+PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId,
+                                       std::shared_ptr<SessionOptions> options) :
+                                       deviceId_(deviceId), modelPath_(modelPath)
 {
     Init(modelPath, options);
 }
@@ -96,7 +98,8 @@ void PyInferenceSession::Init(const std::string &modelPath, std::shared_ptr<Sess
     InitFlag_ = true;
 }
 
-std::vector<TensorBase> PyInferenceSession::InferMap(std::vector<std::string>& output_names, std::map<std::string, TensorBase>& feeds)
+std::vector<TensorBase> PyInferenceSession::InferMap(std::vector<std::string>& output_names,
+                                                     std::map<std::string, TensorBase>& feeds)
 {
     DEBUG_LOG("start to ModelInference feeds");
 
@@ -109,7 +112,8 @@ std::vector<TensorBase> PyInferenceSession::InferMap(std::vector<std::string>& o
     return outputs;
 }
 
-std::vector<TensorBase> PyInferenceSession::InferVector(std::vector<std::string>& output_names, std::vector<TensorBase>& feeds)
+std::vector<TensorBase> PyInferenceSession::InferVector(std::vector<std::string>& output_names,
+                                                        std::vector<TensorBase>& feeds)
 {
     DEBUG_LOG("start to ModelInference");
 
@@ -137,7 +141,8 @@ std::string GetShapeDesc(std::vector<int64_t> shape)
 
 std::string GetTensorDesc(Base::TensorDesc desc)
 {
-    return GetShapeDesc(desc.shape) + "  " + Base::GetTensorDataTypeDesc(desc.datatype) + "  " + std::to_string(desc.size) + "  " + std::to_string(desc.realsize);
+    return GetShapeDesc(desc.shape) + "  " + Base::GetTensorDataTypeDesc(desc.datatype) + "  " +
+           std::to_string(desc.size) + "  " + std::to_string(desc.realsize);
 }
 
 uint32_t PyInferenceSession::GetDeviceId() const
@@ -158,6 +163,11 @@ const std::vector<Base::TensorDesc>& PyInferenceSession::GetOutputs()
 std::shared_ptr<SessionOptions> PyInferenceSession::GetOptions()
 {
     return modelInfer_.GetOptions();
+}
+
+std::string  PyInferenceSession::GetModelPath()
+{
+    return modelPath_;
 }
 
 std::string PyInferenceSession::GetDesc()
@@ -182,9 +192,18 @@ std::string PyInferenceSession::GetDesc()
     return "<Model>\ndevice:\t" + std::to_string(GetDeviceId()) + "\n" + inputStr + outputStr;
 }
 
-const InferSumaryInfo& PyInferenceSession::GetSumaryInfo()
+const InferSumaryInfo& PyInferenceSession::GetSumaryInfo() const
 {
     return modelInfer_.GetSumaryInfo();
+}
+
+void PyInferenceSession::MergeSummaryInfo(const InferSumaryInfo& summaryInfo)
+{
+    InferSumaryInfo& lhsSummaryInfo = modelInfer_.GetMutableSumaryInfo();
+    lhsSummaryInfo.execTimeList.reserve(lhsSummaryInfo.execTimeList.size() + summaryInfo.execTimeList.size());
+    for (auto time : summaryInfo.execTimeList) {
+        lhsSummaryInfo.execTimeList.push_back(time);
+    }
 }
 
 int PyInferenceSession::ResetSumaryInfo()
@@ -278,7 +297,8 @@ int PyInferenceSession::SetCustomOutTensorsSize(std::vector<size_t> customOutSiz
     return APP_ERR_OK;
 }
 
-std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds)
+std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<std::string>& output_names,
+                                                                  std::vector<Base::BaseTensor>& feeds)
 {
     DEBUG_LOG("start to ModelInference base_tensor");
 
@@ -302,7 +322,8 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
     return outputs;
 }
 
-void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names, std::vector<TensorBase>& outputs)
+void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names,
+                                   std::vector<TensorBase>& outputs)
 {
     APP_ERROR ret = modelInfer_.Inference(inputs, output_names, outputs);
     if (ret != APP_ERR_OK) {
@@ -323,9 +344,9 @@ std::vector<std::vector<TensorBase>> PyInferenceSession::InferPipelineBaseTensor
     ConcurrentQueue<std::shared_ptr<Feeds>> d2hQueue;
     ConcurrentQueue<std::shared_ptr<Feeds>> saveQueue;
 
-    std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId);
+    std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId, 1);
     std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), deviceId, this);
-    std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId);
+    std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId, 1);
     std::thread saveThread(FuncSaveTensorBase, std::ref(saveQueue), deviceId, std::ref(result));
     FuncPrepareBaseTensor(h2dQueue, deviceId, this, inputsList, shapesList, autoDymShape, autoDymDims, outputNames);
 
@@ -339,22 +360,31 @@ std::vector<std::vector<TensorBase>> PyInferenceSession::InferPipelineBaseTensor
 
 void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
                                        bool autoDymShape, bool autoDymDims, const std::string& outFmt,
-                                       const bool pureInferMode)
+                                       const bool pureInferMode, size_t num_threads)
 {
     uint32_t deviceId = GetDeviceId();
     ConcurrentQueue<std::shared_ptr<Feeds>> h2dQueue;
     ConcurrentQueue<std::shared_ptr<Feeds>> computeQueue;
     ConcurrentQueue<std::shared_ptr<Feeds>> d2hQueue;
     ConcurrentQueue<std::shared_ptr<Feeds>> saveQueue;
+    std::vector<std::thread> computeThreadGroup{};
+    computeThreadGroup.reserve(num_threads-1);
 
-    std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId);
+    std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId, num_threads);
     std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), deviceId, this);
-    std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId);
+    for (size_t i = 0; i < num_threads - 1; i++) {
+        computeThreadGroup.emplace_back(FuncComputeWithoutSession, std::ref(computeQueue),
+                                        std::ref(d2hQueue), deviceId, this);
+    }
+    std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId, num_threads);
     std::thread saveThread(FuncSave, std::ref(saveQueue), deviceId, outFmt);
     FuncPrepare(h2dQueue, deviceId, this, infilesList, autoDymShape, autoDymDims, outputDir, pureInferMode);
 
     h2dThread.join();
     computeThread.join();
+    for (auto &elem : computeThreadGroup) {
+        elem.join();
+    }
     d2hThread.join();
     saveThread.join();
 }
@@ -458,7 +488,8 @@ int PyInferenceSession::SetPixelVarReci(std::vector<float> reciParams)
     return APP_ERR_OK;
 }
 
-TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc, std::vector<std::string>& filesList)
+TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc,
+                                                         std::vector<std::string>& filesList)
 {
     std::vector<uint32_t> u32shape;
     for (size_t j = 0; j < dstTensorDesc.shape.size(); ++j) {
@@ -487,7 +518,8 @@ TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTe
 }
 }
 
-std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<Base::SessionOptions> options)
+std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string &modelPath, const uint32_t &deviceId,
+                                                              std::shared_ptr<Base::SessionOptions> options)
 {
     return std::make_shared<Base::PyInferenceSession>(modelPath, deviceId, options);
 }

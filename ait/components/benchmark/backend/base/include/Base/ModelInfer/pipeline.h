@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef _PIPELINE_H
-#define _PIPELINE_H
+#ifndef PIPELINE_H
+#define PIPELINE_H
 
 #include <memory>
 #include <vector>
@@ -51,7 +51,8 @@ class ConcurrentQueue {
 public:
     explicit ConcurrentQueue(int depth = 3): depth(depth) {}
 
-    T pop() {
+    T pop()
+    {
         std::unique_lock<std::mutex> mlock(mtx);
         while (queue.empty()) {
             condVar.wait(mlock);
@@ -63,7 +64,8 @@ public:
         return val;
     }
 
-    void push (const T &item) {
+    void push (const T &item)
+    {
         std::unique_lock<std::mutex> mlock(mtx);
         while (queue.size() >= depth) {
             condVar.wait(mlock);
@@ -96,14 +98,18 @@ namespace Base {
                                bool autoDymDims, std::vector<std::string>& outputNames);
 
     void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId);
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId, size_t num_threads);
 
     void FuncCompute(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
                      ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
                      Base::PyInferenceSession* session);
 
+    void FuncComputeWithoutSession(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
+                                   ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
+                                   Base::PyInferenceSession* existingSession, InferSumaryInfo& summaryInfo);
+
     void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId);
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, size_t num_threads);
 
     void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, std::string outFmt);
 
