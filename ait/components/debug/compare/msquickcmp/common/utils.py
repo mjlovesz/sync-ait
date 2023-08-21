@@ -515,7 +515,7 @@ def check_max_size_param_valid(max_size):
     """
     check max_size param valid.
     """
-    if not max_size.isdigit() or int(max_size) < 0:
+    if max_size < 0:
         logger.error(
             "Please enter a valid number for max_size, the max_size id should be"
             " in [0, ∞), now is %s." % max_size)
