@@ -28,7 +28,9 @@
 #include "Base/ModelInfer/pipeline.h"
 
 namespace Base {
-PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<SessionOptions> options) : deviceId_(deviceId), modelPath_(modelPath)
+PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId,
+                                       std::shared_ptr<SessionOptions> options) :
+                                       deviceId_(deviceId), modelPath_(modelPath)
 {
     Init(modelPath, options);
 }
@@ -96,7 +98,8 @@ void PyInferenceSession::Init(const std::string &modelPath, std::shared_ptr<Sess
     InitFlag_ = true;
 }
 
-std::vector<TensorBase> PyInferenceSession::InferMap(std::vector<std::string>& output_names, std::map<std::string, TensorBase>& feeds)
+std::vector<TensorBase> PyInferenceSession::InferMap(std::vector<std::string>& output_names,
+                                                     std::map<std::string, TensorBase>& feeds)
 {
     DEBUG_LOG("start to ModelInference feeds");
 
@@ -109,7 +112,8 @@ std::vector<TensorBase> PyInferenceSession::InferMap(std::vector<std::string>& o
     return outputs;
 }
 
-std::vector<TensorBase> PyInferenceSession::InferVector(std::vector<std::string>& output_names, std::vector<TensorBase>& feeds)
+std::vector<TensorBase> PyInferenceSession::InferVector(std::vector<std::string>& output_names,
+                                                        std::vector<TensorBase>& feeds)
 {
     DEBUG_LOG("start to ModelInference");
 
@@ -137,7 +141,8 @@ std::string GetShapeDesc(std::vector<int64_t> shape)
 
 std::string GetTensorDesc(Base::TensorDesc desc)
 {
-    return GetShapeDesc(desc.shape) + "  " + Base::GetTensorDataTypeDesc(desc.datatype) + "  " + std::to_string(desc.size) + "  " + std::to_string(desc.realsize);
+    return GetShapeDesc(desc.shape) + "  " + Base::GetTensorDataTypeDesc(desc.datatype) + "  " +
+           std::to_string(desc.size) + "  " + std::to_string(desc.realsize);
 }
 
 uint32_t PyInferenceSession::GetDeviceId() const
@@ -292,7 +297,8 @@ int PyInferenceSession::SetCustomOutTensorsSize(std::vector<size_t> customOutSiz
     return APP_ERR_OK;
 }
 
-std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds)
+std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<std::string>& output_names,
+                                                                  std::vector<Base::BaseTensor>& feeds)
 {
     DEBUG_LOG("start to ModelInference base_tensor");
 
@@ -316,7 +322,8 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
     return outputs;
 }
 
-void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names, std::vector<TensorBase>& outputs)
+void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names,
+                                   std::vector<TensorBase>& outputs)
 {
     APP_ERROR ret = modelInfer_.Inference(inputs, output_names, outputs);
     if (ret != APP_ERR_OK) {
@@ -481,7 +488,8 @@ int PyInferenceSession::SetPixelVarReci(std::vector<float> reciParams)
     return APP_ERR_OK;
 }
 
-TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc, std::vector<std::string>& filesList)
+TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc,
+                                                         std::vector<std::string>& filesList)
 {
     std::vector<uint32_t> u32shape;
     for (size_t j = 0; j < dstTensorDesc.shape.size(); ++j) {
@@ -510,7 +518,8 @@ TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTe
 }
 }
 
-std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<Base::SessionOptions> options)
+std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string &modelPath, const uint32_t &deviceId,
+                                                              std::shared_ptr<Base::SessionOptions> options)
 {
     return std::make_shared<Base::PyInferenceSession>(modelPath, deviceId, options);
 }

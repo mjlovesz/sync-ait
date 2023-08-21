@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef _PIPELINE_H
-#define _PIPELINE_H
+#ifndef PIPELINE_H
+#define PIPELINE_H
 
 #include <memory>
 #include <vector>
@@ -51,7 +51,8 @@ class ConcurrentQueue {
 public:
     explicit ConcurrentQueue(int depth = 3): depth(depth) {}
 
-    T pop() {
+    T pop()
+    {
         std::unique_lock<std::mutex> mlock(mtx);
         while (queue.empty()) {
             condVar.wait(mlock);
@@ -63,7 +64,8 @@ public:
         return val;
     }
 
-    void push (const T &item) {
+    void push (const T &item)
+    {
         std::unique_lock<std::mutex> mlock(mtx);
         while (queue.size() >= depth) {
             condVar.wait(mlock);
