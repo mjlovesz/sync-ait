@@ -187,9 +187,18 @@ std::string PyInferenceSession::GetDesc()
     return "<Model>\ndevice:\t" + std::to_string(GetDeviceId()) + "\n" + inputStr + outputStr;
 }
 
-const InferSumaryInfo& PyInferenceSession::GetSumaryInfo()
+const InferSumaryInfo& PyInferenceSession::GetSumaryInfo() const
 {
     return modelInfer_.GetSumaryInfo();
+}
+
+void PyInferenceSession::MergeSummaryInfo(const InferSumaryInfo& summaryInfo)
+{
+    InferSumaryInfo& lhsSummaryInfo = modelInfer_.GetMutableSumaryInfo();
+    lhsSummaryInfo.execTimeList.reserve(lhsSummaryInfo.execTimeList.size() + summaryInfo.execTimeList.size());
+    for (auto time : summaryInfo.execTimeList) {
+        lhsSummaryInfo.execTimeList.push_back(time);
+    }
 }
 
 int PyInferenceSession::ResetSumaryInfo()

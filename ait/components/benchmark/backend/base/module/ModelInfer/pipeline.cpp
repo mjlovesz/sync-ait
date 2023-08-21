@@ -228,8 +228,8 @@ namespace Base {
     }
 
     void FuncComputeWithoutSession(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
-                     ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
-                     Base::PyInferenceSession* existingSession)
+                                   ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
+                                   Base::PyInferenceSession* existingSession, InferSumaryInfo& summaryInfo)
     {
         auto session = std::make_shared<Base::PyInferenceSession>(existingSession->GetModelPath(),
                                                                   deviceId, existingSession->GetOptions());
@@ -241,6 +241,7 @@ namespace Base {
             auto item = computeQueue.pop();
             if (!item) {
                 d2hQueue.push(nullptr);
+                summaryInfo = session->GetSumaryInfo();
                 break;
             }
 

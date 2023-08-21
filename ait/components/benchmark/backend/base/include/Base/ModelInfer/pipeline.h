@@ -103,8 +103,8 @@ namespace Base {
                      Base::PyInferenceSession* session);
 
     void FuncComputeWithoutSession(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
-                     ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
-                     Base::PyInferenceSession* existingSession);
+                                   ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
+                                   Base::PyInferenceSession* existingSession, InferSumaryInfo& summaryInfo);
 
     void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
                  ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, size_t num_threads);

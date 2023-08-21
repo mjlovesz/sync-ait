@@ -180,7 +180,8 @@ public:
     std::shared_ptr<SessionOptions> GetOptions();
 
     APP_ERROR ResetSumaryInfo();
-    const InferSumaryInfo& GetSumaryInfo();
+    const InferSumaryInfo& GetSumaryInfo() const;
+    InferSumaryInfo& GetMutableSumaryInfo();
 
     APP_ERROR SetStaticBatch();
     APP_ERROR SetDynamicBatchsize(int batchsize);

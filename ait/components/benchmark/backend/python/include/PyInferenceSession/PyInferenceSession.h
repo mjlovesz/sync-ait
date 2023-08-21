@@ -66,7 +66,8 @@ public:
     std::string GetModelPath();
     std::shared_ptr<SessionOptions> GetOptions();
 
-    const InferSumaryInfo& GetSumaryInfo();
+    const InferSumaryInfo& GetSumaryInfo() const;
+    void MergeSummaryInfo(const InferSumaryInfo& summaryInfo);
 
     int ResetSumaryInfo();
     int SetStaticBatch();
