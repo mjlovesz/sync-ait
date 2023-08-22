@@ -620,9 +620,38 @@ Result ModelProcess::CreateDymInput(size_t index)
     return SUCCESS;
 }
 
-Result ModelProcess::UpdateInputs(std::vector<int> &inOutRelation)
+Result ModelProcess::UpdateInputs(const std::vector<int> &inOutRelation)
 {
-    return 1;
+    if (input_ == nullptr || output_ == nullptr) {
+        ERROR_LOG("can't find inputdatas");
+        return FAILED;
+    }
+    size_t inputsNum = aclmdlGetDatasetNumBuffers(input_);
+    size_t outputsNum = aclmdlGetDatasetNumBuffers(output_);
+    if (inputsNum != inOutRelation.size()) {
+        ERROR_LOG("wrong inOutRelation size");
+        return FAILED;
+    }
+
+    for (size_t i = 0; i < inputsNum; ++i) {
+        if (inOutRelation[i] < 0) {
+            continue;
+        } else if (inOutRelation[i] < outputsNum) {
+            aclDataBuffer* tmpInputData = aclmdlGetDatasetBuffer(input_, i);
+            aclDataBuffer* tmpOutputData = aclmdlGetDatasetBuffer(output_, inOutRelation[i]);
+            if (aclGetDataBufferSizeV2(tmpInputData) != aclGetDataBufferSizeV2(tmpOutputData)) {
+                ERROR_LOG("inputSize_current and outputSize_last not matched");
+                return FAILED;
+            }
+            aclUpdateDataBuffer(aclmdlGetDatasetBuffer(input_, i), aclGetDataBufferAddr(tmpOutputData), aclGetDataBufferSizeV2(tmpOutputData));
+            aclDestroyDataBuffer(tmpInputData);
+        } else {
+            ERROR_LOG("find outputdata index out of range");
+            return FAILED;
+        }
+    }
+
+    return SUCCESS;
 }
 
 Result ModelProcess::CreateInput(void* inputDataBuffer, size_t bufferSize)

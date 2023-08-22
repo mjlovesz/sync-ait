@@ -311,7 +311,7 @@ APP_ERROR ModelInferenceProcessor::DestroyInferCacheData()
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::UpdateInputsData(std::vector<int> &inOutRelation)
+APP_ERROR ModelInferenceProcessor::UpdateInputsData(const std::vector<int> &inOutRelation)
 {
     auto result = processModel->UpdateInputsData(inOutRelation);
     if (result != SUCCESS) {
@@ -431,7 +431,7 @@ APP_ERROR ModelInferenceProcessor::RepeatInference(const std::vector<int>& inOut
 {
     APP_ERROR ret = UpdateInputsData(inOutRelation);
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("UpdateInputsData failed ret:%d, can't use RepeatInference for the first time", ret);
+        ERROR_LOG("UpdateInputsData failed ret:%d", ret);
         return ret;
     }
     for (int i = 0; i < options_->loop; i++) {

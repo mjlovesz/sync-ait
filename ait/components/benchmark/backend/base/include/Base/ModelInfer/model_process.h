@@ -220,7 +220,7 @@ public:
     * @param [in] inOutRelation: inputs update method
     * @return result
     */
-    Result UpdateInputs(std::vector<int> &inOutRelation);
+    Result UpdateInputs(const std::vector<int> &inOutRelation);
 
     /**
     * @brief create model input

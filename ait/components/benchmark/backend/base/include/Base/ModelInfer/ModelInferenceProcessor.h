@@ -228,7 +228,7 @@ private:
     APP_ERROR DestroyInferCacheData();
 
     APP_ERROR SetInputsData(std::vector<BaseTensor> &inputs);
-    APP_ERROR UpdateInputsData(std::vector<int> &inOutRelation);
+    APP_ERROR UpdateInputsData(const std::vector<int> &inOutRelation);
     APP_ERROR SetAippConfigData();
     APP_ERROR Execute();
     APP_ERROR GetOutputs(std::vector<std::string> outputNames, std::vector<TensorBase> &outputTensors);
