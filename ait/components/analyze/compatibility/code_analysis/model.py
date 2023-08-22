@@ -47,9 +47,6 @@ analysis_apis = {
 
 def evaluate(path):
     prof_path = os.path.join(path, 'profiling')
-    if not os.path.isdir(prof_path):
-        logger.info('[error] profiling path not exist, {prof_path}.')
-        return
     prof_path = utils.check_profiling_data(prof_path)
 
     # dvpp vpc接口选择和优化
@@ -60,7 +57,7 @@ def evaluate(path):
 
 
 def analyze_dvpp_vpc(profiling_path, api):
-    acl_statistic_data = utils.get_statistic_profile_data(profiling_path)
+    acl_statistic_data = utils.get_statistic_profile_data_path(profiling_path)
     data = pd.read_csv(acl_statistic_data)
     count_crop = 0
     count_resize = 0
@@ -107,7 +104,7 @@ def analyze_dvpp_vpc(profiling_path, api):
 
 
 def analyze_dvpp_vdec(profiling_path, api):
-    acl_statistic_data = utils.get_statistic_profile_data(profiling_path)
+    acl_statistic_data = utils.get_statistic_profile_data_path(profiling_path)
     data = pd.read_csv(acl_statistic_data)
     count_vpc_cca = 0
     count_vdec_sf = 0
