@@ -16,10 +16,21 @@ import os
 import json
 
 
-def get_data(filename, dir_path='./', second_path=''):
-    file_path = os.path.join(dir_path, second_path)
-    file_path = os.path.join(file_path, filename)
+def get_valid_read_file(file_path):
     real_file_path = os.path.realpath(file_path)
+    if os.path.islink(real_file_path):
+        raise PermissionError('Opening softlink file is not permitted.')
+    if not os.path.isfile(real_file_path):
+        raise ValueError(f'Provided file_path={file_path} is not a file.')
+    if not os.access(real_file_path, os.R_OK):
+        raise PermissionError(f'Opening file_path={file_path} is not permitted.')
+    return real_file_path
+
+
+def get_data(filename, dir_path='.', second_path=''):
+    file_path = os.path.join(dir_path, second_path, filename)
+    real_file_path = get_valid_read_file(file_path)
+
     with open(real_file_path, 'r') as task_json_file:
         task_data = json.load(task_json_file)
     return task_data
@@ -42,7 +53,7 @@ def check_profiling_data(datapath):
             "The number of profiling data is greater than 1, " \
                 "Please enter only one profiling data"
         )
-    datapath = datapath + '/' + os.listdir(datapath)[0]
+    datapath = os.path.join(datapath, os.listdir(datapath)[0])
     filename_is_correct = 1
     for file in os.listdir(datapath):
         if (file[0:7] == 'device_'):
@@ -64,6 +75,6 @@ def get_statistic_profile_data(profile_path):
 
 
 def get_profile_data(profilepath):
-    profilepath = profilepath + '/' + os.listdir(profilepath)[0]
+    profilepath = os.path.join(profilepath, os.listdir(profilepath)[0])
     return profilepath
 
