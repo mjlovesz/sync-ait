@@ -436,16 +436,32 @@ class InferSession:
         '''
         outputs = self.session.inner_run(in_out_list, self.outputs_names, get_outputs)
         if (get_outputs):
-            # convert to host tensor
-            self.convert_tensors_to_host(outputs)
-            # convert tensor to narray
-            return self.convert_tensors_to_arrays(outputs)
+            return outputs
         else:
             return
 
 
-    def loop_inner_run(self, in_out_list):
-        pass
+    def loop_inner_run(self, feeds, in_out_list, loop_time=1):
+        if (loop_time < 1):
+            raise RuntimeError('wrong loop_time')
+        if len(feeds) > 0 and isinstance(feeds[0], np.ndarray):
+            # if feeds is ndarray list, convert to baseTensor
+            inputs = []
+            for array in feeds:
+                basetensor = aclruntime.BaseTensor(array.__array_interface__['data'][0], array.nbytes)
+                inputs.append(basetensor)
+        else:
+            inputs = feeds
+        if (loop_time == 1):
+            outputs = self.session.run(self.outputs_names, inputs)
+        else:
+            self.session.run(self.outputs_names, inputs)
+
+
+        # convert to host tensor
+        self.convert_tensors_to_host(outputs)
+        # convert tensor to narray
+        return self.convert_tensors_to_arrays(outputs)
 
     def run_pipeline(self, infilelist, output, auto_shape=False,
                      auto_dims=False, outfmt="BIN", pure_infer_mode=False):
