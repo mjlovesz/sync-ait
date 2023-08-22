@@ -61,6 +61,9 @@ def match_knowledge(line) -> Dict[str, List[Knowledge]]:
 
 
 def analysis_310_to_310b(path: str):
+    if os.path.islink(os.path.abspath(path)):
+        raise PermissionError('Opening softlink directory is not permitted.')
+
     logger.info("[info] Start analysis.")
     # 遍历该目录下的所有code文件
     result: Dict[Knowledge, List[str]] = {}
@@ -70,6 +73,9 @@ def analysis_310_to_310b(path: str):
                 continue
             line_num = 0
             filepath = os.path.join(root, filename)
+            if not os.path.isfile(os.path.realpath(filepath)):
+                continue
+
             with open(filepath, encoding='UTF-8') as f:
                 for line in f.readlines():
                     line_num += 1
