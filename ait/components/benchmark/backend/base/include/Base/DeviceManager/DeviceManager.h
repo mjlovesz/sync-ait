@@ -48,6 +48,7 @@ public:
     APP_ERROR ResetDevice(DeviceContext device);
     // release all devices
     APP_ERROR DestroyDevices();
+    APP_ERROR DestroyContext();
     APP_ERROR SetDeviceSimple(DeviceContext device);
     bool IsInitDevices() const;
     APP_ERROR CheckDeviceId(int32_t deviceId);

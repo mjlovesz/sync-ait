@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #include <iostream>
 #include <memory>
 #include "acl/acl.h"
@@ -125,6 +125,35 @@ APP_ERROR DeviceManager::DestroyDevices()
         return APP_ERR_OK;
     }
 
+    return APP_ERR_OK;
+}
+
+/**
+ * @description: release all contexts
+ * @param: void
+ * @return: destory_contexts_result
+ */
+APP_ERROR DeviceManager::DestroyContext()
+{
+    INFO_LOG("in destroy context");
+    std::lock_guard<std::mutex> lock(mtx_);
+    for (auto item : contexts_) {
+        APP_ERROR ret = aclrtDestroyContext(item.second.get());
+        if (ret != APP_ERR_OK) {
+            cout << aclGetRecentErrMsg() << endl;
+            ERROR_LOG("destroy context failed");
+            return ret;
+        }
+        INFO_LOG("end to destroy context");
+
+        ret = aclrtResetDevice(item.first);
+        if (ret != ACL_SUCCESS) {
+            cout << aclGetRecentErrMsg() << endl;
+            ERROR_LOG("reset device failed");
+        }
+        INFO_LOG("end to reset device is %d", item.first);
+    }
+    contexts_.clear();
     return APP_ERR_OK;
 }
 
