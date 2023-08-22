@@ -16,10 +16,14 @@ import os
 import json
 
 
-def get_valid_read_file(file_path):
+def get_realpath_with_soft_link_check(file_path):
     if os.path.islink(os.path.abspath(file_path)):
-        raise PermissionError('Opening softlink file is not permitted.')
-    real_file_path = os.path.realpath(file_path)
+        raise PermissionError('Opening softlink path is not permitted.')
+    return os.path.realpath(file_path)
+
+
+def get_valid_read_file(file_path):
+    real_file_path = get_realpath_with_soft_link_check(file_path)
     if not os.path.isfile(real_file_path):
         raise ValueError(f'Provided file_path={file_path} not exists or not a file.')
     if not os.access(real_file_path, os.R_OK):
@@ -28,12 +32,10 @@ def get_valid_read_file(file_path):
 
 
 def get_valid_read_directory(file_path):
-    if os.path.islink(os.path.abspath(file_path)):
-        raise PermissionError('Opening softlink directory is not permitted.')
-    real_file_path = os.path.realpath(file_path)
+    real_file_path = get_realpath_with_soft_link_check(file_path)
     if not os.path.isdir(real_file_path):
         raise ValueError(f'Provided file_path={file_path} not exists or not a directory.')
-    if not os.access(real_file_path, os.R_OK) or not os.access(real_file_path, os.X_OK):
+    if not os.access(real_file_path, os.R_OK | os.X_OK):
         raise PermissionError(f'Entering file_path={file_path} is not permitted.')
     return real_file_path
 
