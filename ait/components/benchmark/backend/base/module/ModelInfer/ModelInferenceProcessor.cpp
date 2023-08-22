@@ -313,7 +313,7 @@ APP_ERROR ModelInferenceProcessor::DestroyInferCacheData()
 
 APP_ERROR ModelInferenceProcessor::UpdateInputsData(const std::vector<int> &inOutRelation)
 {
-    auto result = processModel->UpdateInputsData(inOutRelation);
+    auto result = processModel->UpdateInputs(inOutRelation);
     if (result != SUCCESS) {
         ERROR_LOG("create inputdataset failed:%d", result);
         return APP_ERR_ACL_FAILURE;
@@ -427,7 +427,7 @@ APP_ERROR ModelInferenceProcessor::GetOutputs(std::vector<std::string> outputNam
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::RepeatInference(const std::vector<int>& inOutRelation)
+APP_ERROR ModelInferenceProcessor::RepeatInference(const std::vector<int>& inOutRelation, std::vector<std::string> &outputNames, std::vector<TensorBase>& outputTensors)
 {
     APP_ERROR ret = UpdateInputsData(inOutRelation);
     if (ret != APP_ERR_OK) {
