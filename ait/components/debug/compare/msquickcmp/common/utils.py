@@ -511,14 +511,14 @@ def check_device_param_valid(device):
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
 
 
-def check_max_size_param_valid(max_size):
+def check_max_size_param_valid(max_cmp_size):
     """
     check max_size param valid.
     """
-    if max_size < 0:
+    if max_cmp_size < 0:
         logger.error(
-            "Please enter a valid number for max_size, the max_size id should be"
-            " in [0, ∞), now is %s." % max_size)
+            "Please enter a valid number for max_cmp_size, the max_cmp_size should be"
+            " in [0, ∞), now is %s." % max_cmp_size)
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
 
 
