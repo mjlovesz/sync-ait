@@ -216,6 +216,13 @@ public:
     Result CreateInput(void* inputDataBuffer, size_t bufferSize);
 
     /**
+    * @brief update model inputs
+    * @param [in] inOutRelation: inputs update method
+    * @return result
+    */
+    Result UpdateInputs(std::vector<int> &inOutRelation);
+
+    /**
     * @brief create model input
     * @return result
     */

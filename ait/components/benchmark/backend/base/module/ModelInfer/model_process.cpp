@@ -620,6 +620,11 @@ Result ModelProcess::CreateDymInput(size_t index)
     return SUCCESS;
 }
 
+Result ModelProcess::UpdateInputs(std::vector<int> &inOutRelation)
+{
+    return 1;
+}
+
 Result ModelProcess::CreateInput(void* inputDataBuffer, size_t bufferSize)
 {
     if (input_ == nullptr) {

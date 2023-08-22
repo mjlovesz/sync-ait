@@ -313,7 +313,11 @@ APP_ERROR ModelInferenceProcessor::DestroyInferCacheData()
 
 APP_ERROR ModelInferenceProcessor::UpdateInputsData(std::vector<int> &inOutRelation)
 {
-    return 1;
+    auto result = processModel->UpdateInputsData(inOutRelation);
+    if (result != SUCCESS) {
+        ERROR_LOG("create inputdataset failed:%d", result);
+        return APP_ERR_ACL_FAILURE;
+    }
 }
 
 APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs)
