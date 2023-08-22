@@ -65,8 +65,7 @@ def test_msopen_given_mode_w_plus_when_write_4_lettle_then_file_writed_and_read_
         aa.write("1234")
         aa.seek(os.SEEK_SET)
         content = aa.read()
-        assert content == "1234"
-
+    assert content == "1234"
     assert FileStat(not_exists_file_name).permission == PERMISSION_NORMAL
     assert FileStat(not_exists_file_name).is_owner
 
@@ -87,16 +86,29 @@ def test_msopen_given_mode_w_when_exists_file_and_write_4_lettle_then_file_write
         aa.write("1234")
         aa.seek(os.SEEK_SET)
         content = aa.read()
-        assert content == "1234"
-
+    assert content == "1234"
     assert FileStat(file_name_which_content_is_abcd).permission == PERMISSION_NORMAL
     assert FileStat(file_name_which_content_is_abcd).is_owner
+
+
+def test_msopen_given_mode_x_when_write_4_lettle_then_file_writed_case(not_exists_file_name):
+    with file.open(not_exists_file_name, "x") as aa:
+        aa.write("1234")
+
+    assert FileStat(not_exists_file_name).file_size == 4
+    assert FileStat(not_exists_file_name).permission == PERMISSION_NORMAL
+    assert FileStat(not_exists_file_name).is_owner
+
+
+def test_msopen_given_mode_x_when_exists_file_then_file_writed_case(file_name_which_content_is_abcd):
+    with file.open(file_name_which_content_is_abcd, "x") as aa:
+        aa.write("1234")
 
 
 def test_msopen_given_mode_r_when_none_then_file_read_out_case(file_name_which_content_is_abcd):
     with ms_open(file_name_which_content_is_abcd, "r", max_size=100) as aa:
         content = aa.read()
-        assert content == "abcd"
+    assert content == "abcd"
 
 
 def test_msopen_given_mode_r_plus_when_none_then_file_read_out_and_write_case(file_name_which_content_is_abcd):
@@ -123,8 +135,7 @@ def test_msopen_given_mode_a_plus_when_none_then_file_write_and_read_out_case(fi
         aa.write("1234")
         aa.seek(os.SEEK_SET)
         content = aa.read()
-        assert content == "abcd1234"
-
+    assert content == "abcd1234"
     assert FileStat(file_name_which_content_is_abcd).permission == PERMISSION_NORMAL
     assert FileStat(file_name_which_content_is_abcd).is_owner
 

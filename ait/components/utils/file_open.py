@@ -110,10 +110,10 @@ def ms_open(file, mode="r", max_size=None, softlink=False, write_permission=PERM
     flags = os.O_RDONLY
     if "+" in mode:
         flags = flags | os.O_RDWR
-    elif "w" in mode or "a" in mode:
+    elif "w" in mode or "a" in mode or "x" in mode:
         flags = flags | os.O_WRONLY
 
-    if "w" in mode:
+    if "w" in mode or "x" in mode:
         flags = flags | os.O_TRUNC | os.O_CREAT
     if "a" in mode:
         flags = flags | os.O_APPEND | os.O_CREAT
