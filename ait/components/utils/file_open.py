@@ -16,10 +16,10 @@ import os
 import stat
 
 
-MAX_SIZE_UNLIMITE = -1  # 就是不限制。必须显示表示不限制，读取必须传入
+MAX_SIZE_UNLIMITE = -1  # 不限制，必须显式表示不限制，读取必须传入
 MAX_SIZE_LIMITE_CONFIG_FILE = 10 * 1024 * 1024  # 10M 普通配置文件，可以根据实际要求变更
 MAX_SIZE_LIMITE_MODEL_FILE = 4 * 1024 * 1024 * 1024  # 4G 普通模型文件，可以根据实际要求变更
-MAX_SIZE_LIMITE_MODEL_FILE = 100 * 1024 * 1024 * 1024  # 100G 超大模型文件，需要确定您确实能处理这么大的文件，可以根据实际要求变更
+MAX_SIZE_LIMITE_MODEL_FILE = 100 * 1024 * 1024 * 1024  # 100G 超大模型文件，需要确定能处理大文件，可以根据实际要求变更
 
 PERMISSION_NORMAL = 0o640  # 普通文件
 PERMISSION_KEY = 0o600  # 密钥文件
@@ -69,6 +69,10 @@ class FileStat:
     def is_owner(self):
         return self.owner == (os.geteuid() if hasattr(os, "geteuid") else 0)
 
+    @property
+    def is_belong_to_user_or_group(self):
+        return self.owner == os.getuid() or self.file_stat.st_gid in os.getgroups()
+
 
 def ms_open(file, mode="r", max_size=None, softlink=False, write_permission=PERMISSION_NORMAL, **kwargs):
     file_stat = FileStat(file)
@@ -114,3 +118,33 @@ def ms_open(file, mode="r", max_size=None, softlink=False, write_permission=PERM
     if "a" in mode:
         flags = flags | os.O_APPEND | os.O_CREAT
     return os.fdopen(os.open(file, flags, mode=write_permission), mode, **kwargs)
+
+
+class SafeWriteUmask:
+    """Write with preset umask
+    Usage:
+    As a decorator:
+    >>> @SafeWriteUmask
+    >>> def function():
+    >>>     ...
+
+    In with block:
+    >>> with SafeWriteUmask(), ms_open(..., "w") as ...:
+    >>>     ...
+    """
+    def __init__(self, func=None, umask=0o027):
+        self.func = func
+        self.umask = umask
+        self.ori_umask = None
+
+    def __call__(self, *args, **kwargs):
+        self.__enter__()
+        out = self.func(*args, **kwargs)
+        self.__exit__()
+        return out
+
+    def __enter__(self):
+        self.ori_umask = os.umask(self.umask)
+
+    def __exit__(self, exc_type=None, exc_val=None, exc_tb=None):
+        os.umask(self.ori_umask)
