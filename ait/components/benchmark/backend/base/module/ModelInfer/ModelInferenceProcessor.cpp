@@ -427,7 +427,8 @@ APP_ERROR ModelInferenceProcessor::GetOutputs(std::vector<std::string> outputNam
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::RepeatInference(const std::vector<int>& inOutRelation, std::vector<std::string> &outputNames, std::vector<TensorBase>& outputTensors)
+APP_ERROR ModelInferenceProcessor::RepeatInference(const std::vector<int>& inOutRelation, std::vector<std::string> &outputNames,
+    std::vector<TensorBase>& outputTensors, const bool get_outputs)
 {
     APP_ERROR ret = UpdateInputsData(inOutRelation);
     if (ret != APP_ERR_OK) {
@@ -448,10 +449,12 @@ APP_ERROR ModelInferenceProcessor::RepeatInference(const std::vector<int>& inOut
     if (options_->loop > 1) {
         printf("\n");
     }
-    ret = GetOutputs(outputNames, outputTensors);
-    if (ret != APP_ERR_OK) {
-        ERROR_LOG("Get OutTensors failed ret:%d", ret);
-        return ret;
+    if (get_outputs) {
+        ret = GetOutputs(outputNames, outputTensors);
+        if (ret != APP_ERR_OK) {
+            ERROR_LOG("Get OutTensors failed ret:%d", ret);
+            return ret;
+        }
     }
     return APP_ERR_OK;
 }

@@ -335,13 +335,14 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
     return outputs;
 }
 
-int PyInferenceSession::InnerInfer(const std::vector<int>& in_out_list, std::vector<std::string>& output_names)
+std::vector<TensorBase> PyInferenceSession::InnerInfer(const std::vector<int>& in_out_list, std::vector<std::string>& output_names, const bool get_outputs)
 {
     std::vector<TensorBase> outputs = {};
-    APP_ERROR ret = modelInfer_.RepeatInference(in_out_list, output_names, outputs);
+    APP_ERROR ret = modelInfer_.RepeatInference(in_out_list, output_names, outputs, get_outputs);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
+    return outputs;
 }
 
 void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names,

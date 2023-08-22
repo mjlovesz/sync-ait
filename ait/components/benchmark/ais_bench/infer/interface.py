@@ -428,13 +428,24 @@ class InferSession:
         else:
             return outputs
 
-    def inner_run(self, in_out_list):
+    def inner_run(self, in_out_list, get_outputs=False):
         '''
             in_out_list:
             如果本次推理沿用上次推理的inputdatas数据，则in_out_list为[-1, -1, -1, ...]
             如果本次推理inputdatas_current[i] = outputdatas_last[j], 那么in_out_list[i] = j
         '''
-        self.session.inner_run(in_out_list, self.outputs_names)
+        outputs = self.session.inner_run(in_out_list, self.outputs_names, get_outputs)
+        if (get_outputs):
+            # convert to host tensor
+            self.convert_tensors_to_host(outputs)
+            # convert tensor to narray
+            return self.convert_tensors_to_arrays(outputs)
+        else:
+            return
+
+
+    def loop_inner_run(self, in_out_list):
+        pass
 
     def run_pipeline(self, infilelist, output, auto_shape=False,
                      auto_dims=False, outfmt="BIN", pure_infer_mode=False):
@@ -503,7 +514,7 @@ class InferSession:
             outputs[i] = self.convert_tensors_to_arrays(output)
         return outputs
 
-    def infer(self, feeds, mode='static', custom_sizes=100000):
+    def infer(self, feeds, mode='static', custom_sizes=100000, out_array=True):
         '''
         Parameters:
             feeds: input data
@@ -549,7 +560,7 @@ class InferSession:
                 self.session.set_custom_outsize(custom_sizes)
             elif mode == 'dymdims':
                 self.session.set_dynamic_dims(dyshapes)
-        return self.run(inputs, out_array=True)
+        return self.run(inputs, out_array)
 
 
 class MemorySummary:
