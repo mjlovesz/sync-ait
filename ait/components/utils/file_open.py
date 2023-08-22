@@ -118,33 +118,3 @@ def ms_open(file, mode="r", max_size=None, softlink=False, write_permission=PERM
     if "a" in mode:
         flags = flags | os.O_APPEND | os.O_CREAT
     return os.fdopen(os.open(file, flags, mode=write_permission), mode, **kwargs)
-
-
-class SafeWriteUmask:
-    """Write with preset umask
-    Usage:
-    As a decorator:
-    >>> @SafeWriteUmask
-    >>> def function():
-    >>>     ...
-
-    In with block:
-    >>> with SafeWriteUmask(), ms_open(..., "w") as ...:
-    >>>     ...
-    """
-    def __init__(self, func=None, umask=0o027):
-        self.func = func
-        self.umask = umask
-        self.ori_umask = None
-
-    def __call__(self, *args, **kwargs):
-        self.__enter__()
-        out = self.func(*args, **kwargs)
-        self.__exit__()
-        return out
-
-    def __enter__(self):
-        self.ori_umask = os.umask(self.umask)
-
-    def __exit__(self, exc_type=None, exc_val=None, exc_tb=None):
-        os.umask(self.ori_umask)

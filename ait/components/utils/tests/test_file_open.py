@@ -14,7 +14,7 @@
 import os
 import stat
 import pytest
-from file_open import ms_open, FileStat, OpenException, SafeWriteUmask
+from file_open import ms_open, FileStat, OpenException
 from file_open import PERMISSION_NORMAL, PERMISSION_KEY
 
 
@@ -191,11 +191,3 @@ def test_msopen_given_mode_w_p_600_when_file_softlink_then_file_delete_before_wr
         aa.write("1234")
 
     assert FileStat(file_name_which_is_softlink).permission == 0o600
-
-
-def test_safe_write_umask_given_valid_when_any_then_pass(file_name_which_content_is_abcd):
-    test_file = file_name_which_content_is_abcd
-    fake_mode = stat.S_IWUSR | stat.S_IRUSR | stat.S_IWGRP | stat.S_IRGRP | stat.S_IWOTH | stat.S_IROTH  # 666
-    with security.SafeWriteUmask(), ms_open(test_file, mode="w", write_permission=fake_mode) as write_file:
-        write_file.write("1234")
-    assert os.stat(test_file).st_mode & (stat.S_IWGRP | stat.S_IWOTH | stat.S_IROTH | stat.S_IXOTH) == 0
