@@ -428,6 +428,14 @@ class InferSession:
         else:
             return outputs
 
+    def inner_run(self, in_out_list):
+        '''
+            in_out_list:
+            如果本次推理沿用上次推理的inputdatas数据，则in_out_list为[-1, -1, -1, ...]
+            如果本次推理inputdatas_current[i] = outputdatas_last[j], 那么in_out_list[i] = j
+        '''
+        self.session.inner_run(in_out_list)
+
     def run_pipeline(self, infilelist, output, auto_shape=False,
                      auto_dims=False, outfmt="BIN", pure_infer_mode=False):
         self.session.run_pipeline(infilelist, output, auto_shape, auto_dims, outfmt, pure_infer_mode)

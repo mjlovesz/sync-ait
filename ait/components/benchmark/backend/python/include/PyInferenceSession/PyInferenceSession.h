@@ -47,6 +47,8 @@ public:
     std::vector<TensorBase> InferVector(std::vector<std::string>& output_names, std::vector<TensorBase>& feeds);
 
     std::vector<TensorBase> InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
+    int InnerInfer(const std::vector<int>& in_out_list);
+
     void OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names, std::vector<TensorBase>& outputs);
     void InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
                        bool autoDymShape, bool autoDymDims, const std::string& outFmt, const bool pureInferMode);

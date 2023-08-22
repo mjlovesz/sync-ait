@@ -335,6 +335,14 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
     return outputs;
 }
 
+int PyInferenceSession::InnerInfer(const std::vector<int>& in_out_list)
+{
+    APP_ERROR ret = modelInfer_.RepeatInference(in_out_list);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+}
+
 void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names,
     std::vector<TensorBase>& outputs)
 {
@@ -562,6 +570,7 @@ void RegistInferenceSession(py::module &m)
     model.def("run", &Base::PyInferenceSession::InferVector);
     model.def("run", &Base::PyInferenceSession::InferMap);
     model.def("run", &Base::PyInferenceSession::InferBaseTensorVector);
+    model.def("inner_run", &Base::PyInferenceSession::InnerInfer);
     model.def("run_pipeline", &Base::PyInferenceSession::InferPipeline);
     model.def("run_pipeline", &Base::PyInferenceSession::InferPipelineBaseTensor);
     model.def("__str__", &Base::PyInferenceSession::GetDesc);
