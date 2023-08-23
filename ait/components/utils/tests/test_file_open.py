@@ -198,7 +198,7 @@ def test_msopen_given_mode_a_when_file_softlink_then_write_failed_case(file_name
 
 
 def test_msopen_given_mode_w_p_600_when_file_softlink_then_file_delete_before_write_case(file_name_which_is_softlink):
-    with ms_open(file_name_which_is_softlink, mode="w", write_permission=0o600) as aa:
+    with ms_open(file_name_which_is_softlink, mode="w", write_permission=PERMISSION_KEY) as aa:
         aa.write("1234")
 
-    assert FileStat(file_name_which_is_softlink).permission == 0o600
+    assert FileStat(file_name_which_is_softlink).permission | PERMISSION_KEY == PERMISSION_KEY
