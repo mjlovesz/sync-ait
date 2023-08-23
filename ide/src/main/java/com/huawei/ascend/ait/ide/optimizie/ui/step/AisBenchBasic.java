@@ -32,9 +32,9 @@ import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdExec;
 import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
 import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
 import com.huawei.ascend.ait.ide.commonlib.ui.SwitchButton;
+import com.huawei.ascend.ait.ide.util.CheckInput;
 
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -101,7 +101,6 @@ public class AisBenchBasic extends DialogWrapper {
     private static final String TXT_FILE_EXTENSION = "txt";
     private static final List<String> PURE_DATA_TYPE = List.of("zero", "random");
     private static final List<String> OUTFMT_TYPE = List.of("BIN", "NPY", "TXT");
-    private static final long FILE_SIZE_MAX = (long) 2 * 1024 * 1024 * 1024;
     private final Border defBorder = modelFileTextField.getBorder();
     private final Project project;
 
@@ -162,7 +161,9 @@ public class AisBenchBasic extends DialogWrapper {
                 return;
             }
             File model = new File(selectFile);
-            checkFileSize(model);
+            if (CheckInput.checkFileSize(model) == Messages.NO) {
+                return;
+            }
             modelFileTextField.setText(selectFile);
         });
     }
@@ -174,8 +175,13 @@ public class AisBenchBasic extends DialogWrapper {
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
-            File model = new File(selectFile);
-            checkFileSize(model);
+            String[] files = selectFile.split(",");
+            for (String file : files) {
+                File f = new File(file);
+                if (CheckInput.checkFileSize(f) == Messages.NO) {
+                    return;
+                }
+            }
             inputFilesTextField.setText(selectFile);
             pureDataTypeJLabel.setVisible(true);
             pureDataTypeCombx.setVisible(true);
@@ -271,13 +277,6 @@ public class AisBenchBasic extends DialogWrapper {
                 }
             }
         });
-    }
-
-    private void checkFileSize(File file) {
-        if (file.length() > FILE_SIZE_MAX) {
-            int result = Messages.showDialog("The file you selected is too large.", "ERROR", new String[]{"Yes", "No"},
-                    Messages.NO, AllIcons.General.QuestionDialog);
-        }
     }
 
     @Override

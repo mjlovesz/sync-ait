@@ -100,7 +100,7 @@ def infer_dymdims():
     outputs = session.infer([ndata], mode)
     logging.info(f"outputs:{outputs} type:{type(outputs)}")
 
-    logging.info(f"dymdims infer avg:{np.mean(session.sumary().exec_time_list))} ms")
+    logging.info(f"dymdims infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
 # 获取模型信息
@@ -114,12 +114,12 @@ def get_model_info():
     # 方法3 也可以直接通过get接口去获取
     intensors_desc = session.get_inputs()
     for i, info in enumerate(intensors_desc):
-        logging.info(f"input info i:{i} shape:{info.shape} type:{info.datatype} val:
+        logging.info(f"input info i:{i} shape:{info.shape} type:{info.datatype} val: \
                      {int(info.datatype)} realsize:{info.realsize} size:{info.size}")
 
     intensors_desc = session.get_outputs()
     for i, info in enumerate(intensors_desc):
-        logging.info(f"outputs info i:{i} shape:{info.shape} type:{info.datatype} val:
+        logging.info(f"outputs info i:{i} shape:{info.shape} type:{info.datatype} val: \
                      {int(info.datatype)} realsize:{info.realsize} size:{info.size}")
 
 infer_simple()

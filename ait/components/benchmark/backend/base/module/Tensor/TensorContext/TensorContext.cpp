@@ -51,6 +51,16 @@ APP_ERROR TensorContext::Finalize()
     return APP_ERR_OK;
 }
 
+APP_ERROR TensorContext::FreeSource()
+{
+    APP_ERROR ret = DeviceManager::GetInstance()->DestroyContext();
+    if (ret != APP_ERR_OK) {
+        LogError << "DeviceManager DestroyContext failed. ret=" << ret << std::endl;
+        return ret;
+    }
+    return APP_ERR_OK;
+}
+
 TensorContext::~TensorContext()
 {
     Finalize();

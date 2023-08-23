@@ -110,6 +110,7 @@ def check_exec_cmd(command: str):
 
         return result
 
+    return True
 
 def check_exec_script_file(script_path: str):
     if not os.path.exists(script_path):

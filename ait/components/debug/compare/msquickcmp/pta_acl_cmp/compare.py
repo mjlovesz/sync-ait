@@ -145,6 +145,7 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
         return
 
     task_id = os.getenv("AIT_CMP_TASK_ID")
+    task_id = task_id or ""
     csv_path = os.path.join(".", task_id + "_cmp_result.csv")
 
     dump_data_dir = "cmp_dump_data"

@@ -28,11 +28,10 @@ import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
 import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
 
 import com.huawei.ascend.ait.ide.optimizie.task.CompareTask;
+import com.huawei.ascend.ait.ide.util.CheckInput;
 import com.huawei.ascend.ait.ide.util.FileChooseWithBrows;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
-import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
@@ -40,7 +39,6 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,7 +51,6 @@ import java.awt.Dimension;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.MissingResourceException;
 import java.util.regex.Pattern;
 
 /**
@@ -134,6 +131,9 @@ public class Compare extends DialogWrapper {
                 return;
             }
             File model = new File(selectFile);
+            if (CheckInput.checkFileSize(model) == Messages.NO) {
+                return;
+            }
             String modelName = model.getName();
             modelFileBrowse.setText(selectFile);
             if ("prototxt".equals(modelName.substring(modelName.lastIndexOf(".") + 1))) {
@@ -147,6 +147,9 @@ public class Compare extends DialogWrapper {
     private void setWeightPath(File model, String modelName) {
         Path path = Path.of(model.getParent(), modelName.substring(0, modelName.lastIndexOf(".")) + ".caffemodel");
         File file = new File(path.toString());
+        if (CheckInput.checkFileSize(file) == Messages.NO) {
+            return;
+        }
         if (file.exists()) {
             weightBrowse.setText(path.toString());
         }
@@ -164,6 +167,9 @@ public class Compare extends DialogWrapper {
             if (StringUtils.isEmpty(selectFile)) {
                 return;
             }
+            if (CheckInput.checkFileSize(new File(selectFile)) == Messages.NO) {
+                return;
+            }
             weightBrowse.setText(selectFile);
         });
     }
@@ -173,6 +179,9 @@ public class Compare extends DialogWrapper {
         offlineModelPathBrowse.addActionListener(event -> {
             String selectFile = getSelectedFile(project, lists, false, "Offline Model Path");
             if (StringUtils.isEmpty(selectFile)) {
+                return;
+            }
+            if (CheckInput.checkFileSize(new File(selectFile)) == Messages.NO) {
                 return;
             }
             offlineModelPathBrowse.setText(selectFile);
@@ -186,12 +195,19 @@ public class Compare extends DialogWrapper {
                     .withFileFilter(virtualFile -> virtualFile.isDirectory() || ("bin").equals(virtualFile.getExtension()))
                     .withTitle("Browse for File or Path")
                     .withDescription("Please select the appropriate file of .bin or the path of the file.");
-            String selectFile = FileChooseWithBrows.fileChoosewithBrowse(project, fileChooserDescriptor,
+            String selectFiles = FileChooseWithBrows.fileChoosewithBrowse(project, fileChooserDescriptor,
                     "", "SelectFile").orElse(null);
-            if (StringUtils.isEmpty(selectFile)) {
+            if (StringUtils.isEmpty(selectFiles)) {
                 return;
             }
-            inputPathBrowse.setText(selectFile);
+            String[] files = selectFiles.split(",");
+            for (String file : files) {
+                File f = new File(file);
+                if (CheckInput.checkFileSize(f) == Messages.NO) {
+                    return;
+                }
+            }
+            inputPathBrowse.setText(selectFiles);
         });
     }
 
