@@ -67,7 +67,6 @@ class NetCompare(object):
         if self.quant_fusion_rule_file:
             utils.check_file_size_valid(self.quant_fusion_rule_file, utils.MAX_READ_FILE_SIZE_4G)
 
-
     @staticmethod
     def execute_command_line(cmd):
         utils.logger.info('Execute command:%s' % " ".join(cmd))
