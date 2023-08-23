@@ -275,6 +275,17 @@ def check_input_name_in_model(tensor_name_list, input_name):
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
+def check_max_size_param_valid(max_cmp_size):
+    """
+    check max_size param valid.
+    """
+    if max_cmp_size < 0:
+        logger.error(
+            "Please enter a valid number for max_cmp_size, the max_cmp_size should be"
+            " in [0, ∞), now is %s." % max_cmp_size)
+        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
+
+
 def get_model_name_and_extension(offline_model_path):
     """
     Function Description:
