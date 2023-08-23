@@ -228,7 +228,7 @@ def remove_RoiExtractor_and_add_inputs(g:OnnxGraph, npu_dump_path):
             continue
     
         shape = extend_inpus_map[node.name].shape
-        data_type = extend_inpus_map[node.name].dtype
+        data_type = np.float32
 
         g.remove(node.name, {})
         g.add_input(input_name, data_type, shape)
