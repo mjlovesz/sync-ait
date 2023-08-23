@@ -318,6 +318,7 @@ APP_ERROR ModelInferenceProcessor::UpdateInputsData(const std::vector<int> &inOu
         ERROR_LOG("create inputdataset failed:%d", result);
         return APP_ERR_ACL_FAILURE;
     }
+    return APP_ERR_OK;
 }
 
 APP_ERROR ModelInferenceProcessor::SetInputsData(std::vector<BaseTensor> &inputs)
