@@ -48,8 +48,7 @@ public:
 
     std::vector<TensorBase> InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
 
-    std::vector<TensorBase> PyInferenceSession::FirstInnerInfer(std::vector<std::string>& output_names,
-        std::vector<Base::BaseTensor>& feeds);
+    std::vector<TensorBase> FirstInnerInfer(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
     std::vector<TensorBase> InnerInfer(const std::vector<int>& in_out_list, std::vector<std::string>& output_names, const bool get_outputs);
 
     void OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names, std::vector<TensorBase>& outputs);
