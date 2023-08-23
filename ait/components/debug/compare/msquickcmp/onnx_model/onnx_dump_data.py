@@ -79,7 +79,7 @@ class OnnxDumpData(DumpData):
         if self.custom_op_type:
             # remove custom op and add extend inputs map
             custom_op = CustomOp(self.custom_op_type, self.model_path, npu_dump_npy_path, self.model_dir)
-            (modify_model_path, self.extend_inputs_map) = custom_op.remove_custom_op_and_add_inputs()
+            modify_model_path, self.extend_inputs_map = custom_op.remove_custom_op_and_add_inputs()
             modify_model, modify_model_contents = self._load_onnx(modify_model_path)
 
             self.dump_model_with_inputs_path = self._new_model_save_path(modify_model_path)

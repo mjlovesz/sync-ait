@@ -157,7 +157,6 @@ def get_BatchMultiClassNMS_inputs_from_npu_dump(npu_dump_path):
     return inputs_map
 
 
-
 def remove_BatchMultiClassNMS_and_add_inputs(g:OnnxGraph, npu_dump_path):
     extend_inpus_map = get_BatchMultiClassNMS_inputs_from_npu_dump(npu_dump_path)
     inputs_map = {}
@@ -242,9 +241,10 @@ def remove_RoiExtractor_and_add_inputs(g:OnnxGraph, npu_dump_path):
                           node.name, input_name, shape, data_type)
     return inputs_map
 
+
 CUSTIOM_OP_MODIFY_FUNC = \
-    {
+{
         DEFORMABLE_CONV2D_TYPE: remove_deformable_conv2d_and_add_inputs,
         BATCH_MULTI_CLASS_NMS_TYPE: remove_BatchMultiClassNMS_and_add_inputs,
         ROI_EXTRACTOR_TYPE: remove_RoiExtractor_and_add_inputs
-    }
+}
