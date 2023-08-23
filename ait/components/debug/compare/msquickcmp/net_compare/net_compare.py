@@ -64,7 +64,7 @@ class NetCompare(object):
 
     @staticmethod
     def execute_command_line(cmd):
-        utils.logger.info('Execute command:%s' % cmd)
+        utils.logger.info('Execute command:%s' % " ".join(cmd))
         process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         return process
 
@@ -139,8 +139,6 @@ class NetCompare(object):
         if self.quant_fusion_rule_file:
             msaccucmp_cmd.extend(["-q", self.quant_fusion_rule_file])
         
-
-        utils.logger.info("msaccucmp command line: %s " % " ".join(msaccucmp_cmd))
         status_code, _, _ = self.execute_msaccucmp_command(msaccucmp_cmd)
         if status_code == 2 or status_code == 0:
             utils.logger.info("Finish compare the files in directory %s with those in directory %s." % (

@@ -153,6 +153,7 @@ class CompareCommand(BaseCommand):
         parser.add_argument(
             "-single",
             "--single-op",
+            default=False,
             dest="single_op",
             type=str2bool,
             help='Comparision mode:single operator compare, default false.Usage: -single True')
