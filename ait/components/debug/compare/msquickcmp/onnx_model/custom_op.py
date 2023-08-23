@@ -115,12 +115,16 @@ def remove_deformable_conv2d_and_add_inputs(g:OnnxGraph, npu_dump_path):
         if node.op_type != DEFORMABLE_CONV2D_TYPE:
             continue
 
+        extend_inpus_map_key = node.name + "_conv2d"
+        if extend_inpus_map_key not in extend_inpus_map:
+            continue
+
         input_name = node.outputs[0]
-        shape = extend_inpus_map[node.name + "_conv2d"].shape
+        shape = extend_inpus_map[extend_inpus_map_key].shape
 
         g.remove(node.name, {})
         g.add_input(input_name, np.float32, shape)
-        inputs_map[input_name] = extend_inpus_map[node.name + "_conv2d"].astype(np.float32)
+        inputs_map[input_name] = extend_inpus_map[extend_inpus_map_key].astype(np.float32)
         utils.logger.info("remove deforable_conv2d custom op: %s "
                           "and add model input: %s, input shape: %s", node.name, input_name, shape)
     return inputs_map
@@ -139,7 +143,6 @@ def get_BatchMultiClassNMS_inputs_from_npu_dump(npu_dump_path):
         op_name = file_name_info[1]
         dump_type = file_name_info[-3]
         index = file_name_info[-2]
-
 
         if BATCH_MULTI_CLASS_NMS_TYPE in op_name and \
             op_type == "BatchMultiClassNonMaxSuppression" and dump_type == "output":
@@ -171,7 +174,7 @@ def remove_BatchMultiClassNMS_and_add_inputs(g:OnnxGraph, npu_dump_path):
             custom_op_name = node.name
             extend_inpus_map_key = custom_op_name + ("_%s" % index)
 
-            if extend_inpus_map_key not in extend_inpus_map.keys():
+            if extend_inpus_map_key not in extend_inpus_map:
                 continue
 
             data_type = extend_inpus_map[extend_inpus_map_key].dtype
@@ -224,7 +227,7 @@ def remove_RoiExtractor_and_add_inputs(g:OnnxGraph, npu_dump_path):
             continue
 
         input_name = node.outputs[0]
-        if node.name not in extend_inpus_map.keys():
+        if node.name not in extend_inpus_map:
             continue
     
         shape = extend_inpus_map[node.name].shape
