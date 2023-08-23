@@ -440,8 +440,13 @@ class InferSession:
         else:
             return
 
-
-    def loop_inner_run(self, feeds, in_out_list, loop_time=1):
+    def iteration_run(self, feeds, in_out_list, iteration_times=1):
+        '''
+            feeds: input datas
+            in_out_list: relation between current input datas and last output datas
+            iteration_times: inner iteration infer loop times
+            return outputs after infer
+        '''
         if len(feeds) > 0 and isinstance(feeds[0], np.ndarray):
             # if feeds is ndarray list, convert to baseTensor
             inputs = []
@@ -450,12 +455,12 @@ class InferSession:
                 inputs.append(basetensor)
         else:
             inputs = feeds
-        if (loop_time == 1):
+        if (iteration_times == 1):
             outputs = self.session.run(self.outputs_names, inputs)
         else:
             self.session.run(self.outputs_names, inputs)
-            for i in range(loop_time - 1):
-                if (i == loop_time - 2):
+            for i in range(iteration_times - 1):
+                if (i == iteration_times - 2):
                     outputs = self.inner_run(self, in_out_list, get_outputs=True)
                     # convert to host tensor
                     self.convert_tensors_to_host(outputs)

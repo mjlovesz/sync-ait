@@ -37,16 +37,19 @@ def infer_simple():
     logging.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
-def infer_loop_inner():
+def infer_iteration_inner():
     # only for single_op_add_model
     device_id = 0
-    loop_times = 100
+    loop_times = 100 # same infer loop times
+    in_out_list = [-1, 0]
+    iteration_times = 5 # inner iteration infer loop times
     session = InferSession(device_id, model_path, None, False, loop_times)
     # create new numpy data according inputs info
     barray = bytearray(session.get_inputs()[0].realsize)
     ndata = np.frombuffer(barray)
-
-
+    outputs = session.iteration_run([ndata, ndata], in_out_list, iteration_times)
+    logging.info(f"outputs:{outputs} type:{type(outputs)}")
+    logging.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
 def infer_pipeline():
@@ -134,5 +137,6 @@ def get_model_info():
         logging.info(f"outputs info i:{i} shape:{info.shape} type:{info.datatype} val: \
                      {int(info.datatype)} realsize:{info.realsize} size:{info.size}")
 
-infer_simple()
+# infer_simple()
+infer_iteration_inner()
 
