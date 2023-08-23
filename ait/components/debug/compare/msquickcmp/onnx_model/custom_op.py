@@ -244,7 +244,7 @@ def remove_RoiExtractor_and_add_inputs(g:OnnxGraph, npu_dump_path):
 
 CUSTIOM_OP_MODIFY_FUNC = \
 {
-        DEFORMABLE_CONV2D_TYPE: remove_deformable_conv2d_and_add_inputs,
-        BATCH_MULTI_CLASS_NMS_TYPE: remove_BatchMultiClassNMS_and_add_inputs,
-        ROI_EXTRACTOR_TYPE: remove_RoiExtractor_and_add_inputs
+    DEFORMABLE_CONV2D_TYPE: remove_deformable_conv2d_and_add_inputs,
+    BATCH_MULTI_CLASS_NMS_TYPE: remove_BatchMultiClassNMS_and_add_inputs,
+    ROI_EXTRACTOR_TYPE: remove_RoiExtractor_and_add_inputs
 }
