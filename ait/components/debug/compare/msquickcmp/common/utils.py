@@ -554,13 +554,11 @@ def execute_command(cmd, info_need=True):
         when invalid command throw exception
     """
     if info_need:
-        logger.info('Execute command:%s' % cmd)
+        logger.info('Execute command:%s' % " ".join(cmd))
     process = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     while process.poll() is None:
         line = process.stdout.readline()
         line = line.strip()
-        if line:
-            logger.info(line)
     if process.returncode != 0:
         logger.error('Failed to execute command:%s' % " ".join(cmd))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DATA_ERROR)

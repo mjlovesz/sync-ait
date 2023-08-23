@@ -54,7 +54,7 @@ ERROR_INTERVAL_INFO_FILE = "error_interval_info.txt"
 MAX_MEMORY_USE = 6 * 1024 * 1024 * 1024
 
 
-def _generate_golden_data_model(args):
+def _generate_golden_data_model(args, npu_dump_npy_path):
     model_name, extension = utils.get_model_name_and_extension(args.model_path)
     if args.weight_path and ".prototxt" == extension:
         from msquickcmp.caffe_model.caffe_dump_data import CaffeDumpData
@@ -67,7 +67,7 @@ def _generate_golden_data_model(args):
     elif ".onnx" == extension:
         from msquickcmp.onnx_model.onnx_dump_data import OnnxDumpData
 
-        return OnnxDumpData(args)
+        return OnnxDumpData(args, npu_dump_npy_path)
     elif ".om" == extension:
         return NpuDumpData(arguments=args, is_golden=True)
 
@@ -162,7 +162,6 @@ def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
         utils.logger.error("if .om model is using aipp config, --fusion-switch-file arg is not support.")
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
-    golden_dump = _generate_golden_data_model(args)
     npu_dump = NpuDumpData(args, is_golden=False)
 
     # generate npu inputs data
@@ -171,16 +170,17 @@ def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
     # generate npu dump data
     npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli=use_cli)
 
-    # generate onnx inputs data
-    golden_dump.generate_inputs_data(npu_dump_data_path, use_aipp)
-
-    expect_net_output_node = npu_dump.get_expect_output_name()
-
     # convert data from bin to npy if --convert is used, or if custom_op is not empty
     if args.bin2npy or args.custom_op != "":
         npu_dump_npy_path = convert_bin_dump_data_to_npy(npu_dump_data_path, npu_net_output_data_path, args.cann_path)
     else:
         npu_dump_npy_path = ""
+
+    # generate onnx inputs data
+    golden_dump = _generate_golden_data_model(args, npu_dump_npy_path)
+    golden_dump.generate_inputs_data(npu_dump_data_path, use_aipp)
+
+    expect_net_output_node = npu_dump.get_expect_output_name()
 
     # generate dump data by golden model
     golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_npy_path, npu_dump.om_parser)

@@ -61,7 +61,13 @@ def convert_model_to_json(cann_path, offline_model_path, out_path):
         utils.execute_command(atc_cmd)
         utils.logger.info("Complete model conversion to json %s." % output_json_path)
 
+    # do the atc command to convert om to json
+    utils.logger.info('Start to converting the model to json')
+    atc_cmd = [atc_command_file_path, "--mode=1", "--om=" + offline_model_path,
+                "--json=" + output_json_path]
+    utils.execute_command(atc_cmd)
     utils.check_file_size_valid(output_json_path, utils.MAX_READ_FILE_SIZE_4G)
+    utils.logger.info("Complete model conversion to json %s." % output_json_path)
     return output_json_path
 
 
