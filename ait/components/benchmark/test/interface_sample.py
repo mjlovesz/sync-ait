@@ -20,6 +20,8 @@ from ais_bench.infer.interface import InferSession
 
 model_path = sys.argv[1]
 
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 # 最短运行样例
 def infer_simple():
@@ -32,9 +34,9 @@ def infer_simple():
 
     # in is numpy list and ouput is numpy list
     outputs = session.infer([ndata])
-    logging.info(f"outputs:{outputs} type:{type(outputs)}")
+    logger.info(f"outputs:{outputs} type:{type(outputs)}")
 
-    logging.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
+    logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
 def infer_iteration_inner():
@@ -48,8 +50,8 @@ def infer_iteration_inner():
     barray = bytearray(session.get_inputs()[0].realsize)
     ndata = np.frombuffer(barray)
     outputs = session.iteration_run([ndata, ndata], in_out_list, iteration_times)
-    logging.info(f"outputs:{outputs} type:{type(outputs)}")
-    logging.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
+    logger.info(f"outputs:{outputs} type:{type(outputs)}")
+    logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
 def infer_pipeline():
@@ -73,7 +75,7 @@ def infer_torch_tensor():
     torchtensor = torch.zeros([1, 3, 256, 256], out = None, dtype = torch.uint8)
     # in is torch tensor and ouput is numpy list
     outputs = session.infer([torchtensor])
-    logging.info(f"in torch tensor outputs[0].shape:{outputs[0].shape} type:{type(outputs)}")
+    logger.info(f"in torch tensor outputs[0].shape:{outputs[0].shape} type:{type(outputs)}")
 
     # create discontinuous torch tensor
     torchtensor = torch.zeros([1, 256, 3, 256], out = None, dtype = torch.uint8)
@@ -81,9 +83,9 @@ def infer_torch_tensor():
 
     # in is discontinuous tensor list and ouput is numpy list
     outputs = session.infer([torchtensor_discontinue])
-    logging.info(f"in discontinuous torch tensor outputs[0].shape:{outputs[0].shape} type:{type(outputs)}")
+    logger.info(f"in discontinuous torch tensor outputs[0].shape:{outputs[0].shape} type:{type(outputs)}")
 
-    logging.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
+    logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
 def infer_dymshape():
@@ -96,13 +98,13 @@ def infer_dymshape():
     # input args custom_sizes is int
     output_size = 100000
     outputs = session.infer([ndata], mode, custom_sizes=output_size)
-    logging.info(f"inputs: custom_sizes: {output_size} outputs:{outputs} type:{type(outputs)}")
+    logger.info(f"inputs: custom_sizes: {output_size} outputs:{outputs} type:{type(outputs)}")
 
     # input args custom_sizes is list
     output_sizes = [100000]
     outputs = session.infer([ndata], mode, custom_sizes=output_sizes)
-    logging.info(f"inputs: custom_sizes: {output_sizes} outputs:{outputs} type:{type(outputs)}")
-    logging.info(f"dymshape infer avg:{np.mean(session.sumary().exec_time_list)} ms")
+    logger.info(f"inputs: custom_sizes: {output_sizes} outputs:{outputs} type:{type(outputs)}")
+    logger.info(f"dymshape infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
 def infer_dymdims():
@@ -113,9 +115,9 @@ def infer_dymdims():
 
     mode = "dymdims"
     outputs = session.infer([ndata], mode)
-    logging.info(f"outputs:{outputs} type:{type(outputs)}")
+    logger.info(f"outputs:{outputs} type:{type(outputs)}")
 
-    logging.info(f"dymdims infer avg:{np.mean(session.sumary().exec_time_list)} ms")
+    logger.info(f"dymdims infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
 # 获取模型信息
@@ -124,17 +126,17 @@ def get_model_info():
     session = InferSession(device_id, model_path)
 
     # 方法2 直接打印session 也可以获取模型信息
-    logging.info(session.session)
+    logger.info(session.session)
 
     # 方法3 也可以直接通过get接口去获取
     intensors_desc = session.get_inputs()
     for i, info in enumerate(intensors_desc):
-        logging.info(f"input info i:{i} shape:{info.shape} type:{info.datatype} val: \
+        logger.info(f"input info i:{i} shape:{info.shape} type:{info.datatype} val: \
                      {int(info.datatype)} realsize:{info.realsize} size:{info.size}")
 
     intensors_desc = session.get_outputs()
     for i, info in enumerate(intensors_desc):
-        logging.info(f"outputs info i:{i} shape:{info.shape} type:{info.datatype} val: \
+        logger.info(f"outputs info i:{i} shape:{info.shape} type:{info.datatype} val: \
                      {int(info.datatype)} realsize:{info.realsize} size:{info.size}")
 
 # infer_simple()
