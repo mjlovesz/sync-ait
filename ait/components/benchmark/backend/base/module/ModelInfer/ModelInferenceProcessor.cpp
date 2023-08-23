@@ -225,7 +225,7 @@ APP_ERROR ModelInferenceProcessor::Inference(const std::vector<BaseTensor>& feed
         return ret;
     }
     ret = ModelInference_Inner(inputs, outputNames, outputTensors);
-    DestroyInferCacheData();
+    // DestroyInferCacheData();
     return ret;
 }
 
