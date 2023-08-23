@@ -62,8 +62,10 @@ class NetCompare(object):
         self.msaccucmp_command_file_path = self._check_msaccucmp_file(self.msaccucmp_command_dir_path)
         self.python_version = sys.executable.split('/')[-1]
 
-        utils.check_file_size_valid(self.golden_json_path, utils.MAX_READ_FILE_SIZE_4G)
-        utils.check_file_size_valid(self.quant_fusion_rule_file, utils.MAX_READ_FILE_SIZE_4G)
+        if self.golden_json_path:
+            utils.check_file_size_valid(self.golden_json_path, utils.MAX_READ_FILE_SIZE_4G)
+        if self.quant_fusion_rule_file:
+            utils.check_file_size_valid(self.quant_fusion_rule_file, utils.MAX_READ_FILE_SIZE_4G)
 
 
     @staticmethod
