@@ -60,7 +60,7 @@ class OnnxDumpData(DumpData):
     This class is used to generate dump data of the ONNX model.
     """
 
-    def __init__(self, arguments:CmpArgsAdapter, npu_dump_npy_path):
+    def __init__(self, arguments:CmpArgsAdapter, npu_dump_npy_path=None):
         super().__init__()
         self.model_path, self.out_path, self.input_path = arguments.model_path, arguments.out_path, arguments.input_path
         self.input_shape, self.dym_shape_range = arguments.input_shape, arguments.dym_shape_range
