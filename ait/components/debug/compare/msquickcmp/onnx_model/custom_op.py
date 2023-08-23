@@ -94,13 +94,14 @@ def get_deformable_conv2d_inputs_from_npu_dump(npu_dump_path):
 
         op_type = file_name_info[0]
         op_name = file_name_info[1]
-
         dump_type = file_name_info[-3]
+
         if DEFORMABLE_CONV2D_TYPE in op_name and op_type == "Conv2D" and dump_type == "output":
             np_data = np.load(os.path.join(npu_dump_path, item), allow_pickle=True)
 
             if len(np_data.shape) == 5:
                 np_data = convert_NC1HWC0_to_NCHW(np_data.shape, np_data.flatten())
+
             inputs_map[op_name] = np_data
 
     return inputs_map
@@ -115,11 +116,11 @@ def remove_deformable_conv2d_and_add_inputs(g:OnnxGraph, npu_dump_path):
             continue
 
         input_name = node.outputs[0]
-        shape = extend_inpus_map[node.name + "conv2d"].shape
+        shape = extend_inpus_map[node.name + "_conv2d"].shape
 
         g.remove(node.name, {})
         g.add_input(input_name, np.float32, shape)
-        inputs_map[input_name] = extend_inpus_map[node.name + "conv2d"].astype(np.float32)
+        inputs_map[input_name] = extend_inpus_map[node.name + "_conv2d"].astype(np.float32)
         utils.logger.info("remove deforable_conv2d custom op: %s "
                           "and add model input: %s, input shape: %s", node.name, input_name, shape)
     return inputs_map
