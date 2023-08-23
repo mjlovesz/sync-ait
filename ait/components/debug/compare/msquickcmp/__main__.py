@@ -49,26 +49,26 @@ class CompareCommand(BaseCommand):
             '--golden-model',
             required=False,
             dest="golden_model",
-            trpe=safe_string,
+            type=safe_string,
             help='The original model (.onnx or .pb or .prototxt) file path')
         parser.add_argument(
             '-om',
             '--om-model',
             dest="om_model",
-            trpe=safe_string,
+            type=safe_string,
             help='The offline model (.om) file path')
         parser.add_argument(
             '-w',
             '--weight',
             dest="weight_path",
-            trpe=safe_string,
+            type=safe_string,
             help='Required when framework is Caffe (.cafemodel)')
         parser.add_argument(
             '-i',
             '--input',
             default='',
             dest="input_data_path",
-            trpe=safe_string,
+            type=safe_string,
             help='The input data path of the model. Separate multiple inputs with commas(,).' 
                  ' E.g: input_0.bin,input_1.bin')
         parser.add_argument(
@@ -76,7 +76,7 @@ class CompareCommand(BaseCommand):
             '--cann-path',
             default=CANN_PATH,
             dest="cann_path",
-            trpe=safe_string,
+            type=safe_string,
             help='The CANN installation path')
         parser.add_argument(
             '-o',
@@ -162,7 +162,7 @@ class CompareCommand(BaseCommand):
         parser.add_argument(
             '--fusion-switch-file',
             dest="fusion_switch_file",
-            trpe=safe_string,
+            type=safe_string,
             help='You can disable selected fusion patterns in the configuration file')
         parser.add_argument(
             "-single",
