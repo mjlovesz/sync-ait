@@ -623,7 +623,8 @@ Result ModelProcess::CreateDymInput(size_t index)
 Result ModelProcess::UpdateInputs(const std::vector<int> &inOutRelation)
 {
     if (input_ == nullptr || output_ == nullptr) {
-        ERROR_LOG("can't find inputdatas");
+        if (input_ == nullptr) {ERROR_LOG("can't find inputdatas");}
+        if (output_ == nullptr) {ERROR_LOG("can't find outputdatas");}
         return FAILED;
     }
     size_t inputsNum = aclmdlGetDatasetNumBuffers(input_);
