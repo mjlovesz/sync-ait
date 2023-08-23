@@ -461,7 +461,7 @@ class InferSession:
             self.session.run(self.outputs_names, inputs)
             for i in range(iteration_times - 1):
                 if (i == iteration_times - 2):
-                    outputs = self.inner_run(self, in_out_list, get_outputs=True)
+                    outputs = self.inner_run(in_out_list, get_outputs=True)
                     # convert to host tensor
                     self.convert_tensors_to_host(outputs)
                     # convert tensor to narray
