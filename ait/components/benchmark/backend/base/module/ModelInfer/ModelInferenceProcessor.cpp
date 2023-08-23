@@ -225,9 +225,26 @@ APP_ERROR ModelInferenceProcessor::Inference(const std::vector<BaseTensor>& feed
         return ret;
     }
     ret = ModelInference_Inner(inputs, outputNames, outputTensors);
+    DestroyInferCacheData();
+    return ret;
+}
+
+APP_ERROR ModelInferenceProcessor::FirstInference(const std::vector<BaseTensor>& feeds,
+    std::vector<std::string> &outputNames, std::vector<TensorBase>& outputTensors)
+{
+    APP_ERROR ret;
+    // create basetensors
+    std::vector<BaseTensor> inputs;
+    ret = CheckInVectorAndFillBaseTensor(feeds, inputs);
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("Check InVector failed ret:%d", ret);
+        return ret;
+    }
+    ret = FirstInferenceInner(inputs, outputNames, outputTensors);
     // DestroyInferCacheData();
     return ret;
 }
+
 
 APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(const std::map<std::string, TensorBase>& feeds, std::vector<BaseTensor> &inputs)
 {
@@ -456,6 +473,41 @@ APP_ERROR ModelInferenceProcessor::RepeatInference(const std::vector<int>& inOut
             ERROR_LOG("Get OutTensors failed ret:%d", ret);
             return ret;
         }
+    }
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::FirstInferenceInner(std::vector<BaseTensor> &inputs,
+    std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors)
+{
+    APP_ERROR ret = SetInputsData(inputs);
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("Set InputsData failed ret:%d", ret);
+        return ret;
+    }
+    if (dyAippCfg->ModelIsLegal()) {
+        ret = SetAippConfigData();
+        if (ret != APP_ERR_OK) {
+            ERROR_LOG("Set AippConfigData failed ret:%d", ret);
+            return ret;
+        }
+        if (options_->loop > 1) {
+            printf("\n");
+        }
+    }
+    for (int i = 0; i < options_->loop; i++) {
+        ret = Execute();
+        if (ret != APP_ERR_OK) {
+            ERROR_LOG("Execute Infer failed ret:%d", ret);
+            return ret;
+        }
+        if (options_->loop > 1) {
+            printf("\rloop inference exec: (%d/%d)", i + 1, options_->loop);
+            fflush(stdout);
+        }
+    }
+    if (options_->loop > 1) {
+        printf("\n");
     }
     return APP_ERR_OK;
 }

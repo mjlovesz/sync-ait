@@ -458,7 +458,7 @@ class InferSession:
         if (iteration_times == 1):
             outputs = self.session.run(self.outputs_names, inputs)
         else:
-            self.session.run(self.outputs_names, inputs)
+            self.session.first_inner_run(self.outputs_names, inputs)
             for i in range(iteration_times - 1):
                 if (i == iteration_times - 2):
                     outputs = self.inner_run(in_out_list, get_outputs=True)

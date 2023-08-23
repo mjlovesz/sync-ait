@@ -169,9 +169,12 @@ public:
 
     APP_ERROR Inference(const std::vector<BaseTensor>& feeds, std::vector<std::string> &outputNames, std::vector<TensorBase>& outputTensors);
 
+    APP_ERROR FirstInference(const std::vector<BaseTensor>& feeds, std::vector<std::string> &outputNames, std::vector<TensorBase>& outputTensors);
+
     APP_ERROR RepeatInference(const std::vector<int>& inOutRelation, std::vector<std::string> &outputNames,
         std::vector<TensorBase>& outputTensors, const bool get_outputs);
 
+    APP_ERROR FirstInferenceInner(std::vector<BaseTensor> &inputs, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors);
     APP_ERROR ModelInference_Inner(std::vector<BaseTensor> &inputs, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors);
 
     /**
