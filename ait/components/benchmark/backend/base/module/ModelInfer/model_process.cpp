@@ -650,11 +650,11 @@ Result ModelProcess::UpdateInputs(const std::vector<int> &inOutRelation)
                 ERROR_LOG("UpdateInputs: aclUpdateDataBuffer failed");
                 return FAILED;
             }
-            ret = aclDestroyDataBuffer(tmpInputData);
-            if (ret != ACL_SUCCESS) {
-                ERROR_LOG("UpdateInputs: aclDestroyDataBuffer failed");
-                return FAILED;
-            }
+            // ret = aclDestroyDataBuffer(tmpInputData);
+            // if (ret != ACL_SUCCESS) {
+            //     ERROR_LOG("UpdateInputs: aclDestroyDataBuffer failed");
+            //     return FAILED;
+            // }
 
         } else {
             ERROR_LOG("find outputdata index out of range");
