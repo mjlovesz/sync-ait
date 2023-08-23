@@ -442,8 +442,6 @@ class InferSession:
 
 
     def loop_inner_run(self, feeds, in_out_list, loop_time=1):
-        if (loop_time < 1):
-            raise RuntimeError('wrong loop_time')
         if len(feeds) > 0 and isinstance(feeds[0], np.ndarray):
             # if feeds is ndarray list, convert to baseTensor
             inputs = []
@@ -456,12 +454,15 @@ class InferSession:
             outputs = self.session.run(self.outputs_names, inputs)
         else:
             self.session.run(self.outputs_names, inputs)
-
-
-        # convert to host tensor
-        self.convert_tensors_to_host(outputs)
-        # convert tensor to narray
-        return self.convert_tensors_to_arrays(outputs)
+            for i in range(loop_time - 1):
+                if (i == loop_time - 2):
+                    outputs = self.inner_run(self, in_out_list, get_outputs=True)
+                    # convert to host tensor
+                    self.convert_tensors_to_host(outputs)
+                    # convert tensor to narray
+                    return self.convert_tensors_to_arrays(outputs)
+                else:
+                    self.inner_run(self, in_out_list, get_outputs=False)
 
     def run_pipeline(self, infilelist, output, auto_shape=False,
                      auto_dims=False, outfmt="BIN", pure_infer_mode=False):
