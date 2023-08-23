@@ -38,8 +38,7 @@ def convert_model_to_json(cann_path, offline_model_path, out_path):
     """
     model_name, extension = utils.get_model_name_and_extension(offline_model_path)
     if ".om" != extension:
-        utils.logger.error('The offline model file not ends with .om, Please check {} file.'.format(
-            offline_model_path))
+        utils.logger.error('The offline model file not ends with .om, Please check {}.'.format(offline_model_path))
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_MODEL_TYPE_ERROR)
     
     cann_path = os.path.realpath(cann_path)
@@ -55,16 +54,14 @@ def convert_model_to_json(cann_path, offline_model_path, out_path):
     else:
         # do the atc command to convert om to json
         utils.logger.info('Start to converting the model to json')
-        atc_cmd = [atc_command_file_path, "--mode=1", "--om=" + offline_model_path,
-                    "--json=" + output_json_path]
+        atc_cmd = [atc_command_file_path, "--mode=1", "--om=" + offline_model_path, "--json=" + output_json_path]
         utils.logger.info("ATC command line %s" % " ".join(atc_cmd))
         utils.execute_command(atc_cmd)
         utils.logger.info("Complete model conversion to json %s." % output_json_path)
 
     # do the atc command to convert om to json
     utils.logger.info('Start to converting the model to json')
-    atc_cmd = [atc_command_file_path, "--mode=1", "--om=" + offline_model_path,
-                "--json=" + output_json_path]
+    atc_cmd = [atc_command_file_path, "--mode=1", "--om=" + offline_model_path, "--json=" + output_json_path]
     utils.execute_command(atc_cmd)
     utils.check_file_size_valid(output_json_path, utils.MAX_READ_FILE_SIZE_4G)
     utils.logger.info("Complete model conversion to json %s." % output_json_path)
