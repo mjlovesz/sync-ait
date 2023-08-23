@@ -467,7 +467,7 @@ class InferSession:
                     # convert tensor to narray
                     return self.convert_tensors_to_arrays(outputs)
                 else:
-                    self.inner_run(self, in_out_list, get_outputs=False)
+                    self.inner_run(in_out_list, get_outputs=False)
 
     def run_pipeline(self, infilelist, output, auto_shape=False,
                      auto_dims=False, outfmt="BIN", pure_infer_mode=False):
