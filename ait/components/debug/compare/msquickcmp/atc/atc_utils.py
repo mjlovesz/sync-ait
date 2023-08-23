@@ -18,6 +18,7 @@ Function:
 This class mainly involves convert model to json function.
 """
 import os
+import stat
 
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException
