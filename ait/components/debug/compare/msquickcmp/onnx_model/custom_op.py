@@ -64,15 +64,13 @@ class CustomOp():
         return custom_op_path, inputs_map
 
 
-def convert_NC1HWC0_to_NCHW(shape_from: list, shape_to: list, array: any) -> any:
+def convert_NC1HWC0_to_NCHW(shape_from: list, array: any) -> any:
     """
     Convert the data format from NC1HWC0 to NCHW
     :param shape_from: the shape before convert
-    :param shape_to: the shape after convert
     :param array: the one-dimensional array
     :return: the data array of NCHW shape
     """
-    _ = shape_to
     n_from = shape_from[0]
     c1_from = shape_from[1]
     h_from = shape_from[2]
@@ -157,7 +155,7 @@ def get_BatchMultiClassNMS_inputs_from_npu_dump(npu_dump_path):
 
 
 def remove_BatchMultiClassNMS_and_add_inputs(g:OnnxGraph, npu_dump_path):
-    extend_inpus_map = get_deformable_conv2d_inputs_from_npu_dump(npu_dump_path)
+    extend_inpus_map = get_BatchMultiClassNMS_inputs_from_npu_dump(npu_dump_path)
     inputs_map = {}
 
     for node in g.nodes:
@@ -170,7 +168,7 @@ def remove_BatchMultiClassNMS_and_add_inputs(g:OnnxGraph, npu_dump_path):
                 continue
 
             custom_op_name = node.name
-            extend_inpus_map_key = custom_op_name +  + ("_%s" % index)
+            extend_inpus_map_key = custom_op_name + ("_%s" % index)
 
             if extend_inpus_map_key not in extend_inpus_map.keys():
                 continue
