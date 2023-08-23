@@ -328,7 +328,7 @@ class NpuDumpData(DumpData):
             self._make_benchmark_cmd_for_shape_range(benchmark_cmd)
 
         # do benchmark command
-        utils.execute_command(benchmark_cmd, not self.single_op)
+        utils.execute_command(benchmark_cmd, False)
 
         npu_dump_data_path = ""
         if self.dump:
