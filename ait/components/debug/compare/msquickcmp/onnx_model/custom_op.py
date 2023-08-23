@@ -43,7 +43,7 @@ class CustomOp():
         for custom_op in self.custom_op_type:
             if custom_op not in CUSTIOM_OP_MODIFY_FUNC.keys():
                 utils.logger.error("custom op type:%s is invalids, now supports: "
-                                   "'DeformableConv2D'、'BatchMultiClassNMS'、'RoiExtractor'" % custom_op)
+                                   "'DeformableConv2D'、'BatchMultiClassNMS'、'RoiExtractor'", custom_op)
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
     def remove_custom_op_and_add_inputs(self):
@@ -185,7 +185,8 @@ def remove_BatchMultiClassNMS_and_add_inputs(g:OnnxGraph, npu_dump_path):
             inputs_map[extend_input_name] = extend_inpus_map[extend_inpus_map_key].astype(data_type)
 
             utils.logger.info("remove deforable_conv2d custom op: %s "
-                            "and add model input: %s, input shape: %s, data_type: %s", node.name, extend_input_name, shape, data_type)
+                              "and add model input: %s, input shape: %s, data_type: %s", 
+                              node.name, extend_input_name, shape, data_type)
             
         g.remove(node.name, {})
 
@@ -237,7 +238,8 @@ def remove_RoiExtractor_and_add_inputs(g:OnnxGraph, npu_dump_path):
         g.add_input(input_name, data_type, shape)
         inputs_map[input_name] = extend_inpus_map[node.name].astype(data_type)
         utils.logger.info("remove deforable_conv2d custom op: %s "
-                          "and add model input: %s, input shape: %s, data_type: %s", node.name, input_name, shape, data_type)
+                          "and add model input: %s, input shape: %s, data_type: %s", 
+                          node.name, input_name, shape, data_type)
     return inputs_map
 
 CUSTIOM_OP_MODIFY_FUNC = \
