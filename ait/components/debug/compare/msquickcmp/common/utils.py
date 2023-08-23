@@ -236,8 +236,6 @@ def execute_command(cmd, info_need=True):
     while process.poll() is None:
         line = process.stdout.readline()
         line = line.strip()
-        if line and info_need:
-            logger.info(line)
     if process.returncode != 0:
         logger.error('Failed to execute command:%s' % " ".join(cmd))
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DATA_ERROR)
