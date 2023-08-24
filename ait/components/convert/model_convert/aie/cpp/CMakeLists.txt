@@ -13,7 +13,7 @@ ENDIF()
 add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
 
 LINK_DIRECTORIES(
-    $ENV{ASCENDAIE_HOME}/lib
+    $ENV{ASCENDIE_HOME}/lib
     $ENV{CANN_HOME}/x86_64-linux/lib64
     $ENV{CANN_HOME}/aarch64-linux/lib64
 )
@@ -21,7 +21,7 @@ LINK_DIRECTORIES(
 ADD_EXECUTABLE(aie_convert aie_convert.cpp)
 
 TARGET_INCLUDE_DIRECTORIES(aie_convert PUBLIC
-    $ENV{ASCENDAIE_HOME}/include
+    $ENV{ASCENDIE_HOME}/include
 )
 
 TARGET_LINK_LIBRARIES(aie_convert PUBLIC ascendie)
