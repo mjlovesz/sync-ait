@@ -457,6 +457,10 @@ class InferSession:
             inputs = feeds
         if (iteration_times == 1):
             outputs = self.session.run(self.outputs_names, inputs)
+            # convert to host tensor
+            self.convert_tensors_to_host(outputs)
+            # convert tensor to narray
+            return self.convert_tensors_to_arrays(outputs)
         else:
             self.session.first_inner_run(self.outputs_names, inputs)
             for i in range(iteration_times - 1):
