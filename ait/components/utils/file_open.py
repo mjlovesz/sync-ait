@@ -66,12 +66,20 @@ class FileStat:
         return self.file_stat.st_uid if self.file_stat else -1
 
     @property
+    def group(self):
+        return self.file_stat.st_gid if self.file_stat else -1
+
+    @property
     def is_owner(self):
         return self.owner == (os.geteuid() if hasattr(os, "geteuid") else 0)
 
     @property
+    def is_group_owner(self):
+        return self.group in (os.getgroups() if hasattr(os, "getgroups") else [0])
+
+    @property
     def is_belong_to_user_or_group(self):
-        return self.owner == os.getuid() or self.file_stat.st_gid in os.getgroups()
+        return self.is_owner() or self.is_group_owner()
 
 
 def ms_open(file, mode="r", max_size=None, softlink=False, write_permission=PERMISSION_NORMAL, **kwargs):
