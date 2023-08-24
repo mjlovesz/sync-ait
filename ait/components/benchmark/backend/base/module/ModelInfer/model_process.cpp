@@ -661,6 +661,9 @@ Result ModelProcess::UpdateInputs(const std::vector<int> &inOutRelation)
             return FAILED;
         }
     }
+    if (output_ != nullptr) {
+        processModel->DestroyOutput(false);
+    }
 
     return SUCCESS;
 }
