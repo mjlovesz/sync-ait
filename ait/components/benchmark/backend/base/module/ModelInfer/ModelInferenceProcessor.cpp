@@ -453,18 +453,18 @@ APP_ERROR ModelInferenceProcessor::RepeatInference(const std::vector<int>& inOut
         ERROR_LOG("UpdateInputsData failed ret:%d", ret);
         return ret;
     }
-    for (int i = 0; i < options_->loop; i++) {
+    for (int i = 0; i < 1; i++) {
         ret = Execute();
         if (ret != APP_ERR_OK) {
             ERROR_LOG("Execute Infer failed ret:%d", ret);
             return ret;
         }
-        if (options_->loop > 1) {
-            printf("\rloop inference exec: (%d/%d)", i + 1, options_->loop);
+        if (1 > 1) {
+            printf("\rloop inference exec: (%d/%d)", i + 1, 1);
             fflush(stdout);
         }
     }
-    if (options_->loop > 1) {
+    if (1 > 1) {
         printf("\n");
     }
     if (get_outputs) {
