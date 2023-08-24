@@ -66,7 +66,7 @@ class FileStat:
         return self.file_stat.st_uid if self.file_stat else -1
 
     @property
-    def group(self):
+    def group_owner(self):
         return self.file_stat.st_gid if self.file_stat else -1
 
     @property
@@ -75,7 +75,7 @@ class FileStat:
 
     @property
     def is_group_owner(self):
-        return self.group in (os.getgroups() if hasattr(os, "getgroups") else [0])
+        return self.group_owner in (os.getgroups() if hasattr(os, "getgroups") else [0])
 
     @property
     def is_belong_to_user_or_group(self):
