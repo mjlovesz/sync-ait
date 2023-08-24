@@ -650,10 +650,15 @@ Result ModelProcess::UpdateInputs(const std::vector<int> &inOutRelation)
             void* lastBuffer = aclGetDataBufferAddr(tmpInputData);
             void* lastOutBuffer = aclGetDataBufferAddr(tmpOutputData);
             ret = aclrtMalloc(&newBuffer, tensorSize, ACL_MEM_MALLOC_HUGE_FIRST);
-            ret = aclrtMemcpy(newBuffer, tensorSize, lastOutBuffer, ACL_MEMCPY_DEVICE_TO_DEVICE);
             if (ret != ACL_SUCCESS) {
                 cout << aclGetRecentErrMsg() << endl;
                 ERROR_LOG("malloc new input buffer failed. size is %zu", tensorSize);
+                return FAILED;
+            }
+            ret = aclrtMemcpy(newBuffer, tensorSize, lastOutBuffer, tensorSize, ACL_MEMCPY_DEVICE_TO_DEVICE);
+            if (ret != ACL_SUCCESS) {
+                cout << aclGetRecentErrMsg() << endl;
+                ERROR_LOG("new input buffer aclrtMemcpy from last output failed. size is %zu", tensorSize);
                 return FAILED;
             }
             aclDataBuffer* newInputData = aclCreateDataBuffer(newBuffer, tensorSize);
