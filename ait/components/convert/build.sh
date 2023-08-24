@@ -41,8 +41,8 @@ build_aie_convert(){
   fi
 }
 
-if [ ${ASCENDAIE_HOME} ];then
+if [ ${ASCENAIE_HOME} ];then
   build_aie_convert
   else
-    echo "WARNING: env ASCENDAIE_HOME is not set. aie command cannot be used."
+    echo "WARNING: env ASCENDIE_HOME is not set. aie command cannot be used."
 fi
