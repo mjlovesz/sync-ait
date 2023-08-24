@@ -15,7 +15,7 @@ import os
 import re
 import argparse
 
-from components.parser.parser import BaseCommand
+from components.utils.parser import BaseCommand
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common.utils import logger, check_exec_cmd

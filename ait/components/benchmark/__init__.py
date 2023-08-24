@@ -11,6 +11,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from components.parser.parser import load_command_instance
+from components.utils.parser import load_command_instance
 
 benchmark_cmd = load_command_instance('benchmark_sub_task')

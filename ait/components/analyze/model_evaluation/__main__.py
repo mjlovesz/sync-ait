@@ -14,7 +14,7 @@
 
 import os
 
-from components.parser.parser import BaseCommand
+from components.utils.parser import BaseCommand
 from model_evaluation.common import utils, logger
 from model_evaluation.common.enum import Framework
 from model_evaluation.bean import ConvertConfig
