@@ -460,7 +460,7 @@ APP_ERROR ModelInferenceProcessor::RepeatInference(const std::vector<int>& inOut
             return ret;
         }
         if (options_->loop > 1) {
-            printf("\rloop inference exec: (%d/%d)", i + 1, 1);
+            printf("\rloop inference exec: (%d/%d)", i + 1, options_->loop);
             fflush(stdout);
         }
     }
