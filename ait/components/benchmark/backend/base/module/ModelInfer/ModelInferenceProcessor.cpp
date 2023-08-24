@@ -335,6 +335,14 @@ APP_ERROR ModelInferenceProcessor::UpdateInputsData(const std::vector<int> &inOu
         ERROR_LOG("create inputdataset failed:%d", result);
         return APP_ERR_ACL_FAILURE;
     }
+    // add data to output dataset
+    for (const auto& tensor : outputsMemDataQue_) {
+        auto result = processModel->CreateOutput(tensor.ptrData, tensor.size);
+        if (result != SUCCESS) {
+            ERROR_LOG("create outputdataset failed:%d", result);
+            return APP_ERR_ACL_FAILURE;
+        }
+    }
     return APP_ERR_OK;
 }
 
