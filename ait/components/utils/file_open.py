@@ -78,7 +78,7 @@ class FileStat:
         return self.group_owner in (os.getgroups() if hasattr(os, "getgroups") else [0])
 
     @property
-    def is_belong_to_user_or_group(self):
+    def is_user_or_group_owner(self):
         return self.is_owner() or self.is_group_owner()
 
 
