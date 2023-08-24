@@ -18,6 +18,7 @@ Function:
 This class mainly involves convert model to json function.
 """
 import os
+import stat
 
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException
@@ -37,8 +38,7 @@ def convert_model_to_json(cann_path, offline_model_path, out_path):
     """
     model_name, extension = utils.get_model_name_and_extension(offline_model_path)
     if ".om" != extension:
-        utils.logger.error('The offline model file not ends with .om, Please check {} file.'.format(
-            offline_model_path))
+        utils.logger.error('The offline model file not ends with .om, Please check {}.'.format(offline_model_path))
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_MODEL_TYPE_ERROR)
     
     cann_path = os.path.realpath(cann_path)
@@ -51,20 +51,30 @@ def convert_model_to_json(cann_path, offline_model_path, out_path):
     output_json_path = os.path.join(out_path, "model", model_name + ".json")
     if os.path.exists(output_json_path):
         utils.logger.info("The {} file is exists.".format(output_json_path))
-        return output_json_path
+    else:
+        # do the atc command to convert om to json
+        utils.logger.info('Start to converting the model to json')
+        atc_cmd = [atc_command_file_path, "--mode=1", "--om=" + offline_model_path, "--json=" + output_json_path]
+        utils.logger.info("ATC command line %s" % " ".join(atc_cmd))
+        utils.execute_command(atc_cmd)
+        utils.logger.info("Complete model conversion to json %s." % output_json_path)
 
-    # do the atc command to convert om to json
-    utils.logger.info('Start to converting the model to json')
-    atc_cmd = [atc_command_file_path, "--mode=1", "--om=" + offline_model_path,
-                "--json=" + output_json_path]
-    utils.execute_command(atc_cmd)
-    utils.logger.info("Complete model conversion to json %s." % output_json_path)
+    utils.check_file_size_valid(output_json_path, utils.MAX_READ_FILE_SIZE_4G)
     return output_json_path
 
 
 def get_atc_path(cann_path):
     atc_command_file_path = os.path.join(cann_path, ATC_FILE_PATH)
-    if os.path.exists(atc_command_file_path):
-        return atc_command_file_path
-    else:
-        return os.path.join(cann_path, OLD_ATC_FILE_PATH)
+    if not os.path.exists(atc_command_file_path):
+        atc_command_file_path = os.path.join(cann_path, OLD_ATC_FILE_PATH)
+    if not os.path.exists(atc_command_file_path):
+        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+    
+    atc_command_file_path = os.path.realpath(atc_command_file_path)
+    if not os.access(atc_command_file_path, os.X_OK):
+        utils.logger.error('ATC path is not permitted for executing.')
+        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+    if os.stat(atc_command_file_path).st_mode & (stat.S_IWGRP | stat.S_IWOTH) > 0:
+        utils.logger.error('ATC path is writable by others or group, not permitted.')
+        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
+    return atc_command_file_path
