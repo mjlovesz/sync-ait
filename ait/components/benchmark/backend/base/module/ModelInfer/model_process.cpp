@@ -646,35 +646,14 @@ Result ModelProcess::UpdateInputs(const std::vector<int> &inOutRelation)
                 return FAILED;
             }
             size_t tensorSize = aclGetDataBufferSizeV2(tmpOutputData);
-            void* newBuffer = nullptr;
             void* lastBuffer = aclGetDataBufferAddr(tmpInputData);
             void* lastOutBuffer = aclGetDataBufferAddr(tmpOutputData);
-            ret = aclrtMalloc(&newBuffer, tensorSize, ACL_MEM_MALLOC_HUGE_FIRST);
-            if (ret != ACL_SUCCESS) {
-                cout << aclGetRecentErrMsg() << endl;
-                ERROR_LOG("malloc new input buffer failed. size is %zu", tensorSize);
-                return FAILED;
-            }
-            ret = aclrtMemcpy(newBuffer, tensorSize, lastOutBuffer, tensorSize, ACL_MEMCPY_DEVICE_TO_DEVICE);
+            ret = aclrtMemcpy(lastBuffer, tensorSize, lastOutBuffer, tensorSize, ACL_MEMCPY_DEVICE_TO_DEVICE);
             if (ret != ACL_SUCCESS) {
                 cout << aclGetRecentErrMsg() << endl;
                 ERROR_LOG("new input buffer aclrtMemcpy from last output failed. size is %zu", tensorSize);
                 return FAILED;
             }
-            aclDataBuffer* newInputData = aclCreateDataBuffer(newBuffer, tensorSize);
-            if (newInputData == nullptr) {
-                ERROR_LOG("can't create new input data buffer, create input failed");
-                aclrtFree(newBuffer);
-                newBuffer = nullptr;
-                return FAILED;
-            }
-            ret = aclUpdateDataBuffer(aclmdlGetDatasetBuffer(input_, i), aclGetDataBufferAddr(newInputData), tensorSize);
-            if (ret != ACL_SUCCESS) {
-                ERROR_LOG("UpdateInputs: aclUpdateDataBuffer failed");
-                return FAILED;
-            }
-
-            (void)aclrtFree(lastBuffer);
         } else {
             ERROR_LOG("find outputdata index out of range");
             return FAILED;
