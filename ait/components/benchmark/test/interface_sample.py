@@ -47,8 +47,9 @@ def infer_iteration_inner():
     iteration_times = 5 # inner iteration infer loop times
     session = InferSession(device_id, model_path, None, False, loop_times)
     # create new numpy data according inputs info
-    barray = bytearray(session.get_inputs()[0].realsize)
-    ndata = np.frombuffer(barray)
+    shape = session.get_inputs()[0].shape
+    ndata = np.full(shape, 1).astype(np.float32)
+    outputs = session.infer([ndata, ndata])
     outputs = session.iteration_run([ndata, ndata], in_out_list, iteration_times)
     logger.info(f"outputs:{outputs} type:{type(outputs)}")
     logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
