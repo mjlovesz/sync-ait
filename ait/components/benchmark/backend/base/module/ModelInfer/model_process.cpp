@@ -644,13 +644,13 @@ Result ModelProcess::UpdateInputs(const std::vector<int> &inOutRelation)
                 ERROR_LOG("inputSize_current and outputSize_last not matched");
                 return FAILED;
             }
+            void* data = aclGetDataBufferAddr(tmpInputData);
             aclError ret;
             ret = aclUpdateDataBuffer(aclmdlGetDatasetBuffer(input_, i), aclGetDataBufferAddr(tmpOutputData), aclGetDataBufferSizeV2(tmpOutputData));
             if (ret != ACL_SUCCESS) {
                 ERROR_LOG("UpdateInputs: aclUpdateDataBuffer failed");
                 return FAILED;
             }
-            void* data = aclGetDataBufferAddr(tmpInputData);
             (void)aclrtFree(data);
             // ret = aclDestroyDataBuffer(tmpInputData);
             // if (ret != ACL_SUCCESS) {
