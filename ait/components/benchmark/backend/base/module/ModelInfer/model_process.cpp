@@ -650,6 +650,8 @@ Result ModelProcess::UpdateInputs(const std::vector<int> &inOutRelation)
                 ERROR_LOG("UpdateInputs: aclUpdateDataBuffer failed");
                 return FAILED;
             }
+            void* data = aclGetDataBufferAddr(tmpInputData);
+            (void)aclrtFree(data);
             // ret = aclDestroyDataBuffer(tmpInputData);
             // if (ret != ACL_SUCCESS) {
             //     ERROR_LOG("UpdateInputs: aclDestroyDataBuffer failed");
@@ -661,7 +663,6 @@ Result ModelProcess::UpdateInputs(const std::vector<int> &inOutRelation)
             return FAILED;
         }
     }
-    DestroyOutput(false);
 
     return SUCCESS;
 }
