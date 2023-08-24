@@ -652,11 +652,11 @@ Result ModelProcess::UpdateInputs(const std::vector<int> &inOutRelation)
                 ERROR_LOG("UpdateInputs: aclUpdateDataBuffer failed");
                 return FAILED;
             }
-            ret = aclrtFree(tmpInputAddr);
-            if (ret != ACL_SUCCESS) {
-                ERROR_LOG("UpdateInputs: aclrtFree last input failed");
-                return FAILED;
-            }
+            (void)aclrtFree(tmpInputAddr);
+            // if (ret != ACL_SUCCESS) {
+            //     ERROR_LOG("UpdateInputs: aclrtFree last input failed");
+            //     return FAILED;
+            // }
 
         } else {
             ERROR_LOG("find outputdata index out of range");
