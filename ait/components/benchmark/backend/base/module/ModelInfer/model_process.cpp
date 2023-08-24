@@ -644,17 +644,18 @@ Result ModelProcess::UpdateInputs(const std::vector<int> &inOutRelation)
                 ERROR_LOG("inputSize_current and outputSize_last not matched");
                 return FAILED;
             }
+            aclDataBuffer* newInputData = aclCreateDataBuffer(aclGetDataBufferAddr(tmpOutputData), aclGetDataBufferSizeV2(tmpOutputData));
             aclError ret;
-            ret = aclUpdateDataBuffer(aclmdlGetDatasetBuffer(input_, i), aclGetDataBufferAddr(tmpOutputData), aclGetDataBufferSizeV2(tmpOutputData));
+            ret = aclUpdateDataBuffer(aclmdlGetDatasetBuffer(input_, i), aclGetDataBufferAddr(newInputData), aclGetDataBufferSizeV2(newInputData));
             if (ret != ACL_SUCCESS) {
                 ERROR_LOG("UpdateInputs: aclUpdateDataBuffer failed");
                 return FAILED;
             }
-            // ret = aclDestroyDataBuffer(tmpInputData);
-            // if (ret != ACL_SUCCESS) {
-            //     ERROR_LOG("UpdateInputs: aclDestroyDataBuffer failed");
-            //     return FAILED;
-            // }
+            ret = aclDestroyDataBuffer(tmpInputData);
+            if (ret != ACL_SUCCESS) {
+                ERROR_LOG("UpdateInputs: aclDestroyDataBuffer failed");
+                return FAILED;
+            }
 
         } else {
             ERROR_LOG("find outputdata index out of range");
