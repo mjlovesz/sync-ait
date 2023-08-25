@@ -428,19 +428,19 @@ class InferSession:
         else:
             return outputs
 
-    def inner_run(self, in_out_list, get_outputs=False):
+    def inner_run(self, in_out_list, get_outputs=False, mem_copy=True):
         '''
             in_out_list:
             如果本次推理沿用上次推理的inputdatas数据，则in_out_list为[-1, -1, -1, ...]
             如果本次推理inputdatas_current[i] = outputdatas_last[j], 那么in_out_list[i] = j
         '''
-        outputs = self.session.inner_run(in_out_list, self.outputs_names, get_outputs)
+        outputs = self.session.inner_run(in_out_list, self.outputs_names, get_outputs, mem_copy)
         if (get_outputs):
             return outputs
         else:
             return
 
-    def iteration_run(self, feeds, in_out_list, iteration_times=1):
+    def iteration_run(self, feeds, in_out_list, iteration_times=1, mem_copy=True):
         '''
             feeds: input datas
             in_out_list: relation between current input datas and last output datas
@@ -465,13 +465,13 @@ class InferSession:
             self.session.first_inner_run(self.outputs_names, inputs)
             for i in range(iteration_times - 1):
                 if (i == iteration_times - 2):
-                    outputs = self.inner_run(in_out_list, get_outputs=True)
+                    outputs = self.inner_run(in_out_list, True, mem_copy)
                     # convert to host tensor
                     self.convert_tensors_to_host(outputs)
                     # convert tensor to narray
                     return self.convert_tensors_to_arrays(outputs)
                 else:
-                    self.inner_run(in_out_list, get_outputs=False)
+                    self.inner_run(in_out_list, False, mem_copy)
 
     def run_pipeline(self, infilelist, output, auto_shape=False,
                      auto_dims=False, outfmt="BIN", pure_infer_mode=False):

@@ -620,7 +620,51 @@ Result ModelProcess::CreateDymInput(size_t index)
     return SUCCESS;
 }
 
-Result ModelProcess::UpdateInputs(const std::vector<int> &inOutRelation)
+Result ModelProcess::UpdateInputsV1(const std::vector<int> &inOutRelation)
+{
+    if (input_ == nullptr || output_ == nullptr) {
+        if (input_ == nullptr) {ERROR_LOG("can't find inputdatas");}
+        if (output_ == nullptr) {ERROR_LOG("can't find outputdatas");}
+        return FAILED;
+    }
+    size_t inputsNum = aclmdlGetDatasetNumBuffers(input_);
+    size_t outputsNum = aclmdlGetDatasetNumBuffers(output_);
+    if (inputsNum != inOutRelation.size()) {
+        ERROR_LOG("wrong inOutRelation size");
+        return FAILED;
+    }
+
+    for (size_t i = 0; i < inputsNum; ++i) {
+        aclError ret;
+        if (inOutRelation[i] < 0) {
+            continue;
+        } else if (inOutRelation[i] < outputsNum) {
+            aclDataBuffer* tmpInputData = aclmdlGetDatasetBuffer(input_, i);
+            aclDataBuffer* tmpOutputData = aclmdlGetDatasetBuffer(output_, inOutRelation[i]);
+            if (aclGetDataBufferSizeV2(tmpInputData) != aclGetDataBufferSizeV2(tmpOutputData)) {
+                ERROR_LOG("inputSize_current and outputSize_last not matched");
+                return FAILED;
+            }
+            size_t tensorSize = aclGetDataBufferSizeV2(tmpOutputData);
+            void* inBuffer = aclGetDataBufferAddr(tmpInputData);
+            void* outBuffer = aclGetDataBufferAddr(tmpOutputData);
+            ret = aclUpdateDataBuffer(tmpInputData, outBuffer, tensorSize);
+            if (ret != ACL_SUCCESS) {
+                cout << aclGetRecentErrMsg() << endl;
+                ERROR_LOG("new input buffer aclrtMemcpy from last output failed. size is %zu", tensorSize);
+                return FAILED;
+            }
+            (void)aclrtFree(inBuffer);
+        } else {
+            ERROR_LOG("find outputdata index out of range");
+            return FAILED;
+        }
+    }
+
+    return SUCCESS;
+}
+
+Result ModelProcess::UpdateInputsV2(const std::vector<int> &inOutRelation)
 {
     if (input_ == nullptr || output_ == nullptr) {
         if (input_ == nullptr) {ERROR_LOG("can't find inputdatas");}

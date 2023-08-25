@@ -172,7 +172,7 @@ public:
     APP_ERROR FirstInference(const std::vector<BaseTensor>& feeds, std::vector<std::string> &outputNames, std::vector<TensorBase>& outputTensors);
 
     APP_ERROR RepeatInference(const std::vector<int>& inOutRelation, std::vector<std::string> &outputNames,
-        std::vector<TensorBase>& outputTensors, const bool get_outputs);
+        std::vector<TensorBase>& outputTensors, const bool get_outputs, const bool mem_copy);
 
     APP_ERROR FirstInferenceInner(std::vector<BaseTensor> &inputs, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors);
     APP_ERROR ModelInference_Inner(std::vector<BaseTensor> &inputs, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors);
@@ -230,7 +230,7 @@ private:
     APP_ERROR DestroyInferCacheData();
 
     APP_ERROR SetInputsData(std::vector<BaseTensor> &inputs);
-    APP_ERROR UpdateInputsData(const std::vector<int> &inOutRelation);
+    APP_ERROR UpdateInputsData(const std::vector<int> &inOutRelation, const bool mem_copy);
     APP_ERROR SetAippConfigData();
     APP_ERROR Execute();
     APP_ERROR GetOutputs(std::vector<std::string> outputNames, std::vector<TensorBase> &outputTensors);

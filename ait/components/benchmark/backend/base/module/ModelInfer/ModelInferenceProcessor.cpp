@@ -328,9 +328,14 @@ APP_ERROR ModelInferenceProcessor::DestroyInferCacheData()
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::UpdateInputsData(const std::vector<int> &inOutRelation)
+APP_ERROR ModelInferenceProcessor::UpdateInputsData(const std::vector<int> &inOutRelation, const bool mem_copy)
 {
-    auto result = processModel->UpdateInputs(inOutRelation);
+    Result result;
+    if (mem_copy) {
+        result = processModel->UpdateInputsV2(inOutRelation);
+    } else {
+        result = processModel->UpdateInputsV1(inOutRelation);
+    }
     if (result != SUCCESS) {
         ERROR_LOG("create inputdataset failed:%d", result);
         return APP_ERR_ACL_FAILURE;
@@ -446,25 +451,31 @@ APP_ERROR ModelInferenceProcessor::GetOutputs(std::vector<std::string> outputNam
 }
 
 APP_ERROR ModelInferenceProcessor::RepeatInference(const std::vector<int>& inOutRelation, std::vector<std::string> &outputNames,
-    std::vector<TensorBase>& outputTensors, const bool get_outputs)
+    std::vector<TensorBase>& outputTensors, const bool get_outputs, const bool mem_copy)
 {
-    APP_ERROR ret = UpdateInputsData(inOutRelation);
+    APP_ERROR ret = UpdateInputsData(inOutRelation, mem_copy);
     if (ret != APP_ERR_OK) {
         ERROR_LOG("UpdateInputsData failed ret:%d", ret);
         return ret;
     }
-    for (int i = 0; i < options_->loop; i++) {
+    int loopTimes;
+    if (mem_copy) {
+        loopTimes = options_->loop;
+    } else {
+        loopTimes = 1;
+    }
+    for (int i = 0; i < loopTimes; i++) {
         ret = Execute();
         if (ret != APP_ERR_OK) {
             ERROR_LOG("Execute Infer failed ret:%d", ret);
             return ret;
         }
-        if (options_->loop > 1) {
-            printf("\rloop inference exec: (%d/%d)", i + 1, options_->loop);
+        if (loopTimes > 1) {
+            printf("\rloop inference exec: (%d/%d)", i + 1, loopTimes);
             fflush(stdout);
         }
     }
-    if (options_->loop > 1) {
+    if (loopTimes > 1) {
         printf("\n");
     }
     if (get_outputs) {

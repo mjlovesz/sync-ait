@@ -360,10 +360,10 @@ std::vector<TensorBase> PyInferenceSession::FirstInnerInfer(std::vector<std::str
     return outputs;
 }
 
-std::vector<TensorBase> PyInferenceSession::InnerInfer(const std::vector<int>& in_out_list, std::vector<std::string>& output_names, const bool get_outputs)
+std::vector<TensorBase> PyInferenceSession::InnerInfer(const std::vector<int>& in_out_list, std::vector<std::string>& output_names, const bool get_outputs, const bool mem_copy)
 {
     std::vector<TensorBase> outputs = {};
-    APP_ERROR ret = modelInfer_.RepeatInference(in_out_list, output_names, outputs, get_outputs);
+    APP_ERROR ret = modelInfer_.RepeatInference(in_out_list, output_names, outputs, get_outputs, mem_copy);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
