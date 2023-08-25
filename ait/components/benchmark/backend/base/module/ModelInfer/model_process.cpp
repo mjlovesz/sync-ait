@@ -654,13 +654,17 @@ Result ModelProcess::UpdateInputsV1(const std::vector<int> &inOutRelation)
                 ERROR_LOG("new input buffer aclrtMemcpy from last output failed. size is %zu", tensorSize);
                 return FAILED;
             }
-            (void)aclrtFree(inBuffer);
+            if (!reuseOutput_) {
+                (void)aclrtFree(inBuffer);
+            }
         } else {
             ERROR_LOG("find outputdata index out of range");
             return FAILED;
         }
     }
-
+    if (!reuseOutput_) {
+        reuseOutput_ = true;
+    }
     return SUCCESS;
 }
 
@@ -1325,6 +1329,11 @@ void callback(aclrtExceptionInfo *exceptionInfo)
 void ModelProcess::SetExceptionCallBack()
 {
     aclrtSetExceptionInfoCallback(callback);
+}
+
+void ModelProcess::InitReuseOutput()
+{
+    reuseOutput_ = false;
 }
 
 Result ModelProcess::Execute()

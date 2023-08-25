@@ -506,6 +506,7 @@ APP_ERROR ModelInferenceProcessor::FirstInferenceInner(std::vector<BaseTensor> &
             printf("\n");
         }
     }
+    processModel->InitReuseOutput();
     for (int i = 0; i < options_->loop; i++) {
         ret = Execute();
         if (ret != APP_ERR_OK) {

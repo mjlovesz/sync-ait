@@ -282,8 +282,10 @@ public:
     Result GetMaxDynamicHWSize(size_t &outsize);
 
     void SetExceptionCallBack();
+    void InitReuseOutput();
 private:
     uint32_t modelId_;
+    bool reuseOutput_;
     bool loadFlag_; // model load flag
     aclmdlDesc* modelDesc_;
     aclmdlDataset* input_;
