@@ -7,9 +7,11 @@
 
 ## 使用场景约束
 
-1、只支持标杆模型为onnx文件；
+1、只支持标杆模型为onnx文件，[-gm，--golden-model]入参必须为.onnx模型；
 
 2、当前custom-op取值范围："BatchMultiClassNMS"、"DeformableConv2D"、"RoiExtractor"
+
+3、使用时请勿关闭--dump，不要开启--locat、--single-op等高级功能
 
 
 ## 运行原理
