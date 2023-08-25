@@ -369,12 +369,13 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
     ConcurrentQueue<std::shared_ptr<Feeds>> saveQueue;
     std::vector<std::thread> computeThreadGroup{};
     computeThreadGroup.reserve(num_threads-1);
+    std::vector<InferSumaryInfo> summaryInfoGroup(num_threads - 1);
 
     std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId, num_threads);
     std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), deviceId, this);
     for (size_t i = 0; i < num_threads - 1; i++) {
         computeThreadGroup.emplace_back(FuncComputeWithoutSession, std::ref(computeQueue),
-                                        std::ref(d2hQueue), deviceId, this);
+                                        std::ref(d2hQueue), deviceId, this, std::ref(summaryInfoGroup[i]));
     }
     std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId, num_threads);
     std::thread saveThread(FuncSave, std::ref(saveQueue), deviceId, outFmt);
@@ -387,6 +388,10 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
     }
     d2hThread.join();
     saveThread.join();
+
+    for (auto &summaryInfo : summaryInfoGroup) {
+        MergeSummaryInfo(summaryInfo);
+    }
 }
 
 int PyInferenceSession::AippSetMaxBatchSize(uint64_t batchSize)

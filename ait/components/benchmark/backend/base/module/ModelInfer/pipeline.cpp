@@ -265,22 +265,22 @@ namespace Base {
         }
     }
 
-    void SaveOutput(std::shared_ptr<Feeds> item, std::string outFmt)
+    void SaveOutput(std::shared_ptr<Feeds> item, std::string outFmt, size_t index)
     {
-        std::string outputFileName = item->outputPrefix + Utils::RemoveSlash(item->outputNames->at(i));
+        std::string outputFileName = item->outputPrefix + Utils::RemoveSlash(item->outputNames->at(index));
         if (outFmt == "NPY") {
             outputFileName += ".npy";
-            if (Utils::TensorToNumpy(outputFileName, item->outputs->at(i)) == FAILED) {
+            if (Utils::TensorToNumpy(outputFileName, item->outputs->at(index)) == FAILED) {
                 ERROR_LOG("%s save failed\n", outputFileName.c_str());
             }
         } else if (outFmt == "TXT") {
             outputFileName += ".txt";
-            if (Utils::TensorToTxt(outputFileName, item->outputs->at(i)) == FAILED) {
+            if (Utils::TensorToTxt(outputFileName, item->outputs->at(index)) == FAILED) {
                 ERROR_LOG("%s save failed\n", outputFileName.c_str());
             }
         } else {
             outputFileName += ".bin";
-            if (Utils::TensorToBin(outputFileName, item->outputs->at(i)) == FAILED) {
+            if (Utils::TensorToBin(outputFileName, item->outputs->at(index)) == FAILED) {
                 ERROR_LOG("%s save failed\n", outputFileName.c_str());
             }
         }
@@ -304,7 +304,7 @@ namespace Base {
             if (item->outputPrefix != "") {
                 size_t n = item->outputs->size();
                 for (size_t i = 0; i < n; i++) {
-                    SaveOutput(item, outFmt);
+                    SaveOutput(item, outFmt, i);
                 }
             }
         }
