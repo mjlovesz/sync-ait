@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import sys
+import time
 import logging
 import numpy as np
 
@@ -39,18 +40,48 @@ def infer_simple():
     logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
-def infer_iteration_inner():
+def infer_iteration_withD2H():
     # only for single_op_add_model
     device_id = 0
-    loop_times = 100 # same infer loop times
-    in_out_list = [-1, 0]
-    iteration_times = 5 # inner iteration infer loop times
+    loop_times = 1 # same infer loop times
+    iteration_times = 1000 # inner iteration infer loop times
     session = InferSession(device_id, model_path, None, False, loop_times)
     # create new numpy data according inputs info
     shape = session.get_inputs()[0].shape
     ndata = np.full(shape, 1).astype(np.float32)
     outputs = session.infer([ndata, ndata])
-    outputs = session.iteration_run([ndata, ndata], in_out_list, iteration_times)
+    for i in range(iteration_times - 1):
+        outputs = session.infer([outputs[0], ndata])
+    logger.info(f"outputs:{outputs} type:{type(outputs)}")
+    logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
+
+
+def infer_iteration_withoutD2H_withmemcpy():
+    # only for single_op_add_model
+    device_id = 0
+    loop_times = 1 # same infer loop times
+    in_out_list = [-1, 0]
+    iteration_times = 1000 # inner iteration infer loop times
+    session = InferSession(device_id, model_path, None, False, loop_times)
+    # create new numpy data according inputs info
+    shape = session.get_inputs()[0].shape
+    ndata = np.full(shape, 1).astype(np.float32)
+    outputs = session.iteration_run([ndata, ndata], in_out_list, iteration_times, mem_copy=True)
+    logger.info(f"outputs:{outputs} type:{type(outputs)}")
+    logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
+
+
+def infer_iteration_withoutD2H_withoutmemcpy():
+    # only for single_op_add_model
+    device_id = 0
+    loop_times = 1 # same infer loop times
+    in_out_list = [-1, 0]
+    iteration_times = 1000 # inner iteration infer loop times
+    session = InferSession(device_id, model_path, None, False, loop_times)
+    # create new numpy data according inputs info
+    shape = session.get_inputs()[0].shape
+    ndata = np.full(shape, 1).astype(np.float32)
+    outputs = session.iteration_run([ndata, ndata], in_out_list, iteration_times, mem_copy=False)
     logger.info(f"outputs:{outputs} type:{type(outputs)}")
     logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
@@ -140,6 +171,13 @@ def get_model_info():
         logger.info(f"outputs info i:{i} shape:{info.shape} type:{info.datatype} val: \
                      {int(info.datatype)} realsize:{info.realsize} size:{info.size}")
 
+
+start = time.time()
 # infer_simple()
-infer_iteration_inner()
+# infer_iteration_withD2H()
+infer_iteration_withoutD2H_withmemcpy()
+# infer_iteration_withoutD2H_withoutmemcpy()
+end = time.time()
+e2e_cost = end - start
+logger.info(f"endtoend time:{e2e_cost} sec")
 

@@ -445,6 +445,7 @@ class InferSession:
             feeds: input datas
             in_out_list: relation between current input datas and last output datas
             iteration_times: inner iteration infer loop times
+            mem_copy: loop param will be fixedly set as 1, in infer iteration, without any memory copy in device
             return outputs after infer
         '''
         if len(feeds) > 0 and isinstance(feeds[0], np.ndarray):
