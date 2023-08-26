@@ -12,15 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import re
 import argparse
 
-from components.parser.parser import BaseCommand
+from components.utils.parser import BaseCommand
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common.utils import logger, check_exec_cmd
 from msquickcmp.pta_acl_cmp.compare import init_aclcmp_task, clear_aclcmp_task
 
 CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
+STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
+
+
+def safe_string(value):
+    if re.search(STR_WHITE_LIST_REGEX, value):
+        raise ValueError("String parameter contains invalid characters.")
+    return value
 
 
 def str2bool(v):
@@ -41,22 +49,26 @@ class CompareCommand(BaseCommand):
             '--golden-model',
             required=False,
             dest="golden_model",
+            type=safe_string,
             help='The original model (.onnx or .pb or .prototxt) file path')
         parser.add_argument(
             '-om',
             '--om-model',
             dest="om_model",
+            type=safe_string,
             help='The offline model (.om) file path')
         parser.add_argument(
             '-w',
             '--weight',
             dest="weight_path",
+            type=safe_string,
             help='Required when framework is Caffe (.cafemodel)')
         parser.add_argument(
             '-i',
             '--input',
             default='',
             dest="input_data_path",
+            type=safe_string,
             help='The input data path of the model. Separate multiple inputs with commas(,).' 
                  ' E.g: input_0.bin,input_1.bin')
         parser.add_argument(
@@ -64,6 +76,7 @@ class CompareCommand(BaseCommand):
             '--cann-path',
             default=CANN_PATH,
             dest="cann_path",
+            type=safe_string,
             help='The CANN installation path')
         parser.add_argument(
             '-o',
@@ -149,10 +162,12 @@ class CompareCommand(BaseCommand):
         parser.add_argument(
             '--fusion-switch-file',
             dest="fusion_switch_file",
+            type=safe_string,
             help='You can disable selected fusion patterns in the configuration file')
         parser.add_argument(
             "-single",
             "--single-op",
+            default=False,
             dest="single_op",
             type=str2bool,
             help='Comparision mode:single operator compare, default false.Usage: -single True')
@@ -166,7 +181,7 @@ class CompareCommand(BaseCommand):
         parser.add_argument(
             '-q',
             '--quant-fusion-rule-file',
-            type=str,
+            type=safe_string,
             dest="quant_fusion_rule_file",
             default='',
             help="the quant fusion rule file path")

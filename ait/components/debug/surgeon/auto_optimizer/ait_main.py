@@ -17,7 +17,7 @@ import subprocess
 import argparse
 
 
-from components.parser.parser import BaseCommand
+from components.utils.parser import BaseCommand
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig,\
     ARGS_REQUIRED_KNOWLEDGES
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph

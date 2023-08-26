@@ -27,6 +27,8 @@ import static com.huawei.ascend.ait.ide.optimizie.ui.step.AitModelConverterStep.
 import com.huawei.ascend.ait.ide.util.exception.ModelFileInvalidException;
 import com.huawei.ascend.ait.ide.util.exception.PathInvalidException;
 
+import com.intellij.icons.AllIcons;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.ui.JBColor;
 import org.apache.commons.io.FileUtils;
@@ -59,6 +61,7 @@ public class CheckInput {
     public static final String VALID_STRING_CHARATERS = "Only digits, and the following special characters are allowed: , ";
     public static final String VALID_DIGITS_CHARATERS = "Only digits are allowed.";
     public static final String INPUT_MAXIMUM = "The maximum input size is 64 bits.";
+    private static final long FILE_SIZE_MAX = (long) 2 * 1024 * 1024 * 1024;
 
     /**
      * checkFileExist
@@ -77,6 +80,15 @@ public class CheckInput {
             return false;
         }
         return true;
+    }
+
+    public static int checkFileSize(File file) {
+        if (file.length() > FILE_SIZE_MAX) {
+            return Messages.showDialog("The size of the file: " + file + " exceed 2 GB, Do you want to continue?",
+                    "Please Confirm", new String[]{"Yes", "No"},
+                    Messages.NO, AllIcons.General.QuestionDialog);
+        }
+        return Messages.YES;
     }
 
     private static boolean pathValid(@NotNull String path) {

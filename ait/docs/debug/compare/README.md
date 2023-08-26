@@ -106,7 +106,7 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
   | -dr，--dym-shape-range | 动态Shape的阈值范围。如果设置该参数，那么将根据参数中所有的Shape列表进行依次推理和精度比对。(仅支持onnx模型)<br/>配置格式为："input_name1:1,3,200\~224,224-230;input_name2:1,300"。<br/>其中，input_name必须是转换前的网络模型中的节点名称；"\~"表示范围，a\~b\~c含义为[a: b :c]；"-"表示某一位的取值。 <br/> | 否  |
   | --dump       | 是否dump所有算子的输出并进行精度对比。默认是True，即开启全部算子输出的比对。(仅支持onnx模型)<br/>使用方式：--dump False       | 否  |
   | --convert    | 支持om比对结果文件数据格式由bin文件转为npy文件，生成的npy文件目录为./dump_data/npu/{时间戳_bin2npy} 文件夹。使用方式：--convert True | 否  |
-  | -cp, --custom-op | 支持存在NPU自定义算子的模型进行精度比对，使用方式：--custom-op="op_name"，其中op_name代表onnx模型中，NPU自定义算子名称。| 否  |
+  | -cp, --custom-op | 支持存在NPU自定义算子的模型进行精度比对，onnx模型中存在的NPU自定义算子类型名称，当前支持范围："DeformableConv2D"、"BatchMultiClassNMS"、"RoiExtractor"，使用方法：--custom-op="DeformableConv2D"，或者传入多个自定义算子类型：--custom-op="BatchMultiClassNMS,RoiExtractor"，中间使用英文分号隔开。| 否  |
   | --locat      | 开启后,自动在每次比对结束后,对误差超阈值的首个节点(任一类误差),执行误差定位流程,自动定位误差的区间范围(无论单节点还是累计误差)。使用方式：--locat True| 否  |
   | -ofs, --onnx-fusion-switch| onnxruntime算子融合开关，默认**开启**算子融合，如存在onnx dump数据中因算子融合导致缺失的，建议关闭此开关。使用方式：--onnx-fusion-switch False| 否  |
   | -single, --single-op| 单算子比对模式，默认关闭，开启时在输出路径下会生成single op目录，存放单算子比对结果文件使用方式：-single True| 否  |

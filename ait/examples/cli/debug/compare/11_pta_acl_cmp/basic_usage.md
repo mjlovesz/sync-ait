@@ -69,7 +69,7 @@ ait debug compare aclcmp xx_args
 | --exec | 执行命令，用于拉起大模型推理脚本。建议使用bash xx.sh args或者python3 xx.py的方式拉起。 |
 
 # 3. 使用示例
-使用前请安装ait工具，安装指导参考：https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md以[chatglm-6b](https://gitee.com/ascend/ascend-transformer-acceleration/tree/master/examples/chatglm6b) 为例，介绍下如何使用加速库精度比对工具。
+使用前请安装ait工具，安装指导参考：https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md 以 [chatglm-6b](https://gitee.com/ascend/ascend-transformer-acceleration/tree/master/examples/chatglm6b) 为例，介绍下如何使用加速库精度比对工具。
 
 1.  设置task_id
 
@@ -130,8 +130,7 @@ ait debug compare aclcmp xx_args
 5. 结果分析
 
    生成的csv报告如下：
-
-   ![1692278209153](C:\Users\C00562~1\AppData\Local\Temp\1692278209153.png)
+    ![输入图片说明](%E6%AF%94%E5%AF%B9%E6%8A%A5%E5%91%8A.PNG)
 
    csv各列名称解释如下：
 
