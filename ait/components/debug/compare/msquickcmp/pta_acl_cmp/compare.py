@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import shutil
 import time
 
 import pandas as pd
@@ -34,20 +35,36 @@ PTA_DATA_PATH = 'pta_data_path'
 ACL_DATA_PATH = 'acl_data_path'
 PTA_DTYPE = "pta_dtype"
 PTA_SHAPE = "pta_shape"
+PTA_MAX_VALUE = "pta_max_value"
+PTA_MIN_VALUE = "pta_min_value"
+PTA_MEAN_VALUE = "pta_mean_value"
 PTA_STACK = "pta_stack"
 ACL_DTYPE = "acl_dtype"
 ACL_SHAPE = "acl_shape"
+ACL_MAX_VALUE = "acl_max_value"
+ACL_MIN_VALUE = "acl_min_value"
+ACL_MEAN_VALUE = "acl_mean_value"
 ACL_STACK = "acl_stack"
 CMP_FLAG = "cmp_flag"
 CMP_FAIL_REASON = "cmp_fail_reason"
-CSV_HEADER = [DATA_ID, PTA_DATA_PATH, PTA_DTYPE, PTA_SHAPE, ACL_DATA_PATH, ACL_DTYPE, ACL_SHAPE, CMP_FLAG]
+CSV_HEADER = [DATA_ID, PTA_DATA_PATH, PTA_DTYPE, PTA_SHAPE, PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE,
+              ACL_DATA_PATH, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, CMP_FLAG]
+
+
+
 CSV_HEADER.extend(list(cmp_alg_map.keys()))
 CSV_HEADER.append(CMP_FAIL_REASON)
+
+ACL_DATA_MAP_FILE = "/tmp/ait_compare_acl_map.txt"
 
 token_counts = 0
 
 
 def set_task_id():
+    # 通过ait拉起精度比对任务，接口才会生效
+    if os.getenv("AIT_CMP_TASK") != "1":
+        return
+
     pid = os.getpid()
     dump_env_name = str(pid) + "_" + "DUMP_PATH"
     if not os.getenv(dump_env_name):
@@ -138,6 +155,10 @@ def save_acl_dump_tensor(csv_data, data_id, tensor_path):
 
 
 def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
+    # 通过ait拉起精度比对任务，接口才会生效
+    if os.getenv("AIT_CMP_TASK") != "1":
+        return
+
     if data_val is None and tensor_path is None:
         return
 
@@ -146,7 +167,9 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
 
     task_id = os.getenv("AIT_CMP_TASK_ID")
     task_id = task_id or ""
-    csv_path = os.path.join(".", task_id + "_cmp_result.csv")
+    ait_task_dir = os.getenv("AIT_CMP_TASK_DIR")
+    ait_task_dir = ait_task_dir or ""
+    csv_path = os.path.join(ait_task_dir, task_id + "_cmp_result.csv")
 
     dump_data_dir = "cmp_dump_data"
     if not os.path.exists(dump_data_dir):
@@ -178,9 +201,29 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
             dump_path = str(pid) + "_DUMP_PATH"
             tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
                                        os.getenv(dump_path), task_id, tensor_path)
+            write_acl_map_file(tensor_path)
             data = save_acl_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
 
     data.to_csv(csv_path, index=False)
+
+
+def write_acl_map_file(tensor_path):
+    ait_cmp_task_pid = os.getenv("AIT_CMP_TASK_PID")
+    acl_map_file_dir = os.path.join('/tmp', ait_cmp_task_pid)
+    acl_map_file_path = os.path.join(acl_map_file_dir, ACL_DATA_MAP_FILE)
+    if not os.path.exists(acl_map_file_dir):
+        os.mkdir(acl_map_file_dir)
+
+    if os.path.exists(acl_map_file_path):
+        with open(acl_map_file_path, 'r') as file:
+            tensor_paths = file.readlines()
+
+        if tensor_path not in tensor_paths:
+            with open(acl_map_file_path, mode="a") as file:
+                file.write(tensor_path + "\n")
+    else:
+        with open(acl_map_file_path, mode="a") as file:
+            file.write(tensor_path + "\n")
 
 
 def compare_tensor(csv_data: pd.DataFrame):
@@ -209,6 +252,14 @@ def compare_tensor(csv_data: pd.DataFrame):
             csv_data[CMP_FAIL_REASON][idx] = "acl_data_path is not exist."
             csv_data[CMP_FLAG][idx] = True
             continue
+
+        csv_data[PTA_MAX_VALUE][idx] = np.max(pta_data)
+        csv_data[PTA_MIN_VALUE][idx] = np.min(pta_data)
+        csv_data[PTA_MEAN_VALUE][idx] = np.mean(pta_data)
+
+        csv_data[ACL_MAX_VALUE][idx] = np.max(acl_data)
+        csv_data[ACL_MIN_VALUE][idx] = np.min(acl_data)
+        csv_data[ACL_MEAN_VALUE][idx] = np.mean(acl_data)
 
         pta_data_fp32 = pta_data.reshape(-1).astype("float32")
         acl_data_fp32 = acl_data.reshape(-1).astype("float32")
@@ -320,3 +371,20 @@ def read_acl_transformer_data(file_path):
         return data.cpu().numpy()
 
     raise ValueError("Tensor file path must be end with .bin.")
+
+
+def init_aclcmp_task():
+    os.environ['AIT_CMP_TASK_PID'] = str(os.getpid())
+    os.environ['AIT_CMP_TASK'] = "1"
+    os.environ['AIT_CMP_TASK_DIR'] = os.getcwd()
+
+    acl_map_file_dir = os.path.join('/tmp', str(os.getpid()))
+    if not os.path.exists(acl_map_file_dir):
+        os.mkdir(acl_map_file_dir)
+
+
+def clear_aclcmp_task():
+    acl_map_file_dir = os.path.join('/tmp', str(os.getpid()))
+    if os.path.exists(acl_map_file_dir):
+        shutil.rmtree(acl_map_file_dir)
+

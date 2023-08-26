@@ -18,7 +18,7 @@ from components.parser.parser import BaseCommand
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common.utils import logger, check_exec_cmd
-
+from msquickcmp.pta_acl_cmp.compare import init_aclcmp_task, clear_aclcmp_task
 
 CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
 
@@ -199,8 +199,10 @@ class AclCompare(BaseCommand):
 
     def handle(self, args, **kwargs):
         if check_exec_cmd(args.exec):
+            init_aclcmp_task()
             # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
             os.system(args.exec)
+            clear_aclcmp_task()
 
 
 def get_cmd_instance():
