@@ -222,4 +222,4 @@ combined_graph = OnnxGraph.concat_graph(
   | [05_extract_command](../../../examples/cli/debug/surgeon/05_extract_command)         | 对ONNX模型进行子图切分           | 
   | [06_big_kernel_optimize](../../../examples/cli/debug/surgeon/06_big_kernel_optimize) | Transformer类模型大kernel优化 |
   | [07_concatenate_command](../../../examples/cli/debug/surgeon/07_concatenate_command) | 对两幅ONNX图进行拼接            |
-  | [07_concatenate_command](../../../examples/cli/debug/surgeon/08_custom_op)           | 添加自定义算子                 |
+  | [08_custom_op](../../../examples/cli/debug/surgeon/08_custom_op)                     | 添加自定义算子                 |
