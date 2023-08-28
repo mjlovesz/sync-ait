@@ -449,9 +449,15 @@ class InferSession:
         '''
         inputs = []
         shapes = []
-        for feed in feeds:
-            inputs.append(feed)
-            shapes.append(feed.shape)
+        if len(feeds) > 0 and isinstance(feeds[0], np.ndarray):
+            for feed in feeds:
+                basetensor = aclruntime.BaseTensor(array.__array_interface__['data'][0], array.nbytes)
+                inputs.append(basetensor)
+                shapes.append(feed.shape)
+        else:
+            for feed in feeds:
+                inputs.append(feed)
+                shapes.append(feed.shape)
 
         if mode == 'dymshape' or mode == 'dymdims':
             dym_list = []
@@ -490,7 +496,7 @@ class InferSession:
             else:
                 outputs = self.infer(feeds, mode, custom_sizes[0])
         else:
-            self.first_inner_run(inputs, mode, custom_sizes)
+            self.first_inner_run(feeds, mode, custom_sizes)
             for i in range(iteration_times - 1):
                 if (i == iteration_times - 2):
                     outputs = self.inner_run(in_out_list, True, mem_copy)
