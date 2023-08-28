@@ -440,7 +440,35 @@ class InferSession:
         else:
             return
 
-    def iteration_run(self, feeds, in_out_list, iteration_times=1, mem_copy=True):
+    def first_inner_run(self, feeds, mode='static', custom_sizes=[]):
+        '''
+        Parameters:
+            feeds: input data
+            mode: static dymdims dymshapes
+            custom_sizes: must equal to the realsize of outputs
+        '''
+        inputs = []
+        shapes = []
+        for feed in feeds:
+            inputs.append(feed)
+            shapes.append(feed.shape)
+
+        if mode == 'dymshape' or mode == 'dymdims':
+            dym_list = []
+            indesc = self.get_inputs()
+            for i, shape in enumerate(shapes):
+                str_shape = [str(val) for val in shape]
+                dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
+                dym_list.append(dyshape)
+            dyshapes = ';'.join(dym_list)
+            if mode == 'dymshape':
+                self.session.set_dynamic_shape(dyshapes)
+                self.session.set_custom_outsize(custom_sizes)
+            elif mode == 'dymdims':
+                self.session.set_dynamic_dims(dyshapes)
+        return self.session.first_inner_run(self.outputs_names, inputs)
+
+    def iteration_run(self, feeds, in_out_list, iteration_times=1, mem_copy=True, mode='static', custom_sizes=[]):
         '''
             feeds: input datas
             in_out_list: relation between current input datas and last output datas
@@ -457,13 +485,12 @@ class InferSession:
         else:
             inputs = feeds
         if (iteration_times == 1):
-            outputs = self.session.run(self.outputs_names, inputs)
-            # convert to host tensor
-            self.convert_tensors_to_host(outputs)
-            # convert tensor to narray
-            return self.convert_tensors_to_arrays(outputs)
+            if custom_sizes:
+                outputs = self.infer(feeds, mode)
+            else:
+                outputs = self.infer(feeds, mode, custom_sizes[0])
         else:
-            self.session.first_inner_run(self.outputs_names, inputs)
+            self.first_inner_run(inputs, mode, custom_sizes)
             for i in range(iteration_times - 1):
                 if (i == iteration_times - 2):
                     outputs = self.inner_run(in_out_list, True, mem_copy)
