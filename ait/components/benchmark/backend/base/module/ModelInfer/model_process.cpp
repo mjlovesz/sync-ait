@@ -93,7 +93,7 @@ Result ModelProcess::LoadModelFromFile(const string& modelPath)
     }
     struct timeval start = { 0 };
     struct timeval end = { 0 };
-    gettimeofday(&start, nullptr)
+    gettimeofday(&start, nullptr);
     aclError ret = aclmdlLoadFromFile(modelPath.c_str(), &modelId_);
     gettimeofday(&end, nullptr);
     if (ret != ACL_SUCCESS) {
