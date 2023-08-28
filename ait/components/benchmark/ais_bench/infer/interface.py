@@ -451,7 +451,7 @@ class InferSession:
         shapes = []
         if len(feeds) > 0 and isinstance(feeds[0], np.ndarray):
             for feed in feeds:
-                basetensor = aclruntime.BaseTensor(array.__array_interface__['data'][0], array.nbytes)
+                basetensor = aclruntime.BaseTensor(feed.__array_interface__['data'][0], feed.nbytes)
                 inputs.append(basetensor)
                 shapes.append(feed.shape)
         else:
