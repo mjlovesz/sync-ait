@@ -91,6 +91,8 @@ Result ModelProcess::LoadModelFromFile(const string& modelPath)
         ERROR_LOG("has already loaded a model");
         return FAILED;
     }
+    struct timeval start = { 0 };
+    struct timeval end = { 0 };
     gettimeofday(&start, nullptr)
     aclError ret = aclmdlLoadFromFile(modelPath.c_str(), &modelId_);
     gettimeofday(&end, nullptr);
