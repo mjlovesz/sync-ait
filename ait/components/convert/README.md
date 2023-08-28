@@ -72,3 +72,7 @@ ait convert aie --golden-model resnet50.onnx --output-file resnet50.om --soc-ver
 
 #### 使用案例
 更多关于aie子命令的介绍请移步[convert工具使用示例](../../examples/cli/convert/01_basic_usage)
+
+
+## FAQ
+使用convert组件进行模型转换时如遇问题，请先行查阅[FAQ](FAQ.md)
