@@ -91,6 +91,18 @@ class PythonIPC {
     constructor() {
         let python_path = path.join(__dirname, "..", "python", process.platform == "win32" ? "python.exe" : "bin/python")
         python_path = fs.existsSync(python_path) ? python_path : "python"
+
+        if (process.platform === "linux") {
+            const stats = fs.statSync(python_path);
+            const mode = `0${(stats.mode & parseInt('777', 8)).toString(8)}`; // 获取文件的八进制格式权限
+            if (mode == "0550") {
+                console.log(`Python permissions are set correctly to 550 for: ${python_path}`);
+            } else {
+                console.warn(`Python permissions are NOT 550 for: ${python_path}. They are: ${mode}`);
+                return;
+            }
+        }
+
         let app_path = path.join(__dirname, "..", "server.py")
         console.debug(python_path,  [app_path, ...process.argv].join(" "))
         this.process = spawn(python_path, [app_path, ...process.argv])
