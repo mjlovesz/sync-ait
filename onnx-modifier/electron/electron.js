@@ -1,6 +1,6 @@
 
 // electron 模块可以用来控制应用的生命周期和创建原生浏览窗口
-const { app, BrowserWindow, ipcMain, webContents, shell } = require('electron')
+const { app, BrowserWindow, ipcMain, webContents, shell, Menu } = require('electron')
 const { spawn } = require("node:child_process")
 const { EventEmitter } = require('events')
 var fs = require('fs')
@@ -40,6 +40,8 @@ const createWindow = () => {
         }
     })
 
+    Menu.setApplicationMenu(null)
+
     // 加载 index.html
     mainWindow.loadFile('static/index.html')
 }
@@ -66,7 +68,7 @@ app.whenReady().then(() => {
 })
 
 // 除了 macOS 外，当所有窗口都被关闭的时候退出程序。 因此, 通常
-// 对应用程序和它们的菜单栏来说应该时刻保持激活状态, 
+// 对应用程序和它们的菜单栏来说应该时刻保持激活状态,
 // 直到用户使用 Cmd + Q 明确退出
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()
@@ -87,9 +89,11 @@ app.on('web-contents-created', (e, webContents) => {
 
 class PythonIPC {
     constructor() {
+        let python_path = path.join(__dirname, "..", "python", process.platform == "win32" ? "python.exe" : "bin/python")
+        python_path = fs.existsSync(python_path) ? python_path : "python"
         let app_path = path.join(__dirname, "..", "server.py")
-        console.debug('python',  [app_path, ...process.argv].join(" "))
-        this.process = spawn('python', [app_path, ...process.argv])
+        console.debug(python_path,  [app_path, ...process.argv].join(" "))
+        this.process = spawn(python_path, [app_path, ...process.argv])
         this.msg_event = new EventEmitter()
         this.req_index = 9
         this.process_exit_code = null
