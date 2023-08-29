@@ -27,7 +27,7 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --force-reinstall) arg_force_reinstall=--force-reinstall;;
   -f) arg_force_reinstall=--force-reinstall;;
   --full) full_install=--full;;
-  --debug) only_debug=true;;
+  --debug) only_debug=true;only_benchmark=true;;
   --benchmark) only_benchmark=true;;
   --analyze) only_analyze=true;;
   --convert) only_convert=true;;
@@ -119,7 +119,6 @@ install(){
 
   if [ ! -z $only_debug ]
   then
-    only_benchmark=true;
     pre_check_skl2onnx
 
     pip3 install ${CURRENT_DIR}/components/debug/compare \
