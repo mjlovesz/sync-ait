@@ -119,6 +119,7 @@ install(){
 
   if [ ! -z $only_debug ]
   then
+    only_benchmark = true
     pre_check_skl2onnx
 
     pip3 install ${CURRENT_DIR}/components/debug/compare \
