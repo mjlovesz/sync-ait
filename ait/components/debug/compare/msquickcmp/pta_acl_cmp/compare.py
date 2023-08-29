@@ -55,7 +55,7 @@ CSV_HEADER = [DATA_ID, PTA_DATA_PATH, PTA_DTYPE, PTA_SHAPE, PTA_MAX_VALUE, PTA_M
 CSV_HEADER.extend(list(cmp_alg_map.keys()))
 CSV_HEADER.append(CMP_FAIL_REASON)
 
-ACL_DATA_MAP_FILE = "/tmp/ait_compare_acl_map.txt"
+ACL_DATA_MAP_FILE = "ait_compare_acl_map.txt"
 
 token_counts = 0
 
@@ -197,11 +197,10 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
             data_path = os.path.join(acl_data_dir, data_id + '_tensor.bin')
             data = save_acl_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=data_path)
         elif tensor_path:  # low-level
-            pid = os.getpid()
-            dump_path = str(pid) + "_DUMP_PATH"
-            tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
-                                       os.getenv(dump_path), task_id, tensor_path)
             write_acl_map_file(tensor_path)
+            pid = os.getpid()
+            tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
+                                       str(pid), task_id, tensor_path)
             data = save_acl_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
 
     data.to_csv(csv_path, index=False)
@@ -218,12 +217,14 @@ def write_acl_map_file(tensor_path):
         with open(acl_map_file_path, 'r') as file:
             tensor_paths = file.readlines()
 
-        if tensor_path not in tensor_paths:
+        if tensor_path + "\n" not in tensor_paths:
             with open(acl_map_file_path, mode="a") as file:
-                file.write(tensor_path + "\n")
+                file.write(tensor_path)
+                file.write("\n")
     else:
         with open(acl_map_file_path, mode="a") as file:
-            file.write(tensor_path + "\n")
+            file.write(tensor_path)
+            file.write("\n")
 
 
 def compare_tensor(csv_data: pd.DataFrame):
