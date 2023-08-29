@@ -17,7 +17,7 @@ chmod u+x install.sh
 
 - 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit软件包。建议安装CANN商业版6.3.RC1以上版本。
 - 请参见《[GCC安装指引](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000091.html)》安装GCC编译器7.3.0版本。
-- 安装python3.7.5。
+- Python版本：支持Python3.7.x、Python3.8.x、Python3.9.x(**如使用TensorFlow模型的精度对比功能则需要Python3.7.x版本**)。
 
 ### 工具安装方式
 
