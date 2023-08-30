@@ -449,15 +449,22 @@ class InferSession:
         '''
         inputs = []
         shapes = []
-        if len(feeds) > 0 and isinstance(feeds[0], np.ndarray):
-            for feed in feeds:
-                basetensor = aclruntime.BaseTensor(feed.__array_interface__['data'][0], feed.nbytes)
-                inputs.append(basetensor)
-                shapes.append(feed.shape)
-        else:
-            for feed in feeds:
-                inputs.append(feed)
-                shapes.append(feed.shape)
+        for feed in feeds:
+            if type(feed) is np.ndarray:
+                infer_input = feed
+                shapes.append(infer_input.shape)
+            elif type(feed) in NP_TYPE_LIST:
+                infer_input = np.array(feed)
+                shapes.append([feed.size])
+            elif hasattr(feed, 'type') and feed.type() in TORCH_TENSOR_LIST:
+                infer_input = feed.numpy()
+                if not feed.is_contiguous():
+                    infer_input = np.ascontiguousarray(infer_input)
+                shapes.append(infer_input.shape)
+            else:
+                raise RuntimeError('type:{} invalid'.format(type(feed)))
+            basetensor = aclruntime.BaseTensor(infer_input.__array_interface__['data'][0], infer_input.nbytes)
+            inputs.append(basetensor)
 
         if mode == 'dymshape' or mode == 'dymdims':
             dym_list = []
@@ -482,14 +489,6 @@ class InferSession:
             mem_copy: loop param will be fixedly set as 1, in infer iteration, without any memory copy in device
             return outputs after infer
         '''
-        if len(feeds) > 0 and isinstance(feeds[0], np.ndarray):
-            # if feeds is ndarray list, convert to baseTensor
-            inputs = []
-            for array in feeds:
-                basetensor = aclruntime.BaseTensor(array.__array_interface__['data'][0], array.nbytes)
-                inputs.append(basetensor)
-        else:
-            inputs = feeds
         if (iteration_times == 1):
             if custom_sizes:
                 outputs = self.infer(feeds, mode)
