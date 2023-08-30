@@ -188,7 +188,7 @@ main()
     model_url="https://download.pytorch.org/models/resnet18-f37072fd.pth"
     resnet_pth_file="$SAMPLEDATA_PATH/pth_resnet18.pth"
     if [ ! -f $resnet_pth_file ]; then
-        try_download_url $model_url $resnet_pth_file || { echo "donwload stubs failed";return 1; }
+        try_download_url $model_url $resnet_pth_file || { echo "donwload stubs failed";return $ret_failed; }
     fi
     resnet_onnx_file="$SAMPLEDATA_PATH/pth_resnet18.onnx"
     input_tensor_name="image"
@@ -197,33 +197,36 @@ main()
         get_convert_file $convert_file_palsth || { echo "get convert file failed";return $ret_failed; }
         chmod 750 $convert_file_path
         cd $SAMPLEDATA_PATH
-        python3 $convert_file_path --checkpoint $resnet_pth_file --save_dir $SAMPLEDATA_PATH/resnet18.onnx || { echo "convert pth to onnx failed";return $ret_failed; }
+        $PYTHON_COMMAND $convert_file_path --checkpoint $resnet_pth_file --save_dir $SAMPLEDATA_PATH/resnet18.onnx || { echo "convert pth to onnx failed";return $ret_failed; }
         mv $SAMPLEDATA_PATH/resnet18.onnx $resnet_onnx_file
         cd -
     fi
 
+    echo "Start convert onnx to om, it may take a few minutes"
     staticbatch="4"
-    convert_staticbatch_om $resnet_onnx_file $SOC_VERSION "${staticbatch[*]}" $input_tensor_name || { echo "convert static om failed";return 1; }
+    convert_staticbatch_om $resnet_onnx_file $SOC_VERSION "${staticbatch[*]}" $input_tensor_name || { echo "convert static om failed";return $ret_failed; }
 
     dymbatch="1,2,4,8,16"
-    convert_dymbatch_om $resnet_onnx_file $SOC_VERSION $dymbatch $input_tensor_name || { echo "convert dymbatch om failed";return 1; }
+    convert_dymbatch_om $resnet_onnx_file $SOC_VERSION $dymbatch $input_tensor_name || { echo "convert dymbatch om failed";return $ret_failed; }
 
     dymhw="224,224;448,448"
-    convert_dymhw_om $resnet_onnx_file $SOC_VERSION $dymhw $input_tensor_name || { echo "convert dymhw om failed";return 1; }
+    convert_dymhw_om $resnet_onnx_file $SOC_VERSION $dymhw $input_tensor_name || { echo "convert dymhw om failed";return $ret_failed; }
 
     dymdims="1,224,224;8,448,448"
-    convert_dymdim_om $resnet_onnx_file $SOC_VERSION $dymdims $input_tensor_name || { echo "convert dymdim om failed";return 1; }
-
+    convert_dymdim_om $resnet_onnx_file $SOC_VERSION $dymdims $input_tensor_name || { echo "convert dymdim om failed";return $ret_failed; }
 
     # dymshapes 310 不支持，310P支持
     if [ $SOC_VERSION != "Ascend310" ]; then
         echo "test dymshape enabled"
         dymshapes="[1~16,3,200~300,200~300]"
-        convert_dymshape_om $resnet_onnx_file $SOC_VERSION $dymshapes $input_tensor_name || { echo "convert dymshape om failed";return 1; }
+        convert_dymshape_om $resnet_onnx_file $SOC_VERSION $dymshapes $input_tensor_name || { echo "convert dymshape om failed";return $ret_failed; }
         if [ ! -f $SAMPLEDATA_PATH/pth_resnet18_dymshape.om ]; then
             mv $SAMPLEDATA_PATH/pth_resnet18_dymshape*.om $SAMPLEDATA_PATH/pth_resnet18_dymshape.om
         fi
     fi
+    echo "All atc finished!"
+
+    $PYTHON_COMMAND generate_datasets.py || { echo "generate datasets failed";return $ret_failed; }
 }
 
 main "$@"
