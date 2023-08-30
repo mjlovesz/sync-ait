@@ -52,10 +52,10 @@ PIXEL_VAR_RECI_CHN_MIN = -65504
 PIXEL_VAR_RECI_CHN_MAX = 65504
 
 TORCH_TENSOR_LIST = ['torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor', 'torch.BFloat16Tensor',
-                     'torch.ByteTensor', 'torch.CharTensor', 'torch.ShortTensor', 'torch.LongTensor',
-                     'torch.BoolTensor', 'torch.IntTensor']
+    'torch.ByteTensor', 'torch.CharTensor', 'torch.ShortTensor', 'torch.LongTensor',
+    'torch.BoolTensor', 'torch.IntTensor']
 NP_TYPE_LIST = [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16,
-                np.uint32, np.float16, np.float32, np.float64]
+    np.uint32, np.float16, np.float32, np.float64]
 
 logger = logging.getLogger(__name__)
 
@@ -245,8 +245,8 @@ class InferSession:
             tmp_csc_params = list()
             tmp_csc_params.append(tmp_csc_switch)
             options = ['matrix_r0c0', 'matrix_r0c1', 'matrix_r0c2', 'matrix_r1c0', 'matrix_r1c1', 'matrix_r1c2',
-                       'matrix_r2c0', 'matrix_r2c1', 'matrix_r2c2', 'output_bias_0', 'output_bias_1', 'output_bias_2',
-                       'input_bias_0', 'input_bias_1', 'input_bias_2']
+                'matrix_r2c0', 'matrix_r2c1', 'matrix_r2c2', 'output_bias_0', 'output_bias_1', 'output_bias_2',
+                'input_bias_0', 'input_bias_1', 'input_bias_2']
             for option in options:
                 tmp_csc_params.append(0 if option_list.count(option) == 0 else cfg.getint('aipp_op', option))
 
@@ -438,15 +438,17 @@ class InferSession:
         if (get_outputs):
             return outputs
         else:
-            return
+            return None
 
-    def first_inner_run(self, feeds, mode='static', custom_sizes=[]):
+    def first_inner_run(self, feeds, mode='static', custom_sizes=None):
         '''
         Parameters:
             feeds: input data
             mode: static dymdims dymshapes
             custom_sizes: must equal to the realsize of outputs
         '''
+        if not custom_sizes:
+            custom_sizes = []
         inputs = []
         shapes = []
         for feed in feeds:
@@ -481,7 +483,7 @@ class InferSession:
                 self.session.set_dynamic_dims(dyshapes)
         return self.session.first_inner_run(self.outputs_names, inputs)
 
-    def iteration_run(self, feeds, in_out_list, iteration_times=1, mem_copy=True, mode='static', custom_sizes=[]):
+    def iteration_run(self, feeds, in_out_list, iteration_times=1, mem_copy=True, mode='static', custom_sizes=None):
         '''
             feeds: input datas
             in_out_list: relation between current input datas and last output datas
@@ -489,11 +491,14 @@ class InferSession:
             mem_copy: loop param will be fixedly set as 1, in infer iteration, without any memory copy in device
             return outputs after infer
         '''
+        if not custom_sizes:
+            custom_sizes = []
         if (iteration_times == 1):
-            if custom_sizes:
+            if not custom_sizes:
                 outputs = self.infer(feeds, mode)
             else:
                 outputs = self.infer(feeds, mode, custom_sizes[0])
+            return outputs
         else:
             self.first_inner_run(feeds, mode, custom_sizes)
             for i in range(iteration_times - 1):
