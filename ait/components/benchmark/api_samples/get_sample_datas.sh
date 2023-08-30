@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,8 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-#!/bin/bash
+declare -i ret_ok=0
+declare -i ret_failed=1
 CUR_PATH=$(dirname $(readlink -f "$0"))
+SOC_VERSION=""
 
 try_download_url() {
     local _url=$1
@@ -25,7 +29,7 @@ try_download_url() {
         echo "download cmd:$cmd targetfile:$ OK"
     else
         echo "downlaod targetfile by $cmd Failed please check network or manual download to target file"
-        return 1
+        return $ret_failed
     fi
 }
 
@@ -35,10 +39,23 @@ function get_convert_file()
     wget $convert_url -O $1 --no-check-certificate
 }
 
-function get_aippConfig_file()
+function get_npu_type()
 {
-    local aipp_config_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/aipp_resnet50.aippconfig"
-    wget $aipp_config_url -O $1 --no-check-certificate
+    get_npu_310=`lspci | grep d100`
+    get_npu_310P3=`lspci | grep d500`
+    get_npu_310B=`lspci | grep d107`
+    if [[ $get_npu_310 != "" ]];then
+        SOC_VERSION="Ascend310"
+        echo "npu is Ascend310, dymshape sample not supported"
+    elif [[ $get_npu_310P3 != "" ]];then
+        SOC_VERSION="Ascend310P3"
+        echo "npu is Ascend310P3"
+    elif [[ $get_npu_310B != "" ]];then
+        SOC_VERSION="Ascend310B"
+        echo "npu is Ascend310B"
+    else
+        return $ret_failed
+    fi
 }
 
 convert_staticbatch_om()
@@ -163,28 +180,25 @@ convert_dymshape_om()
 
 main()
 {
-    SOC_VERSION=${1:-"Ascend310P3"}
-    PYTHON_COMMAND=${2:-"python3"}
-    BENCKMARK_DT_MODE=${3:-"simple"}
-    TESTDATA_PATH=$CUR_PATH/testdata/resnet50/model
-    [ -d $TESTDATA_PATH ] || mkdir -p $TESTDATA_PATH
+    get_npu_type() || { echo "get npu type failed";return $ret_failed; }
+    PYTHON_COMMAND="python3"
+    SAMPLEDATA_PATH=$CUR_PATH/sampledata/resnet18/model
+    [ -d $SAMPLEDATA_PATH ] || mkdir -p $SAMPLEDATA_PATH
 
-    model_url="https://download.pytorch.org/models/resnet50-0676ba61.pth"
-    resnet_pth_file="$TESTDATA_PATH/pth_resnet50.pth"
+    model_url="https://download.pytorch.org/models/resnet18-f37072fd.pth"
+    resnet_pth_file="$SAMPLEDATA_PATH/pth_resnet18.pth"
     if [ ! -f $resnet_pth_file ]; then
         try_download_url $model_url $resnet_pth_file || { echo "donwload stubs failed";return 1; }
     fi
-
-    cp $CUR_PATH/create_multi_inputs_onnx.py $TESTDATA_PATH/create_multi_inputs_onnx.py
-    resnet_onnx_file="$TESTDATA_PATH/pth_resnet50.onnx"
-    input_tensor_name="actual_input_1"
+    resnet_onnx_file="$SAMPLEDATA_PATH/pth_resnet18.onnx"
+    input_tensor_name="image"
     if [ ! -f $resnet_onnx_file ]; then
-        # generate convert_pth_to_onnx.py
-        CONVERT_FILE_PATH=$TESTDATA_PATH/resnet50_convert_pth_to_onnx.py
-        get_convert_file $CONVERT_FILE_PATH || { echo "get convert file failed";return 1; }
-        cd $TESTDATA_PATH/
-        $PYTHON_COMMAND $CONVERT_FILE_PATH $resnet_pth_file || { echo "convert pth to onnx failed";return 1; }
-        mv $TESTDATA_PATH/resnet50_official.onnx $resnet_onnx_file
+        convert_file_path=$SAMPLEDATA_PATH/resnet18_pth2onnx.py
+        get_convert_file $convert_file_path || { echo "get convert file failed";return $ret_failed; }
+        chmod 750 $convert_file_path
+        cd $SAMPLEDATA_PATH
+        python3 $convert_file_path --checkpoint $pth_file --save_dir $CUR_PATH/onnx/resnet18.onnx || { echo "convert pth to onnx failed";return $ret_failed; }
+        mv $SAMPLEDATA_PATH/resnet18.onnx $resnet_onnx_file
         cd -
     fi
 
@@ -202,12 +216,12 @@ main()
 
 
     # dymshapes 310 不支持，310P支持
-    if [ $BENCKMARK_DT_MODE == "full" ]; then
+    if [ $SOC_VERSION != "Ascend310" ]; then
         echo "test dymshape enabled"
         dymshapes="[1~16,3,200~300,200~300]"
         convert_dymshape_om $resnet_onnx_file $SOC_VERSION $dymshapes $input_tensor_name || { echo "convert dymshape om failed";return 1; }
-        if [ ! -f $TESTDATA_PATH/pth_resnet50_dymshape.om ]; then
-            mv $TESTDATA_PATH/pth_resnet50_dymshape*.om $TESTDATA_PATH/pth_resnet50_dymshape.om
+        if [ ! -f $SAMPLEDATA_PATH/pth_resnet18_dymshape.om ]; then
+            mv $SAMPLEDATA_PATH/pth_resnet18_dymshape*.om $SAMPLEDATA_PATH/pth_resnet18_dymshape.om
         fi
     fi
 }
