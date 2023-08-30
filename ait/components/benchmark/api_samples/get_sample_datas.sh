@@ -180,7 +180,7 @@ convert_dymshape_om()
 
 main()
 {
-    get_npu_type() || { echo "get npu type failed";return $ret_failed; }
+    get_npu_type || { echo "get npu type failed";return $ret_failed; }
     PYTHON_COMMAND="python3"
     SAMPLEDATA_PATH=$CUR_PATH/sampledata/resnet18/model
     [ -d $SAMPLEDATA_PATH ] || mkdir -p $SAMPLEDATA_PATH
