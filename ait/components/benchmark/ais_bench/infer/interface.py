@@ -495,6 +495,63 @@ class InferSession:
             outputs[i] = self.convert_tensors_to_arrays(output)
         return outputs
 
+    def _static_prepare(self, shapes, custom_sizes):
+        self.set_staticbatch()
+
+    def _dymbatch_prepare(self, shapes, custom_sizes):
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        for i, shape in enumerate(shapes):
+            for j, dim in enumerate(shape):
+                if (indesc[i].shape[j] < 0):
+                    self.set_dynamic_batchsize(f"{dim}")
+                    return
+                if (indesc[i].shape[j] !=  dim):
+                    raise RuntimeError("input datas and intensors dim not matched!")
+        raise RuntimeError("not a dymbatch model!")
+
+    def _dymhw_prepare(self, shapes, custom_sizes):
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        for i, shape in enumerate(shapes):
+            if (indesc[i][2] < 0 and indesc[i][3] < 0):
+                self.set_dynamic_hw(shape[2], shape[3])
+                return
+        raise RuntimeError("not a dymhw model!")
+
+    def _dymdims_prepare(self, shapes, custom_sizes):
+        dym_list = []
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        for i, shape in enumerate(shapes):
+            str_shape = [str(val) for val in shape]
+            dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
+            dym_list.append(dyshape)
+        dyshapes = ';'.join(dym_list)
+        self.session.set_dynamic_dims(dyshapes)
+
+    def _dymshapes_prepare(self, shapes, custom_sizes):
+        dym_list = []
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        outdesc = self.get_outputs()
+        for i, shape in enumerate(shapes):
+            str_shape = [str(val) for val in shape]
+            dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
+            dym_list.append(dyshape)
+        dyshapes = ';'.join(dym_list)
+        self.session.set_dynamic_shape(dyshapes)
+        if isinstance(custom_sizes, int):
+            custom_sizes = [custom_sizes] * len(outdesc)
+        elif not isinstance(custom_sizes, list):
+            raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
+                custom_sizes, type(custom_sizes)))
+        self.session.set_custom_outsize(custom_sizes)
+
     def infer(self, feeds, mode='static', custom_sizes=100000):
         '''
         Parameters:
@@ -522,25 +579,19 @@ class InferSession:
                 raise RuntimeError('type:{} invalid'.format(type(feed)))
             inputs.append(infer_input)
 
-        if mode == 'dymshape' or mode == 'dymdims':
-            dym_list = []
-            indesc = self.get_inputs()
-            outdesc = self.get_outputs()
-            for i, shape in enumerate(shapes):
-                str_shape = [str(val) for val in shape]
-                dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
-                dym_list.append(dyshape)
-            dyshapes = ';'.join(dym_list)
-            if mode == 'dymshape':
-                self.session.set_dynamic_shape(dyshapes)
-                if isinstance(custom_sizes, int):
-                    custom_sizes = [custom_sizes] * len(outdesc)
-                elif not isinstance(custom_sizes, list):
-                    raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
-                        custom_sizes, type(custom_sizes)))
-                self.session.set_custom_outsize(custom_sizes)
-            elif mode == 'dymdims':
-                self.session.set_dynamic_dims(dyshapes)
+        infer_mode_switch = {
+            "static": self._static_prepare,
+            "dymbatch": self._dymbatch_prepare,
+            "dymhw": self._dymhw_prepare,
+            "dymdims": self._dymdims_prepare,
+            "dumshape": self._dymshape_prepare
+        }
+        if infer_mode_switch.get(mode) is not None:
+            infer_mode_switch.get(mode)(shapes, custom_sizes)
+        else:
+            raise RuntimeError('wrong infer_mode:{}, only support \"static\",\"dymbatch\",\"dymhw\", \
+                \"dymdims\",\"dymshape\"'.format(mode))
+
         return self.run(inputs, out_array=True)
 
 

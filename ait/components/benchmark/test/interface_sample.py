@@ -37,6 +37,34 @@ def infer_simple():
     logging.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
+def infer_dymbatch():
+    # only for resnet50 dymbatch
+    device_id = 0
+    session = InferSession(device_id, model_path)
+
+    # create new numpy data according inputs info
+    ndata = np.full([4,3,224,224], 1).astype(np.float32)
+
+    # in is numpy list and ouput is numpy list
+    outputs = session.infer([ndata], "dymbatch")
+    logging.info(f"outputs:{outputs} type:{type(outputs)}")
+    logging.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
+
+
+def infer_dymhw():
+    # only for resnet50 dymbatch
+    device_id = 0
+    session = InferSession(device_id, model_path)
+
+    # create new numpy data according inputs info
+    ndata = np.full([1,3,224,224], 1).astype(np.float32)
+
+    # in is numpy list and ouput is numpy list
+    outputs = session.infer([ndata], "dymhw")
+    logging.info(f"outputs:{outputs} type:{type(outputs)}")
+    logging.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
+
+
 def infer_pipeline():
     device_id = 0
     session = InferSession(device_id, model_path)
