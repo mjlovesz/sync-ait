@@ -43,7 +43,7 @@ def str2bool(v):
 
 class CompareCommand(BaseCommand):
     def __init__(self, *args, **kwargs):
-        super(CompareCommand, self).init(*args, **kwargs)
+        super(CompareCommand, self).__init__(*args, **kwargs)
         self.parser = None
 
     def add_arguments(self, parser):
