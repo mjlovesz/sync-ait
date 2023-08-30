@@ -102,7 +102,7 @@ Result ModelProcess::LoadModelFromFile(const string& modelPath)
         return FAILED;
     }
     float time_cost = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000.000;
-    INFO_LOG("model aclmdlLoadFromFile cost : %f (ms)", time_cost);
+    DEBUG_LOG("model aclmdlLoadFromFile cost : %f (ms)", time_cost);
     loadFlag_ = true;
     INFO_LOG("load model %s success", modelPath.c_str());
     return SUCCESS;
