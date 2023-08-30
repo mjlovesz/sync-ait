@@ -505,7 +505,7 @@ class InferSession:
         for i, shape in enumerate(shapes):
             for j, dim in enumerate(shape):
                 if (indesc[i].shape[j] < 0):
-                    self.set_dynamic_batchsize(f"{dim}")
+                    self.set_dynamic_batchsize(dim)
                     return
                 if (indesc[i].shape[j] !=  dim):
                     raise RuntimeError("input datas and intensors dim not matched!")
