@@ -51,11 +51,15 @@ PIXEL_MIN_CHN_MAX = 255
 PIXEL_VAR_RECI_CHN_MIN = -65504
 PIXEL_VAR_RECI_CHN_MAX = 65504
 
-TORCH_TENSOR_LIST = ['torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor', 'torch.BFloat16Tensor',
+TORCH_TENSOR_LIST = [
+    'torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor', 'torch.BFloat16Tensor',
     'torch.ByteTensor', 'torch.CharTensor', 'torch.ShortTensor', 'torch.LongTensor',
-    'torch.BoolTensor', 'torch.IntTensor']
-NP_TYPE_LIST = [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16,
-    np.uint32, np.float16, np.float32, np.float64]
+    'torch.BoolTensor', 'torch.IntTensor'
+]
+NP_TYPE_LIST = [
+    np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16,
+    np.uint32, np.float16, np.float32, np.float64
+]
 
 logger = logging.getLogger(__name__)
 
@@ -244,9 +248,11 @@ class InferSession:
         elif (tmp_csc_switch == CSC_SWITCH_ON):
             tmp_csc_params = list()
             tmp_csc_params.append(tmp_csc_switch)
-            options = ['matrix_r0c0', 'matrix_r0c1', 'matrix_r0c2', 'matrix_r1c0', 'matrix_r1c1', 'matrix_r1c2',
+            options = [
+                'matrix_r0c0', 'matrix_r0c1', 'matrix_r0c2', 'matrix_r1c0', 'matrix_r1c1', 'matrix_r1c2',
                 'matrix_r2c0', 'matrix_r2c1', 'matrix_r2c2', 'output_bias_0', 'output_bias_1', 'output_bias_2',
-                'input_bias_0', 'input_bias_1', 'input_bias_2']
+                'input_bias_0', 'input_bias_1', 'input_bias_2'
+            ]
             for option in options:
                 tmp_csc_params.append(0 if option_list.count(option) == 0 else cfg.getint('aipp_op', option))
 
@@ -434,11 +440,13 @@ class InferSession:
             如果本次推理沿用上次推理的inputdatas数据，则in_out_list为[-1, -1, -1, ...]
             如果本次推理inputdatas_current[i] = outputdatas_last[j], 那么in_out_list[i] = j
         '''
-        outputs = self.session.inner_run(in_out_list, self.outputs_names, get_outputs, mem_copy)
         if (get_outputs):
+            outputs = self.session.inner_run(in_out_list, self.outputs_names, get_outputs, mem_copy)
             return outputs
         else:
-            return None
+            self.session.inner_run(in_out_list, self.outputs_names, get_outputs, mem_copy)
+            outputs = None
+            return outputs
 
     def first_inner_run(self, feeds, mode='static', custom_sizes=None):
         '''
