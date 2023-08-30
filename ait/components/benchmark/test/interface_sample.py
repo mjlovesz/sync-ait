@@ -43,7 +43,7 @@ def infer_dymbatch():
     session = InferSession(device_id, model_path)
 
     # create new numpy data according inputs info
-    ndata = np.full([4,3,224,224], 1).astype(np.float32)
+    ndata = np.full([4,3,256,256], 1).astype(np.uint8)
 
     # in is numpy list and ouput is numpy list
     outputs = session.infer([ndata], "dymbatch")
@@ -150,5 +150,7 @@ def get_model_info():
         logging.info(f"outputs info i:{i} shape:{info.shape} type:{info.datatype} val: \
                      {int(info.datatype)} realsize:{info.realsize} size:{info.size}")
 
-infer_simple()
+# infer_simple()
+# infer_dymbatch()
+# infer_dymhw()
 
