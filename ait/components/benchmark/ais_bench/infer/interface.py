@@ -533,7 +533,7 @@ class InferSession:
         dyshapes = ';'.join(dym_list)
         self.session.set_dynamic_dims(dyshapes)
 
-    def _dymshapes_prepare(self, shapes, custom_sizes):
+    def _dymshape_prepare(self, shapes, custom_sizes):
         dym_list = []
         indesc = self.get_inputs()
         if (len(shapes) != len(indesc)):
@@ -584,7 +584,7 @@ class InferSession:
             "dymbatch": self._dymbatch_prepare,
             "dymhw": self._dymhw_prepare,
             "dymdims": self._dymdims_prepare,
-            "dumshape": self._dymshape_prepare
+            "dymshape": self._dymshape_prepare
         }
         if infer_mode_switch.get(mode) is not None:
             infer_mode_switch.get(mode)(shapes, custom_sizes)
