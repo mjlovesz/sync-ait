@@ -35,7 +35,7 @@ try_download_url() {
 
 function get_convert_file()
 {
-    local convert_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/pth2onnx.py"
+    local convert_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet18_for_PyTorch/resnet18_pth2onnx.py"
     wget $convert_url -O $1 --no-check-certificate
 }
 
