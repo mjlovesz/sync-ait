@@ -27,7 +27,7 @@ cur_bin_nor_path = os.path.join(base_path, f"sampledata/resnet18/input/rand_data
 if os.path.exists(cur_bin_nor_path):
     shutil.rmtree(cur_bin_nor_path)
 os.makedirs(cur_bin_nor_path)
-cur_npy_nor_path = os.path.join(base_path, f"sampledata/resnet50/input/rand_dataset_npy_{DATA_NUM}")
+cur_npy_nor_path = os.path.join(base_path, f"sampledata/resnet18/input/rand_dataset_npy_{DATA_NUM}")
 if os.path.exists(cur_npy_nor_path):
     shutil.rmtree(cur_npy_nor_path)
 os.makedirs(cur_npy_nor_path)
