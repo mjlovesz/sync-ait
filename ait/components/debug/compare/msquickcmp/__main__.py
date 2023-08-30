@@ -20,7 +20,6 @@ from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common.utils import logger, check_exec_cmd
 
-
 CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
 
@@ -43,7 +42,12 @@ def str2bool(v):
 
 
 class CompareCommand(BaseCommand):
+    def __init__(self, *args, **kwargs):
+        super(CompareCommand, self).init(*args, **kwargs)
+        self.parser = None
+
     def add_arguments(self, parser):
+        self.parser = parser
         parser.add_argument(
             '-gm',
             '--golden-model',
@@ -69,7 +73,7 @@ class CompareCommand(BaseCommand):
             default='',
             dest="input_data_path",
             type=safe_string,
-            help='The input data path of the model. Separate multiple inputs with commas(,).' 
+            help='The input data path of the model. Separate multiple inputs with commas(,).'
                  ' E.g: input_0.bin,input_1.bin')
         parser.add_argument(
             '-c',
@@ -186,11 +190,10 @@ class CompareCommand(BaseCommand):
             default='',
             help="the quant fusion rule file path")
 
-
-
     def handle(self, args):
         if not args.golden_model:
             logger.error("The following arguments are required: -gm/--golden-model")
+            self.parser.print_usage()
             return
 
         cmp_args = CmpArgsAdapter(args.golden_model, args.om_model, args.weight_path, args.input_data_path,
