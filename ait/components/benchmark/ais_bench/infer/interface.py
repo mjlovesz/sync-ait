@@ -516,7 +516,7 @@ class InferSession:
         if (len(shapes) != len(indesc)):
             raise RuntimeError("input datas and intensors nums not matched!")
         for i, shape in enumerate(shapes):
-            if (indesc[i][2] < 0 and indesc[i][3] < 0):
+            if (indesc[i].shape[2] < 0 and indesc[i].shape[3] < 0):
                 self.set_dynamic_hw(shape[2], shape[3])
                 return
         raise RuntimeError("not a dymhw model!")
