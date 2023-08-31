@@ -37,7 +37,10 @@ APP_ERROR ModelInferenceProcessor::GetModelDescInfo()
         if (dymAIPPIndexSet_.count(i) != 0) {
             continue;
         }
-        CHECK_RET_EQ(processModel->GetInTensorDesc(i, info.name, datatype, info.format, info.shape, info.size), SUCCESS);
+        CHECK_RET_EQ(
+            processModel->GetInTensorDesc(i, info.name, datatype, info.format, info.shape, info.size),
+            SUCCESS
+        );
         info.realsize = info.size;
         info.datatype = (TensorDataType)datatype;
         modelDesc_.inTensorsDesc.push_back(info);
@@ -50,7 +53,10 @@ APP_ERROR ModelInferenceProcessor::GetModelDescInfo()
     modelDesc_.outTensorsDesc.clear();
     modelDesc_.outTensorsDesc.reserve(numOutputs);
     for (size_t i = 0; i < numOutputs; i++) {
-        CHECK_RET_EQ(processModel->GetOutTensorDesc(i, info.name, datatype, info.format, info.shape, info.size), SUCCESS);
+        CHECK_RET_EQ(
+            processModel->GetOutTensorDesc(i, info.name, datatype, info.format, info.shape, info.size),
+            SUCCESS
+        );
         info.realsize = info.size;
         info.datatype = (TensorDataType)datatype;
         modelDesc_.outTensorsDesc.push_back(info);
@@ -60,7 +66,11 @@ APP_ERROR ModelInferenceProcessor::GetModelDescInfo()
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::Init(const std::string& modelPath, std::shared_ptr<SessionOptions> options, const int32_t &deviceId)
+APP_ERROR ModelInferenceProcessor::Init(
+    const std::string& modelPath,
+    std::shared_ptr<SessionOptions> options,
+    const int32_t &deviceId
+)
 {
     options_ = options;
     deviceId_ = deviceId;
@@ -166,7 +176,11 @@ APP_ERROR ModelInferenceProcessor::CreateOutMemoryData(std::vector<MemoryData>& 
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::AddOutTensors(std::vector<MemoryData>& outputs, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors)
+APP_ERROR ModelInferenceProcessor::AddOutTensors(
+    std::vector<MemoryData>& outputs,
+    std::vector<std::string> outputNames,
+    std::vector<TensorBase>& outputTensors
+)
 {
     bool is_dymshape = (dynamicInfo_.dynamicType == DYNAMIC_SHAPE ? true : false);
     size_t realLen;
@@ -178,7 +192,8 @@ APP_ERROR ModelInferenceProcessor::AddOutTensors(std::vector<MemoryData>& output
         realLen = processModel->GetOutTensorLen(index, is_dymshape);
         if (processModel->GetCurOutputShape(index, is_dymshape, i64shape) != SUCCESS) {
             // 针对于动态shape场景 如果无法获取真实的输出shape 先填写一个一维的值 以便后续内存可以导出
-            i64shape.push_back(realLen / aclDataTypeSize(static_cast<aclDataType>(modelDesc_.outTensorsDesc[index].datatype)));
+            auto tmpDataType = static_cast<aclDataType>(modelDesc_.outTensorsDesc[index].datatype);
+            i64shape.push_back(realLen / aclDataTypeSize(tmpDataType));
         }
         DEBUG_LOG("AddOutTensors name:%s index:%zu len:%zu outdescsize:%zu shapesize:%zu",
             name.c_str(), index, realLen, modelDesc_.outTensorsDesc[index].size, i64shape.size());
@@ -196,8 +211,10 @@ APP_ERROR ModelInferenceProcessor::AddOutTensors(std::vector<MemoryData>& output
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(const std::vector<BaseTensor>& feeds,
-                                                                  std::vector<BaseTensor> &inputs)
+APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(
+    const std::vector<BaseTensor>& feeds,
+    std::vector<BaseTensor> &inputs
+)
 {
     for (size_t i = 0; i < feeds.size(); ++i) {
         BaseTensor baseTensor = {};
@@ -213,8 +230,11 @@ APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(const std::vec
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::Inference(const std::vector<BaseTensor>& feeds,
-    std::vector<std::string> &outputNames, std::vector<TensorBase>& outputTensors)
+APP_ERROR ModelInferenceProcessor::Inference(
+    const std::vector<BaseTensor>& feeds,
+    std::vector<std::string> &outputNames,
+    std::vector<TensorBase>& outputTensors
+)
 {
     APP_ERROR ret;
     // create basetensors
@@ -229,8 +249,11 @@ APP_ERROR ModelInferenceProcessor::Inference(const std::vector<BaseTensor>& feed
     return ret;
 }
 
-APP_ERROR ModelInferenceProcessor::FirstInference(const std::vector<BaseTensor>& feeds,
-    std::vector<std::string> &outputNames, std::vector<TensorBase>& outputTensors)
+APP_ERROR ModelInferenceProcessor::FirstInference(
+    const std::vector<BaseTensor>& feeds,
+    std::vector<std::string> &outputNames,
+    std::vector<TensorBase>& outputTensors
+)
 {
     APP_ERROR ret;
     // create basetensors
@@ -246,7 +269,11 @@ APP_ERROR ModelInferenceProcessor::FirstInference(const std::vector<BaseTensor>&
 }
 
 
-APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(const std::map<std::string, TensorBase>& feeds, std::vector<BaseTensor> &inputs)
+APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(
+    const std::map<std::string,
+    TensorBase>& feeds,
+    std::vector<BaseTensor> &inputs
+)
 {
     if (feeds.size() != modelDesc_.inTensorsDesc.size()) {
         ERROR_LOG("intensors size:%zu need size:%zu not match", feeds.size(), modelDesc_.inTensorsDesc.size());
@@ -273,7 +300,11 @@ APP_ERROR ModelInferenceProcessor::CheckInMapAndFillBaseTensor(const std::map<st
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::Inference(const std::map<std::string, TensorBase>& feeds, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors)
+APP_ERROR ModelInferenceProcessor::Inference(
+    const std::map<std::string, TensorBase>& feeds,
+    std::vector<std::string> outputNames,
+    std::vector<TensorBase>& outputTensors
+)
 {
     APP_ERROR ret;
 
@@ -288,8 +319,10 @@ APP_ERROR ModelInferenceProcessor::Inference(const std::map<std::string, TensorB
     return ret;
 }
 
-APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(const std::vector<TensorBase>& feeds,
-                                                                  std::vector<BaseTensor> &inputs)
+APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(
+    const std::vector<TensorBase>& feeds,
+    std::vector<BaseTensor> &inputs
+)
 {
     for (size_t i = 0; i < feeds.size(); ++i) {
         BaseTensor baseTensor = {};
@@ -305,8 +338,11 @@ APP_ERROR ModelInferenceProcessor::CheckInVectorAndFillBaseTensor(const std::vec
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::Inference(const std::vector<TensorBase>& feeds,
-    std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors)
+APP_ERROR ModelInferenceProcessor::Inference(
+    const std::vector<TensorBase>& feeds,
+    std::vector<std::string> outputNames,
+    std::vector<TensorBase>& outputTensors
+)
 {
     APP_ERROR ret;
     // create basetensors
@@ -432,8 +468,10 @@ APP_ERROR ModelInferenceProcessor::SetAippConfigData()
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::GetOutputs(std::vector<std::string> outputNames,
-    std::vector<TensorBase> &outputTensors)
+APP_ERROR ModelInferenceProcessor::GetOutputs(
+    std::vector<std::string> outputNames,
+    std::vector<TensorBase> &outputTensors
+)
 {
     for (const auto& name : outputNames) {
         if (modelDesc_.outnames2Index.find(name) == modelDesc_.outnames2Index.end()) {
@@ -450,8 +488,12 @@ APP_ERROR ModelInferenceProcessor::GetOutputs(std::vector<std::string> outputNam
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::RepeatInference(const std::vector<int>& inOutRelation, std::vector<std::string> &outputNames,
-    std::vector<TensorBase>& outputTensors, const bool get_outputs, const bool mem_copy)
+APP_ERROR ModelInferenceProcessor::RepeatInference(
+    const std::vector<int>& inOutRelation,
+    std::vector<std::string> &outputNames,
+    std::vector<TensorBase>& outputTensors,
+    const bool get_outputs, const bool mem_copy
+)
 {
     APP_ERROR ret = UpdateInputsData(inOutRelation, mem_copy);
     if (ret != APP_ERR_OK) {
@@ -488,8 +530,11 @@ APP_ERROR ModelInferenceProcessor::RepeatInference(const std::vector<int>& inOut
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::FirstInferenceInner(std::vector<BaseTensor> &inputs,
-    std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors)
+APP_ERROR ModelInferenceProcessor::FirstInferenceInner(
+    std::vector<BaseTensor> &inputs,
+    std::vector<std::string> outputNames,
+    std::vector<TensorBase>& outputTensors
+)
 {
     APP_ERROR ret = SetInputsData(inputs);
     if (ret != APP_ERR_OK) {
@@ -524,8 +569,11 @@ APP_ERROR ModelInferenceProcessor::FirstInferenceInner(std::vector<BaseTensor> &
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::ModelInference_Inner(std::vector<BaseTensor> &inputs,
-    std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors)
+APP_ERROR ModelInferenceProcessor::ModelInference_Inner(
+    std::vector<BaseTensor> &inputs,
+    std::vector<std::string> outputNames,
+    std::vector<TensorBase>& outputTensors
+)
 {
     APP_ERROR ret = SetInputsData(inputs);
     if (ret != APP_ERR_OK) {
@@ -608,7 +656,10 @@ APP_ERROR ModelInferenceProcessor::AllocDymAIPPIndexMem()
     for (const auto& index : dymAIPPIndexList_) {
         TensorDesc info;
         int datatype;
-        CHECK_RET_EQ(processModel->GetInTensorDesc(index, info.name, datatype, info.format, info.shape, info.size), SUCCESS);
+        CHECK_RET_EQ(
+            processModel->GetInTensorDesc(index, info.name, datatype, info.format, info.shape, info.size),
+            SUCCESS
+        );
         MemoryData memdata;
         memdata.size = info.size;
         memdata.type = MemoryData::MemoryType::MEMORY_DEVICE;
@@ -627,7 +678,7 @@ APP_ERROR ModelInferenceProcessor::AllocDymAIPPIndexMem()
 
 APP_ERROR ModelInferenceProcessor::FreeDymAIPPMem()
 {
-     for (auto& aippSetIt : dymAIPPIndexSet_) {
+    for (auto& aippSetIt : dymAIPPIndexSet_) {
         if (aippSetIt.second != nullptr) {
             processModel->FreeAIPP(aippSetIt.second);
             aippSetIt.second = nullptr;
@@ -644,7 +695,10 @@ APP_ERROR ModelInferenceProcessor::AllocDyIndexMem()
 
     TensorDesc info;
     int datatype;
-    CHECK_RET_EQ(processModel->GetInTensorDesc(dynamicIndex_, info.name, datatype, info.format, info.shape, info.size), SUCCESS);
+    CHECK_RET_EQ(
+        processModel->GetInTensorDesc(dynamicIndex_, info.name, datatype, info.format, info.shape, info.size),
+        SUCCESS
+    );
 
     dynamicIndexMemory_.size = info.size;
     dynamicIndexMemory_.type = MemoryData::MemoryType::MEMORY_DEVICE;
@@ -669,20 +723,20 @@ APP_ERROR ModelInferenceProcessor::FreeDyIndexMem()
 APP_ERROR ModelInferenceProcessor::FreeDymInfoMem()
 {
     switch (dynamicInfo_.dynamicType) {
-    case DYNAMIC_DIMS:
-        if (dynamicInfo_.dyDims.pDims != nullptr) {
-            free(dynamicInfo_.dyDims.pDims);
-            dynamicInfo_.dyDims.pDims = nullptr;
-        }
-        break;
-    case DYNAMIC_SHAPE:
-        if (dynamicInfo_.dyShape.pShapes != nullptr) {
-            free(dynamicInfo_.dyShape.pShapes);
-            dynamicInfo_.dyShape.pShapes = nullptr;
-        }
-        break;
-    default:
-        break;
+        case DYNAMIC_DIMS:
+            if (dynamicInfo_.dyDims.pDims != nullptr) {
+                free(dynamicInfo_.dyDims.pDims);
+                dynamicInfo_.dyDims.pDims = nullptr;
+            }
+            break;
+        case DYNAMIC_SHAPE:
+            if (dynamicInfo_.dyShape.pShapes != nullptr) {
+                free(dynamicInfo_.dyShape.pShapes);
+                dynamicInfo_.dyShape.pShapes = nullptr;
+            }
+            break;
+        default:
+            break;
     }
 
     return APP_ERR_OK;
@@ -705,8 +759,11 @@ APP_ERROR ModelInferenceProcessor::SetDynamicBatchsize(int batchsize)
     CHECK_RET_EQ(processModel->GetMaxBatchSize(dynamicInfo_.dyBatch.maxbatchsize), SUCCESS);
 
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
-        if (find(modelDesc_.inTensorsDesc[i].shape.begin(), modelDesc_.inTensorsDesc[i].shape.end(), -1) != modelDesc_.inTensorsDesc[i].shape.end()) {
-            modelDesc_.inTensorsDesc[i].realsize = modelDesc_.inTensorsDesc[i].size * batchsize / dynamicInfo_.dyBatch.maxbatchsize;
+        auto tensorBegin = modelDesc_.inTensorsDesc[i].shape.begin();
+        auto tensorEnd = modelDesc_.inTensorsDesc[i].shape.end();
+        if (find(tensorBegin, tensorEnd, -1) != tensorEnd) {
+            modelDesc_.inTensorsDesc[i].realsize = modelDesc_.inTensorsDesc[i].size *
+                batchsize / dynamicInfo_.dyBatch.maxbatchsize;
         }
     }
 
@@ -814,8 +871,11 @@ APP_ERROR ModelInferenceProcessor::SetDynamicHW(int width, int height)
     CHECK_RET_EQ(processModel->GetMaxDynamicHWSize(dynamicInfo_.dyHW.maxHWSize), SUCCESS);
 
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
-        if (find(modelDesc_.inTensorsDesc[i].shape.begin(), modelDesc_.inTensorsDesc[i].shape.end(), -1) != modelDesc_.inTensorsDesc[i].shape.end()) {
-            modelDesc_.inTensorsDesc[i].realsize = modelDesc_.inTensorsDesc[i].size * width * height / dynamicInfo_.dyHW.maxHWSize;
+        auto tensorBegin = modelDesc_.inTensorsDesc[i].shape.begin();
+        auto tensorEnd = modelDesc_.inTensorsDesc[i].shape.end();
+        if (find(tensorBegin, tensorEnd, -1) != tensorEnd) {
+            modelDesc_.inTensorsDesc[i].realsize = modelDesc_.inTensorsDesc[i].size *
+                width * height / dynamicInfo_.dyHW.maxHWSize;
         }
     }
 
@@ -874,7 +934,8 @@ APP_ERROR ModelInferenceProcessor::SetDynamicDims(std::string dymdimsStr)
             continue;
         }
         size_t inindex = modelDesc_.innames2Index[map.first];   // get intensors index by name
-        modelDesc_.inTensorsDesc[inindex].realsize = map.second * aclDataTypeSize(static_cast<aclDataType>(modelDesc_.inTensorsDesc[inindex].datatype));
+        auto tmpDataType = static_cast<aclDataType>(modelDesc_.inTensorsDesc[inindex].datatype);
+        modelDesc_.inTensorsDesc[inindex].realsize = map.second * aclDataTypeSize(tmpDataType);
     }
 
     delete [] dims;
@@ -894,7 +955,10 @@ APP_ERROR ModelInferenceProcessor::SetDynamicShape(std::string dymshapeStr)
     }
 
     std::map<string, std::vector<int64_t>> name2shapesmap;
-    Result ret = processModel->CheckDynamicShape(dym_shape_tmp, name2shapesmap, dynamicInfo_.dyShape.pShapes->dims_num);
+    Result ret = processModel->CheckDynamicShape(
+        dym_shape_tmp, name2shapesmap,
+        dynamicInfo_.dyShape.pShapes->dims_num
+    );
     if (ret != SUCCESS) {
         ERROR_LOG("check dynamic shape failed");
         free(dynamicInfo_.dyShape.pShapes);
@@ -917,7 +981,8 @@ APP_ERROR ModelInferenceProcessor::SetDynamicShape(std::string dymshapeStr)
             continue;
         }
         size_t inindex = modelDesc_.innames2Index[map.first];   // get intensors index by name
-        modelDesc_.inTensorsDesc[inindex].realsize = map.second * aclDataTypeSize(static_cast<aclDataType>(modelDesc_.inTensorsDesc[inindex].datatype));
+        auto tmpDataType = static_cast<aclDataType>(modelDesc_.inTensorsDesc[inindex].datatype)
+        modelDesc_.inTensorsDesc[inindex].realsize = map.second * aclDataTypeSize(tmpDataType);
     }
 
     dynamicInfo_.dynamicType = DYNAMIC_SHAPE;
@@ -950,32 +1015,32 @@ APP_ERROR ModelInferenceProcessor::SetDynamicInfo()
 {
     pair<uint64_t, uint64_t> dynamicHW;
     switch (dynamicInfo_.dynamicType) {
-    case DYNAMIC_BATCH:
-        CHECK_RET_EQ(processModel->SetDynamicBatchSize(dynamicInfo_.dyBatch.batchSize), SUCCESS);
-        break;
-    case DYNAMIC_HW:
-        dynamicHW = {dynamicInfo_.dyHW.imageSize.width, dynamicInfo_.dyHW.imageSize.height};
-        CHECK_RET_EQ(processModel->SetDynamicHW(dynamicHW), SUCCESS);
-        break;
-    case DYNAMIC_DIMS:
-        if (dynamicInfo_.dyDims.pDims == nullptr) {
-            WARN_LOG("error dynamic dims type but pdims is null");
-        }
-        else {
-            CHECK_RET_EQ(processModel->SetDynamicDims(dynamicInfo_.dyDims.pDims->dym_dims), SUCCESS);
-        }
-        break;
-    case DYNAMIC_SHAPE:
-        if (dynamicInfo_.dyShape.pShapes == nullptr) {
-            WARN_LOG("error dynamic shapes type but pshapes is null");
-        }
-        else {
-            CHECK_RET_EQ(processModel->SetDynamicShape(
-                dynamicInfo_.dyShape.pShapes->dym_shape_map, dynamicInfo_.dyShape.pShapes->dims_num), SUCCESS);
-        }
-        break;
-    default:
-        break;
+        case DYNAMIC_BATCH:
+            CHECK_RET_EQ(processModel->SetDynamicBatchSize(dynamicInfo_.dyBatch.batchSize), SUCCESS);
+            break;
+        case DYNAMIC_HW:
+            dynamicHW = {dynamicInfo_.dyHW.imageSize.width, dynamicInfo_.dyHW.imageSize.height};
+            CHECK_RET_EQ(processModel->SetDynamicHW(dynamicHW), SUCCESS);
+            break;
+        case DYNAMIC_DIMS:
+            if (dynamicInfo_.dyDims.pDims == nullptr) {
+                WARN_LOG("error dynamic dims type but pdims is null");
+            }
+            else {
+                CHECK_RET_EQ(processModel->SetDynamicDims(dynamicInfo_.dyDims.pDims->dym_dims), SUCCESS);
+            }
+            break;
+        case DYNAMIC_SHAPE:
+            if (dynamicInfo_.dyShape.pShapes == nullptr) {
+                WARN_LOG("error dynamic shapes type but pshapes is null");
+            }
+            else {
+                CHECK_RET_EQ(processModel->SetDynamicShape(
+                    dynamicInfo_.dyShape.pShapes->dym_shape_map, dynamicInfo_.dyShape.pShapes->dims_num), SUCCESS);
+            }
+            break;
+        default:
+            break;
     }
     return APP_ERR_OK;
 }

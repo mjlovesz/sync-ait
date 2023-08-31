@@ -60,8 +60,7 @@ struct BaseTensor {
     }
 };
 
-struct TensorDesc
-{
+struct TensorDesc {
     std::string name;
     TensorDataType datatype;
     size_t format;
@@ -163,19 +162,25 @@ public:
      * 2.Execute model infer
      * @return APP_ERROR error code
      */
-    APP_ERROR Inference(const std::vector<TensorBase>& feeds, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors);
+    APP_ERROR Inference(const std::vector<TensorBase>& feeds, std::vector<std::string> outputNames,
+        std::vector<TensorBase>& outputTensors);
 
-    APP_ERROR Inference(const std::map<std::string, TensorBase>& feeds, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors);
+    APP_ERROR Inference(const std::map<std::string, TensorBase>& feeds, std::vector<std::string> outputNames,
+        std::vector<TensorBase>& outputTensors);
 
-    APP_ERROR Inference(const std::vector<BaseTensor>& feeds, std::vector<std::string> &outputNames, std::vector<TensorBase>& outputTensors);
+    APP_ERROR Inference(const std::vector<BaseTensor>& feeds, std::vector<std::string> &outputNames,
+        std::vector<TensorBase>& outputTensors);
 
-    APP_ERROR FirstInference(const std::vector<BaseTensor>& feeds, std::vector<std::string> &outputNames, std::vector<TensorBase>& outputTensors);
+    APP_ERROR FirstInference(const std::vector<BaseTensor>& feeds, std::vector<std::string> &outputNames,
+        std::vector<TensorBase>& outputTensors);
 
     APP_ERROR RepeatInference(const std::vector<int>& inOutRelation, std::vector<std::string> &outputNames,
         std::vector<TensorBase>& outputTensors, const bool get_outputs, const bool mem_copy);
 
-    APP_ERROR FirstInferenceInner(std::vector<BaseTensor> &inputs, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors);
-    APP_ERROR ModelInference_Inner(std::vector<BaseTensor> &inputs, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors);
+    APP_ERROR FirstInferenceInner(std::vector<BaseTensor> &inputs, std::vector<std::string> outputNames,
+        std::vector<TensorBase>& outputTensors);
+    APP_ERROR ModelInference_Inner(std::vector<BaseTensor> &inputs, std::vector<std::string> outputNames,
+        std::vector<TensorBase>& outputTensors);
 
     /**
      * @description get modelDesc
@@ -224,7 +229,8 @@ private:
 
     APP_ERROR DestroyOutMemoryData(std::vector<MemoryData>& outputs);
     APP_ERROR CreateOutMemoryData(std::vector<MemoryData>& outputs);
-    APP_ERROR AddOutTensors(std::vector<MemoryData>& outputs, std::vector<std::string> outputNames, std::vector<TensorBase>& outputTensors);
+    APP_ERROR AddOutTensors(std::vector<MemoryData>& outputs, std::vector<std::string> outputNames,
+        std::vector<TensorBase>& outputTensors);
 
     APP_ERROR GetModelDescInfo();
     APP_ERROR DestroyInferCacheData();
@@ -237,7 +243,8 @@ private:
 
     APP_ERROR CheckInVectorAndFillBaseTensor(const std::vector<BaseTensor>& feeds, std::vector<BaseTensor> &inputs);
     APP_ERROR CheckInVectorAndFillBaseTensor(const std::vector<TensorBase>& feeds, std::vector<BaseTensor> &inputs);
-    APP_ERROR CheckInMapAndFillBaseTensor(const std::map<std::string, TensorBase>& feeds, std::vector<BaseTensor> &inputs);
+    APP_ERROR CheckInMapAndFillBaseTensor(const std::map<std::string, TensorBase>& feeds,
+        std::vector<BaseTensor> &inputs);
 
 private:
     ModelDesc modelDesc_;
