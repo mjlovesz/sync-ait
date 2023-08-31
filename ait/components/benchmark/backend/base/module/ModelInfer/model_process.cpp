@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-#include "model_process.h"
 #include <cstddef>
-#include "utils.h"
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include "model_process.h"
+#include "utils.h"
 
 using namespace std;
 bool g_isDevice = true;
