@@ -218,7 +218,7 @@ Result ModelProcess::CheckDynamicShape(
         size_t shape_tmp_size = shape_tmp.size();
         vector<int64_t> shape_array_tmp;
 
-	    dims_num.push_back(shape_tmp_size);
+        dims_num.push_back(shape_tmp_size);
         for (size_t index = 0; index < shape_tmp_size; ++index) {
             num_tmp = atoi(shape_tmp[index].c_str());
             shape_array_tmp.push_back(num_tmp);
@@ -1467,7 +1467,7 @@ size_t ModelProcess::GetOutTensorLen(size_t i, bool is_dymshape)
     if (is_dymshape) {
 	    aclTensorDesc *outputDesc = aclmdlGetDatasetTensorDesc(output_, i);
 	    len = aclGetTensorDescSize(outputDesc);
-	} else {
+    } else {
 	    len = aclGetDataBufferSizeV2(dataBuffer);
     }
     return len;
@@ -1590,7 +1590,8 @@ Result ModelProcess::SetAIPPSrcImageSize(std::shared_ptr<Base::DynamicAippConfig
 
 Result ModelProcess::SetAIPPInputFormat(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet)
 {
-    DEBUG_LOG("aclmdlSetAIPPInputFormat, params: aippParmsSet: %p inputFormat: %s", aippDynamicSet, dyAippCfg->GetInputFormat().c_str());
+    DEBUG_LOG("aclmdlSetAIPPInputFormat, params: aippParmsSet: %p inputFormat: %s",
+        aippDynamicSet, dyAippCfg->GetInputFormat().c_str());
     aclError ret = aclmdlSetAIPPInputFormat(aippDynamicSet, str2aclAippInputFormat[dyAippCfg->GetInputFormat()]);
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
@@ -1633,7 +1634,10 @@ Result ModelProcess::SetAIPPCscParams(std::shared_ptr<Base::DynamicAippConfig> d
     return SUCCESS;
 }
 
-Result ModelProcess::SetAIPPRbuvSwapSwitch(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet)
+Result ModelProcess::SetAIPPRbuvSwapSwitch(
+    std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+    aclmdlAIPP* aippDynamicSet
+)
 {
     DEBUG_LOG("aclmdlSetAIPPRbuvSwapSwitch paras: aippParmsSet: %p rbuvSwapSwitch: %d",
         aippDynamicSet, dyAippCfg->GetRbuvSwapSwitch());
