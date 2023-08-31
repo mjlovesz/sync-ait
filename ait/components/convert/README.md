@@ -6,19 +6,14 @@ convert模型转换工具依托ATC（Ascend Tensor Compiler），AOE（Ascend Op
 
 ## 工具安装
 
+- 如果使用aie做模型转换，需要在安装convert前安装AIE，AIE安装请参考AIE[安装指导](https://gitee.com/ascend/ModelZoo-PyTorch/blob/master/AscendIE/AscendIE/readme.md#%E5%AE%89%E8%A3%85%E5%92%8C%E9%83%A8%E7%BD%B2)
+
+  注：aie要求python3.9，在python3.7下安装aie会提示如下错误，请忽略，不影响模型转换。
+  ```shell
+  AscendIE python api Install failed, please install python3.9 firstly!
+  ```
+
 - 工具安装请见 [ait一体化工具使用指南](../../README.md)
-- 如果使用aie做模型转换，需要在安装convert前安装AIE并完成环境变量的配置:
-  1. 安装AIE  
-  ```bash
-  ./Ascend-cann-aie-api_{version}_linux-{arch}.run --install
-  ```
-  {version}为版本号；
-  {arch} 根据环境架构 (x86_64, aarch64) 获取对应的软件包
-  
-  2. 设置相关环境变量
-  ```bash
-  export AIE_DIR=/xxx/Ascend-cann-aie-api/
-  ```
 
 ## 工具使用
 
@@ -77,3 +72,7 @@ ait convert aie --golden-model resnet50.onnx --output-file resnet50.om --soc-ver
 
 #### 使用案例
 更多关于aie子命令的介绍请移步[convert工具使用示例](../../examples/cli/convert/01_basic_usage)
+
+
+## FAQ
+使用convert组件进行模型转换时如遇问题，请先行查阅[FAQ](FAQ.md)

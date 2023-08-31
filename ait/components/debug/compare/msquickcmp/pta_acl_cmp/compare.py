@@ -175,9 +175,8 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
             data = save_acl_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=data_path)
         elif tensor_path:  # low-level
             pid = os.getpid()
-            dump_path = str(pid) + "_DUMP_PATH"
             tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
-                                       os.getenv(dump_path), task_id, tensor_path)
+                                       str(pid), task_id, tensor_path)
             data = save_acl_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
 
     data.to_csv(csv_path, index=False)

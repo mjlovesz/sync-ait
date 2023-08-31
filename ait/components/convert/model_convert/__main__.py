@@ -14,7 +14,7 @@
 import logging
 import os
 
-from components.parser.parser import BaseCommand
+from components.utils.parser import BaseCommand
 from model_convert.aie.bean import ConvertConfig
 from model_convert.aie.core.convert import Convert
 from model_convert.cmd_utils import add_arguments, gen_convert_cmd, execute_cmd, get_logger
