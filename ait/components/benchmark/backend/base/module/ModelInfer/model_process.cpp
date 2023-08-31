@@ -18,8 +18,9 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "model_process.h"
 #include "utils.h"
+#include "model_process.h"
+
 
 using namespace std;
 bool g_isDevice = true;
