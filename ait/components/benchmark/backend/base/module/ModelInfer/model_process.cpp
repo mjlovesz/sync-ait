@@ -15,18 +15,22 @@
  */
 
 #include "model_process.h"
-#include "utils.h"
 #include <cstddef>
+#include "utils.h"
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
 using namespace std;
-bool g_is_device = true;
-bool g_is_txt = false;
+bool g_isDevice = true;
+bool g_isTxt = false;
 vector<int> g_output_size;
 
-int GetDynamicAippParaByBatch(size_t batchIndex, std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, std::string cfgItem)
+int GetDynamicAippParaByBatch(
+    size_t batchIndex,
+    std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+    std::string cfgItem
+)
 {
     if (cfgItem.compare("dtcPixelMean") == 0) {
         if (dyAippCfg->GetDtcPixelMean().count(batchIndex) == 1) {
@@ -63,13 +67,13 @@ int GetDynamicAippParaByBatch(size_t batchIndex, std::shared_ptr<Base::DynamicAi
     return -1;
 }
 ModelProcess::ModelProcess()
-:modelId_(0)
-, loadFlag_(false)
-, modelDesc_(nullptr)
-, input_(nullptr)
-, output_(nullptr)
-, numInputs_(0)
-, numOutputs_(0)
+    :modelId_(0),
+    loadFlag_(false),
+    modelDesc_(nullptr),
+    input_(nullptr),
+    output_(nullptr),
+    numInputs_(0),
+    numOutputs_(0)
 {
     str2aclAippInputFormat["YUV420SP_U8"] = ACL_YUV420SP_U8;
     str2aclAippInputFormat["XRGB8888_U8"] = ACL_XRGB8888_U8;
@@ -130,8 +134,7 @@ Result ModelProcess::CreateDesc()
 
 Result ModelProcess::GetDynamicGearCount(size_t &dymGearCount)
 {
-    aclError ret;
-    ret = aclmdlGetInputDynamicGearCount(modelDesc_, -1, &dymGearCount);
+    aclError ret = aclmdlGetInputDynamicGearCount(modelDesc_, -1, &dymGearCount);
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("get input dynamic gear count failed %d", ret);
@@ -173,7 +176,11 @@ Result ModelProcess::GetDynamicIndex(size_t &dymindex)
     return SUCCESS;
 }
 
-Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, std::map<string, std::vector<int64_t>> &dym_shape_map, std::vector<int64_t> &dims_num)
+Result ModelProcess::CheckDynamicShape(
+    std::vector<std::string> dym_shape_tmp,
+    std::map<string, std::vector<int64_t>> &dym_shape_map,
+    std::vector<int64_t> &dims_num
+)
 {
     const char *inputname = nullptr;
     vector<const char *> inputnames;
@@ -202,9 +209,8 @@ Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, s
         while (getline(block, cell, ':')) {
             if (index == 0) {
                 name = cell;
-            }
-            else if (index == 1) {
-               shape_str = cell;
+            } else if (index == 1) {
+                shape_str = cell;
             }
             index += 1;
         }
@@ -229,12 +235,15 @@ Result ModelProcess::CheckDynamicShape(std::vector<std::string> dym_shape_tmp, s
     return SUCCESS;
 }
 
-Result ModelProcess::SetDynamicShape(std::map<std::string, std::vector<int64_t>> dym_shape_map, std::vector<int64_t> &dims_num)
+Result ModelProcess::SetDynamicShape(
+    std::map<std::string, std::vector<int64_t>> dym_shape_map,
+    std::vector<int64_t> &dims_num
+)
 {
     aclError ret;
     const char *name;
     size_t  input_num = dym_shape_map.size();
-    aclTensorDesc * inputDesc;
+    aclTensorDesc *inputDesc;
     for (size_t i = 0; i < input_num; i++) {
         name = aclmdlGetInputNameByIndex(modelDesc_, i);
         int64_t arr[dym_shape_map[name].size()];
@@ -248,7 +257,7 @@ Result ModelProcess::SetDynamicShape(std::map<std::string, std::vector<int64_t>>
         }
     }
     DEBUG_LOG("set Dynamic shape success");
-	return SUCCESS;
+    return SUCCESS;
 }
 
 Result ModelProcess::GetMaxDynamicHWSize(uint64_t &outsize)
@@ -300,8 +309,7 @@ Result ModelProcess::CheckDynamicHWSize(pair<int, int> dynamicPair, bool &is_dym
             return FAILED;
         }
         is_dymHW = true;
-    }
-    else {
+    } else {
         ERROR_LOG("the dynamic_image_size parameter is not specified for model conversion");
         return FAILED;
     }
@@ -311,8 +319,7 @@ Result ModelProcess::CheckDynamicHWSize(pair<int, int> dynamicPair, bool &is_dym
 
 Result ModelProcess::SetDynamicHW(std::pair<uint64_t, uint64_t > dynamicPair)
 {
-    aclError ret;
-    ret = aclmdlSetDynamicHWSize(modelId_, input_, g_dymindex, dynamicPair.first, dynamicPair.second);
+    aclError ret = aclmdlSetDynamicHWSize(modelId_, input_, g_dymindex, dynamicPair.first, dynamicPair.second);
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetDynamicHWSize failed %d", ret);
@@ -346,8 +353,7 @@ Result ModelProcess::CheckDynamicBatchSize(uint64_t dymbatch, bool &is_dymbatch)
             return FAILED;
         }
         is_dymbatch = true;
-    }
-    else {
+    } else {
         ERROR_LOG("the dynamic_batch_size parameter is not specified for model conversion");
         return FAILED;
     }
@@ -370,8 +376,7 @@ Result ModelProcess::SetDynamicBatchSize(uint64_t batchSize)
 Result ModelProcess::GetMaxBatchSize(uint64_t &maxBatchSize)
 {
     aclmdlBatch batch_info;
-    aclError ret;
-    ret = aclmdlGetDynamicBatch(modelDesc_, &batch_info);
+    aclError ret = aclmdlGetDynamicBatch(modelDesc_, &batch_info);
     if (ret != ACL_SUCCESS) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("get DynamicBatch failed");
@@ -411,21 +416,18 @@ Result ModelProcess::CheckDynamicDims(vector<string> dym_dims, size_t gearCount,
 {
     aclmdlGetInputDynamicDims(modelDesc_, -1, dims, gearCount);
     bool if_same = false;
-    for (size_t i = 0; i < gearCount; i++)
-    {
+    for (size_t i = 0; i < gearCount; i++) {
         if ((size_t)dym_dims.size() != dims[i].dimCount) {
-            ERROR_LOG("the dymDims parameter is not correct i:%zu dysize:%zu dimcount:%zu", i, dym_dims.size(), dims[i].dimCount);
+            ERROR_LOG("the dymDims parameter is not correct i:%zu dysize:%zu dimcount:%zu",
+                i, dym_dims.size(), dims[i].dimCount);
             GetDimInfo(gearCount, dims);
             return FAILED;
         }
-        for (size_t j = 0; j < dims[i].dimCount; j++)
-        {
-            if (dims[i].dims[j] != atoi(dym_dims[j].c_str()))
-            {
+        for (size_t j = 0; j < dims[i].dimCount; j++) {
+            if (dims[i].dims[j] != atoi(dym_dims[j].c_str())) {
                 break;
             }
-            if (j == dims[i].dimCount - 1)
-            {
+            if (j == dims[i].dimCount - 1) {
                 if_same = true;
             }
         }
@@ -444,8 +446,7 @@ Result ModelProcess::SetDynamicDims(vector<string> dym_dims)
 {
     aclmdlIODims dims;
     dims.dimCount = dym_dims.size();
-    for (size_t i = 0; i < dims.dimCount; i++)
-    {
+    for (size_t i = 0; i < dims.dimCount; i++) {
         dims.dims[i] = atoi(dym_dims[i].c_str());
     }
 
@@ -459,7 +460,8 @@ Result ModelProcess::SetDynamicDims(vector<string> dym_dims)
     return SUCCESS;
 }
 
-void ModelProcess::GetDymBatchInfo() {
+void ModelProcess::GetDymBatchInfo()
+{
     aclmdlBatch batch_info;
     aclmdlGetDynamicBatch(modelDesc_, &batch_info);
     stringstream ss;
@@ -471,7 +473,8 @@ void ModelProcess::GetDymBatchInfo() {
     ERROR_LOG("%s", ss.str().c_str());
 }
 
-void ModelProcess::GetDymHWInfo() {
+void ModelProcess::GetDymHWInfo()
+{
     aclmdlHW  hw_info;
     aclmdlGetDynamicHW(modelDesc_, -1, &hw_info);
     stringstream ss;
@@ -488,23 +491,24 @@ void ModelProcess::GetDimInfo(size_t gearCount, aclmdlIODims *dims)
 {
     aclmdlGetInputDynamicDims(modelDesc_, -1, dims, gearCount);
 
-    for (size_t i = 0; i < gearCount; i++)
-    {
-        if (i == 0)
-        {
+    for (size_t i = 0; i < gearCount; i++) {
+        if (i == 0) {
             ERROR_LOG("model has %zu gear of dims", gearCount);
         }
         stringstream ss;
         ss << "dims[" << i << "]:";
-        for (size_t j = 0; j < dims[i].dimCount; j++)
-        {
+        for (size_t j = 0; j < dims[i].dimCount; j++) {
             ss << "[" << dims[i].dims[j] << "]";
         }
         ERROR_LOG("%s", ss.str().c_str());
     }
 }
 
-void ModelProcess::model_description(aclError ret, size_t& numInputs, size_t& numOutputs, aclmdlIODims& dimsInput, aclmdlIODims& dimsOutput)
+void ModelProcess::model_description(
+    aclError ret, size_t& numInputs,
+    size_t& numOutputs, aclmdlIODims& dimsInput,
+    aclmdlIODims& dimsOutput
+)
 {
     for (size_t i = 0; i < numInputs; i++) {
         DEBUG_LOG("the size of %zu input: %zu", i, aclmdlGetInputSizeByIndex(modelDesc_, i));
@@ -879,8 +883,7 @@ Result ModelProcess::CreateOutput()
         size_t buffer_size = 0;
         if (g_output_size.empty() == false) {
             buffer_size = g_output_size[i];
-        }
-        else {
+        } else {
             buffer_size = aclmdlGetOutputSizeByIndex(modelDesc_, i);
         }
         void* outputBuffer = nullptr;
@@ -915,13 +918,11 @@ Result ModelProcess::CreateOutput()
 
 void ModelProcess::print_float_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
-    for (size_t i = 1; i <= len / sizeof(float); i++)
-    {
+    for (size_t i = 1; i <= len / sizeof(float); i++) {
         float out = *((float*)outData + i - 1);
         outstr << out << " ";
         vector<int64_t>::iterator it;
-        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++)
-        {
+        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
             if ((i != 0) && (i % *it == 0)) {
                 outstr << "\n";
                 break;
@@ -931,17 +932,18 @@ void ModelProcess::print_float_info(size_t len, std::ofstream& outstr, void* out
     return;
 }
 
-void ModelProcess::print_aclFloat16_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_aclFloat16_info(
+    size_t len, std::ofstream& outstr,
+    void* outData, vector<int64_t> curOutputDimsMul
+)
 {
-    aclFloat16 * out_fp16 = reinterpret_cast<aclFloat16*>(outData);
+    aclFloat16 *out_fp16 = reinterpret_cast<aclFloat16*>(outData);
     float out = 0;
-    for (size_t i = 1; i <= len / sizeof(aclFloat16); i++)
-    {
+    for (size_t i = 1; i <= len / sizeof(aclFloat16); i++) {
         out = aclFloat16ToFloat(out_fp16[i-1]);
         outstr << out << " ";
         vector<int64_t>::iterator it;
-        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++)
-        {
+        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
             if ((i != 0) && (i % *it == 0)) {
                 outstr << "\n";
                 break;
@@ -953,13 +955,11 @@ void ModelProcess::print_aclFloat16_info(size_t len, std::ofstream& outstr, void
 
 void ModelProcess::print_int8_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
 {
-    for (size_t i = 1; i <= len / sizeof(int8_t); i++)
-    {
+    for (size_t i = 1; i <= len / sizeof(int8_t); i++) {
         int8_t out = *((int8_t*)outData + i - 1);
         outstr << out << " ";
         vector<int64_t>::iterator it;
-        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++)
-        {
+        for (it = curOutputDimsMul.begin(); it != curOutputDimsMul.end(); it++) {
             if ((i != 0) && (i % *it == 0)) {
             outstr << "\n";
             break;
@@ -1113,7 +1113,10 @@ void ModelProcess::print_bool_info(size_t len, std::ofstream& outstr, void* outD
     return;
 }
 
-void ModelProcess::print_data_log(aclDataType datatype, size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul)
+void ModelProcess::print_data_log(
+    aclDataType datatype, size_t len, std::ofstream& outstr,
+    void* outData, vector<int64_t> curOutputDimsMul
+)
 {
     switch (datatype) {
         case TYPE_FLOAT:
@@ -1161,7 +1164,7 @@ void ModelProcess::print_data_log(aclDataType datatype, size_t len, std::ofstrea
 
 Result ModelProcess::Free_Host_Try(aclError ret, void*& outHostData)
 {
-    if (!g_is_device) {
+    if (!g_isDevice) {
         ret = aclrtFreeHost(outHostData);
         if (ret != ACL_SUCCESS) {
             cout << aclGetRecentErrMsg() << endl;
@@ -1220,7 +1223,8 @@ Result GetDescShape(const aclTensorDesc *desc, std::vector<int64_t>& shape)
     return SUCCESS;
 }
 
-Result GetDescShapeStr(const aclTensorDesc *desc, std::string &shapestr) {
+Result GetDescShapeStr(const aclTensorDesc *desc, std::string &shapestr)
+{
     std::vector<int64_t> shape;
     Result result = GetDescShape(desc, shape);
     if (result != SUCCESS) {
@@ -1266,7 +1270,8 @@ Result SaveTensorMemoryToFile(const aclTensorDesc *desc, std::string &prefixName
             ret, hostaddr, devaddr, len);
         return FAILED;
     }
-    std::string fileName = prefixName + "_format_" + std::to_string(format) + "_dtype_" + std::to_string(dtype) + "_shape_" + shapestr + ".bin";
+    std::string fileName = prefixName + "_format_" + std::to_string(format) +
+        "_dtype_" + std::to_string(dtype) + "_shape_" + shapestr + ".bin";
     INFO_LOG("exception_cb hostaddr:%p devaddr:%p len:%zu write to filename:%s",
              hostaddr, devaddr, len, fileName.c_str());
     ofstream outFile(fileName, ios::out | ios::binary);
@@ -1381,15 +1386,15 @@ Result ModelProcess::GetCurOutputShape(size_t index, bool is_dymshape, std::vect
     if (is_dymshape == true) {
         aclTensorDesc *outputDesc = aclmdlGetDatasetTensorDesc(output_, index);
         size_t dimNums = aclGetTensorDescNumDims(outputDesc);
-         if (dimNums == ACL_UNKNOWN_RANK) {
+        if (dimNums == ACL_UNKNOWN_RANK) {
             return FAILED;
-         } else {
+        } else {
             for (size_t i = 0; i < dimNums; ++i) {
                 int64_t dim;
                 ret = aclGetTensorDescDimV2(outputDesc, i, &dim);
                 shape.push_back(dim);
             }
-         }
+        }
     } else {
         ret = aclmdlGetCurOutputDims(modelDesc_, index, &ioDims);
         if (ret != ACL_SUCCESS) {
@@ -1413,7 +1418,10 @@ size_t ModelProcess::GetNumOutputs()
     return aclmdlGetNumOutputs(modelDesc_);
 }
 
-Result ModelProcess::GetInTensorDesc(size_t i, std::string& name, int& datatype, size_t& format, std::vector<int64_t>& shape, size_t& size)
+Result ModelProcess::GetInTensorDesc(
+    size_t i, std::string& name, int& datatype,
+    size_t& format, std::vector<int64_t>& shape, size_t& size
+)
 {
     name = aclmdlGetInputNameByIndex(modelDesc_, i);
     datatype = aclmdlGetInputDataType(modelDesc_, i);
@@ -1430,7 +1438,10 @@ Result ModelProcess::GetInTensorDesc(size_t i, std::string& name, int& datatype,
     return SUCCESS;
 }
 
-Result ModelProcess::GetOutTensorDesc(size_t i, std::string& name, int& datatype, size_t& format, std::vector<int64_t>& shape, size_t& size)
+Result ModelProcess::GetOutTensorDesc(
+    size_t i, std::string& name, int& datatype,
+    size_t& format, std::vector<int64_t>& shape, size_t& size
+)
 {
     name = aclmdlGetOutputNameByIndex(modelDesc_, i);
     datatype = aclmdlGetOutputDataType(modelDesc_, i);
@@ -1456,10 +1467,9 @@ size_t ModelProcess::GetOutTensorLen(size_t i, bool is_dymshape)
     if (is_dymshape) {
 	    aclTensorDesc *outputDesc = aclmdlGetDatasetTensorDesc(output_, i);
 	    len = aclGetTensorDescSize(outputDesc);
-	}
-    else {
+	} else {
 	    len = aclGetDataBufferSizeV2(dataBuffer);
-	}
+    }
     return len;
 }
 
@@ -1566,7 +1576,8 @@ Result ModelProcess::SetAIPPSrcImageSize(std::shared_ptr<Base::DynamicAippConfig
 {
     DEBUG_LOG("aclmdlSetAIPPSrcImageSize params: aippParmsSet: %p srcImageSizeW: %d srcImageSizeH: %d",
         aippDynamicSet, dyAippCfg->GetSrcImageSizeW(), dyAippCfg->GetSrcImageSizeH());
-    aclError ret = aclmdlSetAIPPSrcImageSize(aippDynamicSet, dyAippCfg->GetSrcImageSizeW(), dyAippCfg->GetSrcImageSizeH());
+    aclError ret = aclmdlSetAIPPSrcImageSize(aippDynamicSet,
+        dyAippCfg->GetSrcImageSizeW(), dyAippCfg->GetSrcImageSizeH());
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetAIPPSrcImageSize failed, w: %d, h: %d, ret: %d", dyAippCfg->GetSrcImageSizeW(),
@@ -1592,21 +1603,27 @@ Result ModelProcess::SetAIPPInputFormat(std::shared_ptr<Base::DynamicAippConfig>
 
 Result ModelProcess::SetAIPPCscParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet)
 {
-    DEBUG_LOG("aclmdlSetAIPPCscParams, params: aippParmsSet: %p csc_switch: %d cscMatrixR0C0: %d cscMatrixR0C1: %d cscMatrixR0C2: %d\
-        cscMatrixR1C0: %d cscMatrixR1C1: %d cscMatrixR1C2: %d cscMatrixR2C0: %d cscMatrixR2C1: %d cscMatrixR2C2: %d cscOutputBias0: %d\
-        cscOutputBias1: %d cscOutputBias2: %d cscInputBias0: %d cscInputBias1: %d cscInputBias2: %d", aippDynamicSet, \
-        dyAippCfg->GetCscParams().cscSwitch, dyAippCfg->GetCscParams().cscMatrixR0C0, dyAippCfg->GetCscParams().cscMatrixR0C1, \
-        dyAippCfg->GetCscParams().cscMatrixR0C2, dyAippCfg->GetCscParams().cscMatrixR1C0, dyAippCfg->GetCscParams().cscMatrixR1C1, \
-        dyAippCfg->GetCscParams().cscMatrixR1C2, dyAippCfg->GetCscParams().cscMatrixR2C0, dyAippCfg->GetCscParams().cscMatrixR2C1, \
-        dyAippCfg->GetCscParams().cscMatrixR2C2, dyAippCfg->GetCscParams().cscOutputBias0, dyAippCfg->GetCscParams().cscOutputBias1, \
-        dyAippCfg->GetCscParams().cscOutputBias2, dyAippCfg->GetCscParams().cscInputBias0, dyAippCfg->GetCscParams().cscInputBias1, \
+    DEBUG_LOG("aclmdlSetAIPPCscParams, params: aippParmsSet: %p csc_switch: %d cscMatrixR0C0: %d cscMatrixR0C1: %d \
+        cscMatrixR0C2: %d cscMatrixR1C0: %d cscMatrixR1C1: %d cscMatrixR1C2: %d cscMatrixR2C0: %d cscMatrixR2C1: %d \
+        cscMatrixR2C2: %d cscOutputBias0: %d cscOutputBias1: %d cscOutputBias2: %d cscInputBias0: %d \
+        cscInputBias1: %d cscInputBias2: %d", aippDynamicSet, dyAippCfg->GetCscParams().cscSwitch,
+        dyAippCfg->GetCscParams().cscMatrixR0C0, dyAippCfg->GetCscParams().cscMatrixR0C1,
+        dyAippCfg->GetCscParams().cscMatrixR0C2, dyAippCfg->GetCscParams().cscMatrixR1C0,
+        dyAippCfg->GetCscParams().cscMatrixR1C1, dyAippCfg->GetCscParams().cscMatrixR1C2,
+        dyAippCfg->GetCscParams().cscMatrixR2C0, dyAippCfg->GetCscParams().cscMatrixR2C1,
+        dyAippCfg->GetCscParams().cscMatrixR2C2, dyAippCfg->GetCscParams().cscOutputBias0,
+        dyAippCfg->GetCscParams().cscOutputBias1, dyAippCfg->GetCscParams().cscOutputBias2,
+        dyAippCfg->GetCscParams().cscInputBias0, dyAippCfg->GetCscParams().cscInputBias1,
         dyAippCfg->GetCscParams().cscInputBias2);
-    aclError ret = aclmdlSetAIPPCscParams(aippDynamicSet, dyAippCfg->GetCscParams().cscSwitch, dyAippCfg->GetCscParams().cscMatrixR0C0,
-        dyAippCfg->GetCscParams().cscMatrixR0C1, dyAippCfg->GetCscParams().cscMatrixR0C2, dyAippCfg->GetCscParams().cscMatrixR1C0,
-        dyAippCfg->GetCscParams().cscMatrixR1C1, dyAippCfg->GetCscParams().cscMatrixR1C2, dyAippCfg->GetCscParams().cscMatrixR2C0,
-        dyAippCfg->GetCscParams().cscMatrixR2C1, dyAippCfg->GetCscParams().cscMatrixR2C2, dyAippCfg->GetCscParams().cscOutputBias0,
-        dyAippCfg->GetCscParams().cscOutputBias1, dyAippCfg->GetCscParams().cscOutputBias2, dyAippCfg->GetCscParams().cscInputBias0,
-        dyAippCfg->GetCscParams().cscInputBias1, dyAippCfg->GetCscParams().cscInputBias2);
+    aclError ret = aclmdlSetAIPPCscParams(aippDynamicSet, dyAippCfg->GetCscParams().cscSwitch,
+        dyAippCfg->GetCscParams().cscMatrixR0C0, dyAippCfg->GetCscParams().cscMatrixR0C1,
+        dyAippCfg->GetCscParams().cscMatrixR0C2, dyAippCfg->GetCscParams().cscMatrixR1C0,
+        dyAippCfg->GetCscParams().cscMatrixR1C1, dyAippCfg->GetCscParams().cscMatrixR1C2,
+        dyAippCfg->GetCscParams().cscMatrixR2C0, dyAippCfg->GetCscParams().cscMatrixR2C1,
+        dyAippCfg->GetCscParams().cscMatrixR2C2, dyAippCfg->GetCscParams().cscOutputBias0,
+        dyAippCfg->GetCscParams().cscOutputBias1, dyAippCfg->GetCscParams().cscOutputBias2,
+        dyAippCfg->GetCscParams().cscInputBias0, dyAippCfg->GetCscParams().cscInputBias1,
+        dyAippCfg->GetCscParams().cscInputBias2);
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("aclmdlSetAIPPCscParams failed, ret %d", ret);
@@ -1618,20 +1635,26 @@ Result ModelProcess::SetAIPPCscParams(std::shared_ptr<Base::DynamicAippConfig> d
 
 Result ModelProcess::SetAIPPRbuvSwapSwitch(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet)
 {
-    DEBUG_LOG("aclmdlSetAIPPRbuvSwapSwitch paras: aippParmsSet: %p rbuvSwapSwitch: %d", aippDynamicSet, dyAippCfg->GetRbuvSwapSwitch());
+    DEBUG_LOG("aclmdlSetAIPPRbuvSwapSwitch paras: aippParmsSet: %p rbuvSwapSwitch: %d",
+        aippDynamicSet, dyAippCfg->GetRbuvSwapSwitch());
     aclError ret = aclmdlSetAIPPRbuvSwapSwitch(aippDynamicSet, dyAippCfg->GetRbuvSwapSwitch());
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
-        ERROR_LOG("aclmdlSetAIPPRbuvSwapSwitch failed rbuvSwap:%d aippset:%p ret %d", dyAippCfg->GetRbuvSwapSwitch(), aippDynamicSet, ret);
+        ERROR_LOG("aclmdlSetAIPPRbuvSwapSwitch failed rbuvSwap:%d aippset:%p ret %d",
+            dyAippCfg->GetRbuvSwapSwitch(), aippDynamicSet, ret);
         throw "AippData set failed!";
         return FAILED;
     }
     return SUCCESS;
 }
 
-Result ModelProcess::SetAIPPAxSwapSwitch(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet)
+Result ModelProcess::SetAIPPAxSwapSwitch(
+    std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+    aclmdlAIPP* aippDynamicSet
+)
 {
-    DEBUG_LOG("aclmdlSetAIPPAxSwapSwitch paras: aippDynamicSet: %p axSwapSwitch: %d", aippDynamicSet, dyAippCfg->GetAxSwapSwitch());
+    DEBUG_LOG("aclmdlSetAIPPAxSwapSwitch paras: aippDynamicSet: %p axSwapSwitch: %d",
+        aippDynamicSet, dyAippCfg->GetAxSwapSwitch());
     aclError ret = aclmdlSetAIPPAxSwapSwitch(aippDynamicSet, dyAippCfg->GetAxSwapSwitch());
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
@@ -1642,7 +1665,10 @@ Result ModelProcess::SetAIPPAxSwapSwitch(std::shared_ptr<Base::DynamicAippConfig
     return SUCCESS;
 }
 
-Result ModelProcess::SetAIPPDtcPixelMean(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex)
+Result ModelProcess::SetAIPPDtcPixelMean(
+    std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+    aclmdlAIPP* aippDynamicSet, size_t batchIndex
+)
 {
     aclError ret = ACL_ERROR_NONE;
     int dtcPixelMeanIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "dtcPixelMean");
@@ -1672,14 +1698,19 @@ Result ModelProcess::SetAIPPDtcPixelMean(std::shared_ptr<Base::DynamicAippConfig
     return SUCCESS;
 }
 
-Result ModelProcess::SetAIPPDtcPixelMin(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex)
+Result ModelProcess::SetAIPPDtcPixelMin(
+    std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+    aclmdlAIPP* aippDynamicSet, size_t batchIndex
+)
 {
     aclError ret = ACL_ERROR_NONE;
     int dtcPixelMinIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "dtcPixelMin");
     if (dtcPixelMinIndex >= 0) {
         DEBUG_LOG("aclmdlSetAIPPDtcPixelMin params: %p dtcPixelMinChn0: %f dtcPixelMinChn1: %f dtcPixelMinChn2: %f \
-            dtcPixelMinChn3 %f batchIndex: %d", aippDynamicSet, dyAippCfg->GetDtcPixelMin()[dtcPixelMinIndex].dtcPixelMinChn0,
-            dyAippCfg->GetDtcPixelMin()[dtcPixelMinIndex].dtcPixelMinChn1, dyAippCfg->GetDtcPixelMin()[dtcPixelMinIndex].dtcPixelMinChn2,
+            dtcPixelMinChn3 %f batchIndex: %d", aippDynamicSet,
+            dyAippCfg->GetDtcPixelMin()[dtcPixelMinIndex].dtcPixelMinChn0,
+            dyAippCfg->GetDtcPixelMin()[dtcPixelMinIndex].dtcPixelMinChn1,
+            dyAippCfg->GetDtcPixelMin()[dtcPixelMinIndex].dtcPixelMinChn2,
             dyAippCfg->GetDtcPixelMin()[dtcPixelMinIndex].dtcPixelMinChn3, int(batchIndex));
         ret = aclmdlSetAIPPDtcPixelMin(aippDynamicSet,
             dyAippCfg->GetDtcPixelMin()[dtcPixelMinIndex].dtcPixelMinChn0,
@@ -1700,7 +1731,10 @@ Result ModelProcess::SetAIPPDtcPixelMin(std::shared_ptr<Base::DynamicAippConfig>
     return SUCCESS;
 }
 
-Result ModelProcess::SetAIPPPixelVarReci(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex)
+Result ModelProcess::SetAIPPPixelVarReci(
+    std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+    aclmdlAIPP* aippDynamicSet, size_t batchIndex
+)
 {
     aclError ret = ACL_ERROR_NONE;
     int pixelVarReciIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "pixelVarReci");
@@ -1732,20 +1766,26 @@ Result ModelProcess::SetAIPPPixelVarReci(std::shared_ptr<Base::DynamicAippConfig
     return SUCCESS;
 }
 
-Result ModelProcess::SetAIPPCropParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex)
+Result ModelProcess::SetAIPPCropParams(
+    std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+    aclmdlAIPP* aippDynamicSet, size_t batchIndex
+)
 {
     aclError ret = ACL_ERROR_NONE;
     int cropIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "crop");
     if (cropIndex >= 0) {
-        DEBUG_LOG("aclmdlSetAIPPCropParams params: aippDynamicSet: %p cropSwitch: %d loadStartPosW: %d loadStartPosH: %d \
-            cropSizeW: %d cropSizeH: %d batchIndex: %d", aippDynamicSet, dyAippCfg->GetCropParams()[cropIndex].cropSwitch,
-            dyAippCfg->GetCropParams()[cropIndex].loadStartPosW, dyAippCfg->GetCropParams()[cropIndex].loadStartPosH,
-            dyAippCfg->GetCropParams()[cropIndex].cropSizeW, dyAippCfg->GetCropParams()[cropIndex].cropSizeH, int(batchIndex));
+        DEBUG_LOG("aclmdlSetAIPPCropParams params: aippDynamicSet: %p cropSwitch: %d loadStartPosW: %d \
+            loadStartPosH: %d cropSizeW: %d cropSizeH: %d batchIndex: %d", aippDynamicSet,
+            dyAippCfg->GetCropParams()[cropIndex].cropSwitch, dyAippCfg->GetCropParams()[cropIndex].loadStartPosW,
+            dyAippCfg->GetCropParams()[cropIndex].loadStartPosH, dyAippCfg->GetCropParams()[cropIndex].cropSizeW,
+            dyAippCfg->GetCropParams()[cropIndex].cropSizeH, int(batchIndex));
         ret = aclmdlSetAIPPCropParams(aippDynamicSet, dyAippCfg->GetCropParams()[cropIndex].cropSwitch,
             dyAippCfg->GetCropParams()[cropIndex].loadStartPosW, dyAippCfg->GetCropParams()[cropIndex].loadStartPosH,
-            dyAippCfg->GetCropParams()[cropIndex].cropSizeW, dyAippCfg->GetCropParams()[cropIndex].cropSizeH, batchIndex);
+            dyAippCfg->GetCropParams()[cropIndex].cropSizeW, dyAippCfg->GetCropParams()[cropIndex].cropSizeH,
+            batchIndex);
     } else {
-        ret = aclmdlSetAIPPCropParams(aippDynamicSet, 0, 0, 0, Base::CROP_SIZE_W_DEFAULT, Base::CROP_SIZE_H_DEFAULT, batchIndex);
+        ret = aclmdlSetAIPPCropParams(aippDynamicSet, 0, 0, 0, Base::CROP_SIZE_W_DEFAULT,
+            Base::CROP_SIZE_H_DEFAULT, batchIndex);
     }
     if (ret != ACL_ERROR_NONE) {
         cout << aclGetRecentErrMsg() << endl;
@@ -1756,19 +1796,27 @@ Result ModelProcess::SetAIPPCropParams(std::shared_ptr<Base::DynamicAippConfig> 
     return SUCCESS;
 }
 
-Result ModelProcess::SetAIPPPaddingParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex)
+Result ModelProcess::SetAIPPPaddingParams(
+    std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+    aclmdlAIPP* aippDynamicSet, size_t batchIndex
+)
 {
     aclError ret = ACL_ERROR_NONE;
     int padIndex = GetDynamicAippParaByBatch(batchIndex, dyAippCfg, "pad");
     if (padIndex >= 0) {
-        DEBUG_LOG("aclmdlSetAIPPPaddingParams params: aippDynamicSet: %p paddingSwitch: %d paddingSizeTop: %d paddingSizeBottom: %d \
-            paddingSizeLeft: %d paddingSizeRight: %d batchIndex: %d", aippDynamicSet, dyAippCfg->GetPaddingParams()[padIndex].paddingSwitch,
-            dyAippCfg->GetPaddingParams()[padIndex].paddingSizeTop, dyAippCfg->GetPaddingParams()[padIndex].paddingSizeBottom,
-            dyAippCfg->GetPaddingParams()[padIndex].paddingSizeLeft, dyAippCfg->GetPaddingParams()[padIndex].paddingSizeRight,
+        DEBUG_LOG("aclmdlSetAIPPPaddingParams params: aippDynamicSet: %p paddingSwitch: %d paddingSizeTop: %d \
+            paddingSizeBottom: %d paddingSizeLeft: %d paddingSizeRight: %d batchIndex: %d", aippDynamicSet,
+            dyAippCfg->GetPaddingParams()[padIndex].paddingSwitch,
+            dyAippCfg->GetPaddingParams()[padIndex].paddingSizeTop,
+            dyAippCfg->GetPaddingParams()[padIndex].paddingSizeBottom,
+            dyAippCfg->GetPaddingParams()[padIndex].paddingSizeLeft,
+            dyAippCfg->GetPaddingParams()[padIndex].paddingSizeRight,
             int(batchIndex));
         ret = aclmdlSetAIPPPaddingParams(aippDynamicSet, dyAippCfg->GetPaddingParams()[padIndex].paddingSwitch,
-            dyAippCfg->GetPaddingParams()[padIndex].paddingSizeTop, dyAippCfg->GetPaddingParams()[padIndex].paddingSizeBottom,
-            dyAippCfg->GetPaddingParams()[padIndex].paddingSizeLeft, dyAippCfg->GetPaddingParams()[padIndex].paddingSizeRight,
+            dyAippCfg->GetPaddingParams()[padIndex].paddingSizeTop,
+            dyAippCfg->GetPaddingParams()[padIndex].paddingSizeBottom,
+            dyAippCfg->GetPaddingParams()[padIndex].paddingSizeLeft,
+            dyAippCfg->GetPaddingParams()[padIndex].paddingSizeRight,
             batchIndex);
     } else {
         ret = aclmdlSetAIPPPaddingParams(aippDynamicSet, 0, 0, 0, 0, 0, batchIndex);
@@ -1782,7 +1830,10 @@ Result ModelProcess::SetAIPPPaddingParams(std::shared_ptr<Base::DynamicAippConfi
     return SUCCESS;
 }
 
-Result ModelProcess::GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* &pAIPPSet, uint64_t maxBatchSize)
+Result ModelProcess::GetDymAIPPConfigSet(
+    std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+    aclmdlAIPP* &pAIPPSet, uint64_t maxBatchSize
+)
 {
     Result ret = SUCCESS;
     INFO_LOG("dynamic aipp mode. batchsize:%d", int(maxBatchSize));

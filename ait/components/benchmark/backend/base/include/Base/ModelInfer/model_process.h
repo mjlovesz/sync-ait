@@ -16,9 +16,9 @@
 
 #ifndef _MODEL_PROCESS_H_
 #define _MODEL_PROCESS_H_
+#include <string>
 #include "acl/acl.h"
 #include "utils.h"
-#include <string>
 #include "Base/Tensor/TensorBase/TensorBase.h"
 #include "Base/ModelInfer/DynamicAippConfig.h"
 
@@ -109,7 +109,8 @@ public:
     /**
     * @brief check dynamic input image size valid
     */
-    Result CheckDynamicShape(std::vector<std::string> dym_shape_tmp, std::map<std::string, std::vector<int64_t>> &dym_shape_map, std::vector<int64_t> &dims_num);
+    Result CheckDynamicShape(std::vector<std::string> dym_shape_tmp, std::map<std::string,
+        std::vector<int64_t>> &dym_shape_map, std::vector<int64_t> &dims_num);
 
     /**
     * @brief set dynamic input dims
@@ -152,21 +153,27 @@ public:
 
     Result SetAIPPAxSwapSwitch(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet);
 
-    Result SetAIPPDtcPixelMean(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+    Result SetAIPPDtcPixelMean(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+        aclmdlAIPP* aippDynamicSet, size_t batchIndex);
 
-    Result SetAIPPDtcPixelMin(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+    Result SetAIPPDtcPixelMin(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+        aclmdlAIPP* aippDynamicSet, size_t batchIndex);
 
-    Result SetAIPPPixelVarReci(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+    Result SetAIPPPixelVarReci(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+        aclmdlAIPP* aippDynamicSet, size_t batchIndex);
 
-    Result SetAIPPCropParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+    Result SetAIPPCropParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+        aclmdlAIPP* aippDynamicSet, size_t batchIndex);
 
-    Result SetAIPPPaddingParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* aippDynamicSet, size_t batchIndex);
+    Result SetAIPPPaddingParams(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+        aclmdlAIPP* aippDynamicSet, size_t batchIndex);
     // ------------------分别配置具体AIPP参数-----------------
 
     /**
     * @brief set single dynamic aipp config
     */
-    Result GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg, aclmdlAIPP* &pAIPPSet, uint64_t maxBatchSize);
+    Result GetDymAIPPConfigSet(std::shared_ptr<Base::DynamicAippConfig> dyAippCfg,
+        aclmdlAIPP* &pAIPPSet, uint64_t maxBatchSize);
 
     /**
     * @brief set single or multiple dynamic aipp config
@@ -272,8 +279,10 @@ public:
     size_t GetNumInputs();
     size_t GetNumOutputs();
 
-    Result GetInTensorDesc(size_t i, std::string& name, int& datatype, size_t& format, std::vector<int64_t>& shape, size_t& size);
-    Result GetOutTensorDesc(size_t i, std::string& name, int& datatype, size_t& format, std::vector<int64_t>& shape, size_t& size);
+    Result GetInTensorDesc(size_t i, std::string& name, int& datatype,
+        size_t& format, std::vector<int64_t>& shape, size_t& size);
+    Result GetOutTensorDesc(size_t i, std::string& name, int& datatype,
+        size_t& format, std::vector<int64_t>& shape, size_t& size);
 
     size_t GetOutTensorLen(size_t i, bool is_dymshape);
 
@@ -294,7 +303,8 @@ private:
     size_t numOutputs_;
     size_t g_dymindex;
     std::map<std::string, aclAippInputFormat> str2aclAippInputFormat;
-    void model_description(aclError ret, size_t& numInputs, size_t& numOutputs, aclmdlIODims& dimsInput, aclmdlIODims& dimsOutput);
+    void model_description(aclError ret, size_t& numInputs, size_t& numOutputs,
+        aclmdlIODims& dimsInput, aclmdlIODims& dimsOutput);
     Result check_ret(aclError ret, size_t buffer_size_zero);
     Result check_create_buffer(aclDataBuffer* inputData, void* inBufferDev);
     Result check_add_buffer(aclError ret, void* inBufferDev, aclDataBuffer* inputData);
@@ -310,7 +320,8 @@ private:
     void print_uint64_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
     void print_double_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
     void print_bool_info(size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
-    void print_data_log(aclDataType datatype, size_t len, std::ofstream& outstr, void* outData, vector<int64_t> curOutputDimsMul);
+    void print_data_log(aclDataType datatype, size_t len, std::ofstream& outstr,
+        void* outData, vector<int64_t> curOutputDimsMul);
     Result Free_Host_Try(aclError ret, void*& outHostData);
     void print_error_log(aclError ret);
 };

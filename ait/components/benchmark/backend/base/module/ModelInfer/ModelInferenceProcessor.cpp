@@ -39,8 +39,7 @@ APP_ERROR ModelInferenceProcessor::GetModelDescInfo()
         }
         CHECK_RET_EQ(
             processModel->GetInTensorDesc(i, info.name, datatype, info.format, info.shape, info.size),
-            SUCCESS
-        );
+            SUCCESS);
         info.realsize = info.size;
         info.datatype = (TensorDataType)datatype;
         modelDesc_.inTensorsDesc.push_back(info);
@@ -55,8 +54,7 @@ APP_ERROR ModelInferenceProcessor::GetModelDescInfo()
     for (size_t i = 0; i < numOutputs; i++) {
         CHECK_RET_EQ(
             processModel->GetOutTensorDesc(i, info.name, datatype, info.format, info.shape, info.size),
-            SUCCESS
-        );
+            SUCCESS);
         info.realsize = info.size;
         info.datatype = (TensorDataType)datatype;
         modelDesc_.outTensorsDesc.push_back(info);
@@ -264,7 +262,7 @@ APP_ERROR ModelInferenceProcessor::FirstInference(
         return ret;
     }
     ret = FirstInferenceInner(inputs, outputNames, outputTensors);
-    // DestroyInferCacheData();
+
     return ret;
 }
 
@@ -658,8 +656,7 @@ APP_ERROR ModelInferenceProcessor::AllocDymAIPPIndexMem()
         int datatype;
         CHECK_RET_EQ(
             processModel->GetInTensorDesc(index, info.name, datatype, info.format, info.shape, info.size),
-            SUCCESS
-        );
+            SUCCESS);
         MemoryData memdata;
         memdata.size = info.size;
         memdata.type = MemoryData::MemoryType::MEMORY_DEVICE;
@@ -697,8 +694,7 @@ APP_ERROR ModelInferenceProcessor::AllocDyIndexMem()
     int datatype;
     CHECK_RET_EQ(
         processModel->GetInTensorDesc(dynamicIndex_, info.name, datatype, info.format, info.shape, info.size),
-        SUCCESS
-    );
+        SUCCESS);
 
     dynamicIndexMemory_.size = info.size;
     dynamicIndexMemory_.type = MemoryData::MemoryType::MEMORY_DEVICE;
@@ -957,8 +953,7 @@ APP_ERROR ModelInferenceProcessor::SetDynamicShape(std::string dymshapeStr)
     std::map<string, std::vector<int64_t>> name2shapesmap;
     Result ret = processModel->CheckDynamicShape(
         dym_shape_tmp, name2shapesmap,
-        dynamicInfo_.dyShape.pShapes->dims_num
-    );
+        dynamicInfo_.dyShape.pShapes->dims_num);
     if (ret != SUCCESS) {
         ERROR_LOG("check dynamic shape failed");
         free(dynamicInfo_.dyShape.pShapes);
@@ -1025,16 +1020,14 @@ APP_ERROR ModelInferenceProcessor::SetDynamicInfo()
         case DYNAMIC_DIMS:
             if (dynamicInfo_.dyDims.pDims == nullptr) {
                 WARN_LOG("error dynamic dims type but pdims is null");
-            }
-            else {
+            } else {
                 CHECK_RET_EQ(processModel->SetDynamicDims(dynamicInfo_.dyDims.pDims->dym_dims), SUCCESS);
             }
             break;
         case DYNAMIC_SHAPE:
             if (dynamicInfo_.dyShape.pShapes == nullptr) {
                 WARN_LOG("error dynamic shapes type but pshapes is null");
-            }
-            else {
+            } else {
                 CHECK_RET_EQ(processModel->SetDynamicShape(
                     dynamicInfo_.dyShape.pShapes->dym_shape_map, dynamicInfo_.dyShape.pShapes->dims_num), SUCCESS);
             }
