@@ -59,6 +59,8 @@ AIT_CMP_TASK_PID = "AIT_CMP_TASK_PID"
 
 ACL_DATA_MAP_FILE = "ait_compare_acl_map.txt"
 
+ACLTRANSFORMER_SAVE_TENSOR_MAX = "ACLTRANSFORMER_SAVE_TENSOR_MAX"
+
 token_counts = 0
 
 
@@ -384,6 +386,9 @@ def init_aclcmp_task():
     os.environ[AIT_CMP_TASK_PID] = str(os.getpid())
     os.environ[AIT_CMP_TASK] = "1"
     os.environ[AIT_CMP_TASK_DIR] = os.getcwd()
+
+    # 加速库获取内部数据轮数，设大一些，否则token数目较多时，可能获取不到后面的数据
+    os.environ[ACLTRANSFORMER_SAVE_TENSOR_MAX] = str(1000)
 
     acl_map_file_dir = os.path.join('/tmp', str(os.getpid()))
     if not os.path.exists(acl_map_file_dir):
