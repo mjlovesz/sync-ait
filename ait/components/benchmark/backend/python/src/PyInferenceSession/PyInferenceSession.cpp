@@ -335,6 +335,42 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
     return outputs;
 }
 
+std::vector<TensorBase> PyInferenceSession::FirstInnerInfer(std::vector<std::string>& output_names,
+    std::vector<Base::BaseTensor>& feeds)
+{
+    DEBUG_LOG("start to FirstInnerInfer base_tensor");
+
+    std::vector<MemoryData> memorys = {};
+    std::vector<BaseTensor> inputs = {};
+    for (auto &info : feeds) {
+        MemoryData mem = CopyMemory2DeviceMemory(info.buf, info.size, deviceId_);
+        memorys.push_back(mem);
+        BaseTensor tensor(mem.ptrData, mem.size);
+        inputs.push_back(tensor);
+    }
+
+    std::vector<TensorBase> outputs = {};
+    APP_ERROR ret = modelInfer_.FirstInference(inputs, output_names, outputs);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    for (auto &mem : memorys) {
+        MemoryHelper::Free(mem);
+    }
+    return outputs;
+}
+
+std::vector<TensorBase> PyInferenceSession::InnerInfer(const std::vector<int>& in_out_list,
+    std::vector<std::string>& output_names, const bool get_outputs, const bool mem_copy)
+{
+    std::vector<TensorBase> outputs = {};
+    APP_ERROR ret = modelInfer_.RepeatInference(in_out_list, output_names, outputs, get_outputs, mem_copy);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+    return outputs;
+}
+
 void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names,
     std::vector<TensorBase>& outputs)
 {
@@ -562,6 +598,8 @@ void RegistInferenceSession(py::module &m)
     model.def("run", &Base::PyInferenceSession::InferVector);
     model.def("run", &Base::PyInferenceSession::InferMap);
     model.def("run", &Base::PyInferenceSession::InferBaseTensorVector);
+    model.def("first_inner_run", &Base::PyInferenceSession::FirstInnerInfer);
+    model.def("inner_run", &Base::PyInferenceSession::InnerInfer);
     model.def("run_pipeline", &Base::PyInferenceSession::InferPipeline);
     model.def("run_pipeline", &Base::PyInferenceSession::InferPipelineBaseTensor);
     model.def("__str__", &Base::PyInferenceSession::GetDesc);

@@ -51,11 +51,15 @@ PIXEL_MIN_CHN_MAX = 255
 PIXEL_VAR_RECI_CHN_MIN = -65504
 PIXEL_VAR_RECI_CHN_MAX = 65504
 
-TORCH_TENSOR_LIST = ['torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor', 'torch.BFloat16Tensor',
-                     'torch.ByteTensor', 'torch.CharTensor', 'torch.ShortTensor', 'torch.LongTensor',
-                     'torch.BoolTensor', 'torch.IntTensor']
-NP_TYPE_LIST = [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16,
-                np.uint32, np.float16, np.float32, np.float64]
+TORCH_TENSOR_LIST = [
+    'torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor', 'torch.BFloat16Tensor',
+    'torch.ByteTensor', 'torch.CharTensor', 'torch.ShortTensor', 'torch.LongTensor',
+    'torch.BoolTensor', 'torch.IntTensor'
+]
+NP_TYPE_LIST = [
+    np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16,
+    np.uint32, np.float16, np.float32, np.float64
+]
 
 logger = logging.getLogger(__name__)
 
@@ -244,9 +248,11 @@ class InferSession:
         elif (tmp_csc_switch == CSC_SWITCH_ON):
             tmp_csc_params = list()
             tmp_csc_params.append(tmp_csc_switch)
-            options = ['matrix_r0c0', 'matrix_r0c1', 'matrix_r0c2', 'matrix_r1c0', 'matrix_r1c1', 'matrix_r1c2',
-                       'matrix_r2c0', 'matrix_r2c1', 'matrix_r2c2', 'output_bias_0', 'output_bias_1', 'output_bias_2',
-                       'input_bias_0', 'input_bias_1', 'input_bias_2']
+            options = [
+                'matrix_r0c0', 'matrix_r0c1', 'matrix_r0c2', 'matrix_r1c0', 'matrix_r1c1', 'matrix_r1c2',
+                'matrix_r2c0', 'matrix_r2c1', 'matrix_r2c2', 'output_bias_0', 'output_bias_1', 'output_bias_2',
+                'input_bias_0', 'input_bias_1', 'input_bias_2'
+            ]
             for option in options:
                 tmp_csc_params.append(0 if option_list.count(option) == 0 else cfg.getint('aipp_op', option))
 
@@ -428,6 +434,91 @@ class InferSession:
         else:
             return outputs
 
+    def inner_run(self, in_out_list, get_outputs=False, mem_copy=True):
+        '''
+            in_out_list:
+            如果本次推理沿用上次推理的inputdatas数据，则in_out_list为[-1, -1, -1, ...]
+            如果本次推理inputdatas_current[i] = outputdatas_last[j], 那么in_out_list[i] = j
+        '''
+        if (get_outputs):
+            outputs = self.session.inner_run(in_out_list, self.outputs_names, get_outputs, mem_copy)
+            return outputs
+        else:
+            self.session.inner_run(in_out_list, self.outputs_names, get_outputs, mem_copy)
+            outputs = None
+            return outputs
+
+    def first_inner_run(self, feeds, mode='static', custom_sizes=None):
+        '''
+        Parameters:
+            feeds: input data
+            mode: static dymdims dymshapes
+            custom_sizes: must equal to the realsize of outputs
+        '''
+        if not custom_sizes:
+            custom_sizes = []
+        inputs = []
+        shapes = []
+        for feed in feeds:
+            if type(feed) is np.ndarray:
+                infer_input = feed
+                shapes.append(infer_input.shape)
+            elif type(feed) in NP_TYPE_LIST:
+                infer_input = np.array(feed)
+                shapes.append([feed.size])
+            elif hasattr(feed, 'type') and feed.type() in TORCH_TENSOR_LIST:
+                infer_input = feed.numpy()
+                if not feed.is_contiguous():
+                    infer_input = np.ascontiguousarray(infer_input)
+                shapes.append(infer_input.shape)
+            else:
+                raise RuntimeError('type:{} invalid'.format(type(feed)))
+            basetensor = aclruntime.BaseTensor(infer_input.__array_interface__['data'][0], infer_input.nbytes)
+            inputs.append(basetensor)
+
+        if mode == 'dymshape' or mode == 'dymdims':
+            dym_list = []
+            indesc = self.get_inputs()
+            for i, shape in enumerate(shapes):
+                str_shape = [str(val) for val in shape]
+                dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
+                dym_list.append(dyshape)
+            dyshapes = ';'.join(dym_list)
+            if mode == 'dymshape':
+                self.session.set_dynamic_shape(dyshapes)
+                self.session.set_custom_outsize(custom_sizes)
+            elif mode == 'dymdims':
+                self.session.set_dynamic_dims(dyshapes)
+        return self.session.first_inner_run(self.outputs_names, inputs)
+
+    def iteration_run(self, feeds, in_out_list, iteration_times=1, mem_copy=True, mode='static', custom_sizes=None):
+        '''
+            feeds: input datas
+            in_out_list: relation between current input datas and last output datas
+            iteration_times: inner iteration infer loop times
+            mem_copy: loop param will be fixedly set as 1, in infer iteration, without any memory copy in device
+            return outputs after infer
+        '''
+        if not custom_sizes:
+            custom_sizes = []
+        if (iteration_times == 1):
+            if not custom_sizes:
+                outputs = self.infer(feeds, mode)
+            else:
+                outputs = self.infer(feeds, mode, custom_sizes[0])
+            return outputs
+        else:
+            self.first_inner_run(feeds, mode, custom_sizes)
+            for i in range(iteration_times - 1):
+                if (i == iteration_times - 2):
+                    outputs = self.inner_run(in_out_list, True, mem_copy)
+                    # convert to host tensor
+                    self.convert_tensors_to_host(outputs)
+                    # convert tensor to narray
+                    return self.convert_tensors_to_arrays(outputs)
+                else:
+                    self.inner_run(in_out_list, False, mem_copy)
+
     def run_pipeline(self, infilelist, output, auto_shape=False,
                      auto_dims=False, outfmt="BIN", pure_infer_mode=False):
         self.session.run_pipeline(infilelist, output, auto_shape, auto_dims, outfmt, pure_infer_mode)
@@ -495,7 +586,7 @@ class InferSession:
             outputs[i] = self.convert_tensors_to_arrays(output)
         return outputs
 
-    def infer(self, feeds, mode='static', custom_sizes=100000):
+    def infer(self, feeds, mode='static', custom_sizes=100000, out_array=True):
         '''
         Parameters:
             feeds: input data
@@ -541,7 +632,7 @@ class InferSession:
                 self.session.set_custom_outsize(custom_sizes)
             elif mode == 'dymdims':
                 self.session.set_dynamic_dims(dyshapes)
-        return self.run(inputs, out_array=True)
+        return self.run(inputs, out_array)
 
 
 class MemorySummary:
