@@ -13,7 +13,7 @@
 # limitations under the License.
 import pkg_resources
 
-from components.utils.parser import load_command_instance, BaseCommand
+from components.utils.parser import BaseCommand
 
 
 class DebugCommand(BaseCommand):
