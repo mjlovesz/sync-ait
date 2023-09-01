@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import pkg_resources
 
-from components.utils.parser import load_command_instance, BaseCommand
+from components.utils.parser import BaseCommand
+
 
 class DebugCommand(BaseCommand):
     def __init__(self, name="", help_info="", children=None, has_handle=False, **kwargs):
@@ -25,4 +27,7 @@ class DebugCommand(BaseCommand):
         return super().handle(args, **kwargs)
 
 help_info = "debug a wide variety of model issues"
-debug_cmd = load_command_instance('debug_sub_task', "debug", help_info, DebugCommand)
+cmd_instances = []
+for entry_point in pkg_resources.iter_entry_points('debug_sub_task'):
+    cmd_instances.append(entry_point.load()())
+debug_cmd = DebugCommand("debug", help_info, cmd_instances)
