@@ -227,14 +227,14 @@ public:
     * @param [in] inOutRelation: inputs update method
     * @return result
     */
-    Result UpdateInputsV1(const std::vector<int> &inOutRelation);
+    Result UpdateInputsReuse(const std::vector<int> &inOutRelation);
 
     /**
     * @brief update model inputs(need one memory copy per iteration)
     * @param [in] inOutRelation: inputs update method
     * @return result
     */
-    Result UpdateInputsV2(const std::vector<int> &inOutRelation);
+    Result UpdateInputsMemcpy(const std::vector<int> &inOutRelation);
 
     /**
     * @brief create model input

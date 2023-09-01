@@ -629,7 +629,7 @@ Result ModelProcess::CreateDymInput(size_t index)
     return SUCCESS;
 }
 
-Result ModelProcess::UpdateInputsV1(const std::vector<int> &inOutRelation)
+Result ModelProcess::UpdateInputsReuse(const std::vector<int> &inOutRelation)
 {
     if (input_ == nullptr || output_ == nullptr) {
         if (input_ == nullptr) {ERROR_LOG("can't find inputdatas");}
@@ -660,7 +660,7 @@ Result ModelProcess::UpdateInputsV1(const std::vector<int> &inOutRelation)
             ret = aclUpdateDataBuffer(tmpInputData, outBuffer, tensorSize);
             if (ret != ACL_SUCCESS) {
                 cout << aclGetRecentErrMsg() << endl;
-                ERROR_LOG("new input buffer aclrtMemcpy from last output failed. size is %zu", tensorSize);
+                ERROR_LOG("new input buffer update from last output failed. size is %zu", tensorSize);
                 return FAILED;
             }
             if (!reuseOutput_) {
@@ -677,7 +677,7 @@ Result ModelProcess::UpdateInputsV1(const std::vector<int> &inOutRelation)
     return SUCCESS;
 }
 
-Result ModelProcess::UpdateInputsV2(const std::vector<int> &inOutRelation)
+Result ModelProcess::UpdateInputsMemcpy(const std::vector<int> &inOutRelation)
 {
     if (input_ == nullptr || output_ == nullptr) {
         if (input_ == nullptr) {ERROR_LOG("can't find inputdatas");}

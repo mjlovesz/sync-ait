@@ -366,9 +366,9 @@ APP_ERROR ModelInferenceProcessor::UpdateInputsData(const std::vector<int> &inOu
 {
     Result result;
     if (mem_copy) {
-        result = processModel->UpdateInputsV2(inOutRelation);
+        result = processModel->UpdateInputsMemcpy(inOutRelation);
     } else {
-        result = processModel->UpdateInputsV1(inOutRelation);
+        result = processModel->UpdateInputsReuse(inOutRelation);
     }
     if (result != SUCCESS) {
         ERROR_LOG("create inputdataset failed:%d", result);
