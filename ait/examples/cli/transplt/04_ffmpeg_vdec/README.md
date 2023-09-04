@@ -6,8 +6,9 @@
 下载样例视频[dvpp_vdec_h264_1frame_bp_51_1920x1080.h264](https://obs-9be7.obs.cn-east-2.myhuaweicloud.com/data/dvpp_sample_input_data/dvpp_vdec_h264_1frame_bp_51_1920x1080.h264)，该视频只包含一帧1920*1080尺寸的图片。
 
 ## 运行原始FFmpeg工程
-- 依赖FFmpeg 4.4以上版本才能运行
-- 
+
+> 建议在FFmpeg 4.2以上版本运行该工程
+
 ### 安装FFmpeg
 
 这里以Ubuntu为例，如果是Ubunt20.04以上版本，可以直接用如下命令安装：
@@ -51,7 +52,7 @@ g++ -std=c++11 ffmpeg_decode.cpp -lavcodec -lavdevice -lavfilter -lavformat -lav
 然后运行编译后的可执行文件：
 
 ```shell
-./ffmpeg_decode dvpp_vdec_h264_1frame_bp_51_1920x1080.h264 dvpp_vdep_51_1920x1080./ffmpeg_decode dvpp_vdec_h264_1frame_bp_51_1920x1080.h264 dvpp_vdep_51_1920x1080
+./ffmpeg_decode dvpp_vdec_h264_1frame_bp_51_1920x1080.h264 dvpp_vdec_h264_1frame_bp_51_1920x1080_decoded
 ```
 
 如果运行成功，会在当前目录下生成一个文件名为`dvpp_vdec_h264_1frame_bp_51_1920x1080-1.pgm`的文件，该文件为解码后的灰度pgm格式图片。
@@ -61,11 +62,15 @@ g++ -std=c++11 ffmpeg_decode.cpp -lavcodec -lavdevice -lavfilter -lavformat -lav
   - 安装 ait 工具后，针对待迁移项目执行 transplt 迁移分析
   ```sh
   ait transplt -s <ait工程目录>/ait/examples/cli/transplt/04_ffmpeg_vdec/ffmpeg
-  # INFO - scan_api.py[123] - Scan source files...
-  # ...
-  # INFO - csv_report.py[46] - Report generated at: ./output.xlsx
-  # INFO - scan_api.py[113] - **** Project analysis finished <<<
   ```
+  输出示例如下
+  ```sh
+  INFO - scan_api.py[123] - Scan source files...
+  ...
+  INFO - csv_report.py[46] - Report generated at: ./output.xlsx
+  INFO - scan_api.py[113] - **** Project analysis finished <<<
+  ```
+
   最终分析结果文件位于`<ait工程目录>/ait/examples/cli/transplt/04_ffmpeg_vdec/ffmpeg`路径下 `./output.xlsx`，该结果中重点关注有对应关系的接口，并参照 `AscendAPILink` 中相关接口说明辅助完成迁移。
 
 ## 迁移到昇腾ACL DVPP 图像处理
@@ -184,14 +189,19 @@ DVPP在解码完成后，资源释放相关API如下：
   
 ```sh
 g++ -O3 -std=c++11 acl_decode.cpp -o acl_decode -I$ASCEND_TOOLKIT_HOME/runtime/include/acl -I$ASCEND_TOOLKIT_HOME/runtime/include/acl/dvpp -L $ASCEND_TOOLKIT_HOME/runtime/lib64/stub -lacl_dvpp_mpi -lascendcl -lpthread -lstdc++
+
 ./acl_decode dvpp_vdec_h264_1frame_bp_51_1920x1080.h264 dvpp_vdec_h264_1frame_bp_51_1920x1080_decoded
-# [hi_dvpp_init][676] aclInit Success.
-# [hi_dvpp_init][684] aclrtSetDevice 0 Success.
-# [hi_dvpp_init][693] aclrtCreateContext Success
-# [hi_dvpp_init][704] Dvpp system init success
-# [send_stream][532] Chn 0 send_stream Thread Exit
-# [get_pic][574] Chn 0 GetFrame Success, Decode Success[1]
-# [get_pic][608] Chn 0 get_pic Thread Exit
-# [hi_dvpp_deinit][730] Dvpp system exit success  
 ```
+输出示例如下：
+```sh
+[hi_dvpp_init][676] aclInit Success.
+[hi_dvpp_init][684] aclrtSetDevice 0 Success.
+[hi_dvpp_init][693] aclrtCreateContext Success
+[hi_dvpp_init][704] Dvpp system init success
+[send_stream][532] Chn 0 send_stream Thread Exit
+[get_pic][574] Chn 0 GetFrame Success, Decode Success[1]
+[get_pic][608] Chn 0 get_pic Thread Exit
+[hi_dvpp_deinit][730] Dvpp system exit success  
+```
+
 > 其中`$ASCEND_TOOLKIT_HOME`是CANN包路径，假设CANN包安装在`/usr/local/Ascend`，该环境变量可以通过`source /usr/local/Ascend/ascend-toolkit/set_env.sh`来自动设置。
