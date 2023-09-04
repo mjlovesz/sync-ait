@@ -205,9 +205,10 @@ start = time.time()
 # infer_iteration_withD2H()
 infer_iteration_withoutD2H_withmemcpy()
 # infer_iteration_withoutD2H_withoutmemcpy()
+# infer_dymbatch()
+# infer_dymhw()
 end = time.time()
 e2e_cost = end - start
 logger.info(f"endtoend time:{e2e_cost} sec")
-# infer_dymbatch()
-# infer_dymhw()
+
 
