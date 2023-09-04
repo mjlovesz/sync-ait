@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 project(mylib)
 
 # 添加要编译的源文件
-add_library(tensorutil SHARED tensorutil.cpp)
+add_library(tensorutil SHARED tensor_util.cpp)
 
 # 设置链接库的路径，这里使用了环境变量
 set(ACLTRANSFORMER_HOME_PATH "$ENV{ACLTRANSFORMER_HOME_PATH}")
