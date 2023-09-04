@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import shutil
+import site
 import time
 
 import pandas as pd
@@ -34,20 +36,43 @@ PTA_DATA_PATH = 'pta_data_path'
 ACL_DATA_PATH = 'acl_data_path'
 PTA_DTYPE = "pta_dtype"
 PTA_SHAPE = "pta_shape"
+PTA_MAX_VALUE = "pta_max_value"
+PTA_MIN_VALUE = "pta_min_value"
+PTA_MEAN_VALUE = "pta_mean_value"
 PTA_STACK = "pta_stack"
 ACL_DTYPE = "acl_dtype"
 ACL_SHAPE = "acl_shape"
+ACL_MAX_VALUE = "acl_max_value"
+ACL_MIN_VALUE = "acl_min_value"
+ACL_MEAN_VALUE = "acl_mean_value"
 ACL_STACK = "acl_stack"
 CMP_FLAG = "cmp_flag"
 CMP_FAIL_REASON = "cmp_fail_reason"
-CSV_HEADER = [DATA_ID, PTA_DATA_PATH, PTA_DTYPE, PTA_SHAPE, ACL_DATA_PATH, ACL_DTYPE, ACL_SHAPE, CMP_FLAG]
+CSV_HEADER = [DATA_ID, PTA_DATA_PATH, PTA_DTYPE, PTA_SHAPE, PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE,
+              ACL_DATA_PATH, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, CMP_FLAG]
 CSV_HEADER.extend(list(cmp_alg_map.keys()))
 CSV_HEADER.append(CMP_FAIL_REASON)
+
+MODEL_INFER_TASK_ID = "AIT_CMP_TASK_ID"
+AIT_CMP_TASK_DIR = 'AIT_CMP_TASK_DIR'
+AIT_CMP_TASK = "AIT_CMP_TASK"
+AIT_CMP_TASK_PID = "AIT_CMP_TASK_PID"
+LD_PRELOAD = "LD_PRELOAD"
+
+ACL_DATA_MAP_FILE = "ait_compare_acl_map.txt"
+
+ACLTRANSFORMER_SAVE_TENSOR_MAX = "ACLTRANSFORMER_SAVE_TENSOR_MAX"
+ACLTRANSFORMER_SAVE_TENSOR = "ACLTRANSFORMER_SAVE_TENSOR"
+MAX_TOKEN_NUM = "10000"
 
 token_counts = 0
 
 
 def set_task_id():
+    # 通过ait拉起精度比对任务，接口才会生效
+    if os.getenv(AIT_CMP_TASK) != "1":
+        return
+
     pid = os.getpid()
     dump_env_name = str(pid) + "_" + "DUMP_PATH"
     if not os.getenv(dump_env_name):
@@ -55,8 +80,8 @@ def set_task_id():
 
     global token_counts
     task_id = str(pid) + "_" + str(token_counts)
-    if os.getenv("AIT_CMP_TASK_ID") != task_id:
-        os.environ["AIT_CMP_TASK_ID"] = task_id
+    if os.getenv(MODEL_INFER_TASK_ID) != task_id:
+        os.environ[MODEL_INFER_TASK_ID] = task_id
 
     logger.info("Acl transformer dump data dir: {}".format(os.getenv(dump_env_name)))
 
@@ -138,15 +163,25 @@ def save_acl_dump_tensor(csv_data, data_id, tensor_path):
 
 
 def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
+    # 通过ait拉起精度比对任务，接口才会生效
+    if os.getenv(AIT_CMP_TASK) != "1":
+        return
+
     if data_val is None and tensor_path is None:
         return
 
     if data_val is not None and not isinstance(data_val, torch.Tensor):
         return
 
-    task_id = os.getenv("AIT_CMP_TASK_ID")
+    task_id = os.getenv(MODEL_INFER_TASK_ID)
     task_id = task_id or ""
-    csv_path = os.path.join(".", task_id + "_cmp_result.csv")
+    ait_task_dir = os.getenv(AIT_CMP_TASK_DIR)
+    ait_task_dir = ait_task_dir or ""
+    ait_cmp_task_pid = os.getenv(AIT_CMP_TASK_PID)
+    ait_cmp_task_pid = ait_cmp_task_pid or ""
+
+    csv_result_dir = os.path.join(ait_task_dir, ait_cmp_task_pid)
+    csv_path = os.path.join(csv_result_dir, task_id + "_cmp_result.csv")
 
     dump_data_dir = "cmp_dump_data"
     if not os.path.exists(dump_data_dir):
@@ -174,12 +209,34 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
             data_path = os.path.join(acl_data_dir, data_id + '_tensor.bin')
             data = save_acl_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=data_path)
         elif tensor_path:  # low-level
+            write_acl_map_file(tensor_path)
             pid = os.getpid()
             tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
                                        str(pid), task_id, tensor_path)
             data = save_acl_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
 
     data.to_csv(csv_path, index=False)
+
+
+def write_acl_map_file(tensor_path):
+    ait_cmp_task_pid = os.getenv(AIT_CMP_TASK_PID)
+    acl_map_file_dir = os.path.join('/tmp', ait_cmp_task_pid)
+    acl_map_file_path = os.path.join(acl_map_file_dir, ACL_DATA_MAP_FILE)
+    if not os.path.exists(acl_map_file_dir):
+        os.mkdir(acl_map_file_dir)
+
+    if os.path.exists(acl_map_file_path):
+        with open(acl_map_file_path, 'r') as file:
+            tensor_paths = file.readlines()
+
+        if tensor_path + "\n" not in tensor_paths:
+            with open(acl_map_file_path, mode="a") as file:
+                file.write(tensor_path)
+                file.write("\n")
+    else:
+        with open(acl_map_file_path, mode="a") as file:
+            file.write(tensor_path)
+            file.write("\n")
 
 
 def compare_tensor(csv_data: pd.DataFrame):
@@ -211,6 +268,15 @@ def compare_tensor(csv_data: pd.DataFrame):
 
         pta_data_fp32 = pta_data.reshape(-1).astype("float32")
         acl_data_fp32 = acl_data.reshape(-1).astype("float32")
+
+        csv_data[PTA_MAX_VALUE][idx] = np.max(pta_data_fp32)
+        csv_data[PTA_MIN_VALUE][idx] = np.min(pta_data_fp32)
+        csv_data[PTA_MEAN_VALUE][idx] = np.mean(pta_data_fp32)
+
+        csv_data[ACL_MAX_VALUE][idx] = np.max(acl_data_fp32)
+        csv_data[ACL_MIN_VALUE][idx] = np.min(acl_data_fp32)
+        csv_data[ACL_MEAN_VALUE][idx] = np.mean(acl_data_fp32)
+
         for name, cmp_func in cmp_alg_map.items():
             result = cmp_func(pta_data_fp32, acl_data_fp32)
             csv_data[name][idx] = result
@@ -319,3 +385,33 @@ def read_acl_transformer_data(file_path):
         return data.cpu().numpy()
 
     raise ValueError("Tensor file path must be end with .bin.")
+
+
+def init_aclcmp_task():
+    os.environ[AIT_CMP_TASK_PID] = str(os.getpid())
+    os.environ[AIT_CMP_TASK] = "1"
+    os.environ[AIT_CMP_TASK_DIR] = os.getcwd()
+    ld_preload = os.getenv("LD_PRELOAD")
+    ld_preload = ld_preload or ""
+    save_tensor_so_path = os.path.join(site.getsitepackages()[0], "msquickcmp", "libtensorutil.so")
+    os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
+
+    # 加速库获取内部数据轮数，设大一些，否则token数目较多时，可能获取不到后面的数据
+    os.environ[ACLTRANSFORMER_SAVE_TENSOR_MAX] = MAX_TOKEN_NUM
+    # 打开加速库dump数据开关
+    os.environ[ACLTRANSFORMER_SAVE_TENSOR] = str(1)
+
+    acl_map_file_dir = os.path.join('/tmp', str(os.getpid()))
+    if not os.path.exists(acl_map_file_dir):
+        os.mkdir(acl_map_file_dir)
+
+    csv_result_dir = os.path.join(os.getenv(AIT_CMP_TASK_DIR), os.getenv(AIT_CMP_TASK_PID))
+    if not os.path.exists(csv_result_dir):
+        os.mkdir(csv_result_dir)
+
+
+def clear_aclcmp_task():
+    acl_map_file_dir = os.path.join('/tmp', str(os.getpid()))
+    if os.path.exists(acl_map_file_dir):
+        shutil.rmtree(acl_map_file_dir)
+
