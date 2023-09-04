@@ -266,16 +266,17 @@ def compare_tensor(csv_data: pd.DataFrame):
             csv_data[CMP_FLAG][idx] = True
             continue
 
-        csv_data[PTA_MAX_VALUE][idx] = np.max(pta_data)
-        csv_data[PTA_MIN_VALUE][idx] = np.min(pta_data)
-        csv_data[PTA_MEAN_VALUE][idx] = np.mean(pta_data)
-
-        csv_data[ACL_MAX_VALUE][idx] = np.max(acl_data)
-        csv_data[ACL_MIN_VALUE][idx] = np.min(acl_data)
-        csv_data[ACL_MEAN_VALUE][idx] = np.mean(acl_data)
-
         pta_data_fp32 = pta_data.reshape(-1).astype("float32")
         acl_data_fp32 = acl_data.reshape(-1).astype("float32")
+
+        csv_data[PTA_MAX_VALUE][idx] = np.max(pta_data_fp32)
+        csv_data[PTA_MIN_VALUE][idx] = np.min(pta_data_fp32)
+        csv_data[PTA_MEAN_VALUE][idx] = np.mean(pta_data_fp32)
+
+        csv_data[ACL_MAX_VALUE][idx] = np.max(acl_data_fp32)
+        csv_data[ACL_MIN_VALUE][idx] = np.min(acl_data_fp32)
+        csv_data[ACL_MEAN_VALUE][idx] = np.mean(acl_data_fp32)
+
         for name, cmp_func in cmp_alg_map.items():
             result = cmp_func(pta_data_fp32, acl_data_fp32)
             csv_data[name][idx] = result
