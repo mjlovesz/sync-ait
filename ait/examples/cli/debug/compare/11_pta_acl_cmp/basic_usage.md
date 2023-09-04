@@ -112,25 +112,14 @@ ait debug compare aclcmp xx_args
                    "/3_SelfAttentionOpsChatglm6bRunner/after/outTensor0.bin")
    ```
 
-3. 设置加速库dump数据的环境变量
-
-   若进行low-level的比对，则需要设置加速库dump数据的环境变量：
-
-   ```
-   export ACLTRANSFORMER_SAVE_TENSOR=1
-   export ACLTRANSFORMER_SAVE_TENSOR_MAX=2  #dump数据的轮数（执行推理的token数），按需设置
-   #要比对的runner。加速库dump数据runner白名单，默认为空，空时为全量dump，非空时只dump白名单中包含的runner数据。
-   export ACLTRANSFORMER_SAVE_TENSOR_RUNNER=SelfAttentionOpsChatglm6bRunner
-   ```
-
-4. 执行比对命令
+3. 执行比对命令
    安装[加速库](https://gitee.com/ascend/ascend-transformer-acceleration)的指导文档下载编译好加速库代码，进入example/chatglm6b目录，执行比对命令：
 
    ```shell
    ait debug compare aclcmp --exec "bash run_performance.sh patches/models/modeling_chatglm_model.py"
    ```
 
-5. 结果分析
+4. 结果分析
 
    生成的csv报告如下：
     ![输入图片说明](%E6%AF%94%E5%AF%B9%E6%8A%A5%E5%91%8A.PNG)
