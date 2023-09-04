@@ -1,8 +1,9 @@
 #!/bin/bash
 
 build_tensorutil(){
+    CUR_PATH=$(dirname $(readlink -f $0))
     # 进入ss目录
-    cd pta_acl_cmp
+    cd ${CUR_PATH}/pta_acl_cmp
 
     # 设置CMake构建目录
     build_dir="build"

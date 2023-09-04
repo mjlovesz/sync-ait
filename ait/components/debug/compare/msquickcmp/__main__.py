@@ -43,6 +43,10 @@ def str2bool(v):
 
 
 class CompareCommand(BaseCommand):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parser = None
+
     def add_arguments(self, parser):
         parser.add_argument(
             '-gm',
@@ -185,12 +189,14 @@ class CompareCommand(BaseCommand):
             dest="quant_fusion_rule_file",
             default='',
             help="the quant fusion rule file path")
+        self.parser = parser
 
 
 
     def handle(self, args):
         if not args.golden_model:
             logger.error("The following arguments are required: -gm/--golden-model")
+            self.parser.print_help()
             return
 
         cmp_args = CmpArgsAdapter(args.golden_model, args.om_model, args.weight_path, args.input_data_path,
