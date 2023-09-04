@@ -14,9 +14,13 @@
 
 import logging
 import time
+import sys
 from configparser import ConfigParser
+from multiprocessing import Pool
+from multiprocessing import Manager
 import numpy as np
 import aclruntime
+
 
 SRC_IMAGE_SIZE_W_MIN = 2
 SRC_IMAGE_SIZE_W_MAX = 4096
@@ -79,15 +83,25 @@ class InferSession:
         self.device_id = device_id
         self.model_path = model_path
         self.loop = loop
-        options = aclruntime.session_options()
+        self.options = aclruntime.session_options()
         if acl_json_path is not None:
-            options.acl_json_path = acl_json_path
-        options.log_level = 1 if debug else 2
-        options.loop = self.loop
-        self.session = aclruntime.InferenceSession(self.model_path, self.device_id, options)
+            self.options.acl_json_path = acl_json_path
+        self.options.log_level = 1 if debug else 2
+        self.options.loop = self.loop
+        self.session = aclruntime.InferenceSession(self.model_path, self.device_id, self.options)
         self.outputs_names = [meta.name for meta in self.session.get_outputs()]
         self.intensors_desc = self.session.get_inputs()
         self.outtensors_desc = self.session.get_outputs()
+
+    def __init__(self, device_id: int, obj=None):
+        self.device_id = device_id
+        self.model_path = obj.model_path
+        self.loop = obj.loop
+        self.options = obj.options
+        self.session = aclruntime.InferenceSession(self.model_path, self.device_id, self.options)
+        self.outputs_names = obj.outputs_names
+        self.intensors_desc = obj.intensors_desc
+        self.outtensors_desc = obj.outtensors_desc
 
     @staticmethod
     def convert_tensors_to_host(tensors):
@@ -642,7 +656,7 @@ class InferSession:
 
         return self.session.first_inner_run(self.outputs_names, inputs)
 
-    def iteration_run(self, feeds, in_out_list, iteration_times=1, mem_copy=True, mode='static', custom_sizes=None):
+    def infer_iteration(self, feeds, in_out_list, iteration_times=1, mem_copy=True, mode='static', custom_sizes=None):
         '''
             feeds: input datas
             in_out_list: relation between current input datas and last output datas
@@ -670,20 +684,45 @@ class InferSession:
                 else:
                     self.inner_run(in_out_list, False, mem_copy)
 
+    def subprocess_run(self, outputs_queue, device_id, feeds, mode='static', custom_sizes=100000):
+        sub_session = InferSession(device_id=device_id, obj=self)
+        outputs = sub_session.infer(feeds, mode, custom_sizes, out_array=True)
+        outputs_queue.put([device_id, outputs])
+        return
+
+    def infer_multidevices(self, device_feeds:dict, mode='static', custom_sizes=100000):
+        p = Pool(len(device_feeds))
+        outputs_queue = Manager().Queue()
+        for device_id, feeds in device_feeds:
+            p.apply_async(self.subprocess_run, args=(outputs_queue, device_id, feeds, mode, custom_sizes), error_callback=self.print_subprocess_run_error)
+        p.close()
+        p.join()
+        result = 0 if 2 * len(device_feeds) == outputs_queue.qsize() else 1
+        logger.info("multidevice run end qsize:{} result:{}".format(outputs_queue.qsize(), result))
+        outputs_dict = {}
+        while outputs_queue.qsize() != 0:
+            ret = outputs_queue.get()
+            if type(ret) == list:
+                outputs_dict.update({ret[0]: ret[1]})
+        return outputs_dict
+
+    def print_subprocess_run_error(value):
+        logger.error("subprocess run failed error_callback:{}".format(value))
+
     def sumary(self):
         return self.session.sumary()
 
-    def finalize(self):
-        if hasattr(self.session, 'finalize'):
-            self.session.finalize()
+    def free_model(self):
+        if hasattr(self.session, 'free_model'):
+            self.session.free_model()
 
     def free_device(self):
         if hasattr(self.session, 'free_device'):
             self.session.free_device()
 
-    def free_model(self):
-        if hasattr(self.session, 'free_model'):
-            self.session.free_model()
+    def finalize(self):
+        if hasattr(self.session, 'finalize'):
+            self.session.finalize()
 
 
 class MemorySummary:
