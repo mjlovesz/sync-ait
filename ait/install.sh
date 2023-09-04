@@ -15,7 +15,8 @@
 
 CURRENT_DIR=$(dirname $(readlink -f $0))
 arg_force_reinstall=
-only_debug=
+only_compare=
+only_surgen=
 only_benchmark=
 only_analyze=
 only_convert=
@@ -27,7 +28,8 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --force-reinstall) arg_force_reinstall=--force-reinstall;;
   -f) arg_force_reinstall=--force-reinstall;;
   --full) full_install=--full;;
-  --debug) only_debug=true;;
+  --compare) only_compare=true;;
+  --surgeon) only_surgeon=true;;
   --benchmark) only_benchmark=true;;
   --analyze) only_analyze=true;;
   --convert) only_convert=true;;
@@ -53,7 +55,8 @@ fi
 if [ "$arg_help" -eq "1" ]; then
   echo "Usage: $0 [options]"
   echo " --help or -h : Print help menu"
-  echo " --debug : only install debug component"
+  echo " --surgeon : only install debug surgeon component"
+  echo " --compare : only install debug compare component"
   echo " --benchmark : only install benchmark component"
   echo " --analyze : only install analyze component"
   echo " --convert : only install convert component"
@@ -76,13 +79,18 @@ pre_check_skl2onnx(){
 
 
 uninstall(){
-  if [ -z $only_debug ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ]
+  if [ -z $only_debug ] && [ -z $only_compare ] && [ -z $only_surgen ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ]
   then
     pip3 uninstall ait analyze_tool aclruntime ais_bench convert_tool compare auto_optimizer msprof transplt ${all_uninstall}
   else
-    if [ ! -z $only_debug ]
+    if [ ! -z $only_compare ]
     then
-      pip3 uninstall compare auto_optimizer ${all_uninstall}
+      pip3 uninstall compare ${all_uninstall}
+    fi
+
+    if [ ! -z $only_surgeon ]
+    then
+      pip3 uninstall auto_optimizer ${all_uninstall}
     fi
 
     if [ ! -z $only_benchmark ]
@@ -117,12 +125,18 @@ uninstall(){
 install(){
   pip3 install ${CURRENT_DIR} ${arg_force_reinstall}
 
-  if [ ! -z $only_debug ]
+  if [ ! -z $only_compare ]
   then
+    only_benchmark=true;
+    only_surgeon=true;
     pre_check_skl2onnx
-
     pip3 install ${CURRENT_DIR}/components/debug/compare \
-    ${CURRENT_DIR}/components/debug/surgeon \
+    ${arg_force_reinstall}
+  fi
+
+  if [ ! -z $only_surgeon	 ]
+  then
+    pip3 install ${CURRENT_DIR}/components/debug/surgeon \
     ${arg_force_reinstall}
   fi
 
@@ -160,7 +174,7 @@ install(){
     ${arg_force_reinstall}
   fi
 
-  if [ -z $only_debug ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ]
+  if [ -z $only_cmopare ] && [ -z $only_surgeon ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ]
   then
     pre_check_skl2onnx
 
