@@ -38,7 +38,7 @@ std::unordered_set<std::string> &findTable() {
 }
 
 
-void AclTransformer::TensorUtil::SaveTensor(const Asdops::Tensor &tensor, const std::string &filePath) {
+void AclTransformer::TensorUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath) {
     std::unordered_set<std::string> &copyTable = findTable();
     pid_t processID = getpid();
     std::string pID = std::to_string(processID);

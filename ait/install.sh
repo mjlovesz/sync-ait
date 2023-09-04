@@ -124,6 +124,8 @@ install(){
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \
     ${arg_force_reinstall}
+
+    bash ${CURRENT_DIR}/components/debug/compare/msquickcmp/build.sh
   fi
 
   if [ ! -z $only_benchmark ]
@@ -175,6 +177,7 @@ install(){
     ${arg_force_reinstall}
 
     bash ${CURRENT_DIR}/components/convert/build.sh
+    bash ${CURRENT_DIR}/components/debug/compare/msquickcmp/pta_acl_cmp/build.sh
 
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi

@@ -13,6 +13,7 @@
 # limitations under the License.
 import os
 import shutil
+import site
 import time
 
 import pandas as pd
@@ -56,10 +57,13 @@ MODEL_INFER_TASK_ID = "AIT_CMP_TASK_ID"
 AIT_CMP_TASK_DIR = 'AIT_CMP_TASK_DIR'
 AIT_CMP_TASK = "AIT_CMP_TASK"
 AIT_CMP_TASK_PID = "AIT_CMP_TASK_PID"
+LD_PRELOAD = "LD_PRELOAD"
 
 ACL_DATA_MAP_FILE = "ait_compare_acl_map.txt"
 
 ACLTRANSFORMER_SAVE_TENSOR_MAX = "ACLTRANSFORMER_SAVE_TENSOR_MAX"
+ACLTRANSFORMER_SAVE_TENSOR = "ACLTRANSFORMER_SAVE_TENSOR"
+MAX_TOKEN_NUM = "10000"
 
 token_counts = 0
 
@@ -386,9 +390,15 @@ def init_aclcmp_task():
     os.environ[AIT_CMP_TASK_PID] = str(os.getpid())
     os.environ[AIT_CMP_TASK] = "1"
     os.environ[AIT_CMP_TASK_DIR] = os.getcwd()
+    ld_preload = os.getenv("LD_PRELOAD")
+    ld_preload = ld_preload or ""
+    save_tensor_so_path = os.path.join(site.getsitepackages()[0], "msquickcmp", "libtensorutil.so")
+    os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
 
     # 加速库获取内部数据轮数，设大一些，否则token数目较多时，可能获取不到后面的数据
-    os.environ[ACLTRANSFORMER_SAVE_TENSOR_MAX] = str(1000)
+    os.environ[ACLTRANSFORMER_SAVE_TENSOR_MAX] = MAX_TOKEN_NUM
+    # 打开加速库dump数据开关
+    os.environ[ACLTRANSFORMER_SAVE_TENSOR] = str(1)
 
     acl_map_file_dir = os.path.join('/tmp', str(os.getpid()))
     if not os.path.exists(acl_map_file_dir):
