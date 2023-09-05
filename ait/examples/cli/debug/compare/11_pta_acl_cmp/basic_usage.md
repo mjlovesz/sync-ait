@@ -118,6 +118,9 @@ ait debug compare aclcmp xx_args
    ```shell
    ait debug compare aclcmp --exec "bash run_performance.sh patches/models/modeling_chatglm_model.py"
    ```
+- **注意事项**：
+- [ ] 在进行low-level比对时，需要先执行PTA model的推理，再执行加速库的推理，即`set_label("acl", data_id, tensor_path)`需要在加速库侧推理前执行。
+- [ ] low-level比对的同时，需要设置high-level比对。
 
 4. 结果分析
 
@@ -132,9 +135,16 @@ ait debug compare aclcmp xx_args
    | pta_data_path               | pta数据的dump路径          |
    | pta_dtype                   | pta数据的类型              |
    | pta_shape                   | pta数据的shape             |
+   | pta_max_value               | pta数据的最大值            |
+   | pta_min_value               | pta数据的最小值            |
+   | pta_mean_value              | pta数据的平均值            |
+
    | acl_data_path               | acl数据的dump路径          |
    | acl_dtype                   | acl数据的类型              |
    | acl_shape                   | acl数据的shape             |
+   | acl_max_value               | acl数据的最大值            |
+   | acl_min_value               | acl数据的最小值            |
+   | acl_mean_value              | acl数据的平均值            |
    | cmp_flag                    | 是否比较                   |
    | cosine_similarity           | pta与acl数据的余弦相似度值 |
    | max_relative_error          | pta与acl数据的最大相对误差 |
