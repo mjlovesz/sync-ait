@@ -18,6 +18,7 @@
 
 #include <exception>
 #include <thread>
+#include <set>
 
 #include "Base/DeviceManager/DeviceManager.h"
 #include "Base/Tensor/TensorBuffer/TensorBuffer.h"
@@ -148,6 +149,11 @@ std::string GetTensorDesc(Base::TensorDesc desc)
 uint32_t PyInferenceSession::GetDeviceId() const
 {
     return deviceId_;
+}
+
+std::size_t PyInferenceSession::GetContextIndex() const
+{
+    return contextIndex_;
 }
 
 const std::vector<Base::TensorDesc>& PyInferenceSession::GetInputs()
@@ -331,6 +337,19 @@ void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<
     }
 }
 
+bool CheckExtraSession(size_t contextIndex, const std::vector<std::shared_ptr<PyInferenceSession>>& extraSession)
+{
+    std::set<size_t> contextSet{contextIndex};
+    for (auto session : extraSession) {
+        auto newContextIndex = session->GetContextIndex();
+        if (contextSet.find(newContextIndex) != contextSet.end()) {
+            return false;
+        }
+        contextSet.insert(newContextIndex);
+    }
+    return true;
+}
+
 std::vector<std::vector<TensorBase>> PyInferenceSession::InferPipelineBaseTensor(
     std::vector<std::string>& outputNames, std::vector<std::vector<Base::BaseTensor>>& inputsList,
     std::vector<std::vector<std::vector<size_t>>>& shapesList, bool autoDymShape, bool autoDymDims)
@@ -344,9 +363,9 @@ std::vector<std::vector<TensorBase>> PyInferenceSession::InferPipelineBaseTensor
     ConcurrentQueue<std::shared_ptr<Feeds>> d2hQueue;
     ConcurrentQueue<std::shared_ptr<Feeds>> saveQueue;
 
-    std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId, 1);
-    std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), deviceId, this);
-    std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId, 1);
+    std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), this);
+    std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), this, nullptr);
+    std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), this);
     std::thread saveThread(FuncSaveTensorBase, std::ref(saveQueue), deviceId, std::ref(result));
     FuncPrepareBaseTensor(h2dQueue, deviceId, this, inputsList, shapesList, autoDymShape, autoDymDims, outputNames);
 
@@ -358,35 +377,51 @@ std::vector<std::vector<TensorBase>> PyInferenceSession::InferPipelineBaseTensor
     return result;
 }
 
-void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
-                                       bool autoDymShape, bool autoDymDims, const std::string& outFmt,
-                                       const bool pureInferMode, size_t num_threads)
+void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& infilesList,
+                                       std::shared_ptr<InferOptions> inferOption,
+                                       std::vector<std::shared_ptr<PyInferenceSession>>& extraSession)
 {
-    uint32_t deviceId = GetDeviceId();
-    ConcurrentQueue<std::shared_ptr<Feeds>> h2dQueue;
-    ConcurrentQueue<std::shared_ptr<Feeds>> computeQueue;
-    ConcurrentQueue<std::shared_ptr<Feeds>> d2hQueue;
+    // check extra session
+    if (!CheckExtraSession(contextIndex_, extraSession)) {
+        ERROR_LOG("InferPipeline failed: cannot have session in same context");
+    }
+
+    std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> h2dQueues;
+    std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> computeQueues;
+    std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> d2hQueues;
     ConcurrentQueue<std::shared_ptr<Feeds>> saveQueue;
+
+    size_t numThreads = extraSession.size();
+    std::vector<std::thread> h2dThreadGroup{};
     std::vector<std::thread> computeThreadGroup{};
-    computeThreadGroup.reserve(num_threads-1);
-    std::vector<InferSumaryInfo> summaryInfoGroup(num_threads - 1);
+    std::vector<std::thread> d2hThreadGroup{};
+    h2dThreadGroup.reserve(numThreads);
+    computeThreadGroup.reserve(numThreads);
+    d2hThreadGroup.reserve(numThreads);
+    std::vector<InferSumaryInfo> summaryInfoGroup(numThreads - 1);
 
-    std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), deviceId, num_threads);
-    std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), deviceId, this);
-    for (size_t i = 0; i < num_threads - 1; i++) {
-        computeThreadGroup.emplace_back(FuncComputeWithoutSession, std::ref(computeQueue),
-                                        std::ref(d2hQueue), deviceId, this, std::ref(summaryInfoGroup[i]));
-    }
-    std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), deviceId, num_threads);
-    std::thread saveThread(FuncSave, std::ref(saveQueue), deviceId, outFmt);
-    FuncPrepare(h2dQueue, deviceId, this, infilesList, autoDymShape, autoDymDims, outputDir, pureInferMode);
+    // necessary (h2d + compute + d2h) threads
+    h2dThreadGroup.emplace_back(FuncH2d, std::ref(h2dQueues[0]), std::ref(computeQueues[0]), this);
+    computeThreadGroup.emplace_back(FuncCompute, std::ref(computeQueues[0]), std::ref(d2hQueues[0]), this, nullptr);
+    d2hThreadGroup.emplace_back(FuncD2h, std::ref(d2hQueues[0]), std::ref(saveQueue), this);
 
-    h2dThread.join();
-    computeThread.join();
-    for (auto &elem : computeThreadGroup) {
-        elem.join();
+    // extra (h2d + compute + d2h) threads
+    for (size_t i = 1; i < numThreads; i++) {
+        h2dThreadGroup.emplace_back(FuncH2d, std::ref(h2dQueues[i]), std::ref(computeQueues[i]),
+                                    extraSession[i-1].get());
+        computeThreadGroup.emplace_back(FuncCompute, std::ref(computeQueues[i]), std::ref(d2hQueues[i]),
+                                        extraSession[i-1].get(), &(summaryInfoGroup[i-1]));
+        d2hThreadGroup.emplace_back(FuncD2h, std::ref(d2hQueues[i]), std::ref(saveQueue),
+                                    extraSession[i-1].get());
     }
-    d2hThread.join();
+    std::thread saveThread(FuncSave, std::ref(saveQueue), inferOption, numThreads);
+    FuncPrepare(h2dQueues, this, infilesList, inferOption);
+
+    for (size_t i = 0; i < numThreads; i++) {
+        h2dThreadGroup[i].join();
+        computeThreadGroup[i].join();
+        d2hThreadGroup[i].join();
+    }
     saveThread.join();
 
     for (auto &summaryInfo : summaryInfoGroup) {
@@ -544,6 +579,16 @@ void RegistInferenceSession(py::module &m)
     .def_readwrite("loop", &Base::SessionOptions::loop)
     .def_readwrite("log_level", &Base::SessionOptions::log_level)
     .def_readwrite("acl_json_path", &Base::SessionOptions::aclJsonPath);
+
+    py::class_<Base::InferOptions, std::shared_ptr<Base::InferOptions>>(m, "infer_options")
+    .def(py::init([]() { return std::make_shared<Base::InferOptions>(); }))
+    .def_readwrite("output_dir", &Base::InferOptions::outputDir)
+    .def_readwrite("auto_dym_shape", &Base::InferOptions::autoDymShape)
+    .def_readwrite("auto_dym_dims", &Base::InferOptions::autoDymDims)
+    .def_readwrite("out_format", &Base::InferOptions::outFmt)
+    .def_readwrite("pure_infer_mode", &Base::InferOptions::pureInferMode)
+    .def_readwrite("output_names", &Base::InferOptions::outputNames)
+    .def_readwrite("shapes_list", &Base::InferOptions::shapesList)
 
     py::class_<Base::TensorDesc>(m, "tensor_desc")
     .def(pybind11::init<>())

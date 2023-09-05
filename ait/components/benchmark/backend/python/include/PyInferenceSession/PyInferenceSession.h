@@ -31,6 +31,7 @@ namespace py = pybind11;
 #endif
 
 #include "Base/ModelInfer/SessionOptions.h"
+#include "Base/ModelInfer/InferOptions.h"
 
 #include "Base/ModelInfer/ModelInferenceProcessor.h"
 #include "Base/Tensor/TensorBase/TensorBase.h"
@@ -41,6 +42,8 @@ class PyInferenceSession
 {
 public:
     PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<SessionOptions> options);
+    PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId,
+                       std::shared_ptr<SessionOptions> options, const size_t contextIndex);
     ~PyInferenceSession();
 
     std::vector<TensorBase> InferMap(std::vector<std::string>& output_names, std::map<std::string, TensorBase>& feeds);
@@ -48,8 +51,8 @@ public:
 
     std::vector<TensorBase> InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
     void OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names, std::vector<TensorBase>& outputs);
-    void InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
-                       bool autoDymShape, bool autoDymDims, const std::string& outFmt, const bool pureInferMode, size_t num_threads);
+    void InferPipeline(std::vector<std::vector<std::string>>& infilesList, std::shared_ptr<InferOptions> inferOption,
+                       std::vector<std::shared_ptr<PyInferenceSession>>& extraSession);
     std::vector<std::vector<TensorBase>> InferPipelineBaseTensor(std::vector<std::string>& outputNames,
                                                                  std::vector<std::vector<Base::BaseTensor>>& inputsList,
                                                                  std::vector<std::vector<std::vector<size_t>>>& shapesList,
@@ -62,6 +65,7 @@ public:
     const std::vector<Base::TensorDesc>& GetOutputs();
 
     uint32_t GetDeviceId() const;
+    std::size_t GetContextIndex() const;
     std::string GetDesc();
     std::string GetModelPath();
     std::shared_ptr<SessionOptions> GetOptions();
@@ -110,6 +114,7 @@ private:
     Base::ModelDesc modelDesc_ = {};
     bool InitFlag_ = false;
     std::string modelPath_ = "";
+    size_t contextIndex_ = 0;
 };
 }
 
