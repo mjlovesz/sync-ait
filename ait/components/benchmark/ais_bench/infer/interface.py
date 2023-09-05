@@ -686,15 +686,18 @@ class InferSession:
 
     def subprocess_run(self, outputs_queue, device_id, feeds, mode='static', custom_sizes=100000):
         sub_session = InferSession(device_id=device_id, obj=self)
+        start_time = time.time()
         outputs = sub_session.infer(feeds, mode, custom_sizes, out_array=True)
-        outputs_queue.put([device_id, outputs])
+        end_time = time.time()
+        outputs_queue.put([device_id, outputs, start_time, end_time])
         return
 
     def infer_multidevices(self, device_feeds:dict, mode='static', custom_sizes=100000):
         p = Pool(len(device_feeds))
         outputs_queue = Manager().Queue()
         for device_id, feeds in device_feeds:
-            p.apply_async(self.subprocess_run, args=(outputs_queue, device_id, feeds, mode, custom_sizes), error_callback=self.print_subprocess_run_error)
+            for feed in feeds:
+                p.apply_async(self.subprocess_run, args=(outputs_queue, device_id, feed, mode, custom_sizes), error_callback=self.print_subprocess_run_error)
         p.close()
         p.join()
         result = 0 if 2 * len(device_feeds) == outputs_queue.qsize() else 1
@@ -704,6 +707,7 @@ class InferSession:
             ret = outputs_queue.get()
             if type(ret) == list:
                 outputs_dict.update({ret[0]: ret[1]})
+                logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 
     def print_subprocess_run_error(value):

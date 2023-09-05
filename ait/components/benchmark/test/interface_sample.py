@@ -127,6 +127,17 @@ def infer_pipeline():
     print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
 
 
+def infer_multidevices():
+    device_id = 0
+    session = InferSession(device_id, model_path)
+    # create new numpy data according inputs info
+    barray = bytearray(session.get_inputs()[0].realsize)
+    ndata = np.frombuffer(barray)
+    device_feeds = {0:[[ndata][ndata]]}
+    outputs = session.infer_multidevices(device_feeds)
+    logger.info(f"outputs:{outputs} type:{type(outputs)}")
+
+
 def infer_torch_tensor():
     import torch
     device_id = 0
@@ -203,7 +214,8 @@ def get_model_info():
 start = time.time()
 # infer_simple()
 # infer_iteration_withD2H()
-infer_iteration_withoutD2H_withmemcpy()
+infer_multidevices()
+# infer_iteration_withoutD2H_withmemcpy()
 # infer_iteration_withoutD2H_withoutmemcpy()
 # infer_dymbatch()
 # infer_dymhw()
