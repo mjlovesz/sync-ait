@@ -68,6 +68,9 @@ NP_TYPE_LIST = [
 logger = logging.getLogger(__name__)
 
 
+
+
+
 class InferSession:
     def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
         """
@@ -84,23 +87,16 @@ class InferSession:
         self.model_path = model_path
         self.loop = loop
         self.options = aclruntime.session_options()
+        self.acl_json_path = acl_json_path
+        self.debug = debug
         if acl_json_path is not None:
-            self.options.acl_json_path = acl_json_path
-        self.options.log_level = 1 if debug else 2
+            self.options.acl_json_path =  self.acl_json_path
+        self.options.log_level = 1 if self.debug else 2
         self.options.loop = self.loop
         self.session = aclruntime.InferenceSession(self.model_path, self.device_id, self.options)
         self.outputs_names = [meta.name for meta in self.session.get_outputs()]
         self.intensors_desc = self.session.get_inputs()
         self.outtensors_desc = self.session.get_outputs()
-
-    def _copy_construct(self, obj):
-        self.model_path = obj.model_path
-        self.loop = obj.loop
-        self.options = obj.options
-        self.session = aclruntime.InferenceSession(self.model_path, self.device_id, self.options)
-        self.outputs_names = obj.outputs_names
-        self.intensors_desc = obj.intensors_desc
-        self.outtensors_desc = obj.outtensors_desc
 
     @staticmethod
     def convert_tensors_to_host(tensors):
@@ -684,8 +680,13 @@ class InferSession:
                     self.inner_run(in_out_list, False, mem_copy)
 
     def subprocess_run(self, outputs_queue, device_id, feeds, mode='static', custom_sizes=100000):
-        sub_session = InferSession(device_id=device_id)
-        sub_session._copy_construct(obj=self)
+        sub_session = InferSession(
+            device_id=device_id,
+            model_path=self.model_path,
+            acl_json_path=self.acl_json_path,
+            debug=self.debug,
+            loop=self.loop
+        )
         start_time = time.time()
         outputs = sub_session.infer(feeds, mode, custom_sizes, out_array=True)
         end_time = time.time()
