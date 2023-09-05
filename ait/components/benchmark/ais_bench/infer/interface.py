@@ -720,7 +720,7 @@ class MultiDeviceSession():
 
     def infer(self, device_feeds:dict, mode='static', custom_sizes=100000):
         subprocess_num = 0
-        for device in device_feeds:
+        for _, device in device_feeds.item():
             subprocess_num += len(device)
         p = Pool(subprocess_num)
         outputs_queue = Manager().Queue()
