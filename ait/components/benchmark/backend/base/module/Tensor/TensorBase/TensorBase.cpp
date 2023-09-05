@@ -90,10 +90,11 @@ TensorBase::TensorBase()
     buffer_ = std::make_shared<TensorBuffer>();
 }
 TensorBase::TensorBase(const MemoryData &memoryData, const bool &isBorrowed, const std::vector<uint32_t> &shape,
-    const TensorDataType &type) : dataType_(type)
+    const TensorDataType &type, const size_t contextIndex) : dataType_(type)
 {
     shape_ = std::make_shared<TensorShape>(shape);
     buffer_ = std::make_shared<TensorBuffer>();
+    buffer_->contextIndex = contextIndex;
     buffer_->type = memoryData.type;
     buffer_->size = memoryData.size;
     buffer_->deviceId = (int32_t)memoryData.deviceId;
@@ -271,6 +272,12 @@ APP_ERROR TensorBase::ToHost()
     }
     *buffer_ = host;
     return APP_ERR_OK;
+}
+
+// 设置TensorBase的contextIndex，可以不设置默认为0
+void TensorBase::SetContextIndex(const size_t contextIndex)
+{
+    buffer_->contextIndex = contextIndex;
 }
 
 // 获取tensor部署的设备类型

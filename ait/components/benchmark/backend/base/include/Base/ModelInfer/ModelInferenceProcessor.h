@@ -149,7 +149,8 @@ public:
      * 2.Get input sizes and output sizes
      * @return APP_ERROR error code
      */
-    APP_ERROR Init(const std::string& modelPath, std::shared_ptr<SessionOptions> options, const int32_t &deviceId);
+    APP_ERROR Init(const std::string& modelPath, std::shared_ptr<SessionOptions> options,
+                   const int32_t &deviceId, const size_t contextIndex = 0);
 
     /**
      * @description Unload Model
@@ -235,6 +236,7 @@ private:
 
 private:
     ModelDesc modelDesc_;
+    std::size_t contextIndex_ = 0;
 
     InferSumaryInfo sumaryInfo_ = {};
     std::shared_ptr<ModelProcess> processModel;

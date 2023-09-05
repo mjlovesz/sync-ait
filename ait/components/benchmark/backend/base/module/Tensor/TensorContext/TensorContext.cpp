@@ -56,11 +56,11 @@ TensorContext::~TensorContext()
     Finalize();
 }
 
-APP_ERROR TensorContext::SetContext(const uint32_t &deviceId)
+APP_ERROR TensorContext::SetContext(const uint32_t &deviceId, const size_t contextIndex)
 {
     DeviceContext device = {};
     device.devId = deviceId;
-    APP_ERROR ret = DeviceManager::GetInstance()->SetDevice(device);
+    APP_ERROR ret = DeviceManager::GetInstance()->SetDevice(device, contextIndex);
     if (ret != APP_ERR_OK) {
         LogError << "SetDevice failed. ret=" << ret << std::endl;
         return ret;

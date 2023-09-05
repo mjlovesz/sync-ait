@@ -22,7 +22,7 @@ namespace Base {
 APP_ERROR TensorBuffer::SetContext() const
 {
     if (IsDevice()) {
-        APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId);
+        APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId, contextIndex);
         if (ret != APP_ERR_OK) {
             LogError << "SetContext failed. ret=" << ret << std::endl;
             return ret;

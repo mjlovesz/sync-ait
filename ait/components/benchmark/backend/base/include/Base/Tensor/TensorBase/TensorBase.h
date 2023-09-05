@@ -71,7 +71,7 @@ public:
     TensorBase(const TensorBase &tensor) = default;
     // tensor构造函数
     TensorBase(const MemoryData &memoryData, const bool &isBorrowed,
-        const std::vector<uint32_t> &shape, const TensorDataType &type);
+        const std::vector<uint32_t> &shape, const TensorDataType &type, const size_t contextIndex = 0);
     TensorBase(const std::vector<uint32_t> &shape, const TensorDataType &type,
         const MemoryData::MemoryType &bufferType, const int32_t &deviceId);
     TensorBase(const std::vector<uint32_t> &shape, const TensorDataType &type, const int32_t &deviceId);
@@ -106,6 +106,8 @@ public:
     APP_ERROR ToHost();
     static APP_ERROR BatchConcat(const std::vector<TensorBase> &inputs, TensorBase &output);
     static APP_ERROR BatchStack(const std::vector<TensorBase> &inputs, TensorBase &output);
+    // 设置TensorBase的contextIndex，可以不设置默认为0
+    void SetContextIndex(const size_t contextIndex);
 
     // 组batch
     static APP_ERROR BatchVector(const std::vector<TensorBase> &inputs, TensorBase &output,

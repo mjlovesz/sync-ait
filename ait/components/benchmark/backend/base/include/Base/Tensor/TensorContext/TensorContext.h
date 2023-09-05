@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #ifndef TENSOR_CONTEXT_H
 #define TENSOR_CONTEXT_H
 
@@ -40,7 +40,7 @@ public:
     TensorContext();
     ~TensorContext();
     static std::shared_ptr<TensorContext> GetInstance();
-    APP_ERROR SetContext(const uint32_t &deviceId);
+    APP_ERROR SetContext(const uint32_t &deviceId, const size_t contextIndex = 0);
     APP_ERROR Finalize();
 private:
     bool InitDeviceFlag_ = false;
