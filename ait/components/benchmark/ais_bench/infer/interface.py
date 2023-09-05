@@ -695,7 +695,7 @@ class InferSession:
     def infer_multidevices(self, device_feeds:dict, mode='static', custom_sizes=100000):
         p = Pool(len(device_feeds))
         outputs_queue = Manager().Queue()
-        for device_id, feeds in device_feeds:
+        for device_id, feeds in device_feeds.items():
             for feed in feeds:
                 p.apply_async(self.subprocess_run, args=(outputs_queue, device_id, feed, mode, custom_sizes), error_callback=self.print_subprocess_run_error)
         p.close()
