@@ -711,7 +711,7 @@ class InferSession:
                 logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 
-    def print_subprocess_run_error(value):
+    def print_subprocess_run_error(self, value):
         logger.error("subprocess run failed error_callback:{}".format(value))
 
     def sumary(self):
