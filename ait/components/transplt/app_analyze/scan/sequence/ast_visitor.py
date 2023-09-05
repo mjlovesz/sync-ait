@@ -6,7 +6,7 @@ from app_analyze.scan.sequence.seq_desc import FuncDesc, ObjDesc
 from app_analyze.scan.sequence.seq_utils import save_api_seq, sort_apis, is_unused_api
 from app_analyze.scan.sequence.api_filter import GLOBAL_FILTER_PREFIX
 from app_analyze.scan.clang_utils import call_expr, skip_implicit, get_attr, get_children
-from app_analyze.scan.clang_parser import cuda_enabled, usr_namespace
+from app_analyze.scan.clang_parser import cuda_enabled, usr_namespace, find_right_angle
 
 
 # three kinds: 1.invalid, 2.usr_defined, 3.acc_lib
@@ -44,9 +44,9 @@ def _get_input_args(node):
     arguments = list(node.get_arguments())
 
     for param, x in zip(parameters, arguments):
-        x = skip_implicit(x)
-        if not x:  # 有默认值的Keyword参数，如果实参未传，则为None
-            continue
+        # x = skip_implicit(x)
+        # if not x:  # 有默认值的Keyword参数，如果实参未传，则为None
+        #     continue
         args.append(param)
     return args
 
@@ -84,12 +84,36 @@ def _get_obj_info(node, func_attr):
         func_attr.return_type = info.result_type
 
 
-def _visit_function_decl(node, api_type='invalid'):
+def _visit_function_decl(node, api_type, arg_dict=None):
+    def _format_api(ns, api):
+        if ns and api:
+            # 拆分模板类型，保留第一个类型，cv::Ptr<cv::cudacodec::VideoReader>
+            left_bracket, right_bracket = api.find('<'), find_right_angle('>')
+            if left_bracket != -1 and right_bracket != -1:
+                api = api[:left_bracket] + api[right_bracket + 1:]
+
+            ns_end = api.rfind('::')
+            if ns_end == -1:  # api无命名空间
+                api = f'{ns}::{api}'
+            else:
+                api_ns = api[:ns_end]
+                ns_idx = ns.find(api_ns)
+                if api_ns.startswith(ns):
+                    pass
+                elif ns_idx == -1:  # api_ns不在ns里，当然也not ns.startswith(api_ns)，例如cv和Scalar::all
+                    api = f'{ns}::{api}'
+                elif not ns.startswith(api_ns):  # api.startswith('')为True，例如cv::dnn和dnn::Net
+                    api = f'{ns[:ns_idx]}{api}'
+        return api
+
     func_attr = FuncDesc()
     func_attr.func_name = node.spelling
     func_attr.return_type = node.result_type.spelling
     func_attr.location = node.location
     func_attr.hash_code = node.hash
+
+    # if 'imread' in node.spelling:
+    #     print()
 
     func_attr.parm_decl_names = _get_input_args(node)
     func_attr.parm_num = len(func_attr.parm_decl_names)
@@ -97,6 +121,7 @@ def _visit_function_decl(node, api_type='invalid'):
     func_attr.is_usr_def = True if api_type == 'usr_defined' else False
     if api_type == 'acc_lib':
         func_attr.acc_name = get_attr(node, 'lib')
+        func_attr.func_name = _format_api(arg_dict['usr_ns'], node.spelling)
 
     func_attr.root_file = node.referenced.location.file.name
     if is_unused_api(func_attr):
@@ -151,7 +176,7 @@ def _visit_call_expr(node, rst, pth):
                     if ref_kind == 'CXX_METHOD':
                         func_attr = _visit_cxx_method(c, api_type)
                     else:
-                        func_attr = _visit_function_decl(c, api_type)
+                        func_attr = _visit_function_decl(c, api_type, arg_dict)
 
         if func_attr:
             cur_path = []
@@ -199,7 +224,7 @@ def visit(node, seq_desc, result):
                 if ref_kind == 'CXX_METHOD':
                     func_attr = _visit_cxx_method(node, api_type)
                 else:
-                    func_attr = _visit_function_decl(node, api_type)
+                    func_attr = _visit_function_decl(node, api_type, arg_dict)
 
                 if not func_attr:
                     return skip_flag

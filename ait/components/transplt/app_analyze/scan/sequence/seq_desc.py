@@ -36,8 +36,7 @@ class FuncDesc:
     def full_name(self):
         api_str = self.api_name
         arg_str = self.arg_name
-        if arg_str:
-            api_str += '(' + arg_str + ')'
+        api_str += '(' + arg_str + ')'
         return api_str
 
     @property
@@ -50,7 +49,7 @@ class FuncDesc:
             else:
                 names = [self.func_name]
 
-        return '.'.join(names)
+        return '::'.join(names)
 
     @property
     def arg_name(self):

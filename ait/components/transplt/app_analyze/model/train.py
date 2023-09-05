@@ -71,8 +71,8 @@ class Model:
             if seqs_file and seqs_idx_file:
                 api_seqs = load_api_seqs(seqs_file)
                 idx_seq_dict = load_api_seqs(seqs_idx_file)
-                seqs = mining_api_seqs(api_seqs, idx_seq_dict)
-                # seqs = filter_api_seqs(api_seqs, idx_seq_dict)
+                # seqs = mining_api_seqs(api_seqs, idx_seq_dict)
+                seqs = filter_api_seqs(api_seqs, idx_seq_dict)
                 eval_time = time.time() - start
                 logger.info(f'Total time is {eval_time}.')
 
@@ -84,6 +84,6 @@ if __name__ == '__main__':
     # '/home/liuzhe/package/opencv-4.5.4/samples/cpp'
     # '/home/liuzhe/samples/opencv'
     # model.train(samples='/home/liuzhe/samples/api-union-test')
-    # model.train(seqs='./mxbase.seqs.bin', seqs_idx='./mxbase.seqs_idx.bin')
-    model.train(seqs='./opencv.seqs.bin', seqs_idx='./opencv.seqs_idx.bin')
+    model.train(seqs='./mxbase.seqs.bin', seqs_idx='./mxbase.seqs_idx.bin')
+    # model.train(seqs='./opencv.seqs.bin', seqs_idx='./opencv.seqs_idx.bin')
     # model.train(samples='/home/liuzhe/package/opencv-4.5.4/samples/cpp')

@@ -11,13 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os.path
-import numpy as np
-
 import pandas as pd
-from app_analyze.utils.excel import read_excel, write_excel
-from app_analyze.utils.log_util import logger
-from app_analyze.common.kit_config import KitConfig
 
 
 class SeqAdvisor:
@@ -28,36 +22,41 @@ class SeqAdvisor:
     def recommend(self):
         data_dict = dict()
         for seq_desc, lib_seqs in self.result.items():
+            content = []
             entry_api = seq_desc.entry_api.full_name
             src_seq = '-->'.join([_.full_name for _ in seq_desc.api_seq])
-            dst_seq = ''
-            func_desc = ''
 
-            i = 1
-            r_index = ''
+            i = 0
             for lib_seq, rate in lib_seqs.items():
-                acc_seq = list()
-                for idx in lib_seq.dst_seq:
-                    acc_seq.append(self.api_idx_dict[idx])
+                for j, dst_seq in enumerate(lib_seq.dst_seqs):
+                    rec_seq = '-->'.join([self.api_idx_dict[_] for _ in dst_seq])
+                    if j == 0:
+                        label = str(i + 1) + '.' + lib_seq.label
+                        if i == 0:
+                            item = [entry_api, src_seq, label, rec_seq, lib_seq.seq_desc[j], str(rate)]
+                        else:
+                            item = ['', '', label, rec_seq, lib_seq.seq_desc[j], str(rate)]
+                    else:
+                        item = ['', '', '', rec_seq, lib_seq.seq_desc[j], str(rate)]
 
-                dst_seq += (str(i) + '.' + '-->'.join(acc_seq) + '\n')
-                func_desc += (str(i) + '.' + lib_seq.function + '\n')
+                    content.append(item)
                 i += 1
 
-                if not r_index:
-                    r_index = str(rate)
+            if not lib_seqs:
+                content = [[entry_api, src_seq, '', '', '', '']]
 
             loc = seq_desc.entry_api.location.file.name
             if data_dict.get(loc, None):
-                data_dict[loc].append([entry_api, func_desc, src_seq, dst_seq, r_index])
+                data_dict[loc] += content
             else:
-                data_dict[loc] = [[entry_api, func_desc, src_seq, dst_seq, r_index]]
+                data_dict[loc] = content
 
         df_dict = dict()
         for f, data in data_dict.items():
             df_dict[f] = pd.DataFrame(data,
-                                      columns=['Entry API', 'Function', 'Raw Sequence', 'Recommended Sequence',
-                                               'Recommendation Index '],
+                                      columns=['Entry API', 'Usr Call Seqs', 'Seq Labels', 'Recommended Sequences',
+                                               'Functional Description', 'Recommendation Index'
+                                               ],
                                       dtype=str)
 
         return df_dict

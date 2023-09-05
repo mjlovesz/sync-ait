@@ -49,24 +49,27 @@ def from_union(fs, x):
 
 
 class Seq:
-    def __init__(self, src_seqs, dst_seq, function):
+    def __init__(self, label, src_seqs, dst_seqs, seq_desc):
+        self.label = label
         self.src_seqs = src_seqs
-        self.dst_seq = dst_seq
-        self.function = function
+        self.dst_seqs = dst_seqs
+        self.seq_desc = seq_desc
 
     @staticmethod
     def from_dict(obj):
         assert isinstance(obj, dict)
+        label = from_str(obj.get('label'))
         src_seqs = from_list(lambda x: from_list(from_int, x), obj.get('src_seqs'))
-        dst_seq = from_list(from_int, obj.get('dst_seq'))
-        function = from_str(obj.get('function'))
-        return Seq(src_seqs, dst_seq, function)
+        dst_seqs = from_list(lambda x: from_list(from_int, x), obj.get('dst_seqs'))
+        seq_desc = from_list(lambda x: from_str(x), obj.get('seq_desc'))
+        return Seq(label, src_seqs, dst_seqs, seq_desc)
 
     def to_dict(self):
         result = dict()
+        result['label'] = from_str(self.label)
         result['src_seqs'] = from_list(lambda x: from_list(from_int, x), self.src_seqs)
-        result['dst_seq'] = from_list(from_int, self.dst_seq)
-        result['function'] = from_str(self.function)
+        result['seq_desc'] = from_list(lambda x: from_str(x), self.seq_desc)
+        result['dst_seqs'] = from_list(lambda x: from_list(from_int, x), self.dst_seqs)
         return result
 
 

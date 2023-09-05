@@ -18,7 +18,7 @@ class Model:
     def _load_data():
         # load expert libs and idx dict
         all_idx_dict = dict()
-        idx_path = ['./opencv.seqs_idx.bin', './mxbase.seqs_idx.bin']
+        idx_path = ['./opencv.seqs_idx.all.bin', './mxbase.seqs_idx.bin']
         for val in idx_path:
             if not os.path.exists(val):
                 raise Exception('Source directory is not existed!')
@@ -66,6 +66,8 @@ class Model:
 
 if __name__ == '__main__':
     model = Model()
-    '/home/liuzhe/package/opencv-4.5.4/samples/cpp'
+    # '/home/liuzhe/package/opencv-4.5.4/samples/cpp'
     # '/home/liuzhe/samples/opencv'
-    model.predict('/home/liuzhe/samples/opencv-one')
+    # /home/liuzhe/samples/gpu_mat_test
+    # /home/liuzhe/samples/opencv-test
+    model.predict('/home/liuzhe/samples/gpu_mat_test')

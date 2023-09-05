@@ -218,31 +218,56 @@ class SeqHandler:
 
     @staticmethod
     def group_api_seqs(seqs, expert_libs):
+        # b is lib api call sequence
+        def _calc_dist(a, b):
+            intersection = np.intersect1d(a, b)
+            union = np.union1d(a, b)
+            ratio = len(intersection) * 1.0 / len(union) if len(intersection) else -1
+            in_flag = True if len(intersection) == len(b) else False
+            return ratio, in_flag
+
         def _group(seq, lib_seqs, sim):
-            def _jaccard_dist(a, b):
-                union = np.union1d(a, b)
-                intersection = np.intersect1d(a, b)
-                dist = len(intersection) * 1.0 / len(union)
-                return dist
-
             for lib_seq in lib_seqs:
-                if lib_seq.dst_seq[0] == -1:
-                    continue
                 for src_seq in lib_seq.src_seqs:
-                    val = _jaccard_dist(seq, src_seq)
-                    if val == sim:
-                        dst_lib_seqs[lib_seq] = sim
-                    elif val > sim:
-                        sim = val
-                        dst_lib_seqs.clear()
-                        dst_lib_seqs[lib_seq] = sim
+                    val, flag = _calc_dist(seq, src_seq)
+                    if val < 0:
+                        continue
 
+                    if flag:
+                        in_lib_seqs[lib_seq] = (val, src_seq)
+                    else:
+                        if val == sim:
+                            cs_lib_seqs[lib_seq] = (sim, src_seq)
+                        elif val > sim:
+                            sim = val
+                            cs_lib_seqs.clear()
+                            cs_lib_seqs[lib_seq] = (sim, src_seq)
             return sim
+
+        def _sort(usr_seq, cs_seqs, in_seqs):
+            if cs_seqs and not in_seqs:
+                return dict(zip(cs_seqs.keys(), [_[0] for _ in list(cs_seqs.values())]))
+            elif not cs_seqs and not in_seqs:
+                return dict()
+            elif not cs_seqs and in_seqs:
+                # sort
+                return dict(zip(in_seqs.keys(), [_[0] for _ in list(in_seqs.values())]))
+            else:
+                apis = list()
+                for _ in list(in_seqs.values()):
+                    apis += _[1]
+                merged_ratio, _ = _calc_dist(usr_seq, list(set(apis)))
+                max_cs_ratio = list(cs_seqs.values())[0][0]
+                if merged_ratio > max_cs_ratio:
+                    return dict(zip(in_seqs.keys(), [_[0] for _ in list(in_seqs.values())]))
+                else:
+                    return dict(zip(cs_seqs.keys(), [_[0] for _ in list(cs_seqs.values())]))
 
         result = dict()
         for seq_desc in seqs:
             sim_val = -1
-            dst_lib_seqs = dict()
+            cs_lib_seqs = dict()
+            in_lib_seqs = dict()
 
             acc_names = set([_.acc_name for _ in seq_desc.api_seq if _.acc_name])
             cur_idx_list = [_.func_id for _ in seq_desc.api_seq]
@@ -251,7 +276,7 @@ class SeqHandler:
                 if seq_info:
                     sim_val = _group(cur_idx_list, seq_info.seqs, sim_val)
 
-            result[seq_desc] = dst_lib_seqs
+            result[seq_desc] = _sort(cur_idx_list, cs_lib_seqs, in_lib_seqs)
         return result
 
 
