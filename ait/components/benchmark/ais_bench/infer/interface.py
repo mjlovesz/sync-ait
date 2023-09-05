@@ -679,26 +679,12 @@ class InferSession:
                 else:
                     self.inner_run(in_out_list, False, mem_copy)
 
-    def subprocess_run(self, outputs_queue, device_id, feeds, mode='static', custom_sizes=100000):
-        sub_session = InferSession(
-            device_id=device_id,
-            model_path=self.model_path,
-            acl_json_path=self.acl_json_path,
-            debug=self.debug,
-            loop=self.loop
-        )
-        start_time = time.time()
-        outputs = sub_session.infer(feeds, mode, custom_sizes, out_array=True)
-        end_time = time.time()
-        outputs_queue.put([device_id, outputs, start_time, end_time])
-        return
-
     def infer_multidevices(self, device_feeds:dict, mode='static', custom_sizes=100000):
         p = Pool(len(device_feeds))
         outputs_queue = Manager().Queue()
         for device_id, feeds in device_feeds.items():
             for feed in feeds:
-                p.apply_async(self.subprocess_run, args=(outputs_queue, device_id, feed, mode, custom_sizes), error_callback=self.print_subprocess_run_error)
+                p.apply_async(subprocess_run, args=(self, outputs_queue, device_id, feed, mode, custom_sizes), error_callback=self.print_subprocess_run_error)
         p.close()
         p.join()
         result = 0 if 2 * len(device_feeds) == outputs_queue.qsize() else 1
@@ -728,6 +714,21 @@ class InferSession:
     def finalize(self):
         if hasattr(self.session, 'finalize'):
             self.session.finalize()
+
+
+def subprocess_run(obj:InferSession,outputs_queue, device_id, feeds, mode='static', custom_sizes=100000):
+    sub_session = InferSession(
+        device_id=device_id,
+        model_path=obj.model_path,
+        acl_json_path=obj.acl_json_path,
+        debug=obj.debug,
+        loop=obj.loop
+    )
+    start_time = time.time()
+    outputs = sub_session.infer(feeds, mode, custom_sizes, out_array=True)
+    end_time = time.time()
+    outputs_queue.put([device_id, outputs, start_time, end_time])
+    return
 
 
 class MemorySummary:
