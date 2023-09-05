@@ -130,6 +130,7 @@ def infer_pipeline():
 def infer_multidevices():
     device_id = 0
     multi_session = MultiDeviceSession(device_id, model_path)
+    session = InferSession(device_id, model_path)
     # create new numpy data according inputs info
     barray = bytearray(session.get_inputs()[0].realsize)
     ndata = np.frombuffer(barray)
