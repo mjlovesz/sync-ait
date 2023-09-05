@@ -719,7 +719,10 @@ class MultiDeviceSession():
         self.loop = loop
 
     def infer(self, device_feeds:dict, mode='static', custom_sizes=100000):
-        p = Pool(len(device_feeds))
+        subprocess_num = 0
+        for device in device_feeds:
+            subprocess_num += len(device)
+        p = Pool(subprocess_num)
         outputs_queue = Manager().Queue()
         for device_id, feeds in device_feeds.items():
             for feed in feeds:
@@ -732,7 +735,9 @@ class MultiDeviceSession():
         while outputs_queue.qsize() != 0:
             ret = outputs_queue.get()
             if type(ret) == list:
-                outputs_dict.update({ret[0]: ret[1]})
+                if (not outputs_dict.get(ret[0])):
+                    outputs_dict.update({ret[0]: []})
+                outputs_dict[ret[0]].append(ret[1])
                 logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 
