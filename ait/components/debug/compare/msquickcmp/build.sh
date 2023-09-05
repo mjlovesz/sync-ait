@@ -41,7 +41,7 @@ build_tensorutil(){
     echo "Build and move completed!"
 }
 
-if [ -d ${ACLTRANSFORMER_HOME_PATH} ]; then
+if [ ${ACLTRANSFORMER_HOME_PATH} ]; then
     build_tensorutil
     else
         echo "WARNING: env ACLTRANSFORMER_HOME_PATH is not set. Dump on demand package cannot be used."
