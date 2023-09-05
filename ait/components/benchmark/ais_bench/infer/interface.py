@@ -93,11 +93,7 @@ class InferSession:
         self.intensors_desc = self.session.get_inputs()
         self.outtensors_desc = self.session.get_outputs()
 
-    def __init__(self):
-        pass
-
-    def _copy_construct(self, obj, device_id: int):
-        self.device_id = device_id
+    def _copy_construct(self, obj):
         self.model_path = obj.model_path
         self.loop = obj.loop
         self.options = obj.options
@@ -688,8 +684,8 @@ class InferSession:
                     self.inner_run(in_out_list, False, mem_copy)
 
     def subprocess_run(self, outputs_queue, device_id, feeds, mode='static', custom_sizes=100000):
-        sub_session = InferSession()
-        sub_session._copy_construct(obj=self, device_id=device_id)
+        sub_session = InferSession(device_id=device_id)
+        sub_session._copy_construct(obj=self)
         start_time = time.time()
         outputs = sub_session.infer(feeds, mode, custom_sizes, out_array=True)
         end_time = time.time()
