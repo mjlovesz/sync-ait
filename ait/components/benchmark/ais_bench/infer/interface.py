@@ -68,9 +68,6 @@ NP_TYPE_LIST = [
 logger = logging.getLogger(__name__)
 
 
-
-
-
 class InferSession:
     def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
         """
@@ -697,9 +694,6 @@ class InferSession:
                 logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 
-    def print_subprocess_run_error(self, value):
-        logger.error("subprocess run failed error_callback:{}".format(value))
-
     def sumary(self):
         return self.session.sumary()
 
@@ -716,19 +710,51 @@ class InferSession:
             self.session.finalize()
 
 
-def subprocess_run(obj:InferSession,outputs_queue, device_id, feeds, mode='static', custom_sizes=100000):
-    sub_session = InferSession(
-        device_id=device_id,
-        model_path=obj.model_path,
-        acl_json_path=obj.acl_json_path,
-        debug=obj.debug,
-        loop=obj.loop
-    )
-    start_time = time.time()
-    outputs = sub_session.infer(feeds, mode, custom_sizes, out_array=True)
-    end_time = time.time()
-    outputs_queue.put([device_id, outputs, start_time, end_time])
-    return
+class MultiDeviceSession():
+    def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
+        self.device_id = device_id
+        self.model_path = model_path
+        self.acl_json_path = acl_json_path
+        self.debug = debug
+        self.loop = loop
+
+    def infer(self, device_feeds:dict, mode='static', custom_sizes=100000):
+        p = Pool(len(device_feeds))
+        outputs_queue = Manager().Queue()
+        for device_id, feeds in device_feeds.items():
+            for feed in feeds:
+                p.apply_async(self.subprocess_run, args=(outputs_queue, device_id, feed, mode, custom_sizes), error_callback=self.print_subprocess_run_error)
+        p.close()
+        p.join()
+        result = 0 if 2 * len(device_feeds) == outputs_queue.qsize() else 1
+        logger.info("multidevice run end qsize:{} result:{}".format(outputs_queue.qsize(), result))
+        outputs_dict = {}
+        while outputs_queue.qsize() != 0:
+            ret = outputs_queue.get()
+            if type(ret) == list:
+                outputs_dict.update({ret[0]: ret[1]})
+                logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
+        return outputs_dict
+
+    def subprocess_run(self, outputs_queue, device_id, feeds, mode='static', custom_sizes=100000):
+        sub_session = InferSession(
+            device_id=device_id,
+            model_path=self.model_path,
+            acl_json_path=self.acl_json_path,
+            debug=self.debug,
+            loop=self.loop
+        )
+        start_time = time.time()
+        outputs = sub_session.infer(feeds, mode, custom_sizes, out_array=True)
+        end_time = time.time()
+        outputs_queue.put([device_id, outputs, start_time, end_time])
+        return
+
+    def print_subprocess_run_error(self, value):
+        logger.error("subprocess run failed error_callback:{}".format(value))
+
+
+
 
 
 class MemorySummary:

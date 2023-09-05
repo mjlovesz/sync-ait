@@ -17,7 +17,7 @@ import time
 import logging
 import numpy as np
 
-from ais_bench.infer.interface import InferSession
+from ais_bench.infer.interface import InferSession, MultiDeviceSession
 
 model_path = sys.argv[1]
 
@@ -129,12 +129,12 @@ def infer_pipeline():
 
 def infer_multidevices():
     device_id = 0
-    session = InferSession(device_id, model_path)
+    multi_session = MultiDeviceSession(device_id, model_path)
     # create new numpy data according inputs info
     barray = bytearray(session.get_inputs()[0].realsize)
     ndata = np.frombuffer(barray)
     device_feeds = {0:[[ndata],[ndata]]}
-    outputs = session.infer_multidevices(device_feeds)
+    outputs = multi_session.infer(device_feeds)
     logger.info(f"outputs:{outputs} type:{type(outputs)}")
 
 
