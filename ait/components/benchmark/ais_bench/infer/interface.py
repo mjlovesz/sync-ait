@@ -93,7 +93,7 @@ class InferSession:
         self.intensors_desc = self.session.get_inputs()
         self.outtensors_desc = self.session.get_outputs()
 
-    def __init__():
+    def __init__(self):
         pass
 
     def _copy_construct(self, obj, device_id: int):
