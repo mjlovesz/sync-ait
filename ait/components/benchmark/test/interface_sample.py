@@ -133,7 +133,7 @@ def infer_multidevices():
     # create new numpy data according inputs info
     barray = bytearray(session.get_inputs()[0].realsize)
     ndata = np.frombuffer(barray)
-    device_feeds = {0:[[ndata][ndata]]}
+    device_feeds = {0:[[ndata],[ndata]]}
     outputs = session.infer_multidevices(device_feeds)
     logger.info(f"outputs:{outputs} type:{type(outputs)}")
 
