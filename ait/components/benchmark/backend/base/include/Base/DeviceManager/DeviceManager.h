@@ -52,7 +52,7 @@ public:
     // release all devices
     APP_ERROR DestroyDevices();
     // release specific context in a device
-    APP_ERROR DestroyContext(uint32_t deviceId, std::size_t contextIndex);
+    APP_ERROR DestroyContext(uint32_t deviceId, std::size_t contextIndex, bool& isFinalize);
     APP_ERROR SetDeviceSimple(DeviceContext device);
     bool IsInitDevices() const;
     APP_ERROR CheckDeviceId(int32_t deviceId);

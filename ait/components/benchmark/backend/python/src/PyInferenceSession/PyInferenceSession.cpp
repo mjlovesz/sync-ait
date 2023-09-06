@@ -315,7 +315,7 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
     APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_, contextIndex_);
     if (ret != APP_ERR_OK) {
         ERROR_LOG("TensorContext::SetContext failed. ret=%d", ret);
-        return ret;
+        throw std::runtime_error(GetError(ret));
     }
 
     std::vector<MemoryData> memorys = {};
@@ -328,7 +328,7 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
     }
 
     std::vector<TensorBase> outputs = {};
-    APP_ERROR ret = modelInfer_.Inference(inputs, output_names, outputs);
+    ret = modelInfer_.Inference(inputs, output_names, outputs);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
@@ -396,12 +396,12 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
         ERROR_LOG("InferPipeline failed: cannot have session in same context");
     }
 
-    std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> h2dQueues;
-    std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> computeQueues;
-    std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> d2hQueues;
+    size_t numThreads = extraSession.size() + 1;
+    std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> h2dQueues(numThreads);
+    std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> computeQueues(numThreads);
+    std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> d2hQueues(numThreads);
     ConcurrentQueue<std::shared_ptr<Feeds>> saveQueue;
 
-    size_t numThreads = extraSession.size() + 1;
     std::vector<std::thread> h2dThreadGroup{};
     std::vector<std::thread> computeThreadGroup{};
     std::vector<std::thread> d2hThreadGroup{};
@@ -425,7 +425,7 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
                                     extraSession[i-1].get());
     }
     std::thread saveThread(FuncSave, std::ref(saveQueue), inferOption, numThreads);
-    FuncPrepare(h2dQueues, this, infilesList, inferOption);
+    FuncPrepare(h2dQueues, this, infilesList, inferOption, numThreads);
 
     for (size_t i = 0; i < numThreads; i++) {
         h2dThreadGroup[i].join();
@@ -598,7 +598,7 @@ void RegistInferenceSession(py::module &m)
     .def_readwrite("out_format", &Base::InferOptions::outFmt)
     .def_readwrite("pure_infer_mode", &Base::InferOptions::pureInferMode)
     .def_readwrite("output_names", &Base::InferOptions::outputNames)
-    .def_readwrite("shapes_list", &Base::InferOptions::shapesList)
+    .def_readwrite("shapes_list", &Base::InferOptions::shapesList);
 
     py::class_<Base::TensorDesc>(m, "tensor_desc")
     .def(pybind11::init<>())

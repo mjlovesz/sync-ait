@@ -459,7 +459,7 @@ def main(args, index=0, msgq=None, device_list=None):
             infiles.append([file])
         warmup(session, args, intensors_desc, infiles)
         for sess in extra_session:
-            warmup(extra_session[i], args, intensors_desc, infiles)
+            warmup(sess, args, intensors_desc, infiles)
 
     if args.pipeline and (args.auto_set_dymshape_mode or args.auto_set_dymdims_mode):
         for file_list in infileslist:

@@ -431,8 +431,13 @@ class InferSession:
 
     def run_pipeline(self, infilelist, output, auto_shape=False,
                      auto_dims=False, outfmt="BIN", pure_infer_mode=False, extra_session=[]):
-        self.session.run_pipeline(infilelist, output, auto_shape, auto_dims, outfmt,
-                                  pure_infer_mode, extra_session)
+        infer_options = aclruntime.infer_options()
+        infer_options.output_dir = output
+        infer_options.auto_dym_shape = auto_shape
+        infer_options.auto_dym_dims = auto_dims
+        infer_options.out_format = outfmt
+        infer_options.pure_infer_mode = pure_infer_mode
+        self.session.run_pipeline(infilelist, infer_options, extra_session)
 
     def reset_sumaryinfo(self):
         self.session.reset_sumaryinfo()
