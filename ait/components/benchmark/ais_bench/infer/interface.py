@@ -807,7 +807,7 @@ class MultiDeviceSession():
             loop=self.loop
         )
         start_time = time.time()
-        outputs = sub_session.infer_iteration(feeds, mode, custom_sizes, in_out_list, iteration_times)
+        outputs = sub_session.infer_iteration(feeds, in_out_list, iteration_times, mode, custom_sizes)
         end_time = time.time()
         outputs_queue.put([device_id, outputs, start_time, end_time])
         return
