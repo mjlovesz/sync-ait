@@ -56,22 +56,7 @@ def infer_iteration_withD2H():
     logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
-def infer_iteration_withoutD2H_withmemcpy():
-    # only for single_op_add_model
-    device_id = 0
-    loop_times = 1 # same infer loop times
-    in_out_list = [-1, 0]
-    iteration_times = 1000 # inner iteration infer loop times
-    session = InferSession(device_id, model_path, None, False, loop_times)
-    # create new numpy data according inputs info
-    shape = session.get_inputs()[0].shape
-    ndata = np.full(shape, 1).astype(np.float32)
-    outputs = session.infer_iteration([ndata, ndata], in_out_list, iteration_times)
-    logger.info(f"outputs:{outputs} type:{type(outputs)}")
-    logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
-
-
-def infer_iteration_withoutD2H_withoutmemcpy():
+def infer_iteration_withoutD2H():
     # only for single_op_add_model
     device_id = 0
     loop_times = 1 # same infer loop times
@@ -121,7 +106,7 @@ def infer_pipeline():
     barray = bytearray(session.get_inputs()[0].realsize)
     ndata = np.frombuffer(barray)
 
-    outputs = session.infer([[ndata]])
+    outputs = session.infer([[ndata],[ndata]])
     print("outputs:{} type:{}".format(outputs, type(outputs)))
 
     print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
@@ -137,6 +122,37 @@ def infer_multidevices():
     session.free_device()
     device_feeds = {0:[[ndata],[ndata]]}
     outputs = multi_session.infer(device_feeds)
+    logger.info(f"outputs:{outputs} type:{type(outputs)}")
+
+
+def infer_multidevices_pipeline():
+    device_id = 0
+    multi_session = MultiDeviceSession(device_id, model_path)
+    session = InferSession(device_id, model_path)
+    # create new numpy data according inputs info
+    barray = bytearray(session.get_inputs()[0].realsize)
+    ndata = np.frombuffer(barray)
+    session.free_device()
+    device_feeds_list = {0:[[[ndata],[ndata]],[[ndata],[ndata]]]}
+    outputs = multi_session.infer_pipeline(device_feeds_list)
+    logger.info(f"outputs:{outputs} type:{type(outputs)}")
+
+
+def infer_multidevices_iteration():
+    # only for single_op_add_model
+    device_id = 0
+    in_out_list = [-1, 0]
+    iteration_times = 1000 # inner iteration infer loop times
+    # create new numpy data according inputs info
+    multi_session = MultiDeviceSession(device_id, model_path)
+    session = InferSession(device_id, model_path)
+    # create new numpy data according inputs info
+    shape = session.get_inputs()[0].shape
+    ndata = np.full(shape, 1).astype(np.float32)
+    outputs = session.infer_iteration([ndata, ndata], in_out_list, iteration_times)
+    session.free_device()
+    device_feeds = {0:[[ndata, ndata],[ndata, ndata]]}
+    outputs = multi_session.infer_iteration(device_feeds, in_out_list, iteration_times)
     logger.info(f"outputs:{outputs} type:{type(outputs)}")
 
 
@@ -216,9 +232,10 @@ def get_model_info():
 start = time.time()
 # infer_simple()
 # infer_iteration_withD2H()
-infer_multidevices()
-# infer_iteration_withoutD2H_withmemcpy()
-# infer_iteration_withoutD2H_withoutmemcpy()
+# infer_multidevices()
+# infer_multidevices_iteration()
+infer_multidevices_pipeline()
+# infer_iteration_withoutD2H()
 # infer_dymbatch()
 # infer_dymhw()
 end = time.time()
