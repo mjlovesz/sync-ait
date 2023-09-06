@@ -15,7 +15,7 @@
 import os
 import argparse
 
-from components.parser.parser import BaseCommand
+from components.utils.parser import BaseCommand
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 

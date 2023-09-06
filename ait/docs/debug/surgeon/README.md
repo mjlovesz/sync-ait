@@ -184,9 +184,9 @@ g.save('layernorm_modify.onnx')
 
 # 切分子图
 g.extract_subgraph(
-    "sub.onnx", 
     ["start_node_name1", "start_node_name2"],
     ["end_node_name1", "end_node_name1"],
+    "sub.onnx", 
     input_shape="input1:1,3,224,224;input2:1,3,64,64",
     input_dtype="input1:float16;input2:int8"
 )
@@ -213,12 +213,13 @@ combined_graph = OnnxGraph.concat_graph(
 
 请移步[surgeon使用示例](../../../examples/cli/debug/surgeon/)
 
-  | 使用示例                                                                                  | 使用场景                   |
-  |---------------------------------------------------------------------------------------|------------------------|
-  | [01_basic_usage](../../../examples/cli/debug/surgeon/01_basic_usage)                  | 基础示例，介绍surgeon各功能      | 
-  | [02_list_command](../../../examples/cli/debug/surgeon/02_list_command)                | 列举当前支持自动调优的所有知识库       | 
-  | [03_evaluate_command](../../../examples/cli/debug/surgeon/03_evaluate_command)        | 搜索可以被指定知识库优化的ONNX模型    | 
-  | [04_optimize_command](../../../examples/cli/debug/surgeon/04_optimize_command)        | 使用指定的知识库优化ONNX模型       | 
-  | [05_extract_command](../../../examples/cli/debug/surgeon/05_extract_command)          | 对ONNX模型进行子图切分          | 
-  | [06_big_kernel_optimize](../../../examples/cli/debug/surgeon/06_big_kernel_optimize)  | Transformer类模型大kernel优化 |
-  | [07_concatenate_command](../../../examples/cli/debug/surgeon/07_concatenate_command)  | 对两幅ONNX图进行拼接           |
+  | 使用示例                                                                                 | 使用场景                    |
+  |--------------------------------------------------------------------------------------|-------------------------|
+  | [01_basic_usage](../../../examples/cli/debug/surgeon/01_basic_usage)                 | 基础示例，介绍surgeon各功能       | 
+  | [02_list_command](../../../examples/cli/debug/surgeon/02_list_command)               | 列举当前支持自动调优的所有知识库        | 
+  | [03_evaluate_command](../../../examples/cli/debug/surgeon/03_evaluate_command)       | 搜索可以被指定知识库优化的ONNX模型     | 
+  | [04_optimize_command](../../../examples/cli/debug/surgeon/04_optimize_command)       | 使用指定的知识库优化ONNX模型        | 
+  | [05_extract_command](../../../examples/cli/debug/surgeon/05_extract_command)         | 对ONNX模型进行子图切分           | 
+  | [06_big_kernel_optimize](../../../examples/cli/debug/surgeon/06_big_kernel_optimize) | Transformer类模型大kernel优化 |
+  | [07_concatenate_command](../../../examples/cli/debug/surgeon/07_concatenate_command) | 对两幅ONNX图进行拼接            |
+  | [08_custom_op](../../../examples/cli/debug/surgeon/08_custom_op)                     | 添加自定义算子                 |

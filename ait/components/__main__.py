@@ -20,13 +20,17 @@ from components.transplt import transplt_cmd
 from components.benchmark import benchmark_cmd
 from components.analyze import analyze_cmd
 from components.convert import convert_cmd
-from components.parser.parser import register_parser
+from components.utils.parser import register_parser
 
 
 def main():
     subcommands = [debug_cmd, profile_cmd, transplt_cmd, benchmark_cmd, analyze_cmd, convert_cmd]
-    parser = argparse.ArgumentParser(description="ait(Ascend Inference Tools), provides one-site debugging "
-                                     "and optimization toolkit for inference use Ascend Devices")
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description="ait(Ascend Inference Tools), [Powered by MindStudio].\n"
+        "Providing one-site debugging and optimization toolkit for inference on Ascend Devices.\n"
+        "For any issue, refer FAQ first: https://gitee.com/ascend/ait/wikis/Home",
+    )
     register_parser(parser, subcommands)
     parser.set_defaults(print_help=parser.print_help)
     args = parser.parse_args()

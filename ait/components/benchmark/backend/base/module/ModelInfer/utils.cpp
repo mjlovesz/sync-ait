@@ -18,7 +18,7 @@
 #include "acl/acl.h"
 #include <sys/time.h>
 using namespace std;
-extern bool g_is_device;
+extern bool g_isDevice;
 
 void* Utils::ReadBinFile(std::string fileName, uint32_t& fileSize)
 {
@@ -40,7 +40,7 @@ void* Utils::ReadBinFile(std::string fileName, uint32_t& fileSize)
 
     void* binFileBufferData = nullptr;
     aclError ret = ACL_SUCCESS;
-    if (!g_is_device) {
+    if (!g_isDevice) {
         ret = aclrtMallocHost(&binFileBufferData, binFileBufferLen);
         if (binFileBufferData == nullptr) {
             cout << aclGetRecentErrMsg() << endl;
@@ -71,7 +71,7 @@ void* Utils::GetDeviceBufferOfFile(std::string fileName, uint32_t& fileSize)
     if (inputHostBuff == nullptr) {
         return nullptr;
     }
-    if (!g_is_device) {
+    if (!g_isDevice) {
         void* inBufferDev = nullptr;
         uint32_t inBufferSize = inputHostBuffSize;
         aclError ret = aclrtMalloc(&inBufferDev, inBufferSize, ACL_MEM_MALLOC_HUGE_FIRST);

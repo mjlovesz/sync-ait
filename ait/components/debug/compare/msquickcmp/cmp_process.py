@@ -54,7 +54,7 @@ ERROR_INTERVAL_INFO_FILE = "error_interval_info.txt"
 MAX_MEMORY_USE = 6 * 1024 * 1024 * 1024
 
 
-def _generate_golden_data_model(args):
+def _generate_golden_data_model(args, npu_dump_npy_path):
     model_name, extension = utils.get_model_name_and_extension(args.model_path)
     if args.weight_path and ".prototxt" == extension:
         from msquickcmp.caffe_model.caffe_dump_data import CaffeDumpData
@@ -67,7 +67,7 @@ def _generate_golden_data_model(args):
     elif ".onnx" == extension:
         from msquickcmp.onnx_model.onnx_dump_data import OnnxDumpData
 
-        return OnnxDumpData(args)
+        return OnnxDumpData(args, npu_dump_npy_path)
     elif ".om" == extension:
         return NpuDumpData(arguments=args, is_golden=True)
 
@@ -98,6 +98,32 @@ def _check_output_node_name_mapping(original_net_output_node, golden_net_output_
         if not match:
             utils.logger.warning("the original name: {} of net output maybe not correct!".format(node_name))
             break
+
+
+def _get_single_csv_in_folder(csv_path):
+    for file_name in os.listdir(csv_path):
+        if file_name.endswith('.csv'):
+            return os.path.join(csv_path, file_name)
+    raise IOError(f"None csv file exists in folder {csv_path}")
+
+
+def _append_is_npu_ops_to_csv(csv_path):
+    csv_path = _get_single_csv_in_folder(csv_path)
+    if os.path.islink(csv_path):
+        os.unlink(csv_path)
+    if os.path.exists(csv_path):
+        with open(csv_path, 'r') as f:
+            reader = csv.reader(f)
+            rows = [row for row in reader]
+        header = rows[0]
+        ground_truth_col = header.index("GroundTruth")
+        header.append('IsNpuOps')
+        for row in rows[1:]:
+            is_npu_ops = "YES" if row[ground_truth_col] == "*" else "NO"
+            row.append(is_npu_ops)
+        with open(csv_path, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerows(rows)
 
 
 def cmp_process(args: CmpArgsAdapter, use_cli: bool):
@@ -136,7 +162,6 @@ def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
         utils.logger.error("if .om model is using aipp config, --fusion-switch-file arg is not support.")
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
-    golden_dump = _generate_golden_data_model(args)
     npu_dump = NpuDumpData(args, is_golden=False)
 
     # generate npu inputs data
@@ -145,16 +170,17 @@ def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
     # generate npu dump data
     npu_dump_data_path, npu_net_output_data_path = npu_dump.generate_dump_data(use_cli=use_cli)
 
-    # generate onnx inputs data
-    golden_dump.generate_inputs_data(npu_dump_data_path, use_aipp)
-
-    expect_net_output_node = npu_dump.get_expect_output_name()
-
     # convert data from bin to npy if --convert is used, or if custom_op is not empty
     if args.bin2npy or args.custom_op != "":
         npu_dump_npy_path = convert_bin_dump_data_to_npy(npu_dump_data_path, npu_net_output_data_path, args.cann_path)
     else:
         npu_dump_npy_path = ""
+
+    # generate onnx inputs data
+    golden_dump = _generate_golden_data_model(args, npu_dump_npy_path)
+    golden_dump.generate_inputs_data(npu_dump_data_path, use_aipp)
+
+    expect_net_output_node = npu_dump.get_expect_output_name()
 
     # generate dump data by golden model
     golden_dump_data_path = golden_dump.generate_dump_data(npu_dump_npy_path, npu_dump.om_parser)
@@ -182,6 +208,7 @@ def run(args:CmpArgsAdapter, input_shape, original_out_path, use_cli: bool):
     else:
         invalid_rows, _ = analyser.Analyser(args.out_path)('ALL_INVALID')
     print_advisor_info(args.out_path)
+    _append_is_npu_ops_to_csv(args.out_path)
     return invalid_rows
 
 
@@ -228,6 +255,7 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
     utils.check_convert_is_valid_used(args.dump, args.bin2npy, args.custom_op)
     utils.check_locat_is_valid(args.dump, args.locat)
     sp.check_single_op_is_valid(args.single_op, args.dump, args.custom_op, args.locat)
+    utils.check_max_size_param_valid(args.max_cmp_size)
 
     time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
     original_out_path = os.path.realpath(os.path.join(args.out_path, time_dir))

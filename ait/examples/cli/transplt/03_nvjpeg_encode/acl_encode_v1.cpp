@@ -34,8 +34,7 @@ uint32_t g_yuv_sizeNum = 2;
 void init()
 {
     // ACL Init
-    const char *aclConfigPath = "acl.json";
-    aclInit(aclConfigPath);
+    aclInit(nullptr);
     // resource manage
     aclrtSetDevice(g_deviceId);
     aclrtCreateContext(&g_context, g_deviceId);
@@ -52,7 +51,7 @@ int main(int argc, char *argv[])
     std::string input_file_name = std::string(argv[1]);
     int heights = std::stoi(argv[2]);
     int widths = std::stoi(argv[3]);
-    std::string outfile_path = "sample_acl.jpg";
+    std::string outfile_path = "sample_acl_v1.jpg";
 
     init();
     std::cout << "Open device " << g_deviceId << " success" << std::endl;

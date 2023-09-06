@@ -131,12 +131,11 @@ APP_ERROR DeviceManager::DestroyDevices()
 }
 
 /**
- * @description: release specific context in device. if this is the last context and last device, minus initCounter
- * by 1 and do aclfinalize.
+ * @description: release specific context in device.
  * @param: void
  * @return: destory_devices_result
  */
-APP_ERROR DeviceManager::DestroyContext(uint32_t deviceId, std::size_t contextIndex, bool& isFinalize)
+APP_ERROR DeviceManager::DestroyContext(uint32_t deviceId, std::size_t contextIndex)
 {
     std::lock_guard<std::mutex> lock(mtx_);
     if (initCounter_ == 0) {
@@ -158,30 +157,6 @@ APP_ERROR DeviceManager::DestroyContext(uint32_t deviceId, std::size_t contextIn
         return ret;
     }
     contexts_[deviceId].erase(contextIndex);
-    if (contexts_[deviceId].empty()) {
-        ret = aclrtResetDevice(deviceId);
-        if (ret != ACL_SUCCESS) {
-            cout << aclGetRecentErrMsg() << endl;
-            ERROR_LOG("reset device failed");
-        }
-    }
-    for (auto contexts : contexts_) {
-        if (contexts.second.empty()) {
-            contexts_.erase(contexts.first);
-        }
-    }
-    if (contexts_.empty() && initCounter_ == 1) {
-        // no device do finalize
-        ret = aclFinalize();
-        if (ret != APP_ERR_OK) {
-            cout << aclGetRecentErrMsg() << endl;
-            ERROR_LOG("finalize acl failed");
-            return ret;
-        }
-        INFO_LOG("end to finalize acl");
-        initCounter_--;
-        isFinalize = true;
-    }
     return APP_ERR_OK;
 }
 

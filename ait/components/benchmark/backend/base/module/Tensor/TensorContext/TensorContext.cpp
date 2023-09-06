@@ -70,14 +70,10 @@ APP_ERROR TensorContext::CreateContext(const uint32_t &deviceId, size_t& context
 
 APP_ERROR TensorContext::DestroyContext(const uint32_t &deviceId, const size_t& contextIndex)
 {
-    bool isFinalize = false;
-    APP_ERROR ret = DeviceManager::GetInstance()->DestroyContext(deviceId, contextIndex, isFinalize);
+    APP_ERROR ret = DeviceManager::GetInstance()->DestroyContext(deviceId, contextIndex);
     if (ret != APP_ERR_OK) {
         LogError << "DestroyContext failed. ret=" << ret << std::endl;
         return ret;
-    }
-    if (isFinalize) {
-        InitDeviceFlag_ = false;
     }
     return APP_ERR_OK;
 }

@@ -275,7 +275,7 @@ sidebar.NodeSidebar = class {
                     return
                 }
                 let select_input = select_elem.options[select_elem.selectedIndex].value;
-                this._host._view.modifier.addModelInput(this._modelNodeName, select_input);
+                this._host._view.modifier.addModelInput(select_input);
             })
         })
         const addOutputElem = this._host.document.createElement('button');
@@ -1504,7 +1504,6 @@ sidebar.ModelSidebar = class {
                     return
                 }
                 this._host.change_batch_size("dynamic")
-                this._view.modifier.changeBatchSize("dynamic");
                 if (dialog.getElementsByClassName("checkbox-shape-change")[0].checked) {
                     let data = this._host.build_download_data(true)
                     data.postprocess_args.shapeInf = true
@@ -1547,7 +1546,6 @@ sidebar.ModelSidebar = class {
                 }
                 let input_change = this._host.document.getElementById("fixed-batch-size-input")
                 this._host.change_batch_size(input_change.value)
-                this._view.modifier.changeBatchSize('fixed', input_change.value);
 
                 if (dialog.getElementsByClassName("checkbox-shape-change")[0].checked) {
                     let data = this._host.build_download_data(true)
@@ -1592,36 +1590,11 @@ sidebar.ModelSidebar = class {
         this._elements.push(item.render());
     }
 
-    _addRebatcher() {
-        this._addButton("Dynamic batch size");
-
-        var fixed_batch_size_title = this._host.document.createElement('span');
-        fixed_batch_size_title.innerHTML = "&nbsp;&nbsp;&nbsp;<strong> or </strong>&nbsp;&nbsp;Fixed batch size&nbsp;&nbsp;&nbsp;";
-        fixed_batch_size_title.setAttribute('style','font-size:14px');
-        this._elements.push(fixed_batch_size_title);
-
-        var fixed_batch_size_value = this._host.document.createElement("INPUT");
-        fixed_batch_size_value.setAttribute("type", "text");
-        fixed_batch_size_value.setAttribute("size", "5");
-        fixed_batch_size_value.setAttribute("value", 1);
-        fixed_batch_size_value.addEventListener('input', (e) => {
-            this._host._view.modifier.changeBatchSize('fixed', e.target.value);
-        });
-
-        this._elements.push(fixed_batch_size_value);
-    }
-
     _addButton(title) {
         const buttonElement = this._host.document.createElement('button');
         buttonElement.className = 'sidebar-view-button';
         buttonElement.innerText = title;
         this._elements.push(buttonElement);
-
-        if (title === 'Dynamic batch size') {
-            buttonElement.addEventListener('click', () => {
-                this._host._view.modifier.changeBatchSize("dynamic");
-            });
-        }
 
         if (title == 'Delete the output') {
             buttonElement.addEventListener('click', () => {
