@@ -119,63 +119,6 @@ class InferSession:
     def print_subprocess_run_error(cls, value):
         logger.error(f"subprocess run failed error_callback:{value}")
 
-    def _static_prepare(self, shapes, custom_sizes):
-        self.set_staticbatch()
-
-    def _dymbatch_prepare(self, shapes, custom_sizes):
-        indesc = self.get_inputs()
-        if (len(shapes) != len(indesc)):
-            raise RuntimeError("input datas and intensors nums not matched!")
-        for i, shape in enumerate(shapes):
-            for j, dim in enumerate(shape):
-                if (indesc[i].shape[j] < 0):
-                    self.set_dynamic_batchsize(dim)
-                    return
-                if (indesc[i].shape[j] != dim):
-                    raise RuntimeError("input datas and intensors dim not matched!")
-        raise RuntimeError("not a dymbatch model!")
-
-    def _dymhw_prepare(self, shapes, custom_sizes):
-        indesc = self.get_inputs()
-        if (len(shapes) != len(indesc)):
-            raise RuntimeError("input datas and intensors nums not matched!")
-        for i, shape in enumerate(shapes):
-            if (indesc[i].shape[2] < 0 and indesc[i].shape[3] < 0):
-                self.set_dynamic_hw(shape[2], shape[3])
-                return
-        raise RuntimeError("not a dymhw model!")
-
-    def _dymdims_prepare(self, shapes, custom_sizes):
-        dym_list = []
-        indesc = self.get_inputs()
-        if (len(shapes) != len(indesc)):
-            raise RuntimeError("input datas and intensors nums not matched!")
-        for i, shape in enumerate(shapes):
-            str_shape = [str(val) for val in shape]
-            dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
-            dym_list.append(dyshape)
-        dyshapes = ';'.join(dym_list)
-        self.session.set_dynamic_dims(dyshapes)
-
-    def _dymshape_prepare(self, shapes, custom_sizes):
-        dym_list = []
-        indesc = self.get_inputs()
-        if (len(shapes) != len(indesc)):
-            raise RuntimeError("input datas and intensors nums not matched!")
-        outdesc = self.get_outputs()
-        for i, shape in enumerate(shapes):
-            str_shape = [str(val) for val in shape]
-            dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
-            dym_list.append(dyshape)
-        dyshapes = ';'.join(dym_list)
-        self.session.set_dynamic_shape(dyshapes)
-        if isinstance(custom_sizes, int):
-            custom_sizes = [custom_sizes] * len(outdesc)
-        elif not isinstance(custom_sizes, list):
-            raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
-                custom_sizes, type(custom_sizes)))
-        self.session.set_custom_outsize(custom_sizes)
-
     def get_inputs(self):
         """
         get inputs info of model
@@ -688,6 +631,63 @@ class InferSession:
     def finalize(self):
         if hasattr(self.session, 'finalize'):
             self.session.finalize()
+
+    def _static_prepare(self, shapes, custom_sizes):
+        self.set_staticbatch()
+
+    def _dymbatch_prepare(self, shapes, custom_sizes):
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        for i, shape in enumerate(shapes):
+            for j, dim in enumerate(shape):
+                if (indesc[i].shape[j] < 0):
+                    self.set_dynamic_batchsize(dim)
+                    return
+                if (indesc[i].shape[j] != dim):
+                    raise RuntimeError("input datas and intensors dim not matched!")
+        raise RuntimeError("not a dymbatch model!")
+
+    def _dymhw_prepare(self, shapes, custom_sizes):
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        for i, shape in enumerate(shapes):
+            if (indesc[i].shape[2] < 0 and indesc[i].shape[3] < 0):
+                self.set_dynamic_hw(shape[2], shape[3])
+                return
+        raise RuntimeError("not a dymhw model!")
+
+    def _dymdims_prepare(self, shapes, custom_sizes):
+        dym_list = []
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        for i, shape in enumerate(shapes):
+            str_shape = [str(val) for val in shape]
+            dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
+            dym_list.append(dyshape)
+        dyshapes = ';'.join(dym_list)
+        self.session.set_dynamic_dims(dyshapes)
+
+    def _dymshape_prepare(self, shapes, custom_sizes):
+        dym_list = []
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        outdesc = self.get_outputs()
+        for i, shape in enumerate(shapes):
+            str_shape = [str(val) for val in shape]
+            dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
+            dym_list.append(dyshape)
+        dyshapes = ';'.join(dym_list)
+        self.session.set_dynamic_shape(dyshapes)
+        if isinstance(custom_sizes, int):
+            custom_sizes = [custom_sizes] * len(outdesc)
+        elif not isinstance(custom_sizes, list):
+            raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
+                custom_sizes, type(custom_sizes)))
+        self.session.set_custom_outsize(custom_sizes)
 
 
 class MultiDeviceSession():
