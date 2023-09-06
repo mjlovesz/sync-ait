@@ -6,3 +6,7 @@
 .idea
 *.onnx
 *.npy
+**/app_analyze/headers
+**/build
+**/*.egg-info
+**/ait_transplt.log

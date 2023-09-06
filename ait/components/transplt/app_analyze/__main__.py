@@ -11,9 +11,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from components.utils.parser import BaseCommand
 from app_analyze.utils import log_util
 from app_analyze.porting.app import start_scan_kit
+from components.parser.parser import BaseCommand
 
 
 class TranspltCommand(BaseCommand):
@@ -31,7 +31,8 @@ class TranspltCommand(BaseCommand):
             "--log-level", default="INFO", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], help="specify log level"
         )
         parser.add_argument(
-            "--tools", default="cmake", choices=['cmake'], help="specify construction, currently only cmake availabel"
+            "--tools", default="cmake", choices=['cmake', 'python'],
+            help="specify construction, currently support cmake and python"
         )
 
     def handle(self, args):

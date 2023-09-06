@@ -2,7 +2,12 @@
 
 ## 简介
 
-本文介绍应用迁移分析工具，提供NV C++推理应用工程迁移分析以及昇腾API推荐
+本文介绍应用迁移分析工具，提供NV推理应用工程迁移分析以及昇腾API推荐。目前支持以下2种场景的迁移分析：
+
+| NV应用工程类型（原始工程） | 推荐的昇腾API类型（目标工程） |
+| -------------------------- | ----------------------------- |
+| C++                        | C++                           |
+| Python                     | C++                           |
 
 ## 工具安装
 
@@ -105,11 +110,11 @@ OPTIONS参数说明如下：
 | 参数              | 说明                                              | 是否必选 |
 | ----------------- | ------------------------------------------------- | -------- |
 | -s, --source      | 待扫描的工程路径                                  | 是       |
-| -f, --report-type | 输出报告类型，支持csv（xlsx），json               | 否       |
-| --tools           | 构建工具类型，目前支持cmake                       | 否       |
+| -f, --report-type | 输出报告类型，支持csv（xlsx），json，默认为csv    | 否       |
+| --tools           | 构建工具类型，目前支持cmake和python，默认为cmake  | 否       |
 | --log_level       | 日志级别，支持INFO（默认），DEBUG，WARNING，ERROR | 否       |
 
-命令示例如下：
+扫描C++应用工程的命令示例如下：
 
 ```shell
 ait transplt -s /data/examples/simple/
@@ -122,6 +127,12 @@ ait transplt -s /data/examples/simple/
 2023-05-13 10:30:49,791 - INFO - json_report.py[50] - Report generated at: /data/examples/simple/output.json
 2023-05-13 10:30:49,791 - INFO - scan_api.py[113] - **** Project analysis finished <<<
 
+```
+
+如需扫描python应用工程，则需要使用如下命令：
+
+``` shell
+ait transplt -s /data/examples/simple --tools python
 ```
 
 在待扫描的工程目录下输出output.xlsx，会呈现工程中每个支持的加速库API的信息和支持情况。output.xlsx表格中的sheet页功能说明如下：
