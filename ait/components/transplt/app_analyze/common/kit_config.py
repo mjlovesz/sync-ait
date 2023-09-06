@@ -32,6 +32,7 @@ class ScannerType(Enum):
     CPP_SCANNER = 0  # C/C++源代码扫描器
     MAKEFILE_SCANNER = 1  # Makefile文件扫
     CMAKE_SCANNER = 2  # cmakelist文件扫描
+    PYTHON_SCANNER = 3  # python文件扫描
 
 
 @unique
@@ -53,6 +54,22 @@ class InputType(Enum):
     RESTFUL = 'restful'
 
 
+@unique
+class BuildToolType(Enum):
+    """
+    input type
+    """
+    CMAKE = 'cmake'
+    PYTHON = 'python'
+
+
+AccLibInfo = namedtuple("AccLibInfo", ["namespace", "cuda_include", "cuda_namespace", "lib_name"])
+
+
+def double_sep(s):
+    return _sep + s + _sep
+
+
 class KitConfig:
     # 1. 工具运行相关配置
     ARCH = platform.machine()
@@ -65,10 +82,10 @@ class KitConfig:
 
     # 'make', 'automake'
     VALID_REPORT_TYPE = ['csv', 'json']
-    VALID_CONSTRUCT_TOOLS = ['cmake']
+    VALID_CONSTRUCT_TOOLS = [BuildToolType.CMAKE.value, BuildToolType.PYTHON.value]
     PORTING_CONTENT = """ait transplt
                 [-h] [-s source] 
-                [-t tools] 
+                [-t tools {cmake,python}] 
                 [-l {DEBUG,INFO,WARN,ERR}] 
                 [-f report_type]\n"""
 
@@ -77,6 +94,7 @@ class KitConfig:
 
     # 2. 加速库相关配置
     # a.加速库名
+    # 1) c++
     OPENCV = 'OpenCV'
     FFMPEG = 'FFmpeg'
     CUDA = 'CUDA'
@@ -84,6 +102,11 @@ class KitConfig:
     CVCUDA = 'CVCUDA'
     TENSORRT = 'TensorRT'
     CODEC = 'Codec'
+    # 2) python
+    OPENCV_PYTHON = 'cv2'
+    CODEC_PYTHON = "PyNvCodec"
+    CVCUDA_PYTHON = "cvcuda"
+    TENSORRT_PYTHON = "tensorrt"
 
     # b.加速库路径
     HEADERS_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'headers'))
@@ -116,25 +139,53 @@ class KitConfig:
     # "libavcodec/nvenc.h"
     ACC_LIBS = {
         # OpenCV
-        OPENCV_HOME: ['cv', _sep + 'cuda', ['cuda', 'gpu'], OPENCV],
+        OPENCV_HOME: AccLibInfo(
+            namespace='cv', cuda_include=_sep + 'cuda', cuda_namespace=['cuda', 'gpu'], lib_name=OPENCV
+        ),
         # FFmpeg
-        _sep + 'libavcodec' + _sep: ['', _sep + 'nv', '', FFMPEG],
-        _sep + 'libavfilter' + _sep: ['', [_sep + 'cuda' + _sep, '_cuda'], '', FFMPEG],
-        'libavformat': ['', '', '', FFMPEG],
-        _sep + 'libavdevice' + _sep: ['', '', '', FFMPEG],
-        _sep + 'libavutil' + _sep: ['', [_sep + 'cuda_', '_cuda' + _sep, '_cuda_'], '', FFMPEG],
-        _sep + 'libswresample' + _sep: ['', '', '', FFMPEG],
-        _sep + 'libpostproc' + _sep: ['', '', '', FFMPEG],
-        _sep + 'libswscale' + _sep: ['', '', '', FFMPEG],
+        double_sep('libavcodec'): AccLibInfo(
+            namespace='', cuda_include=_sep + 'nv', cuda_namespace='', lib_name=FFMPEG
+        ),
+        double_sep('libavfilter'): AccLibInfo(
+            namespace='', cuda_include=[_sep + 'cuda' + _sep, '_cuda'], cuda_namespace='', lib_name=FFMPEG
+        ),
+        double_sep('libavformat'): AccLibInfo(
+            namespace='', cuda_include='', cuda_namespace='', lib_name=FFMPEG
+        ),
+        double_sep('libavdevice'): AccLibInfo(
+            namespace='', cuda_include='', cuda_namespace='', lib_name=FFMPEG
+        ),
+        double_sep('libavutil'): AccLibInfo(
+            namespace='', cuda_include=[_sep + 'cuda_', '_cuda' + _sep, '_cuda_'], cuda_namespace='', lib_name=FFMPEG
+        ),
+        double_sep('libswresample'): AccLibInfo(
+            namespace='', cuda_include='', cuda_namespace='', lib_name=FFMPEG
+        ),
+        double_sep('libpostproc'): AccLibInfo(
+            namespace='', cuda_include='', cuda_namespace='', lib_name=FFMPEG
+        ),
+        double_sep('libswscale'): AccLibInfo(
+            namespace='', cuda_include='', cuda_namespace='', lib_name=FFMPEG
+        ),
         # DALI
-        'dali': ['dali', 1, '', DALI],
+        'dali': AccLibInfo(
+            namespace='dali', cuda_include=1, cuda_namespace='', lib_name=DALI
+        ),
         # CUDA
         # nvJPEG
-        CUDA_HOME: ['', 1, '', CUDA],  # 含nvJPEG等
+        CUDA_HOME: AccLibInfo(
+            namespace='', cuda_include=1, cuda_namespace='', lib_name=CUDA
+        ),  # 含nvJPEG等
         # CV-CUDA
-        CVCUDA_HOME: [['nvcv', 'cvcuda'], 1, '', CVCUDA],
-        TENSORRT_HOME: [['nvinfer1'], 1, '', TENSORRT],
-        CODEC_HOME: ['', 1, '', CODEC],
+        CVCUDA_HOME: AccLibInfo(
+            namespace=['nvcv', 'cvcuda'], cuda_include=1, cuda_namespace='', lib_name=CVCUDA
+        ),
+        TENSORRT_HOME: AccLibInfo(
+            namespace=['nvinfer1'], cuda_include=1, cuda_namespace='', lib_name=TENSORRT
+        ),
+        CODEC_HOME: AccLibInfo(
+            namespace='', cuda_include=1, cuda_namespace='', lib_name=CODEC
+        ),
     }
 
     # e.API映射表，文件名第一个'_'前为加速库名；内部工作表/Sheet名以'-APIMap'结尾，其他工作表会被忽略。
@@ -146,6 +197,10 @@ class KitConfig:
         CVCUDA: os.path.join(API_MAP_FOLDER, 'mxBase_CVCUDA_API_MAP.xlsx'),
         TENSORRT: os.path.join(API_MAP_FOLDER, 'ACLMDL_TRT_API_MAP.xlsx'),
         CODEC: os.path.join(API_MAP_FOLDER, 'DVPP_Codec_API_MAP.xlsx'),
+        OPENCV_PYTHON: os.path.join(API_MAP_FOLDER, 'mxBase_OpenCV_Python_API_MAP.xlsx'),
+        CODEC_PYTHON: os.path.join(API_MAP_FOLDER, 'mxBase_Codec_Python_API_MAP.xlsx'),
+        CVCUDA_PYTHON: os.path.join(API_MAP_FOLDER, 'mxBase_CVCUDA_Python_API_MAP.xlsx'),
+        TENSORRT_PYTHON: os.path.join(API_MAP_FOLDER, 'ACL_TensorRT_Python_API_MAP.xlsx'),
     }
 
     # 3.CMake加速库模式匹配
