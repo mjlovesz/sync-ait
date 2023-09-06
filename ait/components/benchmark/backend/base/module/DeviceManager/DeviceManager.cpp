@@ -136,7 +136,7 @@ APP_ERROR DeviceManager::DestroyDevices()
  * @param: void
  * @return: destory_devices_result
  */
-APP_ERROR DeviceManager::DestroyDevice(uint32_t deviceId, std::size_t contextIndex)
+APP_ERROR DeviceManager::DestroyContext(uint32_t deviceId, std::size_t contextIndex)
 {
     std::lock_guard<std::mutex> lock(mtx_);
     if (initCounter_ == 0) {
@@ -144,30 +144,34 @@ APP_ERROR DeviceManager::DestroyDevice(uint32_t deviceId, std::size_t contextInd
     }
     APP_ERROR ret;
     if (contexts_.find(deviceId) == contexts_.end()) {
-        ERROR_LOG("DestroyDevice failed: device id %u cannot be find", deviceId);
+        ERROR_LOG("DestroyContext failed: device id %u cannot be find", deviceId);
         return APP_ERR_OK;
     }
     if (contexts_[deviceId].find(contextIndex) == contexts_[deviceId].end()) {
-        ERROR_LOG("DestroyDevice failed: context id %lu cannot be find", contextIndex);
+        ERROR_LOG("DestroyContext failed: context id %lu cannot be find", contextIndex);
         return APP_ERR_OK;
     }
-    res = aclrtDestroyContext(contexts_[deviceId][contextIndex]);
+    ret = aclrtDestroyContext(contexts_[deviceId][contextIndex]);
     if (ret != APP_ERR_OK) {
         cout << aclGetRecentErrMsg() << endl;
-        ERROR_LOG("DestroyDevice failed: destroy context failed");
+        ERROR_LOG("DestroyContext failed: destroy context failed");
         return ret;
+    }
+    contexts_[deviceId].erase(contextIndex);
+    if (contexts_[deviceId].empty()) {
+        ret = aclrtResetDevice(deviceId);
+        if (ret != ACL_SUCCESS) {
+            cout << aclGetRecentErrMsg() << endl;
+            ERROR_LOG("reset device failed");
+        }
     }
     for (auto contexts : contexts_) {
         if (contexts.second.empty()) {
             contexts_.erase(contexts.first);
         }
     }
-    if (contexts_[deviceId].empty()) {
-        contexts_.erase(deviceId);
-    }
     if (contexts_.empty() && initCounter_ == 1) {
         // no device do finalize
-        initCounter_--;
         ret = aclFinalize();
         if (ret != APP_ERR_OK) {
             cout << aclGetRecentErrMsg() << endl;
@@ -175,6 +179,7 @@ APP_ERROR DeviceManager::DestroyDevice(uint32_t deviceId, std::size_t contextInd
             return ret;
         }
         INFO_LOG("end to finalize acl");
+        initCounter_--;
     }
     return APP_ERR_OK;
 }
@@ -208,9 +213,11 @@ APP_ERROR DeviceManager::GetCurrentDevice(DeviceContext& device)
     DeviceContext currentDevice = {};
     currentDevice.devStatus = DeviceContext::DeviceStatus::USING;
     currentDevice.devId = -1;
-    for (const auto &item : contexts_) {
-        if (item.second.get() == currentContext) {
-            currentDevice.devId = item.first;
+    for (const auto &contexts : contexts_) {
+        for (const auto &context : contexts.second) {
+            if (context.second == currentContext) {
+                currentDevice.devId = contexts.first;
+            }
         }
     }
     device = currentDevice;
@@ -219,15 +226,10 @@ APP_ERROR DeviceManager::GetCurrentDevice(DeviceContext& device)
 
 APP_ERROR DeviceManager::SetDeviceSimple(DeviceContext device)
 {
-    return SetDevice(device);
+    return SetContext(device);
 }
 
-/**
- * @description: set one device for running
- * @param: device
- * @return: set_device_result
- */
-APP_ERROR DeviceManager::SetDevice(DeviceContext device, std::size_t index)
+APP_ERROR DeviceManager::CreateContext(DeviceContext device, size_t& contextIndex)
 {
     std::lock_guard<std::mutex> lock(mtx_);
     auto deviceId = device.devId;
@@ -240,18 +242,38 @@ APP_ERROR DeviceManager::SetDevice(DeviceContext device, std::size_t index)
             return ret;
         }
         contexts_[deviceId] = {};
+        nextContextIndex_[deviceId] = 0;
     }
-    if (contexts_[deviceId].find(index) == contexts_[deviceId].end()) {
-        aclrtContext newContext = nullptr;
-        ret = aclrtCreateContext(&newContext, deviceId);
-        if (ret != APP_ERR_OK) {
-            cout << aclGetRecentErrMsg() << endl;
-            ERROR_LOG("acl create context failed");
-            return ret;
-        }
-        contexts_[deviceId].insert({index, newContext});
+    aclrtContext newContext = nullptr;
+    ret = aclrtCreateContext(&newContext, deviceId);
+    if (ret != APP_ERR_OK) {
+        cout << aclGetRecentErrMsg() << endl;
+        ERROR_LOG("acl create context failed");
+        return ret;
     }
-    ret = aclrtSetCurrentContext(contexts_[deviceId][index]);
+    auto newContextIndex = nextContextIndex_[deviceId];
+    contexts_[deviceId].insert({newContextIndex, newContext});
+    contextIndex = newContextIndex;
+    nextContextIndex_[deviceId]++;
+
+    return APP_ERR_OK;
+}
+
+/**
+ * @description: set one device for running
+ * @param: device
+ * @return: set_device_result
+ */
+APP_ERROR DeviceManager::SetContext(DeviceContext device, std::size_t contextIndex)
+{
+    std::lock_guard<std::mutex> lock(mtx_);
+    auto deviceId = device.devId;
+    if (contexts_.find(deviceId) == contexts_.end() ||
+        contexts_[deviceId].find(contextIndex) == contexts_[deviceId].end()) {
+        ERROR_LOG("SetContext failed: device %d is not set or context %lu is not created.", deviceId, contextIndex);
+        return APP_ERR_ACL_INVALID_PARAM;
+    }
+    ret = aclrtSetCurrentContext(contexts_[deviceId][contextIndex]);
     if (ret != APP_ERR_OK) {
         cout << aclGetRecentErrMsg() << endl;
         ERROR_LOG("acl set curcontext failed");

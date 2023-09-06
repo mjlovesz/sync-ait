@@ -104,8 +104,8 @@ def set_session_options(session, args):
         session.set_custom_outsize(customsizes)
 
 
-def init_inference_session(args, acl_json_path, context_id = 0):
-    session = InferSession(args.device, args.model, acl_json_path, args.debug, args.loop, context_id)
+def init_inference_session(args, acl_json_path):
+    session = InferSession(args.device, args.model, acl_json_path, args.debug, args.loop)
 
     set_session_options(session, args)
     logger.debug("session info:{}".format(session.session))
@@ -403,7 +403,7 @@ def main(args, index=0, msgq=None, device_list=None):
     extra_session = []
     if args.pipeline:
         extra_session = [init_inference_session(args, tmp_acl_json_path if tmp_acl_json_path is not None\
-                                                else acl_json_path, i + 1) for i in range(args.thread - 1)]
+                                                else acl_json_path) for _ in range(args.thread - 1)]
 
     intensors_desc = session.get_inputs()
     if device_list is not None and len(device_list) > 1:

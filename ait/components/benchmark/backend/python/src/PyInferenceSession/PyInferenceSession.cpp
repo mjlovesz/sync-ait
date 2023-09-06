@@ -41,7 +41,7 @@ int PyInferenceSession::Destroy()
     if (InitFlag_ == false) {
         return APP_ERR_OK;
     }
-    APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_);
+    APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_, contextIndex_);
     if (ret != APP_ERR_OK) {
         ERROR_LOG("TensorContext::SetContext failed. ret=%d", ret);
         return ret;
@@ -58,7 +58,7 @@ int PyInferenceSession::Destroy()
 
 int PyInferenceSession::Finalize()
 {
-    APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_);
+    APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_, contextIndex_);
     if (ret != APP_ERR_OK) {
         ERROR_LOG("TensorContext::SetContext failed. ret=%d", ret);
         return ret;
@@ -69,7 +69,7 @@ int PyInferenceSession::Finalize()
         ERROR_LOG("TensorContext::Finalize. ret=%d", ret);
         return ret;
     }
-    ret = TensorContext::GetInstance()->Finalize();
+    ret = TensorContext::GetInstance()->DestroyContext(deviceId_, contextIndex_);
     if (ret != APP_ERR_OK) {
         ERROR_LOG("TensorContext::Finalize. ret=%d", ret);
         return ret;
@@ -87,7 +87,12 @@ void PyInferenceSession::Init(const std::string &modelPath, std::shared_ptr<Sess
 {
     DeviceManager::GetInstance()->SetAclJsonPath(options->aclJsonPath);
 
-    APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_);
+    APP_ERROR ret = TensorContext::GetInstance()->CreateContext(deviceId_, contextIndex_);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+
+    ret = TensorContext::GetInstance()->SetContext(deviceId_, contextIndex_);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
@@ -307,6 +312,11 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
                                                                   std::vector<Base::BaseTensor>& feeds)
 {
     DEBUG_LOG("start to ModelInference base_tensor");
+    APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_, contextIndex_);
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("TensorContext::SetContext failed. ret=%d", ret);
+        return ret;
+    }
 
     std::vector<MemoryData> memorys = {};
     std::vector<BaseTensor> inputs = {};
@@ -391,7 +401,7 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
     std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> d2hQueues;
     ConcurrentQueue<std::shared_ptr<Feeds>> saveQueue;
 
-    size_t numThreads = extraSession.size();
+    size_t numThreads = extraSession.size() + 1;
     std::vector<std::thread> h2dThreadGroup{};
     std::vector<std::thread> computeThreadGroup{};
     std::vector<std::thread> d2hThreadGroup{};

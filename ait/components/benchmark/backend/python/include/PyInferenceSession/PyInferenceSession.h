@@ -42,8 +42,6 @@ class PyInferenceSession
 {
 public:
     PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<SessionOptions> options);
-    PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId,
-                       std::shared_ptr<SessionOptions> options, const size_t contextIndex);
     ~PyInferenceSession();
 
     std::vector<TensorBase> InferMap(std::vector<std::string>& output_names, std::map<std::string, TensorBase>& feeds);

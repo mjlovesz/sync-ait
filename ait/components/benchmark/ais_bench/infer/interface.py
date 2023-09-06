@@ -62,7 +62,7 @@ logger = logging.getLogger(__name__)
 
 class InferSession:
     def __init__(self, device_id: int, model_path: str, acl_json_path: str = None,
-                 debug: bool = False, loop: int = 1, context_id = 0):
+                 debug: bool = False, loop: int = 1):
         """
         init InferSession
 
@@ -76,13 +76,12 @@ class InferSession:
         self.device_id = device_id
         self.model_path = model_path
         self.loop = loop
-        self.context_id = context_id
         options = aclruntime.session_options()
         if acl_json_path is not None:
             options.acl_json_path = acl_json_path
         options.log_level = 1 if debug else 2
         options.loop = self.loop
-        self.session = aclruntime.InferenceSession(self.model_path, self.device_id, options, self.context_id)
+        self.session = aclruntime.InferenceSession(self.model_path, self.device_id, options)
         self.outputs_names = [meta.name for meta in self.session.get_outputs()]
         self.intensors_desc = self.session.get_inputs()
         self.outtensors_desc = self.session.get_outputs()
@@ -432,12 +431,6 @@ class InferSession:
 
     def run_pipeline(self, infilelist, output, auto_shape=False,
                      auto_dims=False, outfmt="BIN", pure_infer_mode=False, extra_session=[]):
-        context_set = {self.context_id}
-        for sess in extra_session:
-            if (sess.context_id in context_set):
-                logger.error("context id of each sessin need to be mutually different, infer failed.")
-                return
-            context_set.add(sess.context_id)
         self.session.run_pipeline(infilelist, output, auto_shape, auto_dims, outfmt,
                                   pure_infer_mode, extra_session)
 
