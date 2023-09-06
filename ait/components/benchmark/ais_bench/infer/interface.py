@@ -87,13 +87,20 @@ class InferSession:
         self.acl_json_path = acl_json_path
         self.debug = debug
         if acl_json_path is not None:
-            self.options.acl_json_path =  self.acl_json_path
+            self.options.acl_json_path = self.acl_json_path
         self.options.log_level = 1 if self.debug else 2
         self.options.loop = self.loop
         self.session = aclruntime.InferenceSession(self.model_path, self.device_id, self.options)
         self.outputs_names = [meta.name for meta in self.session.get_outputs()]
         self.intensors_desc = self.session.get_inputs()
         self.outtensors_desc = self.session.get_outputs()
+        self.infer_mode_switch = {
+            "static": self._static_prepare,
+            "dymbatch": self._dymbatch_prepare,
+            "dymhw": self._dymhw_prepare,
+            "dymdims": self._dymdims_prepare,
+            "dymshape": self._dymshape_prepare
+        }
 
     @staticmethod
     def convert_tensors_to_host(tensors):
@@ -107,6 +114,67 @@ class InferSession:
             # convert acltensor to numpy array
             arrays.append(np.array(tensor))
         return arrays
+
+    @classmethod
+    def print_subprocess_run_error(cls, value):
+        logger.error(f"subprocess run failed error_callback:{value}")
+
+    def _static_prepare(self, shapes, custom_sizes):
+        self.set_staticbatch()
+
+    def _dymbatch_prepare(self, shapes, custom_sizes):
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        for i, shape in enumerate(shapes):
+            for j, dim in enumerate(shape):
+                if (indesc[i].shape[j] < 0):
+                    self.set_dynamic_batchsize(dim)
+                    return
+                if (indesc[i].shape[j] != dim):
+                    raise RuntimeError("input datas and intensors dim not matched!")
+        raise RuntimeError("not a dymbatch model!")
+
+    def _dymhw_prepare(self, shapes, custom_sizes):
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        for i, shape in enumerate(shapes):
+            if (indesc[i].shape[2] < 0 and indesc[i].shape[3] < 0):
+                self.set_dynamic_hw(shape[2], shape[3])
+                return
+        raise RuntimeError("not a dymhw model!")
+
+    def _dymdims_prepare(self, shapes, custom_sizes):
+        dym_list = []
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        for i, shape in enumerate(shapes):
+            str_shape = [str(val) for val in shape]
+            dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
+            dym_list.append(dyshape)
+        dyshapes = ';'.join(dym_list)
+        self.session.set_dynamic_dims(dyshapes)
+
+    def _dymshape_prepare(self, shapes, custom_sizes):
+        dym_list = []
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        outdesc = self.get_outputs()
+        for i, shape in enumerate(shapes):
+            str_shape = [str(val) for val in shape]
+            dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
+            dym_list.append(dyshape)
+        dyshapes = ';'.join(dym_list)
+        self.session.set_dynamic_shape(dyshapes)
+        if isinstance(custom_sizes, int):
+            custom_sizes = [custom_sizes] * len(outdesc)
+        elif not isinstance(custom_sizes, list):
+            raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
+                custom_sizes, type(custom_sizes)))
+        self.session.set_custom_outsize(custom_sizes)
 
     def get_inputs(self):
         """
@@ -447,63 +515,6 @@ class InferSession:
     def reset_sumaryinfo(self):
         self.session.reset_sumaryinfo()
 
-    def _static_prepare(self, shapes, custom_sizes):
-        self.set_staticbatch()
-
-    def _dymbatch_prepare(self, shapes, custom_sizes):
-        indesc = self.get_inputs()
-        if (len(shapes) != len(indesc)):
-            raise RuntimeError("input datas and intensors nums not matched!")
-        for i, shape in enumerate(shapes):
-            for j, dim in enumerate(shape):
-                if (indesc[i].shape[j] < 0):
-                    self.set_dynamic_batchsize(dim)
-                    return
-                if (indesc[i].shape[j] !=  dim):
-                    raise RuntimeError("input datas and intensors dim not matched!")
-        raise RuntimeError("not a dymbatch model!")
-
-    def _dymhw_prepare(self, shapes, custom_sizes):
-        indesc = self.get_inputs()
-        if (len(shapes) != len(indesc)):
-            raise RuntimeError("input datas and intensors nums not matched!")
-        for i, shape in enumerate(shapes):
-            if (indesc[i].shape[2] < 0 and indesc[i].shape[3] < 0):
-                self.set_dynamic_hw(shape[2], shape[3])
-                return
-        raise RuntimeError("not a dymhw model!")
-
-    def _dymdims_prepare(self, shapes, custom_sizes):
-        dym_list = []
-        indesc = self.get_inputs()
-        if (len(shapes) != len(indesc)):
-            raise RuntimeError("input datas and intensors nums not matched!")
-        for i, shape in enumerate(shapes):
-            str_shape = [str(val) for val in shape]
-            dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
-            dym_list.append(dyshape)
-        dyshapes = ';'.join(dym_list)
-        self.session.set_dynamic_dims(dyshapes)
-
-    def _dymshape_prepare(self, shapes, custom_sizes):
-        dym_list = []
-        indesc = self.get_inputs()
-        if (len(shapes) != len(indesc)):
-            raise RuntimeError("input datas and intensors nums not matched!")
-        outdesc = self.get_outputs()
-        for i, shape in enumerate(shapes):
-            str_shape = [str(val) for val in shape]
-            dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
-            dym_list.append(dyshape)
-        dyshapes = ';'.join(dym_list)
-        self.session.set_dynamic_shape(dyshapes)
-        if isinstance(custom_sizes, int):
-            custom_sizes = [custom_sizes] * len(outdesc)
-        elif not isinstance(custom_sizes, list):
-            raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
-                custom_sizes, type(custom_sizes)))
-        self.session.set_custom_outsize(custom_sizes)
-
     def infer(self, feeds, mode='static', custom_sizes=100000, out_array=True):
         '''
         Parameters:
@@ -531,15 +542,8 @@ class InferSession:
                 raise RuntimeError('type:{} invalid'.format(type(feed)))
             inputs.append(infer_input)
 
-        infer_mode_switch = {
-            "static": self._static_prepare,
-            "dymbatch": self._dymbatch_prepare,
-            "dymhw": self._dymhw_prepare,
-            "dymdims": self._dymdims_prepare,
-            "dymshape": self._dymshape_prepare
-        }
-        if infer_mode_switch.get(mode) is not None:
-            infer_mode_switch.get(mode)(shapes, custom_sizes)
+        if self.infer_mode_switch.get(mode) is not None:
+            self.infer_mode_switch.get(mode)(shapes, custom_sizes)
         else:
             raise RuntimeError('wrong infer_mode:{}, only support \"static\",\"dymbatch\",\"dymhw\", \
                 \"dymdims\",\"dymshape\"'.format(mode))
@@ -633,15 +637,8 @@ class InferSession:
             basetensor = aclruntime.BaseTensor(infer_input.__array_interface__['data'][0], infer_input.nbytes)
             inputs.append(basetensor)
 
-        infer_mode_switch = {
-            "static": self._static_prepare,
-            "dymbatch": self._dymbatch_prepare,
-            "dymhw": self._dymhw_prepare,
-            "dymdims": self._dymdims_prepare,
-            "dymshape": self._dymshape_prepare
-        }
-        if infer_mode_switch.get(mode) is not None:
-            infer_mode_switch.get(mode)(shapes, custom_sizes)
+        if self.infer_mode_switch.get(mode) is not None:
+            self.infer_mode_switch.get(mode)(shapes, custom_sizes)
         else:
             raise RuntimeError('wrong infer_mode:{}, only support \"static\",\"dymbatch\",\"dymhw\", \
                 \"dymdims\",\"dymshape\"'.format(mode))
@@ -656,7 +653,7 @@ class InferSession:
             mem_copy: loop param will be fixedly set as 1, in infer iteration, without any memory copy in device
             return outputs after infer
         '''
-        mem_copy=False
+        mem_copy = False
         if not custom_sizes:
             custom_sizes = []
         if (iteration_times == 1):
@@ -709,18 +706,22 @@ class MultiDeviceSession():
         outputs_queue = Manager().Queue()
         for device_id, feeds in device_feeds.items():
             for feed in feeds:
-                p.apply_async(self.subprocess_infer, args=(outputs_queue, device_id, feed, mode, custom_sizes), error_callback=self.print_subprocess_run_error)
+                p.apply_async(
+                    self.subprocess_infer,
+                    args=(outputs_queue, device_id, feed, mode, custom_sizes),
+                    error_callback=self.print_subprocess_run_error
+                )
         p.close()
         p.join()
         result = 0 if 2 * len(device_feeds) == outputs_queue.qsize() else 1
-        logger.info("multidevice run end qsize:{} result:{}".format(outputs_queue.qsize(), result))
+        logger.info(f"multidevice run end qsize:{outputs_queue.qsize()} result:{result}")
         outputs_dict = {}
         while outputs_queue.qsize() != 0:
             ret = outputs_queue.get()
             if type(ret) == list:
                 if (not outputs_dict.get(ret[0])):
                     outputs_dict.update({ret[0]: []})
-                outputs_dict[ret[0]].append(ret[1])
+                outputs_dict.get(ret[0]).append(ret[1])
                 logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 
@@ -732,18 +733,22 @@ class MultiDeviceSession():
         outputs_queue = Manager().Queue()
         for device_id, feeds in device_feeds_list.items():
             for feed in feeds:
-                p.apply_async(self.subprocess_infer_pipeline, args=(outputs_queue, device_id, feed, mode, custom_sizes), error_callback=self.print_subprocess_run_error)
+                p.apply_async(
+                    self.subprocess_infer_pipeline,
+                    args=(outputs_queue, device_id, feed, mode, custom_sizes),
+                    error_callback=self.print_subprocess_run_error
+                )
         p.close()
         p.join()
         result = 0 if 2 * len(device_feeds_list) == outputs_queue.qsize() else 1
-        logger.info("multidevice run end qsize:{} result:{}".format(outputs_queue.qsize(), result))
+        logger.info(f"multidevice run pipeline end qsize:{outputs_queue.qsize()} result:{result}")
         outputs_dict = {}
         while outputs_queue.qsize() != 0:
             ret = outputs_queue.get()
             if type(ret) == list:
                 if (not outputs_dict.get(ret[0])):
                     outputs_dict.update({ret[0]: []})
-                outputs_dict[ret[0]].append(ret[1])
+                outputs_dict.get(ret[0]).append(ret[1])
                 logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 
@@ -755,18 +760,22 @@ class MultiDeviceSession():
         outputs_queue = Manager().Queue()
         for device_id, feeds in device_feeds.items():
             for feed in feeds:
-                p.apply_async(self.subprocess_infer_iteration, args=(outputs_queue, device_id, feed, in_out_list, iteration_times, mode, custom_sizes), error_callback=self.print_subprocess_run_error)
+                p.apply_async(
+                    self.subprocess_infer_iteration,
+                    args=(outputs_queue, device_id, feed, in_out_list, iteration_times, mode, custom_sizes),
+                    error_callback=self.print_subprocess_run_error
+                )
         p.close()
         p.join()
         result = 0 if 2 * len(device_feeds) == outputs_queue.qsize() else 1
-        logger.info("multidevice run end qsize:{} result:{}".format(outputs_queue.qsize(), result))
+        logger.info(f"multidevice run iteration end qsize:{outputs_queue.qsize()} result:{result}")
         outputs_dict = {}
         while outputs_queue.qsize() != 0:
             ret = outputs_queue.get()
             if type(ret) == list:
                 if (not outputs_dict.get(ret[0])):
                     outputs_dict.update({ret[0]: []})
-                outputs_dict[ret[0]].append(ret[1])
+                outputs_dict.get(ret[0]).append(ret[1])
                 logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 
@@ -798,7 +807,8 @@ class MultiDeviceSession():
         outputs_queue.put([device_id, outputs, start_time, end_time])
         return
 
-    def subprocess_infer_iteration(self, outputs_queue, device_id, feeds, in_out_list=None, iteration_times=1, mode='static', custom_sizes=None):
+    def subprocess_infer_iteration(self, outputs_queue, device_id, feeds, in_out_list=None,
+            iteration_times=1, mode='static', custom_sizes=None):
         sub_session = InferSession(
             device_id=device_id,
             model_path=self.model_path,
@@ -811,9 +821,6 @@ class MultiDeviceSession():
         end_time = time.time()
         outputs_queue.put([device_id, outputs, start_time, end_time])
         return
-
-    def print_subprocess_run_error(self, value):
-        logger.error("subprocess run failed error_callback:{}".format(value))
 
 
 class MemorySummary:
