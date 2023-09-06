@@ -66,7 +66,7 @@ def infer_iteration_withoutD2H_withmemcpy():
     # create new numpy data according inputs info
     shape = session.get_inputs()[0].shape
     ndata = np.full(shape, 1).astype(np.float32)
-    outputs = session.infer_iteration([ndata, ndata], in_out_list, iteration_times, mem_copy=True)
+    outputs = session.infer_iteration([ndata, ndata], in_out_list, iteration_times)
     logger.info(f"outputs:{outputs} type:{type(outputs)}")
     logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
@@ -81,7 +81,7 @@ def infer_iteration_withoutD2H_withoutmemcpy():
     # create new numpy data according inputs info
     shape = session.get_inputs()[0].shape
     ndata = np.full(shape, 1).astype(np.float32)
-    outputs = session.infer_iteration([ndata, ndata], in_out_list, iteration_times, mem_copy=False)
+    outputs = session.infer_iteration([ndata, ndata], in_out_list, iteration_times)
     logger.info(f"outputs:{outputs} type:{type(outputs)}")
     logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
@@ -134,6 +134,7 @@ def infer_multidevices():
     # create new numpy data according inputs info
     barray = bytearray(session.get_inputs()[0].realsize)
     ndata = np.frombuffer(barray)
+    session.free_device()
     device_feeds = {0:[[ndata],[ndata]]}
     outputs = multi_session.infer(device_feeds)
     logger.info(f"outputs:{outputs} type:{type(outputs)}")
