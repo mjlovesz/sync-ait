@@ -55,20 +55,20 @@ class PythonAPIVisitor(libcst.CSTVisitor):
         self.script = jedi.Script(code=get_file_content(self.file), path=self.file, project=self.project)
 
     @staticmethod
-    def __is_acc_lib_api(api_name):
+    def _is_acc_lib_api(api_name):
         for lib in KitConfig.API_MAP.keys():
             if api_name.startswith(lib):
                 return True
         return False
 
     def visit_Call(self, node: "libcst.Call") -> Optional[bool]:
-        api = self.__get_full_name_for_node(node)
-        if not self.__is_acc_lib_api(api):
+        api = self._get_full_name_for_node(node)
+        if not self._is_acc_lib_api(api):
             return True
         cuda_en = True if "cuda" in api.lower() else False
         position = self.get_metadata(libcst.metadata.PositionProvider, node)
         loc = f"{self.file}, {position.start.line}:{position.start.column}"
-        args = self.__parse_args(node)
+        args = self._parse_args(node)
         item = {
             KitConfig.ACC_API: api,
             KitConfig.CUDA_EN: cuda_en,
@@ -79,11 +79,11 @@ class PythonAPIVisitor(libcst.CSTVisitor):
         RESULTS.append(item)
         return True
 
-    def __parse_args(self, node):
+    def _parse_args(self, node):
         parsed_args = []
 
         args = node.args
-        func_definition_params = self.__get_function_define_params_for_node(node)
+        func_definition_params = self._get_function_define_params_for_node(node)
 
         for (index, arg) in enumerate(args):
             assign_node = arg
@@ -101,7 +101,7 @@ class PythonAPIVisitor(libcst.CSTVisitor):
                     if assignment.name != arg_real_name:
                         continue
 
-                    assign_node = self.__get_parent_assign_node(assignment, arg_real_name)
+                    assign_node = self._get_parent_assign_node(assignment, arg_real_name)
                     break
 
             assign_code = self.wrapper.module.code_for_node(assign_node)
@@ -114,7 +114,7 @@ class PythonAPIVisitor(libcst.CSTVisitor):
 
         return "\n".join(parsed_args)
 
-    def __get_parent_assign_node(self, node, arg_name):
+    def _get_parent_assign_node(self, node, arg_name):
         if not isinstance(node, libcst.CSTNode) and hasattr(node, "node"):
             node = node.node
 
@@ -131,7 +131,7 @@ class PythonAPIVisitor(libcst.CSTVisitor):
 
         raise RuntimeError(f"Cannot find parent assign node for node {arg_name}")
 
-    def __get_full_name_for_node(self, node: Union[str, libcst.CSTNode]) -> Optional[str]:
+    def _get_full_name_for_node(self, node: Union[str, libcst.CSTNode]) -> Optional[str]:
         position = self.get_metadata(libcst.metadata.PositionProvider, node)
         name = helper.get_full_name_for_node(node)
         pos = 0
@@ -145,7 +145,7 @@ class PythonAPIVisitor(libcst.CSTVisitor):
             return name_list[0].name
         return name
 
-    def __get_function_define_params_for_node(self, node):
+    def _get_function_define_params_for_node(self, node):
         code = self.wrapper.module.code_for_node(node)
         position = self.get_metadata(libcst.metadata.PositionProvider, node)
         bracket_pos = code.index("(")
