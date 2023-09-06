@@ -3,7 +3,7 @@
 
 ## 介绍
 
-某些昇腾模型，存在NPU自定义算，比如 [Retinanet](https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/contrib/cv/detection/Retinanet)，存在BatchMultiClassNMS后处理算子，该算子无法在onnxruntime上运行，导致该模型无法使用ait debug compare功能进行精度比对。添加--custom-op参数，指定onnx模型中自定义算子类型名称。
+某些昇腾模型，存在NPU自定义算子，比如 [Retinanet](https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/contrib/cv/detection/Retinanet)，存在BatchMultiClassNMS后处理算子，该算子无法在onnxruntime上运行，导致该模型无法使用ait debug compare功能进行精度比对。添加--custom-op参数，指定onnx模型中自定义算子类型名称。
 
 ## 使用场景约束
 
@@ -35,7 +35,7 @@
   ```
   - `--custom-op` 为onnx模型中自定义算子类型名称
 
-也支持多个自定义算子类型，中间用英文分号隔开：
+也支持多个自定义算子类型，中间用英文逗号隔开：
   ```sh
   ait debug compare -gm ./model.onnx -om ./model.om -c /usr/local/Ascend/ascend-toolkit/latest -o /home/HwHiAiUser/result/test  --custom-op='BatchMultiClassNMS,RoiExtractor'
   ```
