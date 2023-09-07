@@ -12,6 +12,7 @@
 # limitations under the License.
 
 import time
+from copy import deepcopy
 
 from app_analyze.utils.log_util import logger
 from app_analyze.scan.scanner import Scanner
@@ -35,6 +36,6 @@ class CxxScanner(Scanner):
         for file in self.files:
             p = self.cxx_parser(file)
             rst_vals = p.parse()
-            result[file] = rst_vals
+            result[file] = deepcopy(rst_vals)
 
         return result
