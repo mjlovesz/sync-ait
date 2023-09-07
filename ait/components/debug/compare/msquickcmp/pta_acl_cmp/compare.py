@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-import shutil
-import site
 import time
 
 import pandas as pd
@@ -22,48 +20,15 @@ import torch
 
 from msquickcmp.common.utils import logger
 from msquickcmp.pta_acl_cmp.cmp_algorithm import cmp_alg_map
+from msquickcmp.pta_acl_cmp.constant import ATTR_END, ATTR_OBJECT_LENGTH, ATTR_OBJECT_COUNT, \
+    ATTR_OBJECT_PREFIX, PTA, ACL, DATA_ID, PTA_DATA_PATH, ACL_DATA_PATH, PTA_DTYPE, PTA_SHAPE, \
+    PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE, PTA_STACK, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, \
+    ACL_MIN_VALUE, ACL_MEAN_VALUE, ACL_STACK, CMP_FLAG, CMP_FAIL_REASON, CSV_HEADER, \
+    MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE
 
-ATTR_VERSION = "$Version"
-ATTR_END = "$End"
-ATTR_OBJECT_LENGTH = "$Object.Length"
-ATTR_OBJECT_COUNT = "$Object.Count"
-ATTR_OBJECT_PREFIX = "$Object."
 
-PTA = "pta"
-ACL = "acl"
-DATA_ID = 'data_id'
-PTA_DATA_PATH = 'pta_data_path'
-ACL_DATA_PATH = 'acl_data_path'
-PTA_DTYPE = "pta_dtype"
-PTA_SHAPE = "pta_shape"
-PTA_MAX_VALUE = "pta_max_value"
-PTA_MIN_VALUE = "pta_min_value"
-PTA_MEAN_VALUE = "pta_mean_value"
-PTA_STACK = "pta_stack"
-ACL_DTYPE = "acl_dtype"
-ACL_SHAPE = "acl_shape"
-ACL_MAX_VALUE = "acl_max_value"
-ACL_MIN_VALUE = "acl_min_value"
-ACL_MEAN_VALUE = "acl_mean_value"
-ACL_STACK = "acl_stack"
-CMP_FLAG = "cmp_flag"
-CMP_FAIL_REASON = "cmp_fail_reason"
-CSV_HEADER = [DATA_ID, PTA_DATA_PATH, PTA_DTYPE, PTA_SHAPE, PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE,
-              ACL_DATA_PATH, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, CMP_FLAG]
 CSV_HEADER.extend(list(cmp_alg_map.keys()))
 CSV_HEADER.append(CMP_FAIL_REASON)
-
-MODEL_INFER_TASK_ID = "AIT_CMP_TASK_ID"
-AIT_CMP_TASK_DIR = 'AIT_CMP_TASK_DIR'
-AIT_CMP_TASK = "AIT_CMP_TASK"
-AIT_CMP_TASK_PID = "AIT_CMP_TASK_PID"
-LD_PRELOAD = "LD_PRELOAD"
-
-ACL_DATA_MAP_FILE = "ait_compare_acl_map.txt"
-
-ACLTRANSFORMER_SAVE_TENSOR_MAX = "ACLTRANSFORMER_SAVE_TENSOR_MAX"
-ACLTRANSFORMER_SAVE_TENSOR = "ACLTRANSFORMER_SAVE_TENSOR"
-MAX_TOKEN_NUM = "10000"
 
 token_counts = 0
 
@@ -183,7 +148,9 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
     csv_result_dir = os.path.join(ait_task_dir, ait_cmp_task_pid)
     csv_path = os.path.join(csv_result_dir, task_id + "_cmp_result.csv")
 
-    dump_data_dir = "cmp_dump_data"
+    pid = os.getpid()
+    dump_data_dir = f"{pid}_cmp_dump_data"
+
     if not os.path.exists(dump_data_dir):
         os.mkdir(dump_data_dir)
 
@@ -385,33 +352,3 @@ def read_acl_transformer_data(file_path):
         return data.cpu().numpy()
 
     raise ValueError("Tensor file path must be end with .bin.")
-
-
-def init_aclcmp_task():
-    os.environ[AIT_CMP_TASK_PID] = str(os.getpid())
-    os.environ[AIT_CMP_TASK] = "1"
-    os.environ[AIT_CMP_TASK_DIR] = os.getcwd()
-    ld_preload = os.getenv("LD_PRELOAD")
-    ld_preload = ld_preload or ""
-    save_tensor_so_path = os.path.join(site.getsitepackages()[0], "msquickcmp", "libtensorutil.so")
-    os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
-
-    # 加速库获取内部数据轮数，设大一些，否则token数目较多时，可能获取不到后面的数据
-    os.environ[ACLTRANSFORMER_SAVE_TENSOR_MAX] = MAX_TOKEN_NUM
-    # 打开加速库dump数据开关
-    os.environ[ACLTRANSFORMER_SAVE_TENSOR] = str(1)
-
-    acl_map_file_dir = os.path.join('/tmp', str(os.getpid()))
-    if not os.path.exists(acl_map_file_dir):
-        os.mkdir(acl_map_file_dir)
-
-    csv_result_dir = os.path.join(os.getenv(AIT_CMP_TASK_DIR), os.getenv(AIT_CMP_TASK_PID))
-    if not os.path.exists(csv_result_dir):
-        os.mkdir(csv_result_dir)
-
-
-def clear_aclcmp_task():
-    acl_map_file_dir = os.path.join('/tmp', str(os.getpid()))
-    if os.path.exists(acl_map_file_dir):
-        shutil.rmtree(acl_map_file_dir)
-
