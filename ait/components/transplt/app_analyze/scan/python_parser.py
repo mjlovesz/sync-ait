@@ -107,7 +107,8 @@ class PythonAPIVisitor(libcst.CSTVisitor):
             assign_code = self.wrapper.module.code_for_node(assign_node)
             position = self.get_metadata(libcst.metadata.PositionProvider, assign_node)
             assign_loc = f"{self.file}, {position.start.line}:{position.start.column}"
-            arg_declaration_name = func_definition_params[index].name
+            arg_declaration_name = func_definition_params[index].name \
+                if func_definition_params and len(func_definition_params) > index else "NaN"
 
             call_arg_str = f"{arg_declaration_name} | {arg_real_name} | {assign_code} | {assign_loc}"
             parsed_args.append(call_arg_str)
