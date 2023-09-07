@@ -462,7 +462,7 @@ class InferSession:
         '''
         Parameters:
             feeds: input data
-            mode: static dymdims dymshapes
+            mode: static dymdims dymshape...
         '''
         inputs = []
         shapes = []
@@ -497,7 +497,7 @@ class InferSession:
         '''
         Parameters:
             feeds_list: input data list
-            mode: static dymdims dymshapes
+            mode: static dymdims dymshape...
         '''
         inputs_list = []
         shapes_list = []
@@ -701,6 +701,10 @@ class MultiDeviceSession():
         self.loop = loop
 
     def infer(self, device_feeds:dict, mode='static', custom_sizes=100000):
+        '''
+        Parameters:
+            device_feeds: device match [input datas1, input datas2...] (Dict)
+        '''
         subprocess_num = 0
         for _, device in device_feeds.items():
             subprocess_num += len(device)
@@ -728,6 +732,10 @@ class MultiDeviceSession():
         return outputs_dict
 
     def infer_pipeline(self, device_feeds_list:dict, mode='static', custom_sizes=100000):
+        '''
+        Parameters:
+            device_feeds: device match [input datas1, input datas2...] (Dict)
+        '''
         subprocess_num = 0
         for _, device in device_feeds_list.items():
             subprocess_num += len(device)
@@ -755,6 +763,10 @@ class MultiDeviceSession():
         return outputs_dict
 
     def infer_iteration(self, device_feeds:dict, in_out_list=None, iteration_times=1, mode='static', custom_sizes=None):
+        '''
+        Parameters:
+            device_feeds: device match [input datas1, input datas2...] (Dict)
+        '''
         subprocess_num = 0
         for _, device in device_feeds.items():
             subprocess_num += len(device)
