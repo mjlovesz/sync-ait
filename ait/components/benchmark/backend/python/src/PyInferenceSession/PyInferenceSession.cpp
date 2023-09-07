@@ -36,6 +36,14 @@ PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint3
     Init(modelPath, options);
 }
 
+void PyInferenceSession::SetContext()
+{
+    APP_ERROR ret = TensorContext::GetInstance()->CreateContext(deviceId_, contextIndex_);
+    if (ret != APP_ERR_OK) {
+        throw std::runtime_error(GetError(ret));
+    }
+}
+
 int PyInferenceSession::Destroy()
 {
     if (InitFlag_ == false) {
@@ -86,14 +94,10 @@ PyInferenceSession::~PyInferenceSession()
 
 void PyInferenceSession::Init(const std::string &modelPath, std::shared_ptr<SessionOptions> options)
 {
+    SetContext();
     DeviceManager::GetInstance()->SetAclJsonPath(options->aclJsonPath);
 
-    APP_ERROR ret = TensorContext::GetInstance()->CreateContext(deviceId_, contextIndex_);
-    if (ret != APP_ERR_OK) {
-        throw std::runtime_error(GetError(ret));
-    }
-
-    ret = TensorContext::GetInstance()->SetContext(deviceId_, contextIndex_);
+    APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_, contextIndex_);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
@@ -108,6 +112,7 @@ void PyInferenceSession::Init(const std::string &modelPath, std::shared_ptr<Sess
 std::vector<TensorBase> PyInferenceSession::InferMap(std::vector<std::string>& output_names,
     std::map<std::string, TensorBase>& feeds)
 {
+    SetContext();
     DEBUG_LOG("start to ModelInference feeds");
 
     std::vector<TensorBase> outputs = {};
@@ -122,6 +127,7 @@ std::vector<TensorBase> PyInferenceSession::InferMap(std::vector<std::string>& o
 std::vector<TensorBase> PyInferenceSession::InferVector(std::vector<std::string>& output_names,
     std::vector<TensorBase>& feeds)
 {
+    SetContext();
     DEBUG_LOG("start to ModelInference");
 
     std::vector<TensorBase> outputs = {};
@@ -184,6 +190,7 @@ std::string  PyInferenceSession::GetModelPath()
 
 std::string PyInferenceSession::GetDesc()
 {
+    SetContext();
     std::string inputStr = "input:\n";
     std::string outputStr = "output:\n";
     auto &inTensorsDesc = modelInfer_.GetInputs();
@@ -229,6 +236,7 @@ int PyInferenceSession::ResetSumaryInfo()
 
 int PyInferenceSession::SetStaticBatch()
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetStaticBatch();
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -238,6 +246,7 @@ int PyInferenceSession::SetStaticBatch()
 
 int PyInferenceSession::SetDynamicBatchsize(int batchsize)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetDynamicBatchsize(batchsize);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -247,16 +256,19 @@ int PyInferenceSession::SetDynamicBatchsize(int batchsize)
 
 uint64_t PyInferenceSession::GetMaxDymBatchsize()
 {
+    SetContext();
     return modelInfer_.GetMaxDymBatchsize();
 }
 
 int PyInferenceSession::GetDymAIPPInputExist()
 {
+    SetContext();
     return modelInfer_.GetDymAIPPInputExist();
 }
 
 int PyInferenceSession::CheckDymAIPPInputExist()
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.CheckDymAIPPInputExist();
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -266,6 +278,7 @@ int PyInferenceSession::CheckDymAIPPInputExist()
 
 int PyInferenceSession::SetDymAIPPInfoSet()
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetDymAIPPInfoSet();
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -275,6 +288,7 @@ int PyInferenceSession::SetDymAIPPInfoSet()
 
 int PyInferenceSession::SetDynamicHW(int width, int height)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetDynamicHW(width, height);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -284,6 +298,7 @@ int PyInferenceSession::SetDynamicHW(int width, int height)
 
 int PyInferenceSession::SetDynamicDims(std::string dymdimsStr)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetDynamicDims(dymdimsStr);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -293,6 +308,7 @@ int PyInferenceSession::SetDynamicDims(std::string dymdimsStr)
 
 int PyInferenceSession::SetDynamicShape(std::string dymshapeStr)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetDynamicShape(dymshapeStr);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -302,6 +318,7 @@ int PyInferenceSession::SetDynamicShape(std::string dymshapeStr)
 
 int PyInferenceSession::SetCustomOutTensorsSize(std::vector<size_t> customOutSize)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetCustomOutTensorsSize(customOutSize);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -312,12 +329,8 @@ int PyInferenceSession::SetCustomOutTensorsSize(std::vector<size_t> customOutSiz
 std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<std::string>& output_names,
     std::vector<Base::BaseTensor>& feeds)
 {
+    SetContext();
     DEBUG_LOG("start to ModelInference base_tensor");
-    APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_, contextIndex_);
-    if (ret != APP_ERR_OK) {
-        ERROR_LOG("TensorContext::SetContext failed. ret=%d", ret);
-        throw std::runtime_error(GetError(ret));
-    }
 
     std::vector<MemoryData> memorys = {};
     std::vector<BaseTensor> inputs = {};
@@ -329,7 +342,7 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
     }
 
     std::vector<TensorBase> outputs = {};
-    ret = modelInfer_.Inference(inputs, output_names, outputs);
+    APP_ERROR ret = modelInfer_.Inference(inputs, output_names, outputs);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
@@ -342,6 +355,7 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
 std::vector<TensorBase> PyInferenceSession::FirstInnerInfer(std::vector<std::string>& output_names,
     std::vector<Base::BaseTensor>& feeds)
 {
+    SetContext();
     DEBUG_LOG("start to FirstInnerInfer base_tensor");
 
     std::vector<MemoryData> memorys = {};
@@ -367,6 +381,7 @@ std::vector<TensorBase> PyInferenceSession::FirstInnerInfer(std::vector<std::str
 std::vector<TensorBase> PyInferenceSession::InnerInfer(const std::vector<int>& in_out_list,
     std::vector<std::string>& output_names, const bool get_outputs, const bool mem_copy)
 {
+    SetContext();
     std::vector<TensorBase> outputs = {};
     APP_ERROR ret = modelInfer_.RepeatInference(in_out_list, output_names, outputs, get_outputs, mem_copy);
     if (ret != APP_ERR_OK) {
@@ -378,6 +393,7 @@ std::vector<TensorBase> PyInferenceSession::InnerInfer(const std::vector<int>& i
 void PyInferenceSession::OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names,
     std::vector<TensorBase>& outputs)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.Inference(inputs, output_names, outputs);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -401,6 +417,7 @@ std::vector<std::vector<TensorBase>> PyInferenceSession::InferPipelineBaseTensor
     std::vector<std::string>& outputNames, std::vector<std::vector<Base::BaseTensor>>& inputsList,
     std::vector<std::vector<std::vector<size_t>>>& shapesList, bool autoDymShape, bool autoDymDims)
 {
+    SetContext();
     DEBUG_LOG("start to ModelInference base_tensor in pipeline");
     std::vector<std::vector<TensorBase>> result{};
 
@@ -428,6 +445,7 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
                                        std::shared_ptr<InferOptions> inferOption,
                                        std::vector<std::shared_ptr<PyInferenceSession>>& extraSession)
 {
+    SetContext();
     // check extra session
     if (!CheckExtraSession(contextIndex_, extraSession)) {
         ERROR_LOG("InferPipeline failed: cannot have session in same context");
@@ -478,6 +496,7 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
 
 int PyInferenceSession::AippSetMaxBatchSize(uint64_t batchSize)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.AippSetMaxBatchSize(batchSize);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -487,6 +506,7 @@ int PyInferenceSession::AippSetMaxBatchSize(uint64_t batchSize)
 
 int PyInferenceSession::SetInputFormat(std::string iptFmt)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetInputFormat(iptFmt);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -496,6 +516,7 @@ int PyInferenceSession::SetInputFormat(std::string iptFmt)
 
 int PyInferenceSession::SetSrcImageSize(std::vector<int> srcImageSize)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetSrcImageSize(srcImageSize);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -505,6 +526,7 @@ int PyInferenceSession::SetSrcImageSize(std::vector<int> srcImageSize)
 
 int PyInferenceSession::SetRbuvSwapSwitch(int rsSwitch)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetRbuvSwapSwitch(rsSwitch);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -514,6 +536,7 @@ int PyInferenceSession::SetRbuvSwapSwitch(int rsSwitch)
 
 int PyInferenceSession::SetAxSwapSwitch(int asSwitch)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetAxSwapSwitch(asSwitch);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -523,6 +546,7 @@ int PyInferenceSession::SetAxSwapSwitch(int asSwitch)
 
 int PyInferenceSession::SetCscParams(std::vector<int> cscParams)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetCscParams(cscParams);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -532,6 +556,7 @@ int PyInferenceSession::SetCscParams(std::vector<int> cscParams)
 
 int PyInferenceSession::SetCropParams(std::vector<int> cropParams)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetCropParams(cropParams);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -541,6 +566,7 @@ int PyInferenceSession::SetCropParams(std::vector<int> cropParams)
 
 int PyInferenceSession::SetPaddingParams(std::vector<int> padParams)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetPaddingParams(padParams);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -550,6 +576,7 @@ int PyInferenceSession::SetPaddingParams(std::vector<int> padParams)
 
 int PyInferenceSession::SetDtcPixelMean(std::vector<int> meanParams)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetDtcPixelMean(meanParams);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -559,6 +586,7 @@ int PyInferenceSession::SetDtcPixelMean(std::vector<int> meanParams)
 
 int PyInferenceSession::SetDtcPixelMin(std::vector<float> minParams)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetDtcPixelMin(minParams);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -568,6 +596,7 @@ int PyInferenceSession::SetDtcPixelMin(std::vector<float> minParams)
 
 int PyInferenceSession::SetPixelVarReci(std::vector<float> reciParams)
 {
+    SetContext();
     APP_ERROR ret = modelInfer_.SetPixelVarReci(reciParams);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -578,6 +607,7 @@ int PyInferenceSession::SetPixelVarReci(std::vector<float> reciParams)
 TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc,
     std::vector<std::string>& filesList)
 {
+    SetContext();
     std::vector<uint32_t> u32shape;
     for (size_t j = 0; j < dstTensorDesc.shape.size(); ++j) {
         u32shape.push_back((uint32_t)(dstTensorDesc.shape[j]));

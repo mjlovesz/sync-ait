@@ -104,8 +104,6 @@ public:
     TensorBase CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc, std::vector<std::string>& filesList);
 
     int Finalize();
-    int FreeDevice();
-    int FreeModel();
 
     Base::ModelInferenceProcessor modelInfer_ = {};
 
@@ -114,6 +112,7 @@ private:
     int Destroy();
 
 private:
+    void SetContext();
     uint32_t deviceId_ = 0;
     Base::ModelDesc modelDesc_ = {};
     bool InitFlag_ = false;
