@@ -51,7 +51,7 @@ class PythonAPIVisitor(libcst.CSTVisitor):
         self.file = file
         self.project_path = project_path
         self.wrapper = wrapper
-        self.project = jedi.Project(path=self.project_path)
+        self.project = jedi.Project(path=self.project_path, added_sys_path=(KitConfig.ACC_PYTHON_LIB_FOLDER,))
         self.script = jedi.Script(code=get_file_content(self.file), path=self.file, project=self.project)
 
     @staticmethod
