@@ -18,7 +18,6 @@ import time
 
 import pandas as pd
 import numpy as np
-import torch
 
 from msquickcmp.common.utils import logger
 from msquickcmp.pta_acl_cmp.cmp_algorithm import cmp_alg_map
@@ -183,7 +182,9 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
     csv_result_dir = os.path.join(ait_task_dir, ait_cmp_task_pid)
     csv_path = os.path.join(csv_result_dir, task_id + "_cmp_result.csv")
 
-    dump_data_dir = "cmp_dump_data"
+    pid = os.getpid()
+    dump_data_dir = f"{pid}_cmp_dump_data"
+
     if not os.path.exists(dump_data_dir):
         os.mkdir(dump_data_dir)
 
@@ -309,6 +310,7 @@ def _get_data_info(data, idx, data_src):
 
 class TensorBinFile:
     def __init__(self, file_path) -> None:
+        import torch
         self.file_path = file_path
         self.dtype = 0
         self.format = 0
