@@ -540,9 +540,10 @@ class InferSession:
 
     def inner_run(self, in_out_list, get_outputs=False, mem_copy=True):
         '''
-            in_out_list:
-            如果本次推理沿用上次推理的inputdatas数据，则in_out_list为[-1, -1, -1, ...]
-            如果本次推理inputdatas_current[i] = outputdatas_last[j], 那么in_out_list[i] = j
+        Parameters:
+            in_out_list: relation between current input datas and last output datas
+            get_outputs: get outputs from device or not
+            mem_copy: the way inputs get data from outputs
         '''
         if (get_outputs):
             outputs = self.session.inner_run(in_out_list, self.outputs_names, get_outputs, mem_copy)
@@ -556,7 +557,7 @@ class InferSession:
         '''
         Parameters:
             feeds: input data
-            mode: static dymdims dymshapes
+            mode: static dymdims dymshapes ...
             custom_sizes: must equal to the realsize of outputs
         '''
         if not custom_sizes:
@@ -590,11 +591,12 @@ class InferSession:
 
     def infer_iteration(self, feeds, in_out_list=None, iteration_times=1, mode='static', custom_sizes=None):
         '''
+        Parameters:
             feeds: input datas
             in_out_list: relation between current input datas and last output datas
             iteration_times: inner iteration infer loop times
-            mem_copy: loop param will be fixedly set as 1, in infer iteration, without any memory copy in device
-            return outputs after infer
+            mode: static dymdims dymshape ...
+            custom_sizes: only dymshape needs
         '''
         mem_copy = False
         if not custom_sizes:
