@@ -38,7 +38,7 @@ PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint3
 
 void PyInferenceSession::SetContext()
 {
-    APP_ERROR ret = TensorContext::GetInstance()->CreateContext(deviceId_, contextIndex_);
+    APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_, contextIndex_);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
@@ -94,14 +94,13 @@ PyInferenceSession::~PyInferenceSession()
 
 void PyInferenceSession::Init(const std::string &modelPath, std::shared_ptr<SessionOptions> options)
 {
-    SetContext();
-    DeviceManager::GetInstance()->SetAclJsonPath(options->aclJsonPath);
-
-    APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_, contextIndex_);
+    APP_ERROR ret = TensorContext::GetInstance()->CreateContext(deviceId_, contextIndex_);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
+    SetContext();
 
+    DeviceManager::GetInstance()->SetAclJsonPath(options->aclJsonPath);
     ret = modelInfer_.Init(modelPath, options, deviceId_);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));

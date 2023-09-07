@@ -157,6 +157,7 @@ APP_ERROR DeviceManager::DestroyContext(uint32_t deviceId, std::size_t contextIn
         return ret;
     }
     contexts_[deviceId].erase(contextIndex);
+    DEBUG_LOG("end to destroy context %lu in device %u", contextIndex ,deviceId);
     return APP_ERR_OK;
 }
 
@@ -230,6 +231,7 @@ APP_ERROR DeviceManager::CreateContext(DeviceContext device, size_t& contextInde
     auto newContextIndex = nextContextIndex_[deviceId];
     contexts_[deviceId].insert({newContextIndex, newContext});
     contextIndex = newContextIndex;
+    DEBUG_LOG("finish create context %lu in device %d", newContextIndex, deviceId);
     nextContextIndex_[deviceId]++;
 
     return APP_ERR_OK;
@@ -255,6 +257,7 @@ APP_ERROR DeviceManager::SetContext(DeviceContext device, std::size_t contextInd
         ERROR_LOG("acl set curcontext failed");
         return ret;
     }
+    DEBUG_LOG("finish set current context to context %lu in device %d", contextIndex, deviceId);
     return APP_ERR_OK;
 }
 
