@@ -13,7 +13,6 @@
 # limitations under the License.
 import os
 import shutil
-import site
 import time
 
 import pandas as pd

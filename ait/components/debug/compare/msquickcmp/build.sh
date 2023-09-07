@@ -22,7 +22,7 @@ build_tensorutil(){
     # 使用make来编译项目
     make
 
-    site_packages_path=$(python -c "import site; print(site.getsitepackages()[0])")
+    site_packages_path=$(python3 -c "import site; print(site.getsitepackages()[0])")
     # 指定.so文件的目标目录
 
     # 检查目标目录是否存在，如果不存在则创建

@@ -1,5 +1,6 @@
 import os
 import shutil
+import site
 
 
 MODEL_INFER_TASK_ID = "AIT_CMP_TASK_ID"
