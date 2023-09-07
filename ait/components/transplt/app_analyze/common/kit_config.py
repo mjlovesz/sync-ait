@@ -110,6 +110,7 @@ class KitConfig:
 
     # b.加速库路径
     HEADERS_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'headers'))
+    ACC_PYTHON_LIB_FOLDER = os.path.join(HEADERS_FOLDER, 'python')
     INCLUDES = {
         OPENCV: os.path.join(HEADERS_FOLDER, 'opencv', 'include', 'opencv4'),
         FFMPEG: os.path.join(HEADERS_FOLDER, 'ffmpeg', 'include'),
