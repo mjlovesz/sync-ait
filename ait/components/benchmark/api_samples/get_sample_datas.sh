@@ -130,11 +130,9 @@ main()
 {
     get_npu_type || { echo "get npu type failed";return $ret_failed; }
     PYTHON_COMMAND="python3"
-    SAMPLE_RES_PATH=$CUR_PATH/sampledata/resnet50/model
     SAMPLE_ADD_PATH=$CUR_PATH/sampledata/add_model/model
     ADD_ONNX_PATH=$SAMPLE_ADD_PATH/add_model.onnx
 
-    [ -d $SAMPLE_RES_PATH ] || mkdir -p $SAMPLE_RES_PATH
     [ -d $SAMPLE_ADD_PATH ] || mkdir -p $SAMPLE_ADD_PATH
 
     if [[ ! -f $ADD_ONNX_PATH ]]; then
