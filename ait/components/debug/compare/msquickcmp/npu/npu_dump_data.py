@@ -316,7 +316,7 @@ class NpuDumpData(DumpData):
             os.mknod(acl_json_path, mode=0o600)
         benchmark_cmd = [self.python_version, "-m", "ais_bench", "--model", self.offline_model_path,
                          "--input", self.benchmark_input_path, "--device", self.device,
-                         "--output", npu_data_output_dir]
+                         "--output", npu_data_output_dir, "--warmup-count", "0"]
         if self.dump:
             cur_dir = os.getcwd()
             acl_json_path = os.path.join(cur_dir, acl_json_path)

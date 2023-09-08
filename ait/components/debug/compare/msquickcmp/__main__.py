@@ -19,7 +19,7 @@ from components.utils.parser import BaseCommand
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common.utils import logger, check_exec_cmd
-
+from msquickcmp.pta_acl_cmp.initial import init_aclcmp_task, clear_aclcmp_task
 
 CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
@@ -43,6 +43,10 @@ def str2bool(v):
 
 
 class CompareCommand(BaseCommand):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parser = None
+
     def add_arguments(self, parser):
         parser.add_argument(
             '-gm',
@@ -185,12 +189,14 @@ class CompareCommand(BaseCommand):
             dest="quant_fusion_rule_file",
             default='',
             help="the quant fusion rule file path")
+        self.parser = parser
 
 
 
     def handle(self, args):
         if not args.golden_model:
             logger.error("The following arguments are required: -gm/--golden-model")
+            self.parser.print_help()
             return
 
         cmp_args = CmpArgsAdapter(args.golden_model, args.om_model, args.weight_path, args.input_data_path,
@@ -214,8 +220,10 @@ class AclCompare(BaseCommand):
 
     def handle(self, args, **kwargs):
         if check_exec_cmd(args.exec):
+            init_aclcmp_task()
             # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
             os.system(args.exec)
+            clear_aclcmp_task()
 
 
 def get_cmd_instance():
