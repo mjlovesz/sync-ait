@@ -99,7 +99,6 @@ APP_ERROR DeviceManager::DestroyDevices()
                 if (ret != APP_ERR_OK) {
                     cout << aclGetRecentErrMsg() << endl;
                     ERROR_LOG("destroy context failed");
-                    return ret;
                 }
                 DEBUG_LOG("end to destroy context %lu in device %lld", context.first ,contexts.first);
             }

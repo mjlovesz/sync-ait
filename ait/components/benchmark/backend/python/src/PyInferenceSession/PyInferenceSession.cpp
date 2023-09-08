@@ -194,7 +194,7 @@ std::shared_ptr<SessionOptions> PyInferenceSession::GetOptions()
     return modelInfer_.GetOptions();
 }
 
-std::string  PyInferenceSession::GetModelPath()
+std::string PyInferenceSession::GetModelPath()
 {
     return modelPath_;
 }
@@ -460,6 +460,7 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
     // check extra session
     if (!CheckExtraSession(contextIndex_, extraSession)) {
         ERROR_LOG("InferPipeline failed: cannot have session in same context");
+        return;
     }
 
     size_t numThreads = extraSession.size() + 1;
