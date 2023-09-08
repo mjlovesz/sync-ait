@@ -14,9 +14,13 @@
 
 import logging
 import time
+import sys
 from configparser import ConfigParser
+from multiprocessing import Pool
+from multiprocessing import Manager
 import numpy as np
 import aclruntime
+
 
 SRC_IMAGE_SIZE_W_MIN = 2
 SRC_IMAGE_SIZE_W_MAX = 4096
@@ -79,15 +83,24 @@ class InferSession:
         self.device_id = device_id
         self.model_path = model_path
         self.loop = loop
-        options = aclruntime.session_options()
+        self.options = aclruntime.session_options()
+        self.acl_json_path = acl_json_path
+        self.debug = debug
         if acl_json_path is not None:
-            options.acl_json_path = acl_json_path
-        options.log_level = 1 if debug else 2
-        options.loop = self.loop
-        self.session = aclruntime.InferenceSession(self.model_path, self.device_id, options)
+            self.options.acl_json_path = self.acl_json_path
+        self.options.log_level = 1 if self.debug else 2
+        self.options.loop = self.loop
+        self.session = aclruntime.InferenceSession(self.model_path, self.device_id, self.options)
         self.outputs_names = [meta.name for meta in self.session.get_outputs()]
         self.intensors_desc = self.session.get_inputs()
         self.outtensors_desc = self.session.get_outputs()
+        self.infer_mode_switch = {
+            "static": self._static_prepare,
+            "dymbatch": self._dymbatch_prepare,
+            "dymhw": self._dymhw_prepare,
+            "dymdims": self._dymdims_prepare,
+            "dymshape": self._dymshape_prepare
+        }
 
     @staticmethod
     def convert_tensors_to_host(tensors):
@@ -434,29 +447,19 @@ class InferSession:
         else:
             return outputs
 
-    def inner_run(self, in_out_list, get_outputs=False, mem_copy=True):
-        '''
-            in_out_list:
-            如果本次推理沿用上次推理的inputdatas数据，则in_out_list为[-1, -1, -1, ...]
-            如果本次推理inputdatas_current[i] = outputdatas_last[j], 那么in_out_list[i] = j
-        '''
-        if (get_outputs):
-            outputs = self.session.inner_run(in_out_list, self.outputs_names, get_outputs, mem_copy)
-            return outputs
-        else:
-            self.session.inner_run(in_out_list, self.outputs_names, get_outputs, mem_copy)
-            outputs = None
-            return outputs
+    def run_pipeline(self, infilelist, output, auto_shape=False,
+                     auto_dims=False, outfmt="BIN", pure_infer_mode=False):
+        self.session.run_pipeline(infilelist, output, auto_shape, auto_dims, outfmt, pure_infer_mode)
 
-    def first_inner_run(self, feeds, mode='static', custom_sizes=None):
+    def reset_sumaryinfo(self):
+        self.session.reset_sumaryinfo()
+
+    def infer(self, feeds, mode='static', custom_sizes=100000, out_array=True):
         '''
         Parameters:
             feeds: input data
-            mode: static dymdims dymshapes
-            custom_sizes: must equal to the realsize of outputs
+            mode: static dymdims dymshape...
         '''
-        if not custom_sizes:
-            custom_sizes = []
         inputs = []
         shapes = []
         for feed in feeds:
@@ -466,6 +469,9 @@ class InferSession:
             elif type(feed) in NP_TYPE_LIST:
                 infer_input = np.array(feed)
                 shapes.append([feed.size])
+            elif type(feed) is aclruntime.Tensor:
+                infer_input = feed
+                shapes.append(infer_input.shape)
             elif hasattr(feed, 'type') and feed.type() in TORCH_TENSOR_LIST:
                 infer_input = feed.numpy()
                 if not feed.is_contiguous():
@@ -473,79 +479,21 @@ class InferSession:
                 shapes.append(infer_input.shape)
             else:
                 raise RuntimeError('type:{} invalid'.format(type(feed)))
-            basetensor = aclruntime.BaseTensor(infer_input.__array_interface__['data'][0], infer_input.nbytes)
-            inputs.append(basetensor)
+            inputs.append(infer_input)
 
-        if mode == 'dymshape' or mode == 'dymdims':
-            dym_list = []
-            indesc = self.get_inputs()
-            for i, shape in enumerate(shapes):
-                str_shape = [str(val) for val in shape]
-                dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
-                dym_list.append(dyshape)
-            dyshapes = ';'.join(dym_list)
-            if mode == 'dymshape':
-                self.session.set_dynamic_shape(dyshapes)
-                self.session.set_custom_outsize(custom_sizes)
-            elif mode == 'dymdims':
-                self.session.set_dynamic_dims(dyshapes)
-        return self.session.first_inner_run(self.outputs_names, inputs)
-
-    def iteration_run(self, feeds, in_out_list, iteration_times=1, mem_copy=True, mode='static', custom_sizes=None):
-        '''
-            feeds: input datas
-            in_out_list: relation between current input datas and last output datas
-            iteration_times: inner iteration infer loop times
-            mem_copy: loop param will be fixedly set as 1, in infer iteration, without any memory copy in device
-            return outputs after infer
-        '''
-        if not custom_sizes:
-            custom_sizes = []
-        if (iteration_times == 1):
-            if not custom_sizes:
-                outputs = self.infer(feeds, mode)
-            else:
-                outputs = self.infer(feeds, mode, custom_sizes[0])
-            return outputs
+        if self.infer_mode_switch.get(mode) is not None:
+            self.infer_mode_switch.get(mode)(shapes, custom_sizes)
         else:
-            self.first_inner_run(feeds, mode, custom_sizes)
-            for i in range(iteration_times - 1):
-                if (i == iteration_times - 2):
-                    outputs = self.inner_run(in_out_list, True, mem_copy)
-                    # convert to host tensor
-                    self.convert_tensors_to_host(outputs)
-                    # convert tensor to narray
-                    return self.convert_tensors_to_arrays(outputs)
-                else:
-                    self.inner_run(in_out_list, False, mem_copy)
+            raise RuntimeError('wrong infer_mode:{}, only support \"static\",\"dymbatch\",\"dymhw\", \
+                \"dymdims\",\"dymshape\"'.format(mode))
 
-    def run_pipeline(self, infilelist, output, auto_shape=False,
-                     auto_dims=False, outfmt="BIN", pure_infer_mode=False):
-        self.session.run_pipeline(infilelist, output, auto_shape, auto_dims, outfmt, pure_infer_mode)
-
-    def reset_sumaryinfo(self):
-        self.session.reset_sumaryinfo()
-
-    def sumary(self):
-        return self.session.sumary()
-
-    def finalize(self):
-        if hasattr(self.session, 'finalize'):
-            self.session.finalize()
-
-    def free_device(self):
-        if hasattr(self.session, 'free_device'):
-            self.session.free_device()
-
-    def free_model(self):
-        if hasattr(self.session, 'free_model'):
-            self.session.free_model()
+        return self.run(inputs, out_array)
 
     def infer_pipeline(self, feeds_list, mode='static', custom_sizes=100000):
         '''
         Parameters:
             feeds_list: input data list
-            mode: static dymdims dymshapes
+            mode: static dymdims dymshape...
         '''
         inputs_list = []
         shapes_list = []
@@ -586,12 +534,30 @@ class InferSession:
             outputs[i] = self.convert_tensors_to_arrays(output)
         return outputs
 
-    def infer(self, feeds, mode='static', custom_sizes=100000, out_array=True):
+    def inner_run(self, in_out_list, get_outputs=False, mem_copy=True):
+        '''
+        Parameters:
+            in_out_list: relation between current input datas and last output datas
+            get_outputs: get outputs from device or not
+            mem_copy: the way inputs get data from outputs
+        '''
+        if (get_outputs):
+            outputs = self.session.inner_run(in_out_list, self.outputs_names, get_outputs, mem_copy)
+            return outputs
+        else:
+            self.session.inner_run(in_out_list, self.outputs_names, get_outputs, mem_copy)
+            outputs = None
+            return outputs
+
+    def first_inner_run(self, feeds, mode='static', custom_sizes=None):
         '''
         Parameters:
             feeds: input data
-            mode: static dymdims dymshapes
+            mode: static dymdims dymshapes ...
+            custom_sizes: must equal to the realsize of outputs
         '''
+        if not custom_sizes:
+            custom_sizes = []
         inputs = []
         shapes = []
         for feed in feeds:
@@ -601,9 +567,6 @@ class InferSession:
             elif type(feed) in NP_TYPE_LIST:
                 infer_input = np.array(feed)
                 shapes.append([feed.size])
-            elif type(feed) is aclruntime.Tensor:
-                infer_input = feed
-                shapes.append(infer_input.shape)
             elif hasattr(feed, 'type') and feed.type() in TORCH_TENSOR_LIST:
                 infer_input = feed.numpy()
                 if not feed.is_contiguous():
@@ -611,28 +574,267 @@ class InferSession:
                 shapes.append(infer_input.shape)
             else:
                 raise RuntimeError('type:{} invalid'.format(type(feed)))
-            inputs.append(infer_input)
+            basetensor = aclruntime.BaseTensor(infer_input.__array_interface__['data'][0], infer_input.nbytes)
+            inputs.append(basetensor)
 
-        if mode == 'dymshape' or mode == 'dymdims':
-            dym_list = []
-            indesc = self.get_inputs()
-            outdesc = self.get_outputs()
-            for i, shape in enumerate(shapes):
-                str_shape = [str(val) for val in shape]
-                dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
-                dym_list.append(dyshape)
-            dyshapes = ';'.join(dym_list)
-            if mode == 'dymshape':
-                self.session.set_dynamic_shape(dyshapes)
-                if isinstance(custom_sizes, int):
-                    custom_sizes = [custom_sizes] * len(outdesc)
-                elif not isinstance(custom_sizes, list):
-                    raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
-                        custom_sizes, type(custom_sizes)))
-                self.session.set_custom_outsize(custom_sizes)
-            elif mode == 'dymdims':
-                self.session.set_dynamic_dims(dyshapes)
-        return self.run(inputs, out_array)
+        if self.infer_mode_switch.get(mode) is not None:
+            self.infer_mode_switch.get(mode)(shapes, custom_sizes)
+        else:
+            raise RuntimeError('wrong infer_mode:{}, only support \"static\",\"dymbatch\",\"dymhw\", \
+                \"dymdims\",\"dymshape\"'.format(mode))
+
+        return self.session.first_inner_run(self.outputs_names, inputs)
+
+    def infer_iteration(self, feeds, in_out_list=None, iteration_times=1, mode='static', custom_sizes=None):
+        '''
+        Parameters:
+            feeds: input datas
+            in_out_list: relation between current input datas and last output datas
+            iteration_times: inner iteration infer loop times
+            mode: static dymdims dymshape ...
+            custom_sizes: only dymshape needs
+        '''
+        mem_copy = False
+        if not custom_sizes:
+            custom_sizes = []
+        if (iteration_times == 1):
+            if not custom_sizes:
+                outputs = self.infer(feeds, mode)
+            else:
+                outputs = self.infer(feeds, mode, custom_sizes[0])
+            return outputs
+        else:
+            self.first_inner_run(feeds, mode, custom_sizes)
+            for i in range(iteration_times - 1):
+                if (i == iteration_times - 2):
+                    outputs = self.inner_run(in_out_list, True, mem_copy)
+                    # convert to host tensor
+                    self.convert_tensors_to_host(outputs)
+                    # convert tensor to narray
+                    return self.convert_tensors_to_arrays(outputs)
+                else:
+                    self.inner_run(in_out_list, False, mem_copy)
+
+    def sumary(self):
+        return self.session.sumary()
+
+    def free_model(self):
+        if hasattr(self.session, 'free_model'):
+            self.session.free_model()
+
+    def free_device(self):
+        if hasattr(self.session, 'free_device'):
+            self.session.free_device()
+
+    def finalize(self):
+        if hasattr(self.session, 'finalize'):
+            self.session.finalize()
+
+    def _static_prepare(self, shapes, custom_sizes):
+        self.set_staticbatch()
+
+    def _dymbatch_prepare(self, shapes, custom_sizes):
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        for i, shape in enumerate(shapes):
+            for j, dim in enumerate(shape):
+                if (indesc[i].shape[j] < 0):
+                    self.set_dynamic_batchsize(dim)
+                    return
+                if (indesc[i].shape[j] != dim):
+                    raise RuntimeError("input datas and intensors dim not matched!")
+        raise RuntimeError("not a dymbatch model!")
+
+    def _dymhw_prepare(self, shapes, custom_sizes):
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        for i, shape in enumerate(shapes):
+            if (indesc[i].shape[2] < 0 and indesc[i].shape[3] < 0):
+                self.set_dynamic_hw(shape[2], shape[3])
+                return
+        raise RuntimeError("not a dymhw model!")
+
+    def _dymdims_prepare(self, shapes, custom_sizes):
+        dym_list = []
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        for i, shape in enumerate(shapes):
+            str_shape = [str(val) for val in shape]
+            dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
+            dym_list.append(dyshape)
+        dyshapes = ';'.join(dym_list)
+        self.session.set_dynamic_dims(dyshapes)
+
+    def _dymshape_prepare(self, shapes, custom_sizes):
+        dym_list = []
+        indesc = self.get_inputs()
+        if (len(shapes) != len(indesc)):
+            raise RuntimeError("input datas and intensors nums not matched!")
+        outdesc = self.get_outputs()
+        for i, shape in enumerate(shapes):
+            str_shape = [str(val) for val in shape]
+            dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
+            dym_list.append(dyshape)
+        dyshapes = ';'.join(dym_list)
+        self.session.set_dynamic_shape(dyshapes)
+        if isinstance(custom_sizes, int):
+            custom_sizes = [custom_sizes] * len(outdesc)
+        elif not isinstance(custom_sizes, list):
+            raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
+                custom_sizes, type(custom_sizes)))
+        self.session.set_custom_outsize(custom_sizes)
+
+
+class MultiDeviceSession():
+    def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
+        self.device_id = device_id
+        self.model_path = model_path
+        self.acl_json_path = acl_json_path
+        self.debug = debug
+        self.loop = loop
+
+    @classmethod
+    def print_subprocess_run_error(cls, value):
+        logger.error(f"subprocess run failed error_callback:{value}")
+
+    def infer(self, device_feeds:dict, mode='static', custom_sizes=100000):
+        '''
+        Parameters:
+            device_feeds: device match [input datas1, input datas2...] (Dict)
+        '''
+        subprocess_num = 0
+        for _, device in device_feeds.items():
+            subprocess_num += len(device)
+        p = Pool(subprocess_num)
+        outputs_queue = Manager().Queue()
+        for device_id, feeds in device_feeds.items():
+            for feed in feeds:
+                p.apply_async(
+                    self.subprocess_infer,
+                    args=(outputs_queue, device_id, feed, mode, custom_sizes),
+                    error_callback=self.print_subprocess_run_error
+                )
+        p.close()
+        p.join()
+        result = 0 if 2 * len(device_feeds) == outputs_queue.qsize() else 1
+        logger.info(f"multidevice run end qsize:{outputs_queue.qsize()} result:{result}")
+        outputs_dict = {}
+        while outputs_queue.qsize() != 0:
+            ret = outputs_queue.get()
+            if type(ret) == list:
+                if (not outputs_dict.get(ret[0])):
+                    outputs_dict.update({ret[0]: []})
+                outputs_dict.get(ret[0]).append(ret[1])
+                logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
+        return outputs_dict
+
+    def infer_pipeline(self, device_feeds_list:dict, mode='static', custom_sizes=100000):
+        '''
+        Parameters:
+            device_feeds: device match [input datas1, input datas2...] (Dict)
+        '''
+        subprocess_num = 0
+        for _, device in device_feeds_list.items():
+            subprocess_num += len(device)
+        p = Pool(subprocess_num)
+        outputs_queue = Manager().Queue()
+        for device_id, feeds in device_feeds_list.items():
+            for feed in feeds:
+                p.apply_async(
+                    self.subprocess_infer_pipeline,
+                    args=(outputs_queue, device_id, feed, mode, custom_sizes),
+                    error_callback=self.print_subprocess_run_error
+                )
+        p.close()
+        p.join()
+        result = 0 if 2 * len(device_feeds_list) == outputs_queue.qsize() else 1
+        logger.info(f"multidevice run pipeline end qsize:{outputs_queue.qsize()} result:{result}")
+        outputs_dict = {}
+        while outputs_queue.qsize() != 0:
+            ret = outputs_queue.get()
+            if type(ret) == list:
+                if (not outputs_dict.get(ret[0])):
+                    outputs_dict.update({ret[0]: []})
+                outputs_dict.get(ret[0]).append(ret[1])
+                logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
+        return outputs_dict
+
+    def infer_iteration(self, device_feeds:dict, in_out_list=None, iteration_times=1, mode='static', custom_sizes=None):
+        '''
+        Parameters:
+            device_feeds: device match [input datas1, input datas2...] (Dict)
+        '''
+        subprocess_num = 0
+        for _, device in device_feeds.items():
+            subprocess_num += len(device)
+        p = Pool(subprocess_num)
+        outputs_queue = Manager().Queue()
+        for device_id, feeds in device_feeds.items():
+            for feed in feeds:
+                p.apply_async(
+                    self.subprocess_infer_iteration,
+                    args=(outputs_queue, device_id, feed, in_out_list, iteration_times, mode, custom_sizes),
+                    error_callback=self.print_subprocess_run_error
+                )
+        p.close()
+        p.join()
+        result = 0 if 2 * len(device_feeds) == outputs_queue.qsize() else 1
+        logger.info(f"multidevice run iteration end qsize:{outputs_queue.qsize()} result:{result}")
+        outputs_dict = {}
+        while outputs_queue.qsize() != 0:
+            ret = outputs_queue.get()
+            if type(ret) == list:
+                if (not outputs_dict.get(ret[0])):
+                    outputs_dict.update({ret[0]: []})
+                outputs_dict.get(ret[0]).append(ret[1])
+                logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
+        return outputs_dict
+
+    def subprocess_infer(self, outputs_queue, device_id, feeds, mode='static', custom_sizes=100000):
+        sub_session = InferSession(
+            device_id=device_id,
+            model_path=self.model_path,
+            acl_json_path=self.acl_json_path,
+            debug=self.debug,
+            loop=self.loop
+        )
+        start_time = time.time()
+        outputs = sub_session.infer(feeds, mode, custom_sizes, out_array=True)
+        end_time = time.time()
+        outputs_queue.put([device_id, outputs, start_time, end_time])
+        return
+
+    def subprocess_infer_pipeline(self, outputs_queue, device_id, feeds_list, mode='static', custom_sizes=100000):
+        sub_session = InferSession(
+            device_id=device_id,
+            model_path=self.model_path,
+            acl_json_path=self.acl_json_path,
+            debug=self.debug,
+            loop=self.loop
+        )
+        start_time = time.time()
+        outputs = sub_session.infer_pipeline(feeds_list, mode, custom_sizes)
+        end_time = time.time()
+        outputs_queue.put([device_id, outputs, start_time, end_time])
+        return
+
+    def subprocess_infer_iteration(self, outputs_queue, device_id, feeds, in_out_list=None,
+            iteration_times=1, mode='static', custom_sizes=None):
+        sub_session = InferSession(
+            device_id=device_id,
+            model_path=self.model_path,
+            acl_json_path=self.acl_json_path,
+            debug=self.debug,
+            loop=self.loop
+        )
+        start_time = time.time()
+        outputs = sub_session.infer_iteration(feeds, in_out_list, iteration_times, mode, custom_sizes)
+        end_time = time.time()
+        outputs_queue.put([device_id, outputs, start_time, end_time])
+        return
 
 
 class MemorySummary:
