@@ -23,11 +23,11 @@ tensor_npy_nor = np.random.rand(1, 3, 32, 32).astype(np.float32)
 DATA_NUM = 8
 list_k = list(range(DATA_NUM))
 base_path = os.getcwd()
-cur_bin_nor_path = os.path.join(base_path, f"sampledata/resnet18/input/rand_dataset_bin_{DATA_NUM}")
+cur_bin_nor_path = os.path.join(base_path, f"sampledata/add_model/input/rand_dataset_bin_{DATA_NUM}")
 if os.path.exists(cur_bin_nor_path):
     shutil.rmtree(cur_bin_nor_path)
 os.makedirs(cur_bin_nor_path)
-cur_npy_nor_path = os.path.join(base_path, f"sampledata/resnet18/input/rand_dataset_npy_{DATA_NUM}")
+cur_npy_nor_path = os.path.join(base_path, f"sampledata/add_model/input/rand_dataset_npy_{DATA_NUM}")
 if os.path.exists(cur_npy_nor_path):
     shutil.rmtree(cur_npy_nor_path)
 os.makedirs(cur_npy_nor_path)

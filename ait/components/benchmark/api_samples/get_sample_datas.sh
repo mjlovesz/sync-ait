@@ -155,7 +155,7 @@ main()
     convert_dymhw_om $SAMPLE_ADD_PATH $model_kind $input_shape $dymhw || { echo "convert dymhw $model_kind om failed";return $ret_failed; }
     input_shape="input1:-1,3,-1,-1;input2:-1,3,-1,-1"
     dymdims="1,32,32,1,32,32;4,64,64,4,64,64"
-    convert_dymdim_om $SAMPLE_ADD_PATH $model_kind $input_shape $dymdims || { echo "convert dymdim $model_kind om failed";return $ret_failed; }
+    convert_dymdims_om $SAMPLE_ADD_PATH $model_kind $input_shape $dymdims || { echo "convert dymdims $model_kind om failed";return $ret_failed; }
 
     # dymshapes 310 不支持，310P支持
     if [ $SOC_VERSION != "Ascend310" ]; then
