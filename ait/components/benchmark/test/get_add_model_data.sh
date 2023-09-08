@@ -108,6 +108,9 @@ main()
     convert_dymdim_om || { return $ret_failed; }
     if [ $SOC_VERSION != "Ascend310" ]; then
         convert_dymshape_om || { return $ret_failed; }
+        if [ ! -f $MODEL_PATH/pth_resnet18_dymshape.om ]; then
+            mv $MODEL_PATH/pth_resnet18_dymshape*.om $MODEL_PATH/pth_resnet18_dymshape.om
+        fi
     fi
 
     return $ret_ok
