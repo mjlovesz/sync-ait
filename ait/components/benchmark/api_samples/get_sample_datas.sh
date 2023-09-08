@@ -170,7 +170,7 @@ main()
     resnet_onnx_file="$SAMPLE_RES_PATH/pth_resnet18.onnx"
     if [ ! -f $resnet_onnx_file ]; then
         convert_file_path=$SAMPLE_RES_PATH/resnet18_pth2onnx.py
-        get_convert_file $convert_file_palsth || { echo "get convert file failed";return $ret_failed; }
+        get_convert_file $convert_file_path || { echo "get convert file failed";return $ret_failed; }
         chmod 750 $convert_file_path
         cd $SAMPLE_RES_PATH
         $PYTHON_COMMAND $convert_file_path --checkpoint $resnet_pth_file --save_dir $SAMPLE_RES_PATH/resnet18.onnx || { echo "convert pth to onnx failed";return $ret_failed; }
