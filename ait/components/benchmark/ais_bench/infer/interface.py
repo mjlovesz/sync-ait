@@ -115,10 +115,6 @@ class InferSession:
             arrays.append(np.array(tensor))
         return arrays
 
-    @classmethod
-    def print_subprocess_run_error(cls, value):
-        logger.error(f"subprocess run failed error_callback:{value}")
-
     def get_inputs(self):
         """
         get inputs info of model
@@ -699,6 +695,10 @@ class MultiDeviceSession():
         self.acl_json_path = acl_json_path
         self.debug = debug
         self.loop = loop
+
+    @classmethod
+    def print_subprocess_run_error(cls, value):
+        logger.error(f"subprocess run failed error_callback:{value}")
 
     def infer(self, device_feeds:dict, mode='static', custom_sizes=100000):
         '''
