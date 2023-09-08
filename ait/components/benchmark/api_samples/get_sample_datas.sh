@@ -35,7 +35,7 @@ try_download_url() {
 
 function get_convert_file()
 {
-    local convert_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet18_for_PyTorch/resnet18_pth2onnx.py"
+    local convert_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/pth2onnx.py"
     wget $convert_url -O $1 --no-check-certificate
 }
 
@@ -150,7 +150,7 @@ main()
 {
     get_npu_type || { echo "get npu type failed";return $ret_failed; }
     PYTHON_COMMAND="python3"
-    SAMPLE_RES_PATH=$CUR_PATH/sampledata/resnet18/model
+    SAMPLE_RES_PATH=$CUR_PATH/sampledata/resnet50/model
     SAMPLE_ADD_PATH=$CUR_PATH/sampledata/add_model/model
     ADD_ONNX_PATH=$SAMPLE_ADD_PATH/add_model.onnx
 
@@ -162,34 +162,34 @@ main()
         mv $CUR_PATH/add_model.onnx $SAMPLE_ADD_PATH/ || { echo "move add onnx failed";return $ret_failed; }
     fi
 
-    model_url="https://download.pytorch.org/models/resnet18-f37072fd.pth"
-    resnet_pth_file="$SAMPLE_RES_PATH/pth_resnet18.pth"
+    model_url="https://download.pytorch.org/models/resnet50-0676ba61.pth"
+    resnet_pth_file="$SAMPLE_RES_PATH/pth_resnet50.pth"
     if [ ! -f $resnet_pth_file ]; then
         try_download_url $model_url $resnet_pth_file || { echo "donwload stubs failed";return $ret_failed; }
     fi
-    resnet_onnx_file="$SAMPLE_RES_PATH/pth_resnet18.onnx"
+    resnet_onnx_file="$SAMPLE_RES_PATH/pth_resnet50.onnx"
     if [ ! -f $resnet_onnx_file ]; then
-        convert_file_path=$SAMPLE_RES_PATH/resnet18_pth2onnx.py
+        convert_file_path=$SAMPLE_RES_PATH/resnet50_convert_pth_to_onnx.py
         get_convert_file $convert_file_path || { echo "get convert file failed";return $ret_failed; }
         chmod 750 $convert_file_path
         cd $SAMPLE_RES_PATH
-        $PYTHON_COMMAND $convert_file_path --checkpoint $resnet_pth_file --save_dir $SAMPLE_RES_PATH/resnet18.onnx || { echo "convert pth to onnx failed";return $ret_failed; }
-        mv $SAMPLE_RES_PATH/resnet18.onnx $resnet_onnx_file
+        $PYTHON_COMMAND $convert_file_path $resnet_pth_file || { echo "convert pth to onnx failed";return $ret_failed; }
+        mv $SAMPLE_RES_PATH/resnet50_official.onnx $resnet_onnx_file
         cd -
     fi
 
-    echo "Start convert pth_resnet18.onnx to om, it may take a few minutes"
-    model_kind="pth_resnet18"
+    echo "Start convert pth_resnet50.onnx to om, it may take a few minutes"
+    model_kind="pth_resnet50"
 
-    input_shape="image:1,3,224,224"
+    input_shape="actual_input_1:1,3,224,224"
     convert_staticbatch_om $SAMPLE_RES_PATH $model_kind $input_shape || { echo "convert static $model_kind om failed";return $ret_failed; }
-    input_shape="image:-1,3,224,224"
+    input_shape="actual_input_1:-1,3,224,224"
     dymbatch="1,2,4,8"
     convert_dymbatch_om $SAMPLE_RES_PATH $model_kind $input_shape $dymbatch || { echo "convert dymbatch $model_kind om failed";return $ret_failed; }
-    input_shape="image:1,3,-1,-1"
+    input_shape="actual_input_1:1,3,-1,-1"
     dymhw="224,224;448,448"
     convert_dymhw_om $SAMPLE_RES_PATH $model_kind $input_shape $dymhw || { echo "convert dymhw $model_kind om failed";return $ret_failed; }
-    input_shape="image:-1,3,-1,-1"
+    input_shape="actual_input_1:-1,3,-1,-1"
     dymdims="1,224,224;8,448,448"
     convert_dymdim_om $SAMPLE_RES_PATH $model_kind $input_shape $dymdims || { echo "convert dymdim $model_kind om failed";return $ret_failed; }
 
@@ -208,15 +208,13 @@ main()
     dymdims="1,32,32,1,32,32;4,64,64,4,64,64"
     convert_dymdim_om $SAMPLE_ADD_PATH $model_kind $input_shape $dymdims || { echo "convert dymdim $model_kind om failed";return $ret_failed; }
 
-
-
     # dymshapes 310 不支持，310P支持
     if [ $SOC_VERSION != "Ascend310" ]; then
         echo "dymshape enabled"
-        dymshapes="[1~16,3,200~300,200~300]"
-        convert_dymshape_om $SAMPLE_RES_PATH $model_kind $dymshapes || { echo "convert dymshape resnet18 om failed";return $ret_failed; }
-        if [ ! -f $SAMPLE_RES_PATH/pth_resnet18_dymshape.om ]; then
-            mv $SAMPLE_RES_PATH/pth_resnet18_dymshape*.om $SAMPLE_RES_PATH/pth_resnet18_dymshape.om
+        dymshapes="actual_input_1:[1~16,3,200~300,200~300]"
+        convert_dymshape_om $SAMPLE_RES_PATH $model_kind $dymshapes || { echo "convert dymshape resnet50 om failed";return $ret_failed; }
+        if [ ! -f $SAMPLE_RES_PATH/pth_resnet50_dymshape.om ]; then
+            mv $SAMPLE_RES_PATH/pth_resnet50_dymshape*.om $SAMPLE_RES_PATH/pth_resnet50_dymshape.om
         fi
         dymshapes="input1:[1~4,3,32~64,32~64];input2:[1~4,3,32~64,32~64]"
         convert_dymshape_om $SAMPLE_ADD_PATH $model_kind $dymshapes || { echo "convert dymshape add_model om failed";return $ret_failed; }
