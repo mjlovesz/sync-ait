@@ -395,7 +395,7 @@ class TestClass():
                 assert ret == 0
                 assert os.path.exists(log_path)
 
-                cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
+                cmd = "cat {} |grep 'model aclExec cost :' | wc -l".format(log_path)
                 try:
                     outval = os.popen(cmd).read()
                 except Exception as e:
@@ -437,7 +437,7 @@ class TestClass():
         assert ret == 0
         assert os.path.exists(log_path)
 
-        cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
+        cmd = "cat {} |grep 'model aclExec cost :' | wc -l".format(log_path)
         try:
             outval = os.popen(cmd).read()
         except Exception as e:

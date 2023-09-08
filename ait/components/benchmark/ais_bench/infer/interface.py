@@ -103,6 +103,11 @@ class InferSession:
             arrays.append(np.array(tensor))
         return arrays
 
+    @staticmethod
+    def finalize():
+        if hasattr(aclruntime.InferenceSession, 'finalize'):
+            aclruntime.InferenceSession.finalize()
+
     def get_inputs(self):
         """
         get inputs info of model
@@ -536,9 +541,9 @@ class InferSession:
     def sumary(self):
         return self.session.sumary()
 
-    def finalize(self):
-        if hasattr(self.session, 'finalize'):
-            self.session.finalize()
+    def free_resource(self):
+        if hasattr(self.session, "free_resource"):
+            self.session.free_resource()
 
     def infer_pipeline(self, feeds_list, mode='static', custom_sizes=100000):
         '''

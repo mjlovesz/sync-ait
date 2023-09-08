@@ -103,7 +103,8 @@ public:
 
     TensorBase CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc, std::vector<std::string>& filesList);
 
-    int Finalize();
+    static int Finalize();
+    int FreeResource();
 
     Base::ModelInferenceProcessor modelInfer_ = {};
 

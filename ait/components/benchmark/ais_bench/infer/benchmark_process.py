@@ -518,9 +518,11 @@ def main(args, index=0, msgq=None, device_list=None):
         # put result to msgq
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
 
-    session.finalize()
+    session.free_resource()
     for sess in extra_session:
-        sess.finalize()
+        sess.free_resource()
+
+    InferSession.finalize()
 
     if args.dump_npy and acl_json_path is not None:
         convert(tmp_acl_json_path, real_dump_path, tmp_dump_path)

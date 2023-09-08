@@ -257,7 +257,6 @@ APP_ERROR DeviceManager::SetContext(DeviceContext device, std::size_t contextInd
         ERROR_LOG("acl set curcontext failed");
         return ret;
     }
-    DEBUG_LOG("finish set current context to context %lu in device %d", contextIndex, deviceId);
     return APP_ERR_OK;
 }
 

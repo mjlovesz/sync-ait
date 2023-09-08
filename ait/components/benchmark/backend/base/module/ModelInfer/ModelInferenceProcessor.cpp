@@ -71,8 +71,6 @@ APP_ERROR ModelInferenceProcessor::Init(const std::string& modelPath, std::share
     deviceId_ = deviceId;
     contextIndex_ = contextIndex;
 
-    SETLOGLEVEL(options_->log_level);
-
     try {
         // make_shared必然会抛出异常
         processModel = std::make_shared<ModelProcess>();

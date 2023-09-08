@@ -66,6 +66,17 @@ int PyInferenceSession::Destroy()
 
 int PyInferenceSession::Finalize()
 {
+    APP_ERROR ret = TensorContext::GetInstance()->Finalize();
+    if (ret != APP_ERR_OK) {
+        ERROR_LOG("TensorContext::Finalize failed. ret=%d", ret);
+        return ret;
+    }
+    DEBUG_LOG("PyInferSession Finalize successfully!");
+    return APP_ERR_OK;
+}
+
+int PyInferenceSession::FreeResource()
+{
     APP_ERROR ret = TensorContext::GetInstance()->SetContext(deviceId_, contextIndex_);
     if (ret != APP_ERR_OK) {
         ERROR_LOG("TensorContext::SetContext failed. ret=%d", ret);
@@ -74,15 +85,15 @@ int PyInferenceSession::Finalize()
 
     ret = Destroy();
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("TensorContext::Finalize. ret=%d", ret);
+        ERROR_LOG("Destroy failed. ret=%d", ret);
         return ret;
     }
     ret = TensorContext::GetInstance()->DestroyContext(deviceId_, contextIndex_);
     if (ret != APP_ERR_OK) {
-        ERROR_LOG("TensorContext::Finalize. ret=%d", ret);
+        ERROR_LOG("TensorContext::DestroyContext. ret=%d", ret);
         return ret;
     }
-    DEBUG_LOG("PyInferSession Finalize successfully!");
+    DEBUG_LOG("PyInferSession FreeResource successfully!");
     return APP_ERR_OK;
 }
 
@@ -94,13 +105,14 @@ PyInferenceSession::~PyInferenceSession()
 
 void PyInferenceSession::Init(const std::string &modelPath, std::shared_ptr<SessionOptions> options)
 {
+    SETLOGLEVEL(options->log_level);
+    DeviceManager::GetInstance()->SetAclJsonPath(options->aclJsonPath);
     APP_ERROR ret = TensorContext::GetInstance()->CreateContext(deviceId_, contextIndex_);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }
     SetContext();
 
-    DeviceManager::GetInstance()->SetAclJsonPath(options->aclJsonPath);
     ret = modelInfer_.Init(modelPath, options, deviceId_);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
@@ -705,7 +717,8 @@ void RegistInferenceSession(py::module &m)
     model.def("set_custom_outsize", &Base::PyInferenceSession::SetCustomOutTensorsSize);
 
     model.def("create_tensor_from_fileslist", &Base::PyInferenceSession::CreateTensorFromFilesList);
-    model.def("finalize", &Base::PyInferenceSession::Finalize);
+    model.def("free_resource", &Base::PyInferenceSession::FreeResource);
+    model.def_static("finalize", &Base::PyInferenceSession::Finalize);
 
     RegistAippConfig(model);
 
