@@ -17,7 +17,7 @@ import time
 import logging
 import numpy as np
 
-from ais_bench.infer.interface import InferSession
+from ais_bench.infer.interface import InferSession, MultiDeviceSession
 
 model_path = sys.argv[1]
 
@@ -56,7 +56,7 @@ def infer_iteration_withD2H():
     logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
-def infer_iteration_withoutD2H_withmemcpy():
+def infer_iteration_withoutD2H():
     # only for single_op_add_model
     device_id = 0
     loop_times = 1 # same infer loop times
@@ -66,24 +66,37 @@ def infer_iteration_withoutD2H_withmemcpy():
     # create new numpy data according inputs info
     shape = session.get_inputs()[0].shape
     ndata = np.full(shape, 1).astype(np.float32)
-    outputs = session.iteration_run([ndata, ndata], in_out_list, iteration_times, mem_copy=True)
+    outputs = session.infer_iteration([ndata, ndata], in_out_list, iteration_times)
     logger.info(f"outputs:{outputs} type:{type(outputs)}")
     logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
-def infer_iteration_withoutD2H_withoutmemcpy():
-    # only for single_op_add_model
+def infer_dymbatch():
+    # only for resnet50 dymbatch
     device_id = 0
-    loop_times = 1 # same infer loop times
-    in_out_list = [-1, 0]
-    iteration_times = 1000 # inner iteration infer loop times
-    session = InferSession(device_id, model_path, None, False, loop_times)
+    session = InferSession(device_id, model_path)
+
     # create new numpy data according inputs info
-    shape = session.get_inputs()[0].shape
-    ndata = np.full(shape, 1).astype(np.float32)
-    outputs = session.iteration_run([ndata, ndata], in_out_list, iteration_times, mem_copy=False)
-    logger.info(f"outputs:{outputs} type:{type(outputs)}")
-    logger.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
+    ndata = np.full([4,3,256,256], 1).astype(np.uint8)
+
+    # in is numpy list and ouput is numpy list
+    outputs = session.infer([ndata], "dymbatch")
+    logging.info(f"outputs:{outputs} type:{type(outputs)}")
+    logging.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
+
+
+def infer_dymhw():
+    # only for resnet50 dymbatch
+    device_id = 0
+    session = InferSession(device_id, model_path)
+
+    # create new numpy data according inputs info
+    ndata = np.full([1,3,224,224], 1).astype(np.float32)
+
+    # in is numpy list and ouput is numpy list
+    outputs = session.infer([ndata], "dymhw")
+    logging.info(f"outputs:{outputs} type:{type(outputs)}")
+    logging.info(f"static infer avg:{np.mean(session.sumary().exec_time_list)} ms")
 
 
 def infer_pipeline():
@@ -93,10 +106,54 @@ def infer_pipeline():
     barray = bytearray(session.get_inputs()[0].realsize)
     ndata = np.frombuffer(barray)
 
-    outputs = session.infer([[ndata]])
+    outputs = session.infer([[ndata],[ndata]])
     print("outputs:{} type:{}".format(outputs, type(outputs)))
 
     print("static infer avg:{} ms".format(np.mean(session.sumary().exec_time_list)))
+
+
+def infer_multidevices():
+    device_id = 0
+    multi_session = MultiDeviceSession(device_id, model_path)
+    session = InferSession(device_id, model_path)
+    # create new numpy data according inputs info
+    barray = bytearray(session.get_inputs()[0].realsize)
+    ndata = np.frombuffer(barray)
+    session.free_device()
+    device_feeds = {0:[[ndata],[ndata]]}
+    outputs = multi_session.infer(device_feeds)
+    logger.info(f"outputs:{outputs} type:{type(outputs)}")
+
+
+def infer_multidevices_pipeline():
+    device_id = 0
+    multi_session = MultiDeviceSession(device_id, model_path)
+    session = InferSession(device_id, model_path)
+    # create new numpy data according inputs info
+    barray = bytearray(session.get_inputs()[0].realsize)
+    ndata = np.frombuffer(barray)
+    session.free_device()
+    device_feeds_list = {0:[[[ndata],[ndata]],[[ndata],[ndata]]]}
+    outputs = multi_session.infer_pipeline(device_feeds_list)
+    logger.info(f"outputs:{outputs} type:{type(outputs)}")
+
+
+def infer_multidevices_iteration():
+    # only for single_op_add_model
+    device_id = 0
+    in_out_list = [-1, 0]
+    iteration_times = 1000 # inner iteration infer loop times
+    # create new numpy data according inputs info
+    multi_session = MultiDeviceSession(device_id, model_path)
+    session = InferSession(device_id, model_path)
+    # create new numpy data according inputs info
+    shape = session.get_inputs()[0].shape
+    ndata = np.full(shape, 1).astype(np.float32)
+    outputs = session.infer_iteration([ndata, ndata], in_out_list, iteration_times)
+    session.free_device()
+    device_feeds = {0:[[ndata, ndata],[ndata, ndata]]}
+    outputs = multi_session.infer_iteration(device_feeds, in_out_list, iteration_times)
+    logger.info(f"outputs:{outputs} type:{type(outputs)}")
 
 
 def infer_torch_tensor():
@@ -171,13 +228,18 @@ def get_model_info():
         logger.info(f"outputs info i:{i} shape:{info.shape} type:{info.datatype} val: \
                      {int(info.datatype)} realsize:{info.realsize} size:{info.size}")
 
-
+#
 start = time.time()
 # infer_simple()
 # infer_iteration_withD2H()
-infer_iteration_withoutD2H_withmemcpy()
-# infer_iteration_withoutD2H_withoutmemcpy()
+# infer_multidevices()
+# infer_multidevices_iteration()
+infer_multidevices_pipeline()
+# infer_iteration_withoutD2H()
+# infer_dymbatch()
+# infer_dymhw()
 end = time.time()
 e2e_cost = end - start
 logger.info(f"endtoend time:{e2e_cost} sec")
+
 
