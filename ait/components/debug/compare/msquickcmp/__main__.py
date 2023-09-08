@@ -19,7 +19,7 @@ from components.utils.parser import BaseCommand
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common.utils import logger, check_exec_cmd
-from msquickcmp.pta_acl_cmp.compare import init_aclcmp_task, clear_aclcmp_task
+from msquickcmp.pta_acl_cmp.initial import init_aclcmp_task, clear_aclcmp_task
 
 CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")

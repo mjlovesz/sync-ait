@@ -90,7 +90,7 @@ class CommandLineInput(IInput):
         if self.args.tools not in KitConfig.VALID_CONSTRUCT_TOOLS:
             raise ValueError('{} ait transplt: error: construct tool {} is not supported. supported input are {}.'
                              .format(KitConfig.PORTING_CONTENT, self.args.tools,
-                                     ' or '.join(KitConfig. VALID_CONSTRUCT_TOOLS)))
+                                     ' or '.join(KitConfig.VALID_CONSTRUCT_TOOLS)))
         self.construct_tool = self.args.tools
 
     def _set_debug_switch(self):

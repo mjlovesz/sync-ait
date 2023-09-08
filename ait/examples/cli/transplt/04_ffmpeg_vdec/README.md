@@ -55,7 +55,7 @@ g++ -std=c++11 ffmpeg_decode.cpp -lavcodec -lavdevice -lavfilter -lavformat -lav
 ./ffmpeg_decode dvpp_vdec_h264_1frame_bp_51_1920x1080.h264 dvpp_vdec_h264_1frame_bp_51_1920x1080_decoded
 ```
 
-如果运行成功，会在当前目录下生成一个文件名为`dvpp_vdec_h264_1frame_bp_51_1920x1080-1.pgm`的文件，该文件为解码后的灰度pgm格式图片。
+如果运行成功，会在当前目录下生成一个文件名为`dvpp_vdec_h264_1frame_bp_51_1920x1080_decoded-1.pgm`的文件，该文件为解码后的灰度pgm格式图片。
 
 ## AIT Transplt 迁移分析
 

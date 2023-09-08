@@ -22,7 +22,7 @@ build_tensorutil(){
     # 使用make来编译项目
     make
 
-    site_packages_path=$(python -c "import site; print(site.getsitepackages()[0])")
+    site_packages_path=$(python3 -c "import site; print(site.getsitepackages()[0])")
     # 指定.so文件的目标目录
 
     # 检查目标目录是否存在，如果不存在则创建
@@ -41,7 +41,7 @@ build_tensorutil(){
     echo "Build and move completed!"
 }
 
-if [ -d ${ACLTRANSFORMER_HOME_PATH} ]; then
+if [ -d "${ACLTRANSFORMER_HOME_PATH}" ]; then
     build_tensorutil
     else
         echo "WARNING: env ACLTRANSFORMER_HOME_PATH is not set. Dump on demand package cannot be used."
