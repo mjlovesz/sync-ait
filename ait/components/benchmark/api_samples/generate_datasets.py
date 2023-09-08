@@ -18,8 +18,8 @@ import shutil
 import numpy as np
 from tqdm import tqdm
 
-tensor_bin_nor = np.random.rand(1, 3, 224, 224).astype(np.float32)
-tensor_npy_nor = np.random.rand(1, 3, 224, 224).astype(np.float32)
+tensor_bin_nor = np.random.rand(1, 3, 32, 32).astype(np.float32)
+tensor_npy_nor = np.random.rand(1, 3, 32, 32).astype(np.float32)
 DATA_NUM = 8
 list_k = list(range(DATA_NUM))
 base_path = os.getcwd()
