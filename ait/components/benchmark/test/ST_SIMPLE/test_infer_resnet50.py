@@ -254,7 +254,7 @@ class TestClass():
         with open(log_path) as f:
             i = 0
             for line in f:
-                if "cost :" not in line:
+                if "model aclExec cost :" not in line:
                     continue
                 i += 1
                 if i == 1:
@@ -308,7 +308,7 @@ class TestClass():
                 assert ret == 0
                 assert os.path.exists(log_path)
 
-                cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
+                cmd = "cat {} |grep 'model aclExec cost :' | wc -l".format(log_path)
                 try:
                     outval = os.popen(cmd).read()
                 except Exception as e:
@@ -350,7 +350,7 @@ class TestClass():
         assert ret == 0
         assert os.path.exists(log_path)
 
-        cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
+        cmd = "cat {} |grep 'model aclExec cost :' | wc -l".format(log_path)
         try:
             outval = os.popen(cmd).read()
         except Exception as e:

@@ -335,6 +335,14 @@ class BenchmarkCommand(BaseCommand):
             help='Input datas need to be divided to match multi devices or not, \
                 --device should be list, default False'
         )
+        parser.add_argument(
+            '--thread',
+            dest='thread',
+            type=check_positive_integer,
+            default=1,
+            help="Number of thread for computing. \
+                need to set --pipeline when setting thread number to be more than one."
+        )
 
     def handle(self, args):
         args = BenchMarkArgsAdapter(args.om_model, args.input, args.output, args.output_dirname, args.outfmt,
@@ -344,7 +352,7 @@ class BenchmarkCommand(BaseCommand):
                                     args.dump, args.acl_json_path, args.output_batchsize_axis, args.run_mode,
                                     args.display_all_summary, args.warmup_count, args.dym_shape_range,
                                     args.aipp_config, args.energy_consumption, args.npu_id, args.backend, args.perf,
-                                    args.pipeline, args.profiler_rename, args.dump_npy, args.divide_input)
+                                    args.pipeline, args.profiler_rename, args.dump_npy, args.divide_input, args.thread)
         benchmark_process(args)
 
 
