@@ -33,6 +33,72 @@ CSV_HEADER.append(CMP_FAIL_REASON)
 token_counts = 0
 
 
+def csv_compare(csv_path_1, csv_path_2, output_path):
+    # 读取两个CSV文件
+    df1 = pd.read_csv(csv_path_1)
+    df2 = pd.read_csv(csv_path_2)
+
+    # 合并两个DataFrame，根据data_id列进行合并，使用outer方式保留所有数据
+    merged_df = df1.merge(df2, on='data_id', how='outer')
+    # 比对开始
+    compare_tensor(merged_df)
+    # 将合并后的数据保存到输出文件
+    merged_df.to_csv(output_path, index=False)
+
+
+def dump_data(data_src, data_id, data_val, tensor_path):
+
+    if data_val is None and tensor_path is None:
+        return
+
+    if data_val is not None and not isinstance(data_val, torch.Tensor):
+        return
+
+    task_id = os.getpid()
+    ait_task_dir = os.getenv(AIT_CMP_TASK_DIR)
+    ait_task_dir = ait_task_dir or ""
+    ait_cmp_task_pid = os.getenv(AIT_CMP_TASK_PID)
+    ait_cmp_task_pid = ait_cmp_task_pid or ""
+
+    csv_result_dir = os.path.join(ait_task_dir, ait_cmp_task_pid)
+    csv_path = os.path.join(csv_result_dir, task_id + "_cmp_result.csv")
+
+    pid = os.getpid()
+    dump_data_dir = f"{pid}_cmp_dump_data"
+
+    if not os.path.exists(dump_data_dir):
+        os.mkdir(dump_data_dir)
+
+    if not os.path.exists(csv_path):
+        data = pd.DataFrame(columns=CSV_HEADER, index=[0])
+    else:
+        data = pd.read_csv(csv_path, header=0)
+
+    if data_src == "pta":
+        pta_data_dir = os.path.join(".", dump_data_dir, "pta_tensor")
+        if not os.path.exists(pta_data_dir):
+            os.makedirs(pta_data_dir)
+
+        pta_data_path = os.path.join(pta_data_dir, data_id + '_tensor.bin')
+        data = save_pta_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=pta_data_path)
+
+    elif data_src == "acl":
+        acl_data_dir = os.path.join(".", dump_data_dir, "acl_tensor")
+        if not os.path.exists(acl_data_dir):
+            os.makedirs(acl_data_dir)
+
+        if data_val is not None:
+            data_path = os.path.join(acl_data_dir, data_id + '_tensor.bin')
+            data = save_acl_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=data_path)
+        elif tensor_path:  # low-level
+            write_acl_map_file(tensor_path)
+            pid = os.getpid()
+            tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
+                                       str(pid), task_id, tensor_path)
+            data = save_acl_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
+
+    data.to_csv(csv_path, index=False)
+
 def set_task_id():
     # 通过ait拉起精度比对任务，接口才会生效
     if os.getenv(AIT_CMP_TASK) != "1":
@@ -140,8 +206,8 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
 
     task_id = os.getenv(MODEL_INFER_TASK_ID)
     task_id = task_id or ""
-    ait_task_dir = os.getenv(AIT_CMP_TASK_DIR)
-    ait_task_dir = ait_task_dir or ""
+    ait_task_dir = os.path.join(".", task_id)
+
     ait_cmp_task_pid = os.getenv(AIT_CMP_TASK_PID)
     ait_cmp_task_pid = ait_cmp_task_pid or ""
 
