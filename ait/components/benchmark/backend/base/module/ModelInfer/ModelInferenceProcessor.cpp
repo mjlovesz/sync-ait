@@ -64,16 +64,12 @@ APP_ERROR ModelInferenceProcessor::GetModelDescInfo()
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::Init(
-    const std::string& modelPath,
-    std::shared_ptr<SessionOptions> options,
-    const int32_t &deviceId
-)
+APP_ERROR ModelInferenceProcessor::Init(const std::string& modelPath, std::shared_ptr<SessionOptions> options,
+                                        const int32_t &deviceId, const size_t contextIndex)
 {
     options_ = options;
     deviceId_ = deviceId;
-
-    SETLOGLEVEL(options_->log_level);
+    contextIndex_ = contextIndex;
 
     try {
         // make_shared必然会抛出异常
@@ -200,7 +196,8 @@ APP_ERROR ModelInferenceProcessor::AddOutTensors(
         for (size_t j = 0; j < i64shape.size(); ++j) {
             u32shape.push_back((uint32_t)(i64shape[j]));
         }
-        TensorBase outputTensor(outputs[index], isBorrowed, u32shape, modelDesc_.outTensorsDesc[index].datatype);
+        TensorBase outputTensor(outputs[index], isBorrowed, u32shape,
+                                modelDesc_.outTensorsDesc[index].datatype, contextIndex_);
         outputTensors.push_back(outputTensor);
         // mem control by outTensors so outputs mems nullptr
         outputs[index].ptrData = nullptr;
@@ -635,7 +632,12 @@ APP_ERROR ModelInferenceProcessor::ResetSumaryInfo()
     return APP_ERR_OK;
 }
 
-const InferSumaryInfo& ModelInferenceProcessor::GetSumaryInfo()
+const InferSumaryInfo& ModelInferenceProcessor::GetSumaryInfo() const
+{
+    return sumaryInfo_;
+}
+
+InferSumaryInfo& ModelInferenceProcessor::GetMutableSumaryInfo()
 {
     return sumaryInfo_;
 }
