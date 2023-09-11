@@ -51,8 +51,10 @@ public:
     std::vector<TensorBase> InnerInfer(const std::vector<int>& in_out_list, std::vector<std::string>& output_names,
         const bool get_outputs, const bool mem_copy);
 
-    std::vector<TensorBase> InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
-    void OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names, std::vector<TensorBase>& outputs);
+    std::vector<TensorBase> InferBaseTensorVector(std::vector<std::string>& output_names,
+                                                  std::vector<Base::BaseTensor>& feeds);
+    void OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names,
+                   std::vector<TensorBase>& outputs);
     void InferPipeline(std::vector<std::vector<std::string>>& infilesList, std::shared_ptr<InferOptions> inferOption,
                        std::vector<std::shared_ptr<PyInferenceSession>>& extraSession);
     std::vector<std::vector<TensorBase>> InferPipelineBaseTensor(std::vector<std::string>& outputNames,

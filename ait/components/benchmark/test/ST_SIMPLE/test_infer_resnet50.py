@@ -254,7 +254,7 @@ class TestClass():
         with open(log_path) as f:
             i = 0
             for line in f:
-                if "cost :" not in line:
+                if "model aclExec cost :" not in line:
                     continue
                 i += 1
                 if i == 1:

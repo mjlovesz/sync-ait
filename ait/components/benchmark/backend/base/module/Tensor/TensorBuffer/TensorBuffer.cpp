@@ -60,7 +60,8 @@ APP_ERROR TensorBuffer::TensorBufferMalloc(TensorBuffer &buffer)
 APP_ERROR TensorBuffer::CheckCopyValid(const TensorBuffer &buffer1, const TensorBuffer &buffer2)
 {
     if (buffer1.size != buffer2.size) {
-        LogError << "param1 data size(" << buffer1.size << ") not match to param2 size(" << buffer2.size << ")" << std::endl;
+        LogError << "param1 data size(" << buffer1.size << ") not match to param2 size("
+            << buffer2.size << ")" << std::endl;
         return APP_ERR_COMM_INVALID_PARAM;
     }
 

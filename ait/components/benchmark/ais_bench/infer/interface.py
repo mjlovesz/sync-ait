@@ -725,11 +725,7 @@ class InferSession:
 
     def free_device(self):
         if hasattr(self.session, 'free_device'):
-            self.session.free_device()
-
-    def finalize(self):
-        if hasattr(self.session, 'finalize'):
-            self.session.finalize()
+            self.session.free_device()  
 
     def _static_prepare(self, shapes, custom_sizes):
         self.set_staticbatch()

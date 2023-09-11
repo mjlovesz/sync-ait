@@ -30,8 +30,8 @@
 
 namespace Base {
 PyInferenceSession::PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId,
-                                       std::shared_ptr<SessionOptions> options) :
-                                       deviceId_(deviceId), modelPath_(modelPath)
+    std::shared_ptr<SessionOptions> options)
+    : deviceId_(deviceId), modelPath_(modelPath)
 {
     Init(modelPath, options);
 }

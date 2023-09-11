@@ -344,19 +344,23 @@ APP_ERROR TensorBase::CheckBatchTensors(const std::vector<TensorBase> &inputs, c
 {
     auto checkFunc = [checkFirstDim] (const TensorBase &t1, const TensorBase &t2) {
         if (t1.GetShape().size() != t2.GetShape().size()) {
-            LogError << "dimension is not match (" << t1.GetShape().size() << ") vs (" << t2.GetShape().size() << ")" << std::endl;
+            LogError << "dimension is not match (" << t1.GetShape().size() << ") vs (" << t2.GetShape().size()
+                << ")" << std::endl;
             return false;
         }
         if (t1.GetDeviceId() != t2.GetDeviceId()) {
-            LogError << "deviceId is not match (" << t1.GetDeviceId() << ") vs (" << t2.GetDeviceId() << ")" << std::endl;
+            LogError << "deviceId is not match (" << t1.GetDeviceId() << ") vs (" << t2.GetDeviceId() << ")"
+                << std::endl;
             return false;
         }
         if (t1.GetDataType() != t2.GetDataType()) {
-            LogError << "data type is not match (" << t1.GetDataType() << ") vs (" << t2.GetDataType() << ")" << std::endl;
+            LogError << "data type is not match (" << t1.GetDataType() << ") vs (" << t2.GetDataType() << ")"
+                << std::endl;
             return false;
         }
         if (t1.GetTensorType() != t2.GetTensorType()) {
-            LogError << "memory type is not match (" << t1.GetTensorType() << ") vs (" << t2.GetTensorType() << ")" << std::endl;
+            LogError << "memory type is not match (" << t1.GetTensorType() << ") vs (" << t2.GetTensorType() << ")"
+                << std::endl;
             return false;
         }
         uint32_t startIndex = checkFirstDim ? 0 : 1;

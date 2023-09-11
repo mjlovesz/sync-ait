@@ -34,8 +34,7 @@ struct ContextStatus {
     ContextMode status = CONTEXT_IDEL;
 };
 
-class TensorContext
-{
+class TensorContext {
 public:
     TensorContext();
     ~TensorContext();

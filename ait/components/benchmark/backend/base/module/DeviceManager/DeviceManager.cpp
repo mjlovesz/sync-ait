@@ -100,7 +100,7 @@ APP_ERROR DeviceManager::DestroyDevices()
                     cout << aclGetRecentErrMsg() << endl;
                     ERROR_LOG("destroy context failed");
                 }
-                DEBUG_LOG("end to destroy context %lu in device %lld", context.first ,contexts.first);
+                DEBUG_LOG("end to destroy context %lu in device %lld", context.first, contexts.first);
             }
             DEBUG_LOG("end to destroy contexts in device %lld", contexts.first);
 
@@ -156,7 +156,7 @@ APP_ERROR DeviceManager::DestroyContext(uint32_t deviceId, std::size_t contextIn
         return ret;
     }
     contexts_[deviceId].erase(contextIndex);
-    DEBUG_LOG("end to destroy context %lu in device %u", contextIndex ,deviceId);
+    DEBUG_LOG("end to destroy context %lu in device %u", contextIndex, deviceId);
     return APP_ERR_OK;
 }
 

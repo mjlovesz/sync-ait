@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef _INFER_OPTIONS_H
-#define _INFER_OPTIONS_H
+#ifndef INFER_OPTIONS_H
+#define INFER_OPTIONS_H
 
 #include <string>
 #include <vector>

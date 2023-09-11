@@ -374,7 +374,7 @@ class TestClass:
         logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret == 0
-        cmd = "cat {} |grep 'load model' | wc -l".format(log_path)
+        cmd = "cat {} |grep 'create model description success' | wc -l".format(log_path)
 
         try:
             outval = os.popen(cmd).read()
