@@ -82,7 +82,7 @@ convert_dymhw_om()
     local _dymhw=$4
 
     local _onnx_path="$_input_path/${_model_name}.onnx"
-    local _om_path_pre="$_input_path/${_model_name}_dymwh"
+    local _om_path_pre="$_input_path/${_model_name}_dymhw"
     local _om_path="$_om_path_pre.om"
     if [[ ! -f $_om_path ]]; then
         local _cmd="atc --model=$_onnx_path --output=$_om_path_pre --framework=5 \
