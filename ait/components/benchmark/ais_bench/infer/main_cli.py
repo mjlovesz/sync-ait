@@ -340,7 +340,7 @@ class BenchmarkCommand(BaseCommand):
             dest='thread',
             type=check_positive_integer,
             default=1,
-            help="number of thread for computing. \
+            help="Number of thread for computing. \
                 need to set --pipeline when setting thread number to be more than one."
         )
 
