@@ -719,14 +719,6 @@ class InferSession:
     def sumary(self):
         return self.session.sumary()
 
-    def free_model(self):
-        if hasattr(self.session, 'free_model'):
-            self.session.free_model()
-
-    def free_device(self):
-        if hasattr(self.session, 'free_device'):
-            self.session.free_device()  
-
     def _static_prepare(self, shapes, custom_sizes):
         self.set_staticbatch()
 

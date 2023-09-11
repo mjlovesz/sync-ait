@@ -29,7 +29,7 @@ def infer_loop_create_session(loop_times):
         ndata = np.frombuffer(barray)
         outputs = session.infer([ndata])
         session_list.append(session)
-        session.finalize()
+        session.free_resource()
 
 
 infer_loop_create_session(100)
