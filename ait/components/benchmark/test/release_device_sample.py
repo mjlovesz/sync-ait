@@ -19,33 +19,6 @@ from ais_bench.infer.interface import InferSession
 
 model_path = sys.argv[1]
 
-
-def infer_sample_free_device():
-    device_id = 0
-    session1 = InferSession(device_id, model_path)
-    barray1 = bytearray(session1.get_inputs()[0].realsize)
-    ndata1 = np.frombuffer(barray1)
-    outputs1 = session1.infer([ndata1])
-    session1.free_device() # release infersession & context of device
-    session2 = InferSession(device_id, model_path)
-    barray2 = bytearray(session2.get_inputs()[0].realsize)
-    ndata2 = np.frombuffer(barray2)
-    outputs2 = session2.infer([ndata2])
-
-
-def infer_sample_free_model():
-    device_id = 0
-    session1 = InferSession(device_id, model_path)
-    barray1 = bytearray(session1.get_inputs()[0].realsize)
-    ndata1 = np.frombuffer(barray1)
-    outputs1 = session1.infer([ndata1])
-    session1.free_model() # release infersession
-    session2 = InferSession(device_id, model_path)
-    barray2 = bytearray(session2.get_inputs()[0].realsize)
-    ndata2 = np.frombuffer(barray2)
-    outputs2 = session2.infer([ndata2])
-
-
 def infer_loop_create_session(loop_times):
     device_id = 0
     session_list = []
@@ -56,7 +29,7 @@ def infer_loop_create_session(loop_times):
         ndata = np.frombuffer(barray)
         outputs = session.infer([ndata])
         session_list.append(session)
-        session.free_model() # or  session.free_device()
+        session.free_resource()
 
 
 infer_loop_create_session(100)

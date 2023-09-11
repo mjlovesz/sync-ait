@@ -21,6 +21,8 @@
 #include <map>
 #include <string>
 #include <mutex>
+#include "acl/acl.h"
+#include "acl/acl_base.h"
 #include "Base/ErrorCode/ErrorCode.h"
 namespace Base {
 const unsigned int DEFAULT_VALUE = 0;
@@ -42,13 +44,15 @@ public:
     APP_ERROR GetDevicesCount(uint32_t& deviceCount);
     // get current running device
     APP_ERROR GetCurrentDevice(DeviceContext& device);
+    APP_ERROR CreateContext(DeviceContext device, size_t& contextIndex);
     // set one device for running
-    APP_ERROR SetDevice(DeviceContext device);
+    APP_ERROR SetContext(DeviceContext device, std::size_t contextIndex = 0);
     // free resources for one device
     APP_ERROR ResetDevice(DeviceContext device);
     // release all devices
     APP_ERROR DestroyDevices();
-    APP_ERROR DestroyContext();
+    // release specific context in a device
+    APP_ERROR DestroyContext(uint32_t deviceId, std::size_t contextIndex);
     APP_ERROR SetDeviceSimple(DeviceContext device);
     bool IsInitDevices() const;
     APP_ERROR CheckDeviceId(int32_t deviceId);
@@ -56,7 +60,8 @@ public:
 private:
     DeviceManager() = default;
     std::mutex mtx_ = {};
-    std::map<int32_t, std::shared_ptr<void>> contexts_ = {};
+    std::map<long long, std::map<std::size_t, aclrtContext>> contexts_ = {};
+    std::map<long long, size_t> nextContextIndex_ = {};
     uint32_t deviceCount_ = 0;
     uint32_t initCounter_ = 0;
     std::string aclJsonPath_ = "";

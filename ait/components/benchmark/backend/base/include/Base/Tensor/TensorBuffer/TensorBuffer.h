@@ -74,6 +74,7 @@ public:
     size_t size = 0;
     MemoryData::MemoryType type = MemoryData::MemoryType::MEMORY_HOST;
     int32_t deviceId = -1;
+    size_t contextIndex = 0;
     std::shared_ptr<void> data = nullptr;
 };
 }

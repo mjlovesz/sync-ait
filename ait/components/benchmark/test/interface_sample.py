@@ -119,7 +119,7 @@ def infer_multidevices():
     # create new numpy data according inputs info
     barray = bytearray(session.get_inputs()[0].realsize)
     ndata = np.frombuffer(barray)
-    session.free_device()
+    session.free_resource()
     device_feeds = {0:[[ndata],[ndata]]}
     outputs = multi_session.infer(device_feeds)
     logger.info(f"outputs:{outputs} type:{type(outputs)}")
@@ -132,7 +132,7 @@ def infer_multidevices_pipeline():
     # create new numpy data according inputs info
     barray = bytearray(session.get_inputs()[0].realsize)
     ndata = np.frombuffer(barray)
-    session.free_device()
+    session.free_resource()
     device_feeds_list = {0:[[[ndata],[ndata]],[[ndata],[ndata]]]}
     outputs = multi_session.infer_pipeline(device_feeds_list)
     logger.info(f"outputs:{outputs} type:{type(outputs)}")
@@ -150,7 +150,7 @@ def infer_multidevices_iteration():
     shape = session.get_inputs()[0].shape
     ndata = np.full(shape, 1).astype(np.float32)
     outputs = session.infer_iteration([ndata, ndata], in_out_list, iteration_times)
-    session.free_device()
+    session.free_resource()
     device_feeds = {0:[[ndata, ndata],[ndata, ndata]]}
     outputs = multi_session.infer_iteration(device_feeds, in_out_list, iteration_times)
     logger.info(f"outputs:{outputs} type:{type(outputs)}")

@@ -57,7 +57,7 @@ class TestCommonClass:
         ndata = np.frombuffer(barray, dtype=np.uint8)
         ndata.tofile(file_path)
         return file_path
-    
+
     @staticmethod
     def prepare_dir(target_folder_path):
         if os.path.exists(target_folder_path):
@@ -75,7 +75,7 @@ class TestCommonClass:
         if not os.path.exists(log_path) and not os.path.isfile(log_path):
             return 0
 
-        cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
+        cmd = "cat {} |grep 'model aclExec cost :' | wc -l".format(log_path)
         try:
             outval = os.popen(cmd).read()
         except Exception as e:
