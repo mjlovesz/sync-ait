@@ -1,8 +1,10 @@
 #include "acltransformer/utils/tensor_util.h"
 
+#include <iostream>
 #include <fstream>
 #include <string>
 #include <unordered_set>
+#include <thread>
 #include <unistd.h>
 
 #include <asdops/utils/binfile/binfile.h>
@@ -40,10 +42,9 @@ std::unordered_set<std::string> &findTable() {
 
 void AclTransformer::TensorUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath) {
     std::unordered_set<std::string> &copyTable = findTable();
-    pid_t processID = getpid();
-    std::string pID = std::to_string(processID);
-    std::string basePath = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH")) + "/tensors/" + pID + "/" +
-                           std::string(std::getenv("AIT_CMP_TASK_ID")) +"/";
+    std::ostringstream ss;
+    ss << std::this_thread::get_id();
+    std::string basePath = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH")) + "/tensors/thread_" + ss.str();
     size_t pos = filePath.find(basePath);
     std::string result = filePath;
     if (pos != std::string::npos) {

@@ -24,7 +24,8 @@ from msquickcmp.pta_acl_cmp.constant import ATTR_END, ATTR_OBJECT_LENGTH, ATTR_O
     ATTR_OBJECT_PREFIX, PTA, ACL, DATA_ID, PTA_DATA_PATH, ACL_DATA_PATH, PTA_DTYPE, PTA_SHAPE, \
     PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE, PTA_STACK, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, \
     ACL_MIN_VALUE, ACL_MEAN_VALUE, ACL_STACK, CMP_FLAG, CMP_FAIL_REASON, CSV_HEADER, \
-    MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE
+    MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE, \
+    GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE
 
 
 CSV_HEADER.extend(list(cmp_alg_map.keys()))
@@ -32,72 +33,6 @@ CSV_HEADER.append(CMP_FAIL_REASON)
 
 token_counts = 0
 
-
-def csv_compare(csv_path_1, csv_path_2, output_path):
-    # 读取两个CSV文件
-    df1 = pd.read_csv(csv_path_1)
-    df2 = pd.read_csv(csv_path_2)
-
-    # 合并两个DataFrame，根据data_id列进行合并，使用outer方式保留所有数据
-    merged_df = df1.merge(df2, on='data_id', how='outer')
-    # 比对开始
-    compare_tensor(merged_df)
-    # 将合并后的数据保存到输出文件
-    merged_df.to_csv(output_path, index=False)
-
-
-def dump_data(data_src, data_id, data_val, tensor_path):
-
-    if data_val is None and tensor_path is None:
-        return
-
-    if data_val is not None and not isinstance(data_val, torch.Tensor):
-        return
-
-    task_id = os.getpid()
-    ait_task_dir = os.getenv(AIT_CMP_TASK_DIR)
-    ait_task_dir = ait_task_dir or ""
-    ait_cmp_task_pid = os.getenv(AIT_CMP_TASK_PID)
-    ait_cmp_task_pid = ait_cmp_task_pid or ""
-
-    csv_result_dir = os.path.join(ait_task_dir, ait_cmp_task_pid)
-    csv_path = os.path.join(csv_result_dir, task_id + "_cmp_result.csv")
-
-    pid = os.getpid()
-    dump_data_dir = f"{pid}_cmp_dump_data"
-
-    if not os.path.exists(dump_data_dir):
-        os.mkdir(dump_data_dir)
-
-    if not os.path.exists(csv_path):
-        data = pd.DataFrame(columns=CSV_HEADER, index=[0])
-    else:
-        data = pd.read_csv(csv_path, header=0)
-
-    if data_src == "pta":
-        pta_data_dir = os.path.join(".", dump_data_dir, "pta_tensor")
-        if not os.path.exists(pta_data_dir):
-            os.makedirs(pta_data_dir)
-
-        pta_data_path = os.path.join(pta_data_dir, data_id + '_tensor.bin')
-        data = save_pta_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=pta_data_path)
-
-    elif data_src == "acl":
-        acl_data_dir = os.path.join(".", dump_data_dir, "acl_tensor")
-        if not os.path.exists(acl_data_dir):
-            os.makedirs(acl_data_dir)
-
-        if data_val is not None:
-            data_path = os.path.join(acl_data_dir, data_id + '_tensor.bin')
-            data = save_acl_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=data_path)
-        elif tensor_path:  # low-level
-            write_acl_map_file(tensor_path)
-            pid = os.getpid()
-            tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
-                                       str(pid), task_id, tensor_path)
-            data = save_acl_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
-
-    data.to_csv(csv_path, index=False)
 
 def set_task_id():
     # 通过ait拉起精度比对任务，接口才会生效
@@ -176,7 +111,7 @@ def save_acl_data(csv_data, data_id, data_val, data_path):
         csv_data[ACL_SHAPE][index] = str(data_val.shape)
 
         # 对应的pta数据存在时，触发比对
-        csv_data = compare_tensor(csv_data=csv_data)
+        # csv_data = compare_tensor(csv_data=csv_data)
 
     return csv_data
 
@@ -206,8 +141,8 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
 
     task_id = os.getenv(MODEL_INFER_TASK_ID)
     task_id = task_id or ""
-    ait_task_dir = os.path.join(".", task_id)
-
+    ait_task_dir = os.getenv(AIT_CMP_TASK_DIR)
+    ait_task_dir = ait_task_dir or ""
     ait_cmp_task_pid = os.getenv(AIT_CMP_TASK_PID)
     ait_cmp_task_pid = ait_cmp_task_pid or ""
 
@@ -418,3 +353,157 @@ def read_acl_transformer_data(file_path):
         return data.cpu().numpy()
 
     raise ValueError("Tensor file path must be end with .bin.")
+
+
+def dump_data(data_src, data_id, data_val, tensor_path, token_id):
+    if data_val is None and tensor_path is None:
+        return
+
+    if data_val is not None and not isinstance(data_val, torch.Tensor):
+        return
+
+    # 获取csv路径
+    pid = os.getpid()
+    csv_result_dir = os.path.join("./", str(pid))
+    if not os.path.exists(csv_result_dir):
+        os.mkdir(csv_result_dir)
+
+    csv_path = os.path.join(csv_result_dir, f"{pid}_cmp_result.csv")
+
+
+    dump_data_dir = f"{pid}_cmp_dump_data"
+    # 如果没有dump数据文件夹新建一个
+    if not os.path.exists(dump_data_dir):
+        os.mkdir(dump_data_dir)
+
+    # 如果没有csv新建一个
+    if not os.path.exists(csv_path):
+        data = pd.DataFrame(columns=CSV_HEADER, index=[0])
+    else:
+        data = pd.read_csv(csv_path, header=0)
+    if data_src == "golden":
+        golden_data_dir = os.path.join(".", dump_data_dir, "golden_tensor")
+        if not os.path.exists(golden_data_dir):
+            os.makedirs(golden_data_dir)
+        if data_val is not None:
+            golden_data_path = os.path.join(golden_data_dir, data_id + '_tensor.bin')
+            data = save_golden_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=golden_data_path)
+        elif tensor_path:  # low-level
+            token_tensor_path = os.path.join(token_id, tensor_path)
+            write_acl_map_file(token_tensor_path)
+            tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
+                                       f"thread_{str(pid)}", token_id, tensor_path)
+            data = save_golden_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
+    elif data_src == "acl":
+        acl_data_dir = os.path.join(".", dump_data_dir, "acl_tensor")
+        if not os.path.exists(acl_data_dir):
+            os.makedirs(acl_data_dir)
+        if data_val is not None:
+            data_path = os.path.join(acl_data_dir, data_id + '_tensor.bin')
+            data = save_acl_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=data_path)
+        elif tensor_path:  # low-level
+            write_acl_map_file(tensor_path)
+            pid = os.getpid()
+            tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
+                                       f"thread_{str(pid)}", token_id, tensor_path)
+            data = save_acl_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
+    data.to_csv(csv_path, index=False)
+
+
+def save_golden_data(csv_data, data_id, data_val, data_path):
+    if data_val is None:
+        return csv_data
+
+    data_val = data_val.cpu().numpy()
+    mapping_data = csv_data[csv_data[DATA_ID] == data_id]
+    if mapping_data.empty:
+        data_val.tofile(data_path)
+        row_data = pd.DataFrame({
+            DATA_ID: [data_id],
+            GOLDEN_DATA_PATH: [data_path],
+            GOLDEN_DTYPE: [str(data_val.dtype)],
+            GOLDEN_SHAPE: [str(data_val.shape)],
+            CMP_FLAG: [False]
+        })
+        csv_data = pd.concat([csv_data, row_data], ignore_index=True)
+    else:
+        index = mapping_data.index.values[0]
+        data_val.tofile(data_path)
+        csv_data[GOLDEN_DATA_PATH][index] = data_path
+        csv_data[GOLDEN_DTYPE][index] = str(data_val.dtype)
+        csv_data[GOLDEN_SHAPE][index] = str(data_val.shape)
+
+    return csv_data
+
+
+def save_golden_dump_tensor(csv_data, data_id, tensor_path):
+    mapping_data = csv_data[csv_data[DATA_ID] == data_id]
+    if mapping_data.empty:
+        row_data = pd.DataFrame({DATA_ID: [data_id], GOLDEN_DATA_PATH: [tensor_path], CMP_FLAG: [False]})
+        csv_data = pd.concat([csv_data, row_data], ignore_index=True)
+    else:
+        index = mapping_data.index.values[0]
+        csv_data[GOLDEN_DATA_PATH][index] = tensor_path
+
+    return csv_data
+
+
+def compare_all(csv_data:pd.DataFrame):
+    csv_data.fillna(value="", inplace=True)
+    data = csv_data[csv_data[CMP_FLAG] == False]
+    if data.empty:
+        return csv_data
+
+    for idx in data.index:
+        golden_data_path, golden_dtype, golden_shape = _get_data_info(data, idx, data_src="golden")
+        acl_data_path, acl_dtype, acl_shape = _get_data_info(data, idx, data_src="acl")
+
+        if os.path.exists(golden_data_path):
+            if golden_dtype and golden_shape:
+                golden_data = np.fromfile(golden_data_path, golden_dtype).reshape(golden_shape)
+            else:
+                golden_data = read_acl_transformer_data(golden_data_path)
+        else:
+            csv_data[CMP_FAIL_REASON][idx] = "golden_data_path is not exist."
+            csv_data[CMP_FLAG][idx] = True
+            continue
+
+        if os.path.exists(acl_data_path):
+            if acl_dtype and acl_shape:
+                acl_data = np.fromfile(acl_data_path, acl_dtype).reshape(acl_shape)
+            else:
+                acl_data = read_acl_transformer_data(acl_data_path)
+        else:
+            csv_data[CMP_FAIL_REASON][idx] = "acl_data_path is not exist."
+            csv_data[CMP_FLAG][idx] = True
+            continue
+
+        golden_data_fp32 = golden_data.reshape(-1).astype("float32")
+        acl_data_fp32 = acl_data.reshape(-1).astype("float32")
+
+        csv_data[PTA_MAX_VALUE][idx] = np.max(golden_data_fp32)
+        csv_data[PTA_MIN_VALUE][idx] = np.min(golden_data_fp32)
+        csv_data[PTA_MEAN_VALUE][idx] = np.mean(golden_data_fp32)
+
+        csv_data[ACL_MAX_VALUE][idx] = np.max(acl_data_fp32)
+        csv_data[ACL_MIN_VALUE][idx] = np.min(acl_data_fp32)
+        csv_data[ACL_MEAN_VALUE][idx] = np.mean(acl_data_fp32)
+
+        for name, cmp_func in cmp_alg_map.items():
+            result = cmp_func(golden_data_fp32, acl_data_fp32)
+            csv_data[name][idx] = result
+            csv_data[CMP_FLAG][idx] = True
+
+    return csv_data
+def csv_compare(csv_path_1, csv_path_2, output_path):
+    # 读取两个CSV文件
+    df1 = pd.read_csv(csv_path_1)
+    df2 = pd.read_csv(csv_path_2)
+
+    # 合并两个DataFrame，根据data_id列进行合并，使用outer方式保留所有数据
+    merged_df = df1.merge(df2, on='data_id', how='outer')
+    # 比对开始
+    compare_all(merged_df)
+
+    # 将合并后的数据保存到输出文件
+    merged_df.to_csv(output_path, index=False)
