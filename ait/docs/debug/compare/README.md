@@ -133,3 +133,7 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
 | [09_single_op](../../../examples/cli/debug/compare/09_single_op)    | 单算子比对模式 |
 | [10_fusion_switch_file](../../../examples/cli/debug/compare/10_fusion_switch_file)    | 关闭融合规则.om模型和原始.om模型精度比对 |
 | [11_pta_acl_cmp](../../../examples/cli/debug/compare/11_pta_acl_cmp) | 大模型加速库在线推理精度比对 |
+
+### 常见问题FAQ
+
+* [compare常见问题](./FAQ.md)

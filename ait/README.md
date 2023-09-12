@@ -70,6 +70,10 @@ ait debug compare -h
 * [AIT convert 快速入门指南](components/convert/README.md)
 * [AIT profile 快速入门指南](docs/profile/README.md)
 
+### 常见问题FAQ
+
+* [AIT使用以及安装常见问题](https://gitee.com/ascend/ait/wikis/Home)
+
 ## 许可证
 
 [Apache License 2.0](LICENSE)
