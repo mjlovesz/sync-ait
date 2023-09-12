@@ -25,12 +25,13 @@ from msquickcmp.pta_acl_cmp.constant import ATTR_END, ATTR_OBJECT_LENGTH, ATTR_O
     PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE, PTA_STACK, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, \
     ACL_MIN_VALUE, ACL_MEAN_VALUE, ACL_STACK, CMP_FLAG, CMP_FAIL_REASON, CSV_HEADER, \
     MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE, \
-    GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE
+    GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, CSV_GOLDEN_HEADER
 
 
 CSV_HEADER.extend(list(cmp_alg_map.keys()))
 CSV_HEADER.append(CMP_FAIL_REASON)
-
+CSV_GOLDEN_HEADER.extend(list(cmp_alg_map.keys()))
+CSV_GOLDEN_HEADER.append(CMP_FAIL_REASON)
 token_counts = 0
 
 
@@ -188,6 +189,7 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
 
 def write_acl_map_file(tensor_path):
     ait_cmp_task_pid = os.getenv(AIT_CMP_TASK_PID)
+    ait_cmp_task_pid = ait_cmp_task_pid or ""
     acl_map_file_dir = os.path.join('/tmp', ait_cmp_task_pid)
     acl_map_file_path = os.path.join(acl_map_file_dir, ACL_DATA_MAP_FILE)
     if not os.path.exists(acl_map_file_dir):
@@ -355,7 +357,7 @@ def read_acl_transformer_data(file_path):
     raise ValueError("Tensor file path must be end with .bin.")
 
 
-def dump_data(data_src, data_id, data_val, tensor_path, token_id):
+def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
     if data_val is None and tensor_path is None:
         return
 
@@ -378,34 +380,34 @@ def dump_data(data_src, data_id, data_val, tensor_path, token_id):
 
     # 如果没有csv新建一个
     if not os.path.exists(csv_path):
-        data = pd.DataFrame(columns=CSV_HEADER, index=[0])
+        data = pd.DataFrame(columns=CSV_GOLDEN_HEADER, index=[0])
     else:
         data = pd.read_csv(csv_path, header=0)
     if data_src == "golden":
-        golden_data_dir = os.path.join(".", dump_data_dir, "golden_tensor")
+        golden_data_dir = os.path.join(".", dump_data_dir, "golden_tensor", str(token_id))
         if not os.path.exists(golden_data_dir):
             os.makedirs(golden_data_dir)
         if data_val is not None:
-            golden_data_path = os.path.join(golden_data_dir, data_id + '_tensor.bin')
+            golden_data_path = os.path.join(golden_data_dir, f'{data_id}_tensor.bin')
             data = save_golden_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=golden_data_path)
         elif tensor_path:  # low-level
-            token_tensor_path = os.path.join(token_id, tensor_path)
+            token_tensor_path = os.path.join(str(token_id), tensor_path)
             write_acl_map_file(token_tensor_path)
             tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
-                                       f"thread_{str(pid)}", token_id, tensor_path)
+                                       f"thread_{str(pid)}", str(token_id), tensor_path)
             data = save_golden_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
     elif data_src == "acl":
-        acl_data_dir = os.path.join(".", dump_data_dir, "acl_tensor")
+        acl_data_dir = os.path.join(".", dump_data_dir, "acl_tensor", str(token_id))
         if not os.path.exists(acl_data_dir):
             os.makedirs(acl_data_dir)
         if data_val is not None:
-            data_path = os.path.join(acl_data_dir, data_id + '_tensor.bin')
+            data_path = os.path.join(acl_data_dir, f'{data_id}_tensor.bin')
             data = save_acl_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=data_path)
         elif tensor_path:  # low-level
-            write_acl_map_file(tensor_path)
-            pid = os.getpid()
+            token_tensor_path = os.path.join(str(token_id), tensor_path)
+            write_acl_map_file(token_tensor_path)
             tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
-                                       f"thread_{str(pid)}", token_id, tensor_path)
+                                       f"thread_{str(pid)}", str(token_id), tensor_path)
             data = save_acl_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
     data.to_csv(csv_path, index=False)
 
@@ -501,7 +503,8 @@ def csv_compare(csv_path_1, csv_path_2, output_path):
     df2 = pd.read_csv(csv_path_2)
 
     # 合并两个DataFrame，根据data_id列进行合并，使用outer方式保留所有数据
-    merged_df = df1.merge(df2, on='data_id', how='outer')
+    merged_df = df1.merge(df2, on='data_id', how='outer', suffixes=('', '_y'))
+    merged_df = merged_df[[col for col in merged_df.columns if not col.endswith('_y')]]
     # 比对开始
     compare_all(merged_df)
 
