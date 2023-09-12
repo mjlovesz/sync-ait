@@ -25,7 +25,8 @@ from msquickcmp.pta_acl_cmp.constant import ATTR_END, ATTR_OBJECT_LENGTH, ATTR_O
     PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE, PTA_STACK, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, \
     ACL_MIN_VALUE, ACL_MEAN_VALUE, ACL_STACK, CMP_FLAG, CMP_FAIL_REASON, CSV_HEADER, \
     MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE, \
-    GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, CSV_GOLDEN_HEADER
+    GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, CSV_GOLDEN_HEADER, GOLDEN_MAX_VALUE, GOLDEN_MIN_VALUE, \
+    GOLDEN_MEAN_VALUE
 
 
 CSV_HEADER.extend(list(cmp_alg_map.keys()))
@@ -260,6 +261,11 @@ def _get_data_info(data, idx, data_src):
         path_key = PTA_DATA_PATH
         dtype_key = PTA_DTYPE
         shape_key = PTA_SHAPE
+    elif data_src == "golden":
+        path_key = GOLDEN_DATA_PATH
+        dtype_key = GOLDEN_DTYPE
+        shape_key = GOLDEN_SHAPE
+
     else:
         path_key = ACL_DATA_PATH
         dtype_key = ACL_DTYPE
@@ -417,6 +423,7 @@ def save_golden_data(csv_data, data_id, data_val, data_path):
         return csv_data
 
     data_val = data_val.cpu().numpy()
+    data_path = os.path.realpath(data_path)
     mapping_data = csv_data[csv_data[DATA_ID] == data_id]
     if mapping_data.empty:
         data_val.tofile(data_path)
@@ -483,15 +490,19 @@ def compare_all(csv_data:pd.DataFrame):
         golden_data_fp32 = golden_data.reshape(-1).astype("float32")
         acl_data_fp32 = acl_data.reshape(-1).astype("float32")
 
-        csv_data[PTA_MAX_VALUE][idx] = np.max(golden_data_fp32)
-        csv_data[PTA_MIN_VALUE][idx] = np.min(golden_data_fp32)
-        csv_data[PTA_MEAN_VALUE][idx] = np.mean(golden_data_fp32)
+        csv_data[GOLDEN_MAX_VALUE][idx] = np.max(golden_data_fp32)
+        csv_data[GOLDEN_MIN_VALUE][idx] = np.min(golden_data_fp32)
+        csv_data[GOLDEN_MEAN_VALUE][idx] = np.mean(golden_data_fp32)
 
         csv_data[ACL_MAX_VALUE][idx] = np.max(acl_data_fp32)
         csv_data[ACL_MIN_VALUE][idx] = np.min(acl_data_fp32)
         csv_data[ACL_MEAN_VALUE][idx] = np.mean(acl_data_fp32)
 
         for name, cmp_func in cmp_alg_map.items():
+            if len(golden_data_fp32) != len(acl_data_fp32):
+                csv_data[CMP_FAIL_REASON][idx] = "data shape doesn't match."
+                csv_data[CMP_FLAG][idx] = True
+                continue
             result = cmp_func(golden_data_fp32, acl_data_fp32)
             csv_data[name][idx] = result
             csv_data[CMP_FLAG][idx] = True
@@ -502,9 +513,9 @@ def csv_compare(csv_path_1, csv_path_2, output_path):
     df1 = pd.read_csv(csv_path_1)
     df2 = pd.read_csv(csv_path_2)
 
-    # 合并两个DataFrame，根据data_id列进行合并，使用outer方式保留所有数据
-    merged_df = df1.merge(df2, on='data_id', how='outer', suffixes=('', '_y'))
-    merged_df = merged_df[[col for col in merged_df.columns if not col.endswith('_y')]]
+    # 合并两个DataFrame，根据data_id列进行合并
+    merged_df = df1.set_index('data_id').combine_first(df2.set_index('data_id')).reset_index()
+
     # 比对开始
     compare_all(merged_df)
 
