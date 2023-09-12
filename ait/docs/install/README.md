@@ -47,6 +47,7 @@ ait推理工具的安装包括**ait包**和**依赖的组件包**的安装，其
 
 ```shell
 git clone https://gitee.com/ascend/ait.git
+# 更新项目代码使用 git pull origin
 cd ait/ait
 
 # 1. 添加执行权限
