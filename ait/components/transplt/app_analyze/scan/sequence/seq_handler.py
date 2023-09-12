@@ -228,20 +228,20 @@ class SeqHandler:
 
         def _group(seq, lib_seqs, sim):
             for lib_seq in lib_seqs:
-                for src_seq in lib_seq.src_seqs:
-                    val, flag = _calc_dist(seq, src_seq)
-                    if val < 0:
-                        continue
+                src_seq = lib_seq.src_seq
+                val, flag = _calc_dist(seq, src_seq)
+                if val < 0:
+                    continue
 
-                    if flag:
-                        in_lib_seqs[lib_seq] = (val, src_seq)
-                    else:
-                        if val == sim:
-                            cs_lib_seqs[lib_seq] = (sim, src_seq)
-                        elif val > sim:
-                            sim = val
-                            cs_lib_seqs.clear()
-                            cs_lib_seqs[lib_seq] = (sim, src_seq)
+                if flag:
+                    in_lib_seqs[lib_seq] = (val, src_seq)
+                else:
+                    if val == sim:
+                        cs_lib_seqs[lib_seq] = (sim, src_seq)
+                    elif val > sim:
+                        sim = val
+                        cs_lib_seqs.clear()
+                        cs_lib_seqs[lib_seq] = (sim, src_seq)
             return sim
 
         def _sort(usr_seq, cs_seqs, in_seqs):

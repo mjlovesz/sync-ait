@@ -15,6 +15,7 @@ import logging
 import re
 import os
 import time
+from copy import deepcopy
 
 from clang.cindex import Index, CursorKind, TranslationUnit, Config
 
@@ -389,7 +390,7 @@ class Parser:
             IOUtil.json_safe_dump(info, f'temp/{dump}.json')
             logger.debug(f'Ast saved in：temp/{dump}.json')
 
-        return RESULTS
+        return deepcopy(RESULTS)
 
 
 if __name__ == '__main__':

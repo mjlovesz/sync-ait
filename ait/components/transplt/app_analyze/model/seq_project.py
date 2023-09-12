@@ -38,6 +38,11 @@ class SeqProject(Project):
         for s_type in self.inputs.scanner_type:
             self.scanners.append(scanner_factory.get_scanner(s_type))
 
+    def register_reporter_format(self, fmt_dict):
+        for reporter in self.reporters:
+            name = type(reporter).__name__
+            reporter.set_format(fmt_dict.get(name, None))
+
     def scan(self):
         """
         调用定义的所有扫描器的scan函数进行扫描任务，核心并行扫描处理框架
@@ -72,7 +77,9 @@ class SeqProject(Project):
             advisor = SeqAdvisor(cluster_result, get_idx_tbl())
             rd_rst = advisor.recommend()
             self.report_results.update(rd_rst)
+
             self.dump()
+            self.register_reporter_format({'CsvReport': advisor.format_fn})
             self.generate_report(True)
 
         eval_time = time.time() - start_time
