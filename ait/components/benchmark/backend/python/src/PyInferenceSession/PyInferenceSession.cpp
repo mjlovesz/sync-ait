@@ -457,50 +457,45 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
                                        std::vector<std::shared_ptr<PyInferenceSession>>& extraSession)
 {
     SetContext();
-    // check extra session
     if (!CheckExtraSession(contextIndex_, extraSession)) {
         ERROR_LOG("InferPipeline failed: cannot have session in same context");
         return;
     }
-
     size_t numThreads = extraSession.size() + 1;
     std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> h2dQueues(numThreads);
     std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> computeQueues(numThreads);
     std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> d2hQueues(numThreads);
-    ConcurrentQueue<std::shared_ptr<Feeds>> saveQueue;
-
+    std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> saveQueues(numThreads);
+    std::vector<std::thread> prepareThreadGroup{};
     std::vector<std::thread> h2dThreadGroup{};
     std::vector<std::thread> computeThreadGroup{};
     std::vector<std::thread> d2hThreadGroup{};
-    h2dThreadGroup.reserve(numThreads);
-    computeThreadGroup.reserve(numThreads);
-    d2hThreadGroup.reserve(numThreads);
+    std::vector<std::thread> saveThreadGroup{};
     std::vector<InferSumaryInfo> summaryInfoGroup(numThreads - 1);
 
-    // necessary (h2d + compute + d2h) threads
-    h2dThreadGroup.emplace_back(FuncH2d, std::ref(h2dQueues[0]), std::ref(computeQueues[0]), this);
-    computeThreadGroup.emplace_back(FuncCompute, std::ref(computeQueues[0]), std::ref(d2hQueues[0]), this, nullptr);
-    d2hThreadGroup.emplace_back(FuncD2h, std::ref(d2hQueues[0]), std::ref(saveQueue), this);
-
-    // extra (h2d + compute + d2h) threads
-    for (size_t i = 1; i < numThreads; i++) {
-        h2dThreadGroup.emplace_back(FuncH2d, std::ref(h2dQueues[i]), std::ref(computeQueues[i]),
-                                    extraSession[i-1].get());
+    for (size_t i = 0; i < numThreads; i++) {
+        Base::PyInferenceSession* session = this;
+        InferSumaryInfo* inferSummary = nullptr;
+        if (i != 0) {
+            session = extraSession[i-1].get();
+            inferSummary = &(summaryInfoGroup[i-1]);
+        }
+        prepareThreadGroup.emplace_back(FuncPrepare, std::ref(h2dQueues[i]), session, std::ref(infilesList),
+            inferOption, numThreads, i);
+        h2dThreadGroup.emplace_back(FuncH2d, std::ref(h2dQueues[i]), std::ref(computeQueues[i]), session);
         computeThreadGroup.emplace_back(FuncCompute, std::ref(computeQueues[i]), std::ref(d2hQueues[i]),
-                                        extraSession[i-1].get(), &(summaryInfoGroup[i-1]));
-        d2hThreadGroup.emplace_back(FuncD2h, std::ref(d2hQueues[i]), std::ref(saveQueue),
-                                    extraSession[i-1].get());
+            session, inferSummary);
+        d2hThreadGroup.emplace_back(FuncD2h, std::ref(d2hQueues[i]), std::ref(saveQueues[i]), session);
+        saveThreadGroup.emplace_back(FuncSave, std::ref(saveQueues[i]), inferOption);
     }
-    std::thread saveThread(FuncSave, std::ref(saveQueue), inferOption, numThreads);
-    FuncPrepare(h2dQueues, this, infilesList, inferOption, numThreads);
 
     for (size_t i = 0; i < numThreads; i++) {
+        prepareThreadGroup[i].join();
         h2dThreadGroup[i].join();
         computeThreadGroup[i].join();
         d2hThreadGroup[i].join();
+        saveThreadGroup[i].join();
     }
-    saveThread.join();
-
     for (auto &summaryInfo : summaryInfoGroup) {
         MergeSummaryInfo(summaryInfo);
     }

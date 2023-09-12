@@ -80,12 +80,11 @@ namespace Base {
         }
     }
 
-    void FuncPrepare(std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> &h2dQueues,
+    void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
                      Base::PyInferenceSession* session,
-                     std::vector<std::vector<std::string>> &infilesList,
-                     std::shared_ptr<InferOptions> inferOption, size_t numThreads)
+                     const std::vector<std::vector<std::string>> &infilesList,
+                     std::shared_ptr<InferOptions> inferOption, size_t numThreads, size_t startIndex)
     {
-        size_t count = 0;
         std::vector<std::string> inputNames {};
         std::vector<std::string> outputNames {};
         for (const auto &desc: session->GetInputs()) {
@@ -94,7 +93,9 @@ namespace Base {
         for (const auto &desc: session->GetOutputs()) {
             outputNames.emplace_back(desc.name);
         }
-        for (auto &files : infilesList) {
+        size_t n = infilesList.size();
+        for (size_t i = startIndex; i < n; i += numThreads) {
+            auto &files = infilesList[i];
             auto feeds = std::make_shared<Feeds>();
 
             feeds->outputNames = std::make_shared<std::vector<std::string>>(outputNames);
@@ -109,13 +110,9 @@ namespace Base {
             feeds->arrayPtr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
             PrepareInputData(files, session, feeds, inferOption->autoDymShape, inferOption->autoDymDims,
                              inferOption->pureInferMode, inputNames);
-            auto index = count % numThreads;
-            h2dQueues[index].push(feeds);
-            count++;
+            h2dQueue.push(feeds);
         }
-        for (size_t i = 0; i < numThreads; i++) {
-            h2dQueues[i].push(nullptr);
-        }
+        h2dQueue.push(nullptr);
     }
 
     void FuncPrepareBaseTensor(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
@@ -258,17 +255,11 @@ namespace Base {
         }
     }
 
-    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, std::shared_ptr<InferOptions> inferOption,
-                  const size_t numThreads)
+    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, std::shared_ptr<InferOptions> inferOption)
     {
-        size_t count = 1;
         while (true) {
             auto item = saveQueue.pop();
             if (!item) {
-                if (count < numThreads) {
-                    count++;
-                    continue;
-                }
                 break;
             }
             for (auto &mem : *(item->memory)) {

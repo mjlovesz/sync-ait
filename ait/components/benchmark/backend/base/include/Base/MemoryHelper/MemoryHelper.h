@@ -17,6 +17,7 @@
 #ifndef MEMORY_HELPER_H
 #define MEMORY_HELPER_H
 #include <vector>
+#include <mutex>
 #include "Base/ErrorCode/ErrorCode.h"
 
 namespace Base {
@@ -74,6 +75,7 @@ struct MemorySummary {
         H2DTimeList.clear();
         D2HTimeList.clear();
     }
+    std::mutex mtx_;
 };
 
 struct MemorySummary* GetMemorySummaryPtr();

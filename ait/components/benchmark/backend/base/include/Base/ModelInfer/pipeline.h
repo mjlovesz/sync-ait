@@ -87,10 +87,10 @@ namespace Base {
     void PrepareInputData(std::vector<std::string> &files, Base::PyInferenceSession* session,
         std::shared_ptr<Feeds> &feeds, bool autoDymShape,
         bool autoDymDims, const bool pure_infer, std::vector<std::string> &inputNames);
-    void FuncPrepare(std::vector<ConcurrentQueue<std::shared_ptr<Feeds>>> &h2dQueues,
+    void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
                      Base::PyInferenceSession* session,
-                     std::vector<std::vector<std::string>> &infilesList,
-                     std::shared_ptr<InferOptions> inferOption, size_t numThreads);
+                     const std::vector<std::vector<std::string>> &infilesList,
+                     std::shared_ptr<InferOptions> inferOption, size_t numThreads, size_t startIndex);
 
     void FuncPrepareBaseTensor(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
                                Base::PyInferenceSession* session,
@@ -111,8 +111,7 @@ namespace Base {
                  ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue,
                  Base::PyInferenceSession* session);
 
-    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, std::shared_ptr<InferOptions> inferOption,
-                  const size_t numThreads);
+    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, std::shared_ptr<InferOptions> inferOption);
 
     void FuncSaveTensorBase(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId,
                             std::vector<std::vector<TensorBase>> &result);
