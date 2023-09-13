@@ -43,6 +43,22 @@ ait推理工具的安装包括**ait包**和**依赖的组件包**的安装，其
     > * 普通用户下`ACTUAL_CANN_PATH`一般为`$HOME`，root用户下一般为`/usr/local`
     
 
+- 如果安装过程中，出现以下提示：
+
+  ```shell
+  WARNING: env ASCEND_HOME is not set. aie command cannot be used.
+  ```
+
+  如果不使用ait convert aie命令，忽略此告警。
+
+- 如果安装过程中，出现以下提示：
+
+  ```shell
+  WARNING: env ACLTRANSFORMER_HOME_PATH is not set. Dump on demand package cannot be used.
+  ```
+
+  如果不使用大模型精度比对功能，忽略此告警。
+
 #### 源代码一键式安装
 
 ```shell
