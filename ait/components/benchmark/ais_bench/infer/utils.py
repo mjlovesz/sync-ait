@@ -39,6 +39,19 @@ MSACCUCMP_FILE_PATH =  "tools/operator_cmp/compare/msaccucmp.py"
 CANN_PATH = "/usr/local/Ascend/ascend-toolkit/latest"
 
 
+def file_user_correct_check(file_path):
+    file_stat = os.stat(file_path)
+    current_user_id = os.getuid()
+    file_owner = os.getpwuid(file_stat.st_uid).pw_name
+    file_group = os.getgrgid(file_stat.st_gid).gr_name
+    user_name = os.getpwuid(current_user_id).pw_name
+    group_name = os.getgrgid(current_user_id).gr_name
+    if file_owner == user_name and file_group == group_name:
+        return True
+    else:
+        return False
+
+
 # Split a List Into Even Chunks of N Elements
 def list_split(list_a, n, padding_file):
     for x in range(0, len(list_a), n):

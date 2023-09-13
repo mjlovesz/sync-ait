@@ -44,7 +44,7 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
 from ais_bench.infer.summary import summary
 from ais_bench.infer.miscellaneous import (dymshape_range_run, get_acl_json_path, version_check,
                                            get_batchsize, ACL_JSON_CMD_LIST)
-from ais_bench.infer.utils import (get_file_content, get_file_datasize,
+from ais_bench.infer.utils import (get_file_content, get_file_datasize, file_user_correct_check,
                                    get_fileslist_from_dir, list_split, list_share, logger,
                                    save_data_to_files, create_fake_file_name,
                                    create_tmp_acl_json, move_subdir, convert_helper)
@@ -655,6 +655,8 @@ def acl_json_base_check(args):
         return args
     json_path = args.acl_json_path
     max_json_size = 8192 # 8KB 30 * 255 byte左右
+    if os.path.islink(json_path):
+        raise Exception(f"json_path:{json_path} is a symbolic link, considering security, not supported")
     if os.path.splitext(json_path)[1] != ".json":
         logger.error(f"acl_json_path:{json_path} is not a .json file")
         raise TypeError(f"acl_json_path:{json_path} is not a .json file")
@@ -662,6 +664,8 @@ def acl_json_base_check(args):
         logger.error(f"acl_json_path:{json_path} not exsit")
         raise FileExistsError(f"acl_json_path:{json_path} not exist")
     json_size = os.path.getsize(json_path)
+    if not file_user_correct_check(json_path):
+        raise Exception(f"current user isn't json_file:{json_path}'s owner and ownergroup|")
     if json_size > max_json_size:
         logger.error(f"json_file_size:{json_size} byte out of max limit {max_json_size} byte")
         raise MemoryError(f"json_file_size:{json_size} byte out of max limit")
@@ -678,6 +682,27 @@ def acl_json_base_check(args):
     return args
 
 
+def config_check(config_path):
+    if not config_path:
+        return
+    max_config_size = 12800
+    if os.path.islink(config_path):
+        raise Exception(f"aipp_config:{config_path} is a symbolic link, considering security, not supported")
+    if os.path.splitext(config_path)[1] != ".config":
+        logger.error(f"aipp_config:{config_path} is not a .json file")
+        raise TypeError(f"aipp_config:{config_path} is not a .json file")
+    if not os.path.exists(os.path.realpath(config_path)):
+        logger.error(f"aipp_config:{config_path} not exsit")
+        raise FileExistsError(f"aipp_config:{config_path} not exist")
+    config_size = os.path.getsize(config_path)
+    if config_size > max_config_size:
+        logger.error(f"json_file_size:{config_size} byte out of max limit {max_config_size} byte")
+        raise MemoryError(f"json_file_size:{config_size} byte out of max limit")
+    if not file_user_correct_check(config_path):
+        raise Exception(f"current user isn't json_file:{config_path}'s owner and ownergroup|")
+    return
+
+
 def backend_run(args):
     backend_class = BackendFactory.create_backend(args.backend)
     backend = backend_class(args)
@@ -691,6 +716,7 @@ def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
     args = acl_json_base_check(args)
+    config_check(args.aipp_config)
 
     if args.perf:
         backend_run(args)
