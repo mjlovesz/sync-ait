@@ -156,9 +156,9 @@ FOR /F "delims=" %%I IN ("7z.exe") DO (
         SET zip_exists=1
     ) ELSE (
         rem download a new 7zip
-        curl %skip_check_cert% -LJo 7z2301-x64.msi %download_7zip_link%
-        msiexec /a %cwd%\7z2301-x64.msi /qb TARGETDIR=%cwd%\7zip
-        SET zip_loc="%cwd%\7zip\Files\7-Zip\7z.exe"
+        curl %skip_check_cert% -LJo "%TEMP%\7z2301-x64.msi" %download_7zip_link%
+        msiexec /a "%TEMP%\7z2301-x64.msi" /qb TARGETDIR="%TEMP%\7zip"
+        SET zip_loc="%TEMP%\7zip\Files\7-Zip\7z.exe"
         del 7z2301-x64.msi
     )
 )
