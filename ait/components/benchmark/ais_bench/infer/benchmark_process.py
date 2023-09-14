@@ -706,6 +706,8 @@ def config_check(config_path):
 
 def args_exist_path_check(path):
     # check path which should be exist
+    if not path:
+        return True
     if not path_length_check(path):
         return False
     if not path_white_list_check(path):
@@ -721,6 +723,8 @@ def args_exist_path_check(path):
 
 def args_not_exsit_path_check(path):
     # check path which no need to be exist
+    if not path:
+        return True
     if not path_length_check(path):
         return False
     if not path_white_list_check(path):
