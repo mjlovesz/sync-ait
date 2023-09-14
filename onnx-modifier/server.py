@@ -307,6 +307,7 @@ def optimizer_model(modifier, modify_info, opt_tmp_file):
             modifier.reload(onnx.load_model(opt_file, onnx.ModelProto, load_external_data=False))
 
             if opt_tmp_file is not None:
+                opt_file.seek(0)
                 opt_tmp_file.seek(0)
                 opt_tmp_file.truncate()
                 opt_tmp_file.write(opt_file.read())

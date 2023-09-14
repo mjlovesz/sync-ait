@@ -42,6 +42,9 @@ install_clang_on_ubuntu() {
   elif [[ $OS_VERSION == "18.04"* ]]; then
     $SUDO apt-get update
     $SUDO apt-get install libclang-10-dev clang-10 -y
+  elif [[ $OS_VERSION == "16.04"* ]]; then
+    $SUDO apt-get update
+    $SUDO apt-get install libclang-6.0-dev clang-6.0 -y
   fi
 }
 

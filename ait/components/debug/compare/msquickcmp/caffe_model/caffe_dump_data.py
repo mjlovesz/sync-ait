@@ -17,6 +17,7 @@ Function:
 This class is used to generate GUP dump data of the Caffe model.
 """
 import os
+import re
 
 import numpy as np
 
@@ -87,6 +88,11 @@ class CaffeDumpData(DumpData):
         if self.input_data_path:
             self._check_input_data_path(self.input_data_path, input_shapes)
             self.inputs_map = self._read_input_data(self.input_data_path, input_names, input_shapes, input_dtypes)
+        elif os.listdir(self.input_data_save_dir):
+            input_bin_files = os.listdir(self.input_data_save_dir)
+            input_bin_files.sort(key=lambda file: int((re.findall("\\d+", file))[0]))
+            bin_file_path_array = [os.path.join(self.input_data_save_dir, item) for item in input_bin_files]
+            self.inputs_map = self._read_input_data(bin_file_path_array, input_names, input_shapes, input_dtypes)
         else:
             self.inputs_map = self._generate_random_input_data(
                 self.input_data_save_dir, input_names, input_shapes, input_dtypes

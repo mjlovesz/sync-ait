@@ -12,27 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import click
-import pkg_resources
+import argparse
 
-from components.debug import debug_cli_group
-from components.profile import profile_cli
-from components.transplt import transplt_cli
-from components.benchmark import benchmark_cli
-from components.analyze import analyze_cli
-from components.convert import convert_cli
-
-
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+from components.debug import debug_cmd
+from components.profile import profile_cmd
+from components.transplt import transplt_cmd
+from components.benchmark import benchmark_cmd
+from components.analyze import analyze_cmd
+from components.convert import convert_cmd
+from components.parser.parser import register_parser
 
 
-cli = click.Group(context_settings=CONTEXT_SETTINGS,
-                  commands=[debug_cli_group, profile_cli,
-                            analyze_cli, benchmark_cli, 
-                            transplt_cli, convert_cli],
-                  no_args_is_help=True,
-                  help="ait(Ascend Inference Tools), "
-                  "provides one-site debugging and optimization toolkit for inference use Ascend Devices")
+def main():
+    subcommands = [debug_cmd, profile_cmd, transplt_cmd, benchmark_cmd, analyze_cmd, convert_cmd]
+    parser = argparse.ArgumentParser(description="ait(Ascend Inference Tools), provides one-site debugging "
+                                     "and optimization toolkit for inference use Ascend Devices")
+    register_parser(parser, subcommands)
+    parser.set_defaults(print_help=parser.print_help)
+    args = parser.parse_args()
+
+    if hasattr(args, 'handle'):
+        args.handle(args)
+    elif hasattr(args, "print_help"):
+        args.print_help()
 
 if __name__ == "__main__":
-    cli()
+    main()

@@ -15,18 +15,9 @@
 from collections import deque
 from collections import OrderedDict
 import re
-import argparse
 import os
-import sys
-import time
 
 import numpy as np
-import onnxruntime
-
-from auto_optimizer.graph_refactor import Node
-from auto_optimizer import OnnxGraph
-from msquickcmp.atc.atc_utils import AtcUtils
-from msquickcmp.common import utils
 
 
 def calculate_flow(graph, startnode, endnode):

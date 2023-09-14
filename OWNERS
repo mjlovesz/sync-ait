@@ -13,15 +13,16 @@
 # limitations under the License.
 
 approvers:
+- wo-wenjie
 - wodemingzi123
 - xiaolianzi_cl
 - jiangzc86_admin
 reviewers:
+- wo-wenjie
 - wodemingzi123
 - xiaolianzi_cl
 - wu138679
 - mjsz
 - wangguowei33
-- jinfaz
 - binghamhuang
 - jiangzc86_admin

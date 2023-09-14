@@ -51,6 +51,12 @@ PIXEL_MIN_CHN_MAX = 255
 PIXEL_VAR_RECI_CHN_MIN = -65504
 PIXEL_VAR_RECI_CHN_MAX = 65504
 
+TORCH_TENSOR_LIST = ['torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor', 'torch.BFloat16Tensor',
+                     'torch.ByteTensor', 'torch.CharTensor', 'torch.ShortTensor', 'torch.LongTensor',
+                     'torch.BoolTensor', 'torch.IntTensor']
+NP_TYPE_LIST = [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16,
+                np.uint32, np.float16, np.float32, np.float64]
+
 logger = logging.getLogger(__name__)
 
 
@@ -238,56 +244,16 @@ class InferSession:
         elif (tmp_csc_switch == CSC_SWITCH_ON):
             tmp_csc_params = list()
             tmp_csc_params.append(tmp_csc_switch)
-            tmp_csc_params.append(
-                0 if option_list.count('matrix_r0c0') == 0 else cfg.getint('aipp_op', 'matrix_r0c0')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('matrix_r0c1') == 0 else cfg.getint('aipp_op', 'matrix_r0c1')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('matrix_r0c2') == 0 else cfg.getint('aipp_op', 'matrix_r0c2')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('matrix_r1c0') == 0 else cfg.getint('aipp_op', 'matrix_r1c0')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('matrix_r1c1') == 0 else cfg.getint('aipp_op', 'matrix_r1c1')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('matrix_r1c2') == 0 else cfg.getint('aipp_op', 'matrix_r1c2')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('matrix_r2c0') == 0 else cfg.getint('aipp_op', 'matrix_r2c0')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('matrix_r2c1') == 0 else cfg.getint('aipp_op', 'matrix_r2c1')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('matrix_r2c2') == 0 else cfg.getint('aipp_op', 'matrix_r2c2')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('output_bias_0') == 0 else cfg.getint('aipp_op', 'output_bias_0')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('output_bias_1') == 0 else cfg.getint('aipp_op', 'output_bias_1')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('output_bias_2') == 0 else cfg.getint('aipp_op', 'output_bias_2')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('input_bias_0') == 0 else cfg.getint('aipp_op', 'input_bias_0')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('input_bias_1') == 0 else cfg.getint('aipp_op', 'input_bias_1')
-            )
-            tmp_csc_params.append(
-                0 if option_list.count('input_bias_2') == 0 else cfg.getint('aipp_op', 'input_bias_2')
-            )
+            options = ['matrix_r0c0', 'matrix_r0c1', 'matrix_r0c2', 'matrix_r1c0', 'matrix_r1c1', 'matrix_r1c2',
+                       'matrix_r2c0', 'matrix_r2c1', 'matrix_r2c2', 'output_bias_0', 'output_bias_1', 'output_bias_2',
+                       'input_bias_0', 'input_bias_1', 'input_bias_2']
+            for option in options:
+                tmp_csc_params.append(0 if option_list.count(option) == 0 else cfg.getint('aipp_op', option))
 
             range_ok = True
-            for i in range (1, 9):
+            for i in range(1, 9):
                 range_ok = range_ok and (CSC_MATRIX_MIN <= tmp_csc_params[i] <= CSC_MATRIX_MAX)
-            for i in range (10, 15):
+            for i in range(10, 15):
                 range_ok = range_ok and (0 <= tmp_csc_params[i] <= 255)
             if (range_ok is False):
                 logger.error("csc_params in config file out of range, please check it!")
@@ -361,7 +327,7 @@ class InferSession:
             )
 
             range_ok = True
-            for i in range (1, 5):
+            for i in range(1, 5):
                 range_ok = range_ok and (PADDING_SIZE_MIN <= tmp_padding_params[i] <= PADDING_SIZE_MAX)
             if (range_ok is False):
                 logger.error("padding_params in config file out of range, please check it!")
@@ -388,7 +354,7 @@ class InferSession:
         )
 
         range_ok = True
-        for i in range (0, 4):
+        for i in range(0, 4):
             range_ok = range_ok and (PIXEL_MEAN_CHN_MIN <= tmp_mean_params[i] <= PIXEL_MEAN_CHN_MAX)
         if (range_ok is False):
             logger.error("mean_chn_params in config file out of range, please check it!")
@@ -412,7 +378,7 @@ class InferSession:
         )
 
         range_ok = True
-        for i in range (0, 4):
+        for i in range(0, 4):
             range_ok = range_ok and (PIXEL_MIN_CHN_MIN <= tmp_min_params[i] <= PIXEL_MIN_CHN_MAX)
         if (range_ok is False):
             logger.error("min_chn_params in config file out of range, please check it!")
@@ -436,7 +402,7 @@ class InferSession:
         )
 
         range_ok = True
-        for i in range (0, 4):
+        for i in range(0, 4):
             range_ok = range_ok and (PIXEL_VAR_RECI_CHN_MIN <= tmp_reci_params[i] <= PIXEL_VAR_RECI_CHN_MAX)
         if (range_ok is False):
             logger.error("var_reci_chn_params in config file out of range, please check it!")
@@ -462,6 +428,10 @@ class InferSession:
         else:
             return outputs
 
+    def run_pipeline(self, infilelist, output, auto_shape=False,
+                     auto_dims=False, outfmt="BIN", pure_infer_mode=False):
+        self.session.run_pipeline(infilelist, output, auto_shape, auto_dims, outfmt, pure_infer_mode)
+
     def reset_sumaryinfo(self):
         self.session.reset_sumaryinfo()
 
@@ -472,7 +442,52 @@ class InferSession:
         if hasattr(self.session, 'finalize'):
             self.session.finalize()
 
-    def infer(self, feeds, mode = 'static', custom_sizes = 100000):
+    def infer_pipeline(self, feeds_list, mode='static', custom_sizes=100000):
+        '''
+        Parameters:
+            feeds_list: input data list
+            mode: static dymdims dymshapes
+        '''
+        inputs_list = []
+        shapes_list = []
+        for feeds in feeds_list:
+            inputs = []
+            shapes = []
+            for feed in feeds:
+                if type(feed) is np.ndarray:
+                    infer_input = feed
+                    shape = feed.shape
+                elif type(feed) in NP_TYPE_LIST:
+                    infer_input = np.array(feed)
+                    shape = [feed.size]
+                elif type(feed) is aclruntime.Tensor:
+                    infer_input = np.array(feed)
+                    shape = infer_input.shape
+                elif hasattr(feed, 'type') and feed.type() in TORCH_TENSOR_LIST:
+                    infer_input = feed.numpy()
+                    infer_input = np.ascontiguousarray(infer_input) if not feed.is_contiguous() else infer_input
+                    shape = infer_input.shape
+                else:
+                    raise RuntimeError('type:{} invalid'.format(type(feed)))
+                basetensor = aclruntime.BaseTensor(infer_input.__array_interface__['data'][0], infer_input.nbytes)
+                inputs.append(basetensor)
+                shapes.append(shape)
+            inputs_list.append(inputs)
+            shapes_list.append(shapes)
+        if mode == 'dymshape':
+            if isinstance(custom_sizes, int):
+                custom_sizes = [custom_sizes] * len(self.get_outputs())
+            elif not isinstance(custom_sizes, list):
+                raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
+                    custom_sizes, type(custom_sizes)))
+            self.session.set_custom_outsize(custom_sizes)
+        outputs = self.session.run_pipeline(self.outputs_names, inputs_list, shapes_list,
+                                            mode == 'dymshape', mode == 'dymdims')
+        for i, output in enumerate(outputs):
+            outputs[i] = self.convert_tensors_to_arrays(output)
+        return outputs
+
+    def infer(self, feeds, mode='static', custom_sizes=100000):
         '''
         Parameters:
             feeds: input data
@@ -480,22 +495,17 @@ class InferSession:
         '''
         inputs = []
         shapes = []
-        torch_tensor_list = ['torch.FloatTensor', 'torch.DoubleTensor', 'torch.HalfTensor',
-            'torch.BFloat16Tensor', 'torch.ByteTensor', 'torch.CharTensor', 'torch.ShortTensor',
-            'torch.LongTensor', 'torch.BoolTensor', 'torch.IntTensor' ]
-        np_type_list = [np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, \
-                      np.float32, np.float64]
         for feed in feeds:
             if type(feed) is np.ndarray:
                 infer_input = feed
                 shapes.append(infer_input.shape)
-            elif type(feed) in np_type_list:
+            elif type(feed) in NP_TYPE_LIST:
                 infer_input = np.array(feed)
                 shapes.append([feed.size])
             elif type(feed) is aclruntime.Tensor:
                 infer_input = feed
                 shapes.append(infer_input.shape)
-            elif hasattr(feed, 'type') and feed.type() in torch_tensor_list:
+            elif hasattr(feed, 'type') and feed.type() in TORCH_TENSOR_LIST:
                 infer_input = feed.numpy()
                 if not feed.is_contiguous():
                     infer_input = np.ascontiguousarray(infer_input)
@@ -509,15 +519,15 @@ class InferSession:
             indesc = self.get_inputs()
             outdesc = self.get_outputs()
             for i, shape in enumerate(shapes):
-                str_shape = [ str(val) for val in shape ]
+                str_shape = [str(val) for val in shape]
                 dyshape = "{}:{}".format(indesc[i].name, ",".join(str_shape))
                 dym_list.append(dyshape)
             dyshapes = ';'.join(dym_list)
             if mode == 'dymshape':
                 self.session.set_dynamic_shape(dyshapes)
                 if isinstance(custom_sizes, int):
-                    custom_sizes = [custom_sizes]*len(outdesc)
-                elif isinstance(custom_sizes, list) is False:
+                    custom_sizes = [custom_sizes] * len(outdesc)
+                elif not isinstance(custom_sizes, list):
                     raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
                         custom_sizes, type(custom_sizes)))
                 self.session.set_custom_outsize(custom_sizes)

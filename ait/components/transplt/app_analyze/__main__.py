@@ -11,25 +11,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-import click
-
+from components.parser.parser import BaseCommand
 from app_analyze.utils import log_util
-from app_analyze.common.kit_config import Args
-from app_analyze.porting.app import start_scan_kit, opt_source, opt_tools, opt_log_level, opt_report_type
+from app_analyze.porting.app import start_scan_kit
 
 
-@click.command(short_help='Transplant tool to analyze inference applications', no_args_is_help=True)
-@opt_source
-@opt_report_type
-@opt_log_level
-@opt_tools
-def cli(source, report_type, log_level, tools):
-    args = Args(source, report_type, log_level, tools)
-    log_util.set_logger_level(args.log_level)
-    log_util.init_file_logger()
-    start_scan_kit(args)
+class TranspltCommand(BaseCommand):
+    def add_arguments(self, parser):
+        # 逗号分隔的情况下只有一个列表元素
+        parser.add_argument("-s", "--source", required=True, help="directories of source folder")
+        parser.add_argument(
+            "-f",
+            "--report-type",
+            default='csv',
+            choices=['csv', 'json'],
+            help="specify output report type. Only csv(xlsx)/json is supported",
+        )
+        parser.add_argument(
+            "--log-level", default="INFO", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], help="specify log level"
+        )
+        parser.add_argument(
+            "--tools", default="cmake", choices=['cmake'], help="specify construction, currently only cmake availabel"
+        )
+
+    def handle(self, args):
+        log_util.set_logger_level(args.log_level)
+        log_util.init_file_logger()
+        start_scan_kit(args)
 
 
-if __name__ == '__main__':
-    cli()
+def get_cmd_instance():
+    help_info = "Transplant tool to analyze inference applications"
+    cmd_instance = TranspltCommand("transplt", help_info)
+    return cmd_instance

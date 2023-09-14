@@ -1,46 +1,31 @@
-# Basic Usage
+# aie子命令
 
 ## 介绍
 
-Convert模型转换工具依托AIE（Ascend Inference Engine）推理引擎，提供由ONNX模型转换至om模型的功能。
+ait convert aie命令依托AIE（Ascend Inference Engine）推理引擎，提供由ONNX模型转换至om模型的功能。
 
 ## 使用场景约束
 1. 当前仅支持**Ascend310**以及**Ascend310P**平台的AIE转换；
 2. 当前仅支持**FP16**精度下的模型转换
-3. 当前已验证模型：Resnet50、DBNet、CRNN
+3. 目前ait convert aie命令支持以下4个模型：
+
+|  **序号**                  |  **onnx模型名称**                                |  **模型链接**  |
+|---------------------|----------------------------------------------------------|------|
+| 1 | Resnet50 | https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer |
+| 2 | DBNet_MobileNetV3 | https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/DBNet_MobileNetV3 |
+| 3 | CRNN | https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/CRNN_BuiltIn_for_Pytorch |
+| 4 |YOLOX-s| https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/YoloXs_for_Pytorch |
+
 
 ## 运行示例
 
 ```shell
-ait convert --golden-model resnet50.onnx --output-file resnet50.om --soc-version Ascend310P3
+ait convert aie --golden-model resnet50.onnx --output-file resnet50.om --soc-version Ascend310P3
 ```
 
 结果输出如下：
 ```shell
-[INFO] Execute command:['sh', 'build.sh', '-p', '/usr/bin/python3']
-[INFO] b'-- The C compiler identification is GNU 11.3.0'
-[INFO] b'-- The Cxx compiler identification is GNU 11.3.0'
-[INFO] b'-- Detecting C compiler ABI info'
-[INFO] b'-- Detecting C compiler ABI info - done'
-[INFO] b'-- Checking for working C compiler: /usr/bin/cc - skipped'
-[INFO] b'-- Detecting C compiler features'
-[INFO] b'-- Detecting C compiler features - done'
-[INFO] b'-- Detecting C compiler ABI info'
-[INFO] b'-- Detecting C compiler ABI info - done'
-[INFO] b'-- Checking for working CXX compiler: /usr/bin/c++ - skipped'
-[INFO] b'-- Detecting CXX compiler features'
-[INFO] b'-- Detecting CXX compiler features - done'
-[INFO] b'-- Configuring done'
-[INFO] b'-- Generating done'
-[INFO] b'-- Building files have been written to: /xxx/ait/components/convert/aie_runtime/cpp/build'
-[INFO] b'Scanning dependencies of target ait_convert'
-[INFO] b'[ 50%] Building CXX object CMakeFiles/ait_convert.dir/ait_convert.cpp.o'
-[INFO] b'[100%] Linking CXX executable ait_convert'
-[INFO] b'[100%] Built target ait_convert'
-[INFO] Run command line: ['sh', 'build.sh', '-p', '/usr/bin/python3']
-[INFO] Execute command:['./ait_convert', 'resnet50.onnx', 'resnet50.om', 'Ascend310']
-[INFO] b'AIE Model Convert:1'
-[INFO] Execute command:['cp', 'resnet50.om', '/xxx/ait']
-[INFO] AIE model convert finished, the command: ['./ait_convert', 'resnet50.onnx', 'resnet50.om', 'Ascend310']
+[INFO] Execute command:['./ait_convert', 'resnet50.onnx', 'resnet50.om', 'Ascend310P3']
+[INFO] AIE model convert finished, the command: ['./ait_convert', 'resnet50.onnx', 'resnet50.om', 'Ascend310P3']
 [INFO] convert model finished.
 ```

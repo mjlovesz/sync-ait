@@ -17,7 +17,19 @@ import platform
 from app_analyze.utils.log_util import logger
 
 
-def get_lib_clang_path():
+def _get_lib_clang_path_win():
+    lib_clang_file_name = "libclang.dll"
+    sys_paths = os.environ.get("Path")
+    for sys_path in sys_paths.split(";"):
+        lib_clang_candidate = os.path.join(sys_path, lib_clang_file_name)
+        if os.path.exists(lib_clang_candidate) and os.access(lib_clang_candidate, os.R_OK):
+            return lib_clang_candidate
+
+    logger.warning('Unable to locate libclang.dll file, ait transplt may not be usable.')
+    return "D:\\Program Files\\LLVM\\bin\\libclang.dll"
+
+
+def _get_lib_clang_path_linux():
     # default dirs
     candidate_lib_dirs = [
         "/lib", "/lib64", "/usr/lib", "/usr/lib64",
@@ -63,5 +75,12 @@ def get_lib_clang_path():
             if os.path.exists(candidate) and os.access(candidate, os.R_OK):
                 return candidate
 
-    logger.debug('Unable to locate libclang so file, ait transplt may not be usable.')
+    logger.warning('Unable to locate libclang so file, ait transplt may not be usable.')
     return f"/usr/lib/{platform.machine()}-linux-gnu/libclang-14.so"
+
+
+def get_lib_clang_path():
+    if platform.system() == "Windows":
+        return _get_lib_clang_path_win()
+    else:
+        return _get_lib_clang_path_linux()

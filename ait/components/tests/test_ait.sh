@@ -57,6 +57,9 @@ function test_debug_compare()
 {
     cd $CUR_PATH/../debug/compare/tests/ut/
     bash test.sh
+
+    cd $CUR_PATH/../debug/compare/tests/st/
+    bash test.sh
 }
 function test_debug_surgeon()
 {

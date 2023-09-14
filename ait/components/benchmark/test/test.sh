@@ -15,6 +15,7 @@
 # limitations under the License.
 
 declare -i ret_ok=0
+declare -i ret_failed=0
 declare -i ret_invalid_args=1
 CUR_PATH=$(dirname $(readlink -f "$0"))
 . $CUR_PATH/utils.sh
@@ -62,6 +63,8 @@ main() {
     bash -x $CUR_PATH/get_pth_resnet50_data.sh $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE
     #bash -x $CUR_PATH/get_pth_resnet101_data.sh $SOC_VERSION $PYTHON_COMMAND
     #bash -x $CUR_PATH/get_pth_inception_v3_data.sh $SOC_VERSION $PYTHON_COMMAND
+    ${PYTHON_COMMAND} generate_pipeline_datasets.py
+
     if [ $BENCKMARK_DT_MODE == "full" ];then
         bash -x $CUR_PATH/get_bert_data.sh $SOC_VERSION $PYTHON_COMMAND
         bash -x $CUR_PATH/get_yolo_data.sh $SOC_VERSION $PYTHON_COMMAND
@@ -74,8 +77,8 @@ main() {
         ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/ST/
     else
         echo "run DT in simple mode"
-        ${PYTHON_COMMAND} -m pytest -x $CUR_PATH/UT_SIMPLE/
-        ${PYTHON_COMMAND} -m pytest -x $CUR_PATH/ST_SIMPLE/
+        ${PYTHON_COMMAND} -m pytest -x $CUR_PATH/UT_SIMPLE/ || { return $ret_failed; }
+        ${PYTHON_COMMAND} -m pytest -x $CUR_PATH/ST_SIMPLE/ || { return $ret_failed; }
     fi
 
     return $ret_ok

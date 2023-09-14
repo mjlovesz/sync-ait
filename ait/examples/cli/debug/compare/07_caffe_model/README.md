@@ -3,7 +3,7 @@
 ## 介绍
 Caffe 一键式精度比对
 
-## 使用示例
+## 使用示例一
 - 环境中已安装 CANN 包以及 ait 工具
 - 环境中安装 caffe，其中 `Ubuntu 18.04` 可通过 `apt install caffe-cpu` 安装
 - 对于 Caffe 模型，目前不支持动态 shape 的模型比对。对于 `yolov2` / `yolov3` / `ssd` 等需要自定义实现层的模型，需要自行编译安装特定版本的 caffe
@@ -21,6 +21,27 @@ Caffe 一键式精度比对
   ```sh
   atc --model=caffe_demo.prototxt --weight=caffe_demo.caffemodel --framework=0 --soc_version=Ascend310P3 --output=caffe_demo
   ```
+- 注：执行量化原始模型（GPU/CPU） vs 量化离线模型 （**关闭融合规则**）（NPU） 。由于ATC工具的模型转换操作默认开启了算子融合功能，故为了排除融合后算子无法直接进行精度比对，模型转换先关闭算子融合,配置方法参见：[如何关闭/开启融合规则](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/reference/graphubfusionref/graphubfusionref_000003.html)
+  ```sh
+  atc --model=resnet50_deploy_model.prototxt --weight=resnet50_deploy_weights.caffemodel --framework=0   \
+  --output=caffe_resnet50_off --soc_version=Ascend310P3  --fusion_switch_file=fusion_switch.cfg
+  ```  
+  
+
+说明： 关闭算子融合功能需要通过`--fusion_switch_file`参数指定算子融合规则配置文件（如fusion_switch.cfg），并在配置文件中关闭算子融合。 融合规则配置文件关闭配置如下：
+```
+{
+    "Switch":{
+        "GraphFusion":{
+            "ALL":"off"
+        },
+        "UBFusion":{
+            "ALL":"off"
+         }
+    }
+}
+```
+
 - **精度比对调用**
   ```sh
   mkdir -p test  # dump 数据以及比对结果输出路径
@@ -38,6 +59,25 @@ Caffe 一键式精度比对
   ```
 - **输出目录结构** 参考 [01_basic_usage](../01_basic_usage/README.md))，其中 caffe 模型 dump 数据位于 `{output_path}/{timestamp}/dump_data/caffe/`
 - **比对结果** 位于 `{output_path}/{timestamp}/result_{timestamp}.csv` 中，比对结果的含义与基础精度比对工具完全相同，其中每个字段的含义可参考 [CANN商用版/比对步骤（推理场景）](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/atlasaccuracy_16_0039.html)
+
+
+## 使用示例二
+- Caffe非量化原始模型 vs 量化离线模型场景时，使用 `atc` 命令将**量化**后caffe 转化为 om 模型：
+  ```sh
+  atc --model=caffe_demo.prototxt --weight=caffe_demo.caffemodel --framework=0 --soc_version=Ascend310P3 --output=caffe_demo
+  ```
+- 再转出json文件：
+  ```sh
+   atc --om caffe_demo.om --mode 1 --json=caffe_demo.json
+  ```
+- **精度比对调用**
+- 使用**量化前**caffe模型：
+  ```sh
+  mkdir -p test  # dump 数据以及比对结果输出路径
+  ASCEND_TOOLKIT=$HOME/Ascend/ascend-toolkit/latest  # 必须为可写的 CANN 包路径
+  ait debug compare -gm ResNet-50-deploy.prototxt -w ResNet-50-model.caffemodel -om caffe_demo.om -c $ASCEND_TOOLKIT -o ./test -q caffe_demo.json
+  ```
+
 ## Caffe 模型结构文件示例
 - `caffe_demo.prototxt`
 ```java

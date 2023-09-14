@@ -1,5 +1,18 @@
 ## 工具安装
 
+### tips
+ait工具于2023/08/01完成框架重构，需要全量卸载之前环境中安装的ait以及各子工具，再进行安装。
+
+```bash
+cd ait/ait
+
+chmod u+x install.sh
+
+./install.sh --uninstall -y
+
+./install.sh
+```
+
 ### 环境和依赖
 
 - 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit软件包。建议安装CANN商业版6.3.RC1以上版本。
@@ -36,18 +49,18 @@ ait推理工具的安装包括**ait包**和**依赖的组件包**的安装，其
 git clone https://gitee.com/ascend/ait.git
 cd ait/ait
 
-# 添加执行权限
+# 1. 添加执行权限
 chmod u+x install.sh
 
-# 安装ait，包括debug、profile、benchmark、transplt、analyze等组件（不安装clang等系统依赖库，只影响transplt功能）
+# 2. 以下install.sh根据情况选一个执行
+# a. 安装ait，包括debug、profile、benchmark、transplt、analyze等组件（不安装clang等系统依赖库，只影响transplt功能）
 ./install.sh
-
-# 安装ait，包括debug、profile、benchmark、transplt、analyze等组件（安装clang等系统依赖库，需要提供sudo权限）
+  
+# b. 安装ait，包括debug、profile、benchmark、transplt、analyze等组件（安装clang等系统依赖库，需要提供sudo权限）
 ./install.sh --full
-
-# 重新安装ait及其debug、profile、benchmark、transplt、analyze等组件
+  
+# c. 重新安装ait及其debug、profile、benchmark、transplt、analyze等组件
 ./install.sh --force-reinstall
-
 ```
 
 #### 按需手动安装不同组件
@@ -96,3 +109,8 @@ chmod u+x install.sh
 # 4. 不询问式单独组件直接卸载(例如debug组件)
 ./install.sh --uninstall --debug -y
 ```
+
+### 常见问题 Q&A
+
+参考：[Ait 安装常见问题](https://gitee.com/ascend/ait/wikis/ait%E7%9A%84%E5%AE%89%E8%A3%85%E4%B8%8E%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ait%E5%AE%89%E8%A3%85)
+

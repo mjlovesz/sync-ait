@@ -12,18 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-if [ ! ${AIE_DIR} ];then
-  echo "Error: Ascend Inference Engine is not installed."
-  exit 1
-fi
-
-CONVERT_DIR=$(dirname $(readlink -f $0))
-cd ${CONVERT_DIR}/aie_runtime/cpp
-rm -rf build && mkdir build && cd build && cmake .. && make -j
-
-AIT_CONVERT=${CONVERT_DIR}/aie_runtime/cpp/build/ait_convert
-
 if [ ! "$(command -v pip3)" ];then
   echo "Error: pip3 is not installed."
   exit 1
@@ -32,11 +20,29 @@ fi
 PIP3=$(readlink -f $(which pip3))
 PIP3_DIR=$(dirname ${PIP3})
 PYTHON=${PIP3_DIR}/python
+if [ ! -f ${PYTHON} ];then
+  PIP_HEAD=$(head -n 1 ${PIP3})
+  PYTHON=${PIP_HEAD:2}
+fi
 
-AIE_RUNTIME_PATH=$(dirname $(${PYTHON} -c "import aie_runtime;print(aie_runtime.__file__)"))
+MODEL_CONVERT_PATH=$(dirname $(${PYTHON} -c "import model_convert;print(model_convert.__file__)"))
+CUR_PATH=$(dirname $(readlink -f $0))
 
-if [ -f ${AIT_CONVERT} ];then
-  cp ${AIT_CONVERT} ${AIE_RUNTIME_PATH}
+build_aie_convert(){
+  cd ${CUR_PATH}/model_convert/aie/cpp
+  rm -rf build && mkdir build && cd build && cmake .. && make -j
+
+  AIE_CONVERT=${CUR_PATH}/model_convert/aie/cpp/build/aie_convert
+
+  if [ -f ${AIE_CONVERT} ];then
+    cp ${AIE_CONVERT} ${MODEL_CONVERT_PATH}/aie
+    else
+      echo "WARNING: Build aie_convert failed. aie command cannot be used."
+  fi
+}
+
+if [ ${AIE_DIR} ];then
+  build_aie_convert
   else
-    echo "Error: Build ait_convert failed."
+    echo "WARNING: Ascend Inference Engine is not installed. aie command cannot be used."
 fi

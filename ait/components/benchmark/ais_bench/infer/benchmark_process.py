@@ -17,32 +17,42 @@ import math
 import os
 import sys
 import time
+import json
 import shutil
 import copy
-import subprocess
 import shlex
 import re
 import subprocess
+import fcntl
 from multiprocessing import Pool
 from multiprocessing import Manager
+import numpy as np
 
 from tqdm import tqdm
 
 from ais_bench.infer.interface import InferSession, MemorySummary
 from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
+                                          create_pipeline_fileslist_from_inputs_list,
                                           create_intensors_from_infileslist,
                                           get_narray_from_files_list,
                                           get_tensor_from_files_list,
                                           convert_real_files,
-                                          PURE_INFER_FAKE_FILE, save_tensors_to_file)
+                                          PURE_INFER_FAKE_FILE_ZERO,
+                                          PURE_INFER_FAKE_FILE_RANDOM,
+                                          PURE_INFER_FAKE_FILE, save_tensors_to_file,
+                                          get_pure_infer_data)
 from ais_bench.infer.summary import summary
-from ais_bench.infer.utils import logger
-from ais_bench.infer.miscellaneous import dymshape_range_run, get_acl_json_path, version_check, get_batchsize
+from ais_bench.infer.miscellaneous import (dymshape_range_run, get_acl_json_path, version_check,
+                                           get_batchsize, ACL_JSON_CMD_LIST)
 from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                                    get_fileslist_from_dir, list_split, list_share, logger,
-                                   save_data_to_files)
+                                   save_data_to_files, create_fake_file_name,
+                                   create_tmp_acl_json, move_subdir, convert_helper)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
+logger = logging.getLogger(__name__)
 
 
 def set_session_options(session, args):
@@ -94,8 +104,7 @@ def set_session_options(session, args):
         session.set_custom_outsize(customsizes)
 
 
-def init_inference_session(args):
-    acl_json_path = get_acl_json_path(args)
+def init_inference_session(args, acl_json_path):
     session = InferSession(args.device, args.model, acl_json_path, args.debug, args.loop)
 
     set_session_options(session, args)
@@ -162,6 +171,19 @@ def run_inference(session, args, inputs, out_array=False):
         set_dymdims_shape(session, inputs)
     outputs = session.run(inputs, out_array)
     return outputs
+
+
+def run_pipeline_inference(session, args, infileslist, output_prefix):
+    out = output_prefix if output_prefix is not None else ""
+    pure_infer_mode = False
+    if args.input is None:
+        pure_infer_mode = True
+    session.run_pipeline(infileslist,
+                         out,
+                         args.auto_set_dymshape_mode,
+                         args.auto_set_dymdims_mode,
+                         args.outfmt,
+                         pure_infer_mode)
 
 
 # tensor to loop infer
@@ -234,17 +256,108 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             )
 
 
-def msprof_run_profiling(args, msprof_bin):
-    cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
-    msprof_cmd = "{} --output={}/profiler --application=\"{}\" --model-execution=on \
-                --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off \
-                --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
-                .format(msprof_bin, args.output, cmd)
+def infer_pipeline_run(session, args, infileslist, output_prefix):
+    logger.info("run in pipeline mode")
+    run_pipeline_inference(session, args, infileslist, output_prefix)
 
+
+def get_file_name(file_path: str, suffix: str, res_file_path: list) -> list:
+    """获取路径下的指定文件类型后缀的文件
+    Args:
+        file_path: 文件夹的路径
+        suffix: 要提取的文件类型的后缀
+        res_file_path: 保存返回结果的列表
+    Returns: 文件路径
+    """
+    for file in os.listdir(file_path):
+
+        if os.path.isdir(os.path.join(file_path, file)):
+            get_file_name(os.path.join(file_path, file), suffix, res_file_path)
+        else:
+            res_file_path.append(os.path.join(file_path, file))
+    # endswith：表示以suffix结尾。可根据需要自行修改；如：startswith：表示以suffix开头，__contains__：包含suffix字符串
+    return res_file_path if suffix == '' or suffix is None else list(filter(lambda x: x.endswith(suffix), res_file_path))
+
+
+def get_legal_json_content(acl_json_path):
+    cmd_dict = {}
+    with open(acl_json_path, 'r') as f:
+        json_dict = json.load(f)
+    profile_dict = json_dict.get("profiler")
+    for option_cmd in ACL_JSON_CMD_LIST:
+        if profile_dict.get(option_cmd):
+            cmd_dict.update({"--" + option_cmd.replace('_', '-'): profile_dict.get(option_cmd)})
+            if (option_cmd == "sys_hardware_mem_freq"):
+                cmd_dict.update({"--sys-hardware-mem": "on"})
+            if (option_cmd == "sys_interconnection_freq"):
+                cmd_dict.update({"--sys-interconnection-profiling": "on"})
+            if (option_cmd == "dvpp_freq"):
+                cmd_dict.update({"--dvpp-profiling": "on"})
+    return cmd_dict
+
+
+def json_to_msprof_cmd(acl_json_path):
+    json_dict = get_legal_json_content(acl_json_path)
+    msprof_option_cmd = " ".join([f"{key}={value}" for key, value in json_dict.items()])
+    return msprof_option_cmd
+
+
+def msprof_run_profiling(args, msprof_bin):
+    if args.acl_json_path is not None:
+        # acl.json to msprof cmd
+        args.profiler_rename = False
+        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
+        cmd = cmd.replace("--acl-json-path", "")
+        cmd = cmd.replace("--acl_json_path", "")
+        cmd = cmd.replace(args.acl_json_path, "")
+        msprof_cmd = f"{msprof_bin} --application=\"{cmd}\" " + json_to_msprof_cmd(args.acl_json_path)
+    else:
+        # default msprof cmd
+        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
+        msprof_cmd = f"{msprof_bin} --output={args.output}/profiler --application=\"{cmd}\" --model-execution=on \
+                    --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off \
+                    --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
+
+    ret = -1
     msprof_cmd_list = shlex.split(msprof_cmd)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
-    ret = subprocess.call(msprof_cmd_list, shell=False)
-    logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
+    if (args.profiler_rename):
+        p = subprocess.Popen(msprof_cmd_list, stdout=subprocess.PIPE, shell=False, bufsize=0)
+        flags = fcntl.fcntl(p.stdout, fcntl.F_GETFL)
+        fcntl.fcntl(p.stdout, fcntl.F_SETFL, flags | os.O_NONBLOCK)
+
+        get_path_flag = True
+        sub_str = ""
+        for line in iter(p.stdout.read, b''):
+            if not line:
+                continue
+            line = line.decode()
+            if (get_path_flag and line.find("PROF_") != -1):
+                get_path_flag = False
+                start_index = line.find("PROF_")
+                sub_str = line[start_index:(start_index + 46)] # PROF_XXXX的目录长度为46
+            print(f'{line}', flush=True, end="")
+        p.stdout.close()
+        p.wait()
+
+        output_prefix = os.path.join(args.output, "profiler")
+        output_prefix = os.path.join(output_prefix, sub_str)
+        hash_str = sub_str.rsplit('_')[-1]
+        file_name = get_file_name(output_prefix, ".csv", [])
+        file_name_json = get_file_name(output_prefix, ".json", [])
+
+        model_name = os.path.basename(args.model).split(".")[0]
+        for file in file_name:
+            real_file = os.path.splitext(file)[0]
+            os.rename(file, real_file + "_" + model_name + "_" + hash_str + ".csv")
+        for file in file_name_json:
+            real_file = os.path.splitext(file)[0]
+            os.rename(file, real_file + "_" + model_name + "_" + hash_str + ".json")
+        ret = 0
+    else:
+        ret = subprocess.call(msprof_cmd_list, shell=False)
+        logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
+    return ret
 
 
 def get_energy_consumption(npu_id):
@@ -261,6 +374,16 @@ def get_energy_consumption(npu_id):
     return power
 
 
+def convert(tmp_acl_json_path, real_dump_path, tmp_dump_path):
+    if real_dump_path is not None and tmp_dump_path is not None:
+        output_dir, timestamp = move_subdir(tmp_dump_path, real_dump_path)
+        convert_helper(output_dir, timestamp)
+    if tmp_dump_path is not None:
+        shutil.rmtree(tmp_dump_path)
+    if tmp_acl_json_path is not None:
+        os.remove(tmp_acl_json_path)
+
+
 def main(args, index=0, msgq=None, device_list=None):
     # if msgq is not None,as subproces run
     if msgq is not None:
@@ -269,7 +392,12 @@ def main(args, index=0, msgq=None, device_list=None):
     if args.debug:
         logger.setLevel(logging.DEBUG)
 
-    session = init_inference_session(args)
+    acl_json_path = get_acl_json_path(args)
+    tmp_acl_json_path = None
+    if args.dump_npy and acl_json_path is not None:
+        tmp_acl_json_path, real_dump_path, tmp_dump_path = create_tmp_acl_json(acl_json_path)
+
+    session = init_inference_session(args, tmp_acl_json_path if tmp_acl_json_path is not None else acl_json_path)
 
     intensors_desc = session.get_inputs()
     if device_list is not None and len(device_list) > 1:
@@ -304,14 +432,34 @@ def main(args, index=0, msgq=None, device_list=None):
     # create infiles list accord inputs list
     if len(inputs_list) == 0:
         # Pure reference scenario. Create input zero data
-        infileslist = [[[PURE_INFER_FAKE_FILE] for index in intensors_desc]]
+        if not args.pipeline:
+            infileslist = [[[PURE_INFER_FAKE_FILE] for _ in intensors_desc]]
+        else:
+            infileslist = [[]]
+            pure_file = PURE_INFER_FAKE_FILE_ZERO if args.pure_data_type == "zero" else PURE_INFER_FAKE_FILE_RANDOM
+            for _ in intensors_desc:
+                infileslist[0].append(pure_file)
     else:
-        infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
+        if not args.pipeline:
+            infileslist = create_infileslist_from_inputs_list(inputs_list, intensors_desc, args.no_combine_tensor_mode)
+        else:
+            infileslist = create_pipeline_fileslist_from_inputs_list(inputs_list, intensors_desc)
+    if not args.pipeline:
+        warmup(session, args, intensors_desc, infileslist[0])
+    else:
+        # prepare for pipeline case
+        infiles = []
+        for file in infileslist[0]:
+            infiles.append([file])
+        warmup(session, args, intensors_desc, infiles)
 
-    warmup(session, args, intensors_desc, infileslist[0])
+    if args.pipeline and (args.auto_set_dymshape_mode or args.auto_set_dymdims_mode):
+        for file_list in infileslist:
+            input_first = np.load(file_list[0])
+            summary.add_batchsize(input_first.shape[0])
 
     if msgq is not None:
-        # wait subprocess init ready, if time eplapsed,force ready run
+        # wait subprocess init ready, if time eplapsed, force ready run
         logger.info("subprocess_{} qsize:{} now waiting".format(index, msgq.qsize()))
         msgq.put(index)
         time_sec = 0
@@ -330,17 +478,19 @@ def main(args, index=0, msgq=None, device_list=None):
     end_energy_consumption = 0
     if args.energy_consumption and args.npu_id:
         start_energy_consumption = get_energy_consumption(args.npu_id)
-
-    if args.run_mode == "array":
-        infer_loop_array_run(session, args, intensors_desc, infileslist, output_prefix)
-    elif args.run_mode == "files":
-        infer_loop_files_run(session, args, intensors_desc, infileslist, output_prefix)
-    elif args.run_mode == "full":
-        infer_fulltensors_run(session, args, intensors_desc, infileslist, output_prefix)
-    elif args.run_mode == "tensor":
-        infer_loop_tensor_run(session, args, intensors_desc, infileslist, output_prefix)
+    if args.pipeline:
+        infer_pipeline_run(session, args, infileslist, output_prefix)
     else:
-        raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
+        run_mode_switch = {
+            "array": infer_loop_array_run,
+            "files": infer_loop_files_run,
+            "full": infer_fulltensors_run,
+            "tensor": infer_loop_tensor_run
+        }
+        if run_mode_switch.get(args.run_mode) is not None:
+            run_mode_switch.get(args.run_mode)(session, args, intensors_desc, infileslist, output_prefix)
+        else:
+            raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
     if args.energy_consumption and args.npu_id:
         end_energy_consumption = get_energy_consumption(args.npu_id)
     end_time = time.time()
@@ -351,6 +501,7 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.h2d_latency_list = MemorySummary.get_h2d_time_list()
     summary.d2h_latency_list = MemorySummary.get_d2h_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
+    logger.info("end_to_end_time (s):%s", end_time - start_time)
     if args.energy_consumption and args.npu_id:
         logger.info("NPU ID:{} energy consumption(J):{}".format(args.npu_id, ((float(end_energy_consumption) +
                                                                            float(start_energy_consumption))/2.0 ) * (
@@ -360,6 +511,9 @@ def main(args, index=0, msgq=None, device_list=None):
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
 
     session.finalize()
+
+    if args.dump_npy and acl_json_path is not None:
+        convert(tmp_acl_json_path, real_dump_path, tmp_dump_path)
 
 
 def print_subproces_run_error(value):
@@ -382,7 +536,8 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
         raise RuntimeError()
 
     args.device = 0
-    session = init_inference_session(args)
+    acl_json_path = get_acl_json_path(args)
+    session = init_inference_session(args, acl_json_path)
     intensors_desc = session.get_inputs()
     try:
         chunks_elements = math.ceil(len(fileslist) / len(intensors_desc))
@@ -413,11 +568,10 @@ def multidevice_run(args):
     npu_id_list = args.npu_id
     p = Pool(len(device_list))
     msgq = Manager().Queue()
-
     args.subprocess_count = len(device_list)
-    jobs = args.subprocess_count
     splits = None
-    if (args.input is not None):
+    if (args.input is not None and args.divide_input):
+        jobs = args.subprocess_count
         splits = seg_input_data_for_multi_process(args, args.input, jobs)
 
     for i, device in enumerate(device_list):
@@ -425,7 +579,8 @@ def multidevice_run(args):
         cur_args.device = int(device)
         if args.energy_consumption:
             cur_args.npu_id = int(npu_id_list[i])
-        cur_args.input = None if splits is None else list(splits)[i]
+        if args.divide_input:
+            cur_args.input = None if splits is None else list(splits)[i]
         p.apply_async(main, args=(cur_args, i, msgq, device_list), error_callback=print_subproces_run_error)
 
     p.close()
@@ -478,6 +633,34 @@ def args_rules(args):
     return args
 
 
+def acl_json_base_check(args):
+    if args.acl_json_path is None:
+        return args
+    json_path = args.acl_json_path
+    max_json_size = 8192 # 8KB 30 * 255 byte左右
+    if os.path.splitext(json_path)[1] != ".json":
+        logger.error(f"acl_json_path:{json_path} is not a .json file")
+        raise TypeError(f"acl_json_path:{json_path} is not a .json file")
+    if not os.path.exists(os.path.realpath(json_path)):
+        logger.error(f"acl_json_path:{json_path} not exsit")
+        raise FileExistsError(f"acl_json_path:{json_path} not exist")
+    json_size = os.path.getsize(json_path)
+    if json_size > max_json_size:
+        logger.error(f"json_file_size:{json_size} byte out of max limit {max_json_size} byte")
+        raise MemoryError(f"json_file_size:{json_size} byte out of max limit")
+    try:
+        with open(json_path, 'r') as f:
+            json_dict = json.load(f)
+    except Exception as err:
+        logger.error(f"can't read acl_json_path:{json_path}")
+        raise Exception from err
+    if json_dict.get("profiler") is not None and json_dict.get("profiler").get("switch") == "on":
+        args.profiler = True
+    if json_dict.get("dump") is not None:
+        args.profiler = False
+    return args
+
+
 def backend_run(args):
     backend_class = BackendFactory.create_backend(args.backend)
     backend = backend_class(args)
@@ -487,33 +670,10 @@ def backend_run(args):
     logger.info("perf info:{}".format(perf))
 
 
-def pipeline_run(args, concur):
-    concur_args_dict = {"model": args.model, "input": args.input, "output": args.output, "loop": str(args.loop),
-                        "debug": "1" if args.debug else "0", "warmup": str(args.warmup_count),
-                        "device": str(args.device), "dymHW": args.dym_hw, "dymDims": args.dym_dims,
-                        "dymShape": args.dym_shape, "display": "1" if args.display_all_summary else "0",
-                        "outputSize": args.output_size,
-                        "auto_set_dymshape_mode": "1" if args.auto_set_dymshape_mode else "0"}
-    concur_args_list = [f"{k}={v}" for k, v in concur_args_dict.items() if v]
-    concur_cmd = "{} {}".format(concur, " ".join(concur_args_list))
-    concur_cmd_list = shlex.split(concur_cmd)
-
-    logger.info("pipeline cmd:{} begin run".format(concur_cmd))
-    ret = subprocess.call(concur_cmd_list, shell=False)
-    logger.info("pipeline cmd:{} end run ret:{}".format(concur_cmd, ret))
-
-
 def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
-
-    if args.pipeline:
-        concur = shutil.which("concur")
-        if concur is None :
-            logger.info("find no pipeline excutable continue normal mode")
-        else:
-            pipeline_run(args, concur)
-            return 0
+    args = acl_json_base_check(args)
 
     if args.perf:
         backend_run(args)
@@ -522,11 +682,13 @@ def benchmark_process(args:BenchMarkArgsAdapter):
     if args.profiler:
         # try use msprof to run
         msprof_bin = shutil.which('msprof')
-        if msprof_bin is None or os.getenv('GE_PROFILING_TO_STD_OUT') == '1':
-            logger.info("find no msprof continue use acl.json mode")
+        if msprof_bin is None:
+            logger.info("find no msprof continue use acl.json mode, result won't be parsed as csv")
+        elif os.getenv('AIT_NO_MSPROF_MODE') == '1':
+            logger.info("find AIT_NO_MSPROF_MODE set, continue use acl.json mode, result won't be parsed as csv")
         else:
-            msprof_run_profiling(args, msprof_bin)
-            return 0
+            ret = msprof_run_profiling(args, msprof_bin)
+            return ret
 
     if args.dym_shape_range is not None and args.dym_shape is None:
         # dymshape range run,according range to run each shape infer get best shape
