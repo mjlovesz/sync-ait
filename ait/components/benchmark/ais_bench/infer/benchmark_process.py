@@ -700,7 +700,7 @@ def config_check(config_path):
     config_size = os.path.getsize(config_path)
     if config_size > max_config_size:
         logger.error(f"aipp_config_size:{config_size} byte out of max limit {max_config_size} byte")
-        raise MemoryError(f"json_file_size:{config_size} byte out of max limit")
+        raise MemoryError(f"aipp_config_size:{config_size} byte out of max limit")
     return
 
 
