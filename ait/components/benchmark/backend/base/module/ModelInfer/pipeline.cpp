@@ -82,7 +82,7 @@ namespace Base {
 
     void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
                      Base::PyInferenceSession* session,
-                     const std::vector<std::vector<std::string>> &infilesList,
+                     std::vector<std::vector<std::string>> &infilesList,
                      std::shared_ptr<InferOptions> inferOption, size_t numThreads, size_t startIndex)
     {
         std::vector<std::string> inputNames {};

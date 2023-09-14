@@ -89,7 +89,7 @@ namespace Base {
         bool autoDymDims, const bool pure_infer, std::vector<std::string> &inputNames);
     void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
                      Base::PyInferenceSession* session,
-                     const std::vector<std::vector<std::string>> &infilesList,
+                     std::vector<std::vector<std::string>> &infilesList,
                      std::shared_ptr<InferOptions> inferOption, size_t numThreads, size_t startIndex);
 
     void FuncPrepareBaseTensor(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
