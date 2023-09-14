@@ -303,18 +303,32 @@ def json_to_msprof_cmd(acl_json_path):
     return msprof_option_cmd
 
 
+def regenerate_cmd(args:BenchMarkArgsAdapter):
+    args_dict = args.get_all_args_dict()
+    cmd = sys.executable + " "
+    for key, value in args_dict.items():
+        if key == '--acl_json_path':
+            continue
+        if key == '--warmup_count':
+            cmd = cmd + " " + f"{key}={0}"
+            continue
+        if key == '--profiler':
+            cmd = cmd + " " + f"{key}={0}"
+            continue
+        if value:
+            cmd = cmd + " " + f"{key}={value}"
+    return cmd
+
+
 def msprof_run_profiling(args, msprof_bin):
     if args.acl_json_path is not None:
         # acl.json to msprof cmd
         args.profiler_rename = False
-        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
-        cmd = cmd.replace("--acl-json-path", "")
-        cmd = cmd.replace("--acl_json_path", "")
-        cmd = cmd.replace(args.acl_json_path, "")
+        cmd = regenerate_cmd(args)
         msprof_cmd = f"{msprof_bin} --application=\"{cmd}\" " + json_to_msprof_cmd(args.acl_json_path)
     else:
         # default msprof cmd
-        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
+        cmd = regenerate_cmd(args)
         msprof_cmd = f"{msprof_bin} --output={args.output}/profiler --application=\"{cmd}\" --model-execution=on \
                     --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off \
                     --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
@@ -651,7 +665,7 @@ def acl_json_base_check(args):
         return args
     json_path = args.acl_json_path
     if not path_white_list_check(json_path):
-        raise Exception(f"acl_json_path:{json_path} is illegal")
+        raise Exception(f"acl_json_path:{json_path} contains illegal char")
     max_json_size = 8192 # 8KB 30 * 255 byte左右
     if os.path.islink(json_path):
         raise Exception(f"acl_json_path:{json_path} is a symbolic link, considering security, not supported")
@@ -661,7 +675,7 @@ def acl_json_base_check(args):
     if not path_length_check(json_path):
         raise Exception(f"acl_json_path:path length is illegal")
     if not os.path.exists(os.path.realpath(json_path)):
-        logger.error(f"acl_json_path:{json_path} not exsit")
+        logger.error(f"acl_json_path:{json_path} not exist")
         raise FileExistsError(f"acl_json_path:{json_path} not exist")
     json_size = os.path.getsize(json_path)
     if not file_owner_correct_check(json_path):
@@ -686,7 +700,7 @@ def config_check(config_path):
     if not config_path:
         return
     if not path_white_list_check(config_path):
-        raise Exception(f"aipp_config:{config_path} is illegal")
+        raise Exception(f"aipp_config:{config_path} contains illegal char")
     max_config_size = 12800
     if os.path.islink(config_path):
         raise Exception(f"aipp_config:{config_path} is a symbolic link, considering security, not supported")
@@ -696,14 +710,14 @@ def config_check(config_path):
     if not path_length_check(config_path):
         raise Exception(f"aipp_config:path length is illegal")
     if not os.path.exists(os.path.realpath(config_path)):
-        logger.error(f"aipp_config:{config_path} not exsit")
+        logger.error(f"aipp_config:{config_path} not exist")
         raise FileExistsError(f"aipp_config:{config_path} not exist")
     config_size = os.path.getsize(config_path)
     if config_size > max_config_size:
         logger.error(f"json_file_size:{config_size} byte out of max limit {max_config_size} byte")
         raise MemoryError(f"json_file_size:{config_size} byte out of max limit")
     if not file_owner_correct_check(config_path):
-        raise Exception(f"current user isn't json_file:{config_path}'s owner and ownergroup|")
+        raise Exception(f"current user isn't json_file:{config_path}'s owner and ownergroup")
     return
 
 

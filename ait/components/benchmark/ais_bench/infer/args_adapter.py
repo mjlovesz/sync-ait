@@ -56,3 +56,41 @@ class BenchMarkArgsAdapter():
         self.dump_npy = dump_npy
         self.divide_input = divide_input
         self.thread = thread
+
+    def get_all_args_dict(self):
+        args_dict = {}
+        args_dict.update({'--model':self.model})
+        args_dict.update({'--input':self.input})
+        args_dict.update({'--output':self.output})
+        args_dict.update({'--output_dirname':self.output_dirname})
+        args_dict.update({'--outfmt':self.outfmt})
+        args_dict.update({'--loop':self.loop})
+        args_dict.update({'--debug':self.debug})
+        args_dict.update({'--device':self.device})
+        args_dict.update({'--dym_batch':self.dym_batch})
+        args_dict.update({'--dym_hw':self.dym_hw})
+        args_dict.update({'--dym_dims':self.dym_dims})
+        args_dict.update({'--dym_shape':self.dym_shape})
+        args_dict.update({'--output_size':self.output_size})
+        args_dict.update({'--auto_set_dymshape_mode':self.auto_set_dymshape_mode})
+        args_dict.update({'--auto_set_dymdims_mode':self.auto_set_dymdims_mode})
+        args_dict.update({'--batchsize':self.batchsize})
+        args_dict.update({'--pure_data_type':self.pure_data_type})
+        args_dict.update({'--profiler':self.profiler})
+        args_dict.update({'--dump':self.dump})
+        args_dict.update({'--acl_json_path':self.acl_json_path})
+        args_dict.update({'--output_batchsize_axis':self.output_batchsize_axis})
+        args_dict.update({'--run_mode':self.run_mode})
+        args_dict.update({'--display_all_summary':self.display_all_summary})
+        args_dict.update({'--warmup_count':self.warmup_count})
+        args_dict.update({'--dym_shape_range':self.dym_shape_range})
+        args_dict.update({'--aipp_config':self.aipp_config})
+        args_dict.update({'--energy_consumption':self.energy_consumption})
+        args_dict.update({'--npu_id':self.npu_id})
+        args_dict.update({'--perf':self.perf})
+        args_dict.update({'--pipeline':self.pipeline})
+        args_dict.update({'--profiler_rename':self.profiler_rename})
+        args_dict.update({'--dump_npy':self.dump_npy})
+        args_dict.update({'--divide_input':self.divide_input})
+        args_dict.update({'--thread':self.thread})
+        return args_dict
