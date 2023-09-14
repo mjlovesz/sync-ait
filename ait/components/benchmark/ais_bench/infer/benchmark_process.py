@@ -44,9 +44,9 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
 from ais_bench.infer.summary import summary
 from ais_bench.infer.miscellaneous import (dymshape_range_run, get_acl_json_path, version_check,
                                            get_batchsize, ACL_JSON_CMD_LIST)
-from ais_bench.infer.utils import (get_file_content, get_file_datasize, file_user_correct_check, path_length_check,
+from ais_bench.infer.utils import (get_file_content, get_file_datasize, file_owner_correct_check, path_length_check,
                                    get_fileslist_from_dir, list_split, list_share, path_white_list_check,
-                                   save_data_to_files, create_fake_file_name, logger, nomral_string_white_list_check,
+                                   save_data_to_files, create_fake_file_name, logger, normal_string_white_list_check,
                                    create_tmp_acl_json, move_subdir, convert_helper)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
@@ -668,7 +668,7 @@ def acl_json_base_check(args):
         logger.error(f"acl_json_path:{json_path} not exsit")
         raise FileExistsError(f"acl_json_path:{json_path} not exist")
     json_size = os.path.getsize(json_path)
-    if not file_user_correct_check(json_path):
+    if not file_owner_correct_check(json_path):
         raise Exception(f"current user isn't json_file:{json_path}'s owner and ownergroup|")
     if json_size > max_json_size:
         logger.error(f"acl_json_file_size:{json_size} byte out of max limit {max_json_size} byte")
@@ -706,7 +706,7 @@ def config_check(config_path):
     if config_size > max_config_size:
         logger.error(f"json_file_size:{config_size} byte out of max limit {max_config_size} byte")
         raise MemoryError(f"json_file_size:{config_size} byte out of max limit")
-    if not file_user_correct_check(config_path):
+    if not file_owner_correct_check(config_path):
         raise Exception(f"current user isn't json_file:{config_path}'s owner and ownergroup|")
     return
 
