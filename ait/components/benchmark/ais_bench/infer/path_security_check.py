@@ -11,10 +11,11 @@ def path_length_check(path):
     if len(path) > 4096:
         logger.error(f"file total path length out of range (4096)")
         return False
-    filename = os.path.basename(path)
-    if len(filename) > 255:
-        logger.error(f"file name length out of range (255)")
-        return False
+    dirnames = path.split("/")
+    for dirname in dirnames:
+        if len(dirname) > 255:
+            logger.error(f"file name length out of range (255)")
+            return False
     return True
 
 
