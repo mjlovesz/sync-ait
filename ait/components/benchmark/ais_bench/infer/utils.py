@@ -47,6 +47,7 @@ def path_length_check(path):
     if len(filename) > 255:
         logger.error(f"file name length out of range (255)")
         return False
+    return True
 
 
 def path_white_list_check(path):
