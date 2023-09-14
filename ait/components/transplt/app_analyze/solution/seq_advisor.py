@@ -142,12 +142,12 @@ class SeqAdvisor:
             params = []
             for i in range(len(temp_list)):
                 if i != 0:
-                    if temp_list[i] is not None:
+                    if temp_list[i] != '':
                         params.extend((fmt, keyword_set[i - 1], temp_list[i]))
                     else:
                         params.extend((fmt, keyword_set[i - 1]))
                 else:
-                    if temp_list[i] is not None:
+                    if temp_list[i] != '':
                         params.append(temp_list[i])
 
             columns.pop(-1)

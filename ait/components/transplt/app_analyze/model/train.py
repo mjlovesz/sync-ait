@@ -83,7 +83,5 @@ if __name__ == '__main__':
     model = Model()
     # '/home/liuzhe/package/opencv-4.5.4/samples/cpp'
     # '/home/liuzhe/samples/opencv'
-    # model.train(samples='/home/liuzhe/samples/api-union-test')
-    model.train(seqs='./mxbase.seqs.bin', seqs_idx='./mxbase.seqs_idx.bin')
-    # model.train(seqs='./opencv.seqs.bin', seqs_idx='./opencv.seqs_idx.bin')
-    # model.train(samples='/home/liuzhe/package/opencv-4.5.4/samples/cpp')
+    model.train(samples='/home/liuzhe/samples/api-union-test')
+    # model.train(seqs='./mxbase.seqs.bin', seqs_idx='./mxbase.seqs_idx.bin')
