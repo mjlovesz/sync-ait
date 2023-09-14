@@ -39,14 +39,24 @@ MSACCUCMP_FILE_PATH =  "tools/operator_cmp/compare/msaccucmp.py"
 CANN_PATH = "/usr/local/Ascend/ascend-toolkit/latest"
 
 
+def path_length_check(path):
+    if len(path) > 4096:
+        logger.error(f"file total path length out of range (4096)")
+        return False
+    filename = os.path.basename(path)
+    if len(filename) > 255:
+        logger.error(f"file name length out of range (255)")
+        return False
+
+
 def path_white_list_check(path):
     regex = re.compile(r"[^_A-Za-z0-9/.-]")
-    return regex.match(path)
+    return not regex.search(path)
 
 
 def nomral_string_white_list_check(unknown_str):
     regex = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
-    return regex.match(unknown_str)
+    return not regex.search(unknown_str)
 
 
 def file_user_correct_check(file_path):
