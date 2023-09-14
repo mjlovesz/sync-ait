@@ -20,15 +20,10 @@ def path_length_check(path):
 
 def path_white_list_check(path):
     regex = re.compile(r"[^_A-Za-z0-9/.-]")
-    if not regex.search(path):
+    if regex.search(path):
         logger.error(f"path:{path} contains illegal char")
         return False
     return True
-
-
-def normal_string_white_list_check(unknown_str):
-    regex = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
-    return not regex.search(unknown_str)
 
 
 def path_exist_check(path):
