@@ -305,7 +305,7 @@ def json_to_msprof_cmd(acl_json_path):
 
 def regenerate_cmd(args:BenchMarkArgsAdapter):
     args_dict = args.get_all_args_dict()
-    cmd = sys.executable + " "
+    cmd = sys.executable + " -m ais_bench"
     for key, value in args_dict.items():
         if key == '--acl_json_path':
             continue
