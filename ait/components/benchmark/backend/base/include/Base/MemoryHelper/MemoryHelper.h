@@ -71,7 +71,8 @@ private:
 struct MemorySummary {
     std::vector<float> H2DTimeList;
     std::vector<float> D2HTimeList;
-    void Reset() {
+    void Reset()
+    {
         H2DTimeList.clear();
         D2HTimeList.clear();
     }

@@ -649,14 +649,27 @@ std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string 
 }
 
 #ifdef COMPILE_PYTHON_MODULE
-void RegistInferenceSession(py::module &m)
+void RegistTensor(py::module &m)
 {
     using namespace pybind11::literals;
 
     py::class_<Base::BaseTensor>(m, "BaseTensor")
-        .def(py::init<int64_t, int64_t>())
-        .def_readwrite("buf", &Base::BaseTensor::buf)
-        .def_readwrite("size", &Base::BaseTensor::size);
+    .def(py::init<int64_t, int64_t>())
+    .def_readwrite("buf", &Base::BaseTensor::buf)
+    .def_readwrite("size", &Base::BaseTensor::size);
+
+    py::class_<Base::TensorDesc>(m, "tensor_desc")
+    .def(pybind11::init<>())
+    .def_readwrite("name", &Base::TensorDesc::name)
+    .def_readwrite("datatype", &Base::TensorDesc::datatype)
+    .def_readwrite("format", &Base::TensorDesc::format)
+    .def_readwrite("shape", &Base::TensorDesc::shape)
+    .def_readwrite("realsize", &Base::TensorDesc::realsize)
+    .def_readwrite("size", &Base::TensorDesc::size);
+}
+void RegistOptions(py::module &m)
+{
+    using namespace pybind11::literals;
 
     py::class_<Base::SessionOptions, std::shared_ptr<Base::SessionOptions>>(m, "session_options")
     .def(py::init([]() { return std::make_shared<Base::SessionOptions>(); }))
@@ -673,15 +686,11 @@ void RegistInferenceSession(py::module &m)
     .def_readwrite("pure_infer_mode", &Base::InferOptions::pureInferMode)
     .def_readwrite("output_names", &Base::InferOptions::outputNames)
     .def_readwrite("shapes_list", &Base::InferOptions::shapesList);
+}
 
-    py::class_<Base::TensorDesc>(m, "tensor_desc")
-    .def(pybind11::init<>())
-    .def_readwrite("name", &Base::TensorDesc::name)
-    .def_readwrite("datatype", &Base::TensorDesc::datatype)
-    .def_readwrite("format", &Base::TensorDesc::format)
-    .def_readwrite("shape", &Base::TensorDesc::shape)
-    .def_readwrite("realsize", &Base::TensorDesc::realsize)
-    .def_readwrite("size", &Base::TensorDesc::size);
+void RegistInferenceSession(py::module &m)
+{
+    using namespace pybind11::literals;
 
     py::class_<Base::InferSumaryInfo>(m, "sumary")
     .def(pybind11::init<>())
@@ -717,6 +726,8 @@ void RegistInferenceSession(py::module &m)
     model.def_static("finalize", &Base::PyInferenceSession::Finalize);
 
     RegistAippConfig(model);
+    RegistOptions(m);
+    RegistTensor(m);
 
     m.def("model", &CreateModelInstance, "modelPath"_a, "deviceId"_a = 0, "options"_a=py::none());
 }

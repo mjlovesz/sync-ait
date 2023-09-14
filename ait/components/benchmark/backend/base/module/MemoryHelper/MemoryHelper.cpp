@@ -15,10 +15,10 @@
  */
 
 #include "Base/MemoryHelper/MemoryHelper.h"
+#include <sys/time.h>
 #include "acl/acl.h"
 #include "acl/ops/acl_dvpp.h"
 #include "Base/Log/Log.h"
-#include <sys/time.h>
 
 namespace Base {
 using MemeoryDataFreeFuncPointer = APP_ERROR (*)(void*);
