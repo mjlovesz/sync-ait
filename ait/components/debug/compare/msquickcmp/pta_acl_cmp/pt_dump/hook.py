@@ -25,22 +25,25 @@ def dump_output_hook():
         if not os.path.exists(token_dir):
             os.mkdir(token_dir)
 
-        out_data_path = os.path.join(token_dir, "{}_output.bin")
+        out_data_path = os.path.join(token_dir, "{}_output.npy".format(module.name))
         np.save(out_data_path, outputs.cpu().numpy())
 
         metadata_path = os.path.join(pid_dir, "metadata.json")
+        infer_step_key = str(infer_step)
         if os.path.exists(metadata_path):
             with open(metadata_path, "r") as file:
                 metadata = json.load(file)
-            if metadata.get(infer_step):
-                metadata.get(infer_step).append({w_md5: [out_data_path]})
+            if metadata.get(infer_step_key):
+                metadata.get(infer_step_key).setdefault(w_md5, [out_data_path])
             else:
-                metadata.setdefault(infer_step, {w_md5: [out_data_path]})
+                metadata.setdefault(infer_step_key, {w_md5: [out_data_path]})
         else:
-            metadata = {infer_step: {w_md5: [out_data_path]}}
+            metadata = {infer_step_key: {w_md5: [out_data_path]}}
 
         with open(metadata_path, "w") as file:
             json.dump(metadata, file)
+
+        infer_step += 1
 
     return hook_func
 
