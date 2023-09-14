@@ -619,15 +619,11 @@ def args_rules(args):
         logger.error("when dump or profiler, miss output path, please check them!")
         raise RuntimeError('miss output parameter!')
 
-    # 判断--aipp_config 文件是否是存在的.config文件
-    if args.aipp_config is not None:
-        if (os.path.splitext(args.aipp_config)[-1] == ".config"):
-            if (not os.path.isfile(args.aipp_config)):
-                logger.error("can't find the path of config file, please check it!")
-                raise RuntimeError('wrong aipp config file path!')
-        else:
-            logger.error("aipp config file is not a .config file, please check it!")
-            raise RuntimeError('wrong aipp config file type!')
+    # check --aipp_config file
+    try:
+        config_check(args.aipp_config)
+    except Exception:
+        raise Exception(f"aipp_config path check failed")
 
     if not args.auto_set_dymshape_mode and not args.auto_set_dymdims_mode:
         args.no_combine_tensor_mode = False
@@ -724,7 +720,6 @@ def benchmark_process(args:BenchMarkArgsAdapter):
     args = args_rules(args)
     version_check(args)
     args = acl_json_base_check(args)
-    config_check(args.aipp_config)
 
     if args.perf:
         backend_run(args)
