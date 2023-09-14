@@ -699,7 +699,7 @@ def config_check(config_path):
         raise TypeError(f"aipp_config:{config_path} is not a .config file")
     config_size = os.path.getsize(config_path)
     if config_size > max_config_size:
-        logger.error(f"json_file_size:{config_size} byte out of max limit {max_config_size} byte")
+        logger.error(f"aipp_config_size:{config_size} byte out of max limit {max_config_size} byte")
         raise MemoryError(f"json_file_size:{config_size} byte out of max limit")
     return
 
