@@ -39,6 +39,16 @@ MSACCUCMP_FILE_PATH =  "tools/operator_cmp/compare/msaccucmp.py"
 CANN_PATH = "/usr/local/Ascend/ascend-toolkit/latest"
 
 
+def path_white_list_check(path):
+    regex = re.compile(r"[^_A-Za-z0-9/.-]")
+    return regex.match(path)
+
+
+def nomral_string_white_list_check(unknown_str):
+    regex = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
+    return regex.match(unknown_str)
+
+
 def file_user_correct_check(file_path):
     file_stat = os.stat(file_path)
     current_user_id = os.getuid()

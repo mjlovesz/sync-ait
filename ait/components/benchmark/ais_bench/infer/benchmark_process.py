@@ -45,8 +45,8 @@ from ais_bench.infer.summary import summary
 from ais_bench.infer.miscellaneous import (dymshape_range_run, get_acl_json_path, version_check,
                                            get_batchsize, ACL_JSON_CMD_LIST)
 from ais_bench.infer.utils import (get_file_content, get_file_datasize, file_user_correct_check,
-                                   get_fileslist_from_dir, list_split, list_share, logger,
-                                   save_data_to_files, create_fake_file_name,
+                                   get_fileslist_from_dir, list_split, list_share, path_white_list_check,
+                                   save_data_to_files, create_fake_file_name, logger, nomral_string_white_list_check,
                                    create_tmp_acl_json, move_subdir, convert_helper)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
@@ -685,6 +685,8 @@ def acl_json_base_check(args):
 def config_check(config_path):
     if not config_path:
         return
+    if not path_white_list_check(config_path):
+        raise Exception(f"aipp_config:{config_path} is illegal")
     max_config_size = 12800
     if os.path.islink(config_path):
         raise Exception(f"aipp_config:{config_path} is a symbolic link, considering security, not supported")
