@@ -44,10 +44,12 @@ from ais_bench.infer.io_oprations import (create_infileslist_from_inputs_list,
 from ais_bench.infer.summary import summary
 from ais_bench.infer.miscellaneous import (dymshape_range_run, get_acl_json_path, version_check,
                                            get_batchsize, ACL_JSON_CMD_LIST)
-from ais_bench.infer.utils import (get_file_content, get_file_datasize, file_owner_correct_check, path_length_check,
-                                   get_fileslist_from_dir, list_split, list_share, path_white_list_check,
-                                   save_data_to_files, create_fake_file_name, logger, normal_string_white_list_check,
+from ais_bench.infer.utils import (get_file_content, get_file_datasize,
+                                   get_fileslist_from_dir, list_split, list_share,
+                                   save_data_to_files, create_fake_file_name, logger,
                                    create_tmp_acl_json, move_subdir, convert_helper)
+from ais_bench.infer.path_security_check import (path_length_check, path_symbolic_link_check,
+                                                 path_exist_check, path_white_list_check, path_owner_correct_check)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
 
@@ -287,6 +289,9 @@ def get_legal_json_content(acl_json_path):
     profile_dict = json_dict.get("profiler")
     for option_cmd in ACL_JSON_CMD_LIST:
         if profile_dict.get(option_cmd):
+            if option_cmd == "output":
+                if not args_not_exsit_path_check(profile_dict.get(option_cmd)):
+                    raise Exception(f"output path in acl_json is illegal!")
             cmd_dict.update({"--" + option_cmd.replace('_', '-'): profile_dict.get(option_cmd)})
             if (option_cmd == "sys_hardware_mem_freq"):
                 cmd_dict.update({"--sys-hardware-mem": "on"})
@@ -664,22 +669,11 @@ def acl_json_base_check(args):
     if args.acl_json_path is None:
         return args
     json_path = args.acl_json_path
-    if not path_white_list_check(json_path):
-        raise Exception(f"acl_json_path:{json_path} contains illegal char")
     max_json_size = 8192 # 8KB 30 * 255 byte左右
-    if os.path.islink(json_path):
-        raise Exception(f"acl_json_path:{json_path} is a symbolic link, considering security, not supported")
     if os.path.splitext(json_path)[1] != ".json":
         logger.error(f"acl_json_path:{json_path} is not a .json file")
         raise TypeError(f"acl_json_path:{json_path} is not a .json file")
-    if not path_length_check(json_path):
-        raise Exception(f"acl_json_path:path length is illegal")
-    if not os.path.exists(os.path.realpath(json_path)):
-        logger.error(f"acl_json_path:{json_path} not exist")
-        raise FileExistsError(f"acl_json_path:{json_path} not exist")
     json_size = os.path.getsize(json_path)
-    if not file_owner_correct_check(json_path):
-        raise Exception(f"current user isn't json_file:{json_path}'s owner and ownergroup|")
     if json_size > max_json_size:
         logger.error(f"acl_json_file_size:{json_size} byte out of max limit {max_json_size} byte")
         raise MemoryError(f"acl_json_file_size:{json_size} byte out of max limit")
@@ -699,26 +693,57 @@ def acl_json_base_check(args):
 def config_check(config_path):
     if not config_path:
         return
-    if not path_white_list_check(config_path):
-        raise Exception(f"aipp_config:{config_path} contains illegal char")
     max_config_size = 12800
-    if os.path.islink(config_path):
-        raise Exception(f"aipp_config:{config_path} is a symbolic link, considering security, not supported")
     if os.path.splitext(config_path)[1] != ".config":
         logger.error(f"aipp_config:{config_path} is not a .config file")
         raise TypeError(f"aipp_config:{config_path} is not a .config file")
-    if not path_length_check(config_path):
-        raise Exception(f"aipp_config:path length is illegal")
-    if not os.path.exists(os.path.realpath(config_path)):
-        logger.error(f"aipp_config:{config_path} not exist")
-        raise FileExistsError(f"aipp_config:{config_path} not exist")
     config_size = os.path.getsize(config_path)
     if config_size > max_config_size:
         logger.error(f"json_file_size:{config_size} byte out of max limit {max_config_size} byte")
         raise MemoryError(f"json_file_size:{config_size} byte out of max limit")
-    if not file_owner_correct_check(config_path):
-        raise Exception(f"current user isn't json_file:{config_path}'s owner and ownergroup")
     return
+
+
+def args_exist_path_check(path):
+    # check path which should be exist
+    if not path_length_check(path):
+        return False
+    if not path_white_list_check(path):
+        return False
+    if not path_exist_check(path):
+        return False
+    if not path_symbolic_link_check(path):
+        return False
+    if not path_owner_correct_check(path):
+        return False
+    return True
+
+
+def args_not_exsit_path_check(path):
+    # check path which no need to be exist
+    if not path_length_check(path):
+        return False
+    if not path_white_list_check(path):
+        return False
+    return True
+
+
+def args_pathes_base_check(args:BenchMarkArgsAdapter):
+    # check input
+    if not args_exist_path_check(args.input):
+        raise Exception(f"input path base check failed!")
+    # check output
+    if not args_not_exsit_path_check(args.output):
+        raise Exception(f"output path base check failed!")
+    # check output_dirname
+    if not args_not_exsit_path_check(args.output_dirname):
+        raise Exception(f"output_dirname path base check failed!")
+    # check input
+    if not args_exist_path_check(args.acl_json_path):
+        raise Exception(f"acl_json_path path base check failed!")
+    # check input
+    if not args_exist_path_check(args.aipp_config):
+        raise Exception(f"aipp_config path base check failed!")
 
 
 def backend_run(args):
@@ -731,6 +756,7 @@ def backend_run(args):
 
 
 def benchmark_process(args:BenchMarkArgsAdapter):
+    args_pathes_base_check(args)
     args = args_rules(args)
     version_check(args)
     args = acl_json_base_check(args)

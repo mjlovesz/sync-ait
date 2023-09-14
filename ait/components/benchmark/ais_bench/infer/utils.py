@@ -17,8 +17,6 @@ import os
 import sys
 import stat
 import re
-import grp
-import pwd
 import uuid
 from pickle import NONE
 import logging
@@ -39,39 +37,6 @@ WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 MSACCUCMP_FILE_PATH =  "tools/operator_cmp/compare/msaccucmp.py"
 CANN_PATH = "/usr/local/Ascend/ascend-toolkit/latest"
-
-
-def path_length_check(path):
-    if len(path) > 4096:
-        logger.error(f"file total path length out of range (4096)")
-        return False
-    filename = os.path.basename(path)
-    if len(filename) > 255:
-        logger.error(f"file name length out of range (255)")
-        return False
-    return True
-
-
-def path_white_list_check(path):
-    regex = re.compile(r"[^_A-Za-z0-9/.-]")
-    return not regex.search(path)
-
-
-def normal_string_white_list_check(unknown_str):
-    regex = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
-    return not regex.search(unknown_str)
-
-
-def file_owner_correct_check(file_path):
-    file_stat = os.stat(file_path)
-    current_owner_id = os.getuid()
-    current_group_id = os.getgid()
-    file_owner_id = file_stat.st_uid
-    file_group_id = file_stat.st_gid
-    if current_owner_id == file_owner_id and current_group_id == file_group_id:
-        return True
-    else:
-        return False
 
 
 # Split a List Into Even Chunks of N Elements
