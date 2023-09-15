@@ -15,10 +15,10 @@
  */
 
 #include "Base/MemoryHelper/MemoryHelper.h"
+#include <sys/time.h>
 #include "acl/acl.h"
 #include "acl/ops/acl_dvpp.h"
 #include "Base/Log/Log.h"
-#include <sys/time.h>
 
 namespace Base {
 using MemeoryDataFreeFuncPointer = APP_ERROR (*)(void*);
@@ -182,6 +182,16 @@ APP_ERROR MemoryHelper::Memset(MemoryData& data, int32_t value, size_t count)
     return ret;
 }
 
+void AddCostTime(float time, string type)
+{
+    std::lock_guard<std::mutex> lock(g_MemorySummary.mtx_);
+    if (type == "h2d") {
+        g_MemorySummary.H2DTimeList.push_back(time);
+    } else if (type == "d2h") {
+        g_MemorySummary.D2HTimeList.push_back(time);
+    }
+}
+
 APP_ERROR MemoryHelper::Memcpy(MemoryData& dest, const MemoryData& src, size_t count)
 {
     if (dest.size == 0 && src.size == 0) {
@@ -202,7 +212,7 @@ APP_ERROR MemoryHelper::Memcpy(MemoryData& dest, const MemoryData& src, size_t c
         ret = aclrtMemcpy(dest.ptrData, dest.size, src.ptrData, count, ACL_MEMCPY_DEVICE_TO_HOST);
         gettimeofday(&end, nullptr);
         costTime = sec_to_usec * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / sec_to_usec;
-        g_MemorySummary.D2HTimeList.push_back(costTime);
+        AddCostTime(costTime, "d2h");
     } else if (IsHostToHost(dest, src)) {
         ret = aclrtMemcpy(dest.ptrData, dest.size, src.ptrData, count, ACL_MEMCPY_HOST_TO_HOST);
     } else if (IsDeviceToDevice(dest, src)) {
@@ -212,7 +222,7 @@ APP_ERROR MemoryHelper::Memcpy(MemoryData& dest, const MemoryData& src, size_t c
         ret = aclrtMemcpy(dest.ptrData, dest.size, src.ptrData, count, ACL_MEMCPY_HOST_TO_DEVICE);
         gettimeofday(&end, nullptr);
         costTime = sec_to_usec * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / sec_to_usec;
-        g_MemorySummary.H2DTimeList.push_back(costTime);
+        AddCostTime(costTime, "h2d");
     }
     if (ret != APP_ERR_OK) {
         cout << aclGetRecentErrMsg() << endl;
