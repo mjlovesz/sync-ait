@@ -744,10 +744,10 @@ def args_pathes_base_check(args:BenchMarkArgsAdapter):
     # check output_dirname
     if not args_not_exsit_path_check(args.output_dirname):
         raise Exception(f"output_dirname path base check failed!")
-    # check input
+    # check acl-json-path
     if not args_exist_path_check(args.acl_json_path):
         raise Exception(f"acl_json_path path base check failed!")
-    # check input
+    # check aipp_config
     if not args_exist_path_check(args.aipp_config):
         raise Exception(f"aipp_config path base check failed!")
 
