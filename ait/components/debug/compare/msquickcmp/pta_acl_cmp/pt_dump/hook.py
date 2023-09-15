@@ -29,7 +29,7 @@ def dump_output_hook():
         if not os.path.exists(token_dir):
             os.mkdir(token_dir)
 
-        out_data_path = os.path.join(token_dir, "{}_output.npy".format(module.name))
+        out_data_path = os.path.abspath(os.path.join(token_dir, "{}_output.npy".format(module.name)))
         np.save(out_data_path, outputs.cpu().numpy())
 
         metadata_path = os.path.join(pid_dir, "metadata.json")
