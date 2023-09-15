@@ -5,6 +5,8 @@ import os
 import numpy as np
 from torch import nn
 
+from msquickcmp.pta_acl_cmp.constant import AIT_DIALOG_DUMP_PATH
+
 
 def dump_output_hook():
     infer_step = 0
@@ -15,9 +17,11 @@ def dump_output_hook():
 
         nonlocal infer_step
         w_md5 = hashlib.md5(module.weight.cpu().numpy().tobytes()).hexdigest()
+
+        ait_dialog_dump_path = os.getenv(AIT_DIALOG_DUMP_PATH)
+        ait_dialog_dump_path = "" or ait_dialog_dump_path
         pid = os.getpid()
-        cur_dir = os.getcwd()
-        pid_dir = os.path.join(cur_dir, str(pid))
+        pid_dir = os.path.join(ait_dialog_dump_path, str(pid))
         if not os.path.exists(pid_dir):
             os.mkdir(pid_dir)
 
@@ -48,7 +52,33 @@ def dump_output_hook():
     return hook_func
 
 
-def register_hook(model):
+def register_hook(model, op_list=[]):
+    if not isinstance(model, nn.Module):
+        raise TypeError("model must be nn.Module.")
+    if not isinstance(op_list, list):
+        raise TypeError("op_list must be list.")
     for name, module in model.named_modules():
-        module.name = name
-        module.register_forward_hook(dump_output_hook())
+        if op_list:
+            for op_type in op_list:
+                if not isinstance(module, op_type):
+                    continue
+                module.name = name
+                module.register_forward_hook(dump_output_hook())
+        else:
+            module.name = name
+            module.register_forward_hook(dump_output_hook())
+
+
+def set_dump_path(dump_path, dump_tag="ait_dump", backend="pt"):
+    if not os.path.exists(dump_path):
+        os.mkdir(dump_path)
+
+    dialog_path = os.path.join(dump_path, dump_tag)
+    if not os.path.exists(dialog_path):
+        os.mkdir(dialog_path)
+
+    os.environ[AIT_DIALOG_DUMP_PATH] = dialog_path
+
+    if backend == "acl":
+        # TODO: set LD_PRELOAD
+        pass
