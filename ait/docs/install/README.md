@@ -43,16 +43,33 @@ ait推理工具的安装包括**ait包**和**依赖的组件包**的安装，其
     > * 普通用户下`ACTUAL_CANN_PATH`一般为`$HOME`，root用户下一般为`/usr/local`
     
 
+- 如果安装过程中，出现以下提示：
+
+  ```shell
+  WARNING: env ASCEND_HOME is not set. aie command cannot be used.
+  ```
+
+  如果不使用ait convert aie命令，忽略此告警。
+
+- 如果安装过程中，出现以下提示：
+
+  ```shell
+  WARNING: env ACLTRANSFORMER_HOME_PATH is not set. Dump on demand package cannot be used.
+  ```
+
+  如果不使用大模型精度比对功能，忽略此告警。
+
 #### 源代码一键式安装
 
 ```shell
 git clone https://gitee.com/ascend/ait.git
+# 1. git pull origin 更新最新代码 
 cd ait/ait
 
-# 1. 添加执行权限
+# 2. 添加执行权限
 chmod u+x install.sh
 
-# 2. 以下install.sh根据情况选一个执行
+# 3. 以下install.sh根据情况选一个执行
 # a. 安装ait，包括debug、profile、benchmark、transplt、analyze等组件（不安装clang等系统依赖库，只影响transplt功能）
 ./install.sh
   
