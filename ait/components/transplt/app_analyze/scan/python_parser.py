@@ -139,7 +139,7 @@ class PythonAPIVisitor(libcst.CSTVisitor):
         if "." in name:
             pos = name.rindex(".") + 1
         infer_result = self.script.infer(position.start.line, position.start.column + pos)
-        if infer_result and len(infer_result) > 0:
+        if infer_result and len(infer_result) > 0 and not infer_result[0].full_name.startswith("builtins"):
             return infer_result[0].full_name
         name_list = list(self.get_metadata(libcst.metadata.QualifiedNameProvider, node))
         if name_list:

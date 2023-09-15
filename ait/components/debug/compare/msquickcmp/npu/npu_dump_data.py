@@ -357,25 +357,13 @@ class NpuDumpData(DumpData):
         return data_dir
     
     def _get_inputs_info_from_aclruntime(self):
-        import shlex
-        cmd = 'python3 -c \'import aclruntime;options = aclruntime.session_options();' \
-              'aa = aclruntime.InferenceSession("%s", %s, options); ' \
-              'print([{"shape":ii.shape, "dtype":ii.datatype.name} for ii in aa.get_inputs()])\'' \
-              % (self.offline_model_path, self.device)
+        import aclruntime
+        options = aclruntime.session_options()
+        aa = aclruntime.InferenceSession(self.offline_model_path, int(self.device), options)
+        shape_list = [ii.shape for ii in aa.get_inputs()]
+        dtype_list = [ii.datatype.name for ii in aa.get_inputs()]
 
-        # aclruntime can't get another session after the first session.finalize(), so setup a sub process
-        # to execute cmd, that to avoid this problem.
-        proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, shell=False)
-        try:
-            out, errs = proc.communicate(timeout=(60 * 5))
-        except subprocess.TimeoutExpired:
-            proc.kill()
-        if proc.returncode != 0:
-            utils.logger.error('Failed to execute command:%s, returncode:%d' % (cmd, proc.returncode))
-            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
-        result = json.loads(out.decode().split('\n')[0].replace("'", '"'))
-        shape_list = [ii["shape"] for ii in result]
-        dtype_list = [ii["dtype"] for ii in result]
+        aa.free_resource()
         return shape_list, dtype_list
 
     def _generate_inputs_data_without_aipp(self, input_dir):

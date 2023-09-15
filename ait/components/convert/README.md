@@ -38,7 +38,7 @@ ait convert atc [args]
 
 使用示例：
 ```shell
-ait convert atc --model resnet50.onnx --framework 5 --soc_version 310P3 --output resnet50
+ait convert atc --model resnet50.onnx --framework 5 --soc_version Ascend310P3 --output resnet50
 ```
 ### aoe命令
 使用AOE后端进行模型转换，命令格式如下：
