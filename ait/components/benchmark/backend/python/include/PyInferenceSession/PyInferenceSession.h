@@ -126,6 +126,8 @@ private:
 
 #ifdef COMPILE_PYTHON_MODULE
     void RegistInferenceSession(py::module &m);
+    void RegistTensor(py::module &m);
+    void RegistOptions(py::module &m);
     void RegistAippConfig(py::class_<Base::PyInferenceSession, std::shared_ptr<Base::PyInferenceSession>>& model);
 #endif
 
