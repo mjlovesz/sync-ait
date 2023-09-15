@@ -280,7 +280,10 @@ def get_file_name(file_path: str, suffix: str, res_file_path: list) -> list:
         else:
             res_file_path.append(os.path.join(file_path, file))
     # endswith：表示以suffix结尾。可根据需要自行修改；如：startswith：表示以suffix开头，__contains__：包含suffix字符串
-    return res_file_path if suffix == '' or suffix is None else list(filter(lambda x: x.endswith(suffix), res_file_path))
+    if suffix == '' or suffix is None:
+        return res_file_path
+    else:
+        return list(filter(lambda x: x.endswith(suffix), res_file_path))
 
 
 def get_legal_json_content(acl_json_path):
@@ -528,7 +531,7 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
     logger.info("end_to_end_time (s):%s", end_time - start_time)
     if args.energy_consumption and args.npu_id:
-        energy_consumption = ((float(end_energy_consumption) + float(start_energy_consumption)) / 2.0 ) \
+        energy_consumption = ((float(end_energy_consumption) + float(start_energy_consumption)) / 2.0) \
             * (end_time - start_time)
         logger.info(f"NPU ID:{args.npu_id} energy consumption(J):{energy_consumption}")
     if msgq is not None:
