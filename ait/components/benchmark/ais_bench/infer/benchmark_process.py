@@ -456,6 +456,10 @@ def main(args, index=0, msgq=None, device_list=None):
             output_prefix = None
 
     inputs_list = [] if args.input is None else args.input.split(',')
+    for input_path in inputs_list:
+        # check input path is legal
+        if not args_exist_path_check(input_path):
+            raise Exception(f"input path base check failed!")
 
     # create infiles list accord inputs list
     if len(inputs_list) == 0:
@@ -734,9 +738,6 @@ def args_not_exsit_path_check(path):
 
 
 def args_pathes_base_check(args:BenchMarkArgsAdapter):
-    # check input
-    if not args_exist_path_check(args.input):
-        raise Exception(f"input path base check failed!")
     # check output
     if not args_not_exsit_path_check(args.output):
         raise Exception(f"output path base check failed!")
