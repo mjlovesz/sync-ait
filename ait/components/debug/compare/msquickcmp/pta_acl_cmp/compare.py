@@ -25,8 +25,7 @@ from msquickcmp.pta_acl_cmp.constant import ATTR_END, ATTR_OBJECT_LENGTH, ATTR_O
     ATTR_OBJECT_PREFIX, PTA, ACL, DATA_ID, PTA_DATA_PATH, ACL_DATA_PATH, PTA_DTYPE, PTA_SHAPE, \
     PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE, PTA_STACK, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, \
     ACL_MIN_VALUE, ACL_MEAN_VALUE, ACL_STACK, CMP_FLAG, CMP_FAIL_REASON, CSV_HEADER, \
-    MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE
-
+    MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE, TOKEN_ID
 
 CSV_HEADER.extend(list(cmp_alg_map.keys()))
 CSV_HEADER.append(CMP_FAIL_REASON)
@@ -355,19 +354,39 @@ def read_acl_transformer_data(file_path):
     raise ValueError("Tensor file path must be end with .bin.")
 
 
-def compare_metadata(golden_path, acl_path):
+def compare_metadata(golden_path, acl_path, output_path="./"):
     golden_meta = json.load(golden_path)
     acl_meta = json.load(acl_path)
+    data_frame = pd.DataFrame(columns=[TOKEN_ID] + CSV_HEADER, index=[0])
     for token_id, g_data in golden_meta.items():
         acl_data = acl_meta.get(token_id)
         if not acl_data:
             continue
         for w_md5, g_data_path in g_data.items():
-            golden_data = np.load(g_data_path)
-            a_data_path = acl_data.get(w_md5)
-            if not a_data_path:
+            golden_data = np.load(g_data_path[0])
+            a_data_dir = acl_data.get(w_md5)
+            if not a_data_dir:
                 print("weight md5: {}, data_path is none.".format(w_md5))
-            acl_data = read_acl_transformer_data(a_data_path)
-            cos_sim = cmp_alg_map.get("cosine_similarity")(golden_data, acl_data)
+                continue
+            a_data_path = os.path.join(a_data_dir[0], "outtensor0.bin")
+            a_out_data = read_acl_transformer_data(a_data_path)
+            cos_sim = cmp_alg_map.get("cosine_similarity")(golden_data, a_out_data)
             print("weight md5: {}, cos_sim: {}".format(w_md5, cos_sim))
 
+            row_data = pd.DataFrame({
+                TOKEN_ID: [str(token_id)],
+                DATA_ID: [w_md5],
+                PTA_DATA_PATH: [g_data_path[0]],
+                PTA_DTYPE: [str(golden_data.dtype)],
+                PTA_SHAPE: [str(golden_data.shape)],
+                ACL_DATA_PATH: [a_data_path],
+                ACL_DTYPE: [str(a_out_data.dtype)],
+                ACL_SHAPE: [str(a_out_data)],
+                CMP_FLAG: [False]
+            })
+
+            data_frame = pd.concat([data_frame, row_data], ignore_index=True)
+
+    cmp_data_frame = compare_tensor(data_frame)
+    cmp_data_frame.dropna(axis=0, how="all", inplace=True)
+    cmp_data_frame.to_csv(os.path.join(output_path, "cmp_report.csv"), index=False)
