@@ -381,25 +381,17 @@ def compare_metadata(golden_path, acl_path, output_path="./"):
         if not acl_data:
             continue
         for w_md5, g_data_path in g_data.items():
-            golden_data = np.load(g_data_path[0])
             a_data_dir = acl_data.get(w_md5)
             if not a_data_dir:
                 print("weight md5: {}, data_path is none.".format(w_md5))
                 continue
             a_data_path = os.path.join(a_data_dir[0], "outtensor0.bin")
-            a_out_data = read_acl_transformer_data(a_data_path)
-            cos_sim = cmp_alg_map.get("cosine_similarity")(golden_data, a_out_data)
-            print("weight md5: {}, cos_sim: {}".format(w_md5, cos_sim))
 
             row_data = pd.DataFrame({
                 TOKEN_ID: [str(token_id)],
                 DATA_ID: [w_md5],
                 PTA_DATA_PATH: [g_data_path[0]],
-                PTA_DTYPE: [str(golden_data.dtype)],
-                PTA_SHAPE: [str(golden_data.shape)],
                 ACL_DATA_PATH: [a_data_path],
-                ACL_DTYPE: [str(a_out_data.dtype)],
-                ACL_SHAPE: [str(a_out_data)],
                 CMP_FLAG: [False]
             })
 
