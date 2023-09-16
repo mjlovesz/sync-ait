@@ -58,23 +58,17 @@ def save_pta_data(csv_data, data_id, data_val, data_path):
     data_val = data_val.cpu().numpy()
     mapping_data = csv_data[csv_data[DATA_ID] == data_id]
     if mapping_data.empty:
-        # data_val.tofile(data_path)
         np.save(data_path, data_val)
         row_data = pd.DataFrame({
             DATA_ID: [data_id],
             PTA_DATA_PATH: [data_path],
-            # PTA_DTYPE: [str(data_val.dtype)],
-            # PTA_SHAPE: [str(data_val.shape)],
             CMP_FLAG: [False]
         })
         csv_data = pd.concat([csv_data, row_data], ignore_index=True)
     else:
         index = mapping_data.index.values[0]
-        # data_val.tofile(data_path)
         np.save(data_path, data_val)
         csv_data[PTA_DATA_PATH][index] = data_path
-        # csv_data[PTA_DTYPE][index] = str(data_val.dtype)
-        # csv_data[PTA_SHAPE][index] = str(data_val.shape)
 
         # 对应的acl_data存在时，触发比对
         csv_data = compare_tensor(csv_data=csv_data)
@@ -89,23 +83,17 @@ def save_acl_data(csv_data, data_id, data_val, data_path):
     data_val = data_val.cpu().numpy()
     mapping_data = csv_data[csv_data[DATA_ID] == data_id]
     if mapping_data.empty:
-        # data_val.tofile(data_path)
         np.save(data_path, data_val)
         row_data = pd.DataFrame({
             DATA_ID: [data_id],
             ACL_DATA_PATH: [data_path],
-            # ACL_DTYPE: [str(data_val.dtype)],
-            # ACL_SHAPE: [str(data_val.shape)],
             CMP_FLAG: [False]
         })
         csv_data = pd.concat([csv_data, row_data], ignore_index=True)
     else:
         index = mapping_data.index.values[0]
-        # data_val.tofile(data_path)
         np.save(data_path, data_val)
         csv_data[ACL_DATA_PATH][index] = data_path
-        # csv_data[ACL_DTYPE][index] = str(data_val.dtype)
-        # csv_data[ACL_SHAPE][index] = str(data_val.shape)
 
         # 对应的pta数据存在时，触发比对
         csv_data = compare_tensor(csv_data=csv_data)
