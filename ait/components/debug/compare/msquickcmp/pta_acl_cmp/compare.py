@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import json
 import os
 import time
 
@@ -352,3 +353,21 @@ def read_acl_transformer_data(file_path):
         return data.cpu().numpy()
 
     raise ValueError("Tensor file path must be end with .bin.")
+
+
+def compare_metadata(golden_path, acl_path):
+    golden_meta = json.load(golden_path)
+    acl_meta = json.load(acl_path)
+    for token_id, g_data in golden_meta.items():
+        acl_data = acl_meta.get(token_id)
+        if not acl_data:
+            continue
+        for w_md5, g_data_path in g_data.items():
+            golden_data = np.load(g_data_path)
+            a_data_path = acl_data.get(w_md5)
+            if not a_data_path:
+                print("weight md5: {}, data_path is none.".format(w_md5))
+            acl_data = read_acl_transformer_data(a_data_path)
+            cos_sim = cmp_alg_map.get("cosine_similarity")(golden_data, acl_data)
+            print("weight md5: {}, cos_sim: {}".format(w_md5, cos_sim))
+

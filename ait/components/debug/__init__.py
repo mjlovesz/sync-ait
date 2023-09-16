@@ -30,4 +30,4 @@ help_info = "debug a wide variety of model issues"
 cmd_instances = []
 for entry_point in pkg_resources.iter_entry_points('debug_sub_task'):
     cmd_instances.append(entry_point.load()())
-debug_cmd = DebugCommand("debug", help_info, cmd_instances)
+debug_cmd = DebugCommand("debug", help_info, cmd_instances) if cmd_instances else None
