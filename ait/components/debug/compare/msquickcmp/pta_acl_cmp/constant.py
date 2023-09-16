@@ -1,3 +1,5 @@
+from msquickcmp.pta_acl_cmp.cmp_algorithm import cmp_alg_map
+
 ATTR_VERSION = "$Version"
 ATTR_END = "$End"
 ATTR_OBJECT_LENGTH = "$Object.Length"
@@ -25,6 +27,8 @@ CMP_FLAG = "cmp_flag"
 CMP_FAIL_REASON = "cmp_fail_reason"
 CSV_HEADER = [DATA_ID, PTA_DATA_PATH, PTA_DTYPE, PTA_SHAPE, PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE,
               ACL_DATA_PATH, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, CMP_FLAG]
+CSV_HEADER.extend(list(cmp_alg_map.keys()))
+CSV_HEADER.append(CMP_FAIL_REASON)
 
 MODEL_INFER_TASK_ID = "AIT_CMP_TASK_ID"
 AIT_CMP_TASK_DIR = 'AIT_CMP_TASK_DIR'

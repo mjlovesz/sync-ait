@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 
 from msquickcmp.pta_acl_cmp.cmp_algorithm import cmp_alg_map
-from msquickcmp.pta_acl_cmp.compare import _get_data_info
+from msquickcmp.common.utils import logger
 from msquickcmp.pta_acl_cmp.constant import TOKEN_ID, CSV_HEADER, DATA_ID, PTA_DATA_PATH, ACL_DATA_PATH, CMP_FLAG, \
     CMP_FAIL_REASON, PTA_DTYPE, PTA_SHAPE, ACL_DTYPE, ACL_SHAPE, PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE, \
     ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, ATTR_END, ATTR_OBJECT_LENGTH, ATTR_OBJECT_PREFIX
@@ -86,7 +86,7 @@ def read_acl_transformer_data(file_path):
     if file_path.endswith(".bin"):
         bin = TensorBinFile(file_path)
         data = bin.get_data()
-        return data.cpu().numpy()
+        return data
 
     raise ValueError("Tensor file path must be end with .bin.")
 
@@ -100,8 +100,8 @@ def compare_tensor(csv_data: pd.DataFrame):
     for idx in data.index:
         # pta_data_path, pta_dtype, pta_shape = _get_data_info(data, idx, data_src="pta")
         # acl_data_path, acl_dtype, acl_shape = _get_data_info(data, idx, data_src="acl")
-        pta_data_path = _get_data_info(data, idx, data_src="pta")
-        acl_data_path = _get_data_info(data, idx, data_src="acl")
+        pta_data_path = _get_data_path(data, idx, data_src="pta")
+        acl_data_path = _get_data_path(data, idx, data_src="acl")
 
         if os.path.exists(pta_data_path):
             # pta_data = np.fromfile(pta_data_path, pta_dtype).reshape(pta_shape)
@@ -179,3 +179,13 @@ def compare_metadata(golden_path, acl_path, output_path="./"):
     cmp_data_frame = compare_tensor(data_frame)
     cmp_data_frame.dropna(axis=0, how="all", inplace=True)
     cmp_data_frame.to_csv(os.path.join(output_path, "cmp_report.csv"), index=False)
+
+
+def _get_data_path(data, idx, data_src):
+    if data_src == "pta":
+        path_key = PTA_DATA_PATH
+    else:
+        path_key = ACL_DATA_PATH
+
+    data_path = data[path_key][idx]
+    return data_path

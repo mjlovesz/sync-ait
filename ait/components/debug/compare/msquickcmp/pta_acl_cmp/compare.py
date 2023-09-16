@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import json
 import os
 import time
 
@@ -20,16 +19,10 @@ import numpy as np
 import torch
 
 from msquickcmp.common.utils import logger
-from msquickcmp.pta_acl_cmp.cmp_algorithm import cmp_alg_map
-from msquickcmp.pta_acl_cmp.constant import ATTR_END, ATTR_OBJECT_LENGTH, ATTR_OBJECT_COUNT, \
-    ATTR_OBJECT_PREFIX, PTA, ACL, DATA_ID, PTA_DATA_PATH, ACL_DATA_PATH, PTA_DTYPE, PTA_SHAPE, \
-    PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE, PTA_STACK, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, \
-    ACL_MIN_VALUE, ACL_MEAN_VALUE, ACL_STACK, CMP_FLAG, CMP_FAIL_REASON, CSV_HEADER, \
-    MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE, TOKEN_ID
+from msquickcmp.pta_acl_cmp.constant import DATA_ID, PTA_DATA_PATH, ACL_DATA_PATH, \
+    CMP_FLAG, CSV_HEADER, \
+    MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE
 from msquickcmp.pta_acl_cmp.utils import compare_tensor
-
-CSV_HEADER.extend(list(cmp_alg_map.keys()))
-CSV_HEADER.append(CMP_FAIL_REASON)
 
 token_counts = 0
 
@@ -209,28 +202,3 @@ def write_acl_map_file(tensor_path):
         with open(acl_map_file_path, mode="a") as file:
             file.write(tensor_path)
             file.write("\n")
-
-
-def _get_data_info(data, idx, data_src):
-    if data_src == "pta":
-        path_key = PTA_DATA_PATH
-        # dtype_key = PTA_DTYPE
-        # shape_key = PTA_SHAPE
-    else:
-        path_key = ACL_DATA_PATH
-        # dtype_key = ACL_DTYPE
-        # shape_key = ACL_SHAPE
-
-    data_path = data[path_key][idx]
-    # dtype = data[dtype_key][idx]
-    # shape = data[shape_key][idx]
-    # if isinstance(shape, str) and shape:
-    #     shape = [int(s) for s in shape[1:-1].split(',')]
-    #
-    # if isinstance(dtype, str) and dtype:
-    #     dtype = np.dtype(dtype)
-
-    return data_path
-
-
-
