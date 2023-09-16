@@ -64,21 +64,23 @@ def save_pta_data(csv_data, data_id, data_val, data_path):
     data_val = data_val.cpu().numpy()
     mapping_data = csv_data[csv_data[DATA_ID] == data_id]
     if mapping_data.empty:
-        data_val.tofile(data_path)
+        # data_val.tofile(data_path)
+        np.save(data_path, data_val)
         row_data = pd.DataFrame({
             DATA_ID: [data_id],
             PTA_DATA_PATH: [data_path],
-            PTA_DTYPE: [str(data_val.dtype)],
-            PTA_SHAPE: [str(data_val.shape)],
+            # PTA_DTYPE: [str(data_val.dtype)],
+            # PTA_SHAPE: [str(data_val.shape)],
             CMP_FLAG: [False]
         })
         csv_data = pd.concat([csv_data, row_data], ignore_index=True)
     else:
         index = mapping_data.index.values[0]
-        data_val.tofile(data_path)
+        # data_val.tofile(data_path)
+        np.save(data_path, data_val)
         csv_data[PTA_DATA_PATH][index] = data_path
-        csv_data[PTA_DTYPE][index] = str(data_val.dtype)
-        csv_data[PTA_SHAPE][index] = str(data_val.shape)
+        # csv_data[PTA_DTYPE][index] = str(data_val.dtype)
+        # csv_data[PTA_SHAPE][index] = str(data_val.shape)
 
         # 对应的acl_data存在时，触发比对
         csv_data = compare_tensor(csv_data=csv_data)
@@ -93,21 +95,23 @@ def save_acl_data(csv_data, data_id, data_val, data_path):
     data_val = data_val.cpu().numpy()
     mapping_data = csv_data[csv_data[DATA_ID] == data_id]
     if mapping_data.empty:
-        data_val.tofile(data_path)
+        # data_val.tofile(data_path)
+        np.save(data_path, data_val)
         row_data = pd.DataFrame({
             DATA_ID: [data_id],
             ACL_DATA_PATH: [data_path],
-            ACL_DTYPE: [str(data_val.dtype)],
-            ACL_SHAPE: [str(data_val.shape)],
+            # ACL_DTYPE: [str(data_val.dtype)],
+            # ACL_SHAPE: [str(data_val.shape)],
             CMP_FLAG: [False]
         })
         csv_data = pd.concat([csv_data, row_data], ignore_index=True)
     else:
         index = mapping_data.index.values[0]
-        data_val.tofile(data_path)
+        # data_val.tofile(data_path)
+        np.save(data_path, data_val)
         csv_data[ACL_DATA_PATH][index] = data_path
-        csv_data[ACL_DTYPE][index] = str(data_val.dtype)
-        csv_data[ACL_SHAPE][index] = str(data_val.shape)
+        # csv_data[ACL_DTYPE][index] = str(data_val.dtype)
+        # csv_data[ACL_SHAPE][index] = str(data_val.shape)
 
         # 对应的pta数据存在时，触发比对
         csv_data = compare_tensor(csv_data=csv_data)
@@ -213,25 +217,34 @@ def compare_tensor(csv_data: pd.DataFrame):
         return csv_data
 
     for idx in data.index:
-        pta_data_path, pta_dtype, pta_shape = _get_data_info(data, idx, data_src="pta")
-        acl_data_path, acl_dtype, acl_shape = _get_data_info(data, idx, data_src="acl")
+        # pta_data_path, pta_dtype, pta_shape = _get_data_info(data, idx, data_src="pta")
+        # acl_data_path, acl_dtype, acl_shape = _get_data_info(data, idx, data_src="acl")
+        pta_data_path = _get_data_info(data, idx, data_src="pta")
+        acl_data_path = _get_data_info(data, idx, data_src="acl")
 
         if os.path.exists(pta_data_path):
-            pta_data = np.fromfile(pta_data_path, pta_dtype).reshape(pta_shape)
+            # pta_data = np.fromfile(pta_data_path, pta_dtype).reshape(pta_shape)
+            pta_data = np.load(pta_data_path)
         else:
             csv_data[CMP_FAIL_REASON][idx] = "pta_data_path is not exist."
             csv_data[CMP_FLAG][idx] = True
             continue
 
         if os.path.exists(acl_data_path):
-            if acl_dtype and acl_shape:
-                acl_data = np.fromfile(acl_data_path, acl_dtype).reshape(acl_shape)
+            if acl_data_path.endswith(".npy"):
+                # acl_data = np.fromfile(acl_data_path, acl_dtype).reshape(acl_shape)
+                acl_data = np.load(acl_data_path)
             else:
                 acl_data = read_acl_transformer_data(acl_data_path)
         else:
             csv_data[CMP_FAIL_REASON][idx] = "acl_data_path is not exist."
             csv_data[CMP_FLAG][idx] = True
             continue
+
+        csv_data[PTA_DTYPE][idx] = str(pta_data.dtype)
+        csv_data[PTA_SHAPE][idx] = str(pta_data.shape)
+        csv_data[ACL_DTYPE][idx] = str(acl_data.dtype)
+        csv_data[ACL_SHAPE][idx] = str(acl_data.shape)
 
         pta_data_fp32 = pta_data.reshape(-1).astype("float32")
         acl_data_fp32 = acl_data.reshape(-1).astype("float32")
@@ -255,23 +268,23 @@ def compare_tensor(csv_data: pd.DataFrame):
 def _get_data_info(data, idx, data_src):
     if data_src == "pta":
         path_key = PTA_DATA_PATH
-        dtype_key = PTA_DTYPE
-        shape_key = PTA_SHAPE
+        # dtype_key = PTA_DTYPE
+        # shape_key = PTA_SHAPE
     else:
         path_key = ACL_DATA_PATH
-        dtype_key = ACL_DTYPE
-        shape_key = ACL_SHAPE
+        # dtype_key = ACL_DTYPE
+        # shape_key = ACL_SHAPE
 
     data_path = data[path_key][idx]
-    dtype = data[dtype_key][idx]
-    shape = data[shape_key][idx]
-    if isinstance(shape, str) and shape:
-        shape = [int(s) for s in shape[1:-1].split(',')]
+    # dtype = data[dtype_key][idx]
+    # shape = data[shape_key][idx]
+    # if isinstance(shape, str) and shape:
+    #     shape = [int(s) for s in shape[1:-1].split(',')]
+    #
+    # if isinstance(dtype, str) and dtype:
+    #     dtype = np.dtype(dtype)
 
-    if isinstance(dtype, str) and dtype:
-        dtype = np.dtype(dtype)
-
-    return data_path, dtype, shape
+    return data_path
 
 
 class TensorBinFile:
