@@ -16,7 +16,7 @@
 #include <asdops/utils/filesystem/filesystem.h>
 
 
-std::string buf_md5(const unsigned char *buf, size_t buf_size)
+std::string bufMd5(const unsigned char *buf, size_t buf_size)
 {
     unsigned char hash[MD5_DIGEST_LENGTH];  // MD5_DIGEST_LENGTH is 16
 
@@ -127,7 +127,7 @@ void saveMd5ToFile(const AsdOps::Tensor &tensor, const std::string &filePath) {
         AsdRtMemCopy(hostData.data(), tensor.dataSize, tensor.data, tensor.dataSize, ASDRT_MEMCOPY_DEVICE_TO_HOST);
     ASD_LOG_IF(st != 0, ERROR) << "AsdRtMemCopy device to host fail for save tensor, ret:" << st;
 
-    std::string md5 = buf_md5((unsigned char*)hostData.data(), tensor.dataSize);
+    std::string md5 = bufMd5((unsigned char*)hostData.data(), tensor.dataSize);
 
     size_t sep_pos = filePath.rfind("/");
     std::string md5_filePath = filePath;
