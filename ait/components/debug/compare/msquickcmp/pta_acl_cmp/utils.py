@@ -163,8 +163,13 @@ def compare_metadata(golden_path, acl_path, output_path="./"):
     with open(golden_path, 'r') as file:
         golden_meta = json.load(file)
 
-    with open(acl_path, 'r') as file:
-        acl_meta = json.load(file)
+    if acl_path.endswith(".json"):
+        with open(acl_path, 'r') as file:
+            acl_meta = json.load(file)
+    else:
+        from msquickcmp.pta_acl_cmp import acl_metadata
+
+        acl_meta = acl_metadata.init_acl_metadata_by_dump_data(acl_path)
 
     data_frame = pd.DataFrame(columns=[TOKEN_ID] + CSV_HEADER, index=[0])
 
