@@ -355,9 +355,14 @@ def read_acl_transformer_data(file_path):
 
 
 def compare_metadata(golden_path, acl_path, output_path="./"):
-    golden_meta = json.load(golden_path)
-    acl_meta = json.load(acl_path)
+    with open(golden_path, 'r') as file:
+        golden_meta = json.load(file)
+
+    with open(acl_path, 'r') as file:
+        acl_meta = json.load(file)
+
     data_frame = pd.DataFrame(columns=[TOKEN_ID] + CSV_HEADER, index=[0])
+
     for token_id, g_data in golden_meta.items():
         acl_data = acl_meta.get(token_id)
         if not acl_data:
