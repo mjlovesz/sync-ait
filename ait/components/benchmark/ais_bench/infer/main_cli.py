@@ -38,7 +38,7 @@ def dym_range_string_check(value):
     if not value:
         return None
     dym_string = str(value)
-    regex = re.compile(r"[^_A-Za-z0-9/-~,;:]")
+    regex = re.compile(r"[^_A-Za-z0-9\-~,;:]")
     if regex.search(dym_string):
         raise argparse.ArgumentTypeError(f"dym range string \"{dym_string}\" is not a legal string")
     return dym_string
