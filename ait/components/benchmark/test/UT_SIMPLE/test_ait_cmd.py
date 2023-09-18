@@ -24,7 +24,7 @@ benchmark_command = BenchmarkCommand()
 current_dir = os.path.dirname(os.path.abspath(__file__))
 base_cmd_dict = {
     "--om-model": os.path.join(current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
-    "--input": "datasets/",
+    "--input": os.path.join(current_dir, "../testdata/resnet50/input/fake_dataset_bin_nor"),
     "--output": "output/",
     "--output-dirname": "outdir/",
     "--outfmt": "NPY",
@@ -62,7 +62,7 @@ base_cmd_dict = {
 
 simple_cmd_dict = {
     "-om": os.path.join(current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
-    "-i": "datasets/",
+    "-i": os.path.join(current_dir, "../testdata/resnet50/input/fake_dataset_bin_nor"),
     "-o": "output/",
     "-od": "outdir/",
     "--outfmt": "NPY",
