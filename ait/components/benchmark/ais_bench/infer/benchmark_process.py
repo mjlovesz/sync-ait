@@ -48,8 +48,7 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                                    get_fileslist_from_dir, list_split, list_share,
                                    save_data_to_files, create_fake_file_name, logger,
                                    create_tmp_acl_json, move_subdir, convert_helper)
-from ais_bench.infer.path_security_check import (args_path_output_check, path_length_check, path_symbolic_link_check,
-                                                 path_exist_check, path_white_list_check, path_owner_correct_check)
+from ais_bench.infer.path_security_check import args_path_output_check
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
 
