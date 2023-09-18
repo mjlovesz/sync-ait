@@ -105,6 +105,7 @@ def set_dump_path(dump_path, dump_tag="ait_dump", backend="pt"):
                 os.environ["LD_PRELOAD"] += possible_ssl_path
                 break
 
+        # Add libtensorutil.so to LD_PRELOAD
         os.environ["LD_PRELOAD"] = (os.environ["LD_PRELOAD"] + ":") if "LD_PRELOAD" in os.environ else ""
         tensor_util_path = os.path.join(msquickcmp.__path__[0], "libtensorutil.so")
         if os.path.exists(tensor_util_path):
