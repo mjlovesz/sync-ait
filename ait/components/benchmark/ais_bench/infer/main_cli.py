@@ -133,7 +133,7 @@ def check_input_path_legality(value):
         try:
             file_stat = InFileStat(input_path)
         except Exception as err:
-            raise argparse.ArgumentTypeError(f"acl json path:{input_path} is illegal. Please check.") from err
+            raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.") from err
         if not file_stat.is_basically_legal([os.R_OK]):
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.")
     return str(value)
