@@ -18,6 +18,9 @@ import argparse
 from components.utils.parser import BaseCommand
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
+from ais_bench.infer.path_security_check import (args_path_input_check, args_path_output_check,
+    path_length_check, path_white_list_check, path_exist_check, path_symbolic_link_check,
+    path_owner_correct_check, path_file_size_check, path_file_type_check)
 
 
 def str2bool(v):
@@ -74,13 +77,64 @@ def check_device_range_valid(value):
         return ivalue
 
 
-def check_om_path_valid(value):
+def check_om_path_legality(value):
     path_value = str(value)
-    if os.path.isfile(path_value) and (not os.path.isdir(path_value)) and os.access(path_value, os.R_OK):
-        return path_value
-    else:
-        raise argparse.ArgumentTypeError(f"om path:{path_value} is invalid. Please check the existency, \
-                                         readability and property of this path")
+    max_size = 10 * 1024 * 1024 * 1024 # 10GB
+    if not args_path_input_check(path_value, [os.R_OK]):
+        raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
+    if not path_file_type_check(path_value, "om"):
+        raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
+    if not path_file_size_check(path_value, max_size):
+        raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
+    return path_value
+
+
+def check_input_path_legality(value):
+    if not value:
+        return None
+    inputs_list = str(value).split(',')
+    for input_path in inputs_list:
+        if not args_path_input_check(input_path, [os.R_OK]):
+            raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.")
+    return str(value)
+
+
+def check_output_path_legality(value):
+    if not value:
+        return None
+    path_value = str(value)
+    if not args_path_output_check(path_value, [os.R_OK]):
+        raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
+    return path_value
+
+
+def check_acl_json_path_legality(value):
+    if not value:
+        return None
+    path_value = str(value)
+    max_size = 8 * 1024 # 8KB
+    if not args_path_input_check(path_value, [os.R_OK]):
+        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+    if not path_file_type_check(path_value, "json"):
+        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+    if not path_file_size_check(path_value, max_size):
+        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+    return path_value
+
+
+def check_aipp_config_path_legality(value):
+    if not value:
+        return None
+    path_value = str(value)
+    max_size = 12.5 * 1024 # 12.5KB
+    if not args_path_input_check(path_value, [os.R_OK]):
+        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+    if not path_file_type_check(path_value, "config"):
+        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+    if not path_file_size_check(path_value, max_size):
+        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+    return path_value
+
 
 
 class BenchmarkCommand(BaseCommand):
@@ -88,7 +142,7 @@ class BenchmarkCommand(BaseCommand):
         parser.add_argument(
             "-om",
             "--om-model",
-            type=check_om_path_valid,
+            type=check_om_path_legality,
             required=True,
             help="The path of the om model"
         )
@@ -96,19 +150,21 @@ class BenchmarkCommand(BaseCommand):
             '-i',
             '--input',
             default=None,
+            type=check_input_path_legality,
             help="Input file or dir"
         )
         parser.add_argument(
             '-o',
             '--output',
             default=None,
+            type=check_output_path_legality,
             help="Inference data output path. The inference results are output to \
                 the subdirectory named current date under given output path"
         )
         parser.add_argument(
             '-od',
             "--output-dirname",
-            type=str,
+            type=check_output_path_legality,
             default=None,
             help="Actual output directory name. \
                 Used with parameter output, cannot be used alone. \
@@ -229,7 +285,7 @@ class BenchmarkCommand(BaseCommand):
             '-acl',
             '--acl-json-path',
             dest='acl_json_path',
-            type=str,
+            type=check_acl_json_path_legality,
             default=None,
             help="Acl json path for profiling or dump"
         )
@@ -278,7 +334,7 @@ class BenchmarkCommand(BaseCommand):
             '-aipp',
             '--aipp-config',
             dest='aipp_config',
-            type=str,
+            type=check_aipp_config_path_legality,
             default=None,
             help="File type: .config, to set actual aipp params before infer"
         )

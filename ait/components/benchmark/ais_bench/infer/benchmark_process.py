@@ -643,12 +643,6 @@ def args_rules(args):
         logger.error("when dump or profiler, miss output path, please check them!")
         raise RuntimeError('miss output parameter!')
 
-    # check --aipp_config file
-    try:
-        config_check(args.aipp_config)
-    except Exception as err:
-        raise Exception(f"aipp_config path check failed") from err
-
     if not args.auto_set_dymshape_mode and not args.auto_set_dymdims_mode:
         args.no_combine_tensor_mode = False
     else:
@@ -674,14 +668,6 @@ def acl_json_base_check(args):
     if args.acl_json_path is None:
         return args
     json_path = args.acl_json_path
-    max_json_size = 8192 # 8KB 30 * 255 byte左右
-    if os.path.splitext(json_path)[1] != ".json":
-        logger.error(f"acl_json_path:{json_path} is not a .json file")
-        raise TypeError(f"acl_json_path:{json_path} is not a .json file")
-    json_size = os.path.getsize(json_path)
-    if json_size > max_json_size:
-        logger.error(f"acl_json_file_size:{json_size} byte out of max limit {max_json_size} byte")
-        raise MemoryError(f"acl_json_file_size:{json_size} byte out of max limit")
     try:
         with open(json_path, 'r') as f:
             json_dict = json.load(f)
@@ -709,49 +695,6 @@ def config_check(config_path):
     return
 
 
-def args_exist_path_check(path):
-    # check path which should be exist
-    if not path:
-        return True
-    if not path_length_check(path):
-        return False
-    if not path_white_list_check(path):
-        return False
-    if not path_exist_check(path):
-        return False
-    if not path_symbolic_link_check(path):
-        return False
-    if not path_owner_correct_check(path):
-        return False
-    return True
-
-
-def args_not_exsit_path_check(path):
-    # check path which no need to be exist
-    if not path:
-        return True
-    if not path_length_check(path):
-        return False
-    if not path_white_list_check(path):
-        return False
-    return True
-
-
-def args_pathes_base_check(args:BenchMarkArgsAdapter):
-    # check output
-    if not args_not_exsit_path_check(args.output):
-        raise Exception(f"output path base check failed!")
-    # check output_dirname
-    if not args_not_exsit_path_check(args.output_dirname):
-        raise Exception(f"output_dirname path base check failed!")
-    # check acl-json-path
-    if not args_exist_path_check(args.acl_json_path):
-        raise Exception(f"acl_json_path path base check failed!")
-    # check aipp_config
-    if not args_exist_path_check(args.aipp_config):
-        raise Exception(f"aipp_config path base check failed!")
-
-
 def backend_run(args):
     backend_class = BackendFactory.create_backend(args.backend)
     backend = backend_class(args)
@@ -762,7 +705,6 @@ def backend_run(args):
 
 
 def benchmark_process(args:BenchMarkArgsAdapter):
-    args_pathes_base_check(args)
     args = args_rules(args)
     version_check(args)
     args = acl_json_base_check(args)

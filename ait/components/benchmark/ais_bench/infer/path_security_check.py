@@ -7,6 +7,38 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)
 logger = logging.getLogger(__name__)
 
 
+def args_path_input_check(path, perm_list:list):
+    # check path as input path
+    if not path:
+        return True
+    if not path_length_check(path):
+        return False
+    if not path_white_list_check(path):
+        return False
+    if not path_exist_check(path):
+        return False
+    for perm in perm_list:
+        if not os.access(path, perm):
+            logger.error(f"file {path} don't have right permission")
+            return False
+    if not path_symbolic_link_check(path):
+        return False
+    if not path_owner_correct_check(path):
+        return False
+    return True
+
+
+def args_path_output_check(path):
+    # check path as output path
+    if not path:
+        return True
+    if not path_length_check(path):
+        return False
+    if not path_white_list_check(path):
+        return False
+    return True
+
+
 def path_length_check(path):
     if len(path) > 4096:
         logger.error(f"file total path length out of range (4096)")
@@ -52,3 +84,20 @@ def path_owner_correct_check(path):
     else:
         logger.error(f"current user isn't path:{path}'s owner and ownergroup")
         return False
+
+
+def path_file_size_check(path, max_size):
+    file_size = os.path.getsize(path)
+    if file_size > max_size:
+        logger.error(f"acl_json_file_size:{file_size} byte out of max limit {max_size} byte")
+        return False
+    else:
+        return True
+
+
+def path_file_type_check(path, file_type:str):
+    if os.path.splitext(path)[1] != f".{file_type}":
+        logger.error(f"acl_json_path:{path} is not a .{file_type} file")
+        return False
+    else:
+        return True
