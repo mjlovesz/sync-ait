@@ -93,5 +93,11 @@ def set_dump_path(dump_path, dump_tag="ait_dump", backend="pt"):
     os.environ[AIT_DIALOG_DUMP_PATH] = dialog_path
 
     if backend == "acl":
-        # TODO: set LD_PRELOAD
-        pass
+        # Python using different ssl path from compiled one, or will meet error undefined symbol: EVP_md5
+        possible_ssl_pathes = [
+            "/usr/lib/aarch64-linux-gnu/libssl.so", "/usr/lib/libssl.so", "/usr/local/lib/libssl.so",
+        ]
+        for possible_ssl_path in possible_ssl_pathes:
+            if os.path.exists(possible_ssl_path):
+                os.environ["LD_PRELOAD"] = possible_ssl_path
+                break
