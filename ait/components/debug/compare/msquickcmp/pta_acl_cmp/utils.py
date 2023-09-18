@@ -160,7 +160,8 @@ def compare_tensor(csv_data: pd.DataFrame):
 
 
 def compare_metadata(golden_path, acl_path, output_path="./"):
-    with open(golden_path, 'r') as file:
+    golden_meta_path = os.path.join(golden_path, "metadata.json")
+    with open(golden_meta_path, 'r') as file:
         golden_meta = json.load(file)
 
     if acl_path.endswith(".json"):

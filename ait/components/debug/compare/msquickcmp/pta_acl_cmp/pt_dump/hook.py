@@ -19,7 +19,7 @@ import numpy as np
 from torch import nn
 
 import msquickcmp
-from msquickcmp.pta_acl_cmp.constant import AIT_DIALOG_DUMP_PATH
+from msquickcmp.pta_acl_cmp.constant import AIT_DUMP_PATH
 
 
 def dump_output_hook():
@@ -32,10 +32,10 @@ def dump_output_hook():
         nonlocal infer_step
         w_md5 = hashlib.md5(module.weight.cpu().numpy().tobytes()).hexdigest()
 
-        ait_dialog_dump_path = os.getenv(AIT_DIALOG_DUMP_PATH)
-        ait_dialog_dump_path = "" or ait_dialog_dump_path
+        ait_dump_path = os.getenv(AIT_DUMP_PATH)
+        ait_dump_path = "" or ait_dump_path
         pid = os.getpid()
-        pid_dir = os.path.join(ait_dialog_dump_path, str(pid))
+        pid_dir = os.path.join(ait_dump_path, str(pid))
         if not os.path.exists(pid_dir):
             os.mkdir(pid_dir)
 
@@ -83,15 +83,13 @@ def register_hook(model, op_list=[]):
             module.register_forward_hook(dump_output_hook())
 
 
-def set_dump_path(dump_path, dump_tag="ait_dump", backend="pt"):
+def set_dump_path(dump_path, backend="pt"):
     if not os.path.exists(dump_path):
         os.mkdir(dump_path)
 
-    dialog_path = os.path.join(dump_path, dump_tag)
-    if not os.path.exists(dialog_path):
-        os.mkdir(dialog_path)
+    real_dump_path = os.path.relpath(dump_path)
 
-    os.environ[AIT_DIALOG_DUMP_PATH] = dialog_path
+    os.environ[AIT_DUMP_PATH] = real_dump_path
 
     if backend == "acl":
         # Python using different ssl path from compiled one, or will meet error undefined symbol: EVP_md5
