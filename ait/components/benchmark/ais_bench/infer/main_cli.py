@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import re
 import argparse
 
 from components.utils.parser import BaseCommand
@@ -21,6 +22,36 @@ from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.path_security_check import (args_path_input_check, args_path_output_check,
     path_length_check, path_white_list_check, path_exist_check, path_symbolic_link_check,
     path_owner_correct_check, path_file_size_check, path_file_type_check)
+
+
+def dym_string_check(value):
+    if not value:
+        return None
+    dym_string = str(value)
+    regex = re.compile(r"[^_A-Za-z0-9,;]")
+    if regex.search(dym_string):
+        raise argparse.ArgumentTypeError(f"dym string \"{dym_string}\" is not a legal string")
+    return dym_string
+
+
+def dym_range_string_check(value):
+    if not value:
+        return None
+    dym_string = str(value)
+    regex = re.compile(r"[^_A-Za-z0-9/-~,;]")
+    if regex.search(dym_string):
+        raise argparse.ArgumentTypeError(f"dym range string \"{dym_string}\" is not a legal string")
+    return dym_string
+
+
+def number_list_check(value):
+    if not value:
+        return None
+    number_list = str(value)
+    regex = re.compile(r"[^0-9,;]")
+    if regex.search(number_list):
+        raise argparse.ArgumentTypeError(f"number_list \"{number_list}\" is not a legal list")
+    return number_list
 
 
 def str2bool(v):
@@ -136,7 +167,6 @@ def check_aipp_config_path_legality(value):
     return path_value
 
 
-
 class BenchmarkCommand(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
@@ -201,7 +231,7 @@ class BenchmarkCommand(BaseCommand):
             '-db',
             '--dym-batch',
             dest="dym_batch",
-            type=int,
+            type=check_positive_integer,
             default=0,
             help="Dynamic batch size param，such as --dymBatch 2"
         )
@@ -209,7 +239,7 @@ class BenchmarkCommand(BaseCommand):
             '-dhw',
             '--dym-hw',
             dest="dym_hw",
-            type=str,
+            type=dym_string_check,
             default=None,
             help="Dynamic image size param, such as --dymHW \"300,500\""
         )
@@ -217,7 +247,7 @@ class BenchmarkCommand(BaseCommand):
             '-dd',
             '--dym-dims',
             dest="dym_dims",
-            type=str,
+            type=dym_string_check,
             default=None,
             help="Dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\""
         )
@@ -225,7 +255,7 @@ class BenchmarkCommand(BaseCommand):
             '-ds',
             '--dym-shape',
             dest="dym_shape",
-            type=str,
+            type=dym_string_check,
             default=None,
             help="Dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\""
         )
@@ -233,7 +263,7 @@ class BenchmarkCommand(BaseCommand):
             '-outsize',
             '--output-size',
             dest="output_size",
-            type=str,
+            type=number_list_check,
             default=None,
             help="Output size for dynamic shape mode"
         )
@@ -326,7 +356,7 @@ class BenchmarkCommand(BaseCommand):
             '-dr',
             '--dym-shape-range',
             dest="dym_shape_range",
-            type=str,
+            type=dym_range_string_check,
             default=None,
             help='Dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
         )
@@ -342,21 +372,22 @@ class BenchmarkCommand(BaseCommand):
             '-ec',
             '--energy-consumption',
             dest='energy_consumption',
-            type=str,
-            default=None,
+            type=str2bool,
+            default=False,
             help="Obtain power consumption data for model inference"
         )
         parser.add_argument(
             '--npu-id',
             dest='npu_id',
-            type=check_device_range_valid,
+            type=int,
             default=0,
-            help="The NPU ID to use.valid value range is [0, 255]"
+            help="The NPU ID to use. using cmd: \'npu-smi info\' to check "
         )
         parser.add_argument(
             "--backend",
             type=str,
             default=None,
+            choices=["trtexec"],
             help="Backend trtexec"
         )
         parser.add_argument(
