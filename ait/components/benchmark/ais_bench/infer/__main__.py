@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import argparse
+import os
 import re
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter

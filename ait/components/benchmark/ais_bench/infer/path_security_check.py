@@ -106,40 +106,40 @@ class InFileStat:
 
     @property
     def is_user_or_group_owner(self):
-        return self.is_owner() or self.is_group_owner()
+        return self.is_owner or self.is_group_owner
 
     @property
     def is_user_and_group_owner(self):
-        return self.is_owner() and self.is_group_owner()
+        return self.is_owner and self.is_group_owner
 
     def is_basically_legal(self, perm_list=[os.R_OK]):
-        if not self.is_exists():
+        if not self.is_exists:
             logger.error(f"path: {self.file} not exist")
             return False
         for perm in perm_list:
             if not os.access(self.file, perm):
                 logger.error(f"path: {self.file} don't have right permission")
                 return False
-        if self.is_softlink():
+        if self.is_softlink:
             logger.error(f"path :{self.file} is a symbolic link, considering security, not supported")
             return False
-        if not self.is_user_and_group_owner():
+        if not self.is_user_and_group_owner:
             logger.error(f"current user isn't path:{self.file}'s owner and ownergroup")
             return False
         return True
 
     def path_file_size_check(self, max_size):
-        if not self.is_file():
+        if not self.is_file:
             logger.error(f"path: {self.file} is not a file")
             return False
-        if self.file_size() > max_size:
-            logger.error(f"acl_json_file_size:{self.file_size()} byte out of max limit {max_size} byte")
+        if self.file_size > max_size:
+            logger.error(f"acl_json_file_size:{self.file_size} byte out of max limit {max_size} byte")
             return False
         else:
             return True
 
     def path_file_type_check(self, file_type:str):
-        if not self.is_file():
+        if not self.is_file:
             logger.error(f"path: {self.file} is not a file")
             return False
         if os.path.splitext(self.file)[1] != f".{file_type}":
