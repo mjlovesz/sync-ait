@@ -141,7 +141,7 @@ def check_output_path_legality(value):
     if not value:
         return None
     path_value = str(value)
-    if not args_path_output_check(path_value, [os.R_OK]):
+    if not args_path_output_check(path_value):
         raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
     return path_value
 
