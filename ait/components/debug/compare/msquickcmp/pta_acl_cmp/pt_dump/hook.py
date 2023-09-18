@@ -19,7 +19,7 @@ import numpy as np
 from torch import nn
 
 import msquickcmp
-from msquickcmp.pta_acl_cmp.constant import AIT_DUMP_PATH, AIT_IS_SAVE_MD5
+from msquickcmp.pta_acl_cmp.constant import AIT_DUMP_PATH, AIT_IS_SAVE_MD5, AIT_DIALOG_DUMP_PATH
 
 
 def dump_output_hook():
@@ -83,7 +83,7 @@ def register_hook(model, op_list=[]):
             module.register_forward_hook(dump_output_hook())
 
 
-def set_dump_path(dump_path, dump_tag="ait_dump", backend="pt", is_save_md5=False):
+def set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt", is_save_md5=False):
     if not os.path.exists(dump_path):
         os.mkdir(dump_path)
 
