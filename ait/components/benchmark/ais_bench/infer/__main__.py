@@ -16,6 +16,39 @@ import argparse
 
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
+from ais_bench.infer.path_security_check import (args_path_input_check, args_path_output_check,
+    path_length_check, path_white_list_check, path_exist_check, path_symbolic_link_check,
+    path_owner_correct_check, path_file_size_check, path_file_type_check)
+
+
+def dym_string_check(value):
+    if not value:
+        return None
+    dym_string = str(value)
+    regex = re.compile(r"[^_A-Za-z0-9,;]")
+    if regex.search(dym_string):
+        raise argparse.ArgumentTypeError(f"dym string \"{dym_string}\" is not a legal string")
+    return dym_string
+
+
+def dym_range_string_check(value):
+    if not value:
+        return None
+    dym_string = str(value)
+    regex = re.compile(r"[^_A-Za-z0-9/-~,;]")
+    if regex.search(dym_string):
+        raise argparse.ArgumentTypeError(f"dym range string \"{dym_string}\" is not a legal string")
+    return dym_string
+
+
+def number_list_check(value):
+    if not value:
+        return None
+    number_list = str(value)
+    regex = re.compile(r"[^0-9,;]")
+    if regex.search(number_list):
+        raise argparse.ArgumentTypeError(f"number_list \"{number_list}\" is not a legal list")
+    return number_list
 
 
 def str2bool(v):
@@ -72,30 +105,92 @@ def check_device_range_valid(value):
         return ivalue
 
 
+def check_om_path_legality(value):
+    path_value = str(value)
+    max_size = 10 * 1024 * 1024 * 1024 # 10GB
+    if not args_path_input_check(path_value, [os.R_OK]):
+        raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
+    if not path_file_type_check(path_value, "om"):
+        raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
+    if not path_file_size_check(path_value, max_size):
+        raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
+    return path_value
+
+
+def check_input_path_legality(value):
+    if not value:
+        return None
+    inputs_list = str(value).split(',')
+    for input_path in inputs_list:
+        if not args_path_input_check(input_path, [os.R_OK]):
+            raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.")
+    return str(value)
+
+
+def check_output_path_legality(value):
+    if not value:
+        return None
+    path_value = str(value)
+    if not args_path_output_check(path_value, [os.R_OK]):
+        raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
+    return path_value
+
+
+def check_acl_json_path_legality(value):
+    if not value:
+        return None
+    path_value = str(value)
+    max_size = 8 * 1024 # 8KB
+    if not args_path_input_check(path_value, [os.R_OK]):
+        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+    if not path_file_type_check(path_value, "json"):
+        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+    if not path_file_size_check(path_value, max_size):
+        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+    return path_value
+
+
+def check_aipp_config_path_legality(value):
+    if not value:
+        return None
+    path_value = str(value)
+    max_size = 12.5 * 1024 # 12.5KB
+    if not args_path_input_check(path_value, [os.R_OK]):
+        raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
+    if not path_file_type_check(path_value, "config"):
+        raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
+    if not path_file_size_check(path_value, max_size):
+        raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
+    return path_value
+
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--model",
         "-m",
+        type=check_om_path_legality,
         required=True,
         help="The path of the om model"
     )
     parser.add_argument(
         "--input",
         "-i",
+        type=check_input_path_legality,
         default=None,
         help="Input file or dir"
     )
     parser.add_argument(
         "--output",
         "-o",
+        type=check_output_path_legality,
         default=None,
         help="Inference data output path. The inference results are output to \
              the subdirectory named current date under given output path"
     )
     parser.add_argument(
         "--output_dirname",
-        type=str,
+        type=check_output_path_legality,
         default=None,
         help="Actual output directory name. \
              Used with parameter output, cannot be used alone. \
@@ -132,21 +227,21 @@ def get_args():
     parser.add_argument(
         "--dymBatch",
         dest="dym_batch",
-        type=int,
+        type=check_positive_integer,
         default=0,
         help="Dynamic batch size param，such as --dymBatch 2"
     )
     parser.add_argument(
         "--dymHW",
         dest="dym_hw",
-        type=str,
+        type=dym_string_check,
         default=None,
         help="Dynamic image size param, such as --dymHW \"300,500\""
     )
     parser.add_argument(
         "--dymDims",
         dest="dym_dims",
-        type=str,
+        type=dym_string_check,
         default=None,
         help="Dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\""
     )
@@ -154,14 +249,14 @@ def get_args():
         "--dymShape",
         "--dym-shape",
         dest="dym_shape",
-        type=str,
+        type=dym_string_check,
         default=None,
         help="Dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\""
     )
     parser.add_argument(
         "--outputSize",
         dest="output_size",
-        type=str,
+        type=number_list_check,
         default=None,
         help="Output size for dynamic shape mode"
     )
@@ -204,7 +299,7 @@ def get_args():
     )
     parser.add_argument(
         "--acl_json_path",
-        type=str,
+        type=check_acl_json_path_legality,
         default=None,
         help="Acl json path for profiling or dump"
     )
@@ -237,25 +332,25 @@ def get_args():
     parser.add_argument(
         "--dymShape_range",
         dest="dym_shape_range",
-        type=str,
+        type=dym_range_string_check,
         default=None,
         help="Dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\""
     )
     parser.add_argument(
         "--aipp_config",
-        type=str,
+        type=check_aipp_config_path_legality,
         default=None,
         help="File type: .config, to set actual aipp params before infer"
     )
     parser.add_argument(
         "--energy_consumption",
-        type=str,
-        default=None,
+        type=str2bool,
+        default=False,
         help="Obtain power consumption data for model inference"
     )
     parser.add_argument(
         "--npu_id",
-        type=check_device_range_valid,
+        type=check_nonnegative_integer,
         default=0,
         help="The NPU ID to use.valid value range is [0, 255]"
     )
@@ -263,6 +358,7 @@ def get_args():
         "--backend",
         type=str,
         default=None,
+        choices=["trtexec"],
         help="Backend trtexec"
     )
     parser.add_argument(

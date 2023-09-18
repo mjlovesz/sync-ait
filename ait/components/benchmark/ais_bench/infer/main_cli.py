@@ -179,15 +179,15 @@ class BenchmarkCommand(BaseCommand):
         parser.add_argument(
             '-i',
             '--input',
-            default=None,
             type=check_input_path_legality,
+            default=None,
             help="Input file or dir"
         )
         parser.add_argument(
             '-o',
             '--output',
-            default=None,
             type=check_output_path_legality,
+            default=None,
             help="Inference data output path. The inference results are output to \
                 the subdirectory named current date under given output path"
         )
@@ -379,7 +379,7 @@ class BenchmarkCommand(BaseCommand):
         parser.add_argument(
             '--npu-id',
             dest='npu_id',
-            type=int,
+            type=check_nonnegative_integer,
             default=0,
             help="The NPU ID to use. using cmd: \'npu-smi info\' to check "
         )
@@ -417,8 +417,8 @@ class BenchmarkCommand(BaseCommand):
         parser.add_argument(
             '--divide-input',
             dest='divide_input',
-            default=False,
             type=str2bool,
+            default=False,
             help='Input datas need to be divided to match multi devices or not, \
                 --device should be list, default False'
         )
