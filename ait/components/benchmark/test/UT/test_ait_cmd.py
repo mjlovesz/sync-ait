@@ -164,7 +164,7 @@ def test_check_all_full_args_legality(cmdline_legal_args_full):
     args = parser.parse_args()
     args = create_adapter(args)
     args = args_rules(args)
-    assert args.input == "datasets/"
+    assert args.input == os.path.join(current_dir, "../testdata/resnet50/input/fake_dataset_bin_nor")
 
 
 @pytest.fixture
@@ -183,7 +183,7 @@ def test_check_all_simple_args_legality(cmdline_legal_args_simple):
     args = parser.parse_args()
     args = create_adapter(args)
     args = args_rules(args)
-    assert args.input == "datasets/"
+    assert args.input == os.path.join(current_dir, "../testdata/resnet50/input/fake_dataset_bin_nor")
 
 
 @pytest.fixture
