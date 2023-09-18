@@ -29,7 +29,7 @@ class OpenException(Exception):
     pass
 
 
-class FileStat:
+class InFileStat:
     def __init__(self, file) -> None:
         self.is_file_exist = os.path.exists(file)
         if self.is_file_exist:
@@ -83,7 +83,7 @@ class FileStat:
 
 
 def ms_open(file, mode="r", max_size=None, softlink=False, write_permission=PERMISSION_NORMAL, **kwargs):
-    file_stat = FileStat(file)
+    file_stat = InFileStat(file)
 
     if file_stat.is_exists and file_stat.is_dir:
         raise OpenException(f"Expecting a file, but it's a folder. {file}")

@@ -19,9 +19,11 @@ import argparse
 from components.utils.parser import BaseCommand
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
-from ais_bench.infer.path_security_check import (args_path_input_check, args_path_output_check,
-    path_length_check, path_white_list_check, path_exist_check, path_symbolic_link_check,
-    path_owner_correct_check, path_file_size_check, path_file_type_check)
+from ais_bench.infer.path_security_check import args_path_output_check, InFileStat
+
+OM_MODEL_MAX_SIZE = 10 * 1024 * 1024 * 1024 # 10GB
+ACL_JSON_MAX_SIZE = 8 * 1024 # 8KB
+AIPP_CONFIG_MAX_SIZE = 12.5 * 1024 # 12.5KB
 
 
 def dym_string_check(value):
@@ -110,12 +112,15 @@ def check_device_range_valid(value):
 
 def check_om_path_legality(value):
     path_value = str(value)
-    max_size = 10 * 1024 * 1024 * 1024 # 10GB
-    if not args_path_input_check(path_value, [os.R_OK]):
+    try:
+        file_stat = InFileStat(path_value)
+    except Exception as err:
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
-    if not path_file_type_check(path_value, "om"):
+    if not file_stat.is_basically_legal([os.R_OK]):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
-    if not path_file_size_check(path_value, max_size):
+    if not file_stat.path_file_type_check("om"):
+        raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
+    if not file_stat.path_file_size_check(OM_MODEL_MAX_SIZE):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
     return path_value
 
@@ -125,7 +130,8 @@ def check_input_path_legality(value):
         return None
     inputs_list = str(value).split(',')
     for input_path in inputs_list:
-        if not args_path_input_check(input_path, [os.R_OK]):
+        file_stat = InFileStat(input_path)
+        if not file_stat.is_basically_legal([os.R_OK]):
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.")
     return str(value)
 
@@ -143,12 +149,15 @@ def check_acl_json_path_legality(value):
     if not value:
         return None
     path_value = str(value)
-    max_size = 8 * 1024 # 8KB
-    if not args_path_input_check(path_value, [os.R_OK]):
+    try:
+        file_stat = InFileStat(path_value)
+    except Exception as err:
         raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
-    if not path_file_type_check(path_value, "json"):
+    if not file_stat.is_basically_legal([os.R_OK]):
         raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
-    if not path_file_size_check(path_value, max_size):
+    if not file_stat.path_file_type_check("json"):
+        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+    if not file_stat.path_file_size_check(ACL_JSON_MAX_SIZE):
         raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
     return path_value
 
@@ -157,12 +166,15 @@ def check_aipp_config_path_legality(value):
     if not value:
         return None
     path_value = str(value)
-    max_size = 12.5 * 1024 # 12.5KB
-    if not args_path_input_check(path_value, [os.R_OK]):
+    try:
+        file_stat = InFileStat(path_value)
+    except Exception as err:
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
-    if not path_file_type_check(path_value, "config"):
+    if not file_stat.is_basically_legal([os.R_OK]):
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
-    if not path_file_size_check(path_value, max_size):
+    if not not file_stat.path_file_type_check("config"):
+        raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
+    if not file_stat.path_file_size_check(AIPP_CONFIG_MAX_SIZE):
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
     return path_value
 
