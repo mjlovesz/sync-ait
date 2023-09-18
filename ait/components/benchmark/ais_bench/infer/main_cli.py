@@ -115,7 +115,7 @@ def check_om_path_legality(value):
     try:
         file_stat = InFileStat(path_value)
     except Exception as err:
-        raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
+        raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal([os.R_OK]):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_type_check("om"):
@@ -130,7 +130,10 @@ def check_input_path_legality(value):
         return None
     inputs_list = str(value).split(',')
     for input_path in inputs_list:
-        file_stat = InFileStat(input_path)
+        try:
+            file_stat = InFileStat(input_path)
+        except Exception as err:
+            raise argparse.ArgumentTypeError(f"acl json path:{input_path} is illegal. Please check.") from err
         if not file_stat.is_basically_legal([os.R_OK]):
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.")
     return str(value)
@@ -152,7 +155,7 @@ def check_acl_json_path_legality(value):
     try:
         file_stat = InFileStat(path_value)
     except Exception as err:
-        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal([os.R_OK]):
         raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_type_check("json"):
@@ -169,7 +172,7 @@ def check_aipp_config_path_legality(value):
     try:
         file_stat = InFileStat(path_value)
     except Exception as err:
-        raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
+        raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal([os.R_OK]):
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
     if not not file_stat.path_file_type_check("config"):

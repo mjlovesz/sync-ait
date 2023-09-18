@@ -55,7 +55,7 @@ class OpenException(Exception):
 
 class InFileStat:
     def __init__(self, file) -> None:
-        if not path_length_check(file) or path_white_list_check(file):
+        if not path_length_check(file) or not path_white_list_check(file):
             raise Exception(f"create InFileStat failed")
         self.file = file
         self.is_file_exist = os.path.exists(file)
