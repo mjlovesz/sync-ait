@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import argparse
-
+import re
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.path_security_check import (args_path_input_check, args_path_output_check,
@@ -25,7 +25,7 @@ def dym_string_check(value):
     if not value:
         return None
     dym_string = str(value)
-    regex = re.compile(r"[^_A-Za-z0-9,;]")
+    regex = re.compile(r"[^_A-Za-z0-9/-,;]")
     if regex.search(dym_string):
         raise argparse.ArgumentTypeError(f"dym string \"{dym_string}\" is not a legal string")
     return dym_string
