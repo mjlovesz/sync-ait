@@ -165,11 +165,11 @@ bool isInTensorBinPath(const std::string &filePath) {
 void AclTransformer::TensorUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath) {
     ASD_LOG(INFO) << "save asdtensor start, tensor:" << AsdOpsTensorToString(tensor) << ", filePath:" << filePath;
 
-    const char *task_id_env = std::getenv("AIT_CMP_TASK_ID");
-    std::string task_mode = task_id_env ? "manual" : "auto";  // manual or auto map between ACL and PTA
-    ASD_LOG(INFO) << "save asdtensor, task_mode:" << task_mode;
+    const char *is_save_md5_env = std::getenv("AIT_IS_SAVE_MD5");
+    bool is_save_md5 = is_save_md5_env ? true : false;  // manual or auto map between ACL and PTA
+    ASD_LOG(INFO) << "save asdtensor, is_save_md5:" << is_save_md5;
 
-    if (task_mode == "manual") {
+    if (!is_save_md5) {
         if (! isPathInTable(filePath) ) {
             return;
         }
