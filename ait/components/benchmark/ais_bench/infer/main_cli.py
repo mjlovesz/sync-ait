@@ -128,11 +128,11 @@ def check_aipp_config_path_legality(value):
     path_value = str(value)
     max_size = 12.5 * 1024 # 12.5KB
     if not args_path_input_check(path_value, [os.R_OK]):
-        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+        raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
     if not path_file_type_check(path_value, "config"):
-        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+        raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
     if not path_file_size_check(path_value, max_size):
-        raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
+        raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
     return path_value
 
 
