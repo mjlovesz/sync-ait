@@ -179,17 +179,17 @@ def compare_metadata(golden_path, acl_path, output_path="./"):
         if not acl_data:
             continue
         for w_md5, g_data_path in g_data.items():
-            a_data_dir = acl_data.get(w_md5)
+            acl_data_dir = acl_data.get(w_md5)
             if not a_data_dir:
-                print("weight md5: {}, data_path is none.".format(w_md5))
+                logger.warning(f"weight md5: {w_md5}, data_path is none.")
                 continue
-            a_data_path = os.path.join(a_data_dir[0], "outtensor0.bin")
+            acl_data_dir = os.path.join(a_data_dir[0], "outtensor0.bin")
 
             row_data = pd.DataFrame({
                 TOKEN_ID: [str(token_id)],
                 DATA_ID: [w_md5],
                 PTA_DATA_PATH: [g_data_path[0]],
-                ACL_DATA_PATH: [a_data_path],
+                ACL_DATA_PATH: [acl_data_dir],
                 CMP_FLAG: [False]
             })
 

@@ -116,7 +116,7 @@ void saveTensorToFile(const AsdOps::Tensor &tensor, const std::string &filePath,
 }
 
 void saveMd5ToFile(const AsdOps::Tensor &tensor, const std::string &filePath) {
-    if (! tensor.data) {
+    if (!tensor.data) {
         ASD_LOG(INFO) << "save asdtensor " << filePath << " data is empty";
         return;
     }
@@ -153,10 +153,6 @@ bool isInTensorBinPath(const std::string &filePath) {
     std::string fileName = filePath;
     if (sep_pos != std::string::npos) {
         fileName.erase(0, sep_pos + 1);
-    }
-
-    if (fileName.rfind(".bin") != fileName.length() - 4) {
-        return false;
     }
     return fileName.find("intensor") != std::string::npos || fileName.find("inTensor") != std::string::npos;
 }
