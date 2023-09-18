@@ -41,17 +41,29 @@ std::unordered_set<std::string> &findTable() {
 
 void AclTransformer::TensorUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath) {
     std::unordered_set<std::string> &copyTable = findTable();
-    std::string basePath = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH")) + "/tensors/thread_";
-    size_t pos = filePath.find(basePath);
+    pid_t processID = getpid();
     std::string result = filePath;
-    if (pos != std::string::npos) {
-        size_t slashPos = filePath.find("/", pos + basePath.length());
-        result = filePath.substr(slashPos + 1);
+    if (std::getenv("AIT_CMP_TASK_ID")) {
+        std::string pID = std::to_string(processID);
+        std::string basePath = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH")) + "/tensors/" + pID + "/" +
+                            std::string(std::getenv("AIT_CMP_TASK_ID")) +"/";
+        size_t pos = filePath.find(basePath);
+        if (pos != std::string::npos) {
+            result.erase(pos, basePath.length());
+        }
+    }
+    else {
+        std::string basePath = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH")) + "/tensors/thread_";
+        size_t pos = filePath.find(basePath);
+        
+        if (pos != std::string::npos) {
+            size_t slashPos = filePath.find("/", pos + basePath.length());
+            result = filePath.substr(slashPos + 1);
+        }
     }
     if (!copyTable.count(result)) {
-        return;
+            return;
     }
-
     ASD_LOG(INFO) << "save asdtensor start, tensor:" << AsdOpsTensorToString(tensor) << ", filePath:" << filePath;
     AsdOps::BinFile binFile;
     binFile.AddAttr("format", std::to_string(tensor.desc.format));
