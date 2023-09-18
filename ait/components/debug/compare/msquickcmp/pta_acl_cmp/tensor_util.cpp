@@ -1,5 +1,6 @@
 #include "acltransformer/utils/tensor_util.h"
 
+#include <iostream>
 #include <fstream>
 #include <string>
 #include <unordered_set>
@@ -12,11 +13,12 @@
 
 
 void InitialPathTable(std::unordered_set<std::string> &pathTable) {
-    const char* envValue = std::getenv("AIT_CMP_TASK_PID");
-    if (envValue) {
-        std::string aitCmpTaskPid = envValue;
-        std::string fileName = "/tmp/" + aitCmpTaskPid + "/ait_compare_acl_map.txt";
-
+        const char* envValue = std::getenv("AIT_CMP_TASK_PID");
+        std::string taskPid = envValue ? envValue : "";
+        if (taskPid != "") {
+            taskPid = "/" + taskPid;
+        }
+        std::string fileName = "/tmp" + taskPid + "/ait_compare_acl_map.txt";
         std::ifstream fileContent(fileName);
         if (fileContent.is_open()) {
             std::string filePath;
@@ -25,7 +27,6 @@ void InitialPathTable(std::unordered_set<std::string> &pathTable) {
             }
             fileContent.close();
         }
-    }
 }
 
 
@@ -41,18 +42,28 @@ std::unordered_set<std::string> &findTable() {
 void AclTransformer::TensorUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath) {
     std::unordered_set<std::string> &copyTable = findTable();
     pid_t processID = getpid();
-    std::string pID = std::to_string(processID);
-    std::string basePath = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH")) + "/tensors/" + pID + "/" +
-                           std::string(std::getenv("AIT_CMP_TASK_ID")) +"/";
-    size_t pos = filePath.find(basePath);
     std::string result = filePath;
-    if (pos != std::string::npos) {
-        result.erase(pos, basePath.length());
+    if (std::getenv("AIT_CMP_TASK_ID")) {
+        std::string pID = std::to_string(processID);
+        std::string basePath = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH")) + "/tensors/" + pID + "/" +
+                            std::string(std::getenv("AIT_CMP_TASK_ID")) +"/";
+        size_t pos = filePath.find(basePath);
+        if (pos != std::string::npos) {
+            result.erase(pos, basePath.length());
+        }
+    }
+    else {
+        std::string basePath = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH")) + "/tensors/thread_";
+        size_t pos = filePath.find(basePath);
+        
+        if (pos != std::string::npos) {
+            size_t slashPos = filePath.find("/", pos + basePath.length());
+            result = filePath.substr(slashPos + 1);
+        }
     }
     if (!copyTable.count(result)) {
-        return;
+            return;
     }
-
     ASD_LOG(INFO) << "save asdtensor start, tensor:" << AsdOpsTensorToString(tensor) << ", filePath:" << filePath;
     AsdOps::BinFile binFile;
     binFile.AddAttr("format", std::to_string(tensor.desc.format));
