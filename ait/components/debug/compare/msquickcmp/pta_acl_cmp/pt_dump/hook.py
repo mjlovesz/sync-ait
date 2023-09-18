@@ -94,24 +94,4 @@ def set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt", is_save_md5=
     os.environ[AIT_DIALOG_DUMP_PATH] = dialog_path
 
     if is_save_md5:
-        os.environ[AIT_IS_SAVE_MD5] = "1"
-
-    if backend == "acl":
-        # Python using different ssl path from compiled one, or will meet error undefined symbol: EVP_md5
-        os.environ["LD_PRELOAD"] = (os.environ["LD_PRELOAD"] + ":") if "LD_PRELOAD" in os.environ else ""
-
-        possible_ssl_pathes = [
-            "/usr/lib/aarch64-linux-gnu/libssl.so", "/usr/lib/libssl.so", "/usr/local/lib/libssl.so",
-        ]
-        for possible_ssl_path in possible_ssl_pathes:
-            if os.path.exists(possible_ssl_path):
-                os.environ["LD_PRELOAD"] += possible_ssl_path
-                break
-
-        # Add libtensorutil.so to LD_PRELOAD
-        os.environ["LD_PRELOAD"] = (os.environ["LD_PRELOAD"] + ":") if "LD_PRELOAD" in os.environ else ""
-        tensor_util_path = os.path.join(msquickcmp.__path__[0], "libtensorutil.so")
-        if os.path.exists(tensor_util_path):
-            os.environ["LD_PRELOAD"] += tensor_util_path
-
-        
+        os.environ[AIT_IS_SAVE_MD5] = "1"       
