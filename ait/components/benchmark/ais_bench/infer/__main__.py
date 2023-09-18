@@ -173,7 +173,7 @@ def check_aipp_config_path_legality(value):
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal([os.R_OK]):
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
-    if not not file_stat.path_file_type_check("config"):
+    if not file_stat.path_file_type_check("config"):
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_size_check(AIPP_CONFIG_MAX_SIZE):
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
