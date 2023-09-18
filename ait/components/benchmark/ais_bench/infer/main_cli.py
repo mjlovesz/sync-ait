@@ -28,7 +28,7 @@ AIPP_CONFIG_MAX_SIZE = 12.5 * 1024 # 12.5KB
 
 def dym_string_check(value):
     if not value:
-        return None
+        return value
     dym_string = str(value)
     regex = re.compile(r"[^_A-Za-z0-9,;:]")
     if regex.search(dym_string):
@@ -38,7 +38,7 @@ def dym_string_check(value):
 
 def dym_range_string_check(value):
     if not value:
-        return None
+        return value
     dym_string = str(value)
     regex = re.compile(r"[^_A-Za-z0-9\-~,;:]")
     if regex.search(dym_string):
@@ -48,7 +48,7 @@ def dym_range_string_check(value):
 
 def number_list_check(value):
     if not value:
-        return None
+        return value
     number_list = str(value)
     regex = re.compile(r"[^0-9,;]")
     if regex.search(number_list):
@@ -127,7 +127,7 @@ def check_om_path_legality(value):
 
 def check_input_path_legality(value):
     if not value:
-        return None
+        return value
     inputs_list = str(value).split(',')
     for input_path in inputs_list:
         try:
@@ -141,7 +141,7 @@ def check_input_path_legality(value):
 
 def check_output_path_legality(value):
     if not value:
-        return None
+        return value
     path_value = str(value)
     if not args_path_output_check(path_value):
         raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
@@ -150,7 +150,7 @@ def check_output_path_legality(value):
 
 def check_acl_json_path_legality(value):
     if not value:
-        return None
+        return value
     path_value = str(value)
     try:
         file_stat = InFileStat(path_value)
@@ -167,7 +167,7 @@ def check_acl_json_path_legality(value):
 
 def check_aipp_config_path_legality(value):
     if not value:
-        return None
+        return value
     path_value = str(value)
     try:
         file_stat = InFileStat(path_value)
