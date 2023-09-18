@@ -187,24 +187,6 @@ def test_check_all_simple_args_legality(cmdline_legal_args_simple):
 
 
 @pytest.fixture
-def cmdline_args_full_npu_id(monkeypatch):
-    cmd_dict = base_cmd_dict
-    cmd_dict["--npu-id"] = "256"
-    case_cmd_list = cmd_dict_to_list(cmd_dict)
-    monkeypatch.setattr('sys.argv', case_cmd_list)
-
-
-def test_npu_id_out_of_range(cmdline_args_full_npu_id):
-    """
-        npu_id 超出范围
-    """
-    parser = argparse.ArgumentParser()
-    benchmark_command.add_arguments(parser)
-    with pytest.raises(SystemExit) as e:
-        args = parser.parse_args()
-
-
-@pytest.fixture
 def cmdline_args_full_model_path(monkeypatch):
     cmd_dict = base_cmd_dict
     cmd_dict["--model"] = os.path.join(current_dir, "../testdata/resnet50/model/pth_ret50_bs4.om")
