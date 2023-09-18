@@ -19,7 +19,7 @@ import numpy as np
 from torch import nn
 
 import msquickcmp
-from msquickcmp.pta_acl_cmp.constant import AIT_DUMP_PATH
+from msquickcmp.pta_acl_cmp.constant import AIT_DUMP_PATH, AIT_IS_SAVE_MD5
 
 
 def dump_output_hook():
@@ -83,13 +83,18 @@ def register_hook(model, op_list=[]):
             module.register_forward_hook(dump_output_hook())
 
 
-def set_dump_path(dump_path, backend="pt"):
+def set_dump_path(dump_path, dump_tag="ait_dump", backend="pt", is_save_md5=False):
     if not os.path.exists(dump_path):
         os.mkdir(dump_path)
 
-    real_dump_path = os.path.relpath(dump_path)
+    dialog_path = os.path.join(dump_path, dump_tag)
+    if not os.path.exists(dialog_path):
+        os.mkdir(dialog_path)
 
-    os.environ[AIT_DUMP_PATH] = real_dump_path
+    os.environ[AIT_DIALOG_DUMP_PATH] = dialog_path
+
+    if is_save_md5:
+        os.environ[AIT_IS_SAVE_MD5] = "1"
 
     if backend == "acl":
         # Python using different ssl path from compiled one, or will meet error undefined symbol: EVP_md5

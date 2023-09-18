@@ -26,24 +26,39 @@ def init_encoder_decoder_token_id(base_path):
     # For ascend-transformer-acceleration dumped data, the first Decoder data is in 0, but it's actually token_id==1
     # thread_xxx
     # ├ 0
-    # │ ├ Encoder  # token_id = 0
-    # │ └ Decoder  # token_id = 1
+    # │ ├ Encoder    # token_id = 0
+    # │ ├ Decoder_1  # token_id = 1
+    # │ └ Decoder_2  # token_id = 2
     # ├ 1
-    # │ └ Decoder  # token_id = 2
-    # ├ 2
-    # │ └ Decoder  # token_id = 3
-    tokens = {}
-    encoder_token_label, encoder_token_source, encoder_token_target = "Encoder", "1", "0"
-    for token in os.listdir(base_path):
-        cur_token = os.path.join(base_path, token)
-        if not os.path.isdir(cur_token) or not str.isdigit(token):
-            continue
-        tokens[str(int(token) + 1)] = [os.path.join(cur_token, ii) for ii in os.listdir(cur_token)]
+    # │ └ Encoder    # token_id = 5  # A new session, previous session decoder token_id == 6 -> cur encoder is 7
+    # │ ├ Decoder_1  # token_id = 3
+    # │ └ Decoder_2  # token_id = 4
+    # └ 2
+    #   ├ Decoder_1  # token_id = 5
+    #   └ Decoder_2  # token_id = 6
 
-    if encoder_token_source in tokens:
-        tokens[encoder_token_target] = [ii for ii in tokens[encoder_token_source] if encoder_token_label in ii]
-        tokens[encoder_token_source] = [ii for ii in tokens[encoder_token_source] if encoder_token_label not in ii]
-    return tokens
+    # Sort by m_time
+    # sorted_tokens: ["0/Encoder", "0/Decoder_1", "0/Decoder_2", "1/Decoder_*", "2/Decoder_*", "1/Encoder"]
+    sorted_tokens = []
+    for token_id in os.listdir(base_path):
+        cur_token = os.path.join(base_path, token_id)
+        if not os.path.isdir(cur_token) or not str.isdigit(token_id):
+            continue
+        sorted_tokens.extend([os.path.join(cur_token, ii) for ii in os.listdir(cur_token)])
+    sorted_tokens.sort(key=lambda xx: os.stat(xx).st_mtime)
+
+    # Gather all Decoders with a same path into a list
+    # gathered: [["0/Encoder"], ["0/Decoder_1", "0/Decoder_2"], ["1/Decoder_*"], ["2/Decoder_*"], ["1/Encoder"]]
+    gathered, pre_decoder_id = [], str(None)
+    for ii in sorted_tokens:
+        if 'Encoder' in ii:
+            gathered.append([ii])
+        elif os.path.dirname(os.path.dirname(ii)) == pre_decoder_id:
+            gathered[-1].append(ii)
+        else:
+            gathered.append([ii])
+            pre_decoder_id = os.path.basename(os.path.dirname(ii))
+    return {str(id): item for id, item in enumerate(gathered)}
 
 
 def extract_md5_info_from_token_dump_data(token_path, global_dict=None):
