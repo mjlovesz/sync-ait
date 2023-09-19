@@ -52,7 +52,9 @@ from ais_bench.infer.path_security_check import (path_length_check, path_symboli
                                                  path_exist_check, path_white_list_check, path_owner_correct_check)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
+from utils.file_open import ms_open, MAX_SIZE_LIMITE_CONFIG_FILE
 
+PERMISSION_DIR = 0o750
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -288,7 +290,7 @@ def get_file_name(file_path: str, suffix: str, res_file_path: list) -> list:
 
 def get_legal_json_content(acl_json_path):
     cmd_dict = {}
-    with open(acl_json_path, 'r') as f:
+    with ms_open(acl_json_path, mode="r", max_size=MAX_SIZE_LIMITE_CONFIG_FILE) as f:
         json_dict = json.load(f)
     profile_dict = json_dict.get("profiler")
     for option_cmd in ACL_JSON_CMD_LIST:
@@ -438,7 +440,7 @@ def main(args, index=0, msgq=None, device_list=None):
                 output_prefix = os.path.join(args.output, args.output_dirname)
                 output_prefix = os.path.join(output_prefix, "device" + str(device_list[index]) + "_" + str(index))
             if not os.path.exists(output_prefix):
-                os.makedirs(output_prefix, 0o755)
+                os.makedirs(output_prefix, PERMISSION_DIR)
             logger.info(f"output path:{output_prefix}")
         else:
             output_prefix = None
@@ -450,7 +452,7 @@ def main(args, index=0, msgq=None, device_list=None):
             else:
                 output_prefix = os.path.join(args.output, args.output_dirname)
             if not os.path.exists(output_prefix):
-                os.makedirs(output_prefix, 0o755)
+                os.makedirs(output_prefix, PERMISSION_DIR)
             logger.info(f"output path:{output_prefix}")
         else:
             output_prefix = None
@@ -683,7 +685,7 @@ def acl_json_base_check(args):
         logger.error(f"acl_json_file_size:{json_size} byte out of max limit {max_json_size} byte")
         raise MemoryError(f"acl_json_file_size:{json_size} byte out of max limit")
     try:
-        with open(json_path, 'r') as f:
+        with ms_open(json_path, mode="r", max_size=MAX_SIZE_LIMITE_CONFIG_FILE) as f:
             json_dict = json.load(f)
     except Exception as err:
         logger.error(f"can't read acl_json_path:{json_path}")
