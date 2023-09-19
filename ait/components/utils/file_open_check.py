@@ -139,7 +139,7 @@ class FileStat:
         if self.is_softlink:
             logger.error(f"path :{self.file} is a symbolic link, considering security, not supported")
             return False
-        if not self.is_user_and_group_owner:
+        if not self.is_user_or_group_owner:
             logger.error(f"current user isn't path:{self.file}'s owner and ownergroup")
             return False
         return True
