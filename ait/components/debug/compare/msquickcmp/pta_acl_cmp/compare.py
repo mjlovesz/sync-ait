@@ -22,7 +22,7 @@ from msquickcmp.common.utils import logger
 from msquickcmp.pta_acl_cmp.constant import DATA_ID, PTA_DATA_PATH, ACL_DATA_PATH, \
     CMP_FLAG, CSV_HEADER, GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, CSV_GOLDEN_HEADER, \
     MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE, TOKEN_ID
-from msquickcmp.pta_acl_cmp.utils import compare_tensor, compare_all
+from msquickcmp.pta_acl_cmp.utils import compare_tensor, compare_all, write_json_file
 
 token_counts = 0
 
@@ -233,6 +233,9 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
             data = save_golden_dump_tensor(csv_data=data, data_id=data_id, \
                                            tensor_path=tensor_path, token_id=token_id)
+        json_path = os.path.join(golden_data_dir, "metadata.json")
+        write_json_file(data_id, tensor_path, json_path)
+            
     elif data_src == "acl":
         acl_data_dir = os.path.join(".", dump_data_dir, "acl_tensor", str(token_id))
         if not os.path.exists(acl_data_dir):
@@ -248,6 +251,8 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
             data = pure_save_acl_dump_tensor(csv_data=data, data_id=data_id, \
                                         tensor_path=tensor_path, token_id=token_id)
+        json_path = os.path.join(acl_data_dir, "metadata.json") 
+        write_json_file(data_id, tensor_path, json_path)
     data.to_csv(csv_path, index=False)
 
 
@@ -275,7 +280,7 @@ def save_golden_data(csv_data, data_id, data_val, data_path, token_id):
         csv_data[GOLDEN_DATA_PATH][index] = data_path
         csv_data[GOLDEN_DTYPE][index] = str(data_val.dtype)
         csv_data[GOLDEN_SHAPE][index] = str(data_val.shape)
-    
+    dict = {data_id: data_path}
     return csv_data
 
 

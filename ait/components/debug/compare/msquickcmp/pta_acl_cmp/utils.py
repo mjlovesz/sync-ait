@@ -290,3 +290,10 @@ def _get_data_path(data, idx, data_src):
 
     data_path = data[path_key][idx]
     return data_path
+
+
+def write_json_file(data_id, data_path, json_path):
+    import json
+    data_map = {data_id: data_path}
+    with open(json_path, "w") as f:
+        json.dump(data_map, f)
