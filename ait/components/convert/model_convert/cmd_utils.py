@@ -19,8 +19,13 @@ import os
 
 from model_convert.aoe.aoe_args_map import aoe_args
 from model_convert.atc.atc_args_map import atc_args
-from model_convert.security_check import input_file_args, input_dir_args, output_file_args, \
-    get_valid_read_path, get_valid_write_path
+from components.utils.security_check import get_valid_read_path, get_valid_write_path, MAX_READ_FILE_SIZE_32G
+
+
+input_file_args = ['model', 'weight', 'singleop', 'insert_op_conf', 'op_name_map', 'fusion_switch_file',
+                   'compression_optimize_conf', 'op_debug_config']
+input_dir_args = ['mdl_bank_path', 'op_bank_path', 'debug_dir', 'op_compiler_cache_dir', 'model_path']
+output_file_args = ['output', 'json', ]
 
 
 def get_logger(name=__name__):
@@ -70,7 +75,7 @@ def gen_convert_cmd(conf_args: list, parse_args: argparse.Namespace, backend: st
         if hasattr(parse_args, arg_name) and getattr(parse_args, arg_name):
             arg_value = str(getattr(parse_args, arg_name))
             if arg_name in input_file_args:
-                arg_value = get_valid_read_path(arg_value)
+                arg_value = get_valid_read_path(arg_value, size_max=MAX_READ_FILE_SIZE_32G)
             if arg_name in input_dir_args:
                 arg_value = get_valid_read_path(arg_value, is_dir=True)
             if arg_name in output_file_args:
