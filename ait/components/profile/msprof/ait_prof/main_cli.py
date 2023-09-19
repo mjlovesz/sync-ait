@@ -17,7 +17,8 @@ import re
 from components.utils.parser import BaseCommand
 from ait_prof.msprof_process import msprof_process
 from ait_prof.args_adapter import MsProfArgsAdapter
-from ait.components.utils.file_open_check import args_path_output_check
+from
+ components.utils.file_open_check import args_path_output_check
 
 
 def check_output_path_legality(value):

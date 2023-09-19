@@ -16,7 +16,8 @@ import os
 from components.utils.parser import BaseCommand
 from app_analyze.utils import log_util
 from app_analyze.porting.app import start_scan_kit
-from ait.components.utils.file_open_check import FileStat
+from
+ components.utils.file_open_check import FileStat
 
 
 def check_source_path(value):
