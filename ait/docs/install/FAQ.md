@@ -91,4 +91,4 @@ pip3 install protobuf==3.20.2
     export https_proxy="http://用户名:密码@proxy.huawei.com:8080/" 
 ```
 
-注：密码要用url转移
+注：密码要用url转义
