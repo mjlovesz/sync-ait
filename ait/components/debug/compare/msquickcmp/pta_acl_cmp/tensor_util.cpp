@@ -45,10 +45,11 @@ std::string bufMd5(const unsigned char *buf, size_t buf_size)
 
 void InitialPathTable(std::unordered_set<std::string> &pathTable) {
     const char* envValue = std::getenv("AIT_CMP_TASK_PID");
-    if (envValue) {
-        std::string aitCmpTaskPid = envValue;
-        std::string fileName = "/tmp/" + aitCmpTaskPid + "/ait_compare_acl_map.txt";
-
+        std::string taskPid = envValue ? envValue : "";
+        if (taskPid != "") {
+            taskPid = "/" + taskPid;
+        }
+        std::string fileName = "/tmp" + taskPid + "/ait_compare_acl_map.txt";
         std::ifstream fileContent(fileName);
         if (fileContent.is_open()) {
             std::string filePath;
@@ -57,7 +58,6 @@ void InitialPathTable(std::unordered_set<std::string> &pathTable) {
             }
             fileContent.close();
         }
-    }
 }
 
 
@@ -83,8 +83,16 @@ bool isPathInTable(const std::string &filePath) {
         result.erase(pos, basePath.length());
     }
 
+    std::string baseDir = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH")) + "/tensors/thread_";
+    size_t pos = filePath.find(baseDir);
+    std::string originResult = filePath;
+    if (pos != std::string::npos) {
+        size_t slashPos = filePath.find("/", pos + basePath.length());
+        originResult = filePath.substr(slashPos + 1);
+    }
+
     std::unordered_set<std::string> &copyTable = findTable();
-    if (!copyTable.count(result)) {
+    if (!copyTable.count(result) && !copyTable.count(originResult)) {
         return false;
     } else {
         return true;
