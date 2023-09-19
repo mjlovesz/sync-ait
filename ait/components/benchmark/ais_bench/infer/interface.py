@@ -433,7 +433,7 @@ class InferSession:
             logger.error("var_reci_chn_params in config file out of range, please check it!")
             raise RuntimeError('wrong aipp config file content!')
 
-        self.session.aipp_set_dtc_pixel_min(tmp_reci_params)
+        self.session.aipp_set_pixel_var_reci(tmp_reci_params)
 
     def run(self, feeds, out_array=False):
         if len(feeds) > 0 and isinstance(feeds[0], np.ndarray):
