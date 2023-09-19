@@ -20,8 +20,7 @@ from model_evaluation.common import utils, logger
 from model_evaluation.common.enum import Framework
 from model_evaluation.bean import ConvertConfig
 from model_evaluation.core import Analyze
-from
- components.utils.file_open_check import FileStat, args_path_output_check
+from components.utils.file_open_check import FileStat, args_path_output_check
 
 MAX_SIZE_LIMITE_NORMAL_MODEL = 10 * 1024 * 1024 * 1024  # 10G 普通模型文件
 
