@@ -544,7 +544,7 @@ onnx.Graph = class {
                 let node_name = struct._name
                 if (!unique_struct_set.has(node_name)) {
                     unique_struct_set.add(node_name)
-                    unique_struct_set.push(struct)
+                    unique_nodes.push(struct)
                 }
             }
         )
