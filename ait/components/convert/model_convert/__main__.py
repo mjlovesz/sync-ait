@@ -18,7 +18,7 @@ from components.utils.parser import BaseCommand
 from model_convert.aie.bean import ConvertConfig
 from model_convert.aie.core.convert import Convert
 from model_convert.cmd_utils import add_arguments, gen_convert_cmd, execute_cmd, get_logger
-from model_convert.security_check import get_valid_read_path, get_valid_write_path, MAX_READ_FILE_SIZE_32G
+from components.utils.security_check import get_valid_read_path, get_valid_write_path, MAX_READ_FILE_SIZE_32G
 
 logger = get_logger(__name__)
 

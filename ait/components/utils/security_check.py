@@ -9,11 +9,6 @@ MAX_READ_FILE_SIZE_32G = 34359738368  # 32G, 32 * 1024 * 1024 * 1024
 READ_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH
 WRITE_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH | stat.S_IROTH | stat.S_IXOTH
 
-input_file_args = ['model', 'weight', 'singleop', 'insert_op_conf', 'op_name_map', 'fusion_switch_file',
-                   'compression_optimize_conf', 'op_debug_config']
-input_dir_args = ['mdl_bank_path', 'op_bank_path', 'debug_dir', 'op_compiler_cache_dir', 'model_path']
-output_file_args = ['output', 'json', ]
-
 
 def is_belong_to_user_or_group(file_stat):
     return file_stat.st_uid == os.getuid() or file_stat.st_gid in os.getgroups()

@@ -19,8 +19,13 @@ import os
 
 from model_convert.aoe.aoe_args_map import aoe_args
 from model_convert.atc.atc_args_map import atc_args
-from model_convert.security_check import input_file_args, input_dir_args, output_file_args, \
-    get_valid_read_path, get_valid_write_path, MAX_READ_FILE_SIZE_32G
+from components.utils.security_check import get_valid_read_path, get_valid_write_path, MAX_READ_FILE_SIZE_32G
+
+
+input_file_args = ['model', 'weight', 'singleop', 'insert_op_conf', 'op_name_map', 'fusion_switch_file',
+                   'compression_optimize_conf', 'op_debug_config']
+input_dir_args = ['mdl_bank_path', 'op_bank_path', 'debug_dir', 'op_compiler_cache_dir', 'model_path']
+output_file_args = ['output', 'json', ]
 
 
 def get_logger(name=__name__):
