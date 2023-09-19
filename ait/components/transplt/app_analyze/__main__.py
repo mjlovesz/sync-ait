@@ -18,6 +18,7 @@ from app_analyze.utils import log_util
 from app_analyze.porting.app import start_scan_kit
 from ait.components.utils.file_open_check import FileStat
 
+
 def check_source_path(value):
     source_list = str(value).split(',')
     for path in source_list:
@@ -32,10 +33,13 @@ def check_source_path(value):
             raise argparse.ArgumentTypeError(f"source path:{path_value} is not a directory. Please check.")
     return str(value)
 
+
 class TranspltCommand(BaseCommand):
     def add_arguments(self, parser):
         # 逗号分隔的情况下只有一个列表元素
-        parser.add_argument("-s", "--source", required=True, help="directories of source folder")
+        parser.add_argument(
+            "-s", "--source", type=check_source_path, required=True, help="directories of source folder"
+        )
         parser.add_argument(
             "-f",
             "--report-type",

@@ -41,12 +41,14 @@ class ProfileCommand(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--application",
+            type=check_application_string_legality,
             required=True,
             help="Configure to run AI task files on the environment"
         )
         parser.add_argument(
             "-o",
             "--output",
+            type=check_output_path_legality,
             default=None,
             help="The storage path for the collected profiling data,"
                 " which defaults to the directory where the app is located"
