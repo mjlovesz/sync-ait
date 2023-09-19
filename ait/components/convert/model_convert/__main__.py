@@ -18,6 +18,7 @@ from components.utils.parser import BaseCommand
 from model_convert.aie.bean import ConvertConfig
 from model_convert.aie.core.convert import Convert
 from model_convert.cmd_utils import add_arguments, gen_convert_cmd, execute_cmd, get_logger
+from model_convert.security_check import get_valid_read_path, get_valid_write_path, MAX_READ_FILE_SIZE_32G
 
 logger = get_logger(__name__)
 
@@ -72,13 +73,11 @@ class AieCommand(BaseCommand):
                             help="The soc version.")
 
     def handle(self, args, **kwargs):
-        if not os.path.isfile(args.model):
-            logger.error('Input model is not a file.')
-            return
-
+        model_path = get_valid_read_path(args.model, size_max=MAX_READ_FILE_SIZE_32G)
+        output_path = get_valid_write_path(args.output)
         try:
             config = parse_input_param(
-                args.model, args.output, args.soc_version
+                model_path, output_path, args.soc_version
             )
         except ValueError as e:
             logger.error(f'{e}')
