@@ -432,7 +432,7 @@ class InferSession:
         if (range_ok is False):
             logger.error("var_reci_chn_params in config file out of range, please check it!")
             raise RuntimeError('wrong aipp config file content!')
-
+        # test pipeline
         self.session.aipp_set_dtc_pixel_min(tmp_reci_params)
 
     def run(self, feeds, out_array=False):
