@@ -52,7 +52,7 @@ from ais_bench.infer.path_security_check import (path_length_check, path_symboli
                                                  path_exist_check, path_white_list_check, path_owner_correct_check)
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
-from utils.file_open import ms_open, MAX_SIZE_LIMITE_CONFIG_FILE
+from components.utils.file_open import ms_open, MAX_SIZE_LIMITE_CONFIG_FILE
 
 PERMISSION_DIR = 0o750
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
