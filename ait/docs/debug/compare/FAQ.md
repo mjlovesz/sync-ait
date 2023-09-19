@@ -20,3 +20,74 @@ unset ASCEND_AICPU_PATH
 ## 2.使用locat功能时，出现`Object arrays cannot be loaded when allow_pickle=False`
 - 该错误时由于模型执行时onnxruntime对onnx模型使用了算子融合导致某些中间节点没有真实dump数据导致的。
 - **解决方法**是增加参数`--onnx-fusion-switch False`,关闭算子融合，使所有数据可用。
+
+## 3.如何安装Docker
+
+如果操作系统中没有安装docker，可以参考如下步骤手动进行安装。
+
+> 以下docker安装指引以x86版本的Ubuntu22.04操作系统为基准，其他系统需要自行修改部分内容。
+> a) 更新软件包索引，并且安装必要的依赖软件
+
+```shell
+sudo apt update
+sudo apt install apt-transport-https ca-certificates curl wget gnupg-agent software-properties-common lsb-release
+```
+
+b) 导入docker源仓库的 GPG key
+
+```shell
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+```
+
+> 注意：如果当前机器采用proxy方式联网，上面的命令有可能会遇到```curl: (60) SSL certificate problem: self signed certificate in certificate chain``` 的报错问题。遇到这种情况，可以在将curl的运行参数从```curl -fsSL```修改成```curl -fsSL -k```。需要注意的是，这会跳过检查目标网站的证书信息，有一定的安全风险，用户需要谨慎使用并自行承担后果。
+
+c) 将 Docker APT 软件源添加到系统
+
+```shell
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+```
+
+> 注意：如果上面的命令运行失败了，用户也可以采用如下命令手动将docker apt源添加到系统
+>
+> ```shell
+> sudo echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" >> /etc/apt/sources.list
+> ```
+
+d) 安装docker
+
+```shell
+sudo apt install docker-ce docker-ce-cli containerd.io
+```
+
+如果想安装指定版本的docker，可以在上面的命令中添加docker版本信息，如下所示
+
+```shell
+sudo apt install docker-ce=<VERSION> docker-ce-cli=<VERSION> containerd.io
+```
+
+e) 启动docker服务
+一旦安装完成，Docker 服务将会自动启动，可以输入下面的命令查看docker服务的状态
+
+```shell
+sudo systemctl status docker
+```
+
+如果docker服务没有启动，可以尝试手动启动docker服务
+
+```shell
+sudo systemctl start docker
+```
+
+f) 以非root用户运行docker命令
+
+默认情况下，只有 root 或者 有 sudo 权限的用户可以执行 Docker 命令。如果想要以非 root 用户执行 Docker 命令，则需要将你的用户添加到 Docker 用户组，如下所示：
+
+```shell
+sudo usermod -aG docker $USER
+```
+
+其中$USER代表当前用户。
+
+## 4.Dockerfile构建时报错 `ERROR: cannot verify xxx.com's certificate`
+
+可在Dockerfile中每个wget命令后加--no-check-certificate，有安全风险，由用户自行承担。

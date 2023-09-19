@@ -148,7 +148,7 @@ ai.onnx::10::RoiAlign: PartitionedCall
 ai.onnx::10::RoiExtractor: RoiExtractor
 ai.onnx::10::Round: Round
 ai.onnx::10::Scatter: ScatterElements
-ai.onnx::10::ScatterND: TensorScatterUpdate
+ai.onnx::10::ScatterND: ScatterNd
 ai.onnx::10::Selu: Selu
 ai.onnx::10::Shape: Shape
 ai.onnx::10::Shrink: Shrink
@@ -357,7 +357,7 @@ ai.onnx::11::RoiExtractor: RoiExtractor
 ai.onnx::11::Round: Round
 ai.onnx::11::Scatter: ScatterElements
 ai.onnx::11::ScatterElements: ScatterElements
-ai.onnx::11::ScatterND: TensorScatterUpdate
+ai.onnx::11::ScatterND: ScatterNd
 ai.onnx::11::Selu: Selu
 ai.onnx::11::SequenceAt: SequenceAt
 ai.onnx::11::SequenceConstruct: SequenceConstruct
@@ -572,7 +572,7 @@ ai.onnx::12::RoiAlign: PartitionedCall
 ai.onnx::12::RoiExtractor: RoiExtractor
 ai.onnx::12::Round: Round
 ai.onnx::12::ScatterElements: ScatterElements
-ai.onnx::12::ScatterND: TensorScatterUpdate
+ai.onnx::12::ScatterND: ScatterNd
 ai.onnx::12::Selu: Selu
 ai.onnx::12::SequenceAt""ai.onnx::13::SequenceAt: SequenceAt
 ai.onnx::12::SequenceConstruct: SequenceConstruct
@@ -788,7 +788,7 @@ ai.onnx::13::RoiAlign: PartitionedCall
 ai.onnx::13::RoiExtractor: RoiExtractor
 ai.onnx::13::Round: Round
 ai.onnx::13::ScatterElements: ScatterElements
-ai.onnx::13::ScatterND: TensorScatterUpdate
+ai.onnx::13::ScatterND: ScatterNd
 ai.onnx::13::Selu: Selu
 ai.onnx::13::SequenceConstruct: SequenceConstruct
 ai.onnx::13::SequenceEmpty: SequenceEmpty
@@ -1005,7 +1005,7 @@ ai.onnx::14::RoiAlign: PartitionedCall
 ai.onnx::14::RoiExtractor: RoiExtractor
 ai.onnx::14::Round: Round
 ai.onnx::14::ScatterElements: ScatterElements
-ai.onnx::14::ScatterND: TensorScatterUpdate
+ai.onnx::14::ScatterND: ScatterNd
 ai.onnx::14::Selu: Selu
 ai.onnx::14::SequenceAt: SequenceAt
 ai.onnx::14::SequenceConstruct: SequenceConstruct
@@ -1226,7 +1226,7 @@ ai.onnx::15::RoiAlign: PartitionedCall
 ai.onnx::15::RoiExtractor: RoiExtractor
 ai.onnx::15::Round: Round
 ai.onnx::15::ScatterElements: ScatterElements
-ai.onnx::15::ScatterND: TensorScatterUpdate
+ai.onnx::15::ScatterND: ScatterNd
 ai.onnx::15::Selu: Selu
 ai.onnx::15::SequenceAt: SequenceAt
 ai.onnx::15::SequenceConstruct: SequenceConstruct
@@ -1448,7 +1448,7 @@ ai.onnx::16::RoiAlign: PartitionedCall
 ai.onnx::16::RoiExtractor: RoiExtractor
 ai.onnx::16::Round: Round
 ai.onnx::16::ScatterElements: ScatterElements
-ai.onnx::16::ScatterND: TensorScatterUpdate
+ai.onnx::16::ScatterND: ScatterNd
 ai.onnx::16::Selu: Selu
 ai.onnx::16::SequenceAt: SequenceAt
 ai.onnx::16::SequenceConstruct""ai.onnx::17::SequenceConstruct: SequenceConstruct
@@ -1641,7 +1641,7 @@ ai.onnx::17::ReverseSequence: ReverseSequence
 ai.onnx::17::RoiAlign: PartitionedCall
 ai.onnx::17::Round: Round
 ai.onnx::17::ScatterElements: ScatterElements
-ai.onnx::17::ScatterND: TensorScatterUpdate
+ai.onnx::17::ScatterND: ScatterNd
 ai.onnx::17::Selu: Selu
 ai.onnx::17::SequenceAt: SequenceAt
 ai.onnx::17::SequenceEmpty: SequenceEmpty
@@ -1831,7 +1831,7 @@ ai.onnx::18::ReverseSequence: ReverseSequence
 ai.onnx::18::RoiAlign: PartitionedCall
 ai.onnx::18::Round: Round
 ai.onnx::18::ScatterElements: ScatterElements
-ai.onnx::18::ScatterND: TensorScatterUpdate
+ai.onnx::18::ScatterND: ScatterNd
 ai.onnx::18::Selu: Selu
 ai.onnx::18::SequenceAt: SequenceAt
 ai.onnx::18::SequenceConstruct: SequenceConstruct
@@ -1999,7 +1999,7 @@ ai.onnx::8::Reshape: Reshape
 ai.onnx::8::RoiAlign: PartitionedCall
 ai.onnx::8::RoiExtractor: RoiExtractor
 ai.onnx::8::Round: Round
-ai.onnx::8::ScatterND: TensorScatterUpdate
+ai.onnx::8::ScatterND: ScatterNd
 ai.onnx::8::Selu: Selu
 ai.onnx::8::Shape: Shape
 ai.onnx::8::Sigmoid: Sigmoid

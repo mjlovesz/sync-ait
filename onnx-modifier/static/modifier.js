@@ -68,7 +68,6 @@ modifier.Modifier = class {
         for (const node of this.model.supported_nodes) {
             // node: [domain, op]
             var option = new Option(node[1], node[0] + ':' + node[1]);
-            // console.log(option)
             addNodeDropdown.appendChild(option);
         }
     }
@@ -586,7 +585,6 @@ modifier.Modifier = class {
                 }
                 this.addedNode.get(modelNodeName).inputs.get(parameterName)[arg_index][0] = targetValue;
             }
-            // console.log(this.initializerEditInfo)
 
             if (this.addedNode.get(modelNodeName).outputs.has(parameterName)) {
                 arg_name = this.addedNode.get(modelNodeName).outputs.get(parameterName)[arg_index][0]
@@ -599,11 +597,9 @@ modifier.Modifier = class {
                 this.opSeries.push(['change_node_io', [modelNodeName, parameterName, param_type, param_index, arg_index, targetValue], [modelNodeName, parameterName, param_type, param_index, arg_index, arg_name]])
             }
         }
-        // console.log(this.addedNode)
 
         else {    // for the nodes in the original model
             var orig_arg_name = this.getOriginalName(param_type, modelNodeName, param_index, arg_index);
-            // console.log(orig_arg_name)
 
             if (!this.renameMap.get(modelNodeName)) {
                 this.renameMap.set(modelNodeName, new Map());
@@ -615,7 +611,6 @@ modifier.Modifier = class {
                 this.idx++
                 this.opSeries.push(['change_node_io', [modelNodeName, parameterName, param_type, param_index, arg_index, targetValue], [modelNodeName, parameterName, param_type, param_index, arg_index, orig_arg_name]])
             }
-            // console.log(this.modifier.renameMap)
         }
 
         this.applyAndUpdateView();
@@ -629,18 +624,14 @@ modifier.Modifier = class {
 
         if (param_type == 'model_output') {
             // modelNodeName = 'out_' + modelNodeName
-            // console.log(modelNodeName)
             var orig_arg_name = this.name2ModelNode.get(modelNodeName).arguments[0].original_name;
-            // console.log(orig_arg_name)
         }
 
         if (param_type == 'input') {
             var orig_arg_name = this.name2ModelNode.get(modelNodeName).inputs[param_index].arguments[arg_index].original_name;
-            // console.log(orig_arg_name)
         }
         if (param_type == 'output') {
             var orig_arg_name = this.name2ModelNode.get(modelNodeName).outputs[param_index].arguments[arg_index].original_name;
-            // console.log(orig_arg_name)
         }
 
         return orig_arg_name;
@@ -681,7 +672,6 @@ modifier.Modifier = class {
             ori_value, ori_type = this.addedNode.get(modelNodeName).attributes.get(attributeName)
             this.addedNode.get(modelNodeName).attributes.set(attributeName, [targetValue, type]);
         }
-        // console.log(this._addedNode)
 
         else {    // for the nodes in the original model
             if (!this.changedAttributes.get(modelNodeName)) {
@@ -735,7 +725,6 @@ modifier.Modifier = class {
     }
 
     refreshModelInputOutput() {
-        // console.log(this.modifier.renameMap)
         for (var input of this.graph._inputs) {
             var input_orig_name = input.arguments[0].original_name;
             if (this.renameMap.get(input_orig_name)) {
@@ -767,7 +756,6 @@ modifier.Modifier = class {
                 }
             }
         }
-        // console.log(this.graph.outputs)
         // create and add new output to graph
         this.graph.reset_custom_modified_outputs();
         for (var outputName of this.addedOutputs) {
@@ -779,13 +767,11 @@ modifier.Modifier = class {
         for (let [name, size_info] of this.inputSizeInfo) {
             this.graph.modify_input_shape(name, size_info);
         }
-        // console.log(this.graph.outputs)
         for (var output of this.graph.outputs) {
             var output_orig_name = output.arguments[0].original_name;
             if (this.renameMap.get('out_' + output_orig_name)) {
                 // for model input and output, node.modelNodeName == element.original_name
                 var new_name = this.renameMap.get('out_' + output_orig_name).get(output_orig_name);
-                // console.log(new_name)
                 var arg_with_new_name = this.graph._context.argument(new_name, output_orig_name);
 
                 output.arguments[0] = arg_with_new_name;
@@ -795,7 +781,6 @@ modifier.Modifier = class {
                     for (var node_output of node.outputs) {
                         for (const [index, element] of node_output.arguments.entries()) {
                             if (element.original_name == output_orig_name) {
-                                // console.log(element.original_name)
                                 var arg_with_new_name = this.graph._context.argument(new_name, element.original_name);
 
                                 node_output.arguments[index] = arg_with_new_name;
@@ -836,9 +821,7 @@ modifier.Modifier = class {
         // for (const node_info of this.addedNode.values()) {
         // for (const [modelNodeName, node_info] of this.lastViewGraph.addedNode) {
         for (const [modelNodeName, node_info] of this.addedNode) {
-            // console.log(node_info)
             var node = this.graph.make_custom_added_node(node_info);
-            // console.log(node)
 
             for (const input of node.inputs) {
                 var arg_list_info = [];
@@ -882,7 +865,6 @@ modifier.Modifier = class {
                     for (const [index, element] of output.arguments.entries()) {
                         if (this.renameMap.get(node.modelNodeName).get(element.original_name)) {
                             var new_name = this.renameMap.get(node.modelNodeName).get(element.original_name);
-                            // console.log(new_name)
                             var arg_with_new_name = this.graph._context.argument(new_name, element.original_name);
 
                             output.arguments[index] = arg_with_new_name;
@@ -920,13 +902,9 @@ modifier.Modifier = class {
             this.name2NodeStates.delete('out_' + name)
         }
 
-        // console.log(this.modifier.renameMap)
         // reset node inputs/outputs
         for (const changed_node_name of this.renameMap.keys()) {
             var node = this.name2ModelNode.get(changed_node_name);
-            // console.log(node)
-            // console.log(typeof node)
-            // console.log(node.constructor.name)
             if (node.arguments) {   // model input or model output. Because they are purely onnx.Parameter
                 // node.arguments[0] = this.graph._context.argument(node.modelNodeName);
                 node.arguments[0] = this.graph._context.argument(node.arguments[0].original_name);
@@ -936,7 +914,6 @@ modifier.Modifier = class {
                 //reset inputs
                 for (var input of node.inputs) {
                     for (var i = 0; i < input.arguments.length; ++i) {
-                        // console.log(input.arguments[i].original_name)
                         if (this.renameMap.get(node.modelNodeName).get(input.arguments[i].original_name)) {
                             input.arguments[i] = this.graph._context.argument(input.arguments[i].original_name);
                         }
