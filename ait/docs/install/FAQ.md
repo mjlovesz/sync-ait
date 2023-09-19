@@ -7,17 +7,20 @@
 
 **A：** 安装后用户可通过 设置CANN_PATH环境变量 ，指定安装的CANN版本路径，例如：export CANN_PATH=/xxx/Ascend/ascend-toolkit/latest/。若不设置，工具默认会从环境变量ASCEND_TOOLKIT_HOME和/usr/local/Ascend/ascend-toolkit/latest路径分别尝试获取CANN版本。
 
-    > 以下是设置CANN包环境变量的通用方法(假设CANN包安装目录为`ACTUAL_CANN_PATH`)：
-    > * 执行如下命令：
+以下是设置CANN包环境变量的通用方法(假设CANN包安装目录为`ACTUAL_CANN_PATH`)：
+* 执行如下命令：
+
     ```
     source $ACTUAL_CANN_PATH/Ascend/ascend-toolkit/set_env.sh- [目录](#目录)
-
+    ```
 
 ## 2、Q：使用./install.sh进行安装却报-bash: ./install.sh: Permission denied
 **A：** 这是因为没有给install.sh添加执行权限导致的。
 
 ```
 chmod u+x install.sh
+或使用
+bash install.sh
 ```
 
 
@@ -41,7 +44,7 @@ pip3 install YYY
 **A：** 在这个命令中，export | grep ASCEND_HOME_PATH会将所有环境变量输出，并通过管道符将结果传递给grep命令。grep命令会查找包含ASCEND_HOME_PATH的行，并将结果传递给cut命令。cut命令会以等号为分隔符，提取第二个字段，即ASCEND_HOME_PATH的值，并将其输出。
 
 ```
-export | grep ASCEND_HOME_PATH | cut -d'=' -f2
+echo $ASCEND_HOME_PATH
 ```
 
 ## 6、Q: 之前安装ait能够使用，后续环境上的依赖包被其他人或者其他工具破坏了，使用ait时提示“pkg_resources.VersionConflict:XXXXX”怎么办？
@@ -80,15 +83,12 @@ pip3 install protobuf==3.20.2
     ```
     pip3 install skl2onnx-1.14.1-py2.py3-none-any.whl
     ```
-- 这里是列表文本
 
 ## 8、Q：OpenSSL: error:1408F10B:SSL routines:ssl3_get_record:wrong version number
 **A:** 
 解决方案：此问题为网络问题且多存在于黄区，一般配置代理为私人代理后重新安装ait即可（如果仍然不能解决并不影响ait的使用，仅影响transplt组件），代理格式如下：
-    
 ```
-    export http_proxy="http://用户名:密码@proxy.huawei.com:8080/"
-    export https_proxy="http://用户名:密码@proxy.huawei.com:8080/" 
+    export http_proxy="http://用户名:密码@代理地址"
+    export https_proxy="http://用户名:密码@代理地址" 
 ```
-
 注：密码要用url转义
