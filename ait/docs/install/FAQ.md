@@ -85,6 +85,8 @@ pip3 install protobuf==3.20.2
 ## 8、Q：OpenSSL: error:1408F10B:SSL routines:ssl3_get_record:wrong version number
 **A:** 
 解决方案：此问题为网络问题且多存在于黄区，一般配置代理为私人代理后重新安装ait即可（如果仍然不能解决并不影响ait的使用，仅影响transplt组件），代理格式如下：
+    ```
     export http_proxy="http://用户名:密码@proxy.huawei.com:8080/"
     export https_proxy="http://用户名:密码@proxy.huawei.com:8080/" 
+    ```
     注：密码要用url转移
