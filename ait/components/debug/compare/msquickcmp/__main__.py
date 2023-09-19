@@ -25,6 +25,11 @@ from msquickcmp.common.args_check import (
     check_number_list, check_dym_range_string, check_fusion_cfg_path_legality, check_quant_json_path_legality,
     safe_string, str2bool
 )
+from msquickcmp.pta_acl_cmp.initial import init_aclcmp_task, clear_aclcmp_task
+from msquickcmp.pta_acl_cmp.utils import compare_metadata
+
+CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
+
 
 class CompareCommand(BaseCommand):
     def __init__(self, *args, **kwargs):
@@ -201,16 +206,41 @@ class AclCompare(BaseCommand):
         parser.add_argument(
             '--exec',
             dest="exec",
-            required=True,
+            required=False,
             default='',
             help='Exec command to run acltransformer model inference. ')
 
+        parser.add_argument(
+            '--golden-path',
+            dest="golden_path",
+            required=False,
+            default='',
+            help='Metadata path of golden model.')
+
+        parser.add_argument(
+            '--my-path',
+            dest="my_path",
+            required=False,
+            default='',
+            help='Metadata path of my model.')
+
+        parser.add_argument(
+            '--output',
+            dest="output",
+            required=False,
+            default='./',
+            help='The output compared report path')
+
     def handle(self, args, **kwargs):
-        if check_exec_cmd(args.exec):
+        if args.exec and check_exec_cmd(args.exec):
             init_aclcmp_task()
             # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
             os.system(args.exec)
             clear_aclcmp_task()
+            return
+
+        if args.golden_path and args.my_path:
+            compare_metadata(args.golden_path, args.my_path, args.output)
 
 
 def get_cmd_instance():

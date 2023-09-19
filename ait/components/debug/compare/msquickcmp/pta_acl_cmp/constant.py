@@ -1,3 +1,18 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+from msquickcmp.pta_acl_cmp.cmp_algorithm import cmp_alg_map
+
 ATTR_VERSION = "$Version"
 ATTR_END = "$End"
 ATTR_OBJECT_LENGTH = "$Object.Length"
@@ -25,11 +40,15 @@ CMP_FLAG = "cmp_flag"
 CMP_FAIL_REASON = "cmp_fail_reason"
 CSV_HEADER = [DATA_ID, PTA_DATA_PATH, PTA_DTYPE, PTA_SHAPE, PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE,
               ACL_DATA_PATH, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, CMP_FLAG]
+CSV_HEADER.extend(list(cmp_alg_map.keys()))
+CSV_HEADER.append(CMP_FAIL_REASON)
 
 MODEL_INFER_TASK_ID = "AIT_CMP_TASK_ID"
 AIT_CMP_TASK_DIR = 'AIT_CMP_TASK_DIR'
 AIT_CMP_TASK = "AIT_CMP_TASK"
 AIT_CMP_TASK_PID = "AIT_CMP_TASK_PID"
+AIT_IS_SAVE_MD5 = "AIT_IS_SAVE_MD5"
+AIT_DIALOG_DUMP_PATH = "AIT_DIALOG_DUMP_PATH"
 LD_PRELOAD = "LD_PRELOAD"
 
 ACL_DATA_MAP_FILE = "ait_compare_acl_map.txt"
@@ -37,3 +56,5 @@ ACL_DATA_MAP_FILE = "ait_compare_acl_map.txt"
 ACLTRANSFORMER_SAVE_TENSOR_MAX = "ACLTRANSFORMER_SAVE_TENSOR_MAX"
 ACLTRANSFORMER_SAVE_TENSOR = "ACLTRANSFORMER_SAVE_TENSOR"
 MAX_TOKEN_NUM = "10000"
+AIT_DUMP_PATH = "AIT_DUMP_PATH"
+TOKEN_ID = "token_id"
