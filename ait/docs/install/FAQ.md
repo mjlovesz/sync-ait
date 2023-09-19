@@ -18,8 +18,10 @@
 **A：** 这是因为没有给install.sh添加执行权限导致的。
 
 ```
+# 添加权限
 chmod u+x install.sh
-或使用
+
+# 或使用
 bash install.sh
 ```
 
