@@ -33,13 +33,7 @@ def check_model_path_legality(value):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal([os.R_OK]):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
-    if file_stat.path_file_type_check("onnx"):
-        pass
-    elif file_stat.path_file_type_check("prototxt"):
-        pass
-    elif file_stat.path_file_type_check("pb"):
-        pass
-    else:
+    if file_stat.path_file_type_check(["onnx", "prototxt", "pb"]):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_size_check(MAX_SIZE_LIMITE_NORMAL_MODEL):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")

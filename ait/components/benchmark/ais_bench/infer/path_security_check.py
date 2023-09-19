@@ -154,12 +154,12 @@ class FileStat:
         else:
             return True
 
-    def path_file_type_check(self, file_type:str):
+    def path_file_type_check(self, file_types:list):
         if not self.is_file:
             logger.error(f"path: {self.file} is not a file")
             return False
-        if os.path.splitext(self.file)[1] != f".{file_type}":
-            logger.error(f"acl_json_path:{self.file} is not a .{file_type} file")
-            return False
-        else:
-            return True
+        for file_type in file_types:
+            if os.path.splitext(self.file)[1] == f".{file_type}":
+                return True
+        logger.error(f"acl_json_path:{self.file}, file type not in {file_types}")
+        return False

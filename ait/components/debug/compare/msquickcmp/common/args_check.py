@@ -16,7 +16,6 @@ import re
 import argparse
 from ait.components.utils.file_open_check import FileStat, args_path_output_check
 
-CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
 MAX_SIZE_LIMITE_NORMAL_MODEL = 10 * 1024 * 1024 * 1024 # 10GB
 MAX_SIZE_LIMITE_FUSION_FILE = 1 * 1024 * 1024 * 1024 # 1GB
@@ -29,13 +28,7 @@ def check_model_path_legality(value):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal([os.R_OK]):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
-    if file_stat.path_file_type_check("onnx"):
-        pass
-    elif file_stat.path_file_type_check("prototxt"):
-        pass
-    elif file_stat.path_file_type_check("pb"):
-        pass
-    else:
+    if not file_stat.path_file_type_check(["onnx", "prototxt", "pb"]):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_size_check(MAX_SIZE_LIMITE_NORMAL_MODEL):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
@@ -50,7 +43,7 @@ def check_om_path_legality(value):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal([os.R_OK]):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_type_check("om"):
+    if not file_stat.path_file_type_check(["om"]):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_size_check(MAX_SIZE_LIMITE_NORMAL_MODEL):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
@@ -65,7 +58,7 @@ def check_weight_path_legality(value):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal([os.R_OK]):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_type_check("caffemodel"):
+    if not file_stat.path_file_type_check(["caffemodel"]):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_size_check(MAX_SIZE_LIMITE_NORMAL_MODEL):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
