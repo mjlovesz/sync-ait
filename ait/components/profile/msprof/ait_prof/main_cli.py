@@ -12,9 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import re
 from components.utils.parser import BaseCommand
 from ait_prof.msprof_process import msprof_process
 from ait_prof.args_adapter import MsProfArgsAdapter
+from ait.components.utils.file_open_check import args_path_output_check
+
+
+def check_output_path_legality(value):
+    if not value:
+        return value
+    path_value = str(value)
+    if not args_path_output_check(path_value):
+        raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
+    return path_value
+
+
+def check_application_string_legality(value):
+    cmd_str = str(value)
+    regex = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{;:/.~-]")
+    if regex.search(cmd_str):
+        raise argparse.ArgumentTypeError(f"application string \"{cmd_str}\" is not a legal string")
+    return cmd_str
 
 
 class ProfileCommand(BaseCommand):

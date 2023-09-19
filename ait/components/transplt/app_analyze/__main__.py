@@ -11,10 +11,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import os
 from components.utils.parser import BaseCommand
 from app_analyze.utils import log_util
 from app_analyze.porting.app import start_scan_kit
+from ait.components.utils.file_open_check import FileStat
 
+def check_source_path(value):
+    source_list = str(value).split(',')
+    for path in source_list:
+        path_value = str(path)
+        try:
+            file_stat = FileStat(path_value)
+        except Exception as err:
+            raise argparse.ArgumentTypeError(f"source path:{path_value} is illegal. Please check.") from err
+        if not file_stat.is_basically_legal([os.R_OK]):
+            raise argparse.ArgumentTypeError(f"source path:{path_value} is illegal. Please check.")
+        if not file_stat.is_dir:
+            raise argparse.ArgumentTypeError(f"source path:{path_value} is not a directory. Please check.")
+    return str(value)
 
 class TranspltCommand(BaseCommand):
     def add_arguments(self, parser):

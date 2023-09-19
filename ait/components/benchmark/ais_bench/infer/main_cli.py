@@ -19,7 +19,7 @@ import argparse
 from components.utils.parser import BaseCommand
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
-from ais_bench.infer.path_security_check import args_path_output_check, InFileStat
+from ais_bench.infer.path_security_check import args_path_output_check, FileStat
 
 OM_MODEL_MAX_SIZE = 10 * 1024 * 1024 * 1024 # 10GB
 ACL_JSON_MAX_SIZE = 8 * 1024 # 8KB
@@ -113,7 +113,7 @@ def check_device_range_valid(value):
 def check_om_path_legality(value):
     path_value = str(value)
     try:
-        file_stat = InFileStat(path_value)
+        file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal([os.R_OK]):
@@ -131,7 +131,7 @@ def check_input_path_legality(value):
     inputs_list = str(value).split(',')
     for input_path in inputs_list:
         try:
-            file_stat = InFileStat(input_path)
+            file_stat = FileStat(input_path)
         except Exception as err:
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.") from err
         if not file_stat.is_basically_legal([os.R_OK]):
@@ -153,7 +153,7 @@ def check_acl_json_path_legality(value):
         return value
     path_value = str(value)
     try:
-        file_stat = InFileStat(path_value)
+        file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal([os.R_OK]):
@@ -170,7 +170,7 @@ def check_aipp_config_path_legality(value):
         return value
     path_value = str(value)
     try:
-        file_stat = InFileStat(path_value)
+        file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal([os.R_OK]):
