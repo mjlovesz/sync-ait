@@ -6,7 +6,6 @@ from msquickcmp.pta_acl_cmp.constant import AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_
     LD_PRELOAD, ACLTRANSFORMER_SAVE_TENSOR_MAX, ACLTRANSFORMER_SAVE_TENSOR, MAX_TOKEN_NUM
 
 
-
 def init_aclcmp_task():
     os.environ[AIT_CMP_TASK_PID] = str(os.getpid())
     os.environ[AIT_CMP_TASK] = "1"

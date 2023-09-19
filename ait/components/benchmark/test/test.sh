@@ -63,7 +63,7 @@ main() {
     bash -x $CUR_PATH/get_pth_resnet50_data.sh $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE
     #bash -x $CUR_PATH/get_pth_resnet101_data.sh $SOC_VERSION $PYTHON_COMMAND
     #bash -x $CUR_PATH/get_pth_inception_v3_data.sh $SOC_VERSION $PYTHON_COMMAND
-    ${PYTHON_COMMAND} generate_pipeline_datasets.py
+    ${PYTHON_COMMAND} $CUR_PATH/generate_pipeline_datasets.py
 
     if [ $BENCKMARK_DT_MODE == "full" ];then
         bash -x $CUR_PATH/get_bert_data.sh $SOC_VERSION $PYTHON_COMMAND
