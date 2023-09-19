@@ -42,7 +42,7 @@ pip3 install YYY
 ![CRLF改为LF](https://foruda.gitee.com/images/1686645370968699210/f44f04b3_8913618.png "屏幕截图")
 
 
-## 5、Q：如何获取`cann包路径`？
+## 5、Q：如何获取cann包路径？
 **A：** 在这个命令中，export | grep ASCEND_HOME_PATH会将所有环境变量输出，并通过管道符将结果传递给grep命令。grep命令会查找包含ASCEND_HOME_PATH的行，并将结果传递给cut命令。cut命令会以等号为分隔符，提取第二个字段，即ASCEND_HOME_PATH的值，并将其输出。
 
 ```
