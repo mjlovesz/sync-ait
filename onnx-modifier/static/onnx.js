@@ -543,6 +543,18 @@ onnx.Graph = class {
 
     reset_custom_added_node() {
         this._custom_added_node = []
+        let unique_nodes = []
+        let unique_struct_set = new Set()
+        this._nodes.forEach(
+            (struct) => {
+                let node_name = struct._name
+                if (!unique_struct_set.has(node_name) || !node_name) {
+                    unique_struct_set.add(node_name)
+                    unique_nodes.push(struct)
+                }
+            }
+        )
+        this._nodes = unique_nodes
         // this._custom_add_node_io_idx = 0
     }
 
