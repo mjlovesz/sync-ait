@@ -21,7 +21,8 @@ from msquickcmp.pta_acl_cmp.cmp_algorithm import cmp_alg_map
 from msquickcmp.common.utils import logger
 from msquickcmp.pta_acl_cmp.constant import TOKEN_ID, CSV_HEADER, DATA_ID, PTA_DATA_PATH, ACL_DATA_PATH, CMP_FLAG, \
     CMP_FAIL_REASON, PTA_DTYPE, PTA_SHAPE, ACL_DTYPE, ACL_SHAPE, PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE, \
-    ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, ATTR_END, ATTR_OBJECT_LENGTH, ATTR_OBJECT_PREFIX
+    ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, ATTR_END, ATTR_OBJECT_LENGTH, ATTR_OBJECT_PREFIX, \
+    GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, GOLDEN_MAX_VALUE, GOLDEN_MIN_VALUE, GOLDEN_MEAN_VALUE
 
 
 class TensorBinFile:
@@ -198,6 +199,87 @@ def compare_metadata(golden_path, acl_path, output_path="./"):
     cmp_data_frame = compare_tensor(data_frame)
     cmp_data_frame.dropna(axis=0, how="all", inplace=True)
     cmp_data_frame.to_csv(os.path.join(output_path, "cmp_report.csv"), index=False)
+
+
+def _get_data_info(data, idx, data_src):
+    if data_src == "pta":
+        path_key = PTA_DATA_PATH
+        dtype_key = PTA_DTYPE
+        shape_key = PTA_SHAPE
+
+    elif data_src == "golden":
+        path_key = GOLDEN_DATA_PATH
+        dtype_key = GOLDEN_DTYPE
+        shape_key = GOLDEN_SHAPE
+
+    else:
+        path_key = ACL_DATA_PATH
+        dtype_key = ACL_DTYPE
+        shape_key = ACL_SHAPE
+
+    data_path = data[path_key][idx]
+    dtype = data[dtype_key][idx]
+    shape = data[shape_key][idx]
+    if isinstance(shape, str) and shape:
+        shape = [int(s) for s in shape[1:-1].split(',')]
+
+    if isinstance(dtype, str) and dtype:
+        dtype = np.dtype(dtype)
+
+    return data_path, dtype, shape
+
+
+def compare_all(csv_data:pd.DataFrame):
+    csv_data.fillna(value="", inplace=True)
+    data = csv_data[csv_data[CMP_FLAG] == False]
+    if data.empty:
+        return csv_data
+
+    for idx in data.index:
+        golden_data_path, golden_dtype, golden_shape = _get_data_info(data, idx, data_src="golden")
+        acl_data_path, acl_dtype, acl_shape = _get_data_info(data, idx, data_src="acl")
+
+        if os.path.exists(golden_data_path):
+            if golden_dtype and golden_shape:
+                golden_data = np.fromfile(golden_data_path, golden_dtype).reshape(golden_shape)
+            else:
+                golden_data = read_acl_transformer_data(golden_data_path)
+        else:
+            csv_data[CMP_FAIL_REASON][idx] = "golden_data_path is not exist."
+            csv_data[CMP_FLAG][idx] = True
+            continue
+
+        if os.path.exists(acl_data_path):
+            if acl_dtype and acl_shape:
+                acl_data = np.fromfile(acl_data_path, acl_dtype).reshape(acl_shape)
+            else:
+                acl_data = read_acl_transformer_data(acl_data_path)
+        else:
+            csv_data[CMP_FAIL_REASON][idx] = "acl_data_path is not exist."
+            csv_data[CMP_FLAG][idx] = True
+            continue
+
+        golden_data_fp32 = golden_data.reshape(-1).astype("float32")
+        acl_data_fp32 = acl_data.reshape(-1).astype("float32")
+
+        csv_data[GOLDEN_MAX_VALUE][idx] = np.max(golden_data_fp32)
+        csv_data[GOLDEN_MIN_VALUE][idx] = np.min(golden_data_fp32)
+        csv_data[GOLDEN_MEAN_VALUE][idx] = np.mean(golden_data_fp32)
+
+        csv_data[ACL_MAX_VALUE][idx] = np.max(acl_data_fp32)
+        csv_data[ACL_MIN_VALUE][idx] = np.min(acl_data_fp32)
+        csv_data[ACL_MEAN_VALUE][idx] = np.mean(acl_data_fp32)
+
+        for name, cmp_func in cmp_alg_map.items():
+            if len(golden_data_fp32) != len(acl_data_fp32):
+                csv_data[CMP_FAIL_REASON][idx] = "data shape doesn't match."
+                csv_data[CMP_FLAG][idx] = True
+                continue
+            result = cmp_func(golden_data_fp32, acl_data_fp32)
+            csv_data[name][idx] = result
+            csv_data[CMP_FLAG][idx] = True
+
+    return csv_data
 
 
 def _get_data_path(data, idx, data_src):
