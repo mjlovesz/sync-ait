@@ -145,6 +145,8 @@ def check_dym_range_string(value):
 
 
 def check_fusion_cfg_path_legality(value):
+    if not value:
+        return value
     path_value = str(value)
     try:
         file_stat = FileStat(path_value)
@@ -160,6 +162,8 @@ def check_fusion_cfg_path_legality(value):
 
 
 def check_quant_json_path_legality(value):
+    if not value:
+        return value
     path_value = str(value)
     try:
         file_stat = FileStat(path_value)
@@ -175,6 +179,8 @@ def check_quant_json_path_legality(value):
 
 
 def safe_string(value):
+    if not value:
+        return value
     if re.search(STR_WHITE_LIST_REGEX, value):
         raise ValueError("String parameter contains invalid characters.")
     return value
