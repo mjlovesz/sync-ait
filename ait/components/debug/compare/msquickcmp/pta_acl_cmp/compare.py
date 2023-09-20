@@ -150,7 +150,7 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
         if not os.path.exists(pta_data_dir):
             os.makedirs(pta_data_dir)
 
-        pta_data_path = os.path.join(pta_data_dir, data_id + '_tensor.bin')
+        pta_data_path = os.path.join(pta_data_dir, data_id + '_tensor.npy')
         data = save_pta_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=pta_data_path)
 
     elif data_src == "acl":
@@ -159,7 +159,7 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
             os.makedirs(acl_data_dir)
 
         if data_val is not None:
-            data_path = os.path.join(acl_data_dir, data_id + '_tensor.bin')
+            data_path = os.path.join(acl_data_dir, data_id + '_tensor.npy')
             data = save_acl_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=data_path)
         elif tensor_path:  # low-level
             write_acl_map_file(tensor_path)
