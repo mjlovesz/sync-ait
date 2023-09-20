@@ -49,7 +49,7 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   register_hook(model)
   set_dump_path(dump_path=".", dump_tag="ait_dump",backend="pt")
   ```
-  执行推理脚本 `bash run.sh patches/models/modeling_chatglm_model.py`，查看生成数据位于 `{dump_path}/{dump_tag}/{进程 ID}` 下
+  执行推理脚本 `bash run.sh patches/models/modeling_chatglm_model.py`，**输入与执行加速库侧 dump 数据时相同的输入**，查看生成数据位于 `{dump_path}/{dump_tag}/{进程 ID}` 下
 - **AIT 基于权重映射的精度比对** 分别指定 `--golden-path` 为 PTA 侧 dump 数据路径，`--my-path` 为加速库侧 dump 数据路径，通过权重的 MD5 值的匹配关系，自动建立映射，输出比对结果 `cmp_report.csv` 文件
   ```sh
   ait debug compare aclcmp --golden-path ait_dump_path/25115/ --my-path ../../output/acltransformer/tensors/thread_62250
