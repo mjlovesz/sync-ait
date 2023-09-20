@@ -31,7 +31,7 @@ def check_output_path_legality(value):
 
 def check_application_string_legality(value):
     cmd_str = str(value)
-    regex = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{;:/.~-]")
+    regex = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{;: /.~-]")
     if regex.search(cmd_str):
         raise argparse.ArgumentTypeError(f"application string \"{cmd_str}\" is not a legal string")
     return cmd_str
