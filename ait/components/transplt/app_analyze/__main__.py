@@ -27,7 +27,7 @@ def check_source_path(value):
             file_stat = FileStat(path_value)
         except Exception as err:
             raise argparse.ArgumentTypeError(f"source path:{path_value} is illegal. Please check.") from err
-        if not file_stat.is_basically_legal([os.R_OK]):
+        if not file_stat.is_basically_legal('read'):
             raise argparse.ArgumentTypeError(f"source path:{path_value} is illegal. Please check.")
         if not file_stat.is_dir:
             raise argparse.ArgumentTypeError(f"source path:{path_value} is not a directory. Please check.")
