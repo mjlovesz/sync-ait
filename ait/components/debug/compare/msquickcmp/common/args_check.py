@@ -14,7 +14,7 @@
 import os
 import re
 import argparse
-from components.utils.file_open_check import FileStat, args_path_string_check
+from components.utils.file_open_check import FileStat
 
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
 MAX_SIZE_LIMITE_NORMAL_MODEL = 10 * 1024 * 1024 * 1024 # 10GB
