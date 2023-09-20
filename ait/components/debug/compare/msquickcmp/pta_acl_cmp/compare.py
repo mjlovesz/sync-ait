@@ -21,7 +21,8 @@ import torch
 from msquickcmp.common.utils import logger
 from msquickcmp.pta_acl_cmp.constant import DATA_ID, PTA_DATA_PATH, ACL_DATA_PATH, \
     CMP_FLAG, CSV_HEADER, GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, CSV_GOLDEN_HEADER, \
-    MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE, TOKEN_ID
+    MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE, \
+    ACL_DTYPE, ACL_SHAPE, TOKEN_ID
 from msquickcmp.pta_acl_cmp.utils import compare_tensor, compare_all, write_json_file
 
 token_counts = 0
@@ -150,7 +151,7 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
         if not os.path.exists(pta_data_dir):
             os.makedirs(pta_data_dir)
 
-        pta_data_path = os.path.join(pta_data_dir, data_id + '_tensor.bin')
+        pta_data_path = os.path.join(pta_data_dir, data_id + '_tensor.npy')
         data = save_pta_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=pta_data_path)
 
     elif data_src == "acl":
@@ -159,7 +160,7 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
             os.makedirs(acl_data_dir)
 
         if data_val is not None:
-            data_path = os.path.join(acl_data_dir, data_id + '_tensor.bin')
+            data_path = os.path.join(acl_data_dir, data_id + '_tensor.npy')
             data = save_acl_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=data_path)
         elif tensor_path:  # low-level
             write_acl_map_file(tensor_path)
@@ -173,7 +174,10 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
 
 def write_acl_map_file(tensor_path):
     ait_cmp_task_pid = os.getenv(AIT_CMP_TASK_PID)
-    acl_map_file_dir = os.path.join('/tmp', ait_cmp_task_pid)
+    if ait_cmp_task_pid:
+        acl_map_file_dir = os.path.join('/tmp', ait_cmp_task_pid)
+    else:
+        acl_map_file_dir = '/tmp'
     acl_map_file_path = os.path.join(acl_map_file_dir, ACL_DATA_MAP_FILE)
     if not os.path.exists(acl_map_file_dir):
         os.mkdir(acl_map_file_dir)
@@ -233,7 +237,7 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
             data = save_golden_dump_tensor(csv_data=data, data_id=data_id, \
                                            tensor_path=tensor_path, token_id=token_id)
-        json_path = os.path.join(golden_data_dir, "metadata.json")
+        json_path = os.path.join(".", dump_data_dir, "golden_tensor", "metadata.json")
         write_json_file(data_id, tensor_path, json_path)
             
     elif data_src == "acl":
@@ -251,7 +255,7 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
             data = pure_save_acl_dump_tensor(csv_data=data, data_id=data_id, \
                                         tensor_path=tensor_path, token_id=token_id)
-        json_path = os.path.join(acl_data_dir, "metadata.json") 
+        json_path = os.path.join(".", dump_data_dir, "acl_tensor", "metadata.json") 
         write_json_file(data_id, tensor_path, json_path)
     data.to_csv(csv_path, index=False)
 

@@ -294,6 +294,11 @@ def _get_data_path(data, idx, data_src):
 
 def write_json_file(data_id, data_path, json_path):
     import json
-    data_map = {data_id: data_path}
+    try:
+        with open(json_path, 'r') as json_file:
+            json_data = json.load(json_file)
+    except FileNotFoundError:
+        json_data = {}
+    json_data[data_id] = data_path
     with open(json_path, "w") as f:
-        json.dump(data_map, f)
+        json.dump(json_data, f)
