@@ -54,6 +54,17 @@ def path_white_list_check(path):
     return True
 
 
+def args_path_string_check(path):
+    # only check path string
+    if not path:
+        return True
+    if not path_length_check(path):
+        return False
+    if not path_white_list_check(path):
+        return False
+    return True
+
+
 class OpenException(Exception):
     pass
 
@@ -61,7 +72,7 @@ class OpenException(Exception):
 class FileStat:
     def __init__(self, file) -> None:
         if not path_length_check(file) or not path_white_list_check(file):
-            raise Exception(f"create FileStat failed")
+            raise OpenException(f"create FileStat failed")
         self.file = file
         self.is_file_exist = os.path.exists(file)
         if self.is_file_exist:

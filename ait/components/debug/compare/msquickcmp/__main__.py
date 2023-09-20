@@ -21,7 +21,7 @@ from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common.utils import logger, check_exec_cmd
 from msquickcmp.common.args_check import (
     check_model_path_legality, check_om_path_legality, check_weight_path_legality, check_input_path_legality,
-    check_directory_legality, check_output_path_legality, check_dict_kind_string, check_device_range_valid,
+    check_cann_path_legality, check_output_path_legality, check_dict_kind_string, check_device_range_valid,
     check_number_list, check_dym_range_string, check_fusion_cfg_path_legality, check_quant_json_path_legality,
     safe_string, str2bool
 )
@@ -69,7 +69,7 @@ class CompareCommand(BaseCommand):
             '--cann-path',
             default=CANN_PATH,
             dest="cann_path",
-            type=check_directory_legality,
+            type=check_cann_path_legality,
             help='The CANN installation path')
         parser.add_argument(
             '-o',

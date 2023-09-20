@@ -14,7 +14,7 @@
 import os
 import re
 import argparse
-from components.utils.file_open_check import FileStat
+from components.utils.file_open_check import FileStat, args_path_string_check
 
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
 MAX_SIZE_LIMITE_NORMAL_MODEL = 10 * 1024 * 1024 * 1024 # 10GB
@@ -79,17 +79,10 @@ def check_input_path_legality(value):
     return str(value)
 
 
-def check_directory_legality(value):
+def check_cann_path_legality(value):
     path_value = str(value)
-    try:
-        file_stat = FileStat(path_value)
-    except Exception as err:
-        raise argparse.ArgumentTypeError(f"cann path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal('read'):
+    if not args_path_string_check(path_value):
         raise argparse.ArgumentTypeError(f"cann path:{path_value} is illegal. Please check.")
-    if not file_stat.is_dir:
-        raise argparse.ArgumentTypeError(f"om path:{path_value} is not a directory. Please check.")
-    return path_value
 
 
 def check_output_path_legality(value):

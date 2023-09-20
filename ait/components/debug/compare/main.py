@@ -27,7 +27,7 @@ from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.common import utils
 from msquickcmp.common.args_check import (
     check_model_path_legality, check_om_path_legality, check_weight_path_legality, check_input_path_legality,
-    check_directory_legality, check_output_path_legality, check_dict_kind_string, check_device_range_valid,
+    check_cann_path_legality, check_output_path_legality, check_dict_kind_string, check_device_range_valid,
     check_number_list, check_dym_range_string, check_fusion_cfg_path_legality, check_quant_json_path_legality,
     safe_string, str2bool
 )
@@ -45,7 +45,7 @@ def _accuracy_compare_parser(compare_parser):
                         help="<Optional> The input data path of the model."
                              " Separate multiple inputs with commas(,). E.g: input_0.bin,input_1.bin")
     compare_parser.add_argument("-c", "--cann-path", dest="cann_path",
-                        type=check_directory_legality,
+                        type=check_cann_path_legality,
                         default="/usr/local/Ascend/ascend-toolkit/latest/",
                         help="<Optional> The CANN installation path")
     compare_parser.add_argument("-o", "--out-path", dest="out_path", default="",
