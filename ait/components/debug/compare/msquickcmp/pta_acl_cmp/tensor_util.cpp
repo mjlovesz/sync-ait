@@ -73,9 +73,10 @@ bool isPathInTable(const std::string &filePath) {
     pid_t processID = getpid();
     std::string pID = std::to_string(processID);
 
-    std::string acl_home_path = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH"));
-    std::string ait_task_id = std::string(std::getenv("AIT_CMP_TASK_ID"));
-    std::string basePath = acl_home_path + "/tensors/" + pID + "/" + ait_task_id + "/";
+    std::string aclHomePath = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH"));
+    const char* aitTaskIdEnv = std::getenv("AIT_CMP_TASK_ID")
+    std::string aitTaskId = aitTaskIdEnv ? std::string(aitTaskIdEnv) : "";
+    std::string basePath = aclHomePath + "/tensors/" + pID + "/" + aitTaskId + "/";
 
     size_t pos = filePath.find(basePath);
     std::string result = filePath;
@@ -84,10 +85,10 @@ bool isPathInTable(const std::string &filePath) {
     }
 
     std::string baseDir = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH")) + "/tensors/thread_";
-    size_t pos = filePath.find(baseDir);
+    size_t originPos = filePath.find(baseDir);
     std::string originResult = filePath;
-    if (pos != std::string::npos) {
-        size_t slashPos = filePath.find("/", pos + basePath.length());
+    if (originPos != std::string::npos) {
+        size_t slashPos = filePath.find("/", originPos + basePath.length());
         originResult = filePath.substr(slashPos + 1);
     }
 
