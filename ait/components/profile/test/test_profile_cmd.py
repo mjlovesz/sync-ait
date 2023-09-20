@@ -29,7 +29,8 @@ class TestClass:
         return _current_dir
 
     def init(self):
-        self.model_path = os.path.join(self.get_cur_path(), "testdata/resnet50/model/pth_resnet50_bs1.om")
+        self.model_path = os.path.join(self.get_cur_path(),
+            "/../../benchmark/test/testdata/resnet50/model/pth_resnet50_bs1.om")
         self.output_path = os.path.join(self.get_cur_path(), "output_datas/")
         self.app_cmd = "'ait benchmark -om {}'".format(self.model_path)
 
