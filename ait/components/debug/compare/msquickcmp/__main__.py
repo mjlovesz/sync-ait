@@ -183,8 +183,6 @@ class CompareCommand(BaseCommand):
             help="the quant fusion rule file path")
         self.parser = parser
 
-
-
     def handle(self, args):
         if not args.golden_model:
             logger.error("The following arguments are required: -gm/--golden-model")
