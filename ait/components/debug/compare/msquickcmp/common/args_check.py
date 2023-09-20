@@ -119,7 +119,7 @@ def check_device_range_valid(value):
     if ivalue < min_value or ivalue > max_value:
         raise argparse.ArgumentTypeError("device:{} is invalid. valid value range is [{}, {}]".format(
             ivalue, min_value, max_value))
-    return ivalue
+    return value
 
 
 def check_number_list(value):
