@@ -132,14 +132,14 @@ class FileStat:
             if self.permission & READ_FILE_NOT_PERMITTED_STAT > 0:
                 logger.error(f"The file {self.file} is group writable, or is others writable.")
                 return False
-            if not os.access(self.real_path, os.R_OK) or self.permission & stat.S_IRUSR == 0:
+            if not os.access(self.realpath, os.R_OK) or self.permission & stat.S_IRUSR == 0:
                 logger.error(f"Current user doesn't have read permission to the file {self.file}.")
                 return False
         elif perm == 'write' and self.is_exists:
             if self.permission & WRITE_FILE_NOT_PERMITTED_STAT > 0:
                 logger.error(f"The file {self.file} is group writable, or is others writable.")
                 return False
-            if not os.access(self.real_path, os.W_OK):
+            if not os.access(self.realpath, os.W_OK):
                 logger.error(f"Current user doesn't have read permission to the file {self.file}.")
                 return False
         return True
