@@ -48,7 +48,7 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                                    get_fileslist_from_dir, list_split, list_share,
                                    save_data_to_files, create_fake_file_name, logger,
                                    create_tmp_acl_json, move_subdir, convert_helper)
-from ais_bench.infer.path_security_check import args_path_output_check
+from ais_bench.infer.path_security_check import args_path_string_check
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
 
@@ -292,7 +292,7 @@ def get_legal_json_content(acl_json_path):
     profile_dict = json_dict.get("profiler")
     for option_cmd in ACL_JSON_CMD_LIST:
         if profile_dict.get(option_cmd):
-            if option_cmd == "output" and not args_path_output_check(profile_dict.get(option_cmd)):
+            if option_cmd == "output" and not args_path_string_check(profile_dict.get(option_cmd)):
                 raise Exception(f"output path in acl_json is illegal!")
             cmd_dict.update({"--" + option_cmd.replace('_', '-'): profile_dict.get(option_cmd)})
             if (option_cmd == "sys_hardware_mem_freq"):

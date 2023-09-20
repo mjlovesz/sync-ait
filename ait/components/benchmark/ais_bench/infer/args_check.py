@@ -1,7 +1,7 @@
 import os
 import re
 import argparse
-from ais_bench.infer.path_security_check import args_path_output_check, FileStat
+from ais_bench.infer.path_security_check import FileStat
 
 OM_MODEL_MAX_SIZE = 10 * 1024 * 1024 * 1024 # 10GB
 ACL_JSON_MAX_SIZE = 8 * 1024 # 8KB
@@ -98,7 +98,7 @@ def check_om_path_legality(value):
         file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal([os.R_OK]):
+    if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_type_check(["om"]):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
@@ -116,7 +116,7 @@ def check_input_path_legality(value):
             file_stat = FileStat(input_path)
         except Exception as err:
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.") from err
-        if not file_stat.is_basically_legal([os.R_OK]):
+        if not file_stat.is_basically_legal('read'):
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.")
     return str(value)
 
@@ -125,7 +125,11 @@ def check_output_path_legality(value):
     if not value:
         return value
     path_value = str(value)
-    if not args_path_output_check(path_value):
+    try:
+        file_stat = FileStat(path_value)
+    except Exception as err:
+        raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.") from err
+    if not file_stat.is_basically_legal("write"):
         raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
     return path_value
 
@@ -138,7 +142,7 @@ def check_acl_json_path_legality(value):
         file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal([os.R_OK]):
+    if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_type_check(["json"]):
         raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
@@ -155,7 +159,7 @@ def check_aipp_config_path_legality(value):
         file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal([os.R_OK]):
+    if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_type_check(["config"]):
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")

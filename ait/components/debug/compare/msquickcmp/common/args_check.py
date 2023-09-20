@@ -14,7 +14,7 @@
 import os
 import re
 import argparse
-from components.utils.file_open_check import FileStat, args_path_output_check
+from components.utils.file_open_check import FileStat, args_path_string_check
 
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
 MAX_SIZE_LIMITE_NORMAL_MODEL = 10 * 1024 * 1024 * 1024 # 10GB
@@ -26,7 +26,7 @@ def check_model_path_legality(value):
         file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal([os.R_OK]):
+    if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_type_check(["onnx", "prototxt", "pb"]):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
@@ -41,7 +41,7 @@ def check_om_path_legality(value):
         file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal([os.R_OK]):
+    if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_type_check(["om"]):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
@@ -56,7 +56,7 @@ def check_weight_path_legality(value):
         file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal([os.R_OK]):
+    if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_type_check(["caffemodel"]):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
@@ -74,7 +74,7 @@ def check_input_path_legality(value):
             file_stat = FileStat(input_path)
         except Exception as err:
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.") from err
-        if not file_stat.is_basically_legal([os.R_OK]):
+        if not file_stat.is_basically_legal('read'):
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.")
     return str(value)
 
@@ -85,7 +85,7 @@ def check_directory_legality(value):
         file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"cann path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal([os.R_OK]):
+    if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"cann path:{path_value} is illegal. Please check.")
     if not file_stat.is_dir:
         raise argparse.ArgumentTypeError(f"om path:{path_value} is not a directory. Please check.")
@@ -96,7 +96,11 @@ def check_output_path_legality(value):
     if not value:
         return value
     path_value = str(value)
-    if not args_path_output_check(path_value):
+    try:
+        file_stat = FileStat(path_value)
+    except Exception as err:
+        raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.") from err
+    if not file_stat.is_basically_legal(path_value, "write"):
         raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
     return path_value
 
@@ -152,7 +156,7 @@ def check_fusion_cfg_path_legality(value):
         file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"fusion switch file path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal([os.R_OK]):
+    if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"fusion switch file path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_type_check("cfg"):
         raise argparse.ArgumentTypeError(f"fusion switch file path:{path_value} is illegal. Please check.")
@@ -169,7 +173,7 @@ def check_quant_json_path_legality(value):
         file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"quant file path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal([os.R_OK]):
+    if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"quant file path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_type_check("json"):
         raise argparse.ArgumentTypeError(f"quant file path:{path_value} is illegal. Please check.")

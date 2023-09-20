@@ -17,14 +17,18 @@ import re
 from components.utils.parser import BaseCommand
 from ait_prof.msprof_process import msprof_process
 from ait_prof.args_adapter import MsProfArgsAdapter
-from components.utils.file_open_check import args_path_output_check
+from components.utils.file_open_check import FileStat
 
 
 def check_output_path_legality(value):
     if not value:
         return value
     path_value = str(value)
-    if not args_path_output_check(path_value):
+    try:
+        file_stat = FileStat(path_value)
+    except Exception as err:
+        raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.") from err
+    if not file_stat.is_basically_legal(path_value, "write"):
         raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
     return path_value
 

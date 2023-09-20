@@ -24,9 +24,12 @@ MAX_SIZE_LIMITE_CONFIG_FILE = 10 * 1024 * 1024  # 10M 普通配置文件，可�
 MAX_SIZE_LIMITE_NORMAL_FILE = 4 * 1024 * 1024 * 1024  # 4G 普通模型文件，可以根据实际要求变更
 MAX_SIZE_LIMITE_MODEL_FILE = 100 * 1024 * 1024 * 1024  # 100G 超大模型文件，需要确定能处理大文件，可以根据实际要求变更
 
+PATH_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-]")
+
 PERMISSION_NORMAL = 0o640  # 普通文件
 PERMISSION_KEY = 0o600  # 密钥文件
-
+READ_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH
+WRITE_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH | stat.S_IROTH | stat.S_IXOTH
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -45,15 +48,14 @@ def path_length_check(path):
 
 
 def path_white_list_check(path):
-    regex = re.compile(r"[^_A-Za-z0-9/.-]")
-    if regex.search(path):
+    if PATH_WHITE_LIST_REGEX.search(path):
         logger.error(f"path:{path} contains illegal char")
         return False
     return True
 
 
-def args_path_output_check(path):
-    # check path as output path
+def args_path_string_check(path):
+    # only check path string
     if not path:
         return True
     if not path_length_check(path):
@@ -75,6 +77,7 @@ class FileStat:
         self.is_file_exist = os.path.exists(file)
         if self.is_file_exist:
             self.file_stat = os.stat(file)
+            self.realpath =  os.path.realpath(file)
         else:
             self.file_stat = None
 
@@ -126,22 +129,30 @@ class FileStat:
     def is_user_and_group_owner(self):
         return self.is_owner and self.is_group_owner
 
-    def is_basically_legal(self, perm_list):
-        if not perm_list:
-            perm_list = []
-        if not self.is_exists:
+    def is_basically_legal(self, perm='none'):
+        if not self.is_exists and perm != 'write':
             logger.error(f"path: {self.file} not exist")
             return False
-        for perm in perm_list:
-            if not os.access(self.file, perm):
-                logger.error(f"path: {self.file} don't have right permission")
-                return False
         if self.is_softlink:
             logger.error(f"path :{self.file} is a symbolic link, considering security, not supported")
             return False
         if not self.is_user_or_group_owner:
             logger.error(f"current user isn't path:{self.file}'s owner and ownergroup")
             return False
+        if perm == 'read':
+            if self.permission & READ_FILE_NOT_PERMITTED_STAT > 0:
+                logger.error(f"The file {self.file} is group writable, or is others writable.")
+                return False
+            if not os.access(self.real_path, os.R_OK) or self.permission & stat.S_IRUSR == 0:
+                logger.error(f"Current user doesn't have read permission to the file {self.file}.")
+                return False
+        elif perm == 'write' and self.is_exists:
+            if self.permission & WRITE_FILE_NOT_PERMITTED_STAT > 0:
+                logger.error(f"The file {self.file} is group writable, or is others writable.")
+                return False
+            if not os.access(self.real_path, os.W_OK):
+                logger.error(f"Current user doesn't have read permission to the file {self.file}.")
+                return False
         return True
 
     def path_file_size_check(self, max_size):
