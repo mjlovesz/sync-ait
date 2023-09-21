@@ -160,21 +160,7 @@ def compare_tensor(csv_data: pd.DataFrame):
     return csv_data
 
 
-def compare_metadata(golden_path, acl_path, output_path="./"):
-    golden_meta_path = os.path.join(golden_path, "metadata.json")
-    with open(golden_meta_path, 'r') as file:
-        golden_meta = json.load(file)
-
-    if acl_path.endswith(".json"):
-        with open(acl_path, 'r') as file:
-            acl_meta = json.load(file)
-    else:
-        from msquickcmp.pta_acl_cmp import acl_metadata
-
-        acl_meta = acl_metadata.init_acl_metadata_by_dump_data(acl_path)
-
-    data_frame = pd.DataFrame(columns=[TOKEN_ID] + CSV_HEADER, index=[0])
-
+def auto_compare_metadata(golden_meta, acl_meta, data_frame):
     for token_id, g_data in golden_meta.items():
         acl_data = acl_meta.get(token_id)
         if not acl_data:
@@ -196,90 +182,49 @@ def compare_metadata(golden_path, acl_path, output_path="./"):
 
             data_frame = pd.concat([data_frame, row_data], ignore_index=True)
 
+
+def manual_compare_metadata(golden_meta, acl_meta, data_frame):
+    for data_id, golden_data_path in golden_meta.items():
+        acl_data = acl_meta.get(data_id)
+        if not acl_data:
+            continue
+        for token_id, g_data_path in g_data.items():
+            acl_data_dir = acl_data.get(w_md5)
+            if not a_data_dir:
+                logger.warning(f"weight md5: {w_md5}, data_path is none.")
+                continue
+
+            row_data = pd.DataFrame({
+                TOKEN_ID: [str(token_id)],
+                DATA_ID: [w_md5],
+                PTA_DATA_PATH: [g_data_path[0]],
+                ACL_DATA_PATH: [acl_data_dir],
+                CMP_FLAG: [False]
+            })
+
+            data_frame = pd.concat([data_frame, row_data], ignore_index=True)
+
+
+def compare_metadata(golden_path, acl_path, output_path="./"):
+    golden_meta_path = os.path.join(golden_path, "metadata.json")
+    with open(golden_meta_path, 'r') as file:
+        golden_meta = json.load(file)
+
+    if acl_path.endswith(".json"):
+        with open(acl_path, 'r') as file:
+            acl_meta = json.load(file)
+    else:
+        from msquickcmp.pta_acl_cmp import acl_metadata
+
+        acl_meta = acl_metadata.init_acl_metadata_by_dump_data(acl_path)
+
+    data_frame = pd.DataFrame(columns=[TOKEN_ID] + CSV_HEADER, index=[0])
+
+    
+
     cmp_data_frame = compare_tensor(data_frame)
     cmp_data_frame.dropna(axis=0, how="all", inplace=True)
     cmp_data_frame.to_csv(os.path.join(output_path, "cmp_report.csv"), index=False)
-
-
-def _get_data_info(data, idx, data_src):
-    if data_src == "pta":
-        path_key = PTA_DATA_PATH
-        dtype_key = PTA_DTYPE
-        shape_key = PTA_SHAPE
-
-    elif data_src == "golden":
-        path_key = GOLDEN_DATA_PATH
-        dtype_key = GOLDEN_DTYPE
-        shape_key = GOLDEN_SHAPE
-
-    else:
-        path_key = ACL_DATA_PATH
-        dtype_key = ACL_DTYPE
-        shape_key = ACL_SHAPE
-
-    data_path = data[path_key][idx]
-    dtype = data[dtype_key][idx]
-    shape = data[shape_key][idx]
-    if isinstance(shape, str) and shape:
-        shape = [int(s) for s in shape[1:-1].split(',')]
-
-    if isinstance(dtype, str) and dtype:
-        dtype = np.dtype(dtype)
-
-    return data_path, dtype, shape
-
-
-def compare_all(csv_data:pd.DataFrame):
-    csv_data.fillna(value="", inplace=True)
-    data = csv_data[csv_data[CMP_FLAG] == False]
-    if data.empty:
-        return csv_data
-
-    for idx in data.index:
-        golden_data_path, golden_dtype, golden_shape = _get_data_info(data, idx, data_src="golden")
-        acl_data_path, acl_dtype, acl_shape = _get_data_info(data, idx, data_src="acl")
-
-        if os.path.exists(golden_data_path):
-            if golden_dtype and golden_shape:
-                golden_data = np.fromfile(golden_data_path, golden_dtype).reshape(golden_shape)
-            else:
-                golden_data = read_acl_transformer_data(golden_data_path)
-        else:
-            csv_data[CMP_FAIL_REASON][idx] = "golden_data_path is not exist."
-            csv_data[CMP_FLAG][idx] = True
-            continue
-
-        if os.path.exists(acl_data_path):
-            if acl_dtype and acl_shape:
-                acl_data = np.fromfile(acl_data_path, acl_dtype).reshape(acl_shape)
-            else:
-                acl_data = read_acl_transformer_data(acl_data_path)
-        else:
-            csv_data[CMP_FAIL_REASON][idx] = "acl_data_path is not exist."
-            csv_data[CMP_FLAG][idx] = True
-            continue
-
-        golden_data_fp32 = golden_data.reshape(-1).astype("float32")
-        acl_data_fp32 = acl_data.reshape(-1).astype("float32")
-
-        csv_data[GOLDEN_MAX_VALUE][idx] = np.max(golden_data_fp32)
-        csv_data[GOLDEN_MIN_VALUE][idx] = np.min(golden_data_fp32)
-        csv_data[GOLDEN_MEAN_VALUE][idx] = np.mean(golden_data_fp32)
-
-        csv_data[ACL_MAX_VALUE][idx] = np.max(acl_data_fp32)
-        csv_data[ACL_MIN_VALUE][idx] = np.min(acl_data_fp32)
-        csv_data[ACL_MEAN_VALUE][idx] = np.mean(acl_data_fp32)
-
-        for name, cmp_func in cmp_alg_map.items():
-            if len(golden_data_fp32) != len(acl_data_fp32):
-                csv_data[CMP_FAIL_REASON][idx] = "data shape doesn't match."
-                csv_data[CMP_FLAG][idx] = True
-                continue
-            result = cmp_func(golden_data_fp32, acl_data_fp32)
-            csv_data[name][idx] = result
-            csv_data[CMP_FLAG][idx] = True
-
-    return csv_data
 
 
 def _get_data_path(data, idx, data_src):

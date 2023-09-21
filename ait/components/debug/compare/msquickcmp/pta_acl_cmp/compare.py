@@ -1,3 +1,5 @@
+
+
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -203,160 +205,37 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
     if data_val is not None and not isinstance(data_val, torch.Tensor):
         return
 
-    # 获取csv路径
-    pid = os.getpid()
-    csv_result_dir = os.path.join("./", str(pid))
-    if not os.path.exists(csv_result_dir):
-        os.mkdir(csv_result_dir)
-
-    csv_path = os.path.join(csv_result_dir, f"{pid}_cmp_result.csv")
-
-
     dump_data_dir = f"{pid}_cmp_dump_data"
     # 如果没有dump数据文件夹新建一个
     if not os.path.exists(dump_data_dir):
         os.mkdir(dump_data_dir)
 
-    # 如果没有csv新建一个
-    if not os.path.exists(csv_path):
-        data = pd.DataFrame(columns=CSV_GOLDEN_HEADER, index=[0])
-    else:
-        data = pd.read_csv(csv_path, header=0)
     if data_src == "golden":
         golden_data_dir = os.path.join(".", dump_data_dir, "golden_tensor", str(token_id))
         if not os.path.exists(golden_data_dir):
             os.makedirs(golden_data_dir)
         if data_val is not None:
-            golden_data_path = os.path.join(golden_data_dir, f'{data_id}_tensor.bin')
-            data = save_golden_data(csv_data=data, data_id=data_id, data_val=data_val, \
-                                    data_path=golden_data_path, token_id=token_id)
+            golden_data_path = os.path.join(golden_data_dir, f'{data_id}_tensor.npy')
+            np.save(data_val, golden_data_path)
         elif tensor_path:  # low-level
             token_tensor_path = os.path.join(str(token_id), tensor_path)
             write_acl_map_file(token_tensor_path)
-            tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
+            golden_data_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
-            data = save_golden_dump_tensor(csv_data=data, data_id=data_id, \
-                                           tensor_path=tensor_path, token_id=token_id)
         json_path = os.path.join(".", dump_data_dir, "golden_tensor", "metadata.json")
-        write_json_file(data_id, tensor_path, json_path)
+        write_json_file(data_id, golden_data_path, json_path)
             
     elif data_src == "acl":
         acl_data_dir = os.path.join(".", dump_data_dir, "acl_tensor", str(token_id))
         if not os.path.exists(acl_data_dir):
             os.makedirs(acl_data_dir)
         if data_val is not None:
-            data_path = os.path.join(acl_data_dir, f'{data_id}_tensor.bin')
-            data = pure_save_acl_data(csv_data=data, data_id=data_id, data_val=data_val, \
-                                      data_path=data_path, token_id=token_id)
+            acl_data_path = os.path.join(acl_data_dir, f'{data_id}_tensor.npy')
+            np.save(data_val, acl_data_path)
         elif tensor_path:  # low-level
             token_tensor_path = os.path.join(str(token_id), tensor_path)
             write_acl_map_file(token_tensor_path)
-            tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
+            acl_data_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
-            data = pure_save_acl_dump_tensor(csv_data=data, data_id=data_id, \
-                                        tensor_path=tensor_path, token_id=token_id)
         json_path = os.path.join(".", dump_data_dir, "acl_tensor", "metadata.json") 
-        write_json_file(data_id, tensor_path, json_path)
-    data.to_csv(csv_path, index=False)
-
-
-def save_golden_data(csv_data, data_id, data_val, data_path, token_id):
-    if data_val is None:
-        return csv_data
-
-    data_val = data_val.cpu().numpy()
-    data_path = os.path.realpath(data_path)
-    mapping_data = csv_data[csv_data[DATA_ID] == data_id]
-    if mapping_data.empty:
-        data_val.tofile(data_path)
-        row_data = pd.DataFrame({
-            TOKEN_ID: [token_id],
-            DATA_ID: [data_id],
-            GOLDEN_DATA_PATH: [data_path],
-            GOLDEN_DTYPE: [str(data_val.dtype)],
-            GOLDEN_SHAPE: [str(data_val.shape)],
-            CMP_FLAG: [False]
-        })
-        csv_data = pd.concat([csv_data, row_data], ignore_index=True)
-    else:
-        index = mapping_data.index.values[0]
-        data_val.tofile(data_path)
-        csv_data[GOLDEN_DATA_PATH][index] = data_path
-        csv_data[GOLDEN_DTYPE][index] = str(data_val.dtype)
-        csv_data[GOLDEN_SHAPE][index] = str(data_val.shape)
-    dict = {data_id: data_path}
-    return csv_data
-
-
-def save_golden_dump_tensor(csv_data, data_id, tensor_path, token_id):
-    mapping_data = csv_data[csv_data[DATA_ID] == data_id]
-    if mapping_data.empty:
-        row_data = pd.DataFrame({
-            TOKEN_ID: [token_id],
-            DATA_ID: [data_id], 
-            GOLDEN_DATA_PATH: [tensor_path], 
-            CMP_FLAG: [False]})
-        csv_data = pd.concat([csv_data, row_data], ignore_index=True)
-    else:
-        index = mapping_data.index.values[0]
-        csv_data[GOLDEN_DATA_PATH][index] = tensor_path
-
-    return csv_data
-
-
-def pure_save_acl_data(csv_data, data_id, data_val, data_path, token_id):
-    if data_val is None:
-        return csv_data
-
-    data_val = data_val.cpu().numpy()
-    mapping_data = csv_data[csv_data[DATA_ID] == data_id]
-    if mapping_data.empty:
-        data_val.tofile(data_path)
-        row_data = pd.DataFrame({
-            TOKEN_ID: [token_id],
-            DATA_ID: [data_id],
-            ACL_DATA_PATH: [data_path],
-            ACL_DTYPE: [str(data_val.dtype)],
-            ACL_SHAPE: [str(data_val.shape)],
-            CMP_FLAG: [False]
-        })
-        csv_data = pd.concat([csv_data, row_data], ignore_index=True)
-    else:
-        index = mapping_data.index.values[0]
-        data_val.tofile(data_path)
-        csv_data[ACL_DATA_PATH][index] = data_path
-        csv_data[ACL_DTYPE][index] = str(data_val.dtype)
-        csv_data[ACL_SHAPE][index] = str(data_val.shape)
-
-    return csv_data
-
-
-def pure_save_acl_dump_tensor(csv_data, data_id, tensor_path, token_id):
-    mapping_data = csv_data[csv_data[DATA_ID] == data_id]
-    if mapping_data.empty:
-        row_data = pd.DataFrame({
-            TOKEN_ID: [token_id],
-            DATA_ID: [data_id],
-            ACL_DATA_PATH: [tensor_path],
-            CMP_FLAG: [False]})
-        csv_data = pd.concat([csv_data, row_data], ignore_index=True)
-    else:
-        index = mapping_data.index.values[0]
-        csv_data[ACL_DATA_PATH][index] = tensor_path
-
-    return csv_data
-
-
-def csv_compare(csv_path_1, csv_path_2, output_path):
-    # 读取两个CSV文件
-    df1 = pd.read_csv(csv_path_1)
-    df2 = pd.read_csv(csv_path_2)
-
-    # 合并两个DataFrame，根据data_id列进行合并
-    merged_df = df1.set_index('data_id').combine_first(df2.set_index('data_id')).reset_index()
-
-    # 比对开始
-    compare_all(merged_df)
-
-    # 将合并后的数据保存到输出文件
-    merged_df.to_csv(output_path, index=False)
+        write_json_file(data_id, acl_data_path, json_path)
