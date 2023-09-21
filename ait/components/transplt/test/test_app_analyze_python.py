@@ -30,7 +30,10 @@ INVALID_ARG = "invalid_arg"
 def transplt_argparse(argv):
     aa = get_cmd_instance()
     parser = argparse.ArgumentParser()
-    aa.add_arguments(parser)
+    try:
+        aa.add_arguments(parser)
+    except argparse.ArgumentTypeError:
+        raise Exception("args illegal|")
     return parser.parse_args(argv)
 
 
