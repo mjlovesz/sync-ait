@@ -171,11 +171,20 @@ bool isInTensorBinPath(const std::string &filePath) {
 }
 
 
+bool IsEnvEnable(const char *env) {
+    const char *envStr = std::getenv(env);
+    if (!saveTensor) {
+        return false;
+    }
+    return std::string(envStr) == "1";
+}
+
+
 void AclTransformer::TensorUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath) {
     ASD_LOG(INFO) << "save asdtensor start, tensor:" << AsdOpsTensorToString(tensor) << ", filePath:" << filePath;
 
     const char *is_save_md5_env = std::getenv("AIT_IS_SAVE_MD5");
-    bool is_save_md5 = is_save_md5_env ? true : false;
+    bool is_save_md5 = IsEnvEnable("AIT_IS_SAVE_MD5");
     ASD_LOG(INFO) << "save asdtensor, is_save_md5:" << is_save_md5;
 
     if (!is_save_md5) {
