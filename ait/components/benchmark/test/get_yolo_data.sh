@@ -116,8 +116,8 @@ main()
     SOC_VERSION=${1:-"Ascend310P3"}
     PYTHON_COMMAND=${2:-"python3"}
     TESTDATA_PATH=$CUR_PATH/testdata/yolov3/model
-    [ -d $TESTDATA_PATH ] || mkdir -p $TESTDATA_PATH
-    [ -d $TESTDATA_PATH/tmp ] || mkdir -p $TESTDATA_PATH/tmp/
+    [ -d $TESTDATA_PATH ] || { mkdir -p $TESTDATA_PATH;chmod 750 $TESTDATA_PATH; }
+    [ -d $TESTDATA_PATH/tmp ] || { mkdir -p $TESTDATA_PATH/tmp/;chmod 750 $TESTDATA_PATH; }
 
     model_url="https://obs-9be7.obs.cn-east-2.myhuaweicloud.com/turing/resourcecenter/model/ATC%20Yolov3%20from%20Pytorch%20Ascend310/zh/1.1/ATC_Yolov3_from_Pytorch_Ascend310.zip"
     yolo_onnx_file="$TESTDATA_PATH/pth_yolov3.onnx"

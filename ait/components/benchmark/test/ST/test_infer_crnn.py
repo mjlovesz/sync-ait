@@ -208,7 +208,7 @@ class TestClass():
             log_path = os.path.join(output_path, "log.txt")
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
-            os.makedirs(output_path)
+            os.makedirs(output_path, 0o750)
             output_batchsize_axis = 1
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
             cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {} > {}" \
@@ -250,7 +250,7 @@ class TestClass():
             log_path = os.path.join(output_path, "log.txt")
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
-            os.makedirs(output_path)
+            os.makedirs(output_path, 0o750)
             output_batchsize_axis = 1
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
             cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {} \

@@ -26,16 +26,16 @@ FAKE_CSV_PATH = "./test_resource/test_csv_sum"
 
 @pytest.fixture(scope="function")
 def generate_fake_path():
-    
-    os.mkdir(FAKE_CSV_PATH)
+
+    os.mkdir(FAKE_CSV_PATH, 0o750)
     sub_folder_name = os.path.join(FAKE_CSV_PATH, "2023072009")
-    os.mkdir(sub_folder_name)
-    os.mkdir('./test_resource/test_csv_sum/2023072009/images-2_3_638_640')
-    os.mkdir('./test_resource/test_csv_sum/2023072009/images-2_3_640_640')
+    os.mkdir(sub_folder_name, 0o750)
+    os.mkdir('./test_resource/test_csv_sum/2023072009/images-2_3_638_640', 0o750)
+    os.mkdir('./test_resource/test_csv_sum/2023072009/images-2_3_640_640', 0o750)
 
     df1 = pd.DataFrame({'A': [1, 2, 3], 'B': ['a', 'b', 'c']})
     df1.to_csv('./test_resource/test_csv_sum/2023072009/images-2_3_638_640/file1.csv', index=False)
-    
+
     df2 = pd.DataFrame({'A': [1, 2, 3], 'B': ['a', 'b', 'c']})
     df2.to_csv('./test_resource/test_csv_sum/2023072009/images-2_3_640_640/file2.csv', index=False)
 
@@ -54,7 +54,7 @@ def test_csv_sum_given_path_when_valid_then_pass(generate_fake_path):
 
     sheets1 = result_summary.sheetnames
     sheets2 = expected_output.sheetnames
-    
+
     assert len(sheets1) == len(sheets2)
 
     for sheet_name in sheets1:
@@ -63,7 +63,7 @@ def test_csv_sum_given_path_when_valid_then_pass(generate_fake_path):
 
         assert sheet1.max_row == sheet2.max_row
         assert sheet1.max_column == sheet2.max_column
-  
+
         for row in range(1, sheet1.max_row + 1):
             for col in range(1, sheet1.max_column + 1):
                 assert sheet1.cell(row=row, column=col).value == sheet2.cell(row=row, column=col).value

@@ -14,8 +14,8 @@
 import os
 import stat
 import pytest
-from file_open import ms_open, FileStat, OpenException
-from file_open import PERMISSION_NORMAL, PERMISSION_KEY
+from file_open_check import ms_open, FileStat, OpenException
+from file_open_check import PERMISSION_NORMAL, PERMISSION_KEY
 
 
 @pytest.fixture(scope="function")

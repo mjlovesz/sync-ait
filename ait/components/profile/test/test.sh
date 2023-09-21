@@ -23,13 +23,10 @@ PYTHON_COMMAND="python3"
 
 
 main() {
-    if [ ! -d $CUR_PATH/testdata ];then
-        ln -s $TEST_DATA_PATH $CUR_PATH || { echo "make soft link failed!"; return $ret_failed; }
-    fi
     if [ ! -d $OUTPUT_PATH ];then
         mkdir $OUTPUT_PATH || { echo "make output dir failed"; return $ret_failed; }
+        chmod 750 $OUTPUT_PATH
     fi
-
 
     ${PYTHON_COMMAND} -m pytest -s $CUR_PATH/test_profile_cmd.py || {  echo "execute ST command failed!"; return $ret_failed; }
     return $ret_ok

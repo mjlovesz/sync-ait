@@ -13,12 +13,73 @@
 # limitations under the License.
 
 import os
-
+import re
+import argparse
 from components.utils.parser import BaseCommand
 from model_evaluation.common import utils, logger
 from model_evaluation.common.enum import Framework
 from model_evaluation.bean import ConvertConfig
 from model_evaluation.core import Analyze
+from components.utils.file_open_check import FileStat
+
+MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024  # 10G 普通模型文件
+
+
+def check_model_path_legality(value):
+    if not value:
+        return value
+    path_value = value
+    try:
+        file_stat = FileStat(path_value)
+    except Exception as err:
+        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.") from err
+    if not file_stat.is_basically_legal('read'):
+        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
+    if not file_stat.is_legal_file_type(["onnx", "prototxt", "pb"]):
+        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
+    if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
+        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
+    return path_value
+
+
+def check_weight_path_legality(value):
+    if not value:
+        return value
+    path_value = value
+    try:
+        file_stat = FileStat(path_value)
+    except Exception as err:
+        raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.") from err
+    if not file_stat.is_basically_legal('read'):
+        raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
+    if not file_stat.is_legal_file_type(["caffemodel"]):
+        raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
+    if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
+        raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
+    return path_value
+
+
+def check_soc_string(value):
+    if not value:
+        return value
+    soc_string = value
+    regex = re.compile(r"[^_A-Za-z0-9\-]")
+    if regex.search(soc_string):
+        raise argparse.ArgumentTypeError(f"dym string \"{soc_string}\" is not a legal string")
+    return soc_string
+
+
+def check_output_path_legality(value):
+    if not value:
+        return value
+    path_value = value
+    try:
+        file_stat = FileStat(path_value)
+    except Exception as err:
+        raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.") from err
+    if not file_stat.is_basically_legal("write"):
+        raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
+    return path_value
 
 
 def parse_input_param(model: str,
@@ -48,7 +109,7 @@ def parse_input_param(model: str,
 class AnalyzeCommand(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
-            "-gm", "--golden-model", type=str,
+            "-gm", "--golden-model", type=check_model_path_legality,
             required=True, default=None,
             help="model path, support caffe, onnx, tensorflow."
         )
@@ -58,17 +119,17 @@ class AnalyzeCommand(BaseCommand):
             default=None, help="Framework type: 0:Caffe; 3:Tensorflow; 5:Onnx."
         )
         parser.add_argument(
-            "-w", "--weight", type=str,
+            "-w", "--weight", type=check_weight_path_legality,
             required=False, default='',
             help="Weight file. Required when framework is Caffe."
         )
         parser.add_argument(
-            "-soc", "--soc-version", type=str,
+            "-soc", "--soc-version", type=check_soc_string,
             required=False, default='',
             help="The soc version."
         )
         parser.add_argument(
-            "-o", "--output", type=str,
+            "-o", "--output", type=check_output_path_legality,
             required=True, default='',
             help="Output path."
         )
