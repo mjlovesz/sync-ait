@@ -22,7 +22,7 @@ from model_evaluation.bean import ConvertConfig
 from model_evaluation.core import Analyze
 from components.utils.file_open_check import FileStat
 
-MAX_SIZE_LIMITE_NORMAL_MODEL = 10 * 1024 * 1024 * 1024  # 10G 普通模型文件
+MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024  # 10G 普通模型文件
 
 
 def check_model_path_legality(value):

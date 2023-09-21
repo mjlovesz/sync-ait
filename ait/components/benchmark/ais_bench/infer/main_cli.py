@@ -20,7 +20,7 @@ from components.utils.parser import BaseCommand
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.args_check import (
-    dym_string_check, dym_range_string_check, number_list_check, str2bool, check_positive_integer,
+    check_dym_string, check_dym_range_string, check_number_list, str2bool, check_positive_integer,
     check_batchsize_valid, check_nonnegative_integer, check_device_range_valid, check_om_path_legality,
     check_input_path_legality, check_output_path_legality, check_acl_json_path_legality,
     check_aipp_config_path_legality
@@ -99,7 +99,7 @@ class BenchmarkCommand(BaseCommand):
             '-dhw',
             '--dym-hw',
             dest="dym_hw",
-            type=dym_string_check,
+            type=check_dym_string,
             default=None,
             help="Dynamic image size param, such as --dymHW \"300,500\""
         )
@@ -107,7 +107,7 @@ class BenchmarkCommand(BaseCommand):
             '-dd',
             '--dym-dims',
             dest="dym_dims",
-            type=dym_string_check,
+            type=check_dym_string,
             default=None,
             help="Dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\""
         )
@@ -115,7 +115,7 @@ class BenchmarkCommand(BaseCommand):
             '-ds',
             '--dym-shape',
             dest="dym_shape",
-            type=dym_string_check,
+            type=check_dym_string,
             default=None,
             help="Dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\""
         )
@@ -123,7 +123,7 @@ class BenchmarkCommand(BaseCommand):
             '-outsize',
             '--output-size',
             dest="output_size",
-            type=number_list_check,
+            type=check_number_list,
             default=None,
             help="Output size for dynamic shape mode"
         )
@@ -216,7 +216,7 @@ class BenchmarkCommand(BaseCommand):
             '-dr',
             '--dym-shape-range',
             dest="dym_shape_range",
-            type=dym_range_string_check,
+            type=check_dym_range_string,
             default=None,
             help='Dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
         )

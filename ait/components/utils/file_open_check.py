@@ -35,7 +35,7 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)
 logger = logging.getLogger(__name__)
 
 
-def path_length_check(path):
+def is_legal_path_length(path):
     if len(path) > 4096:
         logger.error(f"file total path length out of range (4096)")
         return False
@@ -47,20 +47,20 @@ def path_length_check(path):
     return True
 
 
-def path_white_list_check(path):
+def is_match_path_white_list(path):
     if PATH_WHITE_LIST_REGEX.search(path):
         logger.error(f"path:{path} contains illegal char")
         return False
     return True
 
 
-def args_path_string_check(path):
+def is_legal_args_path_string(path):
     # only check path string
     if not path:
         return True
-    if not path_length_check(path):
+    if not is_legal_path_length(path):
         return False
-    if not path_white_list_check(path):
+    if not is_match_path_white_list(path):
         return False
     return True
 
@@ -71,7 +71,7 @@ class OpenException(Exception):
 
 class FileStat:
     def __init__(self, file) -> None:
-        if not path_length_check(file) or not path_white_list_check(file):
+        if not is_legal_path_length(file) or not is_match_path_white_list(file):
             raise OpenException(f"create FileStat failed")
         self.file = file
         self.is_file_exist = os.path.exists(file)

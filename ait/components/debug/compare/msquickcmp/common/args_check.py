@@ -14,10 +14,10 @@
 import os
 import re
 import argparse
-from components.utils.file_open_check import FileStat, args_path_string_check
+from components.utils.file_open_check import FileStat, is_legal_args_path_string
 
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
-MAX_SIZE_LIMITE_NORMAL_MODEL = 10 * 1024 * 1024 * 1024 # 10GB
+MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024 # 10GB
 MAX_SIZE_LIMITE_FUSION_FILE = 1 * 1024 * 1024 * 1024 # 1GB
 
 def check_model_path_legality(value):
@@ -81,7 +81,7 @@ def check_input_path_legality(value):
 
 def check_cann_path_legality(value):
     path_value = str(value)
-    if not args_path_string_check(path_value):
+    if not is_legal_args_path_string(path_value):
         raise argparse.ArgumentTypeError(f"cann path:{path_value} is illegal. Please check.")
     return path_value
 

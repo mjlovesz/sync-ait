@@ -8,7 +8,7 @@ ACL_JSON_MAX_SIZE = 8 * 1024 # 8KB
 AIPP_CONFIG_MAX_SIZE = 12.5 * 1024 # 12.5KB
 
 
-def dym_string_check(value):
+def check_dym_string(value):
     if not value:
         return value
     dym_string = str(value)
@@ -18,7 +18,7 @@ def dym_string_check(value):
     return dym_string
 
 
-def dym_range_string_check(value):
+def check_dym_range_string(value):
     if not value:
         return value
     dym_string = str(value)
@@ -28,7 +28,7 @@ def dym_range_string_check(value):
     return dym_string
 
 
-def number_list_check(value):
+def check_number_list(value):
     if not value:
         return value
     number_list = str(value)
