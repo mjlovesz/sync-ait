@@ -45,6 +45,7 @@ function chmod_file_data()
 }
 
 main() {
+    chmod_file_data
     if [ $# -lt 2 ]; then
         echo "at least one parameter. for example: bash test.sh Ascend310P3 python3"
         return $ret_invalid_args
