@@ -152,7 +152,7 @@ def check_fusion_cfg_path_legality(value):
         raise argparse.ArgumentTypeError(f"fusion switch file path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"fusion switch file path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_type_check("cfg"):
+    if not file_stat.path_file_type_check(["cfg"]):
         raise argparse.ArgumentTypeError(f"fusion switch file path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_size_check(MAX_SIZE_LIMITE_NORMAL_MODEL):
         raise argparse.ArgumentTypeError(f"fusion switch file path:{path_value} is illegal. Please check.")
@@ -169,7 +169,7 @@ def check_quant_json_path_legality(value):
         raise argparse.ArgumentTypeError(f"quant file path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"quant file path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_type_check("json"):
+    if not file_stat.path_file_type_check(["json"]):
         raise argparse.ArgumentTypeError(f"quant file path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_size_check(MAX_SIZE_LIMITE_NORMAL_MODEL):
         raise argparse.ArgumentTypeError(f"quant file path:{path_value} is illegal. Please check.")

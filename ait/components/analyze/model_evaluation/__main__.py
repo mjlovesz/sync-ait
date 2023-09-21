@@ -48,7 +48,7 @@ def check_weight_path_legality(value):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_type_check("caffemodel"):
+    if not file_stat.path_file_type_check(["caffemodel"]):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
     if not file_stat.path_file_size_check(MAX_SIZE_LIMITE_NORMAL_MODEL):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
