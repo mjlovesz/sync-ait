@@ -93,5 +93,5 @@ def set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt"):
 
     os.environ[AIT_DIALOG_DUMP_PATH] = dialog_path
 
-    if isinstance(backend, atr) and backend.lower() == "acl":
+    if isinstance(backend, str) and backend.lower() == "acl":
         os.environ[AIT_IS_SAVE_MD5] = "1"       
