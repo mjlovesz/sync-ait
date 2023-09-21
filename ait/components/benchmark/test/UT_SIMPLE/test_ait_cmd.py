@@ -22,6 +22,7 @@ from ais_bench.infer.main_cli import BenchmarkCommand
 
 benchmark_command = BenchmarkCommand()
 current_dir = os.path.dirname(os.path.abspath(__file__))
+os.chmod(os.path.join(current_dir, "../json_for_arg_test.json"), 0o750)
 base_cmd_dict = {
     "--om-model": os.path.join(current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
     "--input": os.path.join(current_dir, "../testdata/resnet50/input/fake_dataset_bin_nor"),
