@@ -1,15 +1,15 @@
 # PTA 与 ACL 加速库基于权重映射的精度比对
 - 基于 weight（输入）数值，比较加速库 kernel 数据和 PT/PTA 的 API 的 weight（输入）数值，从而粗略的判断 kernel 和 API 是有映射关系的
-- 步骤：获取加速库和 PTA 框架的 weight，计算 md5 值，md5 值相等则确定 kernel 和 API 有映射关系
+- 步骤：获取加速库和 PTA 框架的 weight，计算 md5 值，md5 值相等则确定对应的 kernel 和 API 存在映射关系
 - 局限：只适用于使用了权重 weight，且存在映射关系的匹配
 ## 接口介绍
 - **set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt", is_save_md5=False)** 设置 dump 数据目录，多卡推理时须保证每个进程都能调用该函数
   | 参数名      | 含义                   | 是否必填 | 使用说明                                                                                  |
   | ----------- | ---------------------- | -------- | ------------------------------------------------------------------------------------- |
   | dump_path   | dump 数据保存路径      | 否       | 数据类型：str，当需要dump不同对话的数据时，建议设置该参数，否则会覆盖上一轮对话的数据     |
-  | dump_tag    | 设置 dump 数据目录名称 | 否       | 参数示例：dump_tag="diglog_id"，默认 dump 数据目录命名为 ait_dump                           |
+  | dump_tag    | 设置 dump 数据目录名称 | 否       | 参数示例：dump_tag="dialog_0"，默认 dump 数据目录命名为 ait_dump                           |
   | backend     | 推理后端               | 否       | 数据类型：str，可选值 [pt, acl]，pt 表示 pytorch-npu 或 pytorch-gpu 推理，acl 表示加速库推理 |
-  | is_save_md5 | 是否保存 MD5 值        | 否       | 数据类型：bool，指定保存 intensor 的 MD5 值或完整 tensor 数据|
+  | is_save_md5 | 是否保存 MD5 值        | 否       | 数据类型：bool，指定保存 intensor 的 MD5 值或完整 tensor 数据，默认 False 保存 tensor 数据 |
 
 - **register_hook(model, op_list=[])** 给模型注册钩子，获取模型中间的输出数据，仅 pytorch-npu(gpu) 推理时需要使用
   | 参数名  | 含义               | 是否必填 | 使用说明                                                                                    |
