@@ -109,7 +109,7 @@ APP_ERROR DeviceManager::DestroyDevices()
                 cout << aclGetRecentErrMsg() << endl;
                 ERROR_LOG("reset device failed");
             }
-            INFO_LOG("end to reset device %lld", contexts.first);
+            DEBUG_LOG("end to reset device %lld", contexts.first);
         }
 
         contexts_.clear();
@@ -217,7 +217,6 @@ APP_ERROR DeviceManager::CreateContext(DeviceContext device, size_t& contextInde
             ERROR_LOG("acl open device %d failed", deviceId);
             return ret;
         }
-        INFO_LOG("open device %d success", deviceId);
         contexts_[deviceId] = {};
         nextContextIndex_[deviceId] = 0;
     }

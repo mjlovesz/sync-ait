@@ -29,18 +29,22 @@ cur_bin_aipp_path = os.path.join(base_path, "testdata/resnet50/input/fake_datase
 if os.path.exists(cur_bin_aipp_path):
     shutil.rmtree(cur_bin_aipp_path)
 os.makedirs(cur_bin_aipp_path)
+os.chmod(cur_bin_aipp_path, 0o750)
 cur_bin_nor_path = os.path.join(base_path, "testdata/resnet50/input/fake_dataset_bin_nor")
 if os.path.exists(cur_bin_nor_path):
     shutil.rmtree(cur_bin_nor_path)
 os.makedirs(cur_bin_nor_path)
+os.chmod(cur_bin_nor_path, 0o750)
 cur_npy_aipp_path = os.path.join(base_path, "testdata/resnet50/input/fake_dataset_npy_aipp")
 if os.path.exists(cur_npy_aipp_path):
     shutil.rmtree(cur_npy_aipp_path)
 os.makedirs(cur_npy_aipp_path)
+os.chmod(cur_npy_aipp_path, 0o750)
 cur_npy_nor_path = os.path.join(base_path, "testdata/resnet50/input/fake_dataset_npy_nor")
 if os.path.exists(cur_npy_nor_path):
     shutil.rmtree(cur_npy_nor_path)
 os.makedirs(cur_npy_nor_path)
+os.chmod(cur_npy_nor_path, 0o750)
 for i, _ in enumerate(tqdm(list_k, file=sys.stdout, desc='generate dataset process:')):
     bin_aipp_name = f"{i}.bin"
     bin_nor_name = f"{i}.bin"
@@ -51,6 +55,10 @@ for i, _ in enumerate(tqdm(list_k, file=sys.stdout, desc='generate dataset proce
     npy_aipp_path = os.path.join(cur_npy_aipp_path, npy_aipp_name)
     npy_nor_path = os.path.join(cur_npy_nor_path, npy_nor_name)
     tensor_bin_aipp.tofile(bin_aipp_path)
+    os.chmod(bin_aipp_path, 0o750)
     tensor_bin_nor.tofile(bin_nor_path)
+    os.chmod(bin_nor_path, 0o750)
     np.save(npy_aipp_path, tensor_npy_aipp)
+    os.chmod(npy_aipp_path, 0o750)
     np.save(npy_nor_path, tensor_npy_nor)
+    os.chmod(npy_nor_path, 0o750)

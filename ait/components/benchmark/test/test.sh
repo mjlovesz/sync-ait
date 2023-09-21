@@ -38,7 +38,14 @@ function get_msame_file()
     fi
 }
 
+function chmod_file_data()
+{
+    chmod 750 $CUR_PATH/json_for_arg_test.json
+    chmod -R 750 $CUR_PATH/aipp_config_files
+}
+
 main() {
+    chmod_file_data
     if [ $# -lt 2 ]; then
         echo "at least one parameter. for example: bash test.sh Ascend310P3 python3"
         return $ret_invalid_args

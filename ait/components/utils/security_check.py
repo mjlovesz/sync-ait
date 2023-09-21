@@ -174,3 +174,4 @@ def check_dict_character(dict_value, key_max_len=512, param_name="dict"):
                 check_character(value, param_name=param_name)
 
     check_dict_character_recursion(dict_value)
+

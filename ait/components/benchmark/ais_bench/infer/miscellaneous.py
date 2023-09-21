@@ -19,7 +19,7 @@ import itertools
 import numpy as np
 
 from ais_bench.infer.utils import logger
-from components.utils.file_open import ms_open, MAX_SIZE_LIMITE_CONFIG_FILE, MAX_SIZE_LIMITE_NORMAL_FILE
+from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_CONFIG_FILE, MAX_SIZE_LIMITE_NORMAL_FILE
 
 PERMISSION_DIR = 0o750
 

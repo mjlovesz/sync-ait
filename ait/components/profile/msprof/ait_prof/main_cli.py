@@ -12,21 +12,47 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import re
 from components.utils.parser import BaseCommand
 from ait_prof.msprof_process import msprof_process
 from ait_prof.args_adapter import MsProfArgsAdapter
+from components.utils.file_open_check import FileStat
+
+
+def check_output_path_legality(value):
+    if not value:
+        return value
+    path_value = value
+    try:
+        file_stat = FileStat(path_value)
+    except Exception as err:
+        raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.") from err
+    if not file_stat.is_basically_legal("write"):
+        raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
+    return path_value
+
+
+def check_application_string_legality(value):
+    cmd_str = value
+    regex = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{;: /.~-]")
+    if regex.search(cmd_str):
+        raise argparse.ArgumentTypeError(f"application string \"{cmd_str}\" is not a legal string")
+    return cmd_str
 
 
 class ProfileCommand(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--application",
+            type=check_application_string_legality,
             required=True,
             help="Configure to run AI task files on the environment"
         )
         parser.add_argument(
             "-o",
             "--output",
+            type=check_output_path_legality,
             default=None,
             help="The storage path for the collected profiling data,"
                 " which defaults to the directory where the app is located"

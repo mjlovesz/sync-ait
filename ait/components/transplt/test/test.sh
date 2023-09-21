@@ -54,6 +54,8 @@ fi
 
 echo "PYTHONPATH: $PYTHONPATH"
 
+chmod -R 750 $CUR_PATH/resources
+
 coverage run -m pytest $CUR_PATH --disable-warnings
 if [ $? != 0 ]; then
     echo "coverage run failed! "
