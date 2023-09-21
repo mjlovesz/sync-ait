@@ -83,6 +83,7 @@ def check_cann_path_legality(value):
     path_value = str(value)
     if not args_path_string_check(path_value):
         raise argparse.ArgumentTypeError(f"cann path:{path_value} is illegal. Please check.")
+    return path_value
 
 
 def check_output_path_legality(value):
