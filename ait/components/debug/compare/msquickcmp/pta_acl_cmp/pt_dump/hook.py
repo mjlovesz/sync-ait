@@ -83,7 +83,7 @@ def register_hook(model, op_list=[]):
             module.register_forward_hook(dump_output_hook())
 
 
-def set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt", is_save_md5=False):
+def set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt"):
     if not os.path.exists(dump_path):
         os.mkdir(dump_path)
 
@@ -93,5 +93,5 @@ def set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt", is_save_md5=
 
     os.environ[AIT_DIALOG_DUMP_PATH] = dialog_path
 
-    if is_save_md5:
+    if isinstance(backend, atr) and backend.lower() == "acl":
         os.environ[AIT_IS_SAVE_MD5] = "1"       
