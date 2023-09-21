@@ -30,10 +30,7 @@ INVALID_ARG = "invalid_arg"
 def transplt_argparse(argv):
     aa = get_cmd_instance()
     parser = argparse.ArgumentParser()
-    try:
-        aa.add_arguments(parser)
-    except argparse.ArgumentTypeError:
-        raise Exception("args illegal|")
+    aa.add_arguments(parser)
     return parser.parse_args(argv)
 
 
@@ -54,5 +51,5 @@ def test_app_analyze_python_given_opencv_csv_when_any_then_pass():
 
 def test_app_analyze_python_given_invalid_source_when_any_then_error():
     argv = ["-s", INVALID_ARG, "-f", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS]
-    with pytest.raises(Exception):
+    with pytest.raises(argparse.ArgumentTypeError):
         call_transplt_cmd(argv)
