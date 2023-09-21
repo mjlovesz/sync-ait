@@ -107,12 +107,12 @@ def fake_dym_shape_onnx_model():
     input_name = 'input0'
     input_data = torch.ones(INPUT_SHAPE)
 
-    torch.onnx.export(model, 
-                      input_data, 
+    torch.onnx.export(model,
+                      input_data,
                       FAKE_DYM_SHAPE_ONNX_MODEL_PATH,
                       input_names=[input_name],
                       dynamic_axes={input_name:{0:'bs'}})
-    
+
     yield FAKE_DYM_SHAPE_ONNX_MODEL_PATH
 
     if os.path.exists(FAKE_DYM_SHAPE_ONNX_MODEL_PATH):
@@ -123,7 +123,7 @@ def fake_dym_shape_onnx_model():
 def fake_om_model(width_onnx_model):
     if not os.path.exists(FAKE_OM_MODEL_PATH):
         cmd = 'atc --model={}  --framework=5 --output={} \
-            --soc_version={}'.format(width_onnx_model, 
+            --soc_version={}'.format(width_onnx_model,
                                      OM_OUT_PATH,
                                      acl.get_soc_name())
         subprocess.run(cmd.split(), shell=False)
@@ -157,7 +157,7 @@ def fake_om_model_with_aipp(width_onnx_model):
 
         if not os.path.exists(FAKE_OM_MODEL_WITH_AIPP_PATH):
             cmd = 'atc --model={} --framework=5 --output={} \
-                --soc_version={} --insert_op_conf={}'.format(width_onnx_model, 
+                --soc_version={} --insert_op_conf={}'.format(width_onnx_model,
                                                             FAKE_OM_MODEL_WITH_AIPP_PATH.replace(".om", ""),
                                                             acl.get_soc_name(),
                                                             "./fake_aipp.config")
@@ -167,7 +167,7 @@ def fake_om_model_with_aipp(width_onnx_model):
 
         if os.path.exists(FAKE_OM_MODEL_WITH_AIPP_PATH):
             os.remove(FAKE_OM_MODEL_WITH_AIPP_PATH)
-        
+
         if os.path.exists("fake_aipp.config"):
             os.remove("fake_aipp.config")
 
@@ -194,7 +194,7 @@ def test_init_given_invalid_when_any_then_failed(fake_arguments):
     if os.path.exists(fake_arguments.out_path):
         shutil.rmtree(fake_arguments.out_path)
 
-        
+
 def test_generate_inputs_data_given_random_when_valid_then_pass(fake_arguments):
     npu_dump = NpuDumpData(fake_arguments, False)
 
@@ -280,7 +280,7 @@ def test_generate_inputs_data_given_input_path_when_golden_then_pass(fake_argume
         shutil.rmtree(tmp_input_data)
 
 
-def test_generate_inputs_data_given_random_data_when_aipp_then_pass(fake_arguments, fake_om_model_with_aipp):    
+def test_generate_inputs_data_given_random_data_when_aipp_then_pass(fake_arguments, fake_om_model_with_aipp):
     fake_arguments.offline_model_path = fake_om_model_with_aipp
     fake_arguments.out_path = fake_om_model_with_aipp.replace(".om", "")
 
@@ -311,7 +311,7 @@ def test_generate_inputs_data_given_random_data_when_aipp_then_pass(fake_argumen
 def test_generate_dump_data_given_random_data_when_valid_then_pass(fake_arguments):
     npu_dump = NpuDumpData(fake_arguments, False)
     npu_dump.generate_inputs_data()
-
+    os.system(f"chmod -R 750 {OM_OUT_PATH}")
     om_dump_data_dir, _ = npu_dump.generate_dump_data()
     assert os.path.exists(om_dump_data_dir)
 
@@ -325,6 +325,7 @@ def test_generate_dump_data_given_random_data_when_dump_false_then_pass(fake_arg
     fake_arguments.dump = False
     npu_dump = NpuDumpData(fake_arguments, False)
     npu_dump.generate_inputs_data()
+    os.system(f"chmod -R 750 {OM_OUT_PATH}")
 
     _, npu_net_output_data_path = npu_dump.generate_dump_data()
     assert os.path.exists(npu_net_output_data_path)
