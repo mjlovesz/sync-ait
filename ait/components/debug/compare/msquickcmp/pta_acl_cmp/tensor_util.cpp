@@ -45,19 +45,19 @@ std::string bufMd5(const unsigned char *buf, size_t buf_size)
 
 void InitialPathTable(std::unordered_set<std::string> &pathTable) {
     const char* envValue = std::getenv("AIT_CMP_TASK_PID");
-        std::string taskPid = envValue ? envValue : "";
-        if (taskPid != "") {
-            taskPid = "/" + taskPid;
+    std::string taskPid = envValue ? envValue : "";
+    if (taskPid != "") {
+        taskPid = "/" + taskPid;
+    }
+    std::string fileName = "/tmp" + taskPid + "/ait_compare_acl_map.txt";
+    std::ifstream fileContent(fileName);
+    if (fileContent.is_open()) {
+        std::string filePath;
+        while (std::getline(fileContent, filePath)) {
+            pathTable.insert(filePath);
         }
-        std::string fileName = "/tmp" + taskPid + "/ait_compare_acl_map.txt";
-        std::ifstream fileContent(fileName);
-        if (fileContent.is_open()) {
-            std::string filePath;
-            while (std::getline(fileContent, filePath)) {
-                pathTable.insert(filePath);
-            }
-            fileContent.close();
-        }
+        fileContent.close();
+    }
 }
 
 
