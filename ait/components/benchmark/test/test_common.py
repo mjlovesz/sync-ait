@@ -62,7 +62,7 @@ class TestCommonClass:
     def prepare_dir(target_folder_path):
         if os.path.exists(target_folder_path):
             shutil.rmtree(target_folder_path)
-        os.makedirs(target_folder_path)
+        os.makedirs(target_folder_path, 0o750)
 
     @staticmethod
     def get_model_inputs_size(model_path):
