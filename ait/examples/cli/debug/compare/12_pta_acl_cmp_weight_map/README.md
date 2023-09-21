@@ -2,6 +2,9 @@
 - 基于 weight（输入）数值，比较加速库 kernel 数据和 PT/PTA 的 API 的 weight（输入）数值，从而粗略的判断存在映射关系的加速库 kernel 和 PTA API
 - 步骤：获取加速库和 PTA 框架的 weight，计算 md5 值，md5 值相等则确定对应的加速库 kernel 和 PTA API 存在映射关系
 - 局限：只适用于使用了权重 weight，且存在映射关系的匹配
+
+## 比对流程
+![acl_pta_workflow.png](acl_pta_workflow.png)
 ## 接口介绍
 - **set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt", is_save_md5=False)** 设置 dump 数据目录，多卡推理时须保证每个进程都能调用该函数
   | 参数名      | 含义                   | 是否必填 | 使用说明                                                                                  |
