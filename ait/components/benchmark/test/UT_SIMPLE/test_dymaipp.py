@@ -365,43 +365,33 @@ class TestClass:
     # 各种输入的aipp具体参数配置文件
     @classmethod
     def get_actual_aipp_config(cls):
-        path = os.path.join(
+        return os.path.join(
             os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg.config"
         )
-        os.chmod(path, 0o750)
-        return path
 
     @classmethod
     def get_aipp_config_param_overflowed(cls):
-        path = os.path.join(
+        return os.path.join(
             os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_param_overflowed.config"
         )
-        os.chmod(path, 0o750)
-        return
 
     @classmethod
     def get_aipp_config_lack_param(cls):
-        path = os.path.join(
+        return os.path.join(
             os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_lack_param.config"
         )
-        os.chmod(path, 0o750)
-        return path
 
     @classmethod
     def get_aipp_config_multi_input(cls):
-        path = os.path.join(
+        return os.path.join(
             os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_multi_input.config"
         )
-        os.chmod(path, 0o750)
-        return path
 
     @classmethod
     def get_aipp_config_lack_title(cls):
-        path = os.path.join(
+        return os.path.join(
             os.path.dirname(__file__), "../", "aipp_config_files", "actual_aipp_cfg_lack_title.config"
         )
-        os.chmod(path, 0o750)
-        return path
 
     def init(self):
         self.model_name = "resnet50"
