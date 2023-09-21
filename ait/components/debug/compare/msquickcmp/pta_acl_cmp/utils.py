@@ -19,11 +19,10 @@ import numpy as np
 
 from msquickcmp.pta_acl_cmp.cmp_algorithm import cmp_alg_map
 from msquickcmp.common.utils import logger
-from msquickcmp.pta_acl_cmp.constant import TOKEN_ID, CSV_HEADER, DATA_ID, PTA_DATA_PATH, ACL_DATA_PATH, CMP_FLAG, \
-    CMP_FAIL_REASON, PTA_DTYPE, PTA_SHAPE, ACL_DTYPE, ACL_SHAPE, PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE, \
-    ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, ATTR_END, ATTR_OBJECT_LENGTH, ATTR_OBJECT_PREFIX, \
-    GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, GOLDEN_MAX_VALUE, GOLDEN_MIN_VALUE, GOLDEN_MEAN_VALUE, \
-    CSV_GOLDEN_HEADER
+from msquickcmp.pta_acl_cmp.constant import TOKEN_ID, DATA_ID, ACL_DATA_PATH, CMP_FLAG, \
+    CMP_FAIL_REASON, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, ATTR_END, \
+    ATTR_OBJECT_LENGTH, ATTR_OBJECT_PREFIX, GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, \
+    GOLDEN_MAX_VALUE, GOLDEN_MIN_VALUE, GOLDEN_MEAN_VALUE, CSV_GOLDEN_HEADER
 
 
 class TensorBinFile:
@@ -111,12 +110,9 @@ def compare_tensor(csv_data: pd.DataFrame):
     data = csv_data[csv_data[CMP_FLAG] == False]
     if data.empty:
         return csv_data
-    if PTA_DATA_PATH in csv_data.columns:
-        golden_data_src = "pta"
-    else:
-        golden_data_src = "golden"
+
     for idx in data.index:
-        golden_data_path = _get_data_path(data, idx, data_src=golden_data_src)
+        golden_data_path = _get_data_path(data, idx, data_src="golden")
         acl_data_path = _get_data_path(data, idx, data_src="acl")
 
         if os.path.exists(golden_data_path):
@@ -127,7 +123,6 @@ def compare_tensor(csv_data: pd.DataFrame):
             continue
         if os.path.exists(acl_data_path):
             if acl_data_path.endswith(".npy"):
-                # acl_data = np.fromfile(acl_data_path, acl_dtype).reshape(acl_shape)
                 acl_data = np.load(acl_data_path)
             else:
                 acl_data = read_acl_transformer_data(acl_data_path)
@@ -139,18 +134,11 @@ def compare_tensor(csv_data: pd.DataFrame):
         golden_data_fp32 = golden_data.reshape(-1).astype("float32")
         acl_data_fp32 = acl_data.reshape(-1).astype("float32")
     
-        if golden_data_src == "pta":
-            csv_data[PTA_DTYPE][idx] = str(golden_data.dtype)
-            csv_data[PTA_SHAPE][idx] = str(golden_data.shape)
-            csv_data[PTA_MAX_VALUE][idx] = np.max(golden_data_fp32)
-            csv_data[PTA_MIN_VALUE][idx] = np.min(golden_data_fp32)
-            csv_data[PTA_MEAN_VALUE][idx] = np.mean(golden_data_fp32)
-        elif golden_data_src == "golden":
-            csv_data[GOLDEN_DTYPE][idx] = str(golden_data.dtype)
-            csv_data[GOLDEN_SHAPE][idx] = str(golden_data.shape)
-            csv_data[GOLDEN_MAX_VALUE][idx] = np.max(golden_data_fp32)
-            csv_data[GOLDEN_MIN_VALUE][idx] = np.min(golden_data_fp32)
-            csv_data[GOLDEN_MEAN_VALUE][idx] = np.mean(golden_data_fp32)
+        csv_data[GOLDEN_DTYPE][idx] = str(golden_data.dtype)
+        csv_data[GOLDEN_SHAPE][idx] = str(golden_data.shape)
+        csv_data[GOLDEN_MAX_VALUE][idx] = np.max(golden_data_fp32)
+        csv_data[GOLDEN_MIN_VALUE][idx] = np.min(golden_data_fp32)
+        csv_data[GOLDEN_MEAN_VALUE][idx] = np.mean(golden_data_fp32)
         
         csv_data[ACL_DTYPE][idx] = str(acl_data.dtype)
         csv_data[ACL_SHAPE][idx] = str(acl_data.shape)
@@ -172,13 +160,13 @@ def compare_tensor(csv_data: pd.DataFrame):
 
 def auto_compare_metadata(golden_meta, acl_meta):
     # 用于自动映射关系的比对
-    data_frame = pd.DataFrame(columns=[TOKEN_ID] + CSV_HEADER, index=[0])
+    data_frame = pd.DataFrame(columns=CSV_GOLDEN_HEADER, index=[0])
     for token_id, g_data in golden_meta.items():
         acl_data = acl_meta.get(token_id)
         if not acl_data:
             continue
         for w_md5, g_data_path in g_data.items():
-            acl_data_dir = acl_data.get(w_md5)
+            a_data_dir = acl_data.get(w_md5)
             if not a_data_dir:
                 logger.warning(f"weight md5: {w_md5}, data_path is none.")
                 continue
@@ -187,7 +175,7 @@ def auto_compare_metadata(golden_meta, acl_meta):
             row_data = pd.DataFrame({
                 TOKEN_ID: [str(token_id)],
                 DATA_ID: [w_md5],
-                PTA_DATA_PATH: [g_data_path[0]],
+                GOLDEN_DATA_PATH: [g_data_path[0]],
                 ACL_DATA_PATH: [acl_data_dir],
                 CMP_FLAG: [False]
             })
@@ -246,14 +234,10 @@ def compare_metadata(golden_path, acl_path, output_path="./"):
 
 
 def _get_data_path(data, idx, data_src):
-    if data_src == "pta":
-        path_key = PTA_DATA_PATH
-    
-    elif data_src == "golden":
-        path_key = GOLDEN_DATA_PATH
-
-    else:
+    if data_src == "acl":
         path_key = ACL_DATA_PATH
+    else:
+        path_key = GOLDEN_DATA_PATH
 
     data_path = data[path_key][idx]
     return data_path

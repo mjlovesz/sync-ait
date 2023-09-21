@@ -19,8 +19,8 @@ import numpy as np
 import torch
 
 from msquickcmp.common.utils import logger
-from msquickcmp.pta_acl_cmp.constant import DATA_ID, PTA_DATA_PATH, ACL_DATA_PATH, \
-    CMP_FLAG, CSV_HEADER, GOLDEN_DATA_PATH, \
+from msquickcmp.pta_acl_cmp.constant import DATA_ID, ACL_DATA_PATH, \
+    CMP_FLAG, GOLDEN_DATA_PATH, CSV_GOLDEN_HEADER, \
     MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE, \
     ACL_DTYPE, ACL_SHAPE, TOKEN_ID
 from msquickcmp.pta_acl_cmp.utils import compare_tensor, write_json_file
@@ -62,14 +62,14 @@ def save_pta_data(csv_data, data_id, data_val, data_path):
         np.save(data_path, data_val)
         row_data = pd.DataFrame({
             DATA_ID: [data_id],
-            PTA_DATA_PATH: [data_path],
+            GOLDEN_DATA_PATH: [data_path],
             CMP_FLAG: [False]
         })
         csv_data = pd.concat([csv_data, row_data], ignore_index=True)
     else:
         index = mapping_data.index.values[0]
         np.save(data_path, data_val)
-        csv_data[PTA_DATA_PATH][index] = data_path
+        csv_data[GOLDEN_DATA_PATH][index] = data_path
 
         # 对应的acl_data存在时，触发比对
         csv_data = compare_tensor(csv_data=csv_data)
@@ -142,7 +142,7 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
         os.mkdir(dump_data_dir)
 
     if not os.path.exists(csv_path):
-        data = pd.DataFrame(columns=CSV_HEADER, index=[0])
+        data = pd.DataFrame(columns=CSV_GOLDEN_HEADER, index=[0])
     else:
         data = pd.read_csv(csv_path, header=0)
 
@@ -151,8 +151,8 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
         if not os.path.exists(pta_data_dir):
             os.makedirs(pta_data_dir)
 
-        pta_data_path = os.path.join(pta_data_dir, data_id + '_tensor.npy')
-        data = save_pta_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=pta_data_path)
+        golden_data_path = os.path.join(pta_data_dir, data_id + '_tensor.npy')
+        data = save_pta_data(csv_data=data, data_id=data_id, data_val=data_val, data_path=golden_data_path)
 
     elif data_src == "acl":
         acl_data_dir = os.path.join(".", dump_data_dir, "acl_tensor")

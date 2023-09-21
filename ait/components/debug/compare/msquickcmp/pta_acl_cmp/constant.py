@@ -23,14 +23,7 @@ PTA = "pta"
 ACL = "acl"
 DATA_ID = 'data_id'
 TOKEN_ID = "token_id"
-PTA_DATA_PATH = 'pta_data_path'
 ACL_DATA_PATH = 'acl_data_path'
-PTA_DTYPE = "pta_dtype"
-PTA_SHAPE = "pta_shape"
-PTA_MAX_VALUE = "pta_max_value"
-PTA_MIN_VALUE = "pta_min_value"
-PTA_MEAN_VALUE = "pta_mean_value"
-PTA_STACK = "pta_stack"
 ACL_DTYPE = "acl_dtype"
 ACL_SHAPE = "acl_shape"
 ACL_MAX_VALUE = "acl_max_value"
@@ -46,12 +39,8 @@ GOLDEN_MEAN_VALUE = "golden_mean_value"
 GOLDEN_STACK = "golden_stack"
 CMP_FLAG = "cmp_flag"
 CMP_FAIL_REASON = "cmp_fail_reason"
-CSV_HEADER = [DATA_ID, PTA_DATA_PATH, PTA_DTYPE, PTA_SHAPE, PTA_MAX_VALUE, PTA_MIN_VALUE, PTA_MEAN_VALUE,
-              ACL_DATA_PATH, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, CMP_FLAG]
 CSV_GOLDEN_HEADER = [TOKEN_ID, DATA_ID, GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, GOLDEN_MAX_VALUE, GOLDEN_MIN_VALUE, GOLDEN_MEAN_VALUE,
               ACL_DATA_PATH, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, CMP_FLAG]
-CSV_HEADER.extend(list(cmp_alg_map.keys()))
-CSV_HEADER.append(CMP_FAIL_REASON)
 CSV_GOLDEN_HEADER.extend(list(cmp_alg_map.keys()))
 CSV_GOLDEN_HEADER.append(CMP_FAIL_REASON)
 
