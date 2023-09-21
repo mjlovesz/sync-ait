@@ -74,7 +74,7 @@ bool isPathInTable(const std::string &filePath) {
     std::string pID = std::to_string(processID);
 
     std::string aclHomePath = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH"));
-    const char* aitTaskIdEnv = std::getenv("AIT_CMP_TASK_ID")
+    const char* aitTaskIdEnv = std::getenv("AIT_CMP_TASK_ID");
     std::string aitTaskId = aitTaskIdEnv ? std::string(aitTaskIdEnv) : "";
     std::string basePath = aclHomePath + "/tensors/" + pID + "/" + aitTaskId + "/";
 
