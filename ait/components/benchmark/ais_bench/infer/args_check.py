@@ -11,7 +11,7 @@ AIPP_CONFIG_MAX_SIZE = 12.5 * 1024 # 12.5KB
 def check_dym_string(value):
     if not value:
         return value
-    dym_string = str(value)
+    dym_string = value
     regex = re.compile(r"[^_A-Za-z0-9,;:]")
     if regex.search(dym_string):
         raise argparse.ArgumentTypeError(f"dym string \"{dym_string}\" is not a legal string")
@@ -21,7 +21,7 @@ def check_dym_string(value):
 def check_dym_range_string(value):
     if not value:
         return value
-    dym_string = str(value)
+    dym_string = value
     regex = re.compile(r"[^_A-Za-z0-9\-~,;:]")
     if regex.search(dym_string):
         raise argparse.ArgumentTypeError(f"dym range string \"{dym_string}\" is not a legal string")
@@ -31,7 +31,7 @@ def check_dym_range_string(value):
 def check_number_list(value):
     if not value:
         return value
-    number_list = str(value)
+    number_list = value
     regex = re.compile(r"[^0-9,;]")
     if regex.search(number_list):
         raise argparse.ArgumentTypeError(f"number_list \"{number_list}\" is not a legal list")
@@ -93,7 +93,7 @@ def check_device_range_valid(value):
 
 
 def check_om_path_legality(value):
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:
@@ -110,7 +110,7 @@ def check_om_path_legality(value):
 def check_input_path_legality(value):
     if not value:
         return value
-    inputs_list = str(value).split(',')
+    inputs_list = value.split(',')
     for input_path in inputs_list:
         try:
             file_stat = FileStat(input_path)
@@ -118,13 +118,13 @@ def check_input_path_legality(value):
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.") from err
         if not file_stat.is_basically_legal('read'):
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.")
-    return str(value)
+    return value
 
 
 def check_output_path_legality(value):
     if not value:
         return value
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:
@@ -137,7 +137,7 @@ def check_output_path_legality(value):
 def check_acl_json_path_legality(value):
     if not value:
         return value
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:
@@ -154,7 +154,7 @@ def check_acl_json_path_legality(value):
 def check_aipp_config_path_legality(value):
     if not value:
         return value
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:

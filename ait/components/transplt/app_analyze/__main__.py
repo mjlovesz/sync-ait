@@ -20,7 +20,7 @@ from components.utils.file_open_check import FileStat
 
 
 def check_source_path(value):
-    source_list = str(value).split(',')
+    source_list = value.split(',')
     for path in source_list:
         path_value = str(path)
         try:
@@ -31,7 +31,7 @@ def check_source_path(value):
             raise argparse.ArgumentTypeError(f"source path:{path_value} is illegal. Please check.")
         if not file_stat.is_dir:
             raise argparse.ArgumentTypeError(f"source path:{path_value} is not a directory. Please check.")
-    return str(value)
+    return value
 
 
 class TranspltCommand(BaseCommand):

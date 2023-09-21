@@ -23,7 +23,7 @@ from components.utils.file_open_check import FileStat
 def check_output_path_legality(value):
     if not value:
         return value
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:
@@ -34,7 +34,7 @@ def check_output_path_legality(value):
 
 
 def check_application_string_legality(value):
-    cmd_str = str(value)
+    cmd_str = value
     regex = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{;: /.~-]")
     if regex.search(cmd_str):
         raise argparse.ArgumentTypeError(f"application string \"{cmd_str}\" is not a legal string")

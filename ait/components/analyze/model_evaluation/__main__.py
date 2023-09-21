@@ -28,7 +28,7 @@ MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024  # 10G 普通模型文件
 def check_model_path_legality(value):
     if not value:
         return value
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:
@@ -45,7 +45,7 @@ def check_model_path_legality(value):
 def check_weight_path_legality(value):
     if not value:
         return value
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:
@@ -62,7 +62,7 @@ def check_weight_path_legality(value):
 def check_soc_string(value):
     if not value:
         return value
-    soc_string = str(value)
+    soc_string = value
     regex = re.compile(r"[^_A-Za-z0-9\-]")
     if regex.search(soc_string):
         raise argparse.ArgumentTypeError(f"dym string \"{soc_string}\" is not a legal string")
@@ -72,7 +72,7 @@ def check_soc_string(value):
 def check_output_path_legality(value):
     if not value:
         return value
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:

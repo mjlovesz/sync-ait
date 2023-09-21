@@ -21,7 +21,7 @@ MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024 # 10GB
 MAX_SIZE_LIMITE_FUSION_FILE = 1 * 1024 * 1024 * 1024 # 1GB
 
 def check_model_path_legality(value):
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:
@@ -36,7 +36,7 @@ def check_model_path_legality(value):
 
 
 def check_om_path_legality(value):
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:
@@ -51,7 +51,7 @@ def check_om_path_legality(value):
 
 
 def check_weight_path_legality(value):
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:
@@ -68,7 +68,7 @@ def check_weight_path_legality(value):
 def check_input_path_legality(value):
     if not value:
         return value
-    inputs_list = str(value).split(',')
+    inputs_list = value.split(',')
     for input_path in inputs_list:
         try:
             file_stat = FileStat(input_path)
@@ -76,11 +76,11 @@ def check_input_path_legality(value):
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.") from err
         if not file_stat.is_basically_legal('read'):
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.")
-    return str(value)
+    return value
 
 
 def check_cann_path_legality(value):
-    path_value = str(value)
+    path_value = value
     if not is_legal_args_path_string(path_value):
         raise argparse.ArgumentTypeError(f"cann path:{path_value} is illegal. Please check.")
     return path_value
@@ -89,7 +89,7 @@ def check_cann_path_legality(value):
 def check_output_path_legality(value):
     if not value:
         return value
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:
@@ -103,7 +103,7 @@ def check_dict_kind_string(value):
     # just like "input_name1:1,224,224,3;input_name2:3,300"
     if not value:
         return value
-    input_shape = str(value)
+    input_shape = value
     regex = re.compile(r"[^_A-Za-z0-9,;:]")
     if regex.search(input_shape):
         raise argparse.ArgumentTypeError(f"dym string \"{input_shape}\" is not a legal string")
@@ -124,18 +124,18 @@ def check_number_list(value):
     # just like "1241414,124141,124424"
     if not value:
         return value
-    outsize_list = str(value).split(',')
+    outsize_list = value.split(',')
     for outsize in outsize_list:
         regex = re.compile(r"[^0-9]")
         if regex.search(outsize):
             raise argparse.ArgumentTypeError(f"output size \"{outsize}\" is not a legal string")
-    return str(value)
+    return value
 
 
 def check_dym_range_string(value):
     if not value:
         return value
-    dym_string = str(value)
+    dym_string = value
     regex = re.compile(r"[^_A-Za-z0-9\-~,;:]")
     if regex.search(dym_string):
         raise argparse.ArgumentTypeError(f"dym range string \"{dym_string}\" is not a legal string")
@@ -145,7 +145,7 @@ def check_dym_range_string(value):
 def check_fusion_cfg_path_legality(value):
     if not value:
         return value
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:
@@ -162,7 +162,7 @@ def check_fusion_cfg_path_legality(value):
 def check_quant_json_path_legality(value):
     if not value:
         return value
-    path_value = str(value)
+    path_value = value
     try:
         file_stat = FileStat(path_value)
     except Exception as err:
