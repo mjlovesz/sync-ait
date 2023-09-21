@@ -216,6 +216,11 @@ class NpuDumpData(DumpData):
             }
         }
         if os.access(acl_json_path, os.W_OK):
+            json_stat = os.stat(acl_json_path)
+            if json_stat.st_uid == os.getuid():
+                os.remove(acl_json_path)
+            else:
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR)
             try:
                 with os.fdopen(os.open(acl_json_path, OPEN_FLAGS, OPEN_MODES), "w") as write_json:
                     try:

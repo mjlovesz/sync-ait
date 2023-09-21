@@ -79,6 +79,7 @@ ait debug compare aclcmp xx_args
    在每轮对话开始前设置task_id，修改main_performance.py
 
    ```
+      from msquickcmp.pta_acl_cmp.compare import set_task_id
        while True:
            set_task_id()
            query = input("\n用户：")
@@ -138,7 +139,6 @@ ait debug compare aclcmp xx_args
    | pta_max_value               | pta数据的最大值            |
    | pta_min_value               | pta数据的最小值            |
    | pta_mean_value              | pta数据的平均值            |
-
    | acl_data_path               | acl数据的dump路径          |
    | acl_dtype                   | acl数据的类型              |
    | acl_shape                   | acl数据的shape             |
