@@ -26,6 +26,8 @@ MAX_SIZE_LIMITE_NORMAL_MODEL = 10 * 1024 * 1024 * 1024  # 10G 普通模型文件
 
 
 def check_model_path_legality(value):
+    if not value:
+        return value
     path_value = str(value)
     try:
         file_stat = FileStat(path_value)
@@ -41,6 +43,8 @@ def check_model_path_legality(value):
 
 
 def check_weight_path_legality(value):
+    if not value:
+        return value
     path_value = str(value)
     try:
         file_stat = FileStat(path_value)
