@@ -1,5 +1,3 @@
-
-
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,10 +20,10 @@ import torch
 
 from msquickcmp.common.utils import logger
 from msquickcmp.pta_acl_cmp.constant import DATA_ID, PTA_DATA_PATH, ACL_DATA_PATH, \
-    CMP_FLAG, CSV_HEADER, GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, CSV_GOLDEN_HEADER, \
+    CMP_FLAG, CSV_HEADER, GOLDEN_DATA_PATH, \
     MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE, \
     ACL_DTYPE, ACL_SHAPE, TOKEN_ID
-from msquickcmp.pta_acl_cmp.utils import compare_tensor, compare_all, write_json_file
+from msquickcmp.pta_acl_cmp.utils import compare_tensor, write_json_file
 
 token_counts = 0
 
@@ -223,7 +221,7 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
             golden_data_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
         json_path = os.path.join(".", dump_data_dir, "golden_tensor", "metadata.json")
-        write_json_file(data_id, golden_data_path, json_path)
+        write_json_file(data_id, golden_data_path, json_path, token_id)
             
     elif data_src == "acl":
         acl_data_dir = os.path.join(".", dump_data_dir, "acl_tensor", str(token_id))
@@ -238,4 +236,4 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
             acl_data_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
         json_path = os.path.join(".", dump_data_dir, "acl_tensor", "metadata.json") 
-        write_json_file(data_id, acl_data_path, json_path)
+        write_json_file(data_id, acl_data_path, json_path, token_id)

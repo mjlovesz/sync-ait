@@ -171,6 +171,7 @@ def compare_tensor(csv_data: pd.DataFrame):
 
 
 def auto_compare_metadata(golden_meta, acl_meta):
+    # 用于自动映射关系的比对
     data_frame = pd.DataFrame(columns=[TOKEN_ID] + CSV_HEADER, index=[0])
     for token_id, g_data in golden_meta.items():
         acl_data = acl_meta.get(token_id)
@@ -196,6 +197,7 @@ def auto_compare_metadata(golden_meta, acl_meta):
 
 
 def manual_compare_metadata(golden_meta, acl_meta):
+    # 用于用户指定data_id的比对
     data_frame = pd.DataFrame(columns=CSV_GOLDEN_HEADER, index=[0])
     for data_id, golden_info in golden_meta.items():
         acl_info = acl_meta.get(data_id)
@@ -252,13 +254,13 @@ def _get_data_path(data, idx, data_src):
     return data_path
 
 
-def write_json_file(data_id, data_path, json_path):
+def write_json_file(data_id, data_path, json_path, token_id):
     import json
     try:
         with open(json_path, 'r') as json_file:
             json_data = json.load(json_file)
     except FileNotFoundError:
         json_data = {}
-    json_data[data_id] = data_path
+    json_data[data_id] = {token_id: data_path}
     with open(json_path, "w") as f:
         json.dump(json_data, f)
