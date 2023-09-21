@@ -247,6 +247,8 @@ class NpuDumpData(DumpData):
                 file_name = "input_" + str(i) + ".bin"
                 dest_file = os.path.join(self.out_path, "input", file_name)
                 shutil.copy(input_file, dest_file)
+                os.chmod(input_file, 0o750)
+                os.chmod(dest_file, 0o750)
             return
         if use_aipp:
             self._generate_inputs_data_for_aipp(self.data_dir)
