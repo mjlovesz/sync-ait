@@ -169,7 +169,7 @@ main()
     SOC_VERSION=${1:-"Ascend310P3"}
     PYTHON_COMMAND=${2:-"python3"}
     TESTDATA_PATH=$CUR_PATH/testdata/
-    [ -d $TESTDATA_PATH ] || mkdir $TESTDATA_PATH
+    [ -d $TESTDATA_PATH ] || { mkdir $TESTDATA_PATH;chmod 750 $TESTDATA_PATH; }
 
     model_url="https://download.pytorch.org/models/resnet101-63fe2227.pth"
     resnet_pth_file="$TESTDATA_PATH/pth_resnet101.pth"

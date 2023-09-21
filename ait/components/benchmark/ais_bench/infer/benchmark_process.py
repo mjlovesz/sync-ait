@@ -48,11 +48,10 @@ from ais_bench.infer.utils import (get_file_content, get_file_datasize,
                                    get_fileslist_from_dir, list_split, list_share,
                                    save_data_to_files, create_fake_file_name, logger,
                                    create_tmp_acl_json, move_subdir, convert_helper)
-from ais_bench.infer.path_security_check import (path_length_check, path_symbolic_link_check,
-                                                 path_exist_check, path_white_list_check, path_owner_correct_check)
+from ais_bench.infer.path_security_check import is_legal_args_path_string
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
-from components.utils.file_open import ms_open, MAX_SIZE_LIMITE_CONFIG_FILE
+from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_CONFIG_FILE
 
 PERMISSION_DIR = 0o750
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
@@ -295,7 +294,7 @@ def get_legal_json_content(acl_json_path):
     profile_dict = json_dict.get("profiler")
     for option_cmd in ACL_JSON_CMD_LIST:
         if profile_dict.get(option_cmd):
-            if option_cmd == "output" and not args_not_exsit_path_check(profile_dict.get(option_cmd)):
+            if option_cmd == "output" and not is_legal_args_path_string(profile_dict.get(option_cmd)):
                 raise Exception(f"output path in acl_json is illegal!")
             cmd_dict.update({"--" + option_cmd.replace('_', '-'): profile_dict.get(option_cmd)})
             if (option_cmd == "sys_hardware_mem_freq"):
@@ -458,10 +457,6 @@ def main(args, index=0, msgq=None, device_list=None):
             output_prefix = None
 
     inputs_list = [] if args.input is None else args.input.split(',')
-    for input_path in inputs_list:
-        # check input path is legal
-        if not args_exist_path_check(input_path):
-            raise Exception(f"input path base check failed!")
 
     # create infiles list accord inputs list
     if len(inputs_list) == 0:
@@ -645,12 +640,6 @@ def args_rules(args):
         logger.error("when dump or profiler, miss output path, please check them!")
         raise RuntimeError('miss output parameter!')
 
-    # check --aipp_config file
-    try:
-        config_check(args.aipp_config)
-    except Exception as err:
-        raise Exception(f"aipp_config path check failed") from err
-
     if not args.auto_set_dymshape_mode and not args.auto_set_dymdims_mode:
         args.no_combine_tensor_mode = False
     else:
@@ -676,14 +665,6 @@ def acl_json_base_check(args):
     if args.acl_json_path is None:
         return args
     json_path = args.acl_json_path
-    max_json_size = 8192 # 8KB 30 * 255 byte左右
-    if os.path.splitext(json_path)[1] != ".json":
-        logger.error(f"acl_json_path:{json_path} is not a .json file")
-        raise TypeError(f"acl_json_path:{json_path} is not a .json file")
-    json_size = os.path.getsize(json_path)
-    if json_size > max_json_size:
-        logger.error(f"acl_json_file_size:{json_size} byte out of max limit {max_json_size} byte")
-        raise MemoryError(f"acl_json_file_size:{json_size} byte out of max limit")
     try:
         with ms_open(json_path, mode="r", max_size=MAX_SIZE_LIMITE_CONFIG_FILE) as f:
             json_dict = json.load(f)
@@ -711,49 +692,6 @@ def config_check(config_path):
     return
 
 
-def args_exist_path_check(path):
-    # check path which should be exist
-    if not path:
-        return True
-    if not path_length_check(path):
-        return False
-    if not path_white_list_check(path):
-        return False
-    if not path_exist_check(path):
-        return False
-    if not path_symbolic_link_check(path):
-        return False
-    if not path_owner_correct_check(path):
-        return False
-    return True
-
-
-def args_not_exsit_path_check(path):
-    # check path which no need to be exist
-    if not path:
-        return True
-    if not path_length_check(path):
-        return False
-    if not path_white_list_check(path):
-        return False
-    return True
-
-
-def args_pathes_base_check(args:BenchMarkArgsAdapter):
-    # check output
-    if not args_not_exsit_path_check(args.output):
-        raise Exception(f"output path base check failed!")
-    # check output_dirname
-    if not args_not_exsit_path_check(args.output_dirname):
-        raise Exception(f"output_dirname path base check failed!")
-    # check acl-json-path
-    if not args_exist_path_check(args.acl_json_path):
-        raise Exception(f"acl_json_path path base check failed!")
-    # check aipp_config
-    if not args_exist_path_check(args.aipp_config):
-        raise Exception(f"aipp_config path base check failed!")
-
-
 def backend_run(args):
     backend_class = BackendFactory.create_backend(args.backend)
     backend = backend_class(args)
@@ -764,7 +702,6 @@ def backend_run(args):
 
 
 def benchmark_process(args:BenchMarkArgsAdapter):
-    args_pathes_base_check(args)
     args = args_rules(args)
     version_check(args)
     args = acl_json_base_check(args)
