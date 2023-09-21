@@ -54,4 +54,4 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   ```sh
   ait debug compare aclcmp --golden-path ait_dump_path/25115/ --my-path ../../output/acltransformer/tensors/thread_62250
   ```
-  ![](cmp_result.png)
+  ![](./cmp_result.png)
