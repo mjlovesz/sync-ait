@@ -19,6 +19,7 @@ import stat
 import json
 import argparse
 import numpy as np
+from components.utils.file_open import ms_open, MAX_SIZE_LIMITE_NORMAL_FILE
 
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
@@ -36,7 +37,7 @@ def get_topk_list(k, origin_list):
 
 def get_file_info(file):
     info = None
-    with open(file, 'rb') as f:
+    with ms_open(file, mode="rb", max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as f:
         info = json.load(f)
     return info
 
@@ -60,9 +61,8 @@ def analyse_topk_times(args):
     topk_index = [ i[0] for i in topk_list ]
     logging.info(topk_index)
     if args.output is not None:
-        with os.fdopen(os.open(os.path.join(args.output, "topk_index.json"), OPEN_FLAGS, OPEN_MODES), 'w') as f:
+        with ms_open(os.path.join(args.output, "topk_index.json"), mode="w") as f:
             f.write(json.dumps(topk_index))
-        os.chmod(os.path.join(args.output, "topk_index.json"), 0o440)
 
 
 def get_args():
