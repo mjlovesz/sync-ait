@@ -222,7 +222,11 @@ def manual_compare_metadata(golden_meta, acl_meta):
 
 
 def compare_metadata(golden_path, acl_path, output_path="./"):
-    golden_meta_path = os.path.join(golden_path, "metadata.json")
+    if golden_path.endswith(".json"):
+        golden_meta_path = golden_path
+    else:
+       golden_meta_path = os.path.join(golden_path, "metadata.json")
+
     with open(golden_meta_path, 'r') as file:
         golden_meta = json.load(file)
 
@@ -247,6 +251,7 @@ def _get_data_path(data, idx, data_src):
     
     elif data_src == "golden":
         path_key = GOLDEN_DATA_PATH
+
     else:
         path_key = ACL_DATA_PATH
 
@@ -255,6 +260,7 @@ def _get_data_path(data, idx, data_src):
 
 
 def write_json_file(data_id, data_path, json_path, token_id):
+    # 建议与json解耦，需要的时候用
     import json
     try:
         with open(json_path, 'r') as json_file:

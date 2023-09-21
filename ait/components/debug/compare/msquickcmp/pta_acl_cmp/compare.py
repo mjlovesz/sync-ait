@@ -202,19 +202,21 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
 
     if data_val is not None and not isinstance(data_val, torch.Tensor):
         return
-
+    pid = os.getpid()
     dump_data_dir = f"{pid}_cmp_dump_data"
     # 如果没有dump数据文件夹新建一个
     if not os.path.exists(dump_data_dir):
         os.mkdir(dump_data_dir)
 
+    
     if data_src == "golden":
         golden_data_dir = os.path.join(".", dump_data_dir, "golden_tensor", str(token_id))
         if not os.path.exists(golden_data_dir):
             os.makedirs(golden_data_dir)
         if data_val is not None:
             golden_data_path = os.path.join(golden_data_dir, f'{data_id}_tensor.npy')
-            np.save(data_val, golden_data_path)
+            data_val = data_val.cpu().numpy()
+            np.save(golden_data_path, data_val)
         elif tensor_path:  # low-level
             token_tensor_path = os.path.join(str(token_id), tensor_path)
             write_acl_map_file(token_tensor_path)
@@ -229,7 +231,8 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
             os.makedirs(acl_data_dir)
         if data_val is not None:
             acl_data_path = os.path.join(acl_data_dir, f'{data_id}_tensor.npy')
-            np.save(data_val, acl_data_path)
+            data_val = data_val.cpu().numpy()
+            np.save(acl_data_path, data_val)
         elif tensor_path:  # low-level
             token_tensor_path = os.path.join(str(token_id), tensor_path)
             write_acl_map_file(token_tensor_path)

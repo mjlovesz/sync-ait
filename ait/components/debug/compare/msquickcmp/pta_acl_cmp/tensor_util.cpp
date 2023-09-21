@@ -45,19 +45,19 @@ std::string bufMd5(const unsigned char *buf, size_t buf_size)
 
 void InitialPathTable(std::unordered_set<std::string> &pathTable) {
     const char* envValue = std::getenv("AIT_CMP_TASK_PID");
-    std::string taskPid = envValue ? envValue : "";
-    if (taskPid != "") {
-        taskPid = "/" + taskPid;
-    }
-    std::string fileName = "/tmp" + taskPid + "/ait_compare_acl_map.txt";
-    std::ifstream fileContent(fileName);
-    if (fileContent.is_open()) {
-        std::string filePath;
-        while (std::getline(fileContent, filePath)) {
-            pathTable.insert(filePath);
+        std::string taskPid = envValue ? envValue : "";
+        if (taskPid != "") {
+            taskPid = "/" + taskPid;
         }
-        fileContent.close();
-    }
+        std::string fileName = "/tmp" + taskPid + "/ait_compare_acl_map.txt";
+        std::ifstream fileContent(fileName);
+        if (fileContent.is_open()) {
+            std::string filePath;
+            while (std::getline(fileContent, filePath)) {
+                pathTable.insert(filePath);
+            }
+            fileContent.close();
+        }
 }
 
 
@@ -74,7 +74,7 @@ bool isPathInTable(const std::string &filePath) {
     std::string pID = std::to_string(processID);
 
     std::string aclHomePath = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH"));
-    const char* aitTaskIdEnv = std::getenv("AIT_CMP_TASK_ID")
+    const char* aitTaskIdEnv = std::getenv("AIT_CMP_TASK_ID");
     std::string aitTaskId = aitTaskIdEnv ? std::string(aitTaskIdEnv) : "";
     std::string basePath = aclHomePath + "/tensors/" + pID + "/" + aitTaskId + "/";
 
