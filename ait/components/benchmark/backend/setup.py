@@ -21,6 +21,7 @@ from pybind11 import get_cmake_dir
 # Available at setup time due to pyproject.toml
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
+from ais_bench.infer.path_security_check import is_legal_args_path_string
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -58,6 +59,8 @@ def get_cann_path():
     set_env_path = os.getenv("CANN_PATH", "")
     if not set_env_path:
         set_env_path = os.getenv("ASCEND_TOOLKIT_HOME", "")
+    if not is_legal_args_path_string(set_env_path):
+        raise TypeError(f"env CANN_PATH:{set_env_path} is not illegal")
     atlas_nnae_path = "/usr/local/Ascend/nnae/latest/"
     atlas_toolkit_path = "/usr/local/Ascend/ascend-toolkit/latest/"
     hisi_fwk_path = "/usr/local/Ascend/"
