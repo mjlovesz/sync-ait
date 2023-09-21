@@ -110,5 +110,5 @@ def test_app_analyze_given_opencv_csv_when_any_then_pass():
 
 def test_app_analyze_given_invalid_source_when_any_then_error():
     argv = ["-s", INVALID_ARG, "-f", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS]
-    with pytest.raises(Exception):
+    with pytest.raises(SystemExit):
         call_transplt_cmd(argv)
