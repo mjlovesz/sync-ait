@@ -161,7 +161,7 @@ main()
     SOC_VERSION=${1:-"Ascend310P3"}
     PYTHON_COMMAND=${2:-"python3"}
     TESTDATA_PATH=$CUR_PATH/testdata/
-    [ -d $TESTDATA_PATH ] || mkdir $TESTDATA_PATH
+    [ -d $TESTDATA_PATH ] || { mkdir $TESTDATA_PATH;chmod 750 $TESTDATA_PATH; }
 
     model_url="https://obs-9be7.obs.cn-east-2.myhuaweicloud.com/003_Atc_Models/AE/ATC%20Model/InceptionV3/inceptionv3.onnx"
     onnx_file="$TESTDATA_PATH/pth_inceptionv3.onnx"
