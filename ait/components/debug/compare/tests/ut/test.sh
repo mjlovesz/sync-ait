@@ -17,7 +17,7 @@ set -u
 
 cur_dir=$(dirname $(readlink -f "$0"))
 
-
+chmod -R 750 $cur_dir/test_resource
 # copy source code to tests, and test
 function copy_source_code_dir_to_tests() {
     cp -rf ${cur_dir}/../../msquickcmp ${cur_dir}/
