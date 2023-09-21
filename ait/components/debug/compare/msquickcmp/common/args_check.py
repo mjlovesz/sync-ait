@@ -28,9 +28,9 @@ def check_model_path_legality(value):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_type_check(["onnx", "prototxt", "pb"]):
+    if not file_stat.is_legal_file_type(["onnx", "prototxt", "pb"]):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_size_check(MAX_SIZE_LIMITE_NORMAL_MODEL):
+    if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
     return path_value
 
@@ -43,9 +43,9 @@ def check_om_path_legality(value):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_type_check(["om"]):
+    if not file_stat.is_legal_file_type(["om"]):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_size_check(MAX_SIZE_LIMITE_NORMAL_MODEL):
+    if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
     return path_value
 
@@ -58,9 +58,9 @@ def check_weight_path_legality(value):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_type_check(["caffemodel"]):
+    if not file_stat.is_legal_file_type(["caffemodel"]):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_size_check(MAX_SIZE_LIMITE_NORMAL_MODEL):
+    if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
         raise argparse.ArgumentTypeError(f"weight path:{path_value} is illegal. Please check.")
     return path_value
 
@@ -152,9 +152,9 @@ def check_fusion_cfg_path_legality(value):
         raise argparse.ArgumentTypeError(f"fusion switch file path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"fusion switch file path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_type_check(["cfg"]):
+    if not file_stat.is_legal_file_type(["cfg"]):
         raise argparse.ArgumentTypeError(f"fusion switch file path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_size_check(MAX_SIZE_LIMITE_NORMAL_MODEL):
+    if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
         raise argparse.ArgumentTypeError(f"fusion switch file path:{path_value} is illegal. Please check.")
     return path_value
 
@@ -169,9 +169,9 @@ def check_quant_json_path_legality(value):
         raise argparse.ArgumentTypeError(f"quant file path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"quant file path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_type_check(["json"]):
+    if not file_stat.is_legal_file_type(["json"]):
         raise argparse.ArgumentTypeError(f"quant file path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_size_check(MAX_SIZE_LIMITE_NORMAL_MODEL):
+    if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
         raise argparse.ArgumentTypeError(f"quant file path:{path_value} is illegal. Please check.")
     return path_value
 

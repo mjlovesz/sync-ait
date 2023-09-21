@@ -100,9 +100,9 @@ def check_om_path_legality(value):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_type_check(["om"]):
+    if not file_stat.is_legal_file_type(["om"]):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_size_check(OM_MODEL_MAX_SIZE):
+    if not file_stat.is_legal_file_size(OM_MODEL_MAX_SIZE):
         raise argparse.ArgumentTypeError(f"om path:{path_value} is illegal. Please check.")
     return path_value
 
@@ -144,9 +144,9 @@ def check_acl_json_path_legality(value):
         raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_type_check(["json"]):
+    if not file_stat.is_legal_file_type(["json"]):
         raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_size_check(ACL_JSON_MAX_SIZE):
+    if not file_stat.is_legal_file_size(ACL_JSON_MAX_SIZE):
         raise argparse.ArgumentTypeError(f"acl json path:{path_value} is illegal. Please check.")
     return path_value
 
@@ -161,8 +161,8 @@ def check_aipp_config_path_legality(value):
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_type_check(["config"]):
+    if not file_stat.is_legal_file_type(["config"]):
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
-    if not file_stat.path_file_size_check(AIPP_CONFIG_MAX_SIZE):
+    if not file_stat.is_legal_file_size(AIPP_CONFIG_MAX_SIZE):
         raise argparse.ArgumentTypeError(f"aipp config path:{path_value} is illegal. Please check.")
     return path_value

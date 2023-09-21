@@ -155,7 +155,7 @@ class FileStat:
                 return False
         return True
 
-    def path_file_size_check(self, max_size):
+    def is_legal_file_size(self, max_size):
         if not self.is_file:
             logger.error(f"path: {self.file} is not a file")
             return False
@@ -165,7 +165,7 @@ class FileStat:
         else:
             return True
 
-    def path_file_type_check(self, file_types:list):
+    def is_legal_file_type(self, file_types:list):
         if not self.is_file:
             logger.error(f"path: {self.file} is not a file")
             return False
