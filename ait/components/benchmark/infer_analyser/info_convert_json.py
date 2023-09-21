@@ -17,6 +17,7 @@ import sys
 import logging
 import stat
 import json
+from components.utils.file_open import ms_open, MAX_SIZE_LIMITE_NORMAL_FILE
 
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
@@ -24,7 +25,7 @@ OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 
 def get_times_list(file):
     time_list = []
-    with open(file, 'rb') as f:
+    with ms_open(file, mode="rb", max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as f:
         for line in f.readlines():
             s = line[0:-3]
             value = float(s)
@@ -37,7 +38,7 @@ def get_pid(file):
     if not os.path.exists(file):
         logging.info(f"{file} file not exist")
     else:
-        with open(file, 'rb') as fd:
+        with ms_open(file, mode="rb", max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as fd:
             pid = int(fd.read())
     return pid
 
@@ -50,6 +51,6 @@ if __name__ == '__main__':
     times = get_times_list(times_file)
     t_pid = get_pid(pid_file)
     info = {"pid": t_pid, "npu_compute_time_list": times}
-    with os.fdopen(os.open(out_file, OPEN_FLAGS, OPEN_MODES), 'w') as ff:
+    with ms_open(out_file, mode="w") as ff:
         json.dump(info, ff)
 

@@ -27,11 +27,13 @@ import shutil
 import shlex
 import subprocess
 import numpy as np
+from components.utils.file_open import ms_open, MAX_SIZE_LIMITE_NORMAL_FILE, MAX_SIZE_LIMITE_CONFIG_FILE
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
+PERMISSION_DIR = 0o750
 READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
 WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
@@ -98,7 +100,7 @@ def get_file_content(file_path):
     if file_path.endswith(".NPY") or file_path.endswith(".npy"):
         return np.load(file_path)
     else:
-        with open(file_path, 'rb') as fd:
+        with ms_open(file_path, mode="rb", max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as fd:
             barray = fd.read()
             return np.frombuffer(barray, dtype=np.int8)
 
@@ -117,7 +119,7 @@ def save_data_to_files(file_path, ndata):
     elif file_path.endswith(".TXT") or file_path.endswith(".txt"):
         outdata = ndata.reshape(-1, ndata.shape[-1])
         fmt = get_ndata_fmt(outdata)
-        with os.fdopen(os.open(file_path, WRITE_FLAGS, WRITE_MODES), 'wb') as f:
+        with ms_open(file_path, mode="wb") as f:
             for i in range(outdata.shape[0]):
                 np.savetxt(f, np.c_[outdata[i]], fmt=fmt, newline=" ")
                 f.write(b"\n")
@@ -159,7 +161,7 @@ def make_dirs(path):
     ret = 0
     if not os.path.exists(path):
         try:
-            os.makedirs(path, 0o755)
+            os.makedirs(path, PERMISSION_DIR)
         except Exception as e:
             logger.warning(f"make dir {path} failed")
             ret = -1
@@ -167,7 +169,7 @@ def make_dirs(path):
 
 
 def create_tmp_acl_json(acl_json_path):
-    with open(acl_json_path, 'r') as f:
+    with ms_open(acl_json_path, mode="r", max_size=MAX_SIZE_LIMITE_CONFIG_FILE) as f:
         acl_json_dict = json.load(f)
     tmp_acl_json_path, real_dump_path, tmp_dump_path = None, None, None
 
@@ -191,7 +193,7 @@ def create_tmp_acl_json(acl_json_path):
             tmp_acl_json_path = None
 
     if tmp_acl_json_path is not None:
-        with os.fdopen(os.open(tmp_acl_json_path, WRITE_FLAGS, WRITE_MODES), 'w') as f:
+        with ms_open(tmp_acl_json_path, mode="w") as f:
             json.dump(acl_json_dict, f)
 
     return tmp_acl_json_path, real_dump_path, tmp_dump_path
