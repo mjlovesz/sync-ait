@@ -160,7 +160,7 @@ class FileStat:
             logger.error(f"path: {self.file} is not a file")
             return False
         if self.file_size > max_size:
-            logger.error(f"acl_json_file_size:{self.file_size} byte out of max limit {max_size} byte")
+            logger.error(f"file_size:{self.file_size} byte out of max limit {max_size} byte")
             return False
         else:
             return True
@@ -172,7 +172,7 @@ class FileStat:
         for file_type in file_types:
             if os.path.splitext(self.file)[1] == f".{file_type}":
                 return True
-        logger.error(f"acl_json_path:{self.file}, file type not in {file_types}")
+        logger.error(f"path:{self.file}, file type not in {file_types}")
         return False
 
 
