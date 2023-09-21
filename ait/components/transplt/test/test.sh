@@ -40,8 +40,6 @@ copy_source_code_dir_to_tests
 
 download_from_obs config.zip headers.zip
 
-chmod 750 $CUR_PATH/resource
-
 if [ $? != 0 ]; then
     echo "download from obs failed"
     del_source_code_from_tests
@@ -55,6 +53,8 @@ else
 fi
 
 echo "PYTHONPATH: $PYTHONPATH"
+
+chmod -R 750 $CUR_PATH/resource
 
 coverage run -m pytest $CUR_PATH --disable-warnings
 if [ $? != 0 ]; then
