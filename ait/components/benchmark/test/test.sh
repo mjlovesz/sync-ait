@@ -40,7 +40,7 @@ function get_msame_file()
 
 function chmod_file_data()
 {
-    chmod 750 $CUR_PATH/json_for_args_test.json
+    chmod 750 $CUR_PATH/json_for_arg_test.json
     chmod -R 750 $CUR_PATH/aipp_config_files
 }
 
