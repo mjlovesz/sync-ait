@@ -19,27 +19,18 @@ from components.utils.parser import BaseCommand
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.common.utils import logger, check_exec_cmd
+from msquickcmp.common.args_check import (
+    check_model_path_legality, check_om_path_legality, check_weight_path_legality, check_input_path_legality,
+    check_cann_path_legality, check_output_path_legality, check_dict_kind_string, check_device_range_valid,
+    check_number_list, check_dym_range_string, check_fusion_cfg_path_legality, check_quant_json_path_legality,
+    safe_string, str2bool
+)
 from msquickcmp.pta_acl_cmp.initial import init_aclcmp_task, clear_aclcmp_task
 
 CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
 
-
-def safe_string(value):
-    if re.search(STR_WHITE_LIST_REGEX, value):
-        raise ValueError("String parameter contains invalid characters.")
-    return value
-
-
-def str2bool(v):
-    if isinstance(v, bool):
-        return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return False
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
+CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
 
 
 class CompareCommand(BaseCommand):
@@ -53,45 +44,46 @@ class CompareCommand(BaseCommand):
             '--golden-model',
             required=False,
             dest="golden_model",
-            type=safe_string,
+            type=check_model_path_legality,
             help='The original model (.onnx or .pb or .prototxt) file path')
         parser.add_argument(
             '-om',
             '--om-model',
             dest="om_model",
-            type=safe_string,
+            type=check_om_path_legality,
             help='The offline model (.om) file path')
         parser.add_argument(
             '-w',
             '--weight',
             dest="weight_path",
-            type=safe_string,
+            type=check_weight_path_legality,
             help='Required when framework is Caffe (.cafemodel)')
         parser.add_argument(
             '-i',
             '--input',
             default='',
             dest="input_data_path",
-            type=safe_string,
-            help='The input data path of the model. Separate multiple inputs with commas(,).' 
+            type=check_input_path_legality,
+            help='The input data path of the model. Separate multiple inputs with commas(,).'
                  ' E.g: input_0.bin,input_1.bin')
         parser.add_argument(
             '-c',
             '--cann-path',
             default=CANN_PATH,
             dest="cann_path",
-            type=safe_string,
+            type=check_cann_path_legality,
             help='The CANN installation path')
         parser.add_argument(
             '-o',
             '--output',
             dest="out_path",
             default='',
+            type=check_output_path_legality,
             help='The output path')
         parser.add_argument(
             '-is',
             '--input-shape',
-            type=str,
+            type=check_dict_kind_string,
             dest="input_shape",
             default='',
             help="Shape of input shape. Separate multiple nodes with semicolons(;)."
@@ -99,19 +91,21 @@ class CompareCommand(BaseCommand):
         parser.add_argument(
             '-d',
             '--device',
+            type=check_device_range_valid,
             dest="device",
             default='0',
             help='Input device ID [0, 255], default is 0.')
         parser.add_argument(
             '-outsize',
             '--output-size',
+            type=check_number_list,
             dest="output_size",
             default='',
             help='The size of output. Separate multiple sizes with commas(,). E.g: 10200,34000')
         parser.add_argument(
             '-n',
             '--output-nodes',
-            type=str,
+            type=check_dict_kind_string,
             dest="output_nodes",
             default='',
             help="Output nodes designated by user. Separate multiple nodes with semicolons(;)."
@@ -124,7 +118,7 @@ class CompareCommand(BaseCommand):
         parser.add_argument(
             '-dr',
             '--dym-shape-range',
-            type=str,
+            type=check_dym_range_string,
             dest="dym_shape_range",
             default='',
             help="Dynamic shape range using in dynamic model, "
@@ -151,7 +145,7 @@ class CompareCommand(BaseCommand):
         parser.add_argument(
             '-cp',
             '--custom-op',
-            type=str,
+            type=safe_string,
             dest="custom_op",
             default='',
             help='Op name witch is not registered in onnxruntime, only supported by Ascend.')
@@ -166,7 +160,7 @@ class CompareCommand(BaseCommand):
         parser.add_argument(
             '--fusion-switch-file',
             dest="fusion_switch_file",
-            type=safe_string,
+            type=check_fusion_cfg_path_legality,
             help='You can disable selected fusion patterns in the configuration file')
         parser.add_argument(
             "-single",
@@ -185,13 +179,11 @@ class CompareCommand(BaseCommand):
         parser.add_argument(
             '-q',
             '--quant-fusion-rule-file',
-            type=safe_string,
+            type=check_quant_json_path_legality,
             dest="quant_fusion_rule_file",
             default='',
             help="the quant fusion rule file path")
         self.parser = parser
-
-
 
     def handle(self, args):
         if not args.golden_model:
