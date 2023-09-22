@@ -130,29 +130,29 @@ main()
 
     safe_remove_pattern $CURDIR/backend/*.egg-info
     safe_remove $CURDIR/backend/build
-    which pip3.7 && { pip3.7 wheel -v $CURDIR/backend/ || echo "pip3.7 run failed"; }
-    which pip3.8 && { pip3.8 wheel -v $CURDIR/backend/ || echo "pip3.8 run failed"; }
-    which pip3.9 && { pip3.9 wheel -v $CURDIR/backend/ || echo "pip3.9 run failed"; }
+    which pip3.7 && { pip3.7 wheel -v $CURDIR/backend || echo "pip3.7 run failed"; }
+    which pip3.8 && { pip3.8 wheel -v $CURDIR/backend || echo "pip3.8 run failed"; }
+    which pip3.9 && { pip3.9 wheel -v $CURDIR/backend || echo "pip3.9 run failed"; }
 
     safe_remove_pattern $CURDIR/*.egg-info
     safe_remove $CURDIR/build
-    which pip3.7 && { pip3.7 wheel -v $CURDIR/ || echo "pip3.7 run failed"; }
-    which pip3.8 && { pip3.8 wheel -v $CURDIR/ || echo "pip3.8 run failed"; }
-    which pip3.9 && { pip3.9 wheel -v $CURDIR/ || echo "pip3.9 run failed"; }
+    which pip3.7 && { pip3.7 wheel -v $CURDIR || echo "pip3.7 run failed"; }
+    which pip3.8 && { pip3.8 wheel -v $CURDIR || echo "pip3.8 run failed"; }
+    which pip3.9 && { pip3.9 wheel -v $CURDIR || echo "pip3.9 run failed"; }
 
-    safe_pattern_cp $CURDIR/aclruntime*.whl $OUTPUT_PATH/ "true" || { echo "$CURDIR/aclruntime*.whl cp failed";return $ret_failed; }
-    safe_pattern_cp $CURDIR/ais_bench*.whl $OUTPUT_PATH/ "true" || { echo "$CURDIR/ais_bench*.whl cp failed";return $ret_failed; }
+    safe_pattern_cp $CURDIR/aclruntime*.whl $OUTPUT_PATH "true" || { echo "$CURDIR/aclruntime*.whl cp failed";return $ret_failed; }
+    safe_pattern_cp $CURDIR/ais_bench*.whl $OUTPUT_PATH "true" || { echo "$CURDIR/ais_bench*.whl cp failed";return $ret_failed; }
 
-    safe_cp $CURDIR/ais_bench $OUTPUT_PATH/ "true" || { echo "$CURDIR/ais_bench cp failed";return $ret_failed; }
-    safe_cp $CURDIR/requirements.txt $OUTPUT_PATH/ "false" || { echo "$CURDIR/requirements.txt cp failed";return $ret_failed; }
-    safe_cp $CURDIR/README.md $OUTPUT_PATH/ "false" || { echo "$CURDIR/README.md cp failed";return $ret_failed; }
-    safe_cp $CURDIR/FAQ.md $OUTPUT_PATH/ "false" || { echo "$CURDIR/FAQ.md cp failed";return $ret_failed; }
+    safe_cp $CURDIR/ais_bench $OUTPUT_PATH "true" || { echo "$CURDIR/ais_bench cp failed";return $ret_failed; }
+    safe_cp $CURDIR/requirements.txt $OUTPUT_PATH "false" || { echo "$CURDIR/requirements.txt cp failed";return $ret_failed; }
+    safe_cp $CURDIR/README.md $OUTPUT_PATH "false" || { echo "$CURDIR/README.md cp failed";return $ret_failed; }
+    safe_cp $CURDIR/FAQ.md $OUTPUT_PATH "false" || { echo "$CURDIR/FAQ.md cp failed";return $ret_failed; }
 
     cd $CURDIR
     safe_remove $CURDIR/$PACKET_NAME.tar.gz || { return $ret_failed; }
     tar -czf $CURDIR/$PACKET_NAME.tar.gz $PACKET_NAME
 
-    safe_remove ${CURDIR}/output/ || { return $ret_failed; }
+    safe_remove ${CURDIR}/output || { return $ret_failed; }
 
     mkdir -p -m 750 ${CURDIR}/output
     safe_pattern_cp $CURDIR/$PACKET_NAME.tar.gz ${CURDIR}/output "false"
