@@ -118,6 +118,7 @@ class TestCommonClass:
             file_name = "{}-{}.bin".format(size, i)
             file_path = os.path.join(input_file_num_folder_path, file_name)
             strs.append("cp {} {}".format(base_size_file_path, file_path))
+            strs.append(f"chmod 750 {file_path}")
 
         cmd = ';'.join(strs)
         os.system(cmd)
