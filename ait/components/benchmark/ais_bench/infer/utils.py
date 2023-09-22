@@ -27,7 +27,8 @@ import shutil
 import shlex
 import subprocess
 import numpy as np
-from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_NORMAL_FILE, MAX_SIZE_LIMITE_CONFIG_FILE
+from ais_bench.infer.path_security_check import (ms_open, MAX_SIZE_LIMITE_NORMAL_FILE,
+    MAX_SIZE_LIMITE_CONFIG_FILE, FileStat, is_legal_args_path_string)
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -72,11 +73,13 @@ def natural_sort(lst):
 def get_fileslist_from_dir(dir_):
     files_list = []
 
-    if os.path.exists(dir_) is False:
-        logger.error('dir:{} not exist'.format(dir_))
-        raise RuntimeError()
-
     for f in os.listdir(dir_):
+        f_true_path = os.path.join(dir_, f)
+        f_stat = FileStat(f_true_path)
+        if not f_stat.is_basically_legal('read'):
+            raise RuntimeError(f'input data:{f_true_path} is illegal')
+        if f_stat.is_dir:
+            continue
         if f.endswith(".npy") or f.endswith(".NPY") or f.endswith(".bin") or f.endswith(".BIN"):
             files_list.append(os.path.join(dir_, f))
 
@@ -114,7 +117,9 @@ def get_ndata_fmt(ndata):
 
 def save_data_to_files(file_path, ndata):
     if file_path.endswith(".NPY") or file_path.endswith(".npy"):
-        np.save(file_path, ndata)
+        with ms_open(file_path, mode="wb") as f:
+            np.save(f, ndata)
+
     elif file_path.endswith(".TXT") or file_path.endswith(".txt"):
         outdata = ndata.reshape(-1, ndata.shape[-1])
         fmt = get_ndata_fmt(outdata)
@@ -150,6 +155,8 @@ def get_dump_relative_paths(output_dir, timestamp):
 
 def get_msaccucmp_path():
     ascend_toolkit_path = os.environ.get("ASCEND_TOOLKIT_HOME")
+    if not is_legal_args_path_string(ascend_toolkit_path):
+        raise TypeError(f"ASCEND_TOOLKIT_HOME:{ascend_toolkit_path} is illegal")
     if ascend_toolkit_path is None:
         ascend_toolkit_path = CANN_PATH
     msaccucmp_path = os.path.join(ascend_toolkit_path, MSACCUCMP_FILE_PATH)
