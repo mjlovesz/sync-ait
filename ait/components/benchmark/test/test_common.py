@@ -117,7 +117,7 @@ class TestCommonClass:
         for i in range(input_file_num):
             file_name = "{}-{}.bin".format(size, i)
             file_path = os.path.join(input_file_num_folder_path, file_name)
-            strs.append("ln -s {} {}".format(base_size_file_path, file_path))
+            strs.append("cp {} {}".format(base_size_file_path, file_path))
 
         cmd = ';'.join(strs)
         os.system(cmd)
