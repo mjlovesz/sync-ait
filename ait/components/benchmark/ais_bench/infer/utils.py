@@ -74,7 +74,7 @@ def get_fileslist_from_dir(dir_):
     files_list = []
 
     for f in os.listdir(dir_):
-        f_stat = FileStat(dir_)
+        f_stat = FileStat(f)
         if not f_stat.is_basically_legal('read'):
             raise RuntimeError(f'input data:{f} is illegal')
         if f_stat.is_dir:
