@@ -80,7 +80,7 @@ safe_cp()
 {
     path=$1
     target_dir=$2
-    rm_flag=$3
+    rm_flag=$3 # remove origin file or not
     file_is_legal $target_dir || { echo "cp target $path is illegal";return $ret_failed; }
     if [[ -d $path ]];then
         file_is_legal $path || { echo "cp origin path $path is illegal";return $ret_failed; }
@@ -101,7 +101,7 @@ safe_pattern_cp()
 {
     pattern=$1
     target_dir=$2
-    rm_flag=$3
+    rm_flag=$3 # remove origin file or not
     file_is_legal $target_dir || { echo "cp target $path is illegal";return $ret_failed; }
     for file in $pattern; do
         check_ok=$ret_ok
