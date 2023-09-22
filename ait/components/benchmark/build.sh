@@ -34,7 +34,7 @@ file_is_legal()
         echo "$path no belong to cur_user or cur_group"
         return $ret_failed
     fi
-    if [ -L "$path"];then
+    if [[ -L "$path" ]];then
         echo "$path no belong to cur_user or cur_group"
         return $ret_failed
     else
