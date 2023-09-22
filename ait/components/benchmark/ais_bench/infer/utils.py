@@ -74,7 +74,7 @@ def get_fileslist_from_dir(dir_):
     files_list = []
     dir_stat = FileStat(dir_)
     if not dir_stat.is_basically_legal('read'):
-        raise RuntimeError(f'input data:{dir_} is not illegal')
+        raise RuntimeError(f'input data:{dir_} is illegal')
 
     for f in os.listdir(dir_):
         if dir_stat.is_dir:
@@ -155,7 +155,7 @@ def get_dump_relative_paths(output_dir, timestamp):
 def get_msaccucmp_path():
     ascend_toolkit_path = os.environ.get("ASCEND_TOOLKIT_HOME")
     if not is_legal_args_path_string(ascend_toolkit_path):
-        raise TypeError(f"ASCEND_TOOLKIT_HOME:{ascend_toolkit_path} is not illegal")
+        raise TypeError(f"ASCEND_TOOLKIT_HOME:{ascend_toolkit_path} is illegal")
     if ascend_toolkit_path is None:
         ascend_toolkit_path = CANN_PATH
     msaccucmp_path = os.path.join(ascend_toolkit_path, MSACCUCMP_FILE_PATH)
