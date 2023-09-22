@@ -186,21 +186,6 @@ def check_model_path_legality(value):
     return path_value
 
 
-def check_output_path_legality(value):
-    if not value:
-        return value
-    path_value = value
-    try:
-        file_stat = FileStat(path_value)
-    except Exception as err:
-        raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal("write"):
-        raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
-    if not file_stat.is_legal_file_type(["onnx"]):
-        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
-    return path_value
-
-
 def safe_string(value):
     if not value:
         return value
