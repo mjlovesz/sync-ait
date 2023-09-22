@@ -21,6 +21,7 @@ OUTPUT_PATH="$CURDIR/$PACKET_NAME/"
 declare -i ret_ok=0
 declare -i ret_failed=1
 
+
 file_is_legal()
 {
     path=$1
@@ -61,6 +62,7 @@ safe_remove()
     return $ret_ok
 }
 
+
 safe_remove_pattern()
 {
     pattern=$1
@@ -73,6 +75,7 @@ safe_remove_pattern()
     done
 }
 
+
 safe_cp()
 {
     path=$1
@@ -82,16 +85,17 @@ safe_cp()
     if [[ -d $path ]];then
         file_is_legal $path || { echo "cp origin path $path is illegal";return $ret_failed; }
         if [[ $rm_flag == "true" ]];then
-            cp file -rf $target_dir
+            cp $path -rf $target_dir
 
         else
-            cp file $target_dir
+            cp $path $target_dir
         fi
         chmod -R 750 $target_dir
         return $ret_ok
     fi
     return $ret_failed
 }
+
 
 safe_pattern_cp()
 {
@@ -104,15 +108,16 @@ safe_pattern_cp()
         file_is_legal $path || { check_ok=$ret_failed; }
         if [[ $check_ok == $ret_ok ]];then
             if [[ $rm_flag == "true" ]];then
-                cp file -rf $target_dir
+                cp $file -rf $target_dir
             else
-                cp file $target_dir
+                cp $file $target_dir
             fi
             chmod -R 750 $target_dir
         fi
         return $ret_ok
     done
 }
+
 
 main()
 {
