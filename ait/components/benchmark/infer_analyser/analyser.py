@@ -19,7 +19,7 @@ import stat
 import json
 import argparse
 import numpy as np
-from components.utils.file_open_check import ms_open, MAX_SIZE_LIMITE_NORMAL_FILE
+from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_NORMAL_FILE
 
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
