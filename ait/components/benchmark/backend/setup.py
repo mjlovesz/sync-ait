@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import os
+import re
 import platform
 import logging
 import sys
@@ -27,6 +28,39 @@ logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)
 logger = logging.getLogger(__name__)
 
 STATIC_VERSION = "0.0.2"
+PATH_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-]")
+
+
+def is_legal_path_length(path):
+    if len(path) > 4096:
+        logger.error(f"file total path length out of range (4096)")
+        return False
+    dirnames = path.split("/")
+    for dirname in dirnames:
+        if len(dirname) > 255:
+            logger.error(f"file name length out of range (255)")
+            return False
+    return True
+
+
+def is_match_path_white_list(path):
+    if PATH_WHITE_LIST_REGEX.search(path):
+        logger.error(f"path:{path} contains illegal char")
+        return False
+    return True
+
+
+def is_legal_args_path_string(path):
+    # only check path string
+    if not path:
+        return True
+    if not is_legal_path_length(path):
+        return False
+    if not is_match_path_white_list(path):
+        return False
+    return True
+
+
 
 # The main interface is through Pybind11Extension.
 # * You can add cxx_std=11/14/17, and then build_ext can be removed.
