@@ -74,7 +74,7 @@ bool isPathInTable(const std::string &filePath) {
     std::string pID = std::to_string(processID);
 
     std::string aclHomePath = std::string(std::getenv("ACLTRANSFORMER_HOME_PATH"));
-    const char* aitTaskIdEnv = std::getenv("AIT_CMP_TASK_ID")
+    const char* aitTaskIdEnv = std::getenv("AIT_CMP_TASK_ID");
     std::string aitTaskId = aitTaskIdEnv ? std::string(aitTaskIdEnv) : "";
     std::string basePath = aclHomePath + "/tensors/" + pID + "/" + aitTaskId + "/";
 
@@ -171,7 +171,7 @@ bool isInTensorBinPath(const std::string &filePath) {
 }
 
 
-bool IsEnvEnable(const char *env) {
+bool IsBoolEnvEnable(const char *env) {
     const char *envStr = std::getenv(env);
     if (!envStr) {
         return false;
@@ -183,7 +183,7 @@ bool IsEnvEnable(const char *env) {
 void AclTransformer::TensorUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath) {
     ASD_LOG(INFO) << "save asdtensor start, tensor:" << AsdOpsTensorToString(tensor) << ", filePath:" << filePath;
 
-    bool is_save_md5 = IsEnvEnable("AIT_IS_SAVE_MD5");
+    bool is_save_md5 = IsBoolEnvEnable("AIT_IS_SAVE_MD5");
     ASD_LOG(INFO) << "save asdtensor, is_save_md5:" << is_save_md5;
 
     if (!is_save_md5) {
