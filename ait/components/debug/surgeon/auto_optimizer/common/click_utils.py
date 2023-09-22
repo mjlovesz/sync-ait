@@ -34,7 +34,7 @@ from components.utils.file_open_check import FileStat, is_legal_args_path_string
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-STR_UNSAFE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: ·/.~-]")
+STR_UNSAFE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-]")
 MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024 # 10GB
 
 
