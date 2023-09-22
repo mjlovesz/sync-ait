@@ -57,9 +57,8 @@ safe_remove()
             echo "not allowed to remove $path"
             return $ret_failed
         fi
-    else
-        return $ret_failed
     fi
+    return $ret_ok
 }
 
 safe_remove_pattern()
