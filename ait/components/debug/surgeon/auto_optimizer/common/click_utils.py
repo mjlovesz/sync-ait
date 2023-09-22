@@ -13,12 +13,15 @@
 # limitations under the License.
 
 import os
+import stat
 import pathlib
 from functools import partial
 from multiprocessing import Pool
 from typing import List, Optional, Union
 
+import re
 import click
+import argparse
 
 from auto_optimizer import KnowledgeFactory
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig, \
@@ -29,6 +32,165 @@ from auto_optimizer.tools.log import logger
 
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+STR_UNSAFE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-]")
+PATH_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-]")
+MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024 # 10GB
+
+READ_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH
+WRITE_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH | stat.S_IROTH | stat.S_IXOTH
+
+
+def is_legal_path_length(path):
+    if len(path) > 4096:
+        logger.error(f"file total path length out of range (4096)")
+        return False
+    dirnames = path.split("/")
+    for dirname in dirnames:
+        if len(dirname) > 255:
+            logger.error(f"file name length out of range (255)")
+            return False
+    return True
+
+
+def is_match_path_white_list(path):
+    if PATH_WHITE_LIST_REGEX.search(path):
+        logger.error(f"path:{path} contains illegal char")
+        return False
+    return True
+
+class OpenException(Exception):
+    pass
+
+
+class FileStat:
+    def __init__(self, file) -> None:
+        if not is_legal_path_length(file) or not is_match_path_white_list(file):
+            raise OpenException(f"create FileStat failed")
+        self.file = file
+        self.is_file_exist = os.path.exists(file)
+        if self.is_file_exist:
+            self.file_stat = os.stat(file)
+            self.realpath =  os.path.realpath(file)
+        else:
+            self.file_stat = None
+
+    @property
+    def is_exists(self):
+        return self.is_file_exist
+
+    @property
+    def is_softlink(self):
+        return stat.S_ISLNK(self.file_stat.st_mode) if self.file_stat else False
+
+    @property
+    def is_file(self):
+        return stat.S_ISREG(self.file_stat.st_mode) if self.file_stat else False
+
+    @property
+    def is_dir(self):
+        return stat.S_ISDIR(self.file_stat.st_mode) if self.file_stat else False
+
+    @property
+    def file_size(self):
+        return self.file_stat.st_size if self.file_stat else 0
+
+    @property
+    def permission(self):
+        return stat.S_IMODE(self.file_stat.st_mode) if self.file_stat else 0o777
+
+    @property
+    def owner(self):
+        return self.file_stat.st_uid if self.file_stat else -1
+
+    @property
+    def group_owner(self):
+        return self.file_stat.st_gid if self.file_stat else -1
+
+    @property
+    def is_owner(self):
+        return self.owner == (os.geteuid() if hasattr(os, "geteuid") else 0)
+
+    @property
+    def is_group_owner(self):
+        return self.group_owner in (os.getgroups() if hasattr(os, "getgroups") else [0])
+
+    @property
+    def is_user_or_group_owner(self):
+        return self.is_owner or self.is_group_owner
+
+    @property
+    def is_user_and_group_owner(self):
+        return self.is_owner and self.is_group_owner
+
+    def is_basically_legal(self, perm='none'):
+        if not self.is_exists and perm != 'write':
+            logger.error(f"path: {self.file} not exist")
+            return False
+        if self.is_softlink:
+            logger.error(f"path :{self.file} is a symbolic link, considering security, not supported")
+            return False
+        if not self.is_user_or_group_owner and self.is_exists:
+            logger.error(f"current user isn't path:{self.file}'s owner or ownergroup")
+            return False
+        if perm == 'read':
+            if self.permission & READ_FILE_NOT_PERMITTED_STAT > 0:
+                logger.error(f"The file {self.file} is group writable, or is others writable.")
+                return False
+            if not os.access(self.realpath, os.R_OK) or self.permission & stat.S_IRUSR == 0:
+                logger.error(f"Current user doesn't have read permission to the file {self.file}.")
+                return False
+        elif perm == 'write' and self.is_exists:
+            if self.permission & WRITE_FILE_NOT_PERMITTED_STAT > 0:
+                logger.error(f"The file {self.file} is group writable, or is others writable.")
+                return False
+            if not os.access(self.realpath, os.W_OK):
+                logger.error(f"Current user doesn't have read permission to the file {self.file}.")
+                return False
+        return True
+
+    def is_legal_file_size(self, max_size):
+        if not self.is_file:
+            logger.error(f"path: {self.file} is not a file")
+            return False
+        if self.file_size > max_size:
+            logger.error(f"file_size:{self.file_size} byte out of max limit {max_size} byte")
+            return False
+        else:
+            return True
+
+    def is_legal_file_type(self, file_types:list):
+        if not self.is_file:
+            logger.error(f"path: {self.file} is not a file")
+            return False
+        for file_type in file_types:
+            if os.path.splitext(self.file)[1] == f".{file_type}":
+                return True
+        logger.error(f"path:{self.file}, file type not in {file_types}")
+        return False
+
+
+def check_model_path_legality(value):
+    path_value = value
+    try:
+        file_stat = FileStat(path_value)
+    except Exception as err:
+        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.") from err
+    if not file_stat.is_basically_legal('read'):
+        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
+    if not file_stat.is_legal_file_type(["onnx", "prototxt", "pb"]):
+        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
+    if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
+        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
+    return path_value
+
+
+def safe_string(value):
+    if not value:
+        return value
+    if re.search(STR_UNSAFE_LIST_REGEX, value):
+        raise ValueError("String parameter contains invalid characters.")
+    return value
 
 
 def check_input_path(input_path):
