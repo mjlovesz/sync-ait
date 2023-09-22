@@ -19,7 +19,7 @@ import stat
 
 import numpy as np
 from ais_bench.infer.utils import logger
-from components.utils.file_open_check import ms_open
+from ais_bench.infer.path_security_check import ms_open
 
 
 class ListInfo(object):
