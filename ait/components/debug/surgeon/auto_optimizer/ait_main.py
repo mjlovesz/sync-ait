@@ -275,7 +275,7 @@ class ConcatenateCommand(BaseCommand):
         parser.add_argument('-pref', '--prefix', dest='graph_prefix', 
                             required=False, type=safe_string, default='pre_',
                             help='Prefix added to all names in a graph')
-        parser.add_argument('-cgp', '--combined-graph-path', default='', type=check_output_path_legality,
+        parser.add_argument('-cgp', '--combined-graph-path', default='', type=lambda val: safe_string(check_output_path_legality(val)),
                             help='Output combined onnx graph path')
 
     def handle(self, args):
@@ -283,10 +283,6 @@ class ConcatenateCommand(BaseCommand):
             raise TypeError(f"Invalid graph1: {args.graph1}")
         if not check_input_path(args.graph2):
             raise TypeError(f"Invalid graph2: {args.graph2}")
-
-        # check if cgp args contains invalid character
-        if safe_string(args.combined_graph_path):
-            pass
 
         onnx_graph1 = OnnxGraph.parse(args.graph1)
         onnx_graph2 = OnnxGraph.parse(args.graph2)
