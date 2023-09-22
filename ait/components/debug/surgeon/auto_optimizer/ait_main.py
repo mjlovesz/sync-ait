@@ -23,7 +23,7 @@ from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestCo
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.tools.log import logger
 from auto_optimizer.common.click_utils import optimize_onnx, list_knowledges, \
-    cli_eva, check_input_path, check_output_model_path, safe_string
+    cli_eva, check_input_path, check_output_model_path, safe_string, check_model_path_legality, check_output_path_legality
 from auto_optimizer.common.click_utils import default_off_knowledges
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 
@@ -265,9 +265,9 @@ class ExtractCommand(BaseCommand):
 
 class ConcatenateCommand(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('-g1', '--graph1', required=True, type=str,
+        parser.add_argument('-g1', '--graph1', required=True, type=check_model_path_legality,
                             help='First onnx model to be consolidated')
-        parser.add_argument('-g2', '--graph2', required=True, type=str,
+        parser.add_argument('-g2', '--graph2', required=True, type=check_model_path_legality,
                             help='Second onnx model to be consolidated')
         parser.add_argument('-io', '--io-map', required=True, type=str,
                             help='Pairs of output/inputs representing outputs \
@@ -275,7 +275,7 @@ class ConcatenateCommand(BaseCommand):
         parser.add_argument('-pref', '--prefix', dest='graph_prefix', 
                             required=False, type=safe_string, default='pre_',
                             help='Prefix added to all names in a graph')
-        parser.add_argument('-cgp', '--combined-graph-path', default='', type=safe_string,
+        parser.add_argument('-cgp', '--combined-graph-path', default='', type=check_output_path_legality,
                             help='Output combined onnx graph path')
 
     def handle(self, args):
@@ -284,12 +284,9 @@ class ConcatenateCommand(BaseCommand):
         if not check_input_path(args.graph2):
             raise TypeError(f"Invalid graph2: {args.graph2}")
 
-        if not args.graph1.endswith(".onnx"):
-            raise TypeError(f"Invalid graph1 format: {args.graph1}. Expected .onnx file")
-        if not args.graph2.endswith(".onnx"):
-            raise TypeError(f"Invalid graph2 format: {args.graph2}. Expected .onnx file")
-        if args.combined_graph_path and (not args.combined_graph_path.endswith(".onnx")):
-            raise TypeError(f"Invalid output format: {args.combined_graph_path}. Expected .onnx file")
+        # check if cgp args contains invalid character
+        if safe_string(args.combined_graph_path):
+            pass
 
         onnx_graph1 = OnnxGraph.parse(args.graph1)
         onnx_graph2 = OnnxGraph.parse(args.graph2)
