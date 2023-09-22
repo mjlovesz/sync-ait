@@ -248,7 +248,7 @@ class TestClass():
             log_path = os.path.join(output_path, "log.txt")
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
-            os.makedirs(output_path)
+            os.makedirs(output_path, 0o750)
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
             cmd = "{} --model {} --device {}  --output {} --output_dirname {} > {}" \
                 .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
@@ -289,7 +289,7 @@ class TestClass():
             log_path = os.path.join(output_path, "log.txt")
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
-            os.makedirs(output_path)
+            os.makedirs(output_path, 0o750)
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
             cmd = "{} --model {} --device {} --output {} --output_dirname {} --dymBatch {} > {}" \
                 .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
@@ -330,7 +330,7 @@ class TestClass():
             log_path = os.path.join(output_path, "log.txt")
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
-            os.makedirs(output_path)
+            os.makedirs(output_path, 0o750)
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
             cmd = "{} --model {} --device {} --output {} --output_dirname {} --dymDims {} > {}" \
                 .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
@@ -371,7 +371,7 @@ class TestClass():
             log_path = os.path.join(output_path, "log.txt")
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
-            os.makedirs(output_path)
+            os.makedirs(output_path, 0o750)
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
             cmd = "{} --model {} --device {} --output {} --output_dirname {} --dymHW {} > {}" \
                 .format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,

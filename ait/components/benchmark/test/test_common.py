@@ -62,7 +62,7 @@ class TestCommonClass:
     def prepare_dir(target_folder_path):
         if os.path.exists(target_folder_path):
             shutil.rmtree(target_folder_path)
-        os.makedirs(target_folder_path)
+        os.makedirs(target_folder_path, 0o750)
 
     @staticmethod
     def get_model_inputs_size(model_path):
@@ -95,7 +95,7 @@ class TestCommonClass:
         """
         size_path = os.path.join(input_path,  str(size))
         if not os.path.exists(size_path):
-            os.makedirs(size_path)
+            os.makedirs(size_path, 0o750)
 
         base_size_file_path = os.path.join(size_path, "{}.bin".format(size))
         if not os.path.exists(base_size_file_path):
@@ -110,7 +110,7 @@ class TestCommonClass:
                 shutil.rmtree(input_file_num_folder_path)
 
         if not os.path.exists(input_file_num_folder_path):
-            os.makedirs(input_file_num_folder_path)
+            os.makedirs(input_file_num_folder_path, 0o750)
 
         strs = []
         # create soft link to base_size_file

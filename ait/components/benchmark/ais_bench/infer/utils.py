@@ -27,7 +27,7 @@ import shutil
 import shlex
 import subprocess
 import numpy as np
-from components.utils.file_open import ms_open, MAX_SIZE_LIMITE_NORMAL_FILE, MAX_SIZE_LIMITE_CONFIG_FILE
+from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_NORMAL_FILE, MAX_SIZE_LIMITE_CONFIG_FILE
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)

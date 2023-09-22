@@ -4,7 +4,7 @@
 - compare一键式全流程精度比对（推理）功能将推理场景的精度比对做了自动化，适用于 TensorFlow、ONNX、Caffe 模型，用户只需要输入原始模型，对应的离线模型和输入，输出整网比对的结果，离线模型为通过 ATC 工具转换的 om 模型，输入 bin 文件需要符合模型的输入要求（支持模型多输入）。
 - 该功能使用约束场景说明，参考链接：[CANN商用版/约束说明（仅推理场景）](https://www.hiascend.com/document/detail/zh/canncommercial/60RC1/devtools/auxiliarydevtool/atlasaccuracy_16_0035.html)
 - 对于 Caffe 模型，目前不支持动态 shape 的模型比对。对于 `yolov2` / `yolov3` / `ssd` 等需要自定义实现层的模型，需要自行编译安装特定版本的 caffe。
-- 大模型加速库在线推理精度比对，参考链接：[使用指导](../../../examples/cli/debug/compare/11_pta_acl_cmp/basic_usage.md)
+- 大模型加速库在线推理精度比对，参考链接：[加速库精度比对介绍](../../../examples/cli/debug/compare/acl_cmp_introduction/introduction.md)
 - **注意**：请确保ATC工具转换的om与当前运行环境使用的芯片型号一致。
 
 
@@ -120,20 +120,19 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
 
 请移步[compare使用示例](../../../examples/cli/debug/compare/)
 
-| 使用示例               | 使用场景                                 |
-|-----------------------| ---------------------------------------- |
-| [01_basic_usage](../../../examples/cli/debug/compare/01_basic_usage)    | 基础示例，运行onnx和om模型精度比对       |
-| [02_specify_input_data](../../../examples/cli/debug/compare/02_specify_input_data)    | 指定模型输入数据       |
-| [03_save_output_data](../../../examples/cli/debug/compare/03_save_output_data)    | 指定结果输出目录       |
-| [04_specify_input_shape_info](../../../examples/cli/debug/compare/04_specify_input_shape_info)    | 指定模型输入的shape信息(动态场景必须进行指定)。       |
-| [05_aipp_model_compare](../../../examples/cli/debug/compare/05_aipp_model_compare)    | 提供模型转换开启aipp参数的om模型与onnx模型进行精度比对的功能。 |
-| [06_npu_custom_op](../../../examples/cli/debug/compare/06_npu_custom_op)    | onnx模型中存在NPU自定义算子场景 |
-| [07_caffe_model](../../../examples/cli/debug/compare/07_caffe_model)    | 标杆模型为Caffe框架的一键式精度比对 |
-| [08_accuracy_error_location](../../../examples/cli/debug/compare/08_accuracy_error_location)    | 误差及累计误差一键式自动定位 |
-| [09_single_op](../../../examples/cli/debug/compare/09_single_op)    | 单算子比对模式 |
-| [10_fusion_switch_file](../../../examples/cli/debug/compare/10_fusion_switch_file)    | 关闭融合规则.om模型和原始.om模型精度比对 |
-| [11_pta_acl_cmp](../../../examples/cli/debug/compare/11_pta_acl_cmp) | 大模型加速库在线推理精度比对 |
-| [12_pta_acl_cmp_weight_map](../../../examples/cli/debug/compare/12_pta_acl_cmp_weight_map) | 大模型加速库在线推理基于权重映射的精度比对 |
+| 使用示例                                                                                             | 使用场景                                 |
+|--------------------------------------------------------------------------------------------------|--------------------------------------|
+| [01_basic_usage](../../../examples/cli/debug/compare/01_basic_usage)                             | 基础示例，运行onnx和om模型精度比对                 |
+| [02_specify_input_data](../../../examples/cli/debug/compare/02_specify_input_data)               | 指定模型输入数据                             |
+| [03_save_output_data](../../../examples/cli/debug/compare/03_save_output_data)                   | 指定结果输出目录                             |
+| [04_specify_input_shape_info](../../../examples/cli/debug/compare/04_specify_input_shape_info)   | 指定模型输入的shape信息(动态场景必须进行指定)。          |
+| [05_aipp_model_compare](../../../examples/cli/debug/compare/05_aipp_model_compare)               | 提供模型转换开启aipp参数的om模型与onnx模型进行精度比对的功能。 |
+| [06_npu_custom_op](../../../examples/cli/debug/compare/06_npu_custom_op)                         | onnx模型中存在NPU自定义算子场景                  |
+| [07_caffe_model](../../../examples/cli/debug/compare/07_caffe_model)                             | 标杆模型为Caffe框架的一键式精度比对                 |
+| [08_accuracy_error_location](../../../examples/cli/debug/compare/08_accuracy_error_location)     | 误差及累计误差一键式自动定位                       |
+| [09_single_op](../../../examples/cli/debug/compare/09_single_op)                                 | 单算子比对模式                              |
+| [10_fusion_switch_file](../../../examples/cli/debug/compare/10_fusion_switch_file)               | 关闭融合规则.om模型和原始.om模型精度比对              |
+| [acl_cmp_introduction](../../../examples/cli/debug/compare/acl_cmp_introduction/introduction.md) | 大模型加速库在线推理精度比对介绍                     |
 
 ### 常见问题FAQ
 
