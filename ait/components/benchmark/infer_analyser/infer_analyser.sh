@@ -68,7 +68,7 @@ get_infer_time_from_json()
     cat ${file} | python3 -c "import sys,json;s=json.load(sys.stdin);print(s[\"npu_compute_time_list\"][${index}]);" 2>/dev/null
 }
 
-# func 
+# func
 
 
 check_args_valid()
