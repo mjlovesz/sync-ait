@@ -41,7 +41,7 @@ safe_remove()
     path=$1
     if [[ -d $path ]];then
         owner_ok=$ret_ok
-        file_owner_is_legal $path || { owner_ok=$ret_failed }
+        file_owner_is_legal $path || { owner_ok=$ret_failed; }
         if [[ $owner_ok == $ret_ok ]];then
             rm -rf $path
             return $ret_ok
@@ -57,7 +57,7 @@ safe_remove_pattern()
     pattern=$1
     for file in $pattern; do
         owner_ok=$ret_ok
-        file_owner_is_legal $path || { owner_ok=$ret_failed }
+        file_owner_is_legal $path || { owner_ok=$ret_failed; }
         if [[ $owner_ok == $ret_ok ]];then
             rm -rf $file
         fi
@@ -71,7 +71,7 @@ safe_pattern_cp()
     rm_flag=$3
     for file in $pattern; do
         owner_ok=$ret_ok
-        file_owner_is_legal $path || { owner_ok=$ret_failed }
+        file_owner_is_legal $path || { owner_ok=$ret_failed; }
         if [[ $owner_ok == $ret_ok ]];then
             rm -rf $file
             if [[ $rm_flag == "true" ]];then
