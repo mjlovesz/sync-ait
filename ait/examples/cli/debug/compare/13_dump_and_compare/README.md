@@ -163,3 +163,5 @@ bash run.sh patches/model/modeling_chatglm_model.py
 ```ait debug compare aclcmp --golden-path path_to_golden_data.json --my-path path_to_acl_data.json --output output_dir```
 
 完成比对后在```output_dir```下会生成一个```cmp_report.csv```,保存比对的最终结果。
+- 比对结果：
+![cmp_report.csv](./cmp_report.png)
