@@ -57,8 +57,9 @@ safe_remove()
             echo "not allowed to remove $path"
             return $ret_failed
         fi
+    else
+        return $ret_failed
     fi
-    return $ret_failed
 }
 
 safe_remove_pattern()
@@ -116,7 +117,7 @@ safe_pattern_cp()
 
 main()
 {
-    safe_remove $OUT_PATH || { return $ret_failed; }
+    safe_remove $OUT_PATH || { echo "$OUT_PATH rm failed";return $ret_failed; }
     mkdir -p -m 750 $OUTPUT_PATH
     safe_remove_pattern $CURDIR/ais_bench*.whl
     safe_remove_pattern $CURDIR/aclruntime*.whl
