@@ -21,7 +21,7 @@ OUTPUT_PATH="$CURDIR/$PACKET_NAME/"
 declare -i ret_ok=0
 declare -i ret_failed=1
 
-file_owner_is_legal()
+file_is_legal()
 {
     path=$1
     owner=$(stat -c '%U' $path)
@@ -29,20 +29,28 @@ file_owner_is_legal()
     cur_user=$(id -un)
     cur_group=$(id -gn)
     if [[ "$owner" == "$cur_user" || "$group" == "$cur_group" ]];then
-        return $ret_ok
+        echo "$path owner check passed"
     else
         echo "$path no belong to cur_user or cur_group"
         return $ret_failed
     fi
+    if [ -L "$path"];then
+        echo "$path no belong to cur_user or cur_group"
+        return $ret_failed
+    else
+        echo "$path owner check passed"
+    fi
+    return $ret_ok
 }
+
 
 safe_remove()
 {
     path=$1
     if [[ -d $path ]];then
-        owner_ok=$ret_ok
-        file_owner_is_legal $path || { owner_ok=$ret_failed; }
-        if [[ $owner_ok == $ret_ok ]];then
+        check_ok=$ret_ok
+        file_is_legal $path || { check_ok=$ret_failed; }
+        if [[ $check_ok == $ret_ok ]];then
             rm -rf $path
             return $ret_ok
         else
@@ -50,18 +58,39 @@ safe_remove()
             return $ret_failed
         fi
     fi
+    return $ret_failed
 }
 
 safe_remove_pattern()
 {
     pattern=$1
     for file in $pattern; do
-        owner_ok=$ret_ok
-        file_owner_is_legal $path || { owner_ok=$ret_failed; }
-        if [[ $owner_ok == $ret_ok ]];then
+        check_ok=$ret_ok
+        file_is_legal $path || { check_ok=$ret_failed; }
+        if [[ $check_ok == $ret_ok ]];then
             rm -rf $file
         fi
     done
+}
+
+safe_cp()
+{
+    path=$1
+    target_dir=$2
+    rm_flag=$3
+    file_is_legal $target_dir || { echo "cp target $path is illegal";return $ret_failed; }
+    if [[ -d $path ]];then
+        file_is_legal $path || { echo "cp origin path $path is illegal";return $ret_failed; }
+        if [[ $rm_flag == "true" ]];then
+            cp file -rf $target_dir
+
+        else
+            cp file $target_dir
+        fi
+        chmod -R 750 $target_dir
+        return $ret_ok
+    fi
+    return $ret_failed
 }
 
 safe_pattern_cp()
@@ -69,17 +98,19 @@ safe_pattern_cp()
     pattern=$1
     target_dir=$2
     rm_flag=$3
+    file_is_legal $target_dir || { echo "cp target $path is illegal";return $ret_failed; }
     for file in $pattern; do
-        owner_ok=$ret_ok
-        file_owner_is_legal $path || { owner_ok=$ret_failed; }
-        if [[ $owner_ok == $ret_ok ]];then
-            rm -rf $file
+        check_ok=$ret_ok
+        file_is_legal $path || { check_ok=$ret_failed; }
+        if [[ $check_ok == $ret_ok ]];then
             if [[ $rm_flag == "true" ]];then
                 cp file -rf $target_dir
             else
                 cp file $target_dir
             fi
+            chmod -R 750 $target_dir
         fi
+        return $ret_ok
     done
 }
 
@@ -104,15 +135,13 @@ main()
     which pip3.8 && { pip3.8 wheel -v $CURDIR/ || echo "pip3.8 run failed"; }
     which pip3.9 && { pip3.9 wheel -v $CURDIR/ || echo "pip3.9 run failed"; }
 
-    safe_pattern_cp $CURDIR/aclruntime*.whl $OUTPUT_PATH/ "true"
-    safe_pattern_cp $CURDIR/ais_bench*.whl $OUTPUT_PATH/ "true"
+    safe_pattern_cp $CURDIR/aclruntime*.whl $OUTPUT_PATH/ "true" || { echo "$CURDIR/aclruntime*.whl cp failed";return $ret_failed; }
+    safe_pattern_cp $CURDIR/ais_bench*.whl $OUTPUT_PATH/ "true" || { echo "$CURDIR/ais_bench*.whl cp failed";return $ret_failed; }
 
-    safe_pattern_cp $CURDIR/ais_bench $OUTPUT_PATH/ "true"
-    safe_pattern_cp $CURDIR/requirements.txt $OUTPUT_PATH/ "false"
-    safe_pattern_cp $CURDIR/README.md $OUTPUT_PATH/ "false"
-    safe_pattern_cp $CURDIR/FAQ.md $OUTPUT_PATH/ "false"
-
-    chmod -R 750 $OUTPUT_PATH/
+    safe_cp $CURDIR/ais_bench $OUTPUT_PATH/ "true" || { echo "$CURDIR/ais_bench cp failed";return $ret_failed; }
+    safe_cp $CURDIR/requirements.txt $OUTPUT_PATH/ "false" || { echo "$CURDIR/requirements.txt cp failed";return $ret_failed; }
+    safe_cp $CURDIR/README.md $OUTPUT_PATH/ "false" || { echo "$CURDIR/README.md cp failed";return $ret_failed; }
+    safe_cp $CURDIR/FAQ.md $OUTPUT_PATH/ "false" || { echo "$CURDIR/FAQ.md cp failed";return $ret_failed; }
 
     cd $CURDIR
     safe_remove $CURDIR/$PACKET_NAME.tar.gz || { return $ret_failed; }
