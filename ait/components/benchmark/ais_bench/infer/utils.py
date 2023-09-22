@@ -72,12 +72,12 @@ def natural_sort(lst):
 
 def get_fileslist_from_dir(dir_):
     files_list = []
-    dir_stat = FileStat(dir_)
-    if not dir_stat.is_basically_legal('read'):
-        raise RuntimeError(f'input data:{dir_} is illegal')
 
     for f in os.listdir(dir_):
-        if dir_stat.is_dir:
+        f_stat = FileStat(dir_)
+        if not f_stat.is_basically_legal('read'):
+            raise RuntimeError(f'input data:{f} is illegal')
+        if f.is_dir:
             continue
         if f.endswith(".npy") or f.endswith(".NPY") or f.endswith(".bin") or f.endswith(".BIN"):
             files_list.append(os.path.join(dir_, f))
