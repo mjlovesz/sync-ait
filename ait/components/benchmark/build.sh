@@ -19,7 +19,7 @@ PACKET_NAME="ais_bench_$PLATFORM"
 OUTPUT_PATH="$CURDIR/$PACKET_NAME/"
 
 declare -i ret_ok=0
-declare -i ret_run_failed=1
+declare -i ret_failed=1
 
 file_owner_is_legal()
 {
@@ -40,7 +40,9 @@ safe_remove()
 {
     path=$1
     if [[ -d $path ]];then
-        if [[ file_owner_is_legal $path == $ret_ok ]];then
+        owner_ok=$ret_ok
+        file_owner_is_legal $path || { owner_ok=$ret_failed }
+        if [[ $owner_ok == $ret_ok ]];then
             rm -rf $path
             return $ret_ok
         else
@@ -54,7 +56,9 @@ safe_remove_pattern()
 {
     pattern=$1
     for file in $pattern; do
-        if [[ file_owner_is_legal $file == $ret_ok ]];then
+        owner_ok=$ret_ok
+        file_owner_is_legal $path || { owner_ok=$ret_failed }
+        if [[ $owner_ok == $ret_ok ]];then
             rm -rf $file
         fi
     done
@@ -66,7 +70,9 @@ safe_pattern_cp()
     target_dir=$2
     rm_flag=$3
     for file in $pattern; do
-        if [[ file_owner_is_legal $file == $ret_ok ]];then
+        owner_ok=$ret_ok
+        file_owner_is_legal $path || { owner_ok=$ret_failed }
+        if [[ $owner_ok == $ret_ok ]];then
             rm -rf $file
             if [[ $rm_flag == "true" ]];then
                 cp file -rf $target_dir
@@ -76,6 +82,7 @@ safe_pattern_cp()
         fi
     done
 }
+
 main()
 {
     safe_remove $OUT_PATH || { return $ret_failed; }
