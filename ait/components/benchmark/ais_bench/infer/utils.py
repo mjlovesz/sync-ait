@@ -74,9 +74,10 @@ def get_fileslist_from_dir(dir_):
     files_list = []
 
     for f in os.listdir(dir_):
-        f_stat = FileStat(f)
+        f_true_path = os.path.join(dir_, f)
+        f_stat = FileStat(f_true_path)
         if not f_stat.is_basically_legal('read'):
-            raise RuntimeError(f'input data:{f} is illegal')
+            raise RuntimeError(f'input data:{f_true_path} is illegal')
         if f_stat.is_dir:
             continue
         if f.endswith(".npy") or f.endswith(".NPY") or f.endswith(".bin") or f.endswith(".BIN"):
