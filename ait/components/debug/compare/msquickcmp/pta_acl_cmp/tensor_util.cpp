@@ -173,7 +173,7 @@ bool isInTensorBinPath(const std::string &filePath) {
 
 bool IsEnvEnable(const char *env) {
     const char *envStr = std::getenv(env);
-    if (!saveTensor) {
+    if (!envStr) {
         return false;
     }
     return std::string(envStr) == "1";
