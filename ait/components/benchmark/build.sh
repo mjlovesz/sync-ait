@@ -105,7 +105,7 @@ safe_pattern_cp()
     file_is_legal $target_dir || { echo "cp target $path is illegal";return $ret_failed; }
     for file in $pattern; do
         check_ok=$ret_ok
-        file_is_legal $path || { check_ok=$ret_failed; }
+        file_is_legal $file || { check_ok=$ret_failed; }
         if [[ $check_ok == $ret_ok ]];then
             if [[ $rm_flag == "true" ]];then
                 cp $file -rf $target_dir
