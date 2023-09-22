@@ -23,7 +23,7 @@ from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestCo
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.tools.log import logger
 from auto_optimizer.common.click_utils import optimize_onnx, list_knowledges, \
-    cli_eva, check_input_path, check_output_model_path
+    cli_eva, check_input_path, check_output_model_path, safe_string
 from auto_optimizer.common.click_utils import default_off_knowledges
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 
@@ -273,9 +273,9 @@ class ConcatenateCommand(BaseCommand):
                             help='Pairs of output/inputs representing outputs \
                             of the first graph and inputs of the second graph to be connected')
         parser.add_argument('-pref', '--prefix', dest='graph_prefix', 
-                            required=False, type=str, default='pre_',
+                            required=False, type=safe_string, default='pre_',
                             help='Prefix added to all names in a graph')
-        parser.add_argument('-cgp', '--combined-graph-path', default='', type=str,
+        parser.add_argument('-cgp', '--combined-graph-path', default='', type=safe_string,
                             help='Output combined onnx graph path')
 
     def handle(self, args):
@@ -283,6 +283,13 @@ class ConcatenateCommand(BaseCommand):
             raise TypeError(f"Invalid graph1: {args.graph1}")
         if not check_input_path(args.graph2):
             raise TypeError(f"Invalid graph2: {args.graph2}")
+
+        if not args.graph1.endswith(".onnx"):
+            raise TypeError(f"Invalid graph1 format: {args.graph1}. Expected .onnx file")
+        if not args.graph2.endswith(".onnx"):
+            raise TypeError(f"Invalid graph2 format: {args.graph2}. Expected .onnx file")
+        if args.combined_graph_path and (not args.combined_graph_path.endswith(".onnx")):
+            raise TypeError(f"Invalid output format: {args.combined_graph_path}. Expected .onnx file")
 
         onnx_graph1 = OnnxGraph.parse(args.graph1)
         onnx_graph2 = OnnxGraph.parse(args.graph2)

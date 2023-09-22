@@ -18,6 +18,7 @@ from functools import partial
 from multiprocessing import Pool
 from typing import List, Optional, Union
 
+import re
 import click
 
 from auto_optimizer import KnowledgeFactory
@@ -29,6 +30,16 @@ from auto_optimizer.tools.log import logger
 
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+STR_UNSAFE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: ·/.~-]")
+
+
+def safe_string(value):
+    if not value:
+        return value
+    if re.search(STR_UNSAFE_LIST_REGEX, value):
+        raise ValueError("String parameter contains invalid characters.")
+    return value
 
 
 def check_input_path(input_path):
