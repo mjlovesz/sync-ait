@@ -23,7 +23,7 @@ from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestCo
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.tools.log import logger
 from auto_optimizer.common.click_utils import optimize_onnx, list_knowledges, \
-    cli_eva, check_input_path, check_output_model_path, safe_string, check_model_path_legality, check_output_path_legality
+    cli_eva, check_input_path, check_output_model_path, safe_string, check_model_path_legality
 from auto_optimizer.common.click_utils import default_off_knowledges
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 
