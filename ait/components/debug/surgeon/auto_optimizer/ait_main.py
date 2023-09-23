@@ -284,7 +284,7 @@ class ConcatenateCommand(BaseCommand):
         if not check_input_path(args.graph2):
             raise TypeError(f"Invalid graph2: {args.graph2}")
 
-        if args.combined_graph_path and (not args.combined_graph_path.endswith(args.combined_graph_path)):
+        if args.combined_graph_path and (not args.combined_graph_path.endswith(".onnx")):
             raise TypeError(f"Invalid output format: {args.combined_graph_path}. Expected .onnx file")
 
         onnx_graph1 = OnnxGraph.parse(args.graph1)
