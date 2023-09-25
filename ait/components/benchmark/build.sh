@@ -80,16 +80,14 @@ safe_cp()
 {
     path=$1
     target_dir=$2
-    rm_flag=$3 # remove origin file or not
     file_is_legal $target_dir || { echo "cp target $path is illegal";return $ret_failed; }
+    file_is_legal $path || { echo "cp origin path $path is illegal";return $ret_failed; }
     if [[ -d $path ]];then
-        file_is_legal $path || { echo "cp origin path $path is illegal";return $ret_failed; }
-        if [[ $rm_flag == "true" ]];then
-            cp $path -rf $target_dir
-
-        else
-            cp $path $target_dir
-        fi
+        cp $path -rf $target_dir
+        chmod -R 750 $target_dir
+        return $ret_ok
+    elif [[ -f $path ]];then
+        cp $path $target_dir
         chmod -R 750 $target_dir
         return $ret_ok
     fi
@@ -101,18 +99,19 @@ safe_pattern_cp()
 {
     pattern=$1
     target_dir=$2
-    rm_flag=$3 # remove origin file or not
     file_is_legal $target_dir || { echo "cp target $path is illegal";return $ret_failed; }
     for file in $pattern; do
         check_ok=$ret_ok
         file_is_legal $file || { check_ok=$ret_failed; }
         if [[ $check_ok == $ret_ok ]];then
-            if [[ $rm_flag == "true" ]];then
+            if [[ -d $file ]];then
                 cp $file -rf $target_dir
-            else
+                chmod -R 750 $target_dir
+            elif [[ -f $file ]];then
                 cp $file $target_dir
+                chmod -R 750 $target_dir
             fi
-            chmod -R 750 $target_dir
+            return $ret_failed
         fi
         return $ret_ok
     done
@@ -140,13 +139,13 @@ main()
     which pip3.8 && { pip3.8 wheel -v $CURDIR || echo "pip3.8 run failed"; }
     which pip3.9 && { pip3.9 wheel -v $CURDIR || echo "pip3.9 run failed"; }
 
-    safe_pattern_cp $CURDIR/aclruntime*.whl $OUTPUT_PATH "true" || { echo "$CURDIR/aclruntime*.whl cp failed";return $ret_failed; }
-    safe_pattern_cp $CURDIR/ais_bench*.whl $OUTPUT_PATH "true" || { echo "$CURDIR/ais_bench*.whl cp failed";return $ret_failed; }
+    safe_pattern_cp $CURDIR/aclruntime*.whl $OUTPUT_PATH || { echo "$CURDIR/aclruntime*.whl cp failed";return $ret_failed; }
+    safe_pattern_cp $CURDIR/ais_bench*.whl $OUTPUT_PATH || { echo "$CURDIR/ais_bench*.whl cp failed";return $ret_failed; }
 
-    safe_cp $CURDIR/ais_bench $OUTPUT_PATH "true" || { echo "$CURDIR/ais_bench cp failed";return $ret_failed; }
-    safe_cp $CURDIR/requirements.txt $OUTPUT_PATH "false" || { echo "$CURDIR/requirements.txt cp failed";return $ret_failed; }
-    safe_cp $CURDIR/README.md $OUTPUT_PATH "false" || { echo "$CURDIR/README.md cp failed";return $ret_failed; }
-    safe_cp $CURDIR/FAQ.md $OUTPUT_PATH "false" || { echo "$CURDIR/FAQ.md cp failed";return $ret_failed; }
+    safe_cp $CURDIR/ais_bench $OUTPUT_PATH || { echo "$CURDIR/ais_bench cp failed";return $ret_failed; }
+    safe_cp $CURDIR/requirements.txt $OUTPUT_PATH || { echo "$CURDIR/requirements.txt cp failed";return $ret_failed; }
+    safe_cp $CURDIR/README.md $OUTPUT_PATH || { echo "$CURDIR/README.md cp failed";return $ret_failed; }
+    safe_cp $CURDIR/FAQ.md $OUTPUT_PATH || { echo "$CURDIR/FAQ.md cp failed";return $ret_failed; }
 
     cd $CURDIR
     safe_remove $CURDIR/$PACKET_NAME.tar.gz || { return $ret_failed; }
