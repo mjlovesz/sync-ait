@@ -61,6 +61,9 @@
   ```bash
   cd ait/onnx-modifier
   pip install -r requirements.txt
+  注：onnxsim可能安装失败，需要更新
+  更新方法一：sudo apt install cmake=版本号
+  更新方法二：去官网https://cmake.org/download/下载指定安装包
   ```
 
 ## 启动方式一：编译成可执行程序启动
