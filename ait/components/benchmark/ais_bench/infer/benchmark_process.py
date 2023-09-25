@@ -431,7 +431,6 @@ def main(args, index=0, msgq=None, device_list=None):
     intensors_desc = session.get_inputs()
     if device_list is not None and len(device_list) > 1:
         if args.output is not None:
-            os.makedirs(args.output, PERMISSION_DIR)
             if args.output_dirname is None:
                 timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
                 output_prefix = os.path.join(args.output, timestr)
@@ -441,12 +440,12 @@ def main(args, index=0, msgq=None, device_list=None):
                 output_prefix = os.path.join(output_prefix, "device" + str(device_list[index]) + "_" + str(index))
             if not os.path.exists(output_prefix):
                 os.makedirs(output_prefix, PERMISSION_DIR)
+            os.chmod(args.output, PERMISSION_DIR)
             logger.info(f"output path:{output_prefix}")
         else:
             output_prefix = None
     else:
         if args.output is not None:
-            os.makedirs(args.output, PERMISSION_DIR)
             if args.output_dirname is None:
                 timestr = time.strftime("%Y_%m_%d-%H_%M_%S")
                 output_prefix = os.path.join(args.output, timestr)
@@ -454,6 +453,7 @@ def main(args, index=0, msgq=None, device_list=None):
                 output_prefix = os.path.join(args.output, args.output_dirname)
             if not os.path.exists(output_prefix):
                 os.makedirs(output_prefix, PERMISSION_DIR)
+            os.chmod(args.output, PERMISSION_DIR)
             logger.info(f"output path:{output_prefix}")
         else:
             output_prefix = None
