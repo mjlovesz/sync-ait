@@ -11,12 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+import os.path
 import sys
 import unittest
 from unittest import mock
 import argparse
 
 import pytest
+import torch
+from torch import nn
 
 from model_convert.aie.bean import ConvertConfig
 from model_convert.aie.core.convert import Convert
@@ -24,7 +27,26 @@ from model_convert.cmd_utils import add_arguments, gen_convert_cmd, execute_cmd
 from model_convert.__main__ import get_cmd_instance, ConvertCommand, ModelConvertCommand, AieCommand
 
 
+class TestModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv = nn.Conv2d(3, 16, (3, 3))
+
+    def forward(self, x):
+        return self.conv(x)
+
+
 class TestConvert(unittest.TestCase):
+
+    def setUp(self) -> None:
+        model = TestModel()
+        dummy_input = torch.randn((1, 3, 32, 32))
+        torch.onnx.export(model, dummy_input, "test.onnx")
+        assert os.path.exists("test.onnx")
+
+    def tearDown(self) -> None:
+        if os.path.exists("test.onnx"):
+            os.remove("test.onnx")
 
     def test_convert(self):
         config = ConvertConfig("test.onnx", "test.om", "Ascend310")
