@@ -440,6 +440,7 @@ def main(args, index=0, msgq=None, device_list=None):
                 output_prefix = os.path.join(output_prefix, "device" + str(device_list[index]) + "_" + str(index))
             if not os.path.exists(output_prefix):
                 os.makedirs(output_prefix, PERMISSION_DIR)
+            os.chmod(args.output, PERMISSION_DIR)
             logger.info(f"output path:{output_prefix}")
         else:
             output_prefix = None
@@ -452,6 +453,7 @@ def main(args, index=0, msgq=None, device_list=None):
                 output_prefix = os.path.join(args.output, args.output_dirname)
             if not os.path.exists(output_prefix):
                 os.makedirs(output_prefix, PERMISSION_DIR)
+            os.chmod(args.output, PERMISSION_DIR)
             logger.info(f"output path:{output_prefix}")
         else:
             output_prefix = None
