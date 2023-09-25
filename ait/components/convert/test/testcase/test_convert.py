@@ -90,7 +90,10 @@ class TestConvert(unittest.TestCase):
                          '--soc_version', 'Ascend310P3', '--output', 'test'])
         args = parser.parse_args()
         cmds = gen_convert_cmd(conf_args, args, backend="atc")
-        assert cmds == ["atc", '--model=test.onnx', '--framework=5', '--output=test', '--soc_version=Ascend310P3']
+        real_model_path = os.path.relpath("test.onnx")
+        real_output = os.path.relpath("test")
+        assert cmds == ["atc", '--model='+real_model_path, '--framework=5', '--output='+real_output,
+                        '--soc_version=Ascend310P3']
 
     def test_gen_convert_cmd_when_backend_aoe(self):
         parser = argparse.ArgumentParser()
@@ -99,10 +102,12 @@ class TestConvert(unittest.TestCase):
             sys.argv = sys.argv[:1]
         else:
             sys.argv.append("test")
-        sys.argv.extend(["--model", 'test.onnx', '--job_type', '1', '--framework', '5'])
+        sys.argv.extend(["--model", 'test.onnx', '--job_type', '1', '--framework', '5', '--output', 'test'])
         args = parser.parse_args()
         cmds = gen_convert_cmd(conf_args, args, backend="aoe")
-        assert cmds == ["aoe", '--model=test.onnx', '--framework=5', '--job_type=1']
+        real_model_path = os.path.relpath("test.onnx")
+        real_output = os.path.relpath("test")
+        assert cmds == ["aoe", '--model='+real_model_path, '--framework=5', '--job_type=1', '--output='+real_output]
 
     def test_gen_convert_cmd_when_backend_invalid_backend(self):
         parser = argparse.ArgumentParser()
@@ -111,7 +116,7 @@ class TestConvert(unittest.TestCase):
             sys.argv = sys.argv[:1]
         else:
             sys.argv.append("test")
-        sys.argv.extend(["--model", 'test.onnx', '--job_type', '1'])
+        sys.argv.extend(["--model", 'test.onnx', '--job_type', '1', ])
         args = parser.parse_args()
         with pytest.raises(ValueError):
             gen_convert_cmd(conf_args, args, backend="invalid")
