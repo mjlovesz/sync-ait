@@ -421,7 +421,7 @@ om.Graph = class {
                     let decodeKey = new TextDecoder("utf-8").decode(this._strList.keyList.list.s[keyIndex]);
                     let value = op.attr[key];
                     if (this._strList.mask.list.b[keyIndex]) {
-                        value.s = this._strList.valueList.list.s[value.list.i];
+                        value.s = this._strList.valueList.list.s[value.i];
                     }
                     op.attr[decodeKey] = value;
                     delete op.attr[key];
