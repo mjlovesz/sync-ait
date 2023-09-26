@@ -42,7 +42,6 @@ $root.om.DataType = {
 $root.om.AttrDef = class AttrDef {
 
     constructor() {
-        this.s=null
     }
 
     get value() {
