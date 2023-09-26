@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 
 def solution_log(content):
-    logger.log(SOLUTION_LEVEL, f"visit {content} for detailed solution")
+    logger.log(SOLUTION_LEVEL, "\033[1;32m" + f"visit {content} for detailed solution" + "\033[0m") # green content
 
 
 def is_legal_path_length(path):
@@ -162,30 +162,30 @@ class FileStat:
             return False
         if perm == 'read' and not sys.platform.startswith("win"): # windows system ignore permission check
             if self.permission & READ_FILE_NOT_PERMITTED_STAT > 0:
-                logger.error(f"The file {self.file} is group writable, or is others writable, as import file(or directory), \
-                    permission should not be over 0o750(rwxr-x---)")
+                logger.error(f"The file {self.file} is group writable, or is others writable, as import file(or directory), "
+                    "permission should not be over 0o750(rwxr-x---)")
                 long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
                     'solution/path_permission_error_log_solution')
                 solution_log(long_url)
                 return False
             if not os.access(self.realpath, os.R_OK) or self.permission & stat.S_IRUSR == 0:
-                logger.error(f"Current user doesn't have read permission to the file {self.file}, as import file(or directory), \
-                    permission should be at least 0o400(r--------) ")
+                logger.error(f"Current user doesn't have read permission to the file {self.file}, as import file(or directory), "
+                    "permission should be at least 0o400(r--------) ")
                 long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
                     'solution/path_permission_error_log_solution')
                 solution_log(long_url)
                 return False
         elif perm == 'write' and self.is_exists and not sys.platform.startswith("win"): # windows system ignore permission check
             if self.permission & WRITE_FILE_NOT_PERMITTED_STAT > 0:
-                logger.error(f"The file {self.file} is group writable, or is others writable, as export file(or directory), \
-                    permission should not be over 0o750(rwxr-x---)")
+                logger.error(f"The file {self.file} is group writable, or is others writable, as export file(or directory), "
+                    "permission should not be over 0o750(rwxr-x---)")
                 long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
                     'solution/path_permission_error_log_solution')
                 solution_log(long_url)
                 return False
             if not os.access(self.realpath, os.W_OK):
-                logger.error(f"Current user doesn't have read permission to the file {self.file}, as export file(or directory), \
-                    permission should be at least 0o200(-w-------) ")
+                logger.error(f"Current user doesn't have read permission to the file {self.file}, as export file(or directory), "
+                    "permission should be at least 0o200(-w-------) ")
                 long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
                     'solution/path_permission_error_log_solution')
                 solution_log(long_url)
