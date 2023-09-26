@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 
 def solution_log(content):
-    logger.log(SOLUTION_LEVEL, f"visit \033[1;32m {content} for detailed solution \033[0m") # green content
+    logger.log(SOLUTION_LEVEL, f"visit \033[1;32m {content} \033[0m for detailed solution") # green content
 
 
 def is_legal_path_length(path):
