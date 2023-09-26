@@ -42,15 +42,12 @@ $root.om.DataType = {
 $root.om.AttrDef = class AttrDef {
 
     constructor() {
+        this.s=null
     }
 
     get value() {
         $root.om.AttrDef.valueSet = $root.om.AttrDef.valueSet || new Set([ "s", "i", "f", "b", "bt", "list", "func", "td", "t", "g", "list_list_int", "dt", "list_list_float"]);
         return Object.keys(this).find((key) => $root.om.AttrDef.valueSet.has(key) && this[key] != null);
-    }
-
-    SetSData(value) {
-        this.s = value
     }
 
     static decode(reader, length) {
