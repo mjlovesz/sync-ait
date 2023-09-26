@@ -102,7 +102,7 @@ class FileStat:
 
     @property
     def is_softlink(self):
-        return stat.S_ISLNK(self.file_stat.st_mode) if self.file_stat else False
+        return os.path.islink(self.file) if self.file_stat else False
 
     @property
     def is_file(self):
