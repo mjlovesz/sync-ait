@@ -24,32 +24,45 @@ MAX_SIZE_LIMITE_CONFIG_FILE = 10 * 1024 * 1024  # 10M 普通配置文件，可�
 MAX_SIZE_LIMITE_NORMAL_FILE = 4 * 1024 * 1024 * 1024  # 4G 普通模型文件，可以根据实际要求变更
 MAX_SIZE_LIMITE_MODEL_FILE = 100 * 1024 * 1024 * 1024  # 100G 超大模型文件，需要确定能处理大文件，可以根据实际要求变更
 
-PATH_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-]")
+PATH_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-:\\]")
 
 PERMISSION_NORMAL = 0o640  # 普通文件
 PERMISSION_KEY = 0o600  # 密钥文件
 READ_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH
 WRITE_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH | stat.S_IROTH | stat.S_IXOTH
 
+SOLUTION_LEVEL = 35
+logging.addLevelName(SOLUTION_LEVEL, "SOLUTION")
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
+def solution_log(content):
+    green_content = '\033[32m' + content + '\033[0m'
+    logger.log(SOLUTION_LEVEL, green_content)
+
+
 def is_legal_path_length(path):
     if len(path) > 4096:
-        logger.error(f"file total path length out of range (4096)")
+        logger.error(f"file total path{path} length out of range (4096), please check the file(or directory) path")
+        solution_log("visit https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution\
+            /path_length_overflow_error_log_solution for detailed solution")
         return False
     dirnames = path.split("/")
     for dirname in dirnames:
         if len(dirname) > 255:
-            logger.error(f"file name length out of range (255)")
+            logger.error(f"file name{dirname} length out of range (255), please check the file(or directory) path")
+            solution_log("visit https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution\
+            /path_length_overflow_error_log_solution for detailed solution")
             return False
     return True
 
 
 def is_match_path_white_list(path):
     if PATH_WHITE_LIST_REGEX.search(path):
-        logger.error(f"path:{path} contains illegal char")
+        logger.error(f"path:{path} contains illegal char, legal chars include A-Z a-z 0-9 _ - / . : \\ ")
+        solution_log("visit https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution\
+            /path_contain_illegal_char_error_log_solution for detailed solution")
         return False
     return True
 
@@ -131,27 +144,43 @@ class FileStat:
 
     def is_basically_legal(self, perm='none'):
         if not self.is_exists and perm != 'write':
-            logger.error(f"path: {self.file} not exist")
+            logger.error(f"path: {self.file} not exist, please check if file or dir is exist")
             return False
         if self.is_softlink:
-            logger.error(f"path :{self.file} is a symbolic link, considering security, not supported")
+            logger.error(f"path :{self.file} is a soft link, not supported, please import file(or directory) directly")
+            solution_log("visit https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution\
+                /soft_link_error_log_solution for detailed solution")
             return False
         if not self.is_user_or_group_owner and self.is_exists:
-            logger.error(f"current user isn't path:{self.file}'s owner or ownergroup")
+            logger.error(f"current user isn't path:{self.file}'s owner or ownergroup, make sure current user belong to file(or directory)'s owner or ownergroup")
+            solution_log("visit https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution\
+                /owner_or_ownergroup_error_log_solution for detailed solution")
             return False
-        if perm == 'read':
+        if perm == 'read' and not sys.platform.startswith("win"): # windows system ignore permission check
             if self.permission & READ_FILE_NOT_PERMITTED_STAT > 0:
-                logger.error(f"The file {self.file} is group writable, or is others writable.")
+                logger.error(f"The file {self.file} is group writable, or is others writable, as import file(or directory), \
+                    permission should not be over 0o750(rwxr-x---)")
+                solution_log("visit https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution\
+                    /path_permission_error_log_solution for detailed solution")
                 return False
             if not os.access(self.realpath, os.R_OK) or self.permission & stat.S_IRUSR == 0:
-                logger.error(f"Current user doesn't have read permission to the file {self.file}.")
+                logger.error(f"Current user doesn't have read permission to the file {self.file}, as import file(or directory), \
+                    permission should be at least 0o400(r--------) ")
+                solution_log("visit https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution\
+                    /path_permission_error_log_solution for detailed solution")
                 return False
-        elif perm == 'write' and self.is_exists:
+        elif perm == 'write' and self.is_exists and not sys.platform.startswith("win"): # windows system ignore permission check
             if self.permission & WRITE_FILE_NOT_PERMITTED_STAT > 0:
-                logger.error(f"The file {self.file} is group writable, or is others writable.")
+                logger.error(f"The file {self.file} is group writable, or is others writable, as export file(or directory), \
+                    permission should not be over 0o750(rwxr-x---)")
+                solution_log("visit https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution\
+                    /path_permission_error_log_solution for detailed solution")
                 return False
             if not os.access(self.realpath, os.W_OK):
-                logger.error(f"Current user doesn't have read permission to the file {self.file}.")
+                logger.error(f"Current user doesn't have read permission to the file {self.file}, as export file(or directory), \
+                    permission should be at least 0o200(-w-------) ")
+                solution_log("visit https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution\
+                    /path_permission_error_log_solution for detailed solution")
                 return False
         return True
 
