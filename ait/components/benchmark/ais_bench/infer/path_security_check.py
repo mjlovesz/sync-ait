@@ -32,7 +32,7 @@ READ_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH
 WRITE_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH | stat.S_IROTH | stat.S_IXOTH
 
 SOLUTION_LEVEL = 35
-logging.addLevelName(SOLUTION_LEVEL, "\033[1;32m]" + "SOLUTION" + "\033[0m]") # green [SOLUTION]
+logging.addLevelName(SOLUTION_LEVEL, "\033[1;32m" + "SOLUTION" + "\033[0m") # green [SOLUTION]
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -44,20 +44,16 @@ def solution_log(content):
 def is_legal_path_length(path):
     if len(path) > 4096:
         logger.error(f"file total path{path} length out of range (4096), please check the file(or directory) path")
-        long_url = '''
-            https://gitee.com/ascend/ait/wikis/ait_security_error_log_
-            solution/path_length_overflow_error_log_solution
-        '''
+        long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
+            'solution/path_length_overflow_error_log_solution')
         solution_log(long_url)
         return False
     dirnames = path.split("/")
     for dirname in dirnames:
         if len(dirname) > 255:
             logger.error(f"file name{dirname} length out of range (255), please check the file(or directory) path")
-            long_url = '''
-                https://gitee.com/ascend/ait/wikis/ait_security_error_log_
-                solution/path_length_overflow_error_log_solution
-            '''
+            long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
+                'solution/path_length_overflow_error_log_solution')
             solution_log(long_url)
             return False
     return True
@@ -66,10 +62,8 @@ def is_legal_path_length(path):
 def is_match_path_white_list(path):
     if PATH_WHITE_LIST_REGEX.search(path):
         logger.error(f"path:{path} contains illegal char, legal chars include A-Z a-z 0-9 _ - / . : \\ ")
-        long_url = '''
-            https://gitee.com/ascend/ait/wikis/ait_security_error_log_
-            solution/path_contain_illegal_char_error_log_solution
-        '''
+        long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
+            'solution/path_contain_illegal_char_error_log_solution')
         solution_log(long_url)
         return False
     return True
@@ -156,56 +150,44 @@ class FileStat:
             return False
         if self.is_softlink:
             logger.error(f"path :{self.file} is a soft link, not supported, please import file(or directory) directly")
-            long_url = '''
-                https://gitee.com/ascend/ait/wikis/ait_security_error_log_
-                solution/soft_link_error_log_solution
-            '''
+            long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
+                'solution/soft_link_error_log_solution')
             solution_log(long_url)
             return False
         if not self.is_user_or_group_owner and self.is_exists:
             logger.error(f"current user isn't path:{self.file}'s owner or ownergroup, make sure current user belong to file(or directory)'s owner or ownergroup")
-            long_url = '''
-                https://gitee.com/ascend/ait/wikis/ait_security_error_log_
-                solution/owner_or_ownergroup_error_log_solution
-            '''
+            long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
+                'solution/owner_or_ownergroup_error_log_solution')
             solution_log(long_url)
             return False
         if perm == 'read' and not sys.platform.startswith("win"): # windows system ignore permission check
             if self.permission & READ_FILE_NOT_PERMITTED_STAT > 0:
                 logger.error(f"The file {self.file} is group writable, or is others writable, as import file(or directory), \
                     permission should not be over 0o750(rwxr-x---)")
-                long_url = '''
-                    https://gitee.com/ascend/ait/wikis/ait_security_error_log_
-                    solution/path_permission_error_log_solution
-                '''
+                long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
+                    'solution/path_permission_error_log_solution')
                 solution_log(long_url)
                 return False
             if not os.access(self.realpath, os.R_OK) or self.permission & stat.S_IRUSR == 0:
                 logger.error(f"Current user doesn't have read permission to the file {self.file}, as import file(or directory), \
                     permission should be at least 0o400(r--------) ")
-                long_url = '''
-                    https://gitee.com/ascend/ait/wikis/ait_security_error_log_
-                    solution/path_permission_error_log_solution
-                '''
+                long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
+                    'solution/path_permission_error_log_solution')
                 solution_log(long_url)
                 return False
         elif perm == 'write' and self.is_exists and not sys.platform.startswith("win"): # windows system ignore permission check
             if self.permission & WRITE_FILE_NOT_PERMITTED_STAT > 0:
                 logger.error(f"The file {self.file} is group writable, or is others writable, as export file(or directory), \
                     permission should not be over 0o750(rwxr-x---)")
-                long_url = '''
-                    https://gitee.com/ascend/ait/wikis/ait_security_error_log_
-                    solution/path_permission_error_log_solution
-                '''
+                long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
+                    'solution/path_permission_error_log_solution')
                 solution_log(long_url)
                 return False
             if not os.access(self.realpath, os.W_OK):
                 logger.error(f"Current user doesn't have read permission to the file {self.file}, as export file(or directory), \
                     permission should be at least 0o200(-w-------) ")
-                long_url = '''
-                    https://gitee.com/ascend/ait/wikis/ait_security_error_log_
-                    solution/path_permission_error_log_solution
-                '''
+                long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
+                    'solution/path_permission_error_log_solution')
                 solution_log(long_url)
                 return False
         return True
