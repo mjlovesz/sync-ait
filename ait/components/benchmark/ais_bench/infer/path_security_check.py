@@ -32,14 +32,15 @@ READ_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH
 WRITE_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH | stat.S_IROTH | stat.S_IXOTH
 
 SOLUTION_LEVEL = 35
+SOLUTION_LEVEL_COLOR = "\033[1;32m]"
 logging.addLevelName(SOLUTION_LEVEL, "SOLUTION")
+logging.SOLUTION_LEVEL_COLOR = SOLUTION_LEVEL_COLOR
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
 def solution_log(content):
-    green_content = '\033[32m' + content + '\033[0m'
-    logger.log(SOLUTION_LEVEL, green_content)
+    logger.log(SOLUTION_LEVEL, content)
 
 
 def is_legal_path_length(path):
