@@ -261,7 +261,7 @@ om.Model = class {
         this._flops = 0;
         this._npuFlops = 0;
         this._graphs = [];
-        this.strList = null
+        this._strList = null
 
         for (let i = 0; i < nets.length; ++i) {
             let index = nets.length == 1 ? undefined : i+1;
@@ -269,7 +269,7 @@ om.Model = class {
             let mainGraph = net.graph[0];
             let weight = this._weights[i];
 
-            if(net.attr["attr_name_enum"]) {
+            if (net.attr["attr_name_enum"]) {
                 this._strList = {
                     keyList: net.attr["attr_name_enum"],
                     valueList: net.attr["attr_value_enum"],
