@@ -49,6 +49,10 @@ $root.om.AttrDef = class AttrDef {
         return Object.keys(this).find((key) => $root.om.AttrDef.valueSet.has(key) && this[key] != null);
     }
 
+    SetSData(value) {
+        this.s = value
+    }
+
     static decode(reader, length) {
         const message = new $root.om.AttrDef();
         const end = length !== undefined ? reader.position + length : reader.length;
