@@ -167,9 +167,9 @@ class FileStat:
 
     def is_basically_legal(self, perm='none'):
         if sys.platform.startswith("win"):
-            self.check_windows_permission(perm)
+            return self.check_windows_permission(perm)
         else:
-            self.check_linux_permission(perm)
+            return self.check_linux_permission(perm)
 
     def check_linux_permission(self, perm='none'):
         if not self.is_exists and perm != 'write':
