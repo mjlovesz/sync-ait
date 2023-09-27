@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# this file is as same as components/utils/file_opem_check.py, because benchamrk might be install without ait
 
 import os
 import sys
