@@ -55,4 +55,6 @@ int main(int argc, char** argv)
     std::cout << "AIE Model Convert Succeed" << std::endl;
 
     delete builder;
+
+    Finalize();
 }
