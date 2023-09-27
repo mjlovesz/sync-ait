@@ -57,17 +57,13 @@ def solution_log_win(content):
     logger.log(SOLUTION_LEVEL_WIN, f"visit {content} for detailed solution")
 
 
-def is_windows():
-    return sys.platform.startswith("win")
-
-
 def is_legal_path_length(path):
-    if len(path) > 4096 and not is_windows(): # linux total path length limit
+    if len(path) > 4096 and not sys.platform.startswith("win"): # linux total path length limit
         logger.error(f"file total path{path} length out of range (4096), please check the file(or directory) path")
         solution_log(SOLUTION_BASE_URL + PATH_LENGTH_SUB_URL)
         return False
 
-    if len(path) > 260 and is_windows(): # windows total path length limit
+    if len(path) > 260 and sys.platform.startswith("win"): # windows total path length limit
         logger.error(f"file total path{path} length out of range (260), please check the file(or directory) path")
         solution_log_win(SOLUTION_BASE_URL + PATH_LENGTH_SUB_URL)
         return False
@@ -82,11 +78,11 @@ def is_legal_path_length(path):
 
 
 def is_match_path_white_list(path):
-    if not is_windows()  and PATH_WHITE_LIST_REGEX.search(path):
+    if not sys.platform.startswith("win")  and PATH_WHITE_LIST_REGEX.search(path):
         logger.error(f"path:{path} contains illegal char, legal chars include A-Z a-z 0-9 _ - / .")
         solution_log(SOLUTION_BASE_URL + ILLEGAL_CHAR_SUB_URL)
         return False
-    if is_windows() and PATH_WHITE_LIST_REGEX_WIN.search(path):
+    if sys.platform.startswith("win") and PATH_WHITE_LIST_REGEX_WIN.search(path):
         logger.error(f"path:{path} contains illegal char, legal chars include A-Z a-z 0-9 _ - / . : \\")
         solution_log_win(SOLUTION_BASE_URL + ILLEGAL_CHAR_SUB_URL)
         return False
@@ -169,7 +165,7 @@ class FileStat:
         return self.is_owner and self.is_group_owner
 
     def is_basically_legal(self, perm='none'):
-        if is_windows():
+        if sys.platform.startswith("win"):
             self.check_windows_permission(perm)
         else:
             self.check_linux_permission(perm)
