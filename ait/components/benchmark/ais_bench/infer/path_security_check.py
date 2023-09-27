@@ -206,7 +206,7 @@ class FileStat:
                 solution_log(long_url)
                 return False
             if not os.access(self.realpath, os.W_OK):
-                logger.error(f"Current user doesn't have read permission to the file {self.file}, as export file(or directory), "
+                logger.error(f"Current user doesn't have write permission to the file {self.file}, as export file(or directory), "
                     "permission should be at least 0o200(-w-------) ")
                 long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
                     'solution/path_permission_error_log_solution')
