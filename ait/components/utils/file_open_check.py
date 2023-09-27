@@ -81,7 +81,7 @@ def is_match_path_white_list(path):
             'solution/path_contain_illegal_char_error_log_solution')
         solution_log(long_url)
         return False
-    if PATH_WHITE_LIST_REGEX_WIN.search(path) and  sys.platform.startswith("win"):
+    if PATH_WHITE_LIST_REGEX_WIN.search(path) and sys.platform.startswith("win"):
         logger.error(f"path:{path} contains illegal char, legal chars include A-Z a-z 0-9 _ - / . : \\")
         long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
             'solution/path_contain_illegal_char_error_log_solution')
