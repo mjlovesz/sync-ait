@@ -25,7 +25,8 @@ MAX_SIZE_LIMITE_CONFIG_FILE = 10 * 1024 * 1024  # 10M 普通配置文件，可�
 MAX_SIZE_LIMITE_NORMAL_FILE = 4 * 1024 * 1024 * 1024  # 4G 普通模型文件，可以根据实际要求变更
 MAX_SIZE_LIMITE_MODEL_FILE = 100 * 1024 * 1024 * 1024  # 100G 超大模型文件，需要确定能处理大文件，可以根据实际要求变更
 
-PATH_WHITE_LIST_REGEX = re.compile(r"[^_:\\A-Za-z0-9/.-]")
+PATH_WHITE_LIST_REGEX_WIN = re.compile(r"[^_:\\A-Za-z0-9/.-]")
+PATH_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-]")
 
 PERMISSION_NORMAL = 0o640  # 普通文件
 PERMISSION_KEY = 0o600  # 密钥文件
@@ -33,13 +34,19 @@ READ_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH
 WRITE_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH | stat.S_IROTH | stat.S_IXOTH
 
 SOLUTION_LEVEL = 35
+SOLUTION_LEVEL_WIN = 45
 logging.addLevelName(SOLUTION_LEVEL, "\033[1;32m" + "SOLUTION" + "\033[0m") # green [SOLUTION]
+logging.addLevelName(SOLUTION_LEVEL_WIN, "SOLUTION_WIN")
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
 def solution_log(content):
     logger.log(SOLUTION_LEVEL, f"visit \033[1;32m {content} \033[0m for detailed solution") # green content
+
+
+def solution_log_win(content):
+    logger.log(SOLUTION_LEVEL_WIN, f"visit {content} for detailed solution") # green content
 
 
 def is_legal_path_length(path):
@@ -54,7 +61,7 @@ def is_legal_path_length(path):
         logger.error(f"file total path{path} length out of range (260), please check the file(or directory) path")
         long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
             'solution/path_length_overflow_error_log_solution')
-        solution_log(long_url)
+        solution_log_win(long_url)
         return False
 
     dirnames = path.split("/")
@@ -69,11 +76,17 @@ def is_legal_path_length(path):
 
 
 def is_match_path_white_list(path):
-    if PATH_WHITE_LIST_REGEX.search(path):
-        logger.error(f"path:{path} contains illegal char, legal chars include A-Z a-z 0-9 _ - / . : \\ ")
+    if PATH_WHITE_LIST_REGEX.search(path) and not sys.platform.startswith("win"):
+        logger.error(f"path:{path} contains illegal char, legal chars include A-Z a-z 0-9 _ - / .")
         long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
             'solution/path_contain_illegal_char_error_log_solution')
         solution_log(long_url)
+        return False
+    if PATH_WHITE_LIST_REGEX_WIN.search(path) and  sys.platform.startswith("win"):
+        logger.error(f"path:{path} contains illegal char, legal chars include A-Z a-z 0-9 _ - / . : \\")
+        long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
+            'solution/path_contain_illegal_char_error_log_solution')
+        solution_log_win(long_url)
         return False
     return True
 
