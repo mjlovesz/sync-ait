@@ -42,15 +42,23 @@ def solution_log(content):
 
 
 def is_legal_path_length(path):
-    if len(path) > 4096:
+    if len(path) > 4096 and not sys.platform.startswith("win"): # linux total path length limit
         logger.error(f"file total path{path} length out of range (4096), please check the file(or directory) path")
         long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
             'solution/path_length_overflow_error_log_solution')
         solution_log(long_url)
         return False
+
+    if len(path) > 260 and sys.platform.startswith("win"): # windows total path length limit
+        logger.error(f"file total path{path} length out of range (260), please check the file(or directory) path")
+        long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
+            'solution/path_length_overflow_error_log_solution')
+        solution_log(long_url)
+        return False
+
     dirnames = path.split("/")
     for dirname in dirnames:
-        if len(dirname) > 255:
+        if len(dirname) > 255: # linux single file path length limit
             logger.error(f"file name{dirname} length out of range (255), please check the file(or directory) path")
             long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
                 'solution/path_length_overflow_error_log_solution')
