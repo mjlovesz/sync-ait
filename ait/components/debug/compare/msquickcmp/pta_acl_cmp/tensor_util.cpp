@@ -124,13 +124,17 @@ void saveTensorToFile(const AsdOps::Tensor &tensor, const std::string &filePath,
     }
 }
 
-void saveMd5ToFile(const AsdOps::Tensor &tensor, const std::string &filePath) {
+void saveMd5ToFile(const AsdOps::Tensor &tensor, const std::string &filePath, const std::string tensorDimsStr) {
     if (!tensor.data) {
         ASD_LOG(INFO) << "save asdtensor " << filePath << " data is empty";
         return;
     }
 
     AsdOps::BinFile binFile;
+    binFile.AddAttr("format", std::to_string(tensor.desc.format));
+    binFile.AddAttr("dtype", std::to_string(tensor.desc.dtype));
+    binFile.AddAttr("dims", tensorDimsStr);
+
     std::vector<char> hostData(tensor.dataSize);
     int st =
         AsdRtMemCopy(hostData.data(), tensor.dataSize, tensor.data, tensor.dataSize, ASDRT_MEMCOPY_DEVICE_TO_HOST);
@@ -170,8 +174,11 @@ bool isInTensorBinPath(const std::string &filePath) {
 void AclTransformer::TensorUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath) {
     ASD_LOG(INFO) << "save asdtensor start, tensor:" << AsdOpsTensorToString(tensor) << ", filePath:" << filePath;
 
-    const char *is_save_md5_env = std::getenv("AIT_IS_SAVE_MD5");
-    bool is_save_md5 = is_save_md5_env ? true : false;  // manual or auto map between ACL and PTA
+    bool is_save_md5 = false;
+    const char *envStr = std::getenv("AIT_IS_SAVE_MD5");
+    if (envStr != nullptr && std::string(envStr) == "1") {
+        is_save_md5 = true;
+    }
     ASD_LOG(INFO) << "save asdtensor, is_save_md5:" << is_save_md5;
 
     if (!is_save_md5) {
@@ -182,7 +189,7 @@ void AclTransformer::TensorUtil::SaveTensor(const AsdOps::Tensor &tensor, const 
         saveTensorToFile(tensor, filePath, AsdOpsDimsToString(tensor.desc.dims));
     } else if (isInTensorBinPath(filePath)) {
         ASD_LOG(INFO) << "save asdtensor, saveMd5ToFile";
-        saveMd5ToFile(tensor, filePath);
+        saveMd5ToFile(tensor, filePath, AsdOpsDimsToString(tensor.desc.dims));
     } else {
         ASD_LOG(INFO) << "save asdtensor, saveTensorToFile";
         saveTensorToFile(tensor, filePath, AsdOpsDimsToString(tensor.desc.dims));
