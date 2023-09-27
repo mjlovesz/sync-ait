@@ -45,7 +45,7 @@ def solution_log(content):
 
 
 def solution_log_win(content):
-    logger.log(SOLUTION_LEVEL_WIN, f"visit {content} for detailed solution") # green content
+    logger.log(SOLUTION_LEVEL_WIN, f"visit {content} for detailed solution")
 
 
 def is_legal_path_length(path):
