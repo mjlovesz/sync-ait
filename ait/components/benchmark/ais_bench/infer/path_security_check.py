@@ -78,15 +78,16 @@ def is_legal_path_length(path):
 
 
 def is_match_path_white_list(path):
-    if not sys.platform.startswith("win")  and PATH_WHITE_LIST_REGEX.search(path):
+    if PATH_WHITE_LIST_REGEX.search(path) and not sys.platform.startswith("win"):
         logger.error(f"path:{path} contains illegal char, legal chars include A-Z a-z 0-9 _ - / .")
         solution_log(SOLUTION_BASE_URL + ILLEGAL_CHAR_SUB_URL)
         return False
-    if sys.platform.startswith("win") and PATH_WHITE_LIST_REGEX_WIN.search(path):
+    if PATH_WHITE_LIST_REGEX_WIN.search(path) and sys.platform.startswith("win"):
         logger.error(f"path:{path} contains illegal char, legal chars include A-Z a-z 0-9 _ - / . : \\")
         solution_log_win(SOLUTION_BASE_URL + ILLEGAL_CHAR_SUB_URL)
         return False
     return True
+
 
 
 def is_legal_args_path_string(path):
