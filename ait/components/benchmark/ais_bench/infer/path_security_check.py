@@ -24,7 +24,7 @@ MAX_SIZE_LIMITE_CONFIG_FILE = 10 * 1024 * 1024  # 10M 普通配置文件，可�
 MAX_SIZE_LIMITE_NORMAL_FILE = 4 * 1024 * 1024 * 1024  # 4G 普通模型文件，可以根据实际要求变更
 MAX_SIZE_LIMITE_MODEL_FILE = 100 * 1024 * 1024 * 1024  # 100G 超大模型文件，需要确定能处理大文件，可以根据实际要求变更
 
-PATH_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-:\\]")
+PATH_WHITE_LIST_REGEX = re.compile(r"[^_:\\A-Za-z0-9/.-]")
 
 PERMISSION_NORMAL = 0o640  # 普通文件
 PERMISSION_KEY = 0o600  # 密钥文件
