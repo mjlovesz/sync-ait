@@ -162,7 +162,7 @@ class FileStat:
                 'solution/soft_link_error_log_solution')
             solution_log(long_url)
             return False
-        if not self.is_user_or_group_owner and self.is_exists:
+        if not self.is_user_or_group_owner and self.is_exists and not sys.platform.startswith("win"): # windows system ignore owner check
             logger.error(f"current user isn't path:{self.file}'s owner or ownergroup, make sure current user belong to file(or directory)'s owner or ownergroup")
             long_url = ('https://gitee.com/ascend/ait/wikis/ait_security_error_log_'
                 'solution/owner_or_ownergroup_error_log_solution')
