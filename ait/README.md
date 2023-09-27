@@ -23,7 +23,7 @@ AIT(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一体�
 
 
 ## 工具安装
-[一体化安装指导](docs/install/README.md) 
+[一体化安装指导](docs/install/README.md)
 
 
 ## 工具使用
@@ -73,6 +73,7 @@ ait debug compare -h
 ### 常见问题FAQ
 
 * [AIT使用以及安装常见问题](https://gitee.com/ascend/ait/wikis/Home)
+* [AIT安全拦截报错解决](https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution)
 
 ## 许可证
 
