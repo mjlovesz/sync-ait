@@ -11,7 +11,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 # this file is as same as components/utils/file_opem_check.py, because benchamrk might be install without ait
 
 import os
@@ -26,6 +25,7 @@ MAX_SIZE_LIMITE_CONFIG_FILE = 10 * 1024 * 1024  # 10M 普通配置文件，可�
 MAX_SIZE_LIMITE_NORMAL_FILE = 4 * 1024 * 1024 * 1024  # 4G 普通模型文件，可以根据实际要求变更
 MAX_SIZE_LIMITE_MODEL_FILE = 100 * 1024 * 1024 * 1024  # 100G 超大模型文件，需要确定能处理大文件，可以根据实际要求变更
 
+PATH_WHITE_LIST_REGEX_WIN = re.compile(r"[^_:\\A-Za-z0-9/.-]")
 PATH_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-]")
 
 PERMISSION_NORMAL = 0o640  # 普通文件
@@ -33,27 +33,61 @@ PERMISSION_KEY = 0o600  # 密钥文件
 READ_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH
 WRITE_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH | stat.S_IROTH | stat.S_IXOTH
 
+SOLUTION_LEVEL = 35
+SOLUTION_LEVEL_WIN = 45
+logging.addLevelName(SOLUTION_LEVEL, "\033[1;32m" + "SOLUTION" + "\033[0m") # green [SOLUTION]
+logging.addLevelName(SOLUTION_LEVEL_WIN, "SOLUTION_WIN")
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
+SOLUTION_BASE_URL = 'https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution'
+SOFT_LINK_SUB_URL ='/soft_link_error_log_solution'
+PATH_LENGTH_SUB_URL = '/path_length_overflow_error_log_solution'
+OWNER_SUB_URL = '/owner_or_ownergroup_error_log_solution'
+PERMISSION_SUB_URL = '/path_permission_error_log_solution'
+ILLEGAL_CHAR_SUB_URL = '/path_contain_illegal_char_error_log_solution'
+
+
+def solution_log(content):
+    logger.log(SOLUTION_LEVEL, f"visit \033[1;32m {content} \033[0m for detailed solution") # green content
+
+
+def solution_log_win(content):
+    logger.log(SOLUTION_LEVEL_WIN, f"visit {content} for detailed solution")
+
+
 def is_legal_path_length(path):
-    if len(path) > 4096:
-        logger.error(f"file total path length out of range (4096)")
+    if len(path) > 4096 and not sys.platform.startswith("win"): # linux total path length limit
+        logger.error(f"file total path{path} length out of range (4096), please check the file(or directory) path")
+        solution_log(SOLUTION_BASE_URL + PATH_LENGTH_SUB_URL)
         return False
+
+    if len(path) > 260 and sys.platform.startswith("win"): # windows total path length limit
+        logger.error(f"file total path{path} length out of range (260), please check the file(or directory) path")
+        solution_log_win(SOLUTION_BASE_URL + PATH_LENGTH_SUB_URL)
+        return False
+
     dirnames = path.split("/")
     for dirname in dirnames:
-        if len(dirname) > 255:
-            logger.error(f"file name length out of range (255)")
+        if len(dirname) > 255: # linux single file path length limit
+            logger.error(f"file name{dirname} length out of range (255), please check the file(or directory) path")
+            solution_log(SOLUTION_BASE_URL + PATH_LENGTH_SUB_URL)
             return False
     return True
 
 
 def is_match_path_white_list(path):
-    if PATH_WHITE_LIST_REGEX.search(path):
-        logger.error(f"path:{path} contains illegal char")
+    if PATH_WHITE_LIST_REGEX.search(path) and not sys.platform.startswith("win"):
+        logger.error(f"path:{path} contains illegal char, legal chars include A-Z a-z 0-9 _ - / .")
+        solution_log(SOLUTION_BASE_URL + ILLEGAL_CHAR_SUB_URL)
+        return False
+    if PATH_WHITE_LIST_REGEX_WIN.search(path) and sys.platform.startswith("win"):
+        logger.error(f"path:{path} contains illegal char, legal chars include A-Z a-z 0-9 _ - / . : \\")
+        solution_log_win(SOLUTION_BASE_URL + ILLEGAL_CHAR_SUB_URL)
         return False
     return True
+
 
 
 def is_legal_args_path_string(path):
@@ -89,7 +123,7 @@ class FileStat:
 
     @property
     def is_softlink(self):
-        return stat.S_ISLNK(self.file_stat.st_mode) if self.file_stat else False
+        return os.path.islink(self.file) if self.file_stat else False
 
     @property
     def is_file(self):
@@ -132,29 +166,55 @@ class FileStat:
         return self.is_owner and self.is_group_owner
 
     def is_basically_legal(self, perm='none'):
+        if sys.platform.startswith("win"):
+            return self.check_windows_permission(perm)
+        else:
+            return self.check_linux_permission(perm)
+
+    def check_linux_permission(self, perm='none'):
         if not self.is_exists and perm != 'write':
-            logger.error(f"path: {self.file} not exist")
+            logger.error(f"path: {self.file} not exist, please check if file or dir is exist")
             return False
         if self.is_softlink:
-            logger.error(f"path :{self.file} is a symbolic link, considering security, not supported")
+            logger.error(f"path :{self.file} is a soft link, not supported, please import file(or directory) directly")
+            solution_log(SOLUTION_BASE_URL + SOFT_LINK_SUB_URL)
             return False
         if not self.is_user_or_group_owner and self.is_exists:
-            logger.error(f"current user isn't path:{self.file}'s owner or ownergroup")
+            logger.error(f"current user isn't path:{self.file}'s owner or ownergroup, make sure current user belong to file(or directory)'s owner or ownergroup")
+            solution_log(SOLUTION_BASE_URL + OWNER_SUB_URL)
             return False
         if perm == 'read':
             if self.permission & READ_FILE_NOT_PERMITTED_STAT > 0:
-                logger.error(f"The file {self.file} is group writable, or is others writable.")
+                logger.error(f"The file {self.file} is group writable, or is others writable, as import file(or directory), "
+                    "permission should not be over 0o755(rwxr-xr-x)")
+                solution_log(SOLUTION_BASE_URL + PERMISSION_SUB_URL)
                 return False
             if not os.access(self.realpath, os.R_OK) or self.permission & stat.S_IRUSR == 0:
-                logger.error(f"Current user doesn't have read permission to the file {self.file}.")
+                logger.error(f"Current user doesn't have read permission to the file {self.file}, as import file(or directory), "
+                    "permission should be at least 0o400(r--------) ")
+                solution_log(SOLUTION_BASE_URL + PERMISSION_SUB_URL)
                 return False
         elif perm == 'write' and self.is_exists:
             if self.permission & WRITE_FILE_NOT_PERMITTED_STAT > 0:
-                logger.error(f"The file {self.file} is group writable, or is others writable.")
+                logger.error(f"The file {self.file} is group writable, or is others writable, as export file(or directory), "
+                    "permission should not be over 0o750(rwxr-x---)")
+                solution_log(SOLUTION_BASE_URL + PERMISSION_SUB_URL)
                 return False
             if not os.access(self.realpath, os.W_OK):
-                logger.error(f"Current user doesn't have read permission to the file {self.file}.")
+                logger.error(f"Current user doesn't have write permission to the file {self.file}, as export file(or directory), "
+                    "permission should be at least 0o200(-w-------) ")
+                solution_log(SOLUTION_BASE_URL + PERMISSION_SUB_URL)
                 return False
+        return True
+
+    def check_windows_permission(self, perm='none'):
+        if not self.is_exists and perm != 'write':
+            logger.error(f"path: {self.file} not exist, please check if file or dir is exist")
+            return False
+        if self.is_softlink:
+            logger.error(f"path :{self.file} is a soft link, not supported, please import file(or directory) directly")
+            solution_log(SOLUTION_BASE_URL + SOFT_LINK_SUB_URL)
+            return False
         return True
 
     def is_legal_file_size(self, max_size):
