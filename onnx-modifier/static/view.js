@@ -2345,7 +2345,7 @@ view.ShowSubGraph = class {
                         let bak_blocks = this._blocks
                         let header = new grapher.Node.Header()
                         let title = header.add(this.id, ['node-item-type', "node-item-type-more"], "...",
-                            `double click to show more nodes around ${this.value.type.name}(${this.modelNodeName})`)
+                            `double click to show more nodes around ${this.value?.type?.name}(${this.modelNodeName})`)
                         title.on('dblclick', () => {this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName)})
                         this._blocks = [header];
                         oriBuild.apply(this, argumentsList)
