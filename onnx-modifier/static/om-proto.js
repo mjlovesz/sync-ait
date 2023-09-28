@@ -42,7 +42,7 @@ $root.om.DataType = {
 $root.om.AttrDef = class AttrDef {
 
     constructor() {
-        AttrDef.prototype.index = 0
+        AttrDef.prototype.i = 0
     }
 
     get value() {
