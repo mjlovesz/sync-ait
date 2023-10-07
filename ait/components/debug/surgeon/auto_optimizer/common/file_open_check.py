@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# this file is as same as components/utils/file_opem_check.py, because benchmark might be install without ait
+# this file is as same as components/utils/file_opem_check.py, because surgeonb might be install without ait
 
 import os
 import sys
@@ -87,7 +87,6 @@ def is_match_path_white_list(path):
         solution_log_win(SOLUTION_BASE_URL + ILLEGAL_CHAR_SUB_URL)
         return False
     return True
-
 
 
 def is_legal_args_path_string(path):
