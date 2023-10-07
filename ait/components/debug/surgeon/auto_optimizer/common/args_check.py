@@ -1,7 +1,7 @@
 import argparse
 import re
 import subprocess
-from auto_optimizer.common.file_open_check import is_legal_path_length, is_match_path_white_list, FileStat
+from components.utils.file_open_check import FileStat, is_legal_args_path_string
 
 
 MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024 # 32GB
@@ -96,7 +96,7 @@ def check_io_string(value):
     if not value:
         return value
     io_string = value
-    regex = re.compile(r"[^_A-Za-z0-9/.-,;]")
+    regex = re.compile(r"[^_A-Za-z0-9/.-,;:]")
     if regex.search(io_string):
         raise argparse.ArgumentTypeError(f"io string \"{io_string}\" is not a legal string")
     return io_string
@@ -106,7 +106,7 @@ def check_nodes_string(value):
     if not value:
         return value
     nodes_string = value
-    regex = re.compile(r"[^_A-Za-z0-9/.-,]")
+    regex = re.compile(r"[^_A-Za-z0-9/.-,:]")
     if regex.search(nodes_string):
         raise argparse.ArgumentTypeError(f"nodes string \"{nodes_string}\" is not a legal string")
     return nodes_string
@@ -116,7 +116,7 @@ def check_single_node_string(value):
     if not value:
         return value
     node_string = value
-    regex = re.compile(r"[^_A-Za-z0-9/.-]")
+    regex = re.compile(r"[^_A-Za-z0-9/.-:]")
     if regex.search(node_string):
         raise argparse.ArgumentTypeError(f"single_node string \"{node_string}\" is not a legal string")
     return node_string
@@ -140,3 +140,22 @@ def check_shapes_range_string(value):
     if regex.search(range_string):
         raise argparse.ArgumentTypeError(f"dym range string \"{range_string}\" is not a legal string")
     return range_string
+
+
+def check_ints_string(value):
+    if not value:
+        return value
+    ints_string = value
+    regex = re.compile(r"[^0-9,]")
+    if regex.search(ints_string):
+        raise argparse.ArgumentTypeError(f"ints string \"{ints_string}\" is not a legal string")
+    return ints_string
+
+
+def check_path_string(value):
+    if not value:
+        return value
+    path_string = value
+    if not is_legal_args_path_string(path_string):
+        raise argparse.ArgumentTypeError(f"ints string \"{path_string}\" is not a legal string")
+    return path_string

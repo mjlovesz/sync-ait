@@ -26,7 +26,8 @@ from auto_optimizer.common.click_utils import optimize_onnx, list_knowledges, \
     cli_eva, check_input_path, check_output_model_path, safe_string
 from auto_optimizer.common.args_check import check_in_model_path_legality, check_out_model_path_legality, check_soc, \
     check_range, check_min_num_1, check_min_num_2, check_shapes_string, check_dtypes_string, check_io_string, \
-    check_nodes_string, check_single_node_string, check_normal_string, check_shapes_range_string
+    check_nodes_string, check_single_node_string, check_normal_string, check_shapes_range_string, check_ints_string, \
+    check_path_string
 from auto_optimizer.common.click_utils import default_off_knowledges
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 
@@ -121,7 +122,7 @@ class OptimizeCommand(BaseCommand):
                             help='Specify input shape range for OM converter.')
         parser.add_argument('--dynamic-shape', type=check_shapes_string,
                             help='Specify input shape for dynamic onnx in inference.')
-        parser.add_argument('-outsize', '--output-size', type=check_normal_string,
+        parser.add_argument('-outsize', '--output-size', type=check_ints_string,
                             help='Specify real size of graph output.')
 
     def handle(self, args):
@@ -240,7 +241,7 @@ class ConcatenateCommand(BaseCommand):
                             help='Pairs of output/inputs representing outputs \
                             of the first graph and inputs of the second graph to be connected')
         parser.add_argument('-pref', '--prefix', dest='graph_prefix',
-                            required=False, type=safe_string, default='pre_',
+                            required=False, type=check_path_string, default='pre_',
                             help='Prefix added to all names in a graph')
         parser.add_argument('-cgp', '--combined-graph-path', default='', type=check_out_model_path_legality,
                             help='Output combined onnx graph path')
