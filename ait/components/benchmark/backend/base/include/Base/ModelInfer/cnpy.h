@@ -17,6 +17,8 @@
 #ifndef _CNPY_H
 #define _CNPY_H
 
+#include <fcntl.h>
+#include <stdio.h>
 #include <string>
 #include <stdexcept>
 #include <sstream>
@@ -107,11 +109,17 @@ void NpySave(std::string fname, const T *data, const std::vector<size_t> shape, 
 {
     FILE *fp = nullptr;
     std::vector<size_t> trueDataShape;
-
+    if (mode == "w") {
+        if (access(fname, F_OK) == 0 && remove(fname) != 0) {
+            throw std::runtime_error("NpySave: existing file %s cannot be removed", fname.c_str());
+        }
+        int fd = open(fname, O_EXCL | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP);
+        close(fd);
+    }
     if (mode == "a") {
+        chmod(fname.c_str(), S_IRUSR | S_IWUSR | S_IRGRP);
         fp = fopen(fname.c_str(), "r+b");
     }
-
     if (fp) {
         size_t wordSize;
         bool fortranOrder;
@@ -140,10 +148,8 @@ void NpySave(std::string fname, const T *data, const std::vector<size_t> shape, 
         fp = fopen(fname.c_str(), "wb");
         trueDataShape = shape;
     }
-
     std::vector<char> header = CreateNpyHeader<T>(trueDataShape);
     size_t nels = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>());
-
     fseek(fp, 0, SEEK_SET);
     fwrite(&header[0], sizeof(char), header.size(), fp);
     fseek(fp, 0, SEEK_END);

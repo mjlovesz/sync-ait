@@ -238,8 +238,11 @@ double Utils::InferenceTimeAverageWithoutFirst(double* x, int len)
         if (i != 0) {
             sum += x[i];
         }
-
-    return sum / (len - 1);
+    if (len != 1) {
+        return sum / (len - 1);
+    }
+    printf("Inference Time Can't divide zero!");
+    return -1;
 }
 
 void Utils::ProfilerJson(bool isprof, map<char, string>& params)
@@ -533,6 +536,11 @@ Result Utils::TensorToNumpy(const std::string& outputFileName, Base::TensorBase&
 
 Result Utils::TensorToBin(const std::string& outputFileName, Base::TensorBase& output)
 {
+    if (access(outputFileName, F_OK) == 0 && remove(outputFileName) != 0) {
+        throw std::runtime_error("TensorToBin: existing file %s cannot be removed", outputFileName.c_str());
+    }
+    int fd = open(outputFileName, O_EXCL | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP);
+    close(fd);
     std::ofstream outfile(outputFileName, std::ios::out | std::ios::binary);
     if (!outfile) {
         ERROR_LOG("TensorToBin: open file %s failed.", outputFileName.c_str());
@@ -562,6 +570,11 @@ static void SaveTxt(std::ofstream& outFile, const T* p, size_t size, size_t rowC
 
 Result Utils::TensorToTxt(const std::string& outputFileName, Base::TensorBase& output)
 {
+    if (access(outputFileName, F_OK) == 0 && remove(outputFileName) != 0) {
+        throw std::runtime_error("TensorToTxt: existing file %s cannot be removed", outputFileName.c_str());
+    }
+    int fd = open(outputFileName, O_EXCL | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP);
+    close(fd);
     std::ofstream outFile(outputFileName);
     if (!outFile) {
         ERROR_LOG("TensorToTxt: open file %s failed.", outputFileName.c_str());
