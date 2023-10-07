@@ -679,9 +679,7 @@ view.View = class {
                     canvas.setAttribute('height', height);
 
                     const container = this._getElementById('graph');
-                    // console.log(this.lastScrollLeft, this.lastScrollTop, this._zoom)
                     if (this.lastScrollLeft != 0 ||  this.lastScrollTop != 0 || this._zoom != 1) {
-                        // console.log("scrolling")
                         this._updateZoom(this._zoom);
                         container.scrollTo({ left: this.lastScrollLeft, top: this.lastScrollTop, behavior: 'auto' });
                     }
@@ -859,7 +857,6 @@ view.View = class {
     showNodeProperties(node, input, modelNodeName) {
         if (node) {
             try {
-                // console.log(node)   // 注意是onnx.Node, 不是grapher.Node，所以没有update()， 没有element元素
                 const nodeSidebar = new sidebar.NodeSidebar(this._host, node, modelNodeName);
                 if (modelNodeName) {
                     this._host._view.modifier.clickSingleNode(modelNodeName)
@@ -969,7 +966,6 @@ view.Graph = class extends grapher.Graph {
         // value.name = (this._nodeKey++).toString();
 
         value.name = input.name;
-        // console.log(value.name)
         input.modelNodeName = input.name;
         this.setNode(value);
         return value;
@@ -986,7 +982,6 @@ view.Graph = class extends grapher.Graph {
         value.name = "out_" + output.name;   // output nodes should have name
         output.modelNodeName = "out_" + output.name;
         this.setNode(value);
-        // console.log(value)
         return value;
     }
 
@@ -1004,7 +999,6 @@ view.Graph = class extends grapher.Graph {
     }
 
     add(graph) {
-        // console.log(graph)   // type: onnx.Graph
         const clusters = new Set();
         const clusterParentMap = new Map();
         const groups = graph.groups;
@@ -1029,7 +1023,6 @@ view.Graph = class extends grapher.Graph {
         }
 
         for (var node of graph.nodes) {
-            // console.log(node)  // type: onnx.Node
             var viewNode = this.createNode(node);
 
             var inputs = node.inputs;
@@ -1102,7 +1095,6 @@ view.Graph = class extends grapher.Graph {
         for (const output of graph.outputs) {
             const viewOutput = this.createOutput(output);
             for (const argument of output.arguments) {
-                // console.log(argument)
                 this.createArgument(argument).to(viewOutput);
             }
         }
@@ -1395,7 +1387,6 @@ view.Argument = class {
                 }
                 this.context.setEdge(edge);
                 this._edges.push(edge);
-                // console.log(this.context._namedEdges);
 
                 // this argument occurs in both sides of the edge, so it is a `path` argument
                 // this.context._pathArgumentNames.add(this._argument.name);
@@ -2151,14 +2142,10 @@ view.ModelFactoryService = class {
     }
 
     _filter(context) {
-        // console.log(context.identifier)  // squeezenet1.0-12-int8.onnx
         const identifier = context.identifier.toLowerCase().split('/').pop();
-        // console.log(identifier)    // squeezenet1.0-12-int8.onnx
         const list = this._factories.filter((entry) =>
             (typeof entry.extension === 'string' && identifier.endsWith(entry.extension)) ||
             (entry.extension instanceof RegExp && entry.extension.exec(identifier)));
-        // console.log(list)
-        // console.log(Array.from(new Set(list.map((entry) => entry.id))))
         return Array.from(new Set(list.map((entry) => entry.id)));
     }
 
