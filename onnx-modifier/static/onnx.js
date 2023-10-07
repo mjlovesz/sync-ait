@@ -218,7 +218,6 @@ onnx.ModelFactory = class {
                         const reader = protobuf.BinaryReader.open(stream);
                         const model = onnx.proto.ModelProto.decode(reader);
                         const format = 'ONNX' + (model.ir_version ? ' v' + model.ir_version.toString() : '');
-                        // console.log(format)  // ONNX v7
                         return open(model, format);
                     }
                     catch (error) {
@@ -408,12 +407,9 @@ onnx.Model = class {
     }
 
     get supported_nodes() {
-        // console.log(this.graphMetadata);
         var nodes = []
         for (const domain of this.graphMetadata._metadata._map.keys()) {
-            // console.log(domain)
             for (const op of this.graphMetadata._metadata._map.get(domain).keys()) {
-                // console.log(op)
                 nodes.push([domain, op])
             }
         }
@@ -445,10 +441,8 @@ onnx.Graph = class {
         this._custom_inputs_shape = new Map();
         
         // model parameter assignment here!
-        // console.log(graph)
         for (const initializer of graph.initializer) {
             const tensor = context.tensor(initializer.name);
-            // console.log(initializer)   // type: TensorProto
             tensor.initializer = new onnx.Tensor(context, initializer, 'Initializer');
         }
         for (const sparse_initializer of graph.sparse_initializer) {
@@ -565,17 +559,13 @@ onnx.Graph = class {
     make_custom_added_node(node_info) {
         // type of node_info == LightNodeInfo
         const schema = this._context.metadata.type(node_info.properties.get('op_type'), node_info.properties.get('domain'));
-        // console.log(schema)
-        
-        // console.log(node_info.attributes)
-        // console.log(node_info.inputs)
-        // console.log(node_info.outputs)
+
+
         // var max_input = schema.max_input
         // var min_input = schema.max_input
         var max_custom_add_input_num = Math.min(schema.max_input, 8)  // set at most 8 custom_add inputs
         var max_custom_add_output_num = Math.min(schema.max_output, 8)  // set at most 8 custom_add outputs
         
-        // console.log(node_info)
         var inputs = []
         // use "if" to deal with node type with no input, like Constant
         if (schema.inputs) {
@@ -583,8 +573,7 @@ onnx.Graph = class {
                 const input = schema.inputs[i]
                 
                 var node_info_input = node_info.inputs.get(input.name)
-                // console.log(node_info_input)
-    
+
                 var arg_list = []
                 if (input.list) {
                     for (let j = 0; j < max_custom_add_input_num; ++j) {
@@ -656,15 +645,12 @@ onnx.Graph = class {
             }
         }
 
-        // console.log(inputs)
-        // console.log(outputs)
+
         
-        // console.log(node_info)
         var attributes = []
         if (schema.attributes) {
             for (const attr of schema.attributes) {
                 // [value, type]
-                // console.log(node_info.attributes)
                 var value = null;
                 if (node_info.attributes.has(attr.name)) {
                     value = node_info.attributes.get(attr.name)[0];
@@ -679,7 +665,6 @@ onnx.Graph = class {
                     )
             }
         }
-        // console.log(attributes)
         var custom_add_node = new onnx.Node(
                 this._context, 
                 node_info.properties.get('op_type'), 
@@ -690,7 +675,6 @@ onnx.Graph = class {
                 inputs, 
                 outputs
             );
-        // console.log(custom_add_node)
 
         this._custom_added_node.push(custom_add_node)
 
@@ -813,9 +797,7 @@ onnx.Node = class {
         this._description = description || '';
         this._inputs = inputs;
         this._outputs = outputs;
-        // console.log(attributes)
         this._attributes = attributes.map((attribute) => new onnx.Attribute(context, op_type, domain, attribute));
-        // console.log(this._attributes)
         this._chain = [];
         const identifier = domain ? domain + '.' + op_type : op_type;
         switch (identifier) {
@@ -932,7 +914,6 @@ onnx.Attribute = class {
                 this._type = 'type[]';
                 break;
             default:
-                // console.log(attribute)
                 this._value = attribute.value;
                 this._type = attribute.type;
                 // TODO: I comment the Error message for the compatibility of onnx.Graph.make_custom_added_node. This is may be unsafe
@@ -941,7 +922,6 @@ onnx.Attribute = class {
 
         // see #L1294 GraphMetadata
         const metadata = context.metadata.attribute(op_type, domain, attribute.name);
-        // console.log(metadata)
         if (metadata) {
             if (Object.prototype.hasOwnProperty.call(metadata, 'default') && this._value == metadata.default) {
                 this._visible = false;
@@ -953,8 +933,6 @@ onnx.Attribute = class {
                 if (!Number.isNaN(value) && Number.isInteger(value)) {
                     this._value = context.createDataType(value);
                 }
-                // console.log(attribute.type, attribute.value)
-                // console.log(this._type, value, this._value)
             }
         }
     }
@@ -1181,14 +1159,11 @@ onnx.Tensor = class {
 
     toString() {
         const context = this._context();
-        // console.log(context)
         if (context.state) {
             return '';
         }
         context.limit = 10000;
         const value = this._decode(context, 0);
-        // console.log(value)
-        // console.log(onnx.Tensor._stringify(value, '', '    '))
         return onnx.Tensor._stringify(value, '', '    ');
     }
 
@@ -1367,7 +1342,6 @@ onnx.Tensor = class {
     }
 
     static _stringify(value, indentation, indent) {
-        // console.log(value, Array.isArray(value))
         if (Array.isArray(value)) {
             const result = [];
             result.push(indentation + '[');
@@ -1859,21 +1833,10 @@ onnx.GraphContext = class {
 
     argument(name, original_name) {
         const tensor = this.tensor(name);
-        // console.log(tensor)
         const type = tensor.initializer ? tensor.initializer.type : tensor.type || null;
         return new onnx.Argument(name, type, tensor.initializer, tensor.annotation, tensor.description, original_name);
 
-        // // if (!this._arguments.has(name)) {
-        // if ((!this._arguments.has(name)) || 
-        //     (this._arguments.has(name) && !this._arguments.get(name).original_name == original_name) 
-        // ) {
-        //     const tensor = this.tensor(name);
-        //     // console.log(name)
-        //     // console.log(tensor)
-        //     const type = tensor.initializer ? tensor.initializer.type : tensor.type || null;
-        //     this._arguments.set(name, new onnx.Argument(name, type, tensor.initializer, tensor.annotation, tensor.description, original_name));
-        // }
-        // return this._arguments.get(name);
+
     }
 
     createType(type) {
@@ -1984,8 +1947,8 @@ onnx.GraphContext = class {
         });
         for (let node of nodes) {
             const schema = this._context.metadata.type(node.op_type, node.domain);
-            // console.log(node)     // NodeProto. It contains the uploaded model data
-            // console.log(schema)   // get the corresponding schema of this node from Metadata
+            // NodeProto. It contains the uploaded model data
+            // get the corresponding schema of this node from Metadata
             const inputs = [];
             node.input = node.input || [];
             for (let i = 0; i < node.input.length; ) {
@@ -1999,7 +1962,6 @@ onnx.GraphContext = class {
                 inputs.push(new onnx.Parameter(input.name, list));
                 i += count;
             }
-            // console.log(inputs)
             const outputs = [];
             node.output = node.output || [];
             for (let i = 0; i < node.output.length; ) {
@@ -2009,15 +1971,9 @@ onnx.GraphContext = class {
                 outputs.push(new onnx.Parameter(output.name, list));
                 i += count;
             }
-            // console.log(schema)
-            // console.log(node)
             node = new onnx.Node(this, node.op_type, node.domain, node.name, node.doc_string, node.attribute, inputs, outputs);
             this._nodes.push(node);
-            // console.log(node)
 
-            // const path = (node.name || '').split('/');
-            // path.pop();
-            // this.group(path.join('/')).get('').push(node);
         }
     }
 
