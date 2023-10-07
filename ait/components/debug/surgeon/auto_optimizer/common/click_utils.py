@@ -29,32 +29,15 @@ from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestCo
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.tools.log import logger
-from auto_optimizer.common.file_open_check import is_legal_path_length, is_match_path_white_list, FileStat
 
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 STR_UNSAFE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-]")
 PATH_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-]")
-MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024 # 32GB
 
 READ_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH
 WRITE_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH | stat.S_IROTH | stat.S_IXOTH
-
-
-def check_model_path_legality(value):
-    path_value = value
-    try:
-        file_stat = FileStat(path_value)
-    except Exception as err:
-        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal('read'):
-        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
-    if not file_stat.is_legal_file_type(["onnx"]):
-        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
-    if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
-        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
-    return path_value
 
 
 def safe_string(value):

@@ -12,7 +12,7 @@ def check_dym_string(value):
     if not value:
         return value
     dym_string = value
-    regex = re.compile(r"[^_A-Za-z0-9,;:]")
+    regex = re.compile(r"[^_A-Za-z0-9/.-,;:]")
     if regex.search(dym_string):
         raise argparse.ArgumentTypeError(f"dym string \"{dym_string}\" is not a legal string")
     return dym_string
@@ -22,7 +22,7 @@ def check_dym_range_string(value):
     if not value:
         return value
     dym_string = value
-    regex = re.compile(r"[^_A-Za-z0-9\-~,;:]")
+    regex = re.compile(r"[^_A-Za-z0-9/.\-~,;:]")
     if regex.search(dym_string):
         raise argparse.ArgumentTypeError(f"dym range string \"{dym_string}\" is not a legal string")
     return dym_string

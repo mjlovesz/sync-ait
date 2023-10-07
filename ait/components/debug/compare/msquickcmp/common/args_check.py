@@ -104,7 +104,7 @@ def check_dict_kind_string(value):
     if not value:
         return value
     input_shape = value
-    regex = re.compile(r"[^_A-Za-z0-9,;:]")
+    regex = re.compile(r"[_A-Za-z0-9/.-,;:]")
     if regex.search(input_shape):
         raise argparse.ArgumentTypeError(f"dym string \"{input_shape}\" is not a legal string")
     return input_shape
@@ -136,7 +136,7 @@ def check_dym_range_string(value):
     if not value:
         return value
     dym_string = value
-    regex = re.compile(r"[^_A-Za-z0-9\-~,;:]")
+    regex = re.compile(r"[^_A-Za-z0-9/.\-~,;:]")
     if regex.search(dym_string):
         raise argparse.ArgumentTypeError(f"dym range string \"{dym_string}\" is not a legal string")
     return dym_string

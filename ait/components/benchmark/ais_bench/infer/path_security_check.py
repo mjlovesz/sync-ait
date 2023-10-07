@@ -228,7 +228,7 @@ class FileStat:
             return True
 
     def is_legal_file_type(self, file_types:list):
-        if not self.is_file:
+        if not self.is_file and self.is_exists:
             logger.error(f"path: {self.file} is not a file")
             return False
         for file_type in file_types:
