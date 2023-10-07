@@ -536,10 +536,11 @@ Result Utils::TensorToNumpy(const std::string& outputFileName, Base::TensorBase&
 
 Result Utils::TensorToBin(const std::string& outputFileName, Base::TensorBase& output)
 {
-    if (access(outputFileName, F_OK) == 0 && remove(outputFileName) != 0) {
-        throw std::runtime_error("TensorToBin: existing file %s cannot be removed", outputFileName.c_str());
+    if (access(outputFileName.c_str(), F_OK) == 0 && remove(outputFileName.c_str()) != 0) {
+        ERROR_LOG("TensorToBin: existing file %s cannot be removed", outputFileName.c_str());
+        return FAILED;
     }
-    int fd = open(outputFileName, O_EXCL | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP);
+    int fd = open(outputFileName.c_str(), O_EXCL | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP);
     close(fd);
     std::ofstream outfile(outputFileName, std::ios::out | std::ios::binary);
     if (!outfile) {
@@ -570,10 +571,11 @@ static void SaveTxt(std::ofstream& outFile, const T* p, size_t size, size_t rowC
 
 Result Utils::TensorToTxt(const std::string& outputFileName, Base::TensorBase& output)
 {
-    if (access(outputFileName, F_OK) == 0 && remove(outputFileName) != 0) {
-        throw std::runtime_error("TensorToTxt: existing file %s cannot be removed", outputFileName.c_str());
+    if (access(outputFileName.c_str(), F_OK) == 0 && remove(outputFileName.c_str()) != 0) {
+        ERROR_LOG("TensorToTxt: existing file %s cannot be removed", outputFileName.c_str());
+        return FAILED;
     }
-    int fd = open(outputFileName, O_EXCL | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP);
+    int fd = open(outputFileName.c_str(), O_EXCL | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP);
     close(fd);
     std::ofstream outFile(outputFileName);
     if (!outFile) {

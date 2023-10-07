@@ -283,10 +283,6 @@ Result ModelProcess::GetMaxDynamicHWSize(uint64_t &outsize)
         }
     }
     outsize = maxDynamicHWSize;
-    if (maxDynamicHWSize == 0) {
-        ERROR_LOG("GetMaxDynamicHWSize failed: max dynamic height*weight size is 0");
-        return FAILED;
-    }
     return SUCCESS;
 }
 
@@ -393,10 +389,6 @@ Result ModelProcess::GetMaxBatchSize(uint64_t &maxBatchSize)
                 maxBatchSize = batch_info.batch[i];
             }
         }
-    }
-    if (maxBatchSize == 0) {
-        ERROR_LOG("GetMaxBatchSize failed: max batch size is 0");
-        return FAILED;
     }
     DEBUG_LOG("get max dynamic batch size success");
     return SUCCESS;

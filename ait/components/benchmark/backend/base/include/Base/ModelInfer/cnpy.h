@@ -19,6 +19,7 @@
 
 #include <fcntl.h>
 #include <stdio.h>
+#include <sys/stat.h>
 #include <string>
 #include <stdexcept>
 #include <sstream>
@@ -110,10 +111,11 @@ void NpySave(std::string fname, const T *data, const std::vector<size_t> shape, 
     FILE *fp = nullptr;
     std::vector<size_t> trueDataShape;
     if (mode == "w") {
-        if (access(fname, F_OK) == 0 && remove(fname) != 0) {
-            throw std::runtime_error("NpySave: existing file %s cannot be removed", fname.c_str());
+        if (access(fname.c_str(), F_OK) == 0 && remove(fname.c_str()) != 0) {
+            ERROR_LOG("existing file %s cannot be removed", fname.c_str());
+            throw std::runtime_error("NpySave: existing file wrong");
         }
-        int fd = open(fname, O_EXCL | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP);
+        int fd = open(fname.c_str(), O_EXCL | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP);
         close(fd);
     }
     if (mode == "a") {
