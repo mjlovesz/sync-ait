@@ -21,7 +21,7 @@ RUN groupadd HwHiAiUser && useradd -rm -d /home/HwHiAiUser -s /bin/bash -g HwHiA
     apt-get install liblzma-dev -y &&\
     apt-get install -y wget gnupg software-properties-common && \
     apt-get install -y sudo gcc g++ make cmake zlib1g zlib1g-dev openssl libsqlite3-dev libssl-dev libffi-dev unzip pciutils net-tools libblas-dev gfortran libblas3 libopenblas-dev libncursesw5-dev wget dkms &&\
-    wget https://npm.taobao.org/mirrors/python/3.7.5/Python-3.7.5.tgz --no-check-certificate -c  && \
+    wget https://www.python.org/ftp/python/3.7.5/Python-3.7.5.tgz   && \
     tar -zxvf Python-3.7.5.tgz &&\
     cd Python-3.7.5 &&\
     ./configure --prefix=/usr/local/python3.7.5 --enable-loadable-sqlite-extensions --enable-shared &&\

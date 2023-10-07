@@ -130,12 +130,12 @@ ECHO ============ downloading ait transplt config and headers ============
 %app_analyze_pos:~0,2% && cd "%app_analyze_pos%"
 curl %skip_check_cert% %download_config_zip_link% -o config.zip
 IF NOT %errorlevel%==0 ( %cwd:~0,2% && cd "%cwd%" && EXIT /B 1 )
-tar -zxf config.zip
+tar -p -zxf config.zip
 IF NOT %errorlevel%==0 ( %cwd:~0,2% && cd "%cwd%" && EXIT /B 1 )
 del config.zip
 curl %skip_check_cert% %download_headers_zip_link% -o headers.zip
 IF NOT %errorlevel%==0 ( %cwd:~0,2% && cd "%cwd%" && EXIT /B 1 )
-tar -zxf headers.zip
+tar -p -zxf headers.zip
 IF NOT %errorlevel%==0 ( %cwd:~0,2% && cd "%cwd%" && EXIT /B 1 )
 del headers.zip
 
@@ -156,9 +156,9 @@ FOR /F "delims=" %%I IN ("7z.exe") DO (
         SET zip_exists=1
     ) ELSE (
         rem download a new 7zip
-        curl %skip_check_cert% -LJo 7z2301-x64.msi %download_7zip_link%
-        msiexec /a %cwd%\7z2301-x64.msi /qb TARGETDIR=%cwd%\7zip
-        SET zip_loc="%cwd%\7zip\Files\7-Zip\7z.exe"
+        curl %skip_check_cert% -LJo "%TEMP%\7z2301-x64.msi" %download_7zip_link%
+        msiexec /a "%TEMP%\7z2301-x64.msi" /qb TARGETDIR="%TEMP%\7zip"
+        SET zip_loc="%TEMP%\7zip\Files\7-Zip\7z.exe"
         del 7z2301-x64.msi
     )
 )
@@ -216,25 +216,26 @@ if %is_admin% == 1 (
 )
 IF DEFINED path_value1 (
     IF "%path_value1:~-1%" == ";" (
-        SET path_value1=%path_value1:~0,-1%
+        SET "path_value1=%path_value1:~0,-1%"
     )
 )
 IF DEFINED path_value1 (
     if %is_admin% == 1 (
         ECHO "%path_value1%" | findstr /C:"%llvm_install_path%\bin" >nul || (
-            setx /m "Path" "%path_value1%;%llvm_install_path%\bin"
+            setx /m "Path" "%path_value1:"=%;%llvm_install_path%\bin"
         )
     ) ELSE (
         ECHO "%path_value1%" | findstr /C:"%llvm_install_path%\bin" >nul || (
-            setx "Path" "%path_value1%;%llvm_install_path%\bin"
+            setx "Path" "%path_value1:"=%;%llvm_install_path%\bin"
         )
     )
 )
 
+SET Path=%Path:"=%
 IF "%Path:~-1%" == ";" (
-    SET Path=%Path:~0,-1%
+    SET "Path=%Path:~0,-1%"
 )
-SET Path=%Path%;%llvm_install_path%\bin
+SET "Path=%Path%;%llvm_install_path%\bin"
 
 :: download and install mingw-w64
 IF %mingw_w64_path%=="" (
@@ -274,24 +275,26 @@ if %is_admin% == 1 (
 )
 IF DEFINED path_value2 (
     IF "%path_value2:~-1%" == ";" (
-        SET path_value2=%path_value2:~0,-1%
+        SET "path_value2=%path_value2:~0,-1%"
     )
 )
 IF DEFINED path_value2 (
     if %is_admin% == 1 (
         ECHO "%path_value2%" | findstr /C:"%mingw_w64_install_path%\mingw64\bin" >nul || (
-            setx /m "Path" "%path_value2%;%mingw_w64_install_path%\mingw64\bin"
+            setx /m "Path" "%path_value2:"=%;%mingw_w64_install_path%\mingw64\bin"
         )
     ) ELSE (
         ECHO "%path_value2%" | findstr /C:"%mingw_w64_install_path%\mingw64\bin" >nul || (
-            setx "Path" "%path_value2%;%mingw_w64_install_path%\mingw64\bin"
+            setx "Path" "%path_value2:"=%;%mingw_w64_install_path%\mingw64\bin"
         )
     )
 )
+
+SET Path=%Path:"=%
 IF "%Path:~-1%" == ";" (
-    SET Path=%Path:~0,-1%
+    SET "Path=%Path:~0,-1%"
 )
-SET Path=%Path%;%mingw_w64_install_path%\mingw64\bin
+SET "Path=%Path%;%mingw_w64_install_path%\mingw64\bin"
 
 
 ECHO ============ downloading patch file float.h of mingw-w64 ============

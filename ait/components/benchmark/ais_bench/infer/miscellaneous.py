@@ -19,7 +19,9 @@ import itertools
 import numpy as np
 
 from ais_bench.infer.utils import logger
+from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_CONFIG_FILE, MAX_SIZE_LIMITE_NORMAL_FILE
 
+PERMISSION_DIR = 0o750
 
 ACL_JSON_CMD_LIST = [
     "output",
@@ -72,7 +74,7 @@ def get_model_name(model):
 
 
 def check_valid_acl_json_for_dump(acl_json_path, model):
-    with open(acl_json_path, 'r') as f:
+    with ms_open(acl_json_path, mode="r", max_size=MAX_SIZE_LIMITE_CONFIG_FILE) as f:
         acl_json_dict = json.load(f)
     model_name_correct = get_model_name(model)
     if acl_json_dict.get("dump") is not None:
@@ -121,14 +123,14 @@ def get_acl_json_path(args):
         out_profiler_path = os.path.join(args.output, "profiler")
 
         if not os.path.exists(out_profiler_path):
-            os.makedirs(out_profiler_path, 0o755)
+            os.makedirs(out_profiler_path, PERMISSION_DIR)
         output_json_dict["profiler"]["output"] = out_profiler_path
     elif args.dump:
         output_json_dict = {"dump": {"dump_path": "", "dump_mode": "all", "dump_list": [{"model_name": ""}]}}
         out_dump_path = os.path.join(args.output, "dump")
 
         if not os.path.exists(out_dump_path):
-            os.makedirs(out_dump_path, 0o755)
+            os.makedirs(out_dump_path, PERMISSION_DIR)
 
         model_name = args.model.split("/")[-1]
         output_json_dict["dump"]["dump_path"] = out_dump_path
@@ -138,7 +140,7 @@ def get_acl_json_path(args):
 
     OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
     OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
-    with os.fdopen(os.open(out_json_file_path, OPEN_FLAGS, OPEN_MODES), 'w') as f:
+    with ms_open(out_json_file_path, mode="w") as f:
         json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
     return out_json_file_path
 
@@ -193,7 +195,7 @@ def get_range_list(ranges):
 def get_dymshape_list(input_ranges):
     ranges_list = []
     if os.path.isfile(input_ranges):
-        with open(input_ranges, 'rt', encoding='utf-8') as finfo:
+        with ms_open(input_ranges, mode="rt", max_size=MAX_SIZE_LIMITE_NORMAL_FILE, encoding='utf-8') as finfo:
             line = finfo.readline()
             while line:
                 line = line.rstrip('\n')

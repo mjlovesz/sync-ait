@@ -99,7 +99,7 @@ main()
     SOC_VERSION=${1:-"Ascend310P3"}
     PYTHON_COMMAND=${2:-"python3"}
     TESTDATA_PATH=$CUR_PATH/testdata/crnn/model
-    [ -d $TESTDATA_PATH ] || mkdir -p $TESTDATA_PATH
+    [ -d $TESTDATA_PATH ] || { mkdir -p $TESTDATA_PATH;chmod 750 $TESTDATA_PATH; }
 
     model_url="https://ascend-repo-modelzoo.obs.cn-east-2.myhuaweicloud.com/c-version/CRNN_for_PyTorch/zh/1.3/m/CRNN_for_PyTorch_1.3_model.zip"
     crnn_onnx_file="$TESTDATA_PATH/pth_crnn.onnx"

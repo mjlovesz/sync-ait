@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef _PIPELINE_H
-#define _PIPELINE_H
+#ifndef PIPELINE_H
+#define PIPELINE_H
 
 #include <memory>
 #include <vector>
@@ -51,7 +51,8 @@ class ConcurrentQueue {
 public:
     explicit ConcurrentQueue(int depth = 3): depth(depth) {}
 
-    T pop() {
+    T pop()
+    {
         std::unique_lock<std::mutex> mlock(mtx);
         while (queue.empty()) {
             condVar.wait(mlock);
@@ -63,7 +64,8 @@ public:
         return val;
     }
 
-    void push (const T &item) {
+    void push (const T &item)
+    {
         std::unique_lock<std::mutex> mlock(mtx);
         while (queue.size() >= depth) {
             condVar.wait(mlock);
@@ -85,9 +87,10 @@ namespace Base {
     void PrepareInputData(std::vector<std::string> &files, Base::PyInferenceSession* session,
         std::shared_ptr<Feeds> &feeds, bool autoDymShape,
         bool autoDymDims, const bool pure_infer, std::vector<std::string> &inputNames);
-    void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
-                     Base::PyInferenceSession* session, std::vector<std::vector<std::string>> &infilesList,
-                     bool autoDymShape, bool autoDymDims, const std::string &outputDir, const bool pure_infer);
+    void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
+                     Base::PyInferenceSession* session,
+                     std::vector<std::vector<std::string>> &infilesList,
+                     std::shared_ptr<InferOptions> inferOption, size_t numThreads, size_t startIndex);
 
     void FuncPrepareBaseTensor(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
                                Base::PyInferenceSession* session,
@@ -96,16 +99,19 @@ namespace Base {
                                bool autoDymDims, std::vector<std::string>& outputNames);
 
     void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId);
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
+                 Base::PyInferenceSession* session);
 
     void FuncCompute(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
-                     ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
-                     Base::PyInferenceSession* session);
+                     ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
+                     Base::PyInferenceSession* session,
+                     InferSumaryInfo* summaryInfo);
 
     void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId);
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue,
+                 Base::PyInferenceSession* session);
 
-    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, std::string outFmt);
+    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, std::shared_ptr<InferOptions> inferOption);
 
     void FuncSaveTensorBase(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId,
                             std::vector<std::vector<TensorBase>> &result);

@@ -50,9 +50,9 @@ INPUT_FORMAT_TO_RGB_RATIO_DICT = {
 }
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
-DTYPE_MAP = {"dtype.float32": np.float32, "dtype.float16": np.float16, "dtype.float64": np.float64, 
-             "dtype.int8": np.int8, "dtype.int16": np.int16, "dtype.int32": np.int32, 
-             "dtype.int64": np.int64, "dtype.uint8": np.uint8, "dtype.uint16": np.uint16, 
+DTYPE_MAP = {"dtype.float32": np.float32, "dtype.float16": np.float16, "dtype.float64": np.float64,
+             "dtype.int8": np.int8, "dtype.int16": np.int16, "dtype.int32": np.int32,
+             "dtype.int64": np.int64, "dtype.uint8": np.uint8, "dtype.uint16": np.uint16,
              "dtype.uint32": np.uint32, "dtype.uint64": np.uint64, "dtype.bool": np.bool}
 
 
@@ -216,6 +216,11 @@ class NpuDumpData(DumpData):
             }
         }
         if os.access(acl_json_path, os.W_OK):
+            json_stat = os.stat(acl_json_path)
+            if json_stat.st_uid == os.getuid():
+                os.remove(acl_json_path)
+            else:
+                raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR)
             try:
                 with os.fdopen(os.open(acl_json_path, OPEN_FLAGS, OPEN_MODES), "w") as write_json:
                     try:
@@ -242,6 +247,8 @@ class NpuDumpData(DumpData):
                 file_name = "input_" + str(i) + ".bin"
                 dest_file = os.path.join(self.out_path, "input", file_name)
                 shutil.copy(input_file, dest_file)
+                os.chmod(input_file, 0o750)
+                os.chmod(dest_file, 0o750)
             return
         if use_aipp:
             self._generate_inputs_data_for_aipp(self.data_dir)
@@ -306,8 +313,8 @@ class NpuDumpData(DumpData):
         except ModuleNotFoundError as err:
             raise err
 
-        self._compare_shape_vs_file()    
-        npu_data_output_dir = os.path.join(self.out_path, 
+        self._compare_shape_vs_file()
+        npu_data_output_dir = os.path.join(self.out_path,
                                            NPU_DUMP_DATA_GOLDEN_PATH if self.is_golden else NPU_DUMP_DATA_BASE_PATH)
         utils.create_directory(npu_data_output_dir)
         model_name, extension = utils.get_model_name_and_extension(self.offline_model_path)
@@ -347,41 +354,29 @@ class NpuDumpData(DumpData):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         self._convert_net_output_to_numpy(npu_net_output_data_path, npu_dump_data_path)
         if self.is_golden:
-            return npu_dump_data_path 
+            return npu_dump_data_path
         else:
             return npu_dump_data_path, npu_net_output_data_path
-    
+
     def _create_dir(self):
         data_dir = os.path.join(self.out_path, "input")
         utils.create_directory(data_dir)
         return data_dir
-    
-    def _get_inputs_info_from_aclruntime(self):
-        import shlex
-        cmd = 'python3 -c \'import aclruntime;options = aclruntime.session_options();' \
-              'aa = aclruntime.InferenceSession("%s", %s, options); ' \
-              'print([{"shape":ii.shape, "dtype":ii.datatype.name} for ii in aa.get_inputs()])\'' \
-              % (self.offline_model_path, self.device)
 
-        # aclruntime can't get another session after the first session.finalize(), so setup a sub process
-        # to execute cmd, that to avoid this problem.
-        proc = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, shell=False)
-        try:
-            out, errs = proc.communicate(timeout=(60 * 5))
-        except subprocess.TimeoutExpired:
-            proc.kill()
-        if proc.returncode != 0:
-            utils.logger.error('Failed to execute command:%s, returncode:%d' % (cmd, proc.returncode))
-            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
-        result = json.loads(out.decode().split('\n')[0].replace("'", '"'))
-        shape_list = [ii["shape"] for ii in result]
-        dtype_list = [ii["dtype"] for ii in result]
+    def _get_inputs_info_from_aclruntime(self):
+        import aclruntime
+        options = aclruntime.session_options()
+        aa = aclruntime.InferenceSession(self.offline_model_path, int(self.device), options)
+        shape_list = [ii.shape for ii in aa.get_inputs()]
+        dtype_list = [ii.datatype.name for ii in aa.get_inputs()]
+
+        aa.free_resource()
         return shape_list, dtype_list
 
     def _generate_inputs_data_without_aipp(self, input_dir):
         if os.listdir(input_dir):
             return
-        
+
         inputs_list, data_type_list = self._get_inputs_info_from_aclruntime()
         if self.dynamic_input.is_dynamic_shape_scenario() and not self.input_shape:
             utils.logger.error("Please set '-s' or '--input-shape' to fix the dynamic shape.")
@@ -389,12 +384,13 @@ class NpuDumpData(DumpData):
 
         if self.input_shape:
             inputs_list = parse_input_shape_to_list(self.input_shape)
-        
+
         for i, (input_shape, data_type) in enumerate(zip(inputs_list, data_type_list)):
             input_data = np.random.random(input_shape).astype(data_type)
             file_name = "input_" +  str(i) + ".bin"
             input_data.tofile(os.path.join(input_dir, file_name))
-    
+            os.chmod(os.path.join(input_dir, file_name), 0o750)
+
     def _generate_inputs_data_for_aipp(self, input_dir):
         aipp_content = self.om_parser.get_aipp_config_content()
         aipp_list = aipp_content.split(",")
@@ -439,6 +435,7 @@ class NpuDumpData(DumpData):
             input_data = np.random.randint(0, 256, int(np.prod(item)/div_input_format)).astype(np.uint8)
             file_name = "input_" + str(i) + ".bin"
             input_data.tofile(os.path.join(input_dir, file_name))
+            os.chmod(os.path.join(input_dir, file_name), 0o750)
 
     def _make_benchmark_cmd_for_shape_range(self, benchmark_cmd):
         pattern = re.compile(r'^[0-9]+$')

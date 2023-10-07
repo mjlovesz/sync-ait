@@ -69,7 +69,8 @@ logger = logging.getLogger(__name__)
 
 
 class InferSession:
-    def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
+    def __init__(self, device_id: int, model_path: str, acl_json_path: str = None,
+                 debug: bool = False, loop: int = 1):
         """
         init InferSession
 
@@ -114,6 +115,11 @@ class InferSession:
             # convert acltensor to numpy array
             arrays.append(np.array(tensor))
         return arrays
+
+    @staticmethod
+    def finalize():
+        if hasattr(aclruntime.InferenceSession, 'finalize'):
+            aclruntime.InferenceSession.finalize()
 
     def get_inputs(self):
         """
@@ -427,7 +433,7 @@ class InferSession:
             logger.error("var_reci_chn_params in config file out of range, please check it!")
             raise RuntimeError('wrong aipp config file content!')
 
-        self.session.aipp_set_dtc_pixel_min(tmp_reci_params)
+        self.session.aipp_set_pixel_var_reci(tmp_reci_params)
 
     def run(self, feeds, out_array=False):
         if len(feeds) > 0 and isinstance(feeds[0], np.ndarray):
@@ -448,8 +454,14 @@ class InferSession:
             return outputs
 
     def run_pipeline(self, infilelist, output, auto_shape=False,
-                     auto_dims=False, outfmt="BIN", pure_infer_mode=False):
-        self.session.run_pipeline(infilelist, output, auto_shape, auto_dims, outfmt, pure_infer_mode)
+                     auto_dims=False, outfmt="BIN", pure_infer_mode=False, extra_session=[]):
+        infer_options = aclruntime.infer_options()
+        infer_options.output_dir = output
+        infer_options.auto_dym_shape = auto_shape
+        infer_options.auto_dym_dims = auto_dims
+        infer_options.out_format = outfmt
+        infer_options.pure_infer_mode = pure_infer_mode
+        self.session.run_pipeline(infilelist, infer_options, extra_session)
 
     def reset_sumaryinfo(self):
         self.session.reset_sumaryinfo()
@@ -488,6 +500,10 @@ class InferSession:
                 \"dymdims\",\"dymshape\"'.format(mode))
 
         return self.run(inputs, out_array)
+
+    def free_resource(self):
+        if hasattr(self.session, "free_resource"):
+            self.session.free_resource()
 
     def infer_pipeline(self, feeds_list, mode='static', custom_sizes=100000):
         '''
@@ -617,18 +633,6 @@ class InferSession:
 
     def sumary(self):
         return self.session.sumary()
-
-    def free_model(self):
-        if hasattr(self.session, 'free_model'):
-            self.session.free_model()
-
-    def free_device(self):
-        if hasattr(self.session, 'free_device'):
-            self.session.free_device()
-
-    def finalize(self):
-        if hasattr(self.session, 'finalize'):
-            self.session.finalize()
 
     def _static_prepare(self, shapes, custom_sizes):
         self.set_staticbatch()

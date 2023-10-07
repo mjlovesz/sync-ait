@@ -131,8 +131,10 @@ class TestClass:
         pure_file = PURE_INFER_FAKE_FILE_ZERO
         for _ in intensors_desc:
             infileslist[0].append(pure_file)
-        output_dir = ""
-        session.run_pipeline(infileslist, output_dir, False, False, 'BIN', True)
+        infer_options = aclruntime.infer_options()
+        infer_options.pure_infer_mode = True
+        extra_session = []
+        session.run_pipeline(infileslist, infer_options, extra_session)
 
     def test_pure_infer_stc_batch_random(self):
         device_id = 0
@@ -144,8 +146,10 @@ class TestClass:
         pure_file = PURE_INFER_FAKE_FILE_RANDOM
         for _ in intensors_desc:
             infileslist[0].append(pure_file)
-        output_dir = ""
-        session.run_pipeline(infileslist, output_dir, False, False, 'BIN', True)
+        infer_options = aclruntime.infer_options()
+        infer_options.pure_infer_mode = True
+        extra_session = []
+        session.run_pipeline(infileslist, infer_options, extra_session)
 
     def test_infer_stc_batch_input_file(self):
         device_id = 0
@@ -155,8 +159,9 @@ class TestClass:
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
-        output_dir = ""
-        session.run_pipeline(infilespath, output_dir, False, False, 'BIN', False)
+        infer_options = aclruntime.infer_options()
+        extra_session = []
+        session.run_pipeline(infilespath, infer_options, extra_session)
 
     def test_infer_stc_batch_input_file_out_bin(self):
         device_id = 0
@@ -169,7 +174,10 @@ class TestClass:
         output_dir = self.get_output_dir_bin()
         if not os.path.exists(output_dir):
             os.makedirs(output_dir, 0o755)
-        session.run_pipeline(infilespath, output_dir, False, False, 'BIN', False)
+        infer_options = aclruntime.infer_options()
+        infer_options.output_dir = output_dir
+        extra_session = []
+        session.run_pipeline(infilespath, infer_options, extra_session)
         bin_files = glob.glob(os.path.join(output_dir, "*.bin"))
         assert len(bin_files) == 1
 
@@ -184,7 +192,11 @@ class TestClass:
         output_dir = self.get_output_dir_npy()
         if not os.path.exists(output_dir):
             os.makedirs(output_dir, 0o755)
-        session.run_pipeline(infilespath, output_dir, False, False, 'NPY', False)
+        infer_options = aclruntime.infer_options()
+        infer_options.output_dir = output_dir
+        infer_options.out_format = 'NPY'
+        extra_session = []
+        session.run_pipeline(infilespath, infer_options, extra_session)
         npy_files = glob.glob(os.path.join(output_dir, "*.npy"))
         assert len(npy_files) == 1
 
@@ -196,8 +208,9 @@ class TestClass:
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_dir_bin_aipp().split(','), intensors_desc)
-        output_dir = ""
-        session.run_pipeline(infilespath, output_dir, False, False, 'BIN', False)
+        infer_options = aclruntime.infer_options()
+        extra_session = []
+        session.run_pipeline(infilespath, infer_options, extra_session)
 
     def test_infer_dym_batch_input_file(self):
         device_id = 0
@@ -208,8 +221,9 @@ class TestClass:
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_file_bin_aipp().split(','), intensors_desc)
-        output_dir = ""
-        session.run_pipeline(infilespath, output_dir, False, False, 'BIN', False)
+        infer_options = aclruntime.infer_options()
+        extra_session = []
+        session.run_pipeline(infilespath, infer_options, extra_session)
 
     def test_infer_dym_hw_input_file(self):
         device_id = 0
@@ -220,8 +234,9 @@ class TestClass:
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_file_bin_nor().split(','), intensors_desc)
-        output_dir = ""
-        session.run_pipeline(infilespath, output_dir, False, False, 'BIN', False)
+        infer_options = aclruntime.infer_options()
+        extra_session = []
+        session.run_pipeline(infilespath, infer_options, extra_session)
 
     def test_infer_dym_dim_input_file(self):
         device_id = 0
@@ -233,8 +248,9 @@ class TestClass:
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_file_bin_nor().split(','), intensors_desc)
-        output_dir = ""
-        session.run_pipeline(infilespath, output_dir, False, False, 'BIN', False)
+        infer_options = aclruntime.infer_options()
+        extra_session = []
+        session.run_pipeline(infilespath, infer_options, extra_session)
 
     def test_infer_auto_dim_input_file(self):
         device_id = 0
@@ -244,8 +260,10 @@ class TestClass:
         intensors_desc = session.get_inputs()
         infilespath = create_pipeline_fileslist_from_inputs_list(
             self.get_input_datas_file_npy_nor().split(','), intensors_desc)
-        output_dir = ""
-        session.run_pipeline(infilespath, output_dir, False, True, 'BIN', False)
+        infer_options = aclruntime.infer_options()
+        infer_options.auto_dym_dims = True
+        extra_session = []
+        session.run_pipeline(infilespath, infer_options, extra_session)
 
     def test_infer_intensor_infile_not_matched(self):
         device_id = 0
