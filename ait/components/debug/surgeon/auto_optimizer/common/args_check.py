@@ -34,6 +34,7 @@ def check_out_model_path_legality(value):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
     if not file_stat.is_legal_file_type(["onnx"]):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
+    return path_value
 
 
 def check_soc(value):
@@ -76,7 +77,7 @@ def check_shapes_string(value):
     if not value:
         return value
     shapes_string = value
-    regex = re.compile(r"[^_A-Za-z0-9/.-,;:]")
+    regex = re.compile(r"[^_A-Za-z0-9,;:/.-]")
     if regex.search(shapes_string):
         raise argparse.ArgumentTypeError(f"shapes string \"{shapes_string}\" is not a legal string")
     return shapes_string
@@ -86,7 +87,7 @@ def check_dtypes_string(value):
     if not value:
         return value
     dtypes_string = value
-    regex = re.compile(r"[^_A-Za-z0-9/.-;:]")
+    regex = re.compile(r"[^_A-Za-z0-9;:/.-]")
     if regex.search(dtypes_string):
         raise argparse.ArgumentTypeError(f"dtypes string \"{dtypes_string}\" is not a legal string")
     return dtypes_string
@@ -96,7 +97,7 @@ def check_io_string(value):
     if not value:
         return value
     io_string = value
-    regex = re.compile(r"[^_A-Za-z0-9/.-,;:]")
+    regex = re.compile(r"[^_A-Za-z0-9,;:/.-]")
     if regex.search(io_string):
         raise argparse.ArgumentTypeError(f"io string \"{io_string}\" is not a legal string")
     return io_string
@@ -116,7 +117,7 @@ def check_single_node_string(value):
     if not value:
         return value
     node_string = value
-    regex = re.compile(r"[^_A-Za-z0-9/.-:]")
+    regex = re.compile(r"[^_A-Za-z0-9:/.-]")
     if regex.search(node_string):
         raise argparse.ArgumentTypeError(f"single_node string \"{node_string}\" is not a legal string")
     return node_string
@@ -136,7 +137,7 @@ def check_shapes_range_string(value):
     if not value:
         return value
     range_string = value
-    regex = re.compile(r"[^_A-Za-z0-9/.\-~,;:]")
+    regex = re.compile(r"[^_A-Za-z0-9,;:/.\-~]")
     if regex.search(range_string):
         raise argparse.ArgumentTypeError(f"dym range string \"{range_string}\" is not a legal string")
     return range_string
