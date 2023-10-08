@@ -755,6 +755,10 @@ APP_ERROR ModelInferenceProcessor::SetDynamicBatchsize(int batchsize)
 
     CHECK_RET_EQ(processModel->CheckDynamicBatchSize(batchsize, is_dymbatch), SUCCESS);
     CHECK_RET_EQ(processModel->GetMaxBatchSize(dynamicInfo_.dyBatch.maxbatchsize), SUCCESS);
+    if (dynamicInfo_.dyBatch.maxbatchsize == 0) {
+        ERROR_LOG("SetDynamicBatchsize failed: max batch size equals to 0");
+        return APP_ERR_ACL_INVALID_PARAM;
+    }
 
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
         auto tensorBegin = modelDesc_.inTensorsDesc[i].shape.begin();
@@ -867,6 +871,10 @@ APP_ERROR ModelInferenceProcessor::SetDynamicHW(int width, int height)
 
     CHECK_RET_EQ(processModel->CheckDynamicHWSize(dynamicHW, is_dymHW), SUCCESS);
     CHECK_RET_EQ(processModel->GetMaxDynamicHWSize(dynamicInfo_.dyHW.maxHWSize), SUCCESS);
+    if (dynamicInfo_.dyHW.maxHWSize == 0) {
+        ERROR_LOG("SetDynamicHW failed: max hw size equals to 0");
+        return APP_ERR_ACL_INVALID_PARAM;
+    }
 
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
         auto tensorBegin = modelDesc_.inTensorsDesc[i].shape.begin();
