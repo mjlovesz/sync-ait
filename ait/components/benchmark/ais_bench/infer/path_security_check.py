@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# this file is as same as components/utils/file_opem_check.py, because benchamrk might be install without ait
+# this file is as same as components/utils/file_opem_check.py, because benchmark might be install without ait
 
 import os
 import sys
@@ -228,7 +228,7 @@ class FileStat:
             return True
 
     def is_legal_file_type(self, file_types:list):
-        if not self.is_file:
+        if not self.is_file and self.is_exists:
             logger.error(f"path: {self.file} is not a file")
             return False
         for file_type in file_types:
