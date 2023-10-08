@@ -128,7 +128,8 @@ def save_data_to_files(file_path, ndata):
                 np.savetxt(f, np.c_[outdata[i]], fmt=fmt, newline=" ")
                 f.write(b"\n")
     else:
-        ndata.tofile(file_path)
+        with ms_open(file_path, mode="wb") as f:
+            ndata.tofile(f)
 
 
 def create_fake_file_name(pure_data_type, index):
