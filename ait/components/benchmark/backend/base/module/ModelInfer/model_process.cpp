@@ -206,8 +206,8 @@ Result ModelProcess::CheckDynamicShape(
         string tmpStr = dym_shape_tmp[i];
         int charPos = tmpStr.rfind(':');
         if (charPos != string::npos) {
-            name = tmpStr.substr(0, pos);
-            shared_ptr = tmpStr.substr(pos + 1);
+            name = tmpStr.substr(0, charPos);
+            shared_ptr = tmpStr.substr(charPos + 1);
         }
         vector<string> shape_tmp;
         Utils::SplitStringWithPunctuation(shape_str, shape_tmp, ',');
