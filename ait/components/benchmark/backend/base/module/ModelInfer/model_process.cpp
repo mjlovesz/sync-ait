@@ -204,10 +204,10 @@ Result ModelProcess::CheckDynamicShape(
     }
     for (size_t i = 0; i < dym_shape_tmp.size(); ++i) {
         string tmpStr = dym_shape_tmp[i];
-        int charPos = tmpStr.rfind(':');
+        size_t charPos = tmpStr.rfind(':');
         if (charPos != string::npos) {
             name = tmpStr.substr(0, charPos);
-            shared_ptr = tmpStr.substr(charPos + 1);
+            shape_str = tmpStr.substr(charPos + 1);
         }
         vector<string> shape_tmp;
         Utils::SplitStringWithPunctuation(shape_str, shape_tmp, ',');
