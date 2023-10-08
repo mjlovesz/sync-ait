@@ -99,6 +99,28 @@ def check_output_path_legality(value):
     return path_value
 
 
+def valid_json_file_or_dir(value):
+    if not value:
+        return value
+    path_value = value
+    try:
+        file_stat = FileStat(path_value)
+    except Exception as err:
+        raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.") from err
+    if not file_stat.is_basically_legal('read'):
+        raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
+    
+    # input type: dir or json
+    # input type -> json need additional check
+    if not file_stat.is_dir:
+        if not file_stat.is_legal_file_type(["json"]):
+            raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
+    
+        if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
+            raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
+    return path_value
+
+
 def check_dict_kind_string(value):
     # just like "input_name1:1,224,224,3;input_name2:3,300"
     if not value:
