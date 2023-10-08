@@ -111,7 +111,7 @@ class FileStat:
         self.is_file_exist = os.path.exists(file)
         if self.is_file_exist:
             self.file_stat = os.stat(file)
-            self.realpath =  os.path.realpath(file)
+            self.realpath = os.path.realpath(file)
         else:
             self.file_stat = None
 

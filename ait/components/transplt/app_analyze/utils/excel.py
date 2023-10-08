@@ -10,12 +10,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import argparse
+import os
 import re
 
 import pandas as pd
 import openpyxl
 
+from components.utils.file_open_check import PERMISSION_NORMAL, FileStat, OpenException
 from app_analyze.utils.log_util import logger
 
 
@@ -43,6 +45,13 @@ def update_hyperlink(path, sheet, hyperlink_cols, df=None, row_header=1):
 
 
 def read_excel(path="", hyperlink_cols=None):
+    try:
+        file_stat = FileStat(path)
+    except Exception:
+        raise argparse.ArgumentTypeError(f"input excel path:{path} is illegal. Please check.")
+    else:
+        if not file_stat.is_basically_legal('read'):
+            raise argparse.ArgumentTypeError(f"input excel path:{path} is illegal. Please check.")
     # 读取Excel文件
     excel = pd.ExcelFile(path)
     # 获取所有Sheet的名称
@@ -73,3 +82,5 @@ def write_excel(df_dict, path='output.xlsx'):
 
     # 保存 Excel 文件
     excel.save()
+    # set permission to 640
+    os.chmod(path, PERMISSION_NORMAL)
