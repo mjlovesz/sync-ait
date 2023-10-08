@@ -10,9 +10,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import argparse
 import os
 import re
+
+from components.utils.file_open_check import FileStat
 from app_analyze.utils.log_util import logger
 
 HPP_EXT = ('.h', '.hxx', '.hpp')
@@ -134,8 +136,15 @@ class FileMatrix:
     def _check_all_file_type(self, file_path, ext, from_external_tool,
                              src_files_from_external_tool):
         """
-        检查全部文件类型：C/C++源文件、makefile文件
+        检查全部文件类型：C/C++、python源文件、makefile文件
         """
+        try:
+            file_stat = FileStat(file_path)
+        except Exception as err:
+            raise argparse.ArgumentTypeError(f"file path:{file_path} is illegal. Please check.") from err
+        if not file_stat.is_basically_legal('read'):
+            raise argparse.ArgumentTypeError(f"file path:{file_path} is illegal. Please check.")
+
         file_name = os.path.basename(file_path)
         source_ext = ('.c', '.cc', '.cpp', '.cxx', '.cx', '.cu')
         python_ext = ('.py', ".pyi")
