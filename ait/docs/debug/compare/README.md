@@ -77,8 +77,8 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
 ├-- model
 │   ├-- {om_model_name}.json                    # 离线模型om模型(.om)通过atc工具转换后的json文件
 │   └-- new_{onnx_model_name}.onnx              # 把每个算子作为输出节点后新生成的 onnx 模型
-│   └-- custom_op_{onnx_model_name}.onnx        # 若指定了--custom-op，自定义算子之后的onnx子图模型
-│   └-- new_custom_op_{onnx_model_name}.onnx    # 若指定了--custom-op，自定义算子之后的onnx子图模型，并把每个算子作为输出节点后新生成的 onnx 模型
+│   └-- custom_op_{onnx_model_name}.onnx        # 若指定了--custom-op，删除自定义算子后的onnx子图模型
+│   └-- new_custom_op_{onnx_model_name}.onnx    # 若指定了--custom-op，删除自定义算子后的onnx子图模型，并把每个算子作为输出节点后新生成的 onnx 模型
 ├-- result_{timestamp}.csv                   # 比对结果文件
 └-- tmp                                      # 如果 -m 模型为 Tensorflow pb 文件, tfdbg 相关的临时目录
 ```
