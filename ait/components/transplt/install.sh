@@ -90,6 +90,9 @@ install_clang() {
 download_config_and_headers() {
   cwd=$(pwd)
 
+  ori_mask=$(umask)
+  umask 022
+
   cd $(python3 -c "import app_analyze; print(app_analyze.__path__[0])") \
     && wget -O config.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip \
     && unzip -o -q config.zip \
@@ -98,6 +101,7 @@ download_config_and_headers() {
     && unzip -o -q headers.zip \
     && rm headers.zip -f
 
+  umask $ori_mask
   cd $cwd
 }
 
@@ -107,5 +111,5 @@ if [ $# -gt 0 ] && [ "$1" == '--full' ]; then
   # Install clang
   install_clang
 
-  bash
+  $SHELL
 fi
