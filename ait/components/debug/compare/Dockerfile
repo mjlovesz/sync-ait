@@ -14,7 +14,8 @@ RUN groupadd HwHiAiUser && useradd -rm -d /home/HwHiAiUser -s /bin/bash -g HwHiA
         sed -i "s@http://.*archive.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list \
         && sed -i "s@http://.*security.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list; \
     elif [ "$(uname -m)" = "aarch64" ]; then \
-        sed -i "s@http://.*ports.ubuntu.com@http://mirrors.tools.huawei.com@g" /etc/apt/sources.list; \
+        sed -i "s@http://ports.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list \
+        && sed -i "s@http://ports.ubuntu.com@http://repo.huaweicloud.com@g" /etc/apt/sources.list; \
     fi  &&\
     apt-get update && \
     apt-get install libbz2-dev -y &&\
