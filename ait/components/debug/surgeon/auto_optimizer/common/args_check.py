@@ -76,7 +76,7 @@ def check_shapes_string(value):
     if not value:
         return value
     shapes_string = value
-    regex = re.compile(r"[^_A-Za-z0-9/.-\,;:]")
+    regex = re.compile(r"[^_A-Za-z0-9/.-,;:]")
     if regex.search(shapes_string):
         raise argparse.ArgumentTypeError(f"shapes string \"{shapes_string}\" is not a legal string")
     return shapes_string
@@ -86,7 +86,7 @@ def check_dtypes_string(value):
     if not value:
         return value
     dtypes_string = value
-    regex = re.compile(r"[^_A-Za-z0-9/.-\;:]")
+    regex = re.compile(r"[^_A-Za-z0-9/.-;:]")
     if regex.search(dtypes_string):
         raise argparse.ArgumentTypeError(f"dtypes string \"{dtypes_string}\" is not a legal string")
     return dtypes_string
@@ -96,7 +96,7 @@ def check_io_string(value):
     if not value:
         return value
     io_string = value
-    regex = re.compile(r"[^_A-Za-z0-9/.-\,;:]")
+    regex = re.compile(r"[^_A-Za-z0-9/.-,;:]")
     if regex.search(io_string):
         raise argparse.ArgumentTypeError(f"io string \"{io_string}\" is not a legal string")
     return io_string
@@ -106,7 +106,7 @@ def check_nodes_string(value):
     if not value:
         return value
     nodes_string = value
-    regex = re.compile(r"[^_A-Za-z0-9/.-\,:]")
+    regex = re.compile(r"[^_A-Za-z0-9/.-]")
     if regex.search(nodes_string):
         raise argparse.ArgumentTypeError(f"nodes string \"{nodes_string}\" is not a legal string")
     return nodes_string
