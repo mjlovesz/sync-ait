@@ -60,3 +60,8 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   ait debug compare aclcmp --golden-path ait_dump_path/25115/ --my-path ../../output/acltransformer/tensors/thread_62250
   ```
   ![cmp_result.png](cmp_result.png)
+- 比对结果中只能匹配到权重 MD5 完全相同的算子，由于实际计算中存在权重数据格式转化等，可能匹配到的节点数量较少，因此只作为精度异常问题的大致范围界定
+
+  ![matched_pie.png](matched_pie.png)
+
+  对于 `ChatGLM6b`，单个 token 匹配到的权重 MD5 占比 `20%`
