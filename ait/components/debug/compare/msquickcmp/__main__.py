@@ -23,7 +23,7 @@ from msquickcmp.common.args_check import (
     check_model_path_legality, check_om_path_legality, check_weight_path_legality, check_input_path_legality,
     check_cann_path_legality, check_output_path_legality, check_dict_kind_string, check_device_range_valid,
     check_number_list, check_dym_range_string, check_fusion_cfg_path_legality, check_quant_json_path_legality,
-    check_json_path_legality, safe_string, str2bool
+    valid_json_file_or_dir, safe_string, str2bool
 )
 from msquickcmp.pta_acl_cmp.initial import init_aclcmp_task, clear_aclcmp_task
 from msquickcmp.pta_acl_cmp.utils import compare_metadata
@@ -213,7 +213,7 @@ class AclCompare(BaseCommand):
             '--golden-path',
             dest="golden_path",
             required=False,
-            type=check_json_path_legality,
+            type=valid_json_file_or_dir,
             default='',
             help='Metadata path of golden model.')
 
@@ -221,7 +221,7 @@ class AclCompare(BaseCommand):
             '--my-path',
             dest="my_path",
             required=False,
-            type=check_json_path_legality,
+            type=valid_json_file_or_dir,
             default='',
             help='Metadata path of my model.')
 

@@ -99,7 +99,7 @@ def check_output_path_legality(value):
     return path_value
 
 
-def check_json_path_legality(value):
+def valid_json_file_or_dir(value):
     if not value:
         return value
     path_value = value
