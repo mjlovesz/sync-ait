@@ -205,6 +205,7 @@ class AclCompare(BaseCommand):
             '--exec',
             dest="exec",
             required=False,
+            type=safe_string,
             default='',
             help='Exec command to run acltransformer model inference. ')
 
@@ -212,6 +213,7 @@ class AclCompare(BaseCommand):
             '--golden-path',
             dest="golden_path",
             required=False,
+            type=check_json_path_legality,
             default='',
             help='Metadata path of golden model.')
 
@@ -219,6 +221,7 @@ class AclCompare(BaseCommand):
             '--my-path',
             dest="my_path",
             required=False,
+            type=check_json_path_legality,
             default='',
             help='Metadata path of my model.')
 
@@ -226,6 +229,7 @@ class AclCompare(BaseCommand):
             '--output',
             dest="output",
             required=False,
+            type=check_output_path_legality,
             default='./',
             help='The output compared report path')
 
