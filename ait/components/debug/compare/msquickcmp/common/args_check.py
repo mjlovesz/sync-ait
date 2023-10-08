@@ -111,12 +111,13 @@ def check_json_path_legality(value):
         raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
     
     # input type: dir or json
-    # input type -> dir need additional check
-    if not file_stat.is_legal_file_type(["json"]) and not file_stat.is_dir:
-        raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
+    # input type -> json need additional check
+    if not file_stat.is_dir:
+        if not file_stat.is_legal_file_type(["json"]):
+            raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
     
-    if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
-        raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
+        if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
+            raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
     return path_value
 
 
