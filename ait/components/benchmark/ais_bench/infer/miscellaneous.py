@@ -154,7 +154,9 @@ def get_batchsize(session, args):
         instr = args.dym_dims if args.dym_dims is not None else args.dym_shape
         elems = instr.split(';')
         for elem in elems:
-            name, shapestr = elem.split(':')
+            tmp_idx = elem.rfind(':')
+            name = elem[:tmp_idx]
+            shapestr = elem[tmp_idx + 1:]
             if name == intensors_desc[0].name:
                 batchsize = int(shapestr.split(',')[0])
     return batchsize
