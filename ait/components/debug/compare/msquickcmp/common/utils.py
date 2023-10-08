@@ -30,7 +30,6 @@ import argparse
 import numpy as np
 import pandas as pd
 
-from components.utils.security_check import check_character
 from msquickcmp.common.dynamic_argument_bean import DynamicArgumentEnum
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
