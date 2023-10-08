@@ -203,18 +203,13 @@ Result ModelProcess::CheckDynamicShape(
         inputnames.push_back(inputname);
     }
     for (size_t i = 0; i < dym_shape_tmp.size(); ++i) {
-        istringstream block(dym_shape_tmp[i]);
-        string cell;
-        size_t index = 0;
-        vector<string> shape_tmp;
-        while (getline(block, cell, ':')) {
-            if (index == 0) {
-                name = cell;
-            } else if (index == 1) {
-                shape_str = cell;
-            }
-            index += 1;
+        string tmpStr = dym_shape_tmp[i];
+        int charPos = tmpStr.rfind(':');
+        if (charPos != string::npos) {
+            name = tmpStr.substr(0, pos);
+            shared_ptr = tmpStr.substr(pos + 1);
         }
+        vector<string> shape_tmp;
         Utils::SplitStringWithPunctuation(shape_str, shape_tmp, ',');
         size_t shape_tmp_size = shape_tmp.size();
         vector<int64_t> shape_array_tmp;
