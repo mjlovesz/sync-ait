@@ -18,6 +18,7 @@ class CevalDataset(BaseDataset):
     def load(self, dataset_path):
         '''
         dataset_path-
+        use val dataset as validation use dev dataset as prompt
         '''
         if dataset_path is None:
             dataset_path = self._download()
@@ -42,7 +43,8 @@ class CevalDataset(BaseDataset):
         return self
 
     def _gen_prompt(self, prompt_df, category_name, val_row):
-        pass
+        prompt = "pretend to be a prompt"
+        return prompt
 
     def __next__(self):
         if self.current_key >= len(self.subjects):
@@ -66,7 +68,47 @@ class CevalDataset(BaseDataset):
         self.current_index += 1
         return result
 
-    def compute_metrics(self, recorder):
-        
+
+    def compute(self, data) -> dict:
+        '''
+        input: data in the form of pandas.DataFrame
+        output: a dictionary containing accuracy, total number of entry, number of correct entry
+        '''
+        out_dict = dict()
+        out_dict["total amount"] = data.shape[0]
+        out_dict["correct amount"] = len(data[data["ground_truth"] == data["answer"]])
+        if out_dict["total amount"] == 0:
+            out_dict["accuracy"] = 0
+        else:
+            out_dict["accuracy"] = out_dict["correct amount"] / out_dict["total amount"]
+
+        return out_dict
+
+    def combine(self, metrics_list) -> dict:
+        '''
+        input: a list of metrics dictonary
+        outpu: a dictionary combining all the info in metrics_list
+        '''
+        out_dict = dict()
+        out_dict["total amount"] = 0
+        out_dict["correct amount"] = 0
+        for metrics in metrics_list:
+            out_dict["total amount"] += metrics["total amount"]
+            out_dict["correct amount"] += metrics["correct amount"]
+        if out_dict["total amount"] == 0:
+            out_dict["accuracy"] = 0
+        else:
+            out_dict["accuracy"] = out_dict["correct amount"] / out_dict["total amount"]
+
+        return out_dict
+
+
+    def report(self, metrics):
+        '''
+        input: a metrics (dictionary)
+        output: None
+        '''
+        print(metrics)
+
 
 

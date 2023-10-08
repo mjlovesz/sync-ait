@@ -8,7 +8,6 @@ class Evaluator():
         self.set_generate_func(generate_func)
         self.set_rank(rank)
         self.set_dataset(dataset_name, dataset_path, shot)
-        self.recorder = Recorder()
 
     def set_generate_func(self, generate_func):
         self.generate = generate_func
@@ -20,12 +19,13 @@ class Evaluator():
         self.dataset = DatasetFactory().get_dataset(dataset_name, dataset_path, shot)
 
     def evaluate(self):
+        recorder = Recorder()
         for index, entry_dict in self.dataset:
             answer = self.generate(entry_dict.get("prompt"))
             entry_dict["answer"] = answer
             if self.rank == 0:
-                self.recorder.record(index, entry_dict)
+                recorder.record(index, entry_dict)
 
-        res = self.dataset.compute_metrics()
-        self.dataset.report(res)
- 
+        recorder.statistics(self.dataset.compute, self.dataset.combine)
+        recorder.report(self.dataset.report)
+        return recorder

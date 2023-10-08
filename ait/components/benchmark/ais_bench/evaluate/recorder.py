@@ -1,29 +1,63 @@
 import pandas as pd
 
 class Recorder():
-    def __init__(self) -> None:
-        self.records = dict()
+    def __init__(self, name) -> None:
+        self.name = name
+        self.records = None
+        self.metrics = None
+        self.children = dict()
 
     def record(self, index : list, entry_dict : dict):
         '''
         all the index should be of the same length
         '''
         if index == []:
-            if self.records is dict():
+            if self.records is None:
                 self.records = pd.DataFrame(columns=entry_dict.keys())
             df_dict = pd.DataFrame([entry_dict])
             self.records = pd.concat([self.records, df_dict], ignore_index=True)
             return
 
-        if index[0] not in self.records:
-            self.records[index[0]] = Recorder()
-        self.records.get(index[0]).record(index[1:], entry_dict)
+        current_index = index[0]
+        if current_index not in self.children:
+            self.children[current_index] = Recorder(current_index)
+        self.children.get(current_index).record(index[1:], entry_dict)
 
     def read(self, index):
         if index == []:
             return self.records
+        current_index = index[0]
+        return self.children.get(current_index).read(index[1:])
 
-        return self.records.get(index[0]).read(index[1:])
+    def statistics(self, func_compute = None, func_combine = None):
+        if self.metrics is not None:
+            return self.metrics
+        if not self.children:
+            if func_compute is None:
+                print("Record.statistics failed: function to compute metrics missing")
+                raise Exception
+            self.metrics = func_compute(self.records)
+            return self.metrics
+        else:
+            metrics_list = []
+            for child in self.children:
+                metrics_list.append(child.statistics())
+            if func_compute is None:
+                print("Record.statistics failed: function to combine metrics missing")
+                raise Exception
+            self.metrics = func_combine(metrics_list)
+            return self.metrics
+
+    def report(self, func_report = None):
+        if func_report is None:
+            print("Record.report failed: function to report metrics missing")
+            raise Exception
+        func_report(self.metrics)
+
+
+
+
+
 
     # def build(self, index):
     #     if index == []:
