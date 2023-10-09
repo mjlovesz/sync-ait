@@ -562,9 +562,13 @@ class InferSession:
         for feed in feeds:
             if type(feed) is np.ndarray:
                 infer_input = feed
+                if not infer_input.flags.c_contiguous:
+                    infer_input = np.ascontiguousarray(infer_input)
                 shapes.append(infer_input.shape)
             elif type(feed) in NP_TYPE_LIST:
                 infer_input = np.array(feed)
+                if not infer_input.flags.c_contiguous:
+                    infer_input = np.ascontiguousarray(infer_input)
                 shapes.append([feed.size])
             elif type(feed) is aclruntime.Tensor:
                 infer_input = feed
@@ -604,9 +608,13 @@ class InferSession:
             for feed in feeds:
                 if type(feed) is np.ndarray:
                     infer_input = feed
+                    if not infer_input.flags.c_contiguous:
+                        infer_input = np.ascontiguousarray(infer_input)
                     shape = feed.shape
                 elif type(feed) in NP_TYPE_LIST:
                     infer_input = np.array(feed)
+                    if not infer_input.flags.c_contiguous:
+                        infer_input = np.ascontiguousarray(infer_input)
                     shape = [feed.size]
                 elif type(feed) is aclruntime.Tensor:
                     infer_input = np.array(feed)
@@ -664,9 +672,13 @@ class InferSession:
         for feed in feeds:
             if type(feed) is np.ndarray:
                 infer_input = feed
+                if not infer_input.flags.c_contiguous:
+                    infer_input = np.ascontiguousarray(infer_input)
                 shapes.append(infer_input.shape)
             elif type(feed) in NP_TYPE_LIST:
                 infer_input = np.array(feed)
+                if not infer_input.flags.c_contiguous:
+                    infer_input = np.ascontiguousarray(infer_input)
                 shapes.append([feed.size])
             elif hasattr(feed, 'type') and feed.type() in TORCH_TENSOR_LIST:
                 infer_input = feed.numpy()
