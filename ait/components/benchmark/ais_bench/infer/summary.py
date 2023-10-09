@@ -100,8 +100,8 @@ class Summary(object):
     def add_args(self, args):
         self.infodict["args"] = args
 
-    def record(self, result, multi_thread = False):
-        if multi_thread:
+    def record(self, result, multi_threads = False):
+        if multi_threads:
             self.infodict['NPU_compute_time'] = {"mean": result.npu_compute_time.mean,
                                                  "count": len(self.npu_compute_time_interval_list)}
             self.infodict['H2D_latency'] = {"mean": result.h2d_latency.mean,"count": len(self.h2d_latency_list)}
@@ -124,9 +124,9 @@ class Summary(object):
         self.infodict['throughput'] = result.throughput
         self.infodict['pid'] = os.getpid()
 
-    def display(self, result, display_all_summary, multi_thread):
+    def display(self, result, display_all_summary, multi_threads):
         logger.info("-----------------Performance Summary------------------")
-        if multi_thread:
+        if multi_threads:
             if display_all_summary is True:
                 logger.info("H2D_latency (ms): mean = {0}".format(result.h2d_latency.mean))
             logger.info("NPU_compute_time (ms): mean = {0}".format(result.npu_compute_time.mean))
@@ -149,7 +149,7 @@ class Summary(object):
             result.batchsize, result.npu_compute_time.mean, result.throughput))
         logger.info("------------------------------------------------------")
 
-    def report(self, batchsize, output_prefix, display_all_summary=False, multi_thread = False):
+    def report(self, batchsize, output_prefix, display_all_summary=False, multi_threads = False):
         scale = 99
 
         if self.npu_compute_time_list and self.npu_compute_time_interval_list:
@@ -178,8 +178,8 @@ class Summary(object):
         result.scale = scale
         result.batchsize = batchsize
 
-        self.record(result, multi_thread)
-        self.display(result, display_all_summary, multi_thread)
+        self.record(result, multi_threads)
+        self.display(result, display_all_summary, multi_threads)
 
 
         if output_prefix is not None:

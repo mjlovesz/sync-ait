@@ -365,12 +365,12 @@ class TestClass:
             assert os.path.exists(suffix_file_path)
             shutil.rmtree(result_path)
 
-    def test_args_thread_ok(self):
+    def test_args_threads_ok(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         log_path = os.path.join(TestCommonClass.base_path, "log.txt")
-        thread = 2
-        cmd = "{} --model {} --device {} --pipeline 1 --thread {} > {}".format(
-            TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, thread, log_path)
+        threads = 2
+        cmd = "{} --model {} --device {} --pipeline 1 --threads {} > {}".format(
+            TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, threads, log_path)
         logging.info(f"run cmd:{cmd}")
         ret = os.system(cmd)
         assert ret == 0
@@ -381,7 +381,7 @@ class TestClass:
         except Exception as e:
             raise Exception("raise an exception: {}".format(e)) from e
 
-        assert int(outval) == thread
+        assert int(outval) == threads
 
 
 if __name__ == '__main__':
