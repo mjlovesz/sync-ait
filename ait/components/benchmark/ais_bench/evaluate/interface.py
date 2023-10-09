@@ -26,6 +26,6 @@ class Evaluator():
             if self.rank == 0:
                 recorder.record(index, entry_dict)
 
-        recorder.statistics(self.dataset.compute, self.dataset.combine)
+        recorder.statistics(self.dataset.compute)
         recorder.report(self.dataset.report)
         return recorder

@@ -12,10 +12,6 @@ class BaseDataset(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def compute_metrics(self, recorder): # dataset -> accuracy
-        raise NotImplementedError
-
-    @abstractmethod
     def __iter__(self):
         raise NotImplementedError
 
@@ -24,5 +20,9 @@ class BaseDataset(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def report(self, result):
+    def compute(self, data):
+        raise NotImplementedError
+
+    @abstractmethod
+    def report(self, metrics):
         raise NotImplementedError

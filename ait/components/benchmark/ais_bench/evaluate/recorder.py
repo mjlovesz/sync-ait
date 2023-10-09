@@ -29,24 +29,23 @@ class Recorder():
         current_index = index[0]
         return self.children.get(current_index).read(index[1:])
 
-    def statistics(self, func_compute = None, func_combine = None):
+    def statistics(self, func_compute = None):
         if self.metrics is not None:
             return self.metrics
+        if func_compute is None:
+            print("Record.statistics failed: function to compute metrics missing")
+            raise Exception
+
         if not self.children:
-            if func_compute is None:
-                print("Record.statistics failed: function to compute metrics missing")
-                raise Exception
-            self.metrics = func_compute(self.records)
-            return self.metrics
+            data = self.records
         else:
-            metrics_list = []
+            data = []
             for child in self.children:
-                metrics_list.append(child.statistics())
-            if func_compute is None:
-                print("Record.statistics failed: function to combine metrics missing")
-                raise Exception
-            self.metrics = func_combine(metrics_list)
-            return self.metrics
+                data.append(child.statistics())
+
+        self.metrics = func_compute(data)
+        return self.metrics
+
 
     def report(self, func_report = None):
         if func_report is None:

@@ -43,7 +43,15 @@ class CevalDataset(BaseDataset):
         return self
 
     def _gen_prompt(self, prompt_df, category_name, val_row):
-        prompt = "pretend to be a prompt"
+        question_template = "问： {question}\nA. {A}\nB. {B}\nC. {C}\nD. {D}\n答： {answer}\n"
+
+        prompt = f"以下展示了在{category_name}领域的选择题及其正确答案\n\n"
+        for _, row in prompt_df.iterrows():
+            prompt += question_template.format(question=row["question"], A=row["A"], B=row["B"],
+                                               C=row["C"], D=row["D"], answer=row["answer"])
+        prompt += "请回答以下选择题\n"
+        prompt += question_template.format(question=val_row["question"], A=val_row["A"], B=val_row["B"],
+                                               C=val_row["C"], D=val_row["D"], answer="")
         return prompt
 
     def __next__(self):
@@ -71,36 +79,26 @@ class CevalDataset(BaseDataset):
 
     def compute(self, data) -> dict:
         '''
-        input: data in the form of pandas.DataFrame
+        input: data in the form of pandas.DataFrame OR a list of metrics dictonary
         output: a dictionary containing accuracy, total number of entry, number of correct entry
-        '''
-        out_dict = dict()
-        out_dict["total amount"] = data.shape[0]
-        out_dict["correct amount"] = len(data[data["ground_truth"] == data["answer"]])
-        if out_dict["total amount"] == 0:
-            out_dict["accuracy"] = 0
-        else:
-            out_dict["accuracy"] = out_dict["correct amount"] / out_dict["total amount"]
-
-        return out_dict
-
-    def combine(self, metrics_list) -> dict:
-        '''
-        input: a list of metrics dictonary
-        outpu: a dictionary combining all the info in metrics_list
         '''
         out_dict = dict()
         out_dict["total amount"] = 0
         out_dict["correct amount"] = 0
-        for metrics in metrics_list:
-            out_dict["total amount"] += metrics["total amount"]
-            out_dict["correct amount"] += metrics["correct amount"]
+        if isinstance(data, list):
+            for metrics in data:
+                out_dict["total amount"] += metrics.get("total amount")
+                out_dict["correct amount"] += metrics.get("correct amount")
+        else:
+            out_dict["total amount"] = data.shape[0]
+            out_dict["correct amount"] = len(data[data["ground_truth"] == data["answer"]])
         if out_dict["total amount"] == 0:
             out_dict["accuracy"] = 0
         else:
             out_dict["accuracy"] = out_dict["correct amount"] / out_dict["total amount"]
 
         return out_dict
+
 
 
     def report(self, metrics):
