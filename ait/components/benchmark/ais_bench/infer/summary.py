@@ -131,7 +131,7 @@ class Summary(object):
                 logger.info("H2D_latency (ms): mean = {0}".format(result.h2d_latency.mean))
             logger.info("NPU_compute_time (ms): mean = {0}".format(result.npu_compute_time.mean))
             if display_all_summary is True:
-                logger.info("D2H_latency (ms): mean = {2}".format(result.d2h_latency.mean))
+                logger.info("D2H_latency (ms): mean = {0}".format(result.d2h_latency.mean))
         else:
             if display_all_summary is True:
                 logger.info("H2D_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
