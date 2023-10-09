@@ -1,7 +1,7 @@
 import pandas as pd
 
 class Recorder():
-    def __init__(self, name) -> None:
+    def __init__(self, name = "default") -> None:
         self.name = name
         self.records = None
         self.metrics = None
@@ -41,7 +41,7 @@ class Recorder():
         else:
             data = []
             for child in self.children:
-                data.append(child.statistics())
+                data.append(child.statistics(func_compute))
 
         self.metrics = func_compute(data)
         return self.metrics

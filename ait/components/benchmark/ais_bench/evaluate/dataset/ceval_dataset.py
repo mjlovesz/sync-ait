@@ -30,10 +30,10 @@ class CevalDataset(BaseDataset):
             val_path = os.path.join(dataset_path, "val", subject+"_val.csv")
             prompt_path = os.path.join(dataset_path, "dev", subject+"_dev.csv")
             with ms_open(val_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
-                val_df = pd.read_csv(file, header=None)
+                val_df = pd.read_csv(file, header=0)
             self.subject_mapping[subject].append(val_df)
             with ms_open(prompt_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
-                prompt_df = pd.read_csv(file, header=None)[:self.shot+1]
+                prompt_df = pd.read_csv(file, header=0)[:self.shot+1]
             self.subject_mapping[subject].append(prompt_df)
         self.subjects = list(self.subject_mapping.keys())
 
@@ -72,9 +72,10 @@ class CevalDataset(BaseDataset):
 
         prompt = self._gen_prompt(prompt_df, category, val_df.loc[self.current_index])
         result = {"id": self.current_index, "category": category, "sub_category": subcategory,
-                  "prompt": prompt, "ground_truth": prompt_df.loc[self.current_index, "answer"]}
+                  "prompt": prompt, "ground_truth": val_df.loc[self.current_index, "answer"]}
+        index = [category, subcategory]
         self.current_index += 1
-        return result
+        return index, result
 
 
     def compute(self, data) -> dict:
