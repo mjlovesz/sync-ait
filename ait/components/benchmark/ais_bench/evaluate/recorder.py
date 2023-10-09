@@ -40,7 +40,7 @@ class Recorder():
             data = self.records
         else:
             data = []
-            for child in self.children:
+            for child in self.children.values():
                 data.append(child.statistics(func_compute))
 
         self.metrics = func_compute(data)
