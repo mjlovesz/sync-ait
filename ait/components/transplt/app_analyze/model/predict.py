@@ -69,4 +69,7 @@ if __name__ == '__main__':
     # '/home/liuzhe/package/opencv-4.5.4/samples/cpp'
     # /home/liuzhe/samples/gpu_mat_test
     # /home/liuzhe/samples/HyperVID/Prj-Cpp
-    model.predict('/home/liuzhe/samples/gpu_mat_test')
+    model.predict('/home/liuzhe/samples/HyperVID/Prj-Cpp')
+
+
+

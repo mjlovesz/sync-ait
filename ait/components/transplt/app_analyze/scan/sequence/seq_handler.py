@@ -218,27 +218,35 @@ class SeqHandler:
 
     @staticmethod
     def group_api_seqs(seqs, expert_libs):
-        # b is lib api call sequence
+        # a:描出的序列; b:模板序列
         def _calc_dist(a, b):
             intersection = np.intersect1d(a, b)
             union = np.union1d(a, b)
             ratio = len(intersection) * 1.0 / len(union) if len(intersection) else -1
+            # in_flag为true，表示模板序列包含在扫描出来的序列中
             in_flag = True if len(intersection) == len(b) else False
             return ratio, in_flag
 
         def _group(seq, lib_seqs, sim):
+            # 遍历对应加速库的模板
             for lib_seq in lib_seqs:
+                # 获取加速库的模板序列
                 src_seq = lib_seq.src_seq
+                # 计算扫描出的序列跟模板序列的匹配度
                 val, flag = _calc_dist(seq, src_seq)
-                if val < 0:
-                    continue
-
                 if flag:
+                    # 模板序列包含在扫描出来的序列中,可以进行推荐
                     in_lib_seqs[lib_seq] = (val, src_seq)
                 else:
+                    # 小于阈值的，不进行推荐
+                    if val < SeqArgs.SIM_MIN_SUPPORT:
+                        continue
+
                     if val == sim:
+                        # 具有相同阈值的序列都保存起来
                         cs_lib_seqs[lib_seq] = (sim, src_seq)
                     elif val > sim:
+                        # 如果当前相似度大于阈值，进行最新序列的替换
                         sim = val
                         cs_lib_seqs.clear()
                         cs_lib_seqs[lib_seq] = (sim, src_seq)
@@ -246,18 +254,25 @@ class SeqHandler:
 
         def _sort(usr_seq, cs_seqs, in_seqs):
             if cs_seqs and not in_seqs:
+                # 序列和模板库交叉
                 return dict(zip(cs_seqs.keys(), [_[0] for _ in list(cs_seqs.values())]))
             elif not cs_seqs and not in_seqs:
+                # 没有推荐的序列
                 return dict()
             elif not cs_seqs and in_seqs:
-                # sort
+                # 序列包含在模板库中
                 return dict(zip(in_seqs.keys(), [_[0] for _ in list(in_seqs.values())]))
             else:
+                # 既存在序列在模板库中的情况，又存在序列跟模板库交叉的情况
                 apis = list()
                 for _ in list(in_seqs.values()):
                     apis += _[1]
+
+                # 如果扫描到的序列包括多个子序列，并且多个子序列拼起来的相似度高于交叉序列的相似度，
+                # 则选择包含的推荐方式，否则选择交叉的推荐方式。
                 merged_ratio, _ = _calc_dist(usr_seq, list(set(apis)))
                 max_cs_ratio = list(cs_seqs.values())[0][0]
+
                 if merged_ratio > max_cs_ratio:
                     return dict(zip(in_seqs.keys(), [_[0] for _ in list(in_seqs.values())]))
                 else:
@@ -266,16 +281,22 @@ class SeqHandler:
         result = dict()
         for seq_desc in seqs:
             sim_val = -1
+            # 模板序列和扫描出来的序列是交叉关系
             cs_lib_seqs = dict()
+            # 模板序列包含在扫描出来的序列中
             in_lib_seqs = dict()
 
+            # 获取序列中所涉及的加速库
             acc_names = set([_.acc_name for _ in seq_desc.api_seq if _.acc_name])
+            # 获取当前序列的id列表
             cur_idx_list = [_.func_id for _ in seq_desc.api_seq]
             for acc_name in acc_names:
+                # 获取当前加速库对应的模板
                 seq_info = expert_libs.acc_lib_dict.get(acc_name, None)
                 if seq_info:
+                    # 进行模板匹配
                     sim_val = _group(cur_idx_list, seq_info.seqs, sim_val)
-
+            # 对扫描出来的结果进行处理
             result[seq_desc] = _sort(cur_idx_list, cs_lib_seqs, in_lib_seqs)
         return result
 
@@ -331,7 +352,7 @@ def mining_api_seqs(seqs, idx_seq_dict=None):
     return all_seqs
 
 
-def load_api_seqs(seq_file):
+def load_api_seqs(seq_file: object) -> object:
     seq_info = SeqHandler.load_api_seqs(seq_file)
     return seq_info
 
