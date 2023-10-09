@@ -526,13 +526,16 @@ def main(args, index=0, msgq=None, device_list=None):
         end_energy_consumption = get_energy_consumption(args.npu_id)
     end_time = time.time()
 
+    multi_thread_mode = args.thread > 1 and args.pipeline
     summary.add_args(sys.argv)
     s = session.sumary()
-    summary.npu_compute_time_list = [time / args.thread for time in s.exec_time_list]
+    if multi_thread_mode:
+        summary.npu_compute_time_interval_list = s.exec_time_list
+    else:
+        summary.npu_compute_time_list = [end_time - start_time for start_time, end_time in s.exec_time_list]
     summary.h2d_latency_list = MemorySummary.get_h2d_time_list()
     summary.d2h_latency_list = MemorySummary.get_d2h_time_list()
-    summary.report(args.batchsize, output_prefix, args.display_all_summary)
-    logger.info("end_to_end_time (s):%s", end_time - start_time)
+    summary.report(args.batchsize, output_prefix, args.display_all_summary, multi_thread_mode)
     if args.energy_consumption and args.npu_id:
         energy_consumption = ((float(end_energy_consumption) + float(start_energy_consumption)) / 2.0) \
             * (end_time - start_time)

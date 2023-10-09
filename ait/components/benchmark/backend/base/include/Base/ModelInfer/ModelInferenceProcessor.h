@@ -137,7 +137,9 @@ struct ModelDesc {
 };
 
 struct InferSumaryInfo {
-    std::vector<float> execTimeList;
+    InferSumaryInfo() {gettimeofday(&zero_point, nullptr);}
+    std::vector<pair<float, float>> execTimeList;
+    struct timeval zero_point = { 0 };
 };
 
 class ModelInferenceProcessor {
