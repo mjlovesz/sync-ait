@@ -78,6 +78,9 @@ def set_session_options(session, args):
         args.batchsize = get_batchsize(session, args)
         logger.info(f"try get model batchsize:{args.batchsize}")
 
+    if args.batchsize < 0 and not args.dym_batch and not args.dym_dims and not args.dym_shape:
+        raise RuntimeError('dynamic batch om model detected, but dymbatch, dymdims or dymshape not set!')
+
     if aipp_batchsize < 0:
         aipp_batchsize = args.batchsize
 
