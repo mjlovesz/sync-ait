@@ -167,7 +167,9 @@ def get_range_list(ranges):
     info_list = []
     for elem in elems:
         shapes = []
-        name, shapestr = elem.split(':')
+        tmp_idx = elem.rfind(':')
+        name = elem[:tmp_idx]
+        shapestr = elem[tmp_idx + 1:]
         for content in shapestr.split(','):
             step = 1
             if '~' in content:
