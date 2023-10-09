@@ -17,7 +17,7 @@ chmod u+x install.sh
 
 - 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit软件包。建议安装CANN商业版6.3.RC1以上版本。
 - 请参见《[GCC安装指引](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000091.html)》安装GCC编译器7.3.0版本。
-- 安装python3.7.5。
+- Python版本：支持Python3.7.x、Python3.8.x、Python3.9.x(**如使用TensorFlow模型的精度对比功能则需要Python3.7.x版本**)。
 
 ### 工具安装方式
 
@@ -47,12 +47,13 @@ ait推理工具的安装包括**ait包**和**依赖的组件包**的安装，其
 
 ```shell
 git clone https://gitee.com/ascend/ait.git
+# 1. git pull origin 更新最新代码 
 cd ait/ait
 
-# 1. 添加执行权限
+# 2. 添加执行权限
 chmod u+x install.sh
 
-# 2. 以下install.sh根据情况选一个执行
+# 3. 以下install.sh根据情况选一个执行
 # a. 安装ait，包括debug、profile、benchmark、transplt、analyze等组件（不安装clang等系统依赖库，只影响transplt功能）
 ./install.sh
   
@@ -72,25 +73,28 @@ cd ait/ait
 # 添加执行权限
 chmod u+x install.sh
 
-# 1. 只安装debug组件（使用compare功能、surgen功能的opt命令下面的--infer-test，需要安装benchmark组件）
-./install.sh --debug
+# 1. 只安装debug下面的surgeon组件
+./install.sh --surgeon
 
-# 2. 只安装benchmark组件
+# 2. 只安装debug下面的compare组件（由于依赖关系，默认安装benchmark组件）
+./install.sh --compare
+
+# 3. 只安装benchmark组件
 ./install.sh --benchmark
 
-# 3. 只安装analyze组件
+# 4. 只安装analyze组件
 ./install.sh --analyze
 
-# 4. 只安装transplt组件（不安装transplt组件依赖的clang系统库）
+# 5. 只安装transplt组件（不安装transplt组件依赖的clang系统库）
 ./install.sh --transplt
 
-# 5. 只安装transplt组件（安装transplt组件依赖的clang系统库，需要提供sudo权限,sles系统安装时，需要手动选择'y',然后继续安装）
+# 6. 只安装transplt组件（安装transplt组件依赖的clang系统库，需要提供sudo权限,sles系统安装时，需要手动选择'y',然后继续安装）
 ./install.sh --transplt --full
 
-# 6. 只安装profile组件
+# 7. 只安装profile组件
 ./install.sh --profile
 
-# 7. 只安装convert组件
+# 8. 只安装convert组件
 ./install.sh --convert
 ```
 
@@ -103,11 +107,11 @@ chmod u+x install.sh
 # 2. 不询问式直接全部卸载
 ./install.sh --uninstall -y
 
-# 3. 单独组件询问式卸载(例如debug组件)
-./install.sh --uninstall --debug
+# 3. 单独组件询问式卸载(例如surgeon组件)
+./install.sh --uninstall --surgeon
 
-# 4. 不询问式单独组件直接卸载(例如debug组件)
-./install.sh --uninstall --debug -y
+# 4. 不询问式单独组件直接卸载(例如surgeon组件)
+./install.sh --uninstall --surgeon -y
 ```
 
 ### 常见问题 Q&A

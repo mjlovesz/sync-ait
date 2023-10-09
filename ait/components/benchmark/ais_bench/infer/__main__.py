@@ -296,6 +296,14 @@ def get_args():
         help="Input datas need to be divided to match multi devices or not, \
             --device should be list, default False"
     )
+    parser.add_argument(
+        '--thread',
+        dest='thread',
+        type=check_positive_integer,
+        default=1,
+        help="Number of thread for computing. \
+            need to set --pipeline when setting thread number to be more than one."
+    )
     benchmark_args = parser.parse_args()
 
     return benchmark_args
@@ -311,6 +319,6 @@ if __name__ == "__main__":
                 args.profiler, args.dump, args.acl_json_path, args.output_batchsize_axis, args.run_mode,
                 args.display_all_summary, args.warmup_count, args.dym_shape_range, args.aipp_config,
                 args.energy_consumption, args.npu_id, args.backend, args.perf, args.pipeline, args.profiler_rename,
-                args.dump_npy, args.divide_input)
+                args.dump_npy, args.divide_input, args.thread)
     ret = benchmark_process(args)
     exit(ret)

@@ -21,7 +21,7 @@ with open('README.md', encoding='utf-8') as f:
 
 setup(
     name='compare',
-    version='0.0.1',
+    version='0.0.2',
     description='This tool enables one-click network-wide accuracy analysis of gold model.',
     long_description=long_description,
     long_description_content_type='text/markdown',

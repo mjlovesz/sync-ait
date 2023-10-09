@@ -173,7 +173,7 @@ def run_inference(session, args, inputs, out_array=False):
     return outputs
 
 
-def run_pipeline_inference(session, args, infileslist, output_prefix):
+def run_pipeline_inference(session, args, infileslist, output_prefix, extra_session):
     out = output_prefix if output_prefix is not None else ""
     pure_infer_mode = False
     if args.input is None:
@@ -183,7 +183,8 @@ def run_pipeline_inference(session, args, infileslist, output_prefix):
                          args.auto_set_dymshape_mode,
                          args.auto_set_dymdims_mode,
                          args.outfmt,
-                         pure_infer_mode)
+                         pure_infer_mode,
+                         [s.session for s in extra_session])
 
 
 # tensor to loop infer
@@ -256,9 +257,9 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
             )
 
 
-def infer_pipeline_run(session, args, infileslist, output_prefix):
-    logger.info("run in pipeline mode")
-    run_pipeline_inference(session, args, infileslist, output_prefix)
+def infer_pipeline_run(session, args, infileslist, output_prefix, extra_session):
+    logger.info(f"run in pipeline mode with {args.thread} computing threads.")
+    run_pipeline_inference(session, args, infileslist, output_prefix, extra_session)
 
 
 def get_file_name(file_path: str, suffix: str, res_file_path: list) -> list:
@@ -398,6 +399,11 @@ def main(args, index=0, msgq=None, device_list=None):
         tmp_acl_json_path, real_dump_path, tmp_dump_path = create_tmp_acl_json(acl_json_path)
 
     session = init_inference_session(args, tmp_acl_json_path if tmp_acl_json_path is not None else acl_json_path)
+    # if pipeline is set and thread number is > 1, create a session pool for extra computing
+    extra_session = []
+    if args.pipeline:
+        extra_session = [init_inference_session(args, tmp_acl_json_path if tmp_acl_json_path is not None\
+                                                else acl_json_path) for _ in range(args.thread - 1)]
 
     intensors_desc = session.get_inputs()
     if device_list is not None and len(device_list) > 1:
@@ -452,6 +458,8 @@ def main(args, index=0, msgq=None, device_list=None):
         for file in infileslist[0]:
             infiles.append([file])
         warmup(session, args, intensors_desc, infiles)
+        for sess in extra_session:
+            warmup(sess, args, intensors_desc, infiles)
 
     if args.pipeline and (args.auto_set_dymshape_mode or args.auto_set_dymdims_mode):
         for file_list in infileslist:
@@ -479,7 +487,7 @@ def main(args, index=0, msgq=None, device_list=None):
     if args.energy_consumption and args.npu_id:
         start_energy_consumption = get_energy_consumption(args.npu_id)
     if args.pipeline:
-        infer_pipeline_run(session, args, infileslist, output_prefix)
+        infer_pipeline_run(session, args, infileslist, output_prefix, extra_session)
     else:
         run_mode_switch = {
             "array": infer_loop_array_run,
@@ -497,7 +505,7 @@ def main(args, index=0, msgq=None, device_list=None):
 
     summary.add_args(sys.argv)
     s = session.sumary()
-    summary.npu_compute_time_list = s.exec_time_list
+    summary.npu_compute_time_list = [time / args.thread for time in s.exec_time_list]
     summary.h2d_latency_list = MemorySummary.get_h2d_time_list()
     summary.d2h_latency_list = MemorySummary.get_d2h_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary)
@@ -510,7 +518,11 @@ def main(args, index=0, msgq=None, device_list=None):
         # put result to msgq
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
 
-    session.finalize()
+    session.free_resource()
+    for sess in extra_session:
+        sess.free_resource()
+
+    InferSession.finalize()
 
     if args.dump_npy and acl_json_path is not None:
         convert(tmp_acl_json_path, real_dump_path, tmp_dump_path)
@@ -630,6 +642,11 @@ def args_rules(args):
         logger.error(
             "parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
         raise RuntimeError('error bad parameters --output_dirname')
+
+    if args.thread > 1 and not args.pipeline:
+        logger.info("need to set --pipeline when setting thread number to be more than one.")
+        args.thread = 1
+
     return args
 
 

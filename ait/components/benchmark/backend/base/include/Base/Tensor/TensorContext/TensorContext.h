@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #ifndef TENSOR_CONTEXT_H
 #define TENSOR_CONTEXT_H
 
@@ -34,13 +34,14 @@ struct ContextStatus {
     ContextMode status = CONTEXT_IDEL;
 };
 
-class TensorContext
-{
+class TensorContext {
 public:
     TensorContext();
     ~TensorContext();
     static std::shared_ptr<TensorContext> GetInstance();
-    APP_ERROR SetContext(const uint32_t &deviceId);
+    APP_ERROR CreateContext(const uint32_t &deviceId, size_t& contextIndex);
+    APP_ERROR SetContext(const uint32_t &deviceId, const size_t contextIndex = 0);
+    APP_ERROR DestroyContext(const uint32_t &deviceId, const size_t& contextIndex);
     APP_ERROR Finalize();
 private:
     bool InitDeviceFlag_ = false;

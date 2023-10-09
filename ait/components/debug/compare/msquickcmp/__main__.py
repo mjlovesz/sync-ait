@@ -12,14 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import re
 import argparse
 
-from components.parser.parser import BaseCommand
+from components.utils.parser import BaseCommand
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.cmp_process import cmp_process
-
+from msquickcmp.common.utils import logger, check_exec_cmd
+from msquickcmp.pta_acl_cmp.initial import init_aclcmp_task, clear_aclcmp_task
 
 CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
+STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
+
+
+def safe_string(value):
+    if re.search(STR_WHITE_LIST_REGEX, value):
+        raise ValueError("String parameter contains invalid characters.")
+    return value
 
 
 def str2bool(v):
@@ -34,28 +43,36 @@ def str2bool(v):
 
 
 class CompareCommand(BaseCommand):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.parser = None
+
     def add_arguments(self, parser):
         parser.add_argument(
             '-gm',
             '--golden-model',
-            required=True,
+            required=False,
             dest="golden_model",
+            type=safe_string,
             help='The original model (.onnx or .pb or .prototxt) file path')
         parser.add_argument(
             '-om',
             '--om-model',
             dest="om_model",
+            type=safe_string,
             help='The offline model (.om) file path')
         parser.add_argument(
             '-w',
             '--weight',
             dest="weight_path",
+            type=safe_string,
             help='Required when framework is Caffe (.cafemodel)')
         parser.add_argument(
             '-i',
             '--input',
             default='',
             dest="input_data_path",
+            type=safe_string,
             help='The input data path of the model. Separate multiple inputs with commas(,).' 
                  ' E.g: input_0.bin,input_1.bin')
         parser.add_argument(
@@ -63,6 +80,7 @@ class CompareCommand(BaseCommand):
             '--cann-path',
             default=CANN_PATH,
             dest="cann_path",
+            type=safe_string,
             help='The CANN installation path')
         parser.add_argument(
             '-o',
@@ -148,10 +166,12 @@ class CompareCommand(BaseCommand):
         parser.add_argument(
             '--fusion-switch-file',
             dest="fusion_switch_file",
+            type=safe_string,
             help='You can disable selected fusion patterns in the configuration file')
         parser.add_argument(
             "-single",
             "--single-op",
+            default=False,
             dest="single_op",
             type=str2bool,
             help='Comparision mode:single operator compare, default false.Usage: -single True')
@@ -165,14 +185,20 @@ class CompareCommand(BaseCommand):
         parser.add_argument(
             '-q',
             '--quant-fusion-rule-file',
-            type=str,
+            type=safe_string,
             dest="quant_fusion_rule_file",
             default='',
             help="the quant fusion rule file path")
+        self.parser = parser
 
 
 
     def handle(self, args):
+        if not args.golden_model:
+            logger.error("The following arguments are required: -gm/--golden-model")
+            self.parser.print_help()
+            return
+
         cmp_args = CmpArgsAdapter(args.golden_model, args.om_model, args.weight_path, args.input_data_path,
                                   args.cann_path, args.out_path,
                                   args.input_shape, args.device, args.output_size, args.output_nodes, args.advisor,
@@ -183,7 +209,25 @@ class CompareCommand(BaseCommand):
         cmp_process(cmp_args, True)
 
 
+class AclCompare(BaseCommand):
+    def add_arguments(self, parser, **kwargs):
+        parser.add_argument(
+            '--exec',
+            dest="exec",
+            required=True,
+            default='',
+            help='Exec command to run acltransformer model inference. ')
+
+    def handle(self, args, **kwargs):
+        if check_exec_cmd(args.exec):
+            init_aclcmp_task()
+            # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
+            os.system(args.exec)
+            clear_aclcmp_task()
+
+
 def get_cmd_instance():
     help_info = "one-click network-wide accuracy analysis of golden models."
-    cmd_instance = CompareCommand("compare", help_info)
+    acl_cmp = AclCompare("aclcmp", help_info="Ascend transformer acceleration accuracy compare.")
+    cmd_instance = CompareCommand("compare", help_info, children=[acl_cmp])
     return cmd_instance

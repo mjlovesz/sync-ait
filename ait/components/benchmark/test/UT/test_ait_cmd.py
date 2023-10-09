@@ -56,7 +56,8 @@ base_cmd_dict = {
     "--pipeline": "0",
     "--profiler-rename": "0",
     "--dump-npy": "0",
-    "--divide-input": "0"
+    "--divide-input": "0",
+    "--thread": "1"
 }
 
 simple_cmd_dict = {
@@ -93,7 +94,8 @@ simple_cmd_dict = {
     "--pipeline": "0",
     "--profiler-rename": "0",
     "--dump-npy": "0",
-    "--divide-input": "0"
+    "--divide-input": "0",
+    "--thread": "1"
 }
 
 
@@ -106,7 +108,7 @@ def cmd_dict_to_list(cmd_dict):
 
 
 def create_adapter(args):
-    args_adapter = BenchMarkArgsAdapter(
+    args_adapter = BenchMarkArgsAdapter (
             model=args.om_model,
             input_path=args.input,
             output=args.output,
@@ -140,7 +142,8 @@ def create_adapter(args):
             pipeline=args.pipeline,
             profiler_rename=args.profiler_rename,
             dump_npy=args.dump_npy,
-            divide_input=args.divide_input
+            divide_input = args.divide_input,
+            thread = args.thread
     )
     return args_adapter
 
