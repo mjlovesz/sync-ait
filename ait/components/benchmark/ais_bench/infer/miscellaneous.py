@@ -221,7 +221,8 @@ def get_throughtput_from_log(out_log):
     log_list = out_log.split('\n')
     for log_txt in log_list:
         if "throughput" in log_txt:
-            return "OK", log_txt
+            throughput = float(log_txt.split(' ')[-1])
+            return "OK", throughput
     return "Failed", 0
 
 
