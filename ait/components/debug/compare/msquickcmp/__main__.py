@@ -207,6 +207,7 @@ class AclCompare(BaseCommand):
             '--exec',
             dest="exec",
             required=True,
+            type=safe_string,
             default='',
             help='Exec command to run acltransformer model inference. ')
 
