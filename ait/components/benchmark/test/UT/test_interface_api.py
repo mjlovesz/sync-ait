@@ -63,7 +63,7 @@ class TestClass:
         shape = session.get_inputs()[0].shape
         ndata = np.full(shape, 0).astype(np.uint8)
 
-        # in is numpy list and ouput is numpy list
+        # in is numpy list and output is numpy list
         outputs = session.infer([ndata], mode='static')
         session.free_device()
 
@@ -76,7 +76,7 @@ class TestClass:
         shape = [1,3,256,256]
         ndata = np.full(shape, 0).astype(np.uint8)
 
-        # in is numpy list and ouput is numpy list
+        # in is numpy list and output is numpy list
         outputs = session.infer([ndata], mode='dymbatch')
         session.free_device()
 
@@ -89,7 +89,7 @@ class TestClass:
         shape = [1,3,224,224]
         ndata = np.full(shape, 0).astype(np.float32)
 
-        # in is numpy list and ouput is numpy list
+        # in is numpy list and output is numpy list
         outputs = session.infer([ndata], mode='dymhw')
         session.free_device()
 
@@ -102,7 +102,7 @@ class TestClass:
         shape = [1,3,224,224]
         ndata = np.full(shape, 0).astype(np.float32)
 
-        # in is numpy list and ouput is numpy list
+        # in is numpy list and output is numpy list
         outputs = session.infer([ndata], mode='dymdims')
         session.free_device()
 
@@ -115,7 +115,7 @@ class TestClass:
         shape = [1,3,224,224]
         ndata = np.full(shape, 0).astype(np.float32)
 
-        # in is numpy list and ouput is numpy list
+        # in is numpy list and output is numpy list
         outputs = session.infer([ndata], mode='dymshape', custom_sizes=100000)
         session.free_device()
 
@@ -129,8 +129,9 @@ class TestClass:
         shape = session.get_inputs()[0].shape
         ndata = np.full(shape, 0).astype(np.float32)
 
-        # in is numpy list and ouput is numpy list
-        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='static')
+        # in is numpy list and output is numpy list
+        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list,
+            iteration_times=self.iteration_times, mode='static')
         session.free_device()
 
     def test_infer_iteration_api_dymbatch(self):
@@ -142,8 +143,9 @@ class TestClass:
         shape = [1,3,32,32]
         ndata = np.full(shape, 0).astype(np.float32)
 
-        # in is numpy list and ouput is numpy list
-        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='dymbatch')
+        # in is numpy list and output is numpy list
+        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list,
+            iteration_times=self.iteration_times, mode='dymbatch')
         session.free_device()
 
     def test_infer_iteration_api_dymwh(self):
@@ -155,8 +157,9 @@ class TestClass:
         shape = [1,3,32,32]
         ndata = np.full(shape, 0).astype(np.float32)
 
-        # in is numpy list and ouput is numpy list
-        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='dymhw')
+        # in is numpy list and output is numpy list
+        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list,
+            iteration_times=self.iteration_times, mode='dymhw')
         session.free_device()
 
     def test_infer_iteration_api_dymdim(self):
@@ -168,8 +171,9 @@ class TestClass:
         shape = [4,3,64,64]
         ndata = np.full(shape, 0).astype(np.float32)
 
-        # in is numpy list and ouput is numpy list
-        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='dymdims')
+        # in is numpy list and output is numpy list
+        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list,
+            iteration_times=self.iteration_times, mode='dymdims')
         session.free_device()
 
     def test_infer_iteration_api_dymshape(self):
@@ -181,133 +185,138 @@ class TestClass:
         shape = [4,3,32,32]
         ndata = np.full(shape, 0).astype(np.float32)
         out_size = 4 * 3 * 32 * 32 * 4
-        # in is numpy list and ouput is numpy list
-        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='dymshape', custom_sizes=out_size)
+        # in is numpy list and output is numpy list
+        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list,
+            iteration_times=self.iteration_times, mode='dymshape', custom_sizes=out_size)
         session.free_device()
 
 # ====================test multi process infer api==========================
     def test_infer_api_static_multidevice(self):
         device_id = 0
         model_path = self.get_resnet50_static(1)
-        multi_session = MultiDeviceSession(device_id, model_path)
+        multi_session = MultiDeviceSession(model_path)
 
         # create new numpy data according inputs info
         shape = [1,3,256,256]
         ndata = np.full(shape, 0).astype(np.uint8)
         device_feeds = {device_id:[[ndata],[ndata]]}
 
-        # in is numpy list and ouput is numpy list
+        # in is numpy list and output is numpy list
         outputs = multi_session.infer(device_feeds, mode='static')
 
     def test_infer_api_dymbatch_multidevice(self):
         device_id = 0
         model_path = self.get_resnet50_dynamic('dymbatch')
-        multi_session = MultiDeviceSession(device_id, model_path)
+        multi_session = MultiDeviceSession(model_path)
 
         # create new numpy data according inputs info
         shape = [1,3,256,256]
         ndata = np.full(shape, 0).astype(np.uint8)
         device_feeds = {device_id:[[ndata],[ndata]]}
 
-        # in is numpy list and ouput is numpy list
+        # in is numpy list and output is numpy list
         outputs = multi_session.infer(device_feeds, mode='dymbatch')
 
     def test_infer_api_dymwh_multidevice(self):
         device_id = 0
         model_path = self.get_resnet50_dynamic('dymwh')
-        multi_session = MultiDeviceSession(device_id, model_path)
+        multi_session = MultiDeviceSession(model_path)
 
         # create new numpy data according inputs info
         shape = [1,3,224,224]
         ndata = np.full(shape, 0).astype(np.float32)
         device_feeds = {device_id:[[ndata],[ndata]]}
 
-        # in is numpy list and ouput is numpy list
+        # in is numpy list and output is numpy list
         outputs = multi_session.infer(device_feeds, mode='dymhw')
 
     def test_infer_api_dymdim_multidevice(self):
         device_id = 0
         model_path = self.get_resnet50_dynamic('dymdim')
-        multi_session = MultiDeviceSession(device_id, model_path)
+        multi_session = MultiDeviceSession(model_path)
 
         # create new numpy data according inputs info
         shape = [1,3,224,224]
         ndata = np.full(shape, 0).astype(np.float32)
         device_feeds = {device_id:[[ndata],[ndata]]}
 
-        # in is numpy list and ouput is numpy list
+        # in is numpy list and output is numpy list
         outputs = multi_session.infer(device_feeds, mode='dymdims')
 
     def test_infer_api_dymshape_multidevice(self):
         device_id = 0
         model_path = self.get_resnet50_dynamic('dymshape')
-        multi_session = MultiDeviceSession(device_id, model_path)
+        multi_session = MultiDeviceSession(model_path)
 
         # create new numpy data according inputs info
         shape = [1,3,224,224]
         ndata = np.full(shape, 0).astype(np.float32)
         device_feeds = {device_id:[[ndata],[ndata]]}
 
-        # in is numpy list and ouput is numpy list
+        # in is numpy list and output is numpy list
         outputs = multi_session.infer(device_feeds, mode='dymshape', custom_sizes=100000)
 
 # ====================test multi process infer iteration api==========================
     def test_infer_iteration_api_static_multidevice(self):
         device_id = 0
         model_path = self.get_add_model_static(1)
-        multi_session = MultiDeviceSession(device_id, model_path)
+        multi_session = MultiDeviceSession(model_path)
 
         # create new numpy data according inputs info
         shape = [1,3,32,32]
         ndata = np.full(shape, 0).astype(np.float32)
         device_feeds = {device_id:[[ndata, ndata],[ndata, ndata]]}
 
-        # in is numpy list and ouput is numpy list
-        outputs = multi_session.infer_iteration(device_feeds, in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='static')
+        # in is numpy list and output is numpy list
+        outputs = multi_session.infer_iteration(device_feeds, in_out_list=self.in_out_list,
+            iteration_times=self.iteration_times, mode='static')
 
     def test_infer_iteration_api_dymbatch_multidevice(self):
         device_id = 0
         model_path = self.get_add_model_dynamic('dymbatch')
-        multi_session = MultiDeviceSession(device_id, model_path)
+        multi_session = MultiDeviceSession(model_path)
 
         # create new numpy data according inputs info
         shape = [1,3,32,32]
         ndata = np.full(shape, 0).astype(np.float32)
         device_feeds = {device_id:[[ndata, ndata],[ndata, ndata]]}
 
-        # in is numpy list and ouput is numpy list
-        outputs = multi_session.infer_iteration(device_feeds, in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='dymbatch')
+        # in is numpy list and output is numpy list
+        outputs = multi_session.infer_iteration(device_feeds, in_out_list=self.in_out_list,
+            iteration_times=self.iteration_times, mode='dymbatch')
 
     def test_infer_iteration_api_dymwh_multidevice(self):
         device_id = 0
         model_path = self.get_add_model_dynamic('dymwh')
-        multi_session = MultiDeviceSession(device_id, model_path)
+        multi_session = MultiDeviceSession(model_path)
 
         # create new numpy data according inputs info
         shape = [1,3,32,32]
         ndata = np.full(shape, 0).astype(np.float32)
         device_feeds = {device_id:[[ndata, ndata],[ndata, ndata]]}
 
-        # in is numpy list and ouput is numpy list
-        outputs = multi_session.infer_iteration(device_feeds, in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='dymhw')
+        # in is numpy list and output is numpy list
+        outputs = multi_session.infer_iteration(device_feeds, in_out_list=self.in_out_list,
+            iteration_times=self.iteration_times, mode='dymhw')
 
     def test_infer_iteration_api_dymdim_multidevice(self):
         device_id = 0
         model_path = self.get_add_model_dynamic('dymdim')
-        multi_session = MultiDeviceSession(device_id, model_path)
+        multi_session = MultiDeviceSession(model_path)
 
         # create new numpy data according inputs info
         shape = [4,3,64,64]
         ndata = np.full(shape, 0).astype(np.float32)
         device_feeds = {device_id:[[ndata, ndata],[ndata, ndata]]}
 
-        # in is numpy list and ouput is numpy list
-        outputs = multi_session.infer_iteration(device_feeds, in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='dymdims')
+        # in is numpy list and output is numpy list
+        outputs = multi_session.infer_iteration(device_feeds, in_out_list=self.in_out_list,
+            iteration_times=self.iteration_times, mode='dymdims')
 
     def test_infer_iteration_api_dymshape_multidevice(self):
         device_id = 0
         model_path = self.get_add_model_dynamic('dymshape')
-        multi_session = MultiDeviceSession(device_id, model_path)
+        multi_session = MultiDeviceSession(model_path)
 
         # create new numpy data according inputs info
         shape = [4,3,32,32]
@@ -315,5 +324,6 @@ class TestClass:
         device_feeds = {device_id:[[ndata, ndata],[ndata, ndata]]}
 
         out_size = 4 * 3 * 32 * 32 * 4
-        # in is numpy list and ouput is numpy list
-        outputs = multi_session.infer_iteration(device_feeds, in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='dymshape', custom_sizes=out_size)
+        # in is numpy list and output is numpy list
+        outputs = multi_session.infer_iteration(device_feeds, in_out_list=self.in_out_list,
+            iteration_times=self.iteration_times, mode='dymshape', custom_sizes=out_size)

@@ -165,8 +165,6 @@ main()
         fi
     fi
     echo "All atc finished!"
-
-    $PYTHON_COMMAND generate_datasets.py || { echo "generate datasets failed";return $ret_failed; }
 }
 
 main "$@"

@@ -705,8 +705,7 @@ class InferSession:
 
 
 class MultiDeviceSession():
-    def __init__(self, device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
-        self.device_id = device_id
+    def __init__(self, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1):
         self.model_path = model_path
         self.acl_json_path = acl_json_path
         self.debug = debug
