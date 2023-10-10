@@ -103,6 +103,7 @@ namespace Base {
                 for (auto tail : {".npy", ".bin", ".NPY", ".BIN", ""}) {
                     if (Utils::TailContain(files.front(), tail)) {
                         feeds->outputPrefix = Utils::GetPrefix(inferOption->outputDir, files.front(), tail);
+                        break;
                     }
                 }
             }

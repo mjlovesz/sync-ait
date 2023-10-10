@@ -111,7 +111,7 @@ class FileStat:
         self.is_file_exist = os.path.exists(file)
         if self.is_file_exist:
             self.file_stat = os.stat(file)
-            self.realpath =  os.path.realpath(file)
+            self.realpath = os.path.realpath(file)
         else:
             self.file_stat = None
 
@@ -226,7 +226,7 @@ class FileStat:
             return True
 
     def is_legal_file_type(self, file_types:list):
-        if not self.is_file:
+        if not self.is_file and self.is_exists:
             logger.error(f"path: {self.file} is not a file")
             return False
         for file_type in file_types:
