@@ -137,7 +137,6 @@ struct ModelDesc {
 };
 
 struct InferSumaryInfo {
-    InferSumaryInfo() {gettimeofday(&zero_point, nullptr);}
     std::vector<pair<float, float>> execTimeList;
     struct timeval zero_point = { 0 };
 };
@@ -193,6 +192,7 @@ public:
 
     std::shared_ptr<SessionOptions> GetOptions();
 
+    APP_ERROR InitSumaryInfo();
     APP_ERROR ResetSumaryInfo();
     const InferSumaryInfo& GetSumaryInfo() const;
     InferSumaryInfo& GetMutableSumaryInfo();
