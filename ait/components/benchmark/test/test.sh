@@ -38,7 +38,14 @@ function get_msame_file()
     fi
 }
 
+function chmod_file_data()
+{
+    chmod 750 $CUR_PATH/json_for_arg_test.json
+    chmod -R 750 $CUR_PATH/aipp_config_files
+}
+
 main() {
+    chmod_file_data
     if [ $# -lt 2 ]; then
         echo "at least one parameter. for example: bash test.sh Ascend310P3 python3"
         return $ret_invalid_args
@@ -63,7 +70,7 @@ main() {
     bash -x $CUR_PATH/get_pth_resnet50_data.sh $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE
     #bash -x $CUR_PATH/get_pth_resnet101_data.sh $SOC_VERSION $PYTHON_COMMAND
     #bash -x $CUR_PATH/get_pth_inception_v3_data.sh $SOC_VERSION $PYTHON_COMMAND
-    ${PYTHON_COMMAND} generate_pipeline_datasets.py
+    ${PYTHON_COMMAND} $CUR_PATH/generate_pipeline_datasets.py
 
     if [ $BENCKMARK_DT_MODE == "full" ];then
         bash -x $CUR_PATH/get_bert_data.sh $SOC_VERSION $PYTHON_COMMAND

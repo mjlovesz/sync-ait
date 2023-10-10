@@ -64,16 +64,12 @@ APP_ERROR ModelInferenceProcessor::GetModelDescInfo()
     return APP_ERR_OK;
 }
 
-APP_ERROR ModelInferenceProcessor::Init(
-    const std::string& modelPath,
-    std::shared_ptr<SessionOptions> options,
-    const int32_t &deviceId
-)
+APP_ERROR ModelInferenceProcessor::Init(const std::string& modelPath, std::shared_ptr<SessionOptions> options,
+                                        const int32_t &deviceId, const size_t contextIndex)
 {
     options_ = options;
     deviceId_ = deviceId;
-
-    SETLOGLEVEL(options_->log_level);
+    contextIndex_ = contextIndex;
 
     try {
         // make_shared必然会抛出异常
@@ -200,7 +196,8 @@ APP_ERROR ModelInferenceProcessor::AddOutTensors(
         for (size_t j = 0; j < i64shape.size(); ++j) {
             u32shape.push_back((uint32_t)(i64shape[j]));
         }
-        TensorBase outputTensor(outputs[index], isBorrowed, u32shape, modelDesc_.outTensorsDesc[index].datatype);
+        TensorBase outputTensor(outputs[index], isBorrowed, u32shape,
+                                modelDesc_.outTensorsDesc[index].datatype, contextIndex_);
         outputTensors.push_back(outputTensor);
         // mem control by outTensors so outputs mems nullptr
         outputs[index].ptrData = nullptr;
@@ -635,7 +632,12 @@ APP_ERROR ModelInferenceProcessor::ResetSumaryInfo()
     return APP_ERR_OK;
 }
 
-const InferSumaryInfo& ModelInferenceProcessor::GetSumaryInfo()
+const InferSumaryInfo& ModelInferenceProcessor::GetSumaryInfo() const
+{
+    return sumaryInfo_;
+}
+
+InferSumaryInfo& ModelInferenceProcessor::GetMutableSumaryInfo()
 {
     return sumaryInfo_;
 }
@@ -753,6 +755,10 @@ APP_ERROR ModelInferenceProcessor::SetDynamicBatchsize(int batchsize)
 
     CHECK_RET_EQ(processModel->CheckDynamicBatchSize(batchsize, is_dymbatch), SUCCESS);
     CHECK_RET_EQ(processModel->GetMaxBatchSize(dynamicInfo_.dyBatch.maxbatchsize), SUCCESS);
+    if (dynamicInfo_.dyBatch.maxbatchsize == 0) {
+        ERROR_LOG("SetDynamicBatchsize failed: max batch size equals to 0");
+        return APP_ERR_ACL_INVALID_PARAM;
+    }
 
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
         auto tensorBegin = modelDesc_.inTensorsDesc[i].shape.begin();
@@ -865,6 +871,10 @@ APP_ERROR ModelInferenceProcessor::SetDynamicHW(int width, int height)
 
     CHECK_RET_EQ(processModel->CheckDynamicHWSize(dynamicHW, is_dymHW), SUCCESS);
     CHECK_RET_EQ(processModel->GetMaxDynamicHWSize(dynamicInfo_.dyHW.maxHWSize), SUCCESS);
+    if (dynamicInfo_.dyHW.maxHWSize == 0) {
+        ERROR_LOG("SetDynamicHW failed: max hw size equals to 0");
+        return APP_ERR_ACL_INVALID_PARAM;
+    }
 
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
         auto tensorBegin = modelDesc_.inTensorsDesc[i].shape.begin();

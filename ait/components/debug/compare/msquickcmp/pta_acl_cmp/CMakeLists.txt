@@ -10,6 +10,7 @@ set(ACLTRANSFORMER_HOME_PATH "$ENV{ACLTRANSFORMER_HOME_PATH}")
 
 # 链接所需的库
 target_link_libraries(tensorutil PRIVATE "${ACLTRANSFORMER_HOME_PATH}/lib/libacltransformer.so")
+target_link_libraries(tensorutil PRIVATE libssl.so)
 
 # 设置输出文件的名称为libtensorutil.so
 set_target_properties(tensorutil PROPERTIES OUTPUT_NAME "tensorutil")

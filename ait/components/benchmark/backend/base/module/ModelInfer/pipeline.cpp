@@ -58,24 +58,14 @@ namespace Base {
     {
         for (size_t i = 0; i < files.size(); i++) {
             if (pure_infer) {
-                auto array = std::make_shared<cnpy::NpyArray>(CreatePureInferArray(files[i],
-                    session->GetInputs()[i]));
-                if (array == nullptr) {
-                    throw std::runtime_error("files: create pure_file failed");
-                }
+                auto array = std::make_shared<cnpy::NpyArray>(CreatePureInferArray(files[i], session->GetInputs()[i]));
                 feeds->arrayPtr->emplace_back(array);
             } else {
                 if (Utils::TailContain(files[i], ".npy") || Utils::TailContain(files[i], ".NPY")) {
                     auto array = std::make_shared<cnpy::NpyArray>(cnpy::NpyLoad(files[i]));
-                    if (array == nullptr) {
-                        throw std::runtime_error("files: create file_array failed");
-                    }
                     feeds->arrayPtr->emplace_back(array);
                 } else {
                     auto array = std::make_shared<cnpy::NpyArray>(cnpy::BinLoad(files[i]));
-                    if (array == nullptr) {
-                        throw std::runtime_error("files: create file_array failed");
-                    }
                     feeds->arrayPtr->emplace_back(array);
                 }
             }
@@ -90,14 +80,11 @@ namespace Base {
         }
     }
 
-    void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue, uint32_t deviceId,
-                     Base::PyInferenceSession* session, std::vector<std::vector<std::string>> &infilesList,
-                     bool autoDymShape, bool autoDymDims, const std::string &outputDir, const bool pure_infer)
+    void FuncPrepare(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
+                     Base::PyInferenceSession* session,
+                     std::vector<std::vector<std::string>> &infilesList,
+                     std::shared_ptr<InferOptions> inferOption, size_t numThreads, size_t startIndex)
     {
-        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
-        if (ret != APP_ERR_OK) {
-            throw std::runtime_error(GetError(ret));
-        }
         std::vector<std::string> inputNames {};
         std::vector<std::string> outputNames {};
         for (const auto &desc: session->GetInputs()) {
@@ -106,32 +93,24 @@ namespace Base {
         for (const auto &desc: session->GetOutputs()) {
             outputNames.emplace_back(desc.name);
         }
-        for (auto &files : infilesList) {
+        size_t n = infilesList.size();
+        for (size_t i = startIndex; i < n; i += numThreads) {
+            auto &files = infilesList[i];
             auto feeds = std::make_shared<Feeds>();
-            if (feeds == nullptr) {
-                throw std::runtime_error("files: create feeds failed");
-            }
 
             feeds->outputNames = std::make_shared<std::vector<std::string>>(outputNames);
-            if (feeds->outputNames == nullptr) {
-                throw std::runtime_error("files: create feeds->outputNames failed");
-            }
-            if (outputDir != "") {
+            if (inferOption->outputDir != "") {
                 for (auto tail : {".npy", ".bin", ".NPY", ".BIN", ""}) {
                     if (Utils::TailContain(files.front(), tail)) {
-                        feeds->outputPrefix = Utils::GetPrefix(outputDir, files.front(), tail);
+                        feeds->outputPrefix = Utils::GetPrefix(inferOption->outputDir, files.front(), tail);
+                        break;
                     }
                 }
             }
             feeds->inputs = std::make_shared<std::vector<Base::BaseTensor>>();
-            if (feeds->inputs == nullptr) {
-                throw std::runtime_error("files: create feeds->inputs failed");
-            }
             feeds->arrayPtr = std::make_shared<std::vector<std::shared_ptr<cnpy::NpyArray>>>();
-            if (feeds->arrayPtr == nullptr) {
-                throw std::runtime_error("files: create feeds->arrayPtr failed");
-            }
-            PrepareInputData(files, session, feeds, autoDymShape, autoDymDims, pure_infer, inputNames);
+            PrepareInputData(files, session, feeds, inferOption->autoDymShape, inferOption->autoDymDims,
+                             inferOption->pureInferMode, inputNames);
             h2dQueue.push(feeds);
         }
         h2dQueue.push(nullptr);
@@ -143,7 +122,8 @@ namespace Base {
                                std::vector<std::vector<std::vector<size_t>>>& shapesList, bool autoDymShape,
                                bool autoDymDims, std::vector<std::string>& outputNames)
     {
-        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
+        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(session->GetDeviceId(),
+                                                                       session->GetContextIndex());
         if (ret != APP_ERR_OK) {
             throw std::runtime_error(GetError(ret));
         }
@@ -169,9 +149,11 @@ namespace Base {
     }
 
     void FuncH2d(ConcurrentQueue<std::shared_ptr<Feeds>> &h2dQueue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue, uint32_t deviceId)
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
+                 Base::PyInferenceSession* session)
     {
-        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
+        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(session->GetDeviceId(),
+                                                                       session->GetContextIndex());
         if (ret != APP_ERR_OK) {
             throw std::runtime_error(GetError(ret));
         }
@@ -185,7 +167,7 @@ namespace Base {
             item->memory = std::make_shared<std::vector<Base::MemoryData>>();
             auto inputs = std::make_shared<std::vector<Base::BaseTensor>>();
             for (auto &info : *(item->inputs)) {
-                Base::MemoryData mem = Base::CopyMemory2DeviceMemory(info.buf, info.size, deviceId);
+                Base::MemoryData mem = Base::CopyMemory2DeviceMemory(info.buf, info.size, session->GetDeviceId());
                 item->memory->emplace_back(mem);
                 Base::BaseTensor tensor(mem.ptrData, mem.size);
                 inputs->emplace_back(tensor);
@@ -197,10 +179,11 @@ namespace Base {
     }
 
     void FuncCompute(ConcurrentQueue<std::shared_ptr<Feeds>> &computeQueue,
-                     ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue, uint32_t deviceId,
-                     Base::PyInferenceSession* session)
+                     ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
+                     Base::PyInferenceSession* session, InferSumaryInfo* summaryInfo)
     {
-        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
+        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(session->GetDeviceId(),
+                                                                       session->GetContextIndex());
         if (ret != APP_ERR_OK) {
             throw std::runtime_error(GetError(ret));
         }
@@ -208,6 +191,9 @@ namespace Base {
             auto item = computeQueue.pop();
             if (!item) {
                 d2hQueue.push(nullptr);
+                if (summaryInfo != nullptr) {
+                    *summaryInfo = session->GetSumaryInfo();
+                }
                 break;
             }
 
@@ -226,9 +212,11 @@ namespace Base {
     }
 
     void FuncD2h(ConcurrentQueue<std::shared_ptr<Feeds>> &d2hQueue,
-                 ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId)
+                 ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue,
+                 Base::PyInferenceSession* session)
     {
-        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
+        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(session->GetDeviceId(),
+                                                                       session->GetContextIndex());
         if (ret != APP_ERR_OK) {
             throw std::runtime_error(GetError(ret));
         }
@@ -247,13 +235,29 @@ namespace Base {
         }
     }
 
-    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId, std::string outFmt)
+    void SaveOutput(std::shared_ptr<Feeds> item, std::string outFmt, size_t index)
     {
-        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
-        if (ret != APP_ERR_OK) {
-            throw std::runtime_error(GetError(ret));
+        std::string outputFileName = item->outputPrefix + Utils::RemoveSlash(item->outputNames->at(index));
+        if (outFmt == "NPY") {
+            outputFileName += ".npy";
+            if (Utils::TensorToNumpy(outputFileName, item->outputs->at(index)) == FAILED) {
+                ERROR_LOG("%s save failed\n", outputFileName.c_str());
+            }
+        } else if (outFmt == "TXT") {
+            outputFileName += ".txt";
+            if (Utils::TensorToTxt(outputFileName, item->outputs->at(index)) == FAILED) {
+                ERROR_LOG("%s save failed\n", outputFileName.c_str());
+            }
+        } else {
+            outputFileName += ".bin";
+            if (Utils::TensorToBin(outputFileName, item->outputs->at(index)) == FAILED) {
+                ERROR_LOG("%s save failed\n", outputFileName.c_str());
+            }
         }
+    }
 
+    void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, std::shared_ptr<InferOptions> inferOption)
+    {
         while (true) {
             auto item = saveQueue.pop();
             if (!item) {
@@ -262,27 +266,10 @@ namespace Base {
             for (auto &mem : *(item->memory)) {
                 Base::MemoryHelper::Free(mem);
             }
-
             if (item->outputPrefix != "") {
                 size_t n = item->outputs->size();
                 for (size_t i = 0; i < n; i++) {
-                    std::string outputFileName = item->outputPrefix + Utils::RemoveSlash(item->outputNames->at(i));
-                    if (outFmt == "NPY") {
-                        outputFileName += ".npy";
-                        if (Utils::TensorToNumpy(outputFileName, item->outputs->at(i)) == FAILED) {
-                            ERROR_LOG("%s save failed\n", outputFileName.c_str());
-                        }
-                    } else if (outFmt == "TXT") {
-                        outputFileName += ".txt";
-                        if (Utils::TensorToTxt(outputFileName, item->outputs->at(i)) == FAILED) {
-                            ERROR_LOG("%s save failed\n", outputFileName.c_str());
-                        }
-                    } else {
-                        outputFileName += ".bin";
-                        if (Utils::TensorToBin(outputFileName, item->outputs->at(i)) == FAILED) {
-                            ERROR_LOG("%s save failed\n", outputFileName.c_str());
-                        }
-                    }
+                    SaveOutput(item, inferOption->outFmt, i);
                 }
             }
         }

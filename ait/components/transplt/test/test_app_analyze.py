@@ -31,7 +31,8 @@ def transplt_argparse(argv):
     aa = get_cmd_instance()
     parser = argparse.ArgumentParser()
     aa.add_arguments(parser)
-    return parser.parse_args(argv)
+    args_parser = parser.parse_args(argv)
+    return args_parser
 
 
 def call_transplt_cmd(argv):
@@ -107,7 +108,7 @@ def test_app_analyze_given_opencv_csv_when_any_then_pass():
     os.remove(output_xlsx)
 
 
-def test_app_analyze_given_opencv_csv_when_any_then_pass():
+def test_app_analyze_given_invalid_source_when_any_then_error():
     argv = ["-s", INVALID_ARG, "-f", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS]
-    with pytest.raises(Exception, match="Source directory is not existed!"):
+    with pytest.raises(SystemExit):
         call_transplt_cmd(argv)

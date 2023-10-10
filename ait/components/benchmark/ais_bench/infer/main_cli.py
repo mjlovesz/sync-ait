@@ -13,74 +13,18 @@
 # limitations under the License.
 
 import os
+import re
 import argparse
 
 from components.utils.parser import BaseCommand
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
-
-
-def str2bool(v):
-    if isinstance(v, bool):
-        return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return False
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
-
-
-def check_positive_integer(value):
-    ivalue = int(value)
-    if ivalue <= 0:
-        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
-    return ivalue
-
-
-def check_batchsize_valid(value):
-    # default value is None
-    if value is None:
-        return value
-    # input value no None
-    else:
-        return check_positive_integer(value)
-
-
-def check_nonnegative_integer(value):
-    ivalue = int(value)
-    if ivalue < 0:
-        raise argparse.ArgumentTypeError("%s is an invalid nonnegative int value" % value)
-    return ivalue
-
-
-def check_device_range_valid(value):
-    # if contain , split to int list
-    min_value = 0
-    max_value = 255
-    if ',' in value:
-        ilist = [int(v) for v in value.split(',')]
-        for ivalue in ilist:
-            if ivalue < min_value or ivalue > max_value:
-                raise argparse.ArgumentTypeError("{} of device:{} is invalid. valid value range is [{}, {}]".format(
-                    ivalue, value, min_value, max_value))
-        return ilist
-    else:
-        # default as single int value
-        ivalue = int(value)
-        if ivalue < min_value or ivalue > max_value:
-            raise argparse.ArgumentTypeError("device:{} is invalid. valid value range is [{}, {}]".format(
-                ivalue, min_value, max_value))
-        return ivalue
-
-
-def check_om_path_valid(value):
-    path_value = str(value)
-    if os.path.isfile(path_value) and (not os.path.isdir(path_value)) and os.access(path_value, os.R_OK):
-        return path_value
-    else:
-        raise argparse.ArgumentTypeError(f"om path:{path_value} is invalid. Please check the existency, \
-                                         readability and property of this path")
+from ais_bench.infer.args_check import (
+    check_dym_string, check_dym_range_string, check_number_list, str2bool, check_positive_integer,
+    check_batchsize_valid, check_nonnegative_integer, check_device_range_valid, check_om_path_legality,
+    check_input_path_legality, check_output_path_legality, check_acl_json_path_legality,
+    check_aipp_config_path_legality
+)
 
 
 class BenchmarkCommand(BaseCommand):
@@ -88,19 +32,21 @@ class BenchmarkCommand(BaseCommand):
         parser.add_argument(
             "-om",
             "--om-model",
-            type=check_om_path_valid,
+            type=check_om_path_legality,
             required=True,
             help="The path of the om model"
         )
         parser.add_argument(
             '-i',
             '--input',
+            type=check_input_path_legality,
             default=None,
             help="Input file or dir"
         )
         parser.add_argument(
             '-o',
             '--output',
+            type=check_output_path_legality,
             default=None,
             help="Inference data output path. The inference results are output to \
                 the subdirectory named current date under given output path"
@@ -108,7 +54,7 @@ class BenchmarkCommand(BaseCommand):
         parser.add_argument(
             '-od',
             "--output-dirname",
-            type=str,
+            type=check_output_path_legality,
             default=None,
             help="Actual output directory name. \
                 Used with parameter output, cannot be used alone. \
@@ -145,7 +91,7 @@ class BenchmarkCommand(BaseCommand):
             '-db',
             '--dym-batch',
             dest="dym_batch",
-            type=int,
+            type=check_positive_integer,
             default=0,
             help="Dynamic batch size param，such as --dymBatch 2"
         )
@@ -153,7 +99,7 @@ class BenchmarkCommand(BaseCommand):
             '-dhw',
             '--dym-hw',
             dest="dym_hw",
-            type=str,
+            type=check_dym_string,
             default=None,
             help="Dynamic image size param, such as --dymHW \"300,500\""
         )
@@ -161,7 +107,7 @@ class BenchmarkCommand(BaseCommand):
             '-dd',
             '--dym-dims',
             dest="dym_dims",
-            type=str,
+            type=check_dym_string,
             default=None,
             help="Dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\""
         )
@@ -169,7 +115,7 @@ class BenchmarkCommand(BaseCommand):
             '-ds',
             '--dym-shape',
             dest="dym_shape",
-            type=str,
+            type=check_dym_string,
             default=None,
             help="Dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\""
         )
@@ -177,7 +123,7 @@ class BenchmarkCommand(BaseCommand):
             '-outsize',
             '--output-size',
             dest="output_size",
-            type=str,
+            type=check_number_list,
             default=None,
             help="Output size for dynamic shape mode"
         )
@@ -229,7 +175,7 @@ class BenchmarkCommand(BaseCommand):
             '-acl',
             '--acl-json-path',
             dest='acl_json_path',
-            type=str,
+            type=check_acl_json_path_legality,
             default=None,
             help="Acl json path for profiling or dump"
         )
@@ -270,7 +216,7 @@ class BenchmarkCommand(BaseCommand):
             '-dr',
             '--dym-shape-range',
             dest="dym_shape_range",
-            type=str,
+            type=check_dym_range_string,
             default=None,
             help='Dynamic shape range, such as --dym_shape_range "data:1,600~700;img_info:1,600-700"'
         )
@@ -278,7 +224,7 @@ class BenchmarkCommand(BaseCommand):
             '-aipp',
             '--aipp-config',
             dest='aipp_config',
-            type=str,
+            type=check_aipp_config_path_legality,
             default=None,
             help="File type: .config, to set actual aipp params before infer"
         )
@@ -286,21 +232,22 @@ class BenchmarkCommand(BaseCommand):
             '-ec',
             '--energy-consumption',
             dest='energy_consumption',
-            type=str,
-            default=None,
+            type=str2bool,
+            default=False,
             help="Obtain power consumption data for model inference"
         )
         parser.add_argument(
             '--npu-id',
             dest='npu_id',
-            type=check_device_range_valid,
+            type=check_nonnegative_integer,
             default=0,
-            help="The NPU ID to use.valid value range is [0, 255]"
+            help="The NPU ID to use. using cmd: \'npu-smi info\' to check "
         )
         parser.add_argument(
             "--backend",
             type=str,
             default=None,
+            choices=["trtexec"],
             help="Backend trtexec"
         )
         parser.add_argument(
@@ -330,10 +277,18 @@ class BenchmarkCommand(BaseCommand):
         parser.add_argument(
             '--divide-input',
             dest='divide_input',
-            default=False,
             type=str2bool,
+            default=False,
             help='Input datas need to be divided to match multi devices or not, \
                 --device should be list, default False'
+        )
+        parser.add_argument(
+            '--thread',
+            dest='thread',
+            type=check_positive_integer,
+            default=1,
+            help="Number of thread for computing. \
+                need to set --pipeline when setting thread number to be more than one."
         )
 
     def handle(self, args):
@@ -344,7 +299,7 @@ class BenchmarkCommand(BaseCommand):
                                     args.dump, args.acl_json_path, args.output_batchsize_axis, args.run_mode,
                                     args.display_all_summary, args.warmup_count, args.dym_shape_range,
                                     args.aipp_config, args.energy_consumption, args.npu_id, args.backend, args.perf,
-                                    args.pipeline, args.profiler_rename, args.dump_npy, args.divide_input)
+                                    args.pipeline, args.profiler_rename, args.dump_npy, args.divide_input, args.thread)
         benchmark_process(args)
 
 

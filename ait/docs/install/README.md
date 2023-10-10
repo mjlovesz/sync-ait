@@ -17,7 +17,7 @@ chmod u+x install.sh
 
 - 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit软件包。建议安装CANN商业版6.3.RC1以上版本。
 - 请参见《[GCC安装指引](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000091.html)》安装GCC编译器7.3.0版本。
-- Python版本：支持Python3.7.x、Python3.8.x、Python3.9.x(**如使用TensorFlow模型的精度对比功能则需要Python3.7.x版本**)。
+- Python版本：支持Python3.7.5+、Python3.8.x、Python3.9.x、Benchmark还支持Python3.10.x(**如使用TensorFlow模型的精度对比功能则需要Python3.7.5版本**)。
 
 ### 工具安装方式
 
@@ -43,16 +43,33 @@ ait推理工具的安装包括**ait包**和**依赖的组件包**的安装，其
     > * 普通用户下`ACTUAL_CANN_PATH`一般为`$HOME`，root用户下一般为`/usr/local`
     
 
+- 如果安装过程中，出现以下提示：
+
+  ```shell
+  WARNING: env ASCEND_HOME is not set. aie command cannot be used.
+  ```
+
+  如果不使用ait convert aie命令，忽略此告警。
+
+- 如果安装过程中，出现以下提示：
+
+  ```shell
+  WARNING: env ACLTRANSFORMER_HOME_PATH is not set. Dump on demand package cannot be used.
+  ```
+
+  如果不使用大模型精度比对功能，忽略此告警。
+
 #### 源代码一键式安装
 
 ```shell
 git clone https://gitee.com/ascend/ait.git
+# 1. git pull origin 更新最新代码 
 cd ait/ait
 
-# 1. 添加执行权限
+# 2. 添加执行权限
 chmod u+x install.sh
 
-# 2. 以下install.sh根据情况选一个执行
+# 3. 以下install.sh根据情况选一个执行
 # a. 安装ait，包括debug、profile、benchmark、transplt、analyze等组件（不安装clang等系统依赖库，只影响transplt功能）
 ./install.sh
   
@@ -115,5 +132,5 @@ chmod u+x install.sh
 
 ### 常见问题 Q&A
 
-参考：[Ait 安装常见问题](https://gitee.com/ascend/ait/wikis/ait%E7%9A%84%E5%AE%89%E8%A3%85%E4%B8%8E%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/ait%E5%AE%89%E8%A3%85)
+参考：[Ait 安装常见问题](./FAQ.md)
 

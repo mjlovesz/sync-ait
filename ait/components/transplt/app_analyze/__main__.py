@@ -11,15 +11,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import os
 from components.utils.parser import BaseCommand
 from app_analyze.utils import log_util
 from app_analyze.porting.app import start_scan_kit
+from components.utils.file_open_check import FileStat
+
+
+def check_source_path(value):
+    source_list = value.split(',')
+    for path in source_list:
+        path_value = str(path)
+        try:
+            file_stat = FileStat(path_value)
+        except Exception as err:
+            raise argparse.ArgumentTypeError(f"source path:{path_value} is illegal. Please check.") from err
+        if not file_stat.is_basically_legal('read'):
+            raise argparse.ArgumentTypeError(f"source path:{path_value} is illegal. Please check.")
+        if not file_stat.is_dir:
+            raise argparse.ArgumentTypeError(f"source path:{path_value} is not a directory. Please check.")
+    return value
 
 
 class TranspltCommand(BaseCommand):
     def add_arguments(self, parser):
         # 逗号分隔的情况下只有一个列表元素
-        parser.add_argument("-s", "--source", required=True, help="directories of source folder")
+        parser.add_argument(
+            "-s", "--source", type=check_source_path, required=True, help="directories of source folder"
+        )
         parser.add_argument(
             "-f",
             "--report-type",
@@ -31,7 +51,8 @@ class TranspltCommand(BaseCommand):
             "--log-level", default="INFO", choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], help="specify log level"
         )
         parser.add_argument(
-            "--tools", default="cmake", choices=['cmake'], help="specify construction, currently only cmake availabel"
+            "--tools", default="cmake", choices=['cmake', 'python'],
+            help="specify construction, currently support cmake and python"
         )
 
     def handle(self, args):

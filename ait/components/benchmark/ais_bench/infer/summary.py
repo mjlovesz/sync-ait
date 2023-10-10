@@ -19,6 +19,7 @@ import stat
 
 import numpy as np
 from ais_bench.infer.utils import logger
+from ais_bench.infer.path_security_check import ms_open
 
 
 class ListInfo(object):
@@ -119,7 +120,7 @@ class Summary(object):
         if output_prefix is not None:
             flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
             modes = stat.S_IWUSR | stat.S_IRUSR
-            with os.fdopen(os.open(output_prefix + "_summary.json", flags, modes), 'w') as f:
+            with ms_open(output_prefix + "_summary.json", mode="w") as f:
                 json.dump(self.infodict, f)
 
 

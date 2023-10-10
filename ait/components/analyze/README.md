@@ -28,6 +28,8 @@ OPTIONS参数说明如下：
 | -w, --weight   | 权重文件，输入模型是caffe时，需要传入该文件                  | 否       |
 | -soc, --soc-version | 芯片类型，不指定则会通过[acl](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/inferapplicationdev/aclpythondevg/aclpythondevg_01_0008.html)接口获取 | 否       |
 
+**特别说明**：当在Ascend310B系列平台上使用analyze工具进行模型支持度分析时，请手动指定-soc参数为Ascend310B。
+
 命令示例及输出如下：
 
 ```shell
@@ -58,16 +60,16 @@ ait analyze -gm /tmp/test.onnx -o /tmp/out
 
 输出数据说明：
 
-| 标题         | 说明                                                         |
-| ------------ | ------------------------------------------------------------ |
-| ori_op_name  | 原始算子名称                                                 |
-| ori_op_type  | 原始算子类型                                                 |
-| op_name      | 模型迁移后算子名称                                           |
-| op_type      | 模型迁移后算子类型                                           |
-| soc_type     | 芯片类型                                                     |
-| engine       | 算子执行引擎                                                 |
-| is_supported | 算子是否支持，TRUE：支持，FALSE：不支持                      |
-| details      | 算子支持情况问题描述，包括算子是否支持，算子定义是否符合约束条件、输入是否为空 |
+| 标题         | 说明                                                             |
+| ------------ |----------------------------------------------------------------|
+| ori_op_name  | 原始算子名称                                                         |
+| ori_op_type  | 原始算子类型                                                         |
+| op_name      | 模型迁移后算子名称                                                      |
+| op_type      | 模型迁移后算子类型                                                      |
+| soc_type     | 芯片类型                                                           |
+| engine       | 算子执行引擎                                                         |
+| is_supported | 算子是否支持，TRUE：支持，FALSE：不支持，可能原因包含算子不被当前硬件平台支持、算子定义不符合约束条件或算子输入为空 |
+| details      | 算子支持情况问题描述，包括算子是否支持，算子定义是否符合约束条件、输入是否为空                        |
 
 ## 工具详细介绍
 - 工具详细介绍请见[analyze工具详细介绍](../../examples/cli/analyze/)

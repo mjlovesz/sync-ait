@@ -10,9 +10,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import argparse
 import os
 import re
+
+from components.utils.file_open_check import FileStat
 from app_analyze.utils.log_util import logger
 
 HPP_EXT = ('.h', '.hxx', '.hpp')
@@ -29,6 +31,7 @@ class FileMatrix:
             "include_path": set(),  # 全局-I路径集合
             "makefiles": [],  # 待扫描的makefile文件列表
             "cmakefiles": [],  # 待扫描的makefile文件列表
+            "python_files": [],  # 待扫描的py文件列表
         }
         self.excluded_dir_list = ['cmake-build-debug']
         self.excluded_head_file_list = []  # 需要排除的头文件列表
@@ -133,16 +136,26 @@ class FileMatrix:
     def _check_all_file_type(self, file_path, ext, from_external_tool,
                              src_files_from_external_tool):
         """
-        检查全部文件类型：C/C++源文件、makefile文件
+        检查全部文件类型：C/C++、python源文件、makefile文件
         """
+        try:
+            file_stat = FileStat(file_path)
+        except Exception as err:
+            raise argparse.ArgumentTypeError(f"file path:{file_path} is illegal. Please check.") from err
+        if not file_stat.is_basically_legal('read'):
+            raise argparse.ArgumentTypeError(f"file path:{file_path} is illegal. Please check.")
+
         file_name = os.path.basename(file_path)
         source_ext = ('.c', '.cc', '.cpp', '.cxx', '.cx', '.cu')
+        python_ext = ('.py', ".pyi")
 
         if ext.lower() in source_ext and not from_external_tool:
             self.files.setdefault('cpp_sources', {})[file_path] = ''
         if ext.lower() in source_ext and from_external_tool:
             self.files.setdefault('cpp_sources', {})[file_path] = \
                 src_files_from_external_tool.get(file_path)
+        if ext.lower() in python_ext and not from_external_tool:
+            self.files.setdefault('python_files', {}).append(file_path)
 
         # 判断是否为Makefile
         if self._check_makefile(file_name):

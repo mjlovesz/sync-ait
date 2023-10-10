@@ -57,12 +57,12 @@ class TestCommonClass:
         ndata = np.frombuffer(barray, dtype=np.uint8)
         ndata.tofile(file_path)
         return file_path
-    
+
     @staticmethod
     def prepare_dir(target_folder_path):
         if os.path.exists(target_folder_path):
             shutil.rmtree(target_folder_path)
-        os.makedirs(target_folder_path)
+        os.makedirs(target_folder_path, 0o750)
 
     @staticmethod
     def get_model_inputs_size(model_path):
@@ -75,7 +75,7 @@ class TestCommonClass:
         if not os.path.exists(log_path) and not os.path.isfile(log_path):
             return 0
 
-        cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
+        cmd = "cat {} |grep 'model aclExec cost :' | wc -l".format(log_path)
         try:
             outval = os.popen(cmd).read()
         except Exception as e:
@@ -95,7 +95,7 @@ class TestCommonClass:
         """
         size_path = os.path.join(input_path,  str(size))
         if not os.path.exists(size_path):
-            os.makedirs(size_path)
+            os.makedirs(size_path, 0o750)
 
         base_size_file_path = os.path.join(size_path, "{}.bin".format(size))
         if not os.path.exists(base_size_file_path):
@@ -110,14 +110,15 @@ class TestCommonClass:
                 shutil.rmtree(input_file_num_folder_path)
 
         if not os.path.exists(input_file_num_folder_path):
-            os.makedirs(input_file_num_folder_path)
+            os.makedirs(input_file_num_folder_path, 0o750)
 
         strs = []
         # create soft link to base_size_file
         for i in range(input_file_num):
             file_name = "{}-{}.bin".format(size, i)
             file_path = os.path.join(input_file_num_folder_path, file_name)
-            strs.append("ln -s {} {}".format(base_size_file_path, file_path))
+            strs.append("cp {} {}".format(base_size_file_path, file_path))
+            strs.append(f"chmod 750 {file_path}")
 
         cmd = ';'.join(strs)
         os.system(cmd)
