@@ -92,9 +92,10 @@ def get_cann_path():
     set_env_path = os.getenv("CANN_PATH", "")
     if not set_env_path:
         set_env_path = os.environ.get("ASCEND_TOOLKIT_HOME")
-    if not set_env_path:
-        raise FileNotFoundError("can't find CANN path, please check.")
-    set_env_path = set_env_path.split(':')[0]
+        if not set_env_path:
+            set_env_path = "/usr/local/Ascend/ascend-toolkit/latest/"
+        else:
+            set_env_path = set_env_path.split(':')[0]
     if not is_legal_args_path_string(set_env_path):
         raise TypeError(f"env CANN_PATH:{set_env_path} is illegal")
     atlas_nnae_path = "/usr/local/Ascend/nnae/latest/"
