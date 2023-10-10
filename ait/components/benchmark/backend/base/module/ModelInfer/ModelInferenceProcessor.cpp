@@ -633,7 +633,7 @@ APP_ERROR ModelInferenceProcessor::Execute()
 APP_ERROR ModelInferenceProcessor::InitSumaryInfo()
 {
     if (gettimeofday(&sumaryInfo_.zero_point, nullptr) == -1) {
-        ERROR_LOG("InitSumaryInfo failed: gettimeofday return -1")
+        ERROR_LOG("InitSumaryInfo failed: gettimeofday return -1");
         return APP_ERR_ACL_FAILURE;
     }
     return APP_ERR_OK;
