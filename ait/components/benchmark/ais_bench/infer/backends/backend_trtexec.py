@@ -13,8 +13,6 @@
 # limitations under the License.
 
 
-from __future__ import annotations
-
 import os
 import sys
 import logging
@@ -70,7 +68,7 @@ class BackendTRTExec(backend.Backend):
 
     def load(
         self, model_path: str, inputs: list = None, outputs: list = None
-    ) -> BackendTRTExec:
+    ):
         if os.path.exists(model_path):
             logger.info("Load engine from file {}".format(model_path))
             self.model_path = model_path

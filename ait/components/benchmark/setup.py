@@ -29,7 +29,7 @@ setup(
     packages=find_packages(),
     keywords='ais_bench tool',
     install_requires=required,
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     entry_points={
         'benchmark_sub_task': ['benchmark=ais_bench.infer.main_cli:get_cmd_instance'],
     },

@@ -32,9 +32,7 @@ import sklearn as _ # import first, bypassing error libgomp-xxx.so.xxx: cannot a
 import onnxruntime
 import acl
 
-from auto_optimizer import OnnxGraph
 from msquickcmp.atc import atc_utils
-from auto_optimizer.graph_refactor import Node
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException, get_shape_to_directory_name
 from msquickcmp.common.convert import convert_bin_dump_data_to_npy
@@ -45,7 +43,6 @@ from msquickcmp.npu.npu_dump_data import NpuDumpData, DynamicInput
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.npu.om_parser import OmParser
 from msquickcmp.accuracy_locat import accuracy_locat as al
-from msquickcmp.single_op import single_op as sp
 
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
@@ -254,7 +251,6 @@ def check_and_run(args: CmpArgsAdapter, use_cli: bool):
     utils.check_file_or_directory_path(os.path.realpath(args.out_path), True)
     utils.check_convert_is_valid_used(args.dump, args.bin2npy, args.custom_op)
     utils.check_locat_is_valid(args.dump, args.locat)
-    sp.check_single_op_is_valid(args.single_op, args.dump, args.custom_op, args.locat)
     utils.check_max_size_param_valid(args.max_cmp_size)
 
     time_dir = time.strftime("%Y%m%d%H%M%S", time.localtime())
