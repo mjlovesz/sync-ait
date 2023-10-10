@@ -155,7 +155,6 @@ class TestClass:
         summary_json_name = result_path.split("/")[-1]
         summary_json_path = os.path.join(output_path, "{}_summary.json".format(summary_json_name))
 
-
         # delete tmp file
         shutil.rmtree(result_path)
         os.remove(summary_json_path)
