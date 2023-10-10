@@ -12,13 +12,13 @@ def check_in_path_legality(value):
     try:
         file_stat = FileStat(path_value)
     except Exception as err:
-        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.") from err
+        raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read'):
-        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
+        raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
     if file_stat.is_file and not file_stat.is_legal_file_type(["onnx"]):
-        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
+        raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
     if file_stat.is_file and not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
-        raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
+        raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
     return path_value
 
 
