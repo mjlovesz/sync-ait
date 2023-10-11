@@ -479,6 +479,7 @@ void PyInferenceSession::InferPipeline(std::vector<std::vector<std::string>>& in
         if (i != 0) {
             session = extraSession[i-1].get();
             inferSummary = &(summaryInfoGroup[i-1]);
+            session->modelInfer_.GetMutableSumaryInfo().zero_point = this->GetSumaryInfo().zero_point;
         }
         prepareThreadGroup.emplace_back(FuncPrepare, std::ref(h2dQueues[i]), session, std::ref(infilesList),
             inferOption, numThreads, i);

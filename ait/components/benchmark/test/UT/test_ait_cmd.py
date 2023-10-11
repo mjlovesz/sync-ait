@@ -57,7 +57,7 @@ base_cmd_dict = {
     "--profiler-rename": "0",
     "--dump-npy": "0",
     "--divide-input": "0",
-    "--thread": "1"
+    "--threads": "1"
 }
 
 simple_cmd_dict = {
@@ -95,7 +95,7 @@ simple_cmd_dict = {
     "--profiler-rename": "0",
     "--dump-npy": "0",
     "--divide-input": "0",
-    "--thread": "1"
+    "--threads": "1"
 }
 
 
@@ -143,7 +143,7 @@ def create_adapter(args):
             profiler_rename=args.profiler_rename,
             dump_npy=args.dump_npy,
             divide_input = args.divide_input,
-            thread = args.thread
+            threads = args.threads
     )
     return args_adapter
 
