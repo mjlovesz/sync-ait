@@ -109,7 +109,8 @@ def _visit_function_decl(node, api_type, arg_dict=None):
     func_attr = FuncDesc()
     func_attr.func_name = node.spelling
     func_attr.return_type = node.result_type.spelling
-    func_attr.location = node.location
+    # func_attr.location = node.location
+    func_attr.location = location_init(node)
     func_attr.hash_code = node.hash
 
     # if 'imread' in node.spelling:
@@ -136,7 +137,8 @@ def _visit_cxx_method(node, api_type='invalid'):
     func_attr = FuncDesc()
     func_attr.func_name = node.spelling
     func_attr.return_type = node.result_type.spelling
-    func_attr.location = node.location
+    # func_attr.location = node.location
+    func_attr.location = location_init(node)
     func_attr.hash_code = node.hash
 
     func_attr.parm_decl_names = _get_input_args(node)
@@ -245,3 +247,12 @@ def visit(node, seq_desc, result):
                     seq_desc.api_seq.extend([val[0] for val in rst])
 
     return skip_flag
+
+def location_init(node):
+    location = {}
+    location['column'] = node.location.column
+    location['file'] = node.location.file.name
+    location['line'] = node.location.line
+    location['offset'] = node.location.offset
+
+
