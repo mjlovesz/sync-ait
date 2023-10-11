@@ -155,4 +155,8 @@ $\qquad\qquad$ <font color=#0088FF>xx</font> <br>
 $\qquad$ **返回值**: <br>
 $\qquad\qquad$ <font color=#44AA00>xx</font> <br>
 
+#### MemorySummary
+class <font color=#DD4466>**MemorySummary**</font>() <br>
+$\qquad$ MemorySummary是。<br>
+
 ## aclruntime API
