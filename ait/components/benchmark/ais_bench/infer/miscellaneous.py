@@ -14,12 +14,14 @@
 import os
 import sys
 import stat
+import subprocess
 import json
 import itertools
 import numpy as np
 
 from ais_bench.infer.utils import logger
 from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_CONFIG_FILE, MAX_SIZE_LIMITE_NORMAL_FILE
+from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 
 PERMISSION_DIR = 0o750
 
@@ -215,33 +217,42 @@ def get_dymshape_list(input_ranges):
 
 
 # get throughput from out log
-def get_throughtput_from_log(log_path):
-    if not os.path.exists(log_path):
-        return "Failed", 0
-    cmd = "cat {} | grep throughput".format(log_path)
-    cmd = cmd + " | awk '{print $NF}'"
-    try:
-        outval = os.popen(cmd).read()
-    except Exception as e:
-        logger.warning("get throughtput failed e:{}".format(e))
-        return "Failed", 0
-    if outval == "":
-        return "Failed", 0
-    throughtput = float(outval)
-    return "OK", throughtput
+def get_throughtput_from_log(out_log):
+    log_list = out_log.split('\n')
+    for log_txt in log_list:
+        if "throughput" in log_txt:
+            throughput = float(log_txt.split(' ')[-1])
+            return "OK", throughput
+    return "Failed", 0
 
 
-def dymshape_range_run(args):
+def regenerate_dymshape_cmd(args:BenchMarkArgsAdapter, dym_shape):
+    args_dict = args.get_all_args_dict()
+    cmd = sys.executable + " -m ais_bench"
+    for key, value in args_dict.items():
+        if key == '--dymShape_range':
+            continue
+        if key == '--dymShape':
+            cmd = cmd + " " + f"{key}={dym_shape}"
+            continue
+        if value:
+            cmd = cmd + " " + f"{key}={value}"
+    cmd_list = cmd.split(' ')
+    return cmd_list
+
+
+def dymshape_range_run(args:BenchMarkArgsAdapter):
     dymshape_list = get_dymshape_list(args.dym_shape_range)
     results = []
-    log_path = os.path.realpath("dym.log") if args.output is None else os.path.join(args.output, "dym.log")
     for dymshape in dymshape_list:
-        cmd = "rm -rf {};{} {} {}".format(log_path, sys.executable, ' '.join(sys.argv),
-            "--dym-shape={}  | tee {}".format(dymshape,  log_path))
+        cmd = regenerate_dymshape_cmd(args, dymshape)
         result = { "dymshape" : dymshape, "cmd": cmd, "result": "Failed", "throughput" : 0 }
         logger.debug("cmd:{}".format(cmd))
-        os.system(cmd)
-        result["result"], result["throughput"] = get_throughtput_from_log(log_path)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, _ = p.communicate()
+        out_log = stdout.decode('utf-8')
+        print(out_log) # show original log of cmd
+        result["result"], result["throughput"] = get_throughtput_from_log(out_log)
         logger.info("dymshape:{} end run result:{}".format(dymshape, result["result"]))
         results.append(result)
 
