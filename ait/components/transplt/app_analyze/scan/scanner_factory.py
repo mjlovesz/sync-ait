@@ -14,6 +14,7 @@
 from app_analyze.common.kit_config import ScannerType
 from app_analyze.scan.cxx_scanner import CxxScanner
 from app_analyze.scan.cmake_scanner import CMakeScanner
+from app_analyze.scan.python_scanner import PythonScanner
 
 
 def merge_dicts(*dict_args):
@@ -34,7 +35,7 @@ class ScannerFactory:
         """实例化扫描器工厂对象"""
         self.scanner_params = scanner_params
 
-    def get_scanner(self, scanner_type):
+    def get_scanner(self, scanner_type, project_directory=None):
         """
         工厂生产方法
         :param scanner_type: 扫描器种类
@@ -46,4 +47,6 @@ class ScannerFactory:
             return CxxScanner(cxx_files, cxx_parser)
         if scanner_type == ScannerType.CMAKE_SCANNER:
             return CMakeScanner(self.scanner_params['cmake_files'])
+        if scanner_type == ScannerType.PYTHON_SCANNER:
+            return PythonScanner(self.scanner_params['python_files'], project_directory)
         raise Exception('Impossible Scanner Type!')

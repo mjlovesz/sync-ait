@@ -41,8 +41,8 @@ build_aie_convert(){
   fi
 }
 
-if [ ${AIE_DIR} ];then
+if [ ${ASCENDIE_HOME} ];then
   build_aie_convert
   else
-    echo "WARNING: Ascend Inference Engine is not installed. aie command cannot be used."
+    echo "WARNING: env ASCENDIE_HOME is not set. aie command cannot be used."
 fi

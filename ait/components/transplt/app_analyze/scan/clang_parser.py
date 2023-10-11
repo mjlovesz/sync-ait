@@ -116,9 +116,9 @@ def in_acc_lib(file, cursor):
         else:
             # get relative path
             new_file = file if not file.startswith(lib) else file.replace(lib, '')
-            cuda_en = cuda_enabled(new_file, v[1])
-            usr_ns = usr_namespace(cursor, v[0])
-            cursor.lib = v[3]
+            cuda_en = cuda_enabled(new_file, v.cuda_include)
+            usr_ns = usr_namespace(cursor, v.namespace)
+            cursor.lib = v.lib_name
         return True, cuda_en, usr_ns
     return False, False, ''
 

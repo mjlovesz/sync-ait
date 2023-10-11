@@ -40,7 +40,7 @@ def convert_bin_dump_data_to_npy(npu_dump_data_path, npu_net_output_data_path, c
     python_version = sys.executable.split('/')[-1]
     bin2npy_cmd = [python_version, msaccucmp_command_file_path,
                     "convert", "-d", npu_dump_data_path, "-out", convert_dir_path]
-    utils.execute_command(bin2npy_cmd)
+    utils.execute_command(bin2npy_cmd, False)
     utils.logger.info("msaccucmp command line: %s " % " ".join(bin2npy_cmd))
     return convert_dir_path
 

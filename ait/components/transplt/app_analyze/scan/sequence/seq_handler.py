@@ -1,5 +1,4 @@
 import pickle
-import numpy as np
 
 from app_analyze.utils.log_util import logger
 from app_analyze.common.kit_config import SeqArgs
@@ -220,12 +219,30 @@ class SeqHandler:
     def group_api_seqs(seqs, expert_libs):
         # a:描出的序列; b:模板序列
         def _calc_dist(a, b):
-            intersection = np.intersect1d(a, b)
-            union = np.union1d(a, b)
+            intersection = list(set(a).intersection(set(b)))
+            union = list(set(a).union(set(b)))
             ratio = len(intersection) * 1.0 / len(union) if len(intersection) else -1
-            # in_flag为true，表示模板序列包含在扫描出来的序列中
-            in_flag = True if len(intersection) == len(b) else False
+
+            if len(intersection) == len(b):
+                # in_flag为true，表示模板序列包含在扫描出来的序列中
+                in_flag = True
+            elif len(intersection) == len(set(a)):
+                # in_flag为true，表示扫描出来的序列包含在模板序列中
+                in_flag = True
+            else:
+                in_flag = False
             return ratio, in_flag
+
+        def _filter(value, cur_acc_lib, saved_seqs):
+            same_flag = False
+            for acc_lib, _ in saved_seqs.items():
+                if cur_acc_lib.dst_seqs != acc_lib.dst_seqs:
+                    continue
+
+                same_flag = True
+
+            if not same_flag:
+                saved_seqs[cur_acc_lib] = (value, cur_acc_lib.src_seq)
 
         def _group(seq, lib_seqs, sim):
             # 遍历对应加速库的模板
@@ -236,15 +253,15 @@ class SeqHandler:
                 val, flag = _calc_dist(seq, src_seq)
                 if flag:
                     # 模板序列包含在扫描出来的序列中,可以进行推荐
-                    in_lib_seqs[lib_seq] = (val, src_seq)
+                    _filter(val, lib_seq, in_lib_seqs)
                 else:
-                    # 小于阈值的，不进行推荐
+                    # 小于阈值的，不进行推荐,SeqArgs.SIM_MIN_SUPPORT
                     if val < SeqArgs.SIM_MIN_SUPPORT:
                         continue
 
                     if val == sim:
                         # 具有相同阈值的序列都保存起来
-                        cs_lib_seqs[lib_seq] = (sim, src_seq)
+                        _filter(val, lib_seq, cs_lib_seqs)
                     elif val > sim:
                         # 如果当前相似度大于阈值，进行最新序列的替换
                         sim = val

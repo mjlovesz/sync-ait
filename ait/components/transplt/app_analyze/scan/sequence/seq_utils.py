@@ -17,6 +17,36 @@ def is_unused_api(func_desc):
     return False
 
 
+def rename_func_name(func_desc):
+    val = ACC_FILTER.get(func_desc.acc_name, None)
+    if val:
+        ns_filter = val.get('namespace_filter', {})
+        func_name = func_desc.func_name
+        record_name = func_desc.obj_info.record_name if func_desc.obj_info is not None else ''
+        for ns_prefix, ns in ns_filter.items():
+            if func_name.startswith(ns_prefix):
+                name = func_name
+                flag = True
+            elif record_name.startswith(ns_prefix):
+                name = record_name
+                flag = False
+            else:
+                continue
+
+            left = name.replace(ns_prefix, '')
+            if left.startswith('::'):
+                if flag:
+                    func_desc.func_name = ns + left
+                else:
+                    func_desc.obj_info.record_name = ns + left
+            else:
+                pos = left.find('::')
+                if flag:
+                    func_desc.func_name = ns + left[pos:]
+                else:
+                    func_desc.obj_info.record_name = ns + left[pos:]
+
+
 def save_api_seq(seq_desc, result):
     api_cnt = len(seq_desc.api_seq)
     if api_cnt == 1:

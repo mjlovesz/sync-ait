@@ -31,14 +31,14 @@ namespace py = pybind11;
 #endif
 
 #include "Base/ModelInfer/SessionOptions.h"
+#include "Base/ModelInfer/InferOptions.h"
 
 #include "Base/ModelInfer/ModelInferenceProcessor.h"
 #include "Base/Tensor/TensorBase/TensorBase.h"
 #include "Base/ModelInfer/DynamicAippConfig.h"
 
 namespace Base {
-class PyInferenceSession
-{
+class PyInferenceSession {
 public:
     PyInferenceSession(const std::string &modelPath, const uint32_t &deviceId, std::shared_ptr<SessionOptions> options);
     ~PyInferenceSession();
@@ -46,14 +46,21 @@ public:
     std::vector<TensorBase> InferMap(std::vector<std::string>& output_names, std::map<std::string, TensorBase>& feeds);
     std::vector<TensorBase> InferVector(std::vector<std::string>& output_names, std::vector<TensorBase>& feeds);
 
-    std::vector<TensorBase> InferBaseTensorVector(std::vector<std::string>& output_names, std::vector<Base::BaseTensor>& feeds);
-    void OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names, std::vector<TensorBase>& outputs);
-    void InferPipeline(std::vector<std::vector<std::string>>& infilesList, const std::string& outputDir,
-                       bool autoDymShape, bool autoDymDims, const std::string& outFmt, const bool pureInferMode);
+    std::vector<TensorBase> FirstInnerInfer(std::vector<std::string>& output_names,
+        std::vector<Base::BaseTensor>& feeds);
+    std::vector<TensorBase> InnerInfer(const std::vector<int>& in_out_list, std::vector<std::string>& output_names,
+        const bool get_outputs, const bool mem_copy);
+
+    std::vector<TensorBase> InferBaseTensorVector(std::vector<std::string>& output_names,
+                                                  std::vector<Base::BaseTensor>& feeds);
+    void OnlyInfer(std::vector<BaseTensor> &inputs, std::vector<std::string>& output_names,
+                   std::vector<TensorBase>& outputs);
+    void InferPipeline(std::vector<std::vector<std::string>>& infilesList, std::shared_ptr<InferOptions> inferOption,
+                       std::vector<std::shared_ptr<PyInferenceSession>>& extraSession);
     std::vector<std::vector<TensorBase>> InferPipelineBaseTensor(std::vector<std::string>& outputNames,
-                                                                 std::vector<std::vector<Base::BaseTensor>>& inputsList,
-                                                                 std::vector<std::vector<std::vector<size_t>>>& shapesList,
-                                                                 bool autoDymShape, bool autoDymDims);
+        std::vector<std::vector<Base::BaseTensor>>& inputsList,
+        std::vector<std::vector<std::vector<size_t>>>& shapesList,
+        bool autoDymShape, bool autoDymDims);
 
     std::vector<std::vector<uint64_t>> GetDynamicHW();
     std::vector<int64_t> GetDynamicBatch();
@@ -62,11 +69,13 @@ public:
     const std::vector<Base::TensorDesc>& GetOutputs();
 
     uint32_t GetDeviceId() const;
+    std::size_t GetContextIndex() const;
     std::string GetDesc();
-
+    std::string GetModelPath();
     std::shared_ptr<SessionOptions> GetOptions();
 
-    const InferSumaryInfo& GetSumaryInfo();
+    const InferSumaryInfo& GetSumaryInfo() const;
+    void MergeSummaryInfo(const InferSumaryInfo& summaryInfo);
 
     int ResetSumaryInfo();
     int SetStaticBatch();
@@ -96,7 +105,8 @@ public:
 
     TensorBase CreateTensorFromFilesList(Base::TensorDesc &dstTensorDesc, std::vector<std::string>& filesList);
 
-    int Finalize();
+    static int Finalize();
+    int FreeResource();
 
     Base::ModelInferenceProcessor modelInfer_ = {};
 
@@ -105,9 +115,12 @@ private:
     int Destroy();
 
 private:
+    void SetContext();
     uint32_t deviceId_ = 0;
     Base::ModelDesc modelDesc_ = {};
     bool InitFlag_ = false;
+    std::string modelPath_ = "";
+    size_t contextIndex_ = 0;
 };
 }
 

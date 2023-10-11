@@ -103,11 +103,12 @@ class Project:
                 'cxx_parser': Parser
             },
             'cmake_files': cmake_files,
+            'python_files': self.file_matrix.files.get("python_files"),
         }
 
         scanner_factory = ScannerFactory(scanner_params)
         for s_type in self.inputs.scanner_type:
-            self.scanners.append(scanner_factory.get_scanner(s_type))
+            self.scanners.append(scanner_factory.get_scanner(s_type, self.inputs.args.source))
 
     def scan(self):
         """
@@ -140,6 +141,12 @@ class Project:
                 self.report_results.update(ad.results)
             elif key == 'cmake':
                 self.report_results.update(val_dict)
+            elif key == 'python':
+                ad = Advisor(val_dict)
+                ad.recommend()
+                ad.workload()
+                ad.cuda_apis()
+                self.report_results.update(ad.results)
 
         eval_time = time.time() - start_time
         KitConfig.PROJECT_TIME = eval_time

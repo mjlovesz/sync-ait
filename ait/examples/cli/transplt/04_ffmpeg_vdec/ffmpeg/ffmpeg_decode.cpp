@@ -58,12 +58,12 @@ static void decode(AVCodecContext *dec_ctx, AVFrame *frame, AVPacket *pkt,
             exit(1);
         }
 
-        printf("saving frame %3lld\n", dec_ctx->frame_num);
+        printf("saving frame %3d\n", dec_ctx->frame_number);
         fflush(stdout);
 
         /* the picture is allocated by the decoder. no need to
            free it */
-        snprintf(buf, sizeof(buf), "%s-%lld.pgm", filename, dec_ctx->frame_num);
+        snprintf(buf, sizeof(buf), "%s-%d.pgm", filename, dec_ctx->frame_number);
         pgm_save(frame->data[0], frame->linesize[0],
                  frame->width, frame->height, buf);
     }

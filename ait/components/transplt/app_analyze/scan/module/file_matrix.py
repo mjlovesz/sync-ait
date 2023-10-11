@@ -29,6 +29,7 @@ class FileMatrix:
             "include_path": set(),  # 全局-I路径集合
             "makefiles": [],  # 待扫描的makefile文件列表
             "cmakefiles": [],  # 待扫描的makefile文件列表
+            "python_files": [],  # 待扫描的py文件列表
         }
         self.excluded_dir_list = ['cmake-build-debug']
         self.excluded_head_file_list = []  # 需要排除的头文件列表
@@ -142,12 +143,15 @@ class FileMatrix:
         """
         file_name = os.path.basename(file_path)
         source_ext = ('.c', '.cc', '.cpp', '.cxx', '.cx', '.cu')
+        python_ext = ('.py', ".pyi")
 
         if ext.lower() in source_ext and not from_external_tool:
             self.files.setdefault('cpp_sources', {})[file_path] = ''
         if ext.lower() in source_ext and from_external_tool:
             self.files.setdefault('cpp_sources', {})[file_path] = \
                 src_files_from_external_tool.get(file_path)
+        if ext.lower() in python_ext and not from_external_tool:
+            self.files.setdefault('python_files', {}).append(file_path)
 
         # 判断是否为Makefile
         if self._check_makefile(file_name):

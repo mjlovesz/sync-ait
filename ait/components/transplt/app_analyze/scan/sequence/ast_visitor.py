@@ -3,7 +3,7 @@ import re
 from clang.cindex import CursorKind
 from app_analyze.common.kit_config import KitConfig
 from app_analyze.scan.sequence.seq_desc import FuncDesc, ObjDesc
-from app_analyze.scan.sequence.seq_utils import save_api_seq, sort_apis, is_unused_api
+from app_analyze.scan.sequence.seq_utils import save_api_seq, sort_apis, is_unused_api, rename_func_name
 from app_analyze.scan.sequence.api_filter import GLOBAL_FILTER_PREFIX
 from app_analyze.scan.clang_utils import call_expr, skip_implicit, get_attr, get_children
 from app_analyze.scan.clang_parser import cuda_enabled, usr_namespace, find_right_angle
@@ -112,9 +112,6 @@ def _visit_function_decl(node, api_type, arg_dict=None):
     func_attr.location = node.location
     func_attr.hash_code = node.hash
 
-    # if 'imread' in node.spelling:
-    #     print()
-
     func_attr.parm_decl_names = _get_input_args(node)
     func_attr.parm_num = len(func_attr.parm_decl_names)
 
@@ -122,6 +119,7 @@ def _visit_function_decl(node, api_type, arg_dict=None):
     if api_type == 'acc_lib':
         func_attr.acc_name = get_attr(node, 'lib')
         func_attr.func_name = _format_api(arg_dict['usr_ns'], node.spelling)
+        rename_func_name(func_attr)
 
     func_attr.root_file = node.referenced.location.file.name
     if is_unused_api(func_attr):
@@ -147,6 +145,7 @@ def _visit_cxx_method(node, api_type='invalid'):
     func_attr.is_usr_def = True if api_type == 'usr_defined' else False
     if api_type == 'acc_lib':
         func_attr.acc_name = get_attr(node, 'lib')
+        rename_func_name(func_attr)
 
     func_attr.root_file = node.referenced.location.file.name
     if is_unused_api(func_attr):

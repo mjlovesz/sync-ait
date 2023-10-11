@@ -19,7 +19,8 @@ _opencv_file_filter = ['opencv2/core/utility.hpp',  # CPU性能统计
                        'opencv2/features2d.hpp',  # 特征点的探测和描述以及匹配
                        ]
 
-_opencv_namespace_filter = {'cv::dnn::dnn4_v': 'cv::dnn::'}
+_opencv_namespace_filter = {'cv::dnn::dnn4_v': 'cv::dnn'}
 
 GLOBAL_FILTER_PREFIX = 'operator'
-ACC_FILTER = {KitConfig.OPENCV: {'file_filter': _opencv_file_filter, 'api_filter': _opencv_api_filter}}
+ACC_FILTER = {KitConfig.OPENCV: {'file_filter': _opencv_file_filter, 'api_filter': _opencv_api_filter,
+                                 'namespace_filter': _opencv_namespace_filter}}

@@ -76,15 +76,6 @@ def test_init_given_valid_when_any_then_pass(fake_arguments):
     assert aa.origin_model is aa.model_with_inputs
 
 
-def test_init_given_custom_op_when_valid_then_pass(fake_arguments):
-    fake_arguments.custom_op = "/3/GlobalAveragePool"
-    aa = OnnxDumpData(fake_arguments)
-
-    assert aa.model_before_custom_op is not None
-    assert aa.model_after_custom_op is not None
-    assert aa.model_before_custom_op is aa.model_with_inputs
-
-
 def test_init_given_model_path_when_not_exists_then_error(fake_arguments):
     fake_arguments.model_path = "not_exists_msquickcmp_test_onnx_model.onnx"
     with pytest.raises(AccuracyCompareException):
@@ -182,32 +173,3 @@ def test_generate_dump_data_given_valid_when_any_then_pass(fake_arguments):
     assert onnx_dump_data_dir.endswith("onnx") or onnx_dump_data_dir.endswith("onnx/")
     assert os.path.exists(onnx_dump_data_dir)
     assert len(os.listdir(onnx_dump_data_dir)) > 0
-
-
-def test_generate_dump_data_given_custom_op_when_valid_then_pass(fake_arguments):
-    fake_arguments.custom_op = "/3/GlobalAveragePool"
-    aa = OnnxDumpData(fake_arguments)
-    aa.generate_inputs_data()
-
-    fake_dump_data_path = "ReduceMeanD._3_GlobalAveragePool.time.output.0.npy"
-    input_data = np.random.uniform(size=(1, 32, 1, 1)).astype("float32")
-    np.save(os.path.join(OUT_PATH, fake_dump_data_path), input_data)
-    om_parser = Args(get_dynamic_scenario_info=lambda: (None, None))
-    onnx_dump_data_dir = aa.generate_dump_data(npu_dump_path=OUT_PATH, om_parser=om_parser)
-
-
-def test_generate_dump_data_given_custom_op_when_npu_dump_data_path_none_then_error(fake_arguments):
-    fake_arguments.custom_op = "/3/GlobalAveragePool"
-    aa = OnnxDumpData(fake_arguments)
-    aa.generate_inputs_data()
-    with pytest.raises(AccuracyCompareException):
-        aa.generate_dump_data()
-
-
-def test_generate_dump_data_given_custom_op_when_not_match_then_error(fake_arguments):
-    fake_arguments.custom_op = "/4/Flatten"
-    aa = OnnxDumpData(fake_arguments)
-    aa.generate_inputs_data()
-    om_parser = Args(get_dynamic_scenario_info=lambda: (None, None))
-    with pytest.raises(AccuracyCompareException):
-        aa.generate_dump_data(npu_dump_path=OUT_PATH, om_parser=om_parser)

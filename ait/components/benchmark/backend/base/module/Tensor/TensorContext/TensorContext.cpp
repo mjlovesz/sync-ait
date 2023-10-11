@@ -56,13 +56,35 @@ TensorContext::~TensorContext()
     Finalize();
 }
 
-APP_ERROR TensorContext::SetContext(const uint32_t &deviceId)
+APP_ERROR TensorContext::CreateContext(const uint32_t &deviceId, size_t& contextIndex)
 {
     DeviceContext device = {};
     device.devId = deviceId;
-    APP_ERROR ret = DeviceManager::GetInstance()->SetDevice(device);
+    APP_ERROR ret = DeviceManager::GetInstance()->CreateContext(device, contextIndex);
     if (ret != APP_ERR_OK) {
-        LogError << "SetDevice failed. ret=" << ret << std::endl;
+        LogError << "CreateContext failed. ret=" << ret << std::endl;
+        return ret;
+    }
+    return APP_ERR_OK;
+}
+
+APP_ERROR TensorContext::DestroyContext(const uint32_t &deviceId, const size_t& contextIndex)
+{
+    APP_ERROR ret = DeviceManager::GetInstance()->DestroyContext(deviceId, contextIndex);
+    if (ret != APP_ERR_OK) {
+        LogError << "DestroyContext failed. ret=" << ret << std::endl;
+        return ret;
+    }
+    return APP_ERR_OK;
+}
+
+APP_ERROR TensorContext::SetContext(const uint32_t &deviceId, const size_t contextIndex)
+{
+    DeviceContext device = {};
+    device.devId = deviceId;
+    APP_ERROR ret = DeviceManager::GetInstance()->SetContext(device, contextIndex);
+    if (ret != APP_ERR_OK) {
+        LogError << "SetContext failed. ret=" << ret << std::endl;
         return ret;
     }
     return APP_ERR_OK;

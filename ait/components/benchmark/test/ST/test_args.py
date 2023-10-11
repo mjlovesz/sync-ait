@@ -132,7 +132,7 @@ class TestClass:
             logging.info(f"run cmd:{cmd}")
             ret = os.system(cmd)
             assert ret == 0
-            cmd = "cat {} |grep 'cost :' | wc -l".format(log_path)
+            cmd = "cat {} |grep 'model aclExec cost :' | wc -l".format(log_path)
 
             try:
                 outval = os.popen(cmd).read()
@@ -364,6 +364,24 @@ class TestClass:
             suffix_file_path = os.path.join(result_path, "pure_infer_data_0.{}".format(output_file_suffix.lower()))
             assert os.path.exists(suffix_file_path)
             shutil.rmtree(result_path)
+
+    def test_args_thread_ok(self):
+        model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
+        log_path = os.path.join(TestCommonClass.base_path, "log.txt")
+        thread = 2
+        cmd = "{} --model {} --device {} --pipeline 1 --thread {} > {}".format(
+            TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id, thread, log_path)
+        logging.info(f"run cmd:{cmd}")
+        ret = os.system(cmd)
+        assert ret == 0
+        cmd = "cat {} |grep 'create model description success' | wc -l".format(log_path)
+
+        try:
+            outval = os.popen(cmd).read()
+        except Exception as e:
+            raise Exception("raise an exception: {}".format(e)) from e
+
+        assert int(outval) == thread
 
 
 if __name__ == '__main__':

@@ -12,6 +12,7 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
+from app_analyze.common.kit_config import ReporterType, ScannerType, BuildToolType
 
 
 class IInput(ABC):
@@ -38,7 +39,7 @@ class IInput(ABC):
         self.directories = []
         self.report_type = []
         self.scanner_type = []
-        self.construct_tool = 'cmake'
+        self.construct_tool = BuildToolType.CMAKE
         self.project_directory = ''
         self.project_time = ''
         self.worker_temp_dir = ''
@@ -51,5 +52,10 @@ class IInput(ABC):
             r'abstract interface. need subclass to implementation.')
 
     def set_scanner_type(self):
-        raise NotImplementedError(
-            r'abstract interface. need subclass to implementation.')
+        if self.construct_tool == BuildToolType.CMAKE.value:
+            self.scanner_type.append(ScannerType.CMAKE_SCANNER)
+            self.scanner_type.append(ScannerType.CPP_SCANNER)
+        if self.construct_tool == BuildToolType.PYTHON.value:
+            self.scanner_type.append(ScannerType.PYTHON_SCANNER)
+        else:
+            NotImplementedError('need to implementation.')
