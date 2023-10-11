@@ -295,7 +295,6 @@ sidebar.NodeSidebar = class {
 
         modiferToolbarElem.appendChild(this.init_extract_helper())
         modiferToolbarElem.appendChild(this.init_delete_helper())
-        modiferToolbarElem.appendChild(this.init_recover_helper())
 
         return modiferToolbarElem
     }
@@ -349,32 +348,7 @@ sidebar.NodeSidebar = class {
         const helper_delete_all = this.init_menu_of_helper("Delete Node With Children", ()=>{
             this._host._view.modifier.deleteNodeWithChildren(this._modelNodeName);
         })
-        const helper_delete_enter = this.init_menu_of_helper("Delete Enter", ()=>{
-            this._host._view.modifier.deleteEnter();
-        })
-
-        return this.init_helper(iconElem, "Delete", [helper_delete, helper_delete_all, helper_delete_enter])
-    }
-
-    init_recover_helper() {
-        const iconElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path1.setAttribute('d', 'M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z');
-        path1.style.setProperty('fill-rule', "evenodd");
-        const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path2.setAttribute('d', 'M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z');
-        iconElem.appendChild(path1)
-        iconElem.appendChild(path2)
-        iconElem.setAttribute("ViewBox", "0 0 16 16")
-
-        const helper_recover = this.init_menu_of_helper("Recover Node", ()=>{
-            this._host._view.modifier.recoverSingleNode(this._modelNodeName);
-        })
-        const helper_recover_all = this.init_menu_of_helper("Recover Node With Children", ()=>{
-            this._host._view.modifier.recoverNodeWithChildren(this._modelNodeName);
-        })
-
-        return this.init_helper(iconElem, "Recover", [helper_recover, helper_recover_all])
+        return this.init_helper(iconElem, "Delete", [helper_delete, helper_delete_all])
     }
 
     init_helper(icon, title, helpers) {
