@@ -346,7 +346,7 @@ std::vector<TensorBase> PyInferenceSession::InferBaseTensorVector(std::vector<st
     std::vector<MemoryData> memorys = {};
     std::vector<BaseTensor> inputs = {};
     for (auto &info : feeds) {
-        MemoryData mem = CopyMemory2DeviceMemory(info.buf, info.size, deviceId_);
+        MemoryData mem = CopyMemory2DeviceMemory(info.buf, info.size, deviceId_, contextIndex_);
         memorys.push_back(mem);
         BaseTensor tensor(mem.ptrData, mem.size);
         inputs.push_back(tensor);
