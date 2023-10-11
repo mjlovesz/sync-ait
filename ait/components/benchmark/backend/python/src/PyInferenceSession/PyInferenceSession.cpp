@@ -113,7 +113,7 @@ void PyInferenceSession::Init(const std::string &modelPath, std::shared_ptr<Sess
     }
     SetContext();
 
-    ret = modelInfer_.Init(modelPath, options, deviceId_);
+    ret = modelInfer_.Init(modelPath, options, deviceId_, contextIndex_);
     if (ret != APP_ERR_OK) {
         throw std::runtime_error(GetError(ret));
     }

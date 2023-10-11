@@ -150,7 +150,7 @@ public:
      * @return APP_ERROR error code
      */
     APP_ERROR Init(const std::string& modelPath, std::shared_ptr<SessionOptions> options,
-                   const int32_t &deviceId, const size_t contextIndex = 0);
+                   const int32_t &deviceId, const size_t contextIndex);
 
     /**
      * @description Unload Model
