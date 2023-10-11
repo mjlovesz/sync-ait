@@ -251,7 +251,7 @@ def dymshape_range_run(args:BenchMarkArgsAdapter):
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, _ = p.communicate()
         out_log = stdout.decode('utf-8')
-        print(out_log)
+        print(out_log) # show original log of cmd
         result["result"], result["throughput"] = get_throughtput_from_log(out_log)
         logger.info("dymshape:{} end run result:{}".format(dymshape, result["result"]))
         results.append(result)
