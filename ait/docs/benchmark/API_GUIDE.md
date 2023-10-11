@@ -33,6 +33,126 @@ session = InferSession(device_id=0, model_path="model.om")
 outputs = session.infer(feeds=inputs, mode="static")
 ```
 推理结束，推理的性能数据也保存在session中，可以通过session的接口获取性能数据。
+```python
+# exec_time_list 按先后顺序保留了所有session在执行推理的时间。
+exec_time = session.summary().exec_time_list[-1]
+```
+### API 详细介绍
+#### InferSession
+class <font color=#DD4466>**InferSession**</font>(<font color=#0088FF>device_id</font>: int, <font color=#0088FF>model_path</font>: str, <font color=#0088FF>acl_json_path</font>: str = None, <font color=#0088FF>debug</font>: bool = False, <font color=#0088FF>loop</font>: int = 1) <br>
+$\qquad$ InferSession是**单进程**下用于om模型推理的类
+##### $\qquad$初始化参数
+- **device_id**
+- **model_path**
+- **acl_json_path**
+- **debug**
+- **loop**
 
+##### $\qquad$<font color=#DD4466>**get_inputs**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+
+##### $\qquad$<font color=#DD4466>**get_outputs**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+
+##### $\qquad$<font color=#DD4466>**infer**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+
+##### $\qquad$<font color=#DD4466>**infer_pipeline**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+
+##### $\qquad$<font color=#DD4466>**infer_iteration**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+
+##### $\qquad$<font color=#DD4466>**summary**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+
+##### $\qquad$<font color=#DD4466>**reset_summaryinfo**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+
+##### $\qquad$<font color=#DD4466>**free_resource**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+
+##### $\qquad$<font color=#DD4466>**finalize**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+
+#### MultiDeviceSession
+class <font color=#DD4466>**MultiDeviceSession**</font>(<font color=#0088FF>model_path</font>: str, <font color=#0088FF>acl_json_path</font>: str = None, <font color=#0088FF>debug</font>: bool = False, <font color=#0088FF>loop</font>: int = 1) <br>
+$\qquad$ MultiDeviceSession是**多进程**下用于om模型推理的类，初始化时不会在npu芯片(device)上加载模型，使用推理接口时才会在指定的几个devices的每个进程中新建一个InferSession。<br>
+##### $\qquad$初始化参数
+- **model_path**
+- **acl_json_path**
+- **debug**
+- **loop**
+
+##### $\qquad$<font color=#DD4466>**infer**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+
+##### $\qquad$<font color=#DD4466>**infer_pipeline**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+
+##### $\qquad$<font color=#DD4466>**infer_iteration**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+
+##### $\qquad$<font color=#DD4466>**summary**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+
+##### $\qquad$<font color=#DD4466>**reset_summaryinfo**</font>()
+$\qquad$ **说明**: <br>
+$\qquad$ **参数**: <br>
+$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
+$\qquad$ **返回值**: <br>
+$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
 
 ## aclruntime API
