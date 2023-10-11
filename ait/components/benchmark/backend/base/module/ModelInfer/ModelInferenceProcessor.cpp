@@ -99,6 +99,8 @@ APP_ERROR ModelInferenceProcessor::Init(const std::string& modelPath, std::share
     }
 
     processModel->SetExceptionCallBack();
+
+    CHECK_RET_EQ(InitSumaryInfo(), APP_ERR_OK);
     return APP_ERR_OK;
 }
 
@@ -620,9 +622,20 @@ APP_ERROR ModelInferenceProcessor::Execute()
     }
 
     gettimeofday(&end, nullptr);
-    float time_cost = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000.000;
-    DEBUG_LOG("model aclExec cost : %f", time_cost);
-    sumaryInfo_.execTimeList.push_back(time_cost);
+    struct timeval zero_point = sumaryInfo_.zero_point;
+    float start_time = 1000 * (start.tv_sec - zero_point.tv_sec) + (start.tv_usec - zero_point.tv_usec) / 1000.000;
+    float end_time = 1000 * (end.tv_sec - zero_point.tv_sec) + (end.tv_usec - zero_point.tv_usec) / 1000.000;
+    DEBUG_LOG("model aclExec cost : %f", end_time - start_time);
+    sumaryInfo_.execTimeList.push_back({start_time, end_time});
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::InitSumaryInfo()
+{
+    if (gettimeofday(&sumaryInfo_.zero_point, nullptr) == -1) {
+        ERROR_LOG("InitSumaryInfo failed: gettimeofday return -1");
+        return APP_ERR_ACL_FAILURE;
+    }
     return APP_ERR_OK;
 }
 
