@@ -33,7 +33,7 @@ exec_time = session.summary().exec_time_list[-1]
 ```
 ## interface python API 详细介绍
 ### InferSession
-$\textcolor{Green}{InferSession}$
+$\color{Green}{InferSession}$
 
 class <font color=#DD4466>**InferSession**</font>(<font color=#0088FF>device_id</font>: int, <font color=#0088FF>model_path</font>: str, <font color=#0088FF>acl_json_path</font>: str = None, <font color=#0088FF>debug</font>: bool = False, <font color=#0088FF>loop</font>: int = 1) <br>
 $\qquad$ InferSession是**单进程**下用于om模型推理的类
