@@ -622,7 +622,7 @@ class InferSession:
             mode: static dymdims dymshape ...
             custom_sizes: only dymshape needs
         '''
-        mem_copy = False
+        mem_copy = True # if False, thought return correct result and faster, but plog err
         if not custom_sizes:
             custom_sizes = []
         if (iteration_times == 1):
