@@ -31,7 +31,7 @@ setup(
     package_data={'': ['LICENSE']},
     license='Apache-2.0',
     keywords='ait',
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     install_requires=required,
     entry_points={
         'console_scripts': ['ait=components.__main__:main'],

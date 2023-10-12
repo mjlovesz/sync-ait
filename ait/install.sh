@@ -128,7 +128,6 @@ install(){
   if [ ! -z $only_compare ]
   then
     only_benchmark=true;
-    only_surgeon=true;
     pre_check_skl2onnx
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${arg_force_reinstall}

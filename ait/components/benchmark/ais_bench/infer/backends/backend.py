@@ -13,8 +13,6 @@
 # limitations under the License.
 
 
-from __future__ import annotations
-
 from abc import ABC, abstractmethod
 from typing import List, Any, Iterable, Union
 
@@ -86,7 +84,7 @@ class Backend(ABC):
         pass
 
     @abstractmethod
-    def load(self, model_path: str) -> Backend:
+    def load(self, model_path: str):
         """
         Each of the subclases must implement this.
         This is called to load a model.

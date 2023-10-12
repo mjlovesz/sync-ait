@@ -36,13 +36,14 @@ setup(
         'Intended Audience :: Developers',
         'License :: Apache-2.0 Software License',
         'Programming Language :: Python :: 3 :: Only',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development'
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     entry_points={
         'debug_sub_task': ['compare=msquickcmp.__main__:get_cmd_instance'],
     },
