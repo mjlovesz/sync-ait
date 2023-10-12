@@ -702,7 +702,7 @@ Result ModelProcess::UpdateInputsMemcpy(const std::vector<int> &inOutRelation)
         } else if (tmpRelation[i] < outputsNum) {
             aclDataBuffer* tmpInputData = aclmdlGetDatasetBuffer(input_, i);
             aclDataBuffer* tmpOutputData = aclmdlGetDatasetBuffer(output_, tmpRelation[i]);
-            if (aclGetDataBufferSizeV2(tmpInputData) != aclGetDataBufferSizeV2(tmpOutputData)) {
+            if (aclGetDataBufferSizeV2(tmpInputData) > aclGetDataBufferSizeV2(tmpOutputData)) {
                 ERROR_LOG("inputSize_current and outputSize_last not matched");
                 return FAILED;
             }
