@@ -613,7 +613,8 @@ class InferSession:
 
         return self.session.first_inner_run(self.outputs_names, inputs)
 
-    def infer_iteration(self, feeds, in_out_list=None, iteration_times=1, mode='static', custom_sizes=None):
+    def infer_iteration(self, feeds, in_out_list=None, iteration_times=1, mode='static',
+            custom_sizes=None, mem_copy=True):
         '''
         Parameters:
             feeds: input datas
@@ -622,7 +623,6 @@ class InferSession:
             mode: static dymdims dymshape ...
             custom_sizes: only dymshape needs
         '''
-        mem_copy = True # if False, thought return correct result and faster, but plog err
         if not custom_sizes:
             custom_sizes = []
         if (iteration_times == 1):
@@ -777,7 +777,7 @@ class MultiDeviceSession():
                 logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 
-    def infer_iteration(self, device_feeds:dict, in_out_list=None, iteration_times=1, mode='static', custom_sizes=None):
+    def infer_iteration(self, device_feeds:dict, in_out_list=None, iteration_times=1, mode='static', custom_sizes=None, mem_copy=True):
         '''
         Parameters:
             device_feeds: device match [input datas1, input datas2...] (Dict)
@@ -791,7 +791,7 @@ class MultiDeviceSession():
             for feed in feeds:
                 p.apply_async(
                     self.subprocess_infer_iteration,
-                    args=(outputs_queue, device_id, feed, in_out_list, iteration_times, mode, custom_sizes),
+                    args=(outputs_queue, device_id, feed, in_out_list, iteration_times, mode, custom_sizes, mem_copy),
                     error_callback=self.print_subprocess_run_error
                 )
         p.close()
@@ -837,7 +837,7 @@ class MultiDeviceSession():
         return
 
     def subprocess_infer_iteration(self, outputs_queue, device_id, feeds, in_out_list=None,
-            iteration_times=1, mode='static', custom_sizes=None):
+            iteration_times=1, mode='static', custom_sizes=None, mem_copy=True):
         sub_session = InferSession(
             device_id=device_id,
             model_path=self.model_path,
@@ -846,7 +846,7 @@ class MultiDeviceSession():
             loop=self.loop
         )
         start_time = time.time()
-        outputs = sub_session.infer_iteration(feeds, in_out_list, iteration_times, mode, custom_sizes)
+        outputs = sub_session.infer_iteration(feeds, in_out_list, iteration_times, mode, custom_sizes, mem_copy)
         end_time = time.time()
         outputs_queue.put([device_id, outputs, start_time, end_time])
         return
