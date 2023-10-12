@@ -123,7 +123,7 @@ TensorBase FromNumpy(py::buffer b)
         bytes = DATA_TYPE_TO_BYTE_SIZE_MAP.find(dataType)->second;
     }
     MemoryData memoryData(info.ptr, info.size * bytes, MemoryData::MemoryType::MEMORY_HOST, -1);
-    TensorBase src(memoryData, true, shape, dataType);
+    TensorBase src(memoryData, true, shape, dataType, 0); // default to be in 0 context
     TensorBase dst(shape, dataType);
     APP_ERROR ret = Base::TensorBase::TensorBaseMalloc(dst);
     if (ret != APP_ERR_OK) {
