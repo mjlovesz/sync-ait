@@ -43,29 +43,35 @@ $\qquad$ InferSession是**单进程**下用于om模型推理的类
 - **loop**：一组输入数据重复推理的次数。
 
 #### <font color=#DD4466>**get_inputs**</font>()
-$\qquad$ **说明**: <br>
-$\qquad\qquad$ 用于获取InferSession加载的模型的属于节点的信息，包括 <br>
-$\qquad$ **参数**: <br>
-$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
-$\qquad$ **返回值**: <br>
-$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+- **说明**: <br>
+    + 用于获取InferSession加载的模型的输入节点的信息。 <br>
+- **返回值**: <br>
+    + 返回类型为<font color=#44AA00>list [aclruntime.tensor_desc]</font>的输入节点属性信息。 <br>
 
 #### <font color=#DD4466>**get_outputs**</font>()
-$\qquad$ **说明**: <br>
-$\qquad$ **参数**: <br>
-$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
-$\qquad$ **返回值**: <br>
-$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+- **说明**:
+    + 用于获取InferSession加载的模型的输出节点的信息。 <br>
+- **返回值**:
+    + 返回类型为<font color=#44AA00>list [aclruntime.tensor_desc]</font>的输出节点属性信息。 <br>
 
-#### <font color=#DD4466>**infer**</font>()
-$\qquad$ **说明**: <br>
-$\qquad$ **参数**: <br>
-$\qquad\qquad$ <font color=#0088FF>xx</font> <br>
-$\qquad$ **返回值**: <br>
-$\qquad\qquad$ <font color=#44AA00>xx</font> <br>
+#### <font color=#DD4466>**infer**</font>(<font color=#0088FF>feeds</font>, <font color=#0088FF>mode</font>='static', <font color=#0088FF>custom_sizes</font>=100000, <font color=#0088FF>out_array</font>=True)
+- **说明**:
+    - 模型推理接口，一次推理一组输入数据，可以推理静态shape、动态batch、动态分辨率、动态dims和动态shape场景的模型。
+- **参数**:
+    + <font color=#0088FF>feeds</font>: 推理所需的一组输入数据，支持数据类型:
+        - numpy.ndarray;
+        - 单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64);
+        - torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor)
+        - aclruntime.Tensor
+    + <font color=#0088FF>mode</font>: 指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)
+    + <font color=#0088FF>custom_sizes</font>: 动态shape模型需要使用，推理输出数据所占的内存大小。
+    + <font color=#0088FF>out_array</font>
+- **返回值**:
+    + out_array == True, 返回numpy.ndarray类型的推理输出结果，数据的内存在host侧。
+    + out_array == False, 返回<font color=#44AA00>aclruntime.Tensor</font>类型的推理输出结果，数据的内存在device侧。
 
 #### <font color=#DD4466>**infer_pipeline**</font>()
-$\qquad$ **说明**: <br>
+- **说明**:
 $\qquad$ **参数**: <br>
 $\qquad\qquad$ <font color=#0088FF>xx</font> <br>
 $\qquad$ **返回值**: <br>
