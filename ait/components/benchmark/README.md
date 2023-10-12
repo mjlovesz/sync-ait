@@ -36,7 +36,7 @@ ais_bench推理工具的安装包括**aclruntime包**和**ais_bench推理程序�
    - [aclruntime-0.0.2-cp39-cp39-linux_x86_64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp39-cp39-linux_x86_64.whl)
    - [aclruntime-0.0.2-cp39-cp39-linux_aarch64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/aclruntime-0.0.2-cp39-cp39-linux_aarch64.whl)
    - [aclruntime-0.0.2-cp310-cp310-linux_x86_64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ait/aclruntime-0.0.2-cp310-cp310-linux_x86_64.whl)
-   - [aclruntime-0.0.2-cp310-cp310-linux_aarch64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ait/aclruntime-0.0.2-cp310-cp310-linux_aarch64.whl) 
+   - [aclruntime-0.0.2-cp310-cp310-linux_aarch64.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ait/aclruntime-0.0.2-cp310-cp310-linux_aarch64.whl)
    - [ais_bench-0.0.2-py3-none-any.whl](https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ais_bench-0.0.2-py3-none-any.whl)
 
 2. 执行如下命令，进行安装。
@@ -258,6 +258,7 @@ ais_bench推理工具可以通过配置不同的参数，来应对各种测试�
 | --npu_id                 |指定npu_id开关。需要通过npu-smi info命令获取指定device所对应的npu id。配合--energy_consumption参数使用，单独使用无效。|否|
 | --pipeline               |指定pipeline开关，用于开启多线程推理功能。1或true（开启）、0或false（关闭），默认关闭。|否|
 | --dump_npy               |指定dump_npy开关，用于开启dump结果自动转换功能。1或true（开启）、0或false（关闭），默认关闭。需要配合--output和--dump/--acl_json_path参数使用，单独使用无效。|否|
+| --threads                |指定threads开关，用于设置多计算线程推理时计算线程的数量。默认值为1，取值范围为大于0的正整数。需要配合--pipeline 1参数使用，单独使用无效。|否|
 
 ### 使用场景
 
@@ -727,7 +728,12 @@ python3 -m ais_bench  --model /home/model/resnet50_v1.om --output ./ --profiler 
   ```bash
   python3 -m ais_bench --model ./pth_resnet50_bs1.om --pipeline 1
   ```
-  在单线程推理的命令行基础上加上--pipeline 1即可开启多线程推理模式，加快端到端推理速度。
+  在单线程推理的命令行基础上加上--pipeline 1即可开启多线程推理模式，实现计算-搬运的并行，加快端到端推理速度。
+
+  ```bash
+  python3 -m ais_bench --model ./pth_resnet50_bs1.om --pipeline 1 --threads 2
+  ```
+  在多线程推理的命令行基础上加上--threads {$number of threads}，即可开启多计算线程推理模式，实现计算-计算的并行，提高推理吞吐量。
 
 #### dump数据自动转换场景
 
