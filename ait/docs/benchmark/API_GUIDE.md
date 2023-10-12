@@ -12,7 +12,6 @@
   pip3 install ./ais_bench-{version}-py3-none-any.whl
   # {version}表示软件版本号，{python_version}表示Python版本号，{arch}表示CPU架构。
   ```
-
 ## interface python API 快速上手
 InferSession 是单进程下interface API的主要类，它用于加载om模型和执行om模型的推理，模型推理前需要初始化一个InferSession的实例。
 ```python
@@ -34,6 +33,8 @@ exec_time = session.summary().exec_time_list[-1]
 ```
 ## interface python API 详细介绍
 ### InferSession
+$\textcolor{Green}{InferSession}$
+
 class <font color=#DD4466>**InferSession**</font>(<font color=#0088FF>device_id</font>: int, <font color=#0088FF>model_path</font>: str, <font color=#0088FF>acl_json_path</font>: str = None, <font color=#0088FF>debug</font>: bool = False, <font color=#0088FF>loop</font>: int = 1) <br>
 $\qquad$ InferSession是**单进程**下用于om模型推理的类
 #### $\qquad$初始化参数
