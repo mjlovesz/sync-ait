@@ -17,7 +17,7 @@ def infer_api_static():
     outputs = session.infer(feeds, mode='static')
     print(f"outputs: {outputs}")
     # free model resource and device context of session
-    session.free_device()
+    session.free_resource()
 
 
 infer_api_static()

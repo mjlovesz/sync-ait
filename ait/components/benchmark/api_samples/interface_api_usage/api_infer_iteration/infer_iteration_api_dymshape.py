@@ -20,7 +20,7 @@ def infer_api_iteration_dymshape():
     outputs = session.infer_iteration(feeds, in_out_list, iteration_times, mode='dymshape', custom_sizes=100000)
     print(f"outputs: {outputs}")
     # free model resource and device context of session
-    session.free_device()
+    session.free_resource()
 
 
 infer_api_iteration_dymshape()
