@@ -633,23 +633,28 @@ Result ModelProcess::UpdateInputsReuse(const std::vector<int> &inOutRelation)
     }
     size_t inputsNum = aclmdlGetDatasetNumBuffers(input_);
     size_t outputsNum = aclmdlGetDatasetNumBuffers(output_);
-    if (inputsNum != inOutRelation.size()) {
-        ERROR_LOG("wrong inOutRelation size");
+    std::vector<int> tmpRelation = inOutRelation;
+    if (g_dymindex != SIZE_MAX) {
+        tmpRelation.insert(tmpRelation.begin() + g_dymindex, -1);
+    }
+
+    if (inputsNum != tmpRelation.size()) {
+        ERROR_LOG("wrong inOutRelation size, inputsNum: %zu, inOutList size: %zu", inputsNum, tmpRelation.size());
         return FAILED;
     }
 
     for (size_t i = 0; i < inputsNum; ++i) {
         aclError ret;
-        if (inOutRelation[i] < 0) {
+        if (tmpRelation[i] < 0) {
             continue;
-        } else if (inOutRelation[i] < outputsNum) {
+        } else if (tmpRelation[i] < outputsNum) {
             aclDataBuffer* tmpInputData = aclmdlGetDatasetBuffer(input_, i);
-            aclDataBuffer* tmpOutputData = aclmdlGetDatasetBuffer(output_, inOutRelation[i]);
-            if (aclGetDataBufferSizeV2(tmpInputData) != aclGetDataBufferSizeV2(tmpOutputData)) {
+            aclDataBuffer* tmpOutputData = aclmdlGetDatasetBuffer(output_, tmpRelation[i]);
+            if (aclGetDataBufferSizeV2(tmpInputData) != aclGetDataBufferSizeV2(tmpOutputData) && g_dymindex == SIZE_MAX) {
                 ERROR_LOG("inputSize_current and outputSize_last not matched");
                 return FAILED;
             }
-            size_t tensorSize = aclGetDataBufferSizeV2(tmpOutputData);
+            size_t tensorSize = aclGetDataBufferSizeV2(tmpInputData);
             void* inBuffer = aclGetDataBufferAddr(tmpInputData);
             void* outBuffer = aclGetDataBufferAddr(tmpOutputData);
             ret = aclUpdateDataBuffer(tmpInputData, outBuffer, tensorSize);
@@ -681,23 +686,27 @@ Result ModelProcess::UpdateInputsMemcpy(const std::vector<int> &inOutRelation)
     }
     size_t inputsNum = aclmdlGetDatasetNumBuffers(input_);
     size_t outputsNum = aclmdlGetDatasetNumBuffers(output_);
-    if (inputsNum != inOutRelation.size()) {
-        ERROR_LOG("wrong inOutRelation size");
+    std::vector<int> tmpRelation = inOutRelation;
+    if (g_dymindex != SIZE_MAX) {
+        tmpRelation.insert(tmpRelation.begin() + g_dymindex, -1);
+    }
+    if (inputsNum != tmpRelation.size()) {
+        ERROR_LOG("wrong inOutRelation size, inputsNum: %zu, inOutList size: %zu", inputsNum, tmpRelation.size());
         return FAILED;
     }
 
     for (size_t i = 0; i < inputsNum; ++i) {
         aclError ret;
-        if (inOutRelation[i] < 0) {
+        if (tmpRelation[i] < 0) {
             continue;
-        } else if (inOutRelation[i] < outputsNum) {
+        } else if (tmpRelation[i] < outputsNum) {
             aclDataBuffer* tmpInputData = aclmdlGetDatasetBuffer(input_, i);
-            aclDataBuffer* tmpOutputData = aclmdlGetDatasetBuffer(output_, inOutRelation[i]);
-            if (aclGetDataBufferSizeV2(tmpInputData) != aclGetDataBufferSizeV2(tmpOutputData)) {
+            aclDataBuffer* tmpOutputData = aclmdlGetDatasetBuffer(output_, tmpRelation[i]);
+            if (aclGetDataBufferSizeV2(tmpInputData) > aclGetDataBufferSizeV2(tmpOutputData)) {
                 ERROR_LOG("inputSize_current and outputSize_last not matched");
                 return FAILED;
             }
-            size_t tensorSize = aclGetDataBufferSizeV2(tmpOutputData);
+            size_t tensorSize = aclGetDataBufferSizeV2(tmpInputData);
             void* lastBuffer = aclGetDataBufferAddr(tmpInputData);
             void* lastOutBuffer = aclGetDataBufferAddr(tmpOutputData);
             ret = aclrtMemcpy(lastBuffer, tensorSize, lastOutBuffer, tensorSize, ACL_MEMCPY_DEVICE_TO_DEVICE);

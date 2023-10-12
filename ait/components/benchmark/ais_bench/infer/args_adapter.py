@@ -20,7 +20,7 @@ class BenchMarkArgsAdapter():
                  profiler, dump, acl_json_path, output_batchsize_axis,
                  run_mode, display_all_summary, warmup_count, dym_shape_range, aipp_config,
                  energy_consumption, npu_id, backend, perf, pipeline, profiler_rename,
-                 dump_npy, divide_input, thread):
+                 dump_npy, divide_input, threads):
         self.model = model
         self.input = input_path
         self.output = output
@@ -55,7 +55,7 @@ class BenchMarkArgsAdapter():
         self.profiler_rename = profiler_rename
         self.dump_npy = dump_npy
         self.divide_input = divide_input
-        self.thread = thread
+        self.threads = threads
 
     def get_all_args_dict(self):
         args_dict = {}
@@ -92,5 +92,5 @@ class BenchMarkArgsAdapter():
         args_dict.update({'--profiler_rename':self.profiler_rename})
         args_dict.update({'--dump_npy':self.dump_npy})
         args_dict.update({'--divide_input':self.divide_input})
-        args_dict.update({'--thread':self.thread})
+        args_dict.update({'--threads':self.threads})
         return args_dict
