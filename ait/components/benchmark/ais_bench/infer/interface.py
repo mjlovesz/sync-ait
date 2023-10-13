@@ -621,8 +621,10 @@ class InferSession:
             mode: static dymdims dymshape ...
             custom_sizes: only dymshape needs
         '''
-        if not custom_sizes:
-            custom_sizes = []
+        if not in_out_list:
+            in_out_list = []
+        if len(in_out_list) != len(self.get_inputs()):
+            raise RuntimeError(f"inputs' amount and length of in_out_list not matched!")
         if (iteration_times == 1):
             outputs = self.infer(feeds, mode, custom_sizes)
             return outputs
@@ -705,6 +707,7 @@ class MultiDeviceSession():
         self.acl_json_path = acl_json_path
         self.debug = debug
         self.loop = loop
+        self.summary = {}
 
     @classmethod
     def print_subprocess_run_error(cls, value):
@@ -732,12 +735,15 @@ class MultiDeviceSession():
         result = 0 if 2 * len(device_feeds) == outputs_queue.qsize() else 1
         logger.info(f"multidevice run end qsize:{outputs_queue.qsize()} result:{result}")
         outputs_dict = {}
+        self.summary.clear()
         while outputs_queue.qsize() != 0:
             ret = outputs_queue.get()
             if type(ret) == list:
                 if (not outputs_dict.get(ret[0])):
                     outputs_dict.update({ret[0]: []})
+                    self.summary.update({ret[0]: []})
                 outputs_dict.get(ret[0]).append(ret[1])
+                self.summary.get(ret[0]).append((ret[3] - ret[2]) * 1000)
                 logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 
@@ -763,12 +769,15 @@ class MultiDeviceSession():
         result = 0 if 2 * len(device_feeds_list) == outputs_queue.qsize() else 1
         logger.info(f"multidevice run pipeline end qsize:{outputs_queue.qsize()} result:{result}")
         outputs_dict = {}
+        self.summary.clear()
         while outputs_queue.qsize() != 0:
             ret = outputs_queue.get()
             if type(ret) == list:
                 if (not outputs_dict.get(ret[0])):
                     outputs_dict.update({ret[0]: []})
+                    self.summary.update({ret[0]: []})
                 outputs_dict.get(ret[0]).append(ret[1])
+                self.summary.get(ret[0]).append((ret[3] - ret[2]) * 1000)
                 logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 
@@ -794,12 +803,15 @@ class MultiDeviceSession():
         result = 0 if 2 * len(device_feeds) == outputs_queue.qsize() else 1
         logger.info(f"multidevice run iteration end qsize:{outputs_queue.qsize()} result:{result}")
         outputs_dict = {}
+        self.summary.clear()
         while outputs_queue.qsize() != 0:
             ret = outputs_queue.get()
             if type(ret) == list:
                 if (not outputs_dict.get(ret[0])):
                     outputs_dict.update({ret[0]: []})
+                    self.summary.update({ret[0]: []})
                 outputs_dict.get(ret[0]).append(ret[1])
+                self.summary.get(ret[0]).append((ret[3] - ret[2]) * 1000)
                 logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 
