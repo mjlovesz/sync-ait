@@ -72,7 +72,7 @@ $\qquad$ InferSession是**单进程**下用于om模型推理的类
 
 #### <font color=#DD4466>**infer_pipeline**</font>()
 - **说明**:
-$\qquad$ **参数**: <br>
+    + **参数**: <br>
 $\qquad\qquad$ <font color=#0088FF>xx</font> <br>
 $\qquad$ **返回值**: <br>
 $\qquad\qquad$ <font color=#44AA00>xx</font> <br>

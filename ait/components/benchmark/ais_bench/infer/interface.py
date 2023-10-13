@@ -573,15 +573,13 @@ class InferSession:
             outputs = None
             return outputs
 
-    def first_inner_run(self, feeds, mode='static', custom_sizes=None):
+    def first_inner_run(self, feeds, mode='static', custom_sizes=100000):
         '''
         Parameters:
             feeds: input data
             mode: static dymdims dymshapes ...
             custom_sizes: must equal to the realsize of outputs
         '''
-        if not custom_sizes:
-            custom_sizes = []
         inputs = []
         shapes = []
         for feed in feeds:
@@ -614,7 +612,7 @@ class InferSession:
         return self.session.first_inner_run(self.outputs_names, inputs)
 
     def infer_iteration(self, feeds, in_out_list=None, iteration_times=1, mode='static',
-            custom_sizes=None, mem_copy=True):
+            custom_sizes=100000, mem_copy=True):
         '''
         Parameters:
             feeds: input datas
@@ -626,10 +624,7 @@ class InferSession:
         if not custom_sizes:
             custom_sizes = []
         if (iteration_times == 1):
-            if not custom_sizes:
-                outputs = self.infer(feeds, mode)
-            else:
-                outputs = self.infer(feeds, mode, custom_sizes[0])
+            outputs = self.infer(feeds, mode, custom_sizes)
             return outputs
         else:
             self.first_inner_run(feeds, mode, custom_sizes)
