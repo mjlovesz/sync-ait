@@ -713,6 +713,9 @@ class MultiDeviceSession():
     def print_subprocess_run_error(cls, value):
         logger.error(f"subprocess run failed error_callback:{value}")
 
+    def summary(self):
+        return self.summary
+
     def infer(self, device_feeds:dict, mode='static', custom_sizes=100000):
         '''
         Parameters:
