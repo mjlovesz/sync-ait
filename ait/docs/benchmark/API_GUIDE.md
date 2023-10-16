@@ -230,7 +230,7 @@ $\qquad$ MemorySummary是用于统计一个推理进程中host2device和device2h
     + 节点接受的tensor的真实大小，针对动态shape 动态分档场景 实际需要的大小。
 #### <font color=#DD4466>**aclruntime.dtype**</font>(enum)
 数据类型名称的枚举类型：<br>
-- 'uint8', 'int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64', 'float16', 'float32', 'double64', 'bool'
+- 包含 'uint8', 'int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64', 'float16', 'float32', 'double64', 'bool'
 #### <font color=#DD4466>**aclruntime.Tensor**</font>
 - device侧保存tensor的方式，在host侧无法直接访问
 
@@ -246,17 +246,16 @@ $\qquad$ MemorySummary是用于统计一个推理进程中host2device和device2h
 ### 样例列表
 |样例|说明|
 | ---- | ---- |
-|infer_api_static.py|调用InferSession的infer接口推理静态模型|
-|infer_api_dymbatch.py|调用InferSession的infer接口推理动态batch模型|
-|infer_api_dymhw.py|调用InferSession的infer接口推理动态分辨率模型|
-|infer_api_dymdims.py|调用InferSession的infer接口推理动态dims模型|
-|infer_api_dymshape.py|调用InferSession的infer接口推理动态shape模型|
-|infer_api_iteration_static.py|调用InferSession的infer_iteration接口推理静态模型|
-|infer_api_iteration_dymbatch.py|调用InferSession的infer_iteration接口推理动态batch模型|
-|infer_api_iteration_dymhw.py|调用InferSession的infer_iteration接口推理动态分辨率模型|
-|infer_api_iteration_dymdims.py|调用InferSession的infer_iteration接口推理动态dims模型|
-|infer_api_iteration_dymshape.py|调用InferSession的infer_iteration接口推理动态shape模型|
-|infer_api_static.py|调用InferSession的infer_iteration接口推理静态模型|
-|multidevice_infer_api.py|调用MultiDeviceSession的infer接口推理静态模型|
-|multidevice_infer_iteration_api.py|调用MultiDeviceSession的infer_iteration接口推理静态模型|
+|[infer_api_static.py](../../components/benchmark/api_samples/interface_api_usage/api_infer/infer_api_static.py)|调用InferSession的infer接口推理静态模型|
+|[infer_api_dymbatch.py](../../components/benchmark/api_samples/interface_api_usage/api_infer/infer_api_dymbatch.py)|调用InferSession的infer接口推理动态batch模型|
+|[infer_api_dymhw.py](../../components/benchmark/api_samples/interface_api_usage/api_infer/infer_api_dymhw.py)|调用InferSession的infer接口推理动态分辨率模型|
+|[infer_api_dymdims.py](../../components/benchmark/api_samples/interface_api_usage/api_infer/infer_api_dymdims.py)|调用InferSession的infer接口推理动态dims模型|
+|[infer_api_dymshape.py](../../components/benchmark/api_samples/interface_api_usage/api_infer/infer_api_dymshape.py)|调用InferSession的infer接口推理动态shape模型|
+|[infer_api_iteration_static.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_iteration/infer_iteration_api_static.py)|调用InferSession的infer_iteration接口推理静态模型|
+|[infer_api_iteration_dymbatch.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_iteration/infer_api_iteration_dymbatch.py)|调用InferSession的infer_iteration接口推理动态batch模型|
+|[infer_api_iteration_dymhw.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_iteration/infer_api_iteration_dymhw.py)|调用InferSession的infer_iteration接口推理动态分辨率模型|
+|[infer_api_iteration_dymdims.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_iteration/infer_api_iteration_dymdims.py)|调用InferSession的infer_iteration接口推理动态dims模型|
+|[infer_api_iteration_dymshape.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_iteration/infer_api_iteration_dymshape.py)|调用InferSession的infer_iteration接口推理动态shape模型|
+|[multidevice_infer_api.py](../../components/benchmark/api_samples/interface_api_usage/multidevice_api/multidevice_infer_api.py)|调用MultiDeviceSession的infer接口推理静态模型|
+|[multidevice_infer_iteration_api.py](../../components/benchmark/api_samples/interface_api_usage/multidevice_api/multidevice_infer_iteration_api.py)|调用MultiDeviceSession的infer_iteration接口推理静态模型|
 
