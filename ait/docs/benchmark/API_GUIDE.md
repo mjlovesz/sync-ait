@@ -79,11 +79,16 @@ $\qquad$ InferSession是**单进程**下用于om模型推理的类
 - **说明**:
     + 多线程推理接口(计算与数据搬运在不同线程)，一次性推理多组数据建议采用此接口，相对于多次调用`infer`接口推理多组数据，可以有效缩短端到端时间。
 - **参数**:
-    + <font color=#0088FF>**feeds**</font>: list，推理所需的几组组输入数据，list中支持数据类型:<span id="jump2"></span>
+    + <font color=#0088FF>**feeds_list**</font>: list，推理所需的几组组输入数据，list中支持数据类型:<span id="jump2"></span>
         - numpy.ndarray;
         - 单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64);
         - torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor)
         - aclruntime.Tensor
+      ```
+      # 注意
+      'static'、'dymbatch'和 'dymhw'场景下feeds_list中的每个feeds中shape必须相同
+      'dymdims'和 'dymshape'场景下feeds_list中的每个feeds中shape可以不相同
+      ```
     + <font color=#0088FF>**mode**</font>: str，指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)
     + <font color=#0088FF>**custom_sizes**</font>: int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。
         - 输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。
@@ -156,7 +161,7 @@ $\qquad$ MultiDeviceSession是**多进程**下用于om模型推理的类，初�
 - **返回值**:
     + 返回{device_id:[output1, output2, ...]}，output*为numpy.ndarray类型的推理输出结果，数据的内存在host侧。
 
-#### <font color=#DD4466>**infer_pipeline**</font>(<font color=#0088FF>feeds_list</font>, <font color=#0088FF>mode</font> = 'static', <font color=#0088FF>custom_sizes</font> = 100000)
+#### <font color=#DD4466>**infer_pipeline**</font>(<font color=#0088FF>devices_feeds_list</font>, <font color=#0088FF>mode</font> = 'static', <font color=#0088FF>custom_sizes</font> = 100000)
 - **说明**:
     + 多进程调用InferSession的[infer_pipeline接口](#jump3)进行推理
 - **参数**:
@@ -168,7 +173,7 @@ $\qquad$ MultiDeviceSession是**多进程**下用于om模型推理的类，初�
 - **返回值**:
    + 返回{device_id:[output1, output2, ...]}，output*为[numpy.ndarray]类型的推理输出结果，数据的内存在host侧。
 
-#### <font color=#DD4466>**infer_iteration**</font>(<font color=#0088FF>feeds</font>, <font color=#0088FF>in_out_list</font> = None, <font color=#0088FF>iteration_times</font> = 1, <font color=#0088FF>mode</font> = 'static', <font color=#0088FF>custom_sizes</font> = 100000, <font color=#0088FF>mem_copy</font> = True)
+#### <font color=#DD4466>**infer_iteration**</font>(<font color=#0088FF>device_feeds</font>, <font color=#0088FF>in_out_list</font> = None, <font color=#0088FF>iteration_times</font> = 1, <font color=#0088FF>mode</font> = 'static', <font color=#0088FF>custom_sizes</font> = 100000, <font color=#0088FF>mem_copy</font> = True)
 - **说明**:
     + 多进程调用InferSession的[infer_iteration接口](#jump5)进行推理
 - **参数**:
