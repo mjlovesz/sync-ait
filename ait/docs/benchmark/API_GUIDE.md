@@ -240,7 +240,7 @@ $\qquad$ MemorySummary是用于统计一个推理进程中host2device和device2h
 - device侧保存tensor的方式，在host侧无法直接访问
 
 ## interface python API 使用样例
-- 如果要执行使用样例，需要在linux环境下载[ait](https://gitee.com/ascend/ait)的源码，进入[使用样例目录](https://gitee.com/ascend/ait/tree/master/ait/components/benchmark/api_samples)下, 执行以下命令生成样例执行所需的模型。
+- 如果要执行使用样例，需要在linux环境下载[ait](https://gitee.com/ascend/ait)的源码，进入[使用样例目录](https://gitee.com/ascend/ait/tree/master/ait/components/benchmark/api_samples)下, 执行以下命令生成样例执行所需的模型（仅支持在310系列的推理卡上生成，不支持在910系列的训练卡上生成）。
   ```cmd
   chmod 750 get_sample_datas.sh
   ```
@@ -256,11 +256,17 @@ $\qquad$ MemorySummary是用于统计一个推理进程中host2device和device2h
 |[infer_api_dymhw.py](../../components/benchmark/api_samples/interface_api_usage/api_infer/infer_api_dymhw.py)|调用InferSession的infer接口推理动态分辨率模型|
 |[infer_api_dymdims.py](../../components/benchmark/api_samples/interface_api_usage/api_infer/infer_api_dymdims.py)|调用InferSession的infer接口推理动态dims模型|
 |[infer_api_dymshape.py](../../components/benchmark/api_samples/interface_api_usage/api_infer/infer_api_dymshape.py)|调用InferSession的infer接口推理动态shape模型|
+|[infer_pipeline_api_static.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_static.py)|调用InferSession的infer接口推理静态模型|
+|[infer_pipeline_api_dymbatch.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymbatch.py)|调用InferSession的infer接口推理动态batch模型|
+|[infer_pipeline_api_dymhw.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymhw.py)|调用InferSession的infer接口推理动态分辨率模型|
+|[infer_pipeline_api_dymdims.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymdims.py)|调用InferSession的infer接口推理动态dims模型|
+|[infer_pipeline_api_dymshape.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymshape.py)|调用InferSession的infer接口推理动态shape模型|
 |[infer_api_iteration_static.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_iteration/infer_iteration_api_static.py)|调用InferSession的infer_iteration接口推理静态模型|
 |[infer_api_iteration_dymbatch.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_iteration/infer_api_iteration_dymbatch.py)|调用InferSession的infer_iteration接口推理动态batch模型|
 |[infer_api_iteration_dymhw.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_iteration/infer_api_iteration_dymhw.py)|调用InferSession的infer_iteration接口推理动态分辨率模型|
 |[infer_api_iteration_dymdims.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_iteration/infer_api_iteration_dymdims.py)|调用InferSession的infer_iteration接口推理动态dims模型|
 |[infer_api_iteration_dymshape.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_iteration/infer_api_iteration_dymshape.py)|调用InferSession的infer_iteration接口推理动态shape模型|
 |[multidevice_infer_api.py](../../components/benchmark/api_samples/interface_api_usage/multidevice_api/multidevice_infer_api.py)|调用MultiDeviceSession的infer接口推理静态模型|
+|[multidevice_infer_pipeline_api.py](../../components/benchmark/api_samples/interface_api_usage/multidevice_api/multidevice_infer_pipeline_api.py)|调用MultiDeviceSession的infer接口推理静态模型|
 |[multidevice_infer_iteration_api.py](../../components/benchmark/api_samples/interface_api_usage/multidevice_api/multidevice_infer_iteration_api.py)|调用MultiDeviceSession的infer_iteration接口推理静态模型|
 
