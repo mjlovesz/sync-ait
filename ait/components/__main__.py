@@ -21,6 +21,7 @@ from components.benchmark import benchmark_cmd
 from components.analyze import analyze_cmd
 from components.convert import convert_cmd
 from components.utils.parser import register_parser
+from components.utils.file_open_check import UmaskWrapper
 
 
 def main():
@@ -36,7 +37,11 @@ def main():
     args = parser.parse_args()
 
     if hasattr(args, 'handle'):
-        args.handle(args)
+        with UmaskWrapper():
+            try:
+                args.handle(args)
+            except Exception as err:
+                print("[ERROR] Refer FAQ first if a known issue: https://gitee.com/ascend/ait/wikis/Home", err)
     elif hasattr(args, "print_help"):
         args.print_help()
 

@@ -280,3 +280,19 @@ def ms_open(file, mode="r", max_size=None, softlink=False, write_permission=PERM
     if "a" in mode:
         flags = flags | os.O_APPEND | os.O_CREAT
     return os.fdopen(os.open(file, flags, mode=write_permission), mode, **kwargs)
+
+
+class UmaskWrapper:
+    """Write with preset umask
+    >>> with UmaskWrapper():
+    >>>     ...
+    """
+
+    def __init__(self, umask=0o027):
+        self.umask, self.ori_umask = umask, None
+
+    def __enter__(self):
+        self.ori_umask = os.umask(self.umask)
+
+    def __exit__(self, exc_type=None, exc_val=None, exc_tb=None):
+        os.umask(self.ori_umask)
