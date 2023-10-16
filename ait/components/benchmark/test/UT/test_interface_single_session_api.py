@@ -119,7 +119,7 @@ class TestClass:
         outputs = session.infer([ndata], mode='dymshape', custom_sizes=100000)
         session.free_resource()
 
-# ====================test single process infer api==========================
+# ====================test single process infer pipeline api==========================
     def test_infer_pipeline_api_static(self):
         device_id = 0
         model_path = self.get_resnet50_static(1)
@@ -134,7 +134,7 @@ class TestClass:
         outputs = session.infer_pipeline(ndata_list, mode='static')
         session.free_resource()
 
-    def test_infer_api_dymbatch(self):
+    def test_infer_pipeline_api_dymbatch(self):
         device_id = 0
         model_path = self.get_resnet50_dynamic('dymbatch')
         session = InferSession(device_id, model_path)
@@ -145,10 +145,10 @@ class TestClass:
         ndata_list = [[ndata], [ndata], [ndata]]
 
         # in is numpy list and output is numpy list
-        outputs = session.infer([ndata_list], mode='dymbatch')
+        outputs = session.infer_pipeline([ndata_list], mode='dymbatch')
         session.free_resource()
 
-    def test_infer_api_dymwh(self):
+    def test_infer_pipeline_api_dymwh(self):
         device_id = 0
         model_path = self.get_resnet50_dynamic('dymwh')
         session = InferSession(device_id, model_path)
@@ -159,10 +159,10 @@ class TestClass:
         ndata_list = [[ndata], [ndata], [ndata]]
 
         # in is numpy list and output is numpy list
-        outputs = session.infer(ndata_list, mode='dymhw')
+        outputs = session.infer_pipeline(ndata_list, mode='dymhw')
         session.free_resource()
 
-    def test_infer_api_dymdim(self):
+    def test_infer_pipeline_api_dymdim(self):
         device_id = 0
         model_path = self.get_resnet50_dynamic('dymdim')
         session = InferSession(device_id, model_path)
@@ -174,10 +174,10 @@ class TestClass:
         ndata2 = np.full(shape2, 0).astype(np.float32)
         ndata_list = [[ndata1], [ndata2]]
         # in is numpy list and output is numpy list
-        outputs = session.infer(ndata_list, mode='dymdims')
+        outputs = session.infer_pipeline(ndata_list, mode='dymdims')
         session.free_resource()
 
-    def test_infer_api_dymshape(self):
+    def test_infer_pipeline_api_dymshape(self):
         device_id = 0
         model_path = self.get_resnet50_dynamic('dymshape')
         session = InferSession(device_id, model_path)
@@ -190,7 +190,7 @@ class TestClass:
         ndata_list = [[ndata1], [ndata2]]
 
         # in is numpy list and output is numpy list
-        outputs = session.infer(ndata_list, mode='dymshape', custom_sizes=100000)
+        outputs = session.infer_pipeline(ndata_list, mode='dymshape', custom_sizes=100000)
         session.free_resource()
 
 # ====================test single process infer iteration api==========================

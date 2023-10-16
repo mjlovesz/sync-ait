@@ -16,7 +16,7 @@ import numpy as np
 from ais_bench.infer.interface import InferSession
 
 
-def infer_api_dymshape():
+def infer_pipeline_api_dymshape():
     device_id = 0
     model_path = "../../sampledata/add_model/model/add_model_dymshape.om"
     # create session of om model for inference
@@ -27,11 +27,12 @@ def infer_api_dymshape():
     shape1 = [4, 3, 32, 32]
     ndata1 = np.full(shape1, 1).astype(np.float32)
     feeds = [ndata0, ndata1]
+    feeds_list = [feeds, feeds]
     # execute inference, inputs is ndarray list and outputs is ndarray list
-    outputs = session.infer(feeds, mode='dymshape', custom_sizes=100000)
+    outputs = session.infer_pipeline(feeds_list, mode='dymshape', custom_sizes=100000)
     print(f"outputs: {outputs}")
     # free model resource and device context of session
     session.free_resource()
 
 
-infer_api_dymshape()
+infer_pipeline_api_dymshape()
