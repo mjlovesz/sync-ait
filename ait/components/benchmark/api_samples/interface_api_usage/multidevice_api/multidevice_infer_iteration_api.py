@@ -29,9 +29,10 @@ def multidevice_infer_iteration_static():
     ndata1 = np.full(shape1, 0).astype(np.float32)
     ndata2 = np.full(shape2, 0).astype(np.float32)
     # create {device_id : input datas} dict
-    device_feeds = {device_id:[[ndata1, ndata2],[ndata1, ndata2]]}
+    device_feeds = {device_id:[[ndata1, ndata2], [ndata1, ndata2]]}
     # in is numpy list and output is numpy list
     outputs = multi_session.infer_iteration(device_feeds, in_out_list, iteration_times, mode='static')
+    print(f"outputs: {outputs}")
 
 
 multidevice_infer_iteration_static()
