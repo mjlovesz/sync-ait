@@ -545,13 +545,18 @@ class InferSession:
                 shapes.append(shape)
             inputs_list.append(inputs)
             shapes_list.append(shapes)
-        if mode == 'dymshape':
+        if self.infer_mode_switch.get(mode) is not None and mode != "dymshape" and mode != "dymdims":
+            self.infer_mode_switch.get(mode)(shapes, custom_sizes)
+        elif mode == "dymshape":
             if isinstance(custom_sizes, int):
                 custom_sizes = [custom_sizes] * len(self.get_outputs())
             elif not isinstance(custom_sizes, list):
                 raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
                     custom_sizes, type(custom_sizes)))
             self.session.set_custom_outsize(custom_sizes)
+        else:
+            raise RuntimeError('wrong infer_mode:{}, only support \"static\",\"dymbatch\",\"dymhw\", \
+                \"dymdims\",\"dymshape\"'.format(mode))
         outputs = self.session.run_pipeline(self.outputs_names, inputs_list, shapes_list,
                                             mode == 'dymshape', mode == 'dymdims')
         for i, output in enumerate(outputs):
