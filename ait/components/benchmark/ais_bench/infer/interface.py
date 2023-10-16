@@ -554,6 +554,8 @@ class InferSession:
                 raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
                     custom_sizes, type(custom_sizes)))
             self.session.set_custom_outsize(custom_sizes)
+        elif mode == "dymdims":
+            pass
         else:
             raise RuntimeError('wrong infer_mode:{}, only support \"static\",\"dymbatch\",\"dymhw\", \
                 \"dymdims\",\"dymshape\"'.format(mode))

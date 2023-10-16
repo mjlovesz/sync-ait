@@ -145,7 +145,7 @@ class TestClass:
         ndata_list = [[ndata], [ndata], [ndata]]
 
         # in is numpy list and output is numpy list
-        outputs = session.infer_pipeline([ndata_list], mode='dymbatch')
+        outputs = session.infer_pipeline(ndata_list, mode='dymbatch')
         session.free_resource()
 
     def test_infer_pipeline_api_dymwh(self):
