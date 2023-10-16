@@ -20,7 +20,7 @@ class BaseDataset(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def compute(self, data):
+    def compute(self, data, measurement): # need to have a default measurement for every dataset
         raise NotImplementedError
 
     @abstractmethod

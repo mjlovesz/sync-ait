@@ -18,7 +18,7 @@ class Evaluator():
     def set_dataset(self, dataset_name, dataset_path, shot):
         self.dataset = DatasetFactory().get_dataset(dataset_name, dataset_path, shot)
 
-    def evaluate(self):
+    def evaluate(self, measurement = None):
         recorder = Recorder()
         for index, entry_dict in self.dataset:
             answer = self.generate(entry_dict.get("prompt"))
@@ -26,6 +26,6 @@ class Evaluator():
             if self.rank == 0:
                 recorder.record(index, entry_dict)
 
-        recorder.statistics(self.dataset.compute)
+        recorder.statistics(self.dataset.compute, measurement)
         recorder.report(self.dataset.report)
         return recorder

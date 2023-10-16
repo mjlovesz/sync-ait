@@ -29,7 +29,7 @@ class Recorder():
         current_index = index[0]
         return self.children.get(current_index).read(index[1:])
 
-    def statistics(self, func_compute = None):
+    def statistics(self, func_compute = None, measurement = None):
         if self.metrics is not None:
             return self.metrics
         if func_compute is None:
@@ -41,9 +41,13 @@ class Recorder():
         else:
             data = []
             for child in self.children.values():
-                data.append(child.statistics(func_compute))
+                data.append(child.statistics(func_compute, measurement))
 
-        self.metrics = func_compute(data)
+        if measurement is None:
+            # use default measurement
+            self.metrics = func_compute(data)
+        else:
+            self.metrics = func_compute(data, measurement)
         return self.metrics
 
 

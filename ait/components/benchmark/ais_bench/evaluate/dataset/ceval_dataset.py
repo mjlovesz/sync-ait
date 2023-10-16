@@ -1,9 +1,8 @@
-
-
 import os
 import json
 import pandas as pd
 from ais_bench.evaluate.dataset.base_dataset import BaseDataset
+from ais_bench.evaluate.measurement.measurement_factory import MeasurementFactory
 from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_NORMAL_FILE
 
 SUBCATEGORY_INDEX = 0
@@ -13,7 +12,10 @@ PROMPT_INDEX = 4
 
 class CevalDataset(BaseDataset):
     def _download(self):
-        raise NotImplementedError
+        print("please download the dataset and subject_mapping from"
+              "huggingface.co/datasets/ceval/ceval-exam/resolve/main/ceval-exam.zip"
+              "and github.com/SJTU-LIT/ceval/blob/main/subject-mapping.json.")
+        raise ValueError
 
     def load(self, dataset_path):
         '''
@@ -78,28 +80,17 @@ class CevalDataset(BaseDataset):
         return index, result
 
 
-    def compute(self, data) -> dict:
+    def compute(self, data, measurement = "accuracy") -> dict:
         '''
         input: data in the form of pandas.DataFrame OR a list of metrics dictonary
         output: a dictionary containing accuracy, total number of entry, number of correct entry
         '''
-        out_dict = dict()
-        out_dict["total amount"] = 0
-        out_dict["correct amount"] = 0
-        if isinstance(data, list):
-            for metrics in data:
-                out_dict["total amount"] += metrics.get("total amount")
-                out_dict["correct amount"] += metrics.get("correct amount")
-        else:
-            out_dict["total amount"] = data.shape[0]
-            out_dict["correct amount"] = len(data[data["ground_truth"] == data["answer"]])
-        if out_dict["total amount"] == 0:
-            out_dict["accuracy"] = 0
-        else:
-            out_dict["accuracy"] = out_dict["correct amount"] / out_dict["total amount"]
+        ground_truth_index = "ground_truth"
+        answer_index = "answer"
+        measurement_method = MeasurementFactory().get(measurement)
 
-        return out_dict
-
+        output = measurement_method(data, ground_truth_index, answer_index)
+        return output
 
 
     def report(self, metrics):
