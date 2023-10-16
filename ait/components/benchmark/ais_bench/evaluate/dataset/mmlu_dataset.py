@@ -16,8 +16,8 @@ class MmluDataset(BaseDataset):
                 subject_name = file.strip().strip("_val.csv")
                 val_path = os.path.join(root, file)
                 with ms_open(val_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
-                    val_df = pd.read_csv(file, header=None)
-                self.subject_mapping[subject_name] = [val_df]
+                    prompt_df = pd.read_csv(file, header=None)[:self.shot+1]
+                self.subject_mapping[subject_name] = [prompt_df]
 
         for root, _, files in os.walk(os.path.join(dataset_path, "test")):
             for file in files:
@@ -33,6 +33,18 @@ class MmluDataset(BaseDataset):
         self.current_index = 0
         return self
 
+    def _gen_prompt(self, prompt_df, category_name, test_row):
+        question_template = "Question: {question}\nA. {A}\nB. {B}\nC. {C}\nD. {D}\nAnswer: {answer}\n"
+
+        prompt = f"The following are multiple choice questions (with answer) about {category_name}.\n\n"
+        for _, row in prompt_df.iterrows():
+            prompt += question_template.format(question=row[0], A=row[1], B=row[2],
+                                               C=row[3], D=row[4], answer=row[5])
+        prompt += "Please answer the following questions.\n"
+        prompt += question_template.format(question=test_row[0], A=test_row[1], B=test_row[2],
+                                               C=test_row[3], D=test_row[4], answer="")
+        return prompt
+
     def __next__(self):
         if self.current_key >= len(self.subjects):
             raise StopIteration
@@ -41,15 +53,33 @@ class MmluDataset(BaseDataset):
         prompt_df = self.subject_mapping[key][0]
         test_df = self.subject_mapping[key][1]
 
-
         if self.current_index >= len(test_df):
             self.current_key += 1
             self.current_index = 0
             return self.__next__()
 
-        prompt = self._gen_prompt(prompt_df, category, val_df.loc[self.current_index])
-        result = {"id": self.current_index, "category": category, "sub_category": subcategory,
-                  "prompt": prompt, "ground_truth": val_df.loc[self.current_index, "answer"]}
-        index = [category, subcategory]
+        prompt = self._gen_prompt(prompt_df, key, test_df.loc[self.current_index])
+        result = {"id": self.current_index, "subject": key,
+                  "prompt": prompt, "ground_truth": test_df.loc[self.current_index, 5]}
+        index = [key]
         self.current_index += 1
         return index, result
+
+    def compute(self, data, measurement = "accuracy") -> dict:
+        '''
+        input: data in the form of pandas.DataFrame OR a list of metrics dictonary
+        output: a dictionary containing accuracy, total number of entry, number of correct entry
+        '''
+        ground_truth_index = "ground_truth"
+        answer_index = "answer"
+        measurement_method = MeasurementFactory().get(measurement)
+
+        output = measurement_method(data, ground_truth_index, answer_index)
+        return output
+
+    def report(self, metrics):
+        '''
+        input: a metrics (dictionary)
+        output: None
+        '''
+        print(metrics)
