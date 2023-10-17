@@ -7,13 +7,22 @@ from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_NORMAL_
 
 
 class MmluDataset(BaseDataset):
+    def _download(self):
+        logger.error("please download the dataset from "
+                     "https://people.eecs.berkeley.edu/~hendrycks/data.tar")
+        raise ValueError
+
+    def _check(dataset_path):
+        pass
+
     def load(self, dataset_path):
         if dataset_path is None:
             dataset_path = self._download()
+        self._check(dataset_path)
         self.subject_mapping = dict()
         for root, _, files in os.walk(os.path.join(dataset_path, "val")):
             for file in files:
-                subject_name = file.strip().strip("_val.csv")
+                subject_name = file.strip().rstrip("_val.csv")
                 val_path = os.path.join(root, file)
                 with ms_open(val_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
                     prompt_df = pd.read_csv(file, header=None)[:self.shot+1]
@@ -21,7 +30,7 @@ class MmluDataset(BaseDataset):
 
         for root, _, files in os.walk(os.path.join(dataset_path, "test")):
             for file in files:
-                subject_name = file.strip().strip("_test.csv")
+                subject_name = file.strip().rstrip("_test.csv")
                 test_path = os.path.join(root, file)
                 with ms_open(test_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
                     test_df = pd.read_csv(file, header=None)

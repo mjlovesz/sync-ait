@@ -13,10 +13,13 @@ PROMPT_INDEX = 4
 
 class CevalDataset(BaseDataset):
     def _download(self):
-        logger.error("please download the dataset and subject_mapping from"
-              "huggingface.co/datasets/ceval/ceval-exam/resolve/main/ceval-exam.zip"
-              "and github.com/SJTU-LIT/ceval/blob/main/subject-mapping.json.")
+        logger.error("please download the dataset and subject_mapping from "
+                     "huggingface.co/datasets/ceval/ceval-exam/resolve/main/ceval-exam.zip "
+                     "and github.com/SJTU-LIT/ceval/blob/main/subject-mapping.json.")
         raise ValueError
+
+    def _check(dataset_path):
+        pass
 
     def load(self, dataset_path):
         '''
@@ -25,6 +28,7 @@ class CevalDataset(BaseDataset):
         '''
         if dataset_path is None:
             dataset_path = self._download()
+        self._check(dataset_path)
         subject_mapping_path = os.path.join(dataset_path, "subject_mapping.json")
         with ms_open(subject_mapping_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
             self.subject_mapping = json.load(file)
