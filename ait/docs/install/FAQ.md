@@ -117,7 +117,7 @@ export https_proxy="http://用户名:密码@代理地址"
     ```
     source $ACTUAL_CANN_PATH/Ascend/ascend-toolkit/set_env.sh
     ```
-    > * 普通用户下`ACTUAL _CANN_PATH`一般为`$HOME`，root用户下一般为`/usr/local`
+    > * 普通用户下`ACTUAL_CANN_PATH`一般为`$HOME`，root用户下一般为`/usr/local`
 
 ## 10、Q：如果安装过程中，出现以下提示：WARNING: env ASCEND_HOME is not set. aie command cannot be used.
 **A:** 如果不使用ait convert aie命令，忽略此告警。具体参考[convert功能使用指南](https://gitee.com/ascend/ait/tree/master/ait/components/convert)
