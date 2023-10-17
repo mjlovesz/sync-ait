@@ -137,7 +137,7 @@ extract 可简写为ext
 | -of/--output-file           | 切分后的子图ONNX模型名称，用户自定义，必须为.onnx文件。      | 是       |
 | -snn/--start-node-names     | 起始算子名称。可指定多个输入算子名称，节点之间使用","分隔。  | 否       |
 | -enn/--end-node-names       | 结束算子名称。可指定多个输出算子名称，节点之间使用","分隔。  | 否       |
-| -ck/--is-check-subgraph     | 是否校验子图。启用这个选项时，会校验切分后的子图。           |          |
+| -ck/--is-check-subgraph     | 是否校验子图。启用这个选项时，会校验切分后的子图。           | 否       |
 | -sis/--subgraph-input-shape | 额外参数。可指定截取子图之后的输入shape。多节点的输入shape指定按照以下格式，"input1:n1,c1,h1,w1;input2:n2,c2,h2,w2"。 | 否       |
 | -sit/--subgraph_input_dtype | 额外参数。可指定截取子图之后的输入dtype。多节点的输入dtype指定按照以下格式，"input1:dtype1;input2:dtype2"。 | 否       |
 | -h/--help                   | 工具使用帮助信息。                                           | 否       |
