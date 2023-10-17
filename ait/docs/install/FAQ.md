@@ -5,7 +5,7 @@
 
 ![输入图片说明](https://foruda.gitee.com/images/1686801650121824710/b64bf91e_9570626.png "屏幕截图")
 
-**A：** 安装后用户可通过 设置CANN_PATH环境变量 ，指定安装的CANN版本路径，例如：export CANN_PATH=/xxx/Ascend/ascend-toolkit/latest/。若不设置，工具默认会从环境变量ASCEND_TOOLKIT_HOME和/usr/local/Ascend/ascend-toolkit/latest路径分别尝试获取CANN版本。
+- **A：** 安装后用户可通过 设置CANN_PATH环境变量 ，指定安装的CANN版本路径，例如：export CANN_PATH=/xxx/Ascend/ascend-toolkit/latest/。若不设置，工具默认会从环境变量ASCEND_TOOLKIT_HOME和/usr/local/Ascend/ascend-toolkit/latest路径分别尝试获取CANN版本。
 
 以下是设置CANN包环境变量的通用方法(假设CANN包安装目录为`ACTUAL_CANN_PATH`)：
 * 执行如下命令：
@@ -15,7 +15,7 @@
     ```
 
 ## 2、Q：使用./install.sh进行安装却报-bash: ./install.sh: Permission denied
-**A：** 这是因为没有给install.sh添加执行权限导致的。
+- **A：** 这是因为没有给install.sh添加执行权限导致的。
 
 ```
 # 添加权限
@@ -28,7 +28,7 @@ bash install.sh
 
 ## 3、Q：常见报错 XXX requires YYY, which is not installed。
 ![which is not installed](https://foruda.gitee.com/images/1686645293870003179/234cf67c_8913618.png "屏幕截图")
-**A：** 这是由于本地安装包缺乏依赖导致的，并非ait报错，根据命令行提示安装即可。
+- **A：** 这是由于本地安装包缺乏依赖导致的，并非ait报错，根据命令行提示安装即可。
 
 ```
 pip3 install YYY
@@ -38,12 +38,12 @@ pip3 install YYY
 
 ![No such file or directory](https://foruda.gitee.com/images/1686645345634951894/08f7e806_8913618.png "屏幕截图")
 
-**A：** 这并不是文件报错，常见原因是因为代码在本地编译器中被默认更换了格式，在pycharm编辑器右下角将.sh文件格式由CRLF改为LF。
+- **A：** 这并不是文件报错，常见原因是因为代码在本地编译器中被默认更换了格式，在pycharm编辑器右下角将.sh文件格式由CRLF改为LF。
 ![CRLF改为LF](https://foruda.gitee.com/images/1686645370968699210/f44f04b3_8913618.png "屏幕截图")
 
 
 ## 5、Q：如何获取cann包路径？
-**A：** 在这个命令中，export | grep ASCEND_HOME_PATH会将所有环境变量输出，并通过管道符将结果传递给grep命令。grep命令会查找包含ASCEND_HOME_PATH的行，并将结果传递给cut命令。cut命令会以等号为分隔符，提取第二个字段，即ASCEND_HOME_PATH的值，并将其输出。
+- **A：** 在这个命令中，export | grep ASCEND_HOME_PATH会将所有环境变量输出，并通过管道符将结果传递给grep命令。grep命令会查找包含ASCEND_HOME_PATH的行，并将结果传递给cut命令。cut命令会以等号为分隔符，提取第二个字段，即ASCEND_HOME_PATH的值，并将其输出。
 
 ```
 echo $ASCEND_HOME_PATH
@@ -53,7 +53,7 @@ echo $ASCEND_HOME_PATH
 
 ![输入图片说明](https://foruda.gitee.com/images/1686886830863530517/53f5816a_9570626.png "屏幕截图")
 
-**A:** 说明ait的依赖包版本可能被升级到了不匹配版本，只需要重新安装下ait即可，即重新在ait/ait目录中，执行
+- **A:** 说明ait的依赖包版本可能被升级到了不匹配版本，只需要重新安装下ait即可，即重新在ait/ait目录中，执行
 ```
 ./install.sh
 ```
@@ -73,7 +73,7 @@ pip3 install protobuf==3.20.2
 
 ## 7、Q：安装ait时，出现skl2onnx组件安装失败的情况
 ![输入图片说明](https://foruda.gitee.com/images/1688461726292472393/721044b8_8277365.png "屏幕截图")
-**A:** 
+- **A:** 
 解决方法1：更换pip源，自行手动安装skl2onnx。执行
     ```
     pip3 install skl2onnx==1.14.1 -i https://pypi.tuna.tsinghua.edu.cn/simple/  --trusted-host pypi.tuna.tsinghua.edu.cn
@@ -87,10 +87,31 @@ pip3 install protobuf==3.20.2
     ```
 
 ## 8、Q：OpenSSL: error:1408F10B:SSL routines:ssl3_get_record:wrong version number
-**A:** 
-解决方案：此问题为网络问题且多存在于黄区，一般配置代理为私人代理后重新安装ait即可（如果仍然不能解决并不影响ait的使用，仅影响transplt组件），代理格式如下：
+- **A:** 
+解决方案：此问题为网络代理问题，一般配置代理为私人代理后重新安装ait即可（如果仍然不能解决并不影响ait的使用，仅影响transplt组件），代理格式如下：
 ```
 export http_proxy="http://用户名:密码@代理地址"
 export https_proxy="http://用户名:密码@代理地址" 
 ```
 注：密码要用url转义
+
+## 9、Q：如果使用过程中出现`No module named 'acl'`，请检验CANN包环境变量是否正确
+- **A：** 解决方案：
+    > 以下是设置CANN包环境变量的通用方法(假设CANN包安装目录为`ACTUAL_CANN_PATH`)：
+    >
+    > * 执行如下命令：
+    ```
+    source $ACTUAL_CANN_PATH/Ascend/ascend-toolkit/set_env.sh
+    ```
+    > * 普通用户下`ACTUAL _CANN_PATH`一般为`$HOME`，root用户下一般为`/usr/local`
+
+## 10、Q：如果安装过程中，出现以下提示：WARNING: env ASCEND_HOME is not set. aie command cannot be used.
+- **A:** 如果不使用ait convert aie命令，忽略此告警。具体参考[convert功能使用指南](https://gitee.com/ascend/ait/tree/master/ait/components/convert)
+
+
+## 11、Q：如果安装过程中，出现以下提示：WARNING: env ACLTRANSFORMER_HOME_PATH is not set. Dump on demand package cannot be used.
+- **A:** 如果不使用大模型精度比对功能，忽略此告警。
+
+
+
+  
