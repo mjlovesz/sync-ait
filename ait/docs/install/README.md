@@ -8,15 +8,15 @@
 - 请参见《[GCC安装指引](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000091.html)》安装GCC编译器7.3.0版本。
 - Python版本：支持Python3.7.5+、Python3.8.x、Python3.9.x、Benchmark还支持Python3.10.x(**如使用TensorFlow模型的精度对比功能则需要Python3.7.5版本**)。
 
-| 依赖软件名称                  | 版本 | 备注                                                                                                                                                                                     |
-|-------------------------|--|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| CANN | 建议安装CANN商业版6.3.RC1以上版本 | 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit软件包。（  [安装后配置](####说明) ）                |
+| 依赖软件名称                  | 版本 | 备注                                                                                                                                                                                    |
+|-------------------------|--|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| CANN | 建议安装CANN商业版6.3.RC1以上版本 | 请参见《[CANN开发工具指南](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000002.html)》安装昇腾设备开发或运行环境，即toolkit软件包。（  [安装后配置](###说明) ）                |
 | GCC编译器                  | 7.3.0版本 | 请参见《[GCC安装指引](https://www.hiascend.com/document/detail/zh/canncommercial/63RC1/envdeployment/instg/instg_000091.html)》安装GCC编译器（centos 7.6平台默认为gcc 4.8编译器，可能**无法安装**本工具，建议更新gcc编译器后再安装） |
-| Python                  | 支持Python3.7.5+、Python3.8.x、Python3.9.x | 此外：Benchmark还支持Python3.10.x<br/>(**如使用TensorFlow模型的精度对比功能则需要Python3.7.5版本**)                                                                                                           |
-|`TensorFlow` 相关 python 依赖包（非必选）         | - | 参考 [Centos7.6上TensorFlow1.15.0 环境安装](https://bbs.huaweicloud.com/blogs/181055) 安装 TensorFlow1.15.0 环境。(**如不使用TensorFlow模型的精度对比功能则不需要安装**)                                              |
-|  `Caffe` 相关 python 依赖包（非必选） | - | 参考 [Caffe Installation](http://caffe.berkeleyvision.org/installation.html) 安装 Caffe 环境。(**如不使用 Caffe 模型的精度对比功能则不需要安装**)                                                                |
-| Clang工具（非必选）  | - | 依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。(**如不使用transplt应用迁移分析功能则不需要安装**)                                                                                                 |
-| [profile](docs/profile) | - | 提供profiling，提供整网详细的性能数据及相关信息                                                                                                                                                           |
+| Python                  | 支持Python3.7.5+、Python3.8.x、Python3.9.x | 此外：Benchmark还支持Python3.10.x<br/>(**如使用TensorFlow模型的精度对比功能则需要Python3.7.5版本**)                                                                                                          |
+|`TensorFlow` 相关 python 依赖包（非必选）         | - | 参考 [Centos7.6上TensorFlow1.15.0 环境安装](https://bbs.huaweicloud.com/blogs/181055) 安装 TensorFlow1.15.0 环境。(**如不使用TensorFlow模型的精度对比功能则不需要安装**)                                             |
+|  `Caffe` 相关 python 依赖包（非必选） | - | 参考 [Caffe Installation](http://caffe.berkeleyvision.org/installation.html) 安装 Caffe 环境。(**如不使用 Caffe 模型的精度对比功能则不需要安装**)                                                               |
+| Clang工具（非必选）  | - | 依赖LLVM Clang，需安装[Clang工具](https://releases.llvm.org/)。(**如不使用transplt应用迁移分析功能则不需要安装**)                                                                                                |
+| [profile](docs/profile) | - | 提供profiling，提供整网详细的性能数据及相关信息                                                                                                                                                          |
 
 
 ### 工具安装方式
