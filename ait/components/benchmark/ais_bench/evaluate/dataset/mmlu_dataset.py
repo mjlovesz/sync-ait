@@ -1,5 +1,4 @@
 import os
-import json
 import pandas as pd
 from ais_bench.evaluate.dataset.base_dataset import BaseDataset
 from ais_bench.evaluate.measurement.measurement_factory import MeasurementFactory
@@ -72,7 +71,7 @@ class MmluDataset(BaseDataset):
         '''
         ground_truth_index = "ground_truth"
         answer_index = "answer"
-        measurement_method = MeasurementFactory().get(measurement)
+        measurement_method = MeasurementFactory().get(measurement)()
 
         output = measurement_method(data, ground_truth_index, answer_index)
         return output

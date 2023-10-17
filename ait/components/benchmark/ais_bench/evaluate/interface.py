@@ -16,7 +16,7 @@ class Evaluator():
         self.rank = rank
 
     def set_dataset(self, dataset_name, dataset_path, shot):
-        self.dataset = DatasetFactory().get_dataset(dataset_name, dataset_path, shot)
+        self.dataset = DatasetFactory().get(dataset_name, dataset_path, shot)
 
     def evaluate(self, measurement = None):
         recorder = Recorder()
