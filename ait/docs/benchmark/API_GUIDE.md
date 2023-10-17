@@ -13,6 +13,8 @@
   # {version}表示软件版本号，{python_version}表示Python版本号，{arch}表示CPU架构。
   ```
 ## interface python API 快速上手
+### 整体流程图
+![API使能模型推理流程](graphs/api_quick_start.png)
 InferSession 是单进程下interface API的主要类，它用于加载om模型和执行om模型的推理，模型推理前需要初始化一个InferSession的实例。
 ```python
 from ais_bench.infer.interface import InferSession
@@ -32,6 +34,26 @@ outputs = session.infer(feeds=inputs, mode="static")
 exec_time = session.summary().exec_time_list[-1]
 ```
 ## interface python API 详细介绍
+### API导览
+|<td rowspan='1'>**主要文件**<td rowspan='1'>**主要类**</td><td rowspan='1'>**接口分类**</td><td rowspan='1'>**接口**</td>|
+|----|
+|<td rowspan='18'>interface.py</td><td rowspan='9'>[InferSession](#InferSession)</td><td rowspan='2'>获取模型信息</td><td rowspan='1'>[get_inputs](#get_inputs)</td>|
+|<td rowspan='1'>[get_outputs](#get_outputs)</td>|
+|<td rowspan='3'>进行模型推理</td><td rowspan='1'>[infer](#infer1)</td>|
+|<td rowspan='1'>[infer_pipeline](#infer_pipeline1)</td>|
+|<td rowspan='1'>[infer_iteration](#infer_iteration1)</td>|
+|<td rowspan='2'>获取推理性能</td><td rowspan='1'>[summary](#summary1)</td>|
+|<td rowspan='1'>[reset_summaryinfo](#reset_summaryinfo)</td>|
+|<td rowspan='2'>释放模型资源</td><td rowspan='1'>[free_resource](#free_resource)</td>|
+|<td rowspan='1'>[finalize](#finalize)</td>|
+|<td rowspan='4'>[MultiDeviceSession](#MultiDeviceSession)</td><td rowspan='3'>进行模型推理</td><td rowspan='1'>[infer](#infer2)</td>|
+|<td rowspan='1'>[infer_pipeline](#infer_pipeline2)</td>|
+|<td rowspan='1'>[infer_iteration](#infer_iteration2)</td>|
+|<td rowspan='1'>获取推理性能</td><td rowspan='1'>[summary](#summary2)</td>|
+|<td rowspan='3'>[MemorySummary](#MemorySummary)</td><td rowspan='3'>资源拷贝时间</td><td rowspan='1'>[get_h2d_time_list](#get_h2d_time_list)</td>|
+|<td rowspan='1'>[get_d2h_time_list](#get_d2h_time_list)</td>|
+|<td rowspan='1'>[reset](#reset)</td>|
+
 ### InferSession
 class <font color=#DD4466>**InferSession**</font>(<font color=#0088FF>device_id</font>: int, <font color=#0088FF>model_path</font>: str, <font color=#0088FF>acl_json_path</font>: str = None, <font color=#0088FF>debug</font>: bool = False, <font color=#0088FF>loop</font>: int = 1) <br>
 $\qquad$ InferSession是**单进程**下用于om模型推理的类
@@ -55,6 +77,8 @@ $\qquad$ InferSession是**单进程**下用于om模型推理的类
     + 返回类型为<font color=#44AA00>list [aclruntime.tensor_desc]</font>的输出节点属性信息。 <br>
 <a name="jump1"></a>
 
+<a name="infer1"></a>
+
 #### <font color=#DD4466>**infer**</font>(<font color=#0088FF>feeds</font>, <font color=#0088FF>mode</font>='static', <font color=#0088FF>custom_sizes</font>=100000, <font color=#0088FF>out_array</font>=True)
 - **说明**:
     - 模型推理接口，一次推理一组输入数据，可以推理静态shape、动态batch、动态分辨率、动态dims和动态shape场景的模型。
@@ -73,7 +97,7 @@ $\qquad$ InferSession是**单进程**下用于om模型推理的类
 - **返回值**:
     + out_array == True，返回numpy.ndarray类型的推理输出结果，数据的内存在host侧。
     + out_array == False，返回<font color=#44AA00>aclruntime.Tensor</font>类型的推理输出结果，数据的内存在device侧。
-<a name="jump3"></a>
+<a name="jump3"></a> <a name="infer_pipeline1"></a>
 
 #### <font color=#DD4466>**infer_pipeline**</font>(<font color=#0088FF>feeds_list</font>, <font color=#0088FF>mode</font> = 'static', <font color=#0088FF>custom_sizes</font> = 100000)
 - **说明**:
@@ -95,13 +119,13 @@ $\qquad$ InferSession是**单进程**下用于om模型推理的类
         - 输入为list:[int]时，模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。
 - **返回值**:
     + 返回list:[numpy.ndarray]类型的推理输出结果，数据的内存在host侧。
-<a name="jump5"></a>
+<a name="jump5"></a> <a name="infer_iteration1"></a>
 
 #### <font color=#DD4466>**infer_iteration**</font>(<font color=#0088FF>feeds</font>, <font color=#0088FF>in_out_list</font> = None, <font color=#0088FF>iteration_times</font> = 1, <font color=#0088FF>mode</font> = 'static', <font color=#0088FF>custom_sizes</font> = 100000, <font color=#0088FF>mem_copy</font> = True)
 - **说明**:
     + 迭代推理接口，迭代推理(循环推理)指的是下一次推理的输入数据有部分来源于上一次推理的输出数据。相对于循环调用`infer`接口实现迭代推理，此接口可以缩短端到端时间。
 - **参数**:
-    + <font color=#0088FF>**feeds**</font>: 推理所需的一组输入数据，支持数据类型:
+    + <font color=#0088FF>**feeds**</font>: 推理所需的一组输入数据，支持数据类型: <a name="jump4"></a>
         - numpy.ndarray;
         - 单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64);
         - torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor)
@@ -116,6 +140,7 @@ $\qquad$ InferSession是**单进程**下用于om模型推理的类
         - mem_copy == False，采用内存共用，推理结束后底层的acl接口可能会报错(开plog情况下)，推理结果正确，推理端到端时间更短。
 - **返回值**:
     + 返回numpy.ndarray类型的推理输出结果，数据的内存在host侧。
+<a name="summary1"></a>
 
 #### <font color=#DD4466>**summary**</font>()
 - **说明**:
@@ -149,6 +174,8 @@ $\qquad$ MultiDeviceSession是**多进程**下用于om模型推理的类，初�
 - **acl_json_path**：str，acl json文件，用于配置profiling（采集推理过程详细的性能数据）和dump（采集模型每层算子的输入输出数据）。
 - **debug**：bool，显示更详细的debug级别的log信息的开关，True为打开开关。
 - **loop**：int，一组输入数据重复推理的次数，至少为1。
+<a name="infer2"></a>
+
 #### <font color=#DD4466>**infer**</font>(<font color=#0088FF>devices_feeds</font>, <font color=#0088FF>mode</font>='static', <font color=#0088FF>custom_sizes</font>=100000, <font color=#0088FF>out_array</font>=True)
 - **说明**:
     + 多进程调用InferSession的[infer接口](#jump1)进行推理
@@ -160,6 +187,7 @@ $\qquad$ MultiDeviceSession是**多进程**下用于om模型推理的类，初�
         - 输入为list:[int]时, 模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。
 - **返回值**:
     + 返回{device_id:[output1, output2, ...]}，output*为numpy.ndarray类型的推理输出结果，数据的内存在host侧。
+<a name="infer_pipeline2"></a>
 
 #### <font color=#DD4466>**infer_pipeline**</font>(<font color=#0088FF>devices_feeds_list</font>, <font color=#0088FF>mode</font> = 'static', <font color=#0088FF>custom_sizes</font> = 100000)
 - **说明**:
@@ -172,6 +200,7 @@ $\qquad$ MultiDeviceSession是**多进程**下用于om模型推理的类，初�
         - 输入为list:[int]时，模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。
 - **返回值**:
    + 返回{device_id:[output1, output2, ...]}，output*为[numpy.ndarray]类型的推理输出结果，数据的内存在host侧。
+<a name="infer_iteration2"></a>
 
 #### <font color=#DD4466>**infer_iteration**</font>(<font color=#0088FF>device_feeds</font>, <font color=#0088FF>in_out_list</font> = None, <font color=#0088FF>iteration_times</font> = 1, <font color=#0088FF>mode</font> = 'static', <font color=#0088FF>custom_sizes</font> = 100000, <font color=#0088FF>mem_copy</font> = True)
 - **说明**:
@@ -189,6 +218,7 @@ $\qquad$ MultiDeviceSession是**多进程**下用于om模型推理的类，初�
         - mem_copy == False，采用内存共用，推理结束后底层的acl接口可能会报错(开plog情况下)，推理结果正确，推理端到端时间更短。
 - **返回值**:
     + 返回{device_id:[output1, output2, ...]}，output*为numpy.ndarray类型的推理输出结果，数据的内存在host侧。
+<a name="summary2"></a>
 
 #### <font color=#DD4466>**summary**</font>()
 - **说明**:
