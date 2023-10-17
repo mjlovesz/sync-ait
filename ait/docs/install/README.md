@@ -25,7 +25,7 @@ ait推理工具的安装包括**ait包**和**依赖的组件包**的安装，其
 
 安装方式包括：**源代码一键式安装**和**按需手动安装不同组件**，用户可以按需选取。
 
-#### 说明：
+## 说明：
 - 安装开发运行环境的昇腾 AI 推理相关驱动、固件、CANN 包，参照 [昇腾文档](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/63RC2alpha002/softwareinstall/instg/instg_000002.html)。安装后用户可通过 **设置CANN_PATH环境变量** ，指定安装的CANN版本路径，例如：export CANN_PATH=/xxx/Ascend/ascend-toolkit/latest。若不设置，工具默认会从环境变量ASCEND_TOOLKIT_HOME和/usr/local/Ascend/ascend-toolkit/latest路径分别尝试获取CANN版本。
 
 - 如果使用过程中出现`No module named 'acl'`，请检验CANN包环境变量是否正确。
