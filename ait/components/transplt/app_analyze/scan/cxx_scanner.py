@@ -12,7 +12,8 @@
 # limitations under the License.
 
 import time
-
+import os
+from multiprocessing import Pool
 from app_analyze.utils.log_util import logger
 from app_analyze.scan.scanner import Scanner
 
@@ -32,9 +33,20 @@ class CxxScanner(Scanner):
 
     def exec_without_threads(self):
         result = {}
+        count = max(max(os.cpu_count(),len(self.files)),16)
+        pool = Pool(count)
+        list_file = []
         for file in self.files:
-            p = self.cxx_parser(file)
-            rst_vals = p.parse()
-            result[file] = rst_vals
-
+            list_file.append((self.cxx_parser,file))
+        lst = pool.starmap_async(cxx_parser_,list_file)
+        pool.close()
+        pool.join()
+        lst1 = lst.get(timeout=2)
+        for file,r in zip(self.files,lst1):
+            result[file] = r
         return result
+
+def cxx_parser_(cxx_parser,files):
+    p = cxx_parser(files)
+    rst_vals = p.parse()
+    return rst_vals

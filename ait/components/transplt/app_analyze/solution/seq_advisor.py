@@ -47,7 +47,7 @@ class SeqAdvisor:
             if not lib_seqs:
                 content = [[entry_api, src_seq, '', '', '', '', '']]
 
-            loc = seq_desc.entry_api.location.file.name
+            loc = seq_desc.entry_api.location['file']
             if data_dict.get(loc, None):
                 data_dict[loc] += content
             else:
