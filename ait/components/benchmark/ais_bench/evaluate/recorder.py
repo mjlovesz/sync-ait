@@ -1,16 +1,20 @@
 import pandas as pd
+from ais_bench.evaluate.log import logger
 
 class Recorder():
-    def __init__(self, name = "default") -> None:
+    def __init__(self, name = "default", rank = 0) -> None:
         self.name = name
         self.records = None
         self.metrics = None
         self.children = dict()
+        self.rank = rank
 
     def record(self, index : list, entry_dict : dict):
         '''
         all the index should be of the same length
         '''
+        if self.rank != 0:
+            return
         if index == []:
             if self.records is None:
                 self.records = pd.DataFrame(columns=entry_dict.keys())
@@ -20,20 +24,24 @@ class Recorder():
 
         current_index = index[0]
         if current_index not in self.children:
-            self.children[current_index] = Recorder(current_index)
+            self.children[current_index] = Recorder(current_index, self.rank)
         self.children.get(current_index).record(index[1:], entry_dict)
 
     def read(self, index):
+        if self.rank != 0:
+            return
         if index == []:
             return self.records
         current_index = index[0]
         return self.children.get(current_index).read(index[1:])
 
     def statistics(self, func_compute = None, measurement = None):
+        if self.rank != 0:
+            return
         if self.metrics is not None:
             return self.metrics
         if func_compute is None:
-            print("Record.statistics failed: function to compute metrics missing")
+            logger.error("Record.statistics failed: function to compute metrics missing")
             raise Exception
 
         if not self.children:
@@ -52,8 +60,10 @@ class Recorder():
 
 
     def report(self, func_report = None):
+        if self.rank != 0:
+            return
         if func_report is None:
-            print("Record.report failed: function to report metrics missing")
+            logger.error("Record.report failed: function to report metrics missing")
             raise Exception
         func_report(self.metrics)
 

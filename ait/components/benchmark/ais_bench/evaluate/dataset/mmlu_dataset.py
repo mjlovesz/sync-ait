@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from ais_bench.evaluate.dataset.base_dataset import BaseDataset
 from ais_bench.evaluate.measurement.measurement_factory import MeasurementFactory
+from ais_bench.evaluate.log import logger
 from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_NORMAL_FILE
 
 
@@ -26,6 +27,12 @@ class MmluDataset(BaseDataset):
                     test_df = pd.read_csv(file, header=None)
                 self.subject_mapping[subject_name].append(test_df)
         self.subjects = list(self.subject_mapping.keys())
+
+    def __len__(self):
+        count = 0
+        for value in self.subject_mapping.values():
+            count += len(value[1])
+        return count
 
     def __iter__(self):
         self.current_key = 0
@@ -81,4 +88,4 @@ class MmluDataset(BaseDataset):
         input: a metrics (dictionary)
         output: None
         '''
-        print(metrics)
+        logger.info(metrics)

@@ -12,6 +12,10 @@ class BaseDataset(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
+    def __len__(self):
+        raise NotImplementedError
+
+    @abstractmethod
     def __iter__(self):
         raise NotImplementedError
 
