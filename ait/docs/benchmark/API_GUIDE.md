@@ -1,5 +1,4 @@
 # ait benchmark interface python API使用指南
-<a href="#jump1">testtest</a>
 ## benchmark API简介
   benchmark提供的python API可供使能基于昇腾硬件的离线模型(.om模型)推理。<br>
 
@@ -54,13 +53,13 @@ $\qquad$ InferSession是**单进程**下用于om模型推理的类
     + 用于获取InferSession加载的模型的输出节点的信息。 <br>
 - **返回值**:
     + 返回类型为<font color=#44AA00>list [aclruntime.tensor_desc]</font>的输出节点属性信息。 <br>
-<span id="jump1"></span>
+<a name="jump1"></a>
 
 #### <font color=#DD4466>**infer**</font>(<font color=#0088FF>feeds</font>, <font color=#0088FF>mode</font>='static', <font color=#0088FF>custom_sizes</font>=100000, <font color=#0088FF>out_array</font>=True)
 - **说明**:
     - 模型推理接口，一次推理一组输入数据，可以推理静态shape、动态batch、动态分辨率、动态dims和动态shape场景的模型。
 - **参数**:
-    + <font color=#0088FF>**feeds**</font>: 推理所需的一组输入数据，支持数据类型:<span id="jump0"></span>
+    + <font color=#0088FF>**feeds**</font>: 推理所需的一组输入数据，支持数据类型:<a name="jump0"></a>
         - numpy.ndarray;
         - 单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64);
         - torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor)
@@ -74,13 +73,13 @@ $\qquad$ InferSession是**单进程**下用于om模型推理的类
 - **返回值**:
     + out_array == True，返回numpy.ndarray类型的推理输出结果，数据的内存在host侧。
     + out_array == False，返回<font color=#44AA00>aclruntime.Tensor</font>类型的推理输出结果，数据的内存在device侧。
-<span id="jump3"></span>
+<a name="jump3"></a>
 
 #### <font color=#DD4466>**infer_pipeline**</font>(<font color=#0088FF>feeds_list</font>, <font color=#0088FF>mode</font> = 'static', <font color=#0088FF>custom_sizes</font> = 100000)
 - **说明**:
     + 多线程推理接口(计算与数据搬运在不同线程)，一次性推理多组数据建议采用此接口，相对于多次调用`infer`接口推理多组数据，可以有效缩短端到端时间。
 - **参数**:
-    + <font color=#0088FF>**feeds_list**</font>: list，推理所需的几组组输入数据，list中支持数据类型:<span id="jump2"></span>
+    + <font color=#0088FF>**feeds_list**</font>: list，推理所需的几组组输入数据，list中支持数据类型:<a name="jump2"></a>
         - numpy.ndarray;
         - 单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64);
         - torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor)
@@ -96,7 +95,7 @@ $\qquad$ InferSession是**单进程**下用于om模型推理的类
         - 输入为list:[int]时，模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。
 - **返回值**:
     + 返回list:[numpy.ndarray]类型的推理输出结果，数据的内存在host侧。
-<span id="jump5"></span>
+<a name="jump5"></a>
 
 #### <font color=#DD4466>**infer_iteration**</font>(<font color=#0088FF>feeds</font>, <font color=#0088FF>in_out_list</font> = None, <font color=#0088FF>iteration_times</font> = 1, <font color=#0088FF>mode</font> = 'static', <font color=#0088FF>custom_sizes</font> = 100000, <font color=#0088FF>mem_copy</font> = True)
 - **说明**:
