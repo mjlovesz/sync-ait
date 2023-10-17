@@ -15,24 +15,35 @@
 ## interface python API 快速上手
 ### 整体流程图
 ![API使能模型推理流程](graphs/api_quick_start.png)
-InferSession 是单进程下interface API的主要类，它用于加载om模型和执行om模型的推理，模型推理前需要初始化一个InferSession的实例。
+
+### 导入依赖包
 ```python
 from ais_bench.infer.interface import InferSession
-
+```
+### 加载模型
+InferSession 是单进程下interface API的主要类，它用于加载om模型和执行om模型的推理，模型推理前需要初始化一个InferSession的实例。
+```python
 # InferSession的初始化表示在device id为0的npu芯片上加载模型model.om
 session = InferSession(device_id=0, model_path="model.om")
 ```
+### 调用接口推理模型得到输出
 建立好InferSession的实例session后，在npu芯片上进行模型推理所需的配置都已经完成，之后就可以直接调用session的成员函数接口进行模型推理，接口返回值就是推理结果。
 ```python
 # feeds传入一组输入数据；mode选择模型类型，static表示输入节点shape固定的静态模型
 # outputs 为ndarray格式的tensor
 outputs = session.infer(feeds=inputs, mode="static")
 ```
+### 获取模型数据性能
 推理结束，推理的性能数据也保存在session中，可以通过session的接口获取性能数据。
 ```python
 # exec_time_list 按先后顺序保留了所有session在执行推理的时间。
 exec_time = session.summary().exec_time_list[-1]
 ```
+### 释放模型占用的内存
+```python
+session.free_resource()
+```
+
 ## interface python API 详细介绍
 ### API导览
 |<td rowspan='1'>**主要文件**<td rowspan='1'>**主要类**</td><td rowspan='1'>**接口分类**</td><td rowspan='1'>**接口**</td>|
