@@ -24,6 +24,8 @@ from auto_optimizer.graph_refactor.interface import PlaceHolder
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException
 
+NPU_ID_INFO_LENGTH = 3
+
 
 def check_single_op_is_valid(single_op, dump, custom_op, locat):
     if single_op:
@@ -48,15 +50,17 @@ def get_memory_size_by_soc_type(device_id):
     c_arg = -1
     for line in map_res.stdout.decode().split('\n'):
         info = line.split()
-        npu_id, chip_id, logic_id, chip_name = info
-        if int(logic_id) == device_id:
-            i_arg = npu_id
-            c_arg = chip_id
+        if not info:
+            continue
+        npu_id, chip_id, logic_id = info[:NPU_ID_INFO_LENGTH]
+        if logic_id == str(device_id):
+            i_arg = int(npu_id)
+            c_arg = int(chip_id)
             break
     
     if i_arg >= 0 and c_arg >= 0:
         mem_cmd = f"npu-smi info -i {i_arg} -c {c_arg} -t usages"
-        mem_res = subprocess.run(pre_cmd.split(), shell=False, stdout=subprocess.PIPE)
+        mem_res = subprocess.run(mem_cmd.split(), shell=False, stdout=subprocess.PIPE)
         mem_capacity = -1
         mem_usage = -1
         lines =  mem_res.stdout.decode().split('\n')
@@ -68,7 +72,7 @@ def get_memory_size_by_soc_type(device_id):
                     mem_usage = int(lines[idx + 1].split()[-1])
         if mem_capacity == -1 and mem_usage == -1:
             utils.logger.warning("npu-smi info -i x -t usages cannot be used")
-            mem_capacity = 0x3f3f3f3f
+            mem_capacity = 3 * 1024 # 3GB
             mem_usage = 0
         available_mem = mem_capacity * ((100 - mem_usage) / 100)
     else:
