@@ -50,7 +50,7 @@ def get_memory_size_by_soc_type(device_id):
     c_arg = -1
     for line in map_res.stdout.decode().split('\n'):
         info = line.split()
-        if not info:
+        if not info or len(info) < NPU_ID_INFO_LENGTH:
             continue
         npu_id, chip_id, logic_id = info[:NPU_ID_INFO_LENGTH]
         if logic_id == str(device_id):
