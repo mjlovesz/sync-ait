@@ -33,7 +33,7 @@ def dump_output_hook():
         w_md5 = hashlib.md5(module.weight.cpu().numpy().tobytes()).hexdigest()
 
         ait_dump_path = os.getenv(AIT_DUMP_PATH)
-        ait_dump_path = "" or ait_dump_path
+        ait_dump_path = ait_dump_path or ""
         pid = os.getpid()
         pid_dir = os.path.join(ait_dump_path, str(pid))
         if not os.path.exists(pid_dir):

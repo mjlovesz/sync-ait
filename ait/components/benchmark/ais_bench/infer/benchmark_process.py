@@ -78,6 +78,10 @@ def set_session_options(session, args):
         args.batchsize = get_batchsize(session, args)
         logger.info(f"try get model batchsize:{args.batchsize}")
 
+    if not args.auto_set_dymshape_mode and not args.auto_set_dymdims_mode:
+        if args.batchsize < 0 and not args.dym_batch and not args.dym_dims and not args.dym_shape:
+            raise RuntimeError('dynamic batch om model detected, but dymbatch, dymdims or dymshape not set!')
+
     if aipp_batchsize < 0:
         aipp_batchsize = args.batchsize
 
@@ -262,7 +266,7 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
 
 
 def infer_pipeline_run(session, args, infileslist, output_prefix, extra_session):
-    logger.info(f"run in pipeline mode with {args.thread} computing threads.")
+    logger.info(f"run in pipeline mode with computing threadsnumber:{args.threads}")
     run_pipeline_inference(session, args, infileslist, output_prefix, extra_session)
 
 
@@ -422,11 +426,11 @@ def main(args, index=0, msgq=None, device_list=None):
         tmp_acl_json_path, real_dump_path, tmp_dump_path = create_tmp_acl_json(acl_json_path)
 
     session = init_inference_session(args, tmp_acl_json_path if tmp_acl_json_path is not None else acl_json_path)
-    # if pipeline is set and thread number is > 1, create a session pool for extra computing
+    # if pipeline is set and threads number is > 1, create a session pool for extra computing
     extra_session = []
     if args.pipeline:
         extra_session = [init_inference_session(args, tmp_acl_json_path if tmp_acl_json_path is not None\
-                                                else acl_json_path) for _ in range(args.thread - 1)]
+                                                else acl_json_path) for _ in range(args.threads - 1)]
 
     intensors_desc = session.get_inputs()
     if device_list is not None and len(device_list) > 1:
@@ -526,13 +530,16 @@ def main(args, index=0, msgq=None, device_list=None):
         end_energy_consumption = get_energy_consumption(args.npu_id)
     end_time = time.time()
 
+    multi_threads_mode = args.threads > 1 and args.pipeline
     summary.add_args(sys.argv)
     s = session.sumary()
-    summary.npu_compute_time_list = [time / args.thread for time in s.exec_time_list]
+    if multi_threads_mode:
+        summary.npu_compute_time_interval_list = s.exec_time_list
+    else:
+        summary.npu_compute_time_list = [end_time - start_time for start_time, end_time in s.exec_time_list]
     summary.h2d_latency_list = MemorySummary.get_h2d_time_list()
     summary.d2h_latency_list = MemorySummary.get_d2h_time_list()
-    summary.report(args.batchsize, output_prefix, args.display_all_summary)
-    logger.info("end_to_end_time (s):%s", end_time - start_time)
+    summary.report(args.batchsize, output_prefix, args.display_all_summary, multi_threads_mode)
     if args.energy_consumption and args.npu_id:
         energy_consumption = ((float(end_energy_consumption) + float(start_energy_consumption)) / 2.0) \
             * (end_time - start_time)
@@ -656,9 +663,9 @@ def args_rules(args):
             "parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
         raise RuntimeError('error bad parameters --output_dirname')
 
-    if args.thread > 1 and not args.pipeline:
-        logger.info("need to set --pipeline when setting thread number to be more than one.")
-        args.thread = 1
+    if args.threads > 1 and not args.pipeline:
+        logger.info("need to set --pipeline when setting threads number to be more than one.")
+        args.threads = 1
 
     return args
 

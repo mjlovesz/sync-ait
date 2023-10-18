@@ -119,7 +119,6 @@ def save_data_to_files(file_path, ndata):
     if file_path.endswith(".NPY") or file_path.endswith(".npy"):
         with ms_open(file_path, mode="wb") as f:
             np.save(f, ndata)
-
     elif file_path.endswith(".TXT") or file_path.endswith(".txt"):
         outdata = ndata.reshape(-1, ndata.shape[-1])
         fmt = get_ndata_fmt(outdata)
@@ -128,7 +127,8 @@ def save_data_to_files(file_path, ndata):
                 np.savetxt(f, np.c_[outdata[i]], fmt=fmt, newline=" ")
                 f.write(b"\n")
     else:
-        ndata.tofile(file_path)
+        with ms_open(file_path, mode="wb") as f:
+            ndata.tofile(f)
 
 
 def create_fake_file_name(pure_data_type, index):

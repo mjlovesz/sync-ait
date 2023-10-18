@@ -1,3 +1,10 @@
+- [FAQ](#faq)
+  - [1.运行时出现`Inner Error`类错误](#1运行时出现inner-error类错误)
+  - [2.使用locat功能时，出现`Object arrays cannot be loaded when allow_pickle=False`](#2使用locat功能时出现object-arrays-cannot-be-loaded-when-allow_picklefalse)
+  - [3.如何安装Docker](#3如何安装docker)
+  - [4.Dockerfile构建时报错 `ERROR: cannot verify xxx.com's certificate`](#4dockerfile构建时报错-error-cannot-verify-xxxcoms-certificate)
+
+
 # FAQ
 ## 1.运行时出现`Inner Error`类错误
 出现Inner类错误多半是内核或者内存出现错误导致的。

@@ -113,7 +113,8 @@ TensorBase::TensorBase(const MemoryData &memoryData, const bool &isBorrowed, con
 }
 
 TensorBase::TensorBase(const std::vector<uint32_t> &shape, const TensorDataType &type,
-                       const MemoryData::MemoryType &bufferType, const int32_t &deviceId) : dataType_(type)
+                       const MemoryData::MemoryType &bufferType, const int32_t &deviceId,
+                       const size_t contextIndex) : dataType_(type)
 {
     shape_ = std::make_shared<TensorShape>(shape);
     uint32_t bytes = 0;
@@ -121,6 +122,7 @@ TensorBase::TensorBase(const std::vector<uint32_t> &shape, const TensorDataType 
         bytes = DATA_TYPE_TO_BYTE_SIZE_MAP.find(type)->second;
     }
     buffer_ = std::make_shared<TensorBuffer>(shape_->GetSize() * bytes, bufferType, deviceId);
+    buffer_->contextIndex = contextIndex;
 }
 
 TensorBase::TensorBase(const std::vector<uint32_t> &shape, const TensorDataType &type) : dataType_(type)
@@ -133,7 +135,8 @@ TensorBase::TensorBase(const std::vector<uint32_t> &shape, const TensorDataType 
     buffer_ = std::make_shared<TensorBuffer>(shape_->GetSize() * bytes);
 }
 
-TensorBase::TensorBase(const std::vector<uint32_t> &shape, const TensorDataType &type, const int32_t &deviceId)
+TensorBase::TensorBase(const std::vector<uint32_t> &shape, const TensorDataType &type, const int32_t &deviceId,
+                       const size_t contextIndex)
 {
     shape_ = std::make_shared<TensorShape>(shape);
     uint32_t bytes = 0;
@@ -141,6 +144,7 @@ TensorBase::TensorBase(const std::vector<uint32_t> &shape, const TensorDataType 
         bytes = DATA_TYPE_TO_BYTE_SIZE_MAP.find(type)->second;
     }
     buffer_ = std::make_shared<TensorBuffer>(shape_->GetSize() * bytes, deviceId);
+    buffer_->contextIndex = contextIndex;
 }
 
 TensorBase::TensorBase(const std::vector<uint32_t> &shape)

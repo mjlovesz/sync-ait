@@ -155,8 +155,6 @@
 
 > `Delete With Children`基于回溯算法实现。
 
-执行删除操作后，被删除的节点首先会变灰显示，以供预览。如果某一个节点被误删了，在该节点的侧边栏点击`Recover Node`即可以将其恢复到图中。预览确认删除操作无误后，点击`Enter`，图结构会刷新，显示节点删除后的状态。
-
 一个典型的删除操作如下图所示：
 
 <img src="./docs/delete_node.gif" style="zoom:75%;" />
@@ -201,7 +199,8 @@
 
 1. 在selector中选择要添加的节点类型，在点击`Confirm`按钮后，一个对应类型的新节点将自动出现在图上。
 
-   > selector中包含来自`ai.onnx`(171), `ai.onnx.preview.training`(4), `ai.onnx.ml`(18) 和 `com.microsoft`(1)的所有节点类型。
+   > * selector中包含来自`ai.onnx`(171), `ai.onnx.preview.training`(4), `ai.onnx.ml`(18) 和 `com.microsoft`(1)的所有节点类型。
+   > * 注意：如果Model中的imports属性并未包含新增节点需要的版本（如`ai.onnx.preview.training`, `ai.onnx.ml`），新增节点可能会失败。
 
 2. 点击这个新节点，在弹出的侧边栏中进行节点的编辑：
    - 节点属性：初始化为`null` （显示为`undefined`）。同上节，在对应的属性框中输入新值即可。

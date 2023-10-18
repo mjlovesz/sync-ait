@@ -1,3 +1,17 @@
+
+- [faq](#faq)
+  - [1、Q： 安装失败，提示“find no cann path”，如何处理？](#1q-安装失败提示find-no-cann-path如何处理)
+  - [2、Q：使用./install.sh进行安装却报-bash: ./install.sh: Permission denied](#2q使用installsh进行安装却报-bash-installsh-permission-denied)
+  - [3、Q：常见报错 XXX requires YYY, which is not installed。](#3q常见报错-xxx-requires-yyy-which-is-not-installed)
+  - [4、Q：使用./install.sh，报错：/usr/bin/env: ‘bash\\r’: No such file or directory。](#4q使用installsh报错usrbinenv-bashr-no-such-file-or-directory)
+  - [5、Q：如何获取cann包路径？](#5q如何获取cann包路径)
+  - [6、Q: 之前安装ait能够使用，后续环境上的依赖包被其他人或者其他工具破坏了，使用ait时提示“pkg\_resources.VersionConflict:XXXXX”怎么办？](#6q-之前安装ait能够使用后续环境上的依赖包被其他人或者其他工具破坏了使用ait时提示pkg_resourcesversionconflictxxxxx怎么办)
+  - [7、Q：安装ait时，出现skl2onnx组件安装失败的情况](#7q安装ait时出现skl2onnx组件安装失败的情况)
+  - [8、Q：OpenSSL: error:1408F10B:SSL routines:ssl3\_get\_record:wrong version number](#8qopenssl-error1408f10bssl-routinesssl3_get_recordwrong-version-number)
+  - [9、Q：如果使用过程中出现`No module named 'acl'`，请检验CANN包环境变量是否正确](#9q如果使用过程中出现no-module-named-acl请检验cann包环境变量是否正确)
+  - [10、Q：如果安装过程中，出现以下提示：WARNING: env ASCEND\_HOME is not set. aie command cannot be used.](#10q如果安装过程中出现以下提示warning-env-ascend_home-is-not-set-aie-command-cannot-be-used)
+  - [11、Q：如果安装过程中，出现以下提示：WARNING: env ACLTRANSFORMER\_HOME\_PATH is not set. Dump on demand package cannot be used.](#11q如果安装过程中出现以下提示warning-env-acltransformer_home_path-is-not-set-dump-on-demand-package-cannot-be-used)
+
 # faq
 ## 1、Q： 安装失败，提示“find no cann path”，如何处理？
 
@@ -88,9 +102,30 @@ pip3 install protobuf==3.20.2
 
 ## 8、Q：OpenSSL: error:1408F10B:SSL routines:ssl3_get_record:wrong version number
 **A:** 
-解决方案：此问题为网络问题且多存在于黄区，一般配置代理为私人代理后重新安装ait即可（如果仍然不能解决并不影响ait的使用，仅影响transplt组件），代理格式如下：
+解决方案：此问题为网络代理问题，一般配置代理为私人代理后重新安装ait即可（如果仍然不能解决并不影响ait的使用，仅影响transplt组件），代理格式如下：
 ```
 export http_proxy="http://用户名:密码@代理地址"
 export https_proxy="http://用户名:密码@代理地址" 
 ```
 注：密码要用url转义
+
+## 9、Q：如果使用过程中出现`No module named 'acl'`，请检验CANN包环境变量是否正确
+- **A：** 解决方案：
+    > 以下是设置CANN包环境变量的通用方法(假设CANN包安装目录为`ACTUAL_CANN_PATH`)：
+    >
+    > * 执行如下命令：
+    ```
+    source $ACTUAL_CANN_PATH/Ascend/ascend-toolkit/set_env.sh
+    ```
+    > * 普通用户下`ACTUAL_CANN_PATH`一般为`$HOME`，root用户下一般为`/usr/local`
+
+## 10、Q：如果安装过程中，出现以下提示：WARNING: env ASCEND_HOME is not set. aie command cannot be used.
+**A:** 如果不使用ait convert aie命令，忽略此告警。具体参考[convert功能使用指南](https://gitee.com/ascend/ait/tree/master/ait/components/convert)
+
+
+## 11、Q：如果安装过程中，出现以下提示：WARNING: env ACLTRANSFORMER_HOME_PATH is not set. Dump on demand package cannot be used.
+**A:** 如果不使用大模型精度比对功能，忽略此告警。
+
+
+
+  

@@ -99,12 +99,34 @@ def check_output_path_legality(value):
     return path_value
 
 
+def valid_json_file_or_dir(value):
+    if not value:
+        return value
+    path_value = value
+    try:
+        file_stat = FileStat(path_value)
+    except Exception as err:
+        raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.") from err
+    if not file_stat.is_basically_legal('read'):
+        raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
+    
+    # input type: dir or json
+    # input type -> json need additional check
+    if not file_stat.is_dir:
+        if not file_stat.is_legal_file_type(["json"]):
+            raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
+    
+        if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
+            raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
+    return path_value
+
+
 def check_dict_kind_string(value):
     # just like "input_name1:1,224,224,3;input_name2:3,300"
     if not value:
         return value
     input_shape = value
-    regex = re.compile(r"[^_A-Za-z0-9,;:]")
+    regex = re.compile(r"[^_A-Za-z0-9,;:/.-]")
     if regex.search(input_shape):
         raise argparse.ArgumentTypeError(f"dym string \"{input_shape}\" is not a legal string")
     return input_shape
@@ -136,7 +158,7 @@ def check_dym_range_string(value):
     if not value:
         return value
     dym_string = value
-    regex = re.compile(r"[^_A-Za-z0-9\-~,;:]")
+    regex = re.compile(r"[^_A-Za-z0-9,;:/.\-~]")
     if regex.search(dym_string):
         raise argparse.ArgumentTypeError(f"dym range string \"{dym_string}\" is not a legal string")
     return dym_string

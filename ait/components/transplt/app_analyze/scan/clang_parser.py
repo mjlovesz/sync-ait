@@ -405,9 +405,10 @@ class Parser:
         logger.debug(f'Time elapsed： {time.time() - start:.3f}s')
         if logger.level == logging.DEBUG:
             dump = self.tu.spelling.replace('/', '.')
-            os.makedirs('temp/', exist_ok=True)
-            IOUtil.json_safe_dump(info, f'temp/{dump}.json')
-            logger.debug(f'Ast saved in：temp/{dump}.json')
+            os.makedirs('temp', exist_ok=True)
+            temp_json_file = os.path.join('temp', f'{dump}.json')
+            IOUtil.json_safe_dump(info, temp_json_file)
+            logger.debug(f'Ast saved in：{temp_json_file}')
 
         return RESULTS
 

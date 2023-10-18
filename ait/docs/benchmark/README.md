@@ -68,6 +68,7 @@ benchmark推理功能可以通过配置不同的参数，来应对各种测试�
 | --npu-id                 |指定npu-id开关。需要通过npu-smi info命令获取指定device说对应的npu id。配合--energy-consumption参数使用，单独使用无效。|否|
 | --pipeline               |指定pipeline开关，用于开启多线程推理功能。1或true（开启）、0或false（关闭），默认关闭。|否|
 | --dump-npy               |指定dump-npy开关，用于开启dump结果自动转换功能。1或true（开启）、0或false（关闭），默认关闭。需要配合--output和--dump/--acl-json-path参数使用，单独使用无效。|否|
+| --threads                |指定threads开关，用于设置多计算线程推理时计算线程的数量。默认值为1，取值范围为大于0的正整数。需要配合--pipeline 1参数使用，单独使用无效。|否|
 
 ### FAQ
 使用过程中遇到问题可以参考[FAQ](FAQ.md)
