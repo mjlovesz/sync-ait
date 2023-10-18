@@ -1,10 +1,12 @@
 from ais_bench.evaluate.dataset.ceval_dataset import CevalDataset
 from ais_bench.evaluate.dataset.mmlu_dataset import MmluDataset
+from ais_bench.evaluate.dataset.gsm8k_dataset import Gsm8kDataset
 from ais_bench.evaluate.log import logger
 
 dataset_switch = {
     "ceval": CevalDataset,
-    "mmlu": MmluDataset
+    "mmlu": MmluDataset,
+    "gsm8k": Gsm8kDataset
 }
 
 class DatasetFactory():

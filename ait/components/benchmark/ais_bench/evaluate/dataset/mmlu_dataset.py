@@ -15,6 +15,16 @@ class MmluDataset(BaseDataset):
     def _check(dataset_path):
         pass
 
+    def _gen_prompt(self, prompt_df, category_name):
+        question_template = "Question: {question}\nA. {A}\nB. {B}\nC. {C}\nD. {D}\nAnswer: {answer}\n"
+
+        prompt = f"The following are multiple choice questions (with answer) about {category_name}.\n\n"
+        for _, row in prompt_df.iterrows():
+            prompt += question_template.format(question=row[0], A=row[1], B=row[2],
+                                               C=row[3], D=row[4], answer=row[5])
+        prompt += "Please answer the following questions.\n"
+        return prompt
+
     def load(self, dataset_path):
         if dataset_path is None:
             dataset_path = self._download()
@@ -26,7 +36,7 @@ class MmluDataset(BaseDataset):
                 val_path = os.path.join(root, file)
                 with ms_open(val_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
                     prompt_df = pd.read_csv(file, header=None)[:self.shot+1]
-                self.subject_mapping[subject_name] = [prompt_df]
+                self.subject_mapping[subject_name] = [self._gen_prompt(prompt_df, subject_name)]
 
         for root, _, files in os.walk(os.path.join(dataset_path, "test")):
             for file in files:
@@ -48,24 +58,12 @@ class MmluDataset(BaseDataset):
         self.current_index = 0
         return self
 
-    def _gen_prompt(self, prompt_df, category_name, test_row):
-        question_template = "Question: {question}\nA. {A}\nB. {B}\nC. {C}\nD. {D}\nAnswer: {answer}\n"
-
-        prompt = f"The following are multiple choice questions (with answer) about {category_name}.\n\n"
-        for _, row in prompt_df.iterrows():
-            prompt += question_template.format(question=row[0], A=row[1], B=row[2],
-                                               C=row[3], D=row[4], answer=row[5])
-        prompt += "Please answer the following questions.\n"
-        prompt += question_template.format(question=test_row[0], A=test_row[1], B=test_row[2],
-                                               C=test_row[3], D=test_row[4], answer="")
-        return prompt
-
     def __next__(self):
         if self.current_key >= len(self.subjects):
             raise StopIteration
 
         key = self.subjects[self.current_key]
-        prompt_df = self.subject_mapping[key][0]
+        prompt = self.subject_mapping[key][0]
         test_df = self.subject_mapping[key][1]
 
         if self.current_index >= len(test_df):
@@ -73,7 +71,10 @@ class MmluDataset(BaseDataset):
             self.current_index = 0
             return self.__next__()
 
-        prompt = self._gen_prompt(prompt_df, key, test_df.loc[self.current_index])
+        test_row = test_df.loc[self.current_index]
+        prompt += "Question: {question}\nA. {A}\nB. {B}\nC. {C}\nD. {D}\nAnswer:\n".format(
+            question=test_row[0], A=test_row[1], B=test_row[2], C=test_row[3], D=test_row[4])
+
         result = {"id": self.current_index, "subject": key,
                   "prompt": prompt, "ground_truth": test_df.loc[self.current_index, 5]}
         index = [key]

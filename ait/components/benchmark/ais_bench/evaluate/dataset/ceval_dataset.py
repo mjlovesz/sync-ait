@@ -7,6 +7,7 @@ from ais_bench.evaluate.log import logger
 from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_NORMAL_FILE
 
 SUBCATEGORY_INDEX = 0
+CHINESE_INDEX = 1
 CATEGORY_INDEX = 2
 VAL_INDEX = 3
 PROMPT_INDEX = 4
@@ -18,8 +19,18 @@ class CevalDataset(BaseDataset):
                      "and github.com/SJTU-LIT/ceval/blob/main/subject-mapping.json.")
         raise ValueError
 
-    def _check(dataset_path):
+    def _check(self, dataset_path):
         pass
+
+    def _gen_prompt(self, prompt_df, category_name):
+        question_template = "问： {question}\nA. {A}\nB. {B}\nC. {C}\nD. {D}\n答： {answer}\n"
+
+        prompt = f"以下展示了在{category_name}领域的选择题及其正确答案\n\n"
+        for _, row in prompt_df.iterrows():
+            prompt += question_template.format(question=row["question"], A=row["A"], B=row["B"],
+                                               C=row["C"], D=row["D"], answer=row["answer"])
+        prompt += "请回答以下选择题\n"
+        return prompt
 
     def load(self, dataset_path):
         '''
@@ -41,7 +52,8 @@ class CevalDataset(BaseDataset):
             self.subject_mapping[subject].append(val_df)
             with ms_open(prompt_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
                 prompt_df = pd.read_csv(file, header=0)[:self.shot+1]
-            self.subject_mapping[subject].append(prompt_df)
+            prompt = self._gen_prompt(prompt_df, self.subject_mapping[subject][CHINESE_INDEX])
+            self.subject_mapping[subject].append(prompt)
         self.subjects = list(self.subject_mapping.keys())
 
     def __len__(self):
@@ -55,17 +67,6 @@ class CevalDataset(BaseDataset):
         self.current_index = 0
         return self
 
-    def _gen_prompt(self, prompt_df, category_name, val_row):
-        question_template = "问： {question}\nA. {A}\nB. {B}\nC. {C}\nD. {D}\n答： {answer}\n"
-
-        prompt = f"以下展示了在{category_name}领域的选择题及其正确答案\n\n"
-        for _, row in prompt_df.iterrows():
-            prompt += question_template.format(question=row["question"], A=row["A"], B=row["B"],
-                                               C=row["C"], D=row["D"], answer=row["answer"])
-        prompt += "请回答以下选择题\n"
-        prompt += question_template.format(question=val_row["question"], A=val_row["A"], B=val_row["B"],
-                                               C=val_row["C"], D=val_row["D"], answer="")
-        return prompt
 
     def __next__(self):
         if self.current_key >= len(self.subjects):
@@ -75,17 +76,18 @@ class CevalDataset(BaseDataset):
         subcategory = self.subject_mapping[key][SUBCATEGORY_INDEX]
         category = self.subject_mapping[key][CATEGORY_INDEX]
         val_df  = self.subject_mapping[key][VAL_INDEX]
-        prompt_df = self.subject_mapping[key][PROMPT_INDEX]
-
+        prompt = self.subject_mapping[key][PROMPT_INDEX]
 
         if self.current_index >= len(val_df):
             self.current_key += 1
             self.current_index = 0
             return self.__next__()
 
-        prompt = self._gen_prompt(prompt_df, category, val_df.loc[self.current_index])
+        val_row = val_df.loc[self.current_index]
+
+        prompt += f"问： {val_row['question']}\nA. {val_row['A']}\nB. {val_row['B']}\nC. {val_row['C']}\nD. {val_row['D']}\n答：\n"
         result = {"id": self.current_index, "category": category, "sub_category": subcategory,
-                  "prompt": prompt, "ground_truth": val_df.loc[self.current_index, "answer"]}
+                  "prompt": prompt, "ground_truth": val_row["answer"]}
         index = [category, subcategory]
         self.current_index += 1
         return index, result
