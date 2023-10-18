@@ -38,32 +38,44 @@ def check_single_op_is_valid(single_op, dump, custom_op, locat):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
-def get_memory_size_by_soc_type():
+def get_memory_size_by_soc_type(device_id):
     npu_id = -1
     memory_size = -1
-    pre_cmd = "npu-smi info -l"
-    res = subprocess.run(pre_cmd.split(), shell=False, stdout=subprocess.PIPE)
+    pre_cmd = "npu-smi info -m"
+    map_res = subprocess.run(pre_cmd.split(), shell=False, stdout=subprocess.PIPE)
 
-    for line in res.stdout.decode().split('\n'):
-        if "NPU ID" in line:
-            npu_id = int(line.split()[-1])
+    i_arg = -1
+    c_arg = -1
+    for line in map_res.stdout.decode().split('\n'):
+        info = line.split()
+        npu_id, chip_id, logic_id, chip_name = info
+        if int(logic_id) == device_id:
+            i_arg = npu_id
+            c_arg = chip_id
             break
     
-    if npu_id == -1:
-        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
-    
-    cmd = f"npu-smi info -t memory -i {npu_id}"
-    res = subprocess.run(cmd.split(), shell=False, stdout=subprocess.PIPE)
-    
-    for line in res.stdout.decode().split('\n'):
-        if "DDR Capacity(MB)" in line:
-            memory_size = int(line.split()[-1])
-            break
-    if memory_size == -1:
+    if i_arg >= 0 and c_arg >= 0:
+        mem_cmd = f"npu-smi info -i {i_arg} -c {c_arg} -t usages"
+        mem_res = subprocess.run(pre_cmd.split(), shell=False, stdout=subprocess.PIPE)
+        mem_capacity = -1
+        mem_usage = -1
+        lines =  mem_res.stdout.decode().split('\n')
+        for idx, line in enumerate(lines):
+            if "Capacity" in line:
+                current_capacity = int(line.split()[-1])
+                if current_capacity > mem_capacity and idx < len(lines) - 1:
+                    mem_capacity = current_capacity
+                    mem_usage = int(lines[idx + 1].split()[-1])
+        if mem_capacity == -1 and mem_usage == -1:
+            utils.logger.warning("npu-smi info -i x -t usages cannot be used")
+            mem_capacity = 0x3f3f3f3f
+            mem_usage = 0
+        available_mem = mem_capacity * ((100 - mem_usage) / 100)
+    else:
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
 
     # get size by Byte Unit
-    return memory_size // 4 * 1024 * 1024
+    return available_mem // 4 * 1024 * 1024
 
 
 def generate_single_op_dir(out_path):
