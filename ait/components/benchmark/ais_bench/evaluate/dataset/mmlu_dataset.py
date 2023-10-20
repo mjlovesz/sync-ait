@@ -7,14 +7,6 @@ from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_NORMAL_
 
 
 class MmluDataset(BaseDataset):
-    def _download(self):
-        logger.error("please download the dataset from "
-                     "https://people.eecs.berkeley.edu/~hendrycks/data.tar")
-        raise ValueError
-
-    def _check(dataset_path):
-        pass
-
     def _gen_prompt(self, prompt_df, category_name):
         question_template = "Question: {question}\nA. {A}\nB. {B}\nC. {C}\nD. {D}\nAnswer: {answer}\n"
 
@@ -25,22 +17,23 @@ class MmluDataset(BaseDataset):
         prompt += "Please answer the following questions.\n"
         return prompt
 
-    def load(self, dataset_path):
-        if dataset_path is None:
-            dataset_path = self._download()
-        self._check(dataset_path)
+    def load(self):
+        if self.dataset_path is None:
+            self._download()
+        self._check(self.dataset_path)
+
         self.subject_mapping = dict()
-        for root, _, files in os.walk(os.path.join(dataset_path, "val")):
+        for root, _, files in os.walk(os.path.join(self.dataset_path, "val")):
             for file in files:
-                subject_name = file.strip().rstrip("_val.csv")
+                subject_name = file.strip()[:-8]
                 val_path = os.path.join(root, file)
                 with ms_open(val_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
                     prompt_df = pd.read_csv(file, header=None)[:self.shot+1]
                 self.subject_mapping[subject_name] = [self._gen_prompt(prompt_df, subject_name)]
 
-        for root, _, files in os.walk(os.path.join(dataset_path, "test")):
+        for root, _, files in os.walk(os.path.join(self.dataset_path, "test")):
             for file in files:
-                subject_name = file.strip().rstrip("_test.csv")
+                subject_name = file.strip()[:-9]
                 test_path = os.path.join(root, file)
                 with ms_open(test_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
                     test_df = pd.read_csv(file, header=None)

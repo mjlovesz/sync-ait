@@ -23,8 +23,8 @@ class Evaluator():
         logger.info(f"Load dataset {dataset_name} success.")
 
     def evaluate(self, measurement = None):
-        logger.info(f"Start to evaluate on {self.dataset.dataset_name} dataset\
-                    with {'default' if measurement is None else measurement} metric.")
+        logger.info(f"Start to evaluate on {self.dataset.dataset_name} dataset"
+                    f"with {'default' if measurement is None else measurement} metric.")
         recorder = Recorder(rank=self.rank)
         for index, entry_dict in tqdm(self.dataset):
             answer = self.generate(entry_dict.get("prompt"))

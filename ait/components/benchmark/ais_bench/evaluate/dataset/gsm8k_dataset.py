@@ -11,15 +11,7 @@ ANS_RE = re.compile(r"#### (\-?[0-9\.\,]+)")
 INVALID_ANS = "[invalid]"
 
 class Gsm8kDataset(BaseDataset):
-    def _download(self):
-        logger.error("please download the dataset from "
-                     )
-        raise ValueError
-
-    def _check(dataset_path):
-        pass
-
-    def _extract_ground_truth(answer):
+    def _extract_ground_truth(self, answer):
         match = ANS_RE.search(answer)
         if match:
             match_str = match.group(1).strip()
@@ -74,7 +66,7 @@ class Gsm8kDataset(BaseDataset):
         if self.current_index >= len(self.validation):
             raise StopIteration
 
-        prompt = self.prompt + f"Question: {self.validation[self.current_index]}\nAnswer:\n"
+        prompt = self.prompt + f"Question: {self.validation[self.current_index].get('question')}\nAnswer:\n"
         result = {"id": self.current_index, "prompt": prompt,
                   "ground_truth": self._extract_ground_truth(self.validation[self.current_index].get("answer"))}
         index = []

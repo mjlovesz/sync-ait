@@ -13,15 +13,6 @@ VAL_INDEX = 3
 PROMPT_INDEX = 4
 
 class CevalDataset(BaseDataset):
-    def _download(self):
-        logger.error("please download the dataset and subject_mapping from "
-                     "huggingface.co/datasets/ceval/ceval-exam/resolve/main/ceval-exam.zip "
-                     "and github.com/SJTU-LIT/ceval/blob/main/subject-mapping.json.")
-        raise ValueError
-
-    def _check(self, dataset_path):
-        pass
-
     def _gen_prompt(self, prompt_df, category_name):
         question_template = "问： {question}\nA. {A}\nB. {B}\nC. {C}\nD. {D}\n答： {answer}\n"
 
@@ -32,21 +23,22 @@ class CevalDataset(BaseDataset):
         prompt += "请回答以下选择题\n"
         return prompt
 
-    def load(self, dataset_path):
+    def load(self):
         '''
         dataset_path-
         use val dataset as validation use dev dataset as prompt
         '''
-        if dataset_path is None:
-            dataset_path = self._download()
-        self._check(dataset_path)
-        subject_mapping_path = os.path.join(dataset_path, "subject_mapping.json")
+        if self.dataset_path is None:
+            self._download()
+        self._check()
+
+        subject_mapping_path = os.path.join(self.dataset_path, "subject_mapping.json")
         with ms_open(subject_mapping_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
             self.subject_mapping = json.load(file)
 
         for subject in self.subject_mapping:
-            val_path = os.path.join(dataset_path, "val", subject+"_val.csv")
-            prompt_path = os.path.join(dataset_path, "dev", subject+"_dev.csv")
+            val_path = os.path.join(self.dataset_path, "val", subject+"_val.csv")
+            prompt_path = os.path.join(self.dataset_path, "dev", subject+"_dev.csv")
             with ms_open(val_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
                 val_df = pd.read_csv(file, header=0)
             self.subject_mapping[subject].append(val_df)
