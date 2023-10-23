@@ -463,7 +463,7 @@ class InferSession:
         infer_options.pure_infer_mode = pure_infer_mode
         self.session.run_pipeline(infilelist, infer_options, extra_session)
 
-    def reset_sumaryinfo(self):
+    def reset_summaryinfo(self):
         self.session.reset_sumaryinfo()
 
     def infer(self, feeds, mode='static', custom_sizes=100000, out_array=True):
@@ -647,7 +647,7 @@ class InferSession:
                 else:
                     self.inner_run(in_out_list, False, mem_copy)
 
-    def sumary(self):
+    def summary(self):
         return self.session.sumary()
 
     def _static_prepare(self, shapes, custom_sizes):
