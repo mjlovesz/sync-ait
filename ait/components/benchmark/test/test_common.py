@@ -43,8 +43,12 @@ class TestCommonClass:
         """
         test/testdata
         """
-        _current_dir = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(_current_dir, "../test/testdata")
+        data_path = os.getenv("AIT_BENCHMARK_DT_DATA_PATH")
+        if not data_path:
+            _current_dir = os.path.dirname(os.path.realpath(__file__))
+            return os.path.join(_current_dir, "../test/testdata")
+        else:
+            return os.path.realpath(data_path)
 
     @staticmethod
     def create_inputs_file(input_path, size, pure_data_type=random):
