@@ -57,7 +57,7 @@ session.free_resource()
 |<td rowspan='1'>[reset_summaryinfo](#reset_summaryinfo)</td>|
 |<td rowspan='2'>释放模型资源</td><td rowspan='1'>[free_resource](#free_resource)</td>|
 |<td rowspan='1'>[finalize](#finalize)</td>|
-|<td rowspan='4'>[MultiDeviceSession](#MultiDeviceSession)</td><td rowspan='3'>进行模型推理</td><td rowspan='1'>[infer](#infer2)</td>|
+|<td rowspan='4'>[MultiDeviceSession](#MultiDeviceSession1)</td><td rowspan='3'>进行模型推理</td><td rowspan='1'>[infer](#infer2)</td>|
 |<td rowspan='1'>[infer_pipeline](#infer_pipeline2)</td>|
 |<td rowspan='1'>[infer_iteration](#infer_iteration2)</td>|
 |<td rowspan='1'>获取推理性能</td><td rowspan='1'>[summary](#summary2)</td>|
@@ -177,7 +177,7 @@ $\qquad$ InferSession是**单进程**下用于om模型推理的类
 - **返回值**:
     + 无
 
-### MultiDeviceSession
+### MultiDeviceSession <a name="MultiDeviceSession1"></a>
 class <font color=#DD4466>**MultiDeviceSession**</font>(<font color=#0088FF>model_path</font>: str, <font color=#0088FF>acl_json_path</font>: str = None, <font color=#0088FF>debug</font>: bool = False, <font color=#0088FF>loop</font>: int = 1) <br>
 $\qquad$ MultiDeviceSession是**多进程**下用于om模型推理的类，初始化时不会在npu芯片(device)上加载模型，使用推理接口时才会在指定的几个devices的每个进程中新建一个InferSession。<br>
 #### 初始化参数
