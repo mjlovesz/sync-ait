@@ -16,7 +16,7 @@ import numpy as np
 from ais_bench.infer.interface import MultiDeviceSession
 
 
-def multidevice_infer_static():
+def multidevice_infer_pipeline_static():
     device_id = 0
     model_path = "../../sampledata/add_model/model/add_model_bs1.om"
     # create multidevice session of om model for inference
@@ -26,10 +26,12 @@ def multidevice_infer_static():
     shape2 = [1,3,32,32]
     ndata1 = np.full(shape1, 0).astype(np.float32)
     ndata2 = np.full(shape2, 0).astype(np.float32)
+    feeds = [ndata1, ndata2]
+    feeds_list = [feeds, feeds]
     # create {device_id : input datas} dict
-    device_feeds = {device_id:[[ndata1, ndata2], [ndata1, ndata2]]}
+    device_feeds = {device_id:[feeds_list, feeds_list]}
     # in is numpy list and output is numpy list
-    outputs = multi_session.infer(device_feeds, mode='static')
+    outputs = multi_session.infer_pipeline(device_feeds, mode='static')
     print(f"outputs: {outputs}")
 
-multidevice_infer_static()
+multidevice_infer_pipeline_static()
