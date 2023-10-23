@@ -463,7 +463,7 @@ class InferSession:
         infer_options.pure_infer_mode = pure_infer_mode
         self.session.run_pipeline(infilelist, infer_options, extra_session)
 
-    def reset_sumaryinfo(self):
+    def reset_summaryinfo(self):
         self.session.reset_sumaryinfo()
 
     def infer(self, feeds, mode='static', custom_sizes=100000, out_array=True):
@@ -545,13 +545,20 @@ class InferSession:
                 shapes.append(shape)
             inputs_list.append(inputs)
             shapes_list.append(shapes)
-        if mode == 'dymshape':
+        if self.infer_mode_switch.get(mode) is not None and mode != "dymshape" and mode != "dymdims":
+            self.infer_mode_switch.get(mode)(shapes, custom_sizes)
+        elif mode == "dymshape":
             if isinstance(custom_sizes, int):
                 custom_sizes = [custom_sizes] * len(self.get_outputs())
             elif not isinstance(custom_sizes, list):
                 raise RuntimeError('custom_sizes:{} type:{} invalid'.format(
                     custom_sizes, type(custom_sizes)))
             self.session.set_custom_outsize(custom_sizes)
+        elif mode == "dymdims":
+            pass
+        else:
+            raise RuntimeError('wrong infer_mode:{}, only support \"static\",\"dymbatch\",\"dymhw\", \
+                \"dymdims\",\"dymshape\"'.format(mode))
         outputs = self.session.run_pipeline(self.outputs_names, inputs_list, shapes_list,
                                             mode == 'dymshape', mode == 'dymdims')
         for i, output in enumerate(outputs):
@@ -573,15 +580,13 @@ class InferSession:
             outputs = None
             return outputs
 
-    def first_inner_run(self, feeds, mode='static', custom_sizes=None):
+    def first_inner_run(self, feeds, mode='static', custom_sizes=100000):
         '''
         Parameters:
             feeds: input data
             mode: static dymdims dymshapes ...
             custom_sizes: must equal to the realsize of outputs
         '''
-        if not custom_sizes:
-            custom_sizes = []
         inputs = []
         shapes = []
         for feed in feeds:
@@ -614,7 +619,7 @@ class InferSession:
         return self.session.first_inner_run(self.outputs_names, inputs)
 
     def infer_iteration(self, feeds, in_out_list=None, iteration_times=1, mode='static',
-            custom_sizes=None, mem_copy=True):
+            custom_sizes=100000, mem_copy=True):
         '''
         Parameters:
             feeds: input datas
@@ -623,13 +628,12 @@ class InferSession:
             mode: static dymdims dymshape ...
             custom_sizes: only dymshape needs
         '''
-        if not custom_sizes:
-            custom_sizes = []
+        if not in_out_list:
+            in_out_list = []
+        if len(in_out_list) != len(self.get_inputs()):
+            raise RuntimeError(f"inputs' amount and length of in_out_list not matched!")
         if (iteration_times == 1):
-            if not custom_sizes:
-                outputs = self.infer(feeds, mode)
-            else:
-                outputs = self.infer(feeds, mode, custom_sizes[0])
+            outputs = self.infer(feeds, mode, custom_sizes)
             return outputs
         else:
             self.first_inner_run(feeds, mode, custom_sizes)
@@ -643,7 +647,7 @@ class InferSession:
                 else:
                     self.inner_run(in_out_list, False, mem_copy)
 
-    def sumary(self):
+    def summary(self):
         return self.session.sumary()
 
     def _static_prepare(self, shapes, custom_sizes):
@@ -710,10 +714,14 @@ class MultiDeviceSession():
         self.acl_json_path = acl_json_path
         self.debug = debug
         self.loop = loop
+        self.summary = {}
 
     @classmethod
     def print_subprocess_run_error(cls, value):
         logger.error(f"subprocess run failed error_callback:{value}")
+
+    def summary(self):
+        return self.summary
 
     def infer(self, device_feeds:dict, mode='static', custom_sizes=100000):
         '''
@@ -737,12 +745,15 @@ class MultiDeviceSession():
         result = 0 if 2 * len(device_feeds) == outputs_queue.qsize() else 1
         logger.info(f"multidevice run end qsize:{outputs_queue.qsize()} result:{result}")
         outputs_dict = {}
+        self.summary.clear()
         while outputs_queue.qsize() != 0:
             ret = outputs_queue.get()
             if type(ret) == list:
                 if (not outputs_dict.get(ret[0])):
                     outputs_dict.update({ret[0]: []})
+                    self.summary.update({ret[0]: []})
                 outputs_dict.get(ret[0]).append(ret[1])
+                self.summary.get(ret[0]).append((ret[3] - ret[2]) * 1000)
                 logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 
@@ -768,12 +779,15 @@ class MultiDeviceSession():
         result = 0 if 2 * len(device_feeds_list) == outputs_queue.qsize() else 1
         logger.info(f"multidevice run pipeline end qsize:{outputs_queue.qsize()} result:{result}")
         outputs_dict = {}
+        self.summary.clear()
         while outputs_queue.qsize() != 0:
             ret = outputs_queue.get()
             if type(ret) == list:
                 if (not outputs_dict.get(ret[0])):
                     outputs_dict.update({ret[0]: []})
+                    self.summary.update({ret[0]: []})
                 outputs_dict.get(ret[0]).append(ret[1])
+                self.summary.get(ret[0]).append((ret[3] - ret[2]) * 1000)
                 logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 
@@ -799,12 +813,15 @@ class MultiDeviceSession():
         result = 0 if 2 * len(device_feeds) == outputs_queue.qsize() else 1
         logger.info(f"multidevice run iteration end qsize:{outputs_queue.qsize()} result:{result}")
         outputs_dict = {}
+        self.summary.clear()
         while outputs_queue.qsize() != 0:
             ret = outputs_queue.get()
             if type(ret) == list:
                 if (not outputs_dict.get(ret[0])):
                     outputs_dict.update({ret[0]: []})
+                    self.summary.update({ret[0]: []})
                 outputs_dict.get(ret[0]).append(ret[1])
+                self.summary.get(ret[0]).append((ret[3] - ret[2]) * 1000)
                 logger.info(f"device {ret[0]}, start_time:{ret[2]}, end_time:{ret[3]}")
         return outputs_dict
 

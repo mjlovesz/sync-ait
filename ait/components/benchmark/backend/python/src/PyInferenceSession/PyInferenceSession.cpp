@@ -441,7 +441,7 @@ std::vector<std::vector<TensorBase>> PyInferenceSession::InferPipelineBaseTensor
     std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), this);
     std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), this, nullptr);
     std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), this);
-    std::thread saveThread(FuncSaveTensorBase, std::ref(saveQueue), deviceId, std::ref(result));
+    std::thread saveThread(FuncSaveTensorBase, std::ref(saveQueue), std::ref(result), this);
     FuncPrepareBaseTensor(h2dQueue, deviceId, this, inputsList, shapesList, autoDymShape, autoDymDims, outputNames);
 
     h2dThread.join();
