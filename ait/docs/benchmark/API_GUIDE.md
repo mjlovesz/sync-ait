@@ -95,7 +95,7 @@ get_inputs()
 ```
 **返回值**
 
-返回类型为<font color=#44AA00>list [aclruntime.tensor_desc]</font>的输入节点属性信息。
+返回类型为<font color=#44AA00>list [[aclruntime.tensor_desc](#acl_tensor_desc)]</font>的输入节点属性信息。
 
 #### <font color=#DD4466>**get_outputs函数**</font>
 **功能说明**
@@ -108,7 +108,7 @@ get_outputs()
 ```
 **返回值**
 
-返回类型为<font color=#44AA00>list [aclruntime.tensor_desc]</font>的输出节点属性信息。 <br>
+返回类型为<font color=#44AA00>list [[aclruntime.tensor_desc](#acl_tensor_desc)]</font>的输出节点属性信息。 <br>
 <a name="jump1"></a>
 
 <a name="infer1"></a>
@@ -126,14 +126,14 @@ infer(feeds, mode='static', custom_sizes=100000, out_array=True)
 **参数说明**
 |参数名|说明|是否必选|
 |----|----|----|
-|**feeds**|推理所需的一组输入数据，支持数据类型:<a name="jump0"></a> <br> <ul>1、numpy.ndarray; <br> 2、单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64); <br> 3、torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor) <br> 4、aclruntime.Tensor </ul>|是|
+|**feeds**|推理所需的一组输入数据，支持数据类型:<a name="jump0"></a> <br> <ul>1、numpy.ndarray; <br> 2、单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64); <br> 3、torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor) <br> 4、[aclruntime.Tensor](#acl_Tensor) </ul>|是|
 |**mode**|str，指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)|否|
 |**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<br> <ul>1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 2、输入为list:[int]时, 模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
 |**out_array**|bool，是否将模型推理的结果从device侧搬运到host侧|否|
 
 **返回值**
 + out_array == True，返回numpy.ndarray类型的推理输出结果，数据的内存在host侧。
-+ out_array == False，返回<font color=#44AA00>aclruntime.Tensor</font>类型的推理输出结果，数据的内存在device侧。
++ out_array == False，返回<font color=#44AA00>[aclruntime.Tensor](#acl_Tensor)</font>类型的推理输出结果，数据的内存在device侧。
 <a name="jump3"></a> <a name="infer_pipeline1"></a>
 
 #### <font color=#DD4466>**infer_pipeline**</font>(<font color=#0088FF>feeds_list</font>, <font color=#0088FF>mode</font> = 'static', <font color=#0088FF>custom_sizes</font> = 100000)
@@ -152,7 +152,7 @@ infer_pipeline(feeds_list, mode = 'static', custom_sizes = 100000)
 **参数说明**
 |参数名|说明|是否必选|
 |----|----|----|
-|**feeds_list**|list，推理所需的几组组输入数据，list中支持数据类型:<a name="jump2"></a>: <br> <ul>1、numpy.ndarray; <br> 2、单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64); <br> 3、torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor) <br> 4、aclruntime.Tensor </ul><b>注意:</b><br> <ul>1、'static'、'dymbatch'和 'dymhw'场景下feeds_list中的每个feeds中shape必须相同 <br> 2、'dymdims'和 'dymshape'场景下feeds_list中的每个feeds中shape可以不相同|是|
+|**feeds_list**|list，推理所需的几组组输入数据，list中支持数据类型:<a name="jump2"></a>: <br> <ul>1、numpy.ndarray; <br> 2、单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64); <br> 3、torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor) <br> 4、[aclruntime.Tensor](#acl_Tensor) </ul><b>注意:</b><br> <ul>1、'static'、'dymbatch'和 'dymhw'场景下feeds_list中的每个feeds中shape必须相同 <br> 2、'dymdims'和 'dymshape'场景下feeds_list中的每个feeds中shape可以不相同|是|
 |**mode**|str，指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)|否|
 |**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<ul><br>1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br>2、输入为list:[int]时，模型的每一个输|否·|
 
@@ -397,11 +397,14 @@ reset()
 无
 
 ### 内部数据类型解释
+
+<a name="acl_tensor_desc"></a>
+
 #### <font color=#DD4466>**aclruntime.tensor_desc**</font>
 描述模型输入输出节点信息的结构体：<br>
 - property <font color=#DD4466>**name**</font>:str
     + 节点名称。
-- property <font color=#DD4466>**datatype**</font>:aclruntime.dtype
+- property <font color=#DD4466>**datatype**</font>:[aclruntime.dtype](#acl_dtype)
     + 节点接受tensor的数据类型
 - property <font color=#DD4466>**format**</font>:int
     + 节点接受tensor格式，0表示NCHW格式，1表示NHWC格式。
@@ -411,9 +414,15 @@ reset()
     + 节点接受的tensor的大小。
 - property <font color=#DD4466>**realsize**</font>:int
     + 节点接受的tensor的真实大小，针对动态shape 动态分档场景 实际需要的大小。
+
+<a name="acl_dtype"></a>
+
 #### <font color=#DD4466>**aclruntime.dtype**</font>(enum)
 数据类型名称的枚举类型：<br>
 - 包含 'uint8', 'int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64', 'float16', 'float32', 'double64', 'bool'
+
+<a name="acl_Tensor"></a>
+
 #### <font color=#DD4466>**aclruntime.Tensor**</font>
 - device侧保存tensor的方式，在host侧无法直接访问
 
