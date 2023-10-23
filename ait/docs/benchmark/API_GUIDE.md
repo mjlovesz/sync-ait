@@ -48,7 +48,7 @@ session.free_resource()
 ### API导览
 |<td rowspan='1'>**主要文件**<td rowspan='1'>**主要类**</td><td rowspan='1'>**接口分类**</td><td rowspan='1'>**接口**</td>|
 |----|
-|<td rowspan='18'>interface.py</td><td rowspan='9'>[InferSession](#InferSession)</td><td rowspan='2'>获取模型信息</td><td rowspan='1'>[get_inputs](#get_inputs)</td>|
+|<td rowspan='18'>interface.py</td><td rowspan='9'>[InferSession](#InferSession1)</td><td rowspan='2'>获取模型信息</td><td rowspan='1'>[get_inputs](#get_inputs)</td>|
 |<td rowspan='1'>[get_outputs](#get_outputs)</td>|
 |<td rowspan='3'>进行模型推理</td><td rowspan='1'>[infer](#infer1)</td>|
 |<td rowspan='1'>[infer_pipeline](#infer_pipeline1)</td>|
@@ -61,10 +61,11 @@ session.free_resource()
 |<td rowspan='1'>[infer_pipeline](#infer_pipeline2)</td>|
 |<td rowspan='1'>[infer_iteration](#infer_iteration2)</td>|
 |<td rowspan='1'>获取推理性能</td><td rowspan='1'>[summary](#summary2)</td>|
-|<td rowspan='3'>[MemorySummary](#MemorySummary)</td><td rowspan='3'>资源拷贝时间</td><td rowspan='1'>[get_h2d_time_list](#get_h2d_time_list)</td>|
+|<td rowspan='3'>[MemorySummary](#MemorySummary1)</td><td rowspan='3'>资源拷贝时间</td><td rowspan='1'>[get_h2d_time_list](#get_h2d_time_list)</td>|
 |<td rowspan='1'>[get_d2h_time_list](#get_d2h_time_list)</td>|
 |<td rowspan='1'>[reset](#reset)</td>|
 
+<a name="InferSession1"></a>
 ### InferSession
 class <font color=#DD4466>**InferSession**</font>(<font color=#0088FF>device_id</font>: int, <font color=#0088FF>model_path</font>: str, <font color=#0088FF>acl_json_path</font>: str = None, <font color=#0088FF>debug</font>: bool = False, <font color=#0088FF>loop</font>: int = 1) <br>
 $\qquad$ InferSession是**单进程**下用于om模型推理的类
@@ -237,6 +238,7 @@ $\qquad$ MultiDeviceSession是**多进程**下用于om模型推理的类，初�
 - **返回值**:
     + 返回{device_id:[e2etime1, e2etime2, ...]}，e2etime*为每个进程端到端推理的时间(包含模型加载时间)。
 
+<a name="MemorySummary1"></a>
 ### MemorySummary
 class <font color=#DD4466>**MemorySummary**</font>() <br>
 $\qquad$ MemorySummary是用于统计一个推理进程中host2device和device2host过程的拷贝时间。<br>
