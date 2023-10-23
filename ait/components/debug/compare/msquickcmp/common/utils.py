@@ -314,7 +314,7 @@ def get_input_path(input_item_path, bin_file_path_array):
                 bin_file_path_array.append(file_path)
 
 
-def get_dump_data_path(dump_dir, is_net_output=False):
+def get_dump_data_path(dump_dir, is_net_output=False, model_name=None):
     """
     Function Description:
         traverse directories and obtain the absolute path of dump data
@@ -343,12 +343,30 @@ def get_dump_data_path(dump_dir, is_net_output=False):
         logger.error("The directory \"{}\" does not contain dump data".format(dump_dir))
         raise AccuracyCompareException(ACCURACY_COMPARISON_NO_DUMP_FILE_ERROR)
 
+    dump_data_path_list = []
     for dir_path, _, files in os.walk(dump_data_dir):
         if len(files) != 0:
-            dump_data_path = dir_path
+            dump_data_path_list.append(dir_path)
             file_is_exist = True
-            break
-        dump_data_path = dir_path
+    
+    if len(dump_data_path_list) > 1:
+        for ii in dump_data_path_list:
+            if model_name in ii:
+                dump_data_path = ii
+                break
+        if dump_data_path is None:
+            dump_data_path = dump_data_path_list[0]
+        
+        for ii in dump_data_path_list:
+            for file in os.listdir(ii):
+                if ii == dump_data_path:
+                    continue
+                shutil.move(os.path.join(ii, file), dump_data_path)
+    elif len(dump_data_path_list) == 1:
+        dump_data_path = dump_data_path_list[0]
+    else:
+        dump_data_path = None
+
     return dump_data_path, file_is_exist
 
 
