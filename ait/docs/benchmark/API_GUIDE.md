@@ -49,22 +49,22 @@ session.free_resource()
 ### API导览
 |<td rowspan='1'>**主要文件**<td rowspan='1'>**主要类**</td><td rowspan='1'>**接口分类**</td><td rowspan='1'>**接口**</td>|
 |----|
-|<td rowspan='18'>interface.py</td><td rowspan='9'>[InferSession](#InferSession1)</td><td rowspan='2'>获取模型信息</td><td rowspan='1'>[get_inputs](#get_inputs)</td>|
-|<td rowspan='1'>[get_outputs](#get_outputs)</td>|
+|<td rowspan='18'>interface.py</td><td rowspan='9'>[InferSession](#InferSession1)</td><td rowspan='2'>获取模型信息</td><td rowspan='1'>[get_inputs](#get_inputs1)</td>|
+|<td rowspan='1'>[get_outputs](#get_outputs1)</td>|
 |<td rowspan='3'>进行模型推理</td><td rowspan='1'>[infer](#infer1)</td>|
 |<td rowspan='1'>[infer_pipeline](#infer_pipeline1)</td>|
 |<td rowspan='1'>[infer_iteration](#infer_iteration1)</td>|
 |<td rowspan='2'>获取推理性能</td><td rowspan='1'>[summary](#summary1)</td>|
-|<td rowspan='1'>[reset_summaryinfo](#reset_summaryinfo)</td>|
-|<td rowspan='2'>释放模型资源</td><td rowspan='1'>[free_resource](#free_resource)</td>|
-|<td rowspan='1'>[finalize](#finalize)</td>|
+|<td rowspan='1'>[reset_summaryinfo](#reset_summaryinfo1)</td>|
+|<td rowspan='2'>释放模型资源</td><td rowspan='1'>[free_resource](#free_resource1)</td>|
+|<td rowspan='1'>[finalize](#finalize1)</td>|
 |<td rowspan='4'>[MultiDeviceSession](#MultiDeviceSession1)</td><td rowspan='3'>进行模型推理</td><td rowspan='1'>[infer](#infer2)</td>|
 |<td rowspan='1'>[infer_pipeline](#infer_pipeline2)</td>|
 |<td rowspan='1'>[infer_iteration](#infer_iteration2)</td>|
 |<td rowspan='1'>获取推理性能</td><td rowspan='1'>[summary](#summary2)</td>|
-|<td rowspan='3'>[MemorySummary](#MemorySummary1)</td><td rowspan='3'>资源拷贝时间</td><td rowspan='1'>[get_h2d_time_list](#get_h2d_time_list)</td>|
-|<td rowspan='1'>[get_d2h_time_list](#get_d2h_time_list)</td>|
-|<td rowspan='1'>[reset](#reset)</td>|
+|<td rowspan='3'>[MemorySummary](#MemorySummary1)</td><td rowspan='3'>资源拷贝时间</td><td rowspan='1'>[get_h2d_time_list](#get_h2d_time_list1)</td>|
+|<td rowspan='1'>[get_d2h_time_list](#get_d2h_time_list1)</td>|
+|<td rowspan='1'>[reset](#reset1)</td>|
 
 <a name="InferSession1"></a>
 
@@ -84,6 +84,8 @@ InferSession是**单进程**下用于om模型推理的类
 |**debug**|bool，显示更详细的debug级别的log信息的开关，True为打开开关。|否|
 |**loop**|int，一组输入数据重复推理的次数，至少为1。|否|
 
+<a name="get_inputs1"></a>
+
 #### <font color=#DD4466>**get_inputs函数**</font>
 **功能说明**
 
@@ -96,6 +98,8 @@ get_inputs()
 **返回值**
 
 返回类型为<font color=#44AA00>list [[aclruntime.tensor_desc](#acl_tensor_desc)]</font>的输入节点属性信息。
+
+<a name="get_outputs1"></a>
 
 #### <font color=#DD4466>**get_outputs函数**</font>
 **功能说明**
@@ -134,6 +138,7 @@ infer(feeds, mode='static', custom_sizes=100000, out_array=True)
 **返回值**
 + out_array == True，返回numpy.ndarray类型的推理输出结果，数据的内存在host侧。
 + out_array == False，返回<font color=#44AA00>[aclruntime.Tensor](#acl_Tensor)</font>类型的推理输出结果，数据的内存在device侧。
+
 <a name="jump3"></a> <a name="infer_pipeline1"></a>
 
 #### <font color=#DD4466>**infer_pipeline**</font>(<font color=#0088FF>feeds_list</font>, <font color=#0088FF>mode</font> = 'static', <font color=#0088FF>custom_sizes</font> = 100000)
@@ -190,6 +195,7 @@ infer_iteration(feeds, in_out_list = None, iteration_times = 1, mode = 'static',
 <a name="summary1"></a>
 
 #### <font color=#DD4466>**summary函数**</font>
+
 **功能说明**
 
 用于获取推理过程的性能数据。
@@ -201,6 +207,8 @@ summary()
 **返回值**
 
 返回[float]类型的数据。返回的list中按推理执行的先后顺序，保存了每一组数据推理的时间。
+
+<a name="reset_summaryinfo1"></a>
 
 #### <font color=#DD4466>**reset_summaryinfo函数**</font>
 
@@ -215,6 +223,8 @@ reset_summaryinfo()
 **返回值**
 
 无
+
+<a name="free_resource1"></a>
 
 #### <font color=#DD4466>**free_resource**</font>()
 
@@ -231,6 +241,8 @@ free_resource()
 
 无
 
+<a name="finalize1"></a>
+
 #### <font color=#DD4466>**finalize**</font>()
 **功能说明**
 
@@ -245,7 +257,9 @@ finalize()
 
 无
 
-### MultiDeviceSession <a name="MultiDeviceSession1"></a>
+<a name="MultiDeviceSession1"></a>
+
+### MultiDeviceSession
 #### 类原型
 ```python
 class MultiDeviceSession(model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1)
@@ -259,6 +273,8 @@ MultiDeviceSession是**多进程**下用于om模型推理的类，初始化时�
 |**acl_json_path**|str，acl json文件，用于配置profiling（采集推理过程详细的性能数据）和dump（采集模型每层算子的输入输出数据）。|否|
 |**debug**|bool，显示更详细的debug级别的log信息的开关，True为打开开关。|否|
 |**loop**|int，一组输入数据重复推理的次数，至少为1。|否|
+
+<a name="infer2"></a>
 
 #### <font color=#DD4466>**infer函数**</font>
 **功能说明**
@@ -279,6 +295,7 @@ infer(devices_feeds, mode='static', custom_sizes=100000, out_array=True)
 
 **返回值**
 返回{device_id:[output1, output2, ...]}，output*为numpy.ndarray类型的推理输出结果，数据的内存在host侧。
+
 <a name="infer_pipeline2"></a>
 
 #### <font color=#DD4466>**infer_pipeline函数**</font>
@@ -301,6 +318,7 @@ infer_pipeline(devices_feeds_list, mode = 'static', custom_sizes = 100000)
 
 **返回值**
 返回{device_id:[output1, output2, ...]}，output*为[numpy.ndarray]类型的推理输出结果，数据的内存在host侧。
+
 <a name="infer_iteration2"></a>
 
 #### <font color=#DD4466>**infer_iteration函数**</font>
@@ -327,6 +345,7 @@ infer_iteration(device_feeds, in_out_list = None, iteration_times = 1, mode = 's
 **返回值**
 
 返回{device_id:[output1, output2, ...]}，output*为numpy.ndarray类型的推理输出结果，数据的内存在host侧。
+
 <a name="summary2"></a>
 
 #### <font color=#DD4466>**summary**</font>
@@ -355,6 +374,8 @@ MemorySummary()
 #### 类说明
 MemorySummary是用于统计一个推理进程中host2device和device2host过程的拷贝时间。
 
+<a name="get_h2d_time_list1"></a>
+
 #### <font color=#DD4466>**get_h2d_time_list函数**</font>
 
 **功能说明**
@@ -366,7 +387,10 @@ MemorySummary是用于统计一个推理进程中host2device和device2host过程
 get_h2d_time_list()
 ```
 **返回值**
+
 返回[float]类型的数据。返回的list中的时间，按推理执行的先后顺序排序。
+
+<a name="get_d2h_time_list1"></a>
 
 #### <font color=#DD4466>**get_d2h_time_list函数**</font>
 **功能说明**
@@ -381,6 +405,8 @@ get_d2h_time_list()
 **返回值**
 
 返回[float]类型的数据。返回的list中的时间，按推理执行的先后顺序排序。
+
+<a name="reset1"></a>
 
 #### <font color=#DD4466>**reset**</font>()
 **功能说明**
