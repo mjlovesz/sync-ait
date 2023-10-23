@@ -141,9 +141,7 @@ infer(feeds, mode='static', custom_sizes=100000, out_array=True)
 
 <a name="jump3"></a> <a name="infer_pipeline1"></a>
 
-#### <font color=#DD4466>**infer_pipeline**</font>(<font color=#0088FF>feeds_list</font>, <font color=#0088FF>mode</font> = 'static', <font color=#0088FF>custom_sizes</font> = 100000)
-
-**infer_pipeline函数**
+#### <font color=#DD4466>**infer_pipeline**</font>
 
 **功能说明**
 
