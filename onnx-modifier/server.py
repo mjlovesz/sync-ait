@@ -276,7 +276,7 @@ def call_auto_optimizer(modifier, modify_info, output_suffix, make_cmd):
     try:
         import auto_optimizer
     except ImportError as ex:
-        raise ServerError("请安装 auto-optimizer", 599) from ex
+        raise ServerError("请安装 ait/debug/surgeon", 599) from ex
 
     import subprocess
     
@@ -438,7 +438,7 @@ def register_interface(app, request, send_file, temp_dir_path, init_file_path=No
             session.cache_message(out_message)
 
             if opt_tmp_file.tell() == 0:
-                return "auto-optimizer 没有匹配到的知识库", 299
+                return "autoOptimizer 没有匹配到的知识库", 299
 
             auto_close.set_not_close()  # file will auto close in send_file 
             return send_file(opt_tmp_file, session.get_session_id(), download_name="modified_opt.onnx")

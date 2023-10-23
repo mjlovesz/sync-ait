@@ -102,6 +102,48 @@ chmod u+x install.sh
 ./install.sh --uninstall --surgeon -y
 ```
 
+### windows 安装
+
+windows 下，仅支持安装 transplt 和 surgeon 组件
+
+#### 安装
+
+```shell
+git clone https://gitee.com/ascend/ait.git
+cd ait/ait
+
+# 1. 安装ait，包括surgeon、transplt组件（不安装clang等系统依赖库，只影响transplt功能）
+install.bat
+
+# 2. 只安装debug下面的surgeon组件
+install.bat --surgeon
+
+# 3. 只安装transplt组件（不安装transplt组件依赖的clang系统库）
+install.bat --transplt
+
+# 4. 只安装transplt组件（安装transplt组件依赖的clang系统库，需要提供sudo权限,sles系统安装时，需要手动选择'y',然后继续安装）
+install.bat --transplt --full
+```
+
+
+#### 卸载
+注：2023/08/01前下载的ait工具需要重新卸载再安装的ait以及各子工具
+```shell
+cd ait/ait
+
+# 1. 一个个询问式卸载
+install.bat --uninstall
+
+# 2. 不询问式直接全部卸载
+install.bat --uninstall -y
+
+# 3. 单独组件询问式卸载(例如surgeon组件)
+install.bat --uninstall --surgeon
+
+# 4. 不询问式单独组件直接卸载(例如surgeon组件)
+install.bat --uninstall --surgeon -y
+```
+
 ### 常见问题 Q&A
 
 参考：[Ait 安装常见问题](./FAQ.md)
