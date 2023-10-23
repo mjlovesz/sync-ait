@@ -66,9 +66,10 @@ main() {
         echo "aclruntime package install failed please install or source set_env.sh"
         return $ret_invalid_args
     }
-
-    bash -x $CUR_PATH/get_pth_resnet50_data.sh $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE
-    bash -x $CUR_PATH/get_add_model_data.sh
+    if [ -n $AIT_BENCHMARK_DT_DATA_PATH ]; then
+        bash -x $CUR_PATH/get_pth_resnet50_data.sh $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE
+        bash -x $CUR_PATH/get_add_model_data.sh
+    fi
     #bash -x $CUR_PATH/get_pth_resnet101_data.sh $SOC_VERSION $PYTHON_COMMAND
     #bash -x $CUR_PATH/get_pth_inception_v3_data.sh $SOC_VERSION $PYTHON_COMMAND
     ${PYTHON_COMMAND} $CUR_PATH/generate_pipeline_datasets.py
