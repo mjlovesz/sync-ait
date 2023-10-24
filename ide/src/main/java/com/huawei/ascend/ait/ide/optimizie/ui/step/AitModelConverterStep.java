@@ -118,7 +118,7 @@ public class AitModelConverterStep extends DialogWrapper {
     private JLabel aiePathErrLabel;
     private JTextField aiePathTextField = aiePathBrowse.getTextField();
     private final Project project;
-    private static final List<String> SOC_VERSION_LIST = List.of("Ascend310P3", "Ascend910B3");
+    private static final List<String> SOC_VERSION_LIST = List.of("Ascend310P3");
     private static final long FILE_SIZE_LIMIT_2G = 2 * 1024 * 1024 * 1024L;
     private static final int DOCUMENT_LIMIT = 256;
     private static final int MODEL_NAME_LIMIT = 64;

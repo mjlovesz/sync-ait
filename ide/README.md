@@ -98,14 +98,14 @@ AIT-IDE(Ascend Inference Tools)作为昇腾统一推理工具，提供客户一�
 
 ### 参数解析：
 
-| 参数名                | 描述                                      | 必选 |
-  |--------------------|-----------------------------------------|----|
-| CANN Location      | Ascend-cann-toolkit开发套件包的安装路径           | 是  |
-| AIE Location       | Ascend-cann-aie-api开发套件包的安装路径           | 是  |
-| Input Model File   | 输入模型文件，当前仅支持onnx模型文件                    | 是  |
-| Target SoC Version | 模型转换时指定芯片型号，当前支持Ascend310P3和Ascend910B3 | 是  |
-| Output Model Path  | 模型文件输出路径                                | 是  |
-| Output Model Name  | 模型文件名，当前仅支持生成om模型文件                     | 是  |
+| 参数名                | 描述                          | 必选 |
+  |--------------------|-----------------------------|----|
+| CANN Location      | Ascend-cann-toolkit开发套件包的安装路径 | 是  |
+| AIE Location       | Ascend-cann-aie-api开发套件包的安装路径 | 是  |
+| Input Model File   | 输入模型文件，当前仅支持onnx模型文件        | 是  |
+| Target SoC Version | 模型转换时指定芯片型号，当前支持Ascend310P3 | 是  |
+| Output Model Path  | 模型文件输出路径                    | 是  |
+| Output Model Name  | 模型文件名，当前仅支持生成om模型文件         | 是  |
 
 ## 参考
 ### AIT资源
