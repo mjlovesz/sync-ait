@@ -24,7 +24,8 @@ class Gsm8kDataset(BaseDataset):
     def load(self):
         if self.dataset_path is None:
             self._download()
-        self._check(self.dataset_path)
+        self._check()
+
         train_path = os.path.join(self.dataset_path, "train.jsonl")
         test_path = os.path.join(self.dataset_path, "test.jsonl")
         self.validation = []

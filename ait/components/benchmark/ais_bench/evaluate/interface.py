@@ -18,12 +18,12 @@ class Evaluator():
     def set_rank(self, rank):
         self.rank = rank
 
-    def set_dataset(self, dataset_name, dataset_path, shot):
+    def set_dataset(self, dataset_name, dataset_path=None, shot=0):
         self.dataset = DatasetFactory().get(dataset_name, dataset_path, shot)
         logger.info(f"Load dataset {dataset_name} success.")
 
     def evaluate(self, measurement = None):
-        logger.info(f"Start to evaluate on {self.dataset.dataset_name} dataset"
+        logger.info(f"Start to evaluate on {self.dataset.dataset_name} dataset "
                     f"with {'default' if measurement is None else measurement} metric.")
         recorder = Recorder(rank=self.rank)
         for index, entry_dict in tqdm(self.dataset):

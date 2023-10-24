@@ -3,7 +3,7 @@
 declare -i ret_ok=0
 declare -i ret_error=1
 
-dir=$(pwd)
+dir=$(dirname "$0")
 
 function download()
 {
@@ -15,7 +15,7 @@ function download()
 
     echo "dataset: $dataset now downloading"
     url="https://llm-dataset.obs.myhuaweicloud.com/$dataset.tar.gz"
-    wget --no-check-certificate --tries=3 "$url" >/dev/null 2>&1
+    wget --no-check-certificate --tries=3 $url -P $dir/ >/dev/null 2>&1
 
     ret=$?
     if [ $ret -ne 0 ]; then
@@ -35,7 +35,7 @@ function unzip()
         echo "Removed existing directory: $dir/$dataset"
     fi
 
-    tar -xzvf "$dir/$dataset.tar.gz" > /dev/null 2>&1
+    tar -xzvf $dir/$dataset.tar.gz -C $dir/ > /dev/null 2>&1
 
     ret=$?
     if [ $ret -ne 0 ]; then

@@ -14,18 +14,18 @@ class BaseDataset(metaclass=ABCMeta):
         self.load()
 
     def _download(self):
-        os.chmod("download.sh", 0o755)
-        result = subprocess.run(["./download.sh", self.dataset_name], check=True,
+        parent_path = os.path.dirname(os.path.realpath(__file__))
+        download_sh_path = os.path.join(parent_path, "download.sh")
+        os.chmod(download_sh_path, 0o755)
+        result = subprocess.run([download_sh_path, self.dataset_name], check=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if result.returncode == 0:
-            current_script_path = os.path.realpath(__file__)
-            parent_path = os.path.dirname(current_script_path)
             self.dataset_path = os.path.join(parent_path, self.dataset_name)
         else:
             logger.error("please download the dataset.")
             raise ValueError
 
-    def _hash(file_path):
+    def _hash(self, file_path):
         hasher = hashlib.sha256()
         with ms_open(file_path, mode="rb", max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
             for chunk in iter(lambda: file.read(4096), b''):

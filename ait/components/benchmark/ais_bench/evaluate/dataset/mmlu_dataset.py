@@ -20,7 +20,7 @@ class MmluDataset(BaseDataset):
     def load(self):
         if self.dataset_path is None:
             self._download()
-        self._check(self.dataset_path)
+        self._check()
 
         self.subject_mapping = dict()
         for root, _, files in os.walk(os.path.join(self.dataset_path, "val")):
