@@ -206,7 +206,7 @@ class NpuDumpData(DumpData):
         self.data_dir = self._create_dir()
 
     @staticmethod
-    def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir):
+    def _write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir, sub_model_name_list=None):
         load_dict = {
             "dump": {
                 "dump_list": [{"model_name": model_name}],
@@ -215,6 +215,8 @@ class NpuDumpData(DumpData):
                 "dump_op_switch": "off"
             }
         }
+        load_dict["dump"]["dump_list"].extend([{"model_name": ii} for ii in sub_model_name_list])
+    
         if os.access(acl_json_path, os.W_OK):
             json_stat = os.stat(acl_json_path)
             if json_stat.st_uid == os.getuid():
@@ -327,7 +329,8 @@ class NpuDumpData(DumpData):
         if self.dump:
             cur_dir = os.getcwd()
             acl_json_path = os.path.join(cur_dir, acl_json_path)
-            self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir)
+            sub_model_name_list = self.om_parser.get_sub_graph_name()
+            self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir, sub_model_name_list)
             benchmark_cmd.extend(["--acl_json_path", acl_json_path])
 
         self.dynamic_input.add_dynamic_arg_for_benchmark(benchmark_cmd)
@@ -339,14 +342,14 @@ class NpuDumpData(DumpData):
 
         npu_dump_data_path = ""
         if self.dump:
-            npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir)
+            npu_dump_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir, False, model_name)
             if not file_is_exist:
                 if self.single_op:
                     return "", ""
                 utils.logger.error("The path {} dump data is not exist.".format(npu_dump_data_path))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         # net output data path
-        npu_net_output_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir, True)
+        npu_net_output_data_path, file_is_exist = utils.get_dump_data_path(npu_data_output_dir, True, model_name)
         if not file_is_exist:
             if self.single_op:
                 return "", ""
