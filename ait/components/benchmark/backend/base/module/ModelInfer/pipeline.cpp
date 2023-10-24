@@ -275,10 +275,11 @@ namespace Base {
         }
     }
 
-    void FuncSaveTensorBase(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId,
-                            std::vector<std::vector<TensorBase>> &result)
+    void FuncSaveTensorBase(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue,
+                            std::vector<std::vector<TensorBase>> &result, Base::PyInferenceSession* session)
     {
-        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(deviceId);
+        APP_ERROR ret = Base::TensorContext::GetInstance()->SetContext(session->GetDeviceId(),
+                                                                       session->GetContextIndex());
         if (ret != APP_ERR_OK) {
             throw std::runtime_error(GetError(ret));
         }

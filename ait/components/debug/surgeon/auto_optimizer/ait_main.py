@@ -27,7 +27,7 @@ from auto_optimizer.common.click_utils import optimize_onnx, list_knowledges, \
 from auto_optimizer.common.args_check import check_in_model_path_legality, check_out_model_path_legality, check_soc, \
     check_range, check_min_num_1, check_min_num_2, check_shapes_string, check_dtypes_string, check_io_string, \
     check_nodes_string, check_single_node_string, check_normal_string, check_shapes_range_string, check_ints_string, \
-    check_path_string
+    check_path_string, check_in_path_legality
 from auto_optimizer.common.click_utils import default_off_knowledges
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 
@@ -42,7 +42,7 @@ class ListCommand(BaseCommand):
 
 class EvaluateCommand(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument('--path', required=True, type=check_in_model_path_legality,
+        parser.add_argument('--path', required=True, type=check_in_path_legality,
                             help='Target onnx file or directory containing onnx file')
         parser.add_argument('-know', '--knowledges',
                             default=','.join(
@@ -216,9 +216,13 @@ class ExtractCommand(BaseCommand):
         # parse start node names and end node names
         if args.start_node_names:
             start_node_names = [node_name.strip() for node_name in args.start_node_names.split(',')]
+        else:
+            start_node_names = None
 
         if args.end_node_names:
             end_node_names = [node_name.strip() for node_name in args.end_node_names.split(',')]
+        else:
+            end_node_names = None
 
         onnx_graph = OnnxGraph.parse(args.input_model)
         try:

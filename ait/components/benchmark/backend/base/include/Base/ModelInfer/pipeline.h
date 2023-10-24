@@ -113,8 +113,8 @@ namespace Base {
 
     void FuncSave(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, std::shared_ptr<InferOptions> inferOption);
 
-    void FuncSaveTensorBase(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue, uint32_t deviceId,
-                            std::vector<std::vector<TensorBase>> &result);
+    void FuncSaveTensorBase(ConcurrentQueue<std::shared_ptr<Feeds>> &saveQueue,
+                            std::vector<std::vector<TensorBase>> &result, Base::PyInferenceSession* session);
 
     cnpy::NpyArray CreatePureInferArray(std::string fname, Base::TensorDesc inTensor);
 }
