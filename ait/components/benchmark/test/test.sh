@@ -66,7 +66,7 @@ main() {
         echo "aclruntime package install failed please install or source set_env.sh"
         return $ret_invalid_args
     }
-    if [ -n $AIT_BENCHMARK_DT_DATA_PATH ]; then
+    if [ ! -n $AIT_BENCHMARK_DT_DATA_PATH ]; then
         echo "using $AIT_BENCHMARK_DT_DATA_PATH as dt data path"
         bash -x $CUR_PATH/get_pth_resnet50_data.sh $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE
         bash -x $CUR_PATH/get_add_model_data.sh
