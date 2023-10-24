@@ -56,7 +56,7 @@ class TestClass():
             ├── model
             └── output
         """
-        return os.path.join(TestCommonClass.base_path, self.model_name)
+        return os.path.join(TestCommonClass.get_basepath(), self.model_name)
 
     def get_dynamic_batch_om_path(self):
         return os.path.join(self.model_base_path, "model",

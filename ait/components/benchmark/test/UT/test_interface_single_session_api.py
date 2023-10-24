@@ -26,25 +26,25 @@ class TestClass:
     @classmethod
     def get_resnet50_static(cls, bs:int = 1):
         return os.path.join(
-            TestCommonClass.base_path, cls.resnet_name, "model", f"pth_resnet50_bs{bs}.om"
+            TestCommonClass.get_basepath(), cls.resnet_name, "model", f"pth_resnet50_bs{bs}.om"
         )
 
     @classmethod
     def get_resnet50_dynamic(cls, kind:str):
         return os.path.join(
-            TestCommonClass.base_path, cls.resnet_name, "model", f"pth_resnet50_{kind}.om"
+            TestCommonClass.get_basepath(), cls.resnet_name, "model", f"pth_resnet50_{kind}.om"
         )
 
     @classmethod
     def get_add_model_static(cls, bs:int = 1):
         return os.path.join(
-            TestCommonClass.base_path, cls.add_name, "model", f"add_model_bs{bs}.om"
+            TestCommonClass.get_basepath(), cls.add_name, "model", f"add_model_bs{bs}.om"
         )
 
     @classmethod
     def get_add_model_dynamic(cls, kind:str):
         return os.path.join(
-            TestCommonClass.base_path, cls.add_name, "model", f"add_model_{kind}.om"
+            TestCommonClass.get_basepath(), cls.add_name, "model", f"add_model_{kind}.om"
         )
 
     def init(self):
