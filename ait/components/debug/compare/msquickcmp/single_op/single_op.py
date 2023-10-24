@@ -57,7 +57,7 @@ def get_memory_size_by_soc_type(device_id):
             i_arg = int(npu_id)
             c_arg = int(chip_id)
             break
-    
+
     if i_arg >= 0 and c_arg >= 0:
         mem_cmd = f"npu-smi info -i {i_arg} -c {c_arg} -t usages"
         mem_res = subprocess.run(mem_cmd.split(), shell=False, stdout=subprocess.PIPE)
@@ -96,7 +96,7 @@ def generate_single_op_dir(out_path):
 def broken(og: OnnxGraph, subgraph_onnx_file: str):
     """
     Function: break onnx into single operator pieces and keep in one onnx
-    
+
     Input: og -> OnnxGraph, subgraph_onnx_file -> output onnx file path
 
     Output:  single operator pieces onnx file
@@ -116,7 +116,7 @@ def broken(og: OnnxGraph, subgraph_onnx_file: str):
                 node.inputs[idx] = in_placeholder.name
                 in_ph_list.append(in_placeholder)
                 input_name_list.append(in_placeholder.name)
-        
+
         out_ph_list = []
         for idx, out in enumerate(node.outputs):
             if out in g_outputs:
@@ -126,7 +126,7 @@ def broken(og: OnnxGraph, subgraph_onnx_file: str):
             out_placeholder = OnnxPlaceHolder(new_name, ph.dtype, ph.shape)
             node.outputs[idx] = out_placeholder.name
             out_ph_list.append(out_placeholder)
-        
+
         og.inputs.extend(in_ph_list)
         og.outputs.extend(out_ph_list)
     og.save(subgraph_onnx_file)
@@ -182,9 +182,9 @@ def dynamic_divide_onnx(out_path: str, subog: OnnxGraph, memory_size: int):
     """
     Function:
     according to the patchsize to divide the given onnx into suitable size onnxs.
-    
+
     Input:subog:OnnxGraph needed to be divided
-    
+
     Output:
     Divided onnx list which contains a series of onnx paths
     """
