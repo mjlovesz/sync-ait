@@ -735,9 +735,9 @@ def benchmark_process(args:BenchMarkArgsAdapter):
         dymshape_range_run(args)
         return 0
 
-    if type(args.device) == list:
+    if type(args.device)==list:
         # args has multiple device, run single process for each device
-        ret = multidevice_run(args)
+        ret=multidevice_run(args)
         return ret
 
     main(args)
