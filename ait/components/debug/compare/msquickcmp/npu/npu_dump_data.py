@@ -329,7 +329,7 @@ class NpuDumpData(DumpData):
         if self.dump:
             cur_dir = os.getcwd()
             acl_json_path = os.path.join(cur_dir, acl_json_path)
-            sub_model_name_list = self.om_parser._get_sub_graph_name()
+            sub_model_name_list = self.om_parser.get_sub_graph_name()
             self._write_content_to_acl_json(acl_json_path, model_name, npu_data_output_dir, sub_model_name_list)
             benchmark_cmd.extend(["--acl_json_path", acl_json_path])
 

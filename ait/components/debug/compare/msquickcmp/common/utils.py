@@ -350,6 +350,7 @@ def get_dump_data_path(dump_dir, is_net_output=False, model_name=None):
             file_is_exist = True
     
     if len(dump_data_path_list) > 1:
+        # find the model name directory
         for ii in dump_data_path_list:
             if model_name in ii:
                 dump_data_path = ii
@@ -357,11 +358,13 @@ def get_dump_data_path(dump_dir, is_net_output=False, model_name=None):
         if dump_data_path is None:
             dump_data_path = dump_data_path_list[0]
         
+        #move all dump files to single directory
         for ii in dump_data_path_list:
             for file in os.listdir(ii):
                 if ii == dump_data_path:
                     continue
                 shutil.move(os.path.join(ii, file), dump_data_path)
+
     elif len(dump_data_path_list) == 1:
         dump_data_path = dump_data_path_list[0]
     else:
