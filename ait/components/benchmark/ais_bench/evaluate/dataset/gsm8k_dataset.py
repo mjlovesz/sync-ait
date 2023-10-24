@@ -21,12 +21,12 @@ class Gsm8kDataset(BaseDataset):
             logger.error(f"Extracting groud truth from dataset failed. Raw answer is {answer}")
             raise ValueError
 
-    def load(self, dataset_path):
-        if dataset_path is None:
-            dataset_path = self._download()
-        self._check(dataset_path)
-        train_path = os.path.join(dataset_path, "train.jsonl")
-        test_path = os.path.join(dataset_path, "test.jsonl")
+    def load(self):
+        if self.dataset_path is None:
+            self._download()
+        self._check(self.dataset_path)
+        train_path = os.path.join(self.dataset_path, "train.jsonl")
+        test_path = os.path.join(self.dataset_path, "test.jsonl")
         self.validation = []
         prompt_list = []
         prompt_count = 0

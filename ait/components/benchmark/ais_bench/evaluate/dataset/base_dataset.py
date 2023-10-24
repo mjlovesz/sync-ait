@@ -11,7 +11,7 @@ class BaseDataset(metaclass=ABCMeta):
         self.dataset_name = dataset_name
         self.shot = shot
         self.dataset_path = dataset_path
-        self.load(dataset_path)
+        self.load()
 
     def _download(self):
         os.chmod("download.sh", 0o755)
@@ -46,8 +46,8 @@ class BaseDataset(metaclass=ABCMeta):
                 raise ValueError
 
     @abstractmethod
-    def load(self, dataset_path):
-        # to do : open file or files in dataset_path and save as pd.dataframe
+    def load(self):
+        # to do : open file or files in self.dataset_path and save as pd.dataframe
         raise NotImplementedError
 
     @abstractmethod

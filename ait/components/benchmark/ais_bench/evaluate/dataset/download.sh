@@ -3,12 +3,14 @@
 declare -i ret_ok=0
 declare -i ret_error=1
 
+dir=$(pwd)
+
 function download()
 {
     dataset=$1
-    if [ -f "$dataset.tar.gz" ]; then
-        rm "$dataset.tar.gz"
-        echo "Removed existing file: $dataset.tar.gz"
+    if [ -f "$dir/$dataset.tar.gz" ]; then
+        rm "$dir/$dataset.tar.gz"
+        echo "Removed existing file: $dir/$dataset.tar.gz"
     fi
 
     echo "dataset: $dataset now downloading"
@@ -28,22 +30,22 @@ function download()
 function unzip()
 {
     dataset=$1
-    if [ -d $dataset ]; then
-        rm -r $dataset
-        echo "Removed existing directory: $dataset"
+    if [ -d $dir/$dataset ]; then
+        rm -r $dir/$dataset
+        echo "Removed existing directory: $dir/$dataset"
     fi
 
-    tar -xzvf "$dataset.tar.gz" > /dev/null 2>&1
+    tar -xzvf "$dir/$dataset.tar.gz" > /dev/null 2>&1
 
     ret=$?
     if [ $ret -ne 0 ]; then
-        echo "tar failed to unzip $dataset.tar.gz"
+        echo "tar failed to unzip $dir/$dataset.tar.gz"
         return $ret
     else
         echo "dataset: $dataset unzipped successfully"
     fi
 
-    rm "$dataset.tar.gz"
+    rm "$dir/$dataset.tar.gz"
 
     return $ret_ok
 }
