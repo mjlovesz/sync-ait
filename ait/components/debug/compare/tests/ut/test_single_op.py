@@ -121,9 +121,9 @@ def test_get_memory_size_by_soc_type_when_invalid_npu_id_then_failed():
         with mock.patch("subprocess.run", return_value=subprocess.CompletedProcess(
                         args=[''],
                         returncode=0,
-                        stdout=b'NPU ID -1'
+                        stdout=b''
                         )):
-            ret = sp.get_memory_size_by_soc_type()
+            ret = sp.get_memory_size_by_soc_type("0")
             assert ret == utils.ACCURACY_COMPARISON_INVALID_DEVICE_ERROR
 
 
