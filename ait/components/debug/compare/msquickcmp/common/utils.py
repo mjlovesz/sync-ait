@@ -360,7 +360,6 @@ def get_dump_data_path(dump_dir, is_net_output=False, model_name=None):
                 continue
             for file in os.listdir(ii):
                 shutil.move(os.path.join(ii, file), dump_data_path)
-
     elif len(dump_data_path_list) == 1:
         dump_data_path = dump_data_path_list[0]
     else:
