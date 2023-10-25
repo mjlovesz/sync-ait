@@ -80,7 +80,7 @@ class TestClass:
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         os.environ['AIT_NO_MSPROF_MODE'] = "1"
         json_dict = {"profiler": {"wrong": "on", "aicpu": "on", "output": "", "aic_metrics": ""}}
-        acl_json_path = os.path.join(TestCommonClass.base_path, "acl.json")
+        acl_json_path = os.path.join(TestCommonClass.get_basepath(), "acl.json")
         with os.fdopen(os.open(acl_json_path, OPEN_FLAGS, OPEN_MODES), "w") as f:
             json.dump(json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
         cmd = "{} --model {} --device {} --acl_json_path {} ".format(TestCommonClass.cmd_prefix, model_path,
@@ -123,7 +123,7 @@ class TestClass:
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
         loops = [3, 300]
         warmup_num = 1
-        log_path = os.path.join(TestCommonClass.base_path, "log.txt")
+        log_path = os.path.join(TestCommonClass.get_basepath(), "log.txt")
         for _, loop_num in enumerate(loops):
             cmd = "{} --model {} --device {} --loop {} --debug True > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                                  TestCommonClass.default_device_id,
@@ -145,7 +145,7 @@ class TestClass:
         debug log record num > 1
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        log_path = os.path.join(TestCommonClass.base_path, "log.txt")
+        log_path = os.path.join(TestCommonClass.get_basepath(), "log.txt")
         cmd = "{} --model {} --device {} --debug True > {}".format(TestCommonClass.cmd_prefix, model_path,
                                                                    TestCommonClass.default_device_id, log_path)
         logging.info(f"run cmd:{cmd}")
@@ -162,7 +162,7 @@ class TestClass:
 
     def test_args_profiler_ok(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        output_path = os.path.join(TestCommonClass.get_basepath(), self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
         profiler_path = os.path.join(output_path, "profiler")
         TestCommonClass.prepare_dir(output_path)
@@ -183,7 +183,7 @@ class TestClass:
 
     def test_args_profiler_rename_ok(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        output_path = os.path.join(TestCommonClass.get_basepath(), self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
         profiler_path = os.path.join(output_path, "profiler")
         TestCommonClass.prepare_dir(output_path)
@@ -236,7 +236,7 @@ class TestClass:
                         `-- 5
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        output_path = os.path.join(TestCommonClass.get_basepath(), self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
         dump_path = os.path.join(output_path, "dump")
 
@@ -255,7 +255,7 @@ class TestClass:
 
     def test_args_output_ok(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        output_path = os.path.join(TestCommonClass.get_basepath(), self.model_name, "output")
         log_path = os.path.join(output_path, "log.txt")
         TestCommonClass.prepare_dir(output_path)
         cmd = "{} --model {} --device {}  --output {} > {}".format(TestCommonClass.cmd_prefix, model_path,
@@ -278,7 +278,7 @@ class TestClass:
 
     def test_args_acljson_ok(self):
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        output_path = os.path.join(TestCommonClass.get_basepath(), self.model_name, "output")
         os.environ['AIT_NO_MSPROF_MODE'] = "1"
         TestCommonClass.prepare_dir(output_path)
         profiler_path = os.path.join(output_path, "profiler")
@@ -289,7 +289,7 @@ class TestClass:
             output_json_dict["profiler"]["output"] = profiler_path
         except Exception as e:
             raise Exception("Visit dict failed".format(e)) from e
-        out_json_file_path = os.path.join(TestCommonClass.base_path, "acl.json")
+        out_json_file_path = os.path.join(TestCommonClass.get_basepath(), "acl.json")
         with os.fdopen(os.open(out_json_file_path, OPEN_FLAGS, OPEN_MODES), "w") as f:
             json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
         cmd = "{} --model {} --device {} --acl_json_path {} --output {}".format(TestCommonClass.cmd_prefix, model_path,
@@ -312,7 +312,7 @@ class TestClass:
         there are two output files and one file with bin suffix in output folder path.
         """
         model_path = TestCommonClass.get_model_static_om_path(1, self.model_name)
-        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        output_path = os.path.join(TestCommonClass.get_basepath(), self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
         log_path = os.path.join(output_path, "log.txt")
 
@@ -347,7 +347,7 @@ class TestClass:
         output_file_suffixs = ["NPY", "BIN", "TXT"]
 
         for _, output_file_suffix in enumerate(output_file_suffixs):
-            output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+            output_path = os.path.join(TestCommonClass.get_basepath(), self.model_name, "output")
             log_path = os.path.join(output_path, "log.txt")
             TestCommonClass.prepare_dir(output_path)
             cmd = "{} --model {} --device {} --output {} --outfmt {} > {}".format(TestCommonClass.cmd_prefix,

@@ -21,7 +21,11 @@ from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.main_cli import BenchmarkCommand
 
 benchmark_command = BenchmarkCommand()
-current_dir = os.path.dirname(os.path.abspath(__file__))
+data_path = os.getenv("AIT_BENCHMARK_DT_DATA_PATH")
+if not data_path:
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+else:
+    current_dir = data_path
 os.chmod(os.path.join(current_dir, "../json_for_arg_test.json"), 0o750)
 base_cmd_dict = {
     "--om-model": os.path.join(current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
