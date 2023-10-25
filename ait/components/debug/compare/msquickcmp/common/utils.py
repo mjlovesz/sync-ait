@@ -352,8 +352,7 @@ def get_dump_data_path(dump_dir, is_net_output=False, model_name=None):
         for ii in dump_data_path_list:
             if model_name in ii:
                 dump_data_path = ii
-                break
-            
+                break            
         
         #move all dump files to single directory
         for ii in dump_data_path_list:
