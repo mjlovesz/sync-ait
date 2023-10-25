@@ -348,12 +348,12 @@ def get_dump_data_path(dump_dir, is_net_output=False, model_name=None):
     
     if len(dump_data_path_list) > 1:
         # find the model name directory
+        dump_data_path = dump_data_path_list[0]
         for ii in dump_data_path_list:
             if model_name in ii:
                 dump_data_path = ii
                 break
-        if dump_data_path is None:
-            dump_data_path = dump_data_path_list[0]
+            
         
         #move all dump files to single directory
         for ii in dump_data_path_list:
