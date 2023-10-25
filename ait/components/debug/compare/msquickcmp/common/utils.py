@@ -357,9 +357,9 @@ def get_dump_data_path(dump_dir, is_net_output=False, model_name=None):
         
         #move all dump files to single directory
         for ii in dump_data_path_list:
+            if ii == dump_data_path:
+                continue
             for file in os.listdir(ii):
-                if ii == dump_data_path:
-                    continue
                 shutil.move(os.path.join(ii, file), dump_data_path)
 
     elif len(dump_data_path_list) == 1:
