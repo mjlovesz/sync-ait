@@ -24,6 +24,7 @@ from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_NORMAL_
 ANS_RE = re.compile(r"#### (\-?[0-9\.\,]+)")
 INVALID_ANS = "[invalid]"
 
+
 class Gsm8kDataset(BaseDataset):
     def _extract_ground_truth(self, answer):
         match = ANS_RE.search(answer)
@@ -88,7 +89,7 @@ class Gsm8kDataset(BaseDataset):
         self.current_index += 1
         return index, result
 
-    def compute(self, data, measurement = "accuracy") -> dict:
+    def compute(self, data, measurement="accuracy") -> dict:
         '''
         input: data in the form of pandas.DataFrame OR a list of metrics dictonary
         output: a dictionary containing accuracy, total number of entry, number of correct entry

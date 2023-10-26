@@ -17,19 +17,16 @@ from ais_bench.evaluate.log import logger
 
 
 class Recorder():
-    def __init__(self, name = "default", rank = 0) -> None:
+    def __init__(self, name="default") -> None:
         self.name = name
         self.records = None
         self.metrics = None
         self.children = dict()
-        self.rank = rank
 
     def record(self, index : list, entry_dict : dict):
         '''
         all the index should be of the same length
         '''
-        if self.rank != 0:
-            return
         if index == []:
             if self.records is None:
                 self.records = pd.DataFrame(columns=entry_dict.keys())
@@ -39,20 +36,16 @@ class Recorder():
 
         current_index = index[0]
         if current_index not in self.children:
-            self.children[current_index] = Recorder(current_index, self.rank)
+            self.children[current_index] = Recorder(current_index)
         self.children.get(current_index).record(index[1:], entry_dict)
 
     def read(self, index):
-        if self.rank != 0:
-            return
         if index == []:
             return self.records
         current_index = index[0]
         return self.children.get(current_index).read(index[1:])
 
-    def statistics(self, func_compute = None, measurement = None):
-        if self.rank != 0:
-            return
+    def statistics(self, func_compute=None, measurement=None):
         if self.metrics is not None:
             return self.metrics
         if func_compute is None:
@@ -73,10 +66,7 @@ class Recorder():
             self.metrics = func_compute(data, measurement)
         return self.metrics
 
-
-    def report(self, func_report = None):
-        if self.rank != 0:
-            return
+    def report(self, func_report=None):
         if func_report is None:
             logger.error("Record.report failed: function to report metrics missing")
             raise Exception

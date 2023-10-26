@@ -42,7 +42,7 @@ class MmluDataset(BaseDataset):
                 subject_name = file.strip()[:-8]
                 val_path = os.path.join(root, file)
                 with ms_open(val_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
-                    prompt_df = pd.read_csv(file, header=None)[:self.shot+1]
+                    prompt_df = pd.read_csv(file, header=None)[:self.shot + 1]
                 self.subject_mapping[subject_name] = [self._gen_prompt(prompt_df, subject_name)]
 
         for root, _, files in os.walk(os.path.join(self.dataset_path, "test")):
@@ -70,8 +70,8 @@ class MmluDataset(BaseDataset):
             raise StopIteration
 
         key = self.subjects[self.current_key]
-        prompt = self.subject_mapping[key][0]
-        test_df = self.subject_mapping[key][1]
+        prompt = self.subject_mapping.get(key)[0]
+        test_df = self.subject_mapping.get(key)[1]
 
         if self.current_index >= len(test_df):
             self.current_key += 1
@@ -88,7 +88,7 @@ class MmluDataset(BaseDataset):
         self.current_index += 1
         return index, result
 
-    def compute(self, data, measurement = "accuracy") -> dict:
+    def compute(self, data, measurement="accuracy") -> dict:
         '''
         input: data in the form of pandas.DataFrame OR a list of metrics dictonary
         output: a dictionary containing accuracy, total number of entry, number of correct entry

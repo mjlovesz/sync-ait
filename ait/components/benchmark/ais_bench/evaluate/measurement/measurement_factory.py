@@ -20,6 +20,7 @@ measurement_switch = {
     "edit-distance": EditDistanceMeasurement
 }
 
+
 class MeasurementFactory():
     def get(self, measurement):
         if measurement_switch.get(measurement.strip()) is not None:

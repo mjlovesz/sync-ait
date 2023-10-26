@@ -1,5 +1,6 @@
 from ais_bench.evaluate.interface import Evaluator
 
+
 def generate_func(prompt):
     return "A"
 

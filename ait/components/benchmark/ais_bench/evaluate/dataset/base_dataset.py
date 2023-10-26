@@ -20,6 +20,7 @@ from abc import abstractmethod, ABCMeta
 from ais_bench.evaluate.log import logger
 from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_NORMAL_FILE
 
+
 class BaseDataset(metaclass=ABCMeta):
     def __init__(self, dataset_name, dataset_path=None, shot=0) -> None:
         self.dataset_name = dataset_name

@@ -26,6 +26,7 @@ CATEGORY_INDEX = 2
 VAL_INDEX = 3
 PROMPT_INDEX = 4
 
+
 class CevalDataset(BaseDataset):
     def _gen_prompt(self, prompt_df, category_name):
         question_template = "问： {question}\nA. {A}\nB. {B}\nC. {C}\nD. {D}\n答： {answer}\n"
@@ -51,13 +52,13 @@ class CevalDataset(BaseDataset):
             self.subject_mapping = json.load(file)
 
         for subject in self.subject_mapping:
-            val_path = os.path.join(self.dataset_path, "val", subject+"_val.csv")
-            prompt_path = os.path.join(self.dataset_path, "dev", subject+"_dev.csv")
+            val_path = os.path.join(self.dataset_path, "val", subject + "_val.csv")
+            prompt_path = os.path.join(self.dataset_path, "dev", subject + "_dev.csv")
             with ms_open(val_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
                 val_df = pd.read_csv(file, header=0)
             self.subject_mapping[subject].append(val_df)
             with ms_open(prompt_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
-                prompt_df = pd.read_csv(file, header=0)[:self.shot+1]
+                prompt_df = pd.read_csv(file, header=0)[:self.shot + 1]
             prompt = self._gen_prompt(prompt_df, self.subject_mapping[subject][CHINESE_INDEX])
             self.subject_mapping[subject].append(prompt)
         self.subjects = list(self.subject_mapping.keys())
@@ -79,10 +80,10 @@ class CevalDataset(BaseDataset):
             raise StopIteration
 
         key = self.subjects[self.current_key]
-        subcategory = self.subject_mapping[key][SUBCATEGORY_INDEX]
-        category = self.subject_mapping[key][CATEGORY_INDEX]
-        val_df  = self.subject_mapping[key][VAL_INDEX]
-        prompt = self.subject_mapping[key][PROMPT_INDEX]
+        subcategory = self.subject_mapping.get(key)[SUBCATEGORY_INDEX]
+        category = self.subject_mapping.get(key)[CATEGORY_INDEX]
+        val_df  = self.subject_mapping.get(key)[VAL_INDEX]
+        prompt = self.subject_mapping.get(key)[PROMPT_INDEX]
 
         if self.current_index >= len(val_df):
             self.current_key += 1
@@ -98,7 +99,7 @@ class CevalDataset(BaseDataset):
         self.current_index += 1
         return index, result
 
-    def compute(self, data, measurement = "accuracy") -> dict:
+    def compute(self, data, measurement="accuracy") -> dict:
         '''
         input: data in the form of pandas.DataFrame OR a list of metrics dictonary
         output: a dictionary containing accuracy, total number of entry, number of correct entry
