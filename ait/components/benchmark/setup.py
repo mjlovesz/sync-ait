@@ -27,6 +27,7 @@ setup(
     long_description=long_description,
     url='ais_bench url',
     packages=find_packages(),
+    include_package_data=True,
     keywords='ais_bench tool',
     install_requires=required,
     python_requires='>=3.7',
