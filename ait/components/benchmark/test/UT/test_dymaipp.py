@@ -337,30 +337,30 @@ class TestClass:
     @classmethod
     def get_without_dymaipp_om_path(cls):
         return os.path.join(
-            TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_bs4.om"
+            TestCommonClass.get_basepath(), cls.model_name, "model", "pth_resnet50_bs4.om"
         )
 
     @classmethod
     def get_dymaipp_staticshape_om_path(cls):
         return os.path.join(
-            TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_bs4_dymaipp_stcbatch.om"
+            TestCommonClass.get_basepath(), cls.model_name, "model", "pth_resnet50_bs4_dymaipp_stcbatch.om"
         )
 
     @classmethod
     def get_dymaipp_dymbatch_om_path(cls):
         return os.path.join(
-            TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_dymaipp_dymbatch.om"
+            TestCommonClass.get_basepath(), cls.model_name, "model", "pth_resnet50_dymaipp_dymbatch.om"
         )
 
     @classmethod
     def get_dymaipp_dymwh_om_path(cls):
         return os.path.join(
-            TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_dymaipp_dymwh.om"
+            TestCommonClass.get_basepath(), cls.model_name, "model", "pth_resnet50_dymaipp_dymwh.om"
         )
 
     @classmethod
     def get_multi_dymaipp_om_path(cls):
-        return os.path.join(TestCommonClass.base_path, cls.model_name, "model", "multi_dym_aipp_model.om")
+        return os.path.join(TestCommonClass.get_basepath(), cls.model_name, "model", "multi_dym_aipp_model.om")
 
     # 各种输入的aipp具体参数配置文件
     @classmethod
