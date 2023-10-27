@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.huawei.ascend.ait.ide.commonlib.util.safeCmd;
+package com.huawei.ascend.ait.ide.commonlib.util.safecmd;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,7 +36,7 @@ import java.util.List;
  * CmdExec TEST
  *
  * @author admin
- * @date 2023/06/28
+ * @since 2023/06/28
  */
 class CmdExecTest {
     static final CmdStrWordStatic AND = new CmdStrWordStatic("&&");

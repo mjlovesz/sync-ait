@@ -25,9 +25,16 @@ import com.intellij.openapi.project.Project;
 import org.cef.OS;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * AitModelConvertTask
+ *
+ * @author Jinhaiyang
+ * @since 2023/06/03
+ */
 public class AitModelConverterAction extends AnAction {
     public AitModelConverterAction() {
-        super("AitModelConverter", "", UiUtils.getJbIcon(Icons.MODEL_CONVERT_TITLE_DARK, Icons.MODEL_CONVERT_TITLE_LIGHT));
+        super("AitModelConverter", "",
+                UiUtils.getJbIcon(Icons.MODEL_CONVERT_TITLE_DARK, Icons.MODEL_CONVERT_TITLE_LIGHT));
     }
 
     @Override
