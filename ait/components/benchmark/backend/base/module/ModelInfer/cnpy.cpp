@@ -23,7 +23,8 @@
 
 #include "Base/ModelInfer/cnpy.h"
 
-#define UPPER_BOUND_FILE 1 << 30
+constexpr size_t UPPER_BOUND_FILE = 1 << 30;
+constexpr int RET_SUCCESS = 0;
 
 char cnpy::BigEndianTest()
 {
@@ -79,7 +80,8 @@ void cnpy::ParseNpyHeader(unsigned char *buffer, size_t &wordSize, std::vector<s
     uint16_t headerLen = *reinterpret_cast<uint16_t *>(buffer + 8);            // 8 means offset of headerLen
     std::string header(reinterpret_cast<char *>(buffer + 9), headerLen);       // 9 means offser of header
 
-    size_t loc1, loc2;
+    size_t loc1;
+    size_t loc2;
 
     loc1 = header.find("fortran_order") + 16; // 16 means offset
     fortranOrder = (header.substr(loc1, 4) == "True" ? true : false); // 4 means length of "True"
@@ -119,7 +121,8 @@ void cnpy::ParseNpyHeader(FILE *fp, size_t &wordSize, std::vector<size_t> &shape
         throw std::runtime_error("ParseNpyHeader: the ending of header should be \n.");
     }
 
-    size_t loc1, loc2;
+    size_t loc1;
+    size_t loc2;
 
     loc1 = header.find("fortran_order");
     if (loc1 == std::string::npos) {
@@ -186,7 +189,10 @@ cnpy::NpyArray cnpy::NpyLoad(std::string fname)
 
     NpyArray arr = LoadNpyFile(fp);
 
-    fclose(fp);
+    int ret = fclose(fp);
+    if (ret != RET_SUCCESS) {
+        throw std::runtime_error("NpyLoad: Unable to close file" + fname);
+    }
     return arr;
 }
 

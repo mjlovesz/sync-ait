@@ -23,6 +23,7 @@
 
 
 using namespace std;
+namespace {
 bool g_isDevice = true;
 bool g_isTxt = false;
 vector<int> g_output_size;
@@ -67,6 +68,8 @@ int GetDynamicAippParaByBatch(
 
     return -1;
 }
+} // namespace
+
 ModelProcess::ModelProcess()
     :modelId_(0),
     loadFlag_(false),
@@ -650,7 +653,8 @@ Result ModelProcess::UpdateInputsReuse(const std::vector<int> &inOutRelation)
         } else if (tmpRelation[i] < outputsNum) {
             aclDataBuffer* tmpInputData = aclmdlGetDatasetBuffer(input_, i);
             aclDataBuffer* tmpOutputData = aclmdlGetDatasetBuffer(output_, tmpRelation[i]);
-            if (aclGetDataBufferSizeV2(tmpInputData) != aclGetDataBufferSizeV2(tmpOutputData) && g_dymindex == SIZE_MAX) {
+            if (aclGetDataBufferSizeV2(tmpInputData) != aclGetDataBufferSizeV2(tmpOutputData)
+                && g_dymindex == SIZE_MAX) {
                 ERROR_LOG("inputSize_current and outputSize_last not matched");
                 return FAILED;
             }
@@ -1208,6 +1212,7 @@ void ModelProcess::DestroyOutput(bool free_memory_flag = true)
     output_ = nullptr;
 }
 
+namespace {
 Result GetDescShape(const aclTensorDesc *desc, std::vector<int64_t>& shape)
 {
     size_t dimNums = aclGetTensorDescNumDims(desc);
@@ -1284,7 +1289,7 @@ Result SaveTensorMemoryToFile(const aclTensorDesc *desc, std::string &prefixName
     return SUCCESS;
 }
 
-void callback(aclrtExceptionInfo *exceptionInfo)
+void Callback(aclrtExceptionInfo *exceptionInfo)
 {
     uint32_t deviceId = aclrtGetDeviceIdFromExceptionInfo(exceptionInfo);
     if (deviceId == 0xffffffff) {
@@ -1339,10 +1344,11 @@ void callback(aclrtExceptionInfo *exceptionInfo)
     aclDestroyTensorDesc(inputDesc);
     aclDestroyTensorDesc(outputDesc);
 }
+} // namespace
 
 void ModelProcess::SetExceptionCallBack()
 {
-    aclrtSetExceptionInfoCallback(callback);
+    aclrtSetExceptionInfoCallback(Callback);
 }
 
 void ModelProcess::InitReuseOutput()

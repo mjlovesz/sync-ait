@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
+#include <sys/time.h>
 #include "utils.h"
 #include "acl/acl.h"
-#include <sys/time.h>
+
 using namespace std;
-extern bool g_isDevice;
+namespace {
+bool g_isDevice = true;
+}
 
 void* Utils::ReadBinFile(std::string fileName, uint32_t& fileSize)
 {
@@ -102,7 +105,8 @@ void* Utils::GetDeviceBufferOfFile(std::string fileName, uint32_t& fileSize)
 
 void Utils::SplitString(std::string& s, std::vector<std::string>& v, char c)
 {
-    std::string::size_type pos1, pos2;
+    std::string::size_type pos1;
+    std::string::size_type pos2;
     pos2 = s.find(c);
     pos1 = 0;
     while (std::string::npos != pos2) {
@@ -150,12 +154,12 @@ int Utils::str2num(char* str)
 
 std::string Utils::modelName(string& s)
 {
-    string::size_type position1, position2;
+    string::size_type position1;
+    string::size_type position2;
     position1 = s.find_last_of("/");
     if (position1 == s.npos) {
         position1 = 0;
-    }
-    else {
+    } else {
         position1 = position1 + 1;
     }
     position2 = s.find_last_of(".");
@@ -208,7 +212,8 @@ void Utils::printHelpLetter()
     cout << "  --dymBatch    dynamic batch size param，such as --dymBatch 2" << endl;
     cout << "  --dymHW       dynamic image size param, such as --dymHW \"300,500\"" << endl;
     cout << "  --dymDims 	dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\"" << endl;
-    cout << "  --dymShape 	dynamic hape param, such as --dymShape \"data:1,600;img_info:1,600\"" << endl << endl << endl;
+    cout << "  --dymShape 	dynamic hape param, such as --dymShape \
+        \"data:1,600;img_info:1,600\"" << endl << endl << endl;
 }
 
 double Utils::printDiffTime(time_t begin, time_t end)
@@ -303,17 +308,14 @@ int Utils::ScanFiles(std::vector<std::string> &fileList, std::string inputDirect
     const char* str = inputDirectory.c_str();
     DIR* dir = opendir(str);
     struct dirent* p = NULL;
-    while ((p = readdir(dir)) != NULL)
-    {
-        if (p->d_name[0] != '.')
-        {
+    while ((p = readdir(dir)) != NULL) {
+        if (p->d_name[0] != '.') {
             string name = string(p->d_name);
             fileList.push_back(name);
         }
     }
     closedir(dir);
-    if (fileList.size() ==0)
-    {
+    if (fileList.size() ==0) {
         printf("[ERROR] No file in the directory[%s]", str);
     }
     return fileList.size();
@@ -380,10 +382,11 @@ void Utils::SplitStringWithPunctuation(string str, vector<string> &out, char spl
 
 int Utils::ToInt(string &str)
 {
-  return atoi(str.c_str());
+    return atoi(str.c_str());
 }
 
-Result Utils::SplitStingGetNameDimsMulMap(std::vector<std::string> in_dym_shape_str, std::map<string, int64_t> &out_namedimsmul_map)
+Result Utils::SplitStingGetNameDimsMulMap(std::vector<std::string> in_dym_shape_str,
+    std::map<string, int64_t> &out_namedimsmul_map)
 {
     string name;
     string shape_str;
@@ -469,7 +472,8 @@ std::string Utils::GetPrefix(const std::string& outputDir, std::string filePath,
     }
 
     // remove tail ".npy" or ".bin"
-    if (fileName.size() >= removeTail.size() && fileName.compare(fileName.size() - removeTail.size(), removeTail.size(), removeTail) == 0) {
+    if (fileName.size() >= removeTail.size()
+        && fileName.compare(fileName.size() - removeTail.size(), removeTail.size(), removeTail) == 0) {
         fileName.erase(fileName.size() - removeTail.size());
     }
     return outputDir + "/" + fileName + "_";
