@@ -14,62 +14,63 @@
  * limitations under the License.
  */
 
-package com.huawei.ascend.ait.ide.commonlib.pluginTool;
+package com.huawei.ascend.ait.ide.commonlib.plugintool;
 
 /**
  * PluginClassId
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class PluginClassId {
     /**
      * Ascend_id
      */
-    public static final String Ascend_id = "com.huawei.mindstudio.ascend";
+    public static final String ASCEND_ID = "com.huawei.mindstudio.ascend";
 
     /**
      * Foundation_PluginId
      */
-    public static final String Foundation_PluginId = Ascend_id + ".foundation";
+    public static final String FOUNDATION_PLUGIN_ID = ASCEND_ID + ".foundation";
 
     /**
      * Profiler_PluginId
      */
-    public static final String Profiler_PluginId = Ascend_id + ".profiler";
+    public static final String PROFILER_PLUGIN_ID = ASCEND_ID + ".profiler";
 
     /**
      * Inference_PluginId
      */
-    public static final String Inference_PluginId = Ascend_id + ".inference";
+    public static final String INFERENCE_PLUGIN_ID = ASCEND_ID + ".inference";
 
     /**
      * AitIde_PluginId
      */
-    public static final String AitIde_PluginId = "com.huawei.ascend.ait.ide";
+    public static final String AIT_IDE_PLUGIN_ID = "com.huawei.ascend.ait.ide";
 
     /**
      * ModelAnalyse_ClassId
      */
-    public static final String ModelAnalyse_ClassId = Ascend_id + ".infer.action.ModelAnalyseAction";
+    public static final String MODEL_ANALYSE_CLASS_ID = ASCEND_ID + ".infer.action.ModelAnalyseAction";
 
     /**
      * ModelConverter_ClassId
      */
-    public static final String AitModelConverter_ClassId = "com.huawei.ascend.ait.ide.action.AitModelConverterAction";
+    public static final String AIT_MODEL_CONVERTER_CLASS_ID = "com.huawei.ascend.ait.ide.action.AitModelConverterAction";
 
     /**
      * SystemProfiler_ClassId
      */
-    public static final String SystemProfiler_ClassId = Ascend_id + ".systemprofiling.actions.SystemProfilingProfileAction";
+    public static final String SYSTEM_PROFILER_CLASS_ID =
+            ASCEND_ID + ".systemprofiling.actions.SystemProfilingProfileAction";
 
     /**
      * AisBench_ClassId
      */
-    public static final String AisBench_ClassId = "com.huawei.ascend.ait.ide.action.AisBenchAction";
+    public static final String AIS_BENCH_CLASS_ID = "com.huawei.ascend.ait.ide.action.AisBenchAction";
 
     /**
      * Compare_ClassId
      */
-    public static final String Compare_ClassId = "com.huawei.ascend.ait.ide.action.CompareAction";
+    public static final String COMPARE_CLASS_ID = "com.huawei.ascend.ait.ide.action.CompareAction";
 }

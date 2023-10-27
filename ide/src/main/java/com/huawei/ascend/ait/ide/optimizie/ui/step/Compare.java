@@ -24,8 +24,8 @@ import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedPath;
 
 import com.huawei.ascend.ait.ide.commonlib.output.OutputService;
 import com.huawei.ascend.ait.ide.commonlib.ui.SwitchButton;
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrBuffer;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrWordStatic;
 
 import com.huawei.ascend.ait.ide.optimizie.task.CompareTask;
 import com.huawei.ascend.ait.ide.util.CheckInput;
@@ -57,7 +57,7 @@ import java.util.regex.Pattern;
  * Compare
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class Compare extends DialogWrapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(Compare.class);

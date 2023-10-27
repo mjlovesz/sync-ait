@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.huawei.ascend.ait.ide.commonlib.util.safeCmd;
+package com.huawei.ascend.ait.ide.commonlib.util.safecmd;
 
 import org.jetbrains.annotations.Nullable;
 
