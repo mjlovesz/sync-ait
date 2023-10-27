@@ -37,7 +37,7 @@ class Evaluator():
     def evaluate(self, measurement=None):
         logger.info(f"Start to evaluate on {self.dataset.dataset_name} dataset "
                     f"with {'default' if measurement is None else measurement} metric.")
-        recorder = Recorder(rank=self.rank)
+        recorder = Recorder()
         for index, entry_dict in tqdm(self.dataset):
             answer = self.generate(entry_dict.get("prompt"))
             entry_dict["answer"] = answer
