@@ -649,7 +649,7 @@ std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string 
 {
     return std::make_shared<Base::PyInferenceSession>(modelPath, deviceId, options);
 }
-} //namespace
+} // namespace
 
 #ifdef COMPILE_PYTHON_MODULE
 void RegistTensor(py::module &m)

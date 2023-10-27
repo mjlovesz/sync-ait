@@ -23,8 +23,10 @@
 
 #include "Base/ModelInfer/cnpy.h"
 
+namespace {
 constexpr size_t UPPER_BOUND_FILE = 1 << 30;
 constexpr int RET_SUCCESS = 0;
+} // namespace
 
 char cnpy::BigEndianTest()
 {
