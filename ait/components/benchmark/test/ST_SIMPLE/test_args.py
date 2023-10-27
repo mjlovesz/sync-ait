@@ -136,7 +136,7 @@ class TestClass:
             try:
                 outval = os.popen(cmd).read()
             except Exception as e:
-                raise Exception("raise an exception: {}".format(e))
+                raise Exception("raise an exception: {}".format(e)) from e
 
             assert int(outval) == (loop_num + warmup_num)
 
@@ -156,7 +156,7 @@ class TestClass:
         try:
             outval = os.popen(cmd).read()
         except Exception as e:
-            raise Exception("raise an exception: {}".format(e))
+            raise Exception("raise an exception: {}".format(e)) from e
 
         assert int(outval) > 1
 
@@ -268,7 +268,7 @@ class TestClass:
         try:
             outval = os.popen(cmd).read()
         except Exception as e:
-            raise Exception("grep action raises an exception: {}".format(e))
+            raise Exception("grep action raises an exception: {}".format(e)) from e
 
         result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
         bin_path = os.path.join(result_path, "pure_infer_data_0.bin")
@@ -327,7 +327,7 @@ class TestClass:
         try:
             outval = os.popen(cmd).read()
         except Exception as e:
-            raise Exception("grep action raises an exception: {}".format(e))
+            raise Exception("grep action raises an exception: {}".format(e)) from e
 
         result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
         bin_path = os.path.join(result_path, "pure_infer_data_0.bin")
@@ -362,7 +362,7 @@ class TestClass:
             try:
                 outval = os.popen(cmd).read()
             except Exception as e:
-                raise Exception("grep action raises an exception: {}".format(e))
+                raise Exception("grep action raises an exception: {}".format(e)) from e
 
             result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
 
