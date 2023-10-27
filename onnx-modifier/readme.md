@@ -53,8 +53,12 @@
   ```
 4. 安装 ait 中的 surgeon 包, 提供 AutoOptimizer （基于知识库的整网优化） 和 Extract （子网导出） 功能, 请参考 ait 的安装流程，以下为参考步骤：
   ```bash
-  cd ait/ait/components/debug/surgeon
-  pip install . --force-reinstall
+  cd ait/ait
+  # windows 场景请直接执行：install.bat --surgeon
+  # 添加执行权限
+  chmod u+x install.sh
+  # 1. 只安装debug下面的surgeon组件
+  ./install.sh --surgeon
   # 安装完成之后返回仓库根目录
   ```
 5. 安装 python 需要库
