@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.huawei.ascend.ait.ide.commonlib.util.safeCmd;
+package com.huawei.ascend.ait.ide.commonlib.util.safecmd;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -29,7 +29,7 @@ import java.util.List;
  * CmdStrBuffer Test
  *
  * @author cabbage
- * @date 2023/06/28
+ * @since 2023/06/28
  */
 class CmdStrBufferTest {
     private String goodStr = "abed";

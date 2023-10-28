@@ -60,6 +60,12 @@ import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * AitModelConverterStep
+ *
+ * @author Jinhaiyang
+ * @since 2023/06/03
+ */
 public class AitModelConverterStep extends DialogWrapper {
     public static final String VALID_DIR_PATH_CHARACTERS = "Valid folder path characters: -, _, :, \\, /, [0-9], [A-Z], [a-z].";
     public static final String UNSUPPORTED_MODEL_TYPE = "Unsupported Model Type.";

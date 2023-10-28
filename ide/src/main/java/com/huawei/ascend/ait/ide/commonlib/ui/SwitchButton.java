@@ -48,9 +48,9 @@ public class SwitchButton extends JLabel {
         this(false);
     }
 
-    public SwitchButton(boolean on) {
+    public SwitchButton(boolean isOn) {
         isSwitchButtonEnable = true;
-        setSwitchStatus(on);
+        setSwitchStatus(isOn);
         addMouseListener(mouseAdapter);
     }
 
@@ -98,13 +98,13 @@ public class SwitchButton extends JLabel {
     /**
      * turn on switch
      *
-     * @param selected selected
+     * @param isSelected isSelected
      */
-    public void setSwitchStatus(boolean selected) {
-        isSelected = selected;
-        setIcon(isSelected ? onIcon : offIcon);
+    public void setSwitchStatus(boolean isSelected) {
+        this.isSelected = isSelected;
+        setIcon(this.isSelected ? onIcon : offIcon);
         if (listener != null) {
-            listener.onChange(selected);
+            listener.onChange(isSelected);
         }
     }
 
@@ -133,9 +133,9 @@ public class SwitchButton extends JLabel {
         /**
          * state change callback
          *
-         * @param selected selected
+         * @param isSelected isSelected
          */
-        void onChange(boolean selected);
+        void onChange(boolean isSelected);
     }
 }
 
