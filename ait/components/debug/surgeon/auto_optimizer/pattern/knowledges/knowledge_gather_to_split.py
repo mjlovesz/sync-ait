@@ -168,7 +168,6 @@ class KnowledgeGatherToSplit(KnowledgeBase):
                 out2gidx[gather.outputs[0]] = indices_t
             else:
                 return None, None, None
-            # out2gidx[gather.outputs[0]] = indices
 
         splits, out2sidx = self._cal_splits_and_out2sidx(out2gidx, dim)
         return axis, splits, out2sidx
