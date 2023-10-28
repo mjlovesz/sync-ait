@@ -315,7 +315,7 @@ int Utils::ScanFiles(std::vector<std::string> &fileList, std::string inputDirect
         }
     }
     closedir(dir);
-    if (fileList.size() ==0) {
+    if (fileList.size() == 0) {
         printf("[ERROR] No file in the directory[%s]", str);
     }
     return fileList.size();
