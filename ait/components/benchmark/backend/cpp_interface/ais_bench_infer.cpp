@@ -17,9 +17,7 @@
 #include <iostream>
 #include <random>
 #include <memory>
-
-#include <unistd.h>
-#include <assert.h>
+#include <cassert>
 
 #include "Base/Tensor/TensorBuffer/TensorBuffer.h"
 #include "Base/Tensor/TensorShape/TensorShape.h"
@@ -29,7 +27,9 @@
 #include "Base/ModelInfer/SessionOptions.h"
 #include "PyInferenceSession/PyInferenceSession.h"
 
-int create_pure_input_tensors(std::vector<Base::TensorDesc> descs, int deviceId, std::vector<Base::TensorBase>& intensors)
+namespace {
+int CreatePureInputTensors(std::vector<Base::TensorDesc> descs,
+    int deviceId, std::vector<Base::TensorBase>& intensors)
 {
     for (const auto& desc : descs) {
         std::vector<uint32_t> i32shape;
@@ -64,7 +64,8 @@ int str2num(char* str)
 }
 
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     const int inputIndex = 3;
     std::string modelPath = argv[1];
     int loop = str2num(argv[2]);
@@ -78,7 +79,8 @@ int main(int argc, char **argv) {
     options->log_level = 1;
 
     int deviceId = 0;
-    std::shared_ptr<Base::PyInferenceSession> session = std::make_shared<Base::PyInferenceSession>(modelPath, deviceId, options);
+    std::shared_ptr<Base::PyInferenceSession> session =
+        std::make_shared<Base::PyInferenceSession>(modelPath, deviceId, options);
     std::vector<Base::TensorDesc> indescs = session->GetInputs();
     std::vector<Base::TensorDesc> outdescs = session->GetOutputs();
     std::vector<Base::TensorBase> intensors = {};
@@ -88,7 +90,7 @@ int main(int argc, char **argv) {
         output_names.push_back(desc.name);
     }
 
-    create_pure_input_tensors(indescs, deviceId, intensors);
+    CreatePureInputTensors(indescs, deviceId, intensors);
     for (const auto& tensor : intensors) {
         printf("in tensor type:%d size:%lld isDevice:%d\n",
             tensor.GetTensorType(), tensor.GetSize(), tensor.IsDevice());
@@ -97,8 +99,7 @@ int main(int argc, char **argv) {
         std::vector<std::string> fileName_vec;
         std::vector<std::vector<std::vector<std::string>>> infilesList;
         printf("lcm debug ignore\n");
-    }
-    else {
+    } else {
         std::vector<Base::TensorBase> outtensors = session->InferVector(output_names, intensors);
         for (const auto& tensor : outtensors) {
             printf("out tensor type:%d size:%lld isDevice:%d\n",
@@ -112,3 +113,4 @@ int main(int argc, char **argv) {
     printf("lcm debug avg:%f count:%d\n", mean, sumary.execTimeList.size());
     return 0;
 }
+} // namespace

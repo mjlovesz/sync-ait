@@ -643,11 +643,13 @@ TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTe
 }
 }
 
+namespace {
 std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string &modelPath,
     const uint32_t &deviceId, std::shared_ptr<Base::SessionOptions> options)
 {
     return std::make_shared<Base::PyInferenceSession>(modelPath, deviceId, options);
 }
+} // namespace
 
 #ifdef COMPILE_PYTHON_MODULE
 void RegistTensor(py::module &m)

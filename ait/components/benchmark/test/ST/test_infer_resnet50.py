@@ -217,10 +217,10 @@ class TestClass():
         model_path = self.get_dynamic_shape_om_path()
         filelist = os.listdir(auto_set_dymshape_mode_input_dir_path)
         num_shape = len(filelist)
-        file_paths = []
+        file_paths_list = []
         for file in filelist:
-            file_paths.append(os.path.join(auto_set_dymshape_mode_input_dir_path, file))
-        file_paths = ",".join(file_paths)
+            file_paths_list.append(os.path.join(auto_set_dymshape_mode_input_dir_path, file))
+        file_paths = ",".join(file_paths_list)
         output_parent_path = os.path.join(self.model_base_path,  "output")
         output_dirname = "auto_set_dymshape_mode_output"
         output_path = os.path.join(output_parent_path, output_dirname)
@@ -530,7 +530,7 @@ class TestClass():
         assert ret == 0
         assert os.path.exists(msame_infer_log_path)
 
-        msame_inference_time_ms = 0
+        msame_inference_time_ms = 0.0
         with open(msame_infer_log_path) as f:
             for line in f:
                 if "Inference average time without first time" not in line:
@@ -543,7 +543,7 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.03
-        if msame_inference_time_ms != 0:
+        if msame_inference_time_ms != 0.0:
             reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
             logger.info("static batch msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms,
                                                                                 ais_bench_inference_time_ms,
@@ -594,7 +594,7 @@ class TestClass():
         assert ret == 0
         assert os.path.exists(msame_infer_log_path)
 
-        msame_inference_time_ms = 0
+        msame_inference_time_ms = 0.0
         with open(msame_infer_log_path) as f:
             for line in f:
                 if "Inference average time without first time" not in line:
@@ -607,7 +607,7 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.04
-        if msame_inference_time_ms != 0:
+        if msame_inference_time_ms != 0.0:
             reference_deviation = (ais_bench_inference_time_ms - msame_inference_time_ms)/msame_inference_time_ms
             logger.info("dymshape msame time:{} ais time:{} ref:{}".format(msame_inference_time_ms,
                                                                             ais_bench_inference_time_ms,
@@ -1269,7 +1269,7 @@ class TestClass():
 
         device_throughputs = []
         total_throughtout = 0
-        summary_throughput = 0
+        summary_throughput = 0.0
         open_device_list = []
         with open(log_path) as f:
             for line in f:
