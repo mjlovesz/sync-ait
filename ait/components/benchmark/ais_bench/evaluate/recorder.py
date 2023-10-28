@@ -66,8 +66,5 @@ class Recorder():
             self.metrics = func_compute(data, measurement)
         return self.metrics
 
-    def report(self, func_report=None):
-        if func_report is None:
-            logger.error("Record.report failed: function to report metrics missing")
-            raise Exception
-        func_report(self.metrics)
+    def report(self):
+        logger.info(self.metrics)

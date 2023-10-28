@@ -46,5 +46,5 @@ class Evaluator():
 
         if self.rank == 0:
             recorder.statistics(self.dataset.compute, measurement)
-            recorder.report(self.dataset.report)
+            recorder.report()
         return recorder

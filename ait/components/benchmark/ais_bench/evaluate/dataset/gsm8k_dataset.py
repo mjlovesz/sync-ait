@@ -100,10 +100,3 @@ class Gsm8kDataset(BaseDataset):
 
         output = measurement_method(data, ground_truth_index, answer_index)
         return output
-
-    def report(self, metrics):
-        '''
-        input: a metrics (dictionary)
-        output: None
-        '''
-        logger.info(metrics)
