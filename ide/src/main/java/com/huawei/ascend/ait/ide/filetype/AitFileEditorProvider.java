@@ -30,7 +30,7 @@ import org.jetbrains.annotations.NotNull;
  * AitFileEditorProvider
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class AitFileEditorProvider implements FileEditorProvider, DumbAware {
     public static final String FILE_NAME = "AIT";
