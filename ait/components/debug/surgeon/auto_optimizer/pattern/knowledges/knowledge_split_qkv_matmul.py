@@ -187,8 +187,12 @@ class KnowledgeSplitQKVMatmul(KnowledgeBase):
         :param old_node: 该节点之前连接的旧节点
         :param new_node: 该节点需要连接的新节点
         """
-        for idx in range(len(node_to_reconnect.inputs)):
-            if node_to_reconnect.inputs[idx] == old_node.outputs[0]:
+        # for idx in range(len(node_to_reconnect.inputs)):
+        #     if node_to_reconnect.inputs[idx] == old_node.outputs[0]:
+        #         node_to_reconnect.inputs[idx] = new_node.outputs[0]
+
+        for idx, item in enumerate(node_to_reconnect.inputs):
+            if item == old_node.outputs[0]:
                 node_to_reconnect.inputs[idx] = new_node.outputs[0]
 
     def _connect_splitted_nodes(self, new_nodes: List[Node],

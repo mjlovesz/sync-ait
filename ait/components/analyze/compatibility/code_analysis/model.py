@@ -96,9 +96,9 @@ def analyze_dvpp_vpc(profiling_path, api):
             logger.info(f'检测到循环调用{api["CropPaste"]}接口，建议使用{api["CropPasteBatch"]}接口。')
         if (count_crop_resize_paste >= 2):
             logger.info(f'检测到循环调用{api["CropResizePaste"]}接口，建议使用{api["CropResizePasteBatch"]}接口。')
-        if (count_make_border >= 2 and (count_crop != 0 or count_resize != 0) and \
-            (count_make_border == count_crop or count_make_border == count_resize)):
-            logger.info(f'检测到循环调用{api["Crop"]}和{api["Resize"]}和{api["MakeBorder"]}接口，建议使用{api["MakeBorderBatch"]}接口。')
+        if count_make_border >= 2 and (count_crop != 0 or count_resize != 0):
+            if count_make_border == count_crop or count_make_border == count_resize:
+                logger.info(f'检测到循环调用{api["Crop"]}和{api["Resize"]}和{api["MakeBorder"]}接口，建议使用{api["MakeBorderBatch"]}接口。')
     else:
         logger.info("在这个AI处理器上，可能没有使用VPCAPI接口，因而在这个方向上，知识库暂时没有调优建议。")
 

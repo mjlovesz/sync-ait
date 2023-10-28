@@ -39,7 +39,7 @@ def check_in_model_path_legality(value):
 
 def check_out_model_path_legality(value):
     if not value:
-        return
+        return None
     path_value = value
     try:
         file_stat = FileStat(path_value)

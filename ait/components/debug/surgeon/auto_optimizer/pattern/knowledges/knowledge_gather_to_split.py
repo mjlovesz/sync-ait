@@ -162,11 +162,13 @@ class KnowledgeGatherToSplit(KnowledgeBase):
             if ini.value.ndim == 0:
                 val = int(ini.value)
                 indices = dim + val if val < 0 else val
+                out2gidx[gather.outputs[0]] = indices
             elif ini.value.ndim == 1:
-                indices = tuple(dim + v if v < 0 else v for v in ini.value)
+                indices_t = tuple(dim + v if v < 0 else v for v in ini.value)
+                out2gidx[gather.outputs[0]] = indices_t
             else:
                 return None, None, None
-            out2gidx[gather.outputs[0]] = indices
+            # out2gidx[gather.outputs[0]] = indices
 
         splits, out2sidx = self._cal_splits_and_out2sidx(out2gidx, dim)
         return axis, splits, out2sidx
