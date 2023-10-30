@@ -382,7 +382,7 @@ class NpuDumpData(DumpData):
 
         inputs_list, data_type_list = self._get_inputs_info_from_aclruntime()
         if self.dynamic_input.is_dynamic_shape_scenario() and not self.input_shape:
-            utils.logger.error("Please set '-s' or '--input-shape' to fix the dynamic shape.")
+            utils.logger.error("Please set '-is' or '--input-shape' to fix the dynamic shape.")
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
         if self.input_shape:
