@@ -53,7 +53,7 @@ class BaseDataset(metaclass=ABCMeta):
         hash_json_path = os.path.join(parent_path, f"{self.dataset_name}_sha256.json")
         with ms_open(hash_json_path, max_size=MAX_SIZE_LIMITE_NORMAL_FILE) as file:
             hash_dict = json.load(file)
-        dataset_dir = os.path.join(parent_path, self.dataset_name)
+        dataset_dir = self.dataset_path
         for relative_path, true_hash in hash_dict.items():
             file_path = os.path.join(dataset_dir, relative_path)
             if (self._hash(file_path) != true_hash):
