@@ -17,6 +17,7 @@ import subprocess
 import hashlib
 import json
 from abc import abstractmethod, ABCMeta
+
 from ais_bench.evaluate.log import logger
 from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_NORMAL_FILE
 

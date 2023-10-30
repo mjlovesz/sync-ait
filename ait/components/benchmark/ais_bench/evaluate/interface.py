@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from tqdm import tqdm
+
 from ais_bench.evaluate.dataset.dataset_factory import DatasetFactory
 from ais_bench.evaluate.recorder import Recorder
 from ais_bench.evaluate.log import logger
-from tqdm import tqdm
 
 
 class Evaluator():
