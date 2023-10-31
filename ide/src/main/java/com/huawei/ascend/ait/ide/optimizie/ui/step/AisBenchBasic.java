@@ -19,6 +19,7 @@ package com.huawei.ascend.ait.ide.optimizie.ui.step;
 import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.add;
 import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addState;
 import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_DIGITS_CHARATERS;
+import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_DIR_PATH_CHARACTERS;
 import static com.huawei.ascend.ait.ide.util.CheckInput.checkDigitValid;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedFile;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedPath;
@@ -34,6 +35,8 @@ import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrWordStatic;
 import com.huawei.ascend.ait.ide.commonlib.ui.SwitchButton;
 import com.huawei.ascend.ait.ide.util.CheckInput;
 
+import com.huawei.ascend.ait.ide.util.exception.ModelFileInvalidException;
+import com.huawei.ascend.ait.ide.util.exception.PathInvalidException;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
@@ -213,6 +216,9 @@ public class AisBenchBasic extends DialogWrapper {
 
         deviceTextField.setToolTipText(VALID_STRING_CHARATERS);
         deviceTextField.setDocument(new JTextFieldLimit(255));
+
+        outputDirJText.setToolTipText(VALID_DIR_PATH_CHARACTERS);
+        outputDirJText.setDocument(new JTextFieldLimit(255));
     }
 
     private void addOutputDirTextListener() {
