@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef _MODEL_PROCESS_H_
-#define _MODEL_PROCESS_H_
+#ifndef MODEL_PROCESS_H_
+#define MODEL_PROCESS_H_
 #include <string>
 #include <sys/time.h>
 #include "acl/acl.h"

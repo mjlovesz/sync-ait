@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef _UTILS_H_
-#define _UTILS_H_
+#ifndef UTILS_H_
+#define UTILS_H_
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
@@ -65,13 +65,16 @@ public:
 
     static void SplitString(std::string& s, std::vector<std::string>& v, char c);
 
-    static  void SplitStringSimple(std::string str, std::vector<std::string> &out, char split1, char split2, char split3);
+    static  void SplitStringSimple(std::string str, std::vector<std::string> &out, char split1,
+        char split2, char split3);
 
-    static void SplitStringWithSemicolonsAndColons(std::string str, std::vector<std::string> &out, char split1, char split2);
+    static void SplitStringWithSemicolonsAndColons(std::string str, std::vector<std::string> &out,
+        char split1, char split2);
 
     static  void SplitStringWithPunctuation(std::string str, std::vector<std::string> &out, char split);
 
-    static Result SplitStingGetNameDimsMulMap(std::vector<std::string> in_dym_shape_str, std::map<string, int64_t> &out_namedimsmul_map);
+    static Result SplitStingGetNameDimsMulMap(std::vector<std::string> in_dym_shape_str,
+        std::map<string, int64_t> &out_namedimsmul_map);
 
     static int str2num(char* str);
 
