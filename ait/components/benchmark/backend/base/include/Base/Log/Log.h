@@ -22,17 +22,18 @@
 #include <map>
 #include <memory>
 #include <ostream>
+#include <iostream>
 #include <csignal>
 #include <execinfo.h>
 
-#include <iostream>
+using namespace std;
 
 #define FILELINE __FILE__, __FUNCTION__, __LINE__
-#define LOG_DEBUG  std::cout  // LOG(INFO)   // VLOG_EVERY_N(Base::LOG_LEVEL_DEBUG, Base::Log::logFlowControlFrequency_)
-#define LOG_INFO   std::cout       // LOG(INFO)        //LOG_EVERY_N(INFO, Base::Log::logFlowControlFrequency_)
-#define LOG_WARN   std::cout  // LOG(WARNING)    //LOG_EVERY_N(WARNING, Base::Log::logFlowControlFrequency_)
-#define LOG_ERROR  std::cout     // LOG(ERROR)    // LOG_EVERY_N(ERROR, Base::Log::logFlowControlFrequency_)
-#define LOG_FATAL  std::cout      // LOG(FATAL)    //LOG_EVERY_N(FATAL, Base::Log::logFlowControlFrequency_)
+#define LOG_DEBUG  cout  // LOG(INFO)   // VLOG_EVERY_N(Base::LOG_LEVEL_DEBUG, Base::Log::logFlowControlFrequency_)
+#define LOG_INFO   cout       // LOG(INFO)        //LOG_EVERY_N(INFO, Base::Log::logFlowControlFrequency_)
+#define LOG_WARN   cout  // LOG(WARNING)    //LOG_EVERY_N(WARNING, Base::Log::logFlowControlFrequency_)
+#define LOG_ERROR  cout     // LOG(ERROR)    // LOG_EVERY_N(ERROR, Base::Log::logFlowControlFrequency_)
+#define LOG_FATAL  cout      // LOG(FATAL)    //LOG_EVERY_N(FATAL, Base::Log::logFlowControlFrequency_)
 
 #define LOG_DEBUG_LEVEL 1
 #define LOG_INFO_LEVEL 2
