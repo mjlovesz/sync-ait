@@ -275,7 +275,7 @@ def onnxsim_model(modifier, modify_info, save_file):
 def call_auto_optimizer(modifier, modify_info, output_suffix, make_cmd):
     import subprocess
     try:
-        out_res = subprocess.run(["ait", "-h"], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        out_res = subprocess.run(["ait", "debug", "surgeon", "-h"], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if out_res.returncode != 0:
             raise ServerError("请安装 ait/debug/surgeon", 599)
     except Exception as ex:
