@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 #include "Base/Log/Log.h"
 
-int FRIZY_LOG_LEVEL;
+int g_frizyLogLevel;
 
+namespace Base {
 void SETLOGLEVEL(int level)
 {
-    FRIZY_LOG_LEVEL = level;
+    g_frizyLogLevel = level;
+}
 }
