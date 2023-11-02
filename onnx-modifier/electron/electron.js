@@ -90,10 +90,10 @@ app.on('web-contents-created', (e, webContents) => {
 class PythonIPC {
     constructor() {
         // env
-        let python_script_path_win = path.resolve(__dirname, "..", "python", "Scripts")
-        let python_script_path_linux = path.resolve(__dirname, "..", "python", "bin")
+        let pythonScriptPathWin = path.resolve(__dirname, '..', 'python', 'Scripts')
+        let pythonScriptPathLinux = path.resolve(__dirname, '..', 'python', 'bin')
         let env = Object.assign({}, process.env)
-        env.Path = `${python_script_path_win};${python_script_path_linux};${env.Path}`
+        env['Path'] = `${pythonScriptPathWin};${pythonScriptPathLinux};${env['Path']}`
 
         let python_path = path.join(__dirname, "..", "python", process.platform == "win32" ? "python.exe" : "bin/python")
         python_path = fs.existsSync(python_path) ? python_path : "python"
