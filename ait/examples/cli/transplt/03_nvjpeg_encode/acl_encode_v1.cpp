@@ -22,13 +22,13 @@
 #include "acl/ops/acl_dvpp.h"
 
 
-int32_t g_deviceId = 0;
-aclrtContext g_context = nullptr;
-aclrtStream g_stream = nullptr;
-aclrtRunMode g_runMode;
+int32_t gDeviceId = 0;
+aclrtContext gContext = nullptr;
+aclrtStream gStream = nullptr;
+aclrtRunMode gRunMode;
 
-uint32_t g_yuv_sizeAlignment = 3;
-uint32_t g_yuv_sizeNum = 2;
+uint32_t gYuvSizeAlignment = 3;
+uint32_t gYuvSizeNum = 2;
 
 
 void init()
@@ -36,10 +36,10 @@ void init()
     // ACL Init
     aclInit(nullptr);
     // resource manage
-    aclrtSetDevice(g_deviceId);
-    aclrtCreateContext(&g_context, g_deviceId);
-    aclrtCreateStream(&g_stream);
-    aclrtGetRunMode(&g_runMode);
+    aclrtSetDevice(gDeviceId);
+    aclrtCreateContext(&gContext, gDeviceId);
+    aclrtCreateStream(&gStream);
+    aclrtGetRunMode(&gRunMode);
 }
 
 int main(int argc, char *argv[])
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     std::string outfile_path = "sample_acl_v1.jpg";
 
     init();
-    std::cout << "Open device " << g_deviceId << " success" << std::endl;
+    std::cout << "Open device " << gDeviceId << " success" << std::endl;
 
     std::ifstream file(input_file_name.c_str(), std::ios::binary | std::ios::ate);
     std::streamsize size = file.tellg();
@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
     file.read(buffer.data(), size);
     file.close();
 
-    unsigned char * pBuffer = NULL;
-    uint32_t jpegInBufferSize = widths * heights * g_yuv_sizeAlignment / g_yuv_sizeNum;
+    unsigned char* pBuffer = NULL;
+    uint32_t jpegInBufferSize = widths * heights * gYuvSizeAlignment / gYuvSizeNum;
     aclError ret = acldvppMalloc((void **)&pBuffer, jpegInBufferSize);
     if (ACL_SUCCESS != ret) {
         std::cerr << "acldvppMalloc malloc device data buffer failed, aclRet is " << ret << std::endl;
@@ -96,25 +96,25 @@ int main(int argc, char *argv[])
     ret = acldvppMalloc(&encodeOutBufferDev, length);
 
     // Do encode
-    acldvppJpegEncodeAsync(dvppChannelDesc, encodeInputDesc, encodeOutBufferDev, &length, jpegeConfig, g_stream);
-    aclrtSynchronizeStream(g_stream);
+    acldvppJpegEncodeAsync(dvppChannelDesc, encodeInputDesc, encodeOutBufferDev, &length, jpegeConfig, gStream);
+    aclrtSynchronizeStream(gStream);
 
     // Get output to host
-    std::vector<unsigned char> obuffer(length);
-    aclrtMemcpy(obuffer.data(), length, encodeOutBufferDev, length, ACL_MEMCPY_DEVICE_TO_HOST);
+    std::vector<unsigned char> oBuf(length);
+    aclrtMemcpy(oBuf.data(), length, encodeOutBufferDev, length, ACL_MEMCPY_DEVICE_TO_HOST);
 
     // save pic
     std::cout << "Writing JPEG file: " << outfile_path << ", length: " << length << std::endl;
     std::ofstream outputFile(outfile_path, std::ios::out | std::ios::binary);
-    outputFile.write(reinterpret_cast<const char *>(obuffer.data()), static_cast<int>(length));
+    outputFile.write(reinterpret_cast<const char *>(oBuf.data()), static_cast<int>(length));
 
     acldvppDestroyJpegeConfig(jpegeConfig);
     acldvppDestroyPicDesc(encodeInputDesc);
     acldvppFree(pBuffer);
     acldvppFree(encodeOutBufferDev);
 
-    aclrtDestroyStream(g_stream);
-    aclrtDestroyContext(g_context);
-    aclrtResetDevice(g_deviceId);
+    aclrtDestroyStream(gStream);
+    aclrtDestroyContext(gContext);
+    aclrtResetDevice(gDeviceId);
     aclFinalize();
 }
