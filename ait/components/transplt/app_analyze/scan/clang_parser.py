@@ -183,7 +183,7 @@ def filter_acc(cursor):
             pattern = r".+_v\d+"
             if re.match(pattern, name):
                 rm_idx = i
-        if rm_idx != None:
+        if rm_idx is not None:
             namespaces.pop(rm_idx)
             api = '::'.join(namespaces + base_api)
     return hit, Info(result_type, spelling, api, definition, source), cuda_en
@@ -321,10 +321,10 @@ def parse_info(node, cwd=None):
 
     if usr_code:
         SCANNED_FILES.append(file)
-        hit = False
-        if not getattr(node, 'scanned', False):
+        if not getattr(node, 'scanned', False) and not getattr(node, 'implicit', False):
             hit, (result_type, spelling, api, definition, source), cuda_en = filter_acc(node)
-        hit = hit and not getattr(node, 'implicit', False)
+        else:
+            hit = False
 
         if hit:
             api = MACRO_MAP.get(api, api)

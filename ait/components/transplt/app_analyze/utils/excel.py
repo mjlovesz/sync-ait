@@ -21,6 +21,10 @@ from components.utils.file_open_check import PERMISSION_NORMAL, FileStat, OpenEx
 from app_analyze.utils.log_util import logger
 
 
+def get_url(cell):
+    return cell.hyperlink.target if cell.hyperlink and cell.hyperlink.target else cell.value
+
+
 def update_hyperlink(path, sheet, hyperlink_cols, df=None, row_header=1):
     """更新df中超链接的text为url。
     Args:
@@ -33,7 +37,6 @@ def update_hyperlink(path, sheet, hyperlink_cols, df=None, row_header=1):
     if df is None:
         df = pd.read_excel(path, sheet)
     ws = openpyxl.load_workbook(path)[sheet]
-    get_url = lambda c: c.hyperlink.target if c.hyperlink and c.hyperlink.target else c.value
     # ws的坐标从1开始
     for col_name in hyperlink_cols:
         row = row_header + 1
@@ -47,8 +50,8 @@ def update_hyperlink(path, sheet, hyperlink_cols, df=None, row_header=1):
 def read_excel(path="", hyperlink_cols=None):
     try:
         file_stat = FileStat(path)
-    except Exception:
-        raise argparse.ArgumentTypeError(f"input excel path:{path} is illegal. Please check.")
+    except Exception as ee:
+        raise argparse.ArgumentTypeError(f"input excel path:{path} is illegal. Please check.") from ee
     else:
         if not file_stat.is_basically_legal('read'):
             raise argparse.ArgumentTypeError(f"input excel path:{path} is illegal. Please check.")
