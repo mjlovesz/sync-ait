@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
     file.read(buffer.data(), size);
     file.close();
 
-    unsigned char * pBuffer = NULL;
+    unsigned char* pBuffer = NULL;
     uint32_t jpegInBufferSize = widths * heights * g_yuv_sizeAlignment / g_yuv_sizeNum;
     aclError ret = hi_mpi_dvpp_malloc(0, (void **)&pBuffer, jpegInBufferSize);
     if (ACL_SUCCESS != ret) {
@@ -118,13 +118,13 @@ int main(int argc, char *argv[])
 
     // Get output to host
     uint32_t dataLen = stream.pack[0].len - stream.pack[0].offset;
-    std::vector<unsigned char> obuffer(dataLen);
-    aclrtMemcpy(obuffer.data(), dataLen, stream.pack[0].addr + stream.pack[0].offset, dataLen, ACL_MEMCPY_DEVICE_TO_HOST);
+    std::vector<unsigned char> oBuf(dataLen);
+    aclrtMemcpy(oBuf.data(), dataLen, stream.pack[0].addr + stream.pack[0].offset, dataLen, ACL_MEMCPY_DEVICE_TO_HOST);
 
     // save pic
     std::cout << "Writing JPEG file: " << outfile_path << ", dataLen: " << dataLen << std::endl;
     std::ofstream outputFile(outfile_path, std::ios::out | std::ios::binary);
-    outputFile.write(reinterpret_cast<const char *>(obuffer.data()), static_cast<int>(dataLen));
+    outputFile.write(reinterpret_cast<const char *>(oBuf.data()), static_cast<int>(dataLen));
 
     hi_mpi_venc_release_stream(g_chn_id, &stream);
     hi_mpi_venc_stop_chn(g_chn_id);

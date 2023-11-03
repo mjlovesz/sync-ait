@@ -21,8 +21,8 @@
 #include "nvjpeg.h"
 #include "cuda_runtime_api.h"
 
-uint32_t g_yuv_sizeAlignment = 3;
-uint32_t g_yuv_sizeNum = 2;
+uint32_t gYuvSizeAlignment = 3;
+uint32_t gYuvSizeNum = 2;
 
 int dev_malloc(void **p, size_t s)
 {
@@ -52,10 +52,10 @@ int main(int argc, const char *argv[])
     file.read(buffer.data(), size);
     file.close();
 
-    unsigned char * pBuffer = NULL;
-    uint32_t jpegInBufferSize = widths * heights * g_yuv_sizeAlignment / g_yuv_sizeNum;
+    unsigned char* pBuffer = NULL;
+    uint32_t jpegInBufferSize = widths * heights * gYuvSizeAlignment / gYuvSizeNum;
     cudaError_t ret = cudaMalloc((void **)&pBuffer, jpegInBufferSize);
-    if(cudaSuccess != ret) {
+    if (cudaSuccess != ret) {
         std::cerr << "cudaMalloc failed for component Y: " << cudaGetErrorString(ret) << std::endl;
         return 1;
     }
