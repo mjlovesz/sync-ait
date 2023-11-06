@@ -34,14 +34,14 @@ WRITE_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH | stat.S_IROTH | sta
 
 SOLUTION_LEVEL = 35
 SOLUTION_LEVEL_WIN = 45
-logging.addLevelName(SOLUTION_LEVEL, "\033[1;32m" + "SOLUTION" + "\033[0m") # green [SOLUTION]
+logging.addLevelName(SOLUTION_LEVEL, "\033[1;32m" + "SOLUTION" + "\033[0m")  # green [SOLUTION]
 logging.addLevelName(SOLUTION_LEVEL_WIN, "SOLUTION_WIN")
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
 SOLUTION_BASE_URL = 'https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution'
-SOFT_LINK_SUB_URL ='/soft_link_error_log_solution'
+SOFT_LINK_SUB_URL = '/soft_link_error_log_solution'
 PATH_LENGTH_SUB_URL = '/path_length_overflow_error_log_solution'
 OWNER_SUB_URL = '/owner_or_ownergroup_error_log_solution'
 PERMISSION_SUB_URL = '/path_permission_error_log_solution'
@@ -49,7 +49,7 @@ ILLEGAL_CHAR_SUB_URL = '/path_contain_illegal_char_error_log_solution'
 
 
 def solution_log(content):
-    logger.log(SOLUTION_LEVEL, f"visit \033[1;32m {content} \033[0m for detailed solution") # green content
+    logger.log(SOLUTION_LEVEL, f"visit \033[1;32m {content} \033[0m for detailed solution")  # green content
 
 
 def solution_log_win(content):
@@ -57,19 +57,19 @@ def solution_log_win(content):
 
 
 def is_legal_path_length(path):
-    if len(path) > 4096 and not sys.platform.startswith("win"): # linux total path length limit
+    if len(path) > 4096 and not sys.platform.startswith("win"):  # linux total path length limit
         logger.error(f"file total path{path} length out of range (4096), please check the file(or directory) path")
         solution_log(SOLUTION_BASE_URL + PATH_LENGTH_SUB_URL)
         return False
 
-    if len(path) > 260 and sys.platform.startswith("win"): # windows total path length limit
+    if len(path) > 260 and sys.platform.startswith("win"):  # windows total path length limit
         logger.error(f"file total path{path} length out of range (260), please check the file(or directory) path")
         solution_log_win(SOLUTION_BASE_URL + PATH_LENGTH_SUB_URL)
         return False
 
     dirnames = path.split("/")
     for dirname in dirnames:
-        if len(dirname) > 255: # linux single file path length limit
+        if len(dirname) > 255:  # linux single file path length limit
             logger.error(f"file name{dirname} length out of range (255), please check the file(or directory) path")
             solution_log(SOLUTION_BASE_URL + PATH_LENGTH_SUB_URL)
             return False
@@ -178,29 +178,29 @@ class FileStat:
             solution_log(SOLUTION_BASE_URL + SOFT_LINK_SUB_URL)
             return False
         if not self.is_user_or_group_owner and self.is_exists:
-            logger.error(f"current user isn't path:{self.file}'s owner or ownergroup, make sure current user belong to file(or directory)'s owner or ownergroup")
+            logger.error(f"current user isn't path:{self.file}'s owner or ownergroup")
             solution_log(SOLUTION_BASE_URL + OWNER_SUB_URL)
             return False
         if perm == 'read':
             if self.permission & READ_FILE_NOT_PERMITTED_STAT > 0:
-                logger.error(f"The file {self.file} is group writable, or is others writable, as import file(or directory), "
-                    "permission should not be over 0o755(rwxr-xr-x)")
+                logger.error(f"The file {self.file} is group writable, or is others writable, "
+                             "as import file(or directory) permission should not be over 0o755(rwxr-xr-x)")
                 solution_log(SOLUTION_BASE_URL + PERMISSION_SUB_URL)
                 return False
             if not os.access(self.realpath, os.R_OK) or self.permission & stat.S_IRUSR == 0:
-                logger.error(f"Current user doesn't have read permission to the file {self.file}, as import file(or directory), "
-                    "permission should be at least 0o400(r--------) ")
+                logger.error(f"Current user doesn't have read permission to the file {self.file}, "
+                             "as import file(or directory) permission should be at least 0o400(r--------) ")
                 solution_log(SOLUTION_BASE_URL + PERMISSION_SUB_URL)
                 return False
         elif perm == 'write' and self.is_exists:
             if self.permission & WRITE_FILE_NOT_PERMITTED_STAT > 0:
-                logger.error(f"The file {self.file} is group writable, or is others writable, as export file(or directory), "
-                    "permission should not be over 0o750(rwxr-x---)")
+                logger.error(f"The file {self.file} is group writable, or is others writable, "
+                             "as export file(or directory) permission should not be over 0o750(rwxr-x---)")
                 solution_log(SOLUTION_BASE_URL + PERMISSION_SUB_URL)
                 return False
             if not os.access(self.realpath, os.W_OK):
-                logger.error(f"Current user doesn't have write permission to the file {self.file}, as export file(or directory), "
-                    "permission should be at least 0o200(-w-------) ")
+                logger.error(f"Current user doesn't have write permission to the file {self.file}, "
+                             "as export file(or directory) permission should be at least 0o200(-w-------) ")
                 solution_log(SOLUTION_BASE_URL + PERMISSION_SUB_URL)
                 return False
         return True
@@ -225,7 +225,7 @@ class FileStat:
         else:
             return True
 
-    def is_legal_file_type(self, file_types:list):
+    def is_legal_file_type(self, file_types: list):
         if not self.is_file and self.is_exists:
             logger.error(f"path: {self.file} is not a file")
             return False
@@ -269,11 +269,12 @@ def ms_open(file, mode="r", max_size=None, softlink=False, write_permission=PERM
         if file_stat.permission != (file_stat.permission & write_permission):
             os.chmod(file, file_stat.permission & write_permission)
 
-    flags = os.O_RDONLY
     if "+" in mode:
-        flags = flags | os.O_RDWR
+        flags = os.O_RDONLY | os.O_RDWR
     elif "w" in mode or "a" in mode or "x" in mode:
-        flags = flags | os.O_WRONLY
+        flags = os.O_RDONLY | os.O_WRONLY
+    else:
+        flags = os.O_RDONLY
 
     if "w" in mode or "x" in mode:
         flags = flags | os.O_TRUNC | os.O_CREAT
