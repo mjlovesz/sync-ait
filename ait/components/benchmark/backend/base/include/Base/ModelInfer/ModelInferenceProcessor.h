@@ -21,6 +21,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <sys/time.h>
 #include "acl/acl.h"
 #include "Base/ErrorCode/ErrorCode.h"
 #include "Base/Tensor/TensorBase/TensorBase.h"
@@ -30,13 +31,13 @@
 #include "Base/ModelInfer/DynamicAippConfig.h"
 
 #define CHECK_RET_EQ(func, expect_value) \
-{ \
+do { \
 auto ret = (func); \
 if (ret != (expect_value)) { \
     WARN_LOG("Check failed:%s, ret:%d\n", #func, ret); \
     return ret; \
 } \
-}
+} while (0)
 
 namespace Base {
 struct BaseTensor {

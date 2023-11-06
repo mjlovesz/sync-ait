@@ -168,7 +168,7 @@ def warmup(session, args, intensors_desc, infiles):
 
     # reset summary info
     summary.reset()
-    session.reset_sumaryinfo()
+    session.reset_summaryinfo()
     MemorySummary.reset()
     logger.info(f"warm up {args.warmup_count} done")
 
@@ -532,7 +532,7 @@ def main(args, index=0, msgq=None, device_list=None):
 
     multi_threads_mode = args.threads > 1 and args.pipeline
     summary.add_args(sys.argv)
-    s = session.sumary()
+    s = session.summary()
     if multi_threads_mode:
         summary.npu_compute_time_interval_list = s.exec_time_list
     else:

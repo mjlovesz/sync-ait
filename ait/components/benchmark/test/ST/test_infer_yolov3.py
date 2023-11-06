@@ -56,7 +56,7 @@ class TestClass():
             ├── model
             └── output
         """
-        return os.path.join(TestCommonClass.base_path, self.model_name)
+        return os.path.join(TestCommonClass.get_basepath(), self.model_name)
 
     def get_dynamic_batch_om_path(self):
         return os.path.join(self.model_base_path, "model", "pth_yolov3_dymbatch.om")
@@ -213,7 +213,7 @@ class TestClass():
         assert ret == 0
         assert os.path.exists(msame_infer_log_path)
 
-        msame_inference_time_ms = 0
+        msame_inference_time_ms = 0.0
         with open(msame_infer_log_path) as f:
             for line in f:
                 if "Inference average time without first time" not in line:
@@ -226,7 +226,7 @@ class TestClass():
         assert math.fabs(msame_inference_time_ms) > TestCommonClass.EPSILON
         # compare
         allowable_performance_deviation = 0.01
-        if msame_inference_time_ms != 0:
+        if msame_inference_time_ms != 0.0:
             actual_performance_deviation = math.fabs(msame_inference_time_ms - \
                                                     ais_bench_inference_time_ms)/msame_inference_time_ms
             assert actual_performance_deviation < allowable_performance_deviation

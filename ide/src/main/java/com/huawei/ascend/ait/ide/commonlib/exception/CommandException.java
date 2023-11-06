@@ -20,7 +20,7 @@ package com.huawei.ascend.ait.ide.commonlib.exception;
  * CommandException
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class CommandException extends RuntimeException {
     private static final long serialVersionUID = -7848065374983831216L;

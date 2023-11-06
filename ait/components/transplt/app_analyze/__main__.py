@@ -19,6 +19,7 @@ from app_analyze.porting.app import start_scan_kit
 from components.utils.file_open_check import FileStat
 
 
+
 def check_source_path(value):
     source_list = value.split(',')
     for path in source_list:
@@ -55,9 +56,24 @@ class TranspltCommand(BaseCommand):
             help="specify construction, currently support cmake and python"
         )
 
+    @staticmethod
+    def _set_env():
+        if os.path.exists("/opt/rh/llvm-toolset-7.0/root/usr/lib64/clang/7.0.1/include"):
+            extra_path = "/opt/rh/llvm-toolset-7.0/root/usr/lib64/clang/7.0.1/include"
+        elif os.path.exists("/usr/lib64/clang/7.0.1/include"):
+            extra_path = "/usr/lib64/clang/7.0.1/include"
+        else:
+            extra_path = ""
+
+        c_plus_include_path = os.environ.get("CPLUS_INCLUDE_PATH")
+        if len(extra_path) > 0:
+            c_plus_include_path = f"{extra_path}:{c_plus_include_path}"
+            os.environ["CPLUS_INCLUDE_PATH"] = c_plus_include_path
+
     def handle(self, args):
         log_util.set_logger_level(args.log_level)
         log_util.init_file_logger()
+        self._set_env()
         start_scan_kit(args)
 
 

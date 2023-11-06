@@ -42,7 +42,7 @@ class TestClass:
 
     @classmethod
     def get_resnet50_om_path(cls):
-        return os.path.join(TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_dymdim.om")
+        return os.path.join(TestCommonClass.get_basepath(), cls.model_name, "model", "pth_resnet50_dymdim.om")
 
     @classmethod
     def generate_acl_json(cls, json_path, json_dict):
@@ -53,7 +53,7 @@ class TestClass:
 
     def init(self):
         self.model_name = "resnet50"
-        self.base_path = TestCommonClass.base_path
+        self.base_path = TestCommonClass.get_basepath()
 
     def test_acl_json_using_msprof(self):
         output_json_dict = {"profiler": {

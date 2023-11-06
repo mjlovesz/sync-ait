@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.huawei.ascend.ait.ide.commonlib.util.safeCmd;
+package com.huawei.ascend.ait.ide.commonlib.util.safecmd;
 
 import com.huawei.ascend.ait.ide.commonlib.exception.CommandInjectException;
 import org.apache.commons.lang3.SystemUtils;

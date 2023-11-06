@@ -216,9 +216,13 @@ class ExtractCommand(BaseCommand):
         # parse start node names and end node names
         if args.start_node_names:
             start_node_names = [node_name.strip() for node_name in args.start_node_names.split(',')]
+        else:
+            start_node_names = None
 
         if args.end_node_names:
             end_node_names = [node_name.strip() for node_name in args.end_node_names.split(',')]
+        else:
+            end_node_names = None
 
         onnx_graph = OnnxGraph.parse(args.input_model)
         try:

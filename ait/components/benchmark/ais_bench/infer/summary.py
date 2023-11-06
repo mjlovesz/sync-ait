@@ -62,6 +62,8 @@ class Summary(object):
         list_info = ListInfo()
         if merge: # work_list is a 2-dim vector each element is a pair containing start and end time
             n = len(work_list)
+            if n == 0:
+                raise RuntimeError(f'summary.get_list_info failed: inner error')
             merged_intervals = Summary.merge_intervals(work_list)
             sum_time = sum(end_time - start_time for start_time, end_time in merged_intervals)
             list_info.mean = sum_time / n

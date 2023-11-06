@@ -273,20 +273,20 @@ def onnxsim_model(modifier, modify_info, save_file):
 
 
 def call_auto_optimizer(modifier, modify_info, output_suffix, make_cmd):
-    try:
-        import auto_optimizer
-    except ImportError as ex:
-        raise ServerError("请安装 auto-optimizer", 599) from ex
-
     import subprocess
-    
+    try:
+        out_res = subprocess.run(["ait", "debug", "surgeon", "-h"], shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        if out_res.returncode != 0:
+            raise ServerError("请安装 ait/debug/surgeon", 599)
+    except Exception as ex:
+        raise ServerError("请安装 ait/debug/surgeon", 599) from ex
+
     with FileAutoClear(tempfile.NamedTemporaryFile(mode="wb", delete=False, suffix=".onnx")) as (_, modified_file):
         opt_file_path = modified_file.name + output_suffix
         modify_model(modifier, modify_info, modified_file)
         modified_file.close()
 
-        python_path = sys.executable
-        cmd = make_cmd(py_path=python_path, in_path=modified_file.name, out_path=opt_file_path)
+        cmd = make_cmd(in_path=modified_file.name, out_path=opt_file_path)
 
         out_res = subprocess.run(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if out_res.returncode != 0:
@@ -297,8 +297,8 @@ def call_auto_optimizer(modifier, modify_info, output_suffix, make_cmd):
 
 
 def optimizer_model(modifier, modify_info, opt_tmp_file):
-    def make_cmd(py_path, in_path, out_path):
-        return [py_path, "-m", "auto_optimizer", "optimize", in_path, out_path]
+    def make_cmd(in_path, out_path):
+        return ["ait", "debug", "surgeon", "optimize", "-in", in_path, "-of", out_path]
 
     opt_file_path, msg = call_auto_optimizer(modifier, modify_info, ".opti.onnx", make_cmd)
 
@@ -316,9 +316,9 @@ def optimizer_model(modifier, modify_info, opt_tmp_file):
 
 
 def extract_model(modifier, modify_info, start_node_name, end_node_name, tmp_file):
-    def make_cmd(py_path, in_path, out_path):
-        return [py_path, "-m", "auto_optimizer", "extract", in_path, out_path,
-                start_node_name, end_node_name]
+    def make_cmd(in_path, out_path):
+        return ["ait", "debug", "surgeon", "extract", "-in", in_path, "-of", out_path,
+                "-snn", start_node_name, "-enn", end_node_name]
     
     extract_file_path, msg = call_auto_optimizer(modifier, modify_info, ".extract.onnx", make_cmd)
 
@@ -438,7 +438,7 @@ def register_interface(app, request, send_file, temp_dir_path, init_file_path=No
             session.cache_message(out_message)
 
             if opt_tmp_file.tell() == 0:
-                return "auto-optimizer 没有匹配到的知识库", 299
+                return "autoOptimizer 没有匹配到的知识库", 299
 
             auto_close.set_not_close()  # file will auto close in send_file 
             return send_file(opt_tmp_file, session.get_session_id(), download_name="modified_opt.onnx")

@@ -441,7 +441,7 @@ std::vector<std::vector<TensorBase>> PyInferenceSession::InferPipelineBaseTensor
     std::thread h2dThread(FuncH2d, std::ref(h2dQueue), std::ref(computeQueue), this);
     std::thread computeThread(FuncCompute, std::ref(computeQueue), std::ref(d2hQueue), this, nullptr);
     std::thread d2hThread(FuncD2h, std::ref(d2hQueue), std::ref(saveQueue), this);
-    std::thread saveThread(FuncSaveTensorBase, std::ref(saveQueue), deviceId, std::ref(result));
+    std::thread saveThread(FuncSaveTensorBase, std::ref(saveQueue), std::ref(result), this);
     FuncPrepareBaseTensor(h2dQueue, deviceId, this, inputsList, shapesList, autoDymShape, autoDymDims, outputNames);
 
     h2dThread.join();
@@ -643,11 +643,13 @@ TensorBase PyInferenceSession::CreateTensorFromFilesList(Base::TensorDesc &dstTe
 }
 }
 
+namespace {
 std::shared_ptr<Base::PyInferenceSession> CreateModelInstance(const std::string &modelPath,
     const uint32_t &deviceId, std::shared_ptr<Base::SessionOptions> options)
 {
     return std::make_shared<Base::PyInferenceSession>(modelPath, deviceId, options);
 }
+} // namespace
 
 #ifdef COMPILE_PYTHON_MODULE
 void RegistTensor(py::module &m)
