@@ -14,4 +14,4 @@ target_link_libraries(savetensor PRIVATE "${ATB_HOME_PATH}/lib/libasdops.a")
 target_link_libraries(savetensor PRIVATE libssl.so)
 
 # 设置输出文件的名称为libsavetensor.so
-set_target_properties(savetensor PROPERTIES OUTPUT_NAME "libsavetensor")
+set_target_properties(savetensor PROPERTIES OUTPUT_NAME "savetensor")
