@@ -64,7 +64,7 @@ def init_encoder_decoder_token_id(base_path):
 def extract_md5_info_from_token_dump_data(token_path, global_dict=None):
     cur_token = {} if global_dict is None else global_dict
     for cur_path, _, files in os.walk(token_path):
-        if len(files) == 0 or not "after" in cur_path:
+        if len(files) == 0 or "after" not in cur_path:
             continue
         if any(["outTensor" in file_name for file_name in files]):  # Op level, not kernel level
             continue

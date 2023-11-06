@@ -31,26 +31,34 @@ def cosine_similarity(pta_data: np.ndarray, acl_data: np.ndarray):
     elif pta_data_norm ** 0.5 <= FLOAT_EPSILON:
         logger.warning('Cannot compare by Cosine Similarity. All the pta_data is zero')
         return NAN
-
-    result = (acl_data / acl_data_norm) @ (pta_data / pta_data_norm)
+    try:
+        result = (acl_data / acl_data_norm) @ (pta_data / pta_data_norm)
+    except ZeroDivisionError as err:
+        raise logger.error('get ZeroDivisionError when calc acl_data_norm or pta_data_norm')
     return '{:.6f}'.format(result)
 
 
 def max_relative_error(pta_data: np.ndarray, acl_data: np.ndarray):
-    result = np.where(
-        np.abs(pta_data) > FLOAT_EPSILON,
-        np.abs(acl_data / pta_data - 1),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
-        0,
-    ).max()
+    try:
+        result = np.where(
+            np.abs(pta_data) > FLOAT_EPSILON,
+            np.abs(acl_data / pta_data - 1),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
+            0,
+        ).max()
+    except ZeroDivisionError as err:
+        raise logger.error('get ZeroDivisionError when calc pta_data')
     return result
 
 
 def mean_relative_error(pta_data: np.ndarray, acl_data: np.ndarray):
-    result = np.where(
-        np.abs(pta_data) > FLOAT_EPSILON,
-        np.abs(acl_data / pta_data - 1),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
-        0,
-    ).mean()
+    try:
+        result = np.where(
+            np.abs(pta_data) > FLOAT_EPSILON,
+            np.abs(acl_data / pta_data - 1),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
+            0,
+        ).mean()
+     except ZeroDivisionError as err:
+        raise logger.error('get ZeroDivisionError when calc pta_data')
     return result
 
 
@@ -59,7 +67,10 @@ def relative_euclidean_distance(pta_data: np.ndarray, acl_data: np.ndarray):
     if ground_truth_square_num ** 0.5 <= FLOAT_EPSILON:
         result = 0.0
     else:
-        result = ((acl_data - pta_data) ** 2).sum() / ground_truth_square_num
+        try:
+            result = ((acl_data - pta_data) ** 2).sum() / ground_truth_square_num
+        except ZeroDivisionError as err:
+            raise logger.error('get ZeroDivisionError when calc ground_truth_square_num')
     return result
 
 
