@@ -165,7 +165,10 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
         elif tensor_path:  # low-level
             write_acl_map_file(tensor_path)
             pid = os.getpid()
-            tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
+            data_save_dir = os.getenv("ASDOPS_LOG_TO_FILE_DIR")
+            if not data_save_dir:
+                data_save_dir = "./"
+            tensor_path = os.path.join(data_save_dir, "tensors",
                                        str(pid), task_id, tensor_path)
             data = save_acl_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
 
