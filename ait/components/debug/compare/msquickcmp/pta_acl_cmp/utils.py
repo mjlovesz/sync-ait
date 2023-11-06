@@ -90,8 +90,7 @@ class TensorBinFile:
             self.format = int(attr_value)
         elif attr_name == "dims":
             self.dims = attr_value.split(",")
-            for dim in self.dims:
-                dim = int(dim)
+            self.dims = [int(dim) for dim in self.dims]
 
 
 def read_acl_transformer_data(file_path):

@@ -30,7 +30,7 @@ def dump_output_hook():
 
     def hook_func(module, inputs, outputs):
         if not hasattr(module, "weight"):
-            pass
+            return outputs
 
         nonlocal infer_step
         w_md5 = hashlib.md5(module.weight.cpu().numpy().tobytes()).hexdigest()
