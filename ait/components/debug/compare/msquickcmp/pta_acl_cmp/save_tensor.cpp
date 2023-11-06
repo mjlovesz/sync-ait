@@ -136,7 +136,7 @@ bool isInTensorBinPath(const std::string &filePath)
 }
 
 
-void AclTransformer::TensorUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath)
+void AclTransformer::StoreUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath)
 {
     bool is_save_md5 = false;
     const char *envStr = std::getenv("AIT_IS_SAVE_MD5");
