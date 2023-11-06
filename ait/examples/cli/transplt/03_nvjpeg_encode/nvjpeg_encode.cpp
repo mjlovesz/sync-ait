@@ -21,15 +21,15 @@
 #include "nvjpeg.h"
 #include "cuda_runtime_api.h"
 
-uint32_t gYuvSizeAlignment = 3;
-uint32_t gYuvSizeNum = 2;
+static uint32_t g_yuvSizeAlignment = 3;
+static uint32_t g_yuvSizeNum = 2;
 
-int dev_malloc(void **p, size_t s)
+static int DevMalloc(void **p, size_t s)
 {
     return (int)cudaMalloc(p, s);
 }
 
-int dev_free(void *p)
+static int DevFree(void *p)
 {
     return (int)cudaFree(p);
 }
@@ -53,7 +53,7 @@ int main(int argc, const char *argv[])
     file.close();
 
     unsigned char* pBuffer = NULL;
-    uint32_t jpegInBufferSize = widths * heights * gYuvSizeAlignment / gYuvSizeNum;
+    uint32_t jpegInBufferSize = widths * heights * g_yuvSizeAlignment / g_yuvSizeNum;
     cudaError_t ret = cudaMalloc((void **)&pBuffer, jpegInBufferSize);
     if (cudaSuccess != ret) {
         std::cerr << "cudaMalloc failed for component Y: " << cudaGetErrorString(ret) << std::endl;
@@ -62,7 +62,7 @@ int main(int argc, const char *argv[])
     cudaMemcpy(pBuffer, buffer.data(), size, cudaMemcpyHostToDevice);
 
     nvjpegHandle_t nvjpeg_handle;
-    nvjpegDevAllocator_t dev_allocator = {&dev_malloc, &dev_free};
+    nvjpegDevAllocator_t dev_allocator = {&DevMalloc, &DevFree};
     nvjpegCreate(NVJPEG_BACKEND_DEFAULT, &dev_allocator, &nvjpeg_handle);
 
     // create image desc

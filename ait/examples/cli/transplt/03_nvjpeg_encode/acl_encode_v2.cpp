@@ -23,16 +23,16 @@
 #include "acl/dvpp/hi_dvpp.h"
 
 
-int32_t g_deviceId = 0;
-aclrtContext g_context = nullptr;
-aclrtStream g_stream = nullptr;
-aclrtRunMode g_runMode;
+static int32_t g_deviceId = 0;
+static aclrtContext g_context = nullptr;
+static aclrtStream g_stream = nullptr;
+static aclrtRunMode g_runMode;
 
-uint32_t g_yuv_sizeAlignment = 3;
-uint32_t g_yuv_sizeNum = 2;
+static uint32_t g_yuv_sizeAlignment = 3;
+static uint32_t g_yuv_sizeNum = 2;
 
 
-void init()
+static void Init()
 {
     // ACL Init
     aclInit(nullptr);
@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     int widths = std::stoi(argv[3]);
     std::string outfile_path = "sample_acl_v2.jpg";
 
-    init();
+    Init();
     std::cout << "Open device " << g_deviceId << " success" << std::endl;
 
     std::ifstream file(input_file_name.c_str(), std::ios::binary | std::ios::ate);
