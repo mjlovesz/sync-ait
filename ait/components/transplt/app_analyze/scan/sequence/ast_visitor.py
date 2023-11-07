@@ -247,11 +247,11 @@ def visit(node, seq_desc, result):
 
     return skip_flag
 
+
 def location_init(node):
-    location = {}
+    location = dict()
     location['column'] = node.location.column
     location['file'] = node.location.file.name
     location['line'] = node.location.line
     location['offset'] = node.location.offset
-
-
+    return location
