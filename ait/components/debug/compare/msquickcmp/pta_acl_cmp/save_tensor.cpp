@@ -90,7 +90,6 @@ bool isPathInTable(const std::string &filePath)
 void saveMd5ToFile(const AsdOps::Tensor &tensor, const std::string &filePath, const std::string tensorDimsStr)
 {
     if (!tensor.data) {
-        ATB_LOG(INFO) << "save asdtensor " << filePath << " data is empty";
         return;
     }
 
@@ -101,8 +100,7 @@ void saveMd5ToFile(const AsdOps::Tensor &tensor, const std::string &filePath, co
 
     std::vector<char> hostData(tensor.dataSize);
     int st =
-        AsdRtMemCopy(hostData.data(), tensor.dataSize, tensor.data, tensor.dataSize, ASDRT_MEMCOPY_DEVICE_TO_HOST);
-    ATB_LOG_IF(st != 0, ERROR) << "AsdRtMemCopy device to host fail for save tensor, ret:" << st;
+        AsdOps::AsdRtMemCopy(hostData.data(), tensor.dataSize, tensor.data, tensor.dataSize, AsdOps::ASDRT_MEMCOPY_DEVICE_TO_HOST);
 
     std::string md5 = bufMd5((unsigned char*)hostData.data(), tensor.dataSize);
 
@@ -114,14 +112,7 @@ void saveMd5ToFile(const AsdOps::Tensor &tensor, const std::string &filePath, co
     } else {
         md5_filePath = md5;
     }
-    ATB_LOG(INFO) << "write md5 info for intensor, md5: " << md5;
-
-    AsdOps::Status write_st = binFile.Write(md5_filePath);
-    if (write_st.Ok()) {
-        ATB_LOG(INFO) << "save md5 " << md5_filePath;
-    } else {
-        ATB_LOG(ERROR) << "save md5 " << md5_filePath << " fail, error:" << write_st.Message();
-    }
+    binFile.Write(md5_filePath);
 }
 
 
@@ -136,7 +127,7 @@ bool isInTensorBinPath(const std::string &filePath)
 }
 
 
-void AclTransformer::StoreUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath)
+void ATB::StoreUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath)
 {
     bool is_save_md5 = false;
     const char *envStr = std::getenv("AIT_IS_SAVE_MD5");
@@ -151,7 +142,7 @@ void AclTransformer::StoreUtil::SaveTensor(const AsdOps::Tensor &tensor, const s
         SaveTensor(std::to_string(tensor.desc.format), std::to_string(tensor.desc.dtype),
             TensorUtil::AsdOpsDimsToString(tensor.desc.dims), tensor.data, tensor.dataSize, filePath);
     } else if (isInTensorBinPath(filePath)) {
-        saveMd5ToFile(tensor, filePath, AsdOpsDimsToString(tensor.desc.dims));
+        saveMd5ToFile(tensor, filePath, TensorUtil::AsdOpsDimsToString(tensor.desc.dims));
     } else {
         SaveTensor(std::to_string(tensor.desc.format), std::to_string(tensor.desc.dtype),
             TensorUtil::AsdOpsDimsToString(tensor.desc.dims), tensor.data, tensor.dataSize, filePath);

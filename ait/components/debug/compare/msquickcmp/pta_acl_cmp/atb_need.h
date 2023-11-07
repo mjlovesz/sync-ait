@@ -20,7 +20,21 @@ namespace AsdOps {
 constexpr size_t MAX_SVECTOR_SIZE = 48;
 constexpr bool CHECK_BOUND = true;
 
-struct MaxSizeExceeded : public std::Exception {};
+typedef enum {
+    ASDRT_MEMCOPY_HOST_TO_HOST = 0,
+    ASDRT_MEMCOPY_HOST_TO_DEVICE,
+    ASDRT_MEMCOPY_DEVICE_TO_HOST,
+    ASDRT_MEMCOPY_DEVICE_TO_DEVICE, // device to device, 1P &P2P
+    ASDRT_MEMCOPY_MANAGED,
+    ASDRT_MEMCOPY_ADDR_DEVICE_TO_DEVICE,
+    ASDRT_MEMCOPY_HOST_TO_DEVICE_EX, // host to device ex(only used for 8 bytes)
+    ASDRT_MEMCOPY_DEVICE_TO_HOST_EX, // device to host ex
+} AsdRtMemCopyType;
+
+
+int AsdRtMemCopy(void *dstPtr, uint64_t dstLen, const void *srcPtr, uint64_t srcLen, AsdRtMemCopyType copyType);
+
+
 template <class T, std::size_t MAX_SIZE = MAX_SVECTOR_SIZE> class SVector {
 private:
     T storage_[MAX_SIZE + 1];
@@ -46,7 +60,7 @@ enum TensorDType : int {
     TENSOR_DTYPE_COMPLEX64 = 16,
     TENSOR_DTYPE_COMPLEX128 = 17,
     TENSOR_DTYPE_BF16 = 27
-}
+};
 
 
 enum TensorFormat : int {
@@ -65,11 +79,13 @@ enum TensorFormat : int {
     TENSOR_FORMAT_FRACTAL_Z_3D = 33
 };
 
+
 struct TensorDesc {
     TensorDType dtype = TENSOR_DTYPE_UNDEFINED;
     TensorFormat format = TENSOR_FORMAT_UNDEFINED;
     AsdOps::SVector<int64_t> dims;
 };
+
 
 struct Tensor {
     TensorDesc desc;
@@ -78,10 +94,24 @@ struct Tensor {
     size_t pos = 0;
     void *hostData = nullptr;
 };
+
+
+class BinFile {
+public:
+    BinFile();
+    ~BinFile();
+    char* AddAttr(const std::string &name, const std::string &value);
+    char* Write(const std::string &filePath);
+private:
+    struct Object {
+        uint64_t offset = 0;
+        uint64_t length = 0;
+    };
+};
 }
 
 
-namespace atb {
+namespace ATB {
     class TensorUtil {
     public:
         static std::string AsdOpsDimsToString(const AsdOps::SVector<int64_t> &dims);

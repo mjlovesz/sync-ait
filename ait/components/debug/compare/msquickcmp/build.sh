@@ -33,7 +33,7 @@ build_tensorutil(){
     fi
 
     # 将生成的.so文件移动到目标目录
-    mv libtensorutil.so "${site_packages_path}/msquickcmp"
+    mv libsavetensor.so "${site_packages_path}/msquickcmp"
 
 
     # 返回原始目录
