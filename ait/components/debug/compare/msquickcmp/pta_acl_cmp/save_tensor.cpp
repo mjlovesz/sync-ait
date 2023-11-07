@@ -46,7 +46,7 @@ void InitialPathTable(std::unordered_set<std::string> &pathTable)
 }
 
 
-std::unordered_set<std::string> &findTable()
+std::unordered_set<std::string> &FindTable()
 {
     static std::unordered_set<std::string> pathTable;
     if (pathTable.empty()) {
@@ -79,7 +79,7 @@ bool isPathInTable(const std::string &filePath)
         originResult = filePath.substr(slashPos + 1);
     }
 
-    std::unordered_set<std::string> &copyTable = findTable();
+    std::unordered_set<std::string> &copyTable = FindTable();
     if (!copyTable.count(result) && !copyTable.count(originResult)) {
         return false;
     } else {
