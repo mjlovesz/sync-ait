@@ -1,3 +1,5 @@
+ #ifndef ATB_NEED_H
+ #define ATB_NEED_H
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -20,9 +22,9 @@ constexpr bool CHECK_BOUND = true;
 
 struct MaxSizeExceeded : public std::Exception {};
 template <class T, std::size_t MAX_SIZE = MAX_SVECTOR_SIZE> class SVector {
-    private:
-        T storage_[MAX_SIZE + 1];
-        std::size_t size_{0};
+private:
+    T storage_[MAX_SIZE + 1];
+    std::size_t size_{0};
 };
 
 
@@ -81,13 +83,14 @@ struct Tensor {
 
 namespace atb {
     class TensorUtil {
-        public:
-            static std::string AsdOpsDimsToString(const AsdOps::SVector<int64_t> &dims);
+    public:
+        static std::string AsdOpsDimsToString(const AsdOps::SVector<int64_t> &dims);
     };
     class StoreUtil {
-        private:
-            static void SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath);
-            static void SaveTensor(const std::string &format, const std::string &dtype, const std::string &dims,
-                const void *deviceData, uint64_t dataSize, const std::string &filePath);
+    private:
+        static void SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath);
+        static void SaveTensor(const std::string &format, const std::string &dtype, const std::string &dims,
+            const void *deviceData, uint64_t dataSize, const std::string &filePath);
     };
 }
+#endif
