@@ -6,7 +6,7 @@ from app_analyze.model.seq_project import SeqProject
 from app_analyze.porting.input_factory import InputFactory
 from app_analyze.common.kit_config import InputType, Args, KitConfig
 from app_analyze.scan.sequence.seq_handler import load_api_seqs
-from app_analyze.scan.sequence.acc_libs import set_expert_libs
+from app_analyze.scan.sequence.acc_libs import set_expert_libs, get_expert_libs, expert_libs_to_dict
 from app_analyze.scan.sequence.seq_desc import set_api_lut
 from app_analyze.utils import log_util
 from app_analyze.utils.log_util import logger
@@ -33,6 +33,19 @@ class Model:
         with open('./expert_libs.json', 'r') as f:
             expert_libs = json.load(f)
             set_expert_libs(expert_libs)
+
+    def export_expert_libs(self, path='./'):
+        if not os.path.exists(path):
+            raise Exception('Dst directory is not existed!')
+
+        self._load_data()
+        expert_libs = get_expert_libs()
+        rs_dict = expert_libs_to_dict(expert_libs)
+
+        file = path + 'expert_libs_debug.json'
+
+        with open(file, 'w') as f:
+            json.dump(rs_dict, f, ensure_ascii=False)
 
     @staticmethod
     def _scan_sources(path):
@@ -70,6 +83,3 @@ if __name__ == '__main__':
     # /home/liuzhe/samples/gpu_mat_test
     # /home/liuzhe/samples/HyperVID/Prj-Cpp
     model.predict('/home/liuzhe/samples/HyperVID/Prj-Cpp')
-
-
-

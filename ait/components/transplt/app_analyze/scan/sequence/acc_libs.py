@@ -1,4 +1,5 @@
 from app_analyze.common.kit_config import KitConfig
+from app_analyze.scan.sequence.seq_desc import get_idx_tbl
 
 _GLOBAl_EXPERT_LIBS_DICT = dict()
 
@@ -67,9 +68,18 @@ class Seq:
     def to_dict(self):
         result = dict()
         result['label'] = from_str(self.label)
-        result['src_seq'] = from_list(lambda x: from_int(x), self.src_seq)
+
+        api_idx_dict = get_idx_tbl()
+        src_seq = [api_idx_dict[_] for _ in self.src_seq]
+        result['src_seq'] = from_list(lambda x: from_str(x), src_seq)
+
         result['seq_desc'] = from_list(lambda x: from_str(x), self.seq_desc)
-        result['dst_seqs'] = from_list(lambda x: from_list(from_int, x), self.dst_seqs)
+
+        dst_seqs = list()
+        for dst_seq in self.dst_seqs:
+            dst_seqs.append([api_idx_dict[_] for _ in dst_seq])
+        result['dst_seqs'] = from_list(lambda x: from_list(from_str, x), dst_seqs)
+
         return result
 
 
@@ -107,14 +117,18 @@ class ExpertLibs:
     def to_dict(self):
         result = dict()
         for lib, _ in KitConfig.ACC_LIB_ID_PREFIX.items():
-            result[lib] = to_class(SeqInfo, self.acc_lib_dict[lib])
+            acc_lib = self.acc_lib_dict.get(lib, None)
+            if acc_lib is not None:
+                result[lib] = to_class(SeqInfo, acc_lib)
         return result
 
 
+# load from json file
 def expert_libs_from_dict(s):
     return ExpertLibs.from_dict(s)
 
 
+# export json file, change api id to api name
 def expert_libs_to_dict(x):
     return to_class(ExpertLibs, x)
 
