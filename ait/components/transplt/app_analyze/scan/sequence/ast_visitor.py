@@ -76,9 +76,10 @@ def _get_obj_info(node, func_attr):
         obj.record_name = info.api.replace('::' + info.spelling, '')
     elif info.api == info.spelling:
         obj.record_name = _get_namespace(node)
-    else:
-        # print('---------------> ' + info.api + ', -------> ' + info.spelling)
+
+    if obj.record_name == '':
         obj = None
+
     func_attr.obj_info = obj
     if func_attr.return_type == '':
         func_attr.return_type = info.result_type

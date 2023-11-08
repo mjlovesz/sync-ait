@@ -80,6 +80,9 @@ class Model:
 if __name__ == '__main__':
     model = Model()
     # '/home/liuzhe/package/opencv-4.5.4/samples/cpp'
-    # /home/liuzhe/samples/gpu_mat_test
-    # /home/liuzhe/samples/HyperVID/Prj-Cpp
-    model.predict('/home/liuzhe/samples/HyperVID/Prj-Cpp')
+    # MTCNN_FaceDetection_TensorRT-master
+    # gpu_mat_test
+    # HyperVID/Prj-Cpp
+    # hrnet
+    # opencv,opencv-one,opencv-test,opencv_ffmpeg_streaming
+    model.predict('/home/liuzhe/samples/opencv_ffmpeg_streaming')

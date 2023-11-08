@@ -5,6 +5,7 @@ from app_analyze.model.project import Project
 from app_analyze.scan.scanner_factory import ScannerFactory
 from app_analyze.scan.func_parser import FuncParser
 from app_analyze.scan.sequence.seq_handler import SeqHandler
+from app_analyze.scan.sequence.seq_matcher import match_api_seqs
 from app_analyze.scan.sequence.acc_libs import get_expert_libs
 from app_analyze.scan.sequence.seq_desc import get_idx_tbl
 from app_analyze.solution.seq_advisor import SeqAdvisor
@@ -73,7 +74,7 @@ class SeqProject(Project):
         self.api_seqs = SeqHandler.clean_api_seqs(rst, self.train_flag)
         if not self.train_flag:
             expert_libs = get_expert_libs()
-            cluster_result = SeqHandler.group_api_seqs(self.api_seqs, expert_libs)
+            cluster_result = match_api_seqs(self.api_seqs, expert_libs)
             advisor = SeqAdvisor(cluster_result, get_idx_tbl())
             rd_rst = advisor.recommend()
             self.report_results.update(rd_rst)
