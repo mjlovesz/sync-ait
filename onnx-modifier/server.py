@@ -286,7 +286,7 @@ def call_auto_optimizer(modifier, modify_info, output_suffix, make_cmd):
         modify_model(modifier, modify_info, modified_file)
         modified_file.close()
 
-        cmd = make_cmd(in_path=modified_file.name, out_path=opt_file_path)
+        cmd = make_cmd(in_path=os.path.realpath(modified_file.name), out_path=os.path.realpath(opt_file_path))
 
         out_res = subprocess.run(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if out_res.returncode != 0:
