@@ -20,21 +20,6 @@ namespace AsdOps {
 constexpr size_t MAX_SVECTOR_SIZE = 48;
 constexpr bool CHECK_BOUND = true;
 
-typedef enum {
-    ASDRT_MEMCOPY_HOST_TO_HOST = 0,
-    ASDRT_MEMCOPY_HOST_TO_DEVICE,
-    ASDRT_MEMCOPY_DEVICE_TO_HOST,
-    ASDRT_MEMCOPY_DEVICE_TO_DEVICE, // device to device, 1P &P2P
-    ASDRT_MEMCOPY_MANAGED,
-    ASDRT_MEMCOPY_ADDR_DEVICE_TO_DEVICE,
-    ASDRT_MEMCOPY_HOST_TO_DEVICE_EX, // host to device ex(only used for 8 bytes)
-    ASDRT_MEMCOPY_DEVICE_TO_HOST_EX, // device to host ex
-} AsdRtMemCopyType;
-
-
-int AsdRtMemCopy(void *dstPtr, uint64_t dstLen, const void *srcPtr, uint64_t srcLen, AsdRtMemCopyType copyType);
-
-
 template <class T, std::size_t MAX_SIZE = MAX_SVECTOR_SIZE> class SVector {
 private:
     T storage_[MAX_SIZE + 1];
