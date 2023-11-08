@@ -31,8 +31,8 @@ def main():
     if len(sys.argv) < 3:
         print_usage_and_exit()
 
-    src_dir = sys.argv[1]
-    config_file = sys.argv[2]
+    src_dir = os.path.realpath(sys.argv[1])
+    config_file = os.path.realpath(sys.argv[2])
 
     mode = 3
     if len(sys.argv) == 4:
@@ -47,7 +47,8 @@ def main():
         print(f"mode value {mode} is not valid")
         print_usage_and_exit()
 
-    check_input(config_file, src_dir)
+    if not check_input(config_file, src_dir):
+        print_usage_and_exit()
 
     new_api_output_excel = "ascend_apis.xlsx"
 
@@ -70,16 +71,18 @@ def main():
 
 def check_input(config_file, src_dir):
     if not check_permission(config_file):
-        print_usage_and_exit()
+        return False
 
     if not check_permission(src_dir):
-        print_usage_and_exit()
+        return False
 
     for path, _, file_list in os.walk(src_dir):
         for f in file_list:
             file_path = os.path.join(path, f)
             if not check_permission(file_path):
-                print_usage_and_exit()
+                return False
+
+    return True
 
 
 if __name__ == "__main__":

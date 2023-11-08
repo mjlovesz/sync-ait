@@ -202,8 +202,6 @@ class AscendApiCrawler:
 
         self._write_to_excel()
         self._close()
-        logger.info("*"*100)
         logger.info("failed url:")
         for url in self._failed_url:
             logger.info(url)
-        logger.info("*"*100)
