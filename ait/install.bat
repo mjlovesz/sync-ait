@@ -123,7 +123,7 @@ GOTO:eof
 
 :install_func
 :: install ait component
-pip3 install %CURRENT_DIR% %arg_force_reinstall%
+pip3 install "%CURRENT_DIR%" %arg_force_reinstall%
 IF NOT %errorlevel%==0 (
     ECHO pip install ait failed, please check the failure reason.
     EXIT /B 1
