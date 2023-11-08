@@ -40,13 +40,13 @@ class FuncParser(Parser):
         if skip_flag:
             info = node_debug_string(node, children)
         else:
-            for c in get_children(node):
-                c_info = self._parse_api(c, seq_desc, result)
-                if c_info:
-                    children.append(c_info)
-
             info = None
             if usr_code:
+                for c in get_children(node):
+                    c_info = self._parse_api(c, seq_desc, result)
+                    if c_info:
+                        children.append(c_info)
+
                 info = node_debug_string(node, children)
 
         return info
