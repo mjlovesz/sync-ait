@@ -136,7 +136,7 @@ IF %all_component%==1 (
 
 IF DEFINED select_surgeon (
     @REM install surgeon component
-    pip3 install %CURRENT_DIR%/components/debug/surgeon %arg_force_reinstall%
+    pip3 install "%CURRENT_DIR%/components/debug/surgeon" %arg_force_reinstall%
     IF NOT %errorlevel%==0 (
         ECHO pip install surgeon failed, please check the failure reason.
         EXIT /B 1
@@ -145,13 +145,13 @@ IF DEFINED select_surgeon (
 
 IF DEFINED select_transplt (
     @REM install transplt component
-    pip3 install %CURRENT_DIR%/components/transplt %arg_force_reinstall%
+    pip3 install "%CURRENT_DIR%/components/transplt" %arg_force_reinstall%
     IF NOT %errorlevel%==0 (
         ECHO pip install transplt failed, please check the failure reason.
         EXIT /B 1
     )
 
-    CALL %CURRENT_DIR%/components/transplt/install.bat %skip_check_cert% %full_install% %llvm_path% %mingw_w64_path%
+    CALL "%CURRENT_DIR%/components/transplt/install.bat" %skip_check_cert% %full_install% %llvm_path% %mingw_w64_path%
     IF NOT %errorlevel%==0 (
         EXIT /B 1
     )
