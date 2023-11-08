@@ -111,14 +111,32 @@ private:
 }
 
 
-namespace ATB {
+namespace atb {
+    constexpr uint32_t MAX_DIM = 8;
+    struct Dims {
+        int64_t dims[MAX_DIM];
+        uint64_t dimNum = 0;
+    };
+    struct TensorDesc {
+        int dtype = -1;
+        int format = -1;
+        Dims shape;
+    };
+    struct Tensor {
+        TensorDesc desc;
+        void *deviceData = nullptr;
+        void *hostData = nullptr;
+        uint64_t dataSize = 0;
+    };
     class TensorUtil {
     public:
+        static std::string ShapeToString(const Dims &dims);
         static std::string AsdOpsDimsToString(const AsdOps::SVector<int64_t> &dims);
     };
     class StoreUtil {
     private:
         static void SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath);
+        static void SaveTensor(const Tensor &tensor, const std::string &filePath);
         static void SaveTensor(const std::string &format, const std::string &dtype, const std::string &dims,
             const void *deviceData, uint64_t dataSize, const std::string &filePath);
     };

@@ -1,4 +1,5 @@
 #include "atb_need.h"
+#include <acl/acl_rt.h>
 
 std::string BufMd5(const unsigned char *buf, size_t buf_size)
 {
@@ -49,8 +50,10 @@ void InitialPathTable(std::unordered_set<std::string> &pathTable)
 std::unordered_set<std::string> &FindTable()
 {
     static std::unordered_set<std::string> pathTable;
-    if (pathTable.empty()) {
+    static bool initialized = false;
+    if (!initialized) {
         InitialPathTable(pathTable);
+        initialized = true;
     }
     return pathTable;
 }
@@ -87,22 +90,17 @@ bool isPathInTable(const std::string &filePath)
     }
 }
 
-void saveMd5ToFile(const AsdOps::Tensor &tensor, const std::string &filePath, const std::string tensorDimsStr)
+void SaveMd5ToFile(const void* deviceData, uint64_t dataSize, const std::string &filePath)
 {
-    if (!tensor.data) {
+    if (!deviceData) {
         return;
     }
 
-    AsdOps::BinFile binFile;
-    binFile.AddAttr("format", std::to_string(tensor.desc.format));
-    binFile.AddAttr("dtype", std::to_string(tensor.desc.dtype));
-    binFile.AddAttr("dims", tensorDimsStr);
-
-    std::vector<char> hostData(tensor.dataSize);
+    std::vector<char> hostData(dataSize);
     int st =
-        AsdOps::AsdRtMemCopy(hostData.data(), tensor.dataSize, tensor.data, tensor.dataSize, AsdOps::ASDRT_MEMCOPY_DEVICE_TO_HOST);
+        aclrtMemcpy(hostData.data(), dataSize, deviceData, dataSize, ACL_MEMCPY_DEVICE_TO_HOST);
 
-    std::string md5 = BufMd5((unsigned char*)hostData.data(), tensor.dataSize);
+    std::string md5 = BufMd5((unsigned char*)hostData.data(), dataSize);
 
     size_t sep_pos = filePath.rfind("/");
     std::string md5_filePath = filePath;
@@ -112,7 +110,7 @@ void saveMd5ToFile(const AsdOps::Tensor &tensor, const std::string &filePath, co
     } else {
         md5_filePath = md5;
     }
-    binFile.Write(md5_filePath);
+    std::ofstream outfile(md5_filePath.c_str());
 }
 
 
@@ -127,7 +125,7 @@ bool isInTensorBinPath(const std::string &filePath)
 }
 
 
-void ATB::StoreUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath)
+void atb::StoreUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string &filePath)
 {
     bool is_save_md5 = false;
     const char *envStr = std::getenv("AIT_IS_SAVE_MD5");
@@ -142,9 +140,32 @@ void ATB::StoreUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string 
         SaveTensor(std::to_string(tensor.desc.format), std::to_string(tensor.desc.dtype),
             TensorUtil::AsdOpsDimsToString(tensor.desc.dims), tensor.data, tensor.dataSize, filePath);
     } else if (isInTensorBinPath(filePath)) {
-        saveMd5ToFile(tensor, filePath, TensorUtil::AsdOpsDimsToString(tensor.desc.dims));
+        SaveMd5ToFile(tensor.data, tensor.dataSize, filePath);
     } else {
         SaveTensor(std::to_string(tensor.desc.format), std::to_string(tensor.desc.dtype),
             TensorUtil::AsdOpsDimsToString(tensor.desc.dims), tensor.data, tensor.dataSize, filePath);
+    }
+}
+
+
+void atb::StoreUtil::SaveTensor(const Tensor &tensor, const std::string &filePath)
+{
+    bool is_save_md5 = false;
+    const char *envStr = std::getenv("AIT_IS_SAVE_MD5");
+    if (envStr != nullptr && std::string(envStr) == "1") {
+        is_save_md5 = true;
+    }
+
+    if (!is_save_md5) {
+        if (!isPathInTable(filePath) ) {
+            return;
+        }
+        SaveTensor(std::to_string(tensor.desc.format), std::to_string(tensor.desc.dtype),
+            TensorUtil::ShapeToString(tensor.desc.shape), tensor.deviceData, tensor.dataSize, filePath);
+    } else if (isInTensorBinPath(filePath)) {
+        saveMd5ToFile(tensor.deviceData, tensor.dataSize, filePath);
+    } else {
+        SaveTensor(std::to_string(tensor.desc.format), std::to_string(tensor.desc.dtype),
+            TensorUtil::ShapeToString(tensor.desc.shape), tensor.deviceData, tensor.dataSize, filePath);
     }
 }
