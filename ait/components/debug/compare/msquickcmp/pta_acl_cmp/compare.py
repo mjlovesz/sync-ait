@@ -223,7 +223,7 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
         elif tensor_path:  # low-level
             token_tensor_path = os.path.join(str(token_id), tensor_path)
             write_acl_map_file(token_tensor_path)
-            golden_data_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
+            golden_data_path = os.path.join(os.getenv("ASDOPS_LOG_TO_FILE_DIR"), "tensors",
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
         json_path = os.path.join(".", dump_data_dir, "golden_tensor", "metadata.json")
         write_json_file(data_id, golden_data_path, json_path, token_id)
@@ -239,7 +239,7 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
         elif tensor_path:  # low-level
             token_tensor_path = os.path.join(str(token_id), tensor_path)
             write_acl_map_file(token_tensor_path)
-            acl_data_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
+            acl_data_path = os.path.join(os.getenv("ASDOPS_LOG_TO_FILE_DIR"), "tensors",
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
         json_path = os.path.join(".", dump_data_dir, "acl_tensor", "metadata.json") 
         write_json_file(data_id, acl_data_path, json_path, token_id)
