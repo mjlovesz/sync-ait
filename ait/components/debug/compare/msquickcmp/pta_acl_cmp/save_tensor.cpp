@@ -62,6 +62,7 @@ bool isPathInTable(const std::string &filePath)
 {
     pid_t processID = getpid();
     std::string pID = std::to_string(processID);
+    pID = pID + "_" + pID;
     const char* fileDir = std::getenv("ASDOPS_LOG_TO_FILE_DIR");
     std::string dataDir = fileDir ? fileDir : "";
     const char* aitTaskIdEnv = std::getenv("AIT_CMP_TASK_ID");
@@ -134,7 +135,7 @@ void atb::StoreUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string 
     }
 
     if (!is_save_md5) {
-        if (! isPathInTable(filePath) ) {
+        if (!isPathInTable(filePath) ) {
             return;
         }
         SaveTensor(std::to_string(tensor.desc.format), std::to_string(tensor.desc.dtype),
