@@ -33,14 +33,14 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   ```
   ```sh
   MSQUICKCMP_PATH=`python3 -c 'import msquickcmp; print(msquickcmp.__path__[0])'`
-  export LD_PRELOAD=$MSQUICKCMP_PATH/libtensorutil.so:$LD_PRELOAD
+  export LD_PRELOAD=$MSQUICKCMP_PATH/libsavetensor.so:$LD_PRELOAD
   bash run.sh patches/models/modeling_chatglm_model.py
   ```
-  生成数据位于 `$ACLTRANSFORMER_HOME_PATH/tensors/{进程 ID}` 下，其中 `$ACLTRANSFORMER_HOME_PATH` 为配置加速库时设置的
+  生成数据位于 `$ASDOPS_LOG_TO_FILE_DIR/tensors/{进程 ID}_{线程ID}` 下，其中 `$ASDOPS_LOG_TO_FILE_DIR` 为配置加速库时设置的
   ```sh
-  ls $ACLTRANSFORMER_HOME_PATH/tensors/ -1t
+  ls $ASDOPS_LOG_TO_FILE_DIR/tensors/ -1t
   # thread_62250
-  ls $ACLTRANSFORMER_HOME_PATH/tensors/thread_62250/
+  ls $ASDOPS_LOG_TO_FILE_DIR/tensors/thread_62250/
   # 0  1  2  3  4  5  6  7  8  9
   ```
   如发生错误 `undefined symbol: EVP_md5`，可能为 anaconda 环境中 python 使用的 `libssl.so` 与编译 `libtensorutil.so` 时使用的系统 `libssl.so` 不一致，可尝试指定 `export LD_PRELOAD=libssl.so:$LD_PRELOAD` 解决
