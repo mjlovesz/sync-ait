@@ -2,6 +2,9 @@
 #include "atb_need.h"
 
 
+static constexpr int OUT_WIDTH = 2;
+
+
 static std::string bufMd5(const unsigned char *buf, size_t buf_size)
 {
     unsigned char hash[MD5_DIGEST_LENGTH];  // MD5_DIGEST_LENGTH is 16
