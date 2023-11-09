@@ -16,6 +16,9 @@
 #include <sys/stat.h>
 
 
+constexpr int OUT_WIDTH = 2;
+
+
 namespace AsdOps {
 constexpr size_t MAX_SVECTOR_SIZE = 48;
 constexpr bool CHECK_BOUND = true;

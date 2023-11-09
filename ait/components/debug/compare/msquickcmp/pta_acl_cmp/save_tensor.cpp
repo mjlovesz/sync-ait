@@ -1,6 +1,6 @@
 #include <acl/acl_rt.h>
 #include "atb_need.h"
-constexpr int OUT_WIDTH = 2;
+
 
 static std::string bufMd5(const unsigned char *buf, size_t buf_size)
 {
