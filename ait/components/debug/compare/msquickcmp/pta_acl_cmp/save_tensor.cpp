@@ -1,12 +1,13 @@
-#include "atb_need.h"
 #include <acl/acl_rt.h>
+#include "atb_need.h"
 
-std::string BufMd5(const unsigned char *buf, size_t buf_size)
+
+static std::string bufMd5(const unsigned char *buf, size_t buf_size)
 {
     unsigned char hash[MD5_DIGEST_LENGTH];  // MD5_DIGEST_LENGTH is 16
 
     EVP_MD_CTX *mdctx;
-    unsigned int md5_digest_len = EVP_MD_size(EVP_md5());
+    unsigned int md5DigestLen = EVP_MD_size(EVP_md5());
 
     // MD5_Init
     mdctx = EVP_MD_CTX_new();
@@ -21,14 +22,14 @@ std::string BufMd5(const unsigned char *buf, size_t buf_size)
     EVP_MD_CTX_free(mdctx);
 
     std::stringstream ss;
-    for(int i = 0; i < MD5_DIGEST_LENGTH; i++) {
+    for (int i = 0; i < MD5_DIGEST_LENGTH; i++) {
         ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(result[i]);
     }
     return ss.str();
 }
 
 
-void InitialPathTable(std::unordered_set<std::string> &pathTable)
+static void InitialPathTable(std::unordered_set<std::string> &pathTable)
 {
     const char* envValue = std::getenv("AIT_CMP_TASK_PID");
     std::string taskPid = envValue ? envValue : "";
@@ -101,7 +102,7 @@ void SaveMd5ToFile(const void* deviceData, uint64_t dataSize, const std::string 
     int st =
         aclrtMemcpy(hostData.data(), dataSize, deviceData, dataSize, ACL_MEMCPY_DEVICE_TO_HOST);
 
-    std::string md5 = BufMd5((unsigned char*)hostData.data(), dataSize);
+    std::string md5 = bufMd5((unsigned char*)hostData.data(), dataSize);
 
     size_t sep_pos = filePath.rfind("/");
     std::string md5_filePath = filePath;
@@ -135,7 +136,7 @@ void atb::StoreUtil::SaveTensor(const AsdOps::Tensor &tensor, const std::string 
     }
 
     if (!is_save_md5) {
-        if (!isPathInTable(filePath) ) {
+        if (!isPathInTable(filePath)) {
             return;
         }
         SaveTensor(std::to_string(tensor.desc.format), std::to_string(tensor.desc.dtype),
@@ -158,7 +159,7 @@ void atb::StoreUtil::SaveTensor(const Tensor &tensor, const std::string &filePat
     }
 
     if (!is_save_md5) {
-        if (!isPathInTable(filePath) ) {
+        if (!isPathInTable(filePath)) {
             return;
         }
         SaveTensor(std::to_string(tensor.desc.format), std::to_string(tensor.desc.dtype),
