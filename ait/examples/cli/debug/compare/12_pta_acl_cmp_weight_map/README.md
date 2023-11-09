@@ -26,7 +26,7 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
 - `my-path` 指定加速库侧 dump 数据路径
 ## 使用示例
 - 使用前请安装ait工具，安装指导参考：[ait 工具安装](https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md) 以 [chatglm-6b](https://gitee.com/ascend/ascend-transformer-acceleration/tree/master/examples/chatglm6b) 中 `patches/models/modeling_chatglm_model.py` 为例，介绍下如何使用加速库精度比对工具
-- **加速库侧 dump 数据** 需要在 `main.py` 中设置 `set_dump_path` 指定 `backend="acl"`，同时指定 `LD_PRELOAD` 为 ait 的 `libtensorutil.so` 覆盖加速库原本的 `SaveTensor` 接口，将 intensor 保存为 MD5 值，用于匹配 PTA 侧数据
+- **加速库侧 dump 数据** 需要在 `main.py` 中设置 `set_dump_path` 指定 `backend="acl"`，同时指定 `LD_PRELOAD` 为 ait 的 `libsavetensor.so` 覆盖加速库原本的 `SaveTensor` 接口，将 intensor 保存为 MD5 值，用于匹配 PTA 侧数据
   ```py
   from msquickcmp.pta_acl_cmp.pt_dump.hook import register_hook
   set_dump_path(backend="acl")
