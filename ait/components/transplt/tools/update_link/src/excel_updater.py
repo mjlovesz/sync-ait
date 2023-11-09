@@ -4,8 +4,9 @@ import openpyxl
 import pandas as pd
 from selenium.webdriver.common.by import By
 
-from .web_crawler import WebCrawler
 from .logger import logger
+from .util import open_excel
+from .web_crawler import ASCEND_URL_PREFIX
 
 
 class ConfigExcelUpdater:
@@ -28,15 +29,16 @@ class ConfigExcelUpdater:
 
     @staticmethod
     def _write_excel_keep_format(df_dict, path='output.xlsx'):
-        with pd.ExcelWriter(path, engine="openpyxl", mode='a', if_sheet_exists='overlay') as writer:
-            for key, df in df_dict.items():
-                if "APIMap" not in key:
-                    continue
-                logger.info(f"write sheet {key} to excel: {path}")
-                df.to_excel(writer, sheet_name=key, index=False)
+        excel = open_excel(path)
+        for key, df in df_dict.items():
+            if "APIMap" not in key:
+                continue
+            logger.info(f"write sheet {key} to excel: {path}")
+            df.to_excel(excel, sheet_name=key, index=False)
+        excel.close()
 
     def _crawl_new_ascend_api_link(self, new_api_link_dict, api_link):
-        if not api_link.startswith("https://www.hiascend.com"):
+        if not api_link.startswith(ASCEND_URL_PREFIX):
             return api_link
 
         logger.info(f"crawling url: {api_link}")
@@ -78,7 +80,7 @@ class ConfigExcelUpdater:
             for index, values in enumerate(datas):
                 api_name = values[0]
                 api_link = values[1]
-                if not type(api_link) is str or "http" not in api_link:
+                if not type(api_link) is str or "https" not in api_link:
                     continue
                 self.origin_api_link_dict[api_name] = api_link
 
@@ -107,7 +109,7 @@ class ConfigExcelUpdater:
                 elif api_name.split(".")[0] in new_api_link_dict:
                     # 部分execl中的api名字是结构体的成员变量，以"."分割，尝试获取正确的名字
                     new_api_link = new_api_link_dict.get(api_name.split(".")[0])
-                elif type(api_link) is str and api_link.startswith("http"):
+                elif type(api_link) is str and api_link.startswith("https"):
                     # 部分execl中的api名字是结构体的成员变量，在new_api_link_dict中无法找到，需要爬取网页并从网页中获取类的名字
                     new_api_link = self._crawl_new_ascend_api_link(new_api_link_dict, api_link)
                 elif api_name in self.origin_api_link_dict:
@@ -171,12 +173,12 @@ class ConfigExcelUpdater:
         for i in range(1, ws.max_row + 1):
             for j in range(1, ws.max_column + 1):
                 text = ws.cell(row=i, column=j).value
-                if type(text) is str and text.startswith("http"):
+                if type(text) is str and text.startswith("https"):
                     continue
                 if not ws.cell(row=i, column=j).hyperlink:
                     continue
                 link = ws.cell(row=i, column=j).hyperlink.target
-                if type(link) is str and link.startswith("http"):
+                if type(link) is str and link.startswith("https"):
                     ws.cell(row=i, column=j).value = link
 
     @staticmethod
@@ -189,7 +191,7 @@ class ConfigExcelUpdater:
         for i in range(1, ws.max_row):
             for j in range(1, ws.max_column):
                 text = ws.cell(row=i, column=j).value
-                if type(text) is str and text.startswith("http"):
+                if type(text) is str and text.startswith("https"):
                     ws.cell(row=i, column=j).hyperlink = text
 
     def update_excels(self):
@@ -208,7 +210,10 @@ class ConfigExcelUpdater:
                 logger.info(f"processing file: {file_path}")
                 df_dict = self._read_excel(file_path)
 
-                self._update_excel_api_link_text(df_dict, file_path, new_api_link_dict)
-                self._update_excel_api_link_hyperlink(file_path)
+                try:
+                    self._update_excel_api_link_text(df_dict, file_path, new_api_link_dict)
+                    self._update_excel_api_link_hyperlink(file_path)
+                except Exception as err:
+                    logger.error(f"failed to update_excel {file_path}, error is: {err}")
 
         self.crawler.close()

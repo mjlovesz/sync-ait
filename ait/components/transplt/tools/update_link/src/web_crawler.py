@@ -8,6 +8,9 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 
 
+ASCEND_URL_PREFIX = "https://www.hiascend.com"
+
+
 class WebCrawler:
     def __init__(self):
         self._init_driver()
@@ -55,6 +58,8 @@ class WebCrawler:
         :return: 1) if opening url succeeded. 2) if is throttled
         """
 
+        if not target_url.startswith(ASCEND_URL_PREFIX):
+            raise ValueError(f"not support to open non-ascend url {target_url}")
         self.driver.get(target_url)
         if not self._crawled_first_url:
             self._crawled_first_url = True
