@@ -63,12 +63,13 @@ bool isPathInTable(const std::string &filePath)
 {
     pid_t processID = getpid();
     std::string pID = std::to_string(processID);
-    pID = pID + "_" + pID;
+    pid_t threadID = syscall(SYS_gettid);
+    std::string tID = std::to_string(threadID);
     const char* fileDir = std::getenv("ASDOPS_LOG_TO_FILE_DIR");
     std::string dataDir = fileDir ? fileDir : "";
     const char* aitTaskIdEnv = std::getenv("AIT_CMP_TASK_ID");
     std::string aitTaskId = aitTaskIdEnv ? std::string(aitTaskIdEnv) + "/" : "";
-    std::string basePath = dataDir + "/tensors/" + pID + "/" + aitTaskId;
+    std::string basePath = dataDir + "/tensors/" + pID + "_" + tID + "/" + aitTaskId;
 
     size_t pos = filePath.find(basePath);
     std::string result = filePath;
