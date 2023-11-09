@@ -5,8 +5,8 @@ from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 import pandas as pd
 
-from .web_crawler import WebCrawler
 from .logger import logger
+from .util import open_excel
 
 
 class AscendApiCrawler:
@@ -145,7 +145,6 @@ class AscendApiCrawler:
         if not os.path.exists(self.output_excel):
             self._init_output_excel_file()
 
-        excel = pd.ExcelWriter(self.output_excel, mode='a', if_sheet_exists='overlay')
         df = pd.DataFrame(self._crawled_data,
                           columns=[
                               "ID",
@@ -156,6 +155,8 @@ class AscendApiCrawler:
                               "Function Prototype",
                           ])
         sheet_name = self._get_result_sheet_name()
+
+        excel = open_excel(self.output_excel)
         df.to_excel(excel, sheet_name=sheet_name, index=False)
         excel.close()
 
