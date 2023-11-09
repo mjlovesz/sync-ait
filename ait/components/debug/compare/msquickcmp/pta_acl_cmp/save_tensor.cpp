@@ -1,6 +1,6 @@
 #include <acl/acl_rt.h>
 #include "atb_need.h"
-
+constexpr int OUT_WIDTH = 2;
 
 static std::string bufMd5(const unsigned char *buf, size_t buf_size)
 {
@@ -23,7 +23,7 @@ static std::string bufMd5(const unsigned char *buf, size_t buf_size)
 
     std::stringstream ss;
     for (int i = 0; i < MD5_DIGEST_LENGTH; i++) {
-        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(result[i]);
+        ss << std::hex << std::setw(OUT_WIDTH) << std::setfill('0') << static_cast<int>(result[i]);
     }
     return ss.str();
 }
