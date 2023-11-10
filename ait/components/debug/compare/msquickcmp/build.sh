@@ -33,7 +33,7 @@ build_tensorutil(){
     fi
 
     # 将生成的.so文件移动到目标目录
-    mv libtensorutil.so "${site_packages_path}/msquickcmp"
+    mv libsavetensor.so "${site_packages_path}/msquickcmp"
 
 
     # 返回原始目录
@@ -43,10 +43,10 @@ build_tensorutil(){
     echo "Build and move completed!"
 }
 
-if [ -d "${ACLTRANSFORMER_HOME_PATH}" ]; then
+if [ -d "${ATB_HOME_PATH}" ]; then
     build_tensorutil
     else
-        echo "WARNING: env ACLTRANSFORMER_HOME_PATH is not set. Dump on demand package cannot be used."
+        echo "WARNING: env ATB_HOME_PATH is not set. Dump on demand package cannot be used."
 fi
 
 
