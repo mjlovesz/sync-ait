@@ -169,7 +169,7 @@ void atb::StoreUtil::SaveTensor(const Tensor &tensor, const std::string &filePat
         SaveTensor(std::to_string(tensor.desc.format), std::to_string(tensor.desc.dtype),
             TensorUtil::ShapeToString(tensor.desc.shape), tensor.deviceData, tensor.dataSize, filePath);
     } else if (isInTensorBinPath(filePath)) {
-        saveMd5ToFile(tensor.deviceData, tensor.dataSize, filePath);
+        SaveMd5ToFile(tensor.deviceData, tensor.dataSize, filePath);
     } else {
         SaveTensor(std::to_string(tensor.desc.format), std::to_string(tensor.desc.dtype),
             TensorUtil::ShapeToString(tensor.desc.shape), tensor.deviceData, tensor.dataSize, filePath);
