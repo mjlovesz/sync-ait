@@ -26,14 +26,27 @@ class Evaluator():
         self.set_dataset(dataset_name, dataset_path, shot)
 
     def set_generate_func(self, generate_func):
+        if callable(generate_func):
+            all_args = generate_func.__code__.co_argcount
+            kwargs = len(generate_func.__defaults__) if generate_func.__defaults__ else 0
+            if all_args - kwargs != 1:
+                logger.error("set_generate_func failed: number of function's required argument not equals to 1.")
+                raise Exception
+        else:
+            logger.error("set_generate_func failed: please pass a callable object.")
+            raise Exception
         self.generate = generate_func
 
     def set_rank(self, rank):
         self.rank = rank
 
     def set_dataset(self, dataset_name, dataset_path=None, shot=0):
-        self.dataset = DatasetFactory().get(dataset_name, dataset_path, shot)
-        logger.info(f"Load dataset {dataset_name} success.")
+        if isinstance(shot, int) and shot >= 0 and shot <= 5:
+            self.dataset = DatasetFactory().get(dataset_name, dataset_path, shot)
+            logger.info(f"Load dataset {dataset_name} success.")
+        else:
+            logger.error("set_dataset failed: shot should be of type int and between 0 and 5.")
+            raise Exception
 
     def evaluate(self, measurement=None):
         logger.info(f"Start to evaluate on {self.dataset.dataset_name} dataset "
@@ -48,4 +61,3 @@ class Evaluator():
         if self.rank == 0:
             recorder.statistics(self.dataset.compute, measurement)
             recorder.report()
-        return recorder
