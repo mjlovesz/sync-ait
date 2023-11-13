@@ -28,7 +28,7 @@ def check_model_path_legality(value):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read'):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
-    if not file_stat.is_legal_file_type(["onnx", "prototxt", "pb"]):
+    if not file_stat.is_legal_file_type(["onnx", "om", "prototxt", "pb"]):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
     if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
         raise argparse.ArgumentTypeError(f"model path:{path_value} is illegal. Please check.")
