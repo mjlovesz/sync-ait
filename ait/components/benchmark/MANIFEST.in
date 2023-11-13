@@ -1,1 +1,2 @@
-include ais_bench/evaluate *
+include ais_bench/evaluate/download.sh
+include ais_bench/evaluate/*.json
