@@ -72,9 +72,7 @@ class Model:
         self._load_data()
         self._scan_sources(KitConfig.SOURCE_DIRECTORY)
         eval_time = time.time() - start
-        logger.info(f'The time of getting sequences is {eval_time}s.')
-        eval_time = time.time() - start
-        logger.info(f'Total time is {eval_time}.')
+        logger.debug(f'Total time is {eval_time}s.')
 
 
 if __name__ == '__main__':

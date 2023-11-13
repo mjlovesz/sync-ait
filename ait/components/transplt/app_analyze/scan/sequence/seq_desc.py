@@ -1,10 +1,13 @@
+import multiprocessing as mp
+from multiprocessing import Value
 from app_analyze.utils.log_util import logger
 from app_analyze.common.kit_config import KitConfig
 
 _GLOBAl_FUNC_ID_DICT = dict()
+_FUNC_ID_COUNTER_DICT = dict()
 
 _GLOBAL_FILE_ID_DICT = dict()
-_FILE_ID_COUNTER = -1
+_FILE_ID_COUNTER = Value('i', 0)
 
 
 class FuncDesc:
@@ -59,19 +62,16 @@ class FuncDesc:
         if self.is_usr_def:
             self._func_id = -1
         else:
-            name_id_tbl = _GLOBAl_FUNC_ID_DICT.get(self.acc_name, None)
             no_fid_flag = False
-            if name_id_tbl:
-                self._func_id = name_id_tbl.get(self.full_name, None)  # TODO, file_name + full_name
-                if self._func_id is None:
-                    no_fid_flag = True
-            else:
-                _GLOBAl_FUNC_ID_DICT[self.acc_name] = {}
+            name_id_tbl = _GLOBAl_FUNC_ID_DICT[self.acc_name]
+            self._func_id = name_id_tbl.get(self.full_name, None)
+            if self._func_id is None:
                 no_fid_flag = True
 
             if no_fid_flag:
                 base = KitConfig.ACC_LIB_ID_PREFIX[self.acc_name] * KitConfig.ACC_ID_BASE
-                offset = len(_GLOBAl_FUNC_ID_DICT[self.acc_name])
+                offset = _FUNC_ID_COUNTER_DICT[self.acc_name].value
+                _FUNC_ID_COUNTER_DICT[self.acc_name].value = offset + 1
                 self._func_id = base + offset
                 _GLOBAl_FUNC_ID_DICT[self.acc_name][self.full_name] = self._func_id
 
@@ -86,9 +86,8 @@ class FuncDesc:
 
         fid = _GLOBAL_FILE_ID_DICT.get(self.root_file, None)
         if fid is None:
-            global _FILE_ID_COUNTER
-            _FILE_ID_COUNTER += 1
-            fid = _FILE_ID_COUNTER
+            fid = _FILE_ID_COUNTER.value
+            _FILE_ID_COUNTER.value += 1
             _GLOBAL_FILE_ID_DICT[self.root_file] = fid
         return fid
 
@@ -126,7 +125,7 @@ class SeqDesc:
         rst = 'Entry Function is: ' + self.entry_api.api_name + '\n'
         apis = [_.full_name for _ in self.api_seq]
         rst += '-->'.join(apis)
-        logger.info(rst)
+        logger.debug(rst)
 
 
 def get_idx_tbl():
@@ -141,14 +140,23 @@ def get_api_lut():
     return _GLOBAl_FUNC_ID_DICT
 
 
-def set_api_lut(idx_dict):
-    base_id_dict = dict(zip(KitConfig.ACC_LIB_ID_PREFIX.values(), KitConfig.ACC_LIB_ID_PREFIX.keys()))
-    for idx, name in idx_dict.items():
-        res = idx // KitConfig.ACC_ID_BASE
-        acc_name = base_id_dict[res]
+def set_api_lut(idx_dict=None):
+    for acc_lib, _ in KitConfig.ACC_LIB_ID_PREFIX.items():
+        _GLOBAl_FUNC_ID_DICT[acc_lib] = mp.Manager().dict()
+        _FUNC_ID_COUNTER_DICT[acc_lib] = Value('i', 0)
 
-        acc_libs = _GLOBAl_FUNC_ID_DICT.get(acc_name, None)
-        if acc_libs:
+    if idx_dict is not None:
+        acc_libs = set()
+        base_id_dict = dict(zip(KitConfig.ACC_LIB_ID_PREFIX.values(), KitConfig.ACC_LIB_ID_PREFIX.keys()))
+        for idx, name in idx_dict.items():
+            res = idx // KitConfig.ACC_ID_BASE
+            acc_name = base_id_dict[res]
+            acc_libs.add(acc_name)
+
             _GLOBAl_FUNC_ID_DICT[acc_name][name] = idx
-        else:
-            _GLOBAl_FUNC_ID_DICT[acc_name] = {name: idx}
+
+        for acc_name in acc_libs:
+            api_dict = _GLOBAl_FUNC_ID_DICT[acc_name]
+            max_idx = max(api_dict.values())
+            idx = max_idx % KitConfig.ACC_ID_BASE
+            _FUNC_ID_COUNTER_DICT[acc_name].value = idx + 1

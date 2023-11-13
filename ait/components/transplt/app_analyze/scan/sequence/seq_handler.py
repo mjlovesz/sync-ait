@@ -71,7 +71,7 @@ class SeqHandler:
                     seq_desc.api_seq = _compact_apis(seq_desc.api_seq)
                     rst.append(seq_desc)
 
-                    logger.info(f'After clean seqs, api seqs length is {len(seq_desc.api_seq)}, the api seq is: ')
+                    logger.debug(f'After clean seqs, api seqs length is {len(seq_desc.api_seq)}, the api seq is: ')
                     seq_desc.debug_string()
                     continue
 
@@ -86,7 +86,7 @@ class SeqHandler:
                 seq_desc.has_usr_def = False
 
             rst.append(seq_desc)
-            logger.info(f'After clean seqs, api seqs length is {len(seq_desc.api_seq)}, the api seq is: ')
+            logger.debug(f'After clean seqs, api seqs length is {len(seq_desc.api_seq)}, the api seq is: ')
             seq_desc.debug_string()
 
         return rst
@@ -122,7 +122,7 @@ class SeqHandler:
                 d_str.append(idx_dict[idx])
             rst_str += str(i) + '. ' + '-->'.join(d_str) + '\n'
 
-        logger.info(f'{rst_str}')
+        logger.debug(f'{rst_str}')
 
     @staticmethod
     def _dedup_api_seqs(seqs):
@@ -222,14 +222,14 @@ def filter_api_seqs(seqs, idx_seq_dict=None):
     if not idx_seq_dict:
         seqs = handler.format_api_seqs(seqs)
 
-    logger.info('===============Sequences Before Filtering===============')
+    logger.debug('===============Sequences Before Filtering===============')
     handler.debug_string(seqs, idx_seq_dict)
 
     for seq in seqs:
         if len(seq) >= SeqArgs.SEQ_MIN_LEN:
             all_seqs.append(seq)
 
-    logger.info('===============Sequences After Filtering===============')
+    logger.debug('===============Sequences After Filtering===============')
     handler.debug_string(all_seqs, idx_seq_dict)
     return all_seqs
 
@@ -249,7 +249,7 @@ def mining_api_seqs(seqs, idx_seq_dict=None):
     if not idx_seq_dict:
         seqs = handler.format_api_seqs(seqs)
 
-    logger.info('===============Sequences Before Mining===============')
+    logger.debug('===============Sequences Before Mining===============')
     handler.debug_string(seqs, idx_seq_dict)
 
     all_seqs = set()
@@ -262,7 +262,7 @@ def mining_api_seqs(seqs, idx_seq_dict=None):
     for apis in dig_apis:
         all_seqs.add(tuple(apis))
 
-    logger.info('===============Sequences After Mining===============')
+    logger.debug('===============Sequences After Mining===============')
     handler.debug_string(all_seqs, idx_seq_dict)
     return all_seqs
 

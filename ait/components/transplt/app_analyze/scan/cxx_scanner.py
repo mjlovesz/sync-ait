@@ -29,24 +29,25 @@ class CxxScanner(Scanner):
         self.porting_results['cxx'] = result
         eval_time = time.time() - start_time
 
-        logger.info(f'Total time for scanning cxx files is {eval_time}s')
+        logger.debug(f'Total time for scanning cxx files is {eval_time}s')
 
     def exec_without_threads(self):
         result = {}
-        count = max(max(os.cpu_count(),len(self.files)),16)
+        count = max(max(os.cpu_count(), len(self.files)), 16)
         pool = Pool(count)
         list_file = []
         for file in self.files:
-            list_file.append((self.cxx_parser,file))
-        lst = pool.starmap_async(cxx_parser_,list_file)
+            list_file.append((self.cxx_parser, file))
+        lst = pool.starmap_async(cxx_parser_, list_file)
         pool.close()
         pool.join()
         lst1 = lst.get(timeout=2)
-        for file,r in zip(self.files,lst1):
+        for file, r in zip(self.files, lst1):
             result[file] = r
         return result
 
-def cxx_parser_(cxx_parser,files):
+
+def cxx_parser_(cxx_parser, files):
     p = cxx_parser(files)
     rst_vals = p.parse()
     return rst_vals
