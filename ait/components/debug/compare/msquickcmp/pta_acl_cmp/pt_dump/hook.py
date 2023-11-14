@@ -22,7 +22,7 @@ import msquickcmp
 from msquickcmp.pta_acl_cmp.constant import AIT_DUMP_PATH, AIT_IS_SAVE_MD5, AIT_DIALOG_DUMP_PATH
 
 
-def dump_output_hook():
+def dump_output_hook(dump_start_step=0, dump_end_step=-1):
     infer_step = 0
 
     def hook_func(module, inputs, outputs):
@@ -30,9 +30,19 @@ def dump_output_hook():
             return outputs
 
         nonlocal infer_step
-        w_md5 = hashlib.md5(module.weight.cpu().numpy().tobytes()).hexdigest()
+        nonlocal dump_start_step
+        if infer_step < dump_start_step:
+            return outputs
+        if dump_end_step > 0 and infer_step > dump_end_step:
+            return outputs
 
-        ait_dump_path = os.getenv(AIT_DUMP_PATH)
+        if hasattr(module, "bias") and module.bias is not None:
+            # Use bias as md5 key, as it's mostly after weight operations
+            cur_md5 = hashlib.md5(module.bias.cpu().numpy().tobytes()).hexdigest()
+        else:
+            cur_md5 = hashlib.md5(module.weight.cpu().numpy().tobytes()).hexdigest()
+
+        ait_dump_path = os.getenv(AIT_DIALOG_DUMP_PATH, os.getenv(AIT_DUMP_PATH))
         ait_dump_path = ait_dump_path or ""
         pid = os.getpid()
         pid_dir = os.path.join(ait_dump_path, str(pid))
@@ -47,16 +57,16 @@ def dump_output_hook():
         np.save(out_data_path, outputs.cpu().numpy())
 
         metadata_path = os.path.join(pid_dir, "metadata.json")
-        infer_step_key = str(infer_step)
+        infer_step_key = str(infer_step - dump_start_step)  # Keep key starts from 0
         if os.path.exists(metadata_path):
             with open(metadata_path, "r") as file:
                 metadata = json.load(file)
             if metadata.get(infer_step_key):
-                metadata.get(infer_step_key).setdefault(w_md5, [out_data_path])
+                metadata.get(infer_step_key).setdefault(cur_md5, [out_data_path])
             else:
-                metadata.setdefault(infer_step_key, {w_md5: [out_data_path]})
+                metadata.setdefault(infer_step_key, {cur_md5: [out_data_path]})
         else:
-            metadata = {infer_step_key: {w_md5: [out_data_path]}}
+            metadata = {infer_step_key: {cur_md5: [out_data_path]}}
 
         with open(metadata_path, "w") as file:
             json.dump(metadata, file)
@@ -66,7 +76,7 @@ def dump_output_hook():
     return hook_func
 
 
-def register_hook(model, op_list=[]):
+def register_hook(model, op_list=[], dump_start_step=0, dump_end_step=-1):
     if not isinstance(model, nn.Module):
         raise TypeError("model must be nn.Module.")
     if not isinstance(op_list, list):
@@ -77,10 +87,14 @@ def register_hook(model, op_list=[]):
                 if not isinstance(module, op_type):
                     continue
                 module.name = name
-                module.register_forward_hook(dump_output_hook())
+                module.register_forward_hook(
+                    dump_output_hook(), dump_start_step=dump_start_step, dump_end_step=dump_end_step
+                )
         else:
             module.name = name
-            module.register_forward_hook(dump_output_hook())
+            module.register_forward_hook(
+                dump_output_hook(), dump_start_step=dump_start_step, dump_end_step=dump_end_step
+            )
 
 
 def set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt"):

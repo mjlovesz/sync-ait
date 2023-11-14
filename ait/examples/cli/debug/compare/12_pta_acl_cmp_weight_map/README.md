@@ -13,11 +13,12 @@
   | dump_tag    | 设置 dump 数据目录名称 | 否       | 参数示例：dump_tag="dialog_0"，默认 dump 数据目录命名为 ait_dump                           |
   | backend     | 推理后端               | 否       | 数据类型：str，可选值 [pt, acl]，pt 表示 pytorch-npu 或 pytorch-gpu 推理，acl 表示加速库推理 |
 
-- **register_hook(model, op_list=[])** 给模型注册钩子，获取模型中间的输出数据，仅 pytorch-npu(gpu) 推理时需要使用
+- **register_hook(model, op_list=[], dump_start_step=0, dump_end_step=-1)** 给模型注册钩子，获取模型中间的输出数据，仅 pytorch-npu(gpu) 推理时需要使用
   | 参数名  | 含义               | 是否必填 | 使用说明                                                                                    |
   | ------- | ------------------ | -------- | ------------------------------------------------------------------------------------------- |
   | model   | 要hook的模型       | 是       | 数据类型：torch.nn.Module                                                                   |
   | op_list | 需要hook的算子类型 | 否       | 数据类型：list，默认为 []，会对模型中所有 op 进行 hook，若设置 op_list，只会 hook 指定的 op |
+  | dump_start_step | dump 数据的起始 token id | 否       | 数据类型：int，默认为 0，当加速库侧不调用 encoder ，即没有 encoder dump 数据时需要设置为 True |
 ## 命令行接口介绍
 ```sh
 ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速库侧 dump 数据}
@@ -25,36 +26,41 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
 - `golden-path` 指定 PTA 侧 dump 数据路径
 - `my-path` 指定加速库侧 dump 数据路径
 ## 使用示例
-- 使用前请安装ait工具，安装指导参考：[ait 工具安装](https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md) 以 chatglm-6b 中 `patches/models/modeling_chatglm_model.py` 为例，介绍下如何使用加速库精度比对工具
+- 使用前请安装ait工具，安装指导参考：[ait 工具安装](https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md) 以 chatglm-6b 中 `pytorch/examples/chatglm6b/modeling_chatglm_model_310p.py` 为例，介绍下如何使用加速库精度比对工具
 - **加速库侧 dump 数据** 需要在 `main.py` 中设置 `set_dump_path` 指定 `backend="acl"`，同时指定 `LD_PRELOAD` 为 ait 的 `libsavetensor.so` 覆盖加速库原本的 `SaveTensor` 接口，将 intensor 保存为 MD5 值，用于匹配 PTA 侧数据
   ```py
   from msquickcmp.pta_acl_cmp.pt_dump.hook import register_hook
   set_dump_path(backend="acl")
   ```
+  同时配置其他 `ATB` dump 相关环境变量，执行推理脚本
   ```sh
   MSQUICKCMP_PATH=`python3 -c 'import msquickcmp; print(msquickcmp.__path__[0])'`
   export LD_PRELOAD=$MSQUICKCMP_PATH/libsavetensor.so:$LD_PRELOAD
-  bash run.sh patches/models/modeling_chatglm_model.py
+
+  export ATB_SAVE_TENSOR=1  # 使能加速库 dump 数据，默认为 0
+  export ATB_SAVE_TENSOR_END=1000  # 指定加速库侧 dump 数据最大 token 数，默认为 1
+  bash run.sh patches/models/modeling_chatglm_model_310p.py
   ```
-  生成数据位于 `$ASDOPS_LOG_TO_FILE_DIR/tensors/{进程 ID}_{线程ID}` 下，其中 `$ASDOPS_LOG_TO_FILE_DIR` 为配置加速库时设置的
+  生成数据位于 `$ASDOPS_LOG_TO_FILE_DIR/tensors/{进程 ID}_{线程ID}` 下，其中 `$ASDOPS_LOG_TO_FILE_DIR` 为配置加速库时设置的，默认值 `"atb_temp"`
   ```sh
   ls $ASDOPS_LOG_TO_FILE_DIR/tensors/ -1t
-  # thread_62250
-  ls $ASDOPS_LOG_TO_FILE_DIR/tensors/thread_62250/
-  # 0  1  2  3  4  5  6  7  8  9
+  # 26077_26077
+  ls $ASDOPS_LOG_TO_FILE_DIR/tensors/26077_26077/
+  # 0  1  2  3  4  5  6  7  8
   ```
-  如发生错误 `undefined symbol: EVP_md5`，可能为 anaconda 环境中 python 使用的 `libssl.so` 与编译 `libtensorutil.so` 时使用的系统 `libssl.so` 不一致，可尝试指定 `export LD_PRELOAD=libssl.so:$LD_PRELOAD` 解决
-- **PTA 侧 dump 数据** 在 `main.py` 中模型创建后添加 `register_hook`，以及 `set_dump_path` 配置 dump 路径，保存前向调用中的数据，其中每层中使用的权重 weights 将作为 MD5 值，用于匹配加速库侧数据
+  如发生错误 `undefined symbol: EVP_md5`，可能为环境中 python 使用的 `libssl.so` 与编译 `libtensorutil.so` 时使用的系统 `libssl.so` 不一致，可尝试指定 `export LD_PRELOAD=libssl.so:$LD_PRELOAD` 解决
+- **PTA 侧 dump 数据** 在 `main.py` 中模型创建后添加 `register_hook`，以及 `set_dump_path` 配置 dump 路径，保存前向调用中的数据，其中每层中使用的权重 weights 或 bias 将作为 MD5 值，用于匹配加速库侧数据
   ```py
   import torch
   from msquickcmp.pta_acl_cmp.pt_dump.hook import register_hook, set_dump_path
 
   model = AutoModel.from_pretrained("./", trust_remote_code=True).half().npu()
-  # 添加
-  register_hook(model)
+  # 在模型初始化后添加
+  # skip_encoder 需要根据实际加速库侧代码决定，当前版本的该样例加速库侧不执行 encoder，配置为 skip_encoder=True
+  register_hook(model, skip_encoder=True)
   set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt")
   ```
-  执行推理脚本 `bash run.sh patches/models/modeling_chatglm_model.py`，**输入与执行加速库侧 dump 数据时相同的输入**，查看生成数据位于 `{dump_path}/{dump_tag}/{进程 ID}` 下
+  执行推理脚本 `bash run.sh patches/models/modeling_chatglm_model_310p.py`，**输入与执行加速库侧 dump 数据时相同的输入**，查看生成数据位于 `{dump_path}/{dump_tag}/{进程 ID}` 下
 - **AIT 基于权重映射的精度比对** 分别指定 `--golden-path` 为 PTA 侧 dump 数据路径，`--my-path` 为加速库侧 dump 数据路径，通过权重的 MD5 值的匹配关系，自动建立映射，输出比对结果 `cmp_report.csv` 文件
   ```sh
   ait debug compare aclcmp --golden-path ait_dump_path/25115/ --my-path ../../atb_temp/tensors/62250_62250
