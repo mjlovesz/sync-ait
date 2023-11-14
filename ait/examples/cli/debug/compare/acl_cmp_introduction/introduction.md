@@ -46,3 +46,53 @@
 工具提供了set_label代码插入的方式，适用于场景一，在一份推理脚本中，通过工具拉起推理进程执行推理，即可完成精度比对。
 
 具体使用指导请参考：[set_label代码插入使用说明](../11_pta_acl_cmp/basic_usage.md)
+
+### 2.4. allreduce通信数据比对
+
+在大模型的推理过程中，权重切分使得大模型可以在不同的卡上同时进行推理。allreduce算子在通信过程中起到将不同卡上的权重进行相加求和的作用，以两张卡运行为例，精度比对功能在比对allreduce通信算子时，将0卡和1卡的intensor相加作为标杆数据与0卡和1卡的outtensor分别进行精度比对。
+
+本工具主要完成allreduce通信数据比对，对于模型中每一层的"AllReduceHcclRunner"的输入输出进行误差比对，逐步缩小范围。
+
+#### 2.4.1 allreduce通信数据比对llama_parallel场景
+
+参考加速库资料[ascend-speed-inference - 文件 (huawei.com)](https://open.codehub.huawei.com/OpenBaize/Ascend/ascend-speed-inference/files?ref=master&filePath=pytorch%2Fexamples%2Fllama_parallel%2Freadme.md&isFile=true)进行环境配置，并且对allreduce算子前后数据进行dump
+
+```
+export ATB_SAVE_TENSOR=1
+export ATB_SAVE_TENSOR_START=0
+export ATB_SAVE_TENSOR_END=10
+export ATB_SAVE_TENSOR_RUNNER="AllReduceHcclRunner"
+bash cut_model_and_run_llama.sh
+```
+
+获取allreduce前后数据后，在`/llama_parallel/atb_temp/tensors/`目录下获得双卡上的两个进程名称，按照如下命令进行调用
+
+```
+export MSQUICKCMP_PATH=`python -c 'import os, msquickcmp; print(os.path.dirname(msquickcmp.__file__))'`
+python $MSQUICKCMP_PATH/pta_acl_cmp/allreduce.py--process_0_path '/xxx/进程1/' --process_1_path '/xxx/进程2/' --output_path '生成csv路径'
+```
+
+#### 2.4.2 allreduce通信数据比对chatglm2_6b场景
+
+参考加速库资料[ascend-speed-inference - 文件 (huawei.com)](https://open.codehub.huawei.com/OpenBaize/Ascend/ascend-speed-inference/files?ref=master&filePath=pytorch%2Fexamples%2Fchatglm2_6b%2FChatGLM2-6B%E9%87%8F%E5%8C%96%E6%8E%A8%E7%90%86%E6%8C%87%E5%AF%BC.md&isFile=true)进行环境配置，并且对allreduce算子前后数据进行dump
+
+```export
+export ATB_SAVE_TENSOR=1
+export ATB_SAVE_TENSOR_START=0
+export ATB_SAVE_TENSOR_END=10
+export ATB_SAVE_TENSOR_RUNNER="AllReduceHcclRunner"
+bash run_quant_parallel.sh patches/models/modeling_chatglm2_6b_quant_mix_parallel_fa.py --evaluate_single
+```
+
+获取allreduce前后数据后，在`/llama_parallel/atb_temp/tensors/`目录下获得双卡上的两个进程名称，按照`2.4.1`命令进行调用
+
+#### 2.4.3 比对结果
+
+如下表所示
+
+| `allreduce` | `cosine_similarity`|`max_relative_error` |`mean_relative_error`|`relative_euclidean_distance` |
+| --- | --- | --- |--- |--- |
+
+
+
+
