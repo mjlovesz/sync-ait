@@ -67,24 +67,24 @@ def compare_allreduce(root_dir_0, root_dir_1, output_path):
         input_tensor_0_path = os.path.join(dir_path, "before/intensor0.bin")
         input_tensor_1_path = input_tensor_0_path.replace(process_0, process_1)
         output_tensor_0_path = os.path.join(dir_path, "after/outtensor0.bin")
-        output_tensor_1_path = output_tensor_0_path.replace(process_0,process_1)
+        output_tensor_1_path = output_tensor_0_path.replace(process_0, process_1)
 
         gold = TensorBinFile(input_tensor_0_path).get_data() + TensorBinFile(input_tensor_1_path).get_data()
         output_0 = TensorBinFile(output_tensor_0_path).get_data()
         output_1 = TensorBinFile(output_tensor_1_path).get_data()
         result_process_0.append([dir_path,
-                                 cosine_similarity(gold,output_0), 
-                                 max_relative_error(gold,output_0),
-                                 mean_relative_error(gold,output_0), 
-                                 relative_euclidean_distance(gold,output_0),
+                                 cosine_similarity(gold, output_0), 
+                                 max_relative_error(gold, output_0),
+                                 mean_relative_error(gold, output_0), 
+                                 relative_euclidean_distance(gold, output_0),
                                 ]
                                 )
         
-        result_process_1.append([dir_path.replace(process_0,process_1),
-                                 cosine_similarity(gold,output_1), 
-                                 max_relative_error(gold,output_1),
-                                 mean_relative_error(gold,output_1), 
-                                 relative_euclidean_distance(gold,output_1),
+        result_process_1.append([dir_path.replace(process_0, process_1),
+                                 cosine_similarity(gold, output_1), 
+                                 max_relative_error(gold, output_1),
+                                 mean_relative_error(gold, output_1), 
+                                 relative_euclidean_distance(gold, output_1),
                                 ]
                                 )
         
@@ -97,11 +97,11 @@ def compare_allreduce(root_dir_0, root_dir_1, output_path):
     with os.fdopen(os.open(allreduce_compare_result, WRITE_FLAGS, WRITE_MODES), 'w',
                                    newline="") as fp_write:
         writer = csv.writer(fp_write)
-        writer.writerow(["allreduce","cosine_similarity", "max_relative_error","mean_relative_error","relative_euclidean_distance"])
+        writer.writerow(["allreduce","cosine_similarity", "max_relative_error", "mean_relative_error", "relative_euclidean_distance"])
         writer.writerows(result_process_0)
         writer.writerows(result_process_1)
 
-    logging.info("The comparison results are generated in {}".format(allreduce_compare_result))
+    logging.info("The comparison results are generated in %s", allreduce_compare_result)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -122,4 +122,4 @@ if __name__ == "__main__":
     process_1_path = args.process_1_path
     output_path = args.output_path
 
-    compare_allreduce(process_0_path, process_1_path,output_path)
+    compare_allreduce(process_0_path, process_1_path, output_path)
