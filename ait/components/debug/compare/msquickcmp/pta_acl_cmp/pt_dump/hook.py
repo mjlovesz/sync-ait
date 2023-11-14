@@ -32,6 +32,7 @@ def dump_output_hook(dump_start_step=0, dump_end_step=-1):
         nonlocal infer_step
         nonlocal dump_start_step
         if infer_step < dump_start_step:
+            infer_step += 1
             return outputs
         if dump_end_step > 0 and infer_step > dump_end_step:
             return outputs
@@ -88,12 +89,12 @@ def register_hook(model, op_list=[], dump_start_step=0, dump_end_step=-1):
                     continue
                 module.name = name
                 module.register_forward_hook(
-                    dump_output_hook(), dump_start_step=dump_start_step, dump_end_step=dump_end_step
+                    dump_output_hook(dump_start_step=dump_start_step, dump_end_step=dump_end_step)
                 )
         else:
             module.name = name
             module.register_forward_hook(
-                dump_output_hook(), dump_start_step=dump_start_step, dump_end_step=dump_end_step
+                dump_output_hook(dump_start_step=dump_start_step, dump_end_step=dump_end_step)
             )
 
 

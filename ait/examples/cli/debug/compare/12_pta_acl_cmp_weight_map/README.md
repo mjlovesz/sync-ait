@@ -18,7 +18,8 @@
   | ------- | ------------------ | -------- | ------------------------------------------------------------------------------------------- |
   | model   | 要hook的模型       | 是       | 数据类型：torch.nn.Module                                                                   |
   | op_list | 需要hook的算子类型 | 否       | 数据类型：list，默认为 []，会对模型中所有 op 进行 hook，若设置 op_list，只会 hook 指定的 op |
-  | dump_start_step | dump 数据的起始 token id | 否       | 数据类型：int，默认为 0，当加速库侧不调用 encoder ，即没有 encoder dump 数据时需要设置为 True |
+  | dump_start_step | dump 数据的起始 token id | 否       | 数据类型：int，默认为 0，当加速库侧不调用 encoder ，即没有 encoder dump 数据时需要设置为 1 |
+  | dump_end_step | dump 数据的结束 token id | 否       | 数据类型：int，默认为 -1，表示不限制结束的 token，或指定 > 0 的值表示结束的 token id |
 ## 命令行接口介绍
 ```sh
 ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速库侧 dump 数据}
@@ -44,8 +45,8 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   生成数据位于 `$ASDOPS_LOG_TO_FILE_DIR/tensors/{进程 ID}_{线程ID}` 下，其中 `$ASDOPS_LOG_TO_FILE_DIR` 为配置加速库时设置的，默认值 `"atb_temp"`
   ```sh
   ls $ASDOPS_LOG_TO_FILE_DIR/tensors/ -1t
-  # 26077_26077
-  ls $ASDOPS_LOG_TO_FILE_DIR/tensors/26077_26077/
+  # 25518_25518
+  ls $ASDOPS_LOG_TO_FILE_DIR/tensors/25518_25518/
   # 0  1  2  3  4  5  6  7  8
   ```
   如发生错误 `undefined symbol: EVP_md5`，可能为环境中 python 使用的 `libssl.so` 与编译 `libtensorutil.so` 时使用的系统 `libssl.so` 不一致，可尝试指定 `export LD_PRELOAD=libssl.so:$LD_PRELOAD` 解决
@@ -56,17 +57,23 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
 
   model = AutoModel.from_pretrained("./", trust_remote_code=True).half().npu()
   # 在模型初始化后添加
-  # skip_encoder 需要根据实际加速库侧代码决定，当前版本的该样例加速库侧不执行 encoder，配置为 skip_encoder=True
-  register_hook(model, skip_encoder=True)
+  # dump_start_step 需要根据实际加速库侧代码决定，当前版本的该样例加速库侧不执行 encoder，需要指定 dump_start_step=1
+  register_hook(model, dump_start_step=1)
   set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt")
   ```
   执行推理脚本 `bash run.sh patches/models/modeling_chatglm_model_310p.py`，**输入与执行加速库侧 dump 数据时相同的输入**，查看生成数据位于 `{dump_path}/{dump_tag}/{进程 ID}` 下
 - **AIT 基于权重映射的精度比对** 分别指定 `--golden-path` 为 PTA 侧 dump 数据路径，`--my-path` 为加速库侧 dump 数据路径，通过权重的 MD5 值的匹配关系，自动建立映射，输出比对结果 `cmp_report.csv` 文件
   ```sh
-  ait debug compare aclcmp --golden-path ait_dump_path/25115/ --my-path ../../atb_temp/tensors/62250_62250
+  ait debug compare aclcmp --golden-path ait_dump_path/25115/ --my-path atb_temp/tensors/25518_25518
   ```
   ![cmp_result.png](cmp_result.png)
 - 比对结果中只能匹配到权重 MD5 完全相同的算子，由于实际计算中存在权重数据格式转化等，可能匹配到的节点数量较少，因此只作为精度异常问题的大致范围界定
+  ```sh
+  # 根据 dump 数据统计加速库侧 Operation 数量
+  find ./atb_temp/tensors/25518_25518/1 -name 'after' | grep 'Operation/.*Operation/after' | wc -l
+  # 644
+  ```
+  同时该样例 csv 表格中单个 token 的 Operation 匹配到权重 MD5 的数量为 `170`，占比 `26.4%`
 
   ![matched_pie.png](matched_pie.png)
 
