@@ -274,7 +274,7 @@ def onnxsim_model(modifier, modify_info, save_file):
 
 def realpath_ex(path):
     if sys.platform == 'win32':
-        if sys.version_info.major <= 3 and sys.version_info.monor <=7:
+        if sys.version_info.major <= 3 and sys.version_info.minor <=7:
             from ctypes import windll, create_unicode_buffer
             buf = create_unicode_buffer(65536)
             windll.kernel32.GetLongPathNameW(path, buf, 65536)
