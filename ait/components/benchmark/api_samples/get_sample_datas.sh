@@ -21,21 +21,9 @@ SOC_VERSION=""
 
 function get_npu_type()
 {
-    get_npu_310=`lspci | grep d100`
-    get_npu_310P3=`lspci | grep d500`
-    get_npu_310B=`lspci | grep d107`
-    if [[ $get_npu_310 != "" ]];then
-        SOC_VERSION="Ascend310"
-        echo "npu is Ascend310, dymshape sample not supported"
-    elif [[ $get_npu_310P3 != "" ]];then
-        SOC_VERSION="Ascend310P3"
-        echo "npu is Ascend310P3"
-    elif [[ $get_npu_310B != "" ]];then
-        SOC_VERSION="Ascend310B"
-        echo "npu is Ascend310B"
-    else
-        return $ret_failed
-    fi
+    SOC_VERSION=`python3 -c 'import acl; print(acl.get_soc_name())'` || { return $ret_failed; }
+    echo "npu is $SOC_VERSION"
+    return $ret_ok
 }
 
 convert_staticbatch_om()
