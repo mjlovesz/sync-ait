@@ -272,6 +272,16 @@ def onnxsim_model(modifier, modify_info, save_file):
         onnx.save(model_simp, save_file)
 
 
+def realpath_ex(path):
+    if sys.platform == 'win32':
+        if sys.version_info.major <= 3 and sys.version_info.minor <= 7:
+            from ctypes import windll, create_unicode_buffer
+            buf = create_unicode_buffer(65536)
+            windll.kernel32.GetLongPathNameW(path, buf, 65536)
+            return buf.value
+    return os.path.realpath(path)
+
+
 def call_auto_optimizer(modifier, modify_info, output_suffix, make_cmd):
     import subprocess
     try:
@@ -286,7 +296,7 @@ def call_auto_optimizer(modifier, modify_info, output_suffix, make_cmd):
         modify_model(modifier, modify_info, modified_file)
         modified_file.close()
 
-        cmd = make_cmd(in_path=os.path.realpath(modified_file.name), out_path=os.path.realpath(opt_file_path))
+        cmd = make_cmd(in_path=realpath_ex(modified_file.name), out_path=realpath_ex(opt_file_path))
 
         out_res = subprocess.run(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if out_res.returncode != 0:
