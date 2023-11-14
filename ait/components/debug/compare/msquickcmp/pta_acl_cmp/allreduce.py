@@ -40,7 +40,7 @@ def cosine_similarity(mat0: NDArray, mat1: NDArray) -> float:
     return np.dot(m0, m1)
 
 
-def compare_allreduce(root_dir_0, root_dir_1, output_path):
+def compare_allreduce(root_dir_0, root_dir_1, csv_output_path):
     """
     Function:
         Compare the output of Allreduce with gold data
@@ -88,7 +88,7 @@ def compare_allreduce(root_dir_0, root_dir_1, output_path):
                                 ]
                                 )
         
-        allreduce_compare_result = os.path.join(output_path, "allreduce_compare_result.csv")
+        allreduce_compare_result = os.path.join(csv_output_path, "allreduce_compare_result.csv")
 
     if os.path.exists(allreduce_compare_result):
         logging.error("Error, file already exists!")
