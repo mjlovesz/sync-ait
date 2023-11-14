@@ -65,7 +65,7 @@ def compare_allreduce(root_dir_0, root_dir_1, output_path):
 
     for dir_path in dir_path_list:
         input_tensor_0_path = os.path.join(dir_path, "before/intensor0.bin")
-        input_tensor_1_path = input_tensor_0_path.replace(process_0,process_1)
+        input_tensor_1_path = input_tensor_0_path.replace(process_0, process_1)
         output_tensor_0_path = os.path.join(dir_path, "after/outtensor0.bin")
         output_tensor_1_path = output_tensor_0_path.replace(process_0,process_1)
 
