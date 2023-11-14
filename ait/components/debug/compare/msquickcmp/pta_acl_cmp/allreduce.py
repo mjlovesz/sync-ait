@@ -97,7 +97,7 @@ def compare_allreduce(root_dir_0, root_dir_1, csv_output_path):
     with os.fdopen(os.open(allreduce_compare_result, WRITE_FLAGS, WRITE_MODES), 'w',
                                    newline="") as fp_write:
         writer = csv.writer(fp_write)
-        writer.writerow(["allreduce","cosine_similarity", "max_relative_error", "mean_relative_error", "relative_euclidean_distance"])
+        writer.writerow(["allreduce", "cosine_similarity", "max_relative_error", "mean_relative_error", "relative_euclidean_distance"])
         writer.writerows(result_process_0)
         writer.writerows(result_process_1)
 
