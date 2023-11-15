@@ -30,7 +30,6 @@ def dump_output_hook(dump_start_step=0, dump_end_step=-1):
             return outputs
 
         nonlocal infer_step
-        nonlocal dump_start_step
         if infer_step < dump_start_step:
             infer_step += 1
             return outputs
