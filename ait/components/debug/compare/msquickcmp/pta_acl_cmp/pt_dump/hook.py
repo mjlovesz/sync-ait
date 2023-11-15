@@ -76,9 +76,10 @@ def dump_output_hook(dump_start_step=0, dump_end_step=-1):
     return hook_func
 
 
-def register_hook(model, op_list=[], dump_start_step=0, dump_end_step=-1):
+def register_hook(model, op_list=None, dump_start_step=0, dump_end_step=-1):
     if not isinstance(model, nn.Module):
         raise TypeError("model must be nn.Module.")
+    op_list = [] if op_list is None else op_list
     if not isinstance(op_list, list):
         raise TypeError("op_list must be list.")
     for name, module in model.named_modules():
