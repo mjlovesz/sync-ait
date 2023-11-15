@@ -27,9 +27,9 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
 - `golden-path` 指定 PTA 侧 dump 数据路径
 - `my-path` 指定加速库侧 dump 数据路径
 ## ChatGLM-6B 使用示例
-- 使用前请安装ait工具，安装指导参考：[ait 工具安装](https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md) 以 chatglm-6b 中 `pytorch/examples/chatglm6b/modeling_chatglm_model_310p.py` 为例，介绍下如何使用加速库精度比对工具
-- 模型权重及配置文件获取 [Huggingface THUDM/chatglm3-6b](https://huggingface.co/THUDM/chatglm3-6b)，**需要保存到加速库路径以外的地方，否则影响以后编译**
-- **加速库侧 dump 数据** 需要在 `main.py` 中设置 `set_dump_path` 指定 `backend="acl"`，同时指定 `LD_PRELOAD` 为 ait 的 `libsavetensor.so` 覆盖加速库原本的 `SaveTensor` 接口，将 intensor 保存为 MD5 值，用于匹配 PTA 侧数据
+- 使用前安装ait工具，参考 [ait 工具安装](https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md)，`ChatGLM-6B` 模型定义位于加速库下的 `pytorch/examples/chatglm6b/modeling_chatglm_model_310p.py`
+- 模型权重及配置文件获取 [Huggingface THUDM/chatglm-6b](https://huggingface.co/THUDM/chatglm-6b)，**需要保存到加速库路径以外的地方，否则影响以后编译**
+- **加速库侧 dump 数据**，在 `main.py` 中设置 `set_dump_path` 指定 `backend="acl"`，同时指定 `LD_PRELOAD` 为 ait 的 `libsavetensor.so` 覆盖加速库原本的 `SaveTensor` 接口，将 intensor 保存为 MD5 值，用于匹配 PTA 侧数据
   ```py
   from msquickcmp.pta_acl_cmp.pt_dump.hook import set_dump_path
   set_dump_path(backend="acl")
@@ -50,8 +50,8 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   ls $ASDOPS_LOG_TO_FILE_DIR/tensors/25518_25518/
   # 0  1  2  3  4  5  6  7  8
   ```
-  如发生错误 `undefined symbol: EVP_md5`，可能为环境中 python 使用的 `libssl.so` 与编译 `libtensorutil.so` 时使用的系统 `libssl.so` 不一致，可尝试指定 `export LD_PRELOAD=libssl.so:$LD_PRELOAD` 解决
-- **PTA 侧 dump 数据** 在 `main.py` 中模型创建后添加 `register_hook`，以及 `set_dump_path` 配置 dump 路径，保存前向调用中的数据，其中每层中使用的权重 weights 或 bias 将作为 MD5 值，用于匹配加速库侧数据
+  如发生错误 `undefined symbol: EVP_md5`，可能为环境中 python 使用的 `libssl.so` 与编译 `libsavetensor.so` 时使用的系统 `libssl.so` 不一致，可尝试指定 `export LD_PRELOAD=libssl.so:$LD_PRELOAD` 解决
+- **PTA 侧 dump 数据**，在 `main.py` 中模型创建后添加 `register_hook`，以及 `set_dump_path` 配置 dump 路径，保存前向调用中的数据，其中每层中使用的权重 weights 或 bias 将作为 MD5 值，用于匹配加速库侧数据
   ```py
   import torch
   from msquickcmp.pta_acl_cmp.pt_dump.hook import register_hook, set_dump_path
@@ -63,7 +63,7 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt")
   ```
   执行推理脚本 `bash run.sh patches/models/modeling_chatglm_model_310p.py`，**输入与执行加速库侧 dump 数据时相同的输入**，查看生成数据位于 `{dump_path}/{dump_tag}/{进程 ID}` 下
-- **AIT 基于权重映射的精度比对** 分别指定 `--golden-path` 为 PTA 侧 dump 数据路径，`--my-path` 为加速库侧 dump 数据路径，通过权重的 MD5 值的匹配关系，自动建立映射，输出比对结果 `cmp_report.csv` 文件
+- **AIT 基于权重映射的精度比对**，分别指定 `--golden-path` 为 PTA 侧 dump 数据路径，`--my-path` 为加速库侧 dump 数据路径，通过权重的 MD5 值的匹配关系，自动建立映射，输出比对结果 `cmp_report.csv` 文件
   ```sh
   ait debug compare aclcmp --golden-path ait_dump/25115/ --my-path atb_temp/tensors/25518_25518
   ```
@@ -71,7 +71,7 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
 
   - 输出结果中 `token_id` 是以 0 为起始，由于 PTA 侧指定了 `dump_start_token_id=1`，`goden_data_path` `token_id==0` 对应的路径为 `1`，`acl_data_path` 对应的为 `0`
   - 该样例的比对结果中，由于加速库侧对于 ffn 层的第一个 Linear + activation 有融合操作，导致匹配到的 PTA 侧 Linear 算子节点相似度较低
-- 比对结果中只能匹配到权重 MD5 完全相同的算子，由于实际计算中存在权重数据格式转化等，可能匹配到的节点数量较少，因此只作为精度异常问题的大致范围界定
+- **计算算子间匹配程度**，比对结果中只能匹配到权重 MD5 完全相同的算子，且由于实际计算中存在权重数据格式转化等，可能匹配到的节点数量较少，因此只作为精度异常问题的大致范围界定
   ```sh
   # 根据 dump 数据统计加速库侧 Operation 数量
   find ./atb_temp/tensors/25518_25518/1 -wholename '*Operation/*Operation/after' | wc -l
@@ -81,10 +81,10 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
 
   ![matched_pie.png](matched_pie.png)
 ## BLOOM-7B 使用示例
-- 基本安装配置参照 `ChatGLM-6B 使用示例`，模型定义位于加速库下的 `pytorch/examples/bloom7b`
+- 使用前安装ait工具，参考 [ait 工具安装](https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md)，`BLOOM-7B` 模型定义位于加速库下的 `pytorch/examples/bloom7b`
 - 模型权重及配置文件获取 [Huggingface bigscience/bloom-7b1](https://huggingface.co/bigscience/bloom-7b1)，**需要保存到加速库路径以外的地方，否则影响以后编译**
 - **该样例加速库侧 dump 数据体积较大，可通过 `register_hook` 的 `dump_end_token_id` 参数限制 PTA 侧 dump token 数量，以及 `ATB_SAVE_TENSOR_END` 限制加速库侧 dump token 数量**
-- **PTA 侧 dump 数据** 在 `run_bloom_npu.py` 的 `main` 函数中，模型创建后添加 `register_hook`，以及 `set_dump_path` 配置 dump 路径，保存前向调用中的数据
+- **PTA 侧 dump 数据**，在 `run_bloom_npu.py` 的 `main` 函数中，模型创建后添加 `register_hook`，以及 `set_dump_path` 配置 dump 路径，保存前向调用中的数据
   ```py
   from msquickcmp.pta_acl_cmp.pt_dump.hook import register_hook, set_dump_path
   ...
@@ -103,7 +103,7 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   max_new_tokens_list = [2**x for x in range(5, 6)]  # 输出为 32 个 token
   ```
   执行推理脚本 `bash run.sh -p modeling_bloom.py --run --device 0`，查看生成数据位于 `{dump_path}/{dump_tag}/{进程 ID}` 下
-- **加速库侧 dump 数据** 在 `run_bloom_npu.py` 中设置 `set_dump_path` 指定 `backend="acl"`，同时指定 `LD_PRELOAD` 为 ait 的 `libsavetensor.so` 覆盖加速库原本的 `SaveTensor` 接口，将 intensor 保存为 MD5 值，用于匹配 PTA 侧数据
+- **加速库侧 dump 数据**，在 `run_bloom_npu.py` 中设置 `set_dump_path` 指定 `backend="acl"`，同时指定 `LD_PRELOAD` 为 ait 的 `libsavetensor.so` 覆盖加速库原本的 `SaveTensor` 接口，将 intensor 保存为 MD5 值，用于匹配 PTA 侧数据
   ```py
   from msquickcmp.pta_acl_cmp.pt_dump.hook import set_dump_path
   set_dump_path(backend="acl")
@@ -124,13 +124,13 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   ls $ASDOPS_LOG_TO_FILE_DIR/tensors/18621_18621/
   # 0  1  2  3  4  5
   ```
-  如发生错误 `undefined symbol: EVP_md5`，可能为环境中 python 使用的 `libssl.so` 与编译 `libtensorutil.so` 时使用的系统 `libssl.so` 不一致，可尝试指定 `export LD_PRELOAD=libssl.so:$LD_PRELOAD` 解决
-- **AIT 基于权重映射的精度比对** 分别指定 `--golden-path` 为 PTA 侧 dump 数据路径，`--my-path` 为加速库侧 dump 数据路径，通过权重的 MD5 值的匹配关系，自动建立映射，输出比对结果 `cmp_report.csv` 文件
+  如发生错误 `undefined symbol: EVP_md5`，可能为环境中 python 使用的 `libssl.so` 与编译 `libsavetensor.so` 时使用的系统 `libssl.so` 不一致，可尝试指定 `export LD_PRELOAD=libssl.so:$LD_PRELOAD` 解决
+- **AIT 基于权重映射的精度比对**，分别指定 `--golden-path` 为 PTA 侧 dump 数据路径，`--my-path` 为加速库侧 dump 数据路径，通过权重的 MD5 值的匹配关系，自动建立映射，输出比对结果 `cmp_report.csv` 文件
   ```sh
   ait debug compare aclcmp --golden-path ait_dump/21219 --my-path atb_temp/tensors/18621_18621
   ```
   ![bloom7b_cmp_result.png](bloom7b_cmp_result.png)
-- 计算算子间匹配程度
+- **计算算子间匹配程度**，比对结果中只能匹配到权重 MD5 完全相同的算子，且由于实际计算中存在权重数据格式转化等，可能匹配到的节点数量较少，因此只作为精度异常问题的大致范围界定
   ```sh
   # 根据 dump 数据统计加速库侧 Operation 数量
   find ./atb_temp/tensors/18621_18621/1 -wholename '*Operation/*Operation/after' | grep -v 'GraphOperation/after' | wc -l
