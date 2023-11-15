@@ -45,7 +45,7 @@ set_generate_func(generate_func)
 
 None
 
-## set_generate_func
+## set_rank
 **功能说明**
 
 设置rank值
