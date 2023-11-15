@@ -1,10 +1,11 @@
 # ait benchmark interface python API使用指南
 ## benchmark API简介
-  benchmark提供的python API可供使能基于昇腾硬件的离线模型(.om模型)推理。<br>
+benchmark提供的python API可供使能基于昇腾硬件的离线模型（.om模型）推理。
 
-使用ait benchmark 提供的api需要安装`ais_bench`和`aclruntime`包。安装方法有：
-- 1、参考[一体化安装指导](https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md)安装ait benchmark工具
-- 2、依据需求，单独安装ais_bench包和aclruntime包([安装包获取地址](https://gitee.com/ascend/ait/blob/master/ait/components/benchmark/README.md#下载whl包安装))：
+使用ait benchmark提供的API需要安装`ais_bench`和`aclruntime`包。安装方法有：
+
+1. 参考[一体化安装指导](https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md)安装ait benchmark工具。
+2. 依据需求，单独安装ais_bench包和aclruntime包([安装包获取地址](https://gitee.com/ascend/ait/blob/master/ait/components/benchmark/README.md#下载whl包安装))：
 
   ``` cmd
   # 安装aclruntime
@@ -13,7 +14,7 @@
   pip3 install ./ais_bench-{version}-py3-none-any.whl
   # {version}表示软件版本号，{python_version}表示Python版本号，{arch}表示CPU架构。
   ```
-## interface python API 快速上手
+## interface python API快速上手
 ### 整体流程图
 ![API使能模型推理流程](graphs/api_quick_start.png)
 
@@ -22,7 +23,7 @@
 from ais_bench.infer.interface import InferSession
 ```
 ### 加载模型
-InferSession 是单进程下interface API的主要类，它用于加载om模型和执行om模型的推理，模型推理前需要初始化一个InferSession的实例。
+InferSession是单进程下interface API的主要类，它用于加载om模型和执行om模型的推理，模型推理前需要初始化一个InferSession的实例。
 ```python
 # InferSession的初始化表示在device id为0的npu芯片上加载模型model.om
 session = InferSession(device_id=0, model_path="model.om")
@@ -47,40 +48,67 @@ session.free_resource()
 
 ## interface python API 详细介绍
 ### API导览
-|<td rowspan='1'>**主要文件**<td rowspan='1'>**主要类**</td><td rowspan='1'>**接口分类**</td><td rowspan='1'>**接口**</td>|
-|----|
-|<td rowspan='18'>interface.py</td><td rowspan='9'>[InferSession](#InferSession1)</td><td rowspan='2'>获取模型信息</td><td rowspan='1'>[get_inputs](#get_inputs1)</td>|
-|<td rowspan='1'>[get_outputs](#get_outputs1)</td>|
-|<td rowspan='3'>进行模型推理</td><td rowspan='1'>[infer](#infer1)</td>|
-|<td rowspan='1'>[infer_pipeline](#infer_pipeline1)</td>|
-|<td rowspan='1'>[infer_iteration](#infer_iteration1)</td>|
-|<td rowspan='2'>获取推理性能</td><td rowspan='1'>[summary](#summary1)</td>|
-|<td rowspan='1'>[reset_summaryinfo](#reset_summaryinfo1)</td>|
-|<td rowspan='2'>释放模型资源</td><td rowspan='1'>[free_resource](#free_resource1)</td>|
-|<td rowspan='1'>[finalize](#finalize1)</td>|
-|<td rowspan='4'>[MultiDeviceSession](#MultiDeviceSession1)</td><td rowspan='3'>进行模型推理</td><td rowspan='1'>[infer](#infer2)</td>|
-|<td rowspan='1'>[infer_pipeline](#infer_pipeline2)</td>|
-|<td rowspan='1'>[infer_iteration](#infer_iteration2)</td>|
-|<td rowspan='1'>获取推理性能</td><td rowspan='1'>[summary](#summary2)</td>|
-|<td rowspan='3'>[MemorySummary](#MemorySummary1)</td><td rowspan='3'>资源拷贝时间</td><td rowspan='1'>[get_h2d_time_list](#get_h2d_time_list1)</td>|
-|<td rowspan='1'>[get_d2h_time_list](#get_d2h_time_list1)</td>|
-|<td rowspan='1'>[reset](#reset1)</td>|
+interface python API主要在interface.py文件中包含的接口和分类如下：
+
+- [InferSession](#InferSession1)
+
+  获取模型信息
+
+  - [get_inputs](#get_inputs1)
+  - [get_outputs](#get_outputs1)
+
+  进行模型推理
+
+  - [infer](#infer1)
+  - [infer_pipeline](#infer_pipeline1)
+  - [infer_iteration](#infer_iteration1)
+
+  获取推理性能
+
+  - [summary](#summary1)
+  - [reset_summaryinfo](#reset_summaryinfo1)
+
+  释放模型资源
+
+  - [free_resource](#free_resource1)
+  - [finalize](#finalize1)
+
+- [MultiDeviceSession](#MultiDeviceSession1)
+
+  进行模型推理
+
+  - [infer](#infer2)
+  - [infer_pipeline](#infer_pipeline2)
+  - [infer_iteration](#infer_iteration2)
+
+  获取推理性能
+
+  - [summary](#summary2)
+
+- [MemorySummary](#MemorySummary1)
+
+  资源拷贝时间
+
+  - [get_h2d_time_list](#get_h2d_time_list1)
+  - [get_d2h_time_list](#get_d2h_time_list1)
+  - [reset](#reset1)
 
 <a name="InferSession1"></a>
 
 ### InferSession
+
 #### 类原型
 ```python
 class InferSession(device_id: int, model_path: str, acl_json_path: str = None, debug: bool = False, loop: int = 1)
 ```
 #### 类说明
-InferSession是**单进程**下用于om模型推理的类
+InferSession是**单进程**下用于om模型推理的类。
 #### 初始化参数
 |参数名|说明|是否必选|
 |----|----|----|
 |**device_id**|uint8，npu芯片的id，在装了CANN驱动的服务器上使用`npu-smi info`查看可用的npu芯片的id。|是|
 |**model_path**|str，om模型的路径，支持绝对路径和相对路径。|是|
-|**acl_json_path**|str，acl json文件，用于配置profiling（采集推理过程详细的性能数据）和dump（采集模型每层算子的输入输出数据）|否|
+|**acl_json_path**|str，acl json文件，用于配置profiling（采集推理过程详细的性能数据）和dump（采集模型每层算子的输入输出数据）。|否|
 |**debug**|bool，显示更详细的debug级别的log信息的开关，True为打开开关。|否|
 |**loop**|int，一组输入数据重复推理的次数，至少为1。|否|
 
@@ -130,10 +158,10 @@ infer(feeds, mode='static', custom_sizes=100000, out_array=True)
 **参数说明**
 |参数名|说明|是否必选|
 |----|----|----|
-|**feeds**|推理所需的一组输入数据，支持数据类型:<a name="jump0"></a> <br> <ul>1、numpy.ndarray; <br> 2、单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64); <br> 3、torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor) <br> 4、[aclruntime.Tensor](#acl_Tensor) </ul>|是|
-|**mode**|str，指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)|否|
+|**feeds**|推理所需的一组输入数据，支持数据类型：<a name="jump0"></a> <br> <ul>1、numpy.ndarray; <br> 2、单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64); <br> 3、torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor) <br> 4、[aclruntime.Tensor](#acl_Tensor) </ul>|是|
+|**mode**|str，指定加载的模型类型，可选“static”（静态模型）、“dymbatch”（动态batch模型）、“dymhw”（动态分辨率模型）、“dymdims”（动态dims模型）、”dymshape“（动态shape模型）。|否|
 |**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<br> <ul>1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 2、输入为list:[int]时, 模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
-|**out_array**|bool，是否将模型推理的结果从device侧搬运到host侧|否|
+|**out_array**|bool，是否将模型推理的结果从device侧搬运到host侧。|否|
 
 **返回值**
 + out_array == True，返回numpy.ndarray类型的推理输出结果，数据的内存在host侧。
@@ -155,11 +183,11 @@ infer_pipeline(feeds_list, mode = 'static', custom_sizes = 100000)
 **参数说明**
 |参数名|说明|是否必选|
 |----|----|----|
-|**feeds_list**|list，推理所需的几组组输入数据，list中支持数据类型:<a name="jump2"></a>: <br> <ul>1、numpy.ndarray; <br> 2、单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64); <br> 3、torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor) <br> 4、[aclruntime.Tensor](#acl_Tensor) </ul><b>注意:</b><br> <ul>1、'static'、'dymbatch'和 'dymhw'场景下feeds_list中的每个feeds中shape必须相同 <br> 2、'dymdims'和 'dymshape'场景下feeds_list中的每个feeds中shape可以不相同|是|
-|**mode**|str，指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)|否|
-|**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<ul><br>1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br>2、输入为list:[int]时，模型的每一个输|否·|
+|**feeds_list**|list，推理所需的几组组输入数据，list中支持数据类型：<a name="jump2"></a> <br> <ul>1、numpy.ndarray; <br> 2、单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64); <br> 3、torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor) <br> 4、[aclruntime.Tensor](#acl_Tensor) </ul><b>注意：</b><br> <ul>1、'static'、'dymbatch'和 'dymhw'场景下feeds_list中的每个feeds中shape必须相同。<br> 2、'dymdims'和 'dymshape'场景下feeds_list中的每个feeds中shape可以不相同。|是|
+|**mode**|str，指定加载的模型类型，可选“static”（静态模型）、“dymbatch”（动态batch模型）、“dymhw”（动态分辨率模型）、“dymdims”（动态dims模型）、”dymshape“（动态shape模型）。|否|
+|**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<br> <ul>1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 2、输入为list:[int]时，模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
 
-- **返回值**
+**返回值**
 
 返回list:[numpy.ndarray]类型的推理输出结果，数据的内存在host侧。
 
@@ -179,14 +207,14 @@ infer_iteration(feeds, in_out_list = None, iteration_times = 1, mode = 'static',
 **参数说明**
 |参数名|说明|是否必选|
 |----|----|----|
-|**feeds**|推理所需的一组输入数据，支持数据类型: <a name="jump4"></a> <br> <ul>1、numpy.ndarray; <br> 2、单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64); <br> 3、torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor) <br> |是|
+|**feeds**|推理所需的一组输入数据，支持数据类型: <a name="jump4"></a> <br> <ul>1、numpy.ndarray; <br> 2、单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64); <br> 3、torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor) |是|
 |**in_out_list**|[int]，表示每次迭代中，模型的输入来源于第几个输出，输入和输出的顺序与`get_inputs()`和`get_outputs()`获取的list中的元素顺序一致。例如，[-1, 1, 0]表示第一个输入数据复用原来的输入数据(用-1表示)，第二个输入数据来源于第二个输出数据，第三个输入来源于第一个输出数据。|是|
 |**iteration_times**|int，迭代的次数。|否|
-|**mode**|str，指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)|否|
+|**mode**|str，指定加载的模型类型，可选“static”（静态模型）、“dymbatch”（动态batch模型）、“dymhw”（动态分辨率模型）、“dymdims”（动态dims模型）、”dymshape“（动态shape模型）。|否|
 |**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<br><ul> 1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 2、输入为list:[int]时，模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
 |**mem_copy**|bool，决定迭代推理中输入数据使用上次推理的输出数据是否采用拷贝的方式。<br><ul> 1、mem_copy == True，采用拷贝，推理结束后底层的acl接口不会报错，推理结果正确。<br> 2、mem_copy == False，采用内存共用，推理结束后底层的acl接口可能会报错(开plog情况下)，推理结果正确，推理端到端时间更短。|否|
 
-- **返回值**
+**返回值**
 
 返回numpy.ndarray类型的推理输出结果，数据的内存在host侧。
 
@@ -244,7 +272,7 @@ free_resource()
 #### <font color=#DD4466>**finalize**</font>()
 **功能说明**
 
-用于释放InferSession对应device内InferSession所在进和AscendCL相关的所有资源。
+用于释放InferSession对应device内InferSession所在进程内和AscendCL相关的所有资源。
 
 **函数原型**
 ```python
@@ -277,9 +305,10 @@ MultiDeviceSession是**多进程**下用于om模型推理的类，初始化时�
 #### <font color=#DD4466>**infer函数**</font>
 **功能说明**
 
-多进程调用InferSession的[infer接口](#jump1)进行推理
+多进程调用InferSession的[infer接口](#jump1)进行推理。
 
 **函数原型**
+
 ```python
 infer(devices_feeds, mode='static', custom_sizes=100000, out_array=True)
 ```
@@ -287,11 +316,12 @@ infer(devices_feeds, mode='static', custom_sizes=100000, out_array=True)
 **参数说明**
 |参数名|说明|是否必选|
 |----|----|----|
-|**devices_feeds**|dict，{device_id: [feeds1, feeds2, ...]}，device的中的每个feeds都会单独开一个进程推理，feeds的定义参考[InferSession的infer接口中对feeds的定义](#jump0)|是|
-|**mode**|str，指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)|否|
-|**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)<br><ul> 1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 输入为list:[int]时, 模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
+|**devices_feeds**|dict，{device_id: [feeds1, feeds2, ...]}，device_id中的每个feeds都会单独开一个进程推理，feeds的定义参考[InferSession的infer接口中对feeds的定义](#jump0)。|是|
+|**mode**|str，指定加载的模型类型，可选“static”（静态模型）、“dymbatch”（动态batch模型）、“dymhw”（动态分辨率模型）、“dymdims”（动态dims模型）、”dymshape“（动态shape模型）。|否|
+|**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)<br> <ul> 1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 2、输入为list:[int]时, 模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
 
 **返回值**
+
 返回{device_id:[output1, output2, ...]}，output*为numpy.ndarray类型的推理输出结果，数据的内存在host侧。
 
 <a name="infer_pipeline2"></a>
@@ -303,6 +333,7 @@ infer(devices_feeds, mode='static', custom_sizes=100000, out_array=True)
 多进程调用InferSession的[infer_pipeline接口](#jump3)进行推理。
 
 **函数原型**
+
 ```python
 infer_pipeline(devices_feeds_list, mode = 'static', custom_sizes = 100000)
 ```
@@ -310,11 +341,12 @@ infer_pipeline(devices_feeds_list, mode = 'static', custom_sizes = 100000)
 **参数说明**
 |参数名|说明|是否必选|
 |----|----|----|
-|**devices_feeds_list**|dict，{device_id: [feeds_list1, feeds_list2, ...]}，device的中的每个feeds_list都会单独开一个进程推理，feeds_list的定义参考[InferSession的infer_pipeline接口中对feeds_list的定义](#jump2)。|是|
-|**mode**|str，指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)|否|
-|**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<ul><br> 1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 2、输入为list:[int]时，模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
+|**devices_feeds_list**|dict，{device_id: [feeds_list1, feeds_list2, ...]}，device_id中的每个feeds_list都会单独开一个进程推理，feeds_list的定义参考[InferSession的infer_pipeline接口中对feeds_list的定义](#jump2)。|是|
+|**mode**|str，指定加载的模型类型，可选“static”（静态模型）、“dymbatch”（动态batch模型）、“dymhw”（动态分辨率模型）、“dymdims”（动态dims模型）、”dymshape“（动态shape模型）。|否|
+|**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<br> <ul> 1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 2、输入为list:[int]时，模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
 
 **返回值**
+
 返回{device_id:[output1, output2, ...]}，output*为[numpy.ndarray]类型的推理输出结果，数据的内存在host侧。
 
 <a name="infer_iteration2"></a>
@@ -327,18 +359,18 @@ infer_pipeline(devices_feeds_list, mode = 'static', custom_sizes = 100000)
 
 **函数原型**
 ```python
-infer_iteration(device_feeds, in_out_list = None, iteration_times = 1, mode = 'static', custom_sizes = 100000, mem_copy = True)
+infer_iteration(device_feeds, in_out_list = None, iteration_times = 1, mode = 'static', custom_sizes = None, mem_copy = True)
 ```
 
 **参数说明**
 |参数名|说明|是否可选|
 |----|----|----|
-|**devices_feeds**|dict，{device_id: [feeds1, feeds2, ...]}，device的中的每个feeds都会单独开一个进程推理，feeds的定义参考[InferSession的infer_iteration接口中对feeds的定义](#jump4)。|是|
+|**devices_feeds**|dict，{device_id: [feeds1, feeds2, ...]}，device_id中的每个feeds都会单独开一个进程推理，feeds的定义参考[InferSession的infer_iteration接口中对feeds的定义](#jump4)。|是|
 |**in_out_list**|[int]，表示每次迭代中，模型的输入来源于第几个输出，输入和输出的顺序与`get_inputs()`和`get_outputs()`获取的list中的元素顺序一致。例如，[-1, 1, 0]表示第一个输入数据复用原来的输入数据(用-1表示)，第二个输入数据来源于第二个输出数据，第三个输入来源于第一个输出数据。|是|
 |**iteration_times**|int，迭代的次数。|否|
-|**mode**|str，指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)|否|
-|**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<ul><br> 1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 2、输入为list:[int]时，模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
-|**mem_copy**|bool，决定迭代推理中输入数据使用上次推理的输出数据是否采用拷贝的方式。<ul><br> 1、mem_copy == True，采用拷贝，推理结束后底层的acl接口不会报错，推理结果正确。2、mem_copy == False，采用内存共用，推理结束后底层的acl接口可能会报错(开plog情况下)，推理结果正确，推理端到端时间更短。|否|
+|**mode**|str，指定加载的模型类型，可选“static”（静态模型）、“dymbatch”（动态batch模型）、“dymhw”（动态分辨率模型）、“dymdims”（动态dims模型）、”dymshape“（动态shape模型）。|否|
+|**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<br> <ul> 1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 2、输入为list:[int]时，模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
+|**mem_copy**|bool，决定迭代推理中输入数据使用上次推理的输出数据是否采用拷贝的方式。<br> <ul>1、mem_copy == True，采用拷贝，推理结束后底层的acl接口不会报错，推理结果正确。<br/> 2、mem_copy == False，采用内存共用，推理结束后底层的acl接口可能会报错(开plog情况下)，推理结果正确，推理端到端时间更短。|否|
 
 **返回值**
 
@@ -350,7 +382,7 @@ infer_iteration(device_feeds, in_out_list = None, iteration_times = 1, mode = 's
 
 **功能说明**
 
-获取最近一次使用多进程推理接口得到的端到端推理时间(包含模型加载时间)。
+获取最近一次使用多进程推理接口得到的端到端推理时间（包含模型加载时间）。
 
 **函数原型**
 
@@ -360,7 +392,7 @@ summary()
 
 **返回值**
 
-返回{device_id:[e2etime1, e2etime2, ...]}，e2etime*为每个进程端到端推理的时间(包含模型加载时间)。
+返回{device_id:[e2etime1, e2etime2, ...]}，e2etime*为每个进程端到端推理的时间（包含模型加载时间）。
 
 <a name="MemorySummary1"></a>
 
@@ -427,37 +459,42 @@ reset()
 #### <font color=#DD4466>**aclruntime.tensor_desc**</font>
 描述模型输入输出节点信息的结构体：<br>
 - property <font color=#DD4466>**name**</font>:str
-    + 节点名称。
+    
+    节点名称。
 - property <font color=#DD4466>**datatype**</font>:[aclruntime.dtype](#acl_dtype)
-    + 节点接受tensor的数据类型
+    
+    节点接受tensor的数据类型。
 - property <font color=#DD4466>**format**</font>:int
-    + 节点接受tensor格式，0表示NCHW格式，1表示NHWC格式。
+    
+    节点接受tensor格式，0表示NCHW格式，1表示NHWC格式。
 - property <font color=#DD4466>**shape**</font>:list [int]
-    + 节点接受的tensor的shape。
+    
+    节点接受的tensor的shape。
 - property <font color=#DD4466>**size**</font>:int
-    + 节点接受的tensor的大小。
+    
+    节点接受的tensor的大小。
 - property <font color=#DD4466>**realsize**</font>:int
-    + 节点接受的tensor的真实大小，针对动态shape 动态分档场景 实际需要的大小。
+    
+    节点接受的tensor的真实大小，针对动态shape 动态分档场景 实际需要的大小。
 
 <a name="acl_dtype"></a>
 
 #### <font color=#DD4466>**aclruntime.dtype**</font>(enum)
-数据类型名称的枚举类型：<br>
-- 包含 'uint8', 'int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64', 'float16', 'float32', 'double64', 'bool'
+数据类型名称的枚举类型，包含： 'uint8', 'int8', 'uint16', 'int16', 'uint32', 'int32', 'uint64', 'int64', 'float16', 'float32', 'double64', 'bool'
 
 <a name="acl_Tensor"></a>
 
 #### <font color=#DD4466>**aclruntime.Tensor**</font>
-- device侧保存tensor的方式，在host侧无法直接访问
+device侧保存tensor的方式，在host侧无法直接访问。
 
 ## interface python API 使用样例
-- 如果要执行使用样例，需要在linux环境下载[ait](https://gitee.com/ascend/ait)的源码，进入[使用样例目录](https://gitee.com/ascend/ait/tree/master/ait/components/benchmark/api_samples)下, 执行以下命令生成样例执行所需的模型（仅支持在310系列的推理卡上生成，不支持在910系列的训练卡上生成）。
-  ```cmd
-  chmod 750 get_sample_datas.sh
-  ```
-  ```cmd
-  ./get_sample_datas.sh
-  ```
+如果要执行使用样例，需要在linux环境下载[ait](https://gitee.com/ascend/ait)的源码，进入[使用样例目录](https://gitee.com/ascend/ait/tree/master/ait/components/benchmark/api_samples)下, 执行以下命令生成样例执行所需的模型（仅支持在310系列的推理卡上生成，不支持在910系列的训练卡上生成）。
+```cmd
+chmod 750 get_sample_datas.sh
+```
+```cmd
+./get_sample_datas.sh
+```
 
 ### 样例列表
 #### 单进程使用`InferSession.infer`接口推理
@@ -472,11 +509,11 @@ reset()
 #### 单进程使用`InferSession.infer_pipeline`接口推理
 |样例|说明|
 | ---- | ---- |
-|[infer_pipeline_api_static.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_static.py)|调用InferSession的infer接口推理静态模型|
-|[infer_pipeline_api_dymbatch.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymbatch.py)|调用InferSession的infer接口推理动态batch模型|
-|[infer_pipeline_api_dymhw.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymhw.py)|调用InferSession的infer接口推理动态分辨率模型|
-|[infer_pipeline_api_dymdims.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymdims.py)|调用InferSession的infer接口推理动态dims模型|
-|[infer_pipeline_api_dymshape.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymshape.py)|调用InferSession的infer接口推理动态shape模型|
+|[infer_pipeline_api_static.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_static.py)|调用InferSession的infer_pipeline接口推理静态模型|
+|[infer_pipeline_api_dymbatch.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymbatch.py)|调用InferSession的infer_pipeline接口推理动态batch模型|
+|[infer_pipeline_api_dymhw.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymhw.py)|调用InferSession的infer_pipeline接口推理动态分辨率模型|
+|[infer_pipeline_api_dymdims.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymdims.py)|调用InferSession的infer_pipeline接口推理动态dims模型|
+|[infer_pipeline_api_dymshape.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymshape.py)|调用InferSession的infer_pipeline接口推理动态shape模型|
 
 #### 单进程使用`InferSession.infer_iteration`接口推理
 |样例|说明|
@@ -491,6 +528,6 @@ reset()
 |样例|说明|
 | ---- | ---- |
 |[multidevice_infer_api.py](../../components/benchmark/api_samples/interface_api_usage/multidevice_api/multidevice_infer_api.py)|调用MultiDeviceSession的infer接口推理静态模型|
-|[multidevice_infer_pipeline_api.py](../../components/benchmark/api_samples/interface_api_usage/multidevice_api/multidevice_infer_pipeline_api.py)|调用MultiDeviceSession的infer接口推理静态模型|
+|[multidevice_infer_pipeline_api.py](../../components/benchmark/api_samples/interface_api_usage/multidevice_api/multidevice_infer_pipeline_api.py)|调用MultiDeviceSession的infer_pipeline接口推理静态模型|
 |[multidevice_infer_iteration_api.py](../../components/benchmark/api_samples/interface_api_usage/multidevice_api/multidevice_infer_iteration_api.py)|调用MultiDeviceSession的infer_iteration接口推理静态模型|
 
