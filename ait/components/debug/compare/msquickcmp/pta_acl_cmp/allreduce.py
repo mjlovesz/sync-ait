@@ -17,10 +17,6 @@ import csv
 import logging
 import argparse
 
-import numpy as np
-from numpy.typing import NDArray
-from numpy.linalg import norm
-
 from msquickcmp.pta_acl_cmp.utils import TensorBinFile
 from msquickcmp.pta_acl_cmp.cmp_algorithm import cosine_similarity, max_relative_error, mean_relative_error, relative_euclidean_distance
 
