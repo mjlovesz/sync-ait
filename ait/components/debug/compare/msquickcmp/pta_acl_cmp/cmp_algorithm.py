@@ -17,6 +17,7 @@ from msquickcmp.common.utils import logger
 
 
 FLOAT_EPSILON = np.finfo(float).eps
+np.seterr(divide='ignore', invalid='ignore')  # ignore `invalid value encountered in true_divide` warning
 NAN = 'NaN'
 
 

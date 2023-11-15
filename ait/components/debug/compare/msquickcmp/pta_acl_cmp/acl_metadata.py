@@ -53,7 +53,7 @@ def init_encoder_decoder_token_id(base_path):
     for ii in sorted_tokens:
         if 'Encoder' in ii:
             gathered.append([ii])
-        elif os.path.dirname(os.path.dirname(ii)) == pre_decoder_id:
+        elif os.path.basename(os.path.dirname(ii)) == pre_decoder_id:
             gathered[-1].append(ii)
         else:
             gathered.append([ii])
