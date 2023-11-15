@@ -70,7 +70,7 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
 - 比对结果中只能匹配到权重 MD5 完全相同的算子，由于实际计算中存在权重数据格式转化等，可能匹配到的节点数量较少，因此只作为精度异常问题的大致范围界定
   ```sh
   # 根据 dump 数据统计加速库侧 Operation 数量
-  find ./atb_temp/tensors/25518_25518/1 -name 'after' | grep 'Operation/.*Operation/after' | wc -l
+  find ./atb_temp/tensors/25518_25518/1 -wholename '*Operation/*Operation/after' | wc -l
   # 644
   ```
   同时该样例 csv 表格中单个 token 的 Operation 匹配到权重 MD5 的数量为 `170`，占比 `26.4%`
