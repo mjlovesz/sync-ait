@@ -22,18 +22,18 @@ import msquickcmp
 from msquickcmp.pta_acl_cmp.constant import AIT_DUMP_PATH, AIT_IS_SAVE_MD5, AIT_DIALOG_DUMP_PATH
 
 
-def dump_output_hook(dump_start_step=0, dump_end_step=-1):
-    infer_step = 0
+def dump_output_hook(dump_start_token_id=0, dump_end_token_id=-1):
+    cur_token_id = 0
 
     def hook_func(module, inputs, outputs):
         if not hasattr(module, "weight"):
             return outputs
 
-        nonlocal infer_step
-        if infer_step < dump_start_step:
-            infer_step += 1
+        nonlocal cur_token_id
+        if cur_token_id < dump_start_token_id:
+            cur_token_id += 1
             return outputs
-        if dump_end_step > 0 and infer_step > dump_end_step:
+        if dump_end_token_id > 0 and cur_token_id > dump_end_token_id:
             return outputs
 
         if hasattr(module, "bias") and module.bias is not None:
@@ -49,7 +49,7 @@ def dump_output_hook(dump_start_step=0, dump_end_step=-1):
         if not os.path.exists(pid_dir):
             os.mkdir(pid_dir)
 
-        token_dir = os.path.join(pid_dir, str(infer_step))
+        token_dir = os.path.join(pid_dir, str(cur_token_id))
         if not os.path.exists(token_dir):
             os.mkdir(token_dir)
 
@@ -57,26 +57,26 @@ def dump_output_hook(dump_start_step=0, dump_end_step=-1):
         np.save(out_data_path, outputs.cpu().numpy())
 
         metadata_path = os.path.join(pid_dir, "metadata.json")
-        infer_step_key = str(infer_step - dump_start_step)  # Keep key starts from 0
+        cur_token_id_key = str(cur_token_id - dump_start_token_id)  # Keep key starts from 0
         if os.path.exists(metadata_path):
             with open(metadata_path, "r") as file:
                 metadata = json.load(file)
-            if metadata.get(infer_step_key):
-                metadata.get(infer_step_key).setdefault(cur_md5, [out_data_path])
+            if metadata.get(cur_token_id_key):
+                metadata.get(cur_token_id_key).setdefault(cur_md5, [out_data_path])
             else:
-                metadata.setdefault(infer_step_key, {cur_md5: [out_data_path]})
+                metadata.setdefault(cur_token_id_key, {cur_md5: [out_data_path]})
         else:
-            metadata = {infer_step_key: {cur_md5: [out_data_path]}}
+            metadata = {cur_token_id_key: {cur_md5: [out_data_path]}}
 
         with open(metadata_path, "w") as file:
             json.dump(metadata, file)
 
-        infer_step += 1
+        cur_token_id += 1
 
     return hook_func
 
 
-def register_hook(model, op_list=None, dump_start_step=0, dump_end_step=-1):
+def register_hook(model, op_list=None, dump_start_token_id=0, dump_end_token_id=-1):
     if not isinstance(model, nn.Module):
         raise TypeError("model must be nn.Module.")
     op_list = [] if op_list is None else op_list
@@ -89,12 +89,12 @@ def register_hook(model, op_list=None, dump_start_step=0, dump_end_step=-1):
                     continue
                 module.name = name
                 module.register_forward_hook(
-                    dump_output_hook(dump_start_step=dump_start_step, dump_end_step=dump_end_step)
+                    dump_output_hook(dump_start_token_id=dump_start_token_id, dump_end_token_id=dump_end_token_id)
                 )
         else:
             module.name = name
             module.register_forward_hook(
-                dump_output_hook(dump_start_step=dump_start_step, dump_end_step=dump_end_step)
+                dump_output_hook(dump_start_token_id=dump_start_token_id, dump_end_token_id=dump_end_token_id)
             )
 
 
