@@ -19,7 +19,7 @@
   | model   | 要hook的模型       | 是       | 数据类型：torch.nn.Module                                                                   |
   | op_list | 需要hook的算子类型 | 否       | 数据类型：list，默认为 None，表示会对模型中所有 op 进行 hook，若设置 op_list，只会 hook 指定的 op |
   | dump_start_token_id | dump 数据的起始 token id | 否       | 数据类型：int，默认为 0，或指定 > 0 的值表示起始的 token id，**当加速库侧不调用 encoder ，即没有 encoder dump 数据时需要设置为 1** |
-  | dump_end_token_id | dump 数据的结束 token id | 否       | 数据类型：int，默认为 -1，表示不限制结束的 token，或指定 > 0 的值表示结束的 token id |
+  | dump_end_token_id | dump 数据的结束 token id | 否       | 数据类型：int，默认为 -1，表示不限制结束的 token，或指定 > 0 的值表示结束的 token id，如指定 3，则 dump `[0, 1, 2, 3]` 4 个 token 的数据 |
 ## 命令行接口介绍
 ```sh
 ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速库侧 dump 数据}
@@ -82,7 +82,7 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   ![matched_pie.png](matched_pie.png)
 ## BLOOM-7B 使用示例
 - 基本安装配置参照 `ChatGLM-6B 使用示例`，模型定义位于加速库下的 `pytorch/examples/bloom7b`
-- 模型权重及配置文件获取 [Huggingface bigscience/bloom-7b1](https://huggingface.co/bigscience/bloom-7b1) 获取，**需要保存到加速库路径以外的地方，否则影响以后编译**
+- 模型权重及配置文件获取 [Huggingface bigscience/bloom-7b1](https://huggingface.co/bigscience/bloom-7b1)，**需要保存到加速库路径以外的地方，否则影响以后编译**
 - **该样例加速库侧 dump 数据体积较大，可通过 `register_hook` 的 `dump_end_token_id` 参数限制 PTA 侧 dump token 数量，以及 `ATB_SAVE_TENSOR_END` 限制加速库侧 dump token 数量**
 - **PTA 侧 dump 数据** 在 `run_bloom_npu.py` 的 `main` 函数中，模型创建后添加 `register_hook`，以及 `set_dump_path` 配置 dump 路径，保存前向调用中的数据
   ```py
@@ -91,14 +91,14 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   model, tokenizer = load_model(args)
   
   # 在模型初始化后添加，当前版本的该样例加速库侧会执行 encoder，不需要指定 dump_start_token_id
-  # 指定 dump_end_token_id dump [0, 1, 2, 3, 4, 5] token 的数据
+  # 指定 dump_end_token_id 表示只 dump [0, 1, 2, 3, 4, 5] token 的数据
   register_hook(model, dump_end_token_id=5)
   set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt")
   ...
 
   # 修改脚本，只做一次推理
-  # -    seq_lens = [2**x for x in range(5, 11)]
-  # -    max_new_tokens_list = [2**x for x in range(5, 11)]
+  # - seq_lens = [2**x for x in range(5, 11)]
+  # - max_new_tokens_list = [2**x for x in range(5, 11)]
   seq_lens = [2**x for x in range(5, 6)]
   max_new_tokens_list = [2**x for x in range(5, 6)]  # 输出为 32 个 token
   ```
@@ -108,7 +108,7 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   from msquickcmp.pta_acl_cmp.pt_dump.hook import set_dump_path
   set_dump_path(backend="acl")
   ```
-  同时配置其他 `ATB` dump 相关环境变量，执行推理脚本，指定 `ATB_SAVE_TENSOR_END=5` 限制只 dump 前 `[0, 1, 2, 3, 4, 5]` token 数据
+  同时配置其他 `ATB` dump 相关环境变量，执行推理脚本，指定 `ATB_SAVE_TENSOR_END=5` 限制只 dump `[0, 1, 2, 3, 4, 5]` token 数据
   ```sh
   MSQUICKCMP_PATH=`python3 -c 'import msquickcmp; print(msquickcmp.__path__[0])'`
   export LD_PRELOAD=$MSQUICKCMP_PATH/libsavetensor.so:$LD_PRELOAD
