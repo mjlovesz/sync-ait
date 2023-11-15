@@ -292,11 +292,11 @@ def call_auto_optimizer(modifier, modify_info, output_suffix, make_cmd):
         raise ServerError("请安装 ait/debug/surgeon", 599) from ex
 
     with FileAutoClear(tempfile.NamedTemporaryFile(mode="wb", delete=False, suffix=".onnx")) as (_, modified_file):
-        opt_file_path = modified_file.name + output_suffix
+        opt_file_path = realpath_ex(modified_file.name) + output_suffix
         modify_model(modifier, modify_info, modified_file)
         modified_file.close()
 
-        cmd = make_cmd(in_path=realpath_ex(modified_file.name), out_path=realpath_ex(opt_file_path))
+        cmd = make_cmd(in_path=realpath_ex(modified_file.name), out_path=opt_file_path)
 
         out_res = subprocess.run(cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         if out_res.returncode != 0:
