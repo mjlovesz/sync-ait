@@ -174,7 +174,7 @@ template <typename T> std::vector<char> CreateNpyHeader(const std::vector<size_t
     dict += BigEndianTest();
     dict += MapType(typeid(T));
     dict += std::to_string(sizeof(T));
-    dict += "', 'fortranOrder': False, 'shape': (";
+    dict += "', 'fortran_order': False, 'shape': (";
     dict+= std::to_string(shape[0]);
     for (size_t i = 1; i < shape.size(); i++) {
         dict += ", ";
