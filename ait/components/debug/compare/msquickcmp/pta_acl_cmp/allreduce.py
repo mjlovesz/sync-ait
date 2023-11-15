@@ -28,18 +28,6 @@ WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 
 
-def cosine_similarity(mat0: NDArray, mat1: NDArray) -> float:
-    try:
-        m0 = np.ndarray.flatten(mat0) / norm(mat0)
-    except ZeroDivisionError as err:
-        raise RuntimeError("get ZeroDivisionError when calc cosine_similarity") from err
-    try:
-        m1 = np.ndarray.flatten(mat1) / norm(mat1)
-    except ZeroDivisionError as err:
-        raise RuntimeError("get ZeroDivisionError when calc cosine_similarity") from err
-    return np.dot(m0, m1)
-
-
 def compare_allreduce(root_dir_0, root_dir_1, csv_output_path):
     """
     Function:
@@ -59,7 +47,7 @@ def compare_allreduce(root_dir_0, root_dir_1, csv_output_path):
     # 获取所有需要比对的路径
     for dirpath, dirnames, _ in os.walk(root_dir_0):
         for dirname in dirnames:
-            if dirname.endswith('1_AllReduceHcclRunner'):
+            if dirname.endswith('AllReduceHcclRunner'):
                 dir_path = os.path.join(dirpath, dirname)
                 dir_path_list.append(dir_path)
 
@@ -69,9 +57,10 @@ def compare_allreduce(root_dir_0, root_dir_1, csv_output_path):
         output_tensor_0_path = os.path.join(dir_path, "after/outtensor0.bin")
         output_tensor_1_path = output_tensor_0_path.replace(process_0, process_1)
 
-        gold = TensorBinFile(input_tensor_0_path).get_data() + TensorBinFile(input_tensor_1_path).get_data()
-        output_0 = TensorBinFile(output_tensor_0_path).get_data()
-        output_1 = TensorBinFile(output_tensor_1_path).get_data()
+        gold = (TensorBinFile(input_tensor_0_path).get_data() + 
+                TensorBinFile(input_tensor_1_path).get_data()).reshape(-1).astype("float32")
+        output_0 = TensorBinFile(output_tensor_0_path).get_data().reshape(-1).astype("float32")
+        output_1 = TensorBinFile(output_tensor_1_path).get_data().reshape(-1).astype("float32")
         result_process_0.append([dir_path,
                                  cosine_similarity(gold, output_0), 
                                  max_relative_error(gold, output_0),
@@ -91,7 +80,7 @@ def compare_allreduce(root_dir_0, root_dir_1, csv_output_path):
         allreduce_compare_result = os.path.join(csv_output_path, "allreduce_compare_result.csv")
 
     if os.path.exists(allreduce_compare_result):
-        logging.error("Error, file already exists!")
+        logging.warning("The original file %s has been overwritten.", allreduce_compare_result)
         os.remove(allreduce_compare_result)
     
     with os.fdopen(os.open(allreduce_compare_result, WRITE_FLAGS, WRITE_MODES), 'w',
@@ -107,11 +96,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--process_0_path",
                         type=str,
-                        help="the path of process 0")
+                        help="the dump data path of process 0")
 
     parser.add_argument("--process_1_path",
                         type=str,
-                        help="the path of process 1")
+                        help="the dump data path of process 1")
 
     parser.add_argument("--output_path",
                         type=str,
