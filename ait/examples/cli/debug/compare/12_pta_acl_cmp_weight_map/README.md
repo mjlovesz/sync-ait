@@ -13,11 +13,11 @@
   | dump_tag    | 设置 dump 数据目录名称 | 否       | 参数示例：dump_tag="dialog_0"，默认 dump 数据目录命名为 ait_dump                           |
   | backend     | 推理后端               | 否       | 数据类型：str，可选值 [pt, acl]，pt 表示 pytorch-npu 或 pytorch-gpu 推理，acl 表示加速库推理 |
 
-- **register_hook(model, op_list=[], dump_start_step=0, dump_end_step=-1)** 给模型注册钩子，获取模型中间的输出数据，**仅 pytorch-npu(gpu) 推理时需要使用**
+- **register_hook(model, op_list=None, dump_start_step=0, dump_end_step=-1)** 给模型注册钩子，获取模型中间的输出数据，**仅 pytorch-npu(gpu) 推理时需要使用**
   | 参数名  | 含义               | 是否必填 | 使用说明                                                                                    |
   | ------- | ------------------ | -------- | ------------------------------------------------------------------------------------------- |
   | model   | 要hook的模型       | 是       | 数据类型：torch.nn.Module                                                                   |
-  | op_list | 需要hook的算子类型 | 否       | 数据类型：list，默认为 []，会对模型中所有 op 进行 hook，若设置 op_list，只会 hook 指定的 op |
+  | op_list | 需要hook的算子类型 | 否       | 数据类型：list，默认为 None，表示会对模型中所有 op 进行 hook，若设置 op_list，只会 hook 指定的 op |
   | dump_start_step | dump 数据的起始 token id | 否       | 数据类型：int，默认为 0，**当加速库侧不调用 encoder ，即没有 encoder dump 数据时需要设置为 1** |
   | dump_end_step | dump 数据的结束 token id | 否       | 数据类型：int，默认为 -1，表示不限制结束的 token，或指定 > 0 的值表示结束的 token id |
 ## 命令行接口介绍
