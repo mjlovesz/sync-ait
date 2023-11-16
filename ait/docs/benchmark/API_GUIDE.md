@@ -310,7 +310,7 @@ MultiDeviceSession是**多进程**下用于om模型推理的类，初始化时�
 **函数原型**
 
 ```python
-infer(devices_feeds, mode='static', custom_sizes=100000, out_array=True)
+infer(devices_feeds, mode='static', custom_sizes=100000)
 ```
 
 **参数说明**
@@ -459,22 +459,22 @@ reset()
 #### <font color=#DD4466>**aclruntime.tensor_desc**</font>
 描述模型输入输出节点信息的结构体：<br>
 - property <font color=#DD4466>**name**</font>:str
-    
+  
     节点名称。
 - property <font color=#DD4466>**datatype**</font>:[aclruntime.dtype](#acl_dtype)
-    
+  
     节点接受tensor的数据类型。
 - property <font color=#DD4466>**format**</font>:int
-    
+  
     节点接受tensor格式，0表示NCHW格式，1表示NHWC格式。
 - property <font color=#DD4466>**shape**</font>:list [int]
-    
+  
     节点接受的tensor的shape。
 - property <font color=#DD4466>**size**</font>:int
-    
+  
     节点接受的tensor的大小。
 - property <font color=#DD4466>**realsize**</font>:int
-    
+  
     节点接受的tensor的真实大小，针对动态shape 动态分档场景 实际需要的大小。
 
 <a name="acl_dtype"></a>
