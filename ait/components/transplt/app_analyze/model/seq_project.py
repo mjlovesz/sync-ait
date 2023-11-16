@@ -2,44 +2,39 @@ import time
 
 from app_analyze.common.kit_config import KitConfig
 from app_analyze.model.project import Project
-from app_analyze.scan.scanner_factory import ScannerFactory
-from app_analyze.scan.func_parser import FuncParser
 from app_analyze.scan.sequence.seq_handler import SeqHandler
 from app_analyze.scan.sequence.seq_matcher import match_api_seqs
-from app_analyze.scan.sequence.acc_libs import get_expert_libs
-from app_analyze.scan.sequence.seq_desc import get_idx_tbl
+from app_analyze.scan.sequence.acc_libs import get_expert_libs, set_expert_libs
+from app_analyze.scan.sequence.seq_desc import get_idx_tbl, set_api_lut
 from app_analyze.solution.seq_advisor import SeqAdvisor
+from app_analyze.utils.io_util import IOUtil
+from app_analyze.utils.log_util import logger
 
 
 class SeqProject(Project):
-    def __init__(self, inputs, train_flag=True):
+    def __init__(self, inputs, infer_flag=True):
         super().__init__(inputs)
-        self.train_flag = train_flag
+        self.infer_flag = infer_flag
+        self._load_api_def(infer_flag)
+
         self.api_seqs = []
 
-    def setup_scanners(self):
-        """
-        根据传入的扫描类型生成对应的扫描器实例，第一阶段只支持C/C++文件和
-        makefile文件的扫描。
-        说明：第一阶段这里的参数传递暂时做成这个样子，方便随时增减参数内容。
-        但是问题是被调用方知道参数的内容才可以顺利取出。所以没做被调用方的取
-        值失败的异常情况。要特别小心。后续可以考虑将参数包装成类进行传递。
-        :return: NA
-        """
-        scanner_params = {
-            'cpp_files': {
-                'cpp': self.file_matrix.files.get('cpp_sources'),
-                'hpp': self.file_matrix.files.get('hpp_sources'),
-                'include_path': self.file_matrix.files.get('include_path'),
-                'cxx_parser': FuncParser
-            },
-        }
+    @staticmethod
+    def _load_api_def(flag):
+        if not flag:
+            logger.debug("Train mode, api lut had been inited outside.")
+            return
 
-        scanner_factory = ScannerFactory(scanner_params)
-        for s_type in self.inputs.scanner_type:
-            self.scanners.append(scanner_factory.get_scanner(s_type))
+        all_idx_dict = {}
+        for val in KitConfig.API_INDEX_MAP.values():
+            idx_seq_dict = IOUtil.bin_safe_load(val)
+            all_idx_dict.update(idx_seq_dict)
+        set_api_lut(all_idx_dict)
 
-    def register_reporter_format(self, fmt_dict):
+        expert_libs = IOUtil.json_safe_load(KitConfig.EXPERT_LIBS_FILE)
+        set_expert_libs(expert_libs)
+
+    def _register_reporter_format(self, fmt_dict):
         for reporter in self.reporters:
             name = type(reporter).__name__
             reporter.set_format(fmt_dict.get(name, None))
@@ -71,17 +66,22 @@ class SeqProject(Project):
         if len(val_dict) > 1:
             SeqHandler.union_api_seqs(rst)
 
-        self.api_seqs = SeqHandler.clean_api_seqs(rst, self.train_flag)
-        if not self.train_flag:
+        self.api_seqs = SeqHandler.clean_api_seqs(rst, self.infer_flag)
+        if self.infer_flag:
             expert_libs = get_expert_libs()
             cluster_result = match_api_seqs(self.api_seqs, expert_libs)
             advisor = SeqAdvisor(cluster_result, get_idx_tbl())
             rd_rst = advisor.recommend()
-            self.report_results.update(rd_rst)
 
-            self.dump()
-            self.register_reporter_format({'CsvReport': advisor.format_fn})
-            self.generate_report(True)
+            self.report_results.update(rd_rst)
+            output_format = dict(zip(rd_rst.keys(), [advisor.cxx_format_fn for _ in range(len(rd_rst))]))
+
+            val_dict = self.scan_results.get('cmake', None)
+            if val_dict:
+                self.report_results.update(val_dict)
+                output_format.update(zip(val_dict.keys(), [advisor.common_format_fn for _ in range(len(val_dict))]))
+
+            self._register_reporter_format({'CsvReport': output_format})
 
         eval_time = time.time() - start_time
         KitConfig.PROJECT_TIME = eval_time

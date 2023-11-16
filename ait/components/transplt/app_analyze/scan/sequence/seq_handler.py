@@ -1,6 +1,5 @@
-import pickle
-
 from app_analyze.utils.log_util import logger
+from app_analyze.utils.io_util import IOUtil
 from app_analyze.common.kit_config import SeqArgs
 from app_analyze.scan.sequence.aprioriv2 import apriori
 from app_analyze.scan.sequence.seq_desc import get_idx_tbl
@@ -44,7 +43,7 @@ class SeqHandler:
                 seq_desc.has_usr_def = False
 
     @staticmethod
-    def clean_api_seqs(seqs, deep_flag):
+    def clean_api_seqs(seqs, infer_flag):
         def _compact_apis(api_seq):
             apis = []
             pre_api_id = None
@@ -65,7 +64,7 @@ class SeqHandler:
             if seq_desc.has_called:
                 continue
 
-            if deep_flag:
+            if not infer_flag:
                 if not seq_desc.has_usr_def:
                     # all acc lib apis in seq
                     seq_desc.api_seq = _compact_apis(seq_desc.api_seq)
@@ -92,23 +91,14 @@ class SeqHandler:
         return rst
 
     @staticmethod
-    def store_api_seqs(seqs, id_dict=None, path='./'):
-        seqs_txt = path + 'seqs.tmp.bin'
-        with open(seqs_txt, 'wb') as f:
-            pickle.dump(seqs, f)
+    def _store_api_seqs(seqs, id_dict=None, path='./'):
+        seqs_file = path + 'seqs.tmp.bin'
+        IOUtil.bin_safe_dump(seqs, seqs_file)
 
-        seqs_idx_txt = path + 'seqs_idx.tmp.bin'
+        seqs_idx_file = path + 'seqs_idx.tmp.bin'
         if not id_dict:
             id_dict = get_idx_tbl()
-
-        with open(seqs_idx_txt, 'wb') as f:
-            pickle.dump(id_dict, f)
-
-    @staticmethod
-    def load_api_seqs(path):
-        with open(path, 'rb') as text:
-            data = pickle.load(text)
-        return data
+        IOUtil.bin_safe_dump(id_dict, seqs_idx_file)
 
     @staticmethod
     def debug_string(seqs, idx_dict=None):
@@ -212,7 +202,7 @@ class SeqHandler:
             if cur_idx_list:
                 rst.append(cur_idx_list)
 
-        self.store_api_seqs(rst)
+        self._store_api_seqs(rst)
         return rst
 
 
@@ -236,16 +226,6 @@ def filter_api_seqs(seqs, idx_seq_dict=None):
 
 def mining_api_seqs(seqs, idx_seq_dict=None):
     handler = SeqHandler()
-
-    # new_idx_seq_dict = dict()
-    # base = KitConfig.ACC_LIB_ID_PREFIX['mxBase'] * KitConfig.ACC_ID_BASE
-    # for idx, name in idx_seq_dict.items():
-    #     new_idx_seq_dict[idx + base] = name
-    # new_api_seqs = []
-    # for seq in seqs:
-    #     new_api_seqs.append([base + _ for _ in seq])
-    # handler.store_api_seqs(new_api_seqs, new_idx_seq_dict)
-
     if not idx_seq_dict:
         seqs = handler.format_api_seqs(seqs)
 
@@ -267,12 +247,7 @@ def mining_api_seqs(seqs, idx_seq_dict=None):
     return all_seqs
 
 
-def load_api_seqs(seq_file: object) -> object:
-    seq_info = SeqHandler.load_api_seqs(seq_file)
-    return seq_info
-
-
 if __name__ == "__main__":
-    api_seqs = load_api_seqs('../../model/seqs.bin')
-    idx_seqs = load_api_seqs('../../model/seqs_idx.bin')
+    api_seqs = IOUtil.bin_safe_load('../../model/seqs.bin')
+    idx_seqs = IOUtil.bin_safe_load('../../model/seqs_idx.bin')
     mining_api_seqs(api_seqs, idx_seqs)

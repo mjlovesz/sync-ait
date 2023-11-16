@@ -34,6 +34,10 @@ class TranspltCommand(BaseCommand):
             "--tools", default="cmake", choices=['cmake', 'python'],
             help="specify construction, currently support cmake and python"
         )
+        parser.add_argument(
+            "--mode", default="api-only", choices=['all', 'api-only'],
+            help="specify scanner mode, currently support all and api only"
+        )
 
     def handle(self, args):
         log_util.set_logger_level(args.log_level)

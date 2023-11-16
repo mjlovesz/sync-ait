@@ -34,21 +34,14 @@ def _get_api_type(file, cursor):
 
 # input arguments
 def _get_input_args(node):
-    args = list()
+    parameters = list()
 
-    refs = node.referenced
-    if not refs:
-        return args
+    ref = node.referenced
+    if not ref:
+        return parameters
 
-    parameters = [f'{x.type.spelling}' for x in node.referenced.get_arguments()]
-    arguments = list(node.get_arguments())
-
-    for param, x in zip(parameters, arguments):
-        # x = skip_implicit(x)
-        # if not x:  # 有默认值的Keyword参数，如果实参未传，则为None
-        #     continue
-        args.append(param)
-    return args
+    parameters = [f'{x.type.spelling}' for x in ref.get_arguments()]
+    return parameters
 
 
 # class or struct info

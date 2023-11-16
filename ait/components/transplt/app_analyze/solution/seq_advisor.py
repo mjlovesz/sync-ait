@@ -64,8 +64,21 @@ class SeqAdvisor:
         return df_dict
 
     @property
-    def format_fn(self):
+    def cxx_format_fn(self):
         return self._postprocess
+
+    @property
+    def common_format_fn(self):
+        return self._dataframe_to_worksheet
+
+    @staticmethod
+    def _dataframe_to_worksheet(file_name, data, workbook):
+        worksheet = workbook.add_worksheet(file_name)
+        header = data.columns.values
+        worksheet.write_row('A1', header[0:len(header)])
+        for i in range(data.shape[0]):
+            columns = [data.loc[i, _] for _ in header]
+            worksheet.write_row('A' + str(i + 2), columns)
 
     @staticmethod
     def _postprocess(file_name, data, workbook):
@@ -76,7 +89,6 @@ class SeqAdvisor:
                 result = result.replace(s, '\\' + s)
             return result
 
-        file_name = file_name.replace('/', '.')[-31:]  # 最大支持31个字符
         worksheet = workbook.add_worksheet(file_name)
 
         fmt = workbook.add_format({'color': 'red'})

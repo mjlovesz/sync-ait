@@ -15,10 +15,11 @@ import time
 import pandas as pd
 
 from app_analyze.utils.log_util import logger
-from app_analyze.common.kit_config import KitConfig
+from app_analyze.common.kit_config import KitConfig, ScannerMode
 from app_analyze.report.report_factory import ReporterFactory
 from app_analyze.scan.scanner_factory import ScannerFactory
 from app_analyze.scan.clang_parser import Parser
+from app_analyze.scan.func_parser import FuncParser
 from app_analyze.scan.module.file_matrix import FileMatrix
 from app_analyze.solution.advisor import Advisor
 
@@ -45,6 +46,13 @@ class Project:
         self.scan_results = {}
         self.lib_reports = []
         self.report_results = {}
+
+    def _get_cxx_parser(self):
+        if self.inputs.scanner_mode == ScannerMode.ALL.value:
+            cxx_parser = Parser
+        else:
+            cxx_parser = FuncParser
+        return cxx_parser
 
     def dump(self):
         """
@@ -100,7 +108,7 @@ class Project:
                 "cpp": self.file_matrix.files.get('cpp_sources'),
                 "hpp": self.file_matrix.files.get('hpp_sources'),
                 'include_path': self.file_matrix.files.get('include_path'),
-                'cxx_parser': Parser
+                'cxx_parser': self._get_cxx_parser()
             },
             'cmake_files': cmake_files,
             'python_files': self.file_matrix.files.get("python_files"),

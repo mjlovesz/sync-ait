@@ -67,8 +67,7 @@ def calc_relation_mat(func, list1, list2=None, relation='dist'):
 
 def try_dbscan(embed=False):
     tik = time.time()
-    model = Model()
-    api_corpus, api_seqs, idx_seq_dict = model.train(seqs='./opencv.seqs.bin', seqs_idx='./opencv.seqs_idx.bin')
+    api_corpus, api_seqs, idx_seq_dict = Model.clean_seqs('./opencv.seqs.bin', './opencv.seqs_idx.bin')
     api_seqs = list(api_seqs)  # [:50]
     tik1 = time.time()
     logger.info(f"1. time: {tik1 - tik}")

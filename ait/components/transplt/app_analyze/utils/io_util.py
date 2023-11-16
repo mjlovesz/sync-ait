@@ -13,10 +13,13 @@
 import json
 import os
 import stat
+import pickle
 
 TIMEOUT = 60 * 60 * 24
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
+
+READ_FLAGS = os.O_RDONLY
 
 
 class IOUtil:
@@ -64,3 +67,26 @@ class IOUtil:
     def json_safe_dump(obj, file):
         with os.fdopen(os.open(file, OPEN_FLAGS, OPEN_MODES), 'w') as fout:
             json.dump(obj, fout, indent=4, ensure_ascii=False)
+
+    @staticmethod
+    def bin_safe_dump(obj, file):
+        with os.fdopen(os.open(file, OPEN_FLAGS, OPEN_MODES), 'wb') as fout:
+            pickle.dump(obj, fout)
+
+    @staticmethod
+    def json_safe_load(file):
+        if not os.path.exists(file):
+            raise Exception(f'File {file} is not existed!')
+
+        with os.fdopen(os.open(file, READ_FLAGS, OPEN_MODES), 'r') as fout:
+            data = json.load(fout)
+        return data
+
+    @staticmethod
+    def bin_safe_load(file):
+        if not os.path.exists(file):
+            raise Exception(f'File {file} is not existed!')
+
+        with os.fdopen(os.open(file, READ_FLAGS, OPEN_MODES), 'rb') as fout:
+            data = pickle.load(fout)
+        return data

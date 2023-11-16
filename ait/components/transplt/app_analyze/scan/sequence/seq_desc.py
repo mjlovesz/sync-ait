@@ -75,6 +75,8 @@ class FuncDesc:
                 self._func_id = base + offset
                 _GLOBAl_FUNC_ID_DICT[self.acc_name][self.full_name] = self._func_id
 
+            logger.debug(f'function id is {self._func_id}, name is: {self.full_name}')
+
     @property
     def func_id(self):
         return self._func_id

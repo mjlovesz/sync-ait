@@ -55,6 +55,15 @@ class InputType(Enum):
 
 
 @unique
+class ScannerMode(Enum):
+    """
+    input type
+    """
+    ALL = 'all'
+    APIONLY = 'api-only'
+
+
+@unique
 class BuildToolType(Enum):
     """
     input type
@@ -83,6 +92,7 @@ class KitConfig:
     # 'make', 'automake'
     VALID_REPORT_TYPE = ['csv', 'json']
     VALID_CONSTRUCT_TOOLS = [BuildToolType.CMAKE.value, BuildToolType.PYTHON.value]
+    VALID_SCANNER_MODE = [ScannerMode.ALL.value, ScannerMode.APIONLY.value]
     PORTING_CONTENT = """ait transplt
                 [-h] [-s source] 
                 [-t tools {cmake,python}] 
@@ -221,6 +231,12 @@ class KitConfig:
         TENSORRT_PYTHON: os.path.join(API_MAP_FOLDER, 'ACL_TensorRT_Python_API_MAP.xlsx'),
     }
 
+    API_INDEX_MAP = {
+        OPENCV: os.path.join(API_MAP_FOLDER, 'opencv.lut.bin'),
+        MxBASE: os.path.join(API_MAP_FOLDER, 'mxbase.lut.bin'),
+    }
+    EXPERT_LIBS_FILE = os.path.join(API_MAP_FOLDER, 'expert_libs.json')
+
     # 3.CMake加速库模式匹配
     MACRO_PATTERN = re.compile(r'(OpenCV|CUDA|NVJPEG|DALI|CVCUDA)')
     LIBRARY_PATTERN = re.compile(
@@ -289,14 +305,6 @@ PortingResult = namedtuple(
                       'suggestion_type',
                       'replacement']
 )
-
-
-class Args:
-    def __init__(self, source, report_type, log_level, tools):
-        self.source = source
-        self.report_type = report_type
-        self.log_level = log_level
-        self.tools = tools
 
 
 class SeqArgs:

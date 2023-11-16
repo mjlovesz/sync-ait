@@ -76,9 +76,10 @@ def write_excel(df_dict, path='output.xlsx'):
     excel.save()
 
 
-def df2xlsx(df_dict, fmt, path='output.xlsx'):
+def df2xlsx(df_dict, fmt_dict, path='output.xlsx'):
     workbook = Workbook(path)
     for key, df in df_dict.items():
+        fmt = fmt_dict[key]
         key = key.replace('/', '.')[-31:]  # 最大支持31个字符
         fmt(key, df, workbook)
     workbook.close()

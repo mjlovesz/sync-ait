@@ -64,6 +64,7 @@ class CommandLineInput(IInput):
         self._get_construct_tool()
         self._set_debug_switch()
         self._get_output_type()
+        self._get_scanner_mode()
         self.set_scanner_type()
 
     def get_source_directories(self):
@@ -91,6 +92,17 @@ class CommandLineInput(IInput):
                              .format(KitConfig.PORTING_CONTENT, self.args.tools,
                                      ' or '.join(KitConfig.VALID_CONSTRUCT_TOOLS)))
         self.construct_tool = self.args.tools
+
+    def _get_scanner_mode(self):
+        """获取扫描方式"""
+        if not self.args.mode:
+            self.args.mode = 'all'
+
+        if self.args.mode not in KitConfig.VALID_SCANNER_MODE:
+            raise ValueError('{} ait transplt: error: scanner mode {} is not supported. supported input are {}.'
+                             .format(KitConfig.PORTING_CONTENT, self.args.mode,
+                                     ' or '.join(KitConfig.VALID_SCANNER_MODE)))
+        self.scanner_mode = self.args.mode
 
     def _set_debug_switch(self):
         """动态修改日志级别"""
