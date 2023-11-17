@@ -72,7 +72,7 @@ def dump_output_hook(dump_start_token_id=0, dump_end_token_id=-1):
         else:
             metadata = {cur_token_id_key: {cur_md5: [out_data_path]}}
 
-        with os.fbopen(os.open(metadata_path, WRITE_FLAGS, WRITE_MODES), "w") as file:
+        with os.fdopen(os.open(metadata_path, WRITE_FLAGS, WRITE_MODES), "w") as file:
             json.dump(metadata, file)
 
         cur_token_id += 1
