@@ -224,7 +224,7 @@ reset_summaryinfo()
 
 <a name="free_resource1"></a>
 
-#### <font color=#DD4466>**free_resource**</font>()
+#### <font color=#DD4466>**free_resource函数**</font>
 
 **功能说明**
 
@@ -241,7 +241,7 @@ free_resource()
 
 <a name="finalize1"></a>
 
-#### <font color=#DD4466>**finalize**</font>()
+#### <font color=#DD4466>**finalize函数**</font>
 **功能说明**
 
 用于释放InferSession对应device内InferSession所在进程和AscendCL相关的所有资源。
@@ -346,7 +346,7 @@ infer_iteration(device_feeds, in_out_list = None, iteration_times = 1, mode = 's
 
 <a name="summary2"></a>
 
-#### <font color=#DD4466>**summary**</font>
+#### <font color=#DD4466>**summary函数**</font>
 
 **功能说明**
 
@@ -406,7 +406,7 @@ get_d2h_time_list()
 
 <a name="reset1"></a>
 
-#### <font color=#DD4466>**reset函数**</font>()
+#### <font color=#DD4466>**reset函数**</font>
 **功能说明**
 
 用于清空`get_h2d_time_list`和`get_d2h_time_list`获取的数据。
