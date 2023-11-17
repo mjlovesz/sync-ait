@@ -141,7 +141,7 @@ infer(feeds, mode='static', custom_sizes=100000, out_array=True)
 
 <a name="jump3"></a> <a name="infer_pipeline1"></a>
 
-#### <font color=#DD4466>**infer_pipeline**</font>
+#### <font color=#DD4466>**infer_pipeline函数**</font>
 
 **功能说明**
 
@@ -406,7 +406,7 @@ get_d2h_time_list()
 
 <a name="reset1"></a>
 
-#### <font color=#DD4466>**reset**</font>()
+#### <font color=#DD4466>**reset函数**</font>()
 **功能说明**
 
 用于清空`get_h2d_time_list`和`get_d2h_time_list`获取的数据。
