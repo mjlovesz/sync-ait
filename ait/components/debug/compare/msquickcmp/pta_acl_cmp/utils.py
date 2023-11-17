@@ -252,5 +252,5 @@ def write_json_file(data_id, data_path, json_path, token_id):
     except FileNotFoundError:
         json_data = {}
     json_data[data_id] = {token_id: data_path}
-    with ms_open(json_path, "w") as f::
+    with ms_open(json_path, "w") as f:
         json.dump(json_data, f)
