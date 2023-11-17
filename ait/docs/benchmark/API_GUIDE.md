@@ -47,24 +47,24 @@ session.free_resource()
 
 ## interface python API 详细介绍
 ### API导览
-|<td rowspan='1'>**主要文件**<td rowspan='1'>**主要类**</td><td rowspan='1'>**接口分类**</td><td rowspan='1'>**接口**</td>|
+|编号<td rowspan='1'>**主要文件**<td rowspan='1'>**主要类**</td><td rowspan='1'>**接口分类**</td><td rowspan='1'>**接口名**</td>|
 |----|
-|<td rowspan='18'>interface.py</td><td rowspan='9'>[InferSession](#InferSession1)</td><td rowspan='2'>获取模型信息</td><td rowspan='1'>[get_inputs](#get_inputs1)</td>|
-|<td rowspan='1'>[get_outputs](#get_outputs1)</td>|
-|<td rowspan='3'>进行模型推理</td><td rowspan='1'>[infer](#infer1)</td>|
-|<td rowspan='1'>[infer_pipeline](#infer_pipeline1)</td>|
-|<td rowspan='1'>[infer_iteration](#infer_iteration1)</td>|
-|<td rowspan='2'>获取推理性能</td><td rowspan='1'>[summary](#summary1)</td>|
-|<td rowspan='1'>[reset_summaryinfo](#reset_summaryinfo1)</td>|
-|<td rowspan='2'>释放模型资源</td><td rowspan='1'>[free_resource](#free_resource1)</td>|
-|<td rowspan='1'>[finalize](#finalize1)</td>|
-|<td rowspan='4'>[MultiDeviceSession](#MultiDeviceSession1)</td><td rowspan='3'>进行模型推理</td><td rowspan='1'>[infer](#infer2)</td>|
-|<td rowspan='1'>[infer_pipeline](#infer_pipeline2)</td>|
-|<td rowspan='1'>[infer_iteration](#infer_iteration2)</td>|
-|<td rowspan='1'>获取推理性能</td><td rowspan='1'>[summary](#summary2)</td>|
-|<td rowspan='3'>[MemorySummary](#MemorySummary1)</td><td rowspan='3'>资源拷贝时间</td><td rowspan='1'>[get_h2d_time_list](#get_h2d_time_list1)</td>|
-|<td rowspan='1'>[get_d2h_time_list](#get_d2h_time_list1)</td>|
-|<td rowspan='1'>[reset](#reset1)</td>|
+|1<td rowspan='18'>interface.py</td><td rowspan='9'>[InferSession](#InferSession1)</td><td rowspan='2'>获取模型信息</td><td rowspan='1'>[get_inputs](#get_inputs1)</td>|
+|2<td rowspan='1'>[get_outputs](#get_outputs1)</td>|
+|3<td rowspan='3'>进行模型推理</td><td rowspan='1'>[infer](#infer1)</td>|
+|4<td rowspan='1'>[infer_pipeline](#infer_pipeline1)</td>|
+|5<td rowspan='1'>[infer_iteration](#infer_iteration1)</td>|
+|6<td rowspan='2'>获取推理性能</td><td rowspan='1'>[summary](#summary1)</td>|
+|7<td rowspan='1'>[reset_summaryinfo](#reset_summaryinfo1)</td>|
+|8<td rowspan='2'>释放模型资源</td><td rowspan='1'>[free_resource](#free_resource1)</td>|
+|9<td rowspan='1'>[finalize](#finalize1)</td>|
+|10<td rowspan='4'>[MultiDeviceSession](#MultiDeviceSession1)</td><td rowspan='3'>进行模型推理</td><td rowspan='1'>[infer](#infer2)</td>|
+|11<td rowspan='1'>[infer_pipeline](#infer_pipeline2)</td>|
+|12<td rowspan='1'>[infer_iteration](#infer_iteration2)</td>|
+|13<td rowspan='1'>获取推理性能</td><td rowspan='1'>[summary](#summary2)</td>|
+|14<td rowspan='3'>[MemorySummary](#MemorySummary1)</td><td rowspan='3'>资源拷贝时间</td><td rowspan='1'>[get_h2d_time_list](#get_h2d_time_list1)</td>|
+|15<td rowspan='1'>[get_d2h_time_list](#get_d2h_time_list1)</td>|
+|16<td rowspan='1'>[reset](#reset1)</td>|
 
 <a name="InferSession1"></a>
 
