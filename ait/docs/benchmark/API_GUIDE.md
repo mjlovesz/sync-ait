@@ -157,7 +157,7 @@ infer_pipeline(feeds_list, mode = 'static', custom_sizes = 100000)
 |----|----|----|
 |**feeds_list**|list，推理所需的几组组输入数据，list中支持数据类型:<a name="jump2"></a>: <br> <ul>1、numpy.ndarray; <br> 2、单个numpy类型数据(np.int8, np.int16, np.int32, np.int64, np.uint8, np.uint16, np.uint32, np.float16, np.float32, np.float64); <br> 3、torch类型Tensor(torch.FloatTensor, torch.DoubleTensor, torch.HalfTensor, torch.BFloat16Tensor, torch.ByteTensor, torch.CharTensor, torch.ShortTensor, torch.LongTensor, torch.BoolTensor, torch.IntTensor) <br> 4、[aclruntime.Tensor](#acl_Tensor) </ul><b>注意:</b><br> <ul>1、'static'、'dymbatch'和 'dymhw'场景下feeds_list中的每个feeds中shape必须相同 <br> 2、'dymdims'和 'dymshape'场景下feeds_list中的每个feeds中shape可以不相同|是|
 |**mode**|str，指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)|否|
-|**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<ul><br>1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br>2、输入为list:[int]时，模型的每一个输|否·|
+|**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<ul><br>1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br>2、输入为list:[int]时，模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否·|
 
 - **返回值**
 
@@ -244,7 +244,7 @@ free_resource()
 #### <font color=#DD4466>**finalize**</font>()
 **功能说明**
 
-用于释放InferSession对应device内InferSession所在进和AscendCL相关的所有资源。
+用于释放InferSession对应device内InferSession所在进程和AscendCL相关的所有资源。
 
 **函数原型**
 ```python
@@ -281,15 +281,15 @@ MultiDeviceSession是**多进程**下用于om模型推理的类，初始化时�
 
 **函数原型**
 ```python
-infer(devices_feeds, mode='static', custom_sizes=100000, out_array=True)
+infer(devices_feeds, mode='static', custom_sizes=100000)
 ```
 
 **参数说明**
 |参数名|说明|是否必选|
 |----|----|----|
-|**devices_feeds**|dict，{device_id: [feeds1, feeds2, ...]}，device的中的每个feeds都会单独开一个进程推理，feeds的定义参考[InferSession的infer接口中对feeds的定义](#jump0)|是|
+|**devices_feeds**|dict，{device_id: [feeds1, feeds2, ...]}，device_id对应的device中的每个feeds都会单独开一个进程推理，feeds的定义参考[InferSession的infer接口中对feeds的定义](#jump0)|是|
 |**mode**|str，指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)|否|
-|**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)<br><ul> 1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 输入为list:[int]时, 模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
+|**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)<br><ul> 1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 2、输入为list:[int]时, 模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
 
 **返回值**
 返回{device_id:[output1, output2, ...]}，output*为numpy.ndarray类型的推理输出结果，数据的内存在host侧。
@@ -310,7 +310,7 @@ infer_pipeline(devices_feeds_list, mode = 'static', custom_sizes = 100000)
 **参数说明**
 |参数名|说明|是否必选|
 |----|----|----|
-|**devices_feeds_list**|dict，{device_id: [feeds_list1, feeds_list2, ...]}，device的中的每个feeds_list都会单独开一个进程推理，feeds_list的定义参考[InferSession的infer_pipeline接口中对feeds_list的定义](#jump2)。|是|
+|**devices_feeds_list**|dict，{device_id: [feeds_list1, feeds_list2, ...]}，device_id对应的device的每个feeds_list都会单独开一个进程推理，feeds_list的定义参考[InferSession的infer_pipeline接口中对feeds_list的定义](#jump2)。|是|
 |**mode**|str，指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)|否|
 |**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<ul><br> 1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 2、输入为list:[int]时，模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
 
@@ -327,18 +327,18 @@ infer_pipeline(devices_feeds_list, mode = 'static', custom_sizes = 100000)
 
 **函数原型**
 ```python
-infer_iteration(device_feeds, in_out_list = None, iteration_times = 1, mode = 'static', custom_sizes = 100000, mem_copy = True)
+infer_iteration(device_feeds, in_out_list = None, iteration_times = 1, mode = 'static', custom_sizes = None, mem_copy = True)
 ```
 
 **参数说明**
 |参数名|说明|是否可选|
 |----|----|----|
-|**devices_feeds**|dict，{device_id: [feeds1, feeds2, ...]}，device的中的每个feeds都会单独开一个进程推理，feeds的定义参考[InferSession的infer_iteration接口中对feeds的定义](#jump4)。|是|
+|**devices_feeds**|dict，{device_id: [feeds1, feeds2, ...]}，device_id对应的device的每个feeds都会单独开一个进程推理，feeds的定义参考[InferSession的infer_iteration接口中对feeds的定义](#jump4)。|是|
 |**in_out_list**|[int]，表示每次迭代中，模型的输入来源于第几个输出，输入和输出的顺序与`get_inputs()`和`get_outputs()`获取的list中的元素顺序一致。例如，[-1, 1, 0]表示第一个输入数据复用原来的输入数据(用-1表示)，第二个输入数据来源于第二个输出数据，第三个输入来源于第一个输出数据。|是|
 |**iteration_times**|int，迭代的次数。|否|
 |**mode**|str，指定加载的模型类型，可选'static'(静态模型)、'dymbatch'(动态batch模型)、'dymhw'(动态分辨率模型)、'dymdims'(动态dims模型)、'dymshape'(动态shape模型)|否|
 |**custom_sizes**|int or [int]，动态shape模型需要使用，推理输出数据所占的内存大小(单位byte)。<ul><br> 1、输入为int时，模型的每一个输出都会被预先分配custom_sizes大小的内存。<br> 2、输入为list:[int]时，模型的每一个输出会被预先分配custom_sizes中对应元素大小的内存。|否|
-|**mem_copy**|bool，决定迭代推理中输入数据使用上次推理的输出数据是否采用拷贝的方式。<ul><br> 1、mem_copy == True，采用拷贝，推理结束后底层的acl接口不会报错，推理结果正确。2、mem_copy == False，采用内存共用，推理结束后底层的acl接口可能会报错(开plog情况下)，推理结果正确，推理端到端时间更短。|否|
+|**mem_copy**|bool，决定迭代推理中输入数据使用上次推理的输出数据是否采用拷贝的方式。<ul><br> 1、mem_copy == True，采用拷贝，推理结束后底层的acl接口不会报错，推理结果正确。<br>2、mem_copy == False，采用内存共用，推理结束后底层的acl接口可能会报错(开plog情况下)，推理结果正确，推理端到端时间更短。|否|
 
 **返回值**
 
@@ -472,11 +472,11 @@ reset()
 #### 单进程使用`InferSession.infer_pipeline`接口推理
 |样例|说明|
 | ---- | ---- |
-|[infer_pipeline_api_static.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_static.py)|调用InferSession的infer接口推理静态模型|
-|[infer_pipeline_api_dymbatch.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymbatch.py)|调用InferSession的infer接口推理动态batch模型|
-|[infer_pipeline_api_dymhw.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymhw.py)|调用InferSession的infer接口推理动态分辨率模型|
-|[infer_pipeline_api_dymdims.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymdims.py)|调用InferSession的infer接口推理动态dims模型|
-|[infer_pipeline_api_dymshape.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymshape.py)|调用InferSession的infer接口推理动态shape模型|
+|[infer_pipeline_api_static.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_static.py)|调用InferSession的infer_pipeline接口推理静态模型|
+|[infer_pipeline_api_dymbatch.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymbatch.py)|调用InferSession的infer_pipeline接口推理动态batch模型|
+|[infer_pipeline_api_dymhw.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymhw.py)|调用InferSession的infer_pipeline接口推理动态分辨率模型|
+|[infer_pipeline_api_dymdims.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymdims.py)|调用InferSession的infer_pipeline接口推理动态dims模型|
+|[infer_pipeline_api_dymshape.py](../../components/benchmark/api_samples/interface_api_usage/api_infer_pipeline/infer_pipeline_api_dymshape.py)|调用InferSession的infer_pipeline接口推理动态shape模型|
 
 #### 单进程使用`InferSession.infer_iteration`接口推理
 |样例|说明|
@@ -491,6 +491,6 @@ reset()
 |样例|说明|
 | ---- | ---- |
 |[multidevice_infer_api.py](../../components/benchmark/api_samples/interface_api_usage/multidevice_api/multidevice_infer_api.py)|调用MultiDeviceSession的infer接口推理静态模型|
-|[multidevice_infer_pipeline_api.py](../../components/benchmark/api_samples/interface_api_usage/multidevice_api/multidevice_infer_pipeline_api.py)|调用MultiDeviceSession的infer接口推理静态模型|
+|[multidevice_infer_pipeline_api.py](../../components/benchmark/api_samples/interface_api_usage/multidevice_api/multidevice_infer_pipeline_api.py)|调用MultiDeviceSession的infer_pipeline接口推理静态模型|
 |[multidevice_infer_iteration_api.py](../../components/benchmark/api_samples/interface_api_usage/multidevice_api/multidevice_infer_iteration_api.py)|调用MultiDeviceSession的infer_iteration接口推理静态模型|
 
