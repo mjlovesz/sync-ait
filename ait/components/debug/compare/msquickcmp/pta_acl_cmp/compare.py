@@ -24,6 +24,7 @@ from msquickcmp.pta_acl_cmp.constant import DATA_ID, ACL_DATA_PATH, \
     MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE, \
     ACL_DTYPE, ACL_SHAPE, TOKEN_ID
 from msquickcmp.pta_acl_cmp.utils import compare_tensor, write_json_file
+from components.utils.file_open_check import ms_open
 
 token_counts = 0
 
@@ -183,18 +184,18 @@ def write_acl_map_file(tensor_path):
         acl_map_file_dir = '/tmp'
     acl_map_file_path = os.path.join(acl_map_file_dir, ACL_DATA_MAP_FILE)
     if not os.path.exists(acl_map_file_dir):
-        os.mkdir(acl_map_file_dir)
+        os.mkdir(acl_map_file_dir, mode=0o750)
 
     if os.path.exists(acl_map_file_path):
-        with open(acl_map_file_path, 'r') as file:
+        with ms_open(acl_map_file_path, 'r') as file:
             tensor_paths = file.readlines()
 
         if tensor_path + "\n" not in tensor_paths:
-            with open(acl_map_file_path, mode="a") as file:
+            with ms_open(acl_map_file_path, mode="a") as file:
                 file.write(tensor_path)
                 file.write("\n")
     else:
-        with open(acl_map_file_path, mode="a") as file:
+        with ms_open(acl_map_file_path, mode="a") as file:
             file.write(tensor_path)
             file.write("\n")
 

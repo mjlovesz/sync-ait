@@ -14,12 +14,16 @@
 import hashlib
 import json
 import os
+import stat
 
 import numpy as np
 from torch import nn
 
 import msquickcmp
 from msquickcmp.pta_acl_cmp.constant import AIT_DUMP_PATH, AIT_IS_SAVE_MD5, AIT_DIALOG_DUMP_PATH
+
+WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
+WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 
 
 def dump_output_hook(dump_start_token_id=0, dump_end_token_id=-1):
@@ -68,7 +72,7 @@ def dump_output_hook(dump_start_token_id=0, dump_end_token_id=-1):
         else:
             metadata = {cur_token_id_key: {cur_md5: [out_data_path]}}
 
-        with open(metadata_path, "w") as file:
+        with os.fdopen(os.open(metadata_path, WRITE_FLAGS, WRITE_MODES), "w") as file:
             json.dump(metadata, file)
 
         cur_token_id += 1
