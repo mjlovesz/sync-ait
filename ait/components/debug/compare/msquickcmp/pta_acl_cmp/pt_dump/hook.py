@@ -25,24 +25,34 @@ WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
 WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 
 
-def dump_output_hook():
-    infer_step = 0
+def dump_output_hook(dump_start_token_id=0, dump_end_token_id=-1):
+    cur_token_id = 0
 
     def hook_func(module, inputs, outputs):
         if not hasattr(module, "weight"):
             return outputs
 
-        nonlocal infer_step
-        w_md5 = hashlib.md5(module.weight.cpu().numpy().tobytes()).hexdigest()
+        nonlocal cur_token_id
+        if cur_token_id < dump_start_token_id:
+            cur_token_id += 1
+            return outputs
+        if dump_end_token_id > 0 and cur_token_id > dump_end_token_id:
+            return outputs
 
-        ait_dump_path = os.getenv(AIT_DUMP_PATH)
+        if hasattr(module, "bias") and module.bias is not None:
+            # Use bias as md5 key, as it's mostly after weight operations
+            cur_md5 = hashlib.md5(module.bias.cpu().numpy().tobytes()).hexdigest()
+        else:
+            cur_md5 = hashlib.md5(module.weight.cpu().numpy().tobytes()).hexdigest()
+
+        ait_dump_path = os.getenv(AIT_DIALOG_DUMP_PATH, os.getenv(AIT_DUMP_PATH))
         ait_dump_path = ait_dump_path or ""
         pid = os.getpid()
         pid_dir = os.path.join(ait_dump_path, str(pid))
         if not os.path.exists(pid_dir):
             os.mkdir(pid_dir)
 
-        token_dir = os.path.join(pid_dir, str(infer_step))
+        token_dir = os.path.join(pid_dir, str(cur_token_id))
         if not os.path.exists(token_dir):
             os.mkdir(token_dir)
 
@@ -50,29 +60,29 @@ def dump_output_hook():
         np.save(out_data_path, outputs.cpu().numpy())
 
         metadata_path = os.path.join(pid_dir, "metadata.json")
-        infer_step_key = str(infer_step)
+        cur_token_id_key = str(cur_token_id - dump_start_token_id)  # Keep key starts from 0
         if os.path.exists(metadata_path):
             with open(metadata_path, "r") as file:
                 metadata = json.load(file)
-            if metadata.get(infer_step_key):
-                metadata.get(infer_step_key).setdefault(w_md5, [out_data_path])
+            if metadata.get(cur_token_id_key):
+                metadata.get(cur_token_id_key).setdefault(cur_md5, [out_data_path])
             else:
-                metadata.setdefault(infer_step_key, {w_md5: [out_data_path]})
+                metadata.setdefault(cur_token_id_key, {cur_md5: [out_data_path]})
         else:
-            metadata = {infer_step_key: {w_md5: [out_data_path]}}
+            metadata = {cur_token_id_key: {cur_md5: [out_data_path]}}
 
         with os.fbopen(os.open(metadata_path, WRITE_FLAGS, WRITE_MODES), "w") as file:
             json.dump(metadata, file)
 
-        infer_step += 1
+        cur_token_id += 1
 
     return hook_func
 
 
-def register_hook(model, op_list=None):
-    op_list = [] if op_list is None else op_list
+def register_hook(model, op_list=None, dump_start_token_id=0, dump_end_token_id=-1):
     if not isinstance(model, nn.Module):
         raise TypeError("model must be nn.Module.")
+    op_list = [] if op_list is None else op_list
     if not isinstance(op_list, list):
         raise TypeError("op_list must be list.")
     for name, module in model.named_modules():
@@ -81,10 +91,14 @@ def register_hook(model, op_list=None):
                 if not isinstance(module, op_type):
                     continue
                 module.name = name
-                module.register_forward_hook(dump_output_hook())
+                module.register_forward_hook(
+                    dump_output_hook(dump_start_token_id=dump_start_token_id, dump_end_token_id=dump_end_token_id)
+                )
         else:
             module.name = name
-            module.register_forward_hook(dump_output_hook())
+            module.register_forward_hook(
+                dump_output_hook(dump_start_token_id=dump_start_token_id, dump_end_token_id=dump_end_token_id)
+            )
 
 
 def set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt"):
