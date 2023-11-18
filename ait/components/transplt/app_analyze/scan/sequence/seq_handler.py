@@ -1,3 +1,16 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from app_analyze.utils.log_util import logger
 from app_analyze.utils.io_util import IOUtil
 from app_analyze.common.kit_config import SeqArgs
@@ -45,45 +58,42 @@ class SeqHandler:
     @staticmethod
     def clean_api_seqs(seqs, infer_flag):
         def _compact_apis(api_seq):
-            apis = []
+            apis = list()
             pre_api_id = None
             for api in api_seq:
                 if not pre_api_id:
                     pre_api_id = api.func_id
                     apis.append(api)
+                elif pre_api_id == api.func_id:
+                    continue
                 else:
-                    if pre_api_id == api.func_id:
-                        continue
-
                     apis.append(api)
                     pre_api_id = api.func_id
             return apis
 
-        rst = []
+        if infer_flag:
+            rst = [seq_desc for seq_desc in seqs if not seq_desc.has_called]
+            return rst
+
+        rst = list()
         for seq_desc in seqs:
             if seq_desc.has_called:
                 continue
 
-            if not infer_flag:
-                if not seq_desc.has_usr_def:
-                    # all acc lib apis in seq
-                    seq_desc.api_seq = _compact_apis(seq_desc.api_seq)
-                    rst.append(seq_desc)
+            if not seq_desc.has_usr_def:
+                # all acc lib apis in seq
+                seq_desc.api_seq = _compact_apis(seq_desc.api_seq)
+                rst.append(seq_desc)
 
-                    logger.debug(f'After clean seqs, api seqs length is {len(seq_desc.api_seq)}, the api seq is: ')
-                    seq_desc.debug_string()
-                    continue
+                logger.debug(f'After clean seqs, api seqs length is {len(seq_desc.api_seq)}, the api seq is: ')
+                seq_desc.debug_string()
+                continue
 
-                new_api_seq = []
-                # delete use define api
-                while seq_desc.api_seq:
-                    func_desc = seq_desc.api_seq.pop(0)
-                    if not func_desc.is_usr_def:
-                        new_api_seq.append(func_desc)
-                # deduplicate apis, eg: a b b b c --> a b c
-                seq_desc.api_seq = _compact_apis(new_api_seq)
-                seq_desc.has_usr_def = False
-
+            # delete use define api
+            new_api_seq = [func_desc for func_desc in seq_desc.api_seq if not func_desc.is_usr_def]
+            # deduplicate apis, eg: a b b b c --> a b c
+            seq_desc.api_seq = _compact_apis(new_api_seq)
+            seq_desc.has_usr_def = False
             rst.append(seq_desc)
             logger.debug(f'After clean seqs, api seqs length is {len(seq_desc.api_seq)}, the api seq is: ')
             seq_desc.debug_string()
@@ -113,34 +123,6 @@ class SeqHandler:
             rst_str += str(i) + '. ' + '-->'.join(d_str) + '\n'
 
         logger.debug(f'{rst_str}')
-
-    @staticmethod
-    def _dedup_api_seqs(seqs):
-        import re
-        for seq_desc in seqs:
-            cnt = len(seq_desc.api_seq)
-            whole = [str(_.func_id) for _ in seq_desc.api_seq]
-            whole_str = ''.join(whole)
-
-            rst = {}
-            for i in range(cnt):
-                for j in range(cnt - i, -1, -1):
-                    sub_str = ')('.join(whole[i:j])
-                    sub_str = '(' + sub_str + ')'
-                    matchers = re.finditer(sub_str, whole_str)
-                    vals = list()
-                    for m in matchers:
-                        vals.append((m.start(), m.end()))
-
-                    if len(vals) == 1:
-                        continue
-                    else:
-                        cnt = 0
-                        for k in range(len(vals) - 1):
-                            if vals[k][1] == vals[k + 1][0]:
-                                cnt += 1
-
-                        rst[(i, j)] = cnt
 
     @staticmethod
     def mining_one_seq(seqs):
@@ -180,14 +162,6 @@ class SeqHandler:
     @staticmethod
     def mining_api_seqs(seqs):
         result = []
-
-        # l1, support_data1 = apriori(seqs, SeqArgs.APRIORI_MIN_SUPPORT)
-        # print(f'L({SeqArgs.APRIORI_MIN_SUPPORT}): ', l1)
-        # for vals in l1:
-        #     for seq in vals:
-        #         if len(seq) >= SeqArgs.SEQ_MIN_LEN:
-        #             result.append(seq)
-
         l1, freq = prefixspan(seqs, SeqArgs.PREFIX_SPAN_TOP_K)
         for item in l1:
             seq = item[1]

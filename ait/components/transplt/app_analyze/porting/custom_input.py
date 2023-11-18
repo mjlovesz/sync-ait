@@ -32,25 +32,17 @@ class CustomInput(CommandLineInput):
     def get_source_directories(self):
         if not self.args.source:
             raise ValueError('No input files!')
-        else:
-            for folder in self.args.source.split(','):
-                folder = folder.strip()
-                folder.replace('\\', '/')
-                folder = os.path.realpath(folder)
-                if os.path.isdir(folder):
-                    self._check_path(folder)
-                    if not folder.endswith('/'):
-                        folder += '/'
-                else:
-                    assert os.path.isfile(folder)
-                    _, ext = os.path.splitext(folder)
+        # 目录或单个文件
+        folder = self.args.source.strip()
+        folder.replace('\\', '/')
+        folder = os.path.realpath(folder)
+        if os.path.isdir(folder):
+            self._check_path(folder)
+            if not folder.endswith(os.path.sep):
+                folder += os.path.sep
 
-                self.directories.append(folder)
-            self.directories = sorted(set(self.directories),
-                                      key=self.directories.index)
-            self.source_path = self.directories
-            self.directories = \
-                IOUtil.remove_subdirectory(self.directories)
+        self.directories.append(folder)
+        self.source_path = self.directories
 
     def set_scanner_type(self):
         if self.construct_tool == "cmake":

@@ -1,6 +1,15 @@
-#!/usr/bin/python
-# coding: utf8
-
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from __future__ import print_function
 from numpy import *
@@ -9,18 +18,6 @@ from numpy import *
 # 加载数据集
 def load_dataset():
     dataset = [[1, 3, 4], [2, 3, 5], [1, 2, 3, 5], [2, 5]]
-    # dataset = [
-    #     [0, 1, 0, 1, 2, 3, 4, 5, 6, 5, 6, 7, 8, 7, 9, 10, 11, 12, 13, 11, 9, 14, 8, 15, 8, 16, 17, 18, 19, 20, 21, 13,
-    #      11, 13, 11, 13, 11, 13, 11, 22, 13, 23]]
-
-    # dataset = [[0, 1, 0, 1], [0, 1, 2, 3, 4], [3, 4, 5, 6, 5, 6], [5, 6, 7, 8, 7, 9, 10],
-    #            [11, 12, 13, 11, 9, 14], [9, 14, 8, 15, 8, 16, 17, 18, 19, 20, 21], [13, 11, 13, 11, 13, 11, 13, 11],
-    #            [13, 11, 22, 13, 23]]
-
-    # dataset = [[0, 1, ], [5, 6], [13, 11],
-    #            [0, 1, 2, 3, 4, 5, 6, 7, 8, 7, 9, 10, 11, 12, 13, 11, 9, 14, 8, 15, 8, 16, 17, 18, 19, 20, 21, 13,
-    #             11, 22, 13, 23]]
-
     return dataset
 
 
@@ -65,11 +62,14 @@ def scan_dataset(dataset, ck, min_support):
     for tid in dataset:
         for can in ck:
             # s.issubset(t)  测试是否 s 中的每一个元素都在 t 中
-            if can.issubset(tid):
-                if not ss_cnt.get(can):
-                    ss_cnt[can] = 1
-                else:
-                    ss_cnt[can] += 1
+            if not can.issubset(tid):
+                continue
+
+            if not ss_cnt.get(can):
+                ss_cnt[can] = 1
+            else:
+                ss_cnt[can] += 1
+
     num_items = float(len(dataset))  # 数据集 D 的数量
     ret_list = []
     support_data = {}
@@ -128,7 +128,6 @@ def apriori(dataset, min_support=0.5):
     # c1 即对 dataSet 进行去重，排序，放入 list 中，然后转换所有的元素为 frozenset
     c1 = create_c1(dataset)
     # 对每一行进行 set 转换，然后存放到集合中
-    # [set(items) for items in tms]
     d = list(map(set, dataset))
     # 计算候选数据集 C1 在数据集 D 中的支持度，并返回支持度大于 minSupport 的数据
     l1, support_data = scan_dataset(d, c1, min_support)
@@ -147,8 +146,6 @@ def apriori(dataset, min_support=0.5):
         if len(lk) == 0:
             break
         # Lk 表示满足频繁子项的集合，L 元素在增加，例如:
-        # l=[[set(1), set(2), set(3)]]
-        # l=[[set(1), set(2), set(3)], [set(1, 2), set(2, 3)]]
         l.append(lk)
         k += 1
     return l, support_data
@@ -157,19 +154,11 @@ def apriori(dataset, min_support=0.5):
 def test_apriori():
     # 加载测试数据集
     dataset = load_dataset()
-    print('dataSet: ', dataset)
 
     # Apriori 算法生成频繁项集以及它们的支持度
     l1, support_data1 = apriori(dataset, min_support=0.7)
-    print('L(0.7): ', l1)
-    print('supportData(0.7): ', support_data1)
-
-    print('->->->->->->->->->->->->->->->->->->->->->->->->->->->->')
-
     # Apriori 算法生成频繁项集以及它们的支持度
     l2, support_data2 = apriori(dataset, min_support=0.5)
-    print('L(0.5): ', l2)
-    print('supportData(0.5): ', support_data2)
 
 
 if __name__ == "__main__":

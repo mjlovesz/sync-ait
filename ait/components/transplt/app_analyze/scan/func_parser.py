@@ -1,5 +1,15 @@
-import os
-import time
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from app_analyze.scan.clang_parser import *
 from app_analyze.scan.clang_utils import *
@@ -40,13 +50,13 @@ class FuncParser(Parser):
         if skip_flag:
             info = node_debug_string(node, children)
         else:
+            for c in get_children(node):
+                c_info = self._parse_api(c, seq_desc, result)
+                if c_info:
+                    children.append(c_info)
+
             info = None
             if usr_code:
-                for c in get_children(node):
-                    c_info = self._parse_api(c, seq_desc, result)
-                    if c_info:
-                        children.append(c_info)
-
                 info = node_debug_string(node, children)
 
         return info
@@ -69,10 +79,5 @@ class FuncParser(Parser):
         save_api_seq(seq_desc, result)
         logger.debug(f'Time elapsed： {time.time() - start:.3f}s')
         self._handle_call_seqs(result)
-
-        # dump = self.tu.spelling.replace('/', '.')
-        # os.makedirs('temp/', exist_ok=True)
-        # IOUtil.json_safe_dump(info, f'temp/{dump}.json')
-        # logger.debug(f'Ast saved in：temp/{dump}.json')
 
         return result

@@ -1,5 +1,17 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import numpy as np
-import time
 from gensim.models import Word2Vec
 from dtaidistance import dtw, dtw_ndim
 from sklearn.cluster import DBSCAN
@@ -25,13 +37,10 @@ def one_hot_embedding(labels, num_classes):
 
 
 def api_embedding(corpus, vector_size=10, window=5, min_count=1, workers=4):
-    tik = time.time()
     model = Word2Vec(corpus, vector_size=vector_size, window=window, min_count=min_count, workers=workers)
     model.train(corpus, total_examples=model.corpus_count, epochs=model.epochs)
     model.save('model.bin')
     model = Word2Vec.load('model.bin')
-    tik1 = time.time()
-    logger.debug(f"API embedding time: {tik1 - tik}")
     return model
 
 
@@ -54,7 +63,6 @@ def seq_embedding(model, seq, max_len=None):
 
 def seqs_embedding(model, api_seqs, max_len=None):
     # 对高频API序列向量化
-    tik = time.time()
     min_len = np.inf
     max_len = max_len or 0
     for seq in api_seqs:
@@ -65,8 +73,6 @@ def seqs_embedding(model, api_seqs, max_len=None):
     for seq in api_seqs:
         embed = seq_embedding(model, seq, max_len=max_len)
         embedding.append(embed)
-    tik1 = time.time()
-    logger.debug(f"Sequences embedding time: {tik1 - tik}")
     return embedding
 
 

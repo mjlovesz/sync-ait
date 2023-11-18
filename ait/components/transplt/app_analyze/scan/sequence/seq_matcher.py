@@ -1,3 +1,16 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from enum import Enum, unique
 from app_analyze.common.kit_config import SeqArgs
 
@@ -39,21 +52,23 @@ def _filter(cur_acc_lib, cur_sim, cur_mt_seq, saved_seqs):
     for acc_lib, acc_tuple in saved_seqs.items():
         acc_mt_seq = acc_tuple[1]
         _, mode, _ = _calc_dist(cur_mt_seq, acc_mt_seq)
-        if mode not in [MatcherMode.NO_MATCHED, MatcherMode.CROSS]:
-            if len(cur_mt_seq) < len(acc_mt_seq):
+        if mode in [MatcherMode.NO_MATCHED, MatcherMode.CROSS]:
+            continue
+
+        if len(cur_mt_seq) < len(acc_mt_seq):
+            valid_flag = False
+            break
+        elif len(cur_mt_seq) == len(acc_mt_seq):
+            acc_sim = acc_tuple[0]
+            if cur_sim <= acc_sim:
                 valid_flag = False
                 break
-            elif len(cur_mt_seq) == len(acc_mt_seq):
-                acc_sim = acc_tuple[0]
-                if cur_sim <= acc_sim:
-                    valid_flag = False
-                    break
-                else:
-                    valid_flag = True
-                    rm_keys.append(acc_lib)
             else:
                 valid_flag = True
                 rm_keys.append(acc_lib)
+        else:
+            valid_flag = True
+            rm_keys.append(acc_lib)
 
     [saved_seqs.pop(k) for k in rm_keys]
     if valid_flag:

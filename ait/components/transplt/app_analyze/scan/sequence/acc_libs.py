@@ -1,3 +1,16 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from app_analyze.common.kit_config import KitConfig
 from app_analyze.scan.sequence.seq_desc import get_idx_tbl
 
@@ -5,48 +18,45 @@ _GLOBAl_EXPERT_LIBS_DICT = dict()
 
 
 def from_int(x):
-    assert isinstance(x, int) and not isinstance(x, bool)
-    return x
+    if isinstance(x, int) and not isinstance(x, bool):
+        return x
+    raise Exception('Type error, x must be type int!')
 
 
 def from_float(x):
-    assert isinstance(x, float) and not isinstance(x, bool)
-    return x
+    if isinstance(x, float) and not isinstance(x, bool):
+        return x
+    raise Exception('Type error, x must be type float!')
 
 
 def from_str(x):
-    assert isinstance(x, str)
-    return x
+    if isinstance(x, str):
+        return x
+    raise Exception('Type error, x must be type str!')
 
 
 def from_list(f, x):
-    assert isinstance(x, list)
-    return [f(y) for y in x]
+    if isinstance(x, list):
+        return [f(y) for y in x]
+    raise Exception('Type error, x must be type list!')
 
 
 def to_class(c, x):
-    assert isinstance(x, c)
-    return x.to_dict()
+    if isinstance(x, c):
+        return x.to_dict()
+    raise Exception('Type error, x must be type class!')
 
 
 def to_enum(c, x):
-    assert isinstance(x, c)
-    return x.value
+    if isinstance(x, c):
+        return x.value
+    raise Exception('Type error, x must be type enum!')
 
 
 def from_none(x):
-    assert x is None
-    return x
-
-
-def from_union(fs, x):
-    for f in fs:
-        try:
-            return f(x)
-        except:
-            pass
-
-    assert False
+    if x is None:
+        return x
+    raise Exception('Value error, x must be None!')
 
 
 class Seq:

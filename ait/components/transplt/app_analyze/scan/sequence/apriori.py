@@ -1,3 +1,16 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 from functools import reduce
 from typing import Dict, List
 from copy import deepcopy
@@ -24,6 +37,7 @@ def apriori(tms: list, min_sup: float, level: int = -1) -> Dict[str, List[List[s
             for item_set in item_sets:
                 if item & item_set == item:  # this way, item is subset to item set
                     count += 1
+
             if count >= n_sup:
                 item = list(item)
                 item.sort()  # sort is necessary
@@ -39,11 +53,14 @@ def apriori(tms: list, min_sup: float, level: int = -1) -> Dict[str, List[List[s
         no_trim_c = set()
         for i in range(fr_kl - 1):
             for j in range(i + 1, fr_kl):
-                if cnt_fr_list[i][:-1] == cnt_fr_list[j][:-1]:
-                    temp = deepcopy(cnt_fr_list[i][:-1])
-                    a, b = cnt_fr_list[i][-1], cnt_fr_list[j][-1]
-                    temp += [a, b] if a < b else [b, a]
-                    no_trim_c.add(tuple(temp))  # list is not hashable
+                if cnt_fr_list[i][:-1] != cnt_fr_list[j][:-1]:
+                    continue
+
+                temp = deepcopy(cnt_fr_list[i][:-1])
+                a, b = cnt_fr_list[i][-1], cnt_fr_list[j][-1]
+                temp += [a, b] if a < b else [b, a]
+                no_trim_c.add(tuple(temp))  # list is not hashable
+
         if len(no_trim_c) == 0:
             break
 

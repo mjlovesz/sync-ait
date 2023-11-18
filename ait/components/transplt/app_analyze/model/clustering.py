@@ -1,12 +1,24 @@
+# Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 import numpy as np
 import os
 import multiprocessing
-import time
 from functools import partial
-from sklearn.cluster import DBSCAN, AgglomerativeClustering
-from dtaidistance import dtw, dtw_ndim
+from sklearn.cluster import DBSCAN
+from dtaidistance import dtw_ndim
 
-from app_analyze.model.train import Model
+from app_analyze.model.model import Model
 from app_analyze.model.embedding import api_embedding, seqs_embedding
 from app_analyze.utils.log_util import logger
 
@@ -65,49 +77,44 @@ def calc_relation_mat(func, list1, list2=None, relation='dist'):
     return array
 
 
+def _cluster_without_embedding(api_seqs):
+    dist_mat = calc_relation_mat(jaccard_dist, api_seqs, relation='dist')
+    clustering = DBSCAN(eps=0.6, min_samples=2, metric='precomputed').fit(dist_mat)
+    return clustering
+
+
+def _cluster_with_embedding(api_seqs, api_corpus):
+    corpus = []
+    for seq in api_corpus:
+        seq_ = list()
+        if isinstance(seq, list):
+            seq_ = seq  # 直接对ID做Embedding
+        else:
+            for x in seq.api_seq:
+                seq_.append(x.api_name)
+        corpus.append(seq_)
+    api2vec = api_embedding(corpus, vector_size=10, window=5, min_count=1, workers=4)
+
+    # 对高频API序列向量化
+    embedding = seqs_embedding(api2vec, api_seqs)
+
+    # 非padding模式，不等长。dtw参考：https://dtaidistance.readthedocs.io/en/latest/usage/dtw.html
+    dist_mat = calc_relation_mat(dtw_ndim.distance, embedding, relation='dist')
+    clustering = DBSCAN(eps=0.6, min_samples=2, metric='precomputed').fit(dist_mat)
+    return clustering
+
+
 def try_dbscan(embed=False):
-    tik = time.time()
     api_corpus, api_seqs, idx_seq_dict = Model.clean_seqs('./opencv.seqs.bin', './opencv.seqs_idx.bin')
     api_seqs = list(api_seqs)  # [:50]
-    tik1 = time.time()
-    logger.info(f"1. time: {tik1 - tik}")
 
     if not embed:
-        ##### Jaccard距离 + 无API Embedding
-        dist_mat = calc_relation_mat(jaccard_dist, api_seqs, relation='dist')
-        # dist_mat = calc_matrix(jaccard_dist, api_seqs)
-        tik1 = time.time()
-        logger.info(f"2. time: {tik1 - tik}")
-        clustering = DBSCAN(eps=0.6, min_samples=2, metric='precomputed').fit(dist_mat)
-        # clustering = AgglomerativeClustering(30).fit(dist_mat)
-        tik1 = time.time()
-        logger.info(f"3. time: {tik1 - tik}")
+        # Jaccard距离 + 无API Embedding
+        clustering = _cluster_without_embedding(api_seqs)
     else:
-        ##### API Embedding + DTW距离
+        # API Embedding + DTW距离
         # 用原始API序列学习API Embedding
-        corpus = []
-        for seq in api_corpus:
-            seq_ = list()
-            if isinstance(seq, list):
-                seq_ = seq  # 直接对ID做Embedding
-            else:
-                for x in seq.api_seq:
-                    seq_.append(x.api_name)
-            corpus.append(seq_)
-        api2vec = api_embedding(corpus, vector_size=10, window=5, min_count=1, workers=4)
-        tik1 = time.time()
-        logger.info(f"2. time: {tik1 - tik}")
-
-        # 对高频API序列向量化
-        embedding = seqs_embedding(api2vec, api_seqs)
-        tik1 = time.time()
-        logger.info(f"3. time: {tik1 - tik}")
-
-        # 非padding模式，不等长。dtw参考：https://dtaidistance.readthedocs.io/en/latest/usage/dtw.html
-        dist_mat = calc_relation_mat(dtw_ndim.distance, embedding, relation='dist')
-        clustering = DBSCAN(eps=0.6, min_samples=2, metric='precomputed').fit(dist_mat)
-        tik1 = time.time()
-        logger.info(f"4. time: {tik1 - tik}")
+        clustering = _cluster_with_embedding(api_seqs, api_corpus)
 
     logger.info([f'{i}:{x}' for i, x in enumerate(clustering.labels_) if x >= 0])
     logger.info([f'{api_seqs[i]}:{x}' for i, x in enumerate(clustering.labels_) if x >= 0])
@@ -128,8 +135,6 @@ def debug_string(labels, idx_seq_dict, api_seqs):
         id_rst[x].append(','.join([str(_) for _ in api_seqs[i]]))
 
     for key, val in name_rst.items():
-        # name_str = '\n'.join(val)
-        # id_str = '\n'.join(id_rst[key])
         name_str = ''
         for i in range(len(val)):
             name_str += f'{val[i]}\n'

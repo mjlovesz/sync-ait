@@ -79,6 +79,7 @@ class CommandLineInput(IInput):
             if not folder.endswith(os.path.sep):
                 folder += os.path.sep
             self.directories.append(folder)
+
         self.directories = sorted(set(self.directories), key=self.directories.index)
         self.source_path = self.directories
         self.directories = IOUtil.remove_subdirectory(self.directories)
