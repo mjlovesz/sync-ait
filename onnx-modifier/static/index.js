@@ -461,8 +461,6 @@ host.BrowserHost = class {
             })
         })
 
-
-
         function isJSONValid(jsonString) {
             try {
                 JSON.parse(jsonString);

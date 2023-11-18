@@ -15,6 +15,7 @@ import sys
 import onnx
 import onnx.helper as helper
 import onnx.checker as checker
+from flask import Flask, request, jsonify
 import logging
 import os
 import sys
@@ -22,7 +23,7 @@ import json
 import stat
 import tempfile
 from urllib import parse
-from flask import Flask, request, jsonify
+
 
 import onnx
 from onnx_modifier import OnnxModifier
