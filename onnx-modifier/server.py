@@ -12,6 +12,9 @@
 # limitations under the License.
 
 import sys
+import onnx
+import onnx.helper as helper
+import onnx.checker as checker
 import logging
 import os
 import sys
@@ -19,6 +22,7 @@ import json
 import stat
 import tempfile
 from urllib import parse
+from flask import Flask, request, jsonify
 
 import onnx
 from onnx_modifier import OnnxModifier
@@ -361,7 +365,38 @@ def register_interface(app, request, send_file, temp_dir_path, init_file_path=No
     @app.route('/get_session_index', methods=['POST'])
     def get_session_index():
         return str(SessionInfo.get_session_index()), 200
-    
+
+
+
+    @app.route('/get-operators', methods=['GET'])
+    def get_operators():
+        with open('./static/onnx-metadata.json', 'r', encoding='utf-8') as file:
+            file_data = json.load(file)
+        return jsonify(file_data)
+
+    @app.route('/add-custom-operator', methods=['POST'])
+    def add_custom_operator():
+        # 获取前端发送的数据
+        operator_data = request.json
+
+        # 打开现有的 JSON 文件并读取其内容
+        with open('./static/onnx-metadata.json', 'r+', encoding='utf-8') as file:
+            file_data = json.load(file)
+
+            # 将新的自定义算子数据追加到文件数据中
+            file_data.append(operator_data)
+
+            # 重置文件指针到文件开头
+            file.seek(0)
+
+            # 将更新后的数据写回文件
+            json.dump(file_data, file, indent=4, ensure_ascii=False)
+
+        return jsonify({"message": "Custom operator added successfully"})
+
+
+
+
     @app.route('/init', methods=['POST'])
     def init():
         modify_info = request.get_json()

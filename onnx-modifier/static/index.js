@@ -461,6 +461,107 @@ host.BrowserHost = class {
             })
         })
 
+
+
+        function isJSONValid(jsonString) {
+            try {
+                JSON.parse(jsonString);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+
+
+        function validateCustomOperatorForm() {
+            if (!isJSONValid(document.getElementById('customInputs').value)  ) {
+                alert('Inputs field contains invalid JSON.');
+                return false;
+            }
+            if (!isJSONValid(document.getElementById('customOutputs').value)) {
+                alert('Outputs field contains invalid JSON.');
+                return false;
+            }
+            if (!isJSONValid(document.getElementById('customAttributes').value)) {
+                alert('Attributes field contains invalid JSON.');
+                return false;
+            }
+            if (!isJSONValid(document.getElementById('customTypeConstraints').value)) {
+                alert('Type Constraints field contains invalid JSON.');
+                return false;
+            }
+            return true;
+        }
+
+
+
+        document.getElementById('openCustomOperatorDialog').addEventListener('click', function() {
+            document.getElementById('customOperatorDialog').showModal();
+        });
+
+        document.getElementById('customOperatorForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            if (validateCustomOperatorForm()) {
+                submitCustomOperator();
+            }
+        });
+
+
+
+        // 函数：从服务器获取最新的算子列表
+        function updateOperatorDropdown() {
+            fetch('/get-operators')
+            .then(response => response.json())
+            .then(data => {
+                var dropdown = document.getElementById('add-node-dropdown');
+                dropdown.innerHTML = ''; // 清空现有选项
+                data.forEach(operator => {
+                    var option = document.createElement('option');
+                    option.value = operator.name;
+                    option.textContent = operator.name;
+                    dropdown.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+
+        function submitCustomOperator() {
+            var customOperatorData = {
+                name: document.getElementById('customName').value,
+                module: document.getElementById('customModule').value,
+                version: parseInt(document.getElementById('customVersion').value),
+                support_level: document.getElementById('customSupportLevel').value,
+                description: document.getElementById('customDescription').value,
+                inputs: JSON.parse(document.getElementById('customInputs').value),
+                outputs: JSON.parse(document.getElementById('customOutputs').value),
+                attributes: JSON.parse(document.getElementById('customAttributes').value),
+                type_constraints: JSON.parse(document.getElementById('customTypeConstraints').value)
+            };
+
+            fetch('/add-custom-operator', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(customOperatorData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                document.getElementById('customOperatorDialog').close();
+                updateOperatorDropdown(); // 更新下拉菜单
+                document.dispatchEvent(new CustomEvent('customOperatorAdded'));
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+
+            });
+
+
+        }
+
+
         this.document.getElementById('version').innerText = this.version;
 
         if (this._meta.file) {

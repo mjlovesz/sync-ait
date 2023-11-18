@@ -1618,7 +1618,7 @@ onnx.Metadata = class {
                 for (const metadata of map.get(name)) {
                     const matchVersion = current ? current.version : -1;
                     const importVersion = imports.get(metadata.module) || 0;
-                    if (importVersion >= metadata.version && matchVersion < metadata.version) {
+                    if ((importVersion >= metadata.version && matchVersion < metadata.version) || domain != 'ai.onnx') {
                         current = metadata;
                     }
                 }
