@@ -24,6 +24,7 @@ from msquickcmp.pta_acl_cmp.constant import DATA_ID, ACL_DATA_PATH, \
     MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE, \
     ACL_DTYPE, ACL_SHAPE, TOKEN_ID
 from msquickcmp.pta_acl_cmp.utils import compare_tensor, write_json_file
+from components.utils.file_open_check import ms_open
 
 token_counts = 0
 
@@ -165,7 +166,10 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
         elif tensor_path:  # low-level
             write_acl_map_file(tensor_path)
             pid = os.getpid()
-            tensor_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
+            data_save_dir = os.getenv("ASDOPS_LOG_TO_FILE_DIR")
+            if not data_save_dir:
+                data_save_dir = "./"
+            tensor_path = os.path.join(data_save_dir, "tensors",
                                        str(pid), task_id, tensor_path)
             data = save_acl_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
 
@@ -180,18 +184,18 @@ def write_acl_map_file(tensor_path):
         acl_map_file_dir = '/tmp'
     acl_map_file_path = os.path.join(acl_map_file_dir, ACL_DATA_MAP_FILE)
     if not os.path.exists(acl_map_file_dir):
-        os.mkdir(acl_map_file_dir)
+        os.mkdir(acl_map_file_dir, mode=0o750)
 
     if os.path.exists(acl_map_file_path):
-        with open(acl_map_file_path, 'r') as file:
+        with ms_open(acl_map_file_path, 'r') as file:
             tensor_paths = file.readlines()
 
         if tensor_path + "\n" not in tensor_paths:
-            with open(acl_map_file_path, mode="a") as file:
+            with ms_open(acl_map_file_path, mode="a") as file:
                 file.write(tensor_path)
                 file.write("\n")
     else:
-        with open(acl_map_file_path, mode="a") as file:
+        with ms_open(acl_map_file_path, mode="a") as file:
             file.write(tensor_path)
             file.write("\n")
 
@@ -220,7 +224,7 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
         elif tensor_path:  # low-level
             token_tensor_path = os.path.join(str(token_id), tensor_path)
             write_acl_map_file(token_tensor_path)
-            golden_data_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
+            golden_data_path = os.path.join(os.getenv("ASDOPS_LOG_TO_FILE_DIR"), "tensors",
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
         json_path = os.path.join(".", dump_data_dir, "golden_tensor", "metadata.json")
         write_json_file(data_id, golden_data_path, json_path, token_id)
@@ -236,7 +240,7 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
         elif tensor_path:  # low-level
             token_tensor_path = os.path.join(str(token_id), tensor_path)
             write_acl_map_file(token_tensor_path)
-            acl_data_path = os.path.join(os.getenv("ACLTRANSFORMER_HOME_PATH"), "tensors",
+            acl_data_path = os.path.join(os.getenv("ASDOPS_LOG_TO_FILE_DIR"), "tensors",
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
         json_path = os.path.join(".", dump_data_dir, "acl_tensor", "metadata.json") 
         write_json_file(data_id, acl_data_path, json_path, token_id)

@@ -53,8 +53,6 @@ install_clang_on_centos() {
   $SUDO yum install llvm-toolset-7.0-clang -y
   source /opt/rh/llvm-toolset-7.0/enable
   echo "source /opt/rh/llvm-toolset-7.0/enable" >> ~/.bashrc
-  export CPLUS_INCLUDE_PATH=/opt/rh/llvm-toolset-7.0/root/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH
-  echo "export CPLUS_INCLUDE_PATH=/opt/rh/llvm-toolset-7.0/root/usr/lib64/clang/7.0.1/include:\$CPLUS_INCLUDE_PATH" >> ~/.bashrc
 }
 
 install_clang_on_sles() {
@@ -65,8 +63,6 @@ install_clang_on_sles() {
   $SUDO zypper refresh
   $SUDO zypper install gcc gcc-c++
   $SUDO zypper install unzip libclang7 clang7-devel
-  export CPLUS_INCLUDE_PATH=/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH
-  echo "export CPLUS_INCLUDE_PATH=/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH" >> ~/.bashrc
 }
 
 install_clang() {

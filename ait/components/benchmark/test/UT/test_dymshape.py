@@ -45,7 +45,7 @@ class TestClass:
         self.model_name = "resnet50"
 
     def get_resnet_dymshape_om_path(self):
-        return os.path.join(TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_dymshape.om")
+        return os.path.join(TestCommonClass.get_basepath(), self.model_name, "model", "pth_resnet50_dymshape.om")
 
     def test_infer_dynamicshape(self):
         device_id = 0

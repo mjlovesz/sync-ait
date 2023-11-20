@@ -56,7 +56,7 @@ class TestClass():
             ├── model
             └── output
         """
-        return os.path.join(TestCommonClass.base_path, self.model_name)
+        return os.path.join(TestCommonClass.get_basepath(), self.model_name)
 
     def get_dynamic_batch_om_path(self):
         return os.path.join(self.model_base_path, "model",
@@ -187,7 +187,7 @@ class TestClass():
         assert ret == 0
         assert os.path.exists(msame_infer_log_path)
 
-        msame_inference_time_ms = 0
+        msame_inference_time_ms = 0.0
         with open(msame_infer_log_path) as f:
             for line in f:
                 if "Inference average time without first time" not in line:

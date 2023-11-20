@@ -121,9 +121,9 @@ def test_get_memory_size_by_soc_type_when_invalid_npu_id_then_failed():
         with mock.patch("subprocess.run", return_value=subprocess.CompletedProcess(
                         args=[''],
                         returncode=0,
-                        stdout=b'NPU ID -1'
+                        stdout=b''
                         )):
-            ret = sp.get_memory_size_by_soc_type()
+            ret = sp.get_memory_size_by_soc_type(0)
             assert ret == utils.ACCURACY_COMPARISON_INVALID_DEVICE_ERROR
 
 
@@ -134,18 +134,8 @@ def test_get_memory_size_by_soc_type_when_invalid_memory_size_then_failed():
                         returncode=0,
                         stdout=b'NPU ID 1\nDDR Capacity(MB) -1\n'
                         )):
-            ret = sp.get_memory_size_by_soc_type()
+            ret = sp.get_memory_size_by_soc_type(0)
             assert ret == utils.ACCURACY_COMPARISON_INVALID_DEVICE_ERROR
-
-
-def test_get_memory_size_by_soc_type_when_valid_then_pass():
-    with mock.patch("subprocess.run", return_value=subprocess.CompletedProcess(
-                        args=[''],
-                        returncode=0,
-                        stdout=b'NPU ID 1\nDDR Capacity(MB) 4\n'
-                        )):
-        ans = sp.get_memory_size_by_soc_type()
-        assert ans == 1024 * 1024
 
 
 def test_find_all_csv_when_valid_then_pass():

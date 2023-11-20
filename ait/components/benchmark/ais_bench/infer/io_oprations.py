@@ -219,7 +219,7 @@ def check_pipeline_fileslist_match_intensors(fileslist, intensors_desc):
         raise RuntimeError()
     # check intensor size matched
     for i, files in enumerate(fileslist):
-        filesize = get_file_datasize(files[i])
+        filesize = get_file_datasize(files[0])
         tensorsize = intensors_desc[i].realsize
         auto_mode = False
         # auto_dim_mode & auto_shape_mode are exceptional cases

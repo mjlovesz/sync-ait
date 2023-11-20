@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.huawei.ascend.ait.ide.commonlib.pluginTool;
+package com.huawei.ascend.ait.ide.commonlib.plugintool;
 
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
@@ -32,11 +32,12 @@ import java.lang.reflect.Method;
  * PluginGet
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class PluginGet {
     private static final Logger LOGGER = LoggerFactory.getLogger(PluginGet.class);
     private final Project project;
+
     public PluginGet(Project project) {
         this.project = project;
     }
@@ -64,8 +65,8 @@ public class PluginGet {
             Constructor<?> constructor = a.getConstructor();
             Object object = constructor.newInstance();
             method.invoke(object, project);
-        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException |
-                 IllegalAccessException | InstantiationException e) {
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException
+                 | IllegalAccessException | InstantiationException e) {
             LOGGER.warn(e.getMessage());
         }
     }

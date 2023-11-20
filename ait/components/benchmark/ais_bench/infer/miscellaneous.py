@@ -121,22 +121,20 @@ def get_acl_json_path(args):
 
     output_json_dict = {}
     if args.profiler:
-        output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "", "aic_metrics": ""}}
         out_profiler_path = os.path.join(args.output, "profiler")
 
         if not os.path.exists(out_profiler_path):
             os.makedirs(out_profiler_path, PERMISSION_DIR)
-        output_json_dict["profiler"]["output"] = out_profiler_path
+        output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": out_profiler_path, "aic_metrics": ""}}
     elif args.dump:
-        output_json_dict = {"dump": {"dump_path": "", "dump_mode": "all", "dump_list": [{"model_name": ""}]}}
         out_dump_path = os.path.join(args.output, "dump")
 
         if not os.path.exists(out_dump_path):
             os.makedirs(out_dump_path, PERMISSION_DIR)
 
         model_name = args.model.split("/")[-1]
-        output_json_dict["dump"]["dump_path"] = out_dump_path
-        output_json_dict["dump"]["dump_list"][0]["model_name"] = model_name.split('.')[0]
+        output_json_dict = {"dump": {"dump_path": out_dump_path, "dump_mode": "all",
+                                     "dump_list": [{"model_name": model_name.split('.')[0]}]}}
 
     out_json_file_path = os.path.join(args.output, "acl.json")
 
@@ -249,7 +247,7 @@ def dymshape_range_run(args:BenchMarkArgsAdapter):
         result = { "dymshape" : dymshape, "cmd": cmd, "result": "Failed", "throughput" : 0 }
         logger.debug("cmd:{}".format(cmd))
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, _ = p.communicate()
+        stdout, _ = p.communicate(timeout=10)
         out_log = stdout.decode('utf-8')
         print(out_log) # show original log of cmd
         result["result"], result["throughput"] = get_throughtput_from_log(out_log)

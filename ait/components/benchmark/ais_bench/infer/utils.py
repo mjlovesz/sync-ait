@@ -132,14 +132,13 @@ def save_data_to_files(file_path, ndata):
 
 
 def create_fake_file_name(pure_data_type, index):
-    chars = ascii_lowercase + ascii_uppercase + digits
     suffix = "_" + pure_data_type + "_" + str(index)
-    fname = os.path.join(os.getcwd(), "tmp-" + "".join(str(uuid.uuid4())) + suffix)
-
-    if not os.path.exists(fname):
-        return fname
-    else:
-        create_fake_file_name(pure_data_type, index)
+    loop_max = 1000
+    for _ in range(loop_max):
+        fname = os.path.join(os.getcwd(), "tmp-" + "".join(str(uuid.uuid4())) + suffix)
+        if not os.path.exists(fname):
+            return fname
+    raise RuntimeError(f'create_fake_file_name failed: inner error')
 
 
 def get_dump_relative_paths(output_dir, timestamp):

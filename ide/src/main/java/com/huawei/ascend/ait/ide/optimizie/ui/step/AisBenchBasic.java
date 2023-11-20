@@ -28,9 +28,9 @@ import static com.huawei.ascend.ait.ide.util.CheckInput.normalizeInput;
 
 import com.huawei.ascend.ait.ide.commonlib.exception.CommandInjectException;
 import com.huawei.ascend.ait.ide.commonlib.output.OutputService;
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdExec;
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdExec;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrBuffer;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrWordStatic;
 import com.huawei.ascend.ait.ide.commonlib.ui.SwitchButton;
 import com.huawei.ascend.ait.ide.util.CheckInput;
 
@@ -64,7 +64,7 @@ import java.util.List;
  * AisBenchBasic
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class AisBenchBasic extends DialogWrapper {
     private static final Logger LOGGER = LoggerFactory.getLogger(AisBenchBasic.class);

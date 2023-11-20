@@ -454,13 +454,14 @@ class InferSession:
             return outputs
 
     def run_pipeline(self, infilelist, output, auto_shape=False,
-                     auto_dims=False, outfmt="BIN", pure_infer_mode=False, extra_session=[]):
+                     auto_dims=False, outfmt="BIN", pure_infer_mode=False, extra_session=None):
         infer_options = aclruntime.infer_options()
         infer_options.output_dir = output
         infer_options.auto_dym_shape = auto_shape
         infer_options.auto_dym_dims = auto_dims
         infer_options.out_format = outfmt
         infer_options.pure_infer_mode = pure_infer_mode
+        extra_session = [] if extra_session is None else extra_session
         self.session.run_pipeline(infilelist, infer_options, extra_session)
 
     def reset_summaryinfo(self):
@@ -637,15 +638,13 @@ class InferSession:
             return outputs
         else:
             self.first_inner_run(feeds, mode, custom_sizes)
-            for i in range(iteration_times - 1):
-                if (i == iteration_times - 2):
-                    outputs = self.inner_run(in_out_list, True, mem_copy)
-                    # convert to host tensor
-                    self.convert_tensors_to_host(outputs)
-                    # convert tensor to narray
-                    return self.convert_tensors_to_arrays(outputs)
-                else:
-                    self.inner_run(in_out_list, False, mem_copy)
+            for _ in range(iteration_times - 2):
+                self.inner_run(in_out_list, False, mem_copy)
+            outputs = self.inner_run(in_out_list, True, mem_copy)
+            # convert to host tensor
+            self.convert_tensors_to_host(outputs)
+            # convert tensor to narray
+            return self.convert_tensors_to_arrays(outputs)
 
     def summary(self):
         return self.session.sumary()

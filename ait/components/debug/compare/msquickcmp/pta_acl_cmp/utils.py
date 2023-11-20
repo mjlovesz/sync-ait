@@ -23,6 +23,7 @@ from msquickcmp.pta_acl_cmp.constant import TOKEN_ID, DATA_ID, ACL_DATA_PATH, CM
     CMP_FAIL_REASON, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, ATTR_END, \
     ATTR_OBJECT_LENGTH, ATTR_OBJECT_PREFIX, GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, \
     GOLDEN_MAX_VALUE, GOLDEN_MIN_VALUE, GOLDEN_MEAN_VALUE, CSV_GOLDEN_HEADER
+from components.utils.file_open_check import ms_open
 
 
 class TensorBinFile:
@@ -59,8 +60,8 @@ class TensorBinFile:
             file_data = fd.read()
 
             begin_offset = 0
-            for i in range(len(file_data)):
-                if file_data[i] == ord("\n"):
+            for i, byte in enumerate(file_data):
+                if byte == ord("\n"):
                     line = file_data[begin_offset: i].decode("utf-8")
                     begin_offset = i + 1
                     fields = line.split("=")
@@ -89,8 +90,7 @@ class TensorBinFile:
             self.format = int(attr_value)
         elif attr_name == "dims":
             self.dims = attr_value.split(",")
-            for i in range(len(self.dims)):
-                self.dims[i] = int(self.dims[i])
+            self.dims = [int(dim) for dim in self.dims]
 
 
 def read_acl_transformer_data(file_path):
@@ -98,8 +98,8 @@ def read_acl_transformer_data(file_path):
         raise FileNotFoundError("{} is not exists".format(file_path))
 
     if file_path.endswith(".bin"):
-        bin = TensorBinFile(file_path)
-        data = bin.get_data()
+        bin_tensor = TensorBinFile(file_path)
+        data = bin_tensor.get_data()
         return data
 
     raise ValueError("Tensor file path must be end with .bin.")
@@ -252,5 +252,5 @@ def write_json_file(data_id, data_path, json_path, token_id):
     except FileNotFoundError:
         json_data = {}
     json_data[data_id] = {token_id: data_path}
-    with open(json_path, "w") as f:
+    with ms_open(json_path, "w") as f:
         json.dump(json_data, f)

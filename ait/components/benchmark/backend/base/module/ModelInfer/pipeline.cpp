@@ -237,7 +237,7 @@ namespace Base {
 
     void SaveOutput(std::shared_ptr<Feeds> item, std::string outFmt, size_t index)
     {
-        std::string outputFileName = item->outputPrefix + Utils::RemoveSlash(item->outputNames->at(index));
+        std::string outputFileName = item->outputPrefix + std::to_string(index);
         if (outFmt == "NPY") {
             outputFileName += ".npy";
             if (Utils::TensorToNumpy(outputFileName, item->outputs->at(index)) == FAILED) {
