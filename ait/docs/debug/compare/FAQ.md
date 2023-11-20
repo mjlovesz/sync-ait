@@ -3,7 +3,7 @@
   - [2.使用locat功能时，出现`Object arrays cannot be loaded when allow_pickle=False`](#2使用locat功能时出现object-arrays-cannot-be-loaded-when-allow_picklefalse)
   - [3.如何安装Docker](#3如何安装docker)
   - [4.Dockerfile构建时报错 `ERROR: cannot verify xxx.com's certificate`](#4dockerfile构建时报错-error-cannot-verify-xxxcoms-certificate)
-
+  - [5.使用单算子比对功能时执行`atc`出现fail](#5使用单算子比对功能时执行atc出现fail)
 
 # FAQ
 ## 1.运行时出现`Inner Error`类错误
@@ -98,3 +98,10 @@ sudo usermod -aG docker $USER
 ## 4.Dockerfile构建时报错 `ERROR: cannot verify xxx.com's certificate`
 
 可在Dockerfile中每个wget命令后加--no-check-certificate，有安全风险，由用户自行承担。
+
+## 5.使用单算子比对功能时执行`atc`出现fail
+一般是模型由于存在`reshape`算子导致的shape缺失从而`atc`转换失败，如果reshape的shape输入为某个网络算子，可能导致单算子atc转换失败，例如图中的reshape：
+
+![输入图片说明](https://foruda.gitee.com/images/1699360631258718283/6e453470_8277365.png "屏幕截图")
+
+可以通过`ait debug surgeon`或者`onnxsim`对`onnx`模型进行优化，去除`reshape`算子。
