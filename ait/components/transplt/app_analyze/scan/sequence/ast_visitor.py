@@ -11,19 +11,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
+from enum import Enum, unique
 from clang.cindex import CursorKind
 from app_analyze.common.kit_config import KitConfig
 from app_analyze.scan.sequence.seq_desc import FuncDesc, ObjDesc
-from app_analyze.scan.sequence.seq_utils import save_api_seq, sort_apis, is_unused_api, rename_func_name
+from app_analyze.scan.sequence.seq_utils import save_api_seq, reorder_args_apis, is_unused_api, rename_func_name
 from app_analyze.scan.sequence.api_filter import GLOBAL_FILTER_PREFIX
-from app_analyze.scan.clang_utils import call_expr, skip_implicit, get_attr, get_children
+from app_analyze.scan.clang_utils import call_expr, get_attr, get_children
 from app_analyze.scan.clang_parser import cuda_enabled, usr_namespace, find_right_angle
+
+
+@unique
+class APIType(Enum):
+    """
+    api type
+    """
+    INVALID = 'invalid'
+    USR_DEFINED = 'usr-defined'
+    ACC_LIB = 'acc-lib'
 
 
 # three kinds: 1.invalid, 2.usr_defined, 3.acc_lib
 def _get_api_type(file, cursor):
     """判断该文件是否为加速库文件。"""
-    arg_dict = {'cuda_en': False, 'usr_ns': '', 'api_type': 'invalid'}
+    arg_dict = {'cuda_en': False, 'usr_ns': '', 'api_type': APIType.INVALID}
     if not file:
         return arg_dict
 
@@ -37,12 +49,12 @@ def _get_api_type(file, cursor):
             new_file = file if not file.startswith(lib) else file.replace(lib, '')
             arg_dict['cuda_en'] = cuda_enabled(new_file, v[1])
             arg_dict['usr_ns'] = usr_namespace(cursor, v[0])
-            arg_dict['api_type'] = 'acc_lib'
+            arg_dict['api_type'] = APIType.ACC_LIB
             cursor.lib = v[3]
         return arg_dict
 
     if file.startswith(KitConfig.SOURCE_DIRECTORY):
-        arg_dict['api_type'] = 'usr_defined'
+        arg_dict['api_type'] = APIType.USR_DEFINED
     return arg_dict
 
 
@@ -119,8 +131,8 @@ def _visit_function_decl(node, api_type, arg_dict=None):
         return api
 
     func_attr = _create_func_desc(node)
-    func_attr.is_usr_def = True if api_type == 'usr_defined' else False
-    if api_type == 'acc_lib':
+    func_attr.is_usr_def = True if api_type == APIType.USR_DEFINED else False
+    if api_type == APIType.ACC_LIB:
         func_attr.acc_name = get_attr(node, 'lib')
         func_attr.func_name = _format_api(arg_dict['usr_ns'], node.spelling)
         rename_func_name(func_attr)
@@ -134,12 +146,12 @@ def _visit_function_decl(node, api_type, arg_dict=None):
     return func_attr
 
 
-def _visit_cxx_method(node, api_type='invalid'):
+def _visit_cxx_method(node, api_type=APIType.INVALID):
     func_attr = _create_func_desc(node)
     _get_obj_info(node, func_attr)
     func_attr.is_cxx_method = True
-    func_attr.is_usr_def = True if api_type == 'usr_defined' else False
-    if api_type == 'acc_lib':
+    func_attr.is_usr_def = True if api_type == APIType.USR_DEFINED else False
+    if api_type == APIType.ACC_LIB:
         func_attr.acc_name = get_attr(node, 'lib')
         rename_func_name(func_attr)
 
@@ -174,7 +186,7 @@ def _visit_call_expr(node, rst, pth):
 
         arg_dict = _get_api_type(c.referenced.location.file.name, c)
         api_type = arg_dict['api_type']
-        if api_type == 'invalid':
+        if api_type == APIType.INVALID:
             cur_path = pth
             _visit_call_expr(c, rst, cur_path)
             continue
@@ -194,73 +206,90 @@ def _visit_call_expr(node, rst, pth):
         _visit_call_expr(c, rst, cur_path)
 
 
+def _usr_def_fn(node, seq_desc):
+    func_attr = _visit_function_decl(node, APIType.USR_DEFINED)
+    seq_desc.api_seq.append(func_attr)
+    seq_desc.has_usr_def = True
+    return False
+
+
+def _usr_def_obj(node, seq_desc, cursor_kind):
+    skip_flag = False
+    if not node.referenced:
+        return skip_flag
+
+    ref_kind = node.referenced.kind.name
+    if ref_kind != cursor_kind.name:
+        return skip_flag
+
+    arg_dict = _get_api_type(node.referenced.location.file.name, node)
+    api_type = arg_dict['api_type']
+    if api_type == APIType.USR_DEFINED:
+        # 用户自定义对象和成员变量
+        func_attr = _visit_cxx_method(node, api_type)
+        seq_desc.api_seq.append(func_attr)
+        seq_desc.has_usr_def = True
+    return skip_flag
+
+
+def _usr_and_lib_call_fn(node, seq_desc, ):
+    skip_flag = False
+    if not node.referenced:
+        return skip_flag
+
+    ref_kind = node.referenced.kind.name
+    if ref_kind not in ['CXX_METHOD', 'FUNCTION_DECL']:
+        return skip_flag
+
+    arg_dict = _get_api_type(node.referenced.location.file.name, node)
+    api_type = arg_dict['api_type']
+    if api_type == APIType.INVALID:
+        return skip_flag
+
+    if ref_kind == 'CXX_METHOD':
+        func_attr = _visit_cxx_method(node, api_type)
+    else:
+        func_attr = _visit_function_decl(node, api_type, arg_dict)
+
+    if not func_attr:
+        return skip_flag
+
+    if api_type == APIType.USR_DEFINED:
+        seq_desc.has_usr_def = True
+
+    skip_flag = True
+    rst = [(func_attr, [node])]
+    pth = [node]
+    _visit_call_expr(node, rst, pth)
+
+    rst_size = len(rst)
+    if rst_size == 1:
+        seq_desc.api_seq.append(rst[0][0])
+    else:
+        reorder_args_apis(rst)
+        seq_desc.api_seq.extend([val[0] for val in rst])
+    return skip_flag
+
+
 def visit(node, seq_desc, result):
     skip_flag = False
 
     # 过滤包含在全局过滤器中的节点
     if node.spelling.startswith(GLOBAL_FILTER_PREFIX):
-        return False
+        return skip_flag
 
     cursor_kind = node.kind
     if cursor_kind == CursorKind.FUNCTION_DECL:
         # 用户自定义函数
         save_api_seq(seq_desc, result)
-        func_attr = _visit_function_decl(node, 'usr_defined')
-        seq_desc.api_seq.append(func_attr)
-        seq_desc.has_usr_def = True
+        skip_flag = _usr_def_fn(node, seq_desc)
     elif cursor_kind in [CursorKind.CONSTRUCTOR, CursorKind.CXX_METHOD]:
         # 对象和成员变量
         save_api_seq(seq_desc, result)
-        if not node.referenced:
-            return skip_flag
-
-        ref_kind = node.referenced.kind.name
-        if ref_kind != cursor_kind.name:
-            return skip_flag
-
-        arg_dict = _get_api_type(node.referenced.location.file.name, node)
-        api_type = arg_dict['api_type']
-        if api_type == 'usr_defined':
-            # 用户自定义对象和成员变量
-            func_attr = _visit_cxx_method(node, api_type)
-            seq_desc.api_seq.append(func_attr)
-            seq_desc.has_usr_def = True
+        skip_flag = _usr_def_obj(node, seq_desc, cursor_kind)
     elif cursor_kind == CursorKind.CALL_EXPR:
         # 函数调用
-        if not node.referenced:
-            return skip_flag
-
-        ref_kind = node.referenced.kind.name
-        if ref_kind not in ['CXX_METHOD', 'FUNCTION_DECL']:
-            return skip_flag
-
-        arg_dict = _get_api_type(node.referenced.location.file.name, node)
-        api_type = arg_dict['api_type']
-        if api_type == 'invalid':
-            return skip_flag
-
-        if ref_kind == 'CXX_METHOD':
-            func_attr = _visit_cxx_method(node, api_type)
-        else:
-            func_attr = _visit_function_decl(node, api_type, arg_dict)
-
-        if not func_attr:
-            return skip_flag
-
-        if api_type == 'usr_defined':
-            seq_desc.has_usr_def = True
-
-        skip_flag = True
-        rst = [(func_attr, [node])]
-        pth = [node]
-        _visit_call_expr(node, rst, pth)
-
-        rst_size = len(rst)
-        if rst_size == 1:
-            seq_desc.api_seq.append(rst[0][0])
-        else:
-            sort_apis(rst)
-            seq_desc.api_seq.extend([val[0] for val in rst])
+        skip_flag = _usr_and_lib_call_fn(node, seq_desc)
 
     return skip_flag
 

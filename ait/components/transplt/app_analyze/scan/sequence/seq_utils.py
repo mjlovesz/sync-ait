@@ -33,6 +33,32 @@ def is_unused_api(func_desc):
 
 
 def rename_func_name(func_desc):
+    def _match_namespace_prefix(prefix):
+        matched_flag = True
+        idx = -1
+
+        if func_name.startswith(prefix):
+            idx = 0
+        elif record_name.startswith(prefix):
+            idx = 1
+        else:
+            matched_flag = False
+        return matched_flag, idx
+
+    def _set_name(idx, prefix):
+        res = name_tuple[idx].replace(prefix, '')
+        if res.startswith('::'):
+            if not idx:
+                func_desc.func_name = ns + res
+            else:
+                func_desc.obj_info.record_name = ns + res
+        else:
+            pos = res.find('::')
+            if not idx:
+                func_desc.func_name = ns + res[pos:]
+            else:
+                func_desc.obj_info.record_name = ns + res[pos:]
+
     val = ACC_FILTER.get(func_desc.acc_name, None)
     if val is None:
         return
@@ -40,28 +66,14 @@ def rename_func_name(func_desc):
     ns_filter = val.get('namespace_filter', {})
     func_name = func_desc.func_name
     record_name = func_desc.obj_info.record_name if func_desc.obj_info is not None else ''
+    name_tuple = (func_name, record_name)
     for ns_prefix, ns in ns_filter.items():
-        if func_name.startswith(ns_prefix):
-            name = func_name
-            flag = True
-        elif record_name.startswith(ns_prefix):
-            name = record_name
-            flag = False
-        else:
+        mt_flag, nm_id = _match_namespace_prefix(ns_prefix)
+        if not mt_flag:
             continue
 
-        left = name.replace(ns_prefix, '')
-        if left.startswith('::'):
-            if flag:
-                func_desc.func_name = ns + left
-            else:
-                func_desc.obj_info.record_name = ns + left
-        else:
-            pos = left.find('::')
-            if flag:
-                func_desc.func_name = ns + left[pos:]
-            else:
-                func_desc.obj_info.record_name = ns + left[pos:]
+        _set_name(nm_id, ns_prefix)
+        break
 
 
 def save_api_seq(seq_desc, result):
@@ -73,43 +85,74 @@ def save_api_seq(seq_desc, result):
         result.append(new_seq_desc)
 
 
-def sort_apis(seq):
-    idx = 0
-    visited_apis = list()
-    cnt = len(seq)
-    i = 0
-    while i < cnt:
-        idx_flag = True
-        chk_flag = False
+def _reorder(idx_tuple, degree_tuple, flag_tuple, nodes):
+    cur_idx, nxt_idx = idx_tuple[0], idx_tuple[1]
+    cur_node_degree, nxt_node_degree = degree_tuple[0], degree_tuple[1]
+    idx_flag, chk_flag = flag_tuple[0], flag_tuple[1]
 
+    node_cnt = len(nodes)
+    cur_node = nodes[cur_idx]
+    stop_flag = False
+
+    if cur_node_degree < nxt_node_degree:
+        # 当前节点的深度比后续遍历节点的深度小
+        if nxt_idx + 1 == node_cnt:
+            # 比所有节点都小，该节点是根节点，要排在最后面
+            nodes.pop(cur_idx)
+            nodes.insert(nxt_idx, cur_node)
+            # 当前节点向后移动，下一个节点的索引跟当前节点索引一样，不需要更改
+            idx_flag = False
+        else:
+            # 继续向后移动，进行位置移动判断
+            chk_flag = True
+    else:
+        if chk_flag:
+            # 父节点需要向后移动
+            nodes.pop(cur_idx)
+            nodes.insert(nxt_idx - 1, cur_node)
+            # 当前节点向后移动，下一个节点的索引跟当前节点索引一样，不需要更改
+            idx_flag = False
+        elif cur_node_degree == nxt_node_degree:
+            # 深度一样，是兄弟节点，不需要进行位置移动
+            stop_flag = True
+
+    return idx_flag, chk_flag, stop_flag
+
+
+# 对函数的参数的api进行逆排序
+# eg: origin order is:
+# [('s',['s']),('a',['s','a']),('c',['s','a','c']),('d',['s','a','d']),('b',['s','b']),('e',['s','b','e'])]
+# after reorder, order is:
+# [('c',['s','a','c']),('d',['s','a','d']),('a',['s','a']),('e',['s','b','e']),('b',['s','b']),('s',['s'])]
+def reorder_args_apis(seq):
+    idx = 0  # 当前需要遍历的节点的索引
+    visited_apis = list()  # 已经遍历过的节点
+    i = 0  # 遍历次数
+    cnt = len(seq)  # 节点的个数
+
+    while i < cnt:
+        idx_moved_flag = True  # 遍历节点时，指针的位置是否需要移动
+        check_nxt_flag = False  # 是否需要向后遍历
+
+        # (func_desc, [node])
         api = seq[idx]
         if api in visited_apis:
             idx += 1
             continue
 
+        # 将没有访问过的节点加入列表中
         visited_apis.append(api)
-
-        item_idx = len(api[1])
+        # 当前节点的深度
+        cur_node_degree = len(api[1])
         for j in range(idx + 1, cnt):
-            cur_idx = len(seq[j][1])
-            if item_idx < cur_idx:
-                if j + 1 == cnt:
-                    seq.pop(idx)
-                    seq.insert(j, api)
-                    idx_flag = False
-                    break
-                else:
-                    chk_flag = True
-                    continue
-            else:
-                if chk_flag:
-                    seq.pop(idx)
-                    seq.insert(j - 1, api)
-                    idx_flag = False
-                    break
-                elif item_idx == cur_idx:
-                    break
+            # 对比节点的深度
+            nxt_node_degree = len(seq[j][1])
+            idx_moved_flag, check_nxt_flag, stop_flag = _reorder((idx, j), (cur_node_degree, nxt_node_degree),
+                                                                 (idx_moved_flag, check_nxt_flag), seq)
+            if not idx_moved_flag or stop_flag:
+                break
 
-        if idx_flag:
+        if idx_moved_flag:
+            # 移动当前指针的位置
             idx += 1
         i += 1

@@ -68,7 +68,9 @@ class Seq:
 
     @staticmethod
     def from_dict(obj):
-        assert isinstance(obj, dict)
+        if not isinstance(obj, dict):
+            raise Exception('Type error, obj must be type dict!')
+
         label = from_str(obj.get('label'))
         src_seq = from_list(lambda x: from_int(x), obj.get('src_seq'))
         seq_desc = from_list(lambda x: from_str(x), obj.get('seq_desc'))
@@ -99,7 +101,9 @@ class SeqInfo:
 
     @staticmethod
     def from_dict(obj):
-        assert isinstance(obj, dict)
+        if not isinstance(obj, dict):
+            raise Exception('Type error, obj must be type dict!')
+
         seqs = from_list(Seq.from_dict, obj.get('seqs'))
         return SeqInfo(seqs)
 
@@ -115,7 +119,9 @@ class ExpertLibs:
 
     @staticmethod
     def from_dict(obj):
-        assert isinstance(obj, dict)
+        if not isinstance(obj, dict):
+            raise Exception('Type error, obj must be type dict!')
+
         acc_lib_dict = dict()
         for lib, _ in KitConfig.ACC_LIB_ID_PREFIX.items():
             if obj.get(lib, None):

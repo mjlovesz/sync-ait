@@ -24,6 +24,8 @@ _FILE_ID_COUNTER = Value('i', 0)
 
 
 class FuncDesc:
+    USR_DEFAULT_ID = -1
+
     def __init__(self):
         self.obj_info = None
         self.location = None
@@ -73,7 +75,7 @@ class FuncDesc:
 
     def set_func_id(self):
         if self.is_usr_def:
-            self._func_id = -1
+            self._func_id = FuncDesc.USR_DEFAULT_ID
         else:
             no_fid_flag = False
             name_id_tbl = _GLOBAl_FUNC_ID_DICT[self.acc_name]
@@ -88,8 +90,6 @@ class FuncDesc:
                 self._func_id = base + offset
                 _GLOBAl_FUNC_ID_DICT[self.acc_name][self.full_name] = self._func_id
 
-            logger.debug(f'function id is {self._func_id}, name is: {self.full_name}')
-
     @property
     def func_id(self):
         return self._func_id
@@ -97,7 +97,7 @@ class FuncDesc:
     @property
     def file_id(self):
         if not self.is_usr_def:
-            return -1
+            return FuncDesc.USR_DEFAULT_ID
 
         fid = _GLOBAL_FILE_ID_DICT.get(self.root_file, None)
         if fid is None:

@@ -47,6 +47,18 @@ def _calc_dist(a, b):
 
 
 def _filter(cur_acc_lib, cur_sim, cur_mt_seq, saved_seqs):
+    def _compare(cur_mt_tuple, acc_mt_tuple):
+        cur_mt_len, cur_val = cur_mt_tuple[0], cur_mt_tuple[1]
+        acc_mt_len, acc_val = acc_mt_tuple[0], acc_mt_tuple[1]
+
+        if cur_mt_len < acc_mt_len:
+            flag = False
+        elif cur_mt_len == acc_mt_len:
+            flag = False if cur_val <= acc_val else True
+        else:
+            flag = True
+        return flag
+
     valid_flag = True
     rm_keys = list()
     for acc_lib, acc_tuple in saved_seqs.items():
@@ -55,20 +67,11 @@ def _filter(cur_acc_lib, cur_sim, cur_mt_seq, saved_seqs):
         if mode in [MatcherMode.NO_MATCHED, MatcherMode.CROSS]:
             continue
 
-        if len(cur_mt_seq) < len(acc_mt_seq):
-            valid_flag = False
-            break
-        elif len(cur_mt_seq) == len(acc_mt_seq):
-            acc_sim = acc_tuple[0]
-            if cur_sim <= acc_sim:
-                valid_flag = False
-                break
-            else:
-                valid_flag = True
-                rm_keys.append(acc_lib)
-        else:
-            valid_flag = True
+        valid_flag = _compare((len(cur_mt_seq), cur_sim), (len(acc_mt_seq), acc_tuple[0]))
+        if valid_flag:
             rm_keys.append(acc_lib)
+        else:
+            break
 
     [saved_seqs.pop(k) for k in rm_keys]
     if valid_flag:
@@ -96,28 +99,29 @@ def _match(seq, acc_lib_seqs, rs_lib_seqs):
 
 
 def match_api_seqs(seqs, expert_libs):
-    result = dict()
-    for seq_desc in seqs:
-        rs_lib_seqs = dict()
+    def _traverse_expert_libs(cur_seq_desc):
+        mt_rst = dict()
+        # 获取当前序列的id列表
+        cur_idx_list = [_.func_id for _ in cur_seq_desc.api_seq if not _.is_usr_def]
+        matched_ids = set(cur_idx_list)
 
         # 获取序列中所涉及的加速库
-        acc_names = set([_.acc_name for _ in seq_desc.api_seq if _.acc_name])
-        # 获取当前序列的id列表
-        cur_idx_list = [_.func_id for _ in seq_desc.api_seq]
-        matched_ids = set(cur_idx_list)
-        if seq_desc.has_usr_def:
-            matched_ids.remove(-1)
-
+        acc_names = set([_.acc_name for _ in cur_seq_desc.api_seq if _.acc_name])
         for acc_name in acc_names:
             # 获取当前加速库对应的模板
             seq_info = expert_libs.acc_lib_dict.get(acc_name, None)
             if seq_info:
                 # 进行模板匹配
-                _match(matched_ids, seq_info.seqs, rs_lib_seqs)
+                _match(matched_ids, seq_info.seqs, mt_rst)
+        return mt_rst
 
+    result = dict()
+    for seq_desc in seqs:
+
+        lib_seqs_rst = _traverse_expert_libs(seq_desc)
         # 对扫描出来的结果进行处理
-        if rs_lib_seqs:
-            rs_lib_seqs = dict(zip(rs_lib_seqs.keys(), [_[0] for _ in list(rs_lib_seqs.values())]))
+        if lib_seqs_rst:
+            lib_seqs_rst = dict(zip(lib_seqs_rst.keys(), [_[0] for _ in list(lib_seqs_rst.values())]))
 
-        result[seq_desc] = rs_lib_seqs
+        result[seq_desc] = lib_seqs_rst
     return result

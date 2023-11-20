@@ -49,7 +49,7 @@ class SeqHandler:
             if not seq_desc.has_usr_def:
                 continue
 
-            new_api_seq = []
+            new_api_seq = list()
             _get_union_api(seq_desc, new_api_seq)
             seq_desc.api_seq = new_api_seq
             if all(not p.is_usr_def for p in new_api_seq):
@@ -117,9 +117,7 @@ class SeqHandler:
 
         rst_str = 'The sequences result are: \n'
         for i, seq in enumerate(seqs):
-            d_str = []
-            for idx in seq:
-                d_str.append(idx_dict[idx])
+            d_str = [idx_dict[idx] for idx in seq]
             rst_str += str(i) + '. ' + '-->'.join(d_str) + '\n'
 
         logger.debug(f'{rst_str}')
@@ -134,29 +132,28 @@ class SeqHandler:
                 idx += 1
             return idx
 
-        result = []
+        def _longest_common_prefix(cur_seq_len, cur_array):
+            for k in range(0, cur_seq_len - 1):
+                for j in range(k + 1, cur_seq_len):
+                    tmp = _len_two_lists(cur_array[k], cur_array[j])
+                    if tmp <= 1:
+                        continue
+
+                    sub_rst = cur_array[k][0:tmp]
+                    if sub_rst and len(sub_rst) >= SeqArgs.SEQ_MIN_LEN:
+                        result.append(sub_rst)
+
+        result = list()
         for seq in seqs:
             seq_len = len(seq)
-
-            max_len = 1
             if seq_len <= 1:
                 continue
 
-            arrays = []  # 存放S的后缀字符串
-            for i in range(0, seq_len):
-                arrays.append(seq[seq_len - 1 - i:])
+            # 存放S的后缀字符串
+            array = [seq[seq_len - 1 - i:] for i in range(0, seq_len)]
 
             # 两个相邻字符串的最长公共前缀
-            for i in range(0, seq_len - 1):
-                for j in range(i + 1, seq_len):
-                    tmp = _len_two_lists(arrays[i], arrays[j])
-                    if tmp <= max_len:
-                        continue
-
-                    sub_rst = arrays[i][0:tmp]
-
-                    if sub_rst and len(sub_rst) >= SeqArgs.SEQ_MIN_LEN:
-                        result.append(sub_rst)
+            _longest_common_prefix(seq_len, array)
         return result
 
     @staticmethod
