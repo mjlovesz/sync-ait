@@ -14,7 +14,6 @@
 from app_analyze.utils.log_util import logger
 from app_analyze.utils.io_util import IOUtil
 from app_analyze.common.kit_config import SeqArgs
-from app_analyze.scan.sequence.aprioriv2 import apriori
 from app_analyze.scan.sequence.seq_desc import get_idx_tbl
 from app_analyze.scan.sequence.prefix_span import prefixspan
 
