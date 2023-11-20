@@ -96,7 +96,7 @@ def parse_input_param(model: str,
             raise ValueError('framework is illegal, use --help.')
         framework = Framework(int(framework))
 
-    if soc is None:
+    if not soc:
         soc = utils.get_soc_type()
 
     return ConvertConfig(
