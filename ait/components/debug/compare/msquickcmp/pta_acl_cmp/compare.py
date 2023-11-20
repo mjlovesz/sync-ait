@@ -73,7 +73,10 @@ def save_pta_data(csv_data, data_id, data_val, data_path):
         csv_data[GOLDEN_DATA_PATH][index] = data_path
 
         # 对应的acl_data存在时，触发比对
-        csv_data = compare_tensor(csv_data=csv_data)
+        dump_clean = os.getenv("AIT_DUMP_CLEAN")
+        if not dump_clean:
+            dump_clean = False
+        csv_data = compare_tensor(csv_data=csv_data, dump_clean)
 
     return csv_data
 
@@ -98,7 +101,10 @@ def save_acl_data(csv_data, data_id, data_val, data_path):
         csv_data[ACL_DATA_PATH][index] = data_path
 
         # 对应的pta数据存在时，触发比对
-        csv_data = compare_tensor(csv_data=csv_data)
+        dump_clean = os.getenv("AIT_DUMP_CLEAN")
+        if not dump_clean:
+            dump_clean = False
+        csv_data = compare_tensor(csv_data=csv_data, dump_clean)
 
     return csv_data
 

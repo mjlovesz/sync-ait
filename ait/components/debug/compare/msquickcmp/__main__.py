@@ -133,20 +133,20 @@ class CompareCommand(BaseCommand):
             dest="bin2npy",
             default=False,
             type=str2bool,
-            help='Enable npu dump data conversion from bin to npy after compare.Usage: --convert True.')
+            help='Enable npu dump data conversion from bin to npy after compare.Usage: --convert True')
         parser.add_argument(
             '--locat',
             default=False,
             dest="locat",
             type=str2bool,
-            help='Enable accuracy interval location when needed.E.g: --locat True.')
+            help='Enable accuracy interval location when needed.E.g: --locat True')
         parser.add_argument(
             '-cp',
             '--custom-op',
             type=safe_string,
             dest="custom_op",
             default='',
-            help='Op name witch is not registered in onnxruntime, only supported by Ascend.')
+            help='Op name witch is not registered in onnxruntime, only supported by Ascend')
         parser.add_argument(
             '-ofs',
             '--onnx-fusion-switch',
@@ -154,7 +154,7 @@ class CompareCommand(BaseCommand):
             default=True,
             type=str2bool,
             help='Onnxruntime fusion switch, set False for dump complete onnx data when '
-                 'necessary.Usage: -ofs False.')
+                 'necessary.Usage: -ofs False')
         parser.add_argument(
             '--fusion-switch-file',
             dest="fusion_switch_file",
@@ -207,7 +207,7 @@ class AclCompare(BaseCommand):
             required=False,
             type=safe_string,
             default='',
-            help='Exec command to run acltransformer model inference. ')
+            help='Exec command to run acltransformer model inference')
 
         parser.add_argument(
             '--golden-path',
@@ -215,7 +215,7 @@ class AclCompare(BaseCommand):
             required=False,
             type=valid_json_file_or_dir,
             default='',
-            help='Metadata path of golden model.')
+            help='Metadata path of golden model')
 
         parser.add_argument(
             '--my-path',
@@ -223,7 +223,7 @@ class AclCompare(BaseCommand):
             required=False,
             type=valid_json_file_or_dir,
             default='',
-            help='Metadata path of my model.')
+            help='Metadata path of my model')
 
         parser.add_argument(
             '--output',
@@ -232,17 +232,25 @@ class AclCompare(BaseCommand):
             type=check_output_path_legality,
             default='./',
             help='The output compared report path')
+        
+        parser.add_argument(
+            '--clean',
+            dest="clean",
+            required=False,
+            type=str2bool,
+            default=False,
+            help='Set clean true if you want clean the dump data.E.g: --clean True')
 
     def handle(self, args, **kwargs):
         if args.exec and check_exec_cmd(args.exec):
-            init_aclcmp_task()
+            init_aclcmp_task(args.clean)
             # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
             os.system(args.exec)
             clear_aclcmp_task()
             return
 
         if args.golden_path and args.my_path:
-            compare_metadata(args.golden_path, args.my_path, args.output)
+            compare_metadata(args.golden_path, args.my_path, args.output, args.clean)
 
 
 def get_cmd_instance():

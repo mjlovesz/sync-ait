@@ -3,16 +3,17 @@ import shutil
 import site
 
 from msquickcmp.pta_acl_cmp.constant import AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, \
-    LD_PRELOAD, ACLTRANSFORMER_SAVE_TENSOR_MAX, ACLTRANSFORMER_SAVE_TENSOR, MAX_TOKEN_NUM
+    LD_PRELOAD, ACLTRANSFORMER_SAVE_TENSOR_MAX, ACLTRANSFORMER_SAVE_TENSOR, MAX_TOKEN_NUM, AIT_DUMP_CLEAN
 
 
-def init_aclcmp_task():
+def init_aclcmp_task(dump_clean):
     os.environ[AIT_CMP_TASK_PID] = str(os.getpid())
     os.environ[AIT_CMP_TASK] = "1"
     os.environ[AIT_CMP_TASK_DIR] = os.getcwd()
+    os.environ[AIT_DUMP_CLEAN] = dump_clean
     ld_preload = os.getenv("LD_PRELOAD")
     ld_preload = ld_preload or ""
-    save_tensor_so_path = os.path.join(site.getsitepackages()[0], "msquickcmp", "libtensorutil.so")
+    save_tensor_so_path = os.path.join(site.getsitepackages()[0], "msquickcmp", "libsavetensor.so")
     os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
 
     # 加速库获取内部数据轮数，设大一些，否则token数目较多时，可能获取不到后面的数据
