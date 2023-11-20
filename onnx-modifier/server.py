@@ -11,21 +11,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import sys
-import onnx
-import onnx.helper as helper
-import onnx.checker as checker
-from flask import Flask, request, jsonify
+import json
 import logging
 import os
-import sys
-import json
 import stat
+import sys
 import tempfile
 from urllib import parse
 
 
 import onnx
+import onnx.helper as helper
+import onnx.checker as checker
+from flask import Flask, request, jsonify
+
 from onnx_modifier import OnnxModifier
 
 
