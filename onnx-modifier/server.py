@@ -378,6 +378,11 @@ def register_interface(app, request, send_file, temp_dir_path, init_file_path=No
     def add_custom_operator():
         # 获取前端发送的数据
         operator_data = request.json
+        # 检查文件路径是否为软链接
+        if os.path.islink('./static/onnx-metadata.json'):
+            # 如果是软链接，则删除
+            os.unlink('./static/onnx-metadata.json')
+            return jsonify({"error": "Invalid file path. Symbolic link detected."}), 400
 
         # 打开现有的 JSON 文件并读取其内容
         with open('./static/onnx-metadata.json', 'r+', encoding='utf-8') as file:

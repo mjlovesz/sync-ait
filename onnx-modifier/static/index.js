@@ -472,7 +472,19 @@ host.BrowserHost = class {
 
 
         function validateCustomOperatorForm() {
-            if (!isJSONValid(document.getElementById('customInputs').value)  ) {
+            if (!document.getElementById('customName').value.trim()) {
+                alert('Name field is required.');
+                return false;
+            }
+            if (!document.getElementById('customModule').value.trim()) {
+                alert('Module field is required.');
+                return false;
+            }
+            if (!document.getElementById('customVersion').value.trim()) {
+                alert('Version field is required.');
+                return false;
+            }
+            if (!isJSONValid(document.getElementById('customInputs').value)) {
                 alert('Inputs field contains invalid JSON.');
                 return false;
             }
@@ -480,11 +492,11 @@ host.BrowserHost = class {
                 alert('Outputs field contains invalid JSON.');
                 return false;
             }
-            if (!isJSONValid(document.getElementById('customAttributes').value)) {
+            if (document.getElementById('customAttributes').value && !isJSONValid(document.getElementById('customAttributes').value)) {
                 alert('Attributes field contains invalid JSON.');
                 return false;
             }
-            if (!isJSONValid(document.getElementById('customTypeConstraints').value)) {
+            if (document.getElementById('customTypeConstraints').value && !isJSONValid(document.getElementById('customTypeConstraints').value)) {
                 alert('Type Constraints field contains invalid JSON.');
                 return false;
             }
@@ -532,10 +544,19 @@ host.BrowserHost = class {
                 support_level: document.getElementById('customSupportLevel').value,
                 description: document.getElementById('customDescription').value,
                 inputs: JSON.parse(document.getElementById('customInputs').value),
-                outputs: JSON.parse(document.getElementById('customOutputs').value),
-                attributes: JSON.parse(document.getElementById('customAttributes').value),
-                type_constraints: JSON.parse(document.getElementById('customTypeConstraints').value)
+                outputs: JSON.parse(document.getElementById('customOutputs').value)
+
             };
+
+            // 如果存在 Attributes，则添加到对象中
+            if (document.getElementById('customAttributes').value) {
+                customOperatorData.attributes = JSON.parse(document.getElementById('customAttributes').value);
+            }
+
+            // 如果存在 Type Constraints，则添加到对象中
+            if (document.getElementById('customTypeConstraints').value) {
+                customOperatorData.type_constraints = JSON.parse(document.getElementById('customTypeConstraints').value);
+            }
 
             fetch('/add-custom-operator', {
                 method: 'POST',
