@@ -1,12 +1,5 @@
 // electron 模块可以用来控制应用的生命周期和创建原生浏览窗口
-const {
-  app,
-  BrowserWindow,
-  ipcMain,
-  webContents,
-  shell,
-  Menu,
-} = require("electron");
+const { app, BrowserWindow, ipcMain, webContents, shell, Menu } = require("electron");
 const { spawn } = require("node:child_process");
 const { EventEmitter } = require("events");
 var fs = require("fs");
@@ -94,24 +87,12 @@ app.on("web-contents-created", (e, webContents) => {
 class PythonIPC {
   constructor() {
     // env
-    let pythonScriptPathWin = path.resolve(
-      __dirname,
-      "..",
-      "python",
-      "Scripts"
-    );
+    let pythonScriptPathWin = path.resolve(__dirname, "..", "python", "Scripts");
     let pythonScriptPathLinux = path.resolve(__dirname, "..", "python", "bin");
     let env = Object.assign({}, process.env);
-    env[
-      "Path"
-    ] = `${pythonScriptPathWin};${pythonScriptPathLinux};${env["Path"]}`;
+    env["Path"] = `${pythonScriptPathWin};${pythonScriptPathLinux};${env["Path"]}`;
 
-    let python_path = path.join(
-      __dirname,
-      "..",
-      "python",
-      process.platform == "win32" ? "python.exe" : "bin/python"
-    );
+    let python_path = path.join(__dirname, "..", "python", process.platform == "win32" ? "python.exe" : "bin/python");
     python_path = fs.existsSync(python_path) ? python_path : "python";
     let app_path = path.join(__dirname, "..", "server.py");
     console.debug(python_path, [app_path, ...process.argv].join(" "));
