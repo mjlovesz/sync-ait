@@ -16,7 +16,7 @@
   | 参数名  | 含义               | 是否必填 | 使用说明                                                                                    |
   | ------- | ------------------ | -------- | ------------------------------------------------------------------------------------------- |
   | model   | 要hook的模型       | 是       | 数据类型：torch.nn.Module                                                                   |
-  | op_list | 需要hook的算子类型 | 否       | 数据类型：list，默认为 None，表示会对模型中所有 op 进行 hook，若设置 op_list，只会 hook 指定的 op |
+  | op_list | 需要hook的算子类型 | 否       | 数据类型：list，默认为 None，表示会对模型中所有 op 进行 hook，其中元素为 `torch.nn.Module` 的子类，如 `op_list=[torch.nn.Linear]`，若设置 op_list，只会 hook 指定的 op |
   | dump_start_token_id | dump 数据的起始 token id | 否       | 数据类型：int，默认为 0，或指定 > 0 的值表示起始的 token id，**当加速库侧不调用 encoder ，即没有 encoder dump 数据时需要设置为 1** |
   | dump_end_token_id | dump 数据的结束 token id | 否       | 数据类型：int，默认为 -1，表示不限制结束的 token，或指定 > 0 的值表示结束的 token id，如指定 3，则 dump `[0, 1, 2, 3]` 4 个 token 的数据 |
 ## 命令行接口介绍
