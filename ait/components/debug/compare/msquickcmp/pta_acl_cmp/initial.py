@@ -10,7 +10,7 @@ def init_aclcmp_task(dump_clean):
     os.environ[AIT_CMP_TASK_PID] = str(os.getpid())
     os.environ[AIT_CMP_TASK] = "1"
     os.environ[AIT_CMP_TASK_DIR] = os.getcwd()
-    os.environ[AIT_DUMP_CLEAN] = dump_clean
+    os.environ[AIT_DUMP_CLEAN] = str(dump_clean)
     ld_preload = os.getenv("LD_PRELOAD")
     ld_preload = ld_preload or ""
     save_tensor_so_path = os.path.join(site.getsitepackages()[0], "msquickcmp", "libsavetensor.so")

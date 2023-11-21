@@ -76,7 +76,7 @@ def save_pta_data(csv_data, data_id, data_val, data_path):
         dump_clean = os.getenv("AIT_DUMP_CLEAN")
         if not dump_clean:
             dump_clean = False
-        csv_data = compare_tensor(csv_data=csv_data, dump_clean)
+        csv_data = compare_tensor(csv_data=csv_data, dump_cleandump_clean)
 
     return csv_data
 
@@ -104,7 +104,7 @@ def save_acl_data(csv_data, data_id, data_val, data_path):
         dump_clean = os.getenv("AIT_DUMP_CLEAN")
         if not dump_clean:
             dump_clean = False
-        csv_data = compare_tensor(csv_data=csv_data, dump_clean)
+        csv_data = compare_tensor(csv_data=csv_data, dump_clean=dump_clean)
 
     return csv_data
 
