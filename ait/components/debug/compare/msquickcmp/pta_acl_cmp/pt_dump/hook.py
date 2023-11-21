@@ -37,7 +37,7 @@ def dump_output_hook(dump_start_token_id=0, dump_end_token_id=-1):
         if cur_token_id < dump_start_token_id:
             cur_token_id += 1
             return outputs
-        if dump_end_token_id > 0 and cur_token_id > dump_end_token_id:
+        if dump_end_token_id > 0 and cur_token_id >= dump_end_token_id:  # for dump_end_token_id=1, only dump 0
             return outputs
 
         if hasattr(module, "bias") and module.bias is not None:
@@ -103,14 +103,11 @@ def register_hook(model, op_list=None, dump_start_token_id=0, dump_end_token_id=
 
 
 def set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt"):
-    if not os.path.exists(dump_path):
-        os.mkdir(dump_path)
-
-    dialog_path = os.path.join(dump_path, dump_tag)
-    if not os.path.exists(dialog_path):
-        os.mkdir(dialog_path)
-
-    os.environ[AIT_DIALOG_DUMP_PATH] = dialog_path
-
     if isinstance(backend, str) and backend.lower() == "acl":
-        os.environ[AIT_IS_SAVE_MD5] = "1"       
+        os.environ[AIT_IS_SAVE_MD5] = "1"
+    else:
+        dialog_path = os.path.join(dump_path, dump_tag)
+        if not os.path.exists(dialog_path):
+            os.makedirs(dialog_path, mode=0o750)
+
+        os.environ[AIT_DIALOG_DUMP_PATH] = dialog_path
