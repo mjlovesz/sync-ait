@@ -428,7 +428,6 @@ onnx.Graph = class {
         this._outputs = [];
         this._name = graph.name || null;
         this._description = graph.doc_string || '';
-
         context = new onnx.GraphContext(context, graph.node);
         this._context = context;
 
@@ -439,7 +438,7 @@ onnx.Graph = class {
         this._custom_added_inputs = [];
         this._custom_deleted_inputs = [];
         this._custom_inputs_shape = new Map();
-        
+
         // model parameter assignment here!
         for (const initializer of graph.initializer) {
             const tensor = context.tensor(initializer.name);
@@ -499,6 +498,7 @@ onnx.Graph = class {
         return this._description;
     }
 
+
     get inputs() {
         //return this._inputs;
         var all_inputs = this._inputs.concat(this._custom_added_inputs);
@@ -514,8 +514,8 @@ onnx.Graph = class {
             let shape_info = this._custom_inputs_shape.get(in_info.name)
             filtered_inputs[in_index].arguments[0] = new onnx.Argument(in_info.name, this._context.createTensorType(1, shape_info))
         }
-        
-        
+
+
         return filtered_inputs;
     }
 
@@ -567,9 +567,9 @@ onnx.Graph = class {
         if (schema.inputs) {
             for (let i = 0; i < schema.inputs.length; ++i) {
                 const input = schema.inputs[i]
-                
+
                 var node_info_input = node_info.inputs.get(input.name)
-    
+
                 var arg_list = []
                 if (input.list) {
                     for (let j = 0; j < max_custom_add_input_num; ++j) {
@@ -591,7 +591,7 @@ onnx.Graph = class {
                     }
                     arg_list = [this._context.argument(arg_name)]
                 }
-    
+
                 for (var arg of arg_list) {
                     arg.is_custom_added = true;
                     if (input.option && input.option == 'optional') {
@@ -607,7 +607,7 @@ onnx.Graph = class {
             for (let i = 0; i < schema.outputs.length; ++i) {
                 const output = schema.outputs[i]
                 var node_info_output = node_info.outputs.get(output.name)
-    
+
                 var arg_list = []
                 if (output.list) {
                     for (let j = 0; j < max_custom_add_output_num; ++j) {
@@ -627,10 +627,10 @@ onnx.Graph = class {
                     else {
                         var arg_name = 'custom_output_' + (this._custom_add_node_io_idx++).toString()
                     }
-                    
+
                     arg_list = [this._context.argument(arg_name)]
                 }
-    
+
                 for (var arg of arg_list) {
                     arg.is_custom_added = true;
                     if (output.option && output.option == 'optional') {
@@ -650,7 +650,7 @@ onnx.Graph = class {
                 }
                 attributes.push(
                     new onnx.LightAttributeInfo(
-                        attr.name, 
+                        attr.name,
                         attr.description,
                         attr.type,
                         value
@@ -659,13 +659,13 @@ onnx.Graph = class {
             }
         }
         var custom_add_node = new onnx.Node(
-                this._context, 
-                node_info.properties.get('op_type'), 
-                node_info.properties.get('domain'), 
-                node_info.properties.get('name'), 
-                null, // schema.description, // omit it to save sidebar space. The node description can also be seen in the node `type` expander 
-                attributes, 
-                inputs, 
+                this._context,
+                node_info.properties.get('op_type'),
+                node_info.properties.get('domain'),
+                node_info.properties.get('name'),
+                null, // schema.description, // omit it to save sidebar space. The node description can also be seen in the node `type` expander
+                attributes,
+                inputs,
                 outputs
             );
 
@@ -1607,6 +1607,18 @@ onnx.Metadata = class {
                 map.get(item.name).push(item);
             }
         }
+    }
+
+
+    static reload(context) {
+        return window.__view__._host.request('./onnx-metadata.json', 'utf-8', null).then((data) => {
+            onnx.Metadata._metadata = new onnx.Metadata(data);
+            console.log(onnx.Metadata._metadata)
+            // return onnx.Metadata._metadata;
+        }).catch(() => {
+            onnx.Metadata._metadata = new onnx.Metadata(null);
+            // return onnx.Metadata._metadata;
+        });
     }
 
     type(name, domain, imports) {
@@ -2732,3 +2744,5 @@ onnx.Error = class extends Error {
 if (typeof module !== 'undefined' && typeof module.exports === 'object') {
     module.exports.ModelFactory = onnx.ModelFactory;
 }
+
+

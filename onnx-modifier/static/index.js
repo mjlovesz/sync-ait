@@ -517,6 +517,18 @@ host.BrowserHost = class {
         });
 
 
+        document.addEventListener('customOperatorAdded', function() {
+            // 假设 'context' 是初始化 onnx.Metadata 时使用的相同上下文
+            onnx.Metadata.reload(this.context).then(() => {
+                console.log("Metadata reloaded successfully.");
+                window.__view__.model.graphMetadata._metadata = onnx.Metadata._metadata
+                window.__view__.modifier.updateAddNodeDropDown()
+                // 这里可以添加其他需要执行的代码
+            }).catch(error => {
+                console.error("Error reloading metadata:", error);
+            });
+        });
+
 
         // 函数：从服务器获取最新的算子列表
         function updateOperatorDropdown() {
