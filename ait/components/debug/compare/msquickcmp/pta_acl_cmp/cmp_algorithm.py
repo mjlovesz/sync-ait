@@ -17,6 +17,7 @@ from msquickcmp.common.utils import logger
 
 
 FLOAT_EPSILON = np.finfo(float).eps
+np.seterr(divide='ignore', invalid='ignore')  # ignore `invalid value encountered in true_divide` warning
 NAN = 'NaN'
 
 
@@ -33,7 +34,7 @@ def cosine_similarity(pta_data: np.ndarray, acl_data: np.ndarray):
         return NAN
 
     result = (acl_data / acl_data_norm) @ (pta_data / pta_data_norm)
-    return result
+    return '{:.6f}'.format(result)
 
 
 def max_relative_error(pta_data: np.ndarray, acl_data: np.ndarray):

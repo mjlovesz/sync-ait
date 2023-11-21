@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 #include "PyInterface/PyInterface.h"
-
+namespace {
 PYBIND11_MODULE(aclruntime, m) {
     RegistPyTensorModule(m);
     RegistInferenceSession(m);
 }
+} // namespace

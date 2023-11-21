@@ -135,8 +135,12 @@ class OnnxDumpData(DumpData):
         options = onnxruntime.SessionOptions()
         if not self.onnx_fusion_switch:
             options.graph_optimization_level = onnxruntime.GraphOptimizationLevel.ORT_DISABLE_ALL
-        return onnxruntime.InferenceSession(model_contents, options)
-
+        try:
+            infersession = onnxruntime.InferenceSession(model_contents, options)
+        except Exception as e:
+            utils.logger.error(f"Please check onnx model can run in local env. Error: {e}")
+            raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_MODEL_TYPE_ERROR)
+        return infersession
     def _load_onnx(self, model_path):
         # model_path str -> read as bytes -> deserialize to onnx_model
         #                                 -> onnxruntime load as session

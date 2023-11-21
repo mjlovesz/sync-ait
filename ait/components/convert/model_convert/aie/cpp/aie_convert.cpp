@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "AscendIE.h"
 #include <iostream>
 #include <fstream>
+#include "AscendIE.h"
 
 using namespace AscendIE;
 
@@ -23,7 +23,8 @@ int main(int argc, char** argv)
 {
     const int inputIndex = 4;
     if (argc != inputIndex) {
-        std::cout << "For AIE model convert, only three parameters: model, output and soc_version are needed." << std::endl;
+        std::cout << "For AIE model convert, only three parameters: model, output and soc_version are needed."
+            << std::endl;
         return -1;
     }
     std::string onnxModelPath = argv[1];
@@ -55,4 +56,6 @@ int main(int argc, char** argv)
     std::cout << "AIE Model Convert Succeed" << std::endl;
 
     delete builder;
+
+    Finalize();
 }

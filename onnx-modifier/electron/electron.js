@@ -89,11 +89,17 @@ app.on('web-contents-created', (e, webContents) => {
 
 class PythonIPC {
     constructor() {
+        // env
+        let pythonScriptPathWin = path.resolve(__dirname, '..', 'python', 'Scripts')
+        let pythonScriptPathLinux = path.resolve(__dirname, '..', 'python', 'bin')
+        let env = Object.assign({}, process.env)
+        env['Path'] = `${pythonScriptPathWin};${pythonScriptPathLinux};${env['Path']}`
+
         let python_path = path.join(__dirname, "..", "python", process.platform == "win32" ? "python.exe" : "bin/python")
         python_path = fs.existsSync(python_path) ? python_path : "python"
         let app_path = path.join(__dirname, "..", "server.py")
         console.debug(python_path,  [app_path, ...process.argv].join(" "))
-        this.process = spawn(python_path, [app_path, ...process.argv])
+        this.process = spawn(python_path, [app_path, ...process.argv], {env})
         this.msg_event = new EventEmitter()
         this.req_index = 9
         this.process_exit_code = null

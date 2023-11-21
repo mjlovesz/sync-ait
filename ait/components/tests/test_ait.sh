@@ -147,6 +147,8 @@ main() {
     fi
     cd $CUR_PATH
 
+    echo "all_part_test_ok: $all_part_test_ok"
+
     return $all_part_test_ok
 }
 

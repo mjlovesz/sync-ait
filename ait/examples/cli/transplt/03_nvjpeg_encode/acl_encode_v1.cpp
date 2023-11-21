@@ -22,16 +22,16 @@
 #include "acl/ops/acl_dvpp.h"
 
 
-int32_t g_deviceId = 0;
-aclrtContext g_context = nullptr;
-aclrtStream g_stream = nullptr;
-aclrtRunMode g_runMode;
+static int32_t g_deviceId = 0;
+static aclrtContext g_context = nullptr;
+static aclrtStream g_stream = nullptr;
+static aclrtRunMode g_runMode;
 
-uint32_t g_yuv_sizeAlignment = 3;
-uint32_t g_yuv_sizeNum = 2;
+static uint32_t g_yuvSizeAlignment = 3;
+static uint32_t g_yuvSizeNum = 2;
 
 
-void init()
+static void Init()
 {
     // ACL Init
     aclInit(nullptr);
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     int widths = std::stoi(argv[3]);
     std::string outfile_path = "sample_acl_v1.jpg";
 
-    init();
+    Init();
     std::cout << "Open device " << g_deviceId << " success" << std::endl;
 
     std::ifstream file(input_file_name.c_str(), std::ios::binary | std::ios::ate);
@@ -63,8 +63,8 @@ int main(int argc, char *argv[])
     file.read(buffer.data(), size);
     file.close();
 
-    unsigned char * pBuffer = NULL;
-    uint32_t jpegInBufferSize = widths * heights * g_yuv_sizeAlignment / g_yuv_sizeNum;
+    unsigned char* pBuffer = NULL;
+    uint32_t jpegInBufferSize = widths * heights * g_yuvSizeAlignment / g_yuvSizeNum;
     aclError ret = acldvppMalloc((void **)&pBuffer, jpegInBufferSize);
     if (ACL_SUCCESS != ret) {
         std::cerr << "acldvppMalloc malloc device data buffer failed, aclRet is " << ret << std::endl;
@@ -100,13 +100,13 @@ int main(int argc, char *argv[])
     aclrtSynchronizeStream(g_stream);
 
     // Get output to host
-    std::vector<unsigned char> obuffer(length);
-    aclrtMemcpy(obuffer.data(), length, encodeOutBufferDev, length, ACL_MEMCPY_DEVICE_TO_HOST);
+    std::vector<unsigned char> oBuf(length);
+    aclrtMemcpy(oBuf.data(), length, encodeOutBufferDev, length, ACL_MEMCPY_DEVICE_TO_HOST);
 
     // save pic
     std::cout << "Writing JPEG file: " << outfile_path << ", length: " << length << std::endl;
     std::ofstream outputFile(outfile_path, std::ios::out | std::ios::binary);
-    outputFile.write(reinterpret_cast<const char *>(obuffer.data()), static_cast<int>(length));
+    outputFile.write(reinterpret_cast<const char *>(oBuf.data()), static_cast<int>(length));
 
     acldvppDestroyJpegeConfig(jpegeConfig);
     acldvppDestroyPicDesc(encodeInputDesc);

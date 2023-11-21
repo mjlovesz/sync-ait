@@ -22,11 +22,12 @@ import java.util.List;
  * CommandInjectException
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class CommandInjectException extends Exception {
     private static final long serialVersionUID = -2439139320983098242L;
-    private static final List<String> INVALID_CHAR = List.of("|", ";", "&", "$", ">", "<", "`", "\\" + "\\", "!", "\\n");
+    private static final List<String> INVALID_CHAR =
+            List.of("|", ";", "&", "$", ">", "<", "`", "\\" + "\\", "!", "\\n");
     private static final String INJECT_ERROR = "Parameters cannot contain the following characters: " + INVALID_CHAR;
 
     /**

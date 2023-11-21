@@ -1,3 +1,5 @@
+- [FAQ](#faq)
+  - [1. 非root用户使用analyze工具时若使用root目录下/usr/local/Ascend/ascend-toolkit的文件，产生调用fast\_query shell失败的错误](#1-非root用户使用analyze工具时若使用root目录下usrlocalascendascend-toolkit的文件产生调用fast_query-shell失败的错误)
 # FAQ
 
 ## 1. 非root用户使用analyze工具时若使用root目录下/usr/local/Ascend/ascend-toolkit的文件，产生调用fast_query shell失败的错误
