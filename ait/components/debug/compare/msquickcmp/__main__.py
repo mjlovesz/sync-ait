@@ -13,6 +13,7 @@
 # limitations under the License.
 import os
 import re
+import shutil
 import argparse
 
 from components.utils.parser import BaseCommand
@@ -251,6 +252,9 @@ class AclCompare(BaseCommand):
 
         if args.golden_path and args.my_path:
             compare_metadata(args.golden_path, args.my_path, args.output, args.clean)
+            if args.clean and os.path.isdir(args.golden_path) and os.path.isdir(args.my_path):
+                shutil.rmtree(args.golden_path)
+                shutil.rmtree(args.my_path)
 
 
 def get_cmd_instance():
