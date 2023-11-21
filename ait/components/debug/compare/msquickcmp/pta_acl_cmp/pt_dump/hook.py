@@ -37,7 +37,7 @@ def dump_output_hook(dump_start_token_id=0, dump_end_token_id=-1):
         if cur_token_id < dump_start_token_id:
             cur_token_id += 1
             return outputs
-        if dump_end_token_id > 0 and cur_token_id > dump_end_token_id:
+        if dump_end_token_id > 0 and cur_token_id >= dump_end_token_id:  # for dump_end_token_id=1, only dump 0
             return outputs
 
         if hasattr(module, "bias") and module.bias is not None:

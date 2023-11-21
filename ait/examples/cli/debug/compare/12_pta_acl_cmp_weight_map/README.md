@@ -18,7 +18,7 @@
   | model   | 要hook的模型       | 是       | 数据类型：torch.nn.Module                                                                   |
   | op_list | 需要hook的算子类型 | 否       | 数据类型：list，默认为 None，表示会对模型中所有 op 进行 hook，其中元素为 `torch.nn.Module` 的子类，如 `op_list=[torch.nn.Linear]`，若设置 op_list，只会 hook 指定的 op |
   | dump_start_token_id | dump 数据的起始 token id | 否       | 数据类型：int，默认为 0，或指定 > 0 的值表示起始的 token id，**当加速库侧不调用 encoder ，即没有 encoder dump 数据时需要设置为 1** |
-  | dump_end_token_id | dump 数据的结束 token id | 否       | 数据类型：int，默认为 -1，表示不限制结束的 token，或指定 > 0 的值表示结束的 token id，如指定 3，则 dump `[0, 1, 2, 3]` 4 个 token 的数据 |
+  | dump_end_token_id | dump 数据的结束 token id | 否       | 数据类型：int，默认为 -1，表示不限制结束的 token，或指定 > 0 的值表示结束的 token id，如指定 3，则 dump `[0, 1, 2]` 3 个 token 的数据 |
 ## 命令行接口介绍
 ```sh
 ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速库侧 dump 数据}
@@ -56,7 +56,7 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   export LD_PRELOAD=$MSQUICKCMP_PATH/libsavetensor.so:$LD_PRELOAD
 
   export ATB_SAVE_TENSOR=1  # 使能加速库 dump 数据，默认为 0
-  export ATB_SAVE_TENSOR_RANGE=0,1000  # 指定加速库侧 dump 数据最大 token 数，默认 0,1 表示只 dump 前两个 token
+  export ATB_SAVE_TENSOR_RANGE=0,1000  # 指定加速库侧 dump 数据最大 token 数，默认 0,1 表示只 dump 第一个 token
   bash run.sh patches/models/modeling_chatglm_model_310p.py
   ```
 - 生成数据位于 `atb_temp/tensors/{进程 ID}_{线程ID}` 下
@@ -99,7 +99,7 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   model, tokenizer = load_model(args)
   
   # 在模型初始化后添加，当前版本的该样例加速库侧会执行 encoder，不需要指定 dump_start_token_id
-  # 指定 dump_end_token_id 表示只 dump [0, 1, 2, 3, 4, 5] token 的数据
+  # 指定 dump_end_token_id=5 表示只 dump [0, 1, 2, 3, 4] token 的数据
   register_hook(model, dump_end_token_id=5)
   set_dump_path(dump_path=".", dump_tag="ait_dump", backend="pt")
   ...
@@ -117,13 +117,13 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   from msquickcmp.pta_acl_cmp.pt_dump.hook import set_dump_path
   set_dump_path(backend="acl")
   ```
-  同时配置其他 `ATB` dump 相关环境变量，执行推理脚本，指定 `ATB_SAVE_TENSOR_RANGE=0,5` 限制只 dump `[0, 1, 2, 3, 4, 5]` token 数据
+  同时配置其他 `ATB` dump 相关环境变量，执行推理脚本，指定 `ATB_SAVE_TENSOR_RANGE=0,5` 限制只 dump `[0, 1, 2, 3, 4]` token 数据
   ```sh
   MSQUICKCMP_PATH=`python3 -c 'import msquickcmp; print(msquickcmp.__path__[0])'`
   export LD_PRELOAD=$MSQUICKCMP_PATH/libsavetensor.so:$LD_PRELOAD
 
   export ATB_SAVE_TENSOR=1  # 使能加速库 dump 数据，默认为 0
-  export ATB_SAVE_TENSOR_RANGE=0,5  # 只 dump 前 `[0, 1, 2, 3, 4, 5]` token 数据，默认为 0,1
+  export ATB_SAVE_TENSOR_RANGE=0,5  # 只 dump 前 `[0, 1, 2, 3, 4]` token 数据，默认 0,1 表示只 dump 第一个 token
   bash run.sh -p patches/models/modeling_bloom_model_performance.py --run --device 0
   ```
   生成数据位于 `$ASDOPS_LOG_TO_FILE_DIR/tensors/{进程 ID}_{线程ID}` 下，其中 `$ASDOPS_LOG_TO_FILE_DIR` 为配置加速库时设置的，默认值 `"atb_temp"`
@@ -131,7 +131,7 @@ ait debug compare aclcmp --golden-path {PTA 侧 dump 数据} --my-path {加速�
   ls $ASDOPS_LOG_TO_FILE_DIR/tensors/ -1t
   # 18621_18621
   ls $ASDOPS_LOG_TO_FILE_DIR/tensors/18621_18621/
-  # 0  1  2  3  4  5
+  # 0  1  2  3  4
   ```
   如发生错误 `undefined symbol: EVP_md5`，可能为环境中 python 使用的 `libssl.so` 与编译 `libsavetensor.so` 时使用的系统 `libssl.so` 不一致，可尝试指定 `export LD_PRELOAD=libssl.so:$LD_PRELOAD` 解决
 ## AIT 基于权重映射的精度比对
