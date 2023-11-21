@@ -1,9 +1,9 @@
 // electron 模块可以用来控制应用的生命周期和创建原生浏览窗口
-const { app, BrowserWindow, ipcMain, webContents, shell, Menu } = require("electron");
-const { spawn } = require("node:child_process");
-const { EventEmitter } = require("events");
-var fs = require("fs");
-const path = require("path");
+const { app, BrowserWindow, ipcMain, webContents, shell, Menu } = require('electron');
+const { spawn } = require('node:child_process');
+const { EventEmitter } = require('events');
+var fs = require('fs');
+const path = require('path');
 
 class ElectronMsgHandelManager {
   constructor() {
@@ -22,7 +22,7 @@ class ElectronMsgHandelManager {
 
   close() {
     for (const [key, ipc] of this.map_ipc) {
-      ipc.send("/exit", "");
+      ipc.send('/exit', '');
     }
   }
 }
@@ -35,14 +35,14 @@ const createWindow = () => {
     width: 1450,
     height: 900,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: path.join(__dirname, 'preload.js'),
     },
   });
 
   Menu.setApplicationMenu(null);
 
   // 加载 index.html
-  mainWindow.loadFile("static/index.html");
+  mainWindow.loadFile('static/index.html');
 };
 
 // 这段程序将会在 Electron 结束初始化
@@ -51,17 +51,17 @@ const createWindow = () => {
 app.whenReady().then(() => {
   createWindow();
 
-  app.on("activate", () => {
+  app.on('activate', () => {
     // 在 macOS 系统内, 如果没有已开启的应用窗口
     // 点击托盘图标时通常会重新创建一个新窗口
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 
-  ipcMain.handle("message", (event, path, msg_send) => {
+  ipcMain.handle('message', (event, path, msg_send) => {
     return handle_msg.handleMessage(event, path, msg_send);
   });
 
-  ipcMain.handle("new_window", (event, path, msg_send) => {
+  ipcMain.handle('new_window', (event, path, msg_send) => {
     createWindow();
   });
 });
@@ -69,15 +69,15 @@ app.whenReady().then(() => {
 // 除了 macOS 外，当所有窗口都被关闭的时候退出程序。 因此, 通常
 // 对应用程序和它们的菜单栏来说应该时刻保持激活状态,
 // 直到用户使用 Cmd + Q 明确退出
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") app.quit();
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
   handle_msg.close();
 });
 
-app.on("web-contents-created", (e, webContents) => {
+app.on('web-contents-created', (e, webContents) => {
   webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
-    return { action: "deny" };
+    return { action: 'deny' };
   });
 });
 
@@ -87,21 +87,21 @@ app.on("web-contents-created", (e, webContents) => {
 class PythonIPC {
   constructor() {
     // env
-    let pythonScriptPathWin = path.resolve(__dirname, "..", "python", "Scripts");
-    let pythonScriptPathLinux = path.resolve(__dirname, "..", "python", "bin");
+    let pythonScriptPathWin = path.resolve(__dirname, '..', 'python', 'Scripts');
+    let pythonScriptPathLinux = path.resolve(__dirname, '..', 'python', 'bin');
     let env = Object.assign({}, process.env);
-    env["Path"] = `${pythonScriptPathWin};${pythonScriptPathLinux};${env["Path"]}`;
+    env['Path'] = `${pythonScriptPathWin};${pythonScriptPathLinux};${env['Path']}`;
 
-    let python_path = path.join(__dirname, "..", "python", process.platform == "win32" ? "python.exe" : "bin/python");
-    python_path = fs.existsSync(python_path) ? python_path : "python";
-    let app_path = path.join(__dirname, "..", "server.py");
-    console.debug(python_path, [app_path, ...process.argv].join(" "));
+    let python_path = path.join(__dirname, '..', 'python', process.platform == 'win32' ? 'python.exe' : 'bin/python');
+    python_path = fs.existsSync(python_path) ? python_path : 'python';
+    let app_path = path.join(__dirname, '..', 'server.py');
+    console.debug(python_path, [app_path, ...process.argv].join(' '));
     this.process = spawn(python_path, [app_path, ...process.argv], { env });
     this.msg_event = new EventEmitter();
     this.req_index = 9;
     this.process_exit_code = null;
 
-    this.process.stdout.on("data", (data_text) => {
+    this.process.stdout.on('data', (data_text) => {
       data_text = data_text.toString();
       console.debug(`${data_text}`);
       let data_array = data_text.split(/\r?\n/);
@@ -111,25 +111,25 @@ class PythonIPC {
       data_array = data_array.slice(-6);
 
       if (
-        data_array[0] == "" &&
-        data_array[1] == "" &&
-        data_array[2] == ">>" &&
-        data_array[4] == "" &&
-        data_array[5] == ""
+        data_array[0] == '' &&
+        data_array[1] == '' &&
+        data_array[2] == '>>' &&
+        data_array[4] == '' &&
+        data_array[5] == ''
       ) {
         let data = decodeURIComponent(data_array[3]);
-        console.debug("recv", `${data}`);
+        console.debug('recv', `${data}`);
         let { msg, status, file, req_ind } = JSON.parse(data);
         this.msg_event_emit(req_ind, msg, status, file);
       }
     });
 
-    this.process.stderr.on("data", (data_text) => {
+    this.process.stderr.on('data', (data_text) => {
       data_text = data_text.toString();
       console.error(`${data_text}`);
     });
 
-    this.process.on("close", (code) => {
+    this.process.on('close', (code) => {
       this.process_exit_code = code;
       this.msg_event_emit_exit_event();
     });
@@ -179,7 +179,7 @@ class PythonIPC {
       let send_obj_data = { path, msg: msg_send, req_ind };
       let send_obj_str = JSON.stringify(send_obj_data, null, 1);
 
-      console.debug("send", `\n${send_obj_str}\n`);
+      console.debug('send', `\n${send_obj_str}\n`);
       this.process.stdin.write(`${encodeURI(send_obj_str)}\n`);
       this.process.stdin.write(`\n\n`);
     });
