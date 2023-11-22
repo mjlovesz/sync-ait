@@ -583,6 +583,7 @@ host.BrowserHost = class {
                 document.getElementById('customOperatorDialog').close();
                 updateOperatorDropdown(); // 更新下拉菜单
                 document.dispatchEvent(new CustomEvent('customOperatorAdded'));
+                setTimeout(() => {window.__view__.modifier.updateAddNodeDropDown()},500);
             })
             .catch((error) => {
                 console.error('Error:', error);

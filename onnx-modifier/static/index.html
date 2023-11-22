@@ -27,6 +27,36 @@
 <script src="index.js"></script>
 <script src="modifier.js"></script>
 
+<style>
+    /* 为 addnode-dialog 的底部按钮添加样式 */
+    #addnode-dialog .footer {
+        display: flex;
+        justify-content: space-between; /* 使用空间平均分布 */
+    }
+
+    #addnode-dialog .footer > :first-child {
+        margin-right: auto; /* 第一个按钮（Add Custom Operator）推向左侧 */
+    }
+    #customOperatorDialog label {
+        display: inline-block;
+        width: 120px; /* 调整标签的宽度 */
+        text-align: right; /* 标签内文本右对齐 */
+        margin-right: 10px; /* 标签与输入框之间的间距 */
+        vertical-align: top; /* 使标签顶部对齐 */
+        line-height: 2.5em; /* 调整行高以使文本垂直居中 */
+    }
+
+    #customOperatorDialog input[type="text"],
+    #customOperatorDialog input[type="number"],
+    #customOperatorDialog textarea {
+        width: 400px; /* 设置输入框和文本域的统一宽度 */
+    }
+
+    #customOperatorDialog textarea {
+        height: 100px; /* 设置文本域的固定高度 */
+    }
+</style>
+
 </head>
 <body class="welcome">
 <div class="main-page">
