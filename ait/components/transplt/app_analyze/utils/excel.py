@@ -15,6 +15,7 @@ import re
 
 import pandas as pd
 import openpyxl
+from xlsxwriter.workbook import Workbook
 
 from app_analyze.utils.log_util import logger
 
@@ -64,12 +65,21 @@ def read_excel(path="", hyperlink_cols=None):
     return api_dfs
 
 
+# mode: df or workbook
 def write_excel(df_dict, path='output.xlsx'):
     # 创建一个 Excel 文件
     excel = pd.ExcelWriter(path)
     for key, df in df_dict.items():
         key = re.sub(r"\W", ".", key)[-31:]  # 最大支持31个字符
         df.to_excel(excel, sheet_name=key, index=False)
-
     # 保存 Excel 文件
     excel.save()
+
+
+def df2xlsx(df_dict, fmt_dict, path='output.xlsx'):
+    workbook = Workbook(path)
+    for key, df in df_dict.items():
+        fmt = fmt_dict[key]
+        key = key.replace('/', '.')[-31:]  # 最大支持31个字符
+        fmt(key, df, workbook)
+    workbook.close()

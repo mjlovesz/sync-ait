@@ -32,13 +32,17 @@ class Report:
         """Report实例初始化函数"""
         self.report_path = report_param['directory']
         self.report_time = report_param['project_time']
+        self._format = None
+
+    def set_format(self, fmt):
+        self._format = fmt
 
     def initialize(self, project):
         """抽象基类不是先该方法，交由各个子类实现"""
         raise NotImplementedError('{} must implement initialize method!'
                                   .format(self.__class__))
 
-    def generate(self):
+    def generate(self, fmt=None):
         """抽象基类不实现该方法，交由各个子类实现"""
         raise NotImplementedError('{} must implement generate method!'
                                   .format(self.__class__))
