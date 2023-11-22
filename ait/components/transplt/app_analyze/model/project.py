@@ -12,11 +12,14 @@
 # limitations under the License.
 
 import time
+import pandas as pd
 
 from app_analyze.utils.log_util import logger
-from app_analyze.common.kit_config import KitConfig
+from app_analyze.common.kit_config import KitConfig, ScannerMode
 from app_analyze.report.report_factory import ReporterFactory
 from app_analyze.scan.scanner_factory import ScannerFactory
+from app_analyze.scan.clang_parser import Parser
+from app_analyze.scan.func_parser import FuncParser
 from app_analyze.scan.module.file_matrix import FileMatrix
 from app_analyze.solution.advisor import Advisor
 
@@ -44,6 +47,13 @@ class Project:
         self.lib_reports = []
         self.report_results = {}
 
+    def _get_cxx_parser(self):
+        if self.inputs.scanner_mode == ScannerMode.ALL.value:
+            cxx_parser = Parser
+        else:
+            cxx_parser = FuncParser
+        return cxx_parser
+
     def dump(self):
         """
         显示Project的内容
@@ -69,7 +79,7 @@ class Project:
         说明：第一阶段这里的参数传递暂时做成这个样子，方便随时增减参数内容。
         但是问题是被调用方知道参数的内容才可以顺利取出。所以没做被调用方的取
         值失败的异常情况。要特别小心。后续可以考虑将参数包装成类进行传递。
-        :return: NA
+        :return: N
         """
         report_params = {
             'directory': self.inputs.project_directory,
@@ -98,6 +108,7 @@ class Project:
                 "cpp": self.file_matrix.files.get('cpp_sources'),
                 "hpp": self.file_matrix.files.get('hpp_sources'),
                 'include_path': self.file_matrix.files.get('include_path'),
+                'cxx_parser': self._get_cxx_parser()
             },
             'cmake_files': cmake_files,
             'python_files': self.file_matrix.files.get("python_files"),
@@ -127,7 +138,11 @@ class Project:
                 if not val_dict:
                     continue
 
-                ad = Advisor(val_dict)
+                df_dict = {}
+                for f, vals in val_dict.items():
+                    df_dict[f] = pd.DataFrame.from_dict(vals)
+
+                ad = Advisor(df_dict)
                 ad.recommend()
                 ad.workload()
                 ad.cuda_apis()

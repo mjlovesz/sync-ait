@@ -12,17 +12,16 @@
 # limitations under the License.
 
 import time
-
-import pandas as pd
-
+import os
+from multiprocessing import Pool
 from app_analyze.utils.log_util import logger
 from app_analyze.scan.scanner import Scanner
-from app_analyze.scan.clang_parser import Parser
 
 
 class CxxScanner(Scanner):
-    def __init__(self, files):
+    def __init__(self, files, cxx_parser=None):
         super().__init__(files)
+        self.cxx_parser = cxx_parser
 
     def do_scan(self):
         start_time = time.time()
@@ -30,13 +29,25 @@ class CxxScanner(Scanner):
         self.porting_results['cxx'] = result
         eval_time = time.time() - start_time
 
-        logger.info(f'Total time for scanning cxx files is {eval_time}s')
+        logger.debug(f'Total time for scanning cxx files is {eval_time}s')
 
     def exec_without_threads(self):
         result = {}
+        count = max(max(os.cpu_count(), len(self.files)), 16)
+        pool = Pool(count)
+        list_file = []
         for file in self.files:
-            p = Parser(file)
-            rst_vals = p.parse()
-            result[file] = pd.DataFrame.from_dict(rst_vals)
-
+            list_file.append((self.cxx_parser, file))
+        lst = pool.starmap_async(cxx_parser_, list_file)
+        pool.close()
+        pool.join()
+        lst1 = lst.get(timeout=2)
+        for file, r in zip(self.files, lst1):
+            result[file] = r
         return result
+
+
+def cxx_parser_(cxx_parser, files):
+    p = cxx_parser(files)
+    rst_vals = p.parse()
+    return rst_vals

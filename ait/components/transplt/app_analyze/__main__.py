@@ -55,6 +55,10 @@ class TranspltCommand(BaseCommand):
             "--tools", default="cmake", choices=['cmake', 'python'],
             help="specify construction, currently support cmake and python"
         )
+        parser.add_argument(
+            "--mode", default="api-only", choices=['all', 'api-only'],
+            help="specify scanner mode, currently support all and api only"
+        )
 
     @staticmethod
     def _set_env():

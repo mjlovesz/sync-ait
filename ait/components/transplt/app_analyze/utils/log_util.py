@@ -75,4 +75,5 @@ def init_file_logger():
     fh.setFormatter(formatter)
     logger.addHandler(fh)
 
+
 logger = get_logger()
