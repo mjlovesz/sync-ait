@@ -19,8 +19,8 @@ from app_analyze.utils.excel import read_excel, write_excel
 from app_analyze.utils.log_util import logger
 from app_analyze.common.kit_config import KitConfig as K
 
-API_MAP_KEYS = [K.ACC_API, K.ASCEND_API, K.DESC, K.WORKLOAD, K.PARAMS, K.ACC_LINK, K.ASCEND_LINK]
-REPORT_ADD_KEYS = [K.ASCEND_API, K.DESC, K.ASCEND_LIB, K.WORKLOAD, K.PARAMS, K.ACC_LINK, K.ASCEND_LINK]
+API_MAP_KEYS = [K.ACC_API, K.ASCEND_API, K.DESC, K.WORKLOAD, K.PARAMS, K.ACC_LINK, K.ASCEND_LINK, K.ASYNC_API]
+REPORT_ADD_KEYS = [K.ASCEND_API, K.DESC, K.ASCEND_LIB, K.WORKLOAD, K.PARAMS, K.ACC_LINK, K.ASCEND_LINK, K.ASYNC_API]
 
 
 class Advisor:
