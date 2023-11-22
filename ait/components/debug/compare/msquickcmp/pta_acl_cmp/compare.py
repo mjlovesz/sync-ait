@@ -22,7 +22,7 @@ from msquickcmp.common.utils import logger
 from msquickcmp.pta_acl_cmp.constant import DATA_ID, ACL_DATA_PATH, \
     CMP_FLAG, GOLDEN_DATA_PATH, CSV_GOLDEN_HEADER, \
     MODEL_INFER_TASK_ID, AIT_CMP_TASK_DIR, AIT_CMP_TASK, AIT_CMP_TASK_PID, ACL_DATA_MAP_FILE, \
-    ACL_DTYPE, ACL_SHAPE, TOKEN_ID
+    ACL_DTYPE, ACL_SHAPE, TOKEN_ID, AIT_DUMP_CLEAN
 from msquickcmp.pta_acl_cmp.utils import compare_tensor, write_json_file
 from components.utils.file_open_check import ms_open
 
@@ -73,7 +73,7 @@ def save_pta_data(csv_data, data_id, data_val, data_path):
         csv_data[GOLDEN_DATA_PATH][index] = data_path
 
         # 对应的acl_data存在时，触发比对
-        dump_clean = os.getenv("AIT_DUMP_CLEAN")
+        dump_clean = os.getenv(AIT_DUMP_CLEAN)
         dump_clean = dump_clean == "True"
         csv_data = compare_tensor(csv_data=csv_data, dump_clean=dump_clean)
 
@@ -100,7 +100,7 @@ def save_acl_data(csv_data, data_id, data_val, data_path):
         csv_data[ACL_DATA_PATH][index] = data_path
 
         # 对应的pta数据存在时，触发比对
-        dump_clean = os.getenv("AIT_DUMP_CLEAN")
+        dump_clean = os.getenv(AIT_DUMP_CLEAN)
         dump_clean = dump_clean == "True"
         csv_data = compare_tensor(csv_data=csv_data, dump_clean=dump_clean)
 
