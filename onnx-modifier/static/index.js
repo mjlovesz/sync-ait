@@ -474,19 +474,19 @@ host.BrowserHost = class {
 
     function validateCustomOperatorForm() {
         if (!document.getElementById('customName').value.trim()) {
-            window._host.show_message("Warn", 'Name field is required.', "warn");
+            window._host.show_message('Warn', 'Name field is required.', 'warn');
             return false;
         }
         if (!document.getElementById('customModule').value.trim()) {
-            window._host.show_message("Warn", 'Module field is required.', "warn");
+            window._host.show_message('Warn', 'Module field is required.', 'warn');
             return false;
         }
         if (!document.getElementById('customVersion').value.trim()) {
-            window._host.show_message("Warn", 'Version field is required.', "warn");
+            window._host.show_message('Warn', 'Version field is required.', 'warn');
             return false;
         }
         if (!isJSONValid(document.getElementById('customInputs').value)) {
-            window._host.show_message("Warn", 'Inputs field contains invalid JSON.', "warn");
+            window._host.show_message('Warn', 'Inputs field contains invalid JSON.', 'warn');
 
             return false;
         }
@@ -504,13 +504,13 @@ host.BrowserHost = class {
 
 
         if (!isJSONValid(document.getElementById('customOutputs').value)) {
-            window._host.show_message("Warn", 'Outputs field contains invalid JSON.', "warn");
+            window._host.show_message('Warn', 'Outputs field contains invalid JSON.', 'warn');
 
             return false;
         }
 
         if (document.getElementById('customAttributes').value && !isJSONValid(document.getElementById('customAttributes').value)) {
-            window._host.show_message("Warn", 'Attributes field contains invalid JSON.', "warn");
+            window._host.show_message('Warn', 'Attributes field contains invalid JSON.', 'warn');
 
             return false;
         }
@@ -522,7 +522,7 @@ host.BrowserHost = class {
 
 
         if (document.getElementById('customTypeConstraints').value && !isJSONValid(document.getElementById('customTypeConstraints').value)) {
-            window._host.show_message("Warn", 'Type Constraints field contains invalid JSON.', "warn");
+            window._host.show_message('Warn', 'Type Constraints field contains invalid JSON.', 'warn');
 
             return false;
         }
@@ -539,7 +539,7 @@ host.BrowserHost = class {
         // JSON 的最大长度，例如 1000
         const MAX_LENGTH = 10000;
         if (JSON.stringify(jsonArray).length > MAX_LENGTH) {
-            window._host.show_message("Warn", 'JSON data is too long.', "warn");
+            window._host.show_message('Warn', 'JSON data is too long.', 'warn');
             return false;
         }
         return true;
@@ -548,7 +548,7 @@ host.BrowserHost = class {
     function validateJSONContainsName(jsonArray) {
         for (var i = 0; i < jsonArray.length; i++) {
             if (!jsonArray[i].name) {
-                window._host.show_message("Warn", 'Each item in JSON array must contain a \"name\" field.', "warn");
+                window._host.show_message('Warn', 'Each item in JSON array must contain a \"name\" field.', 'warn');
                 return false;
             }
         }
@@ -572,7 +572,7 @@ host.BrowserHost = class {
                 window.__view__.model.graphMetadata._metadata = onnx.Metadata._metadata
                 window.__view__.modifier.updateAddNodeDropDown()
             }).catch(error => {
-                window._host.show_message("Error", 'You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', "error");
+                window._host.show_message('Error', 'You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', 'error');
             });
         });
 
@@ -591,7 +591,7 @@ host.BrowserHost = class {
                 dropdown.appendChild(option);
             });
         })
-        .catch(error => window._host.show_message("Error", 'You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', "error"));
+        .catch(error => window._host.show_message('Error', 'You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', 'error'));
     }
 
 
@@ -657,10 +657,10 @@ host.BrowserHost = class {
                 window.__view__.modifier.updateAddNodeDropDown();
                 addNodeAutomatically(customOperatorData.name);
             },500);
-            window._host.show_message("Success!", 'Custom Operator has been successfuly Submit', "success");
+            window._host.show_message('Success!', 'Custom Operator has been successfuly Submit', 'success');
         })
         .catch((error) => {
-            window._host.show_message("Error", 'Submit Error, You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', "error")
+            window._host.show_message('Error', 'Submit Error, You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', 'error')
 
         });
 
