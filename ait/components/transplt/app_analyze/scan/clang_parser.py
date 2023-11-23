@@ -183,6 +183,7 @@ def filter_acc(cursor):
             pattern = r".+_v\d+"
             if re.match(pattern, name):
                 rm_idx = i
+
         if rm_idx is not None:
             namespaces.pop(rm_idx)
             api = '::'.join(namespaces + base_api)
