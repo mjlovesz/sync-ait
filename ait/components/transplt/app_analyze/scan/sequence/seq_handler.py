@@ -11,11 +11,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from prefixspan import PrefixSpan
 from app_analyze.utils.log_util import logger
 from app_analyze.utils.io_util import IOUtil
 from app_analyze.common.kit_config import SeqArgs
 from app_analyze.scan.sequence.seq_desc import get_idx_tbl
-from app_analyze.scan.sequence.prefix_span import prefixspan
 
 
 class SeqHandler:
@@ -158,7 +158,11 @@ class SeqHandler:
     @staticmethod
     def mining_api_seqs(seqs):
         result = []
-        l1, freq = prefixspan(seqs, SeqArgs.PREFIX_SPAN_TOP_K)
+        ps = PrefixSpan(seqs)
+        # second argument has 2 choice: closed and generator
+        _ = ps.frequent(SeqArgs.PREFIX_SPAN_FREQ, closed=True)
+        l1 = ps.topk(SeqArgs.PREFIX_SPAN_TOP_K, closed=True)
+
         for item in l1:
             seq = item[1]
             if len(seq) >= SeqArgs.SEQ_MIN_LEN:
