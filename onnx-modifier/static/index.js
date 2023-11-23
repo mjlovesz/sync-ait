@@ -475,18 +475,23 @@ host.BrowserHost = class {
     function validateCustomOperatorForm() {
         if (!document.getElementById('customName').value.trim()) {
             alert('Name field is required.');
+            window._host.show_message("Warn", "Name field is required.", "warn");
             return false;
         }
         if (!document.getElementById('customModule').value.trim()) {
             alert('Module field is required.');
+            window._host.show_message("Warn", "Module field is required.", "warn");
             return false;
         }
         if (!document.getElementById('customVersion').value.trim()) {
             alert('Version field is required.');
+            window._host.show_message("Warn", "Version field is required.", "warn");
             return false;
         }
         if (!isJSONValid(document.getElementById('customInputs').value)) {
             alert('Inputs field contains invalid JSON.');
+            window._host.show_message("Warn", "Inputs field contains invalid JSON.", "warn");
+
             return false;
         }
 
@@ -504,11 +509,15 @@ host.BrowserHost = class {
 
         if (!isJSONValid(document.getElementById('customOutputs').value)) {
             alert('Outputs field contains invalid JSON.');
+            window._host.show_message("Warn", "Outputs field contains invalid JSON.", "warn");
+
             return false;
         }
 
         if (document.getElementById('customAttributes').value && !isJSONValid(document.getElementById('customAttributes').value)) {
             alert('Attributes field contains invalid JSON.');
+            window._host.show_message("Warn", "Attributes field contains invalid JSON.", "warn");
+
             return false;
         }
 
@@ -520,6 +529,8 @@ host.BrowserHost = class {
 
         if (document.getElementById('customTypeConstraints').value && !isJSONValid(document.getElementById('customTypeConstraints').value)) {
             alert('Type Constraints field contains invalid JSON.');
+            window._host.show_message("Warn", "Type Constraints field contains invalid JSON.", "warn");
+
             return false;
         }
 
@@ -536,6 +547,8 @@ host.BrowserHost = class {
         const MAX_LENGTH = 10000;
         if (JSON.stringify(jsonArray).length > MAX_LENGTH) {
             alert('JSON data is too long.');
+            window._host.show_message("Warn", "JSON data is too long.", "warn");
+
             return false;
         }
         return true;
@@ -545,6 +558,7 @@ host.BrowserHost = class {
         for (var i = 0; i < jsonArray.length; i++) {
             if (!jsonArray[i].name) {
                 alert('Each item in JSON array must contain a "name" field.');
+                window._host.show_message("Warn", "Each item in JSON array must contain a \"name\" field.", "warn");
                 return false;
             }
         }
