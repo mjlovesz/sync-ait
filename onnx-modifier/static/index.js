@@ -606,10 +606,10 @@ host.BrowserHost = class {
         for (var i = addNodeDropDown.options.length - 1; i > 0; i--) {
             if (addNodeDropDown.options[i].text === operatorName) {
                 addNodeDropDown.selectedIndex = i;
-                var selected_val = addNodeDropDown.options[i].value;
-                var add_op_domain = selected_val.split(':')[0];
-                var add_op_type = selected_val.split(':')[1];
-                window.__view__.modifier.addNode(add_op_domain, add_op_type);
+                var selectedVal = addNodeDropDown.options[i].value;
+                var addOpDomain = selectedVal.split(':')[0];
+                var addOpType = selectedVal.split(':')[1];
+                window.__view__.modifier.addNode(addOpDomain, addOpType);
                 window.__view__._updateGraph();
                 break;
             }
