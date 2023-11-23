@@ -146,7 +146,8 @@ def reorder_args_apis(seq):
         cur_node_degree = len(api[1])
         for j in range(idx + 1, cnt):
             # 对比节点的深度
-            nxt_node_degree = len(seq[j][1])
+            nxt_api = seq[j]
+            nxt_node_degree = len(nxt_api[1])
             idx_moved_flag, check_nxt_flag, stop_flag = _reorder((idx, j), (cur_node_degree, nxt_node_degree),
                                                                  (idx_moved_flag, check_nxt_flag), seq)
             if not idx_moved_flag or stop_flag:
