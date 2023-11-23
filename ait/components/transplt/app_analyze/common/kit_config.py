@@ -310,5 +310,6 @@ PortingResult = namedtuple(
 class SeqArgs:
     SEQ_MIN_LEN = 4
     PREFIX_SPAN_TOP_K = 300
+    PREFIX_SPAN_FREQ = 2
     APRIORI_MIN_SUPPORT = 0.75
     SIM_MIN_SUPPORT = 0.6
