@@ -28,6 +28,9 @@ class MatcherMode(Enum):
 def _calc_dist(a, b):
     seq = set(list(a.intersection(b)))
     num = len(seq)
+    if len(b) == 0:
+        raise Exception('Expert libs had no source sequence, please check expert_libs.json!')
+
     ratio = num * 1.0 / len(b)
 
     if len(a) == len(b) == num:
