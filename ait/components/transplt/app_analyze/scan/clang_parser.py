@@ -173,6 +173,19 @@ def filter_acc(cursor):
                 api = f'{ns}::{api}'
             elif not ns.startswith(api_ns):  # api.startswith('')为True，例如cv::dnn和dnn::Net
                 api = f'{ns[:ns_idx]}{api}'
+    # 某些情况下，如用户代码中使用`using namespace cv; using namespace dnn;`，导致api解析出来的namespace也带有dnn4_v20211004，与
+    # usr_namespace提取的namespace作用后也无法消除dnn4_v20211004，需特殊处理
+    if api and api.startswith('cv::'):
+        ns_api = api.split('::')
+        namespaces, base_api = ns_api[:-1], ns_api[-1:]
+        rm_idx = None
+        for i, name in enumerate(namespaces):
+            pattern = r".+_v\d+"
+            if re.match(pattern, name):
+                rm_idx = i
+        if rm_idx is not None:
+            namespaces.pop(rm_idx)
+            api = '::'.join(namespaces + base_api)
     return hit, Info(result_type, spelling, api, definition, source), cuda_en
 
 
@@ -308,10 +321,10 @@ def parse_info(node, cwd=None):
 
     if usr_code:
         SCANNED_FILES.append(file)
-        hit = False
-        if not getattr(node, 'scanned', False):
+        if not getattr(node, 'scanned', False) and not getattr(node, 'implicit', False):
             hit, (result_type, spelling, api, definition, source), cuda_en = filter_acc(node)
-        hit = hit and not getattr(node, 'implicit', False)
+        else:
+            hit = False
 
         if hit:
             api = MACRO_MAP.get(api, api)
@@ -392,9 +405,10 @@ class Parser:
         logger.debug(f'Time elapsed： {time.time() - start:.3f}s')
         if logger.level == logging.DEBUG:
             dump = self.tu.spelling.replace('/', '.')
-            os.makedirs('temp/', exist_ok=True)
-            IOUtil.json_safe_dump(info, f'temp/{dump}.json')
-            logger.debug(f'Ast saved in：temp/{dump}.json')
+            os.makedirs('temp', exist_ok=True)
+            temp_json_file = os.path.join('temp', f'{dump}.json')
+            IOUtil.json_safe_dump(info, temp_json_file)
+            logger.debug(f'Ast saved in：{temp_json_file}')
 
         return RESULTS
 

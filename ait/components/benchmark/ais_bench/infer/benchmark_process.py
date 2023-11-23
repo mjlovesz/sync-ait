@@ -45,12 +45,15 @@ from ais_bench.infer.summary import summary
 from ais_bench.infer.miscellaneous import (dymshape_range_run, get_acl_json_path, version_check,
                                            get_batchsize, ACL_JSON_CMD_LIST)
 from ais_bench.infer.utils import (get_file_content, get_file_datasize,
-                                   get_fileslist_from_dir, list_split, list_share, logger,
-                                   save_data_to_files, create_fake_file_name,
+                                   get_fileslist_from_dir, list_split, list_share,
+                                   save_data_to_files, create_fake_file_name, logger,
                                    create_tmp_acl_json, move_subdir, convert_helper)
+from ais_bench.infer.path_security_check import is_legal_args_path_string
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.backends import BackendFactory
+from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_CONFIG_FILE
 
+PERMISSION_DIR = 0o750
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -73,7 +76,11 @@ def set_session_options(session, args):
 
     if args.batchsize is None:
         args.batchsize = get_batchsize(session, args)
-        logger.info("try get model batchsize:{}".format(args.batchsize))
+        logger.info(f"try get model batchsize:{args.batchsize}")
+
+    if not args.auto_set_dymshape_mode and not args.auto_set_dymdims_mode:
+        if args.batchsize < 0 and not args.dym_batch and not args.dym_dims and not args.dym_shape:
+            raise RuntimeError('dynamic batch om model detected, but dymbatch, dymdims or dymshape not set!')
 
     if aipp_batchsize < 0:
         aipp_batchsize = args.batchsize
@@ -83,7 +90,7 @@ def set_session_options(session, args):
         aipp_input_exist = 0
     else:
         aipp_input_exist = session.get_dym_aipp_input_exist()
-    logger.debug("aipp_input_exist: {}".format(aipp_input_exist))
+    logger.debug(f"aipp_input_exist: {aipp_input_exist}")
     if (args.aipp_config is not None) and (aipp_input_exist == 1):
         session.load_aipp_config_file(args.aipp_config, aipp_batchsize)
         session.check_dym_aipp_input_exist()
@@ -91,8 +98,8 @@ def set_session_options(session, args):
         logger.error("can't find aipp config file for model with dym aipp input , please check it!")
         raise RuntimeError('aipp model without aipp config!')
     elif (aipp_input_exist > 1):
-        logger.error("don't support more than one dynamic aipp input in model, amount of aipp input is {}"
-                     .format(aipp_input_exist))
+        logger.error(f"don't support more than one dynamic aipp input in model, \
+                     amount of aipp input is {aipp_input_exist}")
         raise RuntimeError('aipp model has more than 1 aipp input!')
     elif (aipp_input_exist == -1):
         raise RuntimeError('aclmdlGetAippType failed!')
@@ -100,7 +107,7 @@ def set_session_options(session, args):
     # 设置custom out tensors size
     if args.output_size is not None:
         customsizes = [int(n) for n in args.output_size.split(',')]
-        logger.debug("set customsize:{}".format(customsizes))
+        logger.debug(f"set customsize:{customsizes}")
         session.set_custom_outsize(customsizes)
 
 
@@ -108,7 +115,7 @@ def init_inference_session(args, acl_json_path):
     session = InferSession(args.device, args.model, acl_json_path, args.debug, args.loop)
 
     set_session_options(session, args)
-    logger.debug("session info:{}".format(session.session))
+    logger.debug(f"session info:{session.session}")
     return session
 
 
@@ -117,10 +124,11 @@ def set_dymshape_shape(session, inputs):
     intensors_desc = session.get_inputs()
     for i, input_ in enumerate(inputs):
         str_shape = [str(shape) for shape in input_.shape]
-        dyshape = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
+        shapes = ",".join(str_shape)
+        dyshape = f"{intensors_desc[i].name}:{shapes}"
         shape_list.append(dyshape)
     dyshapes = ';'.join(shape_list)
-    logger.debug("set dymshape shape:{}".format(dyshapes))
+    logger.debug(f"set dymshape shape:{dyshapes}")
     session.set_dynamic_shape(dyshapes)
     summary.add_batchsize(inputs[0].shape[0])
 
@@ -130,10 +138,11 @@ def set_dymdims_shape(session, inputs):
     intensors_desc = session.get_inputs()
     for i, input_ in enumerate(inputs):
         str_shape = [str(shape) for shape in input_.shape]
-        dydim = "{}:{}".format(intensors_desc[i].name, ",".join(str_shape))
+        shapes = ",".join(str_shape)
+        dydim = f"{intensors_desc[i].name}:{shapes}"
         shape_list.append(dydim)
     dydims = ';'.join(shape_list)
-    logger.debug("set dymdims shape:{}".format(dydims))
+    logger.debug(f"set dymdims shape:{dydims}")
     session.set_dynamic_dims(dydims)
     summary.add_batchsize(inputs[0].shape[0])
 
@@ -159,9 +168,9 @@ def warmup(session, args, intensors_desc, infiles):
 
     # reset summary info
     summary.reset()
-    session.reset_sumaryinfo()
+    session.reset_summaryinfo()
     MemorySummary.reset()
-    logger.info("warm up {} done".format(args.warmup_count))
+    logger.info(f"warm up {args.warmup_count} done")
 
 
 def run_inference(session, args, inputs, out_array=False):
@@ -227,7 +236,6 @@ def infer_fulltensors_run(session, args, intensors_desc, infileslist, output_pre
     intensorslist = create_intensors_from_infileslist(infileslist, intensors_desc, session,
                                                       args.pure_data_type, args.no_combine_tensor_mode)
 
-    # for inputs in intensorslist:
     for inputs in tqdm(intensorslist, file=sys.stdout, desc='Inference Processing full'):
         outputs = run_inference(session, args, inputs)
         outtensors.append(outputs)
@@ -258,7 +266,7 @@ def infer_loop_array_run(session, args, intensors_desc, infileslist, output_pref
 
 
 def infer_pipeline_run(session, args, infileslist, output_prefix, extra_session):
-    logger.info(f"run in pipeline mode with {args.thread} computing threads.")
+    logger.info(f"run in pipeline mode with computing threadsnumber:{args.threads}")
     run_pipeline_inference(session, args, infileslist, output_prefix, extra_session)
 
 
@@ -277,16 +285,21 @@ def get_file_name(file_path: str, suffix: str, res_file_path: list) -> list:
         else:
             res_file_path.append(os.path.join(file_path, file))
     # endswith：表示以suffix结尾。可根据需要自行修改；如：startswith：表示以suffix开头，__contains__：包含suffix字符串
-    return res_file_path if suffix == '' or suffix is None else list(filter(lambda x: x.endswith(suffix), res_file_path))
+    if suffix == '' or suffix is None:
+        return res_file_path
+    else:
+        return list(filter(lambda x: x.endswith(suffix), res_file_path))
 
 
 def get_legal_json_content(acl_json_path):
     cmd_dict = {}
-    with open(acl_json_path, 'r') as f:
+    with ms_open(acl_json_path, mode="r", max_size=MAX_SIZE_LIMITE_CONFIG_FILE) as f:
         json_dict = json.load(f)
     profile_dict = json_dict.get("profiler")
     for option_cmd in ACL_JSON_CMD_LIST:
         if profile_dict.get(option_cmd):
+            if option_cmd == "output" and not is_legal_args_path_string(profile_dict.get(option_cmd)):
+                raise Exception(f"output path in acl_json is illegal!")
             cmd_dict.update({"--" + option_cmd.replace('_', '-'): profile_dict.get(option_cmd)})
             if (option_cmd == "sys_hardware_mem_freq"):
                 cmd_dict.update({"--sys-hardware-mem": "on"})
@@ -303,25 +316,39 @@ def json_to_msprof_cmd(acl_json_path):
     return msprof_option_cmd
 
 
+def regenerate_cmd(args:BenchMarkArgsAdapter):
+    args_dict = args.get_all_args_dict()
+    cmd = sys.executable + " -m ais_bench"
+    for key, value in args_dict.items():
+        if key == '--acl_json_path':
+            continue
+        if key == '--warmup_count':
+            cmd = cmd + " " + f"{key}={0}"
+            continue
+        if key == '--profiler':
+            cmd = cmd + " " + f"{key}={0}"
+            continue
+        if value:
+            cmd = cmd + " " + f"{key}={value}"
+    return cmd
+
+
 def msprof_run_profiling(args, msprof_bin):
     if args.acl_json_path is not None:
         # acl.json to msprof cmd
         args.profiler_rename = False
-        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
-        cmd = cmd.replace("--acl-json-path", "")
-        cmd = cmd.replace("--acl_json_path", "")
-        cmd = cmd.replace(args.acl_json_path, "")
+        cmd = regenerate_cmd(args)
         msprof_cmd = f"{msprof_bin} --application=\"{cmd}\" " + json_to_msprof_cmd(args.acl_json_path)
     else:
         # default msprof cmd
-        cmd = sys.executable + " " + ' '.join(sys.argv) + " --profiler=0 --warmup-count=0"
+        cmd = regenerate_cmd(args)
         msprof_cmd = f"{msprof_bin} --output={args.output}/profiler --application=\"{cmd}\" --model-execution=on \
                     --sys-hardware-mem=on --sys-cpu-profiling=off --sys-profiling=off --sys-pid-profiling=off \
                     --dvpp-profiling=on --runtime-api=on --task-time=on --aicpu=on" \
 
     ret = -1
     msprof_cmd_list = shlex.split(msprof_cmd)
-    logger.info("msprof cmd:{} begin run".format(msprof_cmd))
+    logger.info(f"msprof cmd:{msprof_cmd} begin run")
     if (args.profiler_rename):
         p = subprocess.Popen(msprof_cmd_list, stdout=subprocess.PIPE, shell=False, bufsize=0)
         flags = fcntl.fcntl(p.stdout, fcntl.F_GETFL)
@@ -357,12 +384,12 @@ def msprof_run_profiling(args, msprof_bin):
         ret = 0
     else:
         ret = subprocess.call(msprof_cmd_list, shell=False)
-        logger.info("msprof cmd:{} end run ret:{}".format(msprof_cmd, ret))
+        logger.info(f"msprof cmd:{msprof_cmd} end run ret:{ret}")
     return ret
 
 
 def get_energy_consumption(npu_id):
-    cmd = "npu-smi info -t power -i {}".format(npu_id)
+    cmd = f"npu-smi info -t power -i {npu_id}"
     get_npu_id = subprocess.run(cmd.split(), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     npu_id = get_npu_id.stdout.decode('gb2312')
     power = []
@@ -388,7 +415,7 @@ def convert(tmp_acl_json_path, real_dump_path, tmp_dump_path):
 def main(args, index=0, msgq=None, device_list=None):
     # if msgq is not None,as subproces run
     if msgq is not None:
-        logger.info("subprocess_{} main run".format(index))
+        logger.info(f"subprocess_{index} main run")
 
     if args.debug:
         logger.setLevel(logging.DEBUG)
@@ -399,11 +426,11 @@ def main(args, index=0, msgq=None, device_list=None):
         tmp_acl_json_path, real_dump_path, tmp_dump_path = create_tmp_acl_json(acl_json_path)
 
     session = init_inference_session(args, tmp_acl_json_path if tmp_acl_json_path is not None else acl_json_path)
-    # if pipeline is set and thread number is > 1, create a session pool for extra computing
+    # if pipeline is set and threads number is > 1, create a session pool for extra computing
     extra_session = []
     if args.pipeline:
         extra_session = [init_inference_session(args, tmp_acl_json_path if tmp_acl_json_path is not None\
-                                                else acl_json_path) for _ in range(args.thread - 1)]
+                                                else acl_json_path) for _ in range(args.threads - 1)]
 
     intensors_desc = session.get_inputs()
     if device_list is not None and len(device_list) > 1:
@@ -416,8 +443,9 @@ def main(args, index=0, msgq=None, device_list=None):
                 output_prefix = os.path.join(args.output, args.output_dirname)
                 output_prefix = os.path.join(output_prefix, "device" + str(device_list[index]) + "_" + str(index))
             if not os.path.exists(output_prefix):
-                os.makedirs(output_prefix, 0o755)
-            logger.info("output path:{}".format(output_prefix))
+                os.makedirs(output_prefix, PERMISSION_DIR)
+            os.chmod(args.output, PERMISSION_DIR)
+            logger.info(f"output path:{output_prefix}")
         else:
             output_prefix = None
     else:
@@ -428,8 +456,9 @@ def main(args, index=0, msgq=None, device_list=None):
             else:
                 output_prefix = os.path.join(args.output, args.output_dirname)
             if not os.path.exists(output_prefix):
-                os.makedirs(output_prefix, 0o755)
-            logger.info("output path:{}".format(output_prefix))
+                os.makedirs(output_prefix, PERMISSION_DIR)
+            os.chmod(args.output, PERMISSION_DIR)
+            logger.info(f"output path:{output_prefix}")
         else:
             output_prefix = None
 
@@ -468,7 +497,7 @@ def main(args, index=0, msgq=None, device_list=None):
 
     if msgq is not None:
         # wait subprocess init ready, if time eplapsed, force ready run
-        logger.info("subprocess_{} qsize:{} now waiting".format(index, msgq.qsize()))
+        logger.info(f"subprocess_{index} qsize:{msgq.qsize()} now waiting")
         msgq.put(index)
         time_sec = 0
         while True:
@@ -476,14 +505,12 @@ def main(args, index=0, msgq=None, device_list=None):
                 break
             time_sec = time_sec + 1
             if time_sec > 10:
-                logger.warning("subprocess_{} qsize:{} time:{} s elapsed".format(index, msgq.qsize(), time_sec))
+                logger.warning(f"subprocess_{index} qsize:{msgq.qsize()} time:{time_sec} s elapsed")
                 break
             time.sleep(1)
-        logger.info("subprocess_{} qsize:{} ready to infer run".format(index, msgq.qsize()))
+        logger.info(f"subprocess_{index} qsize:{msgq.qsize()} ready to infer run")
 
     start_time = time.time()
-    start_energy_consumption = 0
-    end_energy_consumption = 0
     if args.energy_consumption and args.npu_id:
         start_energy_consumption = get_energy_consumption(args.npu_id)
     if args.pipeline:
@@ -498,22 +525,25 @@ def main(args, index=0, msgq=None, device_list=None):
         if run_mode_switch.get(args.run_mode) is not None:
             run_mode_switch.get(args.run_mode)(session, args, intensors_desc, infileslist, output_prefix)
         else:
-            raise RuntimeError('wrong run_mode:{}'.format(args.run_mode))
+            raise RuntimeError(f'wrong run_mode:{args.run_mode}')
     if args.energy_consumption and args.npu_id:
         end_energy_consumption = get_energy_consumption(args.npu_id)
     end_time = time.time()
 
+    multi_threads_mode = args.threads > 1 and args.pipeline
     summary.add_args(sys.argv)
-    s = session.sumary()
-    summary.npu_compute_time_list = [time / args.thread for time in s.exec_time_list]
+    s = session.summary()
+    if multi_threads_mode:
+        summary.npu_compute_time_interval_list = s.exec_time_list
+    else:
+        summary.npu_compute_time_list = [end_time - start_time for start_time, end_time in s.exec_time_list]
     summary.h2d_latency_list = MemorySummary.get_h2d_time_list()
     summary.d2h_latency_list = MemorySummary.get_d2h_time_list()
-    summary.report(args.batchsize, output_prefix, args.display_all_summary)
-    logger.info("end_to_end_time (s):%s", end_time - start_time)
+    summary.report(args.batchsize, output_prefix, args.display_all_summary, multi_threads_mode)
     if args.energy_consumption and args.npu_id:
-        logger.info("NPU ID:{} energy consumption(J):{}".format(args.npu_id, ((float(end_energy_consumption) +
-                                                                           float(start_energy_consumption))/2.0 ) * (
-                                                                         end_time - start_time)))
+        energy_consumption = ((float(end_energy_consumption) + float(start_energy_consumption)) / 2.0) \
+            * (end_time - start_time)
+        logger.info(f"NPU ID:{args.npu_id} energy consumption(J):{energy_consumption}")
     if msgq is not None:
         # put result to msgq
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
@@ -529,7 +559,7 @@ def main(args, index=0, msgq=None, device_list=None):
 
 
 def print_subproces_run_error(value):
-    logger.error("subprocess run failed error_callback:{}".format(value))
+    logger.error(f"subprocess run failed error_callback:{value}")
 
 
 def seg_input_data_for_multi_process(args, inputs, jobs):
@@ -544,7 +574,7 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
         for dir_path in inputs_list:
             fileslist.extend(get_fileslist_from_dir(dir_path))
     else:
-        logger.error('error {} not file or dir'.format(inputs_list[0]))
+        logger.error(f'error {inputs_list[0]} not file or dir')
         raise RuntimeError()
 
     args.device = 0
@@ -557,7 +587,7 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
         logger.error("ZeroDivisionError: intensors_desc is empty")
         raise RuntimeError("error zero division") from err
     chunks = list(list_split(fileslist, chunks_elements, None))
-    fileslist = [ [] for _ in range(jobs) ]
+    fileslist = [[] for _ in range(jobs)]
     for _, chunk in enumerate(chunks):
         try:
             splits_elements = int(len(chunk) / jobs)
@@ -575,7 +605,7 @@ def seg_input_data_for_multi_process(args, inputs, jobs):
 
 
 def multidevice_run(args):
-    logger.info("multidevice:{} run begin".format(args.device))
+    logger.info(f"multidevice:{args.device} run begin")
     device_list = args.device
     npu_id_list = args.npu_id
     p = Pool(len(device_list))
@@ -598,15 +628,15 @@ def multidevice_run(args):
     p.close()
     p.join()
     result = 0 if 2 * len(device_list) == msgq.qsize() else 1
-    logger.info("multidevice run end qsize:{} result:{}".format(msgq.qsize(), result))
+    logger.info(f"multidevice run end qsize:{msgq.qsize()} result:{result}")
     tlist = []
     while msgq.qsize() != 0:
         ret = msgq.get()
         if type(ret) == list:
-            logger.info("i:{} device_{} throughput:{} start_time:{} end_time:{}".format(
-                ret[0], device_list[ret[0]], ret[1], ret[2], ret[3]))
+            logger.info(f"i:{ret[0]} device_{device_list[ret[0]]} throughput:{ret[1]} \
+                start_time:{ret[2]} end_time:{ret[3]}")
             tlist.append(ret[1])
-    logger.info('summary throughput:{}'.format(sum(tlist)))
+    logger.info(f'summary throughput:{sum(tlist)}')
     return result
 
 
@@ -618,16 +648,6 @@ def args_rules(args):
     if (args.profiler or args.dump) and (args.output is None):
         logger.error("when dump or profiler, miss output path, please check them!")
         raise RuntimeError('miss output parameter!')
-
-    # 判断--aipp_config 文件是否是存在的.config文件
-    if args.aipp_config is not None:
-        if (os.path.splitext(args.aipp_config)[-1] == ".config"):
-            if (not os.path.isfile(args.aipp_config)):
-                logger.error("can't find the path of config file, please check it!")
-                raise RuntimeError('wrong aipp config file path!')
-        else:
-            logger.error("aipp config file is not a .config file, please check it!")
-            raise RuntimeError('wrong aipp config file type!')
 
     if not args.auto_set_dymshape_mode and not args.auto_set_dymdims_mode:
         args.no_combine_tensor_mode = False
@@ -643,9 +663,9 @@ def args_rules(args):
             "parameter --output_dirname cann't be used alone. Please use it together with the parameter --output!\n")
         raise RuntimeError('error bad parameters --output_dirname')
 
-    if args.thread > 1 and not args.pipeline:
-        logger.info("need to set --pipeline when setting thread number to be more than one.")
-        args.thread = 1
+    if args.threads > 1 and not args.pipeline:
+        logger.info("need to set --pipeline when setting threads number to be more than one.")
+        args.threads = 1
 
     return args
 
@@ -654,19 +674,8 @@ def acl_json_base_check(args):
     if args.acl_json_path is None:
         return args
     json_path = args.acl_json_path
-    max_json_size = 8192 # 8KB 30 * 255 byte左右
-    if os.path.splitext(json_path)[1] != ".json":
-        logger.error(f"acl_json_path:{json_path} is not a .json file")
-        raise TypeError(f"acl_json_path:{json_path} is not a .json file")
-    if not os.path.exists(os.path.realpath(json_path)):
-        logger.error(f"acl_json_path:{json_path} not exsit")
-        raise FileExistsError(f"acl_json_path:{json_path} not exist")
-    json_size = os.path.getsize(json_path)
-    if json_size > max_json_size:
-        logger.error(f"json_file_size:{json_size} byte out of max limit {max_json_size} byte")
-        raise MemoryError(f"json_file_size:{json_size} byte out of max limit")
     try:
-        with open(json_path, 'r') as f:
+        with ms_open(json_path, mode="r", max_size=MAX_SIZE_LIMITE_CONFIG_FILE) as f:
             json_dict = json.load(f)
     except Exception as err:
         logger.error(f"can't read acl_json_path:{json_path}")
@@ -678,13 +687,27 @@ def acl_json_base_check(args):
     return args
 
 
+def config_check(config_path):
+    if not config_path:
+        return
+    max_config_size = 12800
+    if os.path.splitext(config_path)[1] != ".config":
+        logger.error(f"aipp_config:{config_path} is not a .config file")
+        raise TypeError(f"aipp_config:{config_path} is not a .config file")
+    config_size = os.path.getsize(config_path)
+    if config_size > max_config_size:
+        logger.error(f"aipp_config_size:{config_size} byte out of max limit {max_config_size} byte")
+        raise MemoryError(f"aipp_config_size:{config_size} byte out of max limit")
+    return
+
+
 def backend_run(args):
     backend_class = BackendFactory.create_backend(args.backend)
     backend = backend_class(args)
     backend.load(args.model)
     backend.run()
     perf = backend.get_perf()
-    logger.info("perf info:{}".format(perf))
+    logger.info(f"perf info:{perf}")
 
 
 def benchmark_process(args:BenchMarkArgsAdapter):

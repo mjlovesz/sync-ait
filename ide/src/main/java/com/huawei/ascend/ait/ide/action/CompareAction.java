@@ -17,7 +17,6 @@
 package com.huawei.ascend.ait.ide.action;
 
 import com.huawei.ascend.ait.ide.Icons;
-import com.huawei.ascend.ait.ide.commonlib.output.OutputFactory;
 import com.huawei.ascend.ait.ide.commonlib.output.OutputService;
 import com.huawei.ascend.ait.ide.commonlib.ui.UiUtils;
 import com.huawei.ascend.ait.ide.optimizie.ui.step.Compare;
@@ -37,7 +36,7 @@ import java.awt.Window;
  * Compare
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class CompareAction extends AnAction {
     private static final Logger LOG = LoggerFactory.getLogger(CompareAction.class);

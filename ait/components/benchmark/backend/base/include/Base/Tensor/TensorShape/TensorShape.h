@@ -18,8 +18,7 @@
 #define TENSOR_SHAPE_H
 
 namespace Base {
-class TensorShape
-{
+class TensorShape {
 public:
     TensorShape() = default;
     ~TensorShape() = default;

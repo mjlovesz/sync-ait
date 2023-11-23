@@ -123,16 +123,16 @@ TensorBase FromNumpy(py::buffer b)
         bytes = DATA_TYPE_TO_BYTE_SIZE_MAP.find(dataType)->second;
     }
     MemoryData memoryData(info.ptr, info.size * bytes, MemoryData::MemoryType::MEMORY_HOST, -1);
-    TensorBase src(memoryData, true, shape, dataType);
+    TensorBase src(memoryData, true, shape, dataType, 0); // default to be in 0 context
     TensorBase dst(shape, dataType);
     APP_ERROR ret = Base::TensorBase::TensorBaseMalloc(dst);
     if (ret != APP_ERR_OK) {
-        LogError << "TensorBaseMalloc failed. ret=" << ret << std::endl;
+        LOG_ERROR << "TensorBaseMalloc failed. ret=" << ret << std::endl;
         throw std::runtime_error(GetError(ret));
     }
     ret = Base::TensorBase::TensorBaseCopy(dst, src);
     if (ret != APP_ERR_OK) {
-        LogError << "TensorBaseCopy failed. ret=" << ret << std::endl;
+        LOG_ERROR << "TensorBaseCopy failed. ret=" << ret << std::endl;
         throw std::runtime_error(GetError(ret));
     }
     return dst;
@@ -173,7 +173,7 @@ TensorBase BatchVector(const std::vector<TensorBase> &tensors, const bool &keepD
     TensorBase output = {};
     APP_ERROR ret = TensorBase::BatchVector(tensors, output, keepDims);
     if (ret != APP_ERR_OK) {
-        LogError << "TensorBase::BatchVector failed. ret=" << ret << std::endl;
+        LOG_ERROR << "TensorBase::BatchVector failed. ret=" << ret << std::endl;
         throw std::runtime_error(GetError(ret));
     }
     return output;

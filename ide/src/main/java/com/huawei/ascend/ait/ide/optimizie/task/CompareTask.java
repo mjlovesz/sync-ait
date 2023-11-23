@@ -19,8 +19,8 @@ package com.huawei.ascend.ait.ide.optimizie.task;
 import com.huawei.ascend.ait.ide.commonlib.exception.CommandInjectException;
 import com.huawei.ascend.ait.ide.commonlib.output.OutputService;
 import com.huawei.ascend.ait.ide.commonlib.ui.SwitchButton;
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdExec;
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdExec;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrBuffer;
 import com.huawei.ascend.ait.ide.optimizie.ui.step.ShowResult;
 
 import com.intellij.execution.ui.ConsoleViewContentType;
@@ -42,7 +42,7 @@ import java.io.IOException;
  * CompareTask
  *
  * @author cabbage
- * @date 2023/06/25
+ * @since 2023/06/25
  */
 public class CompareTask extends Backgroundable {
     private static final Logger LOGGER = LoggerFactory.getLogger(CompareTask.class);
