@@ -1613,11 +1613,8 @@ onnx.Metadata = class {
     static reload(context) {
         return window.__view__._host.request('./onnx-metadata.json', 'utf-8', null).then((data) => {
             onnx.Metadata._metadata = new onnx.Metadata(data);
-            console.log(onnx.Metadata._metadata)
-            // return onnx.Metadata._metadata;
         }).catch(() => {
             onnx.Metadata._metadata = new onnx.Metadata(null);
-            // return onnx.Metadata._metadata;
         });
     }
 

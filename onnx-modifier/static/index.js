@@ -568,12 +568,11 @@ host.BrowserHost = class {
 
 
         document.addEventListener('customOperatorAdded', function() {
-            // 假设 'context' 是初始化 onnx.Metadata 时使用的相同上下文
             onnx.Metadata.reload(this.context).then(() => {
                 window.__view__.model.graphMetadata._metadata = onnx.Metadata._metadata
                 window.__view__.modifier.updateAddNodeDropDown()
             }).catch(error => {
-                console.error('Error reloading metadata:', error);
+                window._host.show_message("Error", 'You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', "error");
             });
         });
 
@@ -592,7 +591,7 @@ host.BrowserHost = class {
                 dropdown.appendChild(option);
             });
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => window._host.show_message("Error", 'You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', "error"));
     }
 
 
@@ -661,7 +660,6 @@ host.BrowserHost = class {
             window._host.show_message("Success!", 'Custom Operator has been successfuly Submit', "success");
         })
         .catch((error) => {
-            console.error('Error:', error);
             window._host.show_message("Error", 'Submit Error, You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', "error")
 
         });
