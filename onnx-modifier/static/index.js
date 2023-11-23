@@ -463,13 +463,13 @@ host.BrowserHost = class {
         })
 
     function isJSONValid(jsonString) {
-        try {
-            JSON.parse(jsonString);
-            return true;
-        } catch (e) {
-            return false;
-        }
+      try {
+        JSON.parse(jsonString);
+        return true;
+    } catch (e) {
+        return false;
     }
+}
 
 
     function validateCustomOperatorForm() {
