@@ -584,9 +584,11 @@ host.BrowserHost = class {
                 updateOperatorDropdown(); // 更新下拉菜单
                 document.dispatchEvent(new CustomEvent('customOperatorAdded'));
                 setTimeout(() => {window.__view__.modifier.updateAddNodeDropDown()},500);
+                window._host.show_message("Success!", "Custom Operator has been successfuly Submit", "success");
             })
             .catch((error) => {
                 console.error('Error:', error);
+                window._host.show_message("Error", "Submit Error, You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.", "error")
 
             });
 

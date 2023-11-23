@@ -39,11 +39,11 @@
     }
     #customOperatorDialog label {
         display: inline-block;
-        width: 120px; /* 调整标签的宽度 */
+        width: 100px; /* 调整标签的宽度 */
         text-align: right; /* 标签内文本右对齐 */
         margin-right: 10px; /* 标签与输入框之间的间距 */
         vertical-align: top; /* 使标签顶部对齐 */
-        line-height: 2.5em; /* 调整行高以使文本垂直居中 */
+        line-height: 1em; /* 调整行高以使文本垂直居中 */
     }
 
     #customOperatorDialog input[type="text"],
@@ -54,6 +54,14 @@
 
     #customOperatorDialog textarea {
         height: 100px; /* 设置文本域的固定高度 */
+    }
+
+
+    /* 为表单的每个元素添加行距 */
+    #customOperatorDialog label,
+    #customOperatorDialog input,
+    #customOperatorDialog textarea {
+        margin-bottom: 10px; /* 在每个表单元素下方添加间隙 */
     }
 </style>
 
@@ -285,7 +293,7 @@
     </div>
 
     <div class="footer">
-        <button id="openCustomOperatorDialog">Add Custom Operator</button>
+        <button id="openCustomOperatorDialog">Build Custom Operator</button>
         <button data-value="">Cancel</button>
         <button data-value="Confirm">Confirm</button>
     </div>

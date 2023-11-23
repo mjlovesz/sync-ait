@@ -222,17 +222,17 @@
 
 
 
-## 增加自定义算子
+## 构造自定义算子
 
 有时候我们希望向模型中增加自定义算子。`onnx-modifier`已开始支持该功能。
 
-在主页面的左方工具栏，有一个`Add node`按钮，点击之后弹出对话框，通过按钮Add Custom Operator按钮打开自定义文本框，添加成功后需要**刷新**重新加载json文件
+在主页面的左方工具栏，有一个`Add node`按钮，点击之后弹出对话框，通过按钮Build Custom Operator按钮打开自定义文本框，构造成功后会重新加载json文件，添加节点过程参照：[增加新节点](#增加新节点)
 注：需要添加正确的json格式（已经有默认输入）
 
 
-<img src="./docs/add_custom_node.gif" style="zoom:75%;" />
+<img src="./docs/build_custom_operator.gif" style="zoom:75%;" />
 
-添加成功后刷新页面，其余过程参照：[增加新节点](#增加新节点)
+
 
 
 ## 修改模型batch size
