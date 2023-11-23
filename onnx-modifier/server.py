@@ -23,7 +23,7 @@ from urllib import parse
 import onnx
 import onnx.helper as helper
 import onnx.checker as checker
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 
 from onnx_modifier import OnnxModifier
 
