@@ -69,9 +69,6 @@ if [ $? != 0 ]; then
     exit 1
 fi
 
-PATH=/root/anaconda3/bin:$PATH
-export PATH=/root/anaconda3/bin:$PATH
-
 coverage combine $CUR_PATH
 coverage report -m --omit="test_*.py" > $CUR_PATH/test.coverage
 
