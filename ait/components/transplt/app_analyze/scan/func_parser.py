@@ -11,8 +11,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from app_analyze.scan.clang_parser import *
-from app_analyze.scan.clang_utils import *
+import os
+import time
+from clang.cindex import CursorKind
+
+from app_analyze.scan.clang_parser import Parser, macro_map, typedef_map, node_debug_string
+from app_analyze.scan.clang_utils import get_attr, get_children, is_user_code
 from app_analyze.scan.sequence.seq_desc import SeqDesc
 from app_analyze.scan.sequence.seq_handler import SeqHandler
 from app_analyze.scan.sequence.seq_utils import save_api_seq
