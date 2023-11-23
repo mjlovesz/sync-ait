@@ -489,22 +489,67 @@ host.BrowserHost = class {
                 alert('Inputs field contains invalid JSON.');
                 return false;
             }
+
+            var inputs = JSON.parse(document.getElementById('customInputs').value);
+            if (!validateJSONLength(inputs) || !validateJSONContainsName(inputs)) {
+                return false;
+            }
+
+
+            var outputs = JSON.parse(document.getElementById('customOutputs').value);
+            if (!validateJSONLength(outputs) || !validateJSONContainsName(outputs)) {
+                return false;
+            }
+
+
             if (!isJSONValid(document.getElementById('customOutputs').value)) {
                 alert('Outputs field contains invalid JSON.');
                 return false;
             }
+
             if (document.getElementById('customAttributes').value && !isJSONValid(document.getElementById('customAttributes').value)) {
                 alert('Attributes field contains invalid JSON.');
                 return false;
             }
+
+            var customAttributes = document.getElementById('customAttributes').value;
+            if (customAttributes && !validateJSONLength(JSON.parse(customAttributes))) {
+                return false;
+            }
+
+
             if (document.getElementById('customTypeConstraints').value && !isJSONValid(document.getElementById('customTypeConstraints').value)) {
                 alert('Type Constraints field contains invalid JSON.');
+                return false;
+            }
+
+            var customTypeConstraints = document.getElementById('customTypeConstraints').value;
+            if (customTypeConstraints && !validateJSONLength(JSON.parse(customTypeConstraints))) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function validateJSONLength(jsonArray) {
+            // JSON 的最大长度，例如 1000
+            const MAX_LENGTH = 1000;
+            if (JSON.stringify(jsonArray).length > MAX_LENGTH) {
+                alert('JSON data is too long.');
                 return false;
             }
             return true;
         }
 
-
+        function validateJSONContainsName(jsonArray) {
+            for (var i = 0; i < jsonArray.length; i++) {
+                if (!jsonArray[i].name) {
+                    alert('Each item in JSON array must contain a "name" field.');
+                    return false;
+                }
+            }
+            return true;
+        }
 
         document.getElementById('openCustomOperatorDialog').addEventListener('click', function() {
             document.getElementById('customOperatorDialog').showModal();
