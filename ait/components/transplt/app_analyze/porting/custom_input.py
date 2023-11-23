@@ -15,7 +15,6 @@ import os
 
 from app_analyze.porting.cmdline_input import CommandLineInput
 from app_analyze.common.kit_config import ScannerType
-from app_analyze.utils.io_util import IOUtil
 
 
 class CustomInput(CommandLineInput):

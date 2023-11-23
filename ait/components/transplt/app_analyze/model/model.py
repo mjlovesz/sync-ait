@@ -142,7 +142,3 @@ def postprocess():
     instance.add_arguments(parser)
     args = parser.parse_args()
     instance.handle(args)
-
-
-if __name__ == '__main__':
-    predict()

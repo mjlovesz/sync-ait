@@ -56,7 +56,7 @@ class TranspltCommand(BaseCommand):
             help="specify construction, currently support cmake and python"
         )
         parser.add_argument(
-            "--mode", default="api-only", choices=['all', 'api-only'],
+            "--mode", default="all", choices=['all', 'api-only'],
             help="specify scanner mode, currently support all and api only"
         )
 
