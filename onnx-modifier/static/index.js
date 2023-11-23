@@ -474,23 +474,19 @@ host.BrowserHost = class {
 
     function validateCustomOperatorForm() {
         if (!document.getElementById('customName').value.trim()) {
-            alert('Name field is required.');
-            window._host.show_message("Warn", "Name field is required.", "warn");
+            window._host.show_message("Warn", 'Name field is required.', "warn");
             return false;
         }
         if (!document.getElementById('customModule').value.trim()) {
-            alert('Module field is required.');
-            window._host.show_message("Warn", "Module field is required.", "warn");
+            window._host.show_message("Warn", 'Module field is required.', "warn");
             return false;
         }
         if (!document.getElementById('customVersion').value.trim()) {
-            alert('Version field is required.');
-            window._host.show_message("Warn", "Version field is required.", "warn");
+            window._host.show_message("Warn", 'Version field is required.', "warn");
             return false;
         }
         if (!isJSONValid(document.getElementById('customInputs').value)) {
-            alert('Inputs field contains invalid JSON.');
-            window._host.show_message("Warn", "Inputs field contains invalid JSON.", "warn");
+            window._host.show_message("Warn", 'Inputs field contains invalid JSON.', "warn");
 
             return false;
         }
@@ -508,15 +504,13 @@ host.BrowserHost = class {
 
 
         if (!isJSONValid(document.getElementById('customOutputs').value)) {
-            alert('Outputs field contains invalid JSON.');
-            window._host.show_message("Warn", "Outputs field contains invalid JSON.", "warn");
+            window._host.show_message("Warn", 'Outputs field contains invalid JSON.', "warn");
 
             return false;
         }
 
         if (document.getElementById('customAttributes').value && !isJSONValid(document.getElementById('customAttributes').value)) {
-            alert('Attributes field contains invalid JSON.');
-            window._host.show_message("Warn", "Attributes field contains invalid JSON.", "warn");
+            window._host.show_message("Warn", 'Attributes field contains invalid JSON.', "warn");
 
             return false;
         }
@@ -528,8 +522,7 @@ host.BrowserHost = class {
 
 
         if (document.getElementById('customTypeConstraints').value && !isJSONValid(document.getElementById('customTypeConstraints').value)) {
-            alert('Type Constraints field contains invalid JSON.');
-            window._host.show_message("Warn", "Type Constraints field contains invalid JSON.", "warn");
+            window._host.show_message("Warn", 'Type Constraints field contains invalid JSON.', "warn");
 
             return false;
         }
@@ -546,9 +539,7 @@ host.BrowserHost = class {
         // JSON 的最大长度，例如 1000
         const MAX_LENGTH = 10000;
         if (JSON.stringify(jsonArray).length > MAX_LENGTH) {
-            alert('JSON data is too long.');
-            window._host.show_message("Warn", "JSON data is too long.", "warn");
-
+            window._host.show_message("Warn", 'JSON data is too long.', "warn");
             return false;
         }
         return true;
@@ -557,8 +548,7 @@ host.BrowserHost = class {
     function validateJSONContainsName(jsonArray) {
         for (var i = 0; i < jsonArray.length; i++) {
             if (!jsonArray[i].name) {
-                alert('Each item in JSON array must contain a "name" field.');
-                window._host.show_message("Warn", "Each item in JSON array must contain a \"name\" field.", "warn");
+                window._host.show_message("Warn", 'Each item in JSON array must contain a \"name\" field.', "warn");
                 return false;
             }
         }
@@ -583,7 +573,7 @@ host.BrowserHost = class {
                 window.__view__.model.graphMetadata._metadata = onnx.Metadata._metadata
                 window.__view__.modifier.updateAddNodeDropDown()
             }).catch(error => {
-                console.error("Error reloading metadata:", error);
+                console.error('Error reloading metadata:', error);
             });
         });
 
@@ -668,11 +658,11 @@ host.BrowserHost = class {
                 window.__view__.modifier.updateAddNodeDropDown();
                 addNodeAutomatically(customOperatorData.name);
             },500);
-            window._host.show_message("Success!", "Custom Operator has been successfuly Submit", "success");
+            window._host.show_message("Success!", 'Custom Operator has been successfuly Submit', "success");
         })
         .catch((error) => {
             console.error('Error:', error);
-            window._host.show_message("Error", "Submit Error, You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.", "error")
+            window._host.show_message("Error", 'Submit Error, You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', "error")
 
         });
 
