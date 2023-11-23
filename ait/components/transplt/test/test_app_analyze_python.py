@@ -25,6 +25,7 @@ REPORT_TYPE = "csv"
 LOG_LEVEL = "INFO"
 TOOLS = "python"
 INVALID_ARG = "invalid_arg"
+MODE = "api-only"
 
 
 def transplt_argparse(argv):
@@ -42,7 +43,7 @@ def call_transplt_cmd(argv):
 
 
 def test_app_analyze_python_given_opencv_csv_when_any_then_pass():
-    argv = ["-s", SOURCE, "-f", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS]
+    argv = ["-s", SOURCE, "-f", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS, "--mode", MODE]
     call_transplt_cmd(argv)
 
     output_xlsx = os.path.join(CUR_DIR, "resources/opencv_python/output.xlsx")
@@ -51,6 +52,6 @@ def test_app_analyze_python_given_opencv_csv_when_any_then_pass():
 
 
 def test_app_analyze_python_given_invalid_source_when_any_then_error():
-    argv = ["-s", INVALID_ARG, "-f", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS]
+    argv = ["-s", INVALID_ARG, "-f", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS, "--mode", MODE]
     with pytest.raises(SystemExit):
         call_transplt_cmd(argv)

@@ -51,7 +51,7 @@ def test_app_analyze_apionly_given_opencv_csv_when_any_then_pass():
 
 def test_app_analyze_apionly_given_invalid_source_when_any_then_error():
     argv = ["-s", INVALID_ARG, "-f", REPORT_TYPE, "--log-level", LOG_LEVEL, "--tools", TOOLS, "--mode", MODE]
-    with pytest.raises(Exception, match="Source directory is not existed!"):
+    with pytest.raises(SystemExit):
         call_transplt_cmd(argv)
 
 

@@ -69,9 +69,9 @@ class ScanApi:
     @staticmethod
     def _get_project_instance(inputs):
         if inputs.scanner_mode == ScannerMode.ALL.value:
-            project = Project(inputs)
-        else:
             project = SeqProject(inputs)
+        else:
+            project = Project(inputs)
         return project
 
     def scan_source(self, param_dict):
@@ -117,7 +117,7 @@ class ScanApi:
             raise SourceFileNotFoundError('source_file_not_found_err',
                                           'Source code not found') from exp
 
-        if project.scan_results or project.lib_reports or project.tips:
+        if project.scan_results or project.lib_reports:
             self.produce_report(project)
             logger.info('**** Project analysis finished <<<')
         else:
