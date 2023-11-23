@@ -462,94 +462,94 @@ host.BrowserHost = class {
             })
         })
 
-        function isJSONValid(jsonString) {
-            try {
-                JSON.parse(jsonString);
-                return true;
-            } catch (e) {
-                return false;
-            }
-        }
-
-
-        function validateCustomOperatorForm() {
-            if (!document.getElementById('customName').value.trim()) {
-                alert('Name field is required.');
-                return false;
-            }
-            if (!document.getElementById('customModule').value.trim()) {
-                alert('Module field is required.');
-                return false;
-            }
-            if (!document.getElementById('customVersion').value.trim()) {
-                alert('Version field is required.');
-                return false;
-            }
-            if (!isJSONValid(document.getElementById('customInputs').value)) {
-                alert('Inputs field contains invalid JSON.');
-                return false;
-            }
-
-            var inputs = JSON.parse(document.getElementById('customInputs').value);
-            if (!validateJSONLength(inputs) || !validateJSONContainsName(inputs)) {
-                return false;
-            }
-
-
-            var outputs = JSON.parse(document.getElementById('customOutputs').value);
-            if (!validateJSONLength(outputs) || !validateJSONContainsName(outputs)) {
-                return false;
-            }
-
-
-            if (!isJSONValid(document.getElementById('customOutputs').value)) {
-                alert('Outputs field contains invalid JSON.');
-                return false;
-            }
-
-            if (document.getElementById('customAttributes').value && !isJSONValid(document.getElementById('customAttributes').value)) {
-                alert('Attributes field contains invalid JSON.');
-                return false;
-            }
-
-            var customAttributes = document.getElementById('customAttributes').value;
-            if (customAttributes && !validateJSONLength(JSON.parse(customAttributes))) {
-                return false;
-            }
-
-
-            if (document.getElementById('customTypeConstraints').value && !isJSONValid(document.getElementById('customTypeConstraints').value)) {
-                alert('Type Constraints field contains invalid JSON.');
-                return false;
-            }
-
-            var customTypeConstraints = document.getElementById('customTypeConstraints').value;
-            if (customTypeConstraints && !validateJSONLength(JSON.parse(customTypeConstraints))) {
-                return false;
-            }
-
+    function isJSONValid(jsonString) {
+        try {
+            JSON.parse(jsonString);
             return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+
+    function validateCustomOperatorForm() {
+        if (!document.getElementById('customName').value.trim()) {
+            alert('Name field is required.');
+            return false;
+        }
+        if (!document.getElementById('customModule').value.trim()) {
+            alert('Module field is required.');
+            return false;
+        }
+        if (!document.getElementById('customVersion').value.trim()) {
+            alert('Version field is required.');
+            return false;
+        }
+        if (!isJSONValid(document.getElementById('customInputs').value)) {
+            alert('Inputs field contains invalid JSON.');
+            return false;
         }
 
-        function validateJSONLength(jsonArray) {
-            // JSON 的最大长度，例如 1000
-            const MAX_LENGTH = 10000;
-            if (JSON.stringify(jsonArray).length > MAX_LENGTH) {
-                alert('JSON data is too long.');
+        var inputs = JSON.parse(document.getElementById('customInputs').value);
+        if (!validateJSONLength(inputs) || !validateJSONContainsName(inputs)) {
+            return false;
+        }
+
+
+        var outputs = JSON.parse(document.getElementById('customOutputs').value);
+        if (!validateJSONLength(outputs) || !validateJSONContainsName(outputs)) {
+            return false;
+        }
+
+
+        if (!isJSONValid(document.getElementById('customOutputs').value)) {
+            alert('Outputs field contains invalid JSON.');
+            return false;
+        }
+
+        if (document.getElementById('customAttributes').value && !isJSONValid(document.getElementById('customAttributes').value)) {
+            alert('Attributes field contains invalid JSON.');
+            return false;
+        }
+
+        var customAttributes = document.getElementById('customAttributes').value;
+        if (customAttributes && !validateJSONLength(JSON.parse(customAttributes))) {
+            return false;
+        }
+
+
+        if (document.getElementById('customTypeConstraints').value && !isJSONValid(document.getElementById('customTypeConstraints').value)) {
+            alert('Type Constraints field contains invalid JSON.');
+            return false;
+        }
+
+        var customTypeConstraints = document.getElementById('customTypeConstraints').value;
+        if (customTypeConstraints && !validateJSONLength(JSON.parse(customTypeConstraints))) {
+            return false;
+        }
+
+        return true;
+    }
+
+    function validateJSONLength(jsonArray) {
+        // JSON 的最大长度，例如 1000
+        const MAX_LENGTH = 10000;
+        if (JSON.stringify(jsonArray).length > MAX_LENGTH) {
+            alert('JSON data is too long.');
+            return false;
+        }
+        return true;
+    }
+
+    function validateJSONContainsName(jsonArray) {
+        for (var i = 0; i < jsonArray.length; i++) {
+            if (!jsonArray[i].name) {
+                alert('Each item in JSON array must contain a "name" field.');
                 return false;
             }
-            return true;
         }
-
-        function validateJSONContainsName(jsonArray) {
-            for (var i = 0; i < jsonArray.length; i++) {
-                if (!jsonArray[i].name) {
-                    alert('Each item in JSON array must contain a "name" field.');
-                    return false;
-                }
-            }
-            return true;
-        }
+        return true;
+    }
 
         document.getElementById('openCustomOperatorDialog').addEventListener('click', function() {
             document.getElementById('customOperatorDialog').showModal();
@@ -566,10 +566,8 @@ host.BrowserHost = class {
         document.addEventListener('customOperatorAdded', function() {
             // 假设 'context' 是初始化 onnx.Metadata 时使用的相同上下文
             onnx.Metadata.reload(this.context).then(() => {
-                console.log("Metadata reloaded successfully.");
                 window.__view__.model.graphMetadata._metadata = onnx.Metadata._metadata
                 window.__view__.modifier.updateAddNodeDropDown()
-                // 这里可以添加其他需要执行的代码
             }).catch(error => {
                 console.error("Error reloading metadata:", error);
             });
@@ -577,100 +575,95 @@ host.BrowserHost = class {
 
 
         // 函数：从服务器获取最新的算子列表
-        function updateOperatorDropdown() {
-            fetch('/get-operators')
-            .then(response => response.json())
-            .then(data => {
-                var dropdown = document.getElementById('add-node-dropdown');
-                dropdown.innerHTML = ''; // 清空现有选项
-                data.forEach(operator => {
-                    var option = document.createElement('option');
-                    option.value = operator.name;
-                    option.textContent = operator.name;
-                    dropdown.appendChild(option);
-                });
-            })
-            .catch(error => console.error('Error:', error));
-        }
-
-
-
-        function addNodeAutomatically(operatorName) {
-            var addNodeDropDown = document.getElementById('add-node-dropdown');
-            for (const node of window.__view__.model.supported_nodes) {
-                // node: [domain, op]
-                if ( node[1] == "CustomConv54"){
-                    console.log('54')
-                }
-                var option = new Option(node[1], node[0] + ':' + node[1]);
-                addNodeDropDown.appendChild(option);
-            }
-
-            for (var i = addNodeDropDown.options.length - 1; i > 0; i--) {
-                if (addNodeDropDown.options[i].text === operatorName) {
-                    addNodeDropDown.selectedIndex = i;
-                    var selected_val = addNodeDropDown.options[i].value;
-                    var add_op_domain = selected_val.split(':')[0];
-                    var add_op_type = selected_val.split(':')[1];
-                    window.__view__.modifier.addNode(add_op_domain, add_op_type);
-                    window.__view__._updateGraph();
-                    break;
-                }
-            }
-        }
-
-
-        function submitCustomOperator() {
-            var customOperatorData = {
-                name: document.getElementById('customName').value,
-                module: document.getElementById('customModule').value,
-                version: parseInt(document.getElementById('customVersion').value),
-                support_level: document.getElementById('customSupportLevel').value,
-                description: document.getElementById('customDescription').value,
-                inputs: JSON.parse(document.getElementById('customInputs').value),
-                outputs: JSON.parse(document.getElementById('customOutputs').value)
-
-            };
-
-            // 如果存在 Attributes，则添加到对象中
-            if (document.getElementById('customAttributes').value) {
-                customOperatorData.attributes = JSON.parse(document.getElementById('customAttributes').value);
-            }
-
-            // 如果存在 Type Constraints，则添加到对象中
-            if (document.getElementById('customTypeConstraints').value) {
-                customOperatorData.type_constraints = JSON.parse(document.getElementById('customTypeConstraints').value);
-            }
-
-            lastAddedOperatorName = customOperatorData.name;
-
-            fetch('/add-custom-operator', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(customOperatorData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-                document.getElementById('customOperatorDialog').close();
-                updateOperatorDropdown(); // 更新下拉菜单
-                document.dispatchEvent(new CustomEvent('customOperatorAdded'));
-                setTimeout(() => {
-                    window.__view__.modifier.updateAddNodeDropDown();
-                    addNodeAutomatically(customOperatorData.name);
-                },500);
-                window._host.show_message("Success!", "Custom Operator has been successfuly Submit", "success");
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                window._host.show_message("Error", "Submit Error, You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.", "error")
-
+    function updateOperatorDropdown() {
+        fetch('/get-operators')
+        .then(response => response.json())
+        .then(data => {
+            var dropdown = document.getElementById('add-node-dropdown');
+            dropdown.innerHTML = ''; // 清空现有选项
+            data.forEach(operator => {
+                var option = document.createElement('option');
+                option.value = operator.name;
+                option.textContent = operator.name;
+                dropdown.appendChild(option);
             });
+        })
+        .catch(error => console.error('Error:', error));
+    }
 
 
+
+    function addNodeAutomatically(operatorName) {
+        var addNodeDropDown = document.getElementById('add-node-dropdown');
+        for (const node of window.__view__.model.supported_nodes) {
+            var option = new Option(node[1], node[0] + ':' + node[1]);
+            addNodeDropDown.appendChild(option);
         }
+
+        for (var i = addNodeDropDown.options.length - 1; i > 0; i--) {
+            if (addNodeDropDown.options[i].text === operatorName) {
+                addNodeDropDown.selectedIndex = i;
+                var selected_val = addNodeDropDown.options[i].value;
+                var add_op_domain = selected_val.split(':')[0];
+                var add_op_type = selected_val.split(':')[1];
+                window.__view__.modifier.addNode(add_op_domain, add_op_type);
+                window.__view__._updateGraph();
+                break;
+            }
+        }
+    }
+
+
+    function submitCustomOperator() {
+        var customOperatorData = {
+            name: document.getElementById('customName').value,
+            module: document.getElementById('customModule').value,
+            version: parseInt(document.getElementById('customVersion').value),
+            support_level: document.getElementById('customSupportLevel').value,
+            description: document.getElementById('customDescription').value,
+            inputs: JSON.parse(document.getElementById('customInputs').value),
+            outputs: JSON.parse(document.getElementById('customOutputs').value)
+
+        };
+
+        // 如果存在 Attributes，则添加到对象中
+        if (document.getElementById('customAttributes').value) {
+            customOperatorData.attributes = JSON.parse(document.getElementById('customAttributes').value);
+        }
+
+        // 如果存在 Type Constraints，则添加到对象中
+        if (document.getElementById('customTypeConstraints').value) {
+            customOperatorData.type_constraints = JSON.parse(document.getElementById('customTypeConstraints').value);
+        }
+
+        lastAddedOperatorName = customOperatorData.name;
+
+        fetch('/add-custom-operator', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(customOperatorData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('customOperatorDialog').close();
+            updateOperatorDropdown(); // 更新下拉菜单
+            document.dispatchEvent(new CustomEvent('customOperatorAdded'));
+            setTimeout(() => {
+                window.__view__.modifier.updateAddNodeDropDown();
+                addNodeAutomatically(customOperatorData.name);
+            },500);
+            window._host.show_message("Success!", "Custom Operator has been successfuly Submit", "success");
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            window._host.show_message("Error", "Submit Error, You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.", "error")
+
+        });
+
+
+    }
 
 
         this.document.getElementById('version').innerText = this.version;
