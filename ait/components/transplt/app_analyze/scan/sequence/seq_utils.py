@@ -143,11 +143,10 @@ def reorder_args_apis(seq):
         # 将没有访问过的节点加入列表中
         visited_apis.append(api)
         # 当前节点的深度
-        cur_node_degree = len(api[1])
+        cur_node_degree: int = len(api[1])
         for j in range(idx + 1, cnt):
             # 对比节点的深度
-            nxt_api = seq[j]
-            nxt_node_degree = len(nxt_api[1])
+            nxt_node_degree: int = len(seq[j][1])
             idx_moved_flag, check_nxt_flag, stop_flag = _reorder((idx, j), (cur_node_degree, nxt_node_degree),
                                                                  (idx_moved_flag, check_nxt_flag), seq)
             if not idx_moved_flag or stop_flag:
