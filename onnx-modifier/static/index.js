@@ -533,7 +533,7 @@ host.BrowserHost = class {
 
         function validateJSONLength(jsonArray) {
             // JSON 的最大长度，例如 1000
-            const MAX_LENGTH = 1000;
+            const MAX_LENGTH = 10000;
             if (JSON.stringify(jsonArray).length > MAX_LENGTH) {
                 alert('JSON data is too long.');
                 return false;
