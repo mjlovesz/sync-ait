@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Copyright (c) 2023-2023 Huawei Technologies Co., Ltd.
 #
@@ -19,162 +19,98 @@ declare -i ret_failed=1
 CUR_PATH=$(dirname $(readlink -f "$0"))
 SOC_VERSION=""
 
-try_download_url() {
-    local _url=$1
-    local _packet=$2
-    cmd="wget $_url --no-check-certificate -O $_packet"
-    $cmd #>/dev/null 2>&1
-    ret=$?
-    if [ "$ret" == 0 -a -s "$_packet" ]; then
-        echo "download cmd:$cmd targetfile:$ OK"
-    else
-        echo "downlaod targetfile by $cmd Failed please check network or manual download to target file"
-        return $ret_failed
-    fi
-}
-
-function get_convert_file()
-{
-    local convert_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet18_for_PyTorch/resnet18_pth2onnx.py"
-    wget $convert_url -O $1 --no-check-certificate
-}
-
 function get_npu_type()
 {
-    get_npu_310=`lspci | grep d100`
-    get_npu_310P3=`lspci | grep d500`
-    get_npu_310B=`lspci | grep d107`
-    if [[ $get_npu_310 != "" ]];then
-        SOC_VERSION="Ascend310"
-        echo "npu is Ascend310, dymshape sample not supported"
-    elif [[ $get_npu_310P3 != "" ]];then
-        SOC_VERSION="Ascend310P3"
-        echo "npu is Ascend310P3"
-    elif [[ $get_npu_310B != "" ]];then
-        SOC_VERSION="Ascend310B"
-        echo "npu is Ascend310B"
-    else
-        return $ret_failed
-    fi
+    SOC_VERSION=`python3 -c 'import acl; print(acl.get_soc_name())'` || { return $ret_failed; }
+    echo "npu is $SOC_VERSION"
+    return $ret_ok
 }
 
 convert_staticbatch_om()
 {
-    local _input_file=$1
-    local _soc_version=$2
-    local _staticbatch=$3
-    local _input_tensor_name=$4
-    local _aippconfig=$5
-    local _framework=5
+    local _input_path=$1
+    local _model_name=$2
+    local _input_shape=$3
 
-    # 静态batch转换
-    for batchsize in $_staticbatch; do
-        local _input_shape="$_input_tensor_name:$batchsize,3,224,224"
-        local _pre_name=${_input_file%.*}
-        local _om_path_pre="${_pre_name}_bs${batchsize}"
-        local _om_path="$_om_path_pre.om"
-        if [ ! -f $_om_path ]; then
-            local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
-                --input_shape=$_input_shape --soc_version=$_soc_version \
-                --input_format=NCHW --enable_small_channel=1"
-            [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
-            $_cmd || { echo "atc run $_cmd failed"; return 1; }
-        fi
-    done
+    local _onnx_path="$_input_path/${_model_name}.onnx"
+    local _om_path_pre="$_input_path/${_model_name}_bs1"
+    local _om_path="$_om_path_pre.om"
+    if [[ ! -f $_om_path ]]; then
+        local _cmd="atc --model=$_onnx_path --output=$_om_path_pre --framework=5 \
+            --input_shape=$_input_shape --soc_version=$SOC_VERSION"
+        $_cmd || { echo "static model atc run failed";return $ret_failed; }
+    fi
 }
 
 # 动态batch转换
 convert_dymbatch_om()
 {
-    local _input_file=$1
-    local _soc_version=$2
-    local _dymbatch=$3
-    local _input_tensor_name=$4
-    local _aippconfig=$5
-    local _framework=5
+    local _input_path=$1
+    local _model_name=$2
+    local _input_shape=$3
+    local _dymbatch=$4
 
-    local _input_shape="$_input_tensor_name:-1,3,224,224"
-    local _pre_name=${_input_file%.*}
-    local _om_path_pre="${_pre_name}_dymbatch"
+    local _onnx_path="$_input_path/${_model_name}.onnx"
+    local _om_path_pre="$_input_path/${_model_name}_dymbatch"
     local _om_path="$_om_path_pre.om"
 
-    if [ ! -f $_om_path ]; then
-        local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
-        --input_shape=$_input_shape -soc_version=$_soc_version --dynamic_batch_size=$_dymbatch \
-        --input_format=NCHW --enable_small_channel=1"
-        [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
-        $_cmd || { echo "atc run $_cmd failed"; return 1; }
+    if [[ ! -f $_om_path ]]; then
+        local _cmd="atc --model=$_onnx_path --output=$_om_path_pre --framework=5 \
+            --input_shape=$_input_shape --soc_version=$SOC_VERSION --dynamic_batch_size=$_dymbatch"
+        $_cmd || { echo "dymbatch model atc run failed";return $ret_failed; }
     fi
 }
 
 # 动态宽高 转换
 convert_dymhw_om()
 {
-    local _input_file=$1
-    local _soc_version=$2
-    local _dymhw=$3
-    local _input_tensor_name=$4
-    local _aippconfig=$5
-    local _framework=5
+    local _input_path=$1
+    local _model_name=$2
+    local _input_shape=$3
+    local _dymhw=$4
 
-    local _input_shape="$_input_tensor_name:1,3,-1,-1"
-    local _pre_name=${_input_file%.*}
-    local _om_path_pre="${_pre_name}_dymwh"
+    local _onnx_path="$_input_path/${_model_name}.onnx"
+    local _om_path_pre="$_input_path/${_model_name}_dymhw"
     local _om_path="$_om_path_pre.om"
-
-    if [ ! -f $_om_path ]; then
-        local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
-        --input_shape=$_input_shape -soc_version=$_soc_version --dynamic_image_size=$_dymhw
-        --input_format=NCHW --enable_small_channel=1"
-        [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
-        $_cmd || { echo "atc run $_cmd failed"; return 1; }
+    if [[ ! -f $_om_path ]]; then
+        local _cmd="atc --model=$_onnx_path --output=$_om_path_pre --framework=5 \
+            --input_shape=$_input_shape --soc_version=$SOC_VERSION --dynamic_image_size=$_dymhw"
+        $_cmd || { echo "dymwh model atc run failed";return $ret_failed; }
     fi
 }
 
 # 动态dims转换
-convert_dymdim_om()
+convert_dymdims_om()
 {
-    local _input_file=$1
-    local _soc_version=$2
-    local _dymdim=$3
-    local _input_tensor_name=$4
-    local _aippconfig=$5
-    local _framework=5
+    local _input_path=$1
+    local _model_name=$2
+    local _input_shape=$3
+    local _dymdims=$4
 
-    local _input_shape="$_input_tensor_name:-1,3,-1,-1"
-    local _pre_name=${_input_file%.*}
-    local _om_path_pre="${_pre_name}_dymdim"
+    local _onnx_path="$_input_path/${_model_name}.onnx"
+    local _om_path_pre="$_input_path/${_model_name}_dymdims"
     local _om_path="$_om_path_pre.om"
-
-    if [ ! -f $_om_path ]; then
-        local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
-            --input_shape=$_input_shape -soc_version=$_soc_version --input_format=ND --dynamic_dims=$_dymdim \
-            --enable_small_channel=1"
-        [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
-        $_cmd || { echo "atc run $_cmd failed"; return 1; }
+    if [[ ! -f $_om_path ]]; then
+        local _cmd="atc --model=$_onnx_path --output=$_om_path_pre --input_format=ND --framework=5 \
+            --input_shape=$_input_shape --soc_version=$SOC_VERSION --dynamic_dims=$_dymdims"
+        $_cmd || { echo "dymwh model atc run failed";return $ret_failed; }
     fi
 }
 
 # 动态shape转换
 convert_dymshape_om()
 {
-    local _input_file=$1
-    local _soc_version=$2
-    local _dymshapes=$3
-    local _input_tensor_name=$4
-    local _aippconfig=$5
-    local _framework=5
+    local _input_path=$1
+    local _model_name=$2
+    local _input_shape=$3
 
-    local _pre_name=${_input_file%.*}
-    local _om_path_pre="${_pre_name}_dymshape"
+    local _onnx_path="$_input_path/${_model_name}.onnx"
+    local _om_path_pre="$_input_path/${_model_name}_dymshape"
     local _om_path="$_om_path_pre.om"
-
-    if [ ! -f $_om_path ]; then
-        local _cmd="atc --model=$_input_file --output=$_om_path_pre --framework=$_framework \
-            --input_shape_range=$_input_tensor_name:$_dymshapes --soc_version=$_soc_version \
-            --input_format=NCHW"
-        [ "$_aippconfig" != "" ] && _cmd="$_cmd --insert_op_conf=$_aippconfig"
-        $_cmd || { echo "atc run $_cmd failed"; return 1; }
+    if [[ ! -f $_om_path ]]; then
+        local _cmd="atc --model=$_onnx_path --output=$_om_path_pre --framework=5 \
+            --input_shape_range=$_input_shape --soc_version=$SOC_VERSION"
+        $_cmd || { echo "dymwh model atc run failed";return $ret_failed; }
     fi
 }
 
@@ -182,51 +118,41 @@ main()
 {
     get_npu_type || { echo "get npu type failed";return $ret_failed; }
     PYTHON_COMMAND="python3"
-    SAMPLEDATA_PATH=$CUR_PATH/sampledata/resnet18/model
-    [ -d $SAMPLEDATA_PATH ] || mkdir -p $SAMPLEDATA_PATH
+    SAMPLE_ADD_PATH=$CUR_PATH/sampledata/add_model/model
+    ADD_ONNX_PATH=$SAMPLE_ADD_PATH/add_model.onnx
 
-    model_url="https://download.pytorch.org/models/resnet18-f37072fd.pth"
-    resnet_pth_file="$SAMPLEDATA_PATH/pth_resnet18.pth"
-    if [ ! -f $resnet_pth_file ]; then
-        try_download_url $model_url $resnet_pth_file || { echo "donwload stubs failed";return $ret_failed; }
-    fi
-    resnet_onnx_file="$SAMPLEDATA_PATH/pth_resnet18.onnx"
-    input_tensor_name="image"
-    if [ ! -f $resnet_onnx_file ]; then
-        convert_file_path=$SAMPLEDATA_PATH/resnet18_pth2onnx.py
-        get_convert_file $convert_file_palsth || { echo "get convert file failed";return $ret_failed; }
-        chmod 750 $convert_file_path
-        cd $SAMPLEDATA_PATH
-        $PYTHON_COMMAND $convert_file_path --checkpoint $resnet_pth_file --save_dir $SAMPLEDATA_PATH/resnet18.onnx || { echo "convert pth to onnx failed";return $ret_failed; }
-        mv $SAMPLEDATA_PATH/resnet18.onnx $resnet_onnx_file
-        cd -
+    [ -d $SAMPLE_ADD_PATH ] || mkdir -p $SAMPLE_ADD_PATH
+
+    if [[ ! -f $ADD_ONNX_PATH ]]; then
+        python3 generate_add_model.py || { echo "generate add onnx failed";return $ret_failed; }
+        mv $CUR_PATH/add_model.onnx $SAMPLE_ADD_PATH/ || { echo "move add onnx failed";return $ret_failed; }
     fi
 
-    echo "Start convert onnx to om, it may take a few minutes"
-    staticbatch="4"
-    convert_staticbatch_om $resnet_onnx_file $SOC_VERSION "${staticbatch[*]}" $input_tensor_name || { echo "convert static om failed";return $ret_failed; }
+    echo "Start convert add_model.onnx to om, it may take a few minutes"
+    model_kind="add_model"
 
-    dymbatch="1,2,4,8,16"
-    convert_dymbatch_om $resnet_onnx_file $SOC_VERSION $dymbatch $input_tensor_name || { echo "convert dymbatch om failed";return $ret_failed; }
-
-    dymhw="224,224;448,448"
-    convert_dymhw_om $resnet_onnx_file $SOC_VERSION $dymhw $input_tensor_name || { echo "convert dymhw om failed";return $ret_failed; }
-
-    dymdims="1,224,224;8,448,448"
-    convert_dymdim_om $resnet_onnx_file $SOC_VERSION $dymdims $input_tensor_name || { echo "convert dymdim om failed";return $ret_failed; }
+    input_shape="input1:1,3,32,32;input2:1,3,32,32"
+    convert_staticbatch_om $SAMPLE_ADD_PATH $model_kind $input_shape || { echo "convert static $model_kind om failed";return $ret_failed; }
+    input_shape="input1:-1,3,32,32;input2:-1,3,32,32"
+    dymbatch="1,2,4,8"
+    convert_dymbatch_om $SAMPLE_ADD_PATH $model_kind $input_shape $dymbatch || { echo "convert dymbatch $model_kind om failed";return $ret_failed; }
+    input_shape="input1:1,3,-1,-1;input2:1,3,-1,-1"
+    dymhw="32,32;64,64"
+    convert_dymhw_om $SAMPLE_ADD_PATH $model_kind $input_shape $dymhw || { echo "convert dymhw $model_kind om failed";return $ret_failed; }
+    input_shape="input1:-1,3,-1,-1;input2:-1,3,-1,-1"
+    dymdims="1,32,32,1,32,32;4,64,64,4,64,64"
+    convert_dymdims_om $SAMPLE_ADD_PATH $model_kind $input_shape $dymdims || { echo "convert dymdims $model_kind om failed";return $ret_failed; }
 
     # dymshapes 310 不支持，310P支持
     if [ $SOC_VERSION != "Ascend310" ]; then
-        echo "test dymshape enabled"
-        dymshapes="[1~16,3,200~300,200~300]"
-        convert_dymshape_om $resnet_onnx_file $SOC_VERSION $dymshapes $input_tensor_name || { echo "convert dymshape om failed";return $ret_failed; }
-        if [ ! -f $SAMPLEDATA_PATH/pth_resnet18_dymshape.om ]; then
-            mv $SAMPLEDATA_PATH/pth_resnet18_dymshape*.om $SAMPLEDATA_PATH/pth_resnet18_dymshape.om
+        echo "dymshape enabled"
+        dymshapes="input1:[1~4,3,32~64,32~64];input2:[1~4,3,32~64,32~64]"
+        convert_dymshape_om $SAMPLE_ADD_PATH $model_kind $dymshapes || { echo "convert dymshape add_model om failed";return $ret_failed; }
+        if [ ! -f $SAMPLE_ADD_PATH/add_model_dymshape.om ]; then
+            mv $SAMPLE_ADD_PATH/add_model_dymshape*.om $SAMPLE_ADD_PATH/add_model_dymshape.om
         fi
     fi
     echo "All atc finished!"
-
-    $PYTHON_COMMAND generate_datasets.py || { echo "generate datasets failed";return $ret_failed; }
 }
 
 main "$@"

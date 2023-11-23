@@ -257,7 +257,7 @@ main()
     PYTHON_COMMAND=${2:-"python3"}
     BENCKMARK_DT_MODE=${3:-"simple"}
     TESTDATA_PATH=$CUR_PATH/testdata/resnet50/model
-    [ -d $TESTDATA_PATH ] || mkdir -p $TESTDATA_PATH
+    [ -d $TESTDATA_PATH ] || { mkdir -p $TESTDATA_PATH;chmod 750 $TESTDATA_PATH; }
 
     model_url="https://download.pytorch.org/models/resnet50-0676ba61.pth"
     resnet_pth_file="$TESTDATA_PATH/pth_resnet50.pth"

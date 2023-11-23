@@ -99,6 +99,8 @@ APP_ERROR ModelInferenceProcessor::Init(const std::string& modelPath, std::share
     }
 
     processModel->SetExceptionCallBack();
+
+    CHECK_RET_EQ(InitSumaryInfo(), APP_ERR_OK);
     return APP_ERR_OK;
 }
 
@@ -620,9 +622,20 @@ APP_ERROR ModelInferenceProcessor::Execute()
     }
 
     gettimeofday(&end, nullptr);
-    float time_cost = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec) / 1000.000;
-    DEBUG_LOG("model aclExec cost : %f", time_cost);
-    sumaryInfo_.execTimeList.push_back(time_cost);
+    struct timeval zero_point = sumaryInfo_.zero_point;
+    float start_time = 1000 * (start.tv_sec - zero_point.tv_sec) + (start.tv_usec - zero_point.tv_usec) / 1000.000;
+    float end_time = 1000 * (end.tv_sec - zero_point.tv_sec) + (end.tv_usec - zero_point.tv_usec) / 1000.000;
+    DEBUG_LOG("model aclExec cost : %f", end_time - start_time);
+    sumaryInfo_.execTimeList.push_back({start_time, end_time});
+    return APP_ERR_OK;
+}
+
+APP_ERROR ModelInferenceProcessor::InitSumaryInfo()
+{
+    if (gettimeofday(&sumaryInfo_.zero_point, nullptr) == -1) {
+        ERROR_LOG("InitSumaryInfo failed: gettimeofday return -1");
+        return APP_ERR_ACL_FAILURE;
+    }
     return APP_ERR_OK;
 }
 
@@ -755,6 +768,10 @@ APP_ERROR ModelInferenceProcessor::SetDynamicBatchsize(int batchsize)
 
     CHECK_RET_EQ(processModel->CheckDynamicBatchSize(batchsize, is_dymbatch), SUCCESS);
     CHECK_RET_EQ(processModel->GetMaxBatchSize(dynamicInfo_.dyBatch.maxbatchsize), SUCCESS);
+    if (dynamicInfo_.dyBatch.maxbatchsize == 0) {
+        ERROR_LOG("SetDynamicBatchsize failed: max batch size equals to 0");
+        return APP_ERR_ACL_INVALID_PARAM;
+    }
 
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
         auto tensorBegin = modelDesc_.inTensorsDesc[i].shape.begin();
@@ -867,6 +884,10 @@ APP_ERROR ModelInferenceProcessor::SetDynamicHW(int width, int height)
 
     CHECK_RET_EQ(processModel->CheckDynamicHWSize(dynamicHW, is_dymHW), SUCCESS);
     CHECK_RET_EQ(processModel->GetMaxDynamicHWSize(dynamicInfo_.dyHW.maxHWSize), SUCCESS);
+    if (dynamicInfo_.dyHW.maxHWSize == 0) {
+        ERROR_LOG("SetDynamicHW failed: max hw size equals to 0");
+        return APP_ERR_ACL_INVALID_PARAM;
+    }
 
     for (size_t i = 0; i < modelDesc_.inTensorsDesc.size(); ++i) {
         auto tensorBegin = modelDesc_.inTensorsDesc[i].shape.begin();

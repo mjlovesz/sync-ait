@@ -21,6 +21,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <sys/time.h>
 #include "acl/acl.h"
 #include "Base/ErrorCode/ErrorCode.h"
 #include "Base/Tensor/TensorBase/TensorBase.h"
@@ -30,13 +31,13 @@
 #include "Base/ModelInfer/DynamicAippConfig.h"
 
 #define CHECK_RET_EQ(func, expect_value) \
-{ \
+do { \
 auto ret = (func); \
 if (ret != (expect_value)) { \
     WARN_LOG("Check failed:%s, ret:%d\n", #func, ret); \
     return ret; \
 } \
-}
+} while (0)
 
 namespace Base {
 struct BaseTensor {
@@ -137,7 +138,8 @@ struct ModelDesc {
 };
 
 struct InferSumaryInfo {
-    std::vector<float> execTimeList;
+    std::vector<pair<float, float>> execTimeList;
+    struct timeval zero_point = { 0 };
 };
 
 class ModelInferenceProcessor {
@@ -149,7 +151,7 @@ public:
      * @return APP_ERROR error code
      */
     APP_ERROR Init(const std::string& modelPath, std::shared_ptr<SessionOptions> options,
-                   const int32_t &deviceId, const size_t contextIndex = 0);
+                   const int32_t &deviceId, const size_t contextIndex);
 
     /**
      * @description Unload Model
@@ -191,6 +193,7 @@ public:
 
     std::shared_ptr<SessionOptions> GetOptions();
 
+    APP_ERROR InitSumaryInfo();
     APP_ERROR ResetSumaryInfo();
     const InferSumaryInfo& GetSumaryInfo() const;
     InferSumaryInfo& GetMutableSumaryInfo();

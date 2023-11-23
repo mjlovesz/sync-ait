@@ -234,12 +234,10 @@ host.BrowserHost = class {
 
         const downloadWithShapeInfCheckBox = this.document.getElementById('shapeInference');
         downloadWithShapeInfCheckBox.addEventListener('click', () => {
-            // console.log(downloadWithShapeInfCheckBox.checked);
             this._view.modifier.onOffShapeInf(downloadWithShapeInfCheckBox.checked);
         })
         const downloadWithCleanUp = this.document.getElementById('cleanUp');
         downloadWithCleanUp.addEventListener('click', () => {
-            // console.log(downloadWithCleanUp.checked);
             this._view.modifier.onOffCleanUp(downloadWithCleanUp.checked);
         })
 
@@ -489,7 +487,6 @@ host.BrowserHost = class {
                 if (e.target && e.target.files && e.target.files.length > 0) {
                     const files = Array.from(e.target.files);
                     const file = files.find((file) => this._view.accept(file.name));
-                    // console.log(file)
                     this.upload_filename = file.name;
                     this.upload_filepath = file.path;
                     var form = new FormData();
@@ -1196,8 +1193,6 @@ host.BrowserHost = class {
 
     // convert view.LightNodeInfo to Map object for easier transmission to Python backend
     parseAddedLightNodeInfo2Map(nodes_info, initializer_info) {
-        // console.log(nodes_info)
-        // console.log(initializer_info)
         var res_map = new Map()
         for (const [modelNodeName, node_info] of nodes_info) {
             var node_info_map = new Map()
@@ -1206,8 +1201,6 @@ host.BrowserHost = class {
 
             // skip the input and output which is optional and has no initializer value
             var inputs = new Map()
-            // console.log(node_info)
-            // console.log(node_info.inputs)
             for (var [input_name, arg_list] of node_info.inputs) {
                 var filtered_arg_list = []
                 for (var arg of arg_list) {
@@ -1223,7 +1216,6 @@ host.BrowserHost = class {
                     inputs.set(input_name, filtered_arg_list)
                 }
             }
-            // console.log(inputs)
             node_info_map.set('inputs', inputs)
 
             var outputs = new Map()
@@ -1246,7 +1238,6 @@ host.BrowserHost = class {
 
             res_map.set(modelNodeName, node_info_map)
         }
-        // console.log(res_map)
 
         return res_map
     }

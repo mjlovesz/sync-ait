@@ -56,6 +56,7 @@ ACCURACY_COMPARISON_WRONG_AIPP_CONTENT = 18
 ACCRACY_COMPARISON_EXTRACT_ERROR = 19
 ACCRACY_COMPARISON_FETCH_DATA_ERROR = 20
 ACCURACY_COMPARISON_ATC_RUN_ERROR = 21
+ACCURACY_COMPARISON_INVALID_RIGHT_ERROR = 22
 MODEL_TYPE = ['.onnx', '.pb', '.om', '.prototxt']
 DIM_PATTERN = r"^(-?[0-9]{1,100})(,-?[0-9]{1,100}){0,100}"
 DYNAMIC_DIM_PATTERN = r"^([0-9-~]+)(,-?[0-9-~]+){0,3}"
@@ -95,33 +96,31 @@ def check_exec_cmd(command: str):
     if command.startswith("bash") or command.startswith("python"):
         cmds = command.split()
         if len(cmds) < 2:
-            logger.error("Command {} is invalid.".format(command))
-            return False
+            logger.error("Num of command elements is invalid.")
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
         elif len(cmds) == 2:
             script_file = cmds[1]
-            return check_exec_script_file(script_file)
+            check_exec_script_file(script_file)
         else:
-            result = check_exec_script_file(cmds[1])
-            if not result:
-                return result
-
+            script_file = cmds[1]
+            check_exec_script_file(script_file)
             args = cmds[2:]
-            result = check_input_args(args)
+            check_input_args(args)
+        return True
 
-        return result
+    else:
+        logger.error("Command is not started with bash or python.")
+        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
 
-    return True
 
 def check_exec_script_file(script_path: str):
     if not os.path.exists(script_path):
         logger.error("File {} is not exist.".format(script_path))
-        return False
+        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
     if not os.access(script_path, os.X_OK):
         logger.error("Script {} don't has X authority.".format(script_path))
-        return False
-
-    return True
+        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_RIGHT_ERROR)
 
 
 def check_file_or_directory_path(path, isdir=False):
@@ -182,10 +181,8 @@ def check_file_size_valid(file_path, size_max):
 def check_input_args(args: list):
     for arg in args:
         if arg in INVALID_CHARS:
-            logger.error("Arg {} is invalid.".format(arg))
-            return False
-
-    return True
+            logger.error("Args has invalid character.")
+            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
 def check_convert_is_valid_used(dump, bin2npy, custom_op):
@@ -314,7 +311,7 @@ def get_input_path(input_item_path, bin_file_path_array):
                 bin_file_path_array.append(file_path)
 
 
-def get_dump_data_path(dump_dir, is_net_output=False):
+def get_dump_data_path(dump_dir, is_net_output=False, model_name=None):
     """
     Function Description:
         traverse directories and obtain the absolute path of dump data
@@ -343,12 +340,32 @@ def get_dump_data_path(dump_dir, is_net_output=False):
         logger.error("The directory \"{}\" does not contain dump data".format(dump_dir))
         raise AccuracyCompareException(ACCURACY_COMPARISON_NO_DUMP_FILE_ERROR)
 
+    dump_data_path_list = []
     for dir_path, _, files in os.walk(dump_data_dir):
         if len(files) != 0:
-            dump_data_path = dir_path
+            dump_data_path_list.append(dir_path)
             file_is_exist = True
-            break
-        dump_data_path = dir_path
+    
+    if len(dump_data_path_list) > 1:
+        # find the model name directory
+        dump_data_path = dump_data_path_list[0]
+        for ii in dump_data_path_list:
+            if model_name in ii:
+                dump_data_path = ii
+                break            
+        
+        #move all dump files to single directory
+        for ii in dump_data_path_list:
+            if ii == dump_data_path:
+                continue
+            for file in os.listdir(ii):
+                shutil.move(os.path.join(ii, file), dump_data_path)
+
+    elif len(dump_data_path_list) == 1:
+        dump_data_path = dump_data_path_list[0]
+    else:
+        dump_data_path = None
+
     return dump_data_path, file_is_exist
 
 

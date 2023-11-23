@@ -13,63 +13,16 @@
 # limitations under the License.
 
 import argparse
-
+import os
+import re
 from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
-
-
-def str2bool(v):
-    if isinstance(v, bool):
-        return v
-    if v.lower() in ('yes', 'true', 't', 'y', '1'):
-        return True
-    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
-        return False
-    else:
-        raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
-
-
-def check_positive_integer(value):
-    ivalue = int(value)
-    if ivalue <= 0:
-        raise argparse.ArgumentTypeError("%s is an invalid positive int value" % value)
-    return ivalue
-
-
-def check_batchsize_valid(value):
-    # default value is None
-    if value is None:
-        return value
-    # input value no None
-    else:
-        return check_positive_integer(value)
-
-
-def check_nonnegative_integer(value):
-    ivalue = int(value)
-    if ivalue < 0:
-        raise argparse.ArgumentTypeError("%s is an invalid nonnegative int value" % value)
-    return ivalue
-
-
-def check_device_range_valid(value):
-    # if contain , split to int list
-    min_value = 0
-    max_value = 255
-    if ',' in value:
-        ilist = [ int(v) for v in value.split(',') ]
-        for ivalue in ilist:
-            if ivalue < min_value or ivalue > max_value:
-                raise argparse.ArgumentTypeError("{} of device:{} is invalid. valid value range is [{}, {}]".format(
-                    ivalue, value, min_value, max_value))
-        return ilist
-    else:
-		# default as single int value
-        ivalue = int(value)
-        if ivalue < min_value or ivalue > max_value:
-            raise argparse.ArgumentTypeError("device:{} is invalid. valid value range is [{}, {}]".format(
-                ivalue, min_value, max_value))
-        return ivalue
+from ais_bench.infer.args_check import (
+    check_dym_string, check_dym_range_string, check_number_list, str2bool, check_positive_integer,
+    check_batchsize_valid, check_nonnegative_integer, check_device_range_valid, check_om_path_legality,
+    check_input_path_legality, check_output_path_legality, check_acl_json_path_legality,
+    check_aipp_config_path_legality
+)
 
 
 def get_args():
@@ -77,25 +30,28 @@ def get_args():
     parser.add_argument(
         "--model",
         "-m",
+        type=check_om_path_legality,
         required=True,
         help="The path of the om model"
     )
     parser.add_argument(
         "--input",
         "-i",
+        type=check_input_path_legality,
         default=None,
         help="Input file or dir"
     )
     parser.add_argument(
         "--output",
         "-o",
+        type=check_output_path_legality,
         default=None,
         help="Inference data output path. The inference results are output to \
              the subdirectory named current date under given output path"
     )
     parser.add_argument(
         "--output_dirname",
-        type=str,
+        type=check_output_path_legality,
         default=None,
         help="Actual output directory name. \
              Used with parameter output, cannot be used alone. \
@@ -132,21 +88,21 @@ def get_args():
     parser.add_argument(
         "--dymBatch",
         dest="dym_batch",
-        type=int,
+        type=check_positive_integer,
         default=0,
         help="Dynamic batch size param，such as --dymBatch 2"
     )
     parser.add_argument(
         "--dymHW",
         dest="dym_hw",
-        type=str,
+        type=check_dym_string,
         default=None,
         help="Dynamic image size param, such as --dymHW \"300,500\""
     )
     parser.add_argument(
         "--dymDims",
         dest="dym_dims",
-        type=str,
+        type=check_dym_string,
         default=None,
         help="Dynamic dims param, such as --dymDims \"data:1,600;img_info:1,600\""
     )
@@ -154,14 +110,14 @@ def get_args():
         "--dymShape",
         "--dym-shape",
         dest="dym_shape",
-        type=str,
+        type=check_dym_string,
         default=None,
         help="Dynamic shape param, such as --dymShape \"data:1,600;img_info:1,600\""
     )
     parser.add_argument(
         "--outputSize",
         dest="output_size",
-        type=str,
+        type=check_number_list,
         default=None,
         help="Output size for dynamic shape mode"
     )
@@ -204,7 +160,7 @@ def get_args():
     )
     parser.add_argument(
         "--acl_json_path",
-        type=str,
+        type=check_acl_json_path_legality,
         default=None,
         help="Acl json path for profiling or dump"
     )
@@ -237,25 +193,25 @@ def get_args():
     parser.add_argument(
         "--dymShape_range",
         dest="dym_shape_range",
-        type=str,
+        type=check_dym_range_string,
         default=None,
         help="Dynamic shape range, such as --dymShape_range \"data:1,600~700;img_info:1,600-700\""
     )
     parser.add_argument(
         "--aipp_config",
-        type=str,
+        type=check_aipp_config_path_legality,
         default=None,
         help="File type: .config, to set actual aipp params before infer"
     )
     parser.add_argument(
         "--energy_consumption",
-        type=str,
-        default=None,
+        type=str2bool,
+        default=False,
         help="Obtain power consumption data for model inference"
     )
     parser.add_argument(
         "--npu_id",
-        type=check_device_range_valid,
+        type=check_nonnegative_integer,
         default=0,
         help="The NPU ID to use.valid value range is [0, 255]"
     )
@@ -263,6 +219,7 @@ def get_args():
         "--backend",
         type=str,
         default=None,
+        choices=["trtexec"],
         help="Backend trtexec"
     )
     parser.add_argument(
@@ -297,12 +254,12 @@ def get_args():
             --device should be list, default False"
     )
     parser.add_argument(
-        '--thread',
-        dest='thread',
+        '--threads',
+        dest='threads',
         type=check_positive_integer,
         default=1,
-        help="Number of thread for computing. \
-            need to set --pipeline when setting thread number to be more than one."
+        help="Number of threads for computing. \
+            need to set --pipeline when setting threads number to be more than one."
     )
     benchmark_args = parser.parse_args()
 
@@ -319,6 +276,6 @@ if __name__ == "__main__":
                 args.profiler, args.dump, args.acl_json_path, args.output_batchsize_axis, args.run_mode,
                 args.display_all_summary, args.warmup_count, args.dym_shape_range, args.aipp_config,
                 args.energy_consumption, args.npu_id, args.backend, args.perf, args.pipeline, args.profiler_rename,
-                args.dump_npy, args.divide_input, args.thread)
+                args.dump_npy, args.divide_input, args.threads)
     ret = benchmark_process(args)
     exit(ret)

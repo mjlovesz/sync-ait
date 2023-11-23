@@ -60,6 +60,12 @@ import java.util.MissingResourceException;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * AitModelConverterStep
+ *
+ * @author Jinhaiyang
+ * @since 2023/06/03
+ */
 public class AitModelConverterStep extends DialogWrapper {
     public static final String VALID_DIR_PATH_CHARACTERS = "Valid folder path characters: -, _, :, \\, /, [0-9], [A-Z], [a-z].";
     public static final String UNSUPPORTED_MODEL_TYPE = "Unsupported Model Type.";
@@ -118,7 +124,7 @@ public class AitModelConverterStep extends DialogWrapper {
     private JLabel aiePathErrLabel;
     private JTextField aiePathTextField = aiePathBrowse.getTextField();
     private final Project project;
-    private static final List<String> SOC_VERSION_LIST = List.of("Ascend310P3", "Ascend910B3");
+    private static final List<String> SOC_VERSION_LIST = List.of("Ascend310P3");
     private static final long FILE_SIZE_LIMIT_2G = 2 * 1024 * 1024 * 1024L;
     private static final int DOCUMENT_LIMIT = 256;
     private static final int MODEL_NAME_LIMIT = 64;

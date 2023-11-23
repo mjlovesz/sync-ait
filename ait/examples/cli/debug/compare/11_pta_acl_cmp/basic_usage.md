@@ -1,6 +1,6 @@
 
 
-# 大模型加速库在线推理精度比对使用指导
+# set_label代码插入使用说明
 
 大模型加速库精度比对是以PyTorch Ascend(pta)侧的数据作为基准数据，比对加速库(acl)推理的数据与pta数据之间的差异，辅助开发者找出加速库侧的问题Operation。
 ## 1. 比对level
@@ -72,13 +72,14 @@ ait debug compare aclcmp xx_args
 | --exec | 执行命令，用于拉起大模型推理脚本。建议使用bash xx.sh args或者python3 xx.py的方式拉起。 |
 
 # 3. 使用示例
-使用前请安装ait工具，安装指导参考：https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md 以 [chatglm-6b](https://gitee.com/ascend/ascend-transformer-acceleration/tree/master/examples/chatglm6b) 为例，介绍下如何使用加速库精度比对工具。
+使用前请安装ait工具，安装指导参考：https://gitee.com/ascend/ait/blob/master/ait/docs/install/README.md 以 chatglm-6b为例，介绍下如何使用加速库精度比对工具。
 
 1.  设置task_id
 
    在每轮对话开始前设置task_id，修改main_performance.py
 
    ```
+      from msquickcmp.pta_acl_cmp.compare import set_task_id
        while True:
            set_task_id()
            query = input("\n用户：")
@@ -113,7 +114,7 @@ ait debug compare aclcmp xx_args
    ```
 
 3. 执行比对命令
-   安装[加速库](https://gitee.com/ascend/ascend-transformer-acceleration)的指导文档下载编译好加速库代码，进入example/chatglm6b目录，执行比对命令：
+   安装加速库的指导文档下载编译好加速库代码，进入example/chatglm6b目录，执行比对命令：
 
    ```shell
    ait debug compare aclcmp --exec "bash run_performance.sh patches/models/modeling_chatglm_model.py"
@@ -138,7 +139,6 @@ ait debug compare aclcmp xx_args
    | pta_max_value               | pta数据的最大值            |
    | pta_min_value               | pta数据的最小值            |
    | pta_mean_value              | pta数据的平均值            |
-
    | acl_data_path               | acl数据的dump路径          |
    | acl_dtype                   | acl数据的类型              |
    | acl_shape                   | acl数据的shape             |

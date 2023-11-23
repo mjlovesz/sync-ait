@@ -49,7 +49,7 @@ import java.util.List;
  * CheckInput
  *
  * @author cabbage
- * @date 2023/06/08
+ * @since 2023/06/08
  */
 public class CheckInput {
     private static final String DIGIT_EXPRESSION_PATTERN = "[0-9]+";

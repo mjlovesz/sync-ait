@@ -50,73 +50,73 @@ class TestClass:
 
     @classmethod
     def get_output_dir_bin(cls):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path,
+        return os.path.realpath(os.path.join(TestCommonClass.get_basepath(),
                                              cls.model_name, "output", "bin_out"))
 
     @classmethod
     def get_output_dir_npy(cls):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path,
+        return os.path.realpath(os.path.join(TestCommonClass.get_basepath(),
                                              cls.model_name, "output", "npy_out"))
 
     @classmethod
     def get_input_datas_file_bin_nor(cls):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path,
+        return os.path.realpath(os.path.join(TestCommonClass.get_basepath(),
                                              cls.model_name, "input", "fake_dataset_bin_nor/1.bin"))
 
     @classmethod
     def get_input_datas_dir_bin_nor(cls):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path,
+        return os.path.realpath(os.path.join(TestCommonClass.get_basepath(),
                                              cls.model_name, "input", "fake_dataset_bin_nor"))
 
     @classmethod
     def get_input_datas_file_bin_aipp(cls):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path,
+        return os.path.realpath(os.path.join(TestCommonClass.get_basepath(),
                                              cls.model_name, "input", "fake_dataset_bin_aipp/1.bin"))
 
     @classmethod
     def get_input_datas_dir_bin_aipp(cls):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path,
+        return os.path.realpath(os.path.join(TestCommonClass.get_basepath(),
                                              cls.model_name, "input", "fake_dataset_bin_aipp"))
 
     @classmethod
     def get_input_datas_file_npy_nor(cls):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path,
+        return os.path.realpath(os.path.join(TestCommonClass.get_basepath(),
                                              cls.model_name, "input", "fake_dataset_npy_nor/1.npy"))
 
     @classmethod
     def get_input_datas_dir_npy_nor(cls):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path,
+        return os.path.realpath(os.path.join(TestCommonClass.get_basepath(),
                                              cls.model_name, "input", "fake_dataset_npy_nor"))
 
     @classmethod
     def get_input_datas_file_npy_aipp(cls):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path,
+        return os.path.realpath(os.path.join(TestCommonClass.get_basepath(),
                                              cls.model_name, "input", "fake_dataset_npy_aipp/1.npy"))
 
     @classmethod
     def get_input_datas_dir_npy_aipp(cls):
-        return os.path.realpath(os.path.join(TestCommonClass.base_path,
+        return os.path.realpath(os.path.join(TestCommonClass.get_basepath(),
                                              cls.model_name, "input", "fake_dataset_npy_aipp"))
 
     @classmethod
     def get_resnet_stcshape_om_path(cls, bs=1):
-        return os.path.join(TestCommonClass.base_path, cls.model_name, "model", f"pth_resnet50_bs{bs}.om")
+        return os.path.join(TestCommonClass.get_basepath(), cls.model_name, "model", f"pth_resnet50_bs{bs}.om")
 
     @classmethod
     def get_resnet_dymbatch_om_path(cls):
-        return os.path.join(TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_dymbatch.om")
+        return os.path.join(TestCommonClass.get_basepath(), cls.model_name, "model", "pth_resnet50_dymbatch.om")
 
     @classmethod
     def get_resnet_dymhw_om_path(cls):
-        return os.path.join(TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_dymwh.om")
+        return os.path.join(TestCommonClass.get_basepath(), cls.model_name, "model", "pth_resnet50_dymwh.om")
 
     @classmethod
     def get_resnet_dymdim_om_path(cls):
-        return os.path.join(TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_dymdim.om")
+        return os.path.join(TestCommonClass.get_basepath(), cls.model_name, "model", "pth_resnet50_dymdim.om")
 
     @classmethod
     def get_resnet_dymshape_om_path(cls):
-        return os.path.join(TestCommonClass.base_path, cls.model_name, "model", "pth_resnet50_dymshape.om")
+        return os.path.join(TestCommonClass.get_basepath(), cls.model_name, "model", "pth_resnet50_dymshape.om")
 
     def init(self):
         self.model_name = "resnet50"

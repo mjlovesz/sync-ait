@@ -15,7 +15,7 @@
 # limitations under the License.
 
 declare -i ret_ok=0
-declare -i ret_failed=0
+declare -i ret_failed=1
 declare -i ret_invalid_args=1
 CUR_PATH=$(dirname $(readlink -f "$0"))
 . $CUR_PATH/utils.sh
@@ -38,7 +38,14 @@ function get_msame_file()
     fi
 }
 
+function chmod_file_data()
+{
+    chmod 750 $CUR_PATH/json_for_arg_test.json
+    chmod -R 750 $CUR_PATH/aipp_config_files
+}
+
 main() {
+    chmod_file_data
     if [ $# -lt 2 ]; then
         echo "at least one parameter. for example: bash test.sh Ascend310P3 python3"
         return $ret_invalid_args
@@ -59,11 +66,14 @@ main() {
         echo "aclruntime package install failed please install or source set_env.sh"
         return $ret_invalid_args
     }
-
-    bash -x $CUR_PATH/get_pth_resnet50_data.sh $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE
+    if [ ! -n $AIT_BENCHMARK_DT_DATA_PATH ]; then
+        echo "using $AIT_BENCHMARK_DT_DATA_PATH as dt data path"
+        bash -x $CUR_PATH/get_pth_resnet50_data.sh $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE
+        bash -x $CUR_PATH/get_add_model_data.sh
+    fi
     #bash -x $CUR_PATH/get_pth_resnet101_data.sh $SOC_VERSION $PYTHON_COMMAND
     #bash -x $CUR_PATH/get_pth_inception_v3_data.sh $SOC_VERSION $PYTHON_COMMAND
-    ${PYTHON_COMMAND} generate_pipeline_datasets.py
+    ${PYTHON_COMMAND} $CUR_PATH/generate_pipeline_datasets.py
 
     if [ $BENCKMARK_DT_MODE == "full" ];then
         bash -x $CUR_PATH/get_bert_data.sh $SOC_VERSION $PYTHON_COMMAND

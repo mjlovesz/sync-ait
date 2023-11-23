@@ -25,7 +25,7 @@ import javax.swing.Icon;
  * CommonLib Icons
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public interface CommonLibIcons {
     /**
@@ -51,12 +51,12 @@ public interface CommonLibIcons {
     /**
      * SWITCH_CLOSE
      */
-    public static final Icon SWITCH_CLOSE = IconLoader.findIcon(
+    Icon SWITCH_CLOSE = IconLoader.findIcon(
             "/icons/switchclose.svg", Icons.class.getClassLoader());
 
     /**
      * SWITCH_OPEN
      */
-    public static final Icon SWITCH_OPEN = IconLoader.findIcon(
+    Icon SWITCH_OPEN = IconLoader.findIcon(
             "/icons/switchopen.svg", Icons.class.getClassLoader());
 }

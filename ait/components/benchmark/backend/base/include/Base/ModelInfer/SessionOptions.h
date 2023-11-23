@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
-#ifndef _SESSION_OPTIONS_H
-#define _SESSION_OPTIONS_H
+
+#ifndef SESSION_OPTIONS_H
+#define SESSION_OPTIONS_H
 
 #include "Base/ModelInfer/utils.h"
 

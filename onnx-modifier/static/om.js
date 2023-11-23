@@ -261,12 +261,21 @@ om.Model = class {
         this._flops = 0;
         this._npuFlops = 0;
         this._graphs = [];
+        this._strList = null
 
         for (let i = 0; i < nets.length; ++i) {
             let index = nets.length == 1 ? undefined : i+1;
             let net = nets[i];
             let mainGraph = net.graph[0];
             let weight = this._weights[i];
+
+            if (net.attr["attr_name_enum"]) {
+                this._strList = {
+                    keyList: net.attr["attr_name_enum"],
+                    valueList: net.attr["attr_value_enum"],
+                    mask: net.attr["attrs_use_string_value"]
+                }
+            }
 
             if (nets.length > 1) {
                 this._modelType = "Multi-shape model";
@@ -334,7 +343,7 @@ om.Model = class {
         if (index != undefined) {
             graph.name = graph.name + "-shape: " + index;
         }
-        this._graphs.unshift(new om.Graph(metadata, graph, weight, model));
+        this._graphs.unshift(new om.Graph(metadata, graph, weight, model, this._strList));
     }
 
     get format() {
@@ -384,7 +393,7 @@ om.Model = class {
 
 om.Graph = class {
 
-    constructor(metadata, graph, weight, model) {
+    constructor(metadata, graph, weight, model, strList) {
         this._model = model;
         this._nodes = [];
         this._inputs = [];
@@ -393,7 +402,34 @@ om.Graph = class {
         this._weight = weight;
         this._flops = 0;
         this._npuFlops = 0;
+        this._strList = strList;
         var mainGraph = graph;
+        function decodeAttr(str) {
+            let result = 0;
+            for (let i = 1; i < str.length; i++) {
+                let ascii = str.charCodeAt(i);
+                result += (ascii - 1) * Math.pow(127, i - 1);
+            }
+            return result;
+        }
+
+        for (var op of mainGraph.op) {
+            /* Decode node attr, should be done before create Node */
+            for (let key in op.attr) {
+                if (key.charAt(0) == '\x00') {
+                    const keyIndex = decodeAttr(key)
+                    let decodeKey = new TextDecoder("utf-8").decode(this._strList.keyList.list.s[keyIndex]);
+                    let value = op.attr[key];
+                    if (this._strList.mask.list.b[keyIndex]) {
+                        value.s = this._strList.valueList.list.s[value.i];
+                        delete value.i
+                    }
+                    op.attr[decodeKey] = value;
+                    delete op.attr[key];
+                }
+            }
+        }
+
         for (var op of mainGraph.op) {
             if (!isNodeConst(op)) {
                 op.name = (op.name == "") ? "internal_unnamed" : op.name;
@@ -499,12 +535,12 @@ om.Node = class {
                 if (inputNode.attr["value"].t.data == '') {
                     if (this._weight == null) {
                         data = null;
-                    } else if ('merged_offset' in inputNode.attr['value'].t.desc.attr) {
-                        let offset = inputNode.attr['value'].t.desc.attr['merged_offset'].i;
-                        data = this._weight.slice(offset, offset + inputNode.attr['value'].t.desc.weight_size);
+                    } else if ('merged_offset' in inputNode.attr["value"].t.desc.attr) {
+                        let offset = inputNode.attr["value"].t.desc.attr['merged_offset'].i;
+                        data = this._weight.slice(offset, offset + inputNode.attr["value"].t.desc.weight_size);
                     } else {
-                        let offset = inputNode.attr['value'].t.desc.data_offset;
-                        data = this._weight.slice(offset, offset + inputNode.attr['value'].t.desc.weight_size);
+                        let offset = inputNode.attr["value"].t.desc.data_offset;
+                        data = this._weight.slice(offset, offset + inputNode.attr["value"].t.desc.weight_size);
                     }
                 } else {
                     data = inputNode.attr["value"].t.data;
