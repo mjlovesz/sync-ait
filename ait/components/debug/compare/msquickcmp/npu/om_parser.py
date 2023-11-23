@@ -67,7 +67,7 @@ class OmParser(object):
 
     def __init__(self, output_json_path):
         self.json_object = self._load_json_file(output_json_path)
-        self.subgraph_name = self._get_sub_graph_name()
+        self.subgraph_name = self.get_sub_graph_name()
         self.shape_range = self._is_input_shape_range()
         self.contain_negative_1 = False
         self.special_op_attr = self._parse_special_op_attr()
@@ -212,7 +212,7 @@ class OmParser(object):
                         return attr.get(VALUE_OBJECT).get(S_OBJECT)
         return ''
 
-    def _get_sub_graph_name(self):
+    def get_sub_graph_name(self):
         subgraph_name = []
         for graph in self.json_object.get(GRAPH_OBJECT):
             for operator in graph.get(OP_OBJECT):

@@ -14,12 +14,16 @@
 import os
 import sys
 import stat
+import subprocess
 import json
 import itertools
 import numpy as np
 
 from ais_bench.infer.utils import logger
+from ais_bench.infer.path_security_check import ms_open, MAX_SIZE_LIMITE_CONFIG_FILE, MAX_SIZE_LIMITE_NORMAL_FILE
+from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 
+PERMISSION_DIR = 0o750
 
 ACL_JSON_CMD_LIST = [
     "output",
@@ -72,7 +76,7 @@ def get_model_name(model):
 
 
 def check_valid_acl_json_for_dump(acl_json_path, model):
-    with open(acl_json_path, 'r') as f:
+    with ms_open(acl_json_path, mode="r", max_size=MAX_SIZE_LIMITE_CONFIG_FILE) as f:
         acl_json_dict = json.load(f)
     model_name_correct = get_model_name(model)
     if acl_json_dict.get("dump") is not None:
@@ -117,28 +121,26 @@ def get_acl_json_path(args):
 
     output_json_dict = {}
     if args.profiler:
-        output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": "", "aic_metrics": ""}}
         out_profiler_path = os.path.join(args.output, "profiler")
 
         if not os.path.exists(out_profiler_path):
-            os.makedirs(out_profiler_path, 0o755)
-        output_json_dict["profiler"]["output"] = out_profiler_path
+            os.makedirs(out_profiler_path, PERMISSION_DIR)
+        output_json_dict = {"profiler": {"switch": "on", "aicpu": "on", "output": out_profiler_path, "aic_metrics": ""}}
     elif args.dump:
-        output_json_dict = {"dump": {"dump_path": "", "dump_mode": "all", "dump_list": [{"model_name": ""}]}}
         out_dump_path = os.path.join(args.output, "dump")
 
         if not os.path.exists(out_dump_path):
-            os.makedirs(out_dump_path, 0o755)
+            os.makedirs(out_dump_path, PERMISSION_DIR)
 
         model_name = args.model.split("/")[-1]
-        output_json_dict["dump"]["dump_path"] = out_dump_path
-        output_json_dict["dump"]["dump_list"][0]["model_name"] = model_name.split('.')[0]
+        output_json_dict = {"dump": {"dump_path": out_dump_path, "dump_mode": "all",
+                                     "dump_list": [{"model_name": model_name.split('.')[0]}]}}
 
     out_json_file_path = os.path.join(args.output, "acl.json")
 
     OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
     OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
-    with os.fdopen(os.open(out_json_file_path, OPEN_FLAGS, OPEN_MODES), 'w') as f:
+    with ms_open(out_json_file_path, mode="w") as f:
         json.dump(output_json_dict, f, indent=4, separators=(", ", ": "), sort_keys=True)
     return out_json_file_path
 
@@ -152,7 +154,9 @@ def get_batchsize(session, args):
         instr = args.dym_dims if args.dym_dims is not None else args.dym_shape
         elems = instr.split(';')
         for elem in elems:
-            name, shapestr = elem.split(':')
+            tmp_idx = elem.rfind(':')
+            name = elem[:tmp_idx]
+            shapestr = elem[tmp_idx + 1:]
             if name == intensors_desc[0].name:
                 batchsize = int(shapestr.split(',')[0])
     return batchsize
@@ -163,7 +167,9 @@ def get_range_list(ranges):
     info_list = []
     for elem in elems:
         shapes = []
-        name, shapestr = elem.split(':')
+        tmp_idx = elem.rfind(':')
+        name = elem[:tmp_idx]
+        shapestr = elem[tmp_idx + 1:]
         for content in shapestr.split(','):
             step = 1
             if '~' in content:
@@ -193,7 +199,7 @@ def get_range_list(ranges):
 def get_dymshape_list(input_ranges):
     ranges_list = []
     if os.path.isfile(input_ranges):
-        with open(input_ranges, 'rt', encoding='utf-8') as finfo:
+        with ms_open(input_ranges, mode="rt", max_size=MAX_SIZE_LIMITE_NORMAL_FILE, encoding='utf-8') as finfo:
             line = finfo.readline()
             while line:
                 line = line.rstrip('\n')
@@ -209,33 +215,42 @@ def get_dymshape_list(input_ranges):
 
 
 # get throughput from out log
-def get_throughtput_from_log(log_path):
-    if not os.path.exists(log_path):
-        return "Failed", 0
-    cmd = "cat {} | grep throughput".format(log_path)
-    cmd = cmd + " | awk '{print $NF}'"
-    try:
-        outval = os.popen(cmd).read()
-    except Exception as e:
-        logger.warning("get throughtput failed e:{}".format(e))
-        return "Failed", 0
-    if outval == "":
-        return "Failed", 0
-    throughtput = float(outval)
-    return "OK", throughtput
+def get_throughtput_from_log(out_log):
+    log_list = out_log.split('\n')
+    for log_txt in log_list:
+        if "throughput" in log_txt:
+            throughput = float(log_txt.split(' ')[-1])
+            return "OK", throughput
+    return "Failed", 0
 
 
-def dymshape_range_run(args):
+def regenerate_dymshape_cmd(args:BenchMarkArgsAdapter, dym_shape):
+    args_dict = args.get_all_args_dict()
+    cmd = sys.executable + " -m ais_bench"
+    for key, value in args_dict.items():
+        if key == '--dymShape_range':
+            continue
+        if key == '--dymShape':
+            cmd = cmd + " " + f"{key}={dym_shape}"
+            continue
+        if value:
+            cmd = cmd + " " + f"{key}={value}"
+    cmd_list = cmd.split(' ')
+    return cmd_list
+
+
+def dymshape_range_run(args:BenchMarkArgsAdapter):
     dymshape_list = get_dymshape_list(args.dym_shape_range)
     results = []
-    log_path = os.path.realpath("dym.log") if args.output is None else os.path.join(args.output, "dym.log")
     for dymshape in dymshape_list:
-        cmd = "rm -rf {};{} {} {}".format(log_path, sys.executable, ' '.join(sys.argv),
-            "--dym-shape={}  | tee {}".format(dymshape,  log_path))
+        cmd = regenerate_dymshape_cmd(args, dymshape)
         result = { "dymshape" : dymshape, "cmd": cmd, "result": "Failed", "throughput" : 0 }
         logger.debug("cmd:{}".format(cmd))
-        os.system(cmd)
-        result["result"], result["throughput"] = get_throughtput_from_log(log_path)
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, _ = p.communicate(timeout=10)
+        out_log = stdout.decode('utf-8')
+        print(out_log) # show original log of cmd
+        result["result"], result["throughput"] = get_throughtput_from_log(out_log)
         logger.info("dymshape:{} end run result:{}".format(dymshape, result["result"]))
         results.append(result)
 

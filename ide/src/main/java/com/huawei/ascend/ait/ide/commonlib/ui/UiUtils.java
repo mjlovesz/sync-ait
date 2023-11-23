@@ -43,7 +43,7 @@ import javax.swing.table.TableColumnModel;
  * UiUtILS
  *
  * @author CABBAGE
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class UiUtils {
     /**
@@ -59,6 +59,9 @@ public class UiUtils {
 
     private static final int TABLE_PREFERRED_ROW_HEIGHT = 30;
 
+    /**
+     * UiUtils
+     */
     public UiUtils() {
     }
 

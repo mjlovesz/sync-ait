@@ -16,8 +16,8 @@
 
 package com.huawei.ascend.ait.ide.service;
 
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrBuffer;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrWordStatic;
 
 import java.util.Objects;
 
@@ -25,7 +25,7 @@ import java.util.Objects;
  * AisBenchCmdStr
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class AisBenchCmdStr {
     public static final CmdStrWordStatic falseService = new CmdStrWordStatic("False");

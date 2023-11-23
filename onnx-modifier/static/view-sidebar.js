@@ -154,7 +154,6 @@ sidebar.NodeSidebar = class {
         this._attributes = [];
         this._inputs = [];
         this._outputs = [];
-        // console.log(node)  // onnx.Node
 
         if (node.type) {
             let showDocumentation = null;
@@ -296,7 +295,6 @@ sidebar.NodeSidebar = class {
 
         modiferToolbarElem.appendChild(this.init_extract_helper())
         modiferToolbarElem.appendChild(this.init_delete_helper())
-        modiferToolbarElem.appendChild(this.init_recover_helper())
 
         return modiferToolbarElem
     }
@@ -350,32 +348,7 @@ sidebar.NodeSidebar = class {
         const helper_delete_all = this.init_menu_of_helper("Delete Node With Children", ()=>{
             this._host._view.modifier.deleteNodeWithChildren(this._modelNodeName);
         })
-        const helper_delete_enter = this.init_menu_of_helper("Delete Enter", ()=>{
-            this._host._view.modifier.deleteEnter();
-        })
-
-        return this.init_helper(iconElem, "Delete", [helper_delete, helper_delete_all, helper_delete_enter])
-    }
-
-    init_recover_helper() {
-        const iconElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        const path1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path1.setAttribute('d', 'M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z');
-        path1.style.setProperty('fill-rule', "evenodd");
-        const path2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path2.setAttribute('d', 'M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z');
-        iconElem.appendChild(path1)
-        iconElem.appendChild(path2)
-        iconElem.setAttribute("ViewBox", "0 0 16 16")
-
-        const helper_recover = this.init_menu_of_helper("Recover Node", ()=>{
-            this._host._view.modifier.recoverSingleNode(this._modelNodeName);
-        })
-        const helper_recover_all = this.init_menu_of_helper("Recover Node With Children", ()=>{
-            this._host._view.modifier.recoverNodeWithChildren(this._modelNodeName);
-        })
-
-        return this.init_helper(iconElem, "Recover", [helper_recover, helper_recover_all])
+        return this.init_helper(iconElem, "Delete", [helper_delete, helper_delete_all])
     }
 
     init_helper(icon, title, helpers) {
@@ -435,7 +408,6 @@ sidebar.NodeSidebar = class {
     }
 
     _addInput(name, input, param_idx) {
-        // console.log(input)  // type: onnx.Parameter
         if (input.arguments.length > 0) {
             const view = new sidebar.ParameterView(this._host, input, 'input', param_idx, this._modelNodeName);
             view.on('export-tensor', (sender, tensor) => {
@@ -453,7 +425,6 @@ sidebar.NodeSidebar = class {
 
     _addOutput(name, output, param_idx) {
         if (output.arguments.length > 0) {
-            // console.log(this._modelNodeName)
             const item = new sidebar.NameValueView(this._host, name,
                 new sidebar.ParameterView(this._host, output, 'output', param_idx, this._modelNodeName),
                 checkInputValidChars);
@@ -485,7 +456,6 @@ sidebar.NodeSidebar = class {
         for (const node of options) {
             // node: [domain, op]
             var option = new Option(node);
-            // console.log(option)
             inputDropdown.appendChild(option);
         }
         return inputDropdown
@@ -620,15 +590,12 @@ sidebar.NameValueView = class {
         const nameElement = this._host.document.createElement('div');
         nameElement.className = 'sidebar-view-item-name';
 
-        // ===> 这一段是input框前的名称，如attributte的pad，（不包含后面的小白块！！！）
-        // console.log(name)
         const nameInputElement = this._host.document.createElement('input');
         nameInputElement.setAttribute('type', 'text');
         nameInputElement.setAttribute('value', name);
         nameInputElement.setAttribute('title', name);
         nameInputElement.setAttribute('readonly', 'true');
         nameElement.appendChild(nameInputElement);
-        // <=== 这一段是input框前的名称，如attributte的pad
 
         const valueElement = this._host.document.createElement('div');
         valueElement.className = 'sidebar-view-item-value-list';
@@ -802,7 +769,6 @@ class NodeAttributeView {
         this._element.appendChild(valueEditers);
         this._valueEditers = valueEditers
 
-        // console.log(this._attribute.name, value, type)
         switch (type) {
             case 'graph': {
                 const line = this._host.document.createElement('div');
@@ -944,8 +910,7 @@ sidebar.ParameterView = class {
         this._elements = [];
         this._items = [];
 
-        // console.log(list)
-        // for (const argument of list.arguments) {
+
         for (const [arg_idx, argument] of list.arguments.entries()) {
             const item = new sidebar.ArgumentView(host, argument, param_type, param_idx, arg_idx, list._name, this._modelNodeName);
             item.on('export-tensor', (sender, tensor) => {
@@ -1007,7 +972,6 @@ sidebar.ArgumentView = class {
         const type = argument.type;
         const location = this._argument.location !== undefined;
         const is_custom_added = argument.is_custom_added;
-        // console.log(argument)
         if (type || initializer || quantization || location || is_custom_added) {
             this._expander = this._host.document.createElement('div');
             this._expander.classList.add('sidebar-view-item-value-expander');
@@ -1031,7 +995,6 @@ sidebar.ArgumentView = class {
         let name = this._argument.name || '';
         this._hasId = name ? true : false;
         this._hasKind = initializer && initializer.kind ? true : false;
-        // console.log(name, this._hasId, this._hasKind, type)
         if (this._hasId || (!this._hasKind && !type)) {
             this._hasId = true;
 
@@ -1080,7 +1043,6 @@ sidebar.ArgumentView = class {
                 this._expander.classList.remove("off");
 
                 const initializer = this._argument.initializer;
-                // console.log(this._argument, initializer) // type: onnx.Argument, onnx.Tensor
                 if (this._hasId && this._hasKind) {
                     const kindLine = this._host.document.createElement('div');
                     kindLine.className = 'sidebar-view-item-value-line-border';
@@ -1096,7 +1058,6 @@ sidebar.ArgumentView = class {
                 if (type && (this._hasId || this._hasKind)) {
                     const typeLine = this._host.document.createElement('div');
                     typeLine.className = 'sidebar-view-item-value-line-border';
-                    // console.log(type, type.split('<').join('&lt;').split('>').join('&gt;'))
                     typeLine.innerHTML = 'type: <code><b>' + type.split('<').join('&lt;').split('>').join('&gt;') + '</b></code>';
                     this._valueEditers.appendChild(typeLine);
                 }
@@ -1149,7 +1110,6 @@ sidebar.ArgumentView = class {
                     }
 
                     inputInitializerVal.addEventListener('input', (e) => {
-                        // console.log(e.target.value)
                         checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value, true))
                         this._host._view.modifier.changeInitializer(this._modelNodeName, this._parameterName, this._param_type, this._param_index, this._arg_index, this._argument.type._dataType, e.target.value);
                     });

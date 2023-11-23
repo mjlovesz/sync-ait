@@ -55,7 +55,7 @@ class TestClass():
             ├── model
             └── output
         """
-        return os.path.join(TestCommonClass.base_path, self.model_name)
+        return os.path.join(TestCommonClass.get_basepath(), self.model_name)
 
     def get_dynamic_batch_om_path(self):
         return os.path.join(self.model_base_path, "model", "pth_crnn_dymbatch.om")
@@ -208,7 +208,7 @@ class TestClass():
             log_path = os.path.join(output_path, "log.txt")
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
-            os.makedirs(output_path)
+            os.makedirs(output_path, 0o750)
             output_batchsize_axis = 1
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
             cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {} > {}" \
@@ -250,7 +250,7 @@ class TestClass():
             log_path = os.path.join(output_path, "log.txt")
             if os.path.exists(output_path):
                 shutil.rmtree(output_path)
-            os.makedirs(output_path)
+            os.makedirs(output_path, 0o750)
             output_batchsize_axis = 1
             summary_json_path = os.path.join(output_parent_path,  "{}_summary.json".format(output_dirname))
             cmd = "{} --model {} --device {} --output {} --output_dirname {} --output_batchsize_axis {} \

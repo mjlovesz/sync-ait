@@ -32,7 +32,7 @@ import javax.swing.Icon;
  * AitFileEditorIconProvider
  *
  * @author cabbage
- * @date 2023/06/08
+ * @since 2023/06/08
  */
 public class AitFileEditorIconProvider implements FileIconProvider {
     private static final String AIT_FILE = "AIT";

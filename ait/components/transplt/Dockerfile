@@ -55,6 +55,7 @@ RUN apt-get install -y git \
 # Go to the dist-packages directory
 # Download and unzip config.zip, headers.zip
 RUN cd /usr/local/lib/python3.9/dist-packages/app_analyze \
+    && umask 022 \
     && apt-get install -y unzip \
     && wget -O config.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip \
     && unzip config.zip \

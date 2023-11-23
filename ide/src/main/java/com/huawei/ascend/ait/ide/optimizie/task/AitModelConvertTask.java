@@ -18,9 +18,9 @@ package com.huawei.ascend.ait.ide.optimizie.task;
 
 import com.huawei.ascend.ait.ide.commonlib.exception.CommandInjectException;
 import com.huawei.ascend.ait.ide.commonlib.output.OutputService;
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdExec;
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdExec;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrBuffer;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrWordStatic;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -35,6 +35,12 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * AitModelConvertTask
+ *
+ * @author Jinhaiyang
+ * @since 2023/06/03
+ */
 public class AitModelConvertTask extends Backgroundable {
     private final Project project;
     private final String cannPath;

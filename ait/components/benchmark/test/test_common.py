@@ -43,8 +43,12 @@ class TestCommonClass:
         """
         test/testdata
         """
-        _current_dir = os.path.dirname(os.path.realpath(__file__))
-        return os.path.join(_current_dir, "../test/testdata")
+        data_path = os.getenv("AIT_BENCHMARK_DT_DATA_PATH")
+        if not data_path:
+            _current_dir = os.path.dirname(os.path.realpath(__file__))
+            return os.path.join(_current_dir, "../test/testdata")
+        else:
+            return os.path.realpath(data_path)
 
     @staticmethod
     def create_inputs_file(input_path, size, pure_data_type=random):
@@ -62,7 +66,7 @@ class TestCommonClass:
     def prepare_dir(target_folder_path):
         if os.path.exists(target_folder_path):
             shutil.rmtree(target_folder_path)
-        os.makedirs(target_folder_path)
+        os.makedirs(target_folder_path, 0o750)
 
     @staticmethod
     def get_model_inputs_size(model_path):
@@ -95,7 +99,7 @@ class TestCommonClass:
         """
         size_path = os.path.join(input_path,  str(size))
         if not os.path.exists(size_path):
-            os.makedirs(size_path)
+            os.makedirs(size_path, 0o750)
 
         base_size_file_path = os.path.join(size_path, "{}.bin".format(size))
         if not os.path.exists(base_size_file_path):
@@ -110,14 +114,15 @@ class TestCommonClass:
                 shutil.rmtree(input_file_num_folder_path)
 
         if not os.path.exists(input_file_num_folder_path):
-            os.makedirs(input_file_num_folder_path)
+            os.makedirs(input_file_num_folder_path, 0o750)
 
         strs = []
         # create soft link to base_size_file
         for i in range(input_file_num):
             file_name = "{}-{}.bin".format(size, i)
             file_path = os.path.join(input_file_num_folder_path, file_name)
-            strs.append("ln -s {} {}".format(base_size_file_path, file_path))
+            strs.append("cp {} {}".format(base_size_file_path, file_path))
+            strs.append(f"chmod 750 {file_path}")
 
         cmd = ';'.join(strs)
         os.system(cmd)

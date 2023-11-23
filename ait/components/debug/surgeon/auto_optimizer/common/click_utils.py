@@ -13,12 +13,15 @@
 # limitations under the License.
 
 import os
+import stat
 import pathlib
 from functools import partial
 from multiprocessing import Pool
 from typing import List, Optional, Union
 
+import re
 import click
+import argparse
 
 from auto_optimizer import KnowledgeFactory
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig, \
@@ -29,6 +32,20 @@ from auto_optimizer.tools.log import logger
 
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+STR_UNSAFE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-]")
+PATH_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9/.-]")
+
+READ_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH
+WRITE_FILE_NOT_PERMITTED_STAT = stat.S_IWGRP | stat.S_IWOTH | stat.S_IROTH | stat.S_IXOTH
+
+
+def safe_string(value):
+    if not value:
+        return value
+    if re.search(STR_UNSAFE_LIST_REGEX, value):
+        raise ValueError("String parameter contains invalid characters.")
+    return value
 
 
 def check_input_path(input_path):

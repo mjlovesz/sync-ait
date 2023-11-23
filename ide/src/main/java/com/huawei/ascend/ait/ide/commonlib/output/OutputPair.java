@@ -22,7 +22,7 @@ import com.intellij.execution.ui.ConsoleViewContentType;
  * OutputPair
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class OutputPair {
     private String text;

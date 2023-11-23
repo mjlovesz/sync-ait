@@ -19,6 +19,7 @@ import stat
 
 import numpy as np
 from ais_bench.infer.utils import logger
+from ais_bench.infer.path_security_check import ms_open
 
 
 class ListInfo(object):
@@ -30,15 +31,44 @@ class ListInfo(object):
         self.percentile = 0.0
 
 
+class Result(object):
+    def __init__(self):
+        self.npu_compute_time = None
+        self.h2d_latency = None
+        self.d2h_latency  = None
+        self.throughput = None
+        self.scale = None
+        self.batchsize = None
+
+
 class Summary(object):
     def __init__(self):
         self.reset()
         self.infodict = {"filesinfo": {}}
 
     @staticmethod
-    def get_list_info(work_list, percentile_scale):
+    def merge_intervals(intervals):
+        intervals.sort(key=lambda x: x[0])
+        merged = []
+        for interval in intervals:
+            if not merged or merged[-1][1] < interval[0]:
+                merged.append(list(interval))
+            else:
+                merged[-1][1] = max(merged[-1][1], interval[1])
+        return merged
+
+    @staticmethod
+    def get_list_info(work_list, percentile_scale, merge=False):
         list_info = ListInfo()
-        if len(work_list) != 0:
+        if merge: # work_list is a 2-dim vector each element is a pair containing start and end time
+            n = len(work_list)
+            if n == 0:
+                raise RuntimeError(f'summary.get_list_info failed: inner error')
+            merged_intervals = Summary.merge_intervals(work_list)
+            sum_time = sum(end_time - start_time for start_time, end_time in merged_intervals)
+            list_info.mean = sum_time / n
+
+        elif len(work_list) != 0:
             list_info.min = np.min(work_list)
             list_info.max = np.max(work_list)
             list_info.mean = np.mean(work_list)
@@ -51,6 +81,7 @@ class Summary(object):
         self.h2d_latency_list = []
         self.d2h_latency_list = []
         self.npu_compute_time_list = []
+        self.npu_compute_time_interval_list = []
         self._batchsizes = []
 
     def add_batchsize(self, n: int):
@@ -71,10 +102,65 @@ class Summary(object):
     def add_args(self, args):
         self.infodict["args"] = args
 
-    def report(self, batchsize, output_prefix, display_all_summary=False):
+    def record(self, result, multi_threads = False):
+        if multi_threads:
+            self.infodict['NPU_compute_time'] = {"mean": result.npu_compute_time.mean,
+                                                 "count": len(self.npu_compute_time_interval_list)}
+            self.infodict['H2D_latency'] = {"mean": result.h2d_latency.mean,"count": len(self.h2d_latency_list)}
+            self.infodict['D2H_latency'] = {"mean": result.d2h_latency.mean, "count": len(self.d2h_latency_list)}
+            self.infodict['npu_compute_time_list'] = self.npu_compute_time_interval_list
+        else:
+            self.infodict['NPU_compute_time'] = {"min": result.npu_compute_time.min, "max": result.npu_compute_time.max,
+                                        "mean": result.npu_compute_time.mean, "median": result.npu_compute_time.median,
+                                        "percentile({}%)".format(result.scale): result.npu_compute_time.percentile,
+                                        "count": len(self.npu_compute_time_list)}
+            self.infodict['H2D_latency'] = {"min": result.h2d_latency.min, "max": result.h2d_latency.max,
+                                            "mean": result.h2d_latency.mean, "median": result.h2d_latency.median,
+                                            "percentile({}%)".format(result.scale): result.h2d_latency.percentile,
+                                            "count": len(self.h2d_latency_list)}
+            self.infodict['D2H_latency'] = {"min": result.d2h_latency.min, "max": result.d2h_latency.max,
+                                            "mean": result.d2h_latency.mean, "median": result.d2h_latency.median,
+                                            "percentile({}%)".format(result.scale): result.d2h_latency.percentile,
+                                            "count": len(self.d2h_latency_list)}
+            self.infodict['npu_compute_time_list'] = self.npu_compute_time_list
+        self.infodict['throughput'] = result.throughput
+        self.infodict['pid'] = os.getpid()
+
+    def display(self, result, display_all_summary, multi_threads):
+        logger.info("-----------------Performance Summary------------------")
+        if multi_threads:
+            if display_all_summary is True:
+                logger.info("H2D_latency (ms): mean = {0}".format(result.h2d_latency.mean))
+            logger.info("NPU_compute_time (ms): mean = {0}".format(result.npu_compute_time.mean))
+            if display_all_summary is True:
+                logger.info("D2H_latency (ms): mean = {0}".format(result.d2h_latency.mean))
+        else:
+            if display_all_summary is True:
+                logger.info("H2D_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
+                        .format(result.h2d_latency.min, result.h2d_latency.max, result.h2d_latency.mean,
+                                result.h2d_latency.median, result.scale, result.h2d_latency.percentile))
+
+            logger.info("NPU_compute_time (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
+                        .format(result.npu_compute_time.min, result.npu_compute_time.max, result.npu_compute_time.mean,
+                                result.npu_compute_time.median, result.scale, result.npu_compute_time.percentile))
+            if display_all_summary is True:
+                logger.info("D2H_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
+                            .format(result.d2h_latency.min, result.d2h_latency.max, result.d2h_latency.mean,
+                                    result.d2h_latency.median, result.scale, result.d2h_latency.percentile))
+        logger.info("throughput 1000*batchsize.mean({})/NPU_compute_time.mean({}): {}".format(
+            result.batchsize, result.npu_compute_time.mean, result.throughput))
+        logger.info("------------------------------------------------------")
+
+    def report(self, batchsize, output_prefix, display_all_summary=False, multi_threads = False):
         scale = 99
 
-        npu_compute_time = Summary.get_list_info(self.npu_compute_time_list, scale)
+        if self.npu_compute_time_list and self.npu_compute_time_interval_list:
+            logger.error("npu_compute_time_list and npu_compute_time_interval_list exits at the same time")
+            raise Exception
+        if self.npu_compute_time_list:
+            npu_compute_time = Summary.get_list_info(self.npu_compute_time_list, scale)
+        else:
+            npu_compute_time = Summary.get_list_info(self.npu_compute_time_interval_list, scale, True)
         h2d_latency = Summary.get_list_info(self.h2d_latency_list, scale)
         d2h_latency = Summary.get_list_info(self.d2h_latency_list, scale)
         if self._batchsizes:
@@ -86,40 +172,20 @@ class Summary(object):
         else:
             throughput = 1000*batchsize/npu_compute_time.mean
 
-        self.infodict['NPU_compute_time'] = {"min": npu_compute_time.min, "max": npu_compute_time.max,
-                                    "mean": npu_compute_time.mean, "median": npu_compute_time.median,
-                                    "percentile({}%)".format(scale): npu_compute_time.percentile,
-                                    "count": len(self.npu_compute_time_list)}
-        self.infodict['H2D_latency'] = {"min": h2d_latency.min, "max": h2d_latency.max, "mean": h2d_latency.mean,
-                               "median": h2d_latency.median, "percentile({}%)".format(scale): h2d_latency.percentile,
-                               "count": len(self.h2d_latency_list)}
-        self.infodict['D2H_latency'] = {"min": d2h_latency.min, "max": d2h_latency.max, "mean": d2h_latency.mean,
-                               "median": d2h_latency.median, "percentile({}%)".format(scale): d2h_latency.percentile,
-                               "count": len(self.d2h_latency_list)}
-        self.infodict['throughput'] = throughput
-        self.infodict['npu_compute_time_list'] = self.npu_compute_time_list
-        self.infodict['pid'] = os.getpid()
+        result = Result()
+        result.npu_compute_time = npu_compute_time
+        result.d2h_latency = d2h_latency
+        result.h2d_latency = h2d_latency
+        result.throughput = throughput
+        result.scale = scale
+        result.batchsize = batchsize
 
-        logger.info("-----------------Performance Summary------------------")
-        if display_all_summary is True:
-            logger.info("H2D_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
-                        .format(h2d_latency.min, h2d_latency.max, h2d_latency.mean, h2d_latency.median, scale,
-                                h2d_latency.percentile))
-        logger.info("NPU_compute_time (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
-                    .format(npu_compute_time.min, npu_compute_time.max, npu_compute_time.mean, npu_compute_time.median,
-                            scale, npu_compute_time.percentile))
-        if display_all_summary is True:
-            logger.info("D2H_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
-                        .format(d2h_latency.min, d2h_latency.max, d2h_latency.mean, d2h_latency.median, scale,
-                                d2h_latency.percentile))
-        logger.info("throughput 1000*batchsize.mean({})/NPU_compute_time.mean({}): {}".format(
-            batchsize, npu_compute_time.mean, throughput))
-        logger.info("------------------------------------------------------")
+        self.record(result, multi_threads)
+        self.display(result, display_all_summary, multi_threads)
+
 
         if output_prefix is not None:
-            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
-            modes = stat.S_IWUSR | stat.S_IRUSR
-            with os.fdopen(os.open(output_prefix + "_summary.json", flags, modes), 'w') as f:
+            with ms_open(output_prefix + "_summary.json", mode="w") as f:
                 json.dump(self.infodict, f)
 
 

@@ -39,6 +39,8 @@
   <summary> sample code </summary>
 
 ```python
+from auto_optimizer.graph_refactor.interface import Initializer
+
 # 加载模型
 g = OnnxGraph.parse('model.onnx')
 

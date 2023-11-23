@@ -172,7 +172,6 @@ grapher.Graph = class {
             const node = this.node(nodeId);
             if (this.children(nodeId).length == 0) {
                 if (this.modifier.name2NodeStates.get(node.label.modelNodeName) == 'Exist') {
-                    // console.log("build", node.label.modelNodeName)
                     node.label.build(document, nodeGroup);  
                 }
             }
@@ -310,9 +309,6 @@ grapher.Node = class {
     }
 
     update() {
-        // console.log(this)
-        // 没有这一行，所有节点都左对齐到左上角
-        // 这一行对所有节点框进行平移
         this.element.setAttribute('transform', 'translate(' + (this.x - (this.width / 2)) + ',' + (this.y - (this.height / 2)) + ')');
         
         // 设定不透明度
