@@ -69,9 +69,9 @@ class ScanApi:
     @staticmethod
     def _get_project_instance(inputs):
         if inputs.scanner_mode == ScannerMode.ALL.value:
-            project = SeqProject(inputs)
-        else:
             project = Project(inputs)
+        else:
+            project = SeqProject(inputs)
         return project
 
     def scan_source(self, param_dict):
