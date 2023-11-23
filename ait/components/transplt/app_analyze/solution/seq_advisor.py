@@ -104,15 +104,15 @@ class SeqAdvisor:
             # 用所有关键词将整段话分割，再插入富字符串，然后捆绑颜色、关键词和后面的文本，需注意一一对应
             temp_list = re.split(_escape_string(keyword_sep), call_seq)
             sep_str = list()
-            for i in range(len(temp_list)):
+            for i, element in enumerate(temp_list):
                 if i != 0:
-                    if temp_list[i] != '':
-                        sep_str.extend((fmt, keyword_split[i - 1], temp_list[i]))
+                    if element != '':
+                        sep_str.extend((fmt, keyword_split[i - 1], element))
                     else:
                         sep_str.extend((fmt, keyword_split[i - 1]))
                 else:
-                    if temp_list[i] != '':
-                        sep_str.append(temp_list[i])
+                    if element != '':
+                        sep_str.append(element)
             return sep_str
 
         worksheet = workbook.add_worksheet(file_name)
