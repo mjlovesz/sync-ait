@@ -3,6 +3,7 @@
 /* global view */
 
 var host = {};
+let lastAddedOperatorName = null;
 
 host.BrowserHost = class {
 
@@ -548,6 +549,32 @@ host.BrowserHost = class {
         }
 
 
+
+        function addNodeAutomatically(operatorName) {
+            var addNodeDropDown = document.getElementById('add-node-dropdown');
+            for (const node of window.__view__.model.supported_nodes) {
+                // node: [domain, op]
+                if ( node[1] == "CustomConv54"){
+                    console.log('54')
+                }
+                var option = new Option(node[1], node[0] + ':' + node[1]);
+                addNodeDropDown.appendChild(option);
+            }
+
+            for (var i = addNodeDropDown.options.length - 1; i > 0; i--) {
+                if (addNodeDropDown.options[i].text === operatorName) {
+                    addNodeDropDown.selectedIndex = i;
+                    var selected_val = addNodeDropDown.options[i].value;
+                    var add_op_domain = selected_val.split(':')[0];
+                    var add_op_type = selected_val.split(':')[1];
+                    window.__view__.modifier.addNode(add_op_domain, add_op_type);
+                    window.__view__._updateGraph();
+                    break;
+                }
+            }
+        }
+
+
         function submitCustomOperator() {
             var customOperatorData = {
                 name: document.getElementById('customName').value,
@@ -570,6 +597,8 @@ host.BrowserHost = class {
                 customOperatorData.type_constraints = JSON.parse(document.getElementById('customTypeConstraints').value);
             }
 
+            lastAddedOperatorName = customOperatorData.name;
+
             fetch('/add-custom-operator', {
                 method: 'POST',
                 headers: {
@@ -583,7 +612,10 @@ host.BrowserHost = class {
                 document.getElementById('customOperatorDialog').close();
                 updateOperatorDropdown(); // 更新下拉菜单
                 document.dispatchEvent(new CustomEvent('customOperatorAdded'));
-                setTimeout(() => {window.__view__.modifier.updateAddNodeDropDown()},500);
+                setTimeout(() => {
+                    window.__view__.modifier.updateAddNodeDropDown();
+                    addNodeAutomatically(customOperatorData.name);
+                },500);
                 window._host.show_message("Success!", "Custom Operator has been successfuly Submit", "success");
             })
             .catch((error) => {
