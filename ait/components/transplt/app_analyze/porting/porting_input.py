@@ -12,7 +12,7 @@
 # limitations under the License.
 
 from abc import ABC, abstractmethod
-from app_analyze.common.kit_config import ReporterType, ScannerType, BuildToolType
+from app_analyze.common.kit_config import ScannerType, BuildToolType, ScannerMode
 
 
 class IInput(ABC):
@@ -26,6 +26,7 @@ class IInput(ABC):
         'report_type',  # 扫描生成的迁移报告的类型
         'scanner_type',  # 扫描器种类，第一阶段是默认的
         'construct_tool',  # 指定的构建工具，可以是cmake或者make（默认）
+        'scanner_mode',  # 指定扫描的方式，可以全都扫描或者只扫描api调用序列
         'project_directory',  # 本次扫描任务的输出目录
         'project_time',  # 本次扫描任务的时间记录字符串
         'worker_temp_dir',  # worker的临时目录
@@ -40,6 +41,7 @@ class IInput(ABC):
         self.report_type = []
         self.scanner_type = []
         self.construct_tool = BuildToolType.CMAKE
+        self.scanner_mode = ScannerMode.ALL
         self.project_directory = ''
         self.project_time = ''
         self.worker_temp_dir = ''
