@@ -17,8 +17,8 @@
 #include "MxBase/MxBase.h"
 
 
-
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     MxBase::MxInit();
     uint32_t device_id = 0;
     std::string modelPath = "resnet50_aipp_async.om";
@@ -34,11 +34,14 @@ int main(int argc, char **argv) {
     MxBase::Image decoded_image;
     processor.Decode(img_file, decoded_image, MxBase::ImageFormat::RGB_888);
     MxBase::Image resized_image;
-    processor.Resize(decoded_image, MxBase::Size(224, 224), resized_image, MxBase::Interpolation::HUAWEI_HIGH_ORDER_FILTER, stream);
+    int inputWidth = 224;
+    int inputHeight = 224;
+    processor.Resize(decoded_image, MxBase::Size(inputWidth, inputHeight), resized_image,
+                     MxBase::Interpolation::HUAWEI_HIGH_ORDER_FILTER, stream);
     stream.Synchronize();
     auto end = std::chrono::high_resolution_clock::now();
-    float time_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1.0e6;
-    std::cout << "Image process time duration: " << time_duration << "ms" << std::endl;
+    float timeDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1.0e6;
+    std::cout << "Image process time duration: " << timeDuration << "ms" << std::endl;
 
     start = std::chrono::high_resolution_clock::now();
     MxBase::Tensor tensor = resized_image.ConvertToTensor();
@@ -55,7 +58,8 @@ int main(int argc, char **argv) {
     // 创建容器中tensor并分配内存
     for (size_t i = 0; i < num_outputs; ++i) {
         outputs[i] = MxBase::Tensor(shape, MxBase::TensorDType::FLOAT32, device_id);
-        MxBase::Tensor::TensorMalloc(outputs[i]);}
+        MxBase::Tensor::TensorMalloc(outputs[i]);
+    }
     // 模型推理
     APP_ERROR ret = net.Infer(mx_inputs, outputs, stream);
     // 同步stream
@@ -63,21 +67,21 @@ int main(int argc, char **argv) {
     outputs[0].ToHost();
 
     end = std::chrono::high_resolution_clock::now();
-    time_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1.0e6;
-    std::cout << "Model inference time duration: " << time_duration << "ms" << std::endl;
+    timeDuration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count() / 1.0e6;
+    std::cout << "Model inference time duration: " << timeDuration << "ms" << std::endl;
 
-    int total_classes = 1000;
+    int totalClasses = 1000;
     int argmax = 0;
-    float max_score = 0;
+    float maxScore = 0;
     float *data = (float *)outputs[0].GetData();
-    for (int ii = 0; ii < total_classes; ii++) {
-        if (data[ii] > max_score) {
-            max_score = data[ii];
+    for (int ii = 0; ii < totalClasses; ii++) {
+        if (data[ii] > maxScore) {
+            maxScore = data[ii];
             argmax = ii;
         }
     }
     std::cout << "index: " << argmax << std::endl;
-    std::cout << "score: " << max_score << std::endl;
+    std::cout << "score: " << maxScore << std::endl;
 
     return 0;
     // 销毁stram去初始化
