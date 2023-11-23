@@ -185,7 +185,7 @@ def _visit_call_expr(node, rst, pth):
             continue
 
         arg_dict = _get_api_type(c.referenced.location.file.name, c)
-        api_type = arg_dict['api_type']
+        api_type = arg_dict.get('api_type')
         if api_type == APIType.INVALID:
             cur_path = pth
             _visit_call_expr(c, rst, cur_path)
@@ -223,7 +223,7 @@ def _usr_def_obj(node, seq_desc, cursor_kind):
         return skip_flag
 
     arg_dict = _get_api_type(node.referenced.location.file.name, node)
-    api_type = arg_dict['api_type']
+    api_type = arg_dict.get('api_type')
     if api_type == APIType.USR_DEFINED:
         # 用户自定义对象和成员变量
         func_attr = _visit_cxx_method(node, api_type)
@@ -242,7 +242,7 @@ def _usr_and_lib_call_fn(node, seq_desc, ):
         return skip_flag
 
     arg_dict = _get_api_type(node.referenced.location.file.name, node)
-    api_type = arg_dict['api_type']
+    api_type = arg_dict.get('api_type')
     if api_type == APIType.INVALID:
         return skip_flag
 
