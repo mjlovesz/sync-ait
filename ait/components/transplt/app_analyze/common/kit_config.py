@@ -229,6 +229,7 @@ class KitConfig:
     PARAMS = 'Params(Ascend:Acc)'  # 昇腾API和三方加速库API形参对应关系
     ASCEND_LINK = 'AscendAPILink'  # 昇腾API文档链接
     ACC_LINK = 'AccAPILink'  # 三方加速库API文档链接
+    ASYNC_API = 'AsyncAPI'  # 昇腾接口是否为异步API
     # c.可选报告字段
     OPT_REPORT_KEY = {
         DESC: True,
