@@ -29,10 +29,9 @@ import com.intellij.testFramework.LightVirtualFile;
  * AitAction
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class AitAction extends AnAction {
-
     /**
      * AitAction
      */

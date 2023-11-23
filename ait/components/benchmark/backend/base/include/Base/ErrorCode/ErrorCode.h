@@ -156,7 +156,7 @@ enum {
     APP_ERR_STREAM_INVALID_CONFIG = APP_ERR_STREAM_BASE + 5,
     APP_ERR_STREAM_INVALID_LINK = APP_ERR_STREAM_BASE + 6,
     APP_ERR_STREAM_LINK_FAILED = APP_ERR_STREAM_BASE + 7,
-    
+
     APP_ERR_STREAM_TRANS_MODE_NOT_MATCHED = APP_ERR_STREAM_BASE + 8,
     APP_ERR_STREAM_TRANS_MODE_INVALID = APP_ERR_STREAM_BASE + 9,
     APP_ERR_STREAM_TIMEOUT = APP_ERR_STREAM_BASE + 10,
@@ -164,7 +164,7 @@ enum {
     APP_ERR_STREAM_ELEMENT_INVALID = APP_ERR_STREAM_BASE + 11,
     APP_ERR_STREAM_ELEMENT_EXIST = APP_ERR_STREAM_BASE + 12,
     APP_ERR_STREAM_ELEMENT_NOT_EXIST = APP_ERR_STREAM_BASE + 13,
-	
+
     APP_ERR_ELEMENT_INVALID_FACTORY = APP_ERR_STREAM_BASE + 14,
     APP_ERR_ELEMENT_INVALID_PROPERTIES = APP_ERR_STREAM_BASE + 15,
     APP_ERR_ELEMENT_PAD_UNLINKED = APP_ERR_STREAM_BASE + 16,
@@ -508,7 +508,7 @@ const std::string APP_ERR_EXTRA_STRING[] = {
     [APP_ERR_WAIT_CALLBACK_TIMEOUT - APP_ERR_EXTRA_BASE] = "Waiting for callback times out",
     [APP_ERR_REPEAT_FINALIZE - APP_ERR_EXTRA_BASE] = "Repeated Deinitialization",
     [APP_ERR_NOT_STATIC_AIPP - APP_ERR_EXTRA_BASE] = "The AIPP configuration information does not exist",
-   
+
 };
 
 const std::string APP_ERR_INFER_STRING[] = {
@@ -536,7 +536,9 @@ enum ReturnCodeType {
     GST_FLOW_TYPE = 0,
 };
 
+namespace Base {
 std::string GetAppErrCodeInfo(APP_ERROR err);
 std::string GetError(APP_ERROR err, std::string moduleName = "");
 APP_ERROR ConvertReturnCodeToLocal(ReturnCodeType type, int errorCode);
+}
 #endif  // ERROR_CODE_H_

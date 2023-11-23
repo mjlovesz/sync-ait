@@ -35,7 +35,7 @@ import java.beans.PropertyChangeListener;
  * AitFileEditor
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class AitFileEditor extends UserDataHolderBase implements FileEditor {
     private final Choosedialog choosedialog;

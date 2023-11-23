@@ -24,7 +24,7 @@ DeviceManager::~DeviceManager()
 {
     std::lock_guard<std::mutex> lock(mtx_);
     if (initCounter_ != 0) {
-        LogDebug << "DeviceManager Acl Resource is not released." << std::endl;
+        LOG_DEBUG << "DeviceManager Acl Resource is not released." << std::endl;
         return;
     }
 }
@@ -73,7 +73,7 @@ APP_ERROR DeviceManager::InitDevices(std::string configFilePath)
         initCounter_ = 0;
         aclFinalize();
         cout << aclGetRecentErrMsg() << endl;
-        LogError << "Failed to get all devices count: " << GetAppErrCodeInfo(ret) << ".\n";
+        LOG_ERROR << "Failed to get all devices count: " << GetAppErrCodeInfo(ret) << ".\n";
         return ret;
     }
     return APP_ERR_OK;
@@ -109,7 +109,7 @@ APP_ERROR DeviceManager::DestroyDevices()
                 cout << aclGetRecentErrMsg() << endl;
                 ERROR_LOG("reset device failed");
             }
-            DEBUG_LOG("end to reset device %lld", contexts.first);
+            INFO_LOG("end to reset device %lld", contexts.first);
         }
 
         contexts_.clear();
@@ -183,7 +183,7 @@ APP_ERROR DeviceManager::GetCurrentDevice(DeviceContext& device)
     APP_ERROR ret = aclrtGetCurrentContext(&currentContext);
     if (ret != APP_ERR_OK) {
         cout << aclGetRecentErrMsg() << endl;
-        LogError << "aclrtGetCurrentContext failed. ret=" << ret << std::endl;
+        LOG_ERROR << "aclrtGetCurrentContext failed. ret=" << ret << std::endl;
         return ret;
     }
     DeviceContext currentDevice = {};
@@ -217,6 +217,7 @@ APP_ERROR DeviceManager::CreateContext(DeviceContext device, size_t& contextInde
             ERROR_LOG("acl open device %d failed", deviceId);
             return ret;
         }
+        INFO_LOG("open device %d success", deviceId);
         contexts_[deviceId] = {};
         nextContextIndex_[deviceId] = 0;
     }
@@ -277,12 +278,12 @@ APP_ERROR DeviceManager::ResetDevice(DeviceContext device)
 APP_ERROR DeviceManager::CheckDeviceId(int32_t deviceId)
 {
     if (deviceId < 0) {
-        LogError << "deviceId(" << deviceId << ") is less than 0" << std::endl;
+        LOG_ERROR << "deviceId(" << deviceId << ") is less than 0" << std::endl;
         return APP_ERR_COMM_INVALID_PARAM;
     }
 
     if (deviceId > (int32_t)deviceCount_ - 1) {
-        LogError << "deviceId(" << deviceId << ") is bigger than deviceCount(" << deviceCount_ << ")" << std::endl;
+        LOG_ERROR << "deviceId(" << deviceId << ") is bigger than deviceCount(" << deviceCount_ << ")" << std::endl;
         return APP_ERR_COMM_INVALID_PARAM;
     }
     return APP_ERR_OK;

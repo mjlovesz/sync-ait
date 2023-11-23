@@ -71,10 +71,11 @@ public:
     TensorBase(const TensorBase &tensor) = default;
     // tensor构造函数
     TensorBase(const MemoryData &memoryData, const bool &isBorrowed,
-        const std::vector<uint32_t> &shape, const TensorDataType &type, const size_t contextIndex = 0);
+        const std::vector<uint32_t> &shape, const TensorDataType &type, const size_t contextIndex);
     TensorBase(const std::vector<uint32_t> &shape, const TensorDataType &type,
-        const MemoryData::MemoryType &bufferType, const int32_t &deviceId);
-    TensorBase(const std::vector<uint32_t> &shape, const TensorDataType &type, const int32_t &deviceId);
+        const MemoryData::MemoryType &bufferType, const int32_t &deviceId, const size_t contextIndex);
+    TensorBase(const std::vector<uint32_t> &shape, const TensorDataType &type, const int32_t &deviceId,
+               const size_t contextIndex);
     TensorBase(const std::vector<uint32_t> &shape, const TensorDataType &type);
     TensorBase(const std::vector<uint32_t> &shape);
     TensorBase& operator=(const TensorBase &other);

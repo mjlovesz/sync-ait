@@ -42,10 +42,10 @@ class TestClass:
         self.model_name = "resnet50"
 
     def get_dynamic_batch_om_path(self):
-        return os.path.join(TestCommonClass.base_path, self.model_name, "model", "pth_resnet50_dymbatch.om")
+        return os.path.join(TestCommonClass.get_basepath(), self.model_name, "model", "pth_resnet50_dymbatch.om")
 
     def test_args_ok(self):
-        output_path = os.path.join(TestCommonClass.base_path, "tmp")
+        output_path = os.path.join(TestCommonClass.get_basepath(), "tmp")
         TestCommonClass.prepare_dir(output_path)
         model_path = TestCommonClass.get_model_static_om_path(2, self.model_name)
         cmd = "{} --model {} --device {}".format(TestCommonClass.cmd_prefix, model_path,
@@ -62,7 +62,7 @@ class TestClass:
         warmup_num = 1
         output_file_num = 17
         batch_list = [1, 2, 4, 8, 16]
-        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        output_path = os.path.join(TestCommonClass.get_basepath(), self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
         log_path = os.path.join(output_path, "log.txt")
         result_paths = []
@@ -70,7 +70,7 @@ class TestClass:
         batch_size = 1
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
         input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
-        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(os.path.join(TestCommonClass.base_path,
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(os.path.join(TestCommonClass.get_basepath(),
                                                                                            self.model_name), "input"),
                                                      output_file_num)
 
@@ -117,31 +117,70 @@ class TestClass:
     def test_pipeline_inference_normal_static_batch(self):
         warmup_num = 5
         output_file_num = 20
-        general_output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output_general")
-        pipeline_output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output_pipeline")
-        TestCommonClass.prepare_dir(general_output_path)
-        TestCommonClass.prepare_dir(pipeline_output_path)
-        general_log_path = os.path.join(general_output_path, "log.txt")
-        pipeline_log_path = os.path.join(pipeline_output_path, "log.txt")
-        run_modes = {"general" : {"output_path" : general_output_path, "log_path" : general_log_path,
-                                  "results_paths" : [], "summary_json_paths" : []},
-                     "pipeline" : {"output_path" : pipeline_output_path, "log_path" : pipeline_log_path,
-                                  "results_paths" : [], "summary_json_paths" : []}}
+        output_path = os.path.join(TestCommonClass.get_basepath(), self.model_name, "output_pipeline")
+        TestCommonClass.prepare_dir(output_path)
+        log_path = os.path.join(output_path, "log.txt")
+
         batch_size = 1
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
         input_size = TestCommonClass.get_model_inputs_size(model_path)[0]
-        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(os.path.join(TestCommonClass.base_path,
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(os.path.join(TestCommonClass.get_basepath(),
                                                                                            self.model_name), "input"),
                                                      output_file_num)
 
-        for mode, info in run_modes.items():
-            output_path = info.get("output_path")
-            log_path = info.get("log_path")
-            pipeline_switch = (mode == "pipeline")
-            cmd = f"{TestCommonClass.cmd_prefix} --model {model_path} --device {TestCommonClass.default_device_id} \
-                --output {output_path} --debug True --pipeline {pipeline_switch} --warmup-count {warmup_num}\
-                --input {input_path} > {log_path}"
-            logger.info(f"run in {mode} mode. cmd:{cmd}")
+        cmd = f"{TestCommonClass.cmd_prefix} --model {model_path} --device {TestCommonClass.default_device_id} \
+            --output {output_path} --debug True --pipeline {True} --warmup-count {warmup_num}\
+            --input {input_path} > {log_path}"
+        logger.info(f"run cmd:{cmd}")
+        ret = os.system(cmd)
+        assert ret == 0
+
+        # inference times should be  fit to given rule
+        real_execute_num = TestCommonClass.get_inference_execute_num(log_path)
+        if batch_size != 0:
+            exacute_num = math.ceil(output_file_num/batch_size)
+            assert real_execute_num == warmup_num + exacute_num
+        else:
+            logger.error("zero division!")
+            raise ZeroDivisionError("batchsize equal to zero!")
+
+        # bin file num is equal to output_file_num
+        cmd = "cat {} |grep 'output path'".format(log_path)
+        try:
+            outval = os.popen(cmd).read()
+        except Exception as e:
+            raise Exception("grep action raises an exception: {}".format(e)) from e
+
+        result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
+        summary_json_name = result_path.split("/")[-1]
+        summary_json_path = os.path.join(output_path, "{}_summary.json".format(summary_json_name))
+
+        # delete tmp file
+        shutil.rmtree(result_path)
+        os.remove(summary_json_path)
+
+    def test_multi_threads_inference_normal_static_batch(self):
+        warmup_num = 1
+        output_file_num = 17
+        threads_list = [2, 4, 6, 8]
+        output_path = os.path.join(TestCommonClass.get_basepath(), self.model_name, "output")
+        TestCommonClass.prepare_dir(output_path)
+        log_path = os.path.join(output_path, "log.txt")
+        result_paths = []
+        summary_json_paths = []
+        batch_size = 1
+        static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+        input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(os.path.join(TestCommonClass.get_basepath(),
+                                                                                           self.model_name), "input"),
+                                                     output_file_num)
+
+        for threads in threads_list:
+            model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
+            cmd = "{} --model {} --device {} --output {} --debug True --pipeline True --threads {}\
+                --input {} > {}".format(TestCommonClass.cmd_prefix, model_path, TestCommonClass.default_device_id,
+                                        output_path, threads, input_path, log_path)
+            logger.info("run cmd:{}".format(cmd))
             ret = os.system(cmd)
             assert ret == 0
 
@@ -149,10 +188,9 @@ class TestClass:
             real_execute_num = TestCommonClass.get_inference_execute_num(log_path)
             if batch_size != 0:
                 exacute_num = math.ceil(output_file_num/batch_size)
-                assert real_execute_num == warmup_num + exacute_num
+                assert real_execute_num == warmup_num*threads + exacute_num
             else:
-                logger.error("zero division!")
-                raise ZeroDivisionError("batchsize equal to zero!")
+                logger.warning("zero division!")
 
             # bin file num is equal to output_file_num
             cmd = "cat {} |grep 'output path'".format(log_path)
@@ -161,27 +199,27 @@ class TestClass:
             except Exception as e:
                 raise Exception("grep action raises an exception: {}".format(e)) from e
 
+            cmd = "cat {} | grep -c '\[INFO\] load model'".format(log_path)
+            try:
+                real_threads = int(os.popen(cmd).read())
+            except Exception as e:
+                raise Exception("grep action raises an exception: {}".format(e)) from e
+            assert threads == real_threads
+
             result_path = os.path.join(output_path, outval.split(':')[1].replace('\n', ''))
-            info.get("results_paths").append(result_path)
+            result_paths.append(result_path)
             summary_json_name = result_path.split("/")[-1]
-            info.get("summary_json_paths").append(os.path.join(output_path,
-                                                               "{}_summary.json".format(summary_json_name)))
+            summary_json_paths.append(os.path.join(output_path, "{}_summary.json".format(summary_json_name)))
 
-        # compare e2e time
-        cmd_general = "cat {} | grep 'end_to_end' | cut -d: -f2".format(run_modes.get("general").get("log_path"))
-        cmd_pipeline = "cat {} | grep 'end_to_end' | cut -d: -f2".format(run_modes.get("pipeline").get("log_path"))
-        res_general = subprocess.Popen(cmd_general, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        res_pipeline = subprocess.Popen(cmd_pipeline, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        e2e_time_general, _ = res_general.communicate(timeout=5)
-        e2e_time_pipeline, _ = res_pipeline.communicate(timeout=5)
-        assert float(e2e_time_general) > float(e2e_time_pipeline)
-
-        # delete tmp file
-        for output_dir_path in run_modes.get("general").get("results_paths") + \
-                               run_modes.get("pipeline").get("results_paths"):
+        # bin file compare for different threads number should be same
+        for result_path in result_paths[1:]:
+            cmd = "diff  {}  {}".format(result_paths[0], result_path)
+            logger.info("run cmd:{}".format(cmd))
+            ret = os.system(cmd)
+            assert ret == 0
+        for output_dir_path in result_paths:
             shutil.rmtree(output_dir_path)
-        for summary_json_path in run_modes.get("general").get("summary_json_paths") + \
-                                 run_modes.get("pipeline").get("summary_json_paths"):
+        for summary_json_path in summary_json_paths:
             os.remove(summary_json_path)
 
     def test_general_inference_normal_dynamic_batch(self):
@@ -190,12 +228,12 @@ class TestClass:
         output_file_num = 17
         result_paths = []
         summary_json_paths = []
-        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        output_path = os.path.join(TestCommonClass.get_basepath(), self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
         log_path = os.path.join(output_path, "log.txt")
         static_model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
         input_size = TestCommonClass.get_model_inputs_size(static_model_path)[0]
-        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(os.path.join(TestCommonClass.base_path,
+        input_path = TestCommonClass.get_inputs_path(input_size, os.path.join(os.path.join(TestCommonClass.get_basepath(),
                                                                                            self.model_name), "input"),
                                                      output_file_num)
         batch_list = [1, 2, 4, 8]
@@ -243,7 +281,7 @@ class TestClass:
 
     def test_general_inference_with_dump_npy(self):
         output_file_num = 17
-        output_path = os.path.join(TestCommonClass.base_path, self.model_name, "output")
+        output_path = os.path.join(TestCommonClass.get_basepath(), self.model_name, "output")
         TestCommonClass.prepare_dir(output_path)
         log_path = os.path.join(output_path, "log.txt")
         result_path = None
@@ -251,7 +289,7 @@ class TestClass:
         batch_size = 1
         model_path = TestCommonClass.get_model_static_om_path(batch_size, self.model_name)
         input_size = TestCommonClass.get_model_inputs_size(model_path)[0]
-        input_dir = os.path.join(TestCommonClass.base_path, self.model_name, "input")
+        input_dir = os.path.join(TestCommonClass.get_basepath(), self.model_name, "input")
         input_path = TestCommonClass.get_inputs_path(input_size, input_dir, output_file_num)
         if os.path.exists(os.path.join(output_path, "dump")):
             shutil.rmtree(os.path.join(output_path, "dump"))

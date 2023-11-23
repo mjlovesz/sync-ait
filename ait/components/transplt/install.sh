@@ -53,8 +53,6 @@ install_clang_on_centos() {
   $SUDO yum install llvm-toolset-7.0-clang -y
   source /opt/rh/llvm-toolset-7.0/enable
   echo "source /opt/rh/llvm-toolset-7.0/enable" >> ~/.bashrc
-  export CPLUS_INCLUDE_PATH=/opt/rh/llvm-toolset-7.0/root/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH
-  echo "export CPLUS_INCLUDE_PATH=/opt/rh/llvm-toolset-7.0/root/usr/lib64/clang/7.0.1/include:\$CPLUS_INCLUDE_PATH" >> ~/.bashrc
 }
 
 install_clang_on_sles() {
@@ -65,8 +63,6 @@ install_clang_on_sles() {
   $SUDO zypper refresh
   $SUDO zypper install gcc gcc-c++
   $SUDO zypper install unzip libclang7 clang7-devel
-  export CPLUS_INCLUDE_PATH=/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH
-  echo "export CPLUS_INCLUDE_PATH=/usr/lib64/clang/7.0.1/include:$CPLUS_INCLUDE_PATH" >> ~/.bashrc
 }
 
 install_clang() {
@@ -90,6 +86,9 @@ install_clang() {
 download_config_and_headers() {
   cwd=$(pwd)
 
+  ori_mask=$(umask)
+  umask 022
+
   cd $(python3 -c "import app_analyze; print(app_analyze.__path__[0])") \
     && wget -O config.zip https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip \
     && unzip -o -q config.zip \
@@ -98,6 +97,7 @@ download_config_and_headers() {
     && unzip -o -q headers.zip \
     && rm headers.zip -f
 
+  umask $ori_mask
   cd $cwd
 }
 
@@ -107,5 +107,5 @@ if [ $# -gt 0 ] && [ "$1" == '--full' ]; then
   # Install clang
   install_clang
 
-  bash
+  $SHELL
 fi

@@ -24,6 +24,8 @@ from auto_optimizer.graph_refactor.interface import PlaceHolder
 from msquickcmp.common import utils
 from msquickcmp.common.utils import AccuracyCompareException
 
+NPU_ID_INFO_LENGTH = 3
+
 
 def check_single_op_is_valid(single_op, dump, custom_op, locat):
     if single_op:
@@ -38,32 +40,46 @@ def check_single_op_is_valid(single_op, dump, custom_op, locat):
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
 
 
-def get_memory_size_by_soc_type():
+def get_memory_size_by_soc_type(device_id):
     npu_id = -1
     memory_size = -1
-    pre_cmd = "npu-smi info -l"
-    res = subprocess.run(pre_cmd.split(), shell=False, stdout=subprocess.PIPE)
+    pre_cmd = "npu-smi info -m"
+    map_res = subprocess.run(pre_cmd.split(), shell=False, stdout=subprocess.PIPE)
 
-    for line in res.stdout.decode().split('\n'):
-        if "NPU ID" in line:
-            npu_id = int(line.split()[-1])
+    i_arg = -1
+    c_arg = -1
+    for line in map_res.stdout.decode().split('\n'):
+        info = line.split()
+        if not info or len(info) < NPU_ID_INFO_LENGTH:
+            continue
+        npu_id, chip_id, logic_id = info[:NPU_ID_INFO_LENGTH]
+        if logic_id == str(device_id):
+            i_arg = int(npu_id)
+            c_arg = int(chip_id)
             break
-    
-    if npu_id == -1:
-        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
-    
-    cmd = f"npu-smi info -t memory -i {npu_id}"
-    res = subprocess.run(cmd.split(), shell=False, stdout=subprocess.PIPE)
-    
-    for line in res.stdout.decode().split('\n'):
-        if "DDR Capacity(MB)" in line:
-            memory_size = int(line.split()[-1])
-            break
-    if memory_size == -1:
+
+    if i_arg >= 0 and c_arg >= 0:
+        mem_cmd = f"npu-smi info -i {i_arg} -c {c_arg} -t usages"
+        mem_res = subprocess.run(mem_cmd.split(), shell=False, stdout=subprocess.PIPE)
+        mem_capacity = -1
+        mem_usage = -1
+        lines =  mem_res.stdout.decode().split('\n')
+        for idx, line in enumerate(lines):
+            if "Capacity" in line:
+                current_capacity = int(line.split()[-1])
+                if current_capacity > mem_capacity and idx < len(lines) - 1:
+                    mem_capacity = current_capacity
+                    mem_usage = int(lines[idx + 1].split()[-1])
+        if mem_capacity == -1 and mem_usage == -1:
+            utils.logger.warning("npu-smi info -i x -t usages cannot be used")
+            mem_capacity = 3 * 1024 # 3GB
+            mem_usage = 0
+        available_mem = mem_capacity * ((100 - mem_usage) / 100)
+    else:
         raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
 
     # get size by Byte Unit
-    return memory_size // 4 * 1024 * 1024
+    return available_mem // 4 * 1024 * 1024
 
 
 def generate_single_op_dir(out_path):
@@ -80,7 +96,7 @@ def generate_single_op_dir(out_path):
 def broken(og: OnnxGraph, subgraph_onnx_file: str):
     """
     Function: break onnx into single operator pieces and keep in one onnx
-    
+
     Input: og -> OnnxGraph, subgraph_onnx_file -> output onnx file path
 
     Output:  single operator pieces onnx file
@@ -100,7 +116,7 @@ def broken(og: OnnxGraph, subgraph_onnx_file: str):
                 node.inputs[idx] = in_placeholder.name
                 in_ph_list.append(in_placeholder)
                 input_name_list.append(in_placeholder.name)
-        
+
         out_ph_list = []
         for idx, out in enumerate(node.outputs):
             if out in g_outputs:
@@ -110,7 +126,7 @@ def broken(og: OnnxGraph, subgraph_onnx_file: str):
             out_placeholder = OnnxPlaceHolder(new_name, ph.dtype, ph.shape)
             node.outputs[idx] = out_placeholder.name
             out_ph_list.append(out_placeholder)
-        
+
         og.inputs.extend(in_ph_list)
         og.outputs.extend(out_ph_list)
     og.save(subgraph_onnx_file)
@@ -166,9 +182,9 @@ def dynamic_divide_onnx(out_path: str, subog: OnnxGraph, memory_size: int):
     """
     Function:
     according to the patchsize to divide the given onnx into suitable size onnxs.
-    
+
     Input:subog:OnnxGraph needed to be divided
-    
+
     Output:
     Divided onnx list which contains a series of onnx paths
     """
