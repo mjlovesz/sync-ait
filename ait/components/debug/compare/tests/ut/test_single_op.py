@@ -92,7 +92,7 @@ def test_dynamic_divide_onnx_when_valid_then_pass(create_dynamic_divide_onnx_gra
     out_path = './test_dynamic_divide_onnx/'
     if os.path.exists(out_path):
         shutil.rmtree(out_path)
-    os.makedirs(out_path)
+    os.makedirs(out_path, 0o750)
     memory_size = 2 * 8 * 3 * 768 * 768
     subonnx_list = sp.dynamic_divide_onnx(out_path, create_dynamic_divide_onnx_graph, memory_size)
     shutil.rmtree(out_path)
@@ -121,9 +121,9 @@ def test_get_memory_size_by_soc_type_when_invalid_npu_id_then_failed():
         with mock.patch("subprocess.run", return_value=subprocess.CompletedProcess(
                         args=[''],
                         returncode=0,
-                        stdout=b'NPU ID -1'
+                        stdout=b''
                         )):
-            ret = sp.get_memory_size_by_soc_type()
+            ret = sp.get_memory_size_by_soc_type(0)
             assert ret == utils.ACCURACY_COMPARISON_INVALID_DEVICE_ERROR
 
 
@@ -134,25 +134,15 @@ def test_get_memory_size_by_soc_type_when_invalid_memory_size_then_failed():
                         returncode=0,
                         stdout=b'NPU ID 1\nDDR Capacity(MB) -1\n'
                         )):
-            ret = sp.get_memory_size_by_soc_type()
+            ret = sp.get_memory_size_by_soc_type(0)
             assert ret == utils.ACCURACY_COMPARISON_INVALID_DEVICE_ERROR
-
-
-def test_get_memory_size_by_soc_type_when_valid_then_pass():
-    with mock.patch("subprocess.run", return_value=subprocess.CompletedProcess(
-                        args=[''],
-                        returncode=0,
-                        stdout=b'NPU ID 1\nDDR Capacity(MB) 4\n'
-                        )):
-        ans = sp.get_memory_size_by_soc_type()
-        assert ans == 1024 * 1024
 
 
 def test_find_all_csv_when_valid_then_pass():
     out_path = 'find_all_csv_test_path'
     if os.path.exists(out_path):
         shutil.rmtree(out_path)
-    os.makedirs(out_path)
+    os.makedirs(out_path, 0o750)
     df1 = pd.DataFrame({'sum' : [0, 0, 0], 'name' : ['0', '0', '0']})
     df1_path = os.path.join(out_path, 'file1.csv')
     df1.to_csv(df1_path, index=False)

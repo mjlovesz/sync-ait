@@ -50,7 +50,7 @@ import java.util.concurrent.Future;
  *ShowResult
  *
  * @author cabbage
- * @date 2023/06/07
+ * @since 2023/06/07
  */
 public class ShowResult extends JTable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ShowResult.class);

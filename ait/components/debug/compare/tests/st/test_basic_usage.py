@@ -55,6 +55,7 @@ def width_onnx_model():
         torch.nn.Linear(32, 10),
     )
     torch.onnx.export(model, torch.ones(INPUT_SHAPE), FAKE_ONNX_MODEL_PATH)
+    os.chmod(FAKE_ONNX_MODEL_PATH, 0o750)
     yield FAKE_ONNX_MODEL_PATH
 
     if os.path.exists(FAKE_ONNX_MODEL_PATH):
@@ -67,7 +68,7 @@ def width_onnx_model():
 def fake_om_model(width_onnx_model):
     if not os.path.exists(FAKE_OM_MODEL_PATH):
         cmd = 'atc --model={}  --framework=5 --output={} \
-            --soc_version={}'.format(width_onnx_model, 
+            --soc_version={}'.format(width_onnx_model,
                                      OM_OUT_PATH,
                                      acl.get_soc_name())
         subprocess.run(cmd.split(), shell=False)
@@ -79,16 +80,16 @@ def fake_om_model(width_onnx_model):
 
 
 def test_basic_usage_then_pass(width_onnx_model, fake_om_model):
-    cmd = 'ait debug compare -gm {} -om {} -c {} -o {} --max-cmp-size 1024'.format(width_onnx_model, 
+    cmd = 'ait debug compare -gm {} -om {} -c {} -o {} --max-cmp-size 1024'.format(width_onnx_model,
                                                     fake_om_model,
                                                     CANN_PATH,
                                                     OUT_PATH)
     if not os.path.exists(OUT_PATH):
-        os.mkdir(OUT_PATH)
+        os.mkdir(OUT_PATH, 0o750)
 
     ret = os.system(cmd)
     assert ret == 0
-    
+
     assert len(os.listdir(OUT_PATH)) > 0
 
     if os.path.exists(OUT_PATH):

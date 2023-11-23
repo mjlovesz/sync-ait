@@ -13,9 +13,31 @@
 #### 使用入口
 profile可以直接通过ait命令行形式启动模型推理的性能分析。使用ait benchmark(ait benchmark为ait自带的推理工程，用户只需修改om路径即可进行模型推理的性能分析及数据采集)推理的性能分析的命令如下：
 ```bash
-ait profile --application "ait benchmark -om *.om" --output <some path>
+ait profile --application "ait benchmark -om *.om --device 0" --output <some path>
 ```
 其中，*为OM离线模型文件名；<some path>为路径名称。
+得到主要输出结果如下：
+```
+<some path>
+└── profiler
+    └── PROF_000001_20231023172400639_NJDOONIBJCPMJGGB
+        ├── device_0 # device侧的结果，device_0表示device id 为0的芯片的性能数据
+        │   ├── data # 原始性能数据
+        │   ├── log # profiling过程的log日志
+        │   ├── summary # 性能数据汇总表格
+        │   └── timeline # 通过时间轴呈现性能数据
+        └── host
+            ├── data # host侧的原始数据
+            ├── log # profiling过程的log日志
+            ├── summary # 性能数据汇总表格
+            └── timeline # 通过时间轴呈现性能数据
+
+```
+summary 和 timeline中的文件因命令行参数的选择而不同，请依据[使用场景](#使用场景)查看每个文件的具体含义。
+- 采集AI任务运行性能数据相关[summary文件和timeline文件介绍](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/profile/02_collect_ai_task_data)
+- 采集昇腾AI处理器系统数据相关[summary文件和timeline文件介绍](https://gitee.com/ascend/ait/tree/master/ait/examples/cli/profile/03_collect_ascend_ai_processor_data)
+summary文件夹下的文件可以用Excel等软件打开，timeline下的json文件可以在chrome浏览器下用[tracing](chrome://tracing)打开。
+
 
 #### 参数说明
   | 参数名                    | 描述                                       | 必选   |

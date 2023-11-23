@@ -51,21 +51,22 @@ import java.util.Map;
  * OutputFactory
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
-public class OutputFactory implements ToolWindowFactory, DumbAware{
+public class OutputFactory implements ToolWindowFactory, DumbAware {
     private static final String OUTPUT_TOOL_WINDOW_ID = "output";
     private static final String OUTPUT_TOOL_WINDOW_DETAILS = "Detail";
     private static final String DARCULA = "Darcula";
     private static final String DARK = "Dark";
-    private static final String Output_NORMAL = "Normal";
-    private static final String Output_Detail = "Detail";
+    private static final String OUTPUT_NORMAL = "Normal";
+    private static final String OUTPUT_DETAIL = "Detail";
     private static ConsoleView console;
     private static ConsoleView details;
     private static Map<Project, ConsoleView> normalConsoleViewmap = new HashMap<>();
     private static Map<Project, ConsoleView> detailConsoleViewmap = new HashMap<>();
     private static Content consoleContent;
     private static Content detailsContent;
+
     public static Map<Project, ConsoleView> getNormalConsoleViewmap() {
         return normalConsoleViewmap;
     }
@@ -74,7 +75,8 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
     }
 
     private static void setContentTheme(Content content) {
-        if (UIManager.getLookAndFeel().getName().contains(DARCULA) || UIManager.getLookAndFeel().getName().contains(DARK)) {
+        if (UIManager.getLookAndFeel().getName().contains(DARCULA)
+                || UIManager.getLookAndFeel().getName().contains(DARK)) {
             content.setIcon(CommonLibIcons.DETAIL_ICON_DARK);
         } else {
             content.setIcon(CommonLibIcons.DETAIL_ICON);
@@ -82,7 +84,8 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
     }
 
     private static void setToolWindowTheme(ToolWindow toolWindow) {
-        if (UIManager.getLookAndFeel().getName().contains(DARCULA) || UIManager.getLookAndFeel().getName().contains(DARK)) {
+        if (UIManager.getLookAndFeel().getName().contains(DARCULA)
+                || UIManager.getLookAndFeel().getName().contains(DARK)) {
             toolWindow.setIcon(CommonLibIcons.TOOL_ICON_DARK);
         } else {
             toolWindow.setIcon(CommonLibIcons.TOOL_ICON);
@@ -120,7 +123,7 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
      */
     public static void activate(Project project) {
         ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(OUTPUT_TOOL_WINDOW_ID);
-        if (toolWindow == null){
+        if (toolWindow == null) {
             return;
         }
         ApplicationManager.getApplication().invokeLater(() -> {
@@ -138,11 +141,10 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
      */
     public static void show(Project project) {
         ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(OUTPUT_TOOL_WINDOW_ID);
-        if (toolWindow == null){
+        if (toolWindow == null) {
             return;
         }
-        ApplicationManager.getApplication().invokeAndWait(() ->
-                {
+        ApplicationManager.getApplication().invokeAndWait(() -> {
                     if (!project.isDisposed()) {
                         toolWindow.show(null);
                     }
@@ -153,22 +155,22 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
     /**
      * set icon for output of output toolwindow
      *
-     * @param TOOL_ICON tool icon
+     * @param toolIcon tool icon
      */
-    public static void setConsoleContent(Icon TOOL_ICON) {
+    public static void setConsoleContent(Icon toolIcon) {
         if (consoleContent != null) {
-            consoleContent.setIcon(TOOL_ICON);
+            consoleContent.setIcon(toolIcon);
         }
     }
 
     /**
      * set icon for detail of output toolwindow
      *
-     * @param TOOL_ICON tool icon
+     * @param toolIcon tool icon
      */
-    public static void setDetailsContent(Icon TOOL_ICON) {
+    public static void setDetailsContent(Icon toolIcon) {
         if (detailsContent != null) {
-            detailsContent.setIcon(TOOL_ICON);
+            detailsContent.setIcon(toolIcon);
         }
     }
 
@@ -193,7 +195,7 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
         consolePanel.add(component, BorderLayout.CENTER);
 
         final ContentManager contentManager = toolWindow.getContentManager();
-        consoleContent = contentManager.getFactory().createContent(consolePanel, Output_NORMAL, true);
+        consoleContent = contentManager.getFactory().createContent(consolePanel, OUTPUT_NORMAL, true);
         consoleContent.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
         setContentTheme(consoleContent);
         contentManager.addContent(consoleContent);
@@ -201,7 +203,7 @@ public class OutputFactory implements ToolWindowFactory, DumbAware{
 
 
         details = TextConsoleBuilderFactory.getInstance().createBuilder(project).getConsole();
-        detailsContent = contentManager.getFactory().createContent(consolePanel, Output_Detail, true);
+        detailsContent = contentManager.getFactory().createContent(consolePanel, OUTPUT_DETAIL, true);
         detailsContent.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
         setContentTheme(detailsContent);
         contentManager.addContent(detailsContent);

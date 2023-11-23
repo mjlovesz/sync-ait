@@ -11,15 +11,36 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import argparse
+import os
 from components.utils.parser import BaseCommand
 from app_analyze.utils import log_util
 from app_analyze.porting.app import start_scan_kit
+from components.utils.file_open_check import FileStat
+
+
+
+def check_source_path(value):
+    source_list = value.split(',')
+    for path in source_list:
+        path_value = str(path)
+        try:
+            file_stat = FileStat(path_value)
+        except Exception as err:
+            raise argparse.ArgumentTypeError(f"source path:{path_value} is illegal. Please check.") from err
+        if not file_stat.is_basically_legal('read'):
+            raise argparse.ArgumentTypeError(f"source path:{path_value} is illegal. Please check.")
+        if not file_stat.is_dir:
+            raise argparse.ArgumentTypeError(f"source path:{path_value} is not a directory. Please check.")
+    return value
 
 
 class TranspltCommand(BaseCommand):
     def add_arguments(self, parser):
         # 逗号分隔的情况下只有一个列表元素
-        parser.add_argument("-s", "--source", required=True, help="directories of source folder")
+        parser.add_argument(
+            "-s", "--source", type=check_source_path, required=True, help="directories of source folder"
+        )
         parser.add_argument(
             "-f",
             "--report-type",
@@ -39,9 +60,24 @@ class TranspltCommand(BaseCommand):
             help="specify scanner mode, currently support all and api only"
         )
 
+    @staticmethod
+    def _set_env():
+        if os.path.exists("/opt/rh/llvm-toolset-7.0/root/usr/lib64/clang/7.0.1/include"):
+            extra_path = "/opt/rh/llvm-toolset-7.0/root/usr/lib64/clang/7.0.1/include"
+        elif os.path.exists("/usr/lib64/clang/7.0.1/include"):
+            extra_path = "/usr/lib64/clang/7.0.1/include"
+        else:
+            extra_path = ""
+
+        c_plus_include_path = os.environ.get("CPLUS_INCLUDE_PATH")
+        if len(extra_path) > 0:
+            c_plus_include_path = f"{extra_path}:{c_plus_include_path}"
+            os.environ["CPLUS_INCLUDE_PATH"] = c_plus_include_path
+
     def handle(self, args):
         log_util.set_logger_level(args.log_level)
         log_util.init_file_logger()
+        self._set_env()
         start_scan_kit(args)
 
 

@@ -30,7 +30,7 @@ import javax.swing.UIManager;
  * ThemeChangeAction
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class ThemeChangeAction extends AnAction {
     @Override
@@ -56,8 +56,8 @@ public class ThemeChangeAction extends AnAction {
     public void setToolWindowIcon(@NotNull AnActionEvent event) {
         ToolWindow outputToolWindows = ToolWindowManager.getInstance(event.getProject()).getToolWindow("Output");
         if (outputToolWindows != null) {
-            if (UIManager.getLookAndFeel().getName().contains("Darcula") ||
-                    UIManager.getLookAndFeel().getName().contains("Dark")) {
+            if (UIManager.getLookAndFeel().getName().contains("Darcula")
+                    || UIManager.getLookAndFeel().getName().contains("Dark")) {
                 outputToolWindows.setIcon(CommonLibIcons.TOOL_ICON_DARK);
                 OutputFactory.setConsoleContent(CommonLibIcons.TOOL_ICON_DARK);
                 OutputFactory.setDetailsContent(CommonLibIcons.DETAIL_ICON_DARK);

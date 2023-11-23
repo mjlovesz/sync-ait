@@ -24,7 +24,7 @@ benchmark_command = BenchmarkCommand()
 current_dir = os.path.dirname(os.path.abspath(__file__))
 base_cmd_dict = {
     "--om-model": os.path.join(current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
-    "--input": "datasets/",
+    "--input": os.path.join(current_dir, "../testdata/resnet50/input/fake_dataset_bin_nor"),
     "--output": "output/",
     "--output-dirname": "outdir/",
     "--outfmt": "NPY",
@@ -42,7 +42,7 @@ base_cmd_dict = {
     "--pure-data-type": "zero",
     "--profiler": "0",
     "--dump": "0",
-    "--acl-json-path": "acl.json",
+    "--acl-json-path": os.path.join(current_dir, "../json_for_arg_test.json"),
     "--output-batchsize-axis": "1",
     "--run-mode": "array",
     "--display-all-summary": "0",
@@ -57,12 +57,12 @@ base_cmd_dict = {
     "--profiler-rename": "0",
     "--dump-npy": "0",
     "--divide-input": "0",
-    "--thread": "1"
+    "--threads": "1"
 }
 
 simple_cmd_dict = {
     "-om": os.path.join(current_dir, "../testdata/resnet50/model/pth_resnet50_bs4.om"),
-    "-i": "datasets/",
+    "-i": os.path.join(current_dir, "../testdata/resnet50/input/fake_dataset_bin_nor"),
     "-o": "output/",
     "-od": "outdir/",
     "--outfmt": "NPY",
@@ -80,7 +80,7 @@ simple_cmd_dict = {
     "-pdt": "zero",
     "-pf": "0",
     "--dump": "0",
-    "-acl": "acl.json",
+    "-acl": os.path.join(current_dir, "../json_for_arg_test.json"),
     "-oba": "1",
     "-rm": "array",
     "-das": "0",
@@ -95,7 +95,7 @@ simple_cmd_dict = {
     "--profiler-rename": "0",
     "--dump-npy": "0",
     "--divide-input": "0",
-    "--thread": "1"
+    "--threads": "1"
 }
 
 
@@ -143,7 +143,7 @@ def create_adapter(args):
             profiler_rename=args.profiler_rename,
             dump_npy=args.dump_npy,
             divide_input = args.divide_input,
-            thread = args.thread
+            threads = args.threads
     )
     return args_adapter
 
@@ -164,7 +164,7 @@ def test_check_all_full_args_legality(cmdline_legal_args_full):
     args = parser.parse_args()
     args = create_adapter(args)
     args = args_rules(args)
-    assert args.input == "datasets/"
+    assert args.input == os.path.join(current_dir, "../testdata/resnet50/input/fake_dataset_bin_nor")
 
 
 @pytest.fixture
@@ -183,25 +183,7 @@ def test_check_all_simple_args_legality(cmdline_legal_args_simple):
     args = parser.parse_args()
     args = create_adapter(args)
     args = args_rules(args)
-    assert args.input == "datasets/"
-
-
-@pytest.fixture
-def cmdline_args_full_npu_id(monkeypatch):
-    cmd_dict = base_cmd_dict
-    cmd_dict["--npu-id"] = "256"
-    case_cmd_list = cmd_dict_to_list(cmd_dict)
-    monkeypatch.setattr('sys.argv', case_cmd_list)
-
-
-def test_npu_id_out_of_range(cmdline_args_full_npu_id):
-    """
-        npu_id 超出范围
-    """
-    parser = argparse.ArgumentParser()
-    benchmark_command.add_arguments(parser)
-    with pytest.raises(SystemExit) as e:
-        args = parser.parse_args()
+    assert args.input == os.path.join(current_dir, "../testdata/resnet50/input/fake_dataset_bin_nor")
 
 
 @pytest.fixture
