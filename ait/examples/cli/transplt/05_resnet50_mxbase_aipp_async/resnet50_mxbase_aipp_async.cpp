@@ -29,14 +29,12 @@ int main(int argc, char **argv)
     stream.CreateAscendStream();
 
     auto start = std::chrono::high_resolution_clock::now();
-    std::string img_file = "test.png";
     MxBase::ImageProcessor processor;
     MxBase::Image decoded_image;
-    processor.Decode(img_file, decoded_image, MxBase::ImageFormat::RGB_888);
+    processor.Decode("test.png", decoded_image, MxBase::ImageFormat::RGB_888);
     MxBase::Image resized_image;
-    int inputWidth = 224;
-    int inputHeight = 224;
-    processor.Resize(decoded_image, MxBase::Size(inputWidth, inputHeight), resized_image,
+    int inputWidthHeight = 224;
+    processor.Resize(decoded_image, MxBase::Size(inputWidthHeight, inputWidthHeight), resized_image,
                      MxBase::Interpolation::HUAWEI_HIGH_ORDER_FILTER, stream);
     stream.Synchronize();
     auto end = std::chrono::high_resolution_clock::now();
@@ -48,13 +46,11 @@ int main(int argc, char **argv)
     tensor.ToDevice(device_id);
     std::vector<MxBase::Tensor> mx_inputs = {tensor};
     // 获取输出tensor的shape
-    uint32_t index = 0;
-    const std::vector<uint32_t> shape = net.GetOutputTensorShape(index);
+    const std::vector<uint32_t> shape = net.GetOutputTensorShape(0);
     // 获取输出tensor的数量
     uint32_t num_outputs = net.GetOutputTensorNum();
     // 创建输出tensor的容器
-    std::vector<MxBase::Tensor> outputs;
-    outputs.resize(num_outputs);
+    std::vector<MxBase::Tensor> outputs(num_outputs);
     // 创建容器中tensor并分配内存
     for (size_t i = 0; i < num_outputs; ++i) {
         outputs[i] = MxBase::Tensor(shape, MxBase::TensorDType::FLOAT32, device_id);
@@ -80,11 +76,10 @@ int main(int argc, char **argv)
             argmax = ii;
         }
     }
-    std::cout << "index: " << argmax << std::endl;
-    std::cout << "score: " << maxScore << std::endl;
+    std::cout << "index: " << argmax << std::endl << "score: " << maxScore << std::endl;
 
-    return 0;
     // 销毁stram去初始化
     stream.DestroyAscendStream();
     MxBase::MxDeInit();
+    return 0;
 }
