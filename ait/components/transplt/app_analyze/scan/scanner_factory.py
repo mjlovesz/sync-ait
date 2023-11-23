@@ -42,7 +42,9 @@ class ScannerFactory:
         :return: 扫描器实例对象
         """
         if scanner_type == ScannerType.CPP_SCANNER:
-            return CxxScanner(list(self.scanner_params['cpp_files']['cpp'].keys()))
+            cxx_files = list(self.scanner_params['cpp_files']['cpp'].keys())
+            cxx_parser = self.scanner_params['cpp_files']['cxx_parser']
+            return CxxScanner(cxx_files, cxx_parser)
         if scanner_type == ScannerType.CMAKE_SCANNER:
             return CMakeScanner(self.scanner_params['cmake_files'])
         if scanner_type == ScannerType.PYTHON_SCANNER:
