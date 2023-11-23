@@ -36,6 +36,12 @@ function download_from_obs() {
     done
 }
 
+function install_requirements() {
+    pip3 install -r ../requirements.txt
+}
+
+install_requirements
+
 copy_source_code_dir_to_tests
 
 download_from_obs config.zip headers.zip

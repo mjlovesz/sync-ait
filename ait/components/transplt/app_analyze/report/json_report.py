@@ -40,7 +40,7 @@ class JsonReport(Report):
     def initialize(self, project):
         self.report_content = project.get_results()
 
-    def generate(self):
+    def generate(self, fmt=None):
         if self.report_path == '':
             self.report_path = KitConfig.SOURCE_DIRECTORY + '/' + 'output.json'
 

@@ -81,14 +81,17 @@ class FileMatrix:
         :return:
         """
         for working_dir in self.inputs.directories:
-            for root, _, files in os.walk(working_dir, onerror=self._walk_error):
-                ex_flag = list(set(root.split(os.path.sep)).intersection(set(self.excluded_dir_list)))
-                if ex_flag:
-                    continue
+            if os.path.isfile(working_dir):
+                self._add_file_matrix(working_dir, False)
+            else:
+                for root, _, files in os.walk(working_dir, onerror=self._walk_error):
+                    ex_flag = list(set(root.split(os.path.sep)).intersection(set(self.excluded_dir_list)))
+                    if ex_flag:
+                        continue
 
-                for file_name in files:
-                    file_path = os.path.join(root, file_name)
-                    self._add_file_matrix(file_path, False)
+                    for file_name in files:
+                        file_path = os.path.join(root, file_name)
+                        self._add_file_matrix(file_path, False)
 
         logger.debug("The makefile files identified in the %s project are: %s",
                      self.inputs.directories, self.files.get('makefiles'))
