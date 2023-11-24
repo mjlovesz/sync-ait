@@ -109,7 +109,8 @@ def is_lower_onnx_version(graph: BaseGraph, limit_version = 13) -> bool:
     """
     check current onnx version is lower than limit version
     """
-    def domain_check(domain): return domain == '' or domain == 'ai.onnx'
+    def domain_check(domain): 
+        return domain == '' or domain == 'ai.onnx'
     opset_versions = [opset.version for opset in graph.opset_imports if domain_check(opset.domain)]
     return len(opset_versions) == 0 or opset_versions[0] < limit_version
 
