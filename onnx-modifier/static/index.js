@@ -497,15 +497,15 @@ function validateCustomOperatorForm() {
     }
 
 
-    var outputs = JSON.parse(document.getElementById('customOutputs').value);
-    if (!validateJSONLength(outputs) || !validateJSONContainsName(outputs)) {
-        return false;
-    }
-
 
     if (!isJSONValid(document.getElementById('customOutputs').value)) {
         window._host.show_message('Warn', 'Outputs field contains invalid JSON.', 'warn');
 
+        return false;
+    }
+
+    var outputs = JSON.parse(document.getElementById('customOutputs').value);
+    if (!validateJSONLength(outputs) || !validateJSONContainsName(outputs)) {
         return false;
     }
 
