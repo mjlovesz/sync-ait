@@ -107,7 +107,7 @@ def valid_json_file_or_dir(value):
         file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal('read'):
+    if not file_stat.is_basically_legal('read', strict_permission=False):
         raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
     
     # input type: dir or json
