@@ -374,6 +374,25 @@ def register_interface(app, request, send_file, temp_dir_path, init_file_path=No
             file_data = json.load(file)
         return jsonify(file_data)
 
+    @app.route('/delete-custom-operator', methods=['POST'])
+    def delete_custom_operator():
+        # 获取前端发送的数据
+        data = request.json
+        operator_name = data.get('name')
+        operator_module = data.get('module')
+
+        # 打开 JSON 文件并删除指定算子
+        with open('./static/onnx-metadata.json', 'r+', encoding='utf-8') as file:
+            operators = json.load(file)
+            operators = [op for op in operators if
+                         not (op['name'] == operator_name and op['module'] == operator_module)]
+
+            # 重写文件
+            file.seek(0)
+            file.truncate()
+            json.dump(operators, file, indent=4, ensure_ascii=False)
+
+        return jsonify({"message": "Operator deleted successfully"})
     @app.route('/add-custom-operator', methods=['POST'])
     def add_custom_operator():
         # 获取前端发送的数据

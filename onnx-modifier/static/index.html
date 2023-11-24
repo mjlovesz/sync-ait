@@ -293,11 +293,13 @@
     </div>
 
     <div class="footer">
+        <button id="openDeleteOperatorDialog">Delete Operator</button>
         <button id="openCustomOperatorDialog">Add Custom Operator</button>
         <button data-value="">Cancel</button>
         <button data-value="Confirm">Confirm</button>
     </div>
 </dialog>
+
 
 
 <dialog id="customOperatorDialog" class="dialog message-box">
@@ -371,6 +373,19 @@
     </form>
 </dialog>
 
+
+<dialog id="deleteOperatorDialog" class="dialog message-box">
+    <form id="deleteOperatorForm">
+        <label for="deleteOperatorName">Operator Name:</label>
+        <input type="text" id="deleteOperatorName" name="deleteOperatorName"><br>
+        <label for="deleteOperatorModule">Module:</label>
+        <input type="text" id="deleteOperatorModule" name="deleteOperatorModule"><br>
+        <div class="footer">
+            <button type="button" onclick="document.getElementById('deleteOperatorDialog').close()">Cancel</button>
+            <button type="submit">Delete</button>
+        </div>
+    </form>
+</dialog>
 
 <dialog id="addinput-dialog" class="dialog message-box">
     <p class="title"> Add New Input </p>

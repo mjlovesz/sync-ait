@@ -692,6 +692,46 @@ function submitCustomOperator() {
 }
 
 
+document.getElementById('openDeleteOperatorDialog').addEventListener('click', function() {
+    document.getElementById('deleteOperatorDialog').showModal();
+});
+
+document.getElementById('deleteOperatorForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    deleteCustomOperator();
+});
+
+function deleteCustomOperator() {
+    var operatorName = document.getElementById('deleteOperatorName').value.trim();
+    var operatorModule = document.getElementById('deleteOperatorModule').value.trim();
+
+    // 检查模块是否受保护
+    const protectedModules = ["ai.onnx", "com.microsoft", "ai.onnx.preview.training", "ai.onnx.ml"];
+    if (protectedModules.includes(operatorModule)) {
+        window._host.show_message('Error', 'Cannot delete operators from protected modules.', 'error');
+        return;
+    }
+
+    // 从 JSON 文件中删除算子
+    fetch('/delete-custom-operator', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: operatorName, module: operatorModule })
+    })
+    .then(response => response.json())
+    .then(data => {
+        window._host.show_message('Success!', 'Operator deleted successfully', 'success');
+        document.getElementById('deleteOperatorDialog').close();
+        updateOperatorDropdown();
+    })
+    .catch(error => {
+        window._host.show_message('Error', 'Delete Error, please check the log.', 'error');
+    });
+}
+
+
         this.document.getElementById('version').innerText = this.version;
 
         if (this._meta.file) {
