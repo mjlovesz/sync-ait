@@ -485,61 +485,85 @@ function validateCustomOperatorForm() {
         window._host.show_message('Warn', 'Version field is required.', 'warn');
         return false;
     }
+
+    var customInputsValue = document.getElementById('customInputs').value;
+
+    if (!customInputsValue.trim()) {
+        window._host.show_message('Warn', 'Inputs field cannot be empty.', 'warn');
+        return false;
+    }
+
+    if (!validateStringLength(customInputsValue)) {
+        window._host.show_message('Warn', 'Inputs data is too long.', 'warn');
+        return false;
+    }
+
     if (!isJSONValid(document.getElementById('customInputs').value)) {
         window._host.show_message('Warn', 'Inputs field contains invalid JSON.', 'warn');
-
         return false;
     }
 
     var inputs = JSON.parse(document.getElementById('customInputs').value);
-    if (!validateJSONLength(inputs) || !validateJSONContainsName(inputs)) {
+    if (!validateJSONContainsName(inputs)) {
         return false;
     }
 
+
+    var customOutputsValue = document.getElementById('customOutputs').value;
+
+    if (!customOutputsValue.trim()) {
+        window._host.show_message('Warn', 'Outputs field cannot be empty.', 'warn');
+        return false;
+    }
+
+    if (!validateStringLength(customOutputsValue)) {
+        window._host.show_message('Warn', 'Outputs data is too long.', 'warn');
+        return false;
+    }
 
 
     if (!isJSONValid(document.getElementById('customOutputs').value)) {
         window._host.show_message('Warn', 'Outputs field contains invalid JSON.', 'warn');
-
         return false;
     }
 
     var outputs = JSON.parse(document.getElementById('customOutputs').value);
-    if (!validateJSONLength(outputs) || !validateJSONContainsName(outputs)) {
+    if (!validateJSONContainsName(outputs)) {
+        return false;
+    }
+
+    var customAttributes = document.getElementById('customAttributes').value;
+
+    if (!validateStringLength(customAttributes)) {
+        window._host.show_message('Warn', 'customAttributes data is too long.', 'warn');
         return false;
     }
 
     if (document.getElementById('customAttributes').value && !isJSONValid(document.getElementById('customAttributes').value)) {
         window._host.show_message('Warn', 'Attributes field contains invalid JSON.', 'warn');
-
         return false;
     }
 
-    var customAttributes = document.getElementById('customAttributes').value;
-    if (customAttributes && !validateJSONLength(JSON.parse(customAttributes))) {
+
+    var customTypeConstraints = document.getElementById('customTypeConstraints').value;
+
+    if (!validateStringLength(customTypeConstraints)) {
+        window._host.show_message('Warn', 'customTypeConstraints data is too long.', 'warn');
         return false;
     }
-
 
     if (document.getElementById('customTypeConstraints').value && !isJSONValid(document.getElementById('customTypeConstraints').value)) {
         window._host.show_message('Warn', 'Type Constraints field contains invalid JSON.', 'warn');
-
         return false;
     }
 
-    var customTypeConstraints = document.getElementById('customTypeConstraints').value;
-    if (customTypeConstraints && !validateJSONLength(JSON.parse(customTypeConstraints))) {
-        return false;
-    }
 
     return true;
 }
 
-function validateJSONLength(jsonArray) {
-    // JSON 的最大长度，例如 1000
-    const MAX_LENGTH = 10000;
-    if (JSON.stringify(jsonArray).length > MAX_LENGTH) {
-        window._host.show_message('Warn', 'JSON data is too long.', 'warn');
+function validateStringLength(stringValue) {
+    const MAX_LENGTH = 10000; // 最大长度，例如 10000 字符
+    if (stringValue.length > MAX_LENGTH) {
         return false;
     }
     return true;
