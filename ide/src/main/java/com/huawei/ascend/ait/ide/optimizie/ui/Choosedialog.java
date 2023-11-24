@@ -17,8 +17,8 @@
 package com.huawei.ascend.ait.ide.optimizie.ui;
 
 import com.huawei.ascend.ait.ide.Icons;
-import com.huawei.ascend.ait.ide.commonlib.pluginTool.PluginGet;
-import com.huawei.ascend.ait.ide.commonlib.pluginTool.PluginClassId;
+import com.huawei.ascend.ait.ide.commonlib.plugintool.PluginGet;
+import com.huawei.ascend.ait.ide.commonlib.plugintool.PluginClassId;
 import com.huawei.ascend.ait.ide.commonlib.output.OutputFactory;
 import com.huawei.ascend.ait.ide.commonlib.output.OutputService;
 import com.huawei.ascend.ait.ide.commonlib.ui.UiUtils;
@@ -50,7 +50,7 @@ import java.util.function.Function;
  * choosedialog
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class Choosedialog extends JFrame {
     private JPanel root;
@@ -181,11 +181,11 @@ public class Choosedialog extends JFrame {
      * initMouse
      */
     private void initMouse() {
-        checkPluginsAndAddAction(modelAnalyse, StepNum.MODEL_ANALYSE, PluginClassId.Inference_PluginId);
-        checkPluginsAndAddAction(modelConverter, StepNum.MODEL_CONVERTER, PluginClassId.AitIde_PluginId);
-        checkPluginsAndAddAction(aisBench, StepNum.AIS_BENCH, PluginClassId.AitIde_PluginId);
-        checkPluginsAndAddAction(compare, StepNum.COMPARE, PluginClassId.AitIde_PluginId);
-        checkPluginsAndAddAction(systemProfiler, StepNum.SYSTEM_PROFILER, PluginClassId.Profiler_PluginId);
+        checkPluginsAndAddAction(modelAnalyse, StepNum.MODEL_ANALYSE, PluginClassId.INFERENCE_PLUGIN_ID);
+        checkPluginsAndAddAction(modelConverter, StepNum.MODEL_CONVERTER, PluginClassId.AIT_IDE_PLUGIN_ID);
+        checkPluginsAndAddAction(aisBench, StepNum.AIS_BENCH, PluginClassId.AIT_IDE_PLUGIN_ID);
+        checkPluginsAndAddAction(compare, StepNum.COMPARE, PluginClassId.AIT_IDE_PLUGIN_ID);
+        checkPluginsAndAddAction(systemProfiler, StepNum.SYSTEM_PROFILER, PluginClassId.PROFILER_PLUGIN_ID);
     }
 
     /**
@@ -204,14 +204,14 @@ public class Choosedialog extends JFrame {
     private class ModelAnalyse {
         ModelAnalyse() {
             setIcon(modelAnalyse, Icons.MODEL_ANALYSE_DARK, Icons.MODEL_ANALYSE_LIGHT);
-            setStepIcons(modelAnalyseJpanel, modelAnalyse, step1, PluginClassId.Inference_PluginId);
+            setStepIcons(modelAnalyseJpanel, modelAnalyse, step1, PluginClassId.INFERENCE_PLUGIN_ID);
             actionMappings.put(StepNum.MODEL_ANALYSE, this::doModelAnalyse);
         }
 
         private Object doModelAnalyse(Project project){
             activeOutput();
             PluginGet pluginGet = new PluginGet(project);
-            pluginGet.getPluginClass(PluginClassId.ModelAnalyse_ClassId, PluginClassId.Inference_PluginId);
+            pluginGet.getPluginClass(PluginClassId.MODEL_ANALYSE_CLASS_ID, PluginClassId.INFERENCE_PLUGIN_ID);
             return Optional.empty();
         }
     }
@@ -219,14 +219,14 @@ public class Choosedialog extends JFrame {
     private class ModelConvert {
         ModelConvert() {
             setIcon(modelConverter, Icons.AIT_MODEL_CONVERTER_DARK, Icons.AIT_MODEL_CONVERTER_LIGHT);
-            setStepIcons(modelConverterJPanel, modelConverter, step2, PluginClassId.AitIde_PluginId);
+            setStepIcons(modelConverterJPanel, modelConverter, step2, PluginClassId.AIT_IDE_PLUGIN_ID);
             actionMappings.put(StepNum.MODEL_CONVERTER, this::doModelConvert);
         }
 
         private Object doModelConvert(Project project){
             activeOutput();
             PluginGet pluginGet = new PluginGet(project);
-            pluginGet.getPluginClass(PluginClassId.AitModelConverter_ClassId, PluginClassId.AitIde_PluginId);
+            pluginGet.getPluginClass(PluginClassId.AIT_MODEL_CONVERTER_CLASS_ID, PluginClassId.AIT_IDE_PLUGIN_ID);
             return Optional.empty();
         }
     }
@@ -234,14 +234,14 @@ public class Choosedialog extends JFrame {
     private class AisBench {
         AisBench() {
             setIcon(aisBench, Icons.AIS_BENCH_DARK, Icons.AIS_BENCH_LIGHT);
-            setStepIcons(aisBenchJPanel, aisBench, step3, PluginClassId.AitIde_PluginId);
+            setStepIcons(aisBenchJPanel, aisBench, step3, PluginClassId.AIT_IDE_PLUGIN_ID);
             actionMappings.put(StepNum.AIS_BENCH, this::doAisBench);
         }
 
         private Object doAisBench(Project project){
             activeOutput();
             PluginGet pluginGet = new PluginGet(project);
-            pluginGet.getPluginClass(PluginClassId.AisBench_ClassId, PluginClassId.AitIde_PluginId);
+            pluginGet.getPluginClass(PluginClassId.AIS_BENCH_CLASS_ID, PluginClassId.AIT_IDE_PLUGIN_ID);
             return Optional.empty();
         }
     }
@@ -249,14 +249,14 @@ public class Choosedialog extends JFrame {
     private class Compare {
         Compare() {
             setIcon(compare, Icons.COMPARE_DARK, Icons.COMPARE_LIGHT);
-            setStepIcons(compareJPanel, compare, step4, PluginClassId.AitIde_PluginId);
+            setStepIcons(compareJPanel, compare, step4, PluginClassId.AIT_IDE_PLUGIN_ID);
             actionMappings.put(StepNum.COMPARE, this::doCompare);
         }
 
         private Object doCompare(Project project){
             activeOutput();
             PluginGet pluginGet = new PluginGet(project);
-            pluginGet.getPluginClass(PluginClassId.Compare_ClassId, PluginClassId.AitIde_PluginId);
+            pluginGet.getPluginClass(PluginClassId.COMPARE_CLASS_ID, PluginClassId.AIT_IDE_PLUGIN_ID);
             return Optional.empty();
         }
     }
@@ -264,14 +264,14 @@ public class Choosedialog extends JFrame {
     private class SystemProfiling {
         SystemProfiling() {
             setIcon(systemProfiler, Icons.SYSTEM_PROFILER_DARK, Icons.SYSTEM_PROFILER_LIGHT);
-            setStepIcons(systemProfilerJPanel, systemProfiler, step5, PluginClassId.Profiler_PluginId);
+            setStepIcons(systemProfilerJPanel, systemProfiler, step5, PluginClassId.PROFILER_PLUGIN_ID);
             actionMappings.put(StepNum.SYSTEM_PROFILER, this::doSystemProfiling);
         }
 
         private Object doSystemProfiling(Project project){
             activeOutput();
             PluginGet pluginGet = new PluginGet(project);
-            pluginGet.getPluginClass(PluginClassId.SystemProfiler_ClassId, PluginClassId.Profiler_PluginId);
+            pluginGet.getPluginClass(PluginClassId.SYSTEM_PROFILER_CLASS_ID, PluginClassId.PROFILER_PLUGIN_ID);
             return Optional.empty();
         }
     }

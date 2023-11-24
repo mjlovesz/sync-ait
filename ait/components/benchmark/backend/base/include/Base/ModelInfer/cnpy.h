@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef _CNPY_H
-#define _CNPY_H
+#ifndef CNPY_H
+#define CNPY_H
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -38,8 +38,7 @@
 
 #include "Base/Log/Log.h"
 
-namespace cnpy
-{
+namespace cnpy {
 struct NpyArray {
     NpyArray(const std::vector<size_t> &shape, size_t wordSize, bool fortranOrder)
         : shape(shape), wordSize(wordSize), fortranOrder(fortranOrder), numVals(1)
@@ -129,7 +128,6 @@ void NpySave(std::string fname, const T *data, const std::vector<size_t> shape, 
         if (fortranOrder) {
             throw std::runtime_error("NpySave: fortranOrder wrong");
         }
-
         if (wordSize != sizeof(T)) {
             ERROR_LOG("libnpy error: %s has word size %zu but NpySave appending data sized %zu\n",
                       fname.c_str(), wordSize, sizeof(T));
@@ -152,11 +150,13 @@ void NpySave(std::string fname, const T *data, const std::vector<size_t> shape, 
     }
     std::vector<char> header = CreateNpyHeader<T>(trueDataShape);
     size_t nels = std::accumulate(shape.begin(), shape.end(), 1, std::multiplies<size_t>());
-    fseek(fp, 0, SEEK_SET);
-    fwrite(&header[0], sizeof(char), header.size(), fp);
-    fseek(fp, 0, SEEK_END);
-    fwrite(data, sizeof(T), nels, fp);
-    fclose(fp);
+    if (fseek(fp, 0, SEEK_SET) != 0) { throw std::runtime_error("NpySave: fseek failed"); }
+    if (fwrite(&header[0], sizeof(char), header.size(), fp) != header.size()) {
+        throw std::runtime_error("NpySave: fwrite failed");
+    }
+    if (fseek(fp, 0, SEEK_END) != 0) { throw std::runtime_error("NpySave: fseek failed"); }
+    if (fwrite(data, sizeof(T), nels, fp) != nels) { throw std::runtime_error("NpySave: fwrite failed"); }
+    if (fclose(fp) != 0) { throw std::runtime_error("NpySave: fclose failed"); }
 }
 
 template <typename T> void NpySave(std::string fname, const std::vector<T> data, std::string mode = "w")
@@ -174,7 +174,7 @@ template <typename T> std::vector<char> CreateNpyHeader(const std::vector<size_t
     dict += BigEndianTest();
     dict += MapType(typeid(T));
     dict += std::to_string(sizeof(T));
-    dict += "', 'fortranOrder': False, 'shape': (";
+    dict += "', 'fortran_order': False, 'shape': (";
     dict+= std::to_string(shape[0]);
     for (size_t i = 1; i < shape.size(); i++) {
         dict += ", ";
@@ -200,4 +200,4 @@ template <typename T> std::vector<char> CreateNpyHeader(const std::vector<size_t
 }
 } // namespace cnpy
 
-#endif // _CNPY_H
+#endif // CNPY_H

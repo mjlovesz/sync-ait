@@ -144,10 +144,11 @@ source set_env.sh
 
 # 需要dump加速库low-level数据时使用
 site_packages_path=$(python3 -c "import site; print(site.getsitepackages()[0])")
-export LD_PRELOAD="${site_packages_path}/msquickcmp/libtensorutil.so":$LD_PRELOAD
-export ACLTRANSFORMER_SAVE_TENSOR=1 # 打开加速库dump开关，0为关闭dump功能（默认），1为开启；
-export ACLTRANSFORMER_SAVE_TENSOR_MAX=5000 # 加速库接口dump数据轮数，默认为1（若 替换为Layer，则dump第一层数据；若替换为model，则dump第一个token数据）；
-export ACLTRANSFORMER_SAVE_TENSOR_RUNNER=NormOpsRunner # 加速库dump数据runner白名单，默认为空，空时全量dump；非空时只dump白名单包含runner数据。
+export LD_PRELOAD="${site_packages_path}/msquickcmp/libsavetensor.so":$LD_PRELOAD
+export ATB_SAVE_TENSOR=1 # 打开加速库dump开关，0为关闭dump功能（默认），1为开启；
+export ATB_SAVE_TENSOR_START=0 # 加速库接口dump开始数据轮数；
+export ATB_SAVE_TENSOR_END=1 # 加速库接口dump结束数据轮数；
+export ATB_SAVE_TENSOR_RUNNER=NormOpsRunner # 加速库dump数据runner白名单，默认为空，空时全量dump；非空时只dump白名单包含runner数据。
 ```
 
 ###### 模型推理执行

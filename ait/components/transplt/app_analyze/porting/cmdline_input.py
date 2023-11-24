@@ -12,10 +12,9 @@
 # limitations under the License.
 
 import os
-from pathlib import Path
 
 from app_analyze.porting.porting_input import IInput
-from app_analyze.common.kit_config import KitConfig, ReporterType
+from app_analyze.common.kit_config import KitConfig, ReporterType, ScannerType, BuildToolType
 from app_analyze.utils.io_util import IOUtil
 
 
@@ -61,13 +60,14 @@ class CommandLineInput(IInput):
 
     def resolve_user_input(self):
         """解析来自命令行的用户输入"""
-        self._get_source_directories()
+        self.get_source_directories()
         self._get_construct_tool()
         self._set_debug_switch()
         self._get_output_type()
+        self._get_scanner_mode()
         self.set_scanner_type()
 
-    def _get_source_directories(self):
+    def get_source_directories(self):
         if not self.args.source:
             raise ValueError('ait transplt: error: the following arguments are required: -s/--source')
 
@@ -79,6 +79,7 @@ class CommandLineInput(IInput):
             if not folder.endswith(os.path.sep):
                 folder += os.path.sep
             self.directories.append(folder)
+
         self.directories = sorted(set(self.directories), key=self.directories.index)
         self.source_path = self.directories
         self.directories = IOUtil.remove_subdirectory(self.directories)
@@ -92,6 +93,17 @@ class CommandLineInput(IInput):
                              .format(KitConfig.PORTING_CONTENT, self.args.tools,
                                      ' or '.join(KitConfig.VALID_CONSTRUCT_TOOLS)))
         self.construct_tool = self.args.tools
+
+    def _get_scanner_mode(self):
+        """获取扫描方式"""
+        if not self.args.mode:
+            self.args.mode = 'all'
+
+        if self.args.mode not in KitConfig.VALID_SCANNER_MODE:
+            raise ValueError('{} ait transplt: error: scanner mode {} is not supported. supported input are {}.'
+                             .format(KitConfig.PORTING_CONTENT, self.args.mode,
+                                     ' or '.join(KitConfig.VALID_SCANNER_MODE)))
+        self.scanner_mode = self.args.mode
 
     def _set_debug_switch(self):
         """动态修改日志级别"""
@@ -108,3 +120,12 @@ class CommandLineInput(IInput):
             self.report_type.append(ReporterType.CSV_REPORTER)
         if out_format == 'json':
             self.report_type.append(ReporterType.JSON_REPORTER)
+
+    def set_scanner_type(self):
+        if self.construct_tool == BuildToolType.CMAKE.value:
+            self.scanner_type.append(ScannerType.CMAKE_SCANNER)
+            self.scanner_type.append(ScannerType.CPP_SCANNER)
+        if self.construct_tool == BuildToolType.PYTHON.value:
+            self.scanner_type.append(ScannerType.PYTHON_SCANNER)
+        else:
+            NotImplementedError('need to implementation.')

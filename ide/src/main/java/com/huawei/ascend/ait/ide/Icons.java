@@ -25,7 +25,7 @@ import javax.swing.Icon;
  * Icons
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class Icons {
     public static final Icon AIS_BENCH_DARK = IconLoader.findIcon(

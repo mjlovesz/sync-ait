@@ -53,8 +53,12 @@
   ```
 4. 安装 ait 中的 surgeon 包, 提供 AutoOptimizer （基于知识库的整网优化） 和 Extract （子网导出） 功能, 请参考 ait 的安装流程，以下为参考步骤：
   ```bash
-  cd ait/ait/components/debug/surgeon
-  pip install . --force-reinstall
+  cd ait/ait
+  # windows 场景请直接执行：install.bat --surgeon
+  # 添加执行权限
+  chmod u+x install.sh
+  # 1. 只安装debug下面的surgeon组件
+  ./install.sh --surgeon
   # 安装完成之后返回仓库根目录
   ```
 5. 安装 python 需要库
@@ -215,6 +219,21 @@
 2. 为确保正确性，节点的各属性值建议全部填写（而不是留着`undefined`）。默认值在当前版本可能支持得还不够好。
 3. 如果一个属性值是列表类型，则各元素之间使用‘`,`’分隔，无需'[]'。
 4. 在当前版本中，如果一个节点的输入/输出是一个列表类型（如`Concat`），限制最多显示8个。如果一个节点实际输入/输出小于8个，则填写对应数目的输入输出即可，多出来的应以`list_custom`开头，它们会在后续处理中自动被忽略。
+
+
+
+## 构造自定义算子
+
+有时候我们希望向模型中增加自定义算子。`onnx-modifier`已开始支持该功能。
+
+在主页面的左方工具栏，有一个`Add node`按钮，点击之后弹出对话框，通过按钮Add Custom Operator按钮打开自定义文本框，按自己所需添加自定义算子，构造成功后会重新加载json文件并自动添加自定义算子，后续添加节点过程如上：[增加新节点](#增加新节点)
+注：需要添加正确的json格式（已经有默认输入）
+
+
+<img src="./docs/build_custom_operator.gif" style="zoom:75%;" />
+
+
+
 
 ## 修改模型batch size
 动态batch size和固定batch size均已支持。

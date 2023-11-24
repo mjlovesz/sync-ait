@@ -3,6 +3,7 @@
 /* global view */
 
 var host = {};
+let lastAddedOperatorName = null;
 
 host.BrowserHost = class {
 
@@ -460,6 +461,236 @@ host.BrowserHost = class {
                 this._view._updateGraph();
             })
         })
+
+    function isJSONValid(jsonString) {
+      try {
+        JSON.parse(jsonString);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+
+function validateCustomOperatorForm() {
+    if (!document.getElementById('customName').value.trim()) {
+        window._host.show_message('Warn', 'Name field is required.', 'warn');
+        return false;
+    }
+    if (!document.getElementById('customModule').value.trim()) {
+        window._host.show_message('Warn', 'Module field is required.', 'warn');
+        return false;
+    }
+    if (!document.getElementById('customVersion').value.trim()) {
+        window._host.show_message('Warn', 'Version field is required.', 'warn');
+        return false;
+    }
+
+    var customInputsValue = document.getElementById('customInputs').value;
+
+    if (!customInputsValue.trim()) {
+        window._host.show_message('Warn', 'Inputs field cannot be empty.', 'warn');
+        return false;
+    }
+
+    if (!validateStringLength(customInputsValue)) {
+        window._host.show_message('Warn', 'Inputs data is too long.', 'warn');
+        return false;
+    }
+
+    if (!isJSONValid(document.getElementById('customInputs').value)) {
+        window._host.show_message('Warn', 'Inputs field contains invalid JSON.', 'warn');
+        return false;
+    }
+
+    var inputs = JSON.parse(document.getElementById('customInputs').value);
+    if (!validateJSONContainsName(inputs)) {
+        return false;
+    }
+
+
+    var customOutputsValue = document.getElementById('customOutputs').value;
+
+    if (!customOutputsValue.trim()) {
+        window._host.show_message('Warn', 'Outputs field cannot be empty.', 'warn');
+        return false;
+    }
+
+    if (!validateStringLength(customOutputsValue)) {
+        window._host.show_message('Warn', 'Outputs data is too long.', 'warn');
+        return false;
+    }
+
+
+    if (!isJSONValid(document.getElementById('customOutputs').value)) {
+        window._host.show_message('Warn', 'Outputs field contains invalid JSON.', 'warn');
+        return false;
+    }
+
+    var outputs = JSON.parse(document.getElementById('customOutputs').value);
+    if (!validateJSONContainsName(outputs)) {
+        return false;
+    }
+
+    var customAttributes = document.getElementById('customAttributes').value;
+
+    if (!validateStringLength(customAttributes)) {
+        window._host.show_message('Warn', 'customAttributes data is too long.', 'warn');
+        return false;
+    }
+
+    if (document.getElementById('customAttributes').value && !isJSONValid(document.getElementById('customAttributes').value)) {
+        window._host.show_message('Warn', 'Attributes field contains invalid JSON.', 'warn');
+        return false;
+    }
+
+
+    var customTypeConstraints = document.getElementById('customTypeConstraints').value;
+
+    if (!validateStringLength(customTypeConstraints)) {
+        window._host.show_message('Warn', 'customTypeConstraints data is too long.', 'warn');
+        return false;
+    }
+
+    if (document.getElementById('customTypeConstraints').value && !isJSONValid(document.getElementById('customTypeConstraints').value)) {
+        window._host.show_message('Warn', 'Type Constraints field contains invalid JSON.', 'warn');
+        return false;
+    }
+
+
+    return true;
+}
+
+function validateStringLength(stringValue) {
+    const MAX_LENGTH = 10000; // 最大长度，例如 10000 字符
+    if (stringValue.length > MAX_LENGTH) {
+        return false;
+    }
+    return true;
+}
+
+function validateJSONContainsName(jsonArray) {
+    for (var i = 0; i < jsonArray.length; i++) {
+        if (!jsonArray[i].name) {
+            window._host.show_message('Warn', 'Each item in JSON array must contain a \"name\" field.', 'warn');
+            return false;
+        }
+    }
+    return true;
+}
+
+        document.getElementById('openCustomOperatorDialog').addEventListener('click', function() {
+            document.getElementById('customOperatorDialog').showModal();
+        });
+
+        document.getElementById('customOperatorForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            if (validateCustomOperatorForm()) {
+                submitCustomOperator();
+            }
+        });
+
+
+        document.addEventListener('customOperatorAdded', function() {
+            onnx.Metadata.reload(this.context).then(() => {
+                window.__view__.model.graphMetadata._metadata = onnx.Metadata._metadata
+                window.__view__.modifier.updateAddNodeDropDown()
+            }).catch(error => {
+                window._host.show_message('Error', 'You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', 'error');
+            });
+        });
+
+
+        // 函数：从服务器获取最新的算子列表
+function updateOperatorDropdown() {
+    fetch('/get-operators')
+    .then(response => response.json())
+    .then(data => {
+        var dropdown = document.getElementById('add-node-dropdown');
+        dropdown.innerHTML = ''; // 清空现有选项
+        data.forEach(operator => {
+            var option = document.createElement('option');
+            option.value = operator.name;
+            option.textContent = operator.name;
+            dropdown.appendChild(option);
+        });
+    })
+    .catch(error => window._host.show_message('Error', 'You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', 'error'));
+}
+
+
+
+function addNodeAutomatically(operatorName) {
+    var addNodeDropDown = document.getElementById('add-node-dropdown');
+    for (const node of window.__view__.model.supported_nodes) {
+        var option = new Option(node[1], node[0] + ':' + node[1]);
+        addNodeDropDown.appendChild(option);
+    }
+
+    for (var i = addNodeDropDown.options.length - 1; i > 0; i--) {
+        if (addNodeDropDown.options[i].text === operatorName) {
+            addNodeDropDown.selectedIndex = i;
+            var selectedVal = addNodeDropDown.options[i].value;
+            var addOpDomain = selectedVal.split(':')[0];
+            var addOpType = selectedVal.split(':')[1];
+            window.__view__.modifier.addNode(addOpDomain, addOpType);
+            window.__view__._updateGraph();
+            break;
+        }
+    }
+}
+
+
+function submitCustomOperator() {
+    var customOperatorData = {
+        name: document.getElementById('customName').value,
+        module: document.getElementById('customModule').value,
+        version: parseInt(document.getElementById('customVersion').value),
+        support_level: document.getElementById('customSupportLevel').value,
+        description: document.getElementById('customDescription').value,
+        inputs: JSON.parse(document.getElementById('customInputs').value),
+        outputs: JSON.parse(document.getElementById('customOutputs').value)
+
+    };
+
+    // 如果存在 Attributes，则添加到对象中
+    if (document.getElementById('customAttributes').value) {
+        customOperatorData.attributes = JSON.parse(document.getElementById('customAttributes').value);
+    }
+
+    // 如果存在 Type Constraints，则添加到对象中
+    if (document.getElementById('customTypeConstraints').value) {
+        customOperatorData.type_constraints = JSON.parse(document.getElementById('customTypeConstraints').value);
+    }
+
+    lastAddedOperatorName = customOperatorData.name;
+
+    fetch('/add-custom-operator', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(customOperatorData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('customOperatorDialog').close();
+        updateOperatorDropdown(); // 更新下拉菜单
+        document.dispatchEvent(new CustomEvent('customOperatorAdded'));
+        setTimeout(() => {
+            window.__view__.modifier.updateAddNodeDropDown();
+            addNodeAutomatically(customOperatorData.name);
+        },500);
+        window._host.show_message('Success!', 'Custom Operator has been successfuly Submit', 'success');
+    })
+    .catch((error) => {
+        window._host.show_message('Error', 'Submit Error, You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', 'error')
+
+    });
+
+
+}
+
 
         this.document.getElementById('version').innerText = this.version;
 

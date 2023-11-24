@@ -22,14 +22,21 @@ SET llvm_path=
 SET mingw_w64_path=
 SET skip_check_cert=
 
-SET only_transplt=
+SET all_component=1
+SET select_transplt=
+SET select_surgeon=
 SET uninstall=
 SET all_uninstall=
 
 :loop
 IF NOT "%1"=="" (
     IF "%1"=="--transplt" (
-        SET only_transplt=1
+        SET select_transplt=1
+        SET all_component=0
+        SHIFT
+    ) ELSE IF "%1"=="--surgeon" (
+        SET select_surgeon=1
+        SET all_component=0
         SHIFT
     ) ELSE IF "%1"=="--full" (
         SET full_install=--full
@@ -98,10 +105,17 @@ IF NOT %errorlevel%==0 (
 :: function definitions
 
 :uninstall_func
-IF DEFINED only_transplt (
+
+IF DEFINED select_transplt (
     pip3 uninstall transplt %all_uninstall%
-) ELSE (
-    pip3 uninstall ait transplt %all_uninstall%
+)
+
+IF DEFINED select_surgeon (
+    pip3 uninstall auto-optimizer %all_uninstall%
+) 
+
+IF %all_component%==1 (
+    pip3 uninstall ait transplt auto-optimizer %all_uninstall%
 )
 
 GOTO:eof
@@ -109,21 +123,38 @@ GOTO:eof
 
 :install_func
 :: install ait component
-pip3 install %CURRENT_DIR% %arg_force_reinstall%
+pip3 install "%CURRENT_DIR%/" %arg_force_reinstall%
 IF NOT %errorlevel%==0 (
     ECHO pip install ait failed, please check the failure reason.
     EXIT /B 1
 )
 
-:: install transplt component
-pip3 install %CURRENT_DIR%/components/transplt %arg_force_reinstall%
-IF NOT %errorlevel%==0 (
-    ECHO pip install transplt failed, please check the failure reason.
-    EXIT /B 1
+IF %all_component%==1 (
+    SET select_transplt=1
+    SET select_surgeon=1
 )
 
-CALL %CURRENT_DIR%/components/transplt/install.bat %skip_check_cert% %full_install% %llvm_path% %mingw_w64_path%
-IF NOT %errorlevel%==0 (
-    EXIT /B 1
+IF DEFINED select_surgeon (
+    @REM install surgeon component
+    pip3 install "%CURRENT_DIR%/components/debug/surgeon" %arg_force_reinstall%
+    IF NOT %errorlevel%==0 (
+        ECHO pip install surgeon failed, please check the failure reason.
+        EXIT /B 1
+    )
 )
+
+IF DEFINED select_transplt (
+    @REM install transplt component
+    pip3 install "%CURRENT_DIR%/components/transplt" %arg_force_reinstall%
+    IF NOT %errorlevel%==0 (
+        ECHO pip install transplt failed, please check the failure reason.
+        EXIT /B 1
+    )
+
+    CALL "%CURRENT_DIR%/components/transplt/install.bat" %skip_check_cert% %full_install% %llvm_path% %mingw_w64_path%
+    IF NOT %errorlevel%==0 (
+        EXIT /B 1
+    )
+)
+
 GOTO:eof

@@ -16,11 +16,11 @@
 
 package com.huawei.ascend.ait.ide.service;
 
-import static com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic.SPACE;
+import static com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrWordStatic.SPACE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrBuffer;
-import com.huawei.ascend.ait.ide.commonlib.util.safeCmd.CmdStrWordStatic;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrBuffer;
+import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrWordStatic;
 
 import org.junit.jupiter.api.Test;
 

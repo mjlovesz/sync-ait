@@ -16,8 +16,9 @@ import traceback
 from app_analyze.exception.source_scan_exception import \
     AutomakeExecuteFailedException, MakefileExecuteFailException, \
     SourceScanNoResultException, SourceFileNotFoundError
-from app_analyze.common.kit_config import KitConfig, InputType
+from app_analyze.common.kit_config import KitConfig, InputType, ScannerMode
 from app_analyze.model.project import Project
+from app_analyze.model.seq_project import SeqProject
 from app_analyze.porting.input_factory import InputFactory
 from app_analyze.utils.log_util import logger
 
@@ -65,6 +66,14 @@ class ScanApi:
         inputs.resolve_user_input()
         return inputs
 
+    @staticmethod
+    def _get_project_instance(inputs):
+        if inputs.scanner_mode == ScannerMode.ALL.value:
+            project = Project(inputs)
+        else:
+            project = SeqProject(inputs)
+        return project
+
     def scan_source(self, param_dict):
         inputs, info = self._init_source_code_scan_task(param_dict)
         try:
@@ -108,7 +117,7 @@ class ScanApi:
             raise SourceFileNotFoundError('source_file_not_found_err',
                                           'Source code not found') from exp
 
-        if project.scan_results or project.lib_reports or project.tips:
+        if project.scan_results or project.lib_reports:
             self.produce_report(project)
             logger.info('**** Project analysis finished <<<')
         else:
@@ -121,7 +130,7 @@ class ScanApi:
         源码扫描整体过程控制
         """
         logger.info("Scan source files...")
-        project = Project(inputs)
+        project = self._get_project_instance(inputs)
         try:
             self._run_scan_source(project, info)
         except AutomakeExecuteFailedException as err:

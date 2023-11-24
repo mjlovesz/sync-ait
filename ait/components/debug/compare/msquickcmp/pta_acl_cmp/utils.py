@@ -23,6 +23,7 @@ from msquickcmp.pta_acl_cmp.constant import TOKEN_ID, DATA_ID, ACL_DATA_PATH, CM
     CMP_FAIL_REASON, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, ATTR_END, \
     ATTR_OBJECT_LENGTH, ATTR_OBJECT_PREFIX, GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, \
     GOLDEN_MAX_VALUE, GOLDEN_MIN_VALUE, GOLDEN_MEAN_VALUE, CSV_GOLDEN_HEADER
+from components.utils.file_open_check import ms_open
 
 
 class TensorBinFile:
@@ -59,8 +60,8 @@ class TensorBinFile:
             file_data = fd.read()
 
             begin_offset = 0
-            for i in range(len(file_data)):
-                if file_data[i] == ord("\n"):
+            for i, byte in enumerate(file_data):
+                if byte == ord("\n"):
                     line = file_data[begin_offset: i].decode("utf-8")
                     begin_offset = i + 1
                     fields = line.split("=")
@@ -89,8 +90,7 @@ class TensorBinFile:
             self.format = int(attr_value)
         elif attr_name == "dims":
             self.dims = attr_value.split(",")
-            for i in range(len(self.dims)):
-                self.dims[i] = int(self.dims[i])
+            self.dims = [int(dim) for dim in self.dims]
 
 
 def read_acl_transformer_data(file_path):
@@ -98,14 +98,14 @@ def read_acl_transformer_data(file_path):
         raise FileNotFoundError("{} is not exists".format(file_path))
 
     if file_path.endswith(".bin"):
-        bin = TensorBinFile(file_path)
-        data = bin.get_data()
+        bin_tensor = TensorBinFile(file_path)
+        data = bin_tensor.get_data()
         return data
 
     raise ValueError("Tensor file path must be end with .bin.")
 
 
-def compare_tensor(csv_data: pd.DataFrame):
+def compare_tensor(csv_data: pd.DataFrame, dump_clean=False):
     csv_data.fillna(value="", inplace=True)
     data = csv_data[csv_data[CMP_FLAG] == False]
     if data.empty:
@@ -154,7 +154,9 @@ def compare_tensor(csv_data: pd.DataFrame):
             result = cmp_func(golden_data_fp32, acl_data_fp32)
             csv_data[name][idx] = result
             csv_data[CMP_FLAG][idx] = True
-
+        if dump_clean:
+            os.remove(acl_data_path)
+            os.remove(golden_data_path)
     return csv_data
 
 
@@ -209,7 +211,7 @@ def manual_compare_metadata(golden_meta, acl_meta):
     return data_frame
 
 
-def compare_metadata(golden_path, acl_path, output_path="./"):
+def compare_metadata(golden_path, acl_path, output_path="./", dump_clean=False):
     if golden_path.endswith(".json"):
         golden_meta_path = golden_path
     else:
@@ -228,7 +230,7 @@ def compare_metadata(golden_path, acl_path, output_path="./"):
         acl_meta = acl_metadata.init_acl_metadata_by_dump_data(acl_path)
         data_frame = auto_compare_metadata(golden_meta, acl_meta)
 
-    cmp_data_frame = compare_tensor(data_frame)
+    cmp_data_frame = compare_tensor(data_frame, dump_clean)
     cmp_data_frame.dropna(axis=0, how="all", inplace=True)
     cmp_data_frame.to_csv(os.path.join(output_path, "cmp_report.csv"), index=False)
 
@@ -252,5 +254,5 @@ def write_json_file(data_id, data_path, json_path, token_id):
     except FileNotFoundError:
         json_data = {}
     json_data[data_id] = {token_id: data_path}
-    with open(json_path, "w") as f:
+    with ms_open(json_path, "w") as f:
         json.dump(json_data, f)

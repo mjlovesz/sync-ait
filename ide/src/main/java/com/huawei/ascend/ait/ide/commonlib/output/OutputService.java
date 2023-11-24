@@ -39,7 +39,7 @@ import java.util.concurrent.Future;
  * OutputService
  *
  * @author cabbage
- * @date 2023/06/03
+ * @since 2023/06/03
  */
 public class OutputService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OutputService.class);
@@ -50,6 +50,11 @@ public class OutputService {
 
     private Project project;
 
+    /**
+     * OutputService
+     *
+     * @param project project
+     */
     public OutputService(@NotNull Project project) {
         synchronized (TimeZone.class) {
             System.setProperty("user.timezone", "MindStudio-TimeZone");
@@ -179,11 +184,15 @@ public class OutputService {
      *
      * @return normal ConsoleView
      */
-
     public ConsoleView getNormalConsoleView() {
         return OutputFactory.getNormalConsoleViewmap().get(project);
     }
 
+    /**
+     * get detail ConsoleView
+     *
+     * @return detail ConsoleView
+     */
     public ConsoleView getDetailConsoleView() {
         return OutputFactory.getDetailConsoleViewmap().get(project);
     }

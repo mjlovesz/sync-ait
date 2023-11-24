@@ -55,6 +55,10 @@ class TranspltCommand(BaseCommand):
             "--tools", default="cmake", choices=['cmake', 'python'],
             help="specify construction, currently support cmake and python"
         )
+        parser.add_argument(
+            "--mode", default="all", choices=['all', 'api-only'],
+            help="specify scanner mode, currently support all and api only"
+        )
 
     @staticmethod
     def _set_env():
@@ -68,7 +72,7 @@ class TranspltCommand(BaseCommand):
         c_plus_include_path = os.environ.get("CPLUS_INCLUDE_PATH")
         if len(extra_path) > 0:
             c_plus_include_path = f"{extra_path}:{c_plus_include_path}"
-        os.environ["CPLUS_INCLUDE_PATH"] = c_plus_include_path
+            os.environ["CPLUS_INCLUDE_PATH"] = c_plus_include_path
 
     def handle(self, args):
         log_util.set_logger_level(args.log_level)

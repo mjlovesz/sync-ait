@@ -16,9 +16,14 @@ import re
 
 import pandas as pd
 import openpyxl
+from xlsxwriter.workbook import Workbook
 
 from components.utils.file_open_check import PERMISSION_NORMAL, FileStat, OpenException
 from app_analyze.utils.log_util import logger
+
+
+def get_url(cell):
+    return cell.hyperlink.target if cell.hyperlink and cell.hyperlink.target else cell.value
 
 
 def update_hyperlink(path, sheet, hyperlink_cols, df=None, row_header=1):
@@ -33,7 +38,6 @@ def update_hyperlink(path, sheet, hyperlink_cols, df=None, row_header=1):
     if df is None:
         df = pd.read_excel(path, sheet)
     ws = openpyxl.load_workbook(path)[sheet]
-    get_url = lambda c: c.hyperlink.target if c.hyperlink and c.hyperlink.target else c.value
     # ws的坐标从1开始
     for col_name in hyperlink_cols:
         row = row_header + 1
@@ -47,8 +51,8 @@ def update_hyperlink(path, sheet, hyperlink_cols, df=None, row_header=1):
 def read_excel(path="", hyperlink_cols=None):
     try:
         file_stat = FileStat(path)
-    except Exception:
-        raise argparse.ArgumentTypeError(f"input excel path:{path} is illegal. Please check.")
+    except Exception as ee:
+        raise argparse.ArgumentTypeError(f"input excel path:{path} is illegal. Please check.") from ee
     else:
         if not file_stat.is_basically_legal('read'):
             raise argparse.ArgumentTypeError(f"input excel path:{path} is illegal. Please check.")
@@ -73,14 +77,25 @@ def read_excel(path="", hyperlink_cols=None):
     return api_dfs
 
 
+# mode: df or workbook
 def write_excel(df_dict, path='output.xlsx'):
     # 创建一个 Excel 文件
     excel = pd.ExcelWriter(path)
     for key, df in df_dict.items():
         key = re.sub(r"\W", ".", key)[-31:]  # 最大支持31个字符
         df.to_excel(excel, sheet_name=key, index=False)
-
     # 保存 Excel 文件
     excel.save()
+    # set permission to 640
+    os.chmod(path, PERMISSION_NORMAL)
+
+
+def df2xlsx(df_dict, fmt_dict, path='output.xlsx'):
+    workbook = Workbook(path)
+    for key, df in df_dict.items():
+        fmt = fmt_dict[key]
+        key = key.replace('/', '.')[-31:]  # 最大支持31个字符
+        fmt(key, df, workbook)
+    workbook.close()
     # set permission to 640
     os.chmod(path, PERMISSION_NORMAL)
