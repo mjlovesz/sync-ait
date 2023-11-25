@@ -731,6 +731,7 @@ document.getElementById('confirmDeleteOperatorButton').addEventListener('click',
             addNodeDropdown.appendChild(option);
         }
         window._host.updateCustomOperatorLists();
+        updateOperatorDropdown();
         window._host.show_message('Success!', 'Operator deleted successfully', 'success');
         document.getElementById('deleteOperatorDialog').close();
 
