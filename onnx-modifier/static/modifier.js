@@ -64,6 +64,7 @@ modifier.Modifier = class {
 
     updateAddNodeDropDown() {
         // update dropdown supported node lost
+        window._host.updateCustomOperatorLists();
         var addNodeDropdown = this.view._host.document.getElementById('add-node-dropdown');
         for (const node of this.model.supported_nodes) {
             // node: [domain, op]
