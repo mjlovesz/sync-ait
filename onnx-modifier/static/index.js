@@ -606,13 +606,11 @@ function updateOperatorDropdown() {
     fetch('/get-operators')
     .then(response => response.json())
     .then(data => {
-        var dropdown = document.getElementById('add-node-dropdown');
-        dropdown.innerHTML = ''; // 清空现有选项
+        var addNodeDropdown = document.getElementById('add-node-dropdown');
+        addNodeDropdown.innerHTML = ''; // 清空现有选项
         data.forEach(operator => {
-            var option = document.createElement('option');
-            option.value = operator.name;
-            option.textContent = operator.name;
-            dropdown.appendChild(option);
+            var option = new Option(operator.name, operator.module + ':' + operator.name);
+            addNodeDropdown.appendChild(option);
         });
     })
     .catch(error => window._host.show_message('Error', 'You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', 'error'));
@@ -681,6 +679,7 @@ function submitCustomOperator() {
             window.__view__.modifier.updateAddNodeDropDown();
             addNodeAutomatically(customOperatorData.name);
         },500);
+        window._host.updateCustomOperatorLists();
         window._host.show_message('Success!', 'Custom Operator has been successfuly Submit', 'success');
     })
     .catch((error) => {
@@ -690,6 +689,59 @@ function submitCustomOperator() {
 
 
 }
+
+// 删除算子按钮事件监听器
+document.getElementById('deleteOperatorButton').addEventListener('click', function() {
+    document.getElementById('deleteOperatorDialog').showModal();
+});
+
+// 确认删除算子按钮事件监听器
+document.getElementById('confirmDeleteOperatorButton').addEventListener('click', function() {
+    const operatorName = document.getElementById('customName').value;
+    const operatorModule = document.getElementById('customModule').value;
+    const operatorVersion = parseInt(document.getElementById('customVersion').value, 10);
+
+    if (['ai.onnx', 'com.microsoft', 'ai.onnx.preview.training', 'ai.onnx.ml'].includes(operatorModule)) {
+        window._host.show_message('Warn', 'Cannot delete core operator.', 'warn');
+        return;
+    }
+
+    fetch('/delete-custom-operator', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: operatorName, module: operatorModule , version: operatorVersion })
+    })
+    .then(response => {
+    if (!response.ok) {
+        throw new Error('Delete Error');
+    }
+    return response.json();
+})
+    .then(data => {
+        updateOperatorDropdown();
+        setTimeout(() => {
+            window.__view__.modifier.updateAddNodeDropDown();
+            window.__view__.model.graphMetadata._metadata = onnx.Metadata._metadata
+        },500);
+        var addNodeDropdown = document.getElementById('add-node-dropdown');
+        for (const node of window.__view__.model.supported_nodes) {
+            var option = new Option(node[1], node[0] + ':' + node[1]);
+            addNodeDropdown.appendChild(option);
+        }
+        window._host.updateCustomOperatorLists();
+        updateOperatorDropdown();
+        window._host.show_message('Success!', 'Operator deleted successfully', 'success');
+        document.getElementById('deleteOperatorDialog').close();
+
+    })
+    .catch(error => {
+        window._host.show_message('Error', 'Delete Error or Not Found Operator', 'error');
+    });
+});
+
+
 
 
         this.document.getElementById('version').innerText = this.version;
@@ -1314,7 +1366,29 @@ function submitCustomOperator() {
             this._view.error(error, null, null);
         });
     }
+    updateCustomOperatorLists() {
+        fetch('/get-operators')
+        .then(response => response.json())
+        .then(data => {
+            const nameList = document.getElementById('customNameList');
+            const moduleList = document.getElementById('customModuleList');
+            nameList.innerHTML = ''; // 清空现有选项
+            moduleList.innerHTML = ''; // 清空现有选项
 
+            data.forEach(operator => {
+                if (!['ai.onnx', 'com.microsoft', 'ai.onnx.preview.training', 'ai.onnx.ml'].includes(operator.module)) {
+                    const nameOption = document.createElement('option');
+                    nameOption.value = operator.name;
+                    nameList.appendChild(nameOption);
+
+                    const moduleOption = document.createElement('option');
+                    moduleOption.value = operator.module;
+                    moduleList.appendChild(moduleOption);
+                }
+            });
+        })
+        .catch(error => console.error('Error:', error));
+    }
     _updateButtons() {
         let idList = [
             "download-graph",

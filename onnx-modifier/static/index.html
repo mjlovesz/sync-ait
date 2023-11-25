@@ -293,19 +293,26 @@
     </div>
 
     <div class="footer">
-        <button id="openCustomOperatorDialog">Add Custom Operator</button>
+        <button id="openCustomOperatorDialog">Edit Custom Operator</button>
         <button data-value="">Cancel</button>
         <button data-value="Confirm">Confirm</button>
     </div>
 </dialog>
 
 
+
 <dialog id="customOperatorDialog" class="dialog message-box">
     <form id="customOperatorForm">
         <label for="customName">Name:</label>
-        <input type="text" id="customName" name="customName" value="CustomConv"><br>
+        <input type="text" id="customName" name="customName" list="customNameList" value="CustomConv" autocomplete="off"><br>
+        <datalist id="customNameList">
+            <!-- 这里将动态填充算子名称 -->
+        </datalist>
         <label for="customModule">Module:</label>
-        <input type="text" id="customModule" name="customModule" value="Custom"><br>
+        <input type="text" id="customModule" name="customModule" list="customModuleList" value="Custom" autocomplete="off"><br>
+        <datalist id="customModuleList">
+            <!-- 这里将动态填充算子模块 -->
+        </datalist>
         <label for="customVersion">Version:</label>
         <input type="number" id="customVersion" name="customVersion" value="1"><br>
         <label for="customSupportLevel">Support Level:</label>
@@ -366,11 +373,23 @@
 
         <div class="footer">
             <button type="button" onclick="document.getElementById('customOperatorDialog').close()">Cancel</button>
-            <button type="submit">Confirm</button>
+            <button type="button" id="deleteOperatorButton">Delete Operator</button>
+            <button type="submit">Add Operator</button>
         </div>
     </form>
 </dialog>
 
+<!-- 删除算子确认对话框 -->
+<dialog id="deleteOperatorDialog" class="dialog message-box">
+    <p class="title">Delete Operator</p>
+    <div class="dialog-content">
+        <p>Are you sure you want to delete this operator?</p>
+    </div>
+    <div class="footer">
+        <button type="button" onclick="document.getElementById('deleteOperatorDialog').close()">Cancel</button>
+        <button type="button" id="confirmDeleteOperatorButton">Delete</button>
+    </div>
+</dialog>
 
 <dialog id="addinput-dialog" class="dialog message-box">
     <p class="title"> Add New Input </p>
