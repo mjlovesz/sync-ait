@@ -478,13 +478,17 @@ host.BrowserHost = class {
 }
 
     function isNumeric(str) {
-            return  /^-?\d+(\.\d+)?$/.test(str);
+        return  /^-?\d+(\.\d+)?$/.test(str);
     }
     function isValidInput(str) {
-    var regex = /^[a-zA-Z0-9-_]+$/;
-    return regex.test(str);
-}
-
+        var regex = /^[a-zA-Z0-9-_]+$/;
+        return regex.test(str);
+    }
+    // 检查字符串是否为正数
+    function isPositiveNumeric(str) {
+        var num = parseFloat(str);
+        return !isNaN(num) && isFinite(num) && num > 0;
+    }
 
 function validateCustomOperatorForm() {
     if (!document.getElementById('customName').value.trim()) {
@@ -509,7 +513,7 @@ function validateCustomOperatorForm() {
     }
 
     var versionValue = document.getElementById('customVersion').value;
-    if (!isNumeric(versionValue)) {
+    if (!isPositiveNumeric(versionValue)) {
         window._host.show_message('Warn', 'Version field must be a valid number.', 'warn');
         return false;
     }
