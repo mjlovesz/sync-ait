@@ -464,6 +464,7 @@ host.BrowserHost = class {
 
     function isJSONValid(jsonString) {
       try {
+        jsonString = jsonString.trim();
         if (jsonString == 'true' || jsonString == 'false'){
             return false;
         }
