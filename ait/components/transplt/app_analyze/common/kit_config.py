@@ -19,7 +19,6 @@ import platform
 
 from app_analyze.utils.clang_finder import get_lib_clang_path
 
-
 _sep = os.path.sep
 
 
@@ -52,6 +51,16 @@ class InputType(Enum):
     """
     CMD_LINE = 'cmd'
     RESTFUL = 'restful'
+    CUSTOM = 'custom'
+
+
+@unique
+class ScannerMode(Enum):
+    """
+    input type
+    """
+    ALL = 'all'
+    APIONLY = 'api-only'
 
 
 @unique
@@ -83,6 +92,7 @@ class KitConfig:
     # 'make', 'automake'
     VALID_REPORT_TYPE = ['csv', 'json']
     VALID_CONSTRUCT_TOOLS = [BuildToolType.CMAKE.value, BuildToolType.PYTHON.value]
+    VALID_SCANNER_MODE = [ScannerMode.ALL.value, ScannerMode.APIONLY.value]
     PORTING_CONTENT = """ait transplt
                 [-h] [-s source] 
                 [-t tools {cmake,python}] 
@@ -102,13 +112,30 @@ class KitConfig:
     CVCUDA = 'CVCUDA'
     TENSORRT = 'TensorRT'
     CODEC = 'Codec'
+    MxBASE = 'mxBase'
+    CANN = 'cann'
+
+    # b.库id前缀
+    ACC_ID_BASE = 10000
+    ACC_LIB_ID_PREFIX = {
+        OPENCV: 0,
+        FFMPEG: 1,
+        CUDA: 2,
+        DALI: 3,
+        CVCUDA: 4,
+        TENSORRT: 5,
+        CODEC: 6,
+        MxBASE: 50,
+        CANN: 51
+    }
+
     # 2) python
     OPENCV_PYTHON = 'cv2'
     CODEC_PYTHON = "PyNvCodec"
     CVCUDA_PYTHON = "cvcuda"
     TENSORRT_PYTHON = "tensorrt"
 
-    # b.加速库路径
+    # c.加速库路径
     HEADERS_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'headers'))
     ACC_PYTHON_LIB_FOLDER = os.path.join(HEADERS_FOLDER, 'python')
     INCLUDES = {
@@ -119,14 +146,14 @@ class KitConfig:
         TENSORRT: os.path.join(HEADERS_FOLDER, 'tensorrt', 'include'),
         CODEC: os.path.join(HEADERS_FOLDER, 'codec', 'include'),
     }
-    # c.如果用户已经安装，选取用户安装的路径，否则选取默认配置
+    # d.如果用户已经安装，选取用户安装的路径，否则选取默认配置
     OPENCV_HOME = os.environ.get('OPENCV_HOME', INCLUDES.get(OPENCV, None))
     CUDA_HOME = os.environ.get('CUDA_HOME', INCLUDES.get(CUDA, None))
     CVCUDA_HOME = os.environ.get('CVCUDA_HOME', INCLUDES.get(CVCUDA, None))
     TENSORRT_HOME = os.environ.get('TENSORRT_HOME', INCLUDES.get(TENSORRT, None))
     CODEC_HOME = os.environ.get('CODEC_HOME', INCLUDES.get(CODEC, None))
 
-    # d.C++加速库模式匹配
+    # e.C++加速库模式匹配
     # 格式如下，第0/1/2可为list，第1/2用于分析基于CUDA加速的接口。
     # namespace, cuda_include, cuda_namespace, lib_name
     #
@@ -189,7 +216,7 @@ class KitConfig:
         ),
     }
 
-    # e.API映射表，文件名第一个'_'前为加速库名；内部工作表/Sheet名以'-APIMap'结尾，其他工作表会被忽略。
+    # f.API映射表，文件名第一个'_'前为加速库名；内部工作表/Sheet名以'-APIMap'结尾，其他工作表会被忽略。
     API_MAP_FOLDER = os.path.realpath(os.path.join(os.path.dirname(__file__), os.pardir, 'config'))
     API_MAP = {
         OPENCV: os.path.join(API_MAP_FOLDER, 'mxBase_OpenCV_API_MAP.xlsx'),
@@ -203,6 +230,12 @@ class KitConfig:
         CVCUDA_PYTHON: os.path.join(API_MAP_FOLDER, 'mxBase_CVCUDA_Python_API_MAP.xlsx'),
         TENSORRT_PYTHON: os.path.join(API_MAP_FOLDER, 'ACL_TensorRT_Python_API_MAP.xlsx'),
     }
+
+    API_INDEX_MAP = {
+        OPENCV: os.path.join(API_MAP_FOLDER, 'opencv.lut.bin'),
+        MxBASE: os.path.join(API_MAP_FOLDER, 'mxbase.lut.bin'),
+    }
+    EXPERT_LIBS_FILE = os.path.join(API_MAP_FOLDER, 'expert_libs.json')
 
     # 3.CMake加速库模式匹配
     MACRO_PATTERN = re.compile(r'(OpenCV|CUDA|NVJPEG|DALI|CVCUDA)')
@@ -273,3 +306,11 @@ PortingResult = namedtuple(
                       'suggestion_type',
                       'replacement']
 )
+
+
+class SeqArgs:
+    SEQ_MIN_LEN = 4
+    PREFIX_SPAN_TOP_K = 300
+    PREFIX_SPAN_FREQ = 2
+    APRIORI_MIN_SUPPORT = 0.75
+    SIM_MIN_SUPPORT = 0.6

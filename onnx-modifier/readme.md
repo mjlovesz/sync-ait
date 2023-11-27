@@ -220,6 +220,21 @@
 3. 如果一个属性值是列表类型，则各元素之间使用‘`,`’分隔，无需'[]'。
 4. 在当前版本中，如果一个节点的输入/输出是一个列表类型（如`Concat`），限制最多显示8个。如果一个节点实际输入/输出小于8个，则填写对应数目的输入输出即可，多出来的应以`list_custom`开头，它们会在后续处理中自动被忽略。
 
+
+
+## 构造自定义算子
+
+有时候我们希望向模型中增加自定义算子。`onnx-modifier`已开始支持该功能。
+
+在主页面的左方工具栏，有一个`Add node`按钮，点击之后弹出对话框，通过按钮Edit Custom Operator按钮打开自定义文本框，按自己所需添加自定义算子，点击Add Operator按钮构造算子，成功后会重新加载json文件并自动添加自定义算子，后续添加节点过程如上：[增加新节点](#增加新节点)
+注：需要添加正确的json格式（已经有默认输入），在后续如果不需要该自定义算子，可以依据输入的name，moudle与version并点击Delete Operator来删除构造的算子。
+
+
+<img src="./docs/build_custom_operator.gif" style="zoom:75%;" />
+
+
+
+
 ## 修改模型batch size
 动态batch size和固定batch size均已支持。
 - 动态batch size：点击`batch Dynamic`即可；

@@ -14,7 +14,7 @@
 import os
 
 from app_analyze.report.report import Report
-from app_analyze.utils.excel import write_excel
+from app_analyze.utils.excel import write_excel, df2xlsx
 from app_analyze.utils.log_util import logger
 from app_analyze.common.kit_config import KitConfig
 
@@ -40,9 +40,13 @@ class CsvReport(Report):
     def initialize(self, project):
         self.report_content = project.get_results()
 
-    def generate(self):
+    def generate(self, fmt=None):
         if self.report_path == '':
             self.report_path = os.path.join(KitConfig.SOURCE_DIRECTORY, 'output.xlsx')
 
-        write_excel(self.report_content, self.report_path)
+        if self._format is None:
+            write_excel(self.report_content, self.report_path)
+        else:
+            df2xlsx(self.report_content, self._format, self.report_path)
+
         logger.info(f'Report generated at: {self.report_path}')
