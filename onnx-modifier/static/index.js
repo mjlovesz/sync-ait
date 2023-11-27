@@ -465,12 +465,14 @@ host.BrowserHost = class {
     function isJSONValid(jsonString) {
       try {
         jsonString = jsonString.trim();
-        if (jsonString == 'true' || jsonString == 'false'){
+        const jsonArray = JSON.parse(jsonString);
+        if (!Array.isArray(jsonArray)) {
             return false;
         }
-        JSON.parse(jsonString);
-        if (typeof jsonString == 'string' && isNumeric(jsonString)) {
-            return false;
+        for (const obj of jsonArray) {
+            if (typeof obj !== 'object' || obj === null) {
+                return false; // Each item must be a non-null object
+            }
         }
         return true
     } catch (e) {
@@ -478,9 +480,6 @@ host.BrowserHost = class {
     }
 }
 
-    function isNumeric(str) {
-        return  /^-?\d+(\.\d+)?$/.test(str);
-    }
     function isValidInput(str) {
         var regex = /^[a-zA-Z0-9-_]+$/;
         return regex.test(str);
@@ -501,12 +500,24 @@ function validateCustomOperatorForm() {
         return false;
     }
 
-    var nameValue = document.getElementById('customName').value;
-    var moduleValue = document.getElementById('customModule').value;
+    var nameValue = document.getElementById('customName').value.trim();
+    var moduleValue = document.getElementById('customModule').value.trim();
+    var supportLevelValue = document.getElementById('customSupportLevel').value.trim();
+    var descriptionValue = document.getElementById('customDescription').value.trim();
     if (!isValidInput(nameValue) || !isValidInput(moduleValue)) {
         window._host.show_message('Warn', 'Name or Module field contains invalid characters.', 'warn');
         return false;
     }
+    if (supportLevelValue && !isValidInput(supportLevelValue)) {
+        window._host.show_message('Warn', 'Support Level field contains invalid characters.', 'warn');
+        return false;
+    }
+    if (!validateStringLength(nameValue, 'Name') ||
+    !validateStringLength(moduleValue, 'Module') ||
+    !validateStringLength(supportLevelValue, 'Support Level') ||
+    !validateStringLength(descriptionValue, 'Description')) {
+    return false; // 错误信息会在 validateStringLength 函数中处理
+}
 
     if (!document.getElementById('customVersion').value.trim()) {
         window._host.show_message('Warn', 'Version field is required.', 'warn');
@@ -526,8 +537,7 @@ function validateCustomOperatorForm() {
         return false;
     }
 
-    if (!validateStringLength(customInputsValue)) {
-        window._host.show_message('Warn', 'Inputs data is too long.', 'warn');
+    if (!validateStringLength(customInputsValue, 'Inputs')) {
         return false;
     }
 
@@ -549,8 +559,7 @@ function validateCustomOperatorForm() {
         return false;
     }
 
-    if (!validateStringLength(customOutputsValue)) {
-        window._host.show_message('Warn', 'Outputs data is too long.', 'warn');
+    if (!validateStringLength(customOutputsValue, 'Outputs')) {
         return false;
     }
 
@@ -567,8 +576,7 @@ function validateCustomOperatorForm() {
 
     var customAttributes = document.getElementById('customAttributes').value;
 
-    if (!validateStringLength(customAttributes)) {
-        window._host.show_message('Warn', 'customAttributes data is too long.', 'warn');
+    if (!validateStringLength(customAttributes, 'Attributes')) {
         return false;
     }
 
@@ -580,8 +588,7 @@ function validateCustomOperatorForm() {
 
     var customTypeConstraints = document.getElementById('customTypeConstraints').value;
 
-    if (!validateStringLength(customTypeConstraints)) {
-        window._host.show_message('Warn', 'customTypeConstraints data is too long.', 'warn');
+    if (!validateStringLength(customTypeConstraints, 'Type Constraints')) {
         return false;
     }
 
@@ -594,9 +601,10 @@ function validateCustomOperatorForm() {
     return true;
 }
 
-function validateStringLength(stringValue) {
-    const MAX_LENGTH = 10000; // 最大长度，例如 10000 字符
-    if (stringValue.length > MAX_LENGTH) {
+function validateStringLength(stringValue, fieldName) {
+    const MAX_STRING_LENGTH = 10000; // 最大长度，例如 10000 字符
+    if (stringValue.length > MAX_STRING_LENGTH) {
+        window._host.show_message('Warn', fieldName + ' field data is too long.', 'warn');
         return false;
     }
     return true;
