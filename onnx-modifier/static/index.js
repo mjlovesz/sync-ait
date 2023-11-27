@@ -464,6 +464,9 @@ host.BrowserHost = class {
 
     function isJSONValid(jsonString) {
       try {
+        if (jsonString == 'true' || jsonString == 'false'){
+            return false;
+        }
         JSON.parse(jsonString);
         if (typeof jsonString == 'string' && isNumeric(jsonString)) {
             return false;
@@ -477,6 +480,10 @@ host.BrowserHost = class {
     function isNumeric(str) {
             return  /^-?\d+(\.\d+)?$/.test(str);
     }
+    function isValidInput(str) {
+    var regex = /^[a-zA-Z0-9-_]+$/;
+    return regex.test(str);
+}
 
 
 function validateCustomOperatorForm() {
@@ -488,8 +495,22 @@ function validateCustomOperatorForm() {
         window._host.show_message('Warn', 'Module field is required.', 'warn');
         return false;
     }
+
+    var nameValue = document.getElementById('customName').value;
+    var moduleValue = document.getElementById('customModule').value;
+    if (!isValidInput(nameValue) || !isValidInput(moduleValue)) {
+        window._host.show_message('Warn', 'Name or Module field contains invalid characters.', 'warn');
+        return false;
+    }
+
     if (!document.getElementById('customVersion').value.trim()) {
         window._host.show_message('Warn', 'Version field is required.', 'warn');
+        return false;
+    }
+
+    var versionValue = document.getElementById('customVersion').value;
+    if (!isNumeric(versionValue)) {
+        window._host.show_message('Warn', 'Version field must be a valid number.', 'warn');
         return false;
     }
 
