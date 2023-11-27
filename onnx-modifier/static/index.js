@@ -465,11 +465,18 @@ host.BrowserHost = class {
     function isJSONValid(jsonString) {
       try {
         JSON.parse(jsonString);
-        return true;
+        if (typeof jsonString == 'string' && isNumeric(jsonString)) {
+            return false;
+        }
+        return true
     } catch (e) {
         return false;
     }
 }
+
+    function isNumeric(str) {
+            return  /^-?\d+(\.\d+)?$/.test(str);
+    }
 
 
 function validateCustomOperatorForm() {
