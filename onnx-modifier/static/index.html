@@ -63,6 +63,10 @@
     #customOperatorDialog textarea {
         margin-bottom: 10px; /* 在每个表单元素下方添加间隙 */
     }
+
+    .required {
+        color: red;
+    }
 </style>
 
 </head>
@@ -303,24 +307,35 @@
 
 <dialog id="customOperatorDialog" class="dialog message-box">
     <form id="customOperatorForm">
-        <label for="customName">Name:</label>
-        <input type="text" id="customName" name="customName" list="customNameList" value="CustomConv" autocomplete="off"><br>
+        <!-- Name (必填) -->
+        <label for="customName">Name: <span class="required">*</span></label>
+        <input type="text" id="customName" name="customName" list="customNameList" value="CustomConv" autocomplete="off" required><br>
         <datalist id="customNameList">
             <!-- 这里将动态填充算子名称 -->
         </datalist>
-        <label for="customModule">Module:</label>
-        <input type="text" id="customModule" name="customModule" list="customModuleList" value="Custom" autocomplete="off"><br>
+
+        <!-- Module (必填) -->
+        <label for="customModule">Module: <span class="required">*</span></label>
+        <input type="text" id="customModule" name="customModule" list="customModuleList" value="Custom" autocomplete="off" required><br>
         <datalist id="customModuleList">
             <!-- 这里将动态填充算子模块 -->
         </datalist>
-        <label for="customVersion">Version:</label>
-        <input type="number" id="customVersion" name="customVersion" value="1"><br>
+
+        <!-- Version (必填) -->
+        <label for="customVersion">Version: <span class="required">*</span></label>
+        <input type="number" id="customVersion" name="customVersion" value="1" required><br>
+
+        <!-- Support Level -->
         <label for="customSupportLevel">Support Level:</label>
         <input type="text" id="customSupportLevel" name="customSupportLevel" value="common"><br>
+
+        <!-- Description -->
         <label for="customDescription">Description:</label>
         <input type="text" id="customDescription" name="customDescription"><br>
-        <label for="customInputs">Inputs:</label>
-        <textarea id="customInputs" name="customInputs">[
+
+        <!-- Inputs (必填) -->
+        <label for="customInputs">Inputs: <span class="required">*</span></label>
+        <textarea id="customInputs" name="customInputs" required>[
   {
     "name": "input",
     "type": "tensor(float)",
@@ -332,8 +347,10 @@
     "description": "卷积核权重"
   }
 ]</textarea><br>
-        <label for="customOutputs">Outputs:</label>
-        <textarea id="customOutputs" name="customOutputs">[
+
+        <!-- Outputs (必填) -->
+        <label for="customOutputs">Outputs: <span class="required">*</span></label>
+        <textarea id="customOutputs" name="customOutputs" required>[
   {
     "name": "output",
     "type": "tensor(float)",
@@ -341,6 +358,7 @@
   }
 ]</textarea><br>
 
+        <!-- Attributes -->
         <label for="customAttributes">Attributes:</label>
         <textarea id="customAttributes" name="customAttributes">[
   {
@@ -362,6 +380,8 @@
     "default": 0
   }
 ]</textarea><br>
+
+        <!-- Type Constraints -->
         <label for="customTypeConstraints">Type Constraints:</label>
         <textarea id="customTypeConstraints" name="customTypeConstraints">[
   {
