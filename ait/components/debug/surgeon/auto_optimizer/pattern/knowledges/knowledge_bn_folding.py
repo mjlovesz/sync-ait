@@ -50,9 +50,11 @@ class ConstBNMatch(MatchBase):
             return False
         scale = graph.get_node(node.inputs[1], node_type=Initializer)
         bias = graph.get_node(node.inputs[2], node_type=Initializer)
+        if scale is None or bias is None:
+            return False
         mean = graph.get_node(node.inputs[3], node_type=Initializer)
         var = graph.get_node(node.inputs[4], node_type=Initializer)
-        if (scale is None or bias is None or mean is None or var is None):
+        if mean is None or var is None:
             return False
         return True
 
@@ -85,9 +87,11 @@ class KnowledgeBNFolding(KnowledgeBase):
                     graph: BaseGraph) -> Tuple[Optional[NDArray], Optional[NDArray]]:
         scale = graph.get_node(bn.inputs[1], node_type=Initializer)
         bias = graph.get_node(bn.inputs[2], node_type=Initializer)
+        if scale is None or bias is None:
+            return None, None
         mean = graph.get_node(bn.inputs[3], node_type=Initializer)
         var = graph.get_node(bn.inputs[4], node_type=Initializer)
-        if (scale is None or bias is None or mean is None or var is None):
+        if mean is None or var is None:
             return None, None
         epsilon = bn.attrs.get('epsilon', 1e-5)
         mul_init, add_init = self._constant_folding(

@@ -30,8 +30,8 @@ output_file_args = ['output', 'json', ]
 
 def get_logger(name=__name__):
     logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
-    logger = logging.getLogger(name)
-    return logger
+    logger_in = logging.getLogger(name)
+    return logger_in    
 
 
 logger = get_logger()

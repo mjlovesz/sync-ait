@@ -108,9 +108,11 @@ def cosine_similarity(mat0: NDArray, mat1: NDArray) -> float:
 
 
 def meet_precision(lmat: NDArray, rmat: NDArray, cos_th: float, atol: float, rtol: float) -> bool:
-    if (np.any(np.isinf(lmat)) or np.any(np.isinf(rmat))) \
-         or (np.isclose(norm(lmat), 0) and np.isclose(norm(rmat), 0)):
-        # if overflow happens or norm is close to 0, we fallback to allclose
+    if np.any(np.isinf(lmat)) or np.any(np.isinf(rmat)):
+        # if overflow happens, we fallback to allclose
+        return np.allclose(rmat, lmat, atol=atol, rtol=rtol, equal_nan=True)
+    if np.isclose(norm(lmat), 0) and np.isclose(norm(rmat), 0):
+        # if norm is close to 0, we fallback to allclose
         return np.allclose(rmat, lmat, atol=atol, rtol=rtol, equal_nan=True)
     # avoid norm overflow, this affects cosine_similarity
     while norm(lmat) > 1e10 or norm(rmat) > 1e10:
