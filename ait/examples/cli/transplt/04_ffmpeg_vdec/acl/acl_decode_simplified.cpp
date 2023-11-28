@@ -17,16 +17,17 @@
 #include <cstdint>
 #include <getopt.h>
 #include <pthread.h>
-#include <stdio>
-#include <stdlib>
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/time.h>
-#include <signal>
+#include <signal.h>
 #include <vector>
 #include <string>
 #include <sys/prctl.h>
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 
 
 #include "acl.h"
@@ -56,17 +57,17 @@ static void pgmSave(unsigned char* yuv, uint32_t width, uint32_t height, std::st
     int ret = fprintf(fp, "P5\n%d %d\n%d\n", width, height, 255);
     if (ret < 0) {
         printf("[%s][%d] fprintf to file %s failed \n", __FUNCTION__, __LINE__, saveFileName.c_str());
-        return
+        return;
     }
     ret = fwrite(yuv, 1, width * height, fp);
     if (ret < 0) {
         printf("[%s][%d] fwrite to file %s failed \n", __FUNCTION__, __LINE__, saveFileName.c_str());
-        return
+        return;
     }
     ret = fclose(fp);
     if (ret < 0) {
         printf("[%s][%d] fclose file %s failed \n", __FUNCTION__, __LINE__, saveFileName.c_str());
-        return
+        return;
     }
 }
 

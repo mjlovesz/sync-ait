@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-#include <stdio>
-#include <stdlib>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string>
+#include <sstream>
 
 extern "C" {
 #include <libavcodec/avcodec.h>
 }
 
-static const uint32_t INBUF_SIZE = 4096
+static const uint32_t INBUF_SIZE = 4096;
 
 static void pgmSave(unsigned char *buf, int wrap, int xsize, int ysize, std::string filename)
 {
@@ -33,19 +34,19 @@ static void pgmSave(unsigned char *buf, int wrap, int xsize, int ysize, std::str
     int ret = fprintf(f, "P5\n%d %d\n%d\n", xsize, ysize, 255);
     if (ret < 0) {
         printf("[%s][%d] fprintf to file %s failed \n", __FUNCTION__, __LINE__, filename.c_str());
-        return
+        return;
     }
     for (i = 0; i < ysize; i++) {
         ret = fwrite(buf + i * wrap, 1, xsize, f);
         if (ret < 0) {
             printf("[%s][%d] fwrite to file %s failed \n", __FUNCTION__, __LINE__, filename.c_str());
-            return
+            return;
         }
     }
     ret = fclose(f);
     if (ret < 0) {
         printf("[%s][%d] fclose file %s failed \n", __FUNCTION__, __LINE__, filename.c_str());
-        return
+        return;
     }
 }
 
@@ -63,7 +64,7 @@ static int decode(AVCodecContext *dec_ctx, AVFrame *frame, AVPacket *pkt,
     while (ret >= 0) {
         ret = avcodec_receive_frame(dec_ctx, frame);
         if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
-            return;
+            return ret;
         } else if (ret < 0) {
             fprintf(stderr, "Error during decoding\n");
             return ret;
@@ -111,7 +112,7 @@ int main(int argc, char **argv)
     }
 
     /* set end of buffer to 0 (this ensures that no overreading happens for damaged h264 streams) */
-    memset_s(inbuf + INBUF_SIZE, AV_INPUT_BUFFER_PADDING_SIZE, 0, AV_INPUT_BUFFER_PADDING_SIZE);
+    memset(inbuf + INBUF_SIZE, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
     /* find the h264 video decoder */
     codec = avcodec_find_decoder(AV_CODEC_ID_H264);
@@ -187,7 +188,7 @@ int main(int argc, char **argv)
 
     ret = fclose(f);
     if (ret < 0) {
-        printf("[%s][%d] fclose file %s failed \n", __FUNCTION__, __LINE__, filename.c_str());
+        printf("[%s][%d] fclose file %s failed \n", __FUNCTION__, __LINE__, filename);
     }
 
     av_parser_close(parser);
