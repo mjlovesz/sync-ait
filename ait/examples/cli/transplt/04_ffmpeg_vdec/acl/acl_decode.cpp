@@ -17,12 +17,12 @@
 #include <cstdint>
 #include <getopt.h>
 #include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdio>
+#include <stdlib>
 #include <sys/time.h>
-#include <signal.h>
+#include <signal>
 #include <vector>
-#include <string.h>
+#include <string>
 #include <sys/prctl.h>
 #include <unistd.h>
 #include <iostream>
@@ -32,19 +32,19 @@
 #include "acl_rt.h"
 #include "hi_dvpp.h"
 
-std::string g_input_file_name = std::string("infile"); // Input stream file name
-std::string g_output_file_name = std::string("outfile"); // Output file name
-uint32_t g_in_width = 3840; // Input stream width
-uint32_t g_in_height = 2160; // Input stream height
-uint32_t g_in_bitwidth = 8; // Input stream bit width, 8 or 10
+static std::string g_inputFileName = std::string("infile"); // Input stream file name
+static std::string g_outputFileName = std::string("outfile"); // Output file name
+static uint32_t g_in_width = 3840; // Input stream width
+static uint32_t g_in_height = 2160; // Input stream height
+static uint32_t g_in_bitwidth = 8; // Input stream bit width, 8 or 10
 
-uint32_t g_ref_frame_num = 8; // Number of reference frames [0, 16]
-uint32_t g_display_frame_num = 2; // Number of display frames [0, 16]
-uint32_t g_alloc_num = 20; // Number of out buffer
-uint32_t g_start_chn_num = 0; // Video decoder channel start number
+static uint32_t g_ref_frame_num = 8; // Number of reference frames [0, 16]
+static uint32_t g_display_frame_num = 2; // Number of display frames [0, 16]
+static uint32_t g_alloc_num = 20; // Number of out buffer
+static uint32_t g_start_chn_num = 0; // Video decoder channel start number
 
-std::vector<void*> g_out_buffer_pool; // Out buffer pool
-pthread_mutex_t g_out_buffer_pool_lock; // Lock of out buffer pool
+static std::vector<void*> g_outBufferPool; // Out buffer pool
+static pthread_mutex_t g_outBufferPoolLock; // Lock of out buffer pool
 
 static const uint32_t g_GB = 1024 * 1024 * 1024;
 
@@ -63,21 +63,33 @@ static uint64_t g_frame_len[9999]; // Frame size
 static aclrtContext g_context = NULL;
 
 
-static void pgm_save(unsigned char* yuv, uint32_t width, uint32_t height, const char* saveFileName)
+static void pgm_save(unsigned char* yuv, uint32_t width, uint32_t height, std::string saveFileName)
 {
-    FILE* fp = fopen(saveFileName, "wb");
+    FILE* fp = fopen(saveFileName.c_str(), "wb");
     if (fp == nullptr) {
-        printf("[%s][%d] Can't Open File %s \n", __FUNCTION__, __LINE__, saveFileName);
+        printf("[%s][%d] Can't Open File %s \n", __FUNCTION__, __LINE__, saveFileName.c_str());
         return;
     }
 
-    fprintf(fp, "P5\n%d %d\n%d\n", width, height, 255);
-    fwrite(yuv, 1, width * height, fp);
-    fclose(fp);
+    int ret = fprintf(fp, "P5\n%d %d\n%d\n", width, height, 255);
+    if (ret < 0) {
+        printf("[%s][%d] fprintf to file %s failed \n", __FUNCTION__, __LINE__, saveFileName.c_str());
+        return
+    }
+    ret = fwrite(yuv, 1, width * height, fp);
+    if (ret < 0) {
+        printf("[%s][%d] fwrite to file %s failed \n", __FUNCTION__, __LINE__, saveFileName.c_str());
+        return
+    }
+    ret = fclose(fp);
+    if (ret < 0) {
+        printf("[%s][%d] fclose file %s failed \n", __FUNCTION__, __LINE__, saveFileName.c_str());
+        return
+    }
 }
 
 // convert YUV data to pgm data and write to a file
-static void save_to_pgm_file(const char* saveFileName, hi_video_frame frame, uint32_t chanId)
+static void save_to_pgm_file(std::string saveFileName, hi_video_frame frame, uint32_t chanId)
 {
     uint8_t* addr = (uint8_t*)frame.virt_addr[0];
     uint32_t imageSize = frame.width * frame.height;
@@ -142,7 +154,8 @@ static int32_t vdecCreate()
 
     ret = hi_mpi_vdec_create_chn(g_start_chn_num, &chnAttr);
     if (ret != HI_SUCCESS) {
-        printf("[%s][%d] Chn %u, hi_mpi_vdec_create_chn Fail, ret = %x \n", __FUNCTION__, __LINE__, g_start_chn_num, ret);
+        printf("[%s][%d] Chn %u, hi_mpi_vdec_create_chn Fail, ret = %x \n",
+               __FUNCTION__, __LINE__, g_start_chn_num, ret);
         return ret;
     }
     g_chan_create_state = 1;
@@ -151,7 +164,8 @@ static int32_t vdecCreate()
     // Get channel parameter
     ret = hi_mpi_vdec_get_chn_param(g_start_chn_num, &chnParam);
     if (ret != HI_SUCCESS) {
-        printf("[%s][%d] Chn %u, hi_mpi_vdec_get_chn_param Fail, ret = %x \n", __FUNCTION__, __LINE__, g_start_chn_num, ret);
+        printf("[%s][%d] Chn %u, hi_mpi_vdec_get_chn_param Fail, ret = %x \n",
+               __FUNCTION__, __LINE__, g_start_chn_num, ret);
         return ret;
     }
     chnParam.video_param.dec_mode = HI_VIDEO_DEC_MODE_IPB;
@@ -163,14 +177,16 @@ static int32_t vdecCreate()
     // Set channel parameter
     ret = hi_mpi_vdec_set_chn_param(g_start_chn_num, &chnParam);
     if (ret != HI_SUCCESS) {
-        printf("[%s][%d] Chn %u, hi_mpi_vdec_set_chn_param Fail, ret = %x \n", __FUNCTION__, __LINE__, g_start_chn_num, ret);
+        printf("[%s][%d] Chn %u, hi_mpi_vdec_set_chn_param Fail, ret = %x \n",
+               __FUNCTION__, __LINE__, g_start_chn_num, ret);
         return ret;
     }
 
     // Decoder channel start receive stream
     ret = hi_mpi_vdec_start_recv_stream(g_start_chn_num);
     if (ret != HI_SUCCESS) {
-        printf("[%s][%d] Chn %u, hi_mpi_vdec_start_recv_stream Fail, ret = %x \n", __FUNCTION__, __LINE__, g_start_chn_num, ret);
+        printf("[%s][%d] Chn %u, hi_mpi_vdec_start_recv_stream Fail, ret = %x \n",
+               __FUNCTION__, __LINE__, g_start_chn_num, ret);
         return ret;
     }
     return ret;
@@ -179,9 +195,9 @@ static int32_t vdecCreate()
 static void releaseOutbuffer()
 {
     void* outBuffer = nullptr;
-    while (g_out_buffer_pool.empty() == false) {
-        outBuffer = g_out_buffer_pool.back();
-        g_out_buffer_pool.pop_back();
+    while (g_outBufferPool.empty() == false) {
+        outBuffer = g_outBufferPool.back();
+        g_outBufferPool.pop_back();
         hi_mpi_dvpp_free(outBuffer);
     }
 }
@@ -205,7 +221,8 @@ static void vdecResetChn(uint32_t chanId)
 
     ret = hi_mpi_vdec_start_recv_stream(chanId);
     if (ret != HI_SUCCESS) {
-        printf("[%s][%d] Chn %u, hi_mpi_vdec_start_recv_stream Fail, ret = %x \n", __FUNCTION__, __LINE__, chanId, ret);
+        printf("[%s][%d] Chn %u, hi_mpi_vdec_start_recv_stream Fail, ret = %x \n",
+               __FUNCTION__, __LINE__, chanId, ret);
         return;
     }
     printf("[%s][%d] Chn %u, reset chn success \n", __FUNCTION__, __LINE__, chanId);
@@ -231,7 +248,8 @@ static void waitVdecEnd()
     while (g_exit == 0) {
         ret = hi_mpi_vdec_query_status(g_start_chn_num, &status);
         if (ret != HI_SUCCESS) {
-            printf("[%s][%d] Chn %u, hi_mpi_vdec_query_status Fail, ret = %x \n", __FUNCTION__, __LINE__, g_start_chn_num, ret);
+            printf("[%s][%d] Chn %u, hi_mpi_vdec_query_status Fail, ret = %x \n",
+                   __FUNCTION__, __LINE__, g_start_chn_num, ret);
             break;
         }
         if (((status.left_stream_bytes == 0) && (status.left_decoded_frames == 0)) || (g_get_exit_state == 1)) {
@@ -271,12 +289,14 @@ static void vdecDestroy()
         // Decoder channel stop receive stream
         ret = hi_mpi_vdec_stop_recv_stream(g_start_chn_num);
         if (ret != HI_SUCCESS) {
-            printf("[%s][%d] Chn %u, hi_mpi_vdec_stop_recv_stream Fail, ret = %x \n", __FUNCTION__, __LINE__, g_start_chn_num, ret);
+            printf("[%s][%d] Chn %u, hi_mpi_vdec_stop_recv_stream Fail, ret = %x \n",
+                   __FUNCTION__, __LINE__, g_start_chn_num, ret);
         }
         // Destroy channel
         ret = hi_mpi_vdec_destroy_chn(g_start_chn_num);
         if (ret != HI_SUCCESS) {
-            printf("[%s][%d] Chn %u, hi_mpi_vdec_destroy_chn Fail, ret = %x \n", __FUNCTION__, __LINE__, g_start_chn_num, ret);
+            printf("[%s][%d] Chn %u, hi_mpi_vdec_destroy_chn Fail, ret = %x \n",
+                   __FUNCTION__, __LINE__, g_start_chn_num, ret);
         }
         releaseOutbuffer();
     }
@@ -362,17 +382,25 @@ static void* sendStream(void* const chanNum)
 
     // Open input stream file
     FILE* fpInputFile = nullptr;
-    fpInputFile = fopen(g_input_file_name.c_str(), "rb");
+    fpInputFile = fopen(g_inputFileName.c_str(), "rb");
     if (fpInputFile == nullptr) {
-        printf("[%s][%d] Chn %u Can't open file %s \n", __FUNCTION__, __LINE__, chanId, g_input_file_name.c_str());
+        printf("[%s][%d] Chn %u Can't open file %s \n", __FUNCTION__, __LINE__, chanId, g_inputFileName.c_str());
         return (void*)(HI_FAILURE);
     }
 
     // Calculate input stream file size
     uint32_t fileSize = 0;
-    fseek(fpInputFile, 0L, SEEK_END);
+    int ret = fseek(fpInputFile, 0L, SEEK_END);
+    if (ret != 0) {
+        printf("[%s][%d] Chn %u fseek file %s failed \n", __FUNCTION__, __LINE__, chanId, g_inputFileName.c_str());
+        return (void*)(HI_FAILURE);
+    }
     fileSize = ftell(fpInputFile);
-    fseek(fpInputFile, 0L, SEEK_SET);
+    ret = fseek(fpInputFile, 0L, SEEK_SET);
+    if (ret != 0) {
+        printf("[%s][%d] Chn %u fseek file %s failed \n", __FUNCTION__, __LINE__, chanId, g_inputFileName.c_str());
+        return (void*)(HI_FAILURE);
+    }
 
     if (fileSize == 0 || fileSize > g_GB) {
         printf("[%s][%d] Chn %u InputFile size is invalid %d Fail \n", __FUNCTION__, __LINE__, chanId, fileSize);
@@ -416,7 +444,8 @@ static void* sendStream(void* const chanNum)
         fclose(fpInputFile);
         free(inputFileBuf);
         hi_mpi_dvpp_free(dataDev);
-        printf("[%s][%d] Chn %u Copy host memcpy to device failed, error code = %d.\n", __FUNCTION__, __LINE__, chanId, ret);
+        printf("[%s][%d] Chn %u Copy host memcpy to device failed, error code = %d.\n",
+               __FUNCTION__, __LINE__, chanId, ret);
         return (hi_void *)(HI_FAILURE);
     }
 
@@ -445,7 +474,7 @@ static void* sendStream(void* const chanNum)
             return (void*)(HI_FAILURE);
         }
         // Put buffer to pool
-        g_out_buffer_pool.push_back(outBuffer);
+        g_outBufferPool.push_back(outBuffer);
     }
 
     // Delay one second
@@ -479,14 +508,14 @@ static void* sendStream(void* const chanNum)
         // Get out buffer from pool
         while (g_send_exit_state == 0) {
             mallocCount++;
-            (void)pthread_mutex_lock(&g_out_buffer_pool_lock);
-            if (g_out_buffer_pool.empty() == false) {
-                outBuffer = g_out_buffer_pool.back();
-                g_out_buffer_pool.pop_back();
-                (void)pthread_mutex_unlock(&g_out_buffer_pool_lock);
+            (void)pthread_mutex_lock(&g_outBufferPoolLock);
+            if (g_outBufferPool.empty() == false) {
+                outBuffer = g_outBufferPool.back();
+                g_outBufferPool.pop_back();
+                (void)pthread_mutex_unlock(&g_outBufferPoolLock);
                 break;
             } else {
-                (void)pthread_mutex_unlock(&g_out_buffer_pool_lock);
+                (void)pthread_mutex_unlock(&g_outBufferPoolLock);
                 usleep(1000); // 1000us
             }
 
@@ -518,7 +547,8 @@ static void* sendStream(void* const chanNum)
         } while (ret == HI_ERR_VDEC_BUF_FULL); // Try again
 
         if (ret != HI_SUCCESS) {
-            printf("[%s][%d] Chn %u hi_mpi_vdec_send_stream Fail, Error Code = %x \n", __FUNCTION__, __LINE__, chanId, ret);
+            printf("[%s][%d] Chn %u hi_mpi_vdec_send_stream Fail, Error Code = %x \n",
+                   __FUNCTION__, __LINE__, chanId, ret);
             break;
         }
 
@@ -537,7 +567,11 @@ static void* sendStream(void* const chanNum)
     outPicInfo.buffer_size = 0;
     hi_mpi_vdec_send_stream(chanId, &stream, &outPicInfo, -1);
 
-    fclose(fpInputFile);
+    ret = fclose(fpInputFile);
+    if (ret != 0) {
+        printf("[%s][%d] fclose file %s failed \n", __FUNCTION__, __LINE__, g_inputFileName.c_str());
+        return (void*)(HI_FAILURE);
+    }
     free(inputFileBuf);
     hi_mpi_dvpp_free(dataDev);
     printf("[%s][%d] Chn %u sendStream Thread Exit \n", __FUNCTION__, __LINE__, chanId);
@@ -551,7 +585,8 @@ static void* getPic(void* const chanNum)
 
     aclError aclRet = aclrtSetCurrentContext(g_context);
     if (aclRet != ACL_SUCCESS) {
-        printf("[%s][%d] Chn %u set current context failed, error code = %d", __FUNCTION__, __LINE__, chanId, aclRet);
+        printf("[%s][%d] Chn %u set current context failed, error code = %d",
+               __FUNCTION__, __LINE__, chanId, aclRet);
         g_get_exit_state = 1;
         return (void*)(HI_FAILURE);
     }
@@ -582,7 +617,8 @@ static void* getPic(void* const chanNum)
         decResult = frame.v_frame.frame_flag;
         if (decResult == 0) { // 0: Decode success
             successCnt++;
-            printf("[%s][%d] Chn %u GetFrame Success, Decode Success[%d] \n", __FUNCTION__, __LINE__, chanId, successCnt);
+            printf("[%s][%d] Chn %u GetFrame Success, Decode Success[%d] \n",
+                   __FUNCTION__, __LINE__, chanId, successCnt);
         } else  {
             failCnt++;
             printf("[%s][%d] Chn %u GetFrame Success, Decode Fail[%d] \n", __FUNCTION__, __LINE__, chanId, failCnt);
@@ -594,23 +630,24 @@ static void* getPic(void* const chanNum)
 
             // Configure file name
             std::ostringstream sstream;
-            sstream << g_output_file_name.c_str() << "-" << writeFileCnt << ".pgm";
+            sstream << g_outputFileName.c_str() << "-" << writeFileCnt << ".pgm";
             std::string saveFileName = sstream.str();
 
-            save_to_pgm_file(saveFileName.c_str(), frame.v_frame, chanId);
+            save_to_pgm_file(saveFileName, frame.v_frame, chanId);
             writeFileCnt++;
         }
         if (outputBuffer != nullptr) {
             // Put out buffer to pool
-            (void)pthread_mutex_lock(&g_out_buffer_pool_lock);
-            g_out_buffer_pool.push_back(outputBuffer);
-            (void)pthread_mutex_unlock(&g_out_buffer_pool_lock);
+            (void)pthread_mutex_lock(&g_outBufferPoolLock);
+            g_outBufferPool.push_back(outputBuffer);
+            (void)pthread_mutex_unlock(&g_outBufferPoolLock);
         }
         // Release Frame
         ret = hi_mpi_vdec_release_frame(chanId, &frame);
 
         if (ret != HI_SUCCESS) {
-            printf("[%s][%d] Chn %u hi_mpi_vdec_release_frame Fail, Error Code = %x \n", __FUNCTION__, __LINE__, chanId, ret);
+            printf("[%s][%d] Chn %u hi_mpi_vdec_release_frame Fail, Error Code = %x \n",
+                   __FUNCTION__, __LINE__, chanId, ret);
         }
     }
     printf("[%s][%d] Chn %u getPic Thread Exit \n", __FUNCTION__, __LINE__, chanId);
@@ -625,7 +662,8 @@ static int32_t createSendStreamThread()
     // Create send thread
     ret = pthread_create(&g_vdecSendThread, 0, sendStream, (void*)&g_send_thread_id);
     if (ret != 0) {
-        printf("[%s][%d] Chn %u, create send stream thread Fail, ret = %d \n", __FUNCTION__, __LINE__, g_start_chn_num, ret);
+        printf("[%s][%d] Chn %u, create send stream thread Fail, ret = %d \n",
+               __FUNCTION__, __LINE__, g_start_chn_num, ret);
         g_vdecSendThread = 0;
         return ret;
     }
@@ -640,7 +678,8 @@ static int32_t createGetPicThread()
     // Create get thread
     ret = pthread_create(&g_vdecGetThread, 0, getPic, (void*)&g_get_thread_id);
     if (ret != 0) {
-        printf("[%s][%d] Chn %u, create get pic thread Fail, ret = %d \n", __FUNCTION__, __LINE__, g_start_chn_num, ret);
+        printf("[%s][%d] Chn %u, create get pic thread Fail, ret = %d \n",
+               __FUNCTION__, __LINE__, g_start_chn_num, ret);
         g_vdecGetThread = 0;
         return ret;
     }
@@ -669,8 +708,8 @@ static int32_t getOption(int32_t argc, char **argv)
         return HI_FAILURE;
     }
 
-    g_input_file_name = std::string(argv[1]);
-    g_output_file_name = std::string(argv[2]);
+    g_inputFileName = std::string(argv[1]);
+    g_outputFileName = std::string(argv[2]);
     return HI_SUCCESS;
 }
 
@@ -767,7 +806,7 @@ int32_t main(int32_t argc, char *argv[])
         return 0;
     }
     // Lock init
-    pthread_mutex_init(&g_out_buffer_pool_lock, nullptr);
+    pthread_mutex_init(&g_outBufferPoolLock, nullptr);
 
     // Create threads for sending stream
     ret = createSendStreamThread();
@@ -786,7 +825,7 @@ int32_t main(int32_t argc, char *argv[])
     // Wait decoding is complete.
     waitVdecEnd();
     // Destroy init
-    pthread_mutex_destroy(&g_out_buffer_pool_lock);
+    pthread_mutex_destroy(&g_outBufferPoolLock);
     // Destroy video decoder
     vdecDestroy();
     // Dvpp system exit

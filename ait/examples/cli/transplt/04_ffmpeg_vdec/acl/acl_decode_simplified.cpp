@@ -11,18 +11,18 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License. 
+ * limitations under the License.
  */
 
 #include <cstdint>
 #include <getopt.h>
 #include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <stdio>
+#include <stdlib>
 #include <sys/time.h>
-#include <signal.h>
+#include <signal>
 #include <vector>
-#include <string.h>
+#include <string>
 #include <sys/prctl.h>
 #include <unistd.h>
 #include <iostream>
@@ -33,33 +33,45 @@
 #include "acl_rt.h"
 #include "hi_dvpp.h"
 
-uint32_t g_in_width = 3840; // Input stream width
-uint32_t g_in_height = 2160; // Input stream height
+static uint32_t g_in_width = 3840; // Input stream width
+static uint32_t g_in_height = 2160; // Input stream height
 
-uint32_t g_ref_frame_num = 8; // Number of reference frames [0, 16]
-uint32_t g_display_frame_num = 2; // Number of display frames [0, 16]
-uint32_t g_start_chn_num = 0; // Video decoder channel start number
+static uint32_t g_ref_frame_num = 8; // Number of reference frames [0, 16]
+static uint32_t g_display_frame_num = 2; // Number of display frames [0, 16]
+static uint32_t g_start_chn_num = 0; // Video decoder channel start number
 
-uint8_t* g_frame_addr[9999]; // Frame address
-uint64_t g_frame_len[9999]; // Frame size
+static uint8_t* g_frame_addr[9999]; // Frame address
+static uint64_t g_frame_len[9999]; // Frame size
 
-aclrtContext g_context = NULL;
+static aclrtContext g_context = NULL;
 
-void pgm_save(unsigned char* yuv, uint32_t width, uint32_t height, char* saveFileName)
+static void pgmSave(unsigned char* yuv, uint32_t width, uint32_t height, std::string saveFileName)
 {
-    FILE* fp = fopen(saveFileName, "wb");
-    if (fp == NULL) {
-        printf("[%s][%d] Can't Open File %s \n", __FUNCTION__, __LINE__, saveFileName);
+    FILE* fp = fopen(saveFileName.c_str(), "wb");
+    if (fp == nullptr) {
+        printf("[%s][%d] Can't Open File %s \n", __FUNCTION__, __LINE__, saveFileName.c_str());
         return;
     }
 
-    fprintf(fp, "P5\n%d %d\n%d\n", width, height, 255);
-    fwrite(yuv, 1, width * height, fp);
-    fclose(fp);
+    int ret = fprintf(fp, "P5\n%d %d\n%d\n", width, height, 255);
+    if (ret < 0) {
+        printf("[%s][%d] fprintf to file %s failed \n", __FUNCTION__, __LINE__, saveFileName.c_str());
+        return
+    }
+    ret = fwrite(yuv, 1, width * height, fp);
+    if (ret < 0) {
+        printf("[%s][%d] fwrite to file %s failed \n", __FUNCTION__, __LINE__, saveFileName.c_str());
+        return
+    }
+    ret = fclose(fp);
+    if (ret < 0) {
+        printf("[%s][%d] fclose file %s failed \n", __FUNCTION__, __LINE__, saveFileName.c_str());
+        return
+    }
 }
 
 // convert YUV data to pgm data and write to a file
-void save_to_pgm_file(char* saveFileName, hi_video_frame frame, uint32_t chanId)
+static void saveToPgmFile(std::string saveFileName, hi_video_frame frame, uint32_t chanId)
 {
     uint8_t* addr = (uint8_t*)frame.virt_addr[0];
     uint32_t imageSize = frame.width * frame.height;
@@ -90,13 +102,13 @@ void save_to_pgm_file(char* saveFileName, hi_video_frame frame, uint32_t chanId)
         }
     }
 
-    pgm_save(outImageBuf, frame.width, frame.height, saveFileName);
+    pgmSave(outImageBuf, frame.width, frame.height, saveFileName);
     aclrtFreeHost(outImageBuf);
     return;
 }
 
 // Create video decoder channel, channel number is g_start_chn_num
-int32_t vdec_create()
+static int32_t vdecCreate()
 {
     hi_vdec_chn_attr chnAttr{};
     hi_data_bit_width bitWidth = HI_DATA_BIT_WIDTH_8;
@@ -137,7 +149,7 @@ int32_t vdec_create()
 }
 
 // Cutting stream to frame
-void get_every_frame(int32_t chanId, uint8_t* const inputFileBuf, uint32_t* const frameCount, uint32_t fileSize,
+static void getEveryFrame(int32_t chanId, uint8_t* const inputFileBuf, uint32_t* const frameCount, uint32_t fileSize,
     hi_payload_type type, uint8_t* dataDev)
 {
     int32_t i = 0;
@@ -187,10 +199,10 @@ void get_every_frame(int32_t chanId, uint8_t* const inputFileBuf, uint32_t* cons
             readLen = i;
         }
 
-        if (isFindStart == false) {
+        if (!isFindStart) {
             printf("can not find H264 start code! readLen %d, usedBytes %d.!\n", readLen, usedBytes);
         }
-        if (isFindEnd == false) {
+        if (!isFindEnd) {
             readLen = i + 8;
         }
 
@@ -203,7 +215,7 @@ void get_every_frame(int32_t chanId, uint8_t* const inputFileBuf, uint32_t* cons
     *frameCount = count;
 }
 
-int32_t decode(std::string input_file_name, std::string output_file_name)
+static int32_t decode(std::string input_file_name, std::string output_file_name)
 {
     uint32_t chanId = 0;
 
@@ -237,9 +249,9 @@ int32_t decode(std::string input_file_name, std::string output_file_name)
     uint32_t frameCount = 0;
     hi_payload_type type = HI_PT_H264;
     // Cutting stream
-    get_every_frame(chanId, (uint8_t*)inputFileBuf.data(), &frameCount, fileSize, type, dataDev);
+    getEveryFrame(chanId, (uint8_t*)inputFileBuf.data(), &frameCount, fileSize, type, dataDev);
 
-    void* sendStreamBuffer = NULL;
+    void* sendStreamBuffer = nullptr;
     uint32_t sendStreamBufferSize = g_in_width * g_in_height * 3 / 2;
 
     ret = hi_mpi_dvpp_malloc(0, &sendStreamBuffer, sendStreamBufferSize);
@@ -261,7 +273,7 @@ int32_t decode(std::string input_file_name, std::string output_file_name)
     hi_vdec_stream receive_stream;
     hi_video_frame_info frame;
     int32_t decResult = 0; // Decode result
-    void* outputBuffer = NULL;
+    void* outputBuffer = nullptr;
     int32_t getStreamFailCnt = 0;
     int32_t successCnt = 0;
     int32_t failCnt = 0;
@@ -284,7 +296,7 @@ int32_t decode(std::string input_file_name, std::string output_file_name)
         outPicInfo.buffer_size = sendStreamBufferSize;
 
         ret = hi_mpi_vdec_send_stream(chanId, &stream, &outPicInfo, timeOut);
-        if (ret != HI_SUCCESS) {         
+        if (ret != HI_SUCCESS) {
             printf("[%s][%d] hi_mpi_vdec_send_stream Fail, Error Code = %x \n", __FUNCTION__, __LINE__, ret);
             break;
         }
@@ -294,8 +306,8 @@ int32_t decode(std::string input_file_name, std::string output_file_name)
         ret = hi_mpi_vdec_get_frame(chanId, &frame, &stSupplement, &receive_stream, timeOut);
         if (ret != HI_SUCCESS) {
             if (getStreamFailCnt++ < 1000) {
-                printf("[%s][%d] hi_mpi_vdec_get_frame Fail[%d], Error Code = %x, retrying... \n", __FUNCTION__, __LINE__,
-                       getStreamFailCnt, ret);
+                printf("[%s][%d] hi_mpi_vdec_get_frame Fail[%d], Error Code = %x, retrying... \n",
+                       __FUNCTION__, __LINE__, getStreamFailCnt, ret);
                 continue;
             } else {
                 break;
@@ -315,10 +327,11 @@ int32_t decode(std::string input_file_name, std::string output_file_name)
 
         // Decode result write to a file
         if ((decResult == 0) && (outputBuffer != NULL) && (receive_stream.need_display == HI_TRUE)) {
-            char saveFileName[256];
             static int32_t writeFileCnt = 1;
-            snprintf(saveFileName, sizeof(saveFileName), "%s-%d.pgm", output_file_name.c_str(), writeFileCnt);
-            save_to_pgm_file(saveFileName, frame.v_frame, chanId);
+            std::ostringstream sstream;
+            sstream << output_file_name.c_str() << "-" << writeFileCnt << ".pgm";
+            std::string saveFileName = sstream.str();
+            saveToPgmFile(saveFileName, frame.v_frame, chanId);
             writeFileCnt++;
         }
         hi_mpi_vdec_release_frame(chanId, &frame);
@@ -328,7 +341,7 @@ int32_t decode(std::string input_file_name, std::string output_file_name)
     return HI_SUCCESS;
 }
 
-int32_t hi_dvpp_init()
+static int32_t hiDvppInit()
 {
     aclInit(NULL);
     aclrtSetDevice(0);
@@ -337,7 +350,7 @@ int32_t hi_dvpp_init()
     return HI_SUCCESS;
 }
 
-void hi_dvpp_deinit()
+static void hiDvppDeinit()
 {
     hi_mpi_vdec_stop_recv_stream(g_start_chn_num);
     hi_mpi_vdec_destroy_chn(g_start_chn_num);
@@ -359,10 +372,10 @@ int32_t main(int32_t argc, char *argv[])
     std::string input_file_name = std::string(argv[1]);
     std::string output_file_name = std::string(argv[2]);
 
-    hi_dvpp_init();
-    vdec_create();
+    hiDvppInit();
+    vdecCreate();
     decode(input_file_name, output_file_name);
-    hi_dvpp_deinit();
+    hiDvppDeinit();
 
     printf("[%s][%d] Video decode finished.\n", __FUNCTION__, __LINE__);
     return 0;

@@ -14,72 +14,85 @@
  * limitations under the License.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <stdio>
+#include <stdlib>
+#include <string>
 
 extern "C" {
 #include <libavcodec/avcodec.h>
 }
 
-#define INBUF_SIZE 4096
+static const uint32_t INBUF_SIZE = 4096
 
-static void pgm_save(unsigned char *buf, int wrap, int xsize, int ysize,
-                     char *filename)
+static void pgmSave(unsigned char *buf, int wrap, int xsize, int ysize, std::string filename)
 {
     FILE *f;
     int i;
 
-    f = fopen(filename,"wb");
-    fprintf(f, "P5\n%d %d\n%d\n", xsize, ysize, 255);
-    for (i = 0; i < ysize; i++)
-        fwrite(buf + i * wrap, 1, xsize, f);
-    fclose(f);
+    f = fopen(filename.c_str(),"wb");
+    int ret = fprintf(f, "P5\n%d %d\n%d\n", xsize, ysize, 255);
+    if (ret < 0) {
+        printf("[%s][%d] fprintf to file %s failed \n", __FUNCTION__, __LINE__, filename.c_str());
+        return
+    }
+    for (i = 0; i < ysize; i++) {
+        ret = fwrite(buf + i * wrap, 1, xsize, f);
+        if (ret < 0) {
+            printf("[%s][%d] fwrite to file %s failed \n", __FUNCTION__, __LINE__, filename.c_str());
+            return
+        }
+    }
+    ret = fclose(f);
+    if (ret < 0) {
+        printf("[%s][%d] fclose file %s failed \n", __FUNCTION__, __LINE__, filename.c_str());
+        return
+    }
 }
 
-static void decode(AVCodecContext *dec_ctx, AVFrame *frame, AVPacket *pkt,
+static int decode(AVCodecContext *dec_ctx, AVFrame *frame, AVPacket *pkt,
                    const char *filename)
 {
-    char buf[1024];
     int ret;
 
     ret = avcodec_send_packet(dec_ctx, pkt);
     if (ret < 0) {
         fprintf(stderr, "Error sending a packet for decoding\n");
-        exit(1);
+        return ret;
     }
 
     while (ret >= 0) {
         ret = avcodec_receive_frame(dec_ctx, frame);
-        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) {
             return;
-        else if (ret < 0) {
+        } else if (ret < 0) {
             fprintf(stderr, "Error during decoding\n");
-            exit(1);
+            return ret;
         }
 
         printf("saving frame %3d\n", dec_ctx->frame_number);
         fflush(stdout);
 
-        /* the picture is allocated by the decoder. no need to
-           free it */
-        snprintf(buf, sizeof(buf), "%s-%d.pgm", filename, dec_ctx->frame_number);
-        pgm_save(frame->data[0], frame->linesize[0],
-                 frame->width, frame->height, buf);
+        /* the picture is allocated by the decoder. no need to free it */
+        std::ostringstream sstream;
+        sstream << filename << "-" << dec_ctx->frame_number << ".pgm";
+        std::string saveFileName = sstream.str();
+
+        pgmSave(frame->data[0], frame->linesize[0], frame->width, frame->height, saveFileName);
     }
 }
 
 int main(int argc, char **argv)
 {
-    const char *filename, *outfilename;
+    const char *filename;
+    const char *outfilename;
     const AVCodec *codec;
     AVCodecParserContext *parser;
-    AVCodecContext *c= NULL;
+    AVCodecContext *c= nullptr;
     FILE *f;
     AVFrame *frame;
     uint8_t inbuf[INBUF_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];
     uint8_t *data;
-    size_t   data_size;
+    size_t dataSize;
     int ret;
     int eof;
     AVPacket *pkt;
@@ -93,11 +106,12 @@ int main(int argc, char **argv)
     outfilename = argv[2];
 
     pkt = av_packet_alloc();
-    if (!pkt)
+    if (!pkt) {
         exit(1);
+    }
 
     /* set end of buffer to 0 (this ensures that no overreading happens for damaged h264 streams) */
-    memset(inbuf + INBUF_SIZE, 0, AV_INPUT_BUFFER_PADDING_SIZE);
+    memset_s(inbuf + INBUF_SIZE, AV_INPUT_BUFFER_PADDING_SIZE, 0, AV_INPUT_BUFFER_PADDING_SIZE);
 
     /* find the h264 video decoder */
     codec = avcodec_find_decoder(AV_CODEC_ID_H264);
@@ -138,34 +152,43 @@ int main(int argc, char **argv)
 
     do {
         /* read raw data from the input file */
-        data_size = fread(inbuf, 1, INBUF_SIZE, f);
-        if (ferror(f))
+        dataSize = fread(inbuf, 1, INBUF_SIZE, f);
+        if (ferror(f)) {
             break;
-        eof = !data_size;
+        }
+        eof = !dataSize;
 
         /* use the parser to split the data into frames */
         data = inbuf;
-        while (data_size > 0 || eof) {
+        while (dataSize > 0 || eof) {
             ret = av_parser_parse2(parser, c, &pkt->data, &pkt->size,
-                                   data, data_size, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
+                                   data, dataSize, AV_NOPTS_VALUE, AV_NOPTS_VALUE, 0);
             if (ret < 0) {
                 fprintf(stderr, "Error while parsing\n");
                 exit(1);
             }
             data      += ret;
-            data_size -= ret;
+            dataSize -= ret;
 
-            if (pkt->size)
-                decode(c, frame, pkt, outfilename);
-            else if (eof)
+            if (pkt->size) {
+                ret = decode(c, frame, pkt, outfilename);
+                if (ret < 0) {
+                    fprintf(stderr, "Error while decoding\n");
+                    exit(1);
+                }
+            } else if (eof) {
                 break;
+            }
         }
     } while (!eof);
 
     /* flush the decoder */
     decode(c, frame, NULL, outfilename);
 
-    fclose(f);
+    ret = fclose(f);
+    if (ret < 0) {
+        printf("[%s][%d] fclose file %s failed \n", __FUNCTION__, __LINE__, filename.c_str());
+    }
 
     av_parser_close(parser);
     avcodec_free_context(&c);
