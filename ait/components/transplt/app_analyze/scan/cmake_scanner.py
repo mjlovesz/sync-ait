@@ -71,10 +71,61 @@ class CMakeScanner(Scanner):
         start_time = time.time()
         result = self._do_cmake_scan_with_file()
         self.porting_results['cmake'] = result
+        self.update_include_dirs()
         eval_time = time.time() - start_time
 
         if result:
             logger.info(f'Total time for scanning cmake files is {eval_time}s')
+
+
+    def update_include_dirs(self):
+        """
+        add_subdirectory (source_dir [binary_dir] [EXCLUDE_FROM_ALL])
+        include_directories ([AFTER|BEFORE] [SYSTEM] dir1 [dir2 ...])
+        """
+        pattern = r'include_directories\(([^)]+)\)'
+        result = []
+        if self.files:
+            # 获取工程根目录，后续作为路径前缀，默认CMakeLists.txt[0]在项目根路径下
+            root_dir = os.path.dirname(self.files[0])
+            for file in self.files:
+                # 对外部传入路径进行校验
+                if not os.path.isfile(file):
+                    continue
+                # 获取目录名，后续作为include_directories的路径前缀
+                with open(file) as f:
+                    cmake_content = f.read()
+                include_directories_pattern = re.compile(pattern, re.DOTALL)
+                matches = include_directories_pattern.findall(cmake_content)
+                if matches:
+                    result_path = self.match_paths(matches, root_dir)
+                    result.extend(result_path)
+            else:
+                logger.info(f'No include_directories found in the CMakeLists.txt file.')
+
+            # 修改KitConfig.INCLUDES并去重
+        result = [x for x in result if result.count(x) == 1]
+        for i, item in enumerate(result):
+            key = "CMakeLists_{i}".format(i=i)
+            KitConfig.INCLUDES[key] = item
+
+
+    def match_paths(self, matches, root_dir):
+        result = []
+        for match in matches:
+            paths = [path.strip('\"').strip() for path in match.split('\n') if path.strip()]
+            for path in paths:
+                # 处理变量引用，如${PROJECT_SOURCE_DIR}和${OpenCV_INCLUDE_DIRS}
+                processed_path = re.sub(r'\$\{([^}]+_SOURCE_DIR)\}/([^;"\)]+)',
+                                        lambda match: os.path.join(root_dir, match.group(2)), path)
+                # 处理直接路径
+                if processed_path.startswith(('AFTER ', 'BEFORE ', 'SYSTEM ')):
+                    processed_path = processed_path.split(' ', 1)[1].strip()
+                if not os.path.exists(processed_path):
+                    continue
+                result.append(processed_path)
+        return result
+
 
     def _do_cmake_scan_with_file(self):
         """
