@@ -20,8 +20,8 @@ from multiprocessing import Pool
 from typing import List, Optional, Union
 
 import re
-import click
 import argparse
+import click
 
 from auto_optimizer import KnowledgeFactory
 from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig, \

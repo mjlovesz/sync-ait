@@ -94,7 +94,9 @@ class ImageNetPreProcess(PreProcessBase, ABC):
     def resize(img, size, interpolation=Image.Resampling.BILINEAR):
         if isinstance(size, int):
             w, h = img.size
-            if (w <= h and w == size) or (h <= w and h == size):
+            if w <= h and w == size:
+                return img
+            if h <= w and h == size:
                 return img
             if w < h:
                 o_w = size
