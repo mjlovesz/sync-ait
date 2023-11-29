@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
+import os
 from enum import Enum, unique
 from clang.cindex import CursorKind
 from app_analyze.common.kit_config import KitConfig
@@ -67,6 +67,11 @@ def _get_input_args(node):
         return parameters
 
     parameters = [f'{x.type.spelling}' for x in ref.get_arguments()]
+    if not parameters and node.displayname:
+        idx = node.displayname.find(node.spelling)
+        if idx != -1:
+            res = node.displayname[idx + len(node.spelling):].strip('(').strip(')')
+            parameters = res.split(',')
     return parameters
 
 
@@ -74,36 +79,37 @@ def _get_input_args(node):
 def _get_obj_info(node, func_attr):
     def _get_namespace(c):
         namespace = ''
-        if c.parent and get_attr(c.parent, 'referenced.kind') == CursorKind.CLASS_DECL:
-            namespace = c.parent.spelling
+        prefix_name = list()
+        if c.mangled_name:
+            parent = c.semantic_parent
+        else:
+            fn_def = c.get_definition()
+            parent = fn_def.semantic_parent if fn_def is not None else None
 
-        if namespace != '':
+        while parent is not None and parent.kind != CursorKind.TRANSLATION_UNIT:
+            prefix_name.append(parent.spelling)
+            parent = parent.semantic_parent
+
+        if prefix_name:
+            prefix_name.reverse()
+            namespace = '::'.join(prefix_name)
             return namespace
 
-        children = get_children(c)
-        for child in children:
-            if child.kind == CursorKind.TYPE_REF and get_attr(child, 'referenced.kind') == CursorKind.CLASS_DECL:
-                namespace = child.referenced.spelling
-                break
+        info = call_expr(node)
+        if info.api.endswith('.' + info.spelling):
+            namespace = info.api.replace('.' + info.spelling, '')
+        elif info.api.endswith('->' + info.spelling):
+            namespace = info.api.replace('->' + info.spelling, '')
+        elif info.api.endswith('::' + info.spelling):
+            namespace = info.api.replace('::' + info.spelling, '')
         return namespace
 
-    info = call_expr(node)
     obj = ObjDesc()
-    if info.api.endswith('.' + info.spelling):
-        obj.record_name = info.api.replace('.' + info.spelling, '')
-    elif info.api.endswith('->' + info.spelling):
-        obj.record_name = info.api.replace('->' + info.spelling, '')
-    elif info.api.endswith('::' + info.spelling):
-        obj.record_name = info.api.replace('::' + info.spelling, '')
-    elif info.api == info.spelling:
-        obj.record_name = _get_namespace(node)
-
+    obj.record_name = _get_namespace(node)
     if obj.record_name == '':
         obj = None
 
     func_attr.obj_info = obj
-    if func_attr.return_type == '':
-        func_attr.return_type = info.result_type
 
 
 def _visit_function_decl(node, api_type, arg_dict=None):
@@ -136,6 +142,8 @@ def _visit_function_decl(node, api_type, arg_dict=None):
         func_attr.acc_name = get_attr(node, 'lib')
         func_attr.func_name = _format_api(arg_dict['usr_ns'], node.spelling)
         rename_func_name(func_attr)
+    else:
+        _get_obj_info(node, func_attr)
 
     func_attr.root_file = node.referenced.location.file.name
     if is_unused_api(func_attr):
@@ -166,9 +174,6 @@ def _visit_cxx_method(node, api_type=APIType.INVALID):
 
 def _visit_call_expr(node, rst, pth):
     for c in get_children(node):
-        if c.spelling.startswith(GLOBAL_FILTER_PREFIX):
-            continue
-
         cursor_kind = c.kind
         if cursor_kind != CursorKind.CALL_EXPR:
             cur_path = pth
@@ -191,13 +196,18 @@ def _visit_call_expr(node, rst, pth):
             _visit_call_expr(c, rst, cur_path)
             continue
 
+        if api_type == APIType.ACC_LIB and c.spelling.startswith(GLOBAL_FILTER_PREFIX):
+            cur_path = pth
+            _visit_call_expr(c, rst, cur_path)
+            continue
+
         if ref_kind == 'CXX_METHOD':
             func_attr = _visit_cxx_method(c, api_type)
         else:
             func_attr = _visit_function_decl(c, api_type, arg_dict)
 
         if func_attr:
-            cur_path = []
+            cur_path = list()
             cur_path.extend(pth),
             cur_path.append(c)
             rst.append((func_attr, cur_path))
@@ -238,12 +248,15 @@ def _usr_and_lib_call_fn(node, seq_desc, ):
         return skip_flag
 
     ref_kind = node.referenced.kind.name
-    if ref_kind not in ['CXX_METHOD', 'FUNCTION_DECL']:
+    if ref_kind not in ['CXX_METHOD', 'FUNCTION_DECL', 'FUNCTION_TEMPLATE']:
         return skip_flag
 
     arg_dict = _get_api_type(node.referenced.location.file.name, node)
     api_type = arg_dict.get('api_type')
     if api_type == APIType.INVALID:
+        return skip_flag
+
+    if api_type == APIType.ACC_LIB and node.spelling.startswith(GLOBAL_FILTER_PREFIX):
         return skip_flag
 
     if ref_kind == 'CXX_METHOD':
@@ -273,13 +286,8 @@ def _usr_and_lib_call_fn(node, seq_desc, ):
 
 def visit(node, seq_desc, result):
     skip_flag = False
-
-    # 过滤包含在全局过滤器中的节点
-    if node.spelling.startswith(GLOBAL_FILTER_PREFIX):
-        return skip_flag
-
     cursor_kind = node.kind
-    if cursor_kind == CursorKind.FUNCTION_DECL:
+    if cursor_kind in [CursorKind.FUNCTION_DECL, CursorKind.FUNCTION_TEMPLATE]:
         # 用户自定义函数
         save_api_seq(seq_desc, result)
         skip_flag = _usr_def_fn(node, seq_desc)
@@ -309,7 +317,7 @@ def _create_func_desc(node):
 def _init_location(node):
     location = dict()
     location['column'] = node.location.column
-    location['file'] = node.location.file.name
+    location['file'] = os.path.abspath(node.location.file.name)
     location['line'] = node.location.line
     location['offset'] = node.location.offset
     return location
