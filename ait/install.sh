@@ -22,6 +22,7 @@ only_analyze=
 only_convert=
 only_transplt=
 only_profile=
+only_atbdump=
 arg_help=0
 
 while [[ "$#" -gt 0 ]]; do case $1 in
@@ -35,6 +36,7 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --convert) only_convert=true;;
   --transplt) only_transplt=true;;
   --profile) only_profile=true;;
+  --atbdump) only_atbdump=true;;
   --uninstall) uninstall=true;;
   -y) all_uninstall=-y;;
   -h|--help) arg_help=1;;
@@ -177,7 +179,13 @@ install(){
     ${arg_force_reinstall}
   fi
 
-  if [ -z $only_compare ] && [ -z $only_surgeon ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ]
+  if [ ! -z $only_atbdump ]
+  then
+    pip3 install ${CURRENT_DIR}/components/atbdump \
+    ${arg_force_reinstall}
+  fi
+
+  if [ -z $only_compare ] && [ -z $only_surgeon ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_atbdump]
   then
     pre_check_skl2onnx
 
@@ -189,6 +197,7 @@ install(){
     ${CURRENT_DIR}/components/convert \
     ${CURRENT_DIR}/components/transplt \
     ${CURRENT_DIR}/components/profile/msprof \
+    ${CURRENT_DIR}/components/atbdump \
     ${arg_force_reinstall}
 
     bash ${CURRENT_DIR}/components/convert/build.sh
