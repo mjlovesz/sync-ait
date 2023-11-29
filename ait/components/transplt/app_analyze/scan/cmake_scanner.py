@@ -109,12 +109,15 @@ class CMakeScanner(Scanner):
             key = "CMakeLists_{i}".format(i=i)
             KitConfig.INCLUDES[key] = item
 
-
     def match_paths(self, matches, root_dir):
         result = []
         for match in matches:
             paths = [path.strip('\"').strip() for path in match.split('\n') if path.strip()]
             for path in paths:
+                # 根目录下的路径
+                processed_root_path = os.path.join(root_dir, path)
+                if os.path.exists(processed_root_path):
+                    result.append(processed_root_path)
                 # 处理变量引用，如${PROJECT_SOURCE_DIR}和${OpenCV_INCLUDE_DIRS}
                 processed_path = re.sub(r'\$\{([^}]+_SOURCE_DIR)\}/([^;"\)]+)',
                                         lambda match: os.path.join(root_dir, match.group(2)), path)
