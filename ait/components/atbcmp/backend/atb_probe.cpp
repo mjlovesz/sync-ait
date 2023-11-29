@@ -1,6 +1,6 @@
 #include "atb_probe.h"
 #incldue "binfile.h"
-static std::vector<std::string> SplitString(std::string &ss, const char &tar)
+static std::vector<std::string> SplitString(const std::string &ss, const char &tar)
 {
     std::vector<std::string> tokens;
     std::stringstream input(ss);
@@ -19,9 +19,13 @@ bool Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, std::string &optyp
 {
     const char *vid = std::getenv("ATB_SAVE_TENSOR_IDS"); // 应该是20_1_9,1_23,5_29_1
     const char *tid = std::getenv("ATB_SAVE_TENSOR_RUNNER"); // 应该是LinearOps，SelfAttention
+    if (!vid && !tid)
+    {
+        return true;
+    }
     // 先用逗号分隔vid和tid
-    std::vector<std::string> splitVid = SplitString(string(vid), ',');
-    std::string splitTid = SplitString(string(tid), ',');
+    std::vector<std::string> splitVid = SplitString(vid, ',');
+    std::string splitTid = SplitString(tid, ',');
     std::string query = "";
     for (size_t i = 0; i < ids.size(); ++i)
     {
@@ -105,8 +109,6 @@ void Probe::SaveTensor(const std::string &format, const std::string &dtype,
         const std::string &dims, const void *hostData, uint64_t dataSize,
         const std::string &filePath)
 {   int flag = std::stoi(std::getenv("LOG_TO_STDOUT"));
-    // 首先判断是不是要落的tensor
-    // 主要就是先保证它是after还是before，是否是落的，再看是落tensor还是desc
     if (!hostData)
     {   
         if (flag) {
@@ -135,4 +137,14 @@ void Probe::SaveTiling(const uint8_t* data, uint64_t dataSize, const std::string
     } else {
         std::cout << "Unable to open file!" << std::endl;
     }
+}
+
+
+bool Probe::IsSaveTiling()
+{
+    const char* isSaveTiling = std::getenv("ATB_SAVE_TILING");
+    if (isSaveTiling == "1") {
+        return true;
+    }
+    return false;
 }
