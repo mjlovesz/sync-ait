@@ -14,6 +14,7 @@ const std::string ATTR_OBJECT_COUNT = "$Object.Count";
 const std::string ATTR_OBJECT_PREFIX = "$Object.";
 constexpr mode_t BIN_FILE_MODE = S_IRUSR | S_IWUSR | S_IRGRP;
 
+constexpr uint64_t MAX_SINGLE_MEMCPY_SIZE = 1073741824;
 class BinFile {
 struct Binary {
     uint64_t offset = 0;

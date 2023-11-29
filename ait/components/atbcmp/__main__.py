@@ -5,7 +5,7 @@ import argparse
 
 from components.utils.parser import BaseCommand
 from common.utils import str2bool, check_range, check_positive_integer, check_op, safe_string, check_exec_cmd
-from library.initial import init_dump_task, clear_dump_task
+from library.initial import init_dump_task, clear_dump_task, check_ids_string, check_number_list
 
 class CompareCommand(BaseCommand):
     def __init__(self, *args, **kwargs):
@@ -26,7 +26,7 @@ class CompareCommand(BaseCommand):
             '-ids',
             required=False,
             dest="ids",
-            type=str,
+            type=check_ids_string,
             default="",
             help='Save Tensor Ids')
         
@@ -35,7 +35,7 @@ class CompareCommand(BaseCommand):
             '-er',
             required=False,
             dest="range",
-            type=check_range,
+            type=check_number_list,
             default="0,0",
             help='The range of saving tensor.Eg:0,10')
     
@@ -62,7 +62,7 @@ class CompareCommand(BaseCommand):
             '-opname',
             required=False,
             dest="opname",
-            type=check_op,
+            type=safe_string,
             default=None,
             help='Operation names need to dump, default none')
         
