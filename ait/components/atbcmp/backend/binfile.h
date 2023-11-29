@@ -1,6 +1,12 @@
 #ifndef BINFILE_H
 #define BINFILE_H
 
+#include <iostream>
+#include <string>
+#include <cstdint>
+#include <vector>
+
+
 const std::string ATTR_VERSION = "$Version";
 const std::string ATTR_END = "$END";
 const std::string ATTR_OBJECT_LENGTH = "$Object.Length";
@@ -19,6 +25,7 @@ public:
 
     bool AddAttr(const std::string &name, const std::string &value);
     bool Write(const std::string *filePath, const mode_t mode=BIN_FILE_MODE);
+    bool WriteAttr(std::ofstream &outputFile, const std::string &filePath, const std::string &value);
     bool AddObject(const std::string name, const void* binaryBuffer, uint64_t binaryLen);
 private:
     std::string version_ = "1.0";
