@@ -15,7 +15,7 @@ static std::vector<std::string> SplitString(const std::string &ss, const char &t
 }
 
 
-bool Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, std::string &optype)
+bool Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, std::string &optype) const
 {
     const char *vid = std::getenv("ATB_SAVE_TENSOR_IDS"); // 应该是20_1_9,1_23,5_29_1
     const char *tid = std::getenv("ATB_SAVE_TENSOR_RUNNER"); // 应该是LinearOps，SelfAttention
@@ -54,7 +54,7 @@ bool Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, std::string &optyp
 }
 
 
-bool Probe::IsSaveTensorData()
+bool Probe::IsSaveTensorData() const
 {
     const char* saveTensor = std::getenv("ATB_SAVE_TENSOR");
     if (saveTensor == "1")
@@ -65,13 +65,13 @@ bool Probe::IsSaveTensorData()
 }
 
 
-bool Probe::IsSaveTensorDesc()
+bool Probe::IsSaveTensorDesc() const
 {
     return true;
 }
 
 
-bool Probe::IsExecuteCountInRange(const uint64_t executeCount)
+bool Probe::IsExecuteCountInRange(const uint64_t executeCount) const
 {
     const char* saveTensorRange = std::getenv("ATB_SAVE_TENSOR_RANGE");
     std::vector<std::string> saveTensorRan = SplitString(saveTensorRange, ',');
@@ -85,7 +85,7 @@ bool Probe::IsExecuteCountInRange(const uint64_t executeCount)
 }
 
 
-bool Probe::IsSaveTensorBefore()
+bool Probe::IsSaveTensorBefore() const
 {
     const char* saveTensorTime = std::getenv("ATB_SAVE_TENSOR_TIME");
     if (saveTensorTime == "0" || saveTensorTime == "2") {
@@ -95,7 +95,7 @@ bool Probe::IsSaveTensorBefore()
 }
 
 
-bool Probe::IsSaveTensorAfter()
+bool Probe::IsSaveTensorAfter() const
 {
     const char* saveTensorTime = std::getenv("ATB_SAVE_TENSOR_TIME");
     if (saveTensorTime == "1" || saveTensorTime == "2") {
@@ -140,7 +140,7 @@ void Probe::SaveTiling(const uint8_t* data, uint64_t dataSize, const std::string
 }
 
 
-bool Probe::IsSaveTiling()
+bool Probe::IsSaveTiling() const
 {
     const char* isSaveTiling = std::getenv("ATB_SAVE_TILING");
     if (isSaveTiling == "1") {
