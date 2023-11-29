@@ -113,6 +113,7 @@ OPTIONS参数说明如下：
 | -f, --report-type | 输出报告类型，支持csv（xlsx），json，默认为csv    | 否       |
 | --tools           | 构建工具类型，目前支持cmake和python，默认为cmake  | 否       |
 | --log_level       | 日志级别，支持INFO（默认），DEBUG，WARNING，ERROR | 否       |
+| --mode            | 源码扫描模式，支持all（默认），api-only; 目前仅c++源码支持api-only | 否       |
 
 扫描C++应用工程的命令示例如下：
 
@@ -128,6 +129,11 @@ ait transplt -s /data/examples/simple/
 2023-05-13 10:30:49,791 - INFO - scan_api.py[113] - **** Project analysis finished <<<
 
 ```
+如果仅需要扫描C++应用工程的api，开启调用序列模板匹配功能，则需要使用如下命令：
+
+``` shell
+ait transplt -s /data/examples/simple --mode api-only
+```
 
 如需扫描python应用工程，则需要使用如下命令：
 
@@ -135,7 +141,8 @@ ait transplt -s /data/examples/simple/
 ait transplt -s /data/examples/simple --tools python
 ```
 
-在待扫描的工程目录下输出output.xlsx，会呈现工程中每个支持的加速库API的信息和支持情况。output.xlsx表格中的sheet页功能说明如下：
+两种源码扫描模式，都是在待扫描的工程目录下输出output.xlsx文件。
+1. all模式下(源码扫描模式:--mode all)，output.xlsx表格中的sheet页功能说明如下：
 
 | sheet页名称                          | 说明                         |
 | ------------------------------------ | ---------------------------- |
@@ -159,6 +166,23 @@ ait transplt -s /data/examples/simple --tools python
 | Workload(人/天)                               | 迁移工作量（人/天）                                          |
 | AccAPILink                                    | 三方加速库API文档链接                                        |
 | AscendAPILink                                 | 昇腾API文档链接                                              |
+
+2. api-only模式下(源码扫描模式:--mode api-only)，output.xlsx表格中的sheet页功能说明如下：
+
+| sheet页名称                          | 说明                         |
+| ------------------------------------ | ---------------------------- |
+| \*\*\*.CMakeLists.txt                | CMakeLists.txt文件扫描结果页 |
+| \*\*\*.\*\*\*.cpp 或 \*\*\*.\*\*\*.h | 头文件/源码文件扫描结果页    |
+
+其中头文件/源码文件扫描结果页包含了最主要的输出数据，该页面的内容说明如下：
+| 标题                                          | 说明                                                         |
+| --------------------------------------------- | ------------------------------------------------------------|
+| Entry API                                     | 入口API，以函数为入口API，比如main函数等                          |
+| Usr Call Seqs                                 | 用户API调用序列，经过API关联之后的调用序列                         |
+| Seq Labels                                    | 在Usr Call Seqs中标红的子序列在加速库中对应的功能                  |
+| Recommended Sequences                         | 给Usr Call Seqs中标红的子序列推荐的昇腾加速库对应的序列             |
+| Functional Description                        | 昇腾加速库对应序列的功能                                        |
+| Recommendation Index                          | 推荐指数，[min_cfg,1]，最大值为1.0，值越大匹配度越高，为空表示没有推荐的序列 |
 
 ## FAQ
 
