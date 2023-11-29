@@ -119,7 +119,18 @@ def match_api_seqs(seqs, expert_libs):
         return mt_rst
 
     result = dict()
+    # 同一个文件会被多个文件引用，所以序列有重复，需要根据文件过滤
+    file_filter = dict()
     for seq_desc in seqs:
+        entry_api = seq_desc.entry_api.full_name
+        file = seq_desc.entry_api.location['file']
+        entry_apis = file_filter.get(file, None)
+        if entry_apis is None:
+            file_filter[file] = [entry_api]
+        elif entry_api in entry_apis:
+            continue
+        else:
+            file_filter[file].append(entry_api)
 
         lib_seqs_rst = _traverse_expert_libs(seq_desc)
         # 对扫描出来的结果进行处理

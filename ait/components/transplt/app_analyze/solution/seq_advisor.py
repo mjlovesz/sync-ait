@@ -113,7 +113,12 @@ class SeqAdvisor:
                 else:
                     if element != '':
                         sep_str.append(element)
-            return sep_str
+
+            rich_string_flag = True
+            if len(keyword_split) == 1 and keyword_sep == call_seq:
+                # 扫描出来的api只有一个，并且有推荐的api
+                rich_string_flag = False
+            return rich_string_flag, sep_str
 
         worksheet = workbook.add_worksheet(file_name)
         # 设置excel格式
@@ -145,9 +150,12 @@ class SeqAdvisor:
             for m in re_match:
                 re_str += str(m.group()) + '|'
 
-            params = _split_call_seq(re_str, src_call_seq)
+            rich_flag, params = _split_call_seq(re_str, src_call_seq)
             for j, val in enumerate(columns):
                 if j == idx:
-                    worksheet.write_rich_string(num + 1, j, *params)
+                    if rich_flag:
+                        worksheet.write_rich_string(num + 1, j, *params)
+                    else:
+                        worksheet.write(num + 1, j, val, fmt)
                 else:
                     worksheet.write(num + 1, j, val)
