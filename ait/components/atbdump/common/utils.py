@@ -15,7 +15,10 @@
 
 import argparse
 import re
+
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
+INVALID_CHARS = ['|', ';', '&', '&&', '||', '>', '>>', '<', '`', '\\', '!', '\n']
+
 
 def str2bool(v):
     if isinstance(v, bool):
@@ -63,3 +66,35 @@ def check_ids_string(value):
     if regex.search(dym_string):
         raise argparse.ArgumentTypeError(f"dym range string \"{dym_string}\" is not a legal string")
     return dym_string
+
+def check_exec_script_file(script_path: str):
+    if not os.path.exists(script_path):
+        raise argparse.ArgumentTypeError(f"Script Path is not valid : {script_path}")
+
+    if not os.access(script_path, os.X_OK):
+        raise argparse.ArgumentTypeError(f"Script Path is not valid : {script_path}")
+
+
+def check_input_args(args: list):
+    for arg in args:
+        if arg in INVALID_CHARS:
+            raise argparse.ArgumentTypeError(f"Args has invalid chars.Please check")
+
+
+def check_exec_cmd(command: str):
+    if command.startswith("bash") or command.startswith("python"):
+        cmds = command.split()
+        if len(cmds) < 2:
+            raise argparse.ArgumentTypeError(f"Run cmd is not valid: \"{command}\" ")
+        elif len(cmds) == 2:
+            script_file = cmds[1]
+            check_exec_script_file(script_file)
+        else:
+            script_file = cmds[1]
+            check_exec_script_file(script_file)
+            args = cmds[2:]
+            check_input_args(args)
+        return True
+
+    else:
+        raise argparse.ArgumentTypeError(f"Run cmd is not valid: \"{command}\" ")

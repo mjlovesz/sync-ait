@@ -19,7 +19,7 @@ bool BinFile::AddAttr(const std::string &name, const std::string &value)
     return true;
 }
 
-bool BinFile::Write(const std::string &filePath, const mode_t mode=BIN_FILE_MODE)
+bool BinFile::Write(const std::string &filePath, const mode_t mode)
 {
     // 先写头
     // 先写version、count、length
@@ -27,6 +27,10 @@ bool BinFile::Write(const std::string &filePath, const mode_t mode=BIN_FILE_MODE
     // 再写data
     // 再写end
     std::ofstream outputFile(filePath, std::ios::app);
+    if (!outputFile.is_open())
+    {
+        std::cout << "File to write can't open : " << filePath << std::endl;
+    }
     bool ret = WriteAttr(outputFile, ATTR_VERSION, version_);
     ret = WriteAttr(outputFile, ATTR_OBJECT_COUNT, std::to_string(binaries_.size()));
     ret = WriteAttr(outputFile, ATTR_OBJECT_LENGTH, std::to_string(binariesBuffer_.size()));
@@ -71,7 +75,9 @@ bool BinFile::AddObject(const std::string name, const void* binaryBuffer, uint64
     binaryNames_.insert(name);
 
     size_t currentLen = binariesBuffer_.size();
-    BinFile::Binary binary = {currentLen, binaryLen};
+    BinFile::Binary binary;
+    binary.offset = currentLen;
+    binary.length = binaryLen;
     binaries_.push_back({name, binary});
     binariesBuffer_.resize(needLen);
 
@@ -80,20 +86,15 @@ bool BinFile::AddObject(const std::string name, const void* binaryBuffer, uint64
     while (copyLen > 0)
     {
         uint64_t curCopySize = copyLen > MAX_SINGLE_MEMCPY_SIZE ? MAX_SINGLE_MEMCPY_SIZE : copyLen;
-        auto ret = memcpy_s(binariesBuffer_.data() + currentLen + offset, binariesBuffer_.size() - currentLen - offset,
+        auto ret = memcpy(binariesBuffer_.data() + currentLen + offset, binariesBuffer_.size() - currentLen - offset,
                             static_cast<uint8_t*>(binaryBuffer) + offset, curCopySize);
-        if (ret != EOK)
-        {   
-            std::cout << "Copy Data Failed" << std::endl;
-            return false;
-        }
         offset += curCopySize;
         copyLen -= curCopySize;
     }
     return true;
 }
 
-bool BinFile::WriteAttr(std::ofstream &outputFile, const std::string &filePath, const std::string &value)
+bool BinFile::WriteAttr(std::ofstream &outputFile, const std::string &name, const std::string &value)
 {
     std::string line = name + "=" + value + "\n";
     outputFile << line;

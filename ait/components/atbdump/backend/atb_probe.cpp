@@ -1,5 +1,5 @@
 #include "atb_probe.h"
-#incldue "binfile.h"
+#include "binfile.h"
 static std::vector<std::string> SplitString(const std::string &ss, const char &tar)
 {
     std::vector<std::string> tokens;
@@ -15,7 +15,7 @@ static std::vector<std::string> SplitString(const std::string &ss, const char &t
 }
 
 
-bool Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, std::string &optype) const
+bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, std::string &optype)
 {
     const char *vid = std::getenv("ATB_SAVE_TENSOR_IDS"); // 应该是20_1_9,1_23,5_29_1
     const char *tid = std::getenv("ATB_SAVE_TENSOR_RUNNER"); // 应该是LinearOps，SelfAttention
@@ -25,17 +25,17 @@ bool Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, std::string &optyp
     }
     // 先用逗号分隔vid和tid
     std::vector<std::string> splitVid = SplitString(vid, ',');
-    std::string splitTid = SplitString(tid, ',');
+    std::vector<std::string> splitTid = SplitString(tid, ',');
     std::string query = "";
     for (size_t i = 0; i < ids.size(); ++i)
     {
         if (i)
         {
-            query += "_" + to_string(ids[i]);
+            query += "_" + std::to_string(ids[i]);
         }
         else 
         {
-            query += to_string(ids[i]);
+            query += std::to_string(ids[i]);
         }
     }
     for (auto &indice : splitVid)
@@ -54,7 +54,7 @@ bool Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, std::string &optyp
 }
 
 
-bool Probe::IsSaveTensorData() const
+bool atb::Probe::IsSaveTensorData()
 {
     const char* saveTensor = std::getenv("ATB_SAVE_TENSOR");
     if (saveTensor == "1")
@@ -65,13 +65,13 @@ bool Probe::IsSaveTensorData() const
 }
 
 
-bool Probe::IsSaveTensorDesc() const
+bool atb::Probe::IsSaveTensorDesc()
 {
     return true;
 }
 
 
-bool Probe::IsExecuteCountInRange(const uint64_t executeCount) const
+bool atb::Probe::IsExecuteCountInRange(const uint64_t executeCount)
 {
     const char* saveTensorRange = std::getenv("ATB_SAVE_TENSOR_RANGE");
     std::vector<std::string> saveTensorRan = SplitString(saveTensorRange, ',');
@@ -85,27 +85,29 @@ bool Probe::IsExecuteCountInRange(const uint64_t executeCount) const
 }
 
 
-bool Probe::IsSaveTensorBefore() const
+bool atb::Probe::IsSaveTensorBefore()
 {
     const char* saveTensorTime = std::getenv("ATB_SAVE_TENSOR_TIME");
-    if (saveTensorTime == "0" || saveTensorTime == "2") {
+    int value = std::stoi(saveTensorTime);
+    if (value == 0 || value == 2) {
         return true;
     }
     return false;
 }
 
 
-bool Probe::IsSaveTensorAfter() const
+bool atb::Probe::IsSaveTensorAfter()
 {
     const char* saveTensorTime = std::getenv("ATB_SAVE_TENSOR_TIME");
-    if (saveTensorTime == "1" || saveTensorTime == "2") {
+    int value = std::stoi(saveTensorTime);
+    if (value == 1 || value == 2) {
         return true;
     }
     return false;
 }
 
 
-void Probe::SaveTensor(const std::string &format, const std::string &dtype,
+void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
         const std::string &dims, const void *hostData, uint64_t dataSize,
         const std::string &filePath)
 {   int flag = std::stoi(std::getenv("LOG_TO_STDOUT"));
@@ -126,12 +128,12 @@ void Probe::SaveTensor(const std::string &format, const std::string &dtype,
 }
 
 
-void Probe::SaveTiling(const uint8_t* data, uint64_t dataSize, const std::string &filePath)
+void atb::Probe::SaveTiling(const uint8_t* data, uint64_t dataSize, const std::string &filePath)
 {
     std::ofstream outfile(filePath, std::ios::out | std::ios::binary);
 
     if (outfile.is_open()) {
-        outfile.write(data, dataSize);
+        outfile.write(reinterpret_cast<const char*>(data), dataSize);
         outfile.close();
         std::cout << "Data written to file successfully!" << std::endl;
     } else {
@@ -140,7 +142,7 @@ void Probe::SaveTiling(const uint8_t* data, uint64_t dataSize, const std::string
 }
 
 
-bool Probe::IsSaveTiling() const
+bool atb::Probe::IsSaveTiling()
 {
     const char* isSaveTiling = std::getenv("ATB_SAVE_TILING");
     if (isSaveTiling == "1") {

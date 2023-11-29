@@ -19,10 +19,10 @@ import shutil
 import argparse
 
 from components.utils.parser import BaseCommand
-from common.utils import str2bool, check_range, check_positive_integer, check_op, safe_string, check_exec_cmd
-from library.initial import init_dump_task, clear_dump_task, check_ids_string, check_number_list
+from dump.common.utils import str2bool, check_range, check_positive_integer, check_op, safe_string, check_exec_cmd
+from dump.library.initial import init_dump_task, clear_dump_task, check_ids_string, check_number_list
 
-class CompareCommand(BaseCommand):
+class DumpCommand(BaseCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.parser = None
@@ -108,5 +108,5 @@ class CompareCommand(BaseCommand):
         
 def get_cmd_instance():
     help_info = "Ascend Transformer Boost Dump Tool."
-    cmd_instance = CompareCommand("atbdump", help_info)
+    cmd_instance = DumpCommand("atbdump", help_info)
     return cmd_instance

@@ -23,6 +23,6 @@ setup(
     ],
     python_requires='>=3.7',
     entry_points={
-        'atbdump_sub_task': ['atbdump=atbdump.__main__:get_cmd_instance'],
+        'atbdump_sub_task': ['atbdump=dump.__main__:get_cmd_instance'],
     },
 )

@@ -5,7 +5,13 @@
 #include <string>
 #include <cstdint>
 #include <vector>
-
+#include <cstring>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <set>
+#include <map>
+#include <sstream>
+#include <fstream>
 
 const std::string ATTR_VERSION = "$Version";
 const std::string ATTR_END = "$END";
@@ -25,7 +31,7 @@ public:
     ~BinFile();
 
     bool AddAttr(const std::string &name, const std::string &value);
-    bool Write(const std::string *filePath, const mode_t mode=BIN_FILE_MODE);
+    bool Write(const std::string &filePath, const mode_t mode=BIN_FILE_MODE);
     bool WriteAttr(std::ofstream &outputFile, const std::string &filePath, const std::string &value);
     bool AddObject(const std::string name, const void* binaryBuffer, uint64_t binaryLen);
 private:
