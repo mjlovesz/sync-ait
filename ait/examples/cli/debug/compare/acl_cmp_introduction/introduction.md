@@ -69,7 +69,7 @@ bash cut_model_and_run_llama.sh
 
 ```
 export MSQUICKCMP_PATH=`python -c 'import os, msquickcmp; print(os.path.dirname(msquickcmp.__file__))'`
-python $MSQUICKCMP_PATH/pta_acl_cmp/allreduce.py--process_0_path '/xxx/进程1/' --process_1_path '/xxx/进程2/' --output_path '生成csv路径'
+python $MSQUICKCMP_PATH/pta_acl_cmp/allreduce.py --process_0_path '/xxx/进程1/' --process_1_path '/xxx/进程2/' --output_path '生成csv路径'
 ```
 
 #### 2.4.2 allreduce通信数据比对chatglm2_6b场景
