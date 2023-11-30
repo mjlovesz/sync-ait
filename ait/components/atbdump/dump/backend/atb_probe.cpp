@@ -32,7 +32,7 @@ static std::vector<std::string> SplitString(const std::string &ss, const char &t
 }
 
 
-bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, std::string &optype)
+bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::string &optype)
 {
     const char *vid = std::getenv("ATB_SAVE_TENSOR_IDS"); // 应该是20_1_9,1_23,5_29_1
     const char *tid = std::getenv("ATB_SAVE_TENSOR_RUNNER"); // 应该是LinearOps，SelfAttention

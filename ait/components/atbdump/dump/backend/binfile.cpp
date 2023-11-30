@@ -128,8 +128,8 @@ bool BinFile::AddObject(const std::string name, const void* binaryBuffer, uint64
     while (copyLen > 0)
     {
         uint64_t curCopySize = copyLen > MAX_SINGLE_MEMCPY_SIZE ? MAX_SINGLE_MEMCPY_SIZE : copyLen;
-        auto ret = memcpy(binariesBuffer_.data() + currentLen + offset, binariesBuffer_.size() - currentLen - offset,
-                            static_cast<uint8_t*>(binaryBuffer) + offset, curCopySize);
+        auto ret = memcpy(binariesBuffer_.data() + currentLen + offset, 
+                            static_cast<const uint8_t*>(binaryBuffer) + offset, curCopySize);
         offset += curCopySize;
         copyLen -= curCopySize;
     }
