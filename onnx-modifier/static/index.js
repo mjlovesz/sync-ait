@@ -1,4 +1,3 @@
-
 /* eslint "no-global-assign": ["error", {"exceptions": [ "TextDecoder", "TextEncoder", "URLSearchParams" ] } ] */
 /* global view */
 
@@ -6,969 +5,998 @@ var host = {};
 let lastAddedOperatorName = null;
 
 host.BrowserHost = class {
+  constructor() {
+    this._random_session = Math.random();
+    this._index_session = '';
+    this._document = window.document;
+    this._window = window;
+    this._navigator = navigator;
+    this._window.eval = () => {
+      throw new Error('window.eval() not supported.');
+    };
+    this._meta = {};
+    for (const element of Array.from(this._document.getElementsByTagName('meta'))) {
+      if (element.content) {
+        this._meta[element.name] = this._meta[element.name] || [];
+        this._meta[element.name].push(element.content);
+      }
+    }
+    this._type = this._meta.type ? this._meta.type[0] : 'Browser';
+    this._version = this._meta.version ? this._meta.version[0] : null;
+    this._telemetry = this._version && this._version !== '0.0.0';
+    this._environment = new Map();
+    this._environment.set('zoom', 'scroll');
+    // this._environment.set('zoom', 'drag');
+    this._ori_model_file = null;
+    this._activate_model_file = null;
+    this._modify_info = [];
+    window._host = this;
+  }
 
-    constructor() {
-        this._random_session = Math.random()
-        this._index_session = ""
-        this._document = window.document;
-        this._window = window;
-        this._navigator = navigator;
-        this._window.eval = () => {
-            throw new Error('window.eval() not supported.');
+  get session() {
+    return `${this._index_session}${this._random_session}`;
+  }
+
+  get window() {
+    return this._window;
+  }
+
+  get document() {
+    return this._document;
+  }
+
+  get version() {
+    return this._version;
+  }
+
+  get type() {
+    return this._type;
+  }
+
+  get agent() {
+    const userAgent = this._navigator.userAgent.toLowerCase();
+    if (userAgent.indexOf('safari') !== -1 && userAgent.indexOf('chrome') === -1) {
+      return 'safari';
+    }
+    return 'any';
+  }
+
+  initialize(view) {
+    this._view = view;
+    this.view = view;
+    return new Promise((resolve) => {
+      resolve();
+    });
+  }
+
+  start() {
+    this.window.addEventListener('error', (e) => {
+      this.exception(e.error, true);
+    });
+
+    const params = new URLSearchParams(this.window.location.search);
+    this._environment.set('zoom', params.has('zoom') ? params.get('zoom') : this._environment.get('zoom'));
+
+    this._menu = new host.Dropdown(this, 'menu-button', 'menu-dropdown');
+    this._menu.add({
+      label: 'Open New Window...',
+      accelerator: 'CmdOrCtrl+O',
+      click: () => {
+        if (this.window.is_electron) {
+          this.window.new_window();
+        } else {
+          this.window.open('/');
+        }
+      },
+    });
+
+    this._menu.add({});
+    this._menu.add({
+      label: 'Undo',
+      accelerator: 'CmdOrCtrl+Z',
+      click: () => this._view.modifier.undo(),
+    });
+    this._menu.add({
+      label: 'Redo',
+      accelerator: 'CmdOrCtrl+Y',
+      click: () => this._view.modifier.redo(),
+    });
+    this._menu.add({
+      label: 'Properties...',
+      accelerator: 'CmdOrCtrl+Enter',
+      click: () => this._view.showModelProperties(),
+    });
+    this._menu.add({});
+    this._menu.add({
+      label: 'Find...',
+      accelerator: 'CmdOrCtrl+F',
+      click: () => this._view.find(),
+    });
+    this._menu.add({});
+    this._menu.add({
+      label: () => (this._view.options.attributes ? 'Hide Attributes' : 'Show Attributes'),
+      accelerator: 'CmdOrCtrl+D',
+      click: () => this._view.toggle('attributes'),
+    });
+    this._menu.add({
+      label: () => (this._view.options.initializers ? 'Hide Initializers' : 'Show Initializers'),
+      accelerator: 'CmdOrCtrl+I',
+      click: () => this._view.toggle('initializers'),
+    });
+    this._menu.add({
+      label: () => (this._view.options.names ? 'Hide Names' : 'Show Names'),
+      accelerator: 'CmdOrCtrl+U',
+      click: () => this._view.toggle('names'),
+    });
+    this._menu.add({
+      label: () => (this._view.options.direction === 'vertical' ? 'Show Horizontal' : 'Show Vertical'),
+      accelerator: 'CmdOrCtrl+K',
+      click: () => this._view.toggle('direction'),
+    });
+    this._menu.add({
+      label: () => (this._view.options.mousewheel === 'scroll' ? 'Mouse Wheel: Zoom' : 'Mouse Wheel: Scroll'),
+      accelerator: 'CmdOrCtrl+M',
+      click: () => this._view.toggle('mousewheel'),
+    });
+    this._menu.add({});
+    this._menu.add({
+      label: 'Zoom In',
+      accelerator: 'Shift+Up',
+      click: () => this.document.getElementById('zoom-in-button').click(),
+    });
+    this._menu.add({
+      label: 'Zoom Out',
+      accelerator: 'Shift+Down',
+      click: () => this.document.getElementById('zoom-out-button').click(),
+    });
+    this._menu.add({
+      label: 'Actual Size',
+      accelerator: 'Shift+Backspace',
+      click: () => this._view.resetZoom(),
+    });
+    this._menu.add({});
+    this._menu.add({
+      label: 'Export as PNG',
+      accelerator: 'CmdOrCtrl+Shift+E',
+      click: () => this._view.export(document.title + '.png'),
+    });
+    this._menu.add({
+      label: 'Export as SVG',
+      accelerator: 'CmdOrCtrl+Alt+E',
+      click: () => this._view.export(document.title + '.svg'),
+    });
+    this.document.getElementById('menu-button').addEventListener('click', (e) => {
+      this._menu.toggle();
+      e.preventDefault();
+    });
+    this._menu.add({});
+    this._menu.add({
+      label: 'About ' + this.document.title,
+      click: () => this._about(),
+    });
+
+    this.document.getElementById('modify-export').addEventListener('click', () => {
+      let export_name = 'modify_info.json';
+      if (this._ori_model_file) {
+        export_name = `${this._ori_model_file.name}.${export_name}`;
+      }
+      let modify_info = [...this._modify_info, { path: '/download', data_body: this.build_download_data(true) }];
+      this.export(export_name, new Blob([JSON.stringify(modify_info)], { type: 'text/plain' }));
+    });
+
+    this.document.getElementById('modify-import').addEventListener('click', () => {
+      this.document.getElementById('open-modify-json-dialog').click();
+    });
+
+    this.init_input_shape_change_event();
+    this.init_batch_size_change_event();
+
+    const openJsonFileDialog = this.document.getElementById('open-modify-json-dialog');
+
+    openJsonFileDialog.addEventListener('change', (e) => {
+      if (e.target && e.target.files && e.target.files.length > 0) {
+        const files = Array.from(e.target.files);
+        const file = files[0];
+        let reader = new FileReader();
+        reader.onload = async () => {
+          let modify_infos = JSON.parse(reader.result);
+
+          this.take_effect_modify('/load-json', { modify_infos, session: this.session }, true);
         };
-        this._meta = {};
-        for (const element of Array.from(this._document.getElementsByTagName('meta'))) {
-            if (element.content) {
-                this._meta[element.name] = this._meta[element.name] || [];
-                this._meta[element.name].push(element.content);
-            }
+        reader.readAsText(file);
+        openJsonFileDialog.value = null;
+      }
+    });
+
+    const resetButton = this.document.getElementById('reset-graph');
+    resetButton.addEventListener('click', () => {
+      if (window.DISPLAY_OM_MODEL) {
+        this.show_alert_message('disabled', 'This button is disabled when displaying om model.');
+        return;
+      }
+      // this._view._graph.resetGraph();
+      // this._view._updateGraph();
+      this.confirm('Comfirm', 'are you sure to reset? All modifications cannot be reverted').then((confirmed) => {
+        if (!confirmed) {
+          return;
         }
-        this._type = this._meta.type ? this._meta.type[0] : 'Browser';
-        this._version = this._meta.version ? this._meta.version[0] : null;
-        this._telemetry = this._version && this._version !== '0.0.0';
-        this._environment = new Map();
-        this._environment.set('zoom', 'scroll');
-        // this._environment.set('zoom', 'drag');
-        this._ori_model_file = null
-        this._activate_model_file = null
-        this._modify_info = []
-        window._host = this
-    }
-
-    get session() {
-        return `${this._index_session}${this._random_session}`
-    }
-
-    get window() {
-        return this._window;
-    }
-
-    get document() {
-        return this._document;
-    }
-
-    get version() {
-        return this._version;
-    }
-
-    get type() {
-        return this._type;
-    }
-
-    get agent() {
-        const userAgent = this._navigator.userAgent.toLowerCase();
-        if (userAgent.indexOf('safari') !== -1 && userAgent.indexOf('chrome') === -1) {
-            return 'safari';
+        if (this._ori_model_file !== this._activate_model_file && this._ori_model_file != null) {
+          this.openFile(this._ori_model_file);
+        } else {
+          this._view.modifier.resetGraph();
         }
-        return 'any';
-    }
+        this._modify_info = [];
+      });
+    });
 
-    initialize(view) {
-        this._view = view;
-        this.view = view;
-        return new Promise((resolve) => {
-            resolve()
-        });
-    }
+    const downloadWithShapeInfCheckBox = this.document.getElementById('shapeInference');
+    downloadWithShapeInfCheckBox.addEventListener('click', () => {
+      this._view.modifier.onOffShapeInf(downloadWithShapeInfCheckBox.checked);
+    });
+    const downloadWithCleanUp = this.document.getElementById('cleanUp');
+    downloadWithCleanUp.addEventListener('click', () => {
+      this._view.modifier.onOffCleanUp(downloadWithCleanUp.checked);
+    });
 
+    const downloadButton = this.document.getElementById('download-graph');
 
-
-    start() {
-        this.window.addEventListener('error', (e) => {
-            this.exception(e.error, true);
-        });
-
-        const params = new URLSearchParams(this.window.location.search);
-        this._environment.set('zoom', params.has('zoom') ? params.get('zoom') : this._environment.get('zoom'));
-
-        this._menu = new host.Dropdown(this, 'menu-button', 'menu-dropdown');
-        this._menu.add({
-            label: 'Open New Window...',
-            accelerator: 'CmdOrCtrl+O',
-            click: () => {
-                if (this.window.is_electron) {
-                   this.window.new_window()
-                } else {
-                   this.window.open("/")
-                }
-            }
-        })
-
-        this._menu.add({});
-        this._menu.add({
-            label: 'Undo',
-            accelerator: 'CmdOrCtrl+Z',
-            click: () => this._view.modifier.undo()
-        })
-        this._menu.add({
-            label: 'Redo',
-            accelerator: 'CmdOrCtrl+Y',
-            click: () => this._view.modifier.redo()
-        })
-        this._menu.add({
-            label: 'Properties...',
-            accelerator: 'CmdOrCtrl+Enter',
-            click: () => this._view.showModelProperties()
-        });
-        this._menu.add({});
-        this._menu.add({
-            label: 'Find...',
-            accelerator: 'CmdOrCtrl+F',
-            click: () => this._view.find()
-        });
-        this._menu.add({});
-        this._menu.add({
-            label: () => this._view.options.attributes ? 'Hide Attributes' : 'Show Attributes',
-            accelerator: 'CmdOrCtrl+D',
-            click: () => this._view.toggle('attributes')
-        });
-        this._menu.add({
-            label: () => this._view.options.initializers ? 'Hide Initializers' : 'Show Initializers',
-            accelerator: 'CmdOrCtrl+I',
-            click: () => this._view.toggle('initializers')
-        });
-        this._menu.add({
-            label: () => this._view.options.names ? 'Hide Names' : 'Show Names',
-            accelerator: 'CmdOrCtrl+U',
-            click: () => this._view.toggle('names')
-        });
-        this._menu.add({
-            label: () => this._view.options.direction === 'vertical' ? 'Show Horizontal' : 'Show Vertical',
-            accelerator: 'CmdOrCtrl+K',
-            click: () => this._view.toggle('direction')
-        });
-        this._menu.add({
-            label: () => this._view.options.mousewheel === 'scroll' ? 'Mouse Wheel: Zoom' : 'Mouse Wheel: Scroll',
-            accelerator: 'CmdOrCtrl+M',
-            click: () => this._view.toggle('mousewheel')
-        });
-        this._menu.add({});
-        this._menu.add({
-            label: 'Zoom In',
-            accelerator: 'Shift+Up',
-            click: () => this.document.getElementById('zoom-in-button').click()
-        });
-        this._menu.add({
-            label: 'Zoom Out',
-            accelerator: 'Shift+Down',
-            click: () => this.document.getElementById('zoom-out-button').click()
-        });
-        this._menu.add({
-            label: 'Actual Size',
-            accelerator: 'Shift+Backspace',
-            click: () => this._view.resetZoom()
-        });
-        this._menu.add({});
-        this._menu.add({
-            label: 'Export as PNG',
-            accelerator: 'CmdOrCtrl+Shift+E',
-            click: () => this._view.export(document.title + '.png')
-        });
-        this._menu.add({
-            label: 'Export as SVG',
-            accelerator: 'CmdOrCtrl+Alt+E',
-            click: () => this._view.export(document.title + '.svg')
-        });
-        this.document.getElementById('menu-button').addEventListener('click', (e) => {
-            this._menu.toggle();
-            e.preventDefault();
-        });
-        this._menu.add({});
-        this._menu.add({
-            label: 'About ' + this.document.title,
-            click: () => this._about()
-        });
-
-        this.document.getElementById("modify-export").addEventListener("click", ()=> {
-            let export_name = "modify_info.json"
-            if (this._ori_model_file) {
-                export_name = `${this._ori_model_file.name}.${export_name}`
-            }
-            let modify_info = [...this._modify_info, { path: "/download", data_body: this.build_download_data(true) }]
-            this.export(export_name, new Blob([JSON.stringify(modify_info)], { type: 'text/plain' }))
-        })
-
-        this.document.getElementById("modify-import").addEventListener("click", ()=> {
-            this.document.getElementById('open-modify-json-dialog').click();
-        })
-
-        this.init_input_shape_change_event()
-        this.init_batch_size_change_event()
-
-        const openJsonFileDialog = this.document.getElementById('open-modify-json-dialog');
-
-        openJsonFileDialog.addEventListener('change', (e) => {
-            if (e.target && e.target.files && e.target.files.length > 0) {
-                const files = Array.from(e.target.files);
-                const file = files[0];
-                let reader = new FileReader()
-                reader.onload = async () => {
-                    let modify_infos = JSON.parse(reader.result)
-
-                    this.take_effect_modify("/load-json", {modify_infos, session:this.session}, true)
-                }
-                reader.readAsText(file)
-                openJsonFileDialog.value = null
-            }
-        });
-
-        const resetButton = this.document.getElementById('reset-graph');
-        resetButton.addEventListener('click', () => {
-            if (window.DISPLAY_OM_MODEL) {
-                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
-                return;
-            }
-            // this._view._graph.resetGraph();
-            // this._view._updateGraph();
-            this.confirm("Comfirm", "are you sure to reset? All modifications cannot be reverted").then((confirmed)=>{
-                if (!confirmed) {
-                    return
-                }
-                if (this._ori_model_file !== this._activate_model_file && this._ori_model_file != null) {
-                    this.openFile(this._ori_model_file)
-                } else {
-                    this._view.modifier.resetGraph();
-                }
-                this._modify_info = []
-            })
-        })
-
-        const downloadWithShapeInfCheckBox = this.document.getElementById('shapeInference');
-        downloadWithShapeInfCheckBox.addEventListener('click', () => {
-            this._view.modifier.onOffShapeInf(downloadWithShapeInfCheckBox.checked);
-        })
-        const downloadWithCleanUp = this.document.getElementById('cleanUp');
-        downloadWithCleanUp.addEventListener('click', () => {
-            this._view.modifier.onOffCleanUp(downloadWithCleanUp.checked);
-        })
-
-        const downloadButton = this.document.getElementById('download-graph');
-
-        if (this.window.is_electron && this.window.fetch_electron) {
-            class Response {
-                constructor(status, msg, file) {
-                    this._status = status
-                    this._msg = msg
-                    this._file = file
-                    this._headers = new Map()
-                    this._headers.set("Content-Disposition", `filename=${this._msg.filepath}`)
-                }
-
-                get headers() {
-                    return this._headers
-                }
-
-                text() {
-                    return Promise.resolve(this._msg)
-                }
-
-                blob() {
-                    if (!this._file) {
-                        return Promise.resolve(null)
-                    }
-                    let blob = new Blob([this._file])
-                    blob.filepath = this._msg.filepath
-                    return Promise.resolve(blob)
-                }
-
-                get status() {
-                    return this._status
-                }
-
-                get ok() {
-                    return 200 <= this._status && this._status < 300
-                }
-            }
-            this.window.fetch = (path, options) => {
-                let body = options.body
-                if (body instanceof FormData) {
-                    let body_obj = {}
-                    for (const [key, value] of body.entries()) {
-                        if (value instanceof File) {
-                            body_obj[key] = value.path || value.filepath
-                        } else {
-                            body_obj[key] = value
-                        }
-                    }
-                    body = body_obj
-                } else if (typeof (body) == 'string') {
-                    body = JSON.parse(body)
-                }
-                return fetch_electron(path, body).then((result) => {
-                    let [status, msg, file] = result
-                    return new Response(status, msg, file)
-                })
-            }
+    if (this.window.is_electron && this.window.fetch_electron) {
+      class Response {
+        constructor(status, msg, file) {
+          this._status = status;
+          this._msg = msg;
+          this._file = file;
+          this._headers = new Map();
+          this._headers.set('Content-Disposition', `filename=${this._msg.filepath}`);
         }
 
-        fetch("/get_session_index", {method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({session:this.session})
+        get headers() {
+          return this._headers;
+        }
+
+        text() {
+          return Promise.resolve(this._msg);
+        }
+
+        blob() {
+          if (!this._file) {
+            return Promise.resolve(null);
+          }
+          let blob = new Blob([this._file]);
+          blob.filepath = this._msg.filepath;
+          return Promise.resolve(blob);
+        }
+
+        get status() {
+          return this._status;
+        }
+
+        get ok() {
+          return 200 <= this._status && this._status < 300;
+        }
+      }
+      this.window.fetch = (path, options) => {
+        let body = options.body;
+        if (body instanceof FormData) {
+          let body_obj = {};
+          for (const [key, value] of body.entries()) {
+            if (value instanceof File) {
+              body_obj[key] = value.path || value.filepath;
+            } else {
+              body_obj[key] = value;
+            }
+          }
+          body = body_obj;
+        } else if (typeof body == 'string') {
+          body = JSON.parse(body);
+        }
+        return fetch_electron(path, body).then((result) => {
+          let [status, msg, file] = result;
+          return new Response(status, msg, file);
+        });
+      };
+    }
+
+    fetch('/get_session_index', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session: this.session }),
+    })
+      .then((response) => {
+        this.check_res_status(response.status);
+        return response.text().then((text) => {
+          this._index_session = text;
+        });
+      })
+      .then(() => {
+        fetch('/init', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session: this.session }),
         }).then((response) => {
-            this.check_res_status(response.status)
-            return response.text().then((text) => {
-                this._index_session = text
-            })
-        }).then(() => {
-            fetch("/init", {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({session:this.session})
-            }).then((response) => {
-                this.check_res_status(response.status)
-                response.blob().then((blob) => {
-                    if (blob && blob.size > 0) {
-                        let disposition = response.headers.get('Content-Disposition')
-                        if (disposition) {
-                            this.upload_filepath = disposition.substring(disposition.indexOf("=") + 1)
-                            let last_index = disposition.replace(/[\\\\\/]/g, "#").lastIndexOf("#")
-                            if (last_index >= 0) {
-                                this.upload_filename = disposition.substring(last_index + 1)
-                            } else {
-                                this.upload_filename = this.upload_filepath
-                            }
-                        } else {
-                            this.upload_filepath = "some.onnx"
-                            this.upload_filename = "some.onnx"
-                        }
-                        let file = new File([blob], this.upload_filename);
-                        this._ori_model_file = file
-                        file.filepath = blob.filepath ? blob.filepath : this.upload_filepath
-                        return this.openFile(file)
-                    }
-                })
-            })
-        })
-
-        downloadButton.addEventListener('click', () => {
-            if (window.DISPLAY_OM_MODEL) {
-                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
-                return;
-            }
-            let dialog = this.document.getElementById("download-dialog")
-            this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
-                if (!is_not_cancel) {
-                    return
+          this.check_res_status(response.status);
+          response.blob().then((blob) => {
+            if (blob && blob.size > 0) {
+              let disposition = response.headers.get('Content-Disposition');
+              if (disposition) {
+                this.upload_filepath = disposition.substring(disposition.indexOf('=') + 1);
+                let last_index = disposition.replace(/[\\\\\/]/g, '#').lastIndexOf('#');
+                if (last_index >= 0) {
+                  this.upload_filename = disposition.substring(last_index + 1);
+                } else {
+                  this.upload_filename = this.upload_filepath;
                 }
-
-                this.take_effect_modify("/download", this.build_download_data(true), false, (blob)=> {
-                    this.export(this.upload_filename, blob)
-                    this.show_message("Success!", "Model has been successfuly modified", "success");
-                })
-            })
+              } else {
+                this.upload_filepath = 'some.onnx';
+                this.upload_filename = 'some.onnx';
+              }
+              let file = new File([blob], this.upload_filename);
+              this._ori_model_file = file;
+              file.filepath = blob.filepath ? blob.filepath : this.upload_filepath;
+              return this.openFile(file);
+            }
+          });
         });
+      });
 
-        const onnxSimButton = this.document.getElementById('onnxsim-graph');
-        onnxSimButton.addEventListener('click', () => {
-            if (window.DISPLAY_OM_MODEL) {
-                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
-                return;
-            }
-            this.take_effect_modify("/onnxsim", this.build_download_data(true), true)
+    downloadButton.addEventListener('click', () => {
+      if (window.DISPLAY_OM_MODEL) {
+        this.show_alert_message('disabled', 'This button is disabled when displaying om model.');
+        return;
+      }
+      let dialog = this.document.getElementById('download-dialog');
+      this.show_confirm_dialog(dialog).then((is_not_cancel) => {
+        if (!is_not_cancel) {
+          return;
+        }
+
+        this.take_effect_modify('/download', this.build_download_data(true), false, (blob) => {
+          this.export(this.upload_filename, blob);
+          this.show_message('Success!', 'Model has been successfuly modified', 'success');
         });
+      });
+    });
 
-        const onnxOptimizer = this.document.getElementById('auto-optimizer-graph');
-        onnxOptimizer.addEventListener('click', () => {
-            if (window.DISPLAY_OM_MODEL) {
-                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
-                return;
-            }
-            this.take_effect_modify("/auto-optimizer", this.build_download_data(true), true)
-        });
+    const onnxSimButton = this.document.getElementById('onnxsim-graph');
+    onnxSimButton.addEventListener('click', () => {
+      if (window.DISPLAY_OM_MODEL) {
+        this.show_alert_message('disabled', 'This button is disabled when displaying om model.');
+        return;
+      }
+      this.take_effect_modify('/onnxsim', this.build_download_data(true), true);
+    });
 
-        const extract = this.document.getElementById('extract-graph');
-        extract.addEventListener("dblclick", () => {
-            if (window.DISPLAY_OM_MODEL) {
-                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
-                return;
-            }
-            let start_nodes = this._view.modifier.getExtractStart()
-            let end_nodes = this._view.modifier.getExtractEnd()
-            if (!start_nodes || start_nodes.size == 0 || !end_nodes || end_nodes.size == 0 ) {
-                this.show_message("Select Extract Net Start And End", "Select the start node and end node for the subnet export", "warn");
-                return
-            }
-            let download_data = this.build_download_data(true)
-            download_data["extract_start"] = Array.from(start_nodes).join(",")
-            download_data["extract_end"] = Array.from(end_nodes).join(",")
-            download_data['session'] = this.session
-            this.take_effect_modify("/extract", download_data, false, (blob) => {
-                this.export(this.upload_filename.replace(".onnx", ".extract.onnx"), blob)
-                this.show_message("Success!", "Model has been successfuly extracted", "success");
-                for (const start_name of start_nodes) {
-                    this._view.modifier.setExtractStart(start_name, false)
-                }
-                for (const end_name of end_nodes) {
-                    this._view.modifier.setExtractEnd(end_name, false)
-                }
-            })
-        });
+    const onnxOptimizer = this.document.getElementById('auto-optimizer-graph');
+    onnxOptimizer.addEventListener('click', () => {
+      if (window.DISPLAY_OM_MODEL) {
+        this.show_alert_message('disabled', 'This button is disabled when displaying om model.');
+        return;
+      }
+      this.take_effect_modify('/auto-optimizer', this.build_download_data(true), true);
+    });
 
-        this._menu_extract = new host.Dropdown(this, 'extract-graph', 'menu-extract-dropdown');
-        this._menu_extract.add({
-            label: 'Extract',
-            accelerator: 'CmdOrCtrl+T',
-            click: () => extract.dispatchEvent(new Event('dblclick'))
-        })
-        this._menu_extract.add({})
-        this._menu_extract.add({
-            label: (enable) => enable ? this.document.getElementsByClassName("NodeExtractStart")[0].innerText : "Extract Net Start",
-            accelerator: 'CmdOrCtrl+S',
-            enable: () => {
-                return this.document.getElementById("sidebar").style.display != "none" &&
-                this.document.getElementsByClassName("NodeExtractStart").length > 0
-            },
-            click: () => this.document.getElementsByClassName("NodeExtractStart")[0].click()
-        })
-        this._menu_extract.add({
-            label: (enable) => enable ? this.document.getElementsByClassName("NodeExtractEnd")[0].innerText : "Extract Net End",
-            accelerator: 'CmdOrCtrl+E',
-            enable: () => {
-                return this.document.getElementById("sidebar").style.display != "none" &&
-                    this.document.getElementsByClassName("NodeExtractEnd").length > 0
-            },
-            click: () => this.document.getElementsByClassName("NodeExtractEnd")[0].click()
-        })
+    const extract = this.document.getElementById('extract-graph');
+    extract.addEventListener('dblclick', () => {
+      if (window.DISPLAY_OM_MODEL) {
+        this.show_alert_message('disabled', 'This button is disabled when displaying om model.');
+        return;
+      }
+      let start_nodes = this._view.modifier.getExtractStart();
+      let end_nodes = this._view.modifier.getExtractEnd();
+      if (!start_nodes || start_nodes.size == 0 || !end_nodes || end_nodes.size == 0) {
+        this.show_message(
+          'Select Extract Net Start And End',
+          'Select the start node and end node for the subnet export',
+          'warn'
+        );
+        return;
+      }
+      let download_data = this.build_download_data(true);
+      download_data['extract_start'] = Array.from(start_nodes).join(',');
+      download_data['extract_end'] = Array.from(end_nodes).join(',');
+      download_data['session'] = this.session;
+      this.take_effect_modify('/extract', download_data, false, (blob) => {
+        this.export(this.upload_filename.replace('.onnx', '.extract.onnx'), blob);
+        this.show_message('Success!', 'Model has been successfuly extracted', 'success');
+        for (const start_name of start_nodes) {
+          this._view.modifier.setExtractStart(start_name, false);
+        }
+        for (const end_name of end_nodes) {
+          this._view.modifier.setExtractEnd(end_name, false);
+        }
+      });
+    });
 
-        extract.addEventListener('click', (e) => {
-            if (window.DISPLAY_OM_MODEL) {
-                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
-                return;
-            }
-            let top = e.clientY
-            this.document.getElementById("menu-extract-dropdown").style.top = `${top}px`
-            this._menu_extract.toggle();
-            e.preventDefault();
-        });
+    this._menu_extract = new host.Dropdown(this, 'extract-graph', 'menu-extract-dropdown');
+    this._menu_extract.add({
+      label: 'Extract',
+      accelerator: 'CmdOrCtrl+T',
+      click: () => extract.dispatchEvent(new Event('dblclick')),
+    });
+    this._menu_extract.add({});
+    this._menu_extract.add({
+      label: (enable) =>
+        enable ? this.document.getElementsByClassName('NodeExtractStart')[0].innerText : 'Extract Net Start',
+      accelerator: 'CmdOrCtrl+S',
+      enable: () => {
+        return (
+          this.document.getElementById('sidebar').style.display != 'none' &&
+          this.document.getElementsByClassName('NodeExtractStart').length > 0
+        );
+      },
+      click: () => this.document.getElementsByClassName('NodeExtractStart')[0].click(),
+    });
+    this._menu_extract.add({
+      label: (enable) =>
+        enable ? this.document.getElementsByClassName('NodeExtractEnd')[0].innerText : 'Extract Net End',
+      accelerator: 'CmdOrCtrl+E',
+      enable: () => {
+        return (
+          this.document.getElementById('sidebar').style.display != 'none' &&
+          this.document.getElementsByClassName('NodeExtractEnd').length > 0
+        );
+      },
+      click: () => this.document.getElementsByClassName('NodeExtractEnd')[0].click(),
+    });
 
-        const addNodeButton = this.document.getElementById('add-node');
-        addNodeButton.addEventListener('click', () => {
-            if (window.DISPLAY_OM_MODEL) {
-                this.show_alert_message("disabled", "This button is disabled when displaying om model.");
-                return;
-            }
-            let dialog = this.document.getElementById("addnode-dialog")
-            this.show_confirm_dialog(dialog).then((is_not_cancel)=> {
-                if (!is_not_cancel) {
-                    return
-                }
+    extract.addEventListener('click', (e) => {
+      if (window.DISPLAY_OM_MODEL) {
+        this.show_alert_message('disabled', 'This button is disabled when displaying om model.');
+        return;
+      }
+      let top = e.clientY;
+      this.document.getElementById('menu-extract-dropdown').style.top = `${top}px`;
+      this._menu_extract.toggle();
+      e.preventDefault();
+    });
 
-                var addNodeDropDown = this.document.getElementById('add-node-dropdown');
-                var selected_val = addNodeDropDown.options[addNodeDropDown.selectedIndex].value
-                var add_op_domain = selected_val.split(':')[0]
-                var add_op_type = selected_val.split(':')[1]
-                this._view.modifier.addNode(add_op_domain, add_op_type);
-                this._view._updateGraph();
-            })
-        })
+    const addNodeButton = this.document.getElementById('add-node');
+    addNodeButton.addEventListener('click', () => {
+      if (window.DISPLAY_OM_MODEL) {
+        this.show_alert_message('disabled', 'This button is disabled when displaying om model.');
+        return;
+      }
+      let dialog = this.document.getElementById('addnode-dialog');
+      this.show_confirm_dialog(dialog).then((is_not_cancel) => {
+        if (!is_not_cancel) {
+          return;
+        }
+
+        var addNodeDropDown = this.document.getElementById('add-node-dropdown');
+        var selected_val = addNodeDropDown.options[addNodeDropDown.selectedIndex].value;
+        var add_op_domain = selected_val.split(':')[0];
+        var add_op_type = selected_val.split(':')[1];
+        this._view.modifier.addNode(add_op_domain, add_op_type);
+        this._view._updateGraph();
+      });
+    });
 
     function isJSONValid(jsonString) {
       try {
         jsonString = jsonString.trim();
         const jsonArray = JSON.parse(jsonString);
         if (!Array.isArray(jsonArray)) {
-            return false;
+          return false;
         }
         for (const obj of jsonArray) {
-            if (typeof obj !== 'object' || obj === null) {
-                return false; // Each item must be a non-null object
-            }
+          if (typeof obj !== 'object' || obj === null) {
+            return false; // Each item must be a non-null object
+          }
         }
-        return true
-    } catch (e) {
+        return true;
+      } catch (e) {
         return false;
+      }
     }
-}
 
     function isValidInput(str) {
-        var regex = /^[a-zA-Z0-9-_]+$/;
-        return regex.test(str);
+      var regex = /^[a-zA-Z0-9-_]+$/;
+      return regex.test(str);
     }
     // 检查字符串是否为正数
     function isPositiveNumeric(str) {
-        var num = parseFloat(str);
-        return !isNaN(num) && isFinite(num) && num > 0;
+      var num = parseFloat(str);
+      return !isNaN(num) && isFinite(num) && num > 0;
     }
 
-function validateCustomOperatorForm() {
-    if (!document.getElementById('customName').value.trim()) {
+    function validateCustomOperatorForm() {
+      if (!document.getElementById('customName').value.trim()) {
         window._host.show_message('Warn', 'Name field is required.', 'warn');
         return false;
-    }
-    if (!document.getElementById('customModule').value.trim()) {
+      }
+      if (!document.getElementById('customModule').value.trim()) {
         window._host.show_message('Warn', 'Module field is required.', 'warn');
         return false;
-    }
+      }
 
-    var nameValue = document.getElementById('customName').value.trim();
-    var moduleValue = document.getElementById('customModule').value.trim();
-    var supportLevelValue = document.getElementById('customSupportLevel').value.trim();
-    var descriptionValue = document.getElementById('customDescription').value.trim();
-    if (!isValidInput(nameValue) || !isValidInput(moduleValue)) {
+      var nameValue = document.getElementById('customName').value.trim();
+      var moduleValue = document.getElementById('customModule').value.trim();
+      var supportLevelValue = document.getElementById('customSupportLevel').value.trim();
+      var descriptionValue = document.getElementById('customDescription').value.trim();
+      if (!isValidInput(nameValue) || !isValidInput(moduleValue)) {
         window._host.show_message('Warn', 'Name or Module field contains invalid characters.', 'warn');
         return false;
-    }
-    if (supportLevelValue && !isValidInput(supportLevelValue)) {
+      }
+      if (supportLevelValue && !isValidInput(supportLevelValue)) {
         window._host.show_message('Warn', 'Support Level field contains invalid characters.', 'warn');
         return false;
-    }
-    if (!validateStringLength(nameValue, 'Name') ||
-    !validateStringLength(moduleValue, 'Module') ||
-    !validateStringLength(supportLevelValue, 'Support Level') ||
-    !validateStringLength(descriptionValue, 'Description')) {
-    return false; // 错误信息会在 validateStringLength 函数中处理
-}
+      }
+      if (
+        !validateStringLength(nameValue, 'Name') ||
+        !validateStringLength(moduleValue, 'Module') ||
+        !validateStringLength(supportLevelValue, 'Support Level') ||
+        !validateStringLength(descriptionValue, 'Description')
+      ) {
+        return false; // 错误信息会在 validateStringLength 函数中处理
+      }
 
-    if (!document.getElementById('customVersion').value.trim()) {
+      if (!document.getElementById('customVersion').value.trim()) {
         window._host.show_message('Warn', 'Version field is required.', 'warn');
         return false;
-    }
+      }
 
-    var versionValue = document.getElementById('customVersion').value;
-    if (!isPositiveNumeric(versionValue)) {
+      var versionValue = document.getElementById('customVersion').value;
+      if (!isPositiveNumeric(versionValue)) {
         window._host.show_message('Warn', 'Version field must be a valid number.', 'warn');
         return false;
-    }
+      }
 
-    var customInputsValue = document.getElementById('customInputs').value;
+      var customInputsValue = document.getElementById('customInputs').value;
 
-    if (!customInputsValue.trim()) {
+      if (!customInputsValue.trim()) {
         window._host.show_message('Warn', 'Inputs field cannot be empty.', 'warn');
         return false;
-    }
+      }
 
-    if (!validateStringLength(customInputsValue, 'Inputs')) {
+      if (!validateStringLength(customInputsValue, 'Inputs')) {
         return false;
-    }
+      }
 
-    if (!isJSONValid(document.getElementById('customInputs').value)) {
+      if (!isJSONValid(document.getElementById('customInputs').value)) {
         window._host.show_message('Warn', 'Inputs field contains invalid JSON.', 'warn');
         return false;
-    }
+      }
 
-    var inputs = JSON.parse(document.getElementById('customInputs').value);
-    if (!validateJSONContainsName(inputs)) {
+      var inputs = JSON.parse(document.getElementById('customInputs').value);
+      if (!validateJSONContainsName(inputs)) {
         return false;
-    }
+      }
 
+      var customOutputsValue = document.getElementById('customOutputs').value;
 
-    var customOutputsValue = document.getElementById('customOutputs').value;
-
-    if (!customOutputsValue.trim()) {
+      if (!customOutputsValue.trim()) {
         window._host.show_message('Warn', 'Outputs field cannot be empty.', 'warn');
         return false;
-    }
+      }
 
-    if (!validateStringLength(customOutputsValue, 'Outputs')) {
+      if (!validateStringLength(customOutputsValue, 'Outputs')) {
         return false;
-    }
+      }
 
-
-    if (!isJSONValid(document.getElementById('customOutputs').value)) {
+      if (!isJSONValid(document.getElementById('customOutputs').value)) {
         window._host.show_message('Warn', 'Outputs field contains invalid JSON.', 'warn');
         return false;
-    }
+      }
 
-    var outputs = JSON.parse(document.getElementById('customOutputs').value);
-    if (!validateJSONContainsName(outputs)) {
+      var outputs = JSON.parse(document.getElementById('customOutputs').value);
+      if (!validateJSONContainsName(outputs)) {
         return false;
-    }
+      }
 
-    var customAttributes = document.getElementById('customAttributes').value;
+      var customAttributes = document.getElementById('customAttributes').value;
 
-    if (!validateStringLength(customAttributes, 'Attributes')) {
+      if (!validateStringLength(customAttributes, 'Attributes')) {
         return false;
-    }
+      }
 
-    if (document.getElementById('customAttributes').value && !isJSONValid(document.getElementById('customAttributes').value)) {
+      if (
+        document.getElementById('customAttributes').value &&
+        !isJSONValid(document.getElementById('customAttributes').value)
+      ) {
         window._host.show_message('Warn', 'Attributes field contains invalid JSON.', 'warn');
         return false;
-    }
+      }
 
+      var customTypeConstraints = document.getElementById('customTypeConstraints').value;
 
-    var customTypeConstraints = document.getElementById('customTypeConstraints').value;
-
-    if (!validateStringLength(customTypeConstraints, 'Type Constraints')) {
+      if (!validateStringLength(customTypeConstraints, 'Type Constraints')) {
         return false;
-    }
+      }
 
-    if (document.getElementById('customTypeConstraints').value && !isJSONValid(document.getElementById('customTypeConstraints').value)) {
+      if (
+        document.getElementById('customTypeConstraints').value &&
+        !isJSONValid(document.getElementById('customTypeConstraints').value)
+      ) {
         window._host.show_message('Warn', 'Type Constraints field contains invalid JSON.', 'warn');
         return false;
+      }
+
+      return true;
     }
 
-
-    return true;
-}
-
-function validateStringLength(stringValue, fieldName) {
-    const MAX_STRING_LENGTH = 10000; // 最大长度，例如 10000 字符
-    if (stringValue.length > MAX_STRING_LENGTH) {
+    function validateStringLength(stringValue, fieldName) {
+      const MAX_STRING_LENGTH = 10000; // 最大长度，例如 10000 字符
+      if (stringValue.length > MAX_STRING_LENGTH) {
         window._host.show_message('Warn', fieldName + ' field data is too long.', 'warn');
         return false;
+      }
+      return true;
     }
-    return true;
-}
 
-function validateJSONContainsName(jsonArray) {
-    for (var i = 0; i < jsonArray.length; i++) {
+    function validateJSONContainsName(jsonArray) {
+      for (var i = 0; i < jsonArray.length; i++) {
         if (!jsonArray[i].name) {
-            window._host.show_message('Warn', 'Each item in JSON array must contain a \"name\" field.', 'warn');
-            return false;
+          window._host.show_message('Warn', 'Each item in JSON array must contain a "name" field.', 'warn');
+          return false;
         }
+      }
+      return true;
     }
-    return true;
-}
 
-        document.getElementById('openCustomOperatorDialog').addEventListener('click', function() {
-            document.getElementById('customOperatorDialog').showModal();
+    document.getElementById('openCustomOperatorDialog').addEventListener('click', function () {
+      document.getElementById('customOperatorDialog').showModal();
+    });
+
+    document.getElementById('customOperatorForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+      if (validateCustomOperatorForm()) {
+        submitCustomOperator();
+      }
+    });
+
+    document.addEventListener('customOperatorAdded', function () {
+      onnx.Metadata.reload(this.context)
+        .then(() => {
+          window.__view__.model.graphMetadata._metadata = onnx.Metadata._metadata;
+          window.__view__.modifier.updateAddNodeDropDown();
+        })
+        .catch((error) => {
+          window._host.show_message(
+            'Error',
+            'You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.',
+            'error'
+          );
         });
+    });
 
-        document.getElementById('customOperatorForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            if (validateCustomOperatorForm()) {
-                submitCustomOperator();
-            }
-        });
-
-
-        document.addEventListener('customOperatorAdded', function() {
-            onnx.Metadata.reload(this.context).then(() => {
-                window.__view__.model.graphMetadata._metadata = onnx.Metadata._metadata
-                window.__view__.modifier.updateAddNodeDropDown()
-            }).catch(error => {
-                window._host.show_message('Error', 'You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', 'error');
-            });
-        });
-
-
-        // 函数：从服务器获取最新的算子列表
-function updateOperatorDropdown() {
-    fetch('/get-operators')
-    .then(response => response.json())
-    .then(data => {
-        var addNodeDropdown = document.getElementById('add-node-dropdown');
-        addNodeDropdown.innerHTML = ''; // 清空现有选项
-        data.forEach(operator => {
+    // 函数：从服务器获取最新的算子列表
+    function updateOperatorDropdown() {
+      fetch('/get-operators')
+        .then((response) => response.json())
+        .then((data) => {
+          var addNodeDropdown = document.getElementById('add-node-dropdown');
+          addNodeDropdown.innerHTML = ''; // 清空现有选项
+          data.forEach((operator) => {
             var option = new Option(operator.name, operator.module + ':' + operator.name);
             addNodeDropdown.appendChild(option);
-        });
-    })
-    .catch(error => window._host.show_message('Error', 'You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', 'error'));
-}
+          });
+        })
+        .catch((error) =>
+          window._host.show_message(
+            'Error',
+            'You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.',
+            'error'
+          )
+        );
+    }
 
-
-
-function addNodeAutomatically(operatorName) {
-    var addNodeDropDown = document.getElementById('add-node-dropdown');
-    for (const node of window.__view__.model.supported_nodes) {
+    function addNodeAutomatically(operatorName) {
+      var addNodeDropDown = document.getElementById('add-node-dropdown');
+      for (const node of window.__view__.model.supported_nodes) {
         var option = new Option(node[1], node[0] + ':' + node[1]);
         addNodeDropDown.appendChild(option);
-    }
+      }
 
-    for (var i = addNodeDropDown.options.length - 1; i > 0; i--) {
+      for (var i = addNodeDropDown.options.length - 1; i > 0; i--) {
         if (addNodeDropDown.options[i].text === operatorName) {
-            addNodeDropDown.selectedIndex = i;
-            var selectedVal = addNodeDropDown.options[i].value;
-            var addOpDomain = selectedVal.split(':')[0];
-            var addOpType = selectedVal.split(':')[1];
-            window.__view__.modifier.addNode(addOpDomain, addOpType);
-            window.__view__._updateGraph();
-            break;
+          addNodeDropDown.selectedIndex = i;
+          var selectedVal = addNodeDropDown.options[i].value;
+          var addOpDomain = selectedVal.split(':')[0];
+          var addOpType = selectedVal.split(':')[1];
+          window.__view__.modifier.addNode(addOpDomain, addOpType);
+          window.__view__._updateGraph();
+          break;
         }
+      }
     }
-}
 
-
-function submitCustomOperator() {
-    var customOperatorData = {
+    function submitCustomOperator() {
+      var customOperatorData = {
         name: document.getElementById('customName').value,
         module: document.getElementById('customModule').value,
         version: parseInt(document.getElementById('customVersion').value),
         support_level: document.getElementById('customSupportLevel').value,
         description: document.getElementById('customDescription').value,
         inputs: JSON.parse(document.getElementById('customInputs').value),
-        outputs: JSON.parse(document.getElementById('customOutputs').value)
+        outputs: JSON.parse(document.getElementById('customOutputs').value),
+      };
 
-    };
-
-    // 如果存在 Attributes，则添加到对象中
-    if (document.getElementById('customAttributes').value) {
+      // 如果存在 Attributes，则添加到对象中
+      if (document.getElementById('customAttributes').value) {
         customOperatorData.attributes = JSON.parse(document.getElementById('customAttributes').value);
-    }
+      }
 
-    // 如果存在 Type Constraints，则添加到对象中
-    if (document.getElementById('customTypeConstraints').value) {
+      // 如果存在 Type Constraints，则添加到对象中
+      if (document.getElementById('customTypeConstraints').value) {
         customOperatorData.type_constraints = JSON.parse(document.getElementById('customTypeConstraints').value);
-    }
+      }
 
-    lastAddedOperatorName = customOperatorData.name;
+      lastAddedOperatorName = customOperatorData.name;
 
-    fetch('/add-custom-operator', {
+      fetch('/add-custom-operator', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(customOperatorData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        document.getElementById('customOperatorDialog').close();
-        updateOperatorDropdown(); // 更新下拉菜单
-        document.dispatchEvent(new CustomEvent('customOperatorAdded'));
-        setTimeout(() => {
+        body: JSON.stringify(customOperatorData),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          document.getElementById('customOperatorDialog').close();
+          updateOperatorDropdown(); // 更新下拉菜单
+          document.dispatchEvent(new CustomEvent('customOperatorAdded'));
+          setTimeout(() => {
             window.__view__.modifier.updateAddNodeDropDown();
             addNodeAutomatically(customOperatorData.name);
-        },500);
-        window._host.updateCustomOperatorLists();
-        window._host.show_message('Success!', 'Custom Operator has been successfuly Submit', 'success');
-    })
-    .catch((error) => {
-        window._host.show_message('Error', 'Submit Error, You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.', 'error')
+          }, 500);
+          window._host.updateCustomOperatorLists();
+          window._host.show_message('Success!', 'Custom Operator has been successfuly Submit', 'success');
+        })
+        .catch((error) => {
+          window._host.show_message(
+            'Error',
+            'Submit Error, You are kindly to check the log and create an issue on https://gitee.com/ascend/ait.',
+            'error'
+          );
+        });
+    }
 
+    // 删除算子按钮事件监听器
+    document.getElementById('deleteOperatorButton').addEventListener('click', function () {
+      document.getElementById('deleteOperatorDialog').showModal();
     });
 
+    // 确认删除算子按钮事件监听器
+    document.getElementById('confirmDeleteOperatorButton').addEventListener('click', function () {
+      const operatorName = document.getElementById('customName').value;
+      const operatorModule = document.getElementById('customModule').value;
+      const operatorVersion = parseInt(document.getElementById('customVersion').value, 10);
 
-}
-
-// 删除算子按钮事件监听器
-document.getElementById('deleteOperatorButton').addEventListener('click', function() {
-    document.getElementById('deleteOperatorDialog').showModal();
-});
-
-// 确认删除算子按钮事件监听器
-document.getElementById('confirmDeleteOperatorButton').addEventListener('click', function() {
-    const operatorName = document.getElementById('customName').value;
-    const operatorModule = document.getElementById('customModule').value;
-    const operatorVersion = parseInt(document.getElementById('customVersion').value, 10);
-
-    if (['ai.onnx', 'com.microsoft', 'ai.onnx.preview.training', 'ai.onnx.ml'].includes(operatorModule)) {
+      if (['ai.onnx', 'com.microsoft', 'ai.onnx.preview.training', 'ai.onnx.ml'].includes(operatorModule)) {
         window._host.show_message('Warn', 'Cannot delete core operator.', 'warn');
         return;
-    }
+      }
 
-    fetch('/delete-custom-operator', {
+      fetch('/delete-custom-operator', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name: operatorName, module: operatorModule , version: operatorVersion })
-    })
-    .then(response => {
-    if (!response.ok) {
-        throw new Error('Delete Error');
-    }
-    return response.json();
-})
-    .then(data => {
-        updateOperatorDropdown();
-        setTimeout(() => {
+        body: JSON.stringify({ name: operatorName, module: operatorModule, version: operatorVersion }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Delete Error');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          updateOperatorDropdown();
+          setTimeout(() => {
             window.__view__.modifier.updateAddNodeDropDown();
-            window.__view__.model.graphMetadata._metadata = onnx.Metadata._metadata
-        },500);
-        var addNodeDropdown = document.getElementById('add-node-dropdown');
-        for (const node of window.__view__.model.supported_nodes) {
+            window.__view__.model.graphMetadata._metadata = onnx.Metadata._metadata;
+          }, 500);
+          var addNodeDropdown = document.getElementById('add-node-dropdown');
+          for (const node of window.__view__.model.supported_nodes) {
             var option = new Option(node[1], node[0] + ':' + node[1]);
             addNodeDropdown.appendChild(option);
-        }
-        window._host.updateCustomOperatorLists();
-        updateOperatorDropdown();
-        window._host.show_message('Success!', 'Operator deleted successfully', 'success');
-        document.getElementById('deleteOperatorDialog').close();
-
-    })
-    .catch(error => {
-        window._host.show_message('Error', 'Delete Error or Not Found Operator', 'error');
+          }
+          window._host.updateCustomOperatorLists();
+          updateOperatorDropdown();
+          window._host.show_message('Success!', 'Operator deleted successfully', 'success');
+          document.getElementById('deleteOperatorDialog').close();
+        })
+        .catch((error) => {
+          window._host.show_message('Error', 'Delete Error or Not Found Operator', 'error');
+        });
     });
-});
 
+    this.document.getElementById('version').innerText = this.version;
 
+    if (this._meta.file) {
+      const url = this._meta.file[0];
+      if (this._view.accept(url)) {
+        this._openModel(this._url(url), null);
+        return;
+      }
+    }
 
+    const openFileButton = this.document.getElementById('open-file-button');
+    const openFileButtonLogo = this.document.getElementById('open-file-button-logo');
+    const openFileDialog = this.document.getElementById('open-file-dialog');
+    if (openFileButtonLogo && openFileDialog) {
+      openFileButton.addEventListener('click', () => {
+        openFileDialog.value = '';
+        openFileDialog.click();
+      });
+      openFileButtonLogo.addEventListener('click', () => {
+        openFileDialog.value = '';
+        openFileDialog.click();
+      });
+      openFileDialog.addEventListener('change', (e) => {
+        if (e.target && e.target.files && e.target.files.length > 0) {
+          const files = Array.from(e.target.files);
+          const file = files.find((file) => this._view.accept(file.name));
+          this.upload_filename = file.name;
+          this.upload_filepath = file.path;
+          var form = new FormData();
+          form.append('file', file);
+          this._ori_model_file = file;
+          form.append('session', this.session);
 
-        this.document.getElementById('version').innerText = this.version;
-
-        if (this._meta.file) {
-            const url = this._meta.file[0];
-            if (this._view.accept(url)) {
-                this._openModel(this._url(url), null);
-                return;
-            }
-        }
-
-        const openFileButton = this.document.getElementById('open-file-button');
-        const openFileButtonLogo = this.document.getElementById('open-file-button-logo');
-        const openFileDialog = this.document.getElementById('open-file-dialog');
-        if (openFileButtonLogo && openFileDialog) {
-            openFileButton.addEventListener('click', () => {
-                    openFileDialog.value = '';
-                    openFileDialog.click();
-                });
-            openFileButtonLogo.addEventListener('click', () => {
-                openFileDialog.value = '';
-                openFileDialog.click();
+          fetch('/open_model', {
+            method: 'POST',
+            body: form,
+          })
+            .then((response) => {
+              this.check_res_status(response.status);
+              return response.text();
             })
-            openFileDialog.addEventListener('change', (e) => {
-                if (e.target && e.target.files && e.target.files.length > 0) {
-                    const files = Array.from(e.target.files);
-                    const file = files.find((file) => this._view.accept(file.name));
-                    this.upload_filename = file.name;
-                    this.upload_filepath = file.path;
-                    var form = new FormData();
-                    form.append('file', file);
-                    this._ori_model_file = file
-                    form.append('session', this.session)
-
-                    fetch('/open_model', {
-                        method: 'POST',
-                        body: form
-                    }).then((response) => {
-                        this.check_res_status(response.status)
-                        return response.text();
-                    }).then(function (text) {
-                        console.log('POST response: ');
-                        // Should be 'OK' if everything was successful
-                        console.log(text);
-                    });
-
-
-                    if (file) {
-                        this._open(file, files, true);
-                    }
-                }
+            .then(function (text) {
+              console.log('POST response: ');
+              // Should be 'OK' if everything was successful
+              console.log(text);
             });
+
+          if (file) {
+            this._open(file, files, true);
+          }
         }
-
-        const githubButton = this.document.getElementById('github-button');
-        if (githubButton) {
-            githubButton.style.opacity = 1;
-            githubButton.addEventListener('click', () => {
-                this.openURL("https://gitee.com/ascend/ait/tree/master/onnx-modifier");
-            });
-        }
-        this.document.addEventListener('dragover', (e) => {
-            e.preventDefault();
-        });
-        this.document.addEventListener('drop', (e) => {
-            e.preventDefault();
-        });
-        this.document.body.addEventListener('drop', (e) => {
-            e.preventDefault();
-            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                const files = Array.from(e.dataTransfer.files);
-                const file = files.find((file) => this._view.accept(file.name));
-                this.upload_filename = file.name;
-                this.upload_filepath = file.path;
-                var form = new FormData();
-                form.append('file', file);
-                this._ori_model_file = file
-                form.append('session', this.session)
-
-                fetch('/open_model', {
-                    method: 'POST',
-                    body: form
-                }).then((response) => {
-                    this.check_res_status(response.status)
-                    return response.text();
-                }).then(function (text) {
-                    console.log('POST response: ');
-                    // Should be 'OK' if everything was successful
-                    console.log(text);
-                });
-                if (file) {
-                    this._open(file, files, true);
-                }
-            }
-        });
-        this.init_dragable();
-
-        this._view.show('welcome');
+      });
     }
 
-    init_dragable() {
-        let dragable = this.document.getElementById("dragable")
-        let sidebar = this.document.getElementById("sidebar")
-        let oriX = -1
-        let minWidth = sidebar.getBoundingClientRect().width
-        let oriWidth = sidebar.getBoundingClientRect().width
-        let dragableMouseMove = function (e) {
-            if (minWidth > oriWidth + oriX - e.clientX) {
-                return
-            }
-            sidebar.style.width = `${oriWidth + oriX - e.clientX}px`
-        }
-        let dragableMouseUp = function (e) {
-            sidebar.style.transition = null
-            document.removeEventListener("mousemove", dragableMouseMove)
-            document.removeEventListener("mouseup", dragableMouseUp)
-        }
-        let dragableMouseDown = function (e) {
-            oriX = e.clientX
-            oriWidth = sidebar.getBoundingClientRect().width
-            if (minWidth == 0) {
-                minWidth = oriWidth
-            }
-            sidebar.style.transition = `none`
-            document.addEventListener("mousemove", dragableMouseMove)
-            document.addEventListener("mouseup", dragableMouseUp)
-        }
-        dragable.addEventListener("mousedown", dragableMouseDown)
+    const githubButton = this.document.getElementById('github-button');
+    if (githubButton) {
+      githubButton.style.opacity = 1;
+      githubButton.addEventListener('click', () => {
+        this.openURL('https://gitee.com/ascend/ait/tree/master/onnx-modifier');
+      });
     }
+    this.document.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+    this.document.addEventListener('drop', (e) => {
+      e.preventDefault();
+    });
+    this.document.body.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const files = Array.from(e.dataTransfer.files);
+        const file = files.find((file) => this._view.accept(file.name));
+        this.upload_filename = file.name;
+        this.upload_filepath = file.path;
+        var form = new FormData();
+        form.append('file', file);
+        this._ori_model_file = file;
+        form.append('session', this.session);
 
-    get_default_input_shape(input_name) {
-        let default_shape = ""
-        for (var input_info of this._view.modifier.graph.inputs) {
-            if (input_name == input_info.name) {
-                if (input_info.arguments
-                    && input_info.arguments.length > 0
-                    && input_info.arguments[0].type
-                    && input_info.arguments[0].type.shape
-                    && input_info.arguments[0].type.shape.dimensions
-                    && input_info.arguments[0].type.shape.dimensions.length > 0) {
-                    let dims = input_info.arguments[0].type.shape.dimensions
-                    default_shape = dims.map((dim) => dim ? dim.toString() : '?').join(',')
-                }
-                break
-            }
+        fetch('/open_model', {
+          method: 'POST',
+          body: form,
+        })
+          .then((response) => {
+            this.check_res_status(response.status);
+            return response.text();
+          })
+          .then(function (text) {
+            console.log('POST response: ');
+            // Should be 'OK' if everything was successful
+            console.log(text);
+          });
+        if (file) {
+          this._open(file, files, true);
         }
-        return default_shape
-    }
+      }
+    });
+    this.init_dragable();
 
-    dimStr2dimArray(dim_str) {
-        let dims = []
-        let has_error = false
-        let input_dims = dim_str.split(",")
-        for (const dim_str of input_dims) {
-            let dim = dim_str.trim()
-            if (dim.match("^-?[1-9][0-9]{0,10}$")) {
-                dims.push(parseInt(dim))
-            } else if (dim.match("^[a-zA-Z\\-_\\\\/\\.0-9]{1,64}$")) {
-                dims.push(dim)
-            } else {
-                has_error = true
-            }
-        }
-        return [dims, has_error]
-    }
+    this._view.show('welcome');
+  }
 
-    change_batch_size(batch_value) {
-        for (var input_info of this._view.modifier.graph.inputs) {
-            if (input_info.arguments
-                && input_info.arguments.length > 0
-                && input_info.arguments[0].type
-                && input_info.arguments[0].type.shape
-                && input_info.arguments[0].type.shape.dimensions
-                && input_info.arguments[0].type.shape.dimensions.length > 0) {
-                let dims = input_info.arguments[0].type.shape.dimensions
-                if (dims.length > 0) {
-                    let [ori_value, pp] = this.dimStr2dimArray(dims.concat().map((dim) => dim ? dim.toString() : '?').join(','))
-                    dims[0] = batch_value.toString()
-                    let dim_str = dims.map((dim) => dim ? dim.toString() : '?').join(',')
-                    let [input_dims, has_error] = this.dimStr2dimArray(dim_str)
-                    this._view.modifier.changeInputSize(input_info.name, input_dims, ori_value);
-                }
-            }
+  init_dragable() {
+    let dragable = this.document.getElementById('dragable');
+    let sidebar = this.document.getElementById('sidebar');
+    let oriX = -1;
+    let minWidth = sidebar.getBoundingClientRect().width;
+    let oriWidth = sidebar.getBoundingClientRect().width;
+    let dragableMouseMove = function (e) {
+      if (minWidth > oriWidth + oriX - e.clientX) {
+        return;
+      }
+      sidebar.style.width = `${oriWidth + oriX - e.clientX}px`;
+    };
+    let dragableMouseUp = function (e) {
+      sidebar.style.transition = null;
+      document.removeEventListener('mousemove', dragableMouseMove);
+      document.removeEventListener('mouseup', dragableMouseUp);
+    };
+    let dragableMouseDown = function (e) {
+      oriX = e.clientX;
+      oriWidth = sidebar.getBoundingClientRect().width;
+      if (minWidth == 0) {
+        minWidth = oriWidth;
+      }
+      sidebar.style.transition = `none`;
+      document.addEventListener('mousemove', dragableMouseMove);
+      document.addEventListener('mouseup', dragableMouseUp);
+    };
+    dragable.addEventListener('mousedown', dragableMouseDown);
+  }
+
+  get_default_input_shape(input_name) {
+    let default_shape = '';
+    for (var input_info of this._view.modifier.graph.inputs) {
+      if (input_name == input_info.name) {
+        if (
+          input_info.arguments &&
+          input_info.arguments.length > 0 &&
+          input_info.arguments[0].type &&
+          input_info.arguments[0].type.shape &&
+          input_info.arguments[0].type.shape.dimensions &&
+          input_info.arguments[0].type.shape.dimensions.length > 0
+        ) {
+          let dims = input_info.arguments[0].type.shape.dimensions;
+          default_shape = dims.map((dim) => (dim ? dim.toString() : '?')).join(',');
         }
+        break;
+      }
     }
+    return default_shape;
+  }
+
+  dimStr2dimArray(dim_str) {
+    let dims = [];
+    let has_error = false;
+    let input_dims = dim_str.split(',');
+    for (const dim_str of input_dims) {
+      let dim = dim_str.trim();
+      if (dim.match('^-?[1-9][0-9]{0,10}$')) {
+        dims.push(parseInt(dim));
+      } else if (dim.match('^[a-zA-Z\\-_\\\\/\\.0-9]{1,64}$')) {
+        dims.push(dim);
+      } else {
+        has_error = true;
+      }
+    }
+    return [dims, has_error];
+  }
+
+  change_batch_size(batch_value) {
+    for (var input_info of this._view.modifier.graph.inputs) {
+      if (
+        input_info.arguments &&
+        input_info.arguments.length > 0 &&
+        input_info.arguments[0].type &&
+        input_info.arguments[0].type.shape &&
+        input_info.arguments[0].type.shape.dimensions &&
+        input_info.arguments[0].type.shape.dimensions.length > 0
+      ) {
+        let dims = input_info.arguments[0].type.shape.dimensions;
+        if (dims.length > 0) {
+          let [ori_value, pp] = this.dimStr2dimArray(
+            dims
+              .concat()
+              .map((dim) => (dim ? dim.toString() : '?'))
+              .join(',')
+          );
+          dims[0] = batch_value.toString();
+          let dim_str = dims.map((dim) => (dim ? dim.toString() : '?')).join(',');
+          let [input_dims, has_error] = this.dimStr2dimArray(dim_str);
+          this._view.modifier.changeInputSize(input_info.name, input_dims, ori_value);
+        }
+      }
+    }
+  }
 
     init_input_shape_change_event() {
         let input_change = this.document.getElementById("change-input-shape-input")
