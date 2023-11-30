@@ -55,7 +55,7 @@
 
 #### 2.4.1 allreduce通信数据比对llama_parallel场景
 
-根据`pytorch/examples/llama_parallel/readme.md`进行环境配置，并且对allreduce算子前后数据进行dump
+参考加速库资料[ascend-speed-inference - 文件 (huawei.com)](https://open.codehub.huawei.com/OpenBaize/Ascend/ascend-speed-inference/files?ref=master&filePath=pytorch%2Fexamples%2Fllama_parallel%2Freadme.md&isFile=true)进行环境配置，并且对allreduce算子前后数据进行dump
 
 ```
 export ATB_SAVE_TENSOR=1
@@ -74,7 +74,7 @@ python $MSQUICKCMP_PATH/pta_acl_cmp/allreduce.py--process_0_path '/xxx/进程1/'
 
 #### 2.4.2 allreduce通信数据比对chatglm2_6b场景
 
-根据`pytorch/examples/chatglm2_6b/ChatGLM2-6B量化推理指导.md`进行环境配置，并且对allreduce算子前后数据进行dump
+参考加速库资料[ascend-speed-inference - 文件 (huawei.com)](https://open.codehub.huawei.com/OpenBaize/Ascend/ascend-speed-inference/files?ref=master&filePath=pytorch%2Fexamples%2Fchatglm2_6b%2FChatGLM2-6B%E9%87%8F%E5%8C%96%E6%8E%A8%E7%90%86%E6%8C%87%E5%AF%BC.md&isFile=true)进行环境配置，并且对allreduce算子前后数据进行dump
 
 ```export
 export ATB_SAVE_TENSOR=1
@@ -88,11 +88,7 @@ bash run_quant_parallel.sh patches/models/modeling_chatglm2_6b_quant_mix_paralle
 
 #### 2.4.3 比对结果
 
-* 比对结果 在文件`allreduce_compare_result.csv`中
-* 下面简要介绍说明结果信息：
+如下表所示
 
 | `allreduce` | `cosine_similarity`|`max_relative_error` |`mean_relative_error`|`relative_euclidean_distance` |
 | --- | --- | --- |--- |--- |
-| 比对算子名称| 余弦相似度算法比对 |最大相对误差算法比对|平均相对误差|欧氏相对距离算法比对|
-
-输出结果参考[对比结果分析步骤](../result_analyse/README.md)
