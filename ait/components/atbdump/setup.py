@@ -9,7 +9,6 @@ setup(
     packages=find_packages(),
     license='Apache-2.0',
     keywords='atbdump',
-    install_requires=required,
     classifiers=[
         'Development Status :: Alpha',
         'Intended Audience :: Developers',
