@@ -20,6 +20,14 @@
 #define x first
 #define y second
 
+
+static bool directoryExists(const std::string &path)
+{
+    struct stat info;
+    return stat(path.c_str(), &info) == 0 && S_ISDIR(info.st_mode);
+}
+
+
 BinFile::BinFile() {}
 BinFile::~BinFile() {}
 
@@ -43,11 +51,28 @@ bool BinFile::Write(const std::string &filePath, const mode_t mode)
     // 写format dtype dims
     // 再写data
     // 再写end
+    size_t found = filePath.find_last_of("/");
+    std::string directory = filePath.substr(0, found);
+
+    // 检查目录是否存在，如果不存在则创建目录和文件
+    if (!directoryExists(directory)) {
+        int status = mkdir(directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+        if (status == 0) {
+
+            std::cout << "directory created: " << directory << std::endl;
+        
+        } else {
+            std::cout << "cannot create directory: " << directory << std::endl;
+            return false;
+        }
+    }
+
     std::ofstream outputFile(filePath, std::ios::app);
     if (!outputFile.is_open())
     {
         std::cout << "File to write can't open : " << filePath << std::endl;
     }
+
     bool ret = WriteAttr(outputFile, ATTR_VERSION, version_);
     ret = WriteAttr(outputFile, ATTR_OBJECT_COUNT, std::to_string(binaries_.size()));
     ret = WriteAttr(outputFile, ATTR_OBJECT_LENGTH, std::to_string(binariesBuffer_.size()));
