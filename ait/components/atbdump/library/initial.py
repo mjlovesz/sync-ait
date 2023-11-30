@@ -17,7 +17,7 @@ import os
 import shutil
 import site
 
-from constant import ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, \
+from dump.library.constant import ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, \
     ATB_SAVE_TENSOR_RANGE, ATB_SAVE_TILING, LD_PRELOAD
 
 def init_dump_task(args):
