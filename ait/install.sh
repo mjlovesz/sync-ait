@@ -202,6 +202,7 @@ install(){
 
     bash ${CURRENT_DIR}/components/convert/build.sh
     bash ${CURRENT_DIR}/components/debug/compare/msquickcmp/build.sh
+    bash ${CURRENT_DIR}/components/atbdump/dump/backend/build.sh
 
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi
