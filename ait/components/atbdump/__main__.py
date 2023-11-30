@@ -14,14 +14,10 @@
 
 
 import os
-import re
-import shutil
-import argparse
 
 from components.utils.parser import BaseCommand
-from dump.common.utils import str2bool, check_range, check_positive_integer, check_op, safe_string, check_exec_cmd
-from dump.library.initial import init_dump_task, clear_dump_task, check_ids_string, check_number_list
-
+from dump.common.utils import str2bool, check_positive_integer, safe_string, check_exec_cmd, check_ids_string, check_number_list
+from dump.library.initial import init_dump_task, clear_dump_task
 class DumpCommand(BaseCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
