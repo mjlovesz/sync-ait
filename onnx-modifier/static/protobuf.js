@@ -319,126 +319,125 @@ protobuf.BinaryReader = class {
 
   floats(obj, tag) {
     if ((tag & 7) === 2) {
-      if (obj && obj.length > 0) {
-        throw new protobuf.Error('Invalid packed float array.');
-      }
-      const size = this.uint32();
-      const end = this._position + size;
-      if (end > this._length) {
-        this._unexpected();
-      }
-      const length = size >>> 2;
-      obj = size > 1048576 ? new Float32Array(length) : new Array(length);
-      let position = this._position;
-      for (let i = 0; i < length; i++) {
-        obj[i] = this._view.getFloat32(position, true);
-        position += 4;
-      }
-      this._position = end;
-    } else {
-      if (obj !== undefined && obj.length < 1000000) {
-        obj.push(this.float());
-      } else {
-        obj = undefined;
-        this.float();
-      }
+        if (obj && obj.length > 0) {
+            throw new protobuf.Error('Invalid packed float array.');
+        }
+        const size = this.uint32();
+        const end = this._position + size;
+        if (end > this._length) {
+            this._unexpected();
+        }
+        const length = size >>> 2;
+        obj = size > 1048576 ? new Float32Array(length) : new Array(length);
+        let position = this._position;
+        for (let i = 0; i < length; i++) {
+            obj[i] = this._view.getFloat32(position, true);
+            position += 4;
+        }
+        this._position = end;
+    }
+    else {
+        if (obj !== undefined && obj.length < 1000000) {
+            obj.push(this.float());
+        }
+        else {
+            obj = undefined;
+            this.float();
+        }
     }
     return obj;
-  }
+}
 
-  doubles(obj, tag) {
+doubles(obj, tag) {
     if ((tag & 7) === 2) {
-      if (obj && obj.length > 0) {
-        throw new protobuf.Error('Invalid packed float array.');
-      }
-      const size = this.uint32();
-      const end = this._position + size;
-      if (end > this._length) {
-        this._unexpected();
-      }
-      const length = size >>> 3;
-      obj = size > 1048576 ? new Float64Array(length) : new Array(length);
-      let position = this._position;
-      for (let i = 0; i < length; i++) {
-        obj[i] = this._view.getFloat64(position, true);
-        position += 8;
-      }
-      this._position = end;
-    } else {
-      if (obj !== undefined && obj.length < 1000000) {
-        obj.push(this.double());
-      } else {
-        obj = undefined;
-        this.double();
-      }
+        if (obj && obj.length > 0) {
+            throw new protobuf.Error('Invalid packed float array.');
+        }
+        const size = this.uint32();
+        const end = this._position + size;
+        if (end > this._length) {
+            this._unexpected();
+        }
+        const length = size >>> 3;
+        obj = size > 1048576 ? new Float64Array(length) : new Array(length);
+        let position = this._position;
+        for (let i = 0; i < length; i++) {
+            obj[i] = this._view.getFloat64(position, true);
+            position += 8;
+        }
+        this._position = end;
+    }
+    else {
+        if (obj !== undefined && obj.length < 1000000) {
+            obj.push(this.double());
+        }
+        else {
+            obj = undefined;
+            this.double();
+        }
     }
     return obj;
-  }
+}
 
-  skip(offset) {
+skip(offset) {
     this._position += offset;
     if (this._position > this._length) {
-      this._unexpected();
-    }
-  }
-
-  skipVarint() {
-    do {
-      if (this._position >= this._length) {
         this._unexpected();
-      }
-    } while (this._buffer[this._position++] & 128);
-  }
+    }
+}
 
-  _uint32() {
+skipVarint() {
+    do {
+        if (this._position >= this._length) {
+            this._unexpected();
+        }
+    }
+    while (this._buffer[this._position++] & 128);
+}
+
+_uint32() {
     let c;
     if (this._position < this._length) {
-      c = this._buffer[this._position++];
-      let value = (c & 127) >>> 0;
-      if (c < 128) {
-        return value;
-      }
-      if (this._position < this._length) {
         c = this._buffer[this._position++];
-        value = (value | ((c & 127) << 7)) >>> 0;
+        let value = (c & 127) >>> 0;
         if (c < 128) {
-          return value;
+            return value;
         }
         if (this._position < this._length) {
-          c = this._buffer[this._position++];
-          value = (value | ((c & 127) << 14)) >>> 0;
-          if (c < 128) {
-            return value;
-          }
-          if (this._position < this._length) {
             c = this._buffer[this._position++];
-            value = (value | ((c & 127) << 21)) >>> 0;
+            value = (value | (c & 127) <<  7) >>> 0;
             if (c < 128) {
-              return value;
+                return value;
             }
             if (this._position < this._length) {
-              c = this._buffer[this._position++];
-              value = (value | ((c & 15) << 28)) >>> 0;
-              if (c < 128) {
-                return value;
-              }
-              if (
-                this.byte() !== 255 ||
-                this.byte() !== 255 ||
-                this.byte() !== 255 ||
-                this.byte() !== 255 ||
-                this.byte() !== 1
-              ) {
-                return undefined;
-              }
-              return value;
+                c = this._buffer[this._position++];
+                value = (value | (c & 127) << 14) >>> 0;
+                if (c < 128) {
+                    return value;
+                }
+                if (this._position < this._length) {
+                    c = this._buffer[this._position++];
+                    value = (value | (c & 127) << 21) >>> 0;
+                    if (c < 128) {
+                        return value;
+                    }
+                    if (this._position < this._length) {
+                        c = this._buffer[this._position++];
+                        value = (value | (c & 15) << 28) >>> 0;
+                        if (c < 128) {
+                            return value;
+                        }
+                        if (this.byte() !== 255 || this.byte() !== 255 || this.byte() !== 255 || this.byte() !== 255 || this.byte() !== 1) {
+                            return undefined;
+                        }
+                        return value;
+                    }
+                }
             }
-          }
         }
-      }
     }
     return undefined;
-  }
+}
 
     _skipType(wireType) {
         switch (wireType) {
