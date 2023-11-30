@@ -511,7 +511,7 @@ def main(args, index=0, msgq=None, device_list=None):
         logger.info(f"subprocess_{index} qsize:{msgq.qsize()} ready to infer run")
 
     start_time = time.time()
-    if args.energy_consumption and args.npu_id:
+    if args.energy_consumption:
         start_energy_consumption = get_energy_consumption(args.npu_id)
     if args.pipeline:
         infer_pipeline_run(session, args, infileslist, output_prefix, extra_session)
@@ -526,7 +526,7 @@ def main(args, index=0, msgq=None, device_list=None):
             run_mode_switch.get(args.run_mode)(session, args, intensors_desc, infileslist, output_prefix)
         else:
             raise RuntimeError(f'wrong run_mode:{args.run_mode}')
-    if args.energy_consumption and args.npu_id:
+    if args.energy_consumption:
         end_energy_consumption = get_energy_consumption(args.npu_id)
     end_time = time.time()
 
@@ -540,10 +540,19 @@ def main(args, index=0, msgq=None, device_list=None):
     summary.h2d_latency_list = MemorySummary.get_h2d_time_list()
     summary.d2h_latency_list = MemorySummary.get_d2h_time_list()
     summary.report(args.batchsize, output_prefix, args.display_all_summary, multi_threads_mode)
-    if args.energy_consumption and args.npu_id:
-        energy_consumption = ((float(end_energy_consumption) + float(start_energy_consumption)) / 2.0) \
-            * (end_time - start_time)
-        logger.info(f"NPU ID:{args.npu_id} energy consumption(J):{energy_consumption}")
+    try:
+        if args.energy_consumption:
+            energy_consumption = ((float(end_energy_consumption) + float(start_energy_consumption)) / 2.0) \
+                * (end_time - start_time)
+            logger.info(f"NPU ID:{args.npu_id} energy consumption(J):{energy_consumption}")
+    except AttributeError as err:
+        logger.error(f"Attribute Access Error: {err}")
+        raise RuntimeError("Error accessing an attribute, please verify if the NPU ID is correct. ") from err
+    except Exception as err:
+        logger.error(f"Unexpected Error: {err}")
+        raise RuntimeError(
+            "Energy consumption append an unexpected error occurred, please check the input parameters.") from err
+
     if msgq is not None:
         # put result to msgq
         msgq.put([index, summary.infodict['throughput'], start_time, end_time])
