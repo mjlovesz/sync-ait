@@ -30,7 +30,7 @@ constexpr int SAVE_TENSOR_BOTH = 2;
 constexpr int SAVE_TENSOR_DATA = 1;
 
 namespace atb {
-class Probe{
+class Probe {
 public:
     static bool IsTensorNeedSave(const std::vector<int64_t> &ids, const std::string &optype);
     static bool IsSaveTensorData();
