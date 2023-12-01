@@ -44,11 +44,11 @@ if [ ! -d "$site_packages_path" ]; then
 fi
 
 # 将生成的.so文件移动到目标目录
-mv ../lib/libatb_probe.so "${site_packages_path}/msquickcmp"
+mv ../lib/libatb_probe.so "${site_packages_path}/dump"
 
 
 # 返回原始目录
 cd ..
 
 # 完成
-echo "Build and move to ${site_packages_path}/msquickcmp completed!"
+echo "Build and move to ${site_packages_path}/dump completed!"

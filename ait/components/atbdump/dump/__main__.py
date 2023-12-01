@@ -16,7 +16,8 @@
 import os
 
 from components.utils.parser import BaseCommand
-from dump.common.utils import str2bool, check_positive_integer, safe_string, check_exec_cmd, check_ids_string, check_number_list
+from dump.common.utils import str2bool, check_positive_integer, safe_string, check_exec_cmd, \
+                              check_ids_string, check_number_list, check_output_path_legality
 from dump.library.initial import init_dump_task, clear_dump_task
 class DumpCommand(BaseCommand):
     def __init__(self, *args, **kwargs):
@@ -89,10 +90,19 @@ class DumpCommand(BaseCommand):
         parser.add_argument(
             '--exec',
             dest="exec",
-            required=False,
+            required=True,
             type=safe_string,
             default='',
             help='Exec command to run acltransformer model inference')
+        
+        parser.add_argument(
+            '--output',
+            '-o',
+            dest="output",
+            required=False,
+            type=check_output_path_legality,
+            help='Data output directory.E.g:/xx/xxxx/xx')
+        
         
     def handle(self, args, **kwargs):
         if args.exec and check_exec_cmd(args.exec):

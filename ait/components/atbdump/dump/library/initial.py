@@ -17,7 +17,7 @@ import os
 import site
 
 from dump.library.constant import ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, \
-    ATB_SAVE_TENSOR_RANGE, ATB_SAVE_TILING, LD_PRELOAD
+    ATB_SAVE_TENSOR_RANGE, ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR
 
 def init_dump_task(args):
     if args.save_desc:
@@ -30,7 +30,8 @@ def init_dump_task(args):
         os.environ[ATB_SAVE_TENSOR_IDS] = str(args.ids)
     if args.opname:
         os.environ[ATB_SAVE_TENSOR_RUNNER] = str(args.opname)
-    
+    if args.output:
+        os.environ[ATB_OUTPUT_DIR] = str(args.output)
     os.environ[ATB_SAVE_TENSOR_RANGE] = str(args.range)
     os.environ[ATB_SAVE_TILING] = str(args.tiling)
     ld_preload = os.getenv(LD_PRELOAD)

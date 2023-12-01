@@ -16,6 +16,7 @@
 import os
 import argparse
 import re
+from components.utils.file_open_check import FileStat
 
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
 INVALID_CHARS = ['|', ';', '&', '&&', '||', '>', '>>', '<', '`', '\\', '!', '\n']
@@ -99,3 +100,16 @@ def check_exec_cmd(command: str):
 
     else:
         raise argparse.ArgumentTypeError(f"Run cmd is not valid: \"{command}\" ")
+    
+
+def check_output_path_legality(value):
+    if not value:
+        return value
+    path_value = value
+    try:
+        file_stat = FileStat(path_value)
+    except Exception as err:
+        raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.") from err
+    if not file_stat.is_basically_legal("write"):
+        raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
+    return path_value
