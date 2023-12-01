@@ -64,8 +64,8 @@ def check_ids_string(value):
     if not value:
         return value
     dym_string = value
-    regex = re.compile(r"[^_A-Za-z0-9,;:/.\-~]")
-    if regex.search(dym_string):
+    pattern = r'^(\d+(?:_\d+)*)(,\d+(?:_\d+)*)*$'
+    if not re.match(pattern, dym_string):
         raise argparse.ArgumentTypeError(f"dym range string \"{dym_string}\" is not a legal string")
     return dym_string
 
