@@ -900,789 +900,789 @@ class NodeAttributeView {
 }
 
 sidebar.ParameterView = class {
-    constructor(host, list, param_type, param_idx, modelNodeName) {
-      this._host = host;
-      this._list = list;
-      this._modelNodeName = modelNodeName;
-      this._elements = [];
-      this._items = [];
-  
-      for (const [arg_idx, argument] of list.arguments.entries()) {
-        const item = new sidebar.ArgumentView(
-          host,
-          argument,
-          param_type,
-          param_idx,
-          arg_idx,
-          list._name,
-          this._modelNodeName
-        );
-        item.on('export-tensor', (sender, tensor) => {
-          this._raise('export-tensor', tensor);
-        });
-        item.on('error', (sender, tensor) => {
-          this._raise('error', tensor);
-        });
-        this._items.push(item);
-        this._elements.push(item.render());
-      }
-    }
-  
-    render() {
-      return this._elements;
-    }
-  
-    toggle() {
-      for (const item of this._items) {
-        item.toggle();
-      }
-    }
-  
-    on(event, callback) {
-      this._events = this._events || {};
-      this._events[event] = this._events[event] || [];
-      this._events[event].push(callback);
-    }
-  
-    _raise(event, data) {
-      if (this._events && this._events[event]) {
-        for (const callback of this._events[event]) {
-          callback(this, data);
-        }
-      }
-    }
-  };
-  
-  sidebar.ArgumentView = class {
-    constructor(host, argument, param_type, param_index, arg_index, parameterName, modelNodeName) {
-      this._host = host;
-      this._argument = argument;
-      this._param_type = param_type;
-      this._param_index = param_index;
-      this._arg_index = arg_index;
-      this._parameterName = parameterName;
-      this._modelNodeName = modelNodeName;
-  
-      this._element = this._host.document.createElement('div');
-      this._element.className = 'sidebar-view-item-value';
-  
-      const initializer = argument.initializer;
-      if (initializer) {
-        this._element.classList.add('sidebar-view-item-value-dark');
-      }
-  
-      const quantization = argument.quantization;
-      const type = argument.type;
-      const location = this._argument.location !== undefined;
-      const is_custom_added = argument.is_custom_added;
-      if (type || initializer || quantization || location || is_custom_added) {
-        this._expander = this._host.document.createElement('div');
-        this._expander.classList.add('sidebar-view-item-value-expander');
-        this._expander.classList.add('off');
-        this._expander.innerHTML = `
-                  <img src="./svg/chevron-up.svg" class="off"/>
-                  <img src="./svg/chevron-down.svg" class="on"/>
-              `;
-        this._expander.addEventListener('click', () => {
-          this.toggle();
-        });
-        this._element.appendChild(this._expander);
-      }
-  
-      const valueEditers = this._host.document.createElement('div');
-      valueEditers.className = 'sidebar-view-item-value-editers';
-      this._element.appendChild(valueEditers);
-      this._valueEditers = valueEditers;
-  
-      let name = this._argument.name || '';
-      this._hasId = name ? true : false;
-      this._hasKind = initializer && initializer.kind ? true : false;
-      if (this._hasId || (!this._hasKind && !type)) {
-        this._hasId = true;
-  
-        if (typeof name !== 'string') {
-          throw new Error("Invalid argument identifier '" + JSON.stringify(name) + "'.");
-        }
-        name = name.split('\n').shift(); // custom argument id
-        name = name || ' ';
-  
-        var arg_input = document.createElement('INPUT');
-        arg_input.setAttribute('type', 'text');
-        arg_input.setAttribute('value', name);
-        arg_input.addEventListener('input', (e) => {
-          this._host._view.modifier.changeNodeInputOutput(
-            this._modelNodeName,
-            this._parameterName,
-            this._param_type,
-            this._param_index,
-            this._arg_index,
-            e.target.value
-          );
-        });
-        valueEditers.appendChild(arg_input);
-      } else if (this._hasKind) {
-        console.log('this._hasKind is called');
-        const kindLine = this._host.document.createElement('div');
-        kindLine.className = 'sidebar-view-item-value-line';
-        kindLine.innerHTML = 'kind: <b>' + initializer.kind + '</b>';
-        valueEditers.appendChild(kindLine);
-      } else if (type) {
-        console.log('type is called');
-        const typeLine = this._host.document.createElement('div');
-        typeLine.className = 'sidebar-view-item-value-line-border';
-        typeLine.innerHTML =
-          'type: <code><b>' + type.toString().split('<').join('&lt;').split('>').join('&gt;') + '</b></code>';
-        valueEditers.appendChild(typeLine);
-      }
-    }
-  
-    render() {
-      return this._element;
-    }
-  
-    render_rename_aux() {
-      return this._renameAuxelements;
-    }
-  
-    toggle() {
-      if (this._expander) {
-        if (this._expander.classList.contains('off')) {
-          this._expander.classList.remove('off');
-  
-          const initializer = this._argument.initializer;
-          if (this._hasId && this._hasKind) {
-            const kindLine = this._host.document.createElement('div');
-            kindLine.className = 'sidebar-view-item-value-line-border';
-            kindLine.innerHTML = 'kind: ' + '<b>' + initializer.kind + '</b>';
-            this._valueEditers.appendChild(kindLine);
-          }
-          let type = null;
-          let denotation = null;
-          if (this._argument.type) {
-            type = this._argument.type.toString();
-            denotation = this._argument.type.denotation || null;
-          }
-          if (type && (this._hasId || this._hasKind)) {
-            const typeLine = this._host.document.createElement('div');
-            typeLine.className = 'sidebar-view-item-value-line-border';
-            typeLine.innerHTML = 'type: <code><b>' + type.split('<').join('&lt;').split('>').join('&gt;') + '</b></code>';
-            this._valueEditers.appendChild(typeLine);
-          }
-          if (denotation) {
-            const denotationLine = this._host.document.createElement('div');
-            denotationLine.className = 'sidebar-view-item-value-line-border';
-            denotationLine.innerHTML = 'denotation: <code><b>' + denotation + '</b></code>';
-            this._valueEditers.appendChild(denotationLine);
-          }
-  
-          const description = this._argument.description;
-          if (description) {
-            const descriptionLine = this._host.document.createElement('div');
-            descriptionLine.className = 'sidebar-view-item-value-line-border';
-            descriptionLine.innerHTML = description;
-            this._valueEditers.appendChild(descriptionLine);
-          }
-  
-          const quantization = this._argument.quantization;
-          if (quantization) {
-            const quantizationLine = this._host.document.createElement('div');
-            quantizationLine.className = 'sidebar-view-item-value-line-border';
-            const content = !Array.isArray(quantization)
-              ? quantization
-              : '<br><br>' + quantization.map((value) => '  ' + value).join('<br>');
-            quantizationLine.innerHTML =
-              "<span class='sidebar-view-item-value-line-content'>quantization: " + '<b>' + content + '</b></span>';
-            this._valueEditers.appendChild(quantizationLine);
-          }
-  
-          if (this._argument.location !== undefined) {
-            const location = this._host.document.createElement('div');
-            location.className = 'sidebar-view-item-value-line-border';
-            location.innerHTML = 'location: ' + '<b>' + this._argument.location + '</b>';
-            this._valueEditers.appendChild(location);
-          }
-  
-          if (initializer && !window.DISPLAY_OM_MODEL) {
-            const editInitializerVal = this._host.document.createElement('div');
-            editInitializerVal.className = 'sidebar-view-item-value-line-border';
-            editInitializerVal.innerHTML = 'This is an initializer, you can input a new value for it here:';
-            this._valueEditers.appendChild(editInitializerVal);
-  
-            var inputInitializerVal = document.createElement('textarea');
-            inputInitializerVal.setAttribute('type', 'text');
-            inputInitializerVal.rows = 8;
-  
-            // reload the last value
-            var orig_arg_name = this._host._view.modifier.getOriginalName(
-              this._param_type,
-              this._modelNodeName,
-              this._param_index,
-              this._arg_index
-            );
-            if (this._host._view.modifier.initializerEditInfo.get(orig_arg_name)) {
-              // [type, value]
-              inputInitializerVal.innerHTML = this._host._view.modifier.initializerEditInfo.get(orig_arg_name)[1];
-            }
-  
-            inputInitializerVal.addEventListener('input', (e) => {
-              checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value, true));
-              this._host._view.modifier.changeInitializer(
-                this._modelNodeName,
-                this._parameterName,
-                this._param_type,
-                this._param_index,
-                this._arg_index,
-                this._argument.type._dataType,
-                e.target.value
-              );
-            });
-            editInitializerVal.appendChild(inputInitializerVal);
-          }
-  
-          if (this._argument.is_custom_added) {
-            if (this._argument.is_optional) {
-              const isOptionalLine = this._host.document.createElement('div');
-              isOptionalLine.className = 'sidebar-view-item-value-line-border';
-              isOptionalLine.innerHTML = 'optional: <code><b>true</b></code>';
-              this._valueEditers.appendChild(isOptionalLine);
-            }
-            var new_init_val = '',
-              new_init_type = '';
-            // ====== input value ======>
-            const editInitializerVal = this._host.document.createElement('div');
-            editInitializerVal.className = 'sidebar-view-item-value-line-border';
-            editInitializerVal.innerHTML = 'If this is an initializer, you can input new value for it here:';
-            this._valueEditers.appendChild(editInitializerVal);
-  
-            var inputInitializerVal = document.createElement('textarea');
-            inputInitializerVal.setAttribute('type', 'text');
-            inputInitializerVal.rows = 8;
-  
-            inputInitializerVal.addEventListener('input', (e) => {
-              new_init_val = e.target.value;
-              checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value, true));
-              this._host._view.modifier.changeAddedNodeInitializer(
-                this._modelNodeName,
-                this._parameterName,
-                this._param_type,
-                this._param_index,
-                this._arg_index,
-                new_init_type,
-                new_init_val
-              );
-            });
-            this._valueEditers.appendChild(inputInitializerVal);
-            // <====== input value ======
-  
-            // ====== input type ======>
-            const editInitializerType = this._host.document.createElement('div');
-            editInitializerType.className = 'sidebar-view-item-value-line-border';
-            editInitializerType.innerHTML =
-              'and input its type for it here <b>' + '(see properties->type->?' + '</b>' + ' for more info):';
-            this._valueEditers.appendChild(editInitializerType);
-  
-            var inputInitializerType = document.createElement('textarea');
-            inputInitializerType.setAttribute('type', 'text');
-            inputInitializerType.rows = 1;
-  
-            var arg_name = this._host._view.modifier.addedNode.get(this._modelNodeName).inputs.get(this._parameterName)[
-              this._arg_index
-            ][0]; // [arg.name, arg.is_optional]
-            if (this._host._view.modifier.initializerEditInfo.get(arg_name)) {
-              // [type, value]
-              inputInitializerType.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[0];
-              inputInitializerVal.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[1];
-            }
-  
-            inputInitializerType.addEventListener('input', (e) => {
-              new_init_type = e.target.value;
-              checkInputShowErr(inputInitializerType, !checkInputValidChars(e.target.value, true));
-              this._host._view.modifier.changeAddedNodeInitializer(
-                this._modelNodeName,
-                this._parameterName,
-                this._param_type,
-                this._param_index,
-                this._arg_index,
-                new_init_type,
-                new_init_val
-              );
-            });
-            editInitializerVal.appendChild(inputInitializerType);
-            // <====== input type ======
-          }
-  
-          if (initializer) {
-            // to edit the existed initializer
-            const origInitLine = this._host.document.createElement('div');
-            origInitLine.className = 'sidebar-view-item-value-line-border';
-            origInitLine.innerHTML = 'original initializer value:';
-            this._valueEditers.appendChild(origInitLine);
-            const contentLine = this._host.document.createElement('pre');
-            const valueLine = this._host.document.createElement('div');
-            try {
-              const state = initializer.state;
-              if (
-                state === null &&
-                this._host.save &&
-                initializer.type.dataType &&
-                initializer.type.dataType != '?' &&
-                initializer.type.shape &&
-                initializer.type.shape.dimensions /*&& initializer.type.shape.dimensions.length > 0*/
-              ) {
-                this._saveButton = this._host.document.createElement('div');
-                this._saveButton.className = 'sidebar-view-item-value-expander';
-                this._saveButton.innerHTML = '&#x1F4BE;';
-                this._saveButton.style.float = 'right';
-                this._saveButton.addEventListener('click', () => {
-                  this._raise('export-tensor', initializer);
-                });
-                origInitLine.appendChild(this._saveButton);
-              }
-  
-              valueLine.className = 'sidebar-view-item-value-border';
-              contentLine.innerHTML = state || initializer.toString();
-            } catch (err) {
-              contentLine.innerHTML = err.toString();
-              this._raise('error', err);
-            }
-            origInitLine.appendChild(contentLine);
-            this._valueEditers.appendChild(valueLine);
-          }
-        } else {
-          this._expander.classList.add('off');
-          while (this._valueEditers.childElementCount > 1) {
-            this._valueEditers.removeChild(this._valueEditers.lastChild);
-          }
-        }
-      }
-    }
-  
-    on(event, callback) {
-      this._events = this._events || {};
-      this._events[event] = this._events[event] || [];
-      this._events[event].push(callback);
-    }
-  
-    _raise(event, data) {
-      if (this._events && this._events[event]) {
-        for (const callback of this._events[event]) {
-          callback(this, data);
-        }
-      }
-    }
-  };
-  
-  sidebar.ModelSidebar = class {
-    constructor(host, model, graph, clicked_output_name, clicked_input_name) {
-      this._host = host;
-      this._view = this._host.view;
-      this._model = model;
-      this._elements = [];
-      this.clicked_output_name = clicked_output_name;
-      this.clicked_input_name = clicked_input_name;
-  
-      if (model.format) {
-        this._addProperty('format', new sidebar.ValueTextView(this._host, model.format));
-      }
-      if (model.producer) {
-        this._addProperty('producer', new sidebar.ValueTextView(this._host, model.producer));
-      }
-      if (model.source) {
-        this._addProperty('source', new sidebar.ValueTextView(this._host, model.source));
-      }
-      if (model.name) {
-        this._addProperty('name', new sidebar.ValueTextView(this._host, model.name));
-      }
-      if (model.version) {
-        this._addProperty('version', new sidebar.ValueTextView(this._host, model.version));
-      }
-      if (model.description) {
-        this._addProperty('description', new sidebar.ValueTextView(this._host, model.description));
-      }
-      if (model.author) {
-        this._addProperty('author', new sidebar.ValueTextView(this._host, model.author));
-      }
-      if (model.company) {
-        this._addProperty('company', new sidebar.ValueTextView(this._host, model.company));
-      }
-      if (model.license) {
-        this._addProperty('license', new sidebar.ValueTextView(this._host, model.license));
-      }
-  
-      this._addProperty(
-        'domain',
-        new sidebar.ValueTextView(this._host, model.domain, undefined, (domain_value) => {
-          this._host._view.modifier.changeModelProperties('domain', domain_value);
-        })
+  constructor(host, list, param_type, param_idx, modelNodeName) {
+    this._host = host;
+    this._list = list;
+    this._modelNodeName = modelNodeName;
+    this._elements = [];
+    this._items = [];
+
+    for (const [arg_idx, argument] of list.arguments.entries()) {
+      const item = new sidebar.ArgumentView(
+        host,
+        argument,
+        param_type,
+        param_idx,
+        arg_idx,
+        list._name,
+        this._modelNodeName
       );
-  
-      if (model.imports) {
-        this._addProperty(
-          'imports',
-          new sidebar.ValueTextView(this._host, model.imports, undefined, (import_value, index) => {
-            let has_error = false;
-            let splited_import_value = import_value.split(' v');
-            if (import_value.length == 0) {
-              this._host._view.modifier.changeModelProperties('imports', [], index);
-            } else if (splited_import_value.length == 1) {
-              if (import_value.includes(' ')) {
-                return true;
-              }
-              this._host._view.modifier.changeModelProperties('imports', [import_value], index);
-            } else if (splited_import_value.length == 2) {
-              let [domain, version] = splited_import_value;
-              if (!version.match('^[0-9]{1,10}$')) {
-                has_error = true;
-              } else {
-                this._host._view.modifier.changeModelProperties('imports', [domain, parseInt(version)], index);
-              }
-            } else {
-              has_error = true;
-            }
-            return has_error;
-          })
-        );
-      }
-  
-      if (model.runtime) {
-        this._addProperty('runtime', new sidebar.ValueTextView(this._host, model.runtime));
-      }
-  
-      const metadata = model.metadata;
-      if (metadata) {
-        for (const property of model.metadata) {
-          this._addProperty(property.name, new sidebar.ValueTextView(this._host, property.value));
-        }
-      }
-  
-      const graphs = Array.isArray(model.graphs) ? model.graphs : [];
-      if (graphs.length > 1) {
-        const graphSelector = new sidebar.SelectView(this._host, model.graphs, graph);
-        graphSelector.on('change', (sender, data) => {
-          this._raise('update-active-graph', data);
-        });
-        this._addProperty('subgraph', graphSelector);
-      }
-  
-      if (graph) {
-        if (graph.version) {
-          this._addProperty('version', new sidebar.ValueTextView(this._host, graph.version));
-        }
-        if (graph.type) {
-          this._addProperty('type', new sidebar.ValueTextView(this._host, graph.type));
-        }
-        if (graph.tags) {
-          this._addProperty('tags', new sidebar.ValueTextView(this._host, graph.tags));
-        }
-        if (graph.description) {
-          this._addProperty('description', new sidebar.ValueTextView(this._host, graph.description));
-        }
-        if (Array.isArray(graph.inputs) && graph.inputs.length > 0) {
-          this._addHeader('Inputs');
-          for (const [index, input] of graph.inputs.entries()) {
-            this.addArgument(input.name, input, index, 'model_input', checkInputValidChars);
-          }
-        }
-        if (Array.isArray(graph.outputs) && graph.outputs.length > 0) {
-          this._addHeader('Outputs');
-          // for (const output of graph.outputs) {
-          for (const [index, output] of graph.outputs.entries()) {
-            // this.addArgument(output.name, output, index, 'model_output');
-            this.addArgument(output.modelNodeName, output, index, 'model_output');
-          }
-        }
-      }
-  
-      this._view_elements = this._host.document.createElement('div');
-      for (const elem of this._elements) {
-        this._view_elements.appendChild(elem);
-      }
-      this._view_elements.style.flex = 1;
-  
-      this._modifer_element = this.add_modifer_panel();
-    }
-  
-    render() {
-      return [this._view_elements, this._modifer_element];
-    }
-  
-    add_separator(elment, className) {
-      const separator = this._host.document.createElement('div');
-      separator.className = className;
-      elment.push(separator);
-    }
-  
-    add_modifer_panel() {
-      const modiferPanelElem = this._host.document.createElement('div');
-      modiferPanelElem.className = 'sidebar-view-modifer-panel';
-  
-      modiferPanelElem.appendChild(this.init_modifer_button());
-      if (this.clicked_input_name) {
-        modiferPanelElem.appendChild(this.init_modifer_toolbar());
-      }
-      return modiferPanelElem;
-    }
-  
-    init_modifer_button() {
-      const modiferButtonsElem = this._host.document.createElement('div');
-      modiferButtonsElem.className = 'sidebar-view-modifer-buttons';
-  
-      if (this.clicked_input_name) {
-        const removeInputElem = this._host.document.createElement('button');
-        removeInputElem.innerText = 'Remove Input';
-        removeInputElem.addEventListener('click', () => {
-          this._host._view.modifier.deleteModelInput(this.clicked_input_name);
-        });
-        modiferButtonsElem.appendChild(removeInputElem);
-      }
-      if (this.clicked_output_name) {
-        const removeOutputElem = this._host.document.createElement('button');
-        removeOutputElem.innerText = 'Remove Output';
-        removeOutputElem.addEventListener('click', () => {
-          this._host._view.modifier.deleteModelOutput(this.clicked_output_name);
-        });
-        modiferButtonsElem.appendChild(removeOutputElem);
-      }
-  
-      return modiferButtonsElem;
-    }
-  
-    init_modifer_toolbar() {
-      const modiferToolbarElem = this._host.document.createElement('div');
-      modiferToolbarElem.className = 'sidebar-view-modifer-toolbar';
-  
-      const icon_shape = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path.setAttribute(
-        'd',
-        `M8.932.727c-.243-.97-1.62-.97-1.864 0l-.071.286a.96.96 0 0
-              1-1.622.434l-.205-.211c-.695-.719-1.888-.03-1.613.931l.08.284a.96.96 0 0 1-1.186
-              1.187l-.284-.081c-.96-.275-1.65.918-.931 1.613l.211.205a.96.96 0 0 1-.434 1.622l-.286.071c-.97.243-.97
-              1.62 0 1.864l.286.071a.96.96 0 0 1 .434 1.622l-.211.205c-.719.695-.03 1.888.931 1.613l.284-.08a.96.96
-              0 0 1 1.187 1.187l-.081.283c-.275.96.918 1.65 1.613.931l.205-.211a.96.96 0 0 1 1.622.434l.071.286c.243.97
-              1.62.97 1.864 0l.071-.286a.96.96 0 0 1 1.622-.434l.205.211c.695.719 1.888.03 1.613-.931l-.08-.284a.96.96
-              0 0 1 1.187-1.187l.283.081c.96.275 1.65-.918.931-1.613l-.211-.205a.96.96 0 0 1
-              .434-1.622l.286-.071c.97-.243.97-1.62 0-1.864l-.286-.071a.96.96 0 0
-              1-.434-1.622l.211-.205c.719-.695.03-1.888-.931-1.613l-.284.08a.96.96 0 0
-              1-1.187-1.186l.081-.284c.275-.96-.918-1.65-1.613-.931l-.205.211a.96.96 0 0
-              1-1.622-.434L8.932.727zM8 12.997a4.998 4.998 0 1 1 0-9.995 4.998 4.998 0 0 1 0 9.996z`
-      );
-  
-      icon_shape.appendChild(path);
-      icon_shape.setAttribute('ViewBox', '0 0 16 16');
-      modiferToolbarElem.appendChild(
-        this.init_helper(icon_shape, 'Set Input Shape', () => {
-          // show dialog
-          let default_shape = this._host.get_default_input_shape(this.clicked_input_name);
-  
-          let input_change = this._host.document.getElementById('change-input-shape-input');
-          input_change.value = default_shape;
-          let dialog = this._host.document.getElementById('change-input-shape-dialog');
-          dialog.getElementsByClassName('message')[0].innerText = `Change the shape of input: ${this.clicked_input_name}`;
-          this._host.show_confirm_dialog(dialog).then((is_not_cancel) => {
-            if (!is_not_cancel) {
-              return;
-            }
-  
-            this._host.view.modifier.changeInputSize(this.clicked_input_name, input_change.dims);
-            this._view.modifier.refreshModelInputOutput();
-  
-            if (dialog.getElementsByClassName('checkbox-shape-change')[0].checked) {
-              let data = this._host.build_download_data(true);
-              data.postprocess_args.shapeInf = true;
-              this._host.take_effect_modify('/download', data, false);
-            }
-            this._view._sidebar.close();
-          });
-        })
-      );
-  
-      let icon_dynamic = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      const path_dynamic = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path_dynamic.setAttribute(
-        'd',
-        `M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464
-              1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023
-              1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872
-              2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413
-              1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705
-              1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464
-              1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0
-              1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z`
-      );
-  
-      icon_dynamic.appendChild(path_dynamic);
-      icon_dynamic.setAttribute('ViewBox', '0 0 16 16');
-  
-      modiferToolbarElem.appendChild(
-        this.init_helper(icon_dynamic, 'Batch Dynamic', () => {
-          let dialog = this._host.document.getElementById('dynamic-batch-size-dialog');
-          this._host.show_confirm_dialog(dialog).then((is_not_cancel) => {
-            if (!is_not_cancel) {
-              return;
-            }
-            this._host.change_batch_size('dynamic');
-            if (dialog.getElementsByClassName('checkbox-shape-change')[0].checked) {
-              let data = this._host.build_download_data(true);
-              data.postprocess_args.shapeInf = true;
-              this._host.take_effect_modify('/download', data, false);
-            }
-            this._view._sidebar.close();
-          });
-        })
-      );
-  
-      let icon_fix = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      const path_fix1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path_fix1.setAttribute(
-        'd',
-        `M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0
-              0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z`
-      );
-  
-      const path_fix2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-      path_fix2.setAttribute(
-        'd',
-        `M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0
-              1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52
-              1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901
-              3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873
-               0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1
-               .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0
-               1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0
-               1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693
-               1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835
-               1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873
-               1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0
-                0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945
-                8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06
-                4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z`
-      );
-  
-      icon_fix.appendChild(path_fix1);
-      icon_fix.appendChild(path_fix2);
-      icon_fix.setAttribute('ViewBox', '0 0 16 16');
-  
-      modiferToolbarElem.appendChild(
-        this.init_helper(icon_fix, 'Batch Fixed', () => {
-          let dialog = this._host.document.getElementById('fixed-batch-size-dialog');
-          this._host.show_confirm_dialog(dialog).then((is_not_cancel) => {
-            if (!is_not_cancel) {
-              return;
-            }
-            let input_change = this._host.document.getElementById('fixed-batch-size-input');
-            this._host.change_batch_size(input_change.value);
-  
-            if (dialog.getElementsByClassName('checkbox-shape-change')[0].checked) {
-              let data = this._host.build_download_data(true);
-              data.postprocess_args.shapeInf = true;
-              this._host.take_effect_modify('/download', data, false);
-            }
-            this._view._sidebar.close();
-          });
-        })
-      );
-  
-      return modiferToolbarElem;
-    }
-  
-    init_helper(icon, title, callback) {
-      const helperElem = this._host.document.createElement('div');
-      helperElem.style.cursor = 'default';
-  
-      const iconElem = this._host.document.createElement('div');
-      iconElem.classList.add('icon');
-      iconElem.appendChild(icon);
-      icon.setAttribute('width', 16);
-      icon.setAttribute('height', 16);
-      helperElem.appendChild(iconElem);
-  
-      const titleElem = this._host.document.createElement('div');
-      titleElem.classList.add('title');
-      titleElem.innerText = title;
-      helperElem.appendChild(titleElem);
-      helperElem.addEventListener('click', callback);
-      return helperElem;
-    }
-  
-    _addHeader(title) {
-      const headerElement = this._host.document.createElement('div');
-      headerElement.className = 'sidebar-view-header';
-      headerElement.innerText = title.toUpperCase();
-      this._elements.push(headerElement);
-    }
-  
-    _addProperty(name, value) {
-      const item = new sidebar.NameValueView(this._host, name, value);
-      this._elements.push(item.render());
-    }
-  
-    _addButton(title) {
-      const buttonElement = this._host.document.createElement('button');
-      buttonElement.className = 'sidebar-view-button';
-      buttonElement.innerText = title;
-      this._elements.push(buttonElement);
-  
-      if (title == 'Delete the output') {
-        buttonElement.addEventListener('click', () => {
-          this._host._view.modifier.deleteModelOutput(this.clicked_output_name);
-        });
-      }
-  
-      if (title == 'Delete the input') {
-        buttonElement.addEventListener('click', () => {
-          this._host._view.modifier.deleteModelInput(this.clicked_input_name);
-        });
-      }
-    }
-  
-    _addInput(title, default_value, input_event, placeholder) {
-      var fixed_batch_size_title = this._host.document.createElement('span');
-      fixed_batch_size_title.innerHTML = `${title}&nbsp;&nbsp;&nbsp;`;
-      fixed_batch_size_title.setAttribute('style', 'font-size:14px');
-      this._elements.push(fixed_batch_size_title);
-  
-      var fixed_batch_size_value = this._host.document.createElement('INPUT');
-      fixed_batch_size_value.setAttribute('type', 'text');
-      fixed_batch_size_value.setAttribute('size', '15');
-      fixed_batch_size_value.setAttribute('value', default_value);
-      if (placeholder) {
-        fixed_batch_size_value.setAttribute('placeholder', placeholder);
-      }
-      fixed_batch_size_value.addEventListener('input', (e) => {
-        let has_error = input_event(e.target.value.trim(), e);
-        if (has_error) {
-          fixed_batch_size_value.style.borderColor = 'red';
-        } else {
-          fixed_batch_size_value.style.borderColor = null;
-        }
+      item.on('export-tensor', (sender, tensor) => {
+        this._raise('export-tensor', tensor);
       });
-  
-      this._elements.push(fixed_batch_size_value);
-    }
-  
-    addArgument(name, argument, index, arg_type, checker) {
-      // const view = new sidebar.ParameterView(this._host, argument);
-      const view = new sidebar.ParameterView(this._host, argument, arg_type, index, name);
-      view.toggle();
-      const item = new sidebar.NameValueView(this._host, name, view, checker);
+      item.on('error', (sender, tensor) => {
+        this._raise('error', tensor);
+      });
+      this._items.push(item);
       this._elements.push(item.render());
     }
-  
-    on(event, callback) {
-      this._events = this._events || {};
-      this._events[event] = this._events[event] || [];
-      this._events[event].push(callback);
+  }
+
+  render() {
+    return this._elements;
+  }
+
+  toggle() {
+    for (const item of this._items) {
+      item.toggle();
     }
-  
-    _raise(event, data) {
-      if (this._events && this._events[event]) {
-        for (const callback of this._events[event]) {
-          callback(this, data);
+  }
+
+  on(event, callback) {
+    this._events = this._events || {};
+    this._events[event] = this._events[event] || [];
+    this._events[event].push(callback);
+  }
+
+  _raise(event, data) {
+    if (this._events && this._events[event]) {
+      for (const callback of this._events[event]) {
+        callback(this, data);
+      }
+    }
+  }
+};
+
+sidebar.ArgumentView = class {
+  constructor(host, argument, param_type, param_index, arg_index, parameterName, modelNodeName) {
+    this._host = host;
+    this._argument = argument;
+    this._param_type = param_type;
+    this._param_index = param_index;
+    this._arg_index = arg_index;
+    this._parameterName = parameterName;
+    this._modelNodeName = modelNodeName;
+
+    this._element = this._host.document.createElement('div');
+    this._element.className = 'sidebar-view-item-value';
+
+    const initializer = argument.initializer;
+    if (initializer) {
+      this._element.classList.add('sidebar-view-item-value-dark');
+    }
+
+    const quantization = argument.quantization;
+    const type = argument.type;
+    const location = this._argument.location !== undefined;
+    const is_custom_added = argument.is_custom_added;
+    if (type || initializer || quantization || location || is_custom_added) {
+      this._expander = this._host.document.createElement('div');
+      this._expander.classList.add('sidebar-view-item-value-expander');
+      this._expander.classList.add('off');
+      this._expander.innerHTML = `
+                <img src="./svg/chevron-up.svg" class="off"/>
+                <img src="./svg/chevron-down.svg" class="on"/>
+            `;
+      this._expander.addEventListener('click', () => {
+        this.toggle();
+      });
+      this._element.appendChild(this._expander);
+    }
+
+    const valueEditers = this._host.document.createElement('div');
+    valueEditers.className = 'sidebar-view-item-value-editers';
+    this._element.appendChild(valueEditers);
+    this._valueEditers = valueEditers;
+
+    let name = this._argument.name || '';
+    this._hasId = name ? true : false;
+    this._hasKind = initializer && initializer.kind ? true : false;
+    if (this._hasId || (!this._hasKind && !type)) {
+      this._hasId = true;
+
+      if (typeof name !== 'string') {
+        throw new Error("Invalid argument identifier '" + JSON.stringify(name) + "'.");
+      }
+      name = name.split('\n').shift(); // custom argument id
+      name = name || ' ';
+
+      var arg_input = document.createElement('INPUT');
+      arg_input.setAttribute('type', 'text');
+      arg_input.setAttribute('value', name);
+      arg_input.addEventListener('input', (e) => {
+        this._host._view.modifier.changeNodeInputOutput(
+          this._modelNodeName,
+          this._parameterName,
+          this._param_type,
+          this._param_index,
+          this._arg_index,
+          e.target.value
+        );
+      });
+      valueEditers.appendChild(arg_input);
+    } else if (this._hasKind) {
+      console.log('this._hasKind is called');
+      const kindLine = this._host.document.createElement('div');
+      kindLine.className = 'sidebar-view-item-value-line';
+      kindLine.innerHTML = 'kind: <b>' + initializer.kind + '</b>';
+      valueEditers.appendChild(kindLine);
+    } else if (type) {
+      console.log('type is called');
+      const typeLine = this._host.document.createElement('div');
+      typeLine.className = 'sidebar-view-item-value-line-border';
+      typeLine.innerHTML =
+        'type: <code><b>' + type.toString().split('<').join('&lt;').split('>').join('&gt;') + '</b></code>';
+      valueEditers.appendChild(typeLine);
+    }
+  }
+
+  render() {
+    return this._element;
+  }
+
+  render_rename_aux() {
+    return this._renameAuxelements;
+  }
+
+  toggle() {
+    if (this._expander) {
+      if (this._expander.classList.contains('off')) {
+        this._expander.classList.remove('off');
+
+        const initializer = this._argument.initializer;
+        if (this._hasId && this._hasKind) {
+          const kindLine = this._host.document.createElement('div');
+          kindLine.className = 'sidebar-view-item-value-line-border';
+          kindLine.innerHTML = 'kind: ' + '<b>' + initializer.kind + '</b>';
+          this._valueEditers.appendChild(kindLine);
+        }
+        let type = null;
+        let denotation = null;
+        if (this._argument.type) {
+          type = this._argument.type.toString();
+          denotation = this._argument.type.denotation || null;
+        }
+        if (type && (this._hasId || this._hasKind)) {
+          const typeLine = this._host.document.createElement('div');
+          typeLine.className = 'sidebar-view-item-value-line-border';
+          typeLine.innerHTML = 'type: <code><b>' + type.split('<').join('&lt;').split('>').join('&gt;') + '</b></code>';
+          this._valueEditers.appendChild(typeLine);
+        }
+        if (denotation) {
+          const denotationLine = this._host.document.createElement('div');
+          denotationLine.className = 'sidebar-view-item-value-line-border';
+          denotationLine.innerHTML = 'denotation: <code><b>' + denotation + '</b></code>';
+          this._valueEditers.appendChild(denotationLine);
+        }
+
+        const description = this._argument.description;
+        if (description) {
+          const descriptionLine = this._host.document.createElement('div');
+          descriptionLine.className = 'sidebar-view-item-value-line-border';
+          descriptionLine.innerHTML = description;
+          this._valueEditers.appendChild(descriptionLine);
+        }
+
+        const quantization = this._argument.quantization;
+        if (quantization) {
+          const quantizationLine = this._host.document.createElement('div');
+          quantizationLine.className = 'sidebar-view-item-value-line-border';
+          const content = !Array.isArray(quantization)
+            ? quantization
+            : '<br><br>' + quantization.map((value) => '  ' + value).join('<br>');
+          quantizationLine.innerHTML =
+            "<span class='sidebar-view-item-value-line-content'>quantization: " + '<b>' + content + '</b></span>';
+          this._valueEditers.appendChild(quantizationLine);
+        }
+
+        if (this._argument.location !== undefined) {
+          const location = this._host.document.createElement('div');
+          location.className = 'sidebar-view-item-value-line-border';
+          location.innerHTML = 'location: ' + '<b>' + this._argument.location + '</b>';
+          this._valueEditers.appendChild(location);
+        }
+
+        if (initializer && !window.DISPLAY_OM_MODEL) {
+          const editInitializerVal = this._host.document.createElement('div');
+          editInitializerVal.className = 'sidebar-view-item-value-line-border';
+          editInitializerVal.innerHTML = 'This is an initializer, you can input a new value for it here:';
+          this._valueEditers.appendChild(editInitializerVal);
+
+          var inputInitializerVal = document.createElement('textarea');
+          inputInitializerVal.setAttribute('type', 'text');
+          inputInitializerVal.rows = 8;
+
+          // reload the last value
+          var orig_arg_name = this._host._view.modifier.getOriginalName(
+            this._param_type,
+            this._modelNodeName,
+            this._param_index,
+            this._arg_index
+          );
+          if (this._host._view.modifier.initializerEditInfo.get(orig_arg_name)) {
+            // [type, value]
+            inputInitializerVal.innerHTML = this._host._view.modifier.initializerEditInfo.get(orig_arg_name)[1];
+          }
+
+          inputInitializerVal.addEventListener('input', (e) => {
+            checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value, true));
+            this._host._view.modifier.changeInitializer(
+              this._modelNodeName,
+              this._parameterName,
+              this._param_type,
+              this._param_index,
+              this._arg_index,
+              this._argument.type._dataType,
+              e.target.value
+            );
+          });
+          editInitializerVal.appendChild(inputInitializerVal);
+        }
+
+        if (this._argument.is_custom_added) {
+          if (this._argument.is_optional) {
+            const isOptionalLine = this._host.document.createElement('div');
+            isOptionalLine.className = 'sidebar-view-item-value-line-border';
+            isOptionalLine.innerHTML = 'optional: <code><b>true</b></code>';
+            this._valueEditers.appendChild(isOptionalLine);
+          }
+          var new_init_val = '',
+            new_init_type = '';
+          // ====== input value ======>
+          const editInitializerVal = this._host.document.createElement('div');
+          editInitializerVal.className = 'sidebar-view-item-value-line-border';
+          editInitializerVal.innerHTML = 'If this is an initializer, you can input new value for it here:';
+          this._valueEditers.appendChild(editInitializerVal);
+
+          var inputInitializerVal = document.createElement('textarea');
+          inputInitializerVal.setAttribute('type', 'text');
+          inputInitializerVal.rows = 8;
+
+          inputInitializerVal.addEventListener('input', (e) => {
+            new_init_val = e.target.value;
+            checkInputShowErr(inputInitializerVal, !checkInputValidChars(e.target.value, true));
+            this._host._view.modifier.changeAddedNodeInitializer(
+              this._modelNodeName,
+              this._parameterName,
+              this._param_type,
+              this._param_index,
+              this._arg_index,
+              new_init_type,
+              new_init_val
+            );
+          });
+          this._valueEditers.appendChild(inputInitializerVal);
+          // <====== input value ======
+
+          // ====== input type ======>
+          const editInitializerType = this._host.document.createElement('div');
+          editInitializerType.className = 'sidebar-view-item-value-line-border';
+          editInitializerType.innerHTML =
+            'and input its type for it here <b>' + '(see properties->type->?' + '</b>' + ' for more info):';
+          this._valueEditers.appendChild(editInitializerType);
+
+          var inputInitializerType = document.createElement('textarea');
+          inputInitializerType.setAttribute('type', 'text');
+          inputInitializerType.rows = 1;
+
+          var arg_name = this._host._view.modifier.addedNode.get(this._modelNodeName).inputs.get(this._parameterName)[
+            this._arg_index
+          ][0]; // [arg.name, arg.is_optional]
+          if (this._host._view.modifier.initializerEditInfo.get(arg_name)) {
+            // [type, value]
+            inputInitializerType.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[0];
+            inputInitializerVal.innerHTML = this._host._view.modifier.initializerEditInfo.get(arg_name)[1];
+          }
+
+          inputInitializerType.addEventListener('input', (e) => {
+            new_init_type = e.target.value;
+            checkInputShowErr(inputInitializerType, !checkInputValidChars(e.target.value, true));
+            this._host._view.modifier.changeAddedNodeInitializer(
+              this._modelNodeName,
+              this._parameterName,
+              this._param_type,
+              this._param_index,
+              this._arg_index,
+              new_init_type,
+              new_init_val
+            );
+          });
+          editInitializerVal.appendChild(inputInitializerType);
+          // <====== input type ======
+        }
+
+        if (initializer) {
+          // to edit the existed initializer
+          const origInitLine = this._host.document.createElement('div');
+          origInitLine.className = 'sidebar-view-item-value-line-border';
+          origInitLine.innerHTML = 'original initializer value:';
+          this._valueEditers.appendChild(origInitLine);
+          const contentLine = this._host.document.createElement('pre');
+          const valueLine = this._host.document.createElement('div');
+          try {
+            const state = initializer.state;
+            if (
+              state === null &&
+              this._host.save &&
+              initializer.type.dataType &&
+              initializer.type.dataType != '?' &&
+              initializer.type.shape &&
+              initializer.type.shape.dimensions /*&& initializer.type.shape.dimensions.length > 0*/
+            ) {
+              this._saveButton = this._host.document.createElement('div');
+              this._saveButton.className = 'sidebar-view-item-value-expander';
+              this._saveButton.innerHTML = '&#x1F4BE;';
+              this._saveButton.style.float = 'right';
+              this._saveButton.addEventListener('click', () => {
+                this._raise('export-tensor', initializer);
+              });
+              origInitLine.appendChild(this._saveButton);
+            }
+
+            valueLine.className = 'sidebar-view-item-value-border';
+            contentLine.innerHTML = state || initializer.toString();
+          } catch (err) {
+            contentLine.innerHTML = err.toString();
+            this._raise('error', err);
+          }
+          origInitLine.appendChild(contentLine);
+          this._valueEditers.appendChild(valueLine);
+        }
+      } else {
+        this._expander.classList.add('off');
+        while (this._valueEditers.childElementCount > 1) {
+          this._valueEditers.removeChild(this._valueEditers.lastChild);
         }
       }
     }
-  };
+  }
+
+  on(event, callback) {
+    this._events = this._events || {};
+    this._events[event] = this._events[event] || [];
+    this._events[event].push(callback);
+  }
+
+  _raise(event, data) {
+    if (this._events && this._events[event]) {
+      for (const callback of this._events[event]) {
+        callback(this, data);
+      }
+    }
+  }
+};
+
+sidebar.ModelSidebar = class {
+  constructor(host, model, graph, clicked_output_name, clicked_input_name) {
+    this._host = host;
+    this._view = this._host.view;
+    this._model = model;
+    this._elements = [];
+    this.clicked_output_name = clicked_output_name;
+    this.clicked_input_name = clicked_input_name;
+
+    if (model.format) {
+      this._addProperty('format', new sidebar.ValueTextView(this._host, model.format));
+    }
+    if (model.producer) {
+      this._addProperty('producer', new sidebar.ValueTextView(this._host, model.producer));
+    }
+    if (model.source) {
+      this._addProperty('source', new sidebar.ValueTextView(this._host, model.source));
+    }
+    if (model.name) {
+      this._addProperty('name', new sidebar.ValueTextView(this._host, model.name));
+    }
+    if (model.version) {
+      this._addProperty('version', new sidebar.ValueTextView(this._host, model.version));
+    }
+    if (model.description) {
+      this._addProperty('description', new sidebar.ValueTextView(this._host, model.description));
+    }
+    if (model.author) {
+      this._addProperty('author', new sidebar.ValueTextView(this._host, model.author));
+    }
+    if (model.company) {
+      this._addProperty('company', new sidebar.ValueTextView(this._host, model.company));
+    }
+    if (model.license) {
+      this._addProperty('license', new sidebar.ValueTextView(this._host, model.license));
+    }
+
+    this._addProperty(
+      'domain',
+      new sidebar.ValueTextView(this._host, model.domain, undefined, (domain_value) => {
+        this._host._view.modifier.changeModelProperties('domain', domain_value);
+      })
+    );
+
+    if (model.imports) {
+      this._addProperty(
+        'imports',
+        new sidebar.ValueTextView(this._host, model.imports, undefined, (import_value, index) => {
+          let has_error = false;
+          let splited_import_value = import_value.split(' v');
+          if (import_value.length == 0) {
+            this._host._view.modifier.changeModelProperties('imports', [], index);
+          } else if (splited_import_value.length == 1) {
+            if (import_value.includes(' ')) {
+              return true;
+            }
+            this._host._view.modifier.changeModelProperties('imports', [import_value], index);
+          } else if (splited_import_value.length == 2) {
+            let [domain, version] = splited_import_value;
+            if (!version.match('^[0-9]{1,10}$')) {
+              has_error = true;
+            } else {
+              this._host._view.modifier.changeModelProperties('imports', [domain, parseInt(version)], index);
+            }
+          } else {
+            has_error = true;
+          }
+          return has_error;
+        })
+      );
+    }
+
+    if (model.runtime) {
+      this._addProperty('runtime', new sidebar.ValueTextView(this._host, model.runtime));
+    }
+
+    const metadata = model.metadata;
+    if (metadata) {
+      for (const property of model.metadata) {
+        this._addProperty(property.name, new sidebar.ValueTextView(this._host, property.value));
+      }
+    }
+
+    const graphs = Array.isArray(model.graphs) ? model.graphs : [];
+    if (graphs.length > 1) {
+      const graphSelector = new sidebar.SelectView(this._host, model.graphs, graph);
+      graphSelector.on('change', (sender, data) => {
+        this._raise('update-active-graph', data);
+      });
+      this._addProperty('subgraph', graphSelector);
+    }
+
+    if (graph) {
+      if (graph.version) {
+        this._addProperty('version', new sidebar.ValueTextView(this._host, graph.version));
+      }
+      if (graph.type) {
+        this._addProperty('type', new sidebar.ValueTextView(this._host, graph.type));
+      }
+      if (graph.tags) {
+        this._addProperty('tags', new sidebar.ValueTextView(this._host, graph.tags));
+      }
+      if (graph.description) {
+        this._addProperty('description', new sidebar.ValueTextView(this._host, graph.description));
+      }
+      if (Array.isArray(graph.inputs) && graph.inputs.length > 0) {
+        this._addHeader('Inputs');
+        for (const [index, input] of graph.inputs.entries()) {
+          this.addArgument(input.name, input, index, 'model_input', checkInputValidChars);
+        }
+      }
+      if (Array.isArray(graph.outputs) && graph.outputs.length > 0) {
+        this._addHeader('Outputs');
+        // for (const output of graph.outputs) {
+        for (const [index, output] of graph.outputs.entries()) {
+          // this.addArgument(output.name, output, index, 'model_output');
+          this.addArgument(output.modelNodeName, output, index, 'model_output');
+        }
+      }
+    }
+
+    this._view_elements = this._host.document.createElement('div');
+    for (const elem of this._elements) {
+      this._view_elements.appendChild(elem);
+    }
+    this._view_elements.style.flex = 1;
+
+    this._modifer_element = this.add_modifer_panel();
+  }
+
+  render() {
+    return [this._view_elements, this._modifer_element];
+  }
+
+  add_separator(elment, className) {
+    const separator = this._host.document.createElement('div');
+    separator.className = className;
+    elment.push(separator);
+  }
+
+  add_modifer_panel() {
+    const modiferPanelElem = this._host.document.createElement('div');
+    modiferPanelElem.className = 'sidebar-view-modifer-panel';
+
+    modiferPanelElem.appendChild(this.init_modifer_button());
+    if (this.clicked_input_name) {
+      modiferPanelElem.appendChild(this.init_modifer_toolbar());
+    }
+    return modiferPanelElem;
+  }
+
+  init_modifer_button() {
+    const modiferButtonsElem = this._host.document.createElement('div');
+    modiferButtonsElem.className = 'sidebar-view-modifer-buttons';
+
+    if (this.clicked_input_name) {
+      const removeInputElem = this._host.document.createElement('button');
+      removeInputElem.innerText = 'Remove Input';
+      removeInputElem.addEventListener('click', () => {
+        this._host._view.modifier.deleteModelInput(this.clicked_input_name);
+      });
+      modiferButtonsElem.appendChild(removeInputElem);
+    }
+    if (this.clicked_output_name) {
+      const removeOutputElem = this._host.document.createElement('button');
+      removeOutputElem.innerText = 'Remove Output';
+      removeOutputElem.addEventListener('click', () => {
+        this._host._view.modifier.deleteModelOutput(this.clicked_output_name);
+      });
+      modiferButtonsElem.appendChild(removeOutputElem);
+    }
+
+    return modiferButtonsElem;
+  }
+
+  init_modifer_toolbar() {
+    const modiferToolbarElem = this._host.document.createElement('div');
+    modiferToolbarElem.className = 'sidebar-view-modifer-toolbar';
+
+    const icon_shape = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute(
+      'd',
+      `M8.932.727c-.243-.97-1.62-.97-1.864 0l-.071.286a.96.96 0 0
+            1-1.622.434l-.205-.211c-.695-.719-1.888-.03-1.613.931l.08.284a.96.96 0 0 1-1.186
+            1.187l-.284-.081c-.96-.275-1.65.918-.931 1.613l.211.205a.96.96 0 0 1-.434 1.622l-.286.071c-.97.243-.97
+            1.62 0 1.864l.286.071a.96.96 0 0 1 .434 1.622l-.211.205c-.719.695-.03 1.888.931 1.613l.284-.08a.96.96
+            0 0 1 1.187 1.187l-.081.283c-.275.96.918 1.65 1.613.931l.205-.211a.96.96 0 0 1 1.622.434l.071.286c.243.97
+            1.62.97 1.864 0l.071-.286a.96.96 0 0 1 1.622-.434l.205.211c.695.719 1.888.03 1.613-.931l-.08-.284a.96.96
+            0 0 1 1.187-1.187l.283.081c.96.275 1.65-.918.931-1.613l-.211-.205a.96.96 0 0 1
+            .434-1.622l.286-.071c.97-.243.97-1.62 0-1.864l-.286-.071a.96.96 0 0
+            1-.434-1.622l.211-.205c.719-.695.03-1.888-.931-1.613l-.284.08a.96.96 0 0
+            1-1.187-1.186l.081-.284c.275-.96-.918-1.65-1.613-.931l-.205.211a.96.96 0 0
+            1-1.622-.434L8.932.727zM8 12.997a4.998 4.998 0 1 1 0-9.995 4.998 4.998 0 0 1 0 9.996z`
+    );
+
+    icon_shape.appendChild(path);
+    icon_shape.setAttribute('ViewBox', '0 0 16 16');
+    modiferToolbarElem.appendChild(
+      this.init_helper(icon_shape, 'Set Input Shape', () => {
+        // show dialog
+        let default_shape = this._host.get_default_input_shape(this.clicked_input_name);
+
+        let input_change = this._host.document.getElementById('change-input-shape-input');
+        input_change.value = default_shape;
+        let dialog = this._host.document.getElementById('change-input-shape-dialog');
+        dialog.getElementsByClassName('message')[0].innerText = `Change the shape of input: ${this.clicked_input_name}`;
+        this._host.show_confirm_dialog(dialog).then((is_not_cancel) => {
+          if (!is_not_cancel) {
+            return;
+          }
+
+          this._host.view.modifier.changeInputSize(this.clicked_input_name, input_change.dims);
+          this._view.modifier.refreshModelInputOutput();
+
+          if (dialog.getElementsByClassName('checkbox-shape-change')[0].checked) {
+            let data = this._host.build_download_data(true);
+            data.postprocess_args.shapeInf = true;
+            this._host.take_effect_modify('/download', data, false);
+          }
+          this._view._sidebar.close();
+        });
+      })
+    );
+
+    let icon_dynamic = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const path_dynamic = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path_dynamic.setAttribute(
+      'd',
+      `M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464
+            1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311c.446.82.023
+            1.841-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872
+            2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413
+            1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705
+            1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413 1.4-2.397 0-2.81l-.34-.1a1.464
+            1.464 0 0 1-.872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0
+            1-2.105-.872l-.1-.34zM8 10.93a2.929 2.929 0 1 1 0-5.86 2.929 2.929 0 0 1 0 5.858z`
+    );
+
+    icon_dynamic.appendChild(path_dynamic);
+    icon_dynamic.setAttribute('ViewBox', '0 0 16 16');
+
+    modiferToolbarElem.appendChild(
+      this.init_helper(icon_dynamic, 'Batch Dynamic', () => {
+        let dialog = this._host.document.getElementById('dynamic-batch-size-dialog');
+        this._host.show_confirm_dialog(dialog).then((is_not_cancel) => {
+          if (!is_not_cancel) {
+            return;
+          }
+          this._host.change_batch_size('dynamic');
+          if (dialog.getElementsByClassName('checkbox-shape-change')[0].checked) {
+            let data = this._host.build_download_data(true);
+            data.postprocess_args.shapeInf = true;
+            this._host.take_effect_modify('/download', data, false);
+          }
+          this._view._sidebar.close();
+        });
+      })
+    );
+
+    let icon_fix = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    const path_fix1 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path_fix1.setAttribute(
+      'd',
+      `M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0
+            0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z`
+    );
+
+    const path_fix2 = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path_fix2.setAttribute(
+      'd',
+      `M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0
+            1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52
+            1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901
+            3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873
+             0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1
+             .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0
+             1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0
+             1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693
+             1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835
+             1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873
+             1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0
+              0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945
+              8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06
+              4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z`
+    );
+
+    icon_fix.appendChild(path_fix1);
+    icon_fix.appendChild(path_fix2);
+    icon_fix.setAttribute('ViewBox', '0 0 16 16');
+
+    modiferToolbarElem.appendChild(
+      this.init_helper(icon_fix, 'Batch Fixed', () => {
+        let dialog = this._host.document.getElementById('fixed-batch-size-dialog');
+        this._host.show_confirm_dialog(dialog).then((is_not_cancel) => {
+          if (!is_not_cancel) {
+            return;
+          }
+          let input_change = this._host.document.getElementById('fixed-batch-size-input');
+          this._host.change_batch_size(input_change.value);
+
+          if (dialog.getElementsByClassName('checkbox-shape-change')[0].checked) {
+            let data = this._host.build_download_data(true);
+            data.postprocess_args.shapeInf = true;
+            this._host.take_effect_modify('/download', data, false);
+          }
+          this._view._sidebar.close();
+        });
+      })
+    );
+
+    return modiferToolbarElem;
+  }
+
+  init_helper(icon, title, callback) {
+    const helperElem = this._host.document.createElement('div');
+    helperElem.style.cursor = 'default';
+
+    const iconElem = this._host.document.createElement('div');
+    iconElem.classList.add('icon');
+    iconElem.appendChild(icon);
+    icon.setAttribute('width', 16);
+    icon.setAttribute('height', 16);
+    helperElem.appendChild(iconElem);
+
+    const titleElem = this._host.document.createElement('div');
+    titleElem.classList.add('title');
+    titleElem.innerText = title;
+    helperElem.appendChild(titleElem);
+    helperElem.addEventListener('click', callback);
+    return helperElem;
+  }
+
+  _addHeader(title) {
+    const headerElement = this._host.document.createElement('div');
+    headerElement.className = 'sidebar-view-header';
+    headerElement.innerText = title.toUpperCase();
+    this._elements.push(headerElement);
+  }
+
+  _addProperty(name, value) {
+    const item = new sidebar.NameValueView(this._host, name, value);
+    this._elements.push(item.render());
+  }
+
+  _addButton(title) {
+    const buttonElement = this._host.document.createElement('button');
+    buttonElement.className = 'sidebar-view-button';
+    buttonElement.innerText = title;
+    this._elements.push(buttonElement);
+
+    if (title == 'Delete the output') {
+      buttonElement.addEventListener('click', () => {
+        this._host._view.modifier.deleteModelOutput(this.clicked_output_name);
+      });
+    }
+
+    if (title == 'Delete the input') {
+      buttonElement.addEventListener('click', () => {
+        this._host._view.modifier.deleteModelInput(this.clicked_input_name);
+      });
+    }
+  }
+
+  _addInput(title, default_value, input_event, placeholder) {
+    var fixed_batch_size_title = this._host.document.createElement('span');
+    fixed_batch_size_title.innerHTML = `${title}&nbsp;&nbsp;&nbsp;`;
+    fixed_batch_size_title.setAttribute('style', 'font-size:14px');
+    this._elements.push(fixed_batch_size_title);
+
+    var fixed_batch_size_value = this._host.document.createElement('INPUT');
+    fixed_batch_size_value.setAttribute('type', 'text');
+    fixed_batch_size_value.setAttribute('size', '15');
+    fixed_batch_size_value.setAttribute('value', default_value);
+    if (placeholder) {
+      fixed_batch_size_value.setAttribute('placeholder', placeholder);
+    }
+    fixed_batch_size_value.addEventListener('input', (e) => {
+      let has_error = input_event(e.target.value.trim(), e);
+      if (has_error) {
+        fixed_batch_size_value.style.borderColor = 'red';
+      } else {
+        fixed_batch_size_value.style.borderColor = null;
+      }
+    });
+
+    this._elements.push(fixed_batch_size_value);
+  }
+
+  addArgument(name, argument, index, arg_type, checker) {
+    // const view = new sidebar.ParameterView(this._host, argument);
+    const view = new sidebar.ParameterView(this._host, argument, arg_type, index, name);
+    view.toggle();
+    const item = new sidebar.NameValueView(this._host, name, view, checker);
+    this._elements.push(item.render());
+  }
+
+  on(event, callback) {
+    this._events = this._events || {};
+    this._events[event] = this._events[event] || [];
+    this._events[event].push(callback);
+  }
+
+  _raise(event, data) {
+    if (this._events && this._events[event]) {
+      for (const callback of this._events[event]) {
+        callback(this, data);
+      }
+    }
+  }
+};
   
   sidebar.DocumentationSidebar = class {
     constructor(host, metadata) {
