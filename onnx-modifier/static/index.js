@@ -1957,258 +1957,247 @@ host.BrowserHost.BrowserFileContext = class {
 };
 
 host.BrowserHost.BrowserContext = class {
+
   constructor(host, url, identifier, stream) {
-    this._host = host;
-    this._stream = stream;
-    if (identifier) {
-      this._identifier = identifier;
-      this._base = url;
-      if (this._base.endsWith('/')) {
-        this._base.substring(0, this._base.length - 1);
+      this._host = host;
+      this._stream = stream;
+      if (identifier) {
+          this._identifier = identifier;
+          this._base = url;
+          if (this._base.endsWith('/')) {
+              this._base.substring(0, this._base.length - 1);
+          }
       }
-    } else {
-      const parts = url.split('?')[0].split('/');
-      this._identifier = parts.pop();
-      this._base = parts.join('/');
-    }
+      else {
+          const parts = url.split('?')[0].split('/');
+          this._identifier = parts.pop();
+          this._base = parts.join('/');
+      }
   }
 
   get identifier() {
-    return this._identifier;
+      return this._identifier;
   }
 
   get stream() {
-    return this._stream;
+      return this._stream;
   }
 
   request(file, encoding, base) {
-    return this._host.request(file, encoding, base === undefined ? this._base : base);
+      return this._host.request(file, encoding, base === undefined ? this._base : base);
   }
 
   require(id) {
-    return this._host.require(id);
+      return this._host.require(id);
   }
 
   exception(error, fatal) {
-    this._host.exception(error, fatal);
+      this._host.exception(error, fatal);
   }
 };
 
-if (typeof TextDecoder === 'undefined') {
+
+
+if (typeof TextDecoder === "undefined") {
   TextDecoder = function TextDecoder(encoding) {
-    this._encoding = encoding;
+      this._encoding = encoding;
   };
   TextDecoder.prototype.decode = function decode(buffer) {
-    let result = '';
-    const length = buffer.length;
-    let i = 0;
-    switch (this._encoding) {
-      case 'utf-8':
-        while (i < length) {
-          const c = buffer[i++];
-          switch (c >> 4) {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            case 6:
-            case 7: {
-              result += String.fromCharCode(c);
+      let result = '';
+      const length = buffer.length;
+      let i = 0;
+      switch (this._encoding) {
+          case 'utf-8':
+              while (i < length) {
+                  const c = buffer[i++];
+                  switch (c >> 4) {
+                      case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7: {
+                          result += String.fromCharCode(c);
+                          break;
+                      }
+                      case 12: case 13: {
+                          const c2 = buffer[i++];
+                          result += String.fromCharCode(((c & 0x1F) << 6) | (c2 & 0x3F));
+                          break;
+                      }
+                      case 14: {
+                          const c2 = buffer[i++];
+                          const c3 = buffer[i++];
+                          result += String.fromCharCode(((c & 0x0F) << 12) | ((c2 & 0x3F) << 6) | ((c3 & 0x3F) << 0));
+                          break;
+                      }
+                      case 15: {
+                          const c2 = buffer[i++];
+                          const c3 = buffer[i++];
+                          const c4 = buffer[i++];
+                          result += String.fromCodePoint(((c & 0x07) << 18) | ((c2 & 0x3F) << 12) | ((c3 & 0x3F) << 6) | (c4 & 0x3F));
+                      }
+                  }
+              }
               break;
-            }
-            case 12:
-            case 13: {
-              const c2 = buffer[i++];
-              result += String.fromCharCode(((c & 0x1f) << 6) | (c2 & 0x3f));
+          case 'ascii':
+              while (i < length) {
+                  result += String.fromCharCode(buffer[i++]);
+              }
               break;
-            }
-            case 14: {
-              const c2 = buffer[i++];
-              const c3 = buffer[i++];
-              result += String.fromCharCode(((c & 0x0f) << 12) | ((c2 & 0x3f) << 6) | ((c3 & 0x3f) << 0));
-              break;
-            }
-            case 15: {
-              const c2 = buffer[i++];
-              const c3 = buffer[i++];
-              const c4 = buffer[i++];
-              result += String.fromCodePoint(
-                ((c & 0x07) << 18) | ((c2 & 0x3f) << 12) | ((c3 & 0x3f) << 6) | (c4 & 0x3f)
-              );
-            }
-          }
-        }
-        break;
-      case 'ascii':
-        while (i < length) {
-          result += String.fromCharCode(buffer[i++]);
-        }
-        break;
-    }
-    return result;
+      }
+      return result;
   };
 }
 
 if (typeof TextEncoder === 'undefined') {
-  TextEncoder = function TextEncoder() {};
+  TextEncoder = function TextEncoder() {
+  };
   TextEncoder.prototype.encode = function encode(str) {
-    'use strict';
-    const length = str.length;
-    let resPos = -1;
-    const resArr = typeof Uint8Array === 'undefined' ? new Array(length * 2) : new Uint8Array(length * 3);
-    for (let point = 0, nextcode = 0, i = 0; i !== length; ) {
-      point = str.charCodeAt(i);
-      i += 1;
-      if (point >= 0xd800 && point <= 0xdbff) {
-        if (i === length) {
-          resArr[(resPos += 1)] = 0xef;
-          resArr[(resPos += 1)] = 0xbf;
-          resArr[(resPos += 1)] = 0xbd;
-          break;
-        }
-        nextcode = str.charCodeAt(i);
-        if (nextcode >= 0xdc00 && nextcode <= 0xdfff) {
-          point = (point - 0xd800) * 0x400 + nextcode - 0xdc00 + 0x10000;
+      "use strict";
+      const length = str.length;
+      let resPos = -1;
+      const resArr = typeof Uint8Array === "undefined" ? new Array(length * 2) : new Uint8Array(length * 3);
+      for (let point = 0, nextcode = 0, i = 0; i !== length;) {
+          point = str.charCodeAt(i);
           i += 1;
-          if (point > 0xffff) {
-            resArr[(resPos += 1)] = (0x1e << 3) | (point >>> 18);
-            resArr[(resPos += 1)] = (0x2 << 6) | ((point >>> 12) & 0x3f);
-            resArr[(resPos += 1)] = (0x2 << 6) | ((point >>> 6) & 0x3f);
-            resArr[(resPos += 1)] = (0x2 << 6) | (point & 0x3f);
-            continue;
+          if (point >= 0xD800 && point <= 0xDBFF) {
+              if (i === length) {
+                  resArr[resPos += 1] = 0xef; resArr[resPos += 1] = 0xbf;
+                  resArr[resPos += 1] = 0xbd; break;
+              }
+              nextcode = str.charCodeAt(i);
+              if (nextcode >= 0xDC00 && nextcode <= 0xDFFF) {
+                  point = (point - 0xD800) * 0x400 + nextcode - 0xDC00 + 0x10000;
+                  i += 1;
+                  if (point > 0xffff) {
+                      resArr[resPos += 1] = (0x1e << 3) | (point >>> 18);
+                      resArr[resPos += 1] = (0x2 << 6) | ((point >>> 12) & 0x3f);
+                      resArr[resPos += 1] = (0x2 << 6) | ((point >>> 6) & 0x3f);
+                      resArr[resPos += 1] = (0x2 << 6) | (point & 0x3f);
+                      continue;
+                  }
+              }
+              else {
+                  resArr[resPos += 1] = 0xef; resArr[resPos += 1] = 0xbf;
+                  resArr[resPos += 1] = 0xbd; continue;
+              }
           }
-        } else {
-          resArr[(resPos += 1)] = 0xef;
-          resArr[(resPos += 1)] = 0xbf;
-          resArr[(resPos += 1)] = 0xbd;
-          continue;
-        }
+          if (point <= 0x007f) {
+              resArr[resPos += 1] = (0x0 << 7) | point;
+          }
+          else if (point <= 0x07ff) {
+              resArr[resPos += 1] = (0x6 << 5) | (point >>> 6);
+              resArr[resPos += 1] = (0x2 << 6) | (point & 0x3f);
+          }
+          else {
+              resArr[resPos += 1] = (0xe << 4) | (point >>> 12);
+              resArr[resPos += 1] = (0x2 << 6) | ((point >>> 6) & 0x3f);
+              resArr[resPos += 1] = (0x2 << 6) | (point & 0x3f);
+          }
       }
-      if (point <= 0x007f) {
-        resArr[(resPos += 1)] = (0x0 << 7) | point;
-      } else if (point <= 0x07ff) {
-        resArr[(resPos += 1)] = (0x6 << 5) | (point >>> 6);
-        resArr[(resPos += 1)] = (0x2 << 6) | (point & 0x3f);
-      } else {
-        resArr[(resPos += 1)] = (0xe << 4) | (point >>> 12);
-        resArr[(resPos += 1)] = (0x2 << 6) | ((point >>> 6) & 0x3f);
-        resArr[(resPos += 1)] = (0x2 << 6) | (point & 0x3f);
+      if (typeof Uint8Array !== "undefined") {
+          return new Uint8Array(resArr.buffer.slice(0, resPos + 1));
       }
-    }
-    if (typeof Uint8Array !== 'undefined') {
-      return new Uint8Array(resArr.buffer.slice(0, resPos + 1));
-    } else {
-      return resArr.length === resPos + 1 ? resArr : resArr.slice(0, resPos + 1);
-    }
+      else {
+          return resArr.length === resPos + 1 ? resArr : resArr.slice(0, resPos + 1);
+      }
   };
   TextEncoder.prototype.toString = function () {
-    return '[object TextEncoder]';
+      return "[object TextEncoder]";
   };
   try {
-    Object.defineProperty(TextEncoder.prototype, 'encoding', {
-      get: function () {
-        if (Object.prototype.isPrototypeOf.call(TextEncoder.prototype, this)) {
-          return 'utf-8';
-        } else {
-          throw TypeError('Illegal invocation');
-        }
-      },
-    });
-  } catch (e) {
-    TextEncoder.prototype.encoding = 'utf-8';
+      Object.defineProperty(TextEncoder.prototype, "encoding", {
+          get: function () {
+              if (Object.prototype.isPrototypeOf.call(TextEncoder.prototype, this)) {
+                  return "utf-8";
+              }
+              else {
+                  throw TypeError("Illegal invocation");
+              }
+          }
+      });
   }
-  if (typeof Symbol !== 'undefined') {
-    TextEncoder.prototype[Symbol.toStringTag] = 'TextEncoder';
+  catch (e) {
+      TextEncoder.prototype.encoding = "utf-8";
+  }
+  if (typeof Symbol !== "undefined") {
+      TextEncoder.prototype[Symbol.toStringTag] = "TextEncoder";
   }
 }
 
 if (typeof URLSearchParams === 'undefined') {
   URLSearchParams = function URLSearchParams(search) {
-    const decode = (str) => {
-      return str.replace(/[ +]/g, '%20').replace(/(%[a-f0-9]{2})+/gi, (match) => {
-        return decodeURIComponent(match);
-      });
-    };
-    this._dict = {};
-    if (typeof search === 'string') {
-      search = search.indexOf('?') === 0 ? search.substring(1) : search;
-      const properties = search.split('&');
-      for (const property of properties) {
-        const index = property.indexOf('=');
-        const name = index > -1 ? decode(property.substring(0, index)) : decode(property);
-        const value = index > -1 ? decode(property.substring(index + 1)) : '';
-        if (!Object.prototype.hasOwnProperty.call(this._dict, name)) {
-          this._dict[name] = [];
-        }
-        this._dict[name].push(value);
+      const decode = (str) => {
+          return str.replace(/[ +]/g, '%20').replace(/(%[a-f0-9]{2})+/ig, (match) => { return decodeURIComponent(match); });
+      };
+      this._dict = {};
+      if (typeof search === 'string') {
+          search = search.indexOf('?') === 0 ? search.substring(1) : search;
+          const properties = search.split('&');
+          for (const property of properties) {
+              const index = property.indexOf('=');
+              const name = (index > -1) ? decode(property.substring(0, index)) : decode(property);
+              const value = (index > -1) ? decode(property.substring(index + 1)) : '';
+              if (!Object.prototype.hasOwnProperty.call(this._dict, name)) {
+                  this._dict[name] = [];
+              }
+              this._dict[name].push(value);
+          }
       }
-    }
   };
   URLSearchParams.prototype.get = function (name) {
-    return Object.prototype.hasOwnProperty.call(this._dict, name) ? this._dict[name][0] : null;
+      return Object.prototype.hasOwnProperty.call(this._dict, name) ? this._dict[name][0] : null;
   };
 }
 
 if (!HTMLCanvasElement.prototype.toBlob) {
   HTMLCanvasElement.prototype.toBlob = function (callback, type, quality) {
-    const canvas = this;
-    setTimeout(function () {
-      const data = atob(canvas.toDataURL(type, quality).split(',')[1]);
-      const length = data.length;
-      const buffer = new Uint8Array(length);
-      for (let i = 0; i < length; i++) {
-        buffer[i] = data.charCodeAt(i);
-      }
-      callback(new Blob([buffer], { type: type || 'image/png' }));
-    });
+      const canvas = this;
+      setTimeout(function () {
+          const data = atob(canvas.toDataURL(type, quality).split(',')[1]);
+          const length = data.length;
+          const buffer = new Uint8Array(length);
+          for (let i = 0; i < length; i++) {
+              buffer[i] = data.charCodeAt(i);
+          }
+          callback(new Blob([buffer], { type: type || 'image/png' }));
+      });
   };
 }
 
 if (!('scrollBehavior' in window.document.documentElement.style)) {
   const __scrollTo__ = Element.prototype.scrollTo;
   Element.prototype.scrollTo = function (options) {
-    if (options === undefined) {
-      return;
-    }
-    if (
-      options === null ||
-      typeof options !== 'object' ||
-      options.behavior === undefined ||
-      arguments[0].behavior === 'auto' ||
-      options.behavior === 'instant'
-    ) {
-      if (__scrollTo__) {
-        __scrollTo__.apply(this, arguments);
+      if (options === undefined) {
+          return;
       }
-      return;
-    }
-    const now = () => {
-      return window.performance && window.performance.now ? window.performance.now() : Date.now();
-    };
-    const ease = (k) => {
-      return 0.5 * (1 - Math.cos(Math.PI * k));
-    };
-    const step = (context) => {
-      const value = ease(Math.min((now() - context.startTime) / 468, 1));
-      const x = context.startX + (context.x - context.startX) * value;
-      const y = context.startY + (context.y - context.startY) * value;
-      context.element.scrollLeft = x;
-      context.element.scrollTop = y;
-      if (x !== context.x || y !== context.y) {
-        window.requestAnimationFrame(step.bind(window, context));
+      if (options === null || typeof options !== 'object' || options.behavior === undefined || arguments[0].behavior === 'auto' || options.behavior === 'instant') {
+          if (__scrollTo__) {
+              __scrollTo__.apply(this, arguments);
+          }
+          return;
       }
-    };
-    const context = {
-      element: this,
-      x: typeof options.left === 'undefined' ? this.scrollLeft : ~~options.left,
-      y: typeof options.top === 'undefined' ? this.scrollTop : ~~options.top,
-      startX: this.scrollLeft,
-      startY: this.scrollTop,
-      startTime: now(),
-    };
-    step(context);
+      const now = () => {
+          return window.performance && window.performance.now ? window.performance.now() : Date.now();
+      };
+      const ease = (k) => {
+          return 0.5 * (1 - Math.cos(Math.PI * k));
+      };
+      const step = (context) => {
+          const value = ease(Math.min((now() - context.startTime) / 468, 1));
+          const x = context.startX + (context.x - context.startX) * value;
+          const y = context.startY + (context.y - context.startY) * value;
+          context.element.scrollLeft = x;
+          context.element.scrollTop = y;
+          if (x !== context.x || y !== context.y) {
+              window.requestAnimationFrame(step.bind(window, context));
+          }
+      };
+      const context = {
+          element: this,
+          x: typeof options.left === 'undefined' ? this.scrollLeft : ~~options.left,
+          y: typeof options.top === 'undefined' ? this.scrollTop : ~~options.top,
+          startX: this.scrollLeft,
+          startY: this.scrollTop,
+          startTime: now()
+      };
+      step(context);
   };
 }
 
