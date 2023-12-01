@@ -50,8 +50,7 @@ static void pgmSave(unsigned char *buf, int wrap, int xsize, int ysize, std::str
     }
 }
 
-static int decode(AVCodecContext *dec_ctx, AVFrame *frame, AVPacket *pkt,
-                   const char *filename)
+static int decode(AVCodecContext *dec_ctx, AVFrame *frame, AVPacket *pkt, const char *filename)
 {
     int ret;
 
@@ -171,14 +170,18 @@ int main(int argc, char **argv)
             data      += ret;
             dataSize -= ret;
 
-            if (pkt->size) {
-                ret = decode(c, frame, pkt, outfilename);
-                if (ret < 0) {
-                    fprintf(stderr, "Error while decoding\n");
-                    exit(1);
-                }
-            } else if (eof) {
+            if (!pkt->size && eof) {
                 break;
+            }
+
+            if (!pkt->size) {
+                continue
+            }
+
+            ret = decode(c, frame, pkt, outfilename);
+            if (ret < 0) {
+                fprintf(stderr, "Error while decoding\n");
+                exit(1);
             }
         }
     } while (!eof);

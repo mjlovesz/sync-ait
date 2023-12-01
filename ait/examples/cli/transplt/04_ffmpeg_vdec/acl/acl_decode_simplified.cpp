@@ -155,21 +155,15 @@ static void getEveryFrame(int32_t chanId, uint8_t* const inputFileBuf, uint32_t*
 {
     int32_t i = 0;
     int32_t usedBytes = 0;
-    int32_t readLen = 0;
     uint32_t count = 0;
-    uint8_t* bufPointer = NULL;
+    int32_t readLen = fileSize - usedBytes;
+    uint8_t* bufPointer = inputFileBuf + usedBytes;
     bool isFindStart = false;
     bool isFindEnd = false;
 
-    while (1) {
+    while (readLen > 0) {
         isFindStart = false;
         isFindEnd = false;
-
-        bufPointer = inputFileBuf + usedBytes;
-        readLen = fileSize - usedBytes;
-        if (readLen <= 0) {
-            break;
-        }
 
         // H264
         for (i = 0; i < readLen - 8; i++) {
@@ -211,6 +205,9 @@ static void getEveryFrame(int32_t chanId, uint8_t* const inputFileBuf, uint32_t*
         g_frame_len[count] = readLen; // Record frame size
         count++;
         usedBytes = usedBytes + readLen;
+
+        bufPointer = inputFileBuf + usedBytes;
+        readLen = fileSize - usedBytes;
     }
     // Frame count
     *frameCount = count;

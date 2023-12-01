@@ -308,21 +308,15 @@ static void getEveryFrame(int32_t chanId, uint8_t* const inputFileBuf, uint32_t*
 {
     int32_t i = 0;
     int32_t usedBytes = 0;
-    int32_t readLen = 0;
     uint32_t count = 0;
-    uint8_t* bufPointer = NULL;
+    int32_t readLen = fileSize - usedBytes;
+    uint8_t* bufPointer = inputFileBuf + usedBytes;
     bool isFindStart = false;
     bool isFindEnd = false;
 
-    while (1) {
+    while (readLen > 0) {
         isFindStart = false;
         isFindEnd = false;
-
-        bufPointer = inputFileBuf + usedBytes;
-        readLen = fileSize - usedBytes;
-        if (readLen <= 0) {
-            break;
-        }
 
         // H264
         for (i = 0; i < readLen - 8; i++) {
@@ -364,6 +358,9 @@ static void getEveryFrame(int32_t chanId, uint8_t* const inputFileBuf, uint32_t*
         g_frame_len[count] = readLen; // Record frame size
         count++;
         usedBytes = usedBytes + readLen;
+
+        bufPointer = inputFileBuf + usedBytes;
+        readLen = fileSize - usedBytes;
     }
     // Frame count
     *frameCount = count;
@@ -488,10 +485,7 @@ static void* sendStream(void* const chanNum)
     uint32_t circleTimes = 0;
     uint32_t sendOneFrameCnt = 0;
     int32_t timeOut = 1000;
-    while (1) {
-        if (g_send_exit_state == 1) {
-            break;
-        }
+    while (g_send_exit_state == 0) {
         stream.addr = g_frame_addr[readCount]; // Configure input stream address
         stream.len = g_frame_len[readCount]; // Configure input stream size
         stream.end_of_frame = HI_TRUE; // Configure flage of frame end
@@ -602,10 +596,7 @@ static void* getPic(void* const chanNum)
     int32_t writeFileCnt = 1;
     hi_vdec_supplement_info stSupplement{};
 
-    while (true) {
-        if (g_get_exit_state == 1) {
-            break;
-        }
+    while (g_get_exit_state == 0) {
         ret = hi_mpi_vdec_get_frame(chanId, &frame, &stSupplement, &stream, timeOut);
         if (ret != HI_SUCCESS) {
             // 500us
