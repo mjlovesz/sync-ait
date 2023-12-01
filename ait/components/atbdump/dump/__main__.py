@@ -29,12 +29,12 @@ class DumpCommand(BaseCommand):
             '-sd',
             required=False,
             dest="save_desc",
-            type=str2bool,
+            action='store_true',
             default=False,
             help='0 When save tensor, 1 When only save tensor description instead of tensor')
         
         parser.add_argument(
-            '--save-tensor-ids',
+            '--save-operation-ids',
             '-ids',
             required=False,
             dest="ids",
@@ -83,7 +83,7 @@ class DumpCommand(BaseCommand):
             '-tiling',
             required=False,
             dest="tiling",
-            type=str2bool,
+            action='store_true',
             default=False,
             help='Dump all data of child operations if True, do nothing if False')
         

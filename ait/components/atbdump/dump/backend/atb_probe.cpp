@@ -18,37 +18,9 @@
 #include "atb_probe.h"
 #include "binfile.h"
 
-static bool directoryExists(const std::string &path)
+static bool isPrefix(const std::string &str, const std::string &prefix)
 {
-    struct stat info;
-    return stat(path.c_str(), &info) == 0 && S_ISDIR(info.st_mode);
-}
-
-static bool CheckDirectory(const std::string &directory)
-{
-    std::vector<std::string> dirs = SplitString(directory, '/');
-    std::string curDir = "";
-    for (auto &dir : dirs)
-    {
-        curDir += dir + "/";
-        if (!directoryExists(curDir))
-        {
-            int status = mkdir(curDir.c_str(), BIN_FILE_MODE);
-            if (!status)
-            {
-                std::cout << "directory created: " << curDir << std::endl;
-            }
-            else {
-                std::cout << "cannot create directory: " << cueDir << std::endl;
-            }
-        }
-    }
-    // 检查目录是否存在，如果不存在则创建目录和文件
-    if (!directoryExists(directory)) {
-        std::cout << "cannot create directory: " << directory << std::endl;
-        return false;
-    }
-    return true;
+    return str.compare(0, prefix.length(), prefix) == 0;
 }
 
 static std::vector<std::string> SplitString(const std::string &ss, const char &tar)
@@ -66,6 +38,40 @@ static std::vector<std::string> SplitString(const std::string &ss, const char &t
 }
 
 
+static bool directoryExists(const std::string &path)
+{
+    struct stat info;
+    return stat(path.c_str(), &info) == 0 && S_ISDIR(info.st_mode);
+}
+
+static bool CheckDirectory(const std::string &directory)
+{
+    std::vector<std::string> dirs = SplitString(directory, '/');
+    std::string curDir = "";
+    for (auto &dir : dirs)
+    {
+        curDir += dir + "/";
+        if (!directoryExists(curDir))
+        {
+            int status = mkdir(curDir.c_str(), 0755);
+            if (!status)
+            {
+                std::cout << "directory created: " << curDir << std::endl;
+            }
+            else {
+                std::cout << "cannot create directory: " << cueDir << std::endl;
+            }
+        }
+    }
+    // 检查目录是否存在，如果不存在则创建目录和文件
+    if (!directoryExists(directory)) {
+        std::cout << "cannot create directory: " << directory << std::endl;
+        return false;
+    }
+    return true;
+}
+
+
 bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::string &optype)
 {
     const char *vid = std::getenv("ATB_SAVE_TENSOR_IDS"); // 应该是20_1_9,1_23,5_29_1
@@ -74,43 +80,69 @@ bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::st
     {
         return true;
     }
+
+    if (vid != nullptr) {
+        std::vector<std::string> splitVid = SplitString(vid, ',');
+        std::string query = "";
+        for (size_t i = 0; i < ids.size(); ++i) {
+            if (i) {
+                query += "_" + std::to_string(ids[i]);
+            }
+            else {
+                query += std::to_string(ids[i]);
+            }
+        }
+        for (auto &indice : splitVid) {
+            bool result = false;
+            if (IsSaveChild()) {
+                result = isPrefix(query, indice);
+            }
+            else {
+                result = indice == query;
+            }
+            if (result) {
+                return true;
+            }
+        }
+    }
+
+    std::string copyOptype = optype;
+    for (char &c : copyOptype) {
+        c = std::tolower(c);
+    }
     // 先用逗号分隔vid和tid
-    std::vector<std::string> splitVid = SplitString(vid, ',');
-    std::vector<std::string> splitTid = SplitString(tid, ',');
-    std::string query = "";
-    for (size_t i = 0; i < ids.size(); ++i)
-    {
-        if (i)
+    
+    if (tid != nullptr) {
+        std::vector<std::string> splitTid = SplitString(tid, ',');
+        for (auto &indice : splitTid)
         {
-            query += "_" + std::to_string(ids[i]);
-        }
-        else 
-        {
-            query += std::to_string(ids[i]);
+            if (isPrefix(copyOptype, indice)) {
+                return true;
+            }
         }
     }
-    for (auto &indice : splitVid)
-    {
-        if (indice == query) {
-            return true;
-        }
-    }
-    for (auto &indice : splitTid)
-    {
-        if (indice == optype) {
-            return true;
-        }
-    }
+    
     return false;
 }
 
+bool atb::Probe::IsSaveChild()
+{
+    const char* child = std::getenv("ATB_SAVE_CHILD");
+    if (child == nullptr) {
+        return false;
+    }
+    int value = std::stoi(child);
+    return value;
+}
 
 bool atb::Probe::IsSaveTensorData()
 {
     const char* saveTensor = std::getenv("ATB_SAVE_TENSOR");
-    if (saveTensor == "1")
-    {
-        return true;
+    if (saveTensor != nullptr) {
+        int value = std::stoi(saveTensor);
+        if (value == 1) {
+            return true;
+        }
     }
     return false;
 }
@@ -163,10 +195,10 @@ void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
         const std::string &filePath)
 {   
     const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
-    std::string outDir = outputDir ? outputDir : "./";
+    std::string outDir = outputDir != nullptr? outputDir : "./";
     std::string outPath = outDir + filePath;
-    size_t found = filePath.find_last_of("/");
-    std::string directory = filePath.substr(0, found);
+    size_t found = outPath.find_last_of("/");
+    std::string directory = outPath.substr(0, found);
     bool ret = CheckDirectory(directory);
 
     if (!ret)
@@ -184,7 +216,9 @@ void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
     binFile.AddAttr("format", format);
     binFile.AddAttr("dtype", dtype);
     binFile.AddAttr("dims", dims);
-    binFile.AddObject("data", hostData, dataSize);
+    if (IsSaveTensorData()) {
+        binFile.AddObject("data", hostData, dataSize);
+    }
     binFile.Write(outPath);
 
 }
@@ -193,20 +227,18 @@ void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
 void atb::Probe::SaveTiling(const uint8_t* data, uint64_t dataSize, const std::string &filePath)
 {   
     const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
-    std::string outDir = outputDir ? outputDir : "./";
+    std::string outDir = outputDir != nullptr? outputDir : "./";
     std::string outPath = outDir + filePath;
     size_t found = outPath.find_last_of("/");
     std::string directory = outPath.substr(0, found);
     bool ret = CheckDirectory(directory);
 
-    if (!ret)
-    {
+    if (!ret) {
         std::cout << "Create directory failed: " << directory << std::endl;
         return;
     }
 
-    if (!data)
-    {   
+    if (!data) {   
         std::cout << "Data is None." << std::endl;
         return;
     }
@@ -226,8 +258,9 @@ void atb::Probe::SaveTiling(const uint8_t* data, uint64_t dataSize, const std::s
 bool atb::Probe::IsSaveTiling()
 {
     const char* isSaveTiling = std::getenv("ATB_SAVE_TILING");
-    if (isSaveTiling == "1") {
-        return true;
+    if (isSaveTiling == nullptr) {
+        return false;
     }
-    return false;
+    int value = std::stoi(isSaveTiling);
+    return value;
 }

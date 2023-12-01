@@ -20,14 +20,6 @@
 #define x first
 #define y second
 
-
-static bool directoryExists(const std::string &path)
-{
-    struct stat info;
-    return stat(path.c_str(), &info) == 0 && S_ISDIR(info.st_mode);
-}
-
-
 BinFile::BinFile() {}
 BinFile::~BinFile() {}
 
