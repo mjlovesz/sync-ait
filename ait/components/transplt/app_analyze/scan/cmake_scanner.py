@@ -71,10 +71,125 @@ class CMakeScanner(Scanner):
         start_time = time.time()
         result = self._do_cmake_scan_with_file()
         self.porting_results['cmake'] = result
+        self.update_include_dirs()
         eval_time = time.time() - start_time
 
         if result:
             logger.info(f'Total time for scanning cmake files is {eval_time}s')
+
+    def update_include_dirs(self):
+        """
+        add_subdirectory (source_dir [binary_dir] [EXCLUDE_FROM_ALL])
+        include_directories ([AFTER|BEFORE] [SYSTEM] dir1 [dir2 ...])
+        """
+        result = []
+        set_customization_dir = {}
+        if self.files:
+            # 获取工程根目录，后续作为路径前缀，默认CMakeLists.txt[0]在项目根路径下
+            root_dir = os.path.dirname(self.files[0])
+            for file in self.files:
+                # 对外部传入路径进行校验
+                if not os.path.isfile(file):
+                    continue
+                # 获取自定义的set路径
+                set_customization_dir = self._match_set_dir(file, set_customization_dir, root_dir)
+                result_match = self._match_include_directories_paths(file, root_dir, result, set_customization_dir)
+                result.extend(result_match)
+        # 修改KitConfig.INCLUDES并去重
+        result = list(set(result))
+        for i, item in enumerate(result):
+            key = "CMakeLists_{i}".format(i=i)
+            KitConfig.INCLUDES[key] = item
+
+    def _match_include_directories_paths(self, file, root_dir, result, set_customization_dir):
+        """
+        获取自定义include_directories的路径
+        return:返回自定义include_directories的路径列表
+        """
+        pattern = r'include_directories\(([^)]+)\)'
+        with open(file) as f:
+            cmake_content = f.read()
+        include_directories_pattern = re.compile(pattern, re.DOTALL)
+        matches = include_directories_pattern.findall(cmake_content)
+        if matches:
+            result_path = self._match_paths(matches, root_dir, set_customization_dir)
+            result.extend(result_path)
+        return result
+
+    def _match_paths(self, matches, root_dir, set_customization_dir):
+        """
+        匹配扫描CMakeLists.txt下的include_directories路径，目前考虑${PROJECT_SOURCE_DIR}和[AFTER|BEFORE] [SYSTEM]
+        return:返回路径列表
+        """
+        result = []
+        for match in matches:
+            # path[0]匹配双引号中的内容，path[1]匹配单引号中的内容，path[2]匹配空格分隔多个路径
+            paths = re.findall(r'(?:"([^"]+)"|\'([^\']+)\')|([^"\';\s]+)', match)
+            paths = [path[0] or path[1] or path[2] for path in paths]
+            for path in paths:
+                # 先判断本身路径和加根目录后是否为有效路径
+                result = self._is_exists_path(path, result)
+                processed_path = os.path.join(root_dir, path)
+                result = self._is_exists_path(processed_path, result)
+                # 判断是否为${PROJECT_SOURCE_DIR}或${CMAKE_CURRENT_SOURCE_DIR}
+                path = self._replace_pre_variables(path, root_dir)
+                result = self._is_exists_path(path, result)
+                # 判断是否为类似${TEXT_DIR}/include自定义的其他路径
+                path = self._extract_variable_path(path, set_customization_dir)
+                result = self._is_exists_path(path, result)
+        return result
+
+    @staticmethod
+    def _extract_variable_path(path, set_customization_dir):
+        """判断是否为类似${TEXT_DIR}/include自定义的其他路径"""
+        pattern = re.compile(r'\$\{([^}]+_DIR)\}/(.*)')
+        match = pattern.match(path)
+        if match:
+            variable_name, path_after_variable = match.groups()
+            if variable_name in set_customization_dir:
+                path = os.path.join(set_customization_dir[variable_name], path_after_variable)
+        return path
+
+    @staticmethod
+    def _is_exists_path(path, result):
+        """判断是否为有效路径，如果是则加入result列表中"""
+        if os.path.exists(path):
+            result.append(path)
+        return result
+
+    def _match_set_dir(self, file, set_customization_dir, root_dir):
+        """匹配set的库路径，匹配的格式为set(XXXX_DIR /xxx/xxxx/xxxx)"""
+        set_pattern = re.compile(r'^set\((\w+_DIR)\s+([^)]+)\)')
+        get_filename_pattern = re.compile(r'^get_filename_component\((\w+_DIR)\s+([^)]+)\)')
+        with open(file) as f:
+            while True:
+                line = f.readline()
+                if not line:
+                    break
+                # 查找匹配的set语句
+                match_set = set_pattern.match(line)
+                # 查找匹配的get_filename_pattern语句
+                match_getfilename = get_filename_pattern.match(line)
+                if match_set:
+                    variable_name, variable_value = match_set.groups()
+                    variable_value = self._replace_pre_variables(variable_value, root_dir)
+                    set_customization_dir[variable_name] = variable_value
+                if match_getfilename:
+                    variable_name, variable_value = match_getfilename.groups()
+                    variable_value = self._replace_pre_variables(variable_value, root_dir)
+                    set_customization_dir[variable_name] = variable_value
+        return set_customization_dir
+
+    @staticmethod
+    def _replace_pre_variables(variable_value, root_dir):
+        """替换其中的${CMAKE_CURRENT_SOURCE_DIR}和${PROJECT_SOURCE_DIR}为根目录路径"""
+        if variable_value.startswith("${CMAKE_CURRENT_SOURCE_DIR}"):
+            variable_value = os.path.join(root_dir, variable_value[len("${CMAKE_CURRENT_SOURCE_DIR}"):].lstrip("/"))
+            return variable_value
+        else:
+            pattern = re.compile(r'\$\{([^}]+)_SOURCE_DIR\}/?(.*)')
+            variable_value = pattern.sub(lambda match: os.path.join(root_dir, match.group(2)), variable_value)
+        return variable_value
 
     def _do_cmake_scan_with_file(self):
         """
