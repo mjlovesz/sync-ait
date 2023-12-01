@@ -51,26 +51,10 @@ bool BinFile::Write(const std::string &filePath, const mode_t mode)
     // 写format dtype dims
     // 再写data
     // 再写end
-    std::string outPath = "./" + filePath;
-    size_t found = outPath.find_last_of("/");
-    std::string directory = outPath.substr(0, found);
-
-    // 检查目录是否存在，如果不存在则创建目录和文件
-    if (!directoryExists(directory)) {
-        int status = mkdir(directory.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-        if (status == 0) {
-
-            std::cout << "directory created: " << directory << std::endl;
-        
-        } else {
-            std::cout << "cannot create directory: " << directory << std::endl;
-            return false;
-        }
-    }
-    std::ofstream outputFile(outPath, std::ios::app);
+    std::ofstream outputFile(filePath, std::ios::app);
     if (!outputFile.is_open())
     {
-        std::cout << "File to write can't open : " << outPath << std::endl;
+        std::cout << "File to write can't open : " << filePath << std::endl;
     }
 
     bool ret = WriteAttr(outputFile, ATTR_VERSION, version_);

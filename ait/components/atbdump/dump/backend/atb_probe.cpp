@@ -17,6 +17,40 @@
 
 #include "atb_probe.h"
 #include "binfile.h"
+
+static bool directoryExists(const std::string &path)
+{
+    struct stat info;
+    return stat(path.c_str(), &info) == 0 && S_ISDIR(info.st_mode);
+}
+
+static bool CheckDirectory(const std::string &directory)
+{
+    std::vector<std::string> dirs = SplitString(directory, '/');
+    std::string curDir = "";
+    for (auto &dir : dirs)
+    {
+        curDir += dir + "/";
+        if (!directoryExists(curDir))
+        {
+            int status = mkdir(curDir.c_str(), BIN_FILE_MODE);
+            if (!status)
+            {
+                std::cout << "directory created: " << curDir << std::endl;
+            }
+            else {
+                std::cout << "cannot create directory: " << cueDir << std::endl;
+            }
+        }
+    }
+    // 检查目录是否存在，如果不存在则创建目录和文件
+    if (!directoryExists(directory)) {
+        std::cout << "cannot create directory: " << directory << std::endl;
+        return false;
+    }
+    return true;
+}
+
 static std::vector<std::string> SplitString(const std::string &ss, const char &tar)
 {
     std::vector<std::string> tokens;
@@ -127,12 +161,23 @@ bool atb::Probe::IsSaveTensorAfter()
 void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
         const std::string &dims, const void *hostData, uint64_t dataSize,
         const std::string &filePath)
-{   int flag = std::stoi(std::getenv("LOG_TO_STDOUT"));
+{   
+    const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
+    std::string outDir = outputDir ? outputDir : "./";
+    std::string outPath = outDir + filePath;
+    size_t found = filePath.find_last_of("/");
+    std::string directory = filePath.substr(0, found);
+    bool ret = CheckDirectory(directory);
+
+    if (!ret)
+    {
+        std::cout << "Create directory failed: " << directory << std::endl;
+        return;
+    }
+
     if (!hostData)
     {   
-        if (flag) {
-            std::cout << "hostData is None." << std::endl;
-        }
+        std::cout << "hostData is None." << std::endl;
         return;
     }
     BinFile binFile;
@@ -140,14 +185,33 @@ void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
     binFile.AddAttr("dtype", dtype);
     binFile.AddAttr("dims", dims);
     binFile.AddObject("data", hostData, dataSize);
-    binFile.Write(filePath);
+    binFile.Write(outPath);
 
 }
 
 
 void atb::Probe::SaveTiling(const uint8_t* data, uint64_t dataSize, const std::string &filePath)
-{
-    std::ofstream outfile(filePath, std::ios::out | std::ios::binary);
+{   
+    const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
+    std::string outDir = outputDir ? outputDir : "./";
+    std::string outPath = outDir + filePath;
+    size_t found = outPath.find_last_of("/");
+    std::string directory = outPath.substr(0, found);
+    bool ret = CheckDirectory(directory);
+
+    if (!ret)
+    {
+        std::cout << "Create directory failed: " << directory << std::endl;
+        return;
+    }
+
+    if (!data)
+    {   
+        std::cout << "Data is None." << std::endl;
+        return;
+    }
+
+    std::ofstream outfile(outPath, std::ios::out | std::ios::binary);
 
     if (outfile.is_open()) {
         outfile.write(reinterpret_cast<const char*>(data), dataSize);

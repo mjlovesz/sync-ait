@@ -35,7 +35,7 @@ def init_dump_task(args):
     os.environ[ATB_SAVE_TILING] = str(args.tiling)
     ld_preload = os.getenv(LD_PRELOAD)
     ld_preload = ld_preload or ""
-    save_tensor_so_path = os.path.join(site.getsitepackages()[0], "msquickcmp", "libatb_probe.so")
+    save_tensor_so_path = os.path.join(site.getsitepackages()[0], "dump", "libatb_probe.so")
     os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
 
 
