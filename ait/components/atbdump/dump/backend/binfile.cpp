@@ -24,9 +24,8 @@ BinFile::BinFile() {}
 BinFile::~BinFile() {}
 
 bool BinFile::AddAttr(const std::string &name, const std::string &value)
-{   // **********todo name检查*************
-    if (attrNames_.find(name) != attrNames_.end())
-    {   
+{   
+    if (attrNames_.find(name) != attrNames_.end()) {   
         std::cout << "Attr: " << name << " already exists" << std::endl;
         return false;
     }
@@ -44,8 +43,7 @@ bool BinFile::Write(const std::string &filePath, const mode_t mode)
     // 再写data
     // 再写end
     std::ofstream outputFile(filePath, std::ios::app);
-    if (!outputFile.is_open())
-    {
+    if (!outputFile.is_open()) {
         std::cout << "File to write can't open : " << filePath << std::endl;
     }
 
@@ -53,20 +51,17 @@ bool BinFile::Write(const std::string &filePath, const mode_t mode)
     ret = WriteAttr(outputFile, ATTR_OBJECT_COUNT, std::to_string(binaries_.size()));
     ret = WriteAttr(outputFile, ATTR_OBJECT_LENGTH, std::to_string(binariesBuffer_.size()));
     
-    for (const auto &attrIt : attrs_)
-    {
+    for (const auto &attrIt : attrs_) {
         ret = WriteAttr(outputFile, attrIt.x, attrIt.y);
     }
 
-    for (const auto &objIt : binaries_)
-    {
+    for (const auto &objIt : binaries_) {
         ret = WriteAttr(outputFile, ATTR_OBJECT_PREFIX + objIt.x, std::to_string(objIt.y.offset) + "," + std::to_string(objIt.y.length));
     }
 
-    ret = WriteAttr(outputFile, ATTR_END, "1");
+    ret = WriteAttr(outputFile, ATTR_END, END_VALUE);
 
-    if (binariesBuffer_.size() > 0)
-    {
+    if (binariesBuffer_.size() > 0) {
         outputFile.write(binariesBuffer_.data(), binariesBuffer_.size());
     }
     return true;
@@ -74,19 +69,13 @@ bool BinFile::Write(const std::string &filePath, const mode_t mode)
 
 bool BinFile::AddObject(const std::string name, const void* binaryBuffer, uint64_t binaryLen)
 {
-    // todo 检查name
-    if (binaryBuffer == nullptr)
-    {
+    if (binaryBuffer == nullptr) {
         std::cout << "binary buffer size is none" << std::endl;
         return false;
     }
     size_t needLen = binariesBuffer_.size() + binaryLen;
-    
 
-    // todo 超出maxfilesize
-
-    if (binaryNames_.find(name) != binaryNames_.end())
-    {
+    if (binaryNames_.find(name) != binaryNames_.end()) {
         return false;
     }
 
@@ -101,8 +90,7 @@ bool BinFile::AddObject(const std::string name, const void* binaryBuffer, uint64
 
     uint64_t offset = 0;
     uint64_t copyLen = binaryLen;
-    while (copyLen > 0)
-    {
+    while (copyLen > 0) {
         uint64_t curCopySize = copyLen > MAX_SINGLE_MEMCPY_SIZE ? MAX_SINGLE_MEMCPY_SIZE : copyLen;
         auto ret = memcpy(binariesBuffer_.data() + currentLen + offset, 
                             static_cast<const uint8_t*>(binaryBuffer) + offset, curCopySize);

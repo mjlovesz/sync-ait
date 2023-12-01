@@ -18,7 +18,7 @@
 #include "atb_probe.h"
 #include "binfile.h"
 
-static bool isPrefix(const std::string &str, const std::string &prefix)
+static bool IsPrefix(const std::string &str, const std::string &prefix)
 {
     return str.compare(0, prefix.length(), prefix) == 0;
 }
@@ -38,7 +38,7 @@ static std::vector<std::string> SplitString(const std::string &ss, const char &t
 }
 
 
-static bool directoryExists(const std::string &path)
+static bool DirectoryExists(const std::string &path)
 {
     struct stat info;
     return stat(path.c_str(), &info) == 0 && S_ISDIR(info.st_mode);
@@ -51,7 +51,7 @@ static bool CheckDirectory(const std::string &directory)
     for (auto &dir : dirs)
     {
         curDir += dir + "/";
-        if (!directoryExists(curDir))
+        if (!DirectoryExists(curDir))
         {
             int status = mkdir(curDir.c_str(), 0755);
             if (!status)
@@ -64,7 +64,7 @@ static bool CheckDirectory(const std::string &directory)
         }
     }
     // 检查目录是否存在，如果不存在则创建目录和文件
-    if (!directoryExists(directory)) {
+    if (!DirectoryExists(directory)) {
         std::cout << "cannot create directory: " << directory << std::endl;
         return false;
     }
@@ -95,7 +95,7 @@ bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::st
         for (auto &indice : splitVid) {
             bool result = false;
             if (IsSaveChild()) {
-                result = isPrefix(query, indice);
+                result = IsPrefix(query, indice);
             }
             else {
                 result = indice == query;
@@ -116,7 +116,7 @@ bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::st
         std::vector<std::string> splitTid = SplitString(tid, ',');
         for (auto &indice : splitTid)
         {
-            if (isPrefix(copyOptype, indice)) {
+            if (IsPrefix(copyOptype, indice)) {
                 return true;
             }
         }
@@ -140,7 +140,7 @@ bool atb::Probe::IsSaveTensorData()
     const char* saveTensor = std::getenv("ATB_SAVE_TENSOR");
     if (saveTensor != nullptr) {
         int value = std::stoi(saveTensor);
-        if (value == 1) {
+        if (value == SAVE_TENSOR_DATA) {
             return true;
         }
     }
@@ -172,7 +172,7 @@ bool atb::Probe::IsSaveTensorBefore()
 {
     const char* saveTensorTime = std::getenv("ATB_SAVE_TENSOR_TIME");
     int value = std::stoi(saveTensorTime);
-    if (value == 0 || value == 2) {
+    if (value == SAVE_TENSOR_BEFORE || value == SAVE_TENSOR_BOTH) {
         return true;
     }
     return false;
@@ -183,7 +183,7 @@ bool atb::Probe::IsSaveTensorAfter()
 {
     const char* saveTensorTime = std::getenv("ATB_SAVE_TENSOR_TIME");
     int value = std::stoi(saveTensorTime);
-    if (value == 1 || value == 2) {
+    if (value == SAVE_TENSOR_AFTER || value == SAVE_TENSOR_BOTH) {
         return true;
     }
     return false;
