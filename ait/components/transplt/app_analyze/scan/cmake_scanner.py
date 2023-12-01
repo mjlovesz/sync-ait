@@ -132,14 +132,15 @@ class CMakeScanner(Scanner):
                 processed_path = os.path.join(root_dir, path)
                 result = self._is_exists_path(processed_path, result)
                 # 判断是否为${PROJECT_SOURCE_DIR}或${CMAKE_CURRENT_SOURCE_DIR}
-                path = self._replace_prevariables(path, root_dir)
+                path = self._replace_pre_variables(path, root_dir)
                 result = self._is_exists_path(path, result)
                 # 判断是否为类似${TEXT_DIR}/include自定义的其他路径
                 path = self._extract_variable_path(path, set_customization_dir)
                 result = self._is_exists_path(path, result)
         return result
 
-    def _extract_variable_path(self, path, set_customization_dir):
+    @staticmethod
+    def _extract_variable_path(path, set_customization_dir):
         """判断是否为类似${TEXT_DIR}/include自定义的其他路径"""
         pattern = re.compile(r'\$\{([^}]+_DIR)\}/(.*)')
         match = pattern.match(path)
@@ -149,7 +150,8 @@ class CMakeScanner(Scanner):
                 path = os.path.join(set_customization_dir[variable_name], path_after_variable)
         return path
 
-    def _is_exists_path(self, path, result):
+    @staticmethod
+    def _is_exists_path(path, result):
         """判断是否为有效路径，如果是则加入result列表中"""
         if os.path.exists(path):
             result.append(path)
@@ -170,15 +172,16 @@ class CMakeScanner(Scanner):
                 match_getfilename = get_filename_pattern.match(line)
                 if match_set:
                     variable_name, variable_value = match_set.groups()
-                    variable_value = self._replace_prevariables(variable_value, root_dir)
+                    variable_value = self._replace_pre_variables(variable_value, root_dir)
                     set_customization_dir[variable_name] = variable_value
                 if match_getfilename:
                     variable_name, variable_value = match_getfilename.groups()
-                    variable_value = self._replace_prevariables(variable_value, root_dir)
+                    variable_value = self._replace_pre_variables(variable_value, root_dir)
                     set_customization_dir[variable_name] = variable_value
         return set_customization_dir
 
-    def _replace_prevariables(self, variable_value, root_dir):
+    @staticmethod
+    def _replace_pre_variables(variable_value, root_dir):
         """替换其中的${CMAKE_CURRENT_SOURCE_DIR}和${PROJECT_SOURCE_DIR}为根目录路径"""
         if variable_value.startswith("${CMAKE_CURRENT_SOURCE_DIR}"):
             variable_value = os.path.join(root_dir, variable_value[len("${CMAKE_CURRENT_SOURCE_DIR}"):].lstrip("/"))
