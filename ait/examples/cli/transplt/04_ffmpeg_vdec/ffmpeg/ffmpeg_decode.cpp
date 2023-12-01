@@ -175,7 +175,7 @@ int main(int argc, char **argv)
             }
 
             if (!pkt->size) {
-                continue
+                continue;
             }
 
             ret = decode(c, frame, pkt, outfilename);

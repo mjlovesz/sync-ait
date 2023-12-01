@@ -63,7 +63,7 @@ static uint64_t g_frame_len[9999]; // Frame size
 static aclrtContext g_context = NULL;
 
 
-static void pgm_save(unsigned char* yuv, uint32_t width, uint32_t height, std::string saveFileName)
+static void pgmSave(unsigned char* yuv, uint32_t width, uint32_t height, std::string saveFileName)
 {
     FILE* fp = fopen(saveFileName.c_str(), "wb");
     if (fp == nullptr) {
@@ -89,7 +89,7 @@ static void pgm_save(unsigned char* yuv, uint32_t width, uint32_t height, std::s
 }
 
 // convert YUV data to pgm data and write to a file
-static void save_to_pgm_file(std::string saveFileName, hi_video_frame frame, uint32_t chanId)
+static void saveToPgmFile(std::string saveFileName, hi_video_frame frame, uint32_t chanId)
 {
     uint8_t* addr = (uint8_t*)frame.virt_addr[0];
     uint32_t imageSize = frame.width * frame.height;
@@ -121,7 +121,7 @@ static void save_to_pgm_file(std::string saveFileName, hi_video_frame frame, uin
         }
     }
 
-    pgm_save(outImageBuf, frame.width, frame.height, saveFileName);
+    pgmSave(outImageBuf, frame.width, frame.height, saveFileName);
     aclrtFreeHost(outImageBuf);
 
     return;
@@ -624,7 +624,7 @@ static void* getPic(void* const chanNum)
             sstream << g_outputFileName.c_str() << "-" << writeFileCnt << ".pgm";
             std::string saveFileName = sstream.str();
 
-            save_to_pgm_file(saveFileName, frame.v_frame, chanId);
+            saveToPgmFile(saveFileName, frame.v_frame, chanId);
             writeFileCnt++;
         }
         if (outputBuffer != nullptr) {
