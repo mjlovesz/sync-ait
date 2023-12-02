@@ -1,805 +1,811 @@
-
 // Experimental Python parser
 
 var python = python || {};
 
 python.Parser = class {
+  constructor(text, file, debug) {
+    this._tokenizer = new python.Tokenizer(text, file);
+    this._debug = debug;
+    if (!python.Parser._precedence) {
+      python.Parser._precedence = {
+        or: 2,
+        and: 3,
+        not: 4,
+        in: 5,
+        instanceof: 5,
+        is: 5,
+        '<': 5,
+        '>': 5,
+        '<=': 5,
+        '>=': 5,
+        '<>': 5,
+        '==': 5,
+        '!=': 5,
+        '|': 6,
+        '^': 7,
+        '&': 8,
+        '<<': 9,
+        '>>': 9,
+        '+': 10,
+        '-': 10,
+        '*': 11,
+        '@': 11,
+        '/': 11,
+        '//': 11,
+        '%': 11,
+        // '+': 12, '-': 12,
+        '~': 13,
+        '**': 14,
+      };
+    }
+  }
 
-    constructor(text, file, debug) {
-        this._tokenizer = new python.Tokenizer(text, file);
-        this._debug = debug;
-        if (!python.Parser._precedence) {
-            python.Parser._precedence = {
-                'or': 2, 'and': 3, 'not' : 4,
-                'in': 5, 'instanceof': 5, 'is': 5, '<': 5, '>': 5, '<=': 5, '>=': 5, '<>': 5, '==': 5, '!=': 5,
-                '|': 6, '^' : 7, '&' : 8,
-                '<<': 9, '>>': 9, '+': 10, '-': 10, '*': 11, '@': 11, '/': 11, '//': 11, '%': 11,
-                // '+': 12, '-': 12,
-                '~': 13, '**': 14
-            };
+  parse() {
+    const node = this._node('program');
+    node.body = [];
+    while (!this._tokenizer.match('eof')) {
+      const statement = this._parseStatement();
+      if (statement) {
+        node.body.push(statement);
+        continue;
+      }
+      if (this._tokenizer.eat('\n') || this._tokenizer.eat(';') || this._tokenizer.peek().type == 'eof') {
+        continue;
+      }
+      if (this._tokenizer.eat('indent') && this._tokenizer.peek().type == 'eof') {
+        continue;
+      }
+      throw new python.Error('Unknown statement' + this._tokenizer.location());
+    }
+    return node;
+  }
+
+  _parseSuite() {
+    const node = this._node('block');
+    node.statements = [];
+    let statement = null;
+    if (this._tokenizer.eat('\n')) {
+      if (this._tokenizer.eat('indent')) {
+        while (!this._tokenizer.eat('eof') && !this._tokenizer.eat('dedent')) {
+          if (this._tokenizer.eat(';')) {
+            continue;
+          }
+          statement = this._parseStatement();
+          if (statement) {
+            node.statements.push(statement);
+            continue;
+          }
+          if (this._tokenizer.eat('\n')) {
+            continue;
+          }
+          if (this._tokenizer.match('dedent') || this._tokenizer.match('eof')) {
+            continue;
+          } else {
+            throw new python.Error('Empty statement' + this._tokenizer.location());
+          }
         }
+      }
+    } else if (!this._tokenizer.eat('eof')) {
+      while (!this._tokenizer.match('\n') && !this._tokenizer.match('eof') && !this._tokenizer.match('dedent')) {
+        if (this._tokenizer.eat(';')) {
+          continue;
+        }
+        statement = this._parseStatement();
+        if (statement) {
+          node.statements.push(statement);
+          continue;
+        } else {
+          throw new python.Error('Empty statement' + this._tokenizer.location());
+        }
+      }
+      this._tokenizer.eat('\n');
     }
 
-    parse() {
-        const node = this._node('program');
-        node.body = [];
-        while (!this._tokenizer.match('eof')) {
-            const statement = this._parseStatement();
-            if (statement) {
-                node.body.push(statement);
-                continue;
-            }
-            if (this._tokenizer.eat('\n') || this._tokenizer.eat(';') || this._tokenizer.peek().type == 'eof') {
-                continue;
-            }
-            if (this._tokenizer.eat('indent') && this._tokenizer.peek().type == 'eof') {
-                continue;
-            }
-            throw new python.Error('Unknown statement' + this._tokenizer.location());
+    return node;
+  }
+
+  _parseStatement() {
+    let node = this._node();
+
+    node = this._eat('id', 'break');
+    if (node) {
+      return node;
+    }
+    node = this._eat('id', 'continue');
+    if (node) {
+      return node;
+    }
+    node = this._eat('id', 'return');
+    if (node) {
+      node.expression = this._parseExpression(-1, [], true);
+      return node;
+    }
+    node = this._eat('id', 'raise');
+    if (node) {
+      node.exception = this._parseExpression(-1, ['from']);
+      if (this._tokenizer.eat('id', 'from')) {
+        node.from = this._parseExpression();
+      } else if (this._tokenizer.eat(',')) {
+        node.exception = [node.exception];
+        node.exception.push(this._parseExpression());
+        if (this._tokenizer.eat(',')) {
+          node.exception.push(this._parseExpression());
+        }
+      }
+      return node;
+    }
+    node = this._eat('id', 'assert');
+    if (node) {
+      node.condition = this._parseExpression();
+      while (this._tokenizer.eat(',')) {
+        node.condition = { type: 'list', value: [node.condition] };
+        node.condition.value.push(this._parseExpression());
+      }
+      return node;
+    }
+    node = this._eat('id', 'exec');
+    if (node) {
+      node.variable = this._parseExpression(-1, ['in']);
+      if (this._tokenizer.eat('in')) {
+        do {
+          node.target = node.target || [];
+          node.target.push(this._parseExpression(-1, ['in'], false));
+        } while (this._tokenizer.eat(','));
+      }
+      return node;
+    }
+
+    node = this._eat('id', 'global');
+    if (node) {
+      node.variable = [];
+      do {
+        node.variable.push(this._parseName());
+      } while (this._tokenizer.eat(','));
+      return node;
+    }
+    node = this._eat('id', 'nonlocal');
+    if (node) {
+      node.variable = [];
+      do {
+        node.variable.push(this._parseName());
+      } while (this._tokenizer.eat(','));
+      return node;
+    }
+    node = this._eat('id', 'import');
+    if (node) {
+      node.modules = [];
+      do {
+        const module = this._node('module');
+        module.name = this._parseExpression(-1, [], false);
+        if (this._tokenizer.eat('id', 'as')) {
+          module.as = this._parseExpression(-1, [], false);
+        }
+        node.modules.push(module);
+      } while (this._tokenizer.eat(','));
+      return node;
+    }
+    node = this._eat('id', 'from');
+    if (node) {
+      const dots = this._tokenizer.peek();
+      if (dots && Array.from(dots.type).every((c) => c == '.')) {
+        node.from = this._eat(dots.type);
+        node.from.expression = this._parseExpression();
+      } else {
+        node.from = this._parseExpression();
+      }
+      this._tokenizer.expect('id', 'import');
+      node.import = [];
+      const close = this._tokenizer.eat('(');
+      do {
+        const symbol = this._node();
+        symbol.symbol = this._parseExpression(-1, [], false);
+        if (this._tokenizer.eat('id', 'as')) {
+          symbol.as = this._parseExpression(-1, [], false);
+        }
+        node.import.push(symbol);
+      } while (this._tokenizer.eat(','));
+      if (close) {
+        this._tokenizer.expect(')');
+      }
+      return node;
+    }
+    node = this._eat('id', 'class');
+    if (node) {
+      node.name = this._parseName().value;
+      if (this._tokenizer.peek().value === '(') {
+        node.base = this._parseArguments();
+      }
+      this._tokenizer.expect(':');
+      node.body = this._parseSuite();
+      return node;
+    }
+
+    const async = this._eat('id', 'async');
+    if (
+      async &&
+      !this._tokenizer.match('id', 'def') &&
+      !this._tokenizer.match('id', 'with') &&
+      !this._tokenizer.match('id', 'for')
+    ) {
+      throw new python.Error("Expected 'def', 'with' or 'for'" + this._tokenizer.location());
+    }
+
+    node = this._eat('id', 'def');
+    if (node) {
+      if (async) {
+        node.async = async;
+      }
+      node.name = this._parseName().value;
+      this._tokenizer.expect('(');
+      node.parameters = this._parseParameters(')');
+      if (this._tokenizer.eat('->')) {
+        node.returnType = this._parseType();
+      }
+      this._tokenizer.expect(':');
+      node.body = this._parseSuite();
+      return node;
+    }
+    node = this._eat('id', 'del');
+    if (node) {
+      node.expression = this._parseExpression(-1, [], true);
+      return node;
+    }
+    node = this._eat('id', 'print');
+    if (node) {
+      node.expression = this._parseExpression(-1, [], true);
+      return node;
+    }
+    node = this._eat('id', 'if');
+    if (node) {
+      node.condition = this._parseExpression();
+      this._tokenizer.expect(':');
+      node.then = this._parseSuite();
+      let current = node;
+      this._tokenizer.eat('\n');
+      while (this._tokenizer.eat('id', 'elif')) {
+        current.else = this._node('if');
+        current = current.else;
+        current.condition = this._parseExpression();
+        this._tokenizer.expect(':');
+        current.then = this._parseSuite();
+        this._tokenizer.eat('\n');
+      }
+      if (this._tokenizer.eat('id', 'else')) {
+        this._tokenizer.expect(':');
+        current.else = this._parseSuite();
+      }
+      return node;
+    }
+    node = this._eat('id', 'while');
+    if (node) {
+      node.condition = this._parseExpression();
+      this._tokenizer.expect(':');
+      node.body = this._parseSuite();
+      if (this._tokenizer.eat('id', 'else')) {
+        this._tokenizer.expect(':');
+        node.else = this._parseSuite();
+      }
+      return node;
+    }
+    node = this._eat('id', 'pass');
+    if (node) {
+      return node;
+    }
+    node = this._eat('id', 'for');
+    if (node) {
+      node.variable = [];
+      node.variable.push(this._parseExpression(-1, ['in']));
+      while (this._tokenizer.eat(',')) {
+        if (this._tokenizer.match('id', 'in')) {
+          node.variable.push({});
+          break;
+        }
+        node.variable.push(this._parseExpression(-1, ['in']));
+      }
+      this._tokenizer.expect('id', 'in');
+      node.target = [];
+      node.target.push(this._parseExpression());
+      while (this._tokenizer.eat(',')) {
+        if (this._tokenizer.match(':')) {
+          node.target.push({});
+          break;
+        }
+        node.target.push(this._parseExpression(-1, ['in']));
+      }
+      this._tokenizer.expect(':');
+      node.body = this._parseSuite();
+      if (this._tokenizer.eat('id', 'else')) {
+        this._tokenizer.expect(':');
+        node.else = this._parseSuite();
+      }
+      return node;
+    }
+    node = this._eat('id', 'with');
+    if (node) {
+      if (async) {
+        node.async = async;
+      }
+      node.item = [];
+      do {
+        const item = this._node();
+        item.type = 'with_item';
+        item.expression = this._parseExpression();
+        if (this._tokenizer.eat('id', 'as')) {
+          item.variable = this._parseExpression();
+        }
+        node.item.push(item);
+      } while (this._tokenizer.eat(','));
+      this._tokenizer.expect(':');
+      node.body = this._parseSuite();
+      return node;
+    }
+    node = this._eat('id', 'try');
+    if (node) {
+      this._tokenizer.expect(':');
+      node.body = this._parseSuite();
+      node.except = [];
+      while (this._tokenizer.match('id', 'except')) {
+        const except = this._node('except');
+        this._tokenizer.expect('id', 'except');
+        except.clause = [];
+        except.clause.push(this._parseExpression());
+        while (this._tokenizer.eat(',')) {
+          if (this._tokenizer.match(':') || this._tokenizer.match('as')) {
+            except.clause.push({});
+            break;
+          }
+          except.clause.push(this._parseExpression());
+        }
+        if (this._tokenizer.eat('id', 'as')) {
+          except.variable = this._parseExpression();
+        }
+        this._tokenizer.expect(':');
+        except.body = this._parseSuite();
+        node.except.push(except);
+      }
+      if (this._tokenizer.match('id', 'else')) {
+        node.else = this._node('else');
+        this._tokenizer.expect('id', 'else');
+        this._tokenizer.expect(':');
+        node.else.body = this._parseSuite();
+      }
+      if (this._tokenizer.match('id', 'finally')) {
+        node.finally = this._node('finally');
+        this._tokenizer.expect('id', 'finally');
+        this._tokenizer.expect(':');
+        node.finally.body = this._parseSuite();
+      }
+      return node;
+    }
+
+    if (this._tokenizer.match('@')) {
+      node = this._node('decorator');
+      this._tokenizer.expect('@');
+      node.value = this._parseExpression();
+      if (!node.value || (node.value.type !== 'call' && node.value.type !== 'id' && node.value.type !== '.')) {
+        throw new python.Error('Invalid decorator' + this._tokenizer.location());
+      }
+      return node;
+    }
+
+    const expression = this._parseExpression(-1, [], true);
+    if (expression) {
+      if (expression.type == 'id' && this._tokenizer.eat(':')) {
+        node = this._node('var');
+        node.name = expression.value;
+        node.location = expression.location;
+        node.variableType = this._parseExpression(-1, ['=']);
+        if (this._tokenizer.eat('=')) {
+          node.initializer = this._parseExpression();
         }
         return node;
+      }
+      let statement = false;
+      switch (expression.type) {
+        case '=':
+        case ':=':
+        case '==':
+        case '!=':
+        case '+=':
+        case '-=':
+        case '*=':
+        case '@=':
+        case '/=':
+        case '//=':
+        case '**=':
+        case '&=':
+        case '|=':
+        case '%=':
+        case '>>=':
+        case '<<=':
+        case '>>':
+        case '<<':
+        case '>=':
+        case '<=':
+        case '<':
+        case '>':
+        case '%':
+        case '^=':
+        case '...':
+        case 'call':
+        case 'assert':
+        case 'raise':
+        case 'string':
+        case 'list':
+        case 'var':
+        case '.':
+        case '[]':
+        case 'yield':
+        case '+':
+        case '-':
+        case '*':
+        case '**':
+        case '@':
+        case '/':
+        case '//':
+        case '~':
+        case '&':
+        case '^':
+        case '|':
+        case 'not':
+        case 'id':
+        case 'number':
+        case 'in':
+        case 'and':
+        case 'or':
+        case 'if':
+        case 'for':
+        case 'tuple':
+        case 'lambda':
+        case 'await':
+          statement = true;
+          break;
+      }
+      if (statement) {
+        return expression;
+      }
+      throw new python.Error('Unhandled expression' + this._tokenizer.location());
     }
 
-    _parseSuite() {
-        const node = this._node('block');
-        node.statements = [];
-        let statement = null;
-        if (this._tokenizer.eat('\n')) {
-            if (this._tokenizer.eat('indent')) {
-                while (!this._tokenizer.eat('eof') && !this._tokenizer.eat('dedent')) {
-                    if (this._tokenizer.eat(';')) {
-                        continue;
-                    }
-                    statement = this._parseStatement();
-                    if (statement) {
-                        node.statements.push(statement);
-                        continue;
-                    }
-                    if (this._tokenizer.eat('\n')) {
-                        continue;
-                    }
-                    if (this._tokenizer.match('dedent') || this._tokenizer.match('eof')) {
-                        continue;
-                    } else {
-                        throw new python.Error('Empty statement' + this._tokenizer.location());
-                    }
-                }
-            }
-        }
-        else if (!this._tokenizer.eat('eof')) {
-            while (!this._tokenizer.match('\n') && !this._tokenizer.match('eof') && !this._tokenizer.match('dedent')) {
-                if (this._tokenizer.eat(';')) {
-                    continue;
-                }
-                statement = this._parseStatement();
-                if (statement) {
-                    node.statements.push(statement);
-                    continue;
-                } else {
-                    throw new python.Error('Empty statement' + this._tokenizer.location());
-                }
-            }
-            this._tokenizer.eat('\n');
-        }
+    return null;
+  }
 
-        return node;
-    }
-
-    _parseStatement() {
-
-        let node = this._node();
-
-        node = this._eat('id', 'break');
-        if (node) {
-            return node;
+  _parseExpression(minPrecedence, terminal, tuple) {
+    minPrecedence = minPrecedence || -1;
+    const terminalSet = new Set(terminal);
+    const stack = [];
+    for (;;) {
+      let node = this._node();
+      const token = this._tokenizer.peek();
+      if (stack.length == 1 && terminalSet.has(token.value)) {
+        break;
+      }
+      const precedence = python.Parser._precedence[token.value];
+      if (precedence) {
+        if (precedence >= minPrecedence) {
+          this._tokenizer.read();
+          node.type = token.value;
+          if (token.type == 'id' && (token.value === 'in' || token.value === 'not')) {
+            if (token.value === 'in') {
+              node.type = 'in';
+            } else if (this._tokenizer.eat('id', 'in')) {
+              node.type = 'not in';
+            } else {
+              node.type = 'not';
+              node.expression = this._parseExpression(precedence, terminal, tuple === false ? false : true);
+              stack.push(node);
+              continue;
+            }
+          } else if (token.value == '~') {
+            node.type = '~';
+            node.expression = this._parseExpression(precedence, terminal, tuple === false ? false : true);
+            stack.push(node);
+            continue;
+          } else if (token.type == 'id' && token.value == 'is') {
+            if (this._tokenizer.eat('id', 'not')) {
+              node.type = 'is not';
+            }
+          }
+          node.left = stack.pop();
+          node.right = this._parseExpression(precedence, terminal, tuple === false ? false : true);
+          stack.push(node);
+          continue;
         }
-        node = this._eat('id', 'continue');
-        if (node) {
-            return node;
-        }
-        node = this._eat('id', 'return');
-        if (node) {
-            node.expression = this._parseExpression(-1, [], true);
-            return node;
-        }
-        node = this._eat('id', 'raise');
-        if (node) {
-            node.exception = this._parseExpression(-1, [ 'from' ]);
-            if (this._tokenizer.eat('id', 'from')) {
-                node.from = this._parseExpression();
-            }
-            else if (this._tokenizer.eat(',')) {
-                node.exception = [ node.exception ];
-                node.exception.push(this._parseExpression());
-                if (this._tokenizer.eat(',')) {
-                    node.exception.push(this._parseExpression());
-                }
-            }
-            return node;
-        }
-        node = this._eat('id', 'assert');
-        if (node) {
-            node.condition = this._parseExpression();
-            while (this._tokenizer.eat(',')) {
-                node.condition = { type: 'list', value: [ node.condition ] };
-                node.condition.value.push(this._parseExpression());
-            }
-            return node;
-        }
-        node = this._eat('id', 'exec');
-        if (node) {
-            node.variable = this._parseExpression(-1, [ 'in' ]);
-            if (this._tokenizer.eat('in')) {
-                do {
-                    node.target = node.target || [];
-                    node.target.push(this._parseExpression(-1, [ 'in' ], false));
-                }
-                while (this._tokenizer.eat(','));
-            }
-            return node;
-        }
-
-        node = this._eat('id', 'global');
-        if (node) {
-            node.variable = [];
-            do {
-                node.variable.push(this._parseName());
-            }
-            while (this._tokenizer.eat(','));
-            return node;
-        }
-        node = this._eat('id', 'nonlocal');
-        if (node) {
-            node.variable = [];
-            do {
-                node.variable.push(this._parseName());
-            }
-            while (this._tokenizer.eat(','));
-            return node;
-        }
-        node = this._eat('id', 'import');
-        if (node) {
-            node.modules = [];
-            do {
-                const module = this._node('module');
-                module.name = this._parseExpression(-1, [], false);
-                if (this._tokenizer.eat('id', 'as')) {
-                    module.as = this._parseExpression(-1, [], false);
-                }
-                node.modules.push(module);
-            }
-            while (this._tokenizer.eat(','));
-            return node;
-        }
-        node = this._eat('id', 'from');
-        if (node) {
-            const dots = this._tokenizer.peek();
-            if (dots && Array.from(dots.type).every((c) => c == '.')) {
-                node.from = this._eat(dots.type);
-                node.from.expression = this._parseExpression();
-            }
-            else {
-                node.from = this._parseExpression();
-            }
-            this._tokenizer.expect('id', 'import');
-            node.import = [];
-            const close = this._tokenizer.eat('(');
-            do {
-                const symbol = this._node();
-                symbol.symbol = this._parseExpression(-1, [], false);
-                if (this._tokenizer.eat('id', 'as')) {
-                    symbol.as = this._parseExpression(-1, [], false);
-                }
-                node.import.push(symbol);
-            }
-            while (this._tokenizer.eat(','));
-            if (close) {
-                this._tokenizer.expect(')');
-            }
-            return node;
-        }
-        node = this._eat('id', 'class');
-        if (node) {
-            node.name = this._parseName().value;
-            if (this._tokenizer.peek().value === '(') {
-                node.base = this._parseArguments();
-            }
-            this._tokenizer.expect(':');
-            node.body = this._parseSuite();
-            return node;
-        }
-
+      }
+      if (this._tokenizer.eat(':=')) {
+        node.type = ':=';
+        node.target = stack.pop();
+        node.expression = this._parseExpression(-1, terminal, tuple === false ? false : true);
+        stack.push(node);
+        continue;
+      }
+      if (this._tokenizer.eat('=')) {
+        node.type = '=';
+        node.target = stack.pop();
+        node.expression = this._parseExpression(-1, terminal, tuple === false ? false : true);
+        stack.push(node);
+        continue;
+      }
+      switch (token.type) {
+        case '-=':
+        case '**=':
+        case '*=':
+        case '//=':
+        case '/=':
+        case '&=':
+        case '%=':
+        case '^=':
+        case '+=':
+        case '<<=':
+        case '>>=':
+        case '|=':
+        case '@=':
+          node = this._node(token.type);
+          this._tokenizer.expect(token.type);
+          node.target = stack.pop();
+          node.expression = this._parseExpression(-1, terminal, true);
+          stack.push(node);
+          continue;
+      }
+      node = this._eat('id', 'if');
+      if (node) {
+        node.then = stack.pop();
+        node.condition = this._parseExpression();
+        this._tokenizer.expect('id', 'else');
+        node.else = this._parseExpression();
+        stack.push(node);
+        continue;
+      }
+      while (this._tokenizer.match('id', 'for') || this._tokenizer.match('id', 'async')) {
         const async = this._eat('id', 'async');
-        if (async &&
-            !this._tokenizer.match('id', 'def') &&
-            !this._tokenizer.match('id', 'with') &&
-            !this._tokenizer.match('id', 'for')) {
-            throw new python.Error("Expected 'def', 'with' or 'for'" + this._tokenizer.location());
-        }
-
-        node = this._eat('id', 'def');
-        if (node) {
-            if (async) {
-                node.async = async;
-            }
-            node.name = this._parseName().value;
-            this._tokenizer.expect('(');
-            node.parameters = this._parseParameters(')');
-            if (this._tokenizer.eat('->')) {
-                node.returnType = this._parseType();
-            }
-            this._tokenizer.expect(':');
-            node.body = this._parseSuite();
-            return node;
-        }
-        node = this._eat('id', 'del');
-        if (node) {
-            node.expression = this._parseExpression(-1, [], true);
-            return node;
-        }
-        node = this._eat('id', 'print');
-        if (node) {
-            node.expression = this._parseExpression(-1, [], true);
-            return node;
-        }
-        node = this._eat('id', 'if');
-        if (node) {
-            node.condition = this._parseExpression();
-            this._tokenizer.expect(':');
-            node.then = this._parseSuite();
-            let current = node;
-            this._tokenizer.eat('\n');
-            while (this._tokenizer.eat('id', 'elif')) {
-                current.else = this._node('if');
-                current = current.else;
-                current.condition = this._parseExpression();
-                this._tokenizer.expect(':');
-                current.then = this._parseSuite();
-                this._tokenizer.eat('\n');
-            }
-            if (this._tokenizer.eat('id', 'else')) {
-                this._tokenizer.expect(':');
-                current.else = this._parseSuite();
-            }
-            return node;
-        }
-        node = this._eat('id', 'while');
-        if (node) {
-            node.condition = this._parseExpression();
-            this._tokenizer.expect(':');
-            node.body = this._parseSuite();
-            if (this._tokenizer.eat('id', 'else')) {
-                this._tokenizer.expect(':');
-                node.else = this._parseSuite();
-            }
-            return node;
-        }
-        node = this._eat('id', 'pass');
-        if (node) {
-            return node;
+        if (async && !this._tokenizer.match('id', 'for')) {
+          throw new python.Error("Expected 'for'" + this._tokenizer.location());
         }
         node = this._eat('id', 'for');
         if (node) {
-            node.variable = [];
-            node.variable.push(this._parseExpression(-1, [ 'in' ]));
-            while (this._tokenizer.eat(',')) {
-                if (this._tokenizer.match('id', 'in')) {
-                    node.variable.push({});
-                    break;
-                }
-                node.variable.push(this._parseExpression(-1, [ 'in' ]));
-            }
-            this._tokenizer.expect('id', 'in');
-            node.target = [];
-            node.target.push(this._parseExpression());
-            while (this._tokenizer.eat(',')) {
-                if (this._tokenizer.match(':')) {
-                    node.target.push({});
-                    break;
-                }
-                node.target.push(this._parseExpression(-1, [ 'in' ]));
-            }
-            this._tokenizer.expect(':');
-            node.body = this._parseSuite();
-            if (this._tokenizer.eat('id', 'else')) {
-                this._tokenizer.expect(':');
-                node.else = this._parseSuite();
-            }
-            return node;
+          if (async) {
+            node.async = async;
+          }
+          node.expression = stack.pop();
+          node.variable = this._parseExpression(-1, ['in'], true);
+          this._tokenizer.expect('id', 'in');
+          node.target = this._parseExpression(-1, ['for', 'if'], true);
+          while (this._tokenizer.eat('id', 'if')) {
+            node.condition = node.condition || [];
+            node.condition.push(this._parseExpression(-1, ['for', 'if']));
+          }
+          stack.push(node);
         }
-        node = this._eat('id', 'with');
-        if (node) {
-            if (async) {
-                node.async = async;
-            }
-            node.item = [];
-            do {
-                const item = this._node();
-                item.type = 'with_item';
-                item.expression = this._parseExpression();
-                if (this._tokenizer.eat('id', 'as')) {
-                    item.variable = this._parseExpression();
-                }
-                node.item.push(item);
-            }
-            while (this._tokenizer.eat(','));
-            this._tokenizer.expect(':');
-            node.body = this._parseSuite();
-            return node;
+      }
+      node = this._eat('id', 'lambda');
+      if (node) {
+        node.parameters = this._parseParameters(':');
+        node.body = this._parseExpression(-1, terminal, false);
+        stack.push(node);
+        continue;
+      }
+      node = this._eat('id', 'yield');
+      if (node) {
+        if (this._tokenizer.eat('id', 'from')) {
+          node.from = this._parseExpression(-1, [], true);
+        } else {
+          node.expression = [];
+          do {
+            node.expression.push(this._parseExpression(-1, [], false));
+          } while (this._tokenizer.eat(','));
         }
-        node = this._eat('id', 'try');
-        if (node) {
-            this._tokenizer.expect(':');
-            node.body = this._parseSuite();
-            node.except = [];
-            while (this._tokenizer.match('id', 'except')) {
-                const except = this._node('except');
-                this._tokenizer.expect('id', 'except');
-                except.clause = [];
-                except.clause.push(this._parseExpression());
-                while (this._tokenizer.eat(',')) {
-                    if (this._tokenizer.match(':') || this._tokenizer.match('as')) {
-                        except.clause.push({});
-                        break;
-                    }
-                    except.clause.push(this._parseExpression());
-                }
-                if (this._tokenizer.eat('id', 'as')) {
-                    except.variable = this._parseExpression();
-                }
-                this._tokenizer.expect(':');
-                except.body = this._parseSuite();
-                node.except.push(except);
-            }
-            if (this._tokenizer.match('id', 'else')) {
-                node.else = this._node('else');
-                this._tokenizer.expect('id', 'else');
-                this._tokenizer.expect(':');
-                node.else.body = this._parseSuite();
-            }
-            if (this._tokenizer.match('id', 'finally')) {
-                node.finally = this._node('finally');
-                this._tokenizer.expect('id', 'finally');
-                this._tokenizer.expect(':');
-                node.finally.body = this._parseSuite();
-            }
-            return node;
+        stack.push(node);
+        continue;
+      }
+      node = this._eat('id', 'await');
+      if (node) {
+        node.expression = this._parseExpression(minPrecedence, terminal, tuple);
+        stack.push(node);
+        continue;
+      }
+      node = this._eat('.');
+      if (node) {
+        this._tokenizer.eat('\n');
+        node.target = stack.pop();
+        node.member = this._parseName();
+        stack.push(node);
+        continue;
+      }
+      if (this._tokenizer.peek().value === '(') {
+        if (stack.length == 0) {
+          node = this._node('tuple');
+          const args = this._parseArguments();
+          if (args.length == 1) {
+            stack.push(args[0]);
+          } else {
+            node.value = args;
+            stack.push(node);
+          }
+        } else {
+          node = this._node('call');
+          node.target = stack.pop();
+          node.arguments = this._parseArguments();
+          stack.push(node);
         }
-
-        if (this._tokenizer.match('@')) {
-            node = this._node('decorator');
-            this._tokenizer.expect('@');
-            node.value = this._parseExpression();
-            if (!node.value || (node.value.type !== 'call' && node.value.type !== 'id' && node.value.type !== '.')) {
-                throw new python.Error('Invalid decorator' + this._tokenizer.location());
-            }
-            return node;
+        continue;
+      }
+      if (this._tokenizer.peek().value === '[') {
+        if (stack.length == 0) {
+          stack.push(this._parseExpressions());
+        } else {
+          node = this._node('[]');
+          node.target = stack.pop();
+          node.arguments = this._parseSlice();
+          stack.push(node);
         }
-
-        const expression = this._parseExpression(-1, [], true);
-        if (expression) {
-            if (expression.type == 'id' && this._tokenizer.eat(':')) {
-                node = this._node('var');
-                node.name = expression.value;
-                node.location = expression.location;
-                node.variableType = this._parseExpression(-1, [ '=' ]);
-                if (this._tokenizer.eat('=')) {
-                    node.initializer = this._parseExpression();
-                }
-                return node;
-            }
-            let statement = false;
-            switch (expression.type) {
-                case '=':
-                case ':=':
-                case '==':
-                case '!=':
-                case '+=':
-                case '-=':
-                case '*=':
-                case '@=':
-                case '/=':
-                case '//=':
-                case '**=':
-                case '&=':
-                case '|=':
-                case '%=':
-                case '>>=':
-                case '<<=':
-                case '>>':
-                case '<<':
-                case '>=':
-                case '<=':
-                case '<':
-                case '>':
-                case '%':
-                case '^=':
-                case '...':
-                case 'call':
-                case 'assert':
-                case 'raise':
-                case 'string':
-                case 'list':
-                case 'var':
-                case '.':
-                case '[]':
-                case 'yield':
-                case '+':
-                case '-':
-                case '*':
-                case '**':
-                case '@':
-                case '/':
-                case '//':
-                case '~':
-                case '&':
-                case '^':
-                case '|':
-                case 'not':
-                case 'id':
-                case 'number':
-                case 'in':
-                case 'and':
-                case 'or':
-                case 'if':
-                case 'for':
-                case 'tuple':
-                case 'lambda':
-                case 'await':
-                    statement = true;
-                    break;
-            }
-            if (statement) {
-                return expression;
-            }
-            throw new python.Error("Unhandled expression" + this._tokenizer.location());
-        }
-
-        return null;
-    }
-
-    _parseExpression(minPrecedence, terminal, tuple) {
-        minPrecedence = minPrecedence || -1;
-        const terminalSet = new Set(terminal);
-        const stack = [];
-        for (;;) {
-            let node = this._node();
-            const token = this._tokenizer.peek();
-            if (stack.length == 1 && terminalSet.has(token.value)) {
+        continue;
+      }
+      if (this._tokenizer.peek().value == '{') {
+        stack.push(this._parseDictOrSetMaker());
+        continue;
+      }
+      node = this._node();
+      const literal = this._parseLiteral();
+      if (literal) {
+        if (
+          stack.length > 0 &&
+          literal.type == 'number' &&
+          (literal.value.startsWith('-') || literal.value.startsWith('+'))
+        ) {
+          node.type = literal.value.substring(0, 1);
+          literal.value = literal.value.substring(1);
+          node.left = stack.pop();
+          node.right = literal;
+          stack.push(node);
+        } else if (stack.length == 1 && literal.type == 'string' && stack[0].type == 'string') {
+          stack[0].value += literal.value;
+        } else {
+          if (literal.type === 'number') {
+            switch (literal.value) {
+              case 'inf':
+                literal.value = Infinity;
+                break;
+              case '-inf':
+                literal.value = -Infinity;
                 break;
             }
-            const precedence = python.Parser._precedence[token.value];
-            if (precedence) {
-                if (precedence >= minPrecedence) {
-                    this._tokenizer.read();
-                    node.type = token.value;
-                    if (token.type == 'id' && (token.value === 'in' || token.value === 'not')) {
-                        if (token.value === 'in') {
-                            node.type = 'in';
-                        }
-                        else if (this._tokenizer.eat('id', 'in')) {
-                            node.type = 'not in';
-                        }
-                        else {
-                            node.type = 'not';
-                            node.expression = this._parseExpression(precedence, terminal, tuple === false ? false : true);
-                            stack.push(node);
-                            continue;
-                        }
-                    }
-                    else if (token.value == '~') {
-                        node.type = '~';
-                        node.expression = this._parseExpression(precedence, terminal, tuple === false ? false : true);
-                        stack.push(node);
-                        continue;
-                    }
-                    else if (token.type == 'id' && token.value == 'is') {
-                        if (this._tokenizer.eat('id', 'not')) {
-                            node.type = 'is not';
-                        }
-                    }
-                    node.left = stack.pop();
-                    node.right = this._parseExpression(precedence, terminal, tuple === false ? false : true);
-                    stack.push(node);
-                    continue;
-                }
-            }
-            if (this._tokenizer.eat(':=')) {
-                node.type = ':=';
-                node.target = stack.pop();
-                node.expression = this._parseExpression(-1, terminal, tuple === false ? false : true);
-                stack.push(node);
-                continue;
-            }
-            if (this._tokenizer.eat('=')) {
-                node.type = '=';
-                node.target = stack.pop();
-                node.expression = this._parseExpression(-1, terminal, tuple === false ? false : true);
-                stack.push(node);
-                continue;
-            }
-            switch (token.type) {
-                case '-=':
-                case '**=':
-                case '*=':
-                case '//=':
-                case '/=':
-                case '&=':
-                case '%=':
-                case '^=':
-                case '+=':
-                case '<<=':
-                case '>>=':
-                case '|=':
-                case '@=':
-                    node = this._node(token.type);
-                    this._tokenizer.expect(token.type);
-                    node.target = stack.pop();
-                    node.expression = this._parseExpression(-1, terminal, true);
-                    stack.push(node);
-                    continue;
-            }
-            node = this._eat('id', 'if');
-            if (node) {
-                node.then = stack.pop();
-                node.condition = this._parseExpression();
-                this._tokenizer.expect('id', 'else');
-                node.else = this._parseExpression();
-                stack.push(node);
-                continue;
-            }
-            while (this._tokenizer.match('id', 'for') || this._tokenizer.match('id', 'async')) {
-                const async = this._eat('id', 'async');
-                if (async && !this._tokenizer.match('id', 'for')) {
-                    throw new python.Error("Expected 'for'" + this._tokenizer.location());
-                }
-                node = this._eat('id', 'for');
-                if (node) {
-                    if (async) {
-                        node.async = async;
-                    }
-                    node.expression = stack.pop();
-                    node.variable = this._parseExpression(-1, [ 'in' ], true);
-                    this._tokenizer.expect('id', 'in');
-                    node.target = this._parseExpression(-1, [ 'for', 'if' ], true);
-                    while (this._tokenizer.eat('id', 'if')) {
-                        node.condition = node.condition || [];
-                        node.condition.push(this._parseExpression(-1, [ 'for', 'if' ]));
-                    }
-                    stack.push(node);
-                }
-            }
-            node = this._eat('id', 'lambda');
-            if (node) {
-                node.parameters = this._parseParameters(':');
-                node.body = this._parseExpression(-1, terminal, false);
-                stack.push(node);
-                continue;
-            }
-            node = this._eat('id', 'yield');
-            if (node) {
-                if (this._tokenizer.eat('id', 'from')) {
-                    node.from = this._parseExpression(-1, [], true);
-                }
-                else {
-                    node.expression = [];
-                    do {
-                        node.expression.push(this._parseExpression(-1, [], false));
-                    }
-                    while (this._tokenizer.eat(','));
-                }
-                stack.push(node);
-                continue;
-            }
-            node = this._eat('id', 'await');
-            if (node) {
-                node.expression = this._parseExpression(minPrecedence, terminal, tuple);
-                stack.push(node);
-                continue;
-            }
-            node = this._eat('.');
-            if (node) {
-                this._tokenizer.eat('\n');
-                node.target = stack.pop();
-                node.member = this._parseName();
-                stack.push(node);
-                continue;
-            }
-            if (this._tokenizer.peek().value === '(') {
-                if (stack.length == 0) {
-                    node = this._node('tuple');
-                    const args = this._parseArguments();
-                    if (args.length == 1) {
-                        stack.push(args[0]);
-                    }
-                    else {
-                        node.value = args;
-                        stack.push(node);
-                    }
-                }
-                else {
-                    node = this._node('call');
-                    node.target = stack.pop();
-                    node.arguments = this._parseArguments();
-                    stack.push(node);
-                }
-                continue;
-            }
-            if (this._tokenizer.peek().value === '[') {
-                if (stack.length == 0) {
-                    stack.push(this._parseExpressions());
-                }
-                else {
-                    node = this._node('[]');
-                    node.target = stack.pop();
-                    node.arguments = this._parseSlice();
-                    stack.push(node);
-                }
-                continue;
-            }
-            if (this._tokenizer.peek().value == '{') {
-                stack.push(this._parseDictOrSetMaker());
-                continue;
-            }
-            node = this._node();
-            const literal = this._parseLiteral();
-            if (literal) {
-                if (stack.length > 0 && literal.type == 'number' &&
-                    (literal.value.startsWith('-') || literal.value.startsWith('+'))) {
-                    node.type = literal.value.substring(0, 1);
-                    literal.value = literal.value.substring(1);
-                    node.left = stack.pop();
-                    node.right = literal;
-                    stack.push(node);
-                }
-                else if (stack.length == 1 && literal.type == 'string' && stack[0].type == 'string') {
-                    stack[0].value += literal.value;
-                }
-                else {
-                    if (literal.type === 'number') {
-                        switch (literal.value) {
-                            case 'inf': literal.value = Infinity; break;
-                            case '-inf': literal.value = -Infinity; break;
-                        }
-                    }
-                    stack.push(literal);
-                }
-                continue;
-            }
-            if (this._tokenizer.peek().keyword) {
-                break;
-            }
-            node = this._eat('...');
-            if (node) {
-                stack.push(node);
-                continue;
-            }
-            const identifier = this._parseName();
-            if (identifier) {
-                stack.push(identifier);
-                continue;
-            }
+          }
+          stack.push(literal);
+        }
+        continue;
+      }
+      if (this._tokenizer.peek().keyword) {
+        break;
+      }
+      node = this._eat('...');
+      if (node) {
+        stack.push(node);
+        continue;
+      }
+      const identifier = this._parseName();
+      if (identifier) {
+        stack.push(identifier);
+        continue;
+      }
 
-            if (tuple === true && stack.length == 1 && this._tokenizer.eat(',')) {
-                if (stack[0].type === 'tuple') {
-                    node = stack[0];
-                }
-                else {
-                    node = this._node('tuple');
-                    node.value = [ stack.pop() ];
-                    stack.push(node);
-                }
-                // for, bar, = <expr>
-                if (this._tokenizer.peek().value === '=') {
-                    continue;
-                }
-                if (!this._tokenizer.match('=') && !terminalSet.has(this._tokenizer.peek().value)) {
-                    const nextTerminal = terminal.slice(0).concat([ ',', '=' ]);
-                    const expression = this._parseExpression(minPrecedence, nextTerminal, tuple);
-                    if (expression) {
-                        node.value.push(expression);
-                        continue;
-                    }
-                }
-                break;
-            }
-            break;
+      if (tuple === true && stack.length == 1 && this._tokenizer.eat(',')) {
+        if (stack[0].type === 'tuple') {
+          node = stack[0];
+        } else {
+          node = this._node('tuple');
+          node.value = [stack.pop()];
+          stack.push(node);
         }
-
-        if (stack.length == 1) {
-            return stack.pop();
+        // for, bar, = <expr>
+        if (this._tokenizer.peek().value === '=') {
+          continue;
         }
-        if (stack.length != 0) {
-            throw new python.Error('Unexpected expression' + this._tokenizer.location());
+        if (!this._tokenizer.match('=') && !terminalSet.has(this._tokenizer.peek().value)) {
+          const nextTerminal = terminal.slice(0).concat([',', '=']);
+          const expression = this._parseExpression(minPrecedence, nextTerminal, tuple);
+          if (expression) {
+            node.value.push(expression);
+            continue;
+          }
         }
-        return null;
+        break;
+      }
+      break;
     }
 
-    _parseDictOrSetMaker() {
-        const list = [];
-        this._tokenizer.expect('{');
-        let dict = true;
-        while (!this._tokenizer.eat('}')) {
-            const item = this._parseExpression(-1, [], false);
-            if (item == null) {
-                throw new python.Error('Expected expression' + this._tokenizer.location());
-            }
-            if (!this._tokenizer.eat(':')) {
-                dict = false;
-            }
-            if (dict) {
-                const value = this._parseExpression(-1, [], false);
-                if (value == null) {
-                    throw new python.Error('Expected expression' + this._tokenizer.location());
-                }
-                list.push({ type: 'pair', key: item, value: value });
-            }
-            else {
-                list.push(item);
-            }
-            this._tokenizer.eat(',');
-            this._tokenizer.eat('\n');
-            if (this._tokenizer.eat('}')) {
-                break;
-            }
-        }
-        if (dict) {
-            return { type: 'dict', value: list };
-        }
-        return { type: 'set', value: list };
+    if (stack.length == 1) {
+      return stack.pop();
     }
+    if (stack.length != 0) {
+      throw new python.Error('Unexpected expression' + this._tokenizer.location());
+    }
+    return null;
+  }
 
-    _parseExpressions() {
-        const list = [];
-        this._tokenizer.expect('[');
-        while (!this._tokenizer.eat(']')) {
-            const expression = this._parseExpression();
-            if (expression == null) {
-                throw new python.Error('Expected expression' + this._tokenizer.location());
-            }
-            list.push(expression);
-            this._tokenizer.eat(',');
-            while (this._tokenizer.eat('\n')) {
-                // continue
-            }
-            if (this._tokenizer.eat(']')) {
-                break;
-            }
+  _parseDictOrSetMaker() {
+    const list = [];
+    this._tokenizer.expect('{');
+    let dict = true;
+    while (!this._tokenizer.eat('}')) {
+      const item = this._parseExpression(-1, [], false);
+      if (item == null) {
+        throw new python.Error('Expected expression' + this._tokenizer.location());
+      }
+      if (!this._tokenizer.eat(':')) {
+        dict = false;
+      }
+      if (dict) {
+        const value = this._parseExpression(-1, [], false);
+        if (value == null) {
+          throw new python.Error('Expected expression' + this._tokenizer.location());
         }
-        return { type: 'list', value: list };
+        list.push({ type: 'pair', key: item, value: value });
+      } else {
+        list.push(item);
+      }
+      this._tokenizer.eat(',');
+      this._tokenizer.eat('\n');
+      if (this._tokenizer.eat('}')) {
+        break;
+      }
     }
+    if (dict) {
+      return { type: 'dict', value: list };
+    }
+    return { type: 'set', value: list };
+  }
 
-    _parseSlice() {
-        let node = { type: '::' };
-        let list = [];
-        const group = [ 'start', 'stop', 'step' ];
-        this._tokenizer.expect('[');
-        while (!this._tokenizer.eat(']')) {
-            if (this._tokenizer.eat(':')) {
-                node[group.shift()] = { type: 'list', value: list };
-                list = [];
-                continue;
-            }
-            if (this._tokenizer.eat(',')) {
-                // list.push({});
-                continue;
-            }
-            if (this._tokenizer.peek().value != ']') {
-                const expression = this._parseExpression();
-                if (expression == null) {
-                    throw new python.Error('Expected expression' + this._tokenizer.location());
-                }
-                list.push(expression);
-            }
-        }
-        if (list.length > 0) {
-            node[group.shift()] = { type: 'list', value: list };
-        }
-        if (node.start && !node.stop && !node.step) {
-            node = node.start;
-        }
-        return node;
+  _parseExpressions() {
+    const list = [];
+    this._tokenizer.expect('[');
+    while (!this._tokenizer.eat(']')) {
+      const expression = this._parseExpression();
+      if (expression == null) {
+        throw new python.Error('Expected expression' + this._tokenizer.location());
+      }
+      list.push(expression);
+      this._tokenizer.eat(',');
+      while (this._tokenizer.eat('\n')) {
+        // continue
+      }
+      if (this._tokenizer.eat(']')) {
+        break;
+      }
     }
+    return { type: 'list', value: list };
+  }
+
+  _parseSlice() {
+    let node = { type: '::' };
+    let list = [];
+    const group = ['start', 'stop', 'step'];
+    this._tokenizer.expect('[');
+    while (!this._tokenizer.eat(']')) {
+      if (this._tokenizer.eat(':')) {
+        node[group.shift()] = { type: 'list', value: list };
+        list = [];
+        continue;
+      }
+      if (this._tokenizer.eat(',')) {
+        // list.push({});
+        continue;
+      }
+      if (this._tokenizer.peek().value != ']') {
+        const expression = this._parseExpression();
+        if (expression == null) {
+          throw new python.Error('Expected expression' + this._tokenizer.location());
+        }
+        list.push(expression);
+      }
+    }
+    if (list.length > 0) {
+      node[group.shift()] = { type: 'list', value: list };
+    }
+    if (node.start && !node.stop && !node.step) {
+      node = node.start;
+    }
+    return node;
+  }
 
     _parseName() {
         const token = this._tokenizer.peek();
