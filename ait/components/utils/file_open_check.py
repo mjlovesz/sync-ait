@@ -163,13 +163,13 @@ class FileStat:
     def is_user_and_group_owner(self):
         return self.is_owner and self.is_group_owner
 
-    def is_basically_legal(self, perm='none'):
+    def is_basically_legal(self, perm='none', strict_permission=True):
         if sys.platform.startswith("win"):
             return self.check_windows_permission(perm)
         else:
-            return self.check_linux_permission(perm)
+            return self.check_linux_permission(perm, strict_permission=strict_permission)
 
-    def check_linux_permission(self, perm='none'):
+    def check_linux_permission(self, perm='none', strict_permission=True):
         if not self.is_exists and perm != 'write':
             logger.error(f"path: {self.file} not exist, please check if file or dir is exist")
             return False
@@ -182,7 +182,7 @@ class FileStat:
             solution_log(SOLUTION_BASE_URL + OWNER_SUB_URL)
             return False
         if perm == 'read':
-            if self.permission & READ_FILE_NOT_PERMITTED_STAT > 0:
+            if strict_permission and self.permission & READ_FILE_NOT_PERMITTED_STAT > 0:
                 logger.error(f"The file {self.file} is group writable, or is others writable, "
                              "as import file(or directory) permission should not be over 0o755(rwxr-xr-x)")
                 solution_log(SOLUTION_BASE_URL + PERMISSION_SUB_URL)
@@ -193,7 +193,7 @@ class FileStat:
                 solution_log(SOLUTION_BASE_URL + PERMISSION_SUB_URL)
                 return False
         elif perm == 'write' and self.is_exists:
-            if self.permission & WRITE_FILE_NOT_PERMITTED_STAT > 0:
+            if (strict_permission or self.is_file()) and self.permission & WRITE_FILE_NOT_PERMITTED_STAT > 0:
                 logger.error(f"The file {self.file} is group writable, or is others writable, "
                              "as export file(or directory) permission should not be over 0o750(rwxr-x---)")
                 solution_log(SOLUTION_BASE_URL + PERMISSION_SUB_URL)
