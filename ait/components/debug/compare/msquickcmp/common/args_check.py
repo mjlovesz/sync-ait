@@ -17,7 +17,7 @@ import argparse
 from components.utils.file_open_check import FileStat, is_legal_args_path_string
 
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
-MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024 # 10GB
+MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024 # 32GB
 MAX_SIZE_LIMITE_FUSION_FILE = 1 * 1024 * 1024 * 1024 # 1GB
 
 def check_model_path_legality(value):
@@ -94,7 +94,7 @@ def check_output_path_legality(value):
         file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal("write"):
+    if not file_stat.is_basically_legal("write", strict_permission=False):
         raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
     return path_value
 
@@ -107,7 +107,7 @@ def valid_json_file_or_dir(value):
         file_stat = FileStat(path_value)
     except Exception as err:
         raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.") from err
-    if not file_stat.is_basically_legal('read'):
+    if not file_stat.is_basically_legal('read', strict_permission=False):
         raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
     
     # input type: dir or json
