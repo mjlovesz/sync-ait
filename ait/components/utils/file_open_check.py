@@ -193,7 +193,7 @@ class FileStat:
                 solution_log(SOLUTION_BASE_URL + PERMISSION_SUB_URL)
                 return False
         elif perm == 'write' and self.is_exists:
-            if (strict_permission or self.is_file()) and self.permission & WRITE_FILE_NOT_PERMITTED_STAT > 0:
+            if (strict_permission or self.is_file) and self.permission & WRITE_FILE_NOT_PERMITTED_STAT > 0:
                 logger.error(f"The file {self.file} is group writable, or is others writable, "
                              "as export file(or directory) permission should not be over 0o750(rwxr-x---)")
                 solution_log(SOLUTION_BASE_URL + PERMISSION_SUB_URL)

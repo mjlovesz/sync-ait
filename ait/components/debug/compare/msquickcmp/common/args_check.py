@@ -17,7 +17,7 @@ import argparse
 from components.utils.file_open_check import FileStat, is_legal_args_path_string
 
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
-MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024 # 10GB
+MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024 # 32GB
 MAX_SIZE_LIMITE_FUSION_FILE = 1 * 1024 * 1024 * 1024 # 1GB
 
 def check_model_path_legality(value):
