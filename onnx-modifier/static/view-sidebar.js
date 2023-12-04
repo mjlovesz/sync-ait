@@ -1683,579 +1683,572 @@ sidebar.ModelSidebar = class {
     }
   }
 };
-
-sidebar.DocumentationSidebar = class {
-  constructor(host, metadata) {
-    this._host = host;
-    this._metadata = metadata;
-  }
-
-  render() {
-    if (!this._elements) {
-      this._elements = [];
-
-      const type = sidebar.DocumentationSidebar.formatDocumentation(this._metadata);
-
-      const element = this._host.document.createElement('div');
-      element.setAttribute('class', 'sidebar-view-documentation');
-
-      this._append(element, 'h1', type.name);
-
-      if (type.summary) {
-        this._append(element, 'p', type.summary);
-      }
-
-      if (type.description) {
-        this._append(element, 'p', type.description);
-      }
-
-      if (Array.isArray(type.attributes) && type.attributes.length > 0) {
-        this._append(element, 'h2', 'Attributes');
-        const attributes = this._append(element, 'dl');
-        for (const attribute of type.attributes) {
-          this._append(attributes, 'dt', attribute.name + (attribute.type ? ': <tt>' + attribute.type + '</tt>' : ''));
-          this._append(attributes, 'dd', attribute.description);
+  
+  sidebar.DocumentationSidebar = class {
+    constructor(host, metadata) {
+      this._host = host;
+      this._metadata = metadata;
+    }
+  
+    render() {
+      if (!this._elements) {
+        this._elements = [];
+  
+        const type = sidebar.DocumentationSidebar.formatDocumentation(this._metadata);
+  
+        const element = this._host.document.createElement('div');
+        element.setAttribute('class', 'sidebar-view-documentation');
+  
+        this._append(element, 'h1', type.name);
+  
+        if (type.summary) {
+          this._append(element, 'p', type.summary);
         }
-        element.appendChild(attributes);
-      }
-
-      if (Array.isArray(type.inputs) && type.inputs.length > 0) {
-        this._append(element, 'h2', 'Inputs' + (type.inputs_range ? ' (' + type.inputs_range + ')' : ''));
-        const inputs = this._append(element, 'dl');
-        for (const input of type.inputs) {
+  
+        if (type.description) {
+          this._append(element, 'p', type.description);
+        }
+  
+        if (Array.isArray(type.attributes) && type.attributes.length > 0) {
+          this._append(element, 'h2', 'Attributes');
+          const attributes = this._append(element, 'dl');
+          for (const attribute of type.attributes) {
+            this._append(attributes, 'dt', attribute.name + (attribute.type ? ': <tt>' + attribute.type + '</tt>' : ''));
+            this._append(attributes, 'dd', attribute.description);
+          }
+          element.appendChild(attributes);
+        }
+  
+        if (Array.isArray(type.inputs) && type.inputs.length > 0) {
+          this._append(element, 'h2', 'Inputs' + (type.inputs_range ? ' (' + type.inputs_range + ')' : ''));
+          const inputs = this._append(element, 'dl');
+          for (const input of type.inputs) {
+            this._append(
+              inputs,
+              'dt',
+              input.name +
+                (input.type ? ': <tt>' + input.type + '</tt>' : '') +
+                (input.option ? ' (' + input.option + ')' : '')
+            );
+            this._append(inputs, 'dd', input.description);
+          }
+        }
+  
+        if (Array.isArray(type.outputs) && type.outputs.length > 0) {
+          this._append(element, 'h2', 'Outputs' + (type.outputs_range ? ' (' + type.outputs_range + ')' : ''));
+          const outputs = this._append(element, 'dl');
+          for (const output of type.outputs) {
+            this._append(
+              outputs,
+              'dt',
+              output.name +
+                (output.type ? ': <tt>' + output.type + '</tt>' : '') +
+                (output.option ? ' (' + output.option + ')' : '')
+            );
+            this._append(outputs, 'dd', output.description);
+          }
+        }
+  
+        if (Array.isArray(type.type_constraints) && type.type_constraints.length > 0) {
+          this._append(element, 'h2', 'Type Constraints');
+          const type_constraints = this._append(element, 'dl');
+          for (const type_constraint of type.type_constraints) {
+            this._append(
+              type_constraints,
+              'dt',
+              type_constraint.type_param_str +
+                ': ' +
+                type_constraint.allowed_type_strs.map((item) => '<tt>' + item + '</tt>').join(', ')
+            );
+            this._append(type_constraints, 'dd', type_constraint.description);
+          }
+        }
+  
+        if (Array.isArray(type.examples) && type.examples.length > 0) {
+          this._append(element, 'h2', 'Examples');
+          for (const example of type.examples) {
+            this._append(element, 'h3', example.summary);
+            this._append(element, 'pre', example.code);
+          }
+        }
+  
+        if (Array.isArray(type.references) && type.references.length > 0) {
+          this._append(element, 'h2', 'References');
+          const references = this._append(element, 'ul');
+          for (const reference of type.references) {
+            this._append(references, 'li', reference.description);
+          }
+        }
+  
+        if (type.domain && type.version && type.support_level) {
+          this._append(element, 'h2', 'Support');
           this._append(
-            inputs,
-            'dt',
-            input.name +
-              (input.type ? ': <tt>' + input.type + '</tt>' : '') +
-              (input.option ? ' (' + input.option + ')' : '')
+            element,
+            'dl',
+            'In domain <tt>' +
+              type.domain +
+              '</tt> since version <tt>' +
+              type.version +
+              '</tt> at support level <tt>' +
+              type.support_level +
+              '</tt>.'
           );
-          this._append(inputs, 'dd', input.description);
         }
-      }
-
-      if (Array.isArray(type.outputs) && type.outputs.length > 0) {
-        this._append(element, 'h2', 'Outputs' + (type.outputs_range ? ' (' + type.outputs_range + ')' : ''));
-        const outputs = this._append(element, 'dl');
-        for (const output of type.outputs) {
-          this._append(
-            outputs,
-            'dt',
-            output.name +
-              (output.type ? ': <tt>' + output.type + '</tt>' : '') +
-              (output.option ? ' (' + output.option + ')' : '')
-          );
-          this._append(outputs, 'dd', output.description);
-        }
-      }
-
-      if (Array.isArray(type.type_constraints) && type.type_constraints.length > 0) {
-        this._append(element, 'h2', 'Type Constraints');
-        const type_constraints = this._append(element, 'dl');
-        for (const type_constraint of type.type_constraints) {
-          this._append(
-            type_constraints,
-            'dt',
-            type_constraint.type_param_str +
-              ': ' +
-              type_constraint.allowed_type_strs.map((item) => '<tt>' + item + '</tt>').join(', ')
-          );
-          this._append(type_constraints, 'dd', type_constraint.description);
-        }
-      }
-
-      if (Array.isArray(type.examples) && type.examples.length > 0) {
-        this._append(element, 'h2', 'Examples');
-        for (const example of type.examples) {
-          this._append(element, 'h3', example.summary);
-          this._append(element, 'pre', example.code);
-        }
-      }
-
-      if (Array.isArray(type.references) && type.references.length > 0) {
-        this._append(element, 'h2', 'References');
-        const references = this._append(element, 'ul');
-        for (const reference of type.references) {
-          this._append(references, 'li', reference.description);
-        }
-      }
-
-      if (type.domain && type.version && type.support_level) {
-        this._append(element, 'h2', 'Support');
-        this._append(
-          element,
-          'dl',
-          'In domain <tt>' +
-            type.domain +
-            '</tt> since version <tt>' +
-            type.version +
-            '</tt> at support level <tt>' +
-            type.support_level +
-            '</tt>.'
-        );
-      }
-
-      if (this._host.type == 'Electron') {
-        element.addEventListener('click', (e) => {
-          if (e.target && e.target.href) {
-            const link = e.target.href;
-            if (link.startsWith('http://') || link.startsWith('https://')) {
-              e.preventDefault();
-              this._raise('navigate', { link: link });
-            }
-          }
-        });
-      }
-
-      this._elements = [element];
-
-      const separator = this._host.document.createElement('div');
-      separator.className = 'sidebar-view-separator';
-      this._elements.push(separator);
-    }
-    return this._elements;
-  }
-
-  on(event, callback) {
-    this._events = this._events || {};
-    this._events[event] = this._events[event] || [];
-    this._events[event].push(callback);
-  }
-
-  _raise(event, data) {
-    if (this._events && this._events[event]) {
-      for (const callback of this._events[event]) {
-        callback(this, data);
-      }
-    }
-  }
-
-  _append(parent, type, content) {
-    const element = this._host.document.createElement(type);
-    if (content) {
-      element.innerHTML = content;
-    }
-    parent.appendChild(element);
-    return element;
-  }
-
-  static formatDocumentation(source) {
-    if (source) {
-      const generator = new markdown.Generator();
-      const target = {};
-      if (source.name !== undefined) {
-        target.name = source.name;
-      }
-      if (source.module !== undefined) {
-        target.module = source.module;
-      }
-      if (source.category !== undefined) {
-        target.category = source.category;
-      }
-      if (source.summary !== undefined) {
-        target.summary = generator.html(source.summary);
-      }
-      if (source.description !== undefined) {
-        target.description = generator.html(source.description);
-      }
-      if (Array.isArray(source.attributes)) {
-        target.attributes = source.attributes.map((source) => {
-          const target = {};
-          target.name = source.name;
-          if (source.type !== undefined) {
-            target.type = source.type;
-          }
-          if (source.option !== undefined) {
-            target.option = source.option;
-          }
-          if (source.optional !== undefined) {
-            target.optional = source.optional;
-          }
-          if (source.required !== undefined) {
-            target.required = source.required;
-          }
-          if (source.minimum !== undefined) {
-            target.minimum = source.minimum;
-          }
-          if (source.src !== undefined) {
-            target.src = source.src;
-          }
-          if (source.src_type !== undefined) {
-            target.src_type = source.src_type;
-          }
-          if (source.description !== undefined) {
-            target.description = generator.html(source.description);
-          }
-          if (source.default !== undefined) {
-            target.default = source.default;
-          }
-          if (source.visible !== undefined) {
-            target.visible = source.visible;
-          }
-          return target;
-        });
-      }
-      if (Array.isArray(source.inputs)) {
-        target.inputs = source.inputs.map((source) => {
-          const target = {};
-          target.name = source.name;
-          if (source.type !== undefined) {
-            target.type = source.type;
-          }
-          if (source.description !== undefined) {
-            target.description = generator.html(source.description);
-          }
-          if (source.default !== undefined) {
-            target.default = source.default;
-          }
-          if (source.src !== undefined) {
-            target.src = source.src;
-          }
-          if (source.list !== undefined) {
-            target.list = source.list;
-          }
-          if (source.isRef !== undefined) {
-            target.isRef = source.isRef;
-          }
-          if (source.typeAttr !== undefined) {
-            target.typeAttr = source.typeAttr;
-          }
-          if (source.numberAttr !== undefined) {
-            target.numberAttr = source.numberAttr;
-          }
-          if (source.typeListAttr !== undefined) {
-            target.typeListAttr = source.typeListAttr;
-          }
-          if (source.option !== undefined) {
-            target.option = source.option;
-          }
-          if (source.optional !== undefined) {
-            target.optional = source.optional;
-          }
-          if (source.visible !== undefined) {
-            target.visible = source.visible;
-          }
-          return target;
-        });
-      }
-      if (Array.isArray(source.outputs)) {
-        target.outputs = source.outputs.map((source) => {
-          const target = {};
-          target.name = source.name;
-          if (source.type) {
-            target.type = source.type;
-          }
-          if (source.description !== undefined) {
-            target.description = generator.html(source.description);
-          }
-          if (source.list !== undefined) {
-            target.list = source.list;
-          }
-          if (source.typeAttr !== undefined) {
-            target.typeAttr = source.typeAttr;
-          }
-          if (source.typeListAttr !== undefined) {
-            target.typeListAttr = source.typeAttr;
-          }
-          if (source.numberAttr !== undefined) {
-            target.numberAttr = source.numberAttr;
-          }
-          if (source.isRef !== undefined) {
-            target.isRef = source.isRef;
-          }
-          if (source.option !== undefined) {
-            target.option = source.option;
-          }
-          return target;
-        });
-      }
-      if (Array.isArray(source.references)) {
-        target.references = source.references.map((source) => {
-          if (source) {
-            target.description = generator.html(source.description);
-          }
-          return target;
-        });
-      }
-      if (source.version !== undefined) {
-        target.version = source.version;
-      }
-      if (source.operator !== undefined) {
-        target.operator = source.operator;
-      }
-      if (source.identifier !== undefined) {
-        target.identifier = source.identifier;
-      }
-      if (source.package !== undefined) {
-        target.package = source.package;
-      }
-      if (source.support_level !== undefined) {
-        target.support_level = source.support_level;
-      }
-      if (source.min_input !== undefined) {
-        target.min_input = source.min_input;
-      }
-      if (source.max_input !== undefined) {
-        target.max_input = source.max_input;
-      }
-      if (source.min_output !== undefined) {
-        target.min_output = source.min_output;
-      }
-      if (source.max_input !== undefined) {
-        target.max_output = source.max_output;
-      }
-      if (source.inputs_range !== undefined) {
-        target.inputs_range = source.inputs_range;
-      }
-      if (source.outputs_range !== undefined) {
-        target.outputs_range = source.outputs_range;
-      }
-      if (source.examples !== undefined) {
-        target.examples = source.examples;
-      }
-      if (source.constants !== undefined) {
-        target.constants = source.constants;
-      }
-      if (source.type_constraints !== undefined) {
-        target.type_constraints = source.type_constraints;
-      }
-      return target;
-    }
-    return '';
-  }
-};
-
-sidebar.FindSidebar = class {
-  constructor(host, element, graph) {
-    this._host = host;
-    this._graphElement = element;
-    this._graph = graph;
-    this._contentElement = this._host.document.createElement('div');
-    this._contentElement.setAttribute('class', 'sidebar-view-find');
-    this._searchElement = this._host.document.createElement('input');
-    this._searchElement.setAttribute('id', 'search');
-    this._searchElement.setAttribute('type', 'text');
-    this._searchElement.setAttribute('spellcheck', 'false');
-    this._searchElement.setAttribute('placeholder', 'Search...');
-    this._searchElement.setAttribute('style', 'width: 100%');
-    this._searchElement.addEventListener('input', (e) => {
-      this.update(e.target.value);
-      this._raise('search-text-changed', e.target.value);
-    });
-    this._resultElement = this._host.document.createElement('ol');
-    this._resultElement.addEventListener('click', (e) => {
-      this.select(e);
-    });
-    this._resultElement.addEventListener('dblclick', (e) => {
-      this.select(e);
-    });
-    this._contentElement.appendChild(this._searchElement);
-    this._contentElement.appendChild(this._resultElement);
-  }
-
-  on(event, callback) {
-    this._events = this._events || {};
-    this._events[event] = this._events[event] || [];
-    this._events[event].push(callback);
-  }
-
-  _raise(event, data, e) {
-    if (this._events && this._events[event]) {
-      for (const callback of this._events[event]) {
-        callback(this, data, e);
-      }
-    }
-  }
-
-  select(e) {
-    const selection = [];
-    const data = e.target.dataset;
-    const id = data.id;
-
-    const nodesElement = this._graphElement.getElementById('nodes');
-    let nodeElement = nodesElement.firstChild;
-    while (nodeElement) {
-      if (nodeElement.id == id) {
-        selection.push(nodeElement);
-      }
-      nodeElement = nodeElement.nextSibling;
-    }
-
-    const edgePathsElement = this._graphElement.getElementById('edge-paths');
-    let edgePathElement = edgePathsElement.firstChild;
-    while (edgePathElement) {
-      if (edgePathElement.id == id) {
-        selection.push(edgePathElement);
-      }
-      edgePathElement = edgePathElement.nextSibling;
-    }
-
-    let initializerElement = this._graphElement.getElementById(id);
-    if (initializerElement) {
-      while (initializerElement.parentElement) {
-        initializerElement = initializerElement.parentElement;
-        if (initializerElement.id && initializerElement.id.startsWith('node-')) {
-          selection.push(initializerElement);
-          break;
-        }
-      }
-    }
-
-    if (e.type == 'dblclick') {
-      this._raise('dblclick-list', data, e);
-    } else if (selection.length > 0) {
-      this._raise('select', selection);
-    } else {
-      this._raise('select-not-in-graph', data);
-    }
-  }
-
-  focus(searchText) {
-    this._searchElement.focus();
-    this._searchElement.value = '';
-    this._searchElement.value = searchText;
-    this.update(searchText);
-  }
-
-  update(searchText) {
-    while (this._resultElement.lastChild) {
-      this._resultElement.removeChild(this._resultElement.lastChild);
-    }
-
-    let terms = null;
-    let callback = null;
-    const unquote = searchText.match(new RegExp(/^'(.*)'|"(.*)"$/));
-    if (unquote) {
-      const term = unquote[1] || unquote[2];
-      terms = [term];
-      callback = (name) => {
-        return term == name;
-      };
-    } else {
-      terms = searchText
-        .trim()
-        .toLowerCase()
-        .split(' ')
-        .map((term) => term.trim())
-        .filter((term) => term.length > 0);
-      callback = (name) => {
-        return terms.every((term) => name.toLowerCase().indexOf(term) !== -1);
-      };
-    }
-
-    const nodes = new Set();
-    const edges = new Set();
-
-    for (const node of this._graph.nodes.values()) {
-      const label = node.label;
-      const initializers = [];
-      if (label.class === 'graph-node' || label.class === 'graph-input') {
-        for (const input of label.inputs) {
-          for (const argument of input.arguments) {
-            if (argument.name && !edges.has(argument.name)) {
-              const match = (argument, term) => {
-                if (argument.name && argument.name.toLowerCase().indexOf(term) !== -1) {
-                  return true;
-                }
-                if (argument.type) {
-                  if (argument.type.dataType && term === argument.type.dataType.toLowerCase()) {
-                    return true;
-                  }
-                  if (argument.type.shape) {
-                    if (term === argument.type.shape.toString().toLowerCase()) {
-                      return true;
-                    }
-                    if (argument.type.shape && Array.isArray(argument.type.shape.dimensions)) {
-                      const dimensions = argument.type.shape.dimensions.map((dimension) =>
-                        dimension ? dimension.toString().toLowerCase() : ''
-                      );
-                      if (term === dimensions.join(',')) {
-                        return true;
-                      }
-                      if (dimensions.some((dimension) => term === dimension)) {
-                        return true;
-                      }
-                    }
-                  }
-                }
-                return false;
-              };
-              if (terms.every((term) => match(argument, term))) {
-                if (!argument.initializer) {
-                  const inputItem = this._host.document.createElement('li');
-                  inputItem.innerText = '\u2192 ' + argument.name.split('\n').shift(); // custom argument id
-                  inputItem.dataset.id = 'edge-' + argument.name;
-                  inputItem.dataset.type = 'edge';
-                  inputItem.dataset.name = label.name;
-                  inputItem.dataset.graph_node_name = label.modelNodeName.split('\n').shift();
-
-                  this._resultElement.appendChild(inputItem);
-                  edges.add(argument.name);
-                } else {
-                  initializers.push([argument, label.name, label.modelNodeName]);
-                }
+  
+        if (this._host.type == 'Electron') {
+          element.addEventListener('click', (e) => {
+            if (e.target && e.target.href) {
+              const link = e.target.href;
+              if (link.startsWith('http://') || link.startsWith('https://')) {
+                e.preventDefault();
+                this._raise('navigate', { link: link });
               }
             }
-          }
+          });
         }
+  
+        this._elements = [element];
+  
+        const separator = this._host.document.createElement('div');
+        separator.className = 'sidebar-view-separator';
+        this._elements.push(separator);
       }
-      if (label.class === 'graph-node') {
-        const name = label.value.name;
-        const type = label.value.type.name;
-        if (!nodes.has(label.id) && ((name && callback(name)) || (type && callback(type)))) {
-          const nameItem = this._host.document.createElement('li');
-          nameItem.innerText = '\u25A2 ' + (name || '[' + type + ']');
-          nameItem.dataset.id = label.id;
-          nameItem.dataset.type = 'node';
-          nameItem.dataset.name = label.name;
-          nameItem.dataset.graph_node_name = name;
-          this._resultElement.appendChild(nameItem);
-          nodes.add(label.id);
-        }
-      }
-      for (const [argument, name, node_name] of initializers) {
-        if (argument.name) {
-          const initializeItem = this._host.document.createElement('li');
-          initializeItem.innerText = '\u25A0 ' + argument.name.split('\n').shift(); // custom argument id
-          initializeItem.dataset.id = 'initializer-' + argument.name;
-          initializeItem.dataset.type = 'initializer';
-          initializeItem.dataset.name = name;
-          initializeItem.dataset.graph_node_name = node_name.split('\n').shift();
-          this._resultElement.appendChild(initializeItem);
+      return this._elements;
+    }
+  
+    on(event, callback) {
+      this._events = this._events || {};
+      this._events[event] = this._events[event] || [];
+      this._events[event].push(callback);
+    }
+  
+    _raise(event, data) {
+      if (this._events && this._events[event]) {
+        for (const callback of this._events[event]) {
+          callback(this, data);
         }
       }
     }
-
-    for (const node of this._graph.nodes.values()) {
-      const label = node.label;
-      if (label.class === 'graph-node' || label.class === 'graph-output') {
-        for (const output of label.outputs) {
-          for (const argument of output.arguments) {
-            if (
-              argument.name &&
-              !edges.has(argument.name) &&
-              terms.every((term) => argument.name.toLowerCase().indexOf(term) != -1)
-            ) {
-              const outputItem = this._host.document.createElement('li');
-              outputItem.innerText = '\u2192 ' + argument.name.split('\n').shift(); // custom argument id
-              outputItem.dataset.id = 'edge-' + argument.name;
-              outputItem.dataset.type = 'output';
-              outputItem.dataset.name = label.name;
-              outputItem.dataset.graph_node_name = label.modelNodeName.split('\n').shift();
-              this._resultElement.appendChild(outputItem);
-              edges.add(argument.name);
+  
+    _append(parent, type, content) {
+      const element = this._host.document.createElement(type);
+      if (content) {
+        element.innerHTML = content;
+      }
+      parent.appendChild(element);
+      return element;
+    }
+  
+    static formatDocumentation(source) {
+        if (source) {
+            const generator = new markdown.Generator();
+            const target = {};
+            if (source.name !== undefined) {
+                target.name = source.name;
             }
-          }
+            if (source.module !== undefined) {
+                target.module = source.module;
+            }
+            if (source.category !== undefined) {
+                target.category = source.category;
+            }
+            if (source.summary !== undefined) {
+                target.summary = generator.html(source.summary);
+            }
+            if (source.description !== undefined) {
+                target.description = generator.html(source.description);
+            }
+            if (Array.isArray(source.attributes)) {
+                target.attributes = source.attributes.map((source) => {
+                    const target = {};
+                    target.name = source.name;
+                    if (source.type !== undefined) {
+                        target.type = source.type;
+                    }
+                    if (source.option !== undefined) {
+                        target.option = source.option;
+                    }
+                    if (source.optional !== undefined) {
+                        target.optional = source.optional;
+                    }
+                    if (source.required !== undefined) {
+                        target.required = source.required;
+                    }
+                    if (source.minimum !== undefined) {
+                        target.minimum = source.minimum;
+                    }
+                    if (source.src !== undefined) {
+                        target.src = source.src;
+                    }
+                    if (source.src_type !== undefined) {
+                        target.src_type = source.src_type;
+                    }
+                    if (source.description !== undefined) {
+                        target.description = generator.html(source.description);
+                    }
+                    if (source.default !== undefined) {
+                        target.default = source.default;
+                    }
+                    if (source.visible !== undefined) {
+                        target.visible = source.visible;
+                    }
+                    return target;
+                });
+            }
+            if (Array.isArray(source.inputs)) {
+                target.inputs = source.inputs.map((source) => {
+                    const target = {};
+                    target.name = source.name;
+                    if (source.type !== undefined) {
+                        target.type = source.type;
+                    }
+                    if (source.description !== undefined) {
+                        target.description = generator.html(source.description);
+                    }
+                    if (source.default !== undefined) {
+                        target.default = source.default;
+                    }
+                    if (source.src !== undefined) {
+                        target.src = source.src;
+                    }
+                    if (source.list !== undefined) {
+                        target.list = source.list;
+                    }
+                    if (source.isRef !== undefined) {
+                        target.isRef = source.isRef;
+                    }
+                    if (source.typeAttr !== undefined) {
+                        target.typeAttr = source.typeAttr;
+                    }
+                    if (source.numberAttr !== undefined) {
+                        target.numberAttr = source.numberAttr;
+                    }
+                    if (source.typeListAttr !== undefined) {
+                        target.typeListAttr = source.typeListAttr;
+                    }
+                    if (source.option !== undefined) {
+                        target.option = source.option;
+                    }
+                    if (source.optional !== undefined) {
+                        target.optional = source.optional;
+                    }
+                    if (source.visible !== undefined) {
+                        target.visible = source.visible;
+                    }
+                    return target;
+                });
+            }
+            if (Array.isArray(source.outputs)) {
+                target.outputs = source.outputs.map((source) => {
+                    const target = {};
+                    target.name = source.name;
+                    if (source.type) {
+                        target.type = source.type;
+                    }
+                    if (source.description !== undefined) {
+                        target.description = generator.html(source.description);
+                    }
+                    if (source.list !== undefined) {
+                        target.list = source.list;
+                    }
+                    if (source.typeAttr !== undefined) {
+                        target.typeAttr = source.typeAttr;
+                    }
+                    if (source.typeListAttr !== undefined) {
+                        target.typeListAttr = source.typeAttr;
+                    }
+                    if (source.numberAttr !== undefined) {
+                        target.numberAttr = source.numberAttr;
+                    }
+                    if (source.isRef !== undefined) {
+                        target.isRef = source.isRef;
+                    }
+                    if (source.option !== undefined) {
+                        target.option = source.option;
+                    }
+                    return target;
+                });
+            }
+            if (Array.isArray(source.references)) {
+                target.references = source.references.map((source) => {
+                    if (source) {
+                        target.description = generator.html(source.description);
+                    }
+                    return target;
+                });
+            }
+            if (source.version !== undefined) {
+                target.version = source.version;
+            }
+            if (source.operator !== undefined) {
+                target.operator = source.operator;
+            }
+            if (source.identifier !== undefined) {
+                target.identifier = source.identifier;
+            }
+            if (source.package !== undefined) {
+                target.package = source.package;
+            }
+            if (source.support_level !== undefined) {
+                target.support_level = source.support_level;
+            }
+            if (source.min_input !== undefined) {
+                target.min_input = source.min_input;
+            }
+            if (source.max_input !== undefined) {
+                target.max_input = source.max_input;
+            }
+            if (source.min_output !== undefined) {
+                target.min_output = source.min_output;
+            }
+            if (source.max_input !== undefined) {
+                target.max_output = source.max_output;
+            }
+            if (source.inputs_range !== undefined) {
+                target.inputs_range = source.inputs_range;
+            }
+            if (source.outputs_range !== undefined) {
+                target.outputs_range = source.outputs_range;
+            }
+            if (source.examples !== undefined) {
+                target.examples = source.examples;
+            }
+            if (source.constants !== undefined) {
+                target.constants = source.constants;
+            }
+            if (source.type_constraints !== undefined) {
+                target.type_constraints = source.type_constraints;
+            }
+            return target;
         }
-      }
+        return '';
+    }
+  };
+
+sidebar.FindSidebar = class {
+
+    constructor(host, element, graph) {
+        this._host = host;
+        this._graphElement = element;
+        this._graph = graph;
+        this._contentElement = this._host.document.createElement('div');
+        this._contentElement.setAttribute('class', 'sidebar-view-find');
+        this._searchElement = this._host.document.createElement('input');
+        this._searchElement.setAttribute('id', 'search');
+        this._searchElement.setAttribute('type', 'text');
+        this._searchElement.setAttribute('spellcheck', 'false');
+        this._searchElement.setAttribute('placeholder', 'Search...');
+        this._searchElement.setAttribute('style', 'width: 100%');
+        this._searchElement.addEventListener('input', (e) => {
+            this.update(e.target.value);
+            this._raise('search-text-changed', e.target.value);
+        });
+        this._resultElement = this._host.document.createElement('ol');
+        this._resultElement.addEventListener('click', (e) => {
+            this.select(e);
+        });
+        this._resultElement.addEventListener('dblclick', (e) => {
+            this.select(e);
+        });
+        this._contentElement.appendChild(this._searchElement);
+        this._contentElement.appendChild(this._resultElement);
     }
 
-    this._resultElement.style.display = this._resultElement.childNodes.length != 0 ? 'block' : 'none';
-  }
+    on(event, callback) {
+        this._events = this._events || {};
+        this._events[event] = this._events[event] || [];
+        this._events[event].push(callback);
+    }
 
-  get content() {
-    return this._contentElement;
-  }
+    _raise(event, data, e) {
+        if (this._events && this._events[event]) {
+            for (const callback of this._events[event]) {
+                callback(this, data, e);
+            }
+        }
+    }
+
+    select(e) {
+        const selection = [];
+        const data = e.target.dataset;
+        const id = data.id;
+
+        const nodesElement = this._graphElement.getElementById('nodes');
+        let nodeElement = nodesElement.firstChild;
+        while (nodeElement) {
+            if (nodeElement.id == id) {
+                selection.push(nodeElement);
+            }
+            nodeElement = nodeElement.nextSibling;
+        }
+
+        const edgePathsElement = this._graphElement.getElementById('edge-paths');
+        let edgePathElement = edgePathsElement.firstChild;
+        while (edgePathElement) {
+            if (edgePathElement.id == id) {
+                selection.push(edgePathElement);
+            }
+            edgePathElement = edgePathElement.nextSibling;
+        }
+
+        let initializerElement = this._graphElement.getElementById(id);
+        if (initializerElement) {
+            while (initializerElement.parentElement) {
+                initializerElement = initializerElement.parentElement;
+                if (initializerElement.id && initializerElement.id.startsWith('node-')) {
+                    selection.push(initializerElement);
+                    break;
+                }
+            }
+        }
+
+        if (e.type == "dblclick") {
+            this._raise("dblclick-list", data, e)
+        } else if (selection.length > 0) {
+            this._raise('select', selection);
+        } else {
+            this._raise("select-not-in-graph", data)
+        }
+    }
+
+    focus(searchText) {
+        this._searchElement.focus();
+        this._searchElement.value = '';
+        this._searchElement.value = searchText;
+        this.update(searchText);
+    }
+
+    update(searchText) {
+        while (this._resultElement.lastChild) {
+            this._resultElement.removeChild(this._resultElement.lastChild);
+        }
+
+        let terms = null;
+        let callback = null;
+        const unquote = searchText.match(new RegExp(/^'(.*)'|"(.*)"$/));
+        if (unquote) {
+            const term = unquote[1] || unquote[2];
+            terms = [ term ];
+            callback = (name) => {
+                return term == name;
+            };
+        }
+        else {
+            terms = searchText.trim().toLowerCase().split(' ').map((term) => term.trim()).filter((term) => term.length > 0);
+            callback = (name) => {
+                return terms.every((term) => name.toLowerCase().indexOf(term) !== -1);
+            };
+        }
+
+        const nodes = new Set();
+        const edges = new Set();
+
+        for (const node of this._graph.nodes.values()) {
+            const label = node.label;
+            const initializers = [];
+            if (label.class === 'graph-node' || label.class === 'graph-input') {
+                for (const input of label.inputs) {
+                    for (const argument of input.arguments) {
+                        if (argument.name && !edges.has(argument.name)) {
+                            const match = (argument, term) => {
+                                if (argument.name && argument.name.toLowerCase().indexOf(term) !== -1) {
+                                    return true;
+                                }
+                                if (argument.type) {
+                                    if (argument.type.dataType && term === argument.type.dataType.toLowerCase()) {
+                                        return true;
+                                    }
+                                    if (argument.type.shape) {
+                                        if (term === argument.type.shape.toString().toLowerCase()) {
+                                            return true;
+                                        }
+                                        if (argument.type.shape && Array.isArray(argument.type.shape.dimensions)) {
+                                            const dimensions = argument.type.shape.dimensions.map((dimension) => dimension ? dimension.toString().toLowerCase() : '');
+                                            if (term === dimensions.join(',')) {
+                                                return true;
+                                            }
+                                            if (dimensions.some((dimension) => term === dimension)) {
+                                                return true;
+                                            }
+                                        }
+                                    }
+                                }
+                                return false;
+                            };
+                            if (terms.every((term) => match(argument, term))) {
+                                if (!argument.initializer) {
+                                    const inputItem = this._host.document.createElement('li');
+                                    inputItem.innerText = '\u2192 ' + argument.name.split('\n').shift(); // custom argument id
+                                    inputItem.dataset.id = 'edge-' + argument.name;
+                                    inputItem.dataset.type = "edge"
+                                    inputItem.dataset.name = label.name
+                                    inputItem.dataset.graph_node_name = label.modelNodeName.split('\n').shift()
+
+                                    this._resultElement.appendChild(inputItem);
+                                    edges.add(argument.name);
+                                }
+                                else {
+                                    initializers.push([argument, label.name, label.modelNodeName]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (label.class === 'graph-node') {
+                const name = label.value.name;
+                const type = label.value.type.name;
+                if (!nodes.has(label.id) &&
+                    ((name && callback(name) || (type && callback(type))))) {
+                    const nameItem = this._host.document.createElement('li');
+                    nameItem.innerText = '\u25A2 ' + (name || '[' + type + ']');
+                    nameItem.dataset.id = label.id;
+                    nameItem.dataset.type = "node"
+                    nameItem.dataset.name = label.name
+                    nameItem.dataset.graph_node_name = name
+                    this._resultElement.appendChild(nameItem);
+                    nodes.add(label.id);
+                }
+            }
+            for (const [argument, name, node_name] of initializers) {
+                if (argument.name) {
+                    const initializeItem = this._host.document.createElement('li');
+                    initializeItem.innerText = '\u25A0 ' + argument.name.split('\n').shift(); // custom argument id
+                    initializeItem.dataset.id = 'initializer-' + argument.name;
+                    initializeItem.dataset.type = "initializer"
+                    initializeItem.dataset.name = name
+                    initializeItem.dataset.graph_node_name = node_name.split('\n').shift();
+                    this._resultElement.appendChild(initializeItem);
+                }
+            }
+        }
+
+        for (const node of this._graph.nodes.values()) {
+            const label = node.label;
+            if (label.class === 'graph-node' || label.class === 'graph-output') {
+                for (const output of label.outputs) {
+                    for (const argument of output.arguments) {
+                        if (argument.name && !edges.has(argument.name) && terms.every((term) => argument.name.toLowerCase().indexOf(term) != -1)) {
+                            const outputItem = this._host.document.createElement('li');
+                            outputItem.innerText = '\u2192 ' + argument.name.split('\n').shift(); // custom argument id
+                            outputItem.dataset.id = 'edge-' + argument.name;
+                            outputItem.dataset.type = "output"
+                            outputItem.dataset.name = label.name
+                            outputItem.dataset.graph_node_name = label.modelNodeName.split('\n').shift()
+                            this._resultElement.appendChild(outputItem);
+                            edges.add(argument.name);
+                        }
+                    }
+                }
+            }
+        }
+
+        this._resultElement.style.display = this._resultElement.childNodes.length != 0 ? 'block' : 'none';
+    }
+
+    get content() {
+        return this._contentElement;
+    }
 };
 
 const markdown = {};
