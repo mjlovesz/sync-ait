@@ -700,6 +700,18 @@ host.BrowserHost = class {
       }
     }
 
+    function showWaitPage(isWait) {
+      if (isWait) {
+        this.document.body.classList.remove("default")
+        this.document.body.classList.add("welcome")
+        this.document.body.classList.add("spinner")
+      } else {
+        this.document.body.classList.add("default")
+        this.document.body.classList.remove("welcome")
+        this.document.body.classList.remove("spinner")
+      }
+    }
+
     function submitCustomOperator() {
       var customOperatorData = {
         name: document.getElementById('customName').value,
@@ -834,11 +846,13 @@ host.BrowserHost = class {
           this._ori_model_file = file;
           form.append('session', this.session);
 
+          showWaitPage(true)
           fetch('/open_model', {
             method: 'POST',
             body: form,
           })
             .then((response) => {
+              showWaitPage(false)
               this.check_res_status(response.status);
               return response.text();
             })
@@ -1044,6 +1058,8 @@ host.BrowserHost = class {
   }
 
   take_effect_modify(path, data_body, record_modify, callback) {
+    showWaitPage(true)
+    
     return fetch(path, {
       // Declare what type of data we're sending
       headers: {
@@ -1054,6 +1070,7 @@ host.BrowserHost = class {
       body: typeof data_body == 'string' ? data_body : JSON.stringify(data_body),
     })
       .then((response) => {
+        showWaitPage(false)
         if (this.check_res_status(response.status)) {
           return;
         } else if (response.status == 299) {
