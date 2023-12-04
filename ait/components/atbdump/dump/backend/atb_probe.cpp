@@ -28,13 +28,11 @@ static std::vector<std::string> SplitString(const std::string &ss, const char &t
     std::vector<std::string> tokens;
     std::stringstream input(ss);
     std::string token;
-    while (std::getline(input, token, tar))
-    {
+    while (std::getline(input, token, tar)) {
         tokens.push_back(token);
     }
 
     return tokens;
-
 }
 
 
@@ -48,17 +46,13 @@ static bool CheckDirectory(const std::string &directory)
 {
     std::vector<std::string> dirs = SplitString(directory, '/');
     std::string curDir = "";
-    for (auto &dir : dirs)
-    {
+    for (auto &dir : dirs) {
         curDir += dir + "/";
-        if (!DirectoryExists(curDir))
-        {
+        if (!DirectoryExists(curDir)) {
             int status = mkdir(curDir.c_str(), 0755);
-            if (!status)
-            {
+            if (!status) {
                 std::cout << "directory created: " << curDir << std::endl;
-            }
-            else {
+            } else {
                 std::cout << "cannot create directory: " << cueDir << std::endl;
             }
         }
@@ -76,8 +70,7 @@ bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::st
 {
     const char *vid = std::getenv("ATB_SAVE_TENSOR_IDS"); // 应该是20_1_9,1_23,5_29_1
     const char *tid = std::getenv("ATB_SAVE_TENSOR_RUNNER"); // 应该是LinearOps，SelfAttention
-    if (!vid && !tid)
-    {
+    if (!vid && !tid) {
         return true;
     }
 
@@ -87,8 +80,7 @@ bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::st
         for (size_t i = 0; i < ids.size(); ++i) {
             if (i) {
                 query += "_" + std::to_string(ids[i]);
-            }
-            else {
+            } else {
                 query += std::to_string(ids[i]);
             }
         }
@@ -96,8 +88,7 @@ bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::st
             bool result = false;
             if (IsSaveChild()) {
                 result = IsPrefix(query, indice);
-            }
-            else {
+            } else {
                 result = indice == query;
             }
             if (result) {
@@ -158,8 +149,9 @@ bool atb::Probe::IsExecuteCountInRange(const uint64_t executeCount)
 {
     const char* saveTensorRange = std::getenv("ATB_SAVE_TENSOR_RANGE");
     std::vector<std::string> saveTensorRan = SplitString(saveTensorRange, ',');
-    for (size_t i = 1; i < saveTensorRan.size(); i += 2) {
-        uint64_t left = stoi(saveTensorRan[i - 1]), right = stoi(saveTensorRan[i]);
+    for (size_t i = 1; i < saveTensorRan.size(); i += RANGE_COUNT) {
+        uint64_t left = stoi(saveTensorRan[i - 1]);
+        uint64_t right = stoi(saveTensorRan[i]);
         if (executeCount <= right && executeCount >= left) {
             return true;
         }
@@ -191,41 +183,9 @@ bool atb::Probe::IsSaveTensorAfter()
 
 
 void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
-        const std::string &dims, const void *hostData, uint64_t dataSize,
-        const std::string &filePath)
-{   
-    const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
-    std::string outDir = outputDir != nullptr? outputDir : "./";
-    std::string outPath = outDir + filePath;
-    size_t found = outPath.find_last_of("/");
-    std::string directory = outPath.substr(0, found);
-    bool ret = CheckDirectory(directory);
-
-    if (!ret)
-    {
-        std::cout << "Create directory failed: " << directory << std::endl;
-        return;
-    }
-
-    if (!hostData)
-    {   
-        std::cout << "hostData is None." << std::endl;
-        return;
-    }
-    BinFile binFile;
-    binFile.AddAttr("format", format);
-    binFile.AddAttr("dtype", dtype);
-    binFile.AddAttr("dims", dims);
-    if (IsSaveTensorData()) {
-        binFile.AddObject("data", hostData, dataSize);
-    }
-    binFile.Write(outPath);
-
-}
-
-
-void atb::Probe::SaveTiling(const uint8_t* data, uint64_t dataSize, const std::string &filePath)
-{   
+    const std::string &dims, const void *hostData, uint64_t dataSize,
+    const std::string &filePath)
+{
     const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
     std::string outDir = outputDir != nullptr? outputDir : "./";
     std::string outPath = outDir + filePath;
@@ -238,7 +198,36 @@ void atb::Probe::SaveTiling(const uint8_t* data, uint64_t dataSize, const std::s
         return;
     }
 
-    if (!data) {   
+    if (!hostData) {
+        std::cout << "hostData is None." << std::endl;
+        return;
+    }
+    BinFile binFile;
+    binFile.AddAttr("format", format);
+    binFile.AddAttr("dtype", dtype);
+    binFile.AddAttr("dims", dims);
+    if (IsSaveTensorData()) {
+        binFile.AddObject("data", hostData, dataSize);
+    }
+    binFile.Write(outPath);
+}
+
+
+void atb::Probe::SaveTiling(const uint8_t* data, uint64_t dataSize, const std::string &filePath)
+{
+    const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
+    std::string outDir = outputDir != nullptr? outputDir : "./";
+    std::string outPath = outDir + filePath;
+    size_t found = outPath.find_last_of("/");
+    std::string directory = outPath.substr(0, found);
+    bool ret = CheckDirectory(directory);
+
+    if (!ret) {
+        std::cout << "Create directory failed: " << directory << std::endl;
+        return;
+    }
+
+    if (!data) {
         std::cout << "Data is None." << std::endl;
         return;
     }
@@ -252,6 +241,7 @@ void atb::Probe::SaveTiling(const uint8_t* data, uint64_t dataSize, const std::s
     } else {
         std::cout << "Unable to open file!" << std::endl;
     }
+    return;
 }
 
 

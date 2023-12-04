@@ -13,7 +13,23 @@
 # limitations under the License.
 
 
-from setuptools import setup, find_packages  # type: ignore
+from setuptools import setup, find_packages, Extension
+from setuptools.command.build_ext import build_ext
+import subprocess
+
+class CustomBuildExt(build_ext):
+    def run(self):
+        subprocess.check_call(['bash', 'my_module/cpp_code/build.sh'])
+        super().run()
+
+setup(
+    name='my_project',
+    version='1.0',
+    packages=['my_module'],
+    ext_modules=[Extension('my_module.my_cpp_module', sources=['my_module/cpp_code/my_cpp_code.cpp'])],
+    cmdclass={'build_ext': CustomBuildExt},
+    install_requires=[],  # 添加你的依赖项
+)
 
 
 setup(
@@ -35,6 +51,8 @@ setup(
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development'
     ],
+    ext_modules=[Extension('my_module.my_cpp_module', sources=['my_module/cpp_code/my_cpp_code.cpp'])],
+    cmdclass={'build_ext': CustomBuildExt},
     python_requires='>=3.7',
     entry_points={
         'atbdump_sub_task': ['atbdump=dump.__main__:get_cmd_instance'],

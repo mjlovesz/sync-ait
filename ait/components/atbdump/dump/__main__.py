@@ -19,10 +19,13 @@ from components.utils.parser import BaseCommand
 from dump.common.utils import str2bool, check_positive_integer, safe_string, check_exec_cmd, \
                               check_ids_string, check_number_list, check_output_path_legality
 from dump.library.initial import init_dump_task, clear_dump_task
+
+
 class DumpCommand(BaseCommand):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.parser = None
+
     def add_arguments(self, parser):
         parser.add_argument(
             '--only-save-desc',
@@ -111,7 +114,8 @@ class DumpCommand(BaseCommand):
             os.system(args.exec)
             clear_dump_task()
             return
-        
+
+    
 def get_cmd_instance():
     help_info = "Ascend Transformer Boost Dump Tool."
     cmd_instance = DumpCommand("atbdump", help_info)

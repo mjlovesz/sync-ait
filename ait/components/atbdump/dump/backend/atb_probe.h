@@ -24,12 +24,14 @@
 #include <cstdint>
 #include <algorithm>
 
+
+
+namespace atb {
 constexpr int SAVE_TENSOR_BEFORE = 0;
 constexpr int SAVE_TENSOR_AFTER = 1;
 constexpr int SAVE_TENSOR_BOTH = 2;
 constexpr int SAVE_TENSOR_DATA = 1;
-
-namespace atb {
+constexpr int RANGE_COUNT = 2;
 class Probe {
 public:
     static bool IsTensorNeedSave(const std::vector<int64_t> &ids, const std::string &optype);

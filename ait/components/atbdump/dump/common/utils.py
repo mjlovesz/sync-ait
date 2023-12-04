@@ -69,6 +69,7 @@ def check_ids_string(value):
         raise argparse.ArgumentTypeError(f"dym range string \"{dym_string}\" is not a legal string")
     return dym_string
 
+
 def check_exec_script_file(script_path: str):
     if not os.path.exists(script_path):
         raise argparse.ArgumentTypeError(f"Script Path is not valid : {script_path}")
