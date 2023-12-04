@@ -18,8 +18,8 @@
 #include "binfile.h"
 
 
-BinFile::BinFile() {}
-BinFile::~BinFile() {}
+FileSystem::BinFile::BinFile() {}
+FileSystem::BinFile::~BinFile() {}
 
 bool FileSystem::BinFile::AddAttr(const std::string &name, const std::string &value)
 {
