@@ -53,7 +53,7 @@ static bool CheckDirectory(const std::string &directory)
             if (!status) {
                 std::cout << "directory created: " << curDir << std::endl;
             } else {
-                std::cout << "cannot create directory: " << cueDir << std::endl;
+                std::cout << "cannot create directory: " << curDir << std::endl;
             }
         }
     }

@@ -32,12 +32,12 @@
 
 
 namespace FileSystem {
-constexpr std::string ATTR_VERSION = "$Version";
-constexpr std::string ATTR_END = "$END";
-constexpr std::string ATTR_OBJECT_LENGTH = "$Object.Length";
-constexpr std::string ATTR_OBJECT_COUNT = "$Object.Count";
-constexpr std::string ATTR_OBJECT_PREFIX = "$Object.";
-constexpr std::string END_VALUE = "1";
+const std::string ATTR_VERSION = "$Version";
+const std::string ATTR_END = "$END";
+const std::string ATTR_OBJECT_LENGTH = "$Object.Length";
+const std::string ATTR_OBJECT_COUNT = "$Object.Count";
+const std::string ATTR_OBJECT_PREFIX = "$Object.";
+const std::string END_VALUE = "1";
 
 constexpr mode_t BIN_FILE_MODE = S_IRUSR | S_IWUSR | S_IRGRP;
 constexpr uint64_t MAX_SINGLE_MEMCPY_SIZE = 1073741824;
@@ -52,7 +52,7 @@ public:
     ~BinFile();
 
     bool AddAttr(const std::string &name, const std::string &value);
-    bool Write(const std::string &filePath, const mode_t mode = Constant::BIN_FILE_MODE);
+    bool Write(const std::string &filePath, const mode_t mode = BIN_FILE_MODE);
     bool WriteAttr(std::ofstream &outputFile, const std::string &filePath, const std::string &value);
     bool AddObject(const std::string name, const void* binaryBuffer, uint64_t binaryLen);
 
