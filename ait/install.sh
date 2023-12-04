@@ -22,7 +22,7 @@ only_analyze=
 only_convert=
 only_transplt=
 only_profile=
-only_atbdump=
+only_llm=
 arg_help=0
 
 while [[ "$#" -gt 0 ]]; do case $1 in
@@ -36,7 +36,7 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --convert) only_convert=true;;
   --transplt) only_transplt=true;;
   --profile) only_profile=true;;
-  --atbdump) only_llm=true;;
+  --llm) only_llm=true;;
   --uninstall) uninstall=true;;
   -y) all_uninstall=-y;;
   -h|--help) arg_help=1;;
