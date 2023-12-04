@@ -4,6 +4,18 @@
 var host = {};
 let lastAddedOperatorName = null;
 
+function showWaitPage(isWait) {
+  if (isWait) {
+    document.body.classList.remove("default")
+    document.body.classList.add("welcome")
+    document.body.classList.add("spinner")
+  } else {
+    document.body.classList.add("default")
+    document.body.classList.remove("welcome")
+    document.body.classList.remove("spinner")
+  }
+}
+
 host.BrowserHost = class {
   constructor() {
     this._random_session = Math.random();
@@ -834,11 +846,13 @@ host.BrowserHost = class {
           this._ori_model_file = file;
           form.append('session', this.session);
 
+          showWaitPage(true)
           fetch('/open_model', {
             method: 'POST',
             body: form,
           })
             .then((response) => {
+              showWaitPage(false)
               this.check_res_status(response.status);
               return response.text();
             })
@@ -1044,6 +1058,8 @@ host.BrowserHost = class {
   }
 
   take_effect_modify(path, data_body, record_modify, callback) {
+    showWaitPage(true)
+    
     return fetch(path, {
       // Declare what type of data we're sending
       headers: {
@@ -1054,6 +1070,7 @@ host.BrowserHost = class {
       body: typeof data_body == 'string' ? data_body : JSON.stringify(data_body),
     })
       .then((response) => {
+        showWaitPage(false)
         if (this.check_res_status(response.status)) {
           return;
         } else if (response.status == 299) {
