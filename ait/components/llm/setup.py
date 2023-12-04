@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import subprocess
+import site
 
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
@@ -44,6 +45,7 @@ setup(
         'Topic :: Software Development'
     ],
     cmdclass={'build_ext': CustomBuildExt},
+    data_dir=f"{site.getsitepackages()[0]}",
     data_files=[('llm', ['llm/dump/backend/lib/libatb_probe.so'])],
     python_requires='>=3.7',
     entry_points={

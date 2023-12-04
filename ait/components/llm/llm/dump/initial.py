@@ -16,8 +16,9 @@
 import os
 import site
 
-from llm.common.constant import ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, \
-    ATB_SAVE_TENSOR_RANGE, ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD
+from llm.common.constant import ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, \
+    ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, ATB_SAVE_TENSOR_RANGE, \
+    ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD
 
 
 def init_dump_task(args):
@@ -38,7 +39,8 @@ def init_dump_task(args):
     os.environ[ATB_SAVE_TILING] = "1" if args.tiling else "0"
     ld_preload = os.getenv(LD_PRELOAD)
     ld_preload = ld_preload or ""
-    save_tensor_so_path = os.path.join(site.getsitepackages()[0], "dump", "libatb_probe.so")
+    save_tensor_so_path = os.path.join(site.getsitepackages()[0], "llm/dump/backend/lib", \
+                                       "libatb_probe.so")
     os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
 
 
