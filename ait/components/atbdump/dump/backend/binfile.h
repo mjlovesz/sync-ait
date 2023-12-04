@@ -30,7 +30,8 @@
 #include <sstream>
 #include <fstream>
 
-namespace Constant{
+
+namespace FileSystem {
 constexpr std::string ATTR_VERSION = "$Version";
 constexpr std::string ATTR_END = "$END";
 constexpr std::string ATTR_OBJECT_LENGTH = "$Object.Length";
@@ -39,9 +40,7 @@ constexpr std::string ATTR_OBJECT_PREFIX = "$Object.";
 constexpr std::string END_VALUE = "1";
 
 constexpr mode_t BIN_FILE_MODE = S_IRUSR | S_IWUSR | S_IRGRP;
-
 constexpr uint64_t MAX_SINGLE_MEMCPY_SIZE = 1073741824;
-}
 
 class BinFile {
 struct Binary {
@@ -66,4 +65,5 @@ private:
     std::vector<std::pair<std::string, Binary>> binaries_;
     std::vector<char> binariesBuffer_;
 };
+}
 #endif

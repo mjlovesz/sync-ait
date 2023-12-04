@@ -105,8 +105,7 @@ bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::st
     
     if (tid != nullptr) {
         std::vector<std::string> splitTid = SplitString(tid, ',');
-        for (auto &indice : splitTid)
-        {
+        for (auto &indice : splitTid) {
             if (IsPrefix(copyOptype, indice)) {
                 return true;
             }
@@ -191,8 +190,8 @@ void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
     std::string outPath = outDir + filePath;
     size_t found = outPath.find_last_of("/");
     std::string directory = outPath.substr(0, found);
-    bool ret = CheckDirectory(directory);
 
+    bool ret = CheckDirectory(directory);
     if (!ret) {
         std::cout << "Create directory failed: " << directory << std::endl;
         return;
@@ -202,7 +201,7 @@ void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
         std::cout << "hostData is None." << std::endl;
         return;
     }
-    BinFile binFile;
+    FileSystem::BinFile binFile;
     binFile.AddAttr("format", format);
     binFile.AddAttr("dtype", dtype);
     binFile.AddAttr("dims", dims);
@@ -220,8 +219,8 @@ void atb::Probe::SaveTiling(const uint8_t* data, uint64_t dataSize, const std::s
     std::string outPath = outDir + filePath;
     size_t found = outPath.find_last_of("/");
     std::string directory = outPath.substr(0, found);
-    bool ret = CheckDirectory(directory);
 
+    bool ret = CheckDirectory(directory);
     if (!ret) {
         std::cout << "Create directory failed: " << directory << std::endl;
         return;

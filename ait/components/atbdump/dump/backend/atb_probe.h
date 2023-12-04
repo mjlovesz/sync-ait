@@ -25,7 +25,6 @@
 #include <algorithm>
 
 
-
 namespace atb {
 constexpr int SAVE_TENSOR_BEFORE = 0;
 constexpr int SAVE_TENSOR_AFTER = 1;
