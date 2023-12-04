@@ -36,7 +36,7 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --convert) only_convert=true;;
   --transplt) only_transplt=true;;
   --profile) only_profile=true;;
-  --atbdump) only_atbdump=true;;
+  --atbdump) only_llm=true;;
   --uninstall) uninstall=true;;
   -y) all_uninstall=-y;;
   -h|--help) arg_help=1;;
@@ -64,6 +64,7 @@ if [ "$arg_help" -eq "1" ]; then
   echo " --convert : only install convert component"
   echo " --transplt : only install transplt component"
   echo " --profile : only install profile component"
+  echo " --llm : only install llm component"
   echo " --full : using with install, install all components and dependencies, may need sudo privileges"
   echo " --uninstall : uninstall"
   echo " -y : using with uninstall, don't ask for confirmation of uninstall deletions"
@@ -81,9 +82,9 @@ pre_check_skl2onnx(){
 
 
 uninstall(){
-  if [ -z $only_debug ] && [ -z $only_compare ] && [ -z $only_surgen ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ]
+  if [ -z $only_debug ] && [ -z $only_compare ] && [ -z $only_surgen ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_llm ]
   then
-    pip3 uninstall ait analyze_tool aclruntime ais_bench convert_tool compare auto_optimizer msprof transplt ${all_uninstall}
+    pip3 uninstall ait analyze_tool aclruntime ais_bench convert_tool compare auto_optimizer msprof transplt llm ${all_uninstall}
   else
     if [ ! -z $only_compare ]
     then
@@ -118,6 +119,11 @@ uninstall(){
     if [ ! -z $only_profile ]
     then
       pip3 uninstall msprof ${all_uninstall}
+    fi
+
+    if [ ! -z $only_llm ]
+    then
+      pip3 uninstall llm ${all_uninstall}
     fi
   fi
   exit;
@@ -179,15 +185,15 @@ install(){
     ${arg_force_reinstall}
   fi
 
-  if [ ! -z $only_atbdump ]
+  if [ ! -z $only_llm ]
   then
-    pip3 install ${CURRENT_DIR}/components/atbdump \
+    pip3 install ${CURRENT_DIR}/components/llm \
     ${arg_force_reinstall}
 
-    bash ${CURRENT_DIR}/components/atbdump/dump/backend/build.sh
+    bash ${CURRENT_DIR}/components/llm/llm/dump/backend/build.sh
   fi
 
-  if [ -z $only_compare ] && [ -z $only_surgeon ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_atbdump ]
+  if [ -z $only_compare ] && [ -z $only_surgeon ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_llm ]
   then
     pre_check_skl2onnx
 
@@ -199,12 +205,12 @@ install(){
     ${CURRENT_DIR}/components/convert \
     ${CURRENT_DIR}/components/transplt \
     ${CURRENT_DIR}/components/profile/msprof \
-    ${CURRENT_DIR}/components/atbdump \
+    ${CURRENT_DIR}/components/llm \
     ${arg_force_reinstall}
 
     bash ${CURRENT_DIR}/components/convert/build.sh
     bash ${CURRENT_DIR}/components/debug/compare/msquickcmp/build.sh
-    bash ${CURRENT_DIR}/components/atbdump/dump/backend/build.sh
+    bash ${CURRENT_DIR}/components/llm/llm/dump/backend/build.sh
 
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi

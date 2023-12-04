@@ -16,16 +16,11 @@
 import os
 
 from components.utils.parser import BaseCommand
-from dump.common.utils import str2bool, check_positive_integer, safe_string, check_exec_cmd, \
+from llm.common.utils import str2bool, check_positive_integer, safe_string, check_exec_cmd, \
                               check_ids_string, check_number_list, check_output_path_legality
-from dump.library.initial import init_dump_task, clear_dump_task
-
+from llm.dump.initial import init_dump_task, clear_dump_task
 
 class DumpCommand(BaseCommand):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.parser = None
-
     def add_arguments(self, parser):
         parser.add_argument(
             '--only-save-desc',
@@ -96,7 +91,7 @@ class DumpCommand(BaseCommand):
             required=True,
             type=safe_string,
             default='',
-            help='Exec command to run acltransformer model inference')
+            help='Exec command to run acltransformer model inference.E.g: --exec \"bash run.sh patches/models/modeling_xxx.py\" ')
         
         parser.add_argument(
             '--output',
@@ -104,9 +99,8 @@ class DumpCommand(BaseCommand):
             dest="output",
             required=False,
             type=check_output_path_legality,
-            help='Data output directory.E.g:/xx/xxxx/xx')
-        
-        
+            help='Data output directory.E.g:--output /xx/xxxx/xx')
+
     def handle(self, args, **kwargs):
         if args.exec and check_exec_cmd(args.exec):
             init_dump_task(args)
@@ -115,8 +109,29 @@ class DumpCommand(BaseCommand):
             clear_dump_task()
             return
 
+
+class CompareCommand(BaseCommand):
+    def add_arguments(self, parser):
+        pass
+
+    def handle(self, args, **kwargs):
+        pass
+
+
+class LlmCommand(BaseCommand):
+    def __init__(self, name="", help_info="", children=None, has_handle=False, **kwargs):
+        super().__init__(name, help_info, children, has_handle, **kwargs)
+
+    def add_arguments(self, parser, **kwargs):
+        return super().add_arguments(parser, **kwargs)
+
+    def handle(self, args, **kwargs):
+        return super().handle(args, **kwargs)
+
     
 def get_cmd_instance():
-    help_info = "Ascend Transformer Boost Dump Tool."
-    cmd_instance = DumpCommand("atbdump", help_info)
-    return cmd_instance
+    llm_help_info = "Large Language Model(llm) Debugger Tools."
+    dump_cmd_instance = DumpCommand("dump", "Dump tool for ascend transformer boost", alias_name="dd")
+    compare_cmd_instance = CompareCommand("compare", "Compare tool for large language model",
+                                          alias_name="cc")
+    return LlmCommand("llm", llm_help_info, [dump_cmd_instance, compare_cmd_instance])
