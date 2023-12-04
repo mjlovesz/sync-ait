@@ -4,6 +4,18 @@
 var host = {};
 let lastAddedOperatorName = null;
 
+function showWaitPage(isWait) {
+  if (isWait) {
+    document.body.classList.remove("default")
+    document.body.classList.add("welcome")
+    document.body.classList.add("spinner")
+  } else {
+    document.body.classList.add("default")
+    document.body.classList.remove("welcome")
+    document.body.classList.remove("spinner")
+  }
+}
+
 host.BrowserHost = class {
   constructor() {
     this._random_session = Math.random();
@@ -697,18 +709,6 @@ host.BrowserHost = class {
           window.__view__._updateGraph();
           break;
         }
-      }
-    }
-
-    function showWaitPage(isWait) {
-      if (isWait) {
-        this.document.body.classList.remove("default")
-        this.document.body.classList.add("welcome")
-        this.document.body.classList.add("spinner")
-      } else {
-        this.document.body.classList.add("default")
-        this.document.body.classList.remove("welcome")
-        this.document.body.classList.remove("spinner")
       }
     }
 
