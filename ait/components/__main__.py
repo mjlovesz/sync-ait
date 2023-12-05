@@ -14,6 +14,7 @@
 
 import argparse
 
+from components.llm import llm_cmd
 from components.debug import debug_cmd
 from components.profile import profile_cmd
 from components.transplt import transplt_cmd
@@ -27,7 +28,8 @@ AIT_FAQ_HOME = "https://gitee.com/ascend/ait/wikis/Home"
 
 
 def main():
-    subcommands = [debug_cmd, profile_cmd, transplt_cmd, benchmark_cmd, analyze_cmd, convert_cmd]
+    subcommands = [debug_cmd, profile_cmd, transplt_cmd, benchmark_cmd, \
+                   analyze_cmd, convert_cmd, llm_cmd]
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description="ait(Ascend Inference Tools), [Powered by MindStudio].\n"
