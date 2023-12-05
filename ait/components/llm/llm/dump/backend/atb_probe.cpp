@@ -50,9 +50,7 @@ static bool CheckDirectory(const std::string &directory)
         curDir += dir + "/";
         if (!DirectoryExists(curDir)) {
             int status = mkdir(curDir.c_str(), 0755);
-            if (!status) {
-                std::cout << "directory created: " << curDir << std::endl;
-            } else {
+            if (status) {
                 std::cout << "cannot create directory: " << curDir << std::endl;
             }
         }

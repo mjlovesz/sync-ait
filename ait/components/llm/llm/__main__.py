@@ -135,4 +135,4 @@ def get_cmd_instance():
     dump_cmd_instance = DumpCommand("dump", "Dump tool for ascend transformer boost", alias_name="dd")
     compare_cmd_instance = CompareCommand("compare", "Compare tool for large language model",
                                           alias_name="cc")
-    return LlmCommand("llm", llm_help_info, [dump_cmd_instance, compare_cmd_instance])
+    return LlmCommand("llm", llm_help_info, [dump_cmd_instance])

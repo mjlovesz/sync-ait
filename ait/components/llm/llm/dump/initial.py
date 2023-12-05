@@ -33,7 +33,10 @@ def init_dump_task(args):
     if args.opname:
         os.environ[ATB_SAVE_TENSOR_RUNNER] = str(args.opname).lower()
     if args.output:
-        os.environ[ATB_OUTPUT_DIR] = str(args.output)
+        if args.out.path.endswith('/'):
+            os.environ[ATB_OUTPUT_DIR] = str(args.output)
+        else:
+            os.environ[ATB_OUTPUT_DIR] = str(args.output) + '/'
     os.environ[ATB_SAVE_CHILD] = "1" if args.child else "0"
     os.environ[ATB_SAVE_TENSOR_RANGE] = str(args.range)
     os.environ[ATB_SAVE_TILING] = "1" if args.tiling else "0"

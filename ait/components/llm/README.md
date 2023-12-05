@@ -17,6 +17,3 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py"
 | -tiling，--save-tiling           | 选择是否需要保存tiling数据，默认为false。使用方式：-tiling                | 否    |
 | --exec           | 指定拉起执行大模型推理脚本的命令，使用示例： --exec "bash run.sh patches/models/modeling_xxx.py"|是    |
 | -o, --output            | 指定dump数据的输出目录，默认为'./'，使用示例：-o aasx/sss | 否    |
-
-
-## Compare组件
