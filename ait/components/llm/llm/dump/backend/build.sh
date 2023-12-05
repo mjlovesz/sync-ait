@@ -38,17 +38,17 @@ site_packages_path=$(python3 -c "import site; print(site.getsitepackages()[0])")
 # 指定.so文件的目标目录
 
 # 检查目标目录是否存在，如果不存在则创建
-if [ ! -d "$site_packages_path" ]; then
-    mkdir -p "$site_packages_path"
-    chmod 750 $site_packages_path
+if [ ! -d "${site_packages_path}/llm/dump/backend/lib" ]; then
+    mkdir -p "${site_packages_path}/llm/dump/backend/lib"
+    chmod 750 ${site_packages_path}/llm/dump/backend/lib
 fi
 
 # 将生成的.so文件移动到目标目录
-mv ../lib/libatb_probe.so "${site_packages_path}/dump"
+mv ../lib/libatb_probe.so "${site_packages_path}/llm/dump/backend/lib"
 
 
 # 返回原始目录
 cd ..
 
 # 完成
-echo "Build and move to ${site_packages_path}/dump completed!"
+echo "Build and move to ${site_packages_path}/llm/dump/backend/lib completed!"
