@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import difflib
 import multiprocessing as mp
 from multiprocessing import Value
 from app_analyze.utils.log_util import logger
@@ -73,23 +74,6 @@ class FuncDesc:
     def arg_name(self):
         return ','.join(self.parm_decl_names)
 
-    def set_func_id(self):
-        if self.is_usr_def:
-            self._func_id = FuncDesc.USR_DEFAULT_ID
-        else:
-            no_fid_flag = False
-            name_id_tbl = _GLOBAl_FUNC_ID_DICT[self.acc_name]
-            self._func_id = name_id_tbl.get(self.full_name, None)
-            if self._func_id is None:
-                no_fid_flag = True
-
-            if no_fid_flag:
-                base = KitConfig.ACC_LIB_ID_PREFIX[self.acc_name] * KitConfig.ACC_ID_BASE
-                offset = _FUNC_ID_COUNTER_DICT[self.acc_name].value
-                _FUNC_ID_COUNTER_DICT[self.acc_name].value = offset + 1
-                self._func_id = base + offset
-                _GLOBAl_FUNC_ID_DICT[self.acc_name][self.full_name] = self._func_id
-
     @property
     def func_id(self):
         return self._func_id
@@ -105,6 +89,40 @@ class FuncDesc:
             _FILE_ID_COUNTER.value += 1
             _GLOBAL_FILE_ID_DICT[self.root_file] = fid
         return fid
+
+    def set_func_id(self):
+        if self.is_usr_def:
+            self._func_id = FuncDesc.USR_DEFAULT_ID
+            return
+
+        name_id_tbl = _GLOBAl_FUNC_ID_DICT[self.acc_name]
+        self._func_id = name_id_tbl.get(self.full_name, None)
+        if self._func_id is not None:
+            return
+
+        rst = (None, None, 0)
+        for fn_name, func_id in name_id_tbl.items():
+            if not fn_name.startswith(self.api_name):
+                continue
+
+            new_params = fn_name.replace(self.api_name, '').strip('(').strip(')').split(',')
+            if len(new_params) != self.parm_num:
+                continue
+
+            ratio = difflib.SequenceMatcher(None, fn_name, self.full_name).quick_ratio()
+            if rst[2] < ratio:
+                rst = (new_params, func_id, ratio)
+
+        if rst[2] > 0:
+            self.parm_decl_names = rst[0]
+            self._func_id = rst[1]
+            return
+
+        base = KitConfig.ACC_LIB_ID_PREFIX[self.acc_name] * KitConfig.ACC_ID_BASE
+        offset = _FUNC_ID_COUNTER_DICT[self.acc_name].value
+        _FUNC_ID_COUNTER_DICT[self.acc_name].value = offset + 1
+        self._func_id = base + offset
+        _GLOBAl_FUNC_ID_DICT[self.acc_name][self.full_name] = self._func_id
 
 
 class ObjDesc:
