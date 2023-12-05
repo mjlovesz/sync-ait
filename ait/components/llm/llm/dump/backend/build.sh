@@ -44,7 +44,7 @@ if [ ! -d "${site_packages_path}/llm/dump/backend/lib" ]; then
 fi
 
 # 将生成的.so文件移动到目标目录
-mv ../lib/libatb_probe.so "${site_packages_path}/llm/dump/backend/lib"
+cp ../lib/libatb_probe.so "${site_packages_path}/llm/dump/backend/lib"
 
 
 # 返回原始目录
