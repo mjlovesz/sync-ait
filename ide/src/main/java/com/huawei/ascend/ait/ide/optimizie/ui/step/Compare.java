@@ -16,9 +16,15 @@
 
 package com.huawei.ascend.ait.ide.optimizie.ui.step;
 
+import static com.huawei.ascend.ait.ide.optimizie.ui.step.AitModelConverterStep.PATH_REGULAR_EXPRESSION_PATTERN;
+import static com.huawei.ascend.ait.ide.optimizie.ui.step.AitModelConverterStep.SOFT_LINK_PATH;
 import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.add;
 import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addState;
 import static com.huawei.ascend.ait.ide.service.AisBenchCmdStr.addString;
+import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_CHARTERS;
+import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_DIGITS_CHARATERS;
+import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_DIR_PATH_CHARACTERS;
+import static com.huawei.ascend.ait.ide.util.CheckInput.VALID_STRING_CHARATERS;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedFile;
 import static com.huawei.ascend.ait.ide.util.FileChoose.getSelectedPath;
 
@@ -30,6 +36,7 @@ import com.huawei.ascend.ait.ide.commonlib.util.safecmd.CmdStrWordStatic;
 import com.huawei.ascend.ait.ide.optimizie.task.CompareTask;
 import com.huawei.ascend.ait.ide.util.CheckInput;
 import com.huawei.ascend.ait.ide.util.FileChooseWithBrows;
+import com.huawei.ascend.ait.ide.util.exception.PathInvalidException;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
@@ -37,6 +44,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 
+import com.jediterm.terminal.util.JTextFieldLimit;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.Nullable;
@@ -110,6 +118,7 @@ public class Compare extends DialogWrapper {
         setTitle("Compare");
 
         setFileChooseAction();
+        setTextFieldLimitAndToolTip();
         initWeight(isPrototxt);
         setOKButtonText("Start");
     }
@@ -121,6 +130,15 @@ public class Compare extends DialogWrapper {
         inputAction();
         cannPathAction();
         outputAction();
+    }
+
+    private void setTextFieldLimitAndToolTip() {
+        deviceJText.setToolTipText(VALID_DIGITS_CHARATERS);
+        deviceJText.setDocument(new JTextFieldLimit(128));
+
+        inputShapeJText.setDocument(new JTextFieldLimit(128));
+        outputNodesJText.setDocument(new JTextFieldLimit(128));
+        outputSizeJText.setDocument(new JTextFieldLimit(128));
     }
 
     private void modelFileAction() {
@@ -281,8 +299,9 @@ public class Compare extends DialogWrapper {
         String output = outputPathBrowse.getText();
         String inputPaths = inputPathBrowse.getText();
 
-        if (!checkPath(model, "Model File") || !checkPath(offline, "Offline File")
-                || !checkPath(cannPath, "CANN path")) {
+        if (!checkMustPath(model, "Model File") || !checkMustPath(offline, "Offline File")
+                || !checkMustPath(cannPath, "CANN path") || !checkMustPath(output, "Output path")
+                || !checkPath(inputPaths, "Input path")) {
             return false;
         }
 
@@ -298,22 +317,36 @@ public class Compare extends DialogWrapper {
             Messages.showErrorDialog("You do not have the write permission for output path.", "ERROR");
             return false;
         }
-        if (!checkRead(inputPaths)) {
-            return false;
-        }
         return true;
     }
 
     private boolean checkPath(String file, String name) {
         if (file.isEmpty()) {
-            Messages.showErrorDialog(name + " must be chosen", "ERROR");
+            return true;
+        }
+        if (!file.matches(PATH_REGULAR_EXPRESSION_PATTERN)) {
+            Messages.showErrorDialog( file + " include invalid characters.", "ERROR");
             return false;
         }
-        if (!FileUtils.getFile(file).canRead()) {
+
+        File pathFile = FileUtils.getFile(file);
+        if (FileUtils.isSymlink(pathFile)) {
+            Messages.showErrorDialog(name + " can't be symlink.", "ERROR");
+            return false;
+        }
+        if (!checkRead(file)) {
             Messages.showErrorDialog("You do not have the read permission for file: " + file, "ERROR");
             return false;
         }
         return true;
+    }
+
+    private boolean checkMustPath(String file, String name) {
+        if (file.isEmpty()) {
+            Messages.showErrorDialog(name + " must be chosen.", "ERROR");
+            return false;
+        }
+        return checkPath(file, name);
     }
 
     private boolean checkRead(String paths) {
