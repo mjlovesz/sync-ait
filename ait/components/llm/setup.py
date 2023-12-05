@@ -26,7 +26,7 @@ class CustomBuildExt(build_ext):
 
 
 setup(
-    name='llm',
+    name='ait-llm',
     version='0.1.0',
     description='Debug tools for large language model(llm)',
     url='https://gitee.com/ascend/ait/ait/components/llm',
