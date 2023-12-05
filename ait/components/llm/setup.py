@@ -47,6 +47,7 @@ setup(
     cmdclass={'build_ext': CustomBuildExt},
     data_dir=f"{site.getsitepackages()[0]}",
     data_files=[('llm', ['llm/dump/backend/lib/libatb_probe.so'])],
+    include_package_data=True,
     python_requires='>=3.7',
     entry_points={
         'llm_sub_task': ['llm=llm.__main__:get_cmd_instance'],
