@@ -33,7 +33,7 @@
 
 namespace FileSystem {
 const std::string ATTR_VERSION = "$Version";
-const std::string ATTR_END = "$END";
+const std::string ATTR_END = "$End";
 const std::string ATTR_OBJECT_LENGTH = "$Object.Length";
 const std::string ATTR_OBJECT_COUNT = "$Object.Count";
 const std::string ATTR_OBJECT_PREFIX = "$Object.";
