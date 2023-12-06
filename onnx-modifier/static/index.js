@@ -213,7 +213,7 @@ host.BrowserHost = class {
         reader.onload = async () => {
           let modify_infos = JSON.parse(reader.result);
 
-          this.take_effect_modify('/load-json', { modify_infos, session: this.session }, true);
+          this.take_effect_modify('/load-json', { modify_infos, session: this.session }, true, null, "Load Json Success");
         };
         reader.readAsText(file);
         openJsonFileDialog.value = null;
@@ -375,7 +375,7 @@ host.BrowserHost = class {
         this.show_alert_message('disabled', 'This button is disabled when displaying om model.');
         return;
       }
-      this.take_effect_modify('/onnxsim', this.build_download_data(true), true);
+      this.take_effect_modify('/onnxsim', this.build_download_data(true), true, null, "Onnxsim Success");
     });
 
     const onnxOptimizer = this.document.getElementById('auto-optimizer-graph');
@@ -384,7 +384,7 @@ host.BrowserHost = class {
         this.show_alert_message('disabled', 'This button is disabled when displaying om model.');
         return;
       }
-      this.take_effect_modify('/auto-optimizer', this.build_download_data(true), true);
+      this.take_effect_modify('/auto-optimizer', this.build_download_data(true), true, null, "Optimizer Success");
     });
 
     const extract = this.document.getElementById('extract-graph');
@@ -852,7 +852,6 @@ host.BrowserHost = class {
             body: form,
           })
             .then((response) => {
-              showWaitPage(false)
               this.check_res_status(response.status);
               return response.text();
             })
@@ -860,6 +859,7 @@ host.BrowserHost = class {
               console.log('POST response: ');
               // Should be 'OK' if everything was successful
               console.log(text);
+              showWaitPage(false)
             });
 
           if (file) {
@@ -894,6 +894,7 @@ host.BrowserHost = class {
         this._ori_model_file = file;
         form.append('session', this.session);
 
+        showWaitPage(true)
         fetch('/open_model', {
           method: 'POST',
           body: form,
@@ -1057,7 +1058,7 @@ host.BrowserHost = class {
     });
   }
 
-  take_effect_modify(path, data_body, record_modify, callback) {
+  take_effect_modify(path, data_body, record_modify, callback, successMsg) {
     showWaitPage(true)
     
     return fetch(path, {
@@ -1070,12 +1071,11 @@ host.BrowserHost = class {
       body: typeof data_body == 'string' ? data_body : JSON.stringify(data_body),
     })
       .then((response) => {
-        showWaitPage(false)
         if (this.check_res_status(response.status)) {
           return;
         } else if (response.status == 299) {
           return response.text().then((text) => {
-            this.show_message('Nothing happens!', text, 'info');
+            this.show_message('Nothing happens!', text, 'success');
           });
         } else if (!response.ok) {
           return response.text().then((text) => {
@@ -1087,6 +1087,10 @@ host.BrowserHost = class {
           });
         }
 
+        if (successMsg) {
+          this.show_message('Success', successMsg, 'success');
+        }
+
         if (record_modify) {
           this._modify_info.push({ path, data_body });
         }
@@ -1094,9 +1098,11 @@ host.BrowserHost = class {
       })
       .then((blob) => {
         if (!blob) {
+          showWaitPage(false)
           return;
         }
         if (callback) {
+          showWaitPage(false)
           return callback(blob);
         }
 
@@ -1141,6 +1147,7 @@ host.BrowserHost = class {
     form.append('file', file);
     form.append('session', this.session);
 
+    this._view.show('default');
     fetch('/open_model', {
       method: 'POST',
       body: form,
@@ -1153,11 +1160,12 @@ host.BrowserHost = class {
         console.log('POST response: ');
         // Should be 'OK' if everything was successful
         console.log(text);
+      }).then(()=>{
+        if (file) {
+          this._activate_model_file = file;
+          return this._open(file, files);
+        }
       });
-    if (file) {
-      this._activate_model_file = file;
-      return this._open(file, files);
-    }
   }
 
   build_download_data(return_modified_file, shape_inf) {
