@@ -1,5 +1,38 @@
 # 大模型推理精度工具（Large Language Model Debug tool)
 ## Dump组件
+### 安装方式
+#### 1. 下载whl包构建
+需要下载框架whl和工具whl。
+- 下载链接：
+    - arm:
+    > [框架whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231206/ait-0.0.1-py3-none-linux_aarch64.whl)           
+    > [工具whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231206/ait_llm-0.1.0-py3-none-linux_aarch64.whl)
+    - x86:
+    > [框架whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231206/ait-0.0.1-py3-none-linux_x86_64.whl)            
+    > [工具whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231206/ait_llm-0.1.0-py3-none-linux_x86_64.whl)
+- 安装方式：
+    ```
+    # 安装框架whl
+    pip3 install ait-0.0.1-py3-none-linux_aarch64.whl
+    # 安装工具whl
+    pip3 install ait_llm-0.1.0-py3-none-linux_aarch64.whl
+    ```
+#### 2. 下载源码编译安装
+- 需要下载ait仓后编译使用
+- 执行命令如下：
+```
+git clone https://gitee.com/ascend/ait.git
+cd ait/ait
+chmod +x install.sh
+# 如果需要重装可在下面脚本执行添加 --force-reinstall
+./install.sh --llm
+```
+#### 3. 验证是否安装成功
+- 执行如下命令：
+```
+ait llm dump -h
+```
+如果打屏有相应参数说明即安装成功。
 ### 使用方式
 ```
 ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py"
