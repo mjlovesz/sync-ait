@@ -5,9 +5,6 @@ project(MyLibrary)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-# 添加 use_cxx11_abi 选项
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=1")
-
 # 添加共享库
 add_library(MyLibrary SHARED atb_probe.cpp binfile.cpp)
 
