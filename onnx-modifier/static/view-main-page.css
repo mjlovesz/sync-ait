@@ -161,6 +161,10 @@ button { font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI"
     animation-play-state: paused;
 }
 
+.success-message-box {
+    animation-play-state: paused;
+}
+
 
 @keyframes disaple {
     from {
