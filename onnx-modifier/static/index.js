@@ -1059,7 +1059,8 @@ host.BrowserHost = class {
   }
 
   take_effect_modify(path, data_body, record_modify, callback, successMsg) {
-    showWaitPage(true)
+    let isSuccessed = false;
+    showWaitPage(true);
     
     return fetch(path, {
       // Declare what type of data we're sending
@@ -1087,10 +1088,7 @@ host.BrowserHost = class {
           });
         }
 
-        if (successMsg) {
-          this.show_message('Success', successMsg, 'success');
-        }
-
+        isSuccessed = true;
         if (record_modify) {
           this._modify_info.push({ path, data_body });
         }
@@ -1111,6 +1109,10 @@ host.BrowserHost = class {
         return this.openFile(file);
       })
       .then(() => {
+        if (successMsg && isSuccessed) {
+          this.show_message('Success', successMsg, 'success');
+        }
+
         let body = JSON.stringify({ session: this.session });
         fetch('/get_output_message', {
           headers: {
@@ -1147,7 +1149,6 @@ host.BrowserHost = class {
     form.append('file', file);
     form.append('session', this.session);
 
-    this._view.show('default');
     fetch('/open_model', {
       method: 'POST',
       body: form,
