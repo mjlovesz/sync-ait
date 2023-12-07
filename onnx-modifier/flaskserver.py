@@ -49,7 +49,7 @@ def main():
 
     with tempfile.TemporaryDirectory() as temp_dir_path:
         register_interface(app, request, send_file_method, temp_dir_path, args.onnx)
-        app.run(host='localhost', port=args.port, debug=args.debug)
+        app.run(host='localhost', port=args.port, debug=args.debug, threaded=False)
 
 if __name__ == '__main__':
     main()
