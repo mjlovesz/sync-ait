@@ -1,4 +1,6 @@
-# 大模型推理精度工具（Large Language Model Debug tool)
+# 大模型推理精度工具（Large Language Model Debug Tool)
+## 简介
+大模型推理精度工具（llm）提供对大模型推理的数据落盘（dump）以及精度定位（compare）功能。
 ## 安装方式
 ### 1. 下载whl包构建
 需要下载框架whl和工具whl。
@@ -33,6 +35,7 @@ ait llm -h
 ```
 如果打屏有相应参数说明即安装成功。
 ## Dump组件
+- 【注意】：加速库数据dump仅支持12/05之后的加速库版本。
 ### 使用方式
 ```
 ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py"
@@ -50,3 +53,7 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py"
 | -tiling，--save-tiling           | 选择是否需要保存tiling数据，默认为false。使用方式：-tiling                | 否    |
 | --exec           | 指定拉起执行大模型推理脚本的命令，使用示例： --exec "bash run.sh patches/models/modeling_xxx.py"|是    |
 | -o, --output            | 指定dump数据的输出目录，默认为'./'，使用示例：-o aasx/sss | 否    |
+### Dump落盘位置
+Dump默认落盘路径在当前目录下的atb_temp目录下，具体路径是`./atb_temp/tensors/{PID}_{TID}`目录下。
+如果指定output目录，则会生成在`{OUTPUT_DIR}/atb_temp/tensors/{PID}_{TID}`目录下。
+## FAQ
