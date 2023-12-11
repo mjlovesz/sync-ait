@@ -187,15 +187,16 @@ install(){
 
   if [ ! -z $only_llm ]
   then
+    bash ${CURRENT_DIR}/components/llm/llm/dump/backend/build.sh
     pip3 install ${CURRENT_DIR}/components/llm \
     ${arg_force_reinstall}
-
-    bash ${CURRENT_DIR}/components/llm/llm/dump/backend/build.sh
   fi
 
   if [ -z $only_compare ] && [ -z $only_surgeon ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_llm ]
   then
     pre_check_skl2onnx
+
+    bash ${CURRENT_DIR}/components/llm/llm/dump/backend/build.sh
 
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \
@@ -209,8 +210,7 @@ install(){
     ${arg_force_reinstall}
 
     bash ${CURRENT_DIR}/components/convert/build.sh
-    bash ${CURRENT_DIR}/components/debug/compare/msquickcmp/build.sh
-    bash ${CURRENT_DIR}/components/llm/llm/dump/backend/build.sh
+    bash ${CURRENT_DIR}/components/debug/compare/msquickcmp/build.sh  
 
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi
