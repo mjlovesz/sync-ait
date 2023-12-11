@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import subprocess
 import site
 
@@ -19,10 +20,13 @@ from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 
 
-class CustomInstall(install):
+class CustomBuildExt(build_ext):
     def run(self):
-        args = ' '.join(sys.argv[3:]) # 读取abi
-        subprocess.check_call(['bash', 'llm/dump/backend/build.sh'] + args.split(), shell=False)
+        abi = os.environ.get('AIT_LLM_ABI')
+        cmd_list = ['bash', 'llm/dump/backend/build.sh']
+        if abi == "0":
+            cmd_list.append('--nabi')
+        subprocess.check_call(cmd_list, shell=False)
         super().run()
 
 
@@ -45,7 +49,7 @@ setup(
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development'
     ],
-    cmdclass={'install': CustomInstall},
+    cmdclass={'build_ext': CustomBuildExt},
     data_dir=f"{site.getsitepackages()[0]}",
     data_files=[('llm', ['llm/dump/backend/lib/libatb_probe.so'])],
     include_package_data=True,

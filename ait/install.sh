@@ -192,9 +192,10 @@ install(){
   then
     if [ ! -z $not_abi ]
     then
-      pip3 install ${CURRENT_DIR}/components/llm --nabi \
-      ${arg_force_reinstall}
+      AIT_LLM_ABI=0 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
     else
+      AIT_LLM_ABI=1 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
+
       pip3 install ${CURRENT_DIR}/components/llm \
       ${arg_force_reinstall}
   fi
@@ -203,6 +204,12 @@ install(){
   then
     pre_check_skl2onnx
 
+    if [ ! -z $not_abi ]
+    then
+      AIT_LLM_ABI=0 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
+    else
+      AIT_LLM_ABI=1 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
+    
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \
     ${CURRENT_DIR}/components/benchmark/backend \
