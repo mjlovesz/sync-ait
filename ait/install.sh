@@ -23,6 +23,7 @@ only_convert=
 only_transplt=
 only_profile=
 only_llm=
+not_abi=
 arg_help=0
 
 while [[ "$#" -gt 0 ]]; do case $1 in
@@ -37,6 +38,7 @@ while [[ "$#" -gt 0 ]]; do case $1 in
   --transplt) only_transplt=true;;
   --profile) only_profile=true;;
   --llm) only_llm=true;;
+  --nabi) not_abi=true;;
   --uninstall) uninstall=true;;
   -y) all_uninstall=-y;;
   -h|--help) arg_help=1;;
@@ -65,6 +67,7 @@ if [ "$arg_help" -eq "1" ]; then
   echo " --transplt : only install transplt component"
   echo " --profile : only install profile component"
   echo " --llm : only install llm component"
+  echo " --nabi : disable cxx11 abi setting"
   echo " --full : using with install, install all components and dependencies, may need sudo privileges"
   echo " --uninstall : uninstall"
   echo " -y : using with uninstall, don't ask for confirmation of uninstall deletions"
@@ -187,16 +190,18 @@ install(){
 
   if [ ! -z $only_llm ]
   then
-    bash ${CURRENT_DIR}/components/llm/llm/dump/backend/build.sh
-    pip3 install ${CURRENT_DIR}/components/llm \
-    ${arg_force_reinstall}
+    if [ ! -z $not_abi ]
+    then
+      pip3 install ${CURRENT_DIR}/components/llm --nabi \
+      ${arg_force_reinstall}
+    else
+      pip3 install ${CURRENT_DIR}/components/llm \
+      ${arg_force_reinstall}
   fi
 
   if [ -z $only_compare ] && [ -z $only_surgeon ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_llm ]
   then
     pre_check_skl2onnx
-
-    bash ${CURRENT_DIR}/components/llm/llm/dump/backend/build.sh
 
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \

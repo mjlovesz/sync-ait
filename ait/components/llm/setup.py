@@ -19,9 +19,10 @@ from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 
 
-class CustomBuildExt(build_ext):
+class CustomInstall(install):
     def run(self):
-        subprocess.check_call(['bash', 'llm/dump/backend/build.sh'], shell=False)
+        args = ' '.join(sys.argv[3:]) # 读取abi
+        subprocess.check_call(['bash', 'llm/dump/backend/build.sh'] + args.split(), shell=False)
         super().run()
 
 
@@ -44,7 +45,7 @@ setup(
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development'
     ],
-    cmdclass={'build_ext': CustomBuildExt},
+    cmdclass={'install': CustomInstall},
     data_dir=f"{site.getsitepackages()[0]}",
     data_files=[('llm', ['llm/dump/backend/lib/libatb_probe.so'])],
     include_package_data=True,
