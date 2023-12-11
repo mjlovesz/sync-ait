@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import subprocess
 import site
 
@@ -22,11 +21,7 @@ from setuptools.command.build_ext import build_ext
 
 class CustomBuildExt(build_ext):
     def run(self):
-        abi = os.environ.get('AIT_LLM_ABI')
-        cmd_list = ['bash', 'llm/dump/backend/build.sh']
-        if abi == "0":
-            cmd_list.append('--nabi')
-        subprocess.check_call(cmd_list, shell=False)
+        subprocess.check_call(['bash', 'llm/dump/backend/build.sh'], shell=False)
         super().run()
 
 

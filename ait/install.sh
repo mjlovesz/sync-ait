@@ -192,9 +192,9 @@ install(){
   then
     if [ ! -z $not_abi ]
     then
-      AIT_LLM_ABI=0 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
+      LLM_ABI=0 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
     else
-      AIT_LLM_ABI=1 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
+      LLM_ABI=1 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
 
       pip3 install ${CURRENT_DIR}/components/llm \
       ${arg_force_reinstall}
@@ -206,9 +206,9 @@ install(){
 
     if [ ! -z $not_abi ]
     then
-      AIT_LLM_ABI=0 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
+      LLM_ABI=0 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
     else
-      AIT_LLM_ABI=1 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
+      LLM_ABI=1 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
     
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \

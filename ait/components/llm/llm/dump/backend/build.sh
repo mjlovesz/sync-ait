@@ -29,10 +29,8 @@ fi
 cd "$build_dir"
 
 # 调用CMake来构建项目
-if [[ "$*" == *"--nabi"* ]]; then
-    cmake .. -D CMAKE_CXX11_ABI=OFF
-else
-    cmake .. -D CMAKE_CXX11_ABI=ON
+cmake ..
+
 # 使用make来编译项目
 make
 
