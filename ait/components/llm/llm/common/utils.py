@@ -114,3 +114,17 @@ def check_output_path_legality(value):
     if not file_stat.is_basically_legal("write"):
         raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
     return path_value
+
+
+def check_input_path_legality(value):
+    if not value:
+        return value
+    inputs_list = value.split(',')
+    for input_path in inputs_list:
+        try:
+            file_stat = FileStat(input_path)
+        except Exception as err:
+            raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.") from err
+        if not file_stat.is_basically_legal('read'):
+            raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.")
+    return value
