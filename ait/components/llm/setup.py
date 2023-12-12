@@ -14,6 +14,7 @@
 
 import subprocess
 import site
+import os
 
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
@@ -21,7 +22,11 @@ from setuptools.command.build_ext import build_ext
 
 class CustomBuildExt(build_ext):
     def run(self):
-        subprocess.check_call(['bash', 'llm/dump/backend/build.sh'], shell=False)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        build_file_path = os.path.join(current_dir, 'llm/dump/backend/build.sh')
+        exec_method = 'bash'
+        cmd_list = [exec_method, build_file_path]
+        subprocess.check_call(cmd_list, shell=False)
         super().run()
 
 
