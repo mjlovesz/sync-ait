@@ -21,7 +21,7 @@ from ais_bench.infer.benchmark_process import benchmark_process
 from ais_bench.infer.args_adapter import BenchMarkArgsAdapter
 from ais_bench.infer.args_check import (
     check_dym_string, check_dym_range_string, check_number_list, str2bool, check_positive_integer,
-    check_batchsize_valid, check_nonnegative_integer, check_device_range_valid, check_om_path_legality,
+    check_batchsize_valid, check_nonnegative_integer, check_npu_id_range_vaild, check_device_range_valid, check_om_path_legality,
     check_input_path_legality, check_output_path_legality, check_acl_json_path_legality,
     check_aipp_config_path_legality
 )
@@ -239,7 +239,7 @@ class BenchmarkCommand(BaseCommand):
         parser.add_argument(
             '--npu-id',
             dest='npu_id',
-            type=check_nonnegative_integer,
+            type=check_npu_id_range_vaild,
             default=0,
             help="The NPU ID to use. using cmd: \'npu-smi info\' to check "
         )

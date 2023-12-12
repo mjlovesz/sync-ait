@@ -72,24 +72,50 @@ def check_nonnegative_integer(value):
     return ivalue
 
 
-def check_device_range_valid(value):
+def check_npu_id_range_vaild(value):
     # if contain , split to int list
     min_value = 0
-    max_value = 255
+    max_value = 2048
     if ',' in value:
         ilist = [int(v) for v in value.split(',')]
         for ivalue in ilist:
             if ivalue < min_value or ivalue > max_value:
-                raise argparse.ArgumentTypeError("{} of device:{} is invalid. valid value range is [{}, {}]".format(
+                raise argparse.ArgumentTypeError("{} of npu_id:{} is invalid. valid value range is [{}, {}]".format(
                     ivalue, value, min_value, max_value))
         return ilist
     else:
         # default as single int value
         ivalue = int(value)
         if ivalue < min_value or ivalue > max_value:
-            raise argparse.ArgumentTypeError("device:{} is invalid. valid value range is [{}, {}]".format(
+            raise argparse.ArgumentTypeError("npu_id:{} is invalid. valid value range is [{}, {}]".format(
                 ivalue, min_value, max_value))
         return ivalue
+
+
+def check_device_range_valid(value):
+    # if contain , split to int list
+    min_value = 0
+    max_value = 255
+    try:
+        # Check if the value contains a comma; if so, split into a list of integers
+        if ',' in value:
+            ilist = [int(v) for v in value.split(',')]
+            for ivalue in ilist:
+                if ivalue < min_value or ivalue > max_value:
+                    raise argparse.ArgumentTypeError("{} of device:{} is invalid. valid value range is [{}, {}]".format(
+                        ivalue, value, min_value, max_value))
+            return ilist
+        else:
+            # default as single int value
+            ivalue = int(value)
+            if ivalue < min_value or ivalue > max_value:
+                raise argparse.ArgumentTypeError("device:{} is invalid. valid value range is [{}, {}]".format(
+                    ivalue, min_value, max_value))
+            return ivalue
+    except ValueError:
+        raise argparse.ArgumentTypeError("Argument npu-id invalid input value: {}. "
+                                         "Please provide a valid integer or a comma-separated list of integers.".format(value))
+
 
 
 def check_om_path_legality(value):
