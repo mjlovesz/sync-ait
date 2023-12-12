@@ -192,9 +192,9 @@ install(){
   then
     if [ ! -z $not_abi ]
     then
-      LLM_ABI=0 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
+      AIT_LLM_ABI=0 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
     else
-      LLM_ABI=1 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
+      AIT_LLM_ABI=1 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
     fi
       pip3 install ${CURRENT_DIR}/components/llm \
       ${arg_force_reinstall}
@@ -206,9 +206,9 @@ install(){
 
     if [ ! -z $not_abi ]
     then
-      LLM_ABI=0 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
+      AIT_LLM_ABI=0 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
     else
-      LLM_ABI=1 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
+      AIT_LLM_ABI=1 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
     fi
     
     pip3 install ${CURRENT_DIR}/components/debug/compare \

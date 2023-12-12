@@ -9,8 +9,8 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 add_library(MyLibrary SHARED atb_probe.cpp binfile.cpp)
 
 # 设置ABI值
-if (DEFINED ENV{LLM_ABI})
-    if ($ENV{LLM_ABI} STREQUAL "0")
+if (DEFINED ENV{AIT_LLM_ABI})
+    if ($ENV{AIT_LLM_ABI} STREQUAL "0")
         add_compile_options(-D_GLIBCXX_USE_CXX11_ABI=0)
         message("ABI is set to 0. Compiling with cxx11_abi=0.")
     else()
