@@ -56,7 +56,7 @@ def check_number_list(value):
     for outsize in outsize_list:
         regex = re.compile(r"[^0-9]")
         if regex.search(outsize):
-            raise argparse.ArgumentTypeError(f"output size \"{outsize}\" is not a legal string")
+            raise argparse.ArgumentTypeError(f"output size \"{outsize}\" is not a legal number")
     return value
 
 
@@ -72,10 +72,10 @@ def check_ids_string(value):
 
 def check_exec_script_file(script_path: str):
     if not os.path.exists(script_path):
-        raise argparse.ArgumentTypeError(f"Script Path is not valid : {script_path}")
+        raise argparse.ArgumentTypeError(f"Script Path does not exist : {script_path}")
 
     if not os.access(script_path, os.X_OK):
-        raise argparse.ArgumentTypeError(f"Script Path is not valid : {script_path}")
+        raise argparse.ArgumentTypeError(f"Script Path does not have x(execution) authority : {script_path}")
 
 
 def check_input_args(args: list):
@@ -85,22 +85,18 @@ def check_input_args(args: list):
 
 
 def check_exec_cmd(command: str):
-    if command.startswith("bash") or command.startswith("python"):
-        cmds = command.split()
-        if len(cmds) < 2:
-            raise argparse.ArgumentTypeError(f"Run cmd is not valid: \"{command}\" ")
-        elif len(cmds) == 2:
-            script_file = cmds[1]
-            check_exec_script_file(script_file)
-        else:
-            script_file = cmds[1]
-            check_exec_script_file(script_file)
-            args = cmds[2:]
-            check_input_args(args)
-        return True
-
-    else:
+    cmds = command.split()
+    if len(cmds) < 2:
         raise argparse.ArgumentTypeError(f"Run cmd is not valid: \"{command}\" ")
+    elif len(cmds) == 2:
+        script_file = cmds[1]
+        check_exec_script_file(script_file)
+    else:
+        script_file = cmds[1]
+        check_exec_script_file(script_file)
+        args = cmds[2:]
+        check_input_args(args)
+    return True
     
 
 def check_output_path_legality(value):
@@ -112,5 +108,5 @@ def check_output_path_legality(value):
     except Exception as err:
         raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal("write"):
-        raise argparse.ArgumentTypeError(f"output path:{path_value} is illegal. Please check.")
+        raise argparse.ArgumentTypeError(f"output path:{path_value} can not write. Please check.")
     return path_value
