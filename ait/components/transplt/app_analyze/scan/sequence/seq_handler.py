@@ -33,6 +33,10 @@ class SeqHandler:
                         continue
 
                     usr_api['key'].has_called = True
+                    if seq_obj.entry_api.full_name == api.full_name:
+                        # 递归函数
+                        continue
+
                     _get_union_api(usr_api['key'], api_seq)
 
         if len(seqs) == 1:
