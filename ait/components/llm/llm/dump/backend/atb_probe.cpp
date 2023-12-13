@@ -85,7 +85,10 @@ bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::st
         for (auto &indice : splitVid) {
             bool result = false;
             if (IsSaveChild()) {
-                result = IsPrefix(query, indice);
+                result = IsPrefix(query, indice) &&
+                         (query == indice ||
+                         (query.length() > indice.length() &&
+                         query[indice.length()] == '_'));
             } else {
                 result = indice == query;
             }
