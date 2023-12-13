@@ -21,12 +21,13 @@ from llm.common.tool import read_atb_data
 from llm.compare.cmp_algorithm import CMP_ALG_MAP
 
 
-def compare_data(golden_path, my_path):
+def acc_compare(golden_path, my_path):
     if os.path.isdir(golden_path) and os.path.isdir(my_path):
         logger.error("The compared level of directory will be supported in next version.")
         exit(1)
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
-        compare_tensor(golden_path, my_path)
+        res = compare_file(golden_path, my_path)
+        logger.info("Compared results: %s", res)
     else:
         logger.error("The golden_path and my_path must both be directory or file.")
         exit(1)
@@ -43,9 +44,13 @@ def read_data(data_path):
     return data
 
 
-def compare_tensor(golden_path, my_path):
+def compare_file(golden_path, my_path):
     golden_data = read_data(golden_path)
     my_data = read_data(my_path)
+    return compare_data(golden_data, my_data)
+
+
+def compare_data(golden_data, my_data):
     golden_data_fp32 = golden_data.reshape(-1).astype("float32")
     my_data_fp32 = my_data.reshape(-1).astype("float32")
 

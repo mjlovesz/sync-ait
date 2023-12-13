@@ -19,7 +19,7 @@ from components.utils.parser import BaseCommand
 from llm.common.utils import str2bool, check_positive_integer, safe_string, check_exec_cmd, \
     check_ids_string, check_number_list, check_output_path_legality, check_input_path_legality
 from llm.dump.initial import init_dump_task, clear_dump_task
-from llm.compare.acc_cmp import compare_data
+from llm.compare.acc_cmp import acc_compare
 
 
 class DumpCommand(BaseCommand):
@@ -133,7 +133,7 @@ class CompareCommand(BaseCommand):
             help='Compared data path. It supports directory or file.')
 
     def handle(self, args, **kwargs):
-        compare_data(args.golden_path, args.my_path)
+        acc_compare(args.golden_path, args.my_path)
 
 
 class LlmCommand(BaseCommand):
@@ -150,6 +150,6 @@ class LlmCommand(BaseCommand):
 def get_cmd_instance():
     llm_help_info = "Large Language Model(llm) Debugger Tools."
     dump_cmd_instance = DumpCommand("dump", "Dump tool for ascend transformer boost", alias_name="dd")
-    compare_cmd_instance = CompareCommand("compare", "Compare tool for large language model",
+    compare_cmd_instance = CompareCommand("compare", "Accuracy compare tool for large language model",
                                           alias_name="cc")
-    return LlmCommand("llm", llm_help_info, [dump_cmd_instance])
+    return LlmCommand("llm", llm_help_info, [dump_cmd_instance, compare_cmd_instance])
