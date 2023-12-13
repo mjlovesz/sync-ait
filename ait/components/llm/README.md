@@ -5,12 +5,21 @@
 ### 1. 下载whl包构建
 需要下载框架whl和工具whl。
 - 下载链接：
-    - arm:
-    > 框架whl：[ait-0.0.1-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231206/ait-0.0.1-py3-none-linux_aarch64.whl)           
-    > 工具whl：[ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231206/ait_llm-0.1.0-py3-none-linux_aarch64.whl)
-    - x86:
-    > 框架whl：[ait-0.0.1-py3-none-linux_x86_64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231206/ait-0.0.1-py3-none-linux_x86_64.whl)            
-    > 工具whl：[ait_llm-0.1.0-py3-none-linux_x86_64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231206/ait_llm-0.1.0-py3-none-linux_x86_64.whl)
+    > 框架whl:
+
+    |名称| 平台   | whl链接 |
+    |----|--------|------------|
+    | ait | arm   |[ait-0.0.1-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ait-0.0.1-py3-none-linux_aarch64.whl)|
+    | ait | x86   |[ait-0.0.1-py3-none-linux_x86_64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ait-0.0.1-py3-none-linux_x86_64.whl)|            
+    > 工具whl：
+
+    |名称| 平台   | CXX11_ABI  | whl链接 |
+    |----|--------|------------|-------------|
+    |ait-llm| arm    | abi=0 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ABI0/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
+    |ait-llm| arm    | abi=1 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ABI1/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
+    |ait-llm| x86    | abi=0 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ABI0/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
+    |ait-llm| x86    | abi=1 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ABI1/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
+
 - 安装方式：
     ```
     # 安装框架whl
@@ -57,3 +66,9 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py"
 Dump默认落盘路径在当前目录下的atb_temp目录下，具体路径是`./atb_temp/tensors/{PID}_{TID}`目录下。
 如果指定output目录，则会生成在`{OUTPUT_DIR}/atb_temp/tensors/{PID}_{TID}`目录下。
 ## FAQ
+- **1.命令执行成功，但是没有数据dump下来：**
+    - 请先检查加速库版本是否为2023年12月5日之后的版本。
+    - 自查abi与所选包的abi是否匹配，请选择正确abi的版本包；
+
+- **2.执行命令时，报错script_path：**
+    - 请自查对应的脚本文件是否具有执行权限
