@@ -108,7 +108,6 @@ bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::st
         std::vector<std::string> splitTid = SplitString(tid, ',');
         for (auto &indice : splitTid) {
             if (IsPrefix(copyOptype, indice)) {
-                if 
                 return true;
             }
         }
