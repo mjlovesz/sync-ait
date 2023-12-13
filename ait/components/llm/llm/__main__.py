@@ -20,6 +20,7 @@ from llm.common.utils import str2bool, check_positive_integer, safe_string, chec
     check_ids_string, check_number_list, check_output_path_legality, check_input_path_legality
 from llm.dump.initial import init_dump_task, clear_dump_task
 from llm.compare.acc_cmp import acc_compare
+from llm.common.log import set_log_level
 
 
 class DumpCommand(BaseCommand):
@@ -117,7 +118,7 @@ class DumpCommand(BaseCommand):
 class CompareCommand(BaseCommand):
     def add_arguments(self, parser, **kwargs):
         parser.add_argument(
-            '--golden_path',
+            '--golden-path',
             '-gp',
             dest="golden_path",
             required=True,
@@ -125,14 +126,23 @@ class CompareCommand(BaseCommand):
             help='Golden data path. It supports directory or file.')
 
         parser.add_argument(
-            '--my_path',
+            '--my-path',
             '-mp',
             dest="my_path",
             required=True,
             type=check_input_path_legality,
             help='Compared data path. It supports directory or file.')
+        parser.add_argument(
+            '--log-level',
+            '-l',
+            dest="log_level",
+            required=False,
+            default="info",
+            type=check_input_path_legality,
+            help='Log level, default info.')
 
     def handle(self, args, **kwargs):
+        set_log_level(args.log_level)
         acc_compare(args.golden_path, args.my_path)
 
 
