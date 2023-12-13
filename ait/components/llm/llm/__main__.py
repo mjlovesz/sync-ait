@@ -132,13 +132,14 @@ class CompareCommand(BaseCommand):
             required=True,
             type=check_input_path_legality,
             help='Compared data path. It supports directory or file.')
+
         parser.add_argument(
             '--log-level',
             '-l',
             dest="log_level",
             required=False,
             default="info",
-            type=check_input_path_legality,
+            type=str,
             help='Log level, default info.')
 
     def handle(self, args, **kwargs):
