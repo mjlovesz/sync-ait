@@ -17,8 +17,10 @@ import os
 
 from components.utils.parser import BaseCommand
 from llm.common.utils import str2bool, check_positive_integer, safe_string, check_exec_cmd, \
-                              check_ids_string, check_number_list, check_output_path_legality
+    check_ids_string, check_number_list, check_output_path_legality, check_input_path_legality
 from llm.dump.initial import init_dump_task, clear_dump_task
+from llm.compare.acc_cmp import acc_compare
+from llm.common.log import set_log_level
 
 
 class DumpCommand(BaseCommand):
@@ -66,7 +68,8 @@ class DumpCommand(BaseCommand):
             dest="time",
             type=check_positive_integer,
             default=1,
-            help='0 when only need dump data before execution, 1 when only need dump data after execution, 2 both.Default 1')
+            help='0 when only need dump data before execution, '
+                 '1 when only need dump data after execution, 2 both.Default 1')
     
         parser.add_argument(
             '--operation-name',
@@ -92,7 +95,8 @@ class DumpCommand(BaseCommand):
             required=True,
             type=safe_string,
             default='',
-            help='Exec command to run acltransformer model inference.E.g: --exec \"bash run.sh patches/models/modeling_xxx.py\" ')
+            help='Exec command to run acltransformer model inference.'
+                 'E.g: --exec \"bash run.sh patches/models/modeling_xxx.py\" ')
         
         parser.add_argument(
             '--output',
@@ -112,11 +116,35 @@ class DumpCommand(BaseCommand):
 
 
 class CompareCommand(BaseCommand):
-    def add_arguments(self, parser):
-        pass
+    def add_arguments(self, parser, **kwargs):
+        parser.add_argument(
+            '--golden-path',
+            '-gp',
+            dest="golden_path",
+            required=True,
+            type=check_input_path_legality,
+            help='Golden data path. It supports directory or file.')
+
+        parser.add_argument(
+            '--my-path',
+            '-mp',
+            dest="my_path",
+            required=True,
+            type=check_input_path_legality,
+            help='Compared data path. It supports directory or file.')
+
+        parser.add_argument(
+            '--log-level',
+            '-l',
+            dest="log_level",
+            required=False,
+            default="info",
+            type=str,
+            help='Log level, default info.')
 
     def handle(self, args, **kwargs):
-        pass
+        set_log_level(args.log_level)
+        acc_compare(args.golden_path, args.my_path)
 
 
 class LlmCommand(BaseCommand):
@@ -133,6 +161,6 @@ class LlmCommand(BaseCommand):
 def get_cmd_instance():
     llm_help_info = "Large Language Model(llm) Debugger Tools."
     dump_cmd_instance = DumpCommand("dump", "Dump tool for ascend transformer boost", alias_name="dd")
-    compare_cmd_instance = CompareCommand("compare", "Compare tool for large language model",
+    compare_cmd_instance = CompareCommand("compare", "Accuracy compare tool for large language model",
                                           alias_name="cc")
-    return LlmCommand("llm", llm_help_info, [dump_cmd_instance])
+    return LlmCommand("llm", llm_help_info, [dump_cmd_instance, compare_cmd_instance])
