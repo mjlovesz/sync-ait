@@ -8,6 +8,20 @@ set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 # 添加共享库
 add_library(MyLibrary SHARED atb_probe.cpp binfile.cpp)
 
+# 设置ABI值
+if (DEFINED ENV{AIT_LLM_ABI})
+    if ($ENV{AIT_LLM_ABI} STREQUAL "0")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
+        message("ABI is set to 0. Compiling with cxx11_abi=0.")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=1")
+        message("ABI is not 0. Compiling with cxx11_abi=1.")
+    endif()
+else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
+    message("ABI is not set. Compiling with cxx11_abi=0.")
+endif()
+
 # 设置头文件目录
 target_include_directories(MyLibrary PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
