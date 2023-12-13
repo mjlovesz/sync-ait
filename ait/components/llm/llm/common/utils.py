@@ -17,6 +17,7 @@ import os
 import argparse
 import re
 from components.utils.file_open_check import FileStat
+from llm.common.constant import MAX_DATA_SIZE
 
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
 INVALID_CHARS = ['|', ';', '&', '&&', '||', '>', '>>', '<', '`', '\\', '!', '\n']
@@ -121,6 +122,18 @@ def check_input_path_legality(value):
             file_stat = FileStat(input_path)
         except Exception as err:
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.") from err
-        if not file_stat.is_basically_legal('read'):
+        if not file_stat.is_basically_legal('read', strict_permission=False):
             raise argparse.ArgumentTypeError(f"input path:{input_path} is illegal. Please check.")
     return value
+
+
+def check_data_file_size(data_path, max_size=MAX_DATA_SIZE):
+    try:
+        file_stat = FileStat(data_path)
+    except Exception as e:
+        raise Exception(f"data path: {data_path} is illegal. Please check it.")
+
+    if not file_stat.is_legal_file_size(max_size):
+        raise Exception(f"the size of file: {data_path} is out of max limit {MAX_DATA_SIZE} byte.")
+
+    return True

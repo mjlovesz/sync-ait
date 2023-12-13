@@ -17,6 +17,7 @@ import numpy as np
 
 from llm.common.constant import ATTR_END, ATTR_OBJECT_LENGTH
 from llm.common.log import logger
+from llm.common.utils import check_input_path_legality, check_data_file_size
 
 
 class TensorBinFile:
@@ -25,25 +26,15 @@ class TensorBinFile:
         self.dtype = 0
         self.format = 0
         self.dims = []
+        self.dtype_dict = {0: np.float32, 1: np.float16, 2: np.int8, 3: np.int32, 9: np.int64, 12: np.bool_}
 
         self._parse_bin_file()
 
     def get_data(self):
-        if self.dtype == 0:
-            dtype = np.float32
-        elif self.dtype == 1:
-            dtype = np.float16
-        elif self.dtype == 2:
-            dtype = np.int8
-        elif self.dtype == 3:
-            dtype = np.int32
-        elif self.dtype == 9:
-            dtype = np.int64
-        elif self.dtype == 12:
-            dtype = np.bool8
-        else:
+        if self.dtype not in self.dtype_dict:
             logger.error("Unsupported dtype %s", self.dtype)
             raise ValueError("Unsupported dtype {}".format(self.dtype))
+        dtype = self.dtype_dict.get(self.dtype)
         data = np.frombuffer(self.obj_buffer, dtype=dtype)
         data = data.reshape(self.dims)
         return data
@@ -83,13 +74,12 @@ class TensorBinFile:
 
 
 def read_atb_data(file_path):
-    if not os.path.exists(file_path):
-        logger.error("File path %s is not exist.", file_path)
-        raise FileNotFoundError("{} is not exists".format(file_path))
+    file_path = check_input_path_legality(file_path)
 
     if file_path.endswith(".bin"):
-        bin_tensor = TensorBinFile(file_path)
-        data = bin_tensor.get_data()
-        return data
+        if check_data_file_size(file_path):
+            bin_tensor = TensorBinFile(file_path)
+            data = bin_tensor.get_data()
+            return data
 
     raise ValueError("Tensor file path must be end with .bin.")
