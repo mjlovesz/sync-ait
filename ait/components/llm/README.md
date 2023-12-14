@@ -80,7 +80,6 @@ ait llm compare --golden-path golden_data.bin --my-path my-path.bin
 | --my-path, -mp     | 待比较的数据路径，当前仅支持单个数据文件路径，后续将支持文件夹 | 是       |
 | --log-level, -l    | 日志级别，默认为info                                         | 否       |
 
-#### 比对tensor
 
 
 ## FAQ
