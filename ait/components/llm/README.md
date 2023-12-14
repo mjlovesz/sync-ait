@@ -15,10 +15,10 @@
 
     |名称| 平台   | CXX11_ABI  | whl链接 |
     |----|--------|------------|-------------|
-    |ait-llm| arm    | abi=0 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ABI0/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
-    |ait-llm| arm    | abi=1 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ABI1/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
-    |ait-llm| x86    | abi=0 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ABI0/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
-    |ait-llm| x86    | abi=1 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ABI1/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
+    |ait-llm| arm    | abi=0 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231214/ABI0/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
+    |ait-llm| arm    | abi=1 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231214/ABI1/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
+    |ait-llm| x86    | abi=0 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231214/ABI0/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
+    |ait-llm| x86    | abi=1 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231214/ABI1/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
 
 - 安装方式：
     ```
@@ -43,7 +43,7 @@ chmod +x install.sh
 ait llm -h
 ```
 如果打屏有相应参数说明即安装成功。
-## Dump组件
+## Dump特性
 - 【注意】：加速库数据dump仅支持12/05之后的加速库版本。
 ### 使用方式
 ```
@@ -65,6 +65,24 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py"
 ### Dump落盘位置
 Dump默认落盘路径在当前目录下的atb_temp目录下，具体路径是`./atb_temp/tensors/{PID}_{TID}`目录下。
 如果指定output目录，则会生成在`{OUTPUT_DIR}/atb_temp/tensors/{PID}_{TID}`目录下。
+
+## Compare特性
+提供有精度问题的数据与标杆数据之间的比对能力。
+### 命令行
+```
+ait llm compare --golden-path golden_data.bin --my-path my-path.bin
+```
+#### 参数说明
+
+| 参数名             | 描述                                                         | 是否必选 |
+| ------------------ | ------------------------------------------------------------ | -------- |
+| --golden-path, -gp | 标杆数据路径，当前仅支持单个数据文件路径，后续将支持文件夹   | 是       |
+| --my-path, -mp     | 待比较的数据路径，当前仅支持单个数据文件路径，后续将支持文件夹 | 是       |
+| --log-level, -l    | 日志级别，默认为info                                         | 否       |
+
+#### 比对tensor
+
+
 ## FAQ
 - **1.命令执行成功，但是没有数据dump下来：**
     - 请先检查加速库版本是否为2023年12月5日之后的版本。
