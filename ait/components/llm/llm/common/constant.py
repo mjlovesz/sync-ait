@@ -30,4 +30,4 @@ ATTR_OBJECT_LENGTH = "$Object.Length"
 ATTR_OBJECT_COUNT = "$Object.Count"
 ATTR_OBJECT_PREFIX = "$Object."
 
-MAX_DATA_SIZE = 1 * 1024 * 1024 * 1024  # 1G
+MAX_DATA_SIZE = 2 * 1024 * 1024 * 1024  # 2G
