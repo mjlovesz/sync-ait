@@ -19,9 +19,14 @@ import time
 import numpy as np
 
 from ais_bench.infer.summary import summary
-from ais_bench.infer.utils import (get_file_content, get_file_datasize,
-                            get_fileslist_from_dir, list_split, logger,
-                            save_data_to_files)
+from ais_bench.infer.utils import (
+    get_file_content,
+    get_file_datasize,
+    get_fileslist_from_dir,
+    list_split,
+    logger,
+    save_data_to_files,
+)
 
 PURE_INFER_FAKE_FILE = "pure_infer_data"
 PURE_INFER_FAKE_FILE_ZERO = "pure_infer_data_zero"
@@ -30,7 +35,7 @@ PADDING_INFER_FAKE_FILE = "padding_infer_fake_file"
 
 
 def convert_real_files(files):
-    real_files = [ ]
+    real_files = []
     for file in files:
         if file == PURE_INFER_FAKE_FILE:
             raise RuntimeError("not support pure infer")
@@ -63,7 +68,7 @@ def get_narray_from_files_list(files_list, size, pure_data_type, no_combine_tens
     file_path_switch = {
         PURE_INFER_FAKE_FILE: pure_data_type,
         PURE_INFER_FAKE_FILE_ZERO: "zero",
-        PURE_INFER_FAKE_FILE_RANDOM: "random"
+        PURE_INFER_FAKE_FILE_RANDOM: "random",
     }
     for i, file_path in enumerate(files_list):
         logger.debug("get tensor from filepath:{} i:{} of all:{}".format(file_path, i, len(files_list)))
@@ -109,14 +114,17 @@ def get_files_count_per_batch(intensors_desc, fileslist, no_combine_tensor_mode=
             logger.error('arg0 tensorsize: {} filesize: {} not match'.format(tensorsize, filesize))
             raise RuntimeError()
         else:
-            files_count_per_batch = (int)(tensorsize/filesize)
+            files_count_per_batch = (int)(tensorsize / filesize)
     if files_count_per_batch == 0:
         logger.error('files count per batch is zero')
         raise RuntimeError()
     runcount = math.ceil(len(fileslist[0]) / files_count_per_batch)
 
-    logger.info("get filesperbatch files0 size:{} tensor0size:{} filesperbatch:{} runcount:{}".format(
-        filesize, tensorsize, files_count_per_batch, runcount))
+    logger.info(
+        "get filesperbatch files0 size:{} tensor0size:{} filesperbatch:{} runcount:{}".format(
+            filesize, tensorsize, files_count_per_batch, runcount
+        )
+    )
     return files_count_per_batch, runcount
 
 
@@ -128,15 +136,20 @@ def create_infileslist_from_fileslist(fileslist, intensors_desc, no_combine_tens
         raise RuntimeError()
     files_count_per_batch, runcount = get_files_count_per_batch(intensors_desc, fileslist, no_combine_tensor_mode)
 
-    files_perbatch_list = [ list(list_split(fileslist[j], files_count_per_batch, PADDING_INFER_FAKE_FILE))
-                            for j in range(len(intensors_desc)) ]
+    files_perbatch_list = [
+        list(list_split(fileslist[j], files_count_per_batch, PADDING_INFER_FAKE_FILE))
+        for j in range(len(intensors_desc))
+    ]
 
     infileslist = []
     for i in range(runcount):
         infiles = []
         for j in range(len(intensors_desc)):
-            logger.debug("create infileslist i:{} j:{} runcount:{} lists:{} filesPerPatch:{}" \
-                         .format(i, j, runcount, files_perbatch_list[j][i], files_count_per_batch))
+            logger.debug(
+                "create infileslist i:{} j:{} runcount:{} lists:{} filesPerPatch:{}".format(
+                    i, j, runcount, files_perbatch_list[j][i], files_count_per_batch
+                )
+            )
             infiles.append(files_perbatch_list[j][i])
         infileslist.append(infiles)
     return infileslist
@@ -144,14 +157,16 @@ def create_infileslist_from_fileslist(fileslist, intensors_desc, no_combine_tens
 
 #  outapi. Obtain tensor information and files information according to the input filelist.
 #  Create intensor form files list
-def create_intensors_from_infileslist(infileslist, intensors_desc, session,
-                                      pure_data_type, no_combine_tensor_mode=False):
+def create_intensors_from_infileslist(
+    infileslist, intensors_desc, session, pure_data_type, no_combine_tensor_mode=False
+):
     intensorslist = []
     for infiles in infileslist:
         intensors = []
         for files, intensor_desc in zip(infiles, intensors_desc):
-            tensor = get_tensor_from_files_list(files, session, intensor_desc.realsize,
-                                                pure_data_type, no_combine_tensor_mode)
+            tensor = get_tensor_from_files_list(
+                files, session, intensor_desc.realsize, pure_data_type, no_combine_tensor_mode
+            )
             intensors.append(tensor)
         intensorslist.append(intensors)
     return intensorslist
@@ -165,13 +180,19 @@ def check_input_parameter(inputs_list, intensors_desc):
         for index, file_path in enumerate(inputs_list):
             realpath = os.readlink(file_path) if os.path.islink(file_path) else file_path
             if not os.path.isfile(realpath):
-                logger.error("Invalid input args.--input:{} input[{}]:{} {} not exist".format(
-                    inputs_list, index, file_path, realpath))
+                logger.error(
+                    "Invalid input args.--input:{} input[{}]:{} {} not exist".format(
+                        inputs_list, index, file_path, realpath
+                    )
+                )
                 raise RuntimeError()
     elif os.path.isdir(inputs_list[0]):
         if len(inputs_list) != len(intensors_desc):
-            logger.error("Invalid args. args input dir num:{0} not equal to model inputs num:{1}".format(
-                len(inputs_list), len(intensors_desc)))
+            logger.error(
+                "Invalid args. args input dir num:{0} not equal to model inputs num:{1}".format(
+                    len(inputs_list), len(intensors_desc)
+                )
+            )
             raise RuntimeError()
 
         for dir_path in inputs_list:
@@ -193,15 +214,22 @@ def create_infileslist_from_inputs_list(inputs_list, intensors_desc, no_combine_
     if os.path.isfile(inputs_list[0]):
         chunks = inputlistcount // intensorcount
         fileslist = list(list_split(inputs_list, chunks, PADDING_INFER_FAKE_FILE))
-        logger.debug("create intensors list file type inlistcount:{} intensorcont:{} chunks:{} files_size:{}".format(
-            inputlistcount, intensorcount, chunks, len(fileslist)))
+        logger.debug(
+            "create intensors list file type inlistcount:{} intensorcont:{} chunks:{} files_size:{}".format(
+                inputlistcount, intensorcount, chunks, len(fileslist)
+            )
+        )
     elif os.path.isdir(inputs_list[0]) and inputlistcount == intensorcount:
         fileslist = [get_fileslist_from_dir(dir) for dir in inputs_list]
-        logger.debug("create intensors list dictionary type inlistcount:{} intensorcont:{} files_size:{}".format(
-            inputlistcount, intensorcount, len(fileslist)))
+        logger.debug(
+            "create intensors list dictionary type inlistcount:{} intensorcont:{} files_size:{}".format(
+                inputlistcount, intensorcount, len(fileslist)
+            )
+        )
     else:
-        logger.error('create intensors list filelists:{} intensorcont:{} error create'.format(
-            inputlistcount, intensorcount))
+        logger.error(
+            'create intensors list filelists:{} intensorcont:{} error create'.format(inputlistcount, intensorcount)
+        )
         raise RuntimeError()
 
     infileslist = create_infileslist_from_fileslist(fileslist, intensors_desc, no_combine_tensor_mode)
@@ -240,12 +268,16 @@ def create_pipeline_fileslist_from_inputs_list(inputs_list, intensors_desc):
     if os.path.isfile(inputs_list[0]):
         chunks = inputlistcount // intensorcount
         fileslist = list(list_split(inputs_list, chunks, PADDING_INFER_FAKE_FILE))
-        logger.debug(f"create intensors list file type inlistcount:{inputlistcount} \
-                     intensorcont:{intensorcount} chunks:{chunks} files_size:{len(fileslist)}")
+        logger.debug(
+            f"create intensors list file type inlistcount:{inputlistcount} \
+                     intensorcont:{intensorcount} chunks:{chunks} files_size:{len(fileslist)}"
+        )
     elif os.path.isdir(inputs_list[0]) and inputlistcount == intensorcount:
         fileslist = [get_fileslist_from_dir(dir_) for dir_ in inputs_list]
-        logger.debug(f"create intensors list dictionary type inlistcount:{inputlistcount} \
-                     intensorcont:{intensorcount} files_size:{len(fileslist)}")
+        logger.debug(
+            f"create intensors list dictionary type inlistcount:{inputlistcount} \
+                     intensorcont:{intensorcount} files_size:{len(fileslist)}"
+        )
     else:
         logger.error('create intensors list filelists:{inputlistcount} intensorcont:{intensorcount} error create')
         raise RuntimeError()
@@ -264,26 +296,44 @@ def save_tensors_to_file(outputs, output_prefix, infiles_paths, outfmt, index, o
     for i, out in enumerate(outputs):
         ndata = np.array(out)
         if output_batchsize_axis >= len(ndata.shape):
-            logger.error("error i:{0} ndata.shape:{1} len:{2} <= output_batchsize_axis:{3}  is invalid".format(
-                i, ndata.shape, len(ndata.shape), output_batchsize_axis))
+            logger.error(
+                "error i:{0} ndata.shape:{1} len:{2} <= output_batchsize_axis:{3}  is invalid".format(
+                    i, ndata.shape, len(ndata.shape), output_batchsize_axis
+                )
+            )
             raise RuntimeError()
         if files_count_perbatch == 1 or ndata.shape[output_batchsize_axis] % files_count_perbatch == 0:
             subdata = np.array_split(ndata, files_count_perbatch, output_batchsize_axis)
             for j in range(files_count_perbatch):
-                sample_id = index*files_count_perbatch+j
+                sample_id = index * files_count_perbatch + j
                 if infiles_perbatch[j][0] == PADDING_INFER_FAKE_FILE:
-                    logger.debug("sampleid:{} i:{} infiles:{} is padding fake file so continue".format(
-                        sample_id, i, infiles_perbatch[j]))
+                    logger.debug(
+                        "sampleid:{} i:{} infiles:{} is padding fake file so continue".format(
+                            sample_id, i, infiles_perbatch[j]
+                        )
+                    )
                     continue
-                file_path = os.path.join(output_prefix, "{}_{}.{}".format(
-                    os.path.basename(infiles_perbatch[j][0]).split('.')[0], i, outfmt.lower()))
+                file_path = os.path.join(
+                    output_prefix,
+                    "{}_{}.{}".format(os.path.basename(infiles_perbatch[j][0]).split('.')[0], i, outfmt.lower()),
+                )
                 summary.add_sample_id_infiles(sample_id, infiles_perbatch[j])
-                logger.debug("save func: sampleid:{} i:{} infiles:{} outfile:{} fmt:{} axis:{}".format(
-                    sample_id, i, infiles_perbatch[j], file_path, outfmt, output_batchsize_axis))
+                logger.debug(
+                    "save func: sampleid:{} i:{} infiles:{} outfile:{} fmt:{} axis:{}".format(
+                        sample_id, i, infiles_perbatch[j], file_path, outfmt, output_batchsize_axis
+                    )
+                )
                 summary.append_sample_id_outfile(sample_id, file_path)
                 save_data_to_files(file_path, subdata[j])
         else:
-            logger.error('save out files error array shape:{} filesinfo:{} files_count_perbatch:{} ndata.shape\
-                         {}:{}'.format(ndata.shape, infiles_paths, files_count_perbatch, output_batchsize_axis,\
-                         ndata.shape[output_batchsize_axis]))
+            logger.error(
+                'save out files error array shape:{} filesinfo:{} files_count_perbatch:{} ndata.shape\
+                         {}:{}'.format(
+                    ndata.shape,
+                    infiles_paths,
+                    files_count_perbatch,
+                    output_batchsize_axis,
+                    ndata.shape[output_batchsize_axis],
+                )
+            )
             raise RuntimeError()

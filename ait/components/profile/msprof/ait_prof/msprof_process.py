@@ -25,18 +25,31 @@ from ait_prof.args_adapter import MsProfArgsAdapter
 
 PATH_MAX_LENGTH = 255
 
+
 def msprof_run_profiling(args, msprof_bin):
     bin_path = ' '.join(sys.argv).split(" ")[0]
     bin_path = bin_path.rsplit('/', 1)[0]
-    msprof_cmd = "{} --output={}/profiler --application=\"{} {}/{}\" --model-execution={}" \
-               " --sys-hardware-mem={} --sys-cpu-profiling={}" \
-               " --sys-profiling={} --sys-pid-profiling={} --dvpp-profiling={} " \
-               "--runtime-api={} --task-time={} --aicpu={}".format(msprof_bin, args.output, sys.executable,
-                                                                   bin_path, args.application,
-                                                                   args.model_execution, args.sys_hardware_mem,
-                                                                   args.sys_cpu_profiling, args.sys_profiling,
-                                                                   args.sys_pid_profiling, args.dvpp_profiling,
-                                                                   args.runtime_api, args.task_time, args.aicpu)
+    msprof_cmd = (
+        "{} --output={}/profiler --application=\"{} {}/{}\" --model-execution={}"
+        " --sys-hardware-mem={} --sys-cpu-profiling={}"
+        " --sys-profiling={} --sys-pid-profiling={} --dvpp-profiling={} "
+        "--runtime-api={} --task-time={} --aicpu={}".format(
+            msprof_bin,
+            args.output,
+            sys.executable,
+            bin_path,
+            args.application,
+            args.model_execution,
+            args.sys_hardware_mem,
+            args.sys_cpu_profiling,
+            args.sys_profiling,
+            args.sys_pid_profiling,
+            args.dvpp_profiling,
+            args.runtime_api,
+            args.task_time,
+            args.aicpu,
+        )
+    )
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
     ret = os.system(msprof_cmd)
     if ret != 0:
@@ -46,15 +59,14 @@ def msprof_run_profiling(args, msprof_bin):
 
 def args_rules(args):
     if args.output is not None and len(args.output) > PATH_MAX_LENGTH:
-        logger.error("parameter --output length out of range. "
-                    "Please use it together with the parameter --output!\n")
+        logger.error("parameter --output length out of range. " "Please use it together with the parameter --output!\n")
         raise RuntimeError('error bad parameters --output')
     if args.output is None:
         args.output = os.getcwd()
     return args
 
 
-def msprof_process(args:MsProfArgsAdapter):
+def msprof_process(args: MsProfArgsAdapter):
     try:
         args = args_rules(args)
     except RuntimeError:

@@ -86,11 +86,7 @@ class MatchResult(object):
                 return False
         return True
 
-    def _include(
-        self,
-        l_node_dict: Dict[str, List[Node]],
-        r_node_dict: Dict[str, List[Node]]
-    ) -> bool:
+    def _include(self, l_node_dict: Dict[str, List[Node]], r_node_dict: Dict[str, List[Node]]) -> bool:
         """
         检查子图是否包含另一个子图，如果包含返回True，否则返回False
         """
@@ -114,7 +110,7 @@ class Matcher(object):
     def __init__(self, graph: BaseGraph, pattern: Pattern) -> None:
         self._graph: BaseGraph = graph
         self._pattern: Pattern = pattern
-        self._visit_direction: int = 0 # 0: visit from up to down; 1: visit from down to up
+        self._visit_direction: int = 0  # 0: visit from up to down; 1: visit from down to up
 
     def get_candidate_nodes(self) -> List[Node]:
         """
@@ -185,20 +181,14 @@ class Matcher(object):
             next_nodes = next_nodes.union(nodes)
         return list(next_nodes)
 
-    def __get_prev_pattern_nodes(
-        self,
-        pattern_node: PatternNode
-    ) -> List[PatternNode]:
+    def __get_prev_pattern_nodes(self, pattern_node: PatternNode) -> List[PatternNode]:
         """
         获取节点前置节点
         :param pattern_node: 算子节点模板
         """
         return pattern_node.inputs
 
-    def __get_next_pattern_nodes(
-        self,
-        pattern_node: PatternNode
-    ) -> List[PatternNode]:
+    def __get_next_pattern_nodes(self, pattern_node: PatternNode) -> List[PatternNode]:
         """
         获取节点后置节点
         :param pattern_node: 算子节点模板
@@ -211,7 +201,7 @@ class Matcher(object):
         pattern_nodes: List[PatternNode],
         nodes_map: Dict[PatternNode, Optional[Node]],
         nodes_map_group: List[Dict[PatternNode, Optional[Node]]],
-        get_next_func: Callable[[PatternNode], List[PatternNode]]
+        get_next_func: Callable[[PatternNode], List[PatternNode]],
     ) -> None:
         """
         匹配nodes和pattern_nodes，生成所有能匹配的组合
@@ -233,13 +223,7 @@ class Matcher(object):
                 if not pattern_node.match(node, self._graph):
                     continue
                 nodes_map[pattern_node] = node
-                self.__nodes_group_dfs(
-                    nodes,
-                    pattern_nodes,
-                    nodes_map,
-                    nodes_map_group,
-                    get_next_func
-                )
+                self.__nodes_group_dfs(nodes, pattern_nodes, nodes_map, nodes_map_group, get_next_func)
             if pattern_node in nodes_map:
                 nodes_map.pop(pattern_node)
                 continue
@@ -252,13 +236,7 @@ class Matcher(object):
                 new_pattern_nodes: List[PatternNode] = get_next_func(pattern_node)
                 if len(new_pattern_nodes) != 0:
                     pattern_nodes.extend(new_pattern_nodes)
-                self.__nodes_group_dfs(
-                    nodes,
-                    pattern_nodes,
-                    nodes_map,
-                    nodes_map_group,
-                    get_next_func
-                )
+                self.__nodes_group_dfs(nodes, pattern_nodes, nodes_map, nodes_map_group, get_next_func)
                 nodes_map.pop(pattern_node)
                 for nd in new_pattern_nodes:
                     pattern_nodes.remove(nd)
@@ -268,7 +246,7 @@ class Matcher(object):
         nodes: List[Node],
         pattern_nodes: List[PatternNode],
         result: Dict[str, List[Node]],
-        get_next_func: Callable[[PatternNode], List[PatternNode]]
+        get_next_func: Callable[[PatternNode], List[PatternNode]],
     ) -> bool:
         """
         对nodes和pattern_nodes进行匹配，并基于这些节点往上或者往下继续遍历
@@ -283,13 +261,7 @@ class Matcher(object):
         # 计算nodes和pattern_nodes所有可能存在的组合
         nodes_map: Dict[PatternNode, Optional[Node]] = {}
         nodes_map_group: List[Dict[PatternNode, Optional[Node]]] = []
-        self.__nodes_group_dfs(
-            nodes,
-            pattern_nodes,
-            nodes_map,
-            nodes_map_group,
-            get_next_func
-        )
+        self.__nodes_group_dfs(nodes, pattern_nodes, nodes_map, nodes_map_group, get_next_func)
         if len(nodes_map_group) == 0:
             return False
         # 逐个尝试nodes_groups匹配组合，只要有能成功完成子图匹配的组合，则匹配成功并且返回
@@ -308,11 +280,7 @@ class Matcher(object):
         return False
 
     def __match_prev_nodes(
-        self,
-        node: Node,
-        pattern_node: PatternNode,
-        result: Dict[str, List[Node]],
-        visited: Set[Node]
+        self, node: Node, pattern_node: PatternNode, result: Dict[str, List[Node]], visited: Set[Node]
     ) -> bool:
         """
         匹配node前置节点
@@ -331,12 +299,7 @@ class Matcher(object):
                     if prev_node in visited:
                         continue
                     result[pattern_node.op_name].append(prev_node)
-                    if self.__match_prev_nodes(
-                        prev_node,
-                        pattern_node,
-                        result,
-                        visited = visited
-                    ):
+                    if self.__match_prev_nodes(prev_node, pattern_node, result, visited=visited):
                         return True
                     visited.add(prev_node)
                     result[pattern_node.op_name].pop()
@@ -347,19 +310,10 @@ class Matcher(object):
         else:
             prev_pattern_nodes = pattern_node.inputs
             prev_nodes = self.__get_prev_nodes(node)
-        return self.__match_nodes(
-            prev_nodes,
-            prev_pattern_nodes,
-            result,
-            self.__get_prev_pattern_nodes
-        )
+        return self.__match_nodes(prev_nodes, prev_pattern_nodes, result, self.__get_prev_pattern_nodes)
 
     def __match_next_nodes(
-        self,
-        node: Node,
-        pattern_node: PatternNode,
-        result: Dict[str, List[Node]],
-        visited: Set[Node]
+        self, node: Node, pattern_node: PatternNode, result: Dict[str, List[Node]], visited: Set[Node]
     ) -> bool:
         """
         匹配node后置节点
@@ -376,12 +330,7 @@ class Matcher(object):
                 if next_node in visited:
                     continue
                 result[pattern_node.op_name].append(next_node)
-                if self.__match_next_nodes(
-                    next_node,
-                    pattern_node,
-                    result,
-                    visited = visited
-                ):
+                if self.__match_next_nodes(next_node, pattern_node, result, visited=visited):
                     return True
                 visited.add(next_node)
                 result[pattern_node.op_name].pop()
@@ -392,19 +341,9 @@ class Matcher(object):
         else:
             next_pattern_nodes = pattern_node.outputs
             next_nodes = self.__get_next_nodes(node)
-        return self.__match_nodes(
-            next_nodes,
-            next_pattern_nodes,
-            result,
-            self.__get_next_pattern_nodes
-        )
+        return self.__match_nodes(next_nodes, next_pattern_nodes, result, self.__get_next_pattern_nodes)
 
-    def __graph_bfs(
-        self,
-        node: Node,
-        pattern_node: PatternNode,
-        result: Dict[str, List[Node]]
-    ) -> bool:
+    def __graph_bfs(self, node: Node, pattern_node: PatternNode, result: Dict[str, List[Node]]) -> bool:
         """
         从node开始匹配子图，应用广度优先算法
         :param node: 实际算子节点
@@ -426,21 +365,11 @@ class Matcher(object):
             result[pattern_node.op_name] = [node]
 
         if self._visit_direction == 0:
-            if not self.__match_next_nodes(
-                node,
-                pattern_node,
-                result,
-                visited = set()
-            ):
+            if not self.__match_next_nodes(node, pattern_node, result, visited=set()):
                 result.pop(pattern_node.op_name)
                 return False
         else:
-            if not self.__match_prev_nodes(
-                node,
-                pattern_node,
-                result,
-                visited = set()
-            ):
+            if not self.__match_prev_nodes(node, pattern_node, result, visited=set()):
                 result.pop(pattern_node.op_name)
                 return False
         return True

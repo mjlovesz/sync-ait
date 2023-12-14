@@ -29,7 +29,7 @@ from auto_optimizer.pattern.knowledges.big_kernel.util import (
     ADD_B,
     CONVERT_3DIMS_TO_4DIMS,
     QK_MASK_ADD,
-    QK_MASK_ADD_B
+    QK_MASK_ADD_B,
 )
 
 
@@ -93,8 +93,9 @@ class AttentionParser:
     def branch_nodes(self, value):
         self.branch_nodes = value
 
-    def down_top_search(self, start_node: OnnxNode, goal_op_type: str, end_node=None, input_idx=0) \
-            -> Optional[OnnxNode]:
+    def down_top_search(
+        self, start_node: OnnxNode, goal_op_type: str, end_node=None, input_idx=0
+    ) -> Optional[OnnxNode]:
         visited = set()
         if input_idx + 1 > len(start_node.inputs):
             return None
@@ -198,20 +199,21 @@ class AttentionParser:
         transpose_perm = []
         for i in range(3):
             start_idx = i * split
-            end_idx = (i+1) * split
+            end_idx = (i + 1) * split
 
             matmul_w = gemm_w.value[:, start_idx:end_idx]
             self._params.setdefault(prefix_list[i] + MATMUL_W, matmul_w)
 
-            add_b = gemm_b.value[start_idx: end_idx]
+            add_b = gemm_b.value[start_idx:end_idx]
             self._params.setdefault(prefix_list[i] + ADD_B, add_b)
 
             self._params.setdefault(prefix_list[i] + RESHAPE_S, reshape_s.value)
 
             if i == 0:
                 # 通过计算q分支的transpose可以得到k和v的transpose的perm值
-                q_transpose = self.down_top_search(start_node=self._qk_mm, end_node=split_node,
-                                                   goal_op_type="Transpose")
+                q_transpose = self.down_top_search(
+                    start_node=self._qk_mm, end_node=split_node, goal_op_type="Transpose"
+                )
                 transpose_perm = q_transpose.attrs.get("perm")
 
             self._params.setdefault(prefix_list[i] + TRANSPOSE_PERM, transpose_perm)
@@ -224,7 +226,7 @@ class AttentionParser:
         if div:
             div_b = self.graph.get_node(div.inputs[1], node_type=OnnxInitializer)
             try:
-                mul_b = np.array(1/div_b.value).astype(div_b.value.dtype)
+                mul_b = np.array(1 / div_b.value).astype(div_b.value.dtype)
             except ZeroDivisionError as err:
                 logger.error("The value of {} is zero, please check your model.".format(div_b.name))
                 raise err
@@ -362,7 +364,7 @@ class AttentionParser:
         transpose = self.top_down_search(self._score_v_mm, goal_op_type="Transpose")
         perm = transpose.attrs.get("perm")
         if len(perm) == 3:
-            perm = [p+1 for p in perm]
+            perm = [p + 1 for p in perm]
             perm.insert(0, 0)
         self._params.setdefault("transpose_perm", perm)
 
@@ -395,7 +397,7 @@ class AttentionParser:
         """
         attrs = gemm.attrs
         gemm_w = self.graph.get_node(gemm.inputs[1], node_type=OnnxInitializer)
-        if attrs.get("transB"): # transA的情况暂不考虑，需要在gemm（matmul）之前插入transpose算子，这样将破坏了标准pattern
+        if attrs.get("transB"):  # transA的情况暂不考虑，需要在gemm（matmul）之前插入transpose算子，这样将破坏了标准pattern
             weight = attrs.get("alpha") * gemm_w.value.T
         else:
             weight = attrs.get("alpha") * gemm_w.value

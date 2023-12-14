@@ -48,7 +48,7 @@ def make_dynamic_model_and_squeeze(onnx_name, x, y, shape):
     graph.add_node('Add', 'Add', ['X', 'Y'], ['Add_out'])
     graph.add_node('Reshape1', 'Reshape', ['Add_out', 'Shape_out'], ['OUT_0'])
     attrs = {'axes': [1]}
-    insert_squeeze(graph, graph['Reshape0'], attrs, mode='after', refer_index = 0)
+    insert_squeeze(graph, graph['Reshape0'], attrs, mode='after', refer_index=0)
     graph.update_map()
     return graph
 
@@ -56,8 +56,8 @@ def make_dynamic_model_and_squeeze(onnx_name, x, y, shape):
 class TestKnowledgeDynamicReshape(unittest.TestCase, KnowledgeTestHelper):
     def test_basic_dynamic_reshape(self):
         usecases = [
-            (('bs', 512), np.float32, np.array([-1, 64], dtype = np.int64)),
-            (('bs', 'len', 512), np.float32, np.array([-1, 0, 64], dtype = np.int64))
+            (('bs', 512), np.float32, np.array([-1, 64], dtype=np.int64)),
+            (('bs', 'len', 512), np.float32, np.array([-1, 0, 64], dtype=np.int64)),
         ]
 
         for in_shape, in_dtype, shape in usecases:
@@ -91,9 +91,7 @@ class TestKnowledgeDynamicReshape(unittest.TestCase, KnowledgeTestHelper):
             self.assertTrue(np.all(graph_opt[shape_name].value == list(shape)))
 
     def test_basic_dynamic_reshape_and_squeeze(self):
-        usecases = [
-            (('bs', 8, 'len', 32), np.float32, np.array([-1, 1, 0, 32], dtype = np.int64))
-        ]
+        usecases = [(('bs', 8, 'len', 32), np.float32, np.array([-1, 1, 0, 32], dtype=np.int64))]
 
         for in_shape, in_dtype, shape in usecases:
             x = {'shape': in_shape, 'dtype': in_dtype}

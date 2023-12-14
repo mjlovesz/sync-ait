@@ -28,8 +28,9 @@ from auto_optimizer.pattern.knowledges.knowledge_split_qkv_matmul import Knowled
 from testcase.helper import KnowledgeTestHelper, OptimizationConfig
 
 
-def make_basic_qkv_matmul_model(onnx_name, perm, gathers=3, axis=0, ops1=1, ops2=1,
-                                valid_gather=True, valid_reshape=True) -> bool:
+def make_basic_qkv_matmul_model(
+    onnx_name, perm, gathers=3, axis=0, ops1=1, ops2=1, valid_gather=True, valid_reshape=True
+) -> bool:
     if gathers not in [2, 3, 4, 5, 6, 7, 8]:
         return False
     input_ = helper.make_tensor_value_info("input", TensorProto.FLOAT, (1, 10, 112))
@@ -49,9 +50,7 @@ def make_basic_qkv_matmul_model(onnx_name, perm, gathers=3, axis=0, ops1=1, ops2
         _name = f"{_op}_{_op_idx}"
         _input = [last_output, _weight]
         random.shuffle(_input)
-        inits.append(
-            helper.make_tensor(_weight, TensorProto.FLOAT, [112], np.random.randn(112).astype(np.float32))
-        )
+        inits.append(helper.make_tensor(_weight, TensorProto.FLOAT, [112], np.random.randn(112).astype(np.float32)))
         nodes.append(helper.make_node(_op, _input, [_output], _name))
         last_output = _output
 
@@ -76,9 +75,7 @@ def make_basic_qkv_matmul_model(onnx_name, perm, gathers=3, axis=0, ops1=1, ops2
         _name = f"{_op}_{_op_idx}"
         _input = [last_output, _weight]
         random.shuffle(_input)
-        inits.append(
-            helper.make_tensor(_weight, TensorProto.FLOAT, [8400], np.random.randn(8400).astype(np.float32))
-        )
+        inits.append(helper.make_tensor(_weight, TensorProto.FLOAT, [8400], np.random.randn(8400).astype(np.float32)))
         nodes.append(helper.make_node(_op, _input, [_output], _name))
         last_output = _output
 
@@ -178,29 +175,28 @@ def make_basic_qkv_matmul_model(onnx_name, perm, gathers=3, axis=0, ops1=1, ops2
 
 
 class TestKnowledgeSplitQKVMatmul(unittest.TestCase, KnowledgeTestHelper):
-
     def test_basic_qkv_slice(self):
         params = [
             # RES,  PERM,            G, A, S1  S2  valid_gathers valid_reshape
-            (True,  [2, 0, 1, 3, 4], 2, 0, 1,  1,  True,         True),
-            (True,  [2, 0, 3, 1, 4], 2, 0, 1,  1,  True,         True),
-            (True,  [2, 0, 3, 1, 4], 2, 0, 1,  0,  True,         True),
-            (True,  [2, 0, 3, 1, 4], 2, 0, 0,  1,  True,         True),
-            (True,  [2, 0, 3, 1, 4], 2, 0, 0,  0,  True,         True),
+            (True, [2, 0, 1, 3, 4], 2, 0, 1, 1, True, True),
+            (True, [2, 0, 3, 1, 4], 2, 0, 1, 1, True, True),
+            (True, [2, 0, 3, 1, 4], 2, 0, 1, 0, True, True),
+            (True, [2, 0, 3, 1, 4], 2, 0, 0, 1, True, True),
+            (True, [2, 0, 3, 1, 4], 2, 0, 0, 0, True, True),
             # invalid gather nodes
-            (False, [2, 0, 3, 1, 4], 2, 0, 1,  1,  False,        True),
+            (False, [2, 0, 3, 1, 4], 2, 0, 1, 1, False, True),
             # invalid reshape node
-            (False, [2, 0, 3, 1, 4], 2, 0, 1,  1,  True,         False),
-            (True,  [2, 0, 3, 1, 4], 3, 0, 1,  1,  True,         True),
-            (True,  [2, 0, 3, 1, 4], 4, 0, 4,  1,  True,         True),
-            (True,  [2, 0, 3, 1, 4], 5, 0, 2,  5,  True,         True),
-            (True,  [2, 0, 3, 1, 4], 6, 0, 10, 12, True,         True),
-            (True,  [2, 0, 3, 1, 4], 7, 0, 2,  3,  True,         True),
-            (True,  [2, 0, 3, 1, 4], 8, 0, 3,  4,  True,         True),
+            (False, [2, 0, 3, 1, 4], 2, 0, 1, 1, True, False),
+            (True, [2, 0, 3, 1, 4], 3, 0, 1, 1, True, True),
+            (True, [2, 0, 3, 1, 4], 4, 0, 4, 1, True, True),
+            (True, [2, 0, 3, 1, 4], 5, 0, 2, 5, True, True),
+            (True, [2, 0, 3, 1, 4], 6, 0, 10, 12, True, True),
+            (True, [2, 0, 3, 1, 4], 7, 0, 2, 3, True, True),
+            (True, [2, 0, 3, 1, 4], 8, 0, 3, 4, True, True),
             # gather operator not pick from the first axis
-            (False, [2, 0, 3, 1, 4], 3, 2, 1,  1,  True,         True),
+            (False, [2, 0, 3, 1, 4], 3, 2, 1, 1, True, True),
             # invalid permutation
-            (False, [1, 2, 3, 0, 4], 3, 0, 1,  1,  True,         True),
+            (False, [1, 2, 3, 0, 4], 3, 0, 1, 1, True, True),
         ]
         for expect, perm, gathers, axis, s1, s2, vg, vr in params:
             pstr = ''.join(str(k) for k in perm)
@@ -210,14 +206,7 @@ class TestKnowledgeSplitQKVMatmul(unittest.TestCase, KnowledgeTestHelper):
                 onnx_opt = f"./{name}_optimize.onnx"
 
                 ok = make_basic_qkv_matmul_model(
-                    onnx_ori,
-                    perm=perm,
-                    gathers=gathers,
-                    axis=axis,
-                    ops1=s1,
-                    ops2=s2,
-                    valid_gather=vg,
-                    valid_reshape=vr
+                    onnx_ori, perm=perm, gathers=gathers, axis=axis, ops1=s1, ops2=s2, valid_gather=vg, valid_reshape=vr
                 )
                 self.assertTrue(ok)
                 if not ok:

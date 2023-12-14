@@ -20,7 +20,7 @@ import numpy as np
 
 model_path = sys.argv[1]
 
-logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -37,8 +37,8 @@ def infer_simple():
     tensor = aclruntime.Tensor(ndata)
     tensor.to_device(device_id)
 
-    outnames = [ session.get_outputs()[0].name ]
-    feeds = { session.get_inputs()[0].name : tensor}
+    outnames = [session.get_outputs()[0].name]
+    feeds = {session.get_inputs()[0].name: tensor}
 
     outputs = session.run(outnames, feeds)
     logger.info("outputs:", outputs)
@@ -67,13 +67,19 @@ def get_model_info():
     # 方法3 也可以直接通过get接口去获取
     intensors_desc = session.get_inputs()
     for i, info in enumerate(intensors_desc):
-        logger.info("input info i:{} shape:{} type:{} val:{} realsize:{} size:{}".format(
-            i, info.shape, info.datatype, int(info.datatype), info.realsize, info.size))
+        logger.info(
+            "input info i:{} shape:{} type:{} val:{} realsize:{} size:{}".format(
+                i, info.shape, info.datatype, int(info.datatype), info.realsize, info.size
+            )
+        )
 
     intensors_desc = session.get_outputs()
     for i, info in enumerate(intensors_desc):
-        logger.info("outputs info i:{} shape:{} type:{} val:{} realsize:{} size:{}".format(
-            i, info.shape, info.datatype, int(info.datatype), info.realsize, info.size))
+        logger.info(
+            "outputs info i:{} shape:{} type:{} val:{} realsize:{} size:{}".format(
+                i, info.shape, info.datatype, int(info.datatype), info.realsize, info.size
+            )
+        )
 
 
 def infer_dynamicshape():
@@ -92,8 +98,8 @@ def infer_dynamicshape():
     tensor = aclruntime.Tensor(ndata)
     tensor.to_device(device_id)
 
-    outnames = [ session.get_outputs()[0].name ]
-    feeds = { session.get_inputs()[0].name : tensor}
+    outnames = [session.get_outputs()[0].name]
+    feeds = {session.get_inputs()[0].name: tensor}
 
     outputs = session.run(outnames, feeds)
     logger.info("outputs:", outputs)
@@ -129,8 +135,8 @@ def infer_run_simultaneous():
     # convert numpy to pytensors in device
     tensor = aclruntime.Tensor(ndata)
     tensor.to_device(device_id)
-    outnames = [ session.get_outputs()[0].name ]
-    feeds = { session.get_inputs()[0].name : tensor}
+    outnames = [session.get_outputs()[0].name]
+    feeds = {session.get_inputs()[0].name: tensor}
 
     # another call
     options1 = aclruntime.session_options()
@@ -142,8 +148,8 @@ def infer_run_simultaneous():
     # convert numpy to pytensors in device
     tensor1 = aclruntime.Tensor(ndata1)
     tensor1.to_device(device_id)
-    outnames1 = [ session1.get_outputs()[0].name ]
-    feeds1 = { session1.get_inputs()[0].name : tensor1}
+    outnames1 = [session1.get_outputs()[0].name]
+    feeds1 = {session1.get_inputs()[0].name: tensor1}
 
     # one run
     outputs = session.run(outnames, feeds)
@@ -187,8 +193,8 @@ def infer_dynamic_dims():
     tensor = aclruntime.Tensor(ndata)
     tensor.to_device(device_id)
 
-    outnames = [ session.get_outputs()[0].name ]
-    feeds = { session.get_inputs()[0].name : tensor}
+    outnames = [session.get_outputs()[0].name]
+    feeds = {session.get_inputs()[0].name: tensor}
 
     outputs = session.run(outnames, feeds)
     logger.info("outputs:", outputs)
@@ -218,8 +224,8 @@ def infer_dynamics_hw():
     tensor = aclruntime.Tensor(ndata)
     tensor.to_device(device_id)
 
-    outnames = [ session.get_outputs()[0].name ]
-    feeds = { session.get_inputs()[0].name : tensor}
+    outnames = [session.get_outputs()[0].name]
+    feeds = {session.get_inputs()[0].name: tensor}
 
     outputs = session.run(outnames, feeds)
     logger.info("outputs:", outputs)
@@ -250,8 +256,8 @@ def infer_dynamic_batchsize():
     tensor = aclruntime.Tensor(ndata)
     tensor.to_device(device_id)
 
-    outnames = [ session.get_outputs()[0].name ]
-    feeds = { session.get_inputs()[0].name : tensor}
+    outnames = [session.get_outputs()[0].name]
+    feeds = {session.get_inputs()[0].name: tensor}
 
     outputs = session.run(outnames, feeds)
     logger.info("outputs:", outputs)

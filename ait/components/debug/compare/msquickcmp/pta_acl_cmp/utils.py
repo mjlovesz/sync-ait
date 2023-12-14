@@ -19,10 +19,28 @@ import numpy as np
 
 from msquickcmp.pta_acl_cmp.cmp_algorithm import cmp_alg_map
 from msquickcmp.common.utils import logger
-from msquickcmp.pta_acl_cmp.constant import TOKEN_ID, DATA_ID, ACL_DATA_PATH, CMP_FLAG, \
-    CMP_FAIL_REASON, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, ATTR_END, \
-    ATTR_OBJECT_LENGTH, ATTR_OBJECT_PREFIX, GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, \
-    GOLDEN_MAX_VALUE, GOLDEN_MIN_VALUE, GOLDEN_MEAN_VALUE, CSV_GOLDEN_HEADER
+from msquickcmp.pta_acl_cmp.constant import (
+    TOKEN_ID,
+    DATA_ID,
+    ACL_DATA_PATH,
+    CMP_FLAG,
+    CMP_FAIL_REASON,
+    ACL_DTYPE,
+    ACL_SHAPE,
+    ACL_MAX_VALUE,
+    ACL_MIN_VALUE,
+    ACL_MEAN_VALUE,
+    ATTR_END,
+    ATTR_OBJECT_LENGTH,
+    ATTR_OBJECT_PREFIX,
+    GOLDEN_DATA_PATH,
+    GOLDEN_DTYPE,
+    GOLDEN_SHAPE,
+    GOLDEN_MAX_VALUE,
+    GOLDEN_MIN_VALUE,
+    GOLDEN_MEAN_VALUE,
+    CSV_GOLDEN_HEADER,
+)
 from components.utils.file_open_check import ms_open
 
 
@@ -62,13 +80,13 @@ class TensorBinFile:
             begin_offset = 0
             for i, byte in enumerate(file_data):
                 if byte == ord("\n"):
-                    line = file_data[begin_offset: i].decode("utf-8")
+                    line = file_data[begin_offset:i].decode("utf-8")
                     begin_offset = i + 1
                     fields = line.split("=")
                     attr_name = fields[0]
                     attr_value = fields[1]
                     if attr_name == ATTR_END:
-                        self.obj_buffer = file_data[i + 1:]
+                        self.obj_buffer = file_data[i + 1 :]
                         break
                     elif attr_name.startswith("$"):
                         self.__parse_system_atrr(attr_name, attr_value)
@@ -130,16 +148,16 @@ def compare_tensor(csv_data: pd.DataFrame, dump_clean=False):
             csv_data[CMP_FAIL_REASON][idx] = "acl_data_path is not exist."
             csv_data[CMP_FLAG][idx] = True
             continue
-        
+
         golden_data_fp32 = golden_data.reshape(-1).astype("float32")
         acl_data_fp32 = acl_data.reshape(-1).astype("float32")
-    
+
         csv_data[GOLDEN_DTYPE][idx] = str(golden_data.dtype)
         csv_data[GOLDEN_SHAPE][idx] = str(golden_data.shape)
         csv_data[GOLDEN_MAX_VALUE][idx] = np.max(golden_data_fp32)
         csv_data[GOLDEN_MIN_VALUE][idx] = np.min(golden_data_fp32)
         csv_data[GOLDEN_MEAN_VALUE][idx] = np.mean(golden_data_fp32)
-        
+
         csv_data[ACL_DTYPE][idx] = str(acl_data.dtype)
         csv_data[ACL_SHAPE][idx] = str(acl_data.shape)
         csv_data[ACL_MAX_VALUE][idx] = np.max(acl_data_fp32)
@@ -174,13 +192,15 @@ def auto_compare_metadata(golden_meta, acl_meta):
                 continue
             acl_data_dir = os.path.join(a_data_dir[0], "outtensor0.bin")
 
-            row_data = pd.DataFrame({
-                TOKEN_ID: [str(token_id)],
-                DATA_ID: [w_md5],
-                GOLDEN_DATA_PATH: [g_data_path[0]],
-                ACL_DATA_PATH: [acl_data_dir],
-                CMP_FLAG: [False]
-            })
+            row_data = pd.DataFrame(
+                {
+                    TOKEN_ID: [str(token_id)],
+                    DATA_ID: [w_md5],
+                    GOLDEN_DATA_PATH: [g_data_path[0]],
+                    ACL_DATA_PATH: [acl_data_dir],
+                    CMP_FLAG: [False],
+                }
+            )
 
             data_frame = pd.concat([data_frame, row_data], ignore_index=True)
     return data_frame
@@ -199,13 +219,15 @@ def manual_compare_metadata(golden_meta, acl_meta):
                 logger.warning(f"acl data path is none.")
                 continue
 
-            row_data = pd.DataFrame({
-                TOKEN_ID: [str(token_id)],
-                DATA_ID: [data_id],
-                GOLDEN_DATA_PATH: [golden_data_path],
-                ACL_DATA_PATH: [acl_data_path],
-                CMP_FLAG: [False]
-            })
+            row_data = pd.DataFrame(
+                {
+                    TOKEN_ID: [str(token_id)],
+                    DATA_ID: [data_id],
+                    GOLDEN_DATA_PATH: [golden_data_path],
+                    ACL_DATA_PATH: [acl_data_path],
+                    CMP_FLAG: [False],
+                }
+            )
 
             data_frame = pd.concat([data_frame, row_data], ignore_index=True)
     return data_frame
@@ -215,7 +237,7 @@ def compare_metadata(golden_path, acl_path, output_path="./", dump_clean=False):
     if golden_path.endswith(".json"):
         golden_meta_path = golden_path
     else:
-       golden_meta_path = os.path.join(golden_path, "metadata.json")
+        golden_meta_path = os.path.join(golden_path, "metadata.json")
 
     with open(golden_meta_path, 'r') as file:
         golden_meta = json.load(file)
@@ -248,6 +270,7 @@ def _get_data_path(data, idx, data_src):
 def write_json_file(data_id, data_path, json_path, token_id):
     # 建议与json解耦，需要的时候用
     import json
+
     try:
         with open(json_path, 'r') as json_file:
             json_data = json.load(json_file)
