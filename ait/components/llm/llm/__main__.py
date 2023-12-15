@@ -21,6 +21,7 @@ from llm.common.utils import str2bool, check_positive_integer, safe_string, chec
 from llm.dump.initial import init_dump_task, clear_dump_task
 from llm.compare.acc_cmp import acc_compare
 from llm.common.log import set_log_level
+from llm.common.log import logger
 
 
 class DumpCommand(BaseCommand):
@@ -107,7 +108,8 @@ class DumpCommand(BaseCommand):
             help='Data output directory.E.g:--output /xx/xxxx/xx')
 
     def handle(self, args, **kwargs):
-        if args.exec and check_exec_cmd(args.exec):
+        if args.exec:
+            logger.warning("Please ensure that your execution command is secure.")
             init_dump_task(args)
             # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
             os.system(args.exec)
