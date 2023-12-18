@@ -21,46 +21,46 @@ np.seterr(divide='ignore', invalid='ignore')  # ignore `invalid value encountere
 NAN = 'NaN'
 
 
-def cosine_similarity(pta_data: np.ndarray, acl_data: np.ndarray):
-    acl_data_norm = np.linalg.norm(acl_data, axis=-1, keepdims=True)
-    pta_data_norm = np.linalg.norm(pta_data, axis=-1, keepdims=True)
-    if acl_data_norm <= FLOAT_EPSILON and pta_data_norm < FLOAT_EPSILON:
-        return "1.0", ""
-    elif acl_data_norm ** 0.5 <= FLOAT_EPSILON:
-        logger.warning('Cannot compare by Cosine Similarity. All the acl_data is zero')
+def cosine_similarity(golden_data: np.ndarray, my_data: np.ndarray):
+    my_data_norm = np.linalg.norm(my_data, axis=-1, keepdims=True)
+    golden_data_norm = np.linalg.norm(golden_data, axis=-1, keepdims=True)
+    if my_data_norm <= FLOAT_EPSILON and golden_data_norm < FLOAT_EPSILON:
+        return "1.0"
+    elif my_data_norm ** 0.5 <= FLOAT_EPSILON:
+        logger.warning('Cannot compare by Cosine Similarity. All the my_data is zero')
         return NAN
-    elif pta_data_norm ** 0.5 <= FLOAT_EPSILON:
-        logger.warning('Cannot compare by Cosine Similarity. All the pta_data is zero')
+    elif golden_data_norm ** 0.5 <= FLOAT_EPSILON:
+        logger.warning('Cannot compare by Cosine Similarity. All the golden_data is zero')
         return NAN
 
-    result = (acl_data / acl_data_norm) @ (pta_data / pta_data_norm)
+    result = (my_data / my_data_norm) @ (golden_data / golden_data_norm)
     return '{:.6f}'.format(result)
 
 
-def max_relative_error(pta_data: np.ndarray, acl_data: np.ndarray):
+def max_relative_error(golden_data: np.ndarray, my_data: np.ndarray):
     result = np.where(
-        np.abs(pta_data) > FLOAT_EPSILON,
-        np.abs(acl_data / pta_data - 1),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
+        np.abs(golden_data) > FLOAT_EPSILON,
+        np.abs(my_data / golden_data - 1),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
         0,
     ).max()
     return result
 
 
-def mean_relative_error(pta_data: np.ndarray, acl_data: np.ndarray):
+def mean_relative_error(golden_data: np.ndarray, my_data: np.ndarray):
     result = np.where(
-        np.abs(pta_data) > FLOAT_EPSILON,
-        np.abs(acl_data / pta_data - 1),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
+        np.abs(golden_data) > FLOAT_EPSILON,
+        np.abs(my_data / golden_data - 1),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
         0,
     ).mean()
     return result
 
 
-def relative_euclidean_distance(pta_data: np.ndarray, acl_data: np.ndarray):
-    ground_truth_square_num = (pta_data ** 2).sum()
+def relative_euclidean_distance(golden_data: np.ndarray, my_data: np.ndarray):
+    ground_truth_square_num = (golden_data ** 2).sum()
     if ground_truth_square_num ** 0.5 <= FLOAT_EPSILON:
         result = 0.0
     else:
-        result = ((acl_data - pta_data) ** 2).sum() / ground_truth_square_num
+        result = ((my_data - golden_data) ** 2).sum() / ground_truth_square_num
     return result
 
 
