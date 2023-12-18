@@ -107,6 +107,16 @@ class DumpCommand(BaseCommand):
             type=check_output_path_legality,
             help='Data output directory.E.g:--output /xx/xxxx/xx')
 
+        parser.add_argument(
+            '--save-tensor-part',
+            '-stp',
+            required=False,
+            dest="save_tensor_part",
+            type=check_positive_integer,
+            default=2,
+            help='0 when only need dump intensor, '
+                 '1 when only need dump outtensor, 2 both.Default 2')
+
     def handle(self, args, **kwargs):
         if args.exec:
             logger.info(f"About to execute command : {args.exec}")
