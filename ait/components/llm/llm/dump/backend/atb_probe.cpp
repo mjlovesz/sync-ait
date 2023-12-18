@@ -292,9 +292,10 @@ bool atb::Probe::IsSaveIntensor()
         return false;
     }
     int value = std::stoi(saveTensorPart);
-    if (value == SAVE_INTENSR || value == SAVE_ALL_TENSOR) {
+    if (value == SAVE_INTENSOR || value == SAVE_ALL_TENSOR) {
         return true;
     }
+    return false;
 }
 
 
@@ -305,7 +306,8 @@ bool atb::Probe::IsSaveOuttensor()
         return false;
     }
     int value = std::stoi(saveTensorPart);
-    if (value == SAVE_OUTTENSR || value == SAVE_ALL_TENSOR) {
+    if (value == SAVE_OUTTENSOR || value == SAVE_ALL_TENSOR) {
         return true;
     }
+    return false;
 }
