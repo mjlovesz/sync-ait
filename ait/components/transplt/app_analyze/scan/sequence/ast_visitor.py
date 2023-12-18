@@ -291,7 +291,7 @@ def visit(node, seq_desc, result):
         # 用户自定义函数
         save_api_seq(seq_desc, result)
         skip_flag = _usr_def_fn(node, seq_desc)
-    elif cursor_kind in [CursorKind.CONSTRUCTOR, CursorKind.CXX_METHOD]:
+    elif cursor_kind in [CursorKind.CONSTRUCTOR, CursorKind.CXX_METHOD, CursorKind.DESTRUCTOR]:
         # 对象和成员变量
         save_api_seq(seq_desc, result)
         skip_flag = _usr_def_obj(node, seq_desc, cursor_kind)
