@@ -75,6 +75,17 @@ static bool isInTensorBinPath(const std::string &filePath)
 }
 
 
+static bool isOutTensorBinPath(const std::string &filePath)
+{
+    size_t sep_pos = filePath.rfind("/");
+    std::string fileName = filePath;
+    if (sep_pos != std::string::npos) {
+        fileName.erase(0, sep_pos + 1);
+    }
+    return fileName.find("outtensor") != std::string::npos || fileName.find("outTensor") != std::string::npos;
+}
+
+
 bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::string &optype)
 {
     const char *vid = std::getenv("ATB_SAVE_TENSOR_IDS"); // 应该是20_1_9,1_23,5_29_1
@@ -197,8 +208,10 @@ void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
     const std::string &dims, const void *hostData, uint64_t dataSize,
     const std::string &filePath)
 {   
-    // 如果只保存outtensor，那么判断路径是intensor以及确实只保存outtensor后直接返回
-    if (isInTensorBinPath(filePath) && IsOnlyOuttensor()) {
+    // 判断是否需要保存
+    bool SaveFlag = (isInTensorBinPath(filePath) && IsSaveIntensor()) ||
+                (isOutTensorBinPath(filePath) && IsSaveOuttensor());
+    if (!SaveFlag) {
         return;
     }
 
@@ -272,12 +285,27 @@ bool atb::Probe::IsSaveTiling()
 }
 
 
-bool atb::Probe::IsOnlyOuttensor()
+bool atb::Probe::IsSaveIntensor()
 {
-    const char* onlySaveOut = std::getenv("ATB_ONLY_OUT");
-    if (onlySaveOut == nullptr) {
+    const char* saveTensorPart = std::getenv("ATB_SAVE_TENSOR_PART");
+    if (saveTensorPart == nullptr) {
         return false;
     }
-    int value = std::stoi(onlySaveOut);
-    return value;
+    int value = std::stoi(saveTensorPart);
+    if (value == SAVE_INTENSR || value == SAVE_ALL_TENSOR) {
+        return true;
+    }
+}
+
+
+bool atb::Probe::IsSaveOuttensor()
+{
+    const char* saveTensorPart = std::getenv("ATB_SAVE_TENSOR_PART");
+    if (saveTensorPart == nullptr) {
+        return false;
+    }
+    int value = std::stoi(saveTensorPart);
+    if (value == SAVE_OUTTENSR || value == SAVE_ALL_TENSOR) {
+        return true;
+    }
 }
