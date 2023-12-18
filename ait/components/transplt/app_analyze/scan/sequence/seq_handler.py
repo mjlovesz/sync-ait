@@ -33,6 +33,10 @@ class SeqHandler:
                         continue
 
                     usr_api['key'].has_called = True
+                    if seq_obj.entry_api.full_name == api.full_name:
+                        # 递归函数
+                        continue
+
                     _get_union_api(usr_api['key'], api_seq)
 
         if len(seqs) == 1:
@@ -70,12 +74,38 @@ class SeqHandler:
                     pre_api_id = api.func_id
             return apis
 
+        # 序列去重
+        def _dedup_apis(all_seqs):
+            file_filter = dict()
+            for seq_desc in all_seqs:
+                entry_api = seq_desc.entry_api.full_name
+                file = seq_desc.entry_api.location.get('file', None)
+                entry_apis = file_filter.get(file, None)
+                if entry_apis is None:
+                    file_filter[file] = {entry_api: seq_desc}
+                    continue
+
+                item = entry_apis.get(entry_api, None)
+                if item is None:
+                    file_filter[file][entry_api] = seq_desc
+                    continue
+
+                if seq_desc.has_called:
+                    file_filter[file][entry_api] = seq_desc
+
+            res_seqs = list()
+            for _, val_dict in file_filter.items():
+                res_seqs += list(val_dict.values())
+            return res_seqs
+
+        # 同一个文件会被多个文件引用，所以序列有重复，需要根据文件过滤
+        new_seqs = _dedup_apis(seqs)
         if infer_flag:
-            rst = [seq_desc for seq_desc in seqs if not seq_desc.has_called]
+            rst = [seq_desc for seq_desc in new_seqs if not seq_desc.has_called]
             return rst
 
         rst = list()
-        for seq_desc in seqs:
+        for seq_desc in new_seqs:
             if seq_desc.has_called:
                 continue
 
