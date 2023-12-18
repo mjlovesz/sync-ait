@@ -84,8 +84,9 @@ class AccuracyCompareException(Exception):
 
 class InputShapeError(enum.Enum):
     """
-     Class for Input Shape Error
+    Class for Input Shape Error
     """
+
     FORMAT_NOT_MATCH = 0
     VALUE_TYPE_NOT_MATCH = 1
     NAME_NOT_MATCH = 2
@@ -139,16 +140,14 @@ def check_file_or_directory_path(path, isdir=False):
             logger.error('The path {} is not a directory.Please check the path'.format(path))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         if not os.access(path, os.W_OK):
-            logger.error(
-                'The path{} does not have permission to write.Please check the path permission'.format(path))
+            logger.error('The path{} does not have permission to write.Please check the path permission'.format(path))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR)
     else:
         if not os.path.isfile(path):
             logger.error('The path {} is not a file.Please check the path'.format(path))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR)
         if not os.access(path, os.R_OK):
-            logger.error(
-                'The path{} does not have permission to read.Please check the path permission'.format(path))
+            logger.error('The path{} does not have permission to read.Please check the path permission'.format(path))
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR)
 
 
@@ -205,8 +204,8 @@ def check_locat_is_valid(dump, locat):
         True or False
     """
     if locat and not dump:
-            logger.error("Dump must be True when locat is used")
-            raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
+        logger.error("Dump must be True when locat is used")
+        raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_COMMAND_ERROR)
 
 
 def check_device_param_valid(device):
@@ -215,8 +214,8 @@ def check_device_param_valid(device):
     """
     if not device.isdigit() or int(device) > MAX_DEVICE_ID:
         logger.error(
-            "Please enter a valid number for device, the device id should be"
-            " in [0, 255], now is %s." % device)
+            "Please enter a valid number for device, the device id should be" " in [0, 255], now is %s." % device
+        )
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
 
 
@@ -279,7 +278,8 @@ def check_max_size_param_valid(max_cmp_size):
     if max_cmp_size < 0:
         logger.error(
             "Please enter a valid number for max_cmp_size, the max_cmp_size should be"
-            " in [0, ∞), now is %s." % max_cmp_size)
+            " in [0, ∞), now is %s." % max_cmp_size
+        )
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_DEVICE_ERROR)
 
 
@@ -297,8 +297,11 @@ def get_model_name_and_extension(offline_model_path):
     file_name = os.path.basename(offline_model_path)
     model_name, extension = os.path.splitext(file_name)
     if extension not in MODEL_TYPE:
-        logger.error('Only model files whose names end with .pb or .onnx are supported.Please check {}'.format(
-            offline_model_path))
+        logger.error(
+            'Only model files whose names end with .pb or .onnx are supported.Please check {}'.format(
+                offline_model_path
+            )
+        )
         raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR)
     return model_name, extension
 
@@ -345,16 +348,16 @@ def get_dump_data_path(dump_dir, is_net_output=False, model_name=None):
         if len(files) != 0:
             dump_data_path_list.append(dir_path)
             file_is_exist = True
-    
+
     if len(dump_data_path_list) > 1:
         # find the model name directory
         dump_data_path = dump_data_path_list[0]
         for ii in dump_data_path_list:
             if model_name in ii:
                 dump_data_path = ii
-                break            
-        
-        #move all dump files to single directory
+                break
+
+        # move all dump files to single directory
         for ii in dump_data_path_list:
             if ii == dump_data_path:
                 continue
@@ -387,8 +390,10 @@ def get_shape_not_match_message(shape_error_type, value):
     """
     message = ""
     if shape_error_type == InputShapeError.FORMAT_NOT_MATCH:
-        message = "Input shape \"{}\" format mismatch,the format like: " \
-                  "input_name1:1,224,224,3;input_name2:3,300".format(value)
+        message = (
+            "Input shape \"{}\" format mismatch,the format like: "
+            "input_name1:1,224,224,3;input_name2:3,300".format(value)
+        )
     if shape_error_type == InputShapeError.VALUE_TYPE_NOT_MATCH:
         message = "Input shape \"{}\" value not number".format(value)
     if shape_error_type == InputShapeError.NAME_NOT_MATCH:
@@ -465,12 +470,12 @@ def parse_input_shape(input_shape):
 
 def parse_input_shape_to_list(input_shape):
     """
-        Function Description:
-            parse input shape and get a list only contains inputs shape
-        Parameter:
-            input_shape:the input shape,this format like:tensor_name1:dim1,dim2;tensor_name2:dim1,dim2.
-        Return Value:
-            a list only contains inputs shape, this format like [[dim1,dim2],[dim1,dim2]]
+    Function Description:
+        parse input shape and get a list only contains inputs shape
+    Parameter:
+        input_shape:the input shape,this format like:tensor_name1:dim1,dim2;tensor_name2:dim1,dim2.
+    Return Value:
+        a list only contains inputs shape, this format like [[dim1,dim2],[dim1,dim2]]
     """
     input_shape_list = []
     if not input_shape:
@@ -490,13 +495,13 @@ def parse_input_shape_to_list(input_shape):
 
 def parse_dym_shape_range(dym_shape_range):
     """
-        Function Description:
-            parse dynamic input shape
-        Parameter:
-            dym_shape_range:the input shape,this format like:tensor_name1:dim1,dim2-dim3;tensor_name2:dim1,dim2~dim3.
-             - means the both dim2 and dim3 value, ~ means the range of [dim2:dim3]
-        Return Value:
-            a list only contains inputs shape, this format like [[dim1,dim2],[dim1,dim2]]
+    Function Description:
+        parse dynamic input shape
+    Parameter:
+        dym_shape_range:the input shape,this format like:tensor_name1:dim1,dim2-dim3;tensor_name2:dim1,dim2~dim3.
+         - means the both dim2 and dim3 value, ~ means the range of [dim2:dim3]
+    Return Value:
+        a list only contains inputs shape, this format like [[dim1,dim2],[dim1,dim2]]
     """
     _check_colon_exist(dym_shape_range)
     input_shapes = {}
@@ -518,7 +523,7 @@ def parse_dym_shape_range(dym_shape_range):
                 start = int(content_split[0])
                 end = int(content_split[1])
                 step = int(content_split[2]) if len(content_split) == 3 else 1
-                ranges = [str(i) for i in range(start, end+1, step)]
+                ranges = [str(i) for i in range(start, end + 1, step)]
             elif "-" in content:
                 ranges = content.split("-")
             else:
@@ -595,7 +600,8 @@ def create_directory(dir_path):
             os.makedirs(dir_path, mode=0o700)
         except OSError as ex:
             logger.error(
-                'Failed to create {}.Please check the path permission or disk space .{}'.format(dir_path, str(ex)))
+                'Failed to create {}.Please check the path permission or disk space .{}'.format(dir_path, str(ex))
+            )
             raise AccuracyCompareException(ACCURACY_COMPARISON_INVALID_PATH_ERROR) from ex
 
 

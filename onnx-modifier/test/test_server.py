@@ -25,7 +25,7 @@ class TestRequestInfo:
         request_info = RequestInfo()
         request_info.set_json(dict(file=123))
         assert request_info.files.get("file") == 123
-    
+
     def test_files_given_files_when_not_has_file_pass(self):
         request_info = RequestInfo()
         request_info.set_json(dict())
@@ -50,12 +50,14 @@ class TestRequestInfo:
 
 
 class TestRpcServer:
-
-    @pytest.mark.parametrize("msg, status, file, except_out", 
-                             [("msg123", 200, None, dict(msg="msg123", status=200, file=None, req_ind=1)),
-                                 ("OK", 200, "/home/test/xxx.onnx", 
-                                  dict(msg="OK", status=200, file="/home/test/xxx.onnx", req_ind=1)),
-                                 ("msg", 440, None, dict(msg="msg", status=440, file=None, req_ind=1))])
+    @pytest.mark.parametrize(
+        "msg, status, file, except_out",
+        [
+            ("msg123", 200, None, dict(msg="msg123", status=200, file=None, req_ind=1)),
+            ("OK", 200, "/home/test/xxx.onnx", dict(msg="OK", status=200, file="/home/test/xxx.onnx", req_ind=1)),
+            ("msg", 440, None, dict(msg="msg", status=440, file=None, req_ind=1)),
+        ],
+    )
     def test_send_message_given_any_when_any_pass(self, msg, status, file, except_out):
         with patch('sys.stdout', new=StringIO()) as fake_out:
             RpcServer.send_message(msg, status, file, 1)
@@ -81,15 +83,17 @@ class TestRpcServer:
 
         server.route("test_route")(route_test)
         assert server.path_amp.get("test_route") == route_test
-        
 
     def test_run_given_any_when_any_pass(self):
         server = RpcServer()
-        stdin_fake_info = dict(index=-1, strs=[
-            "",
-            "",
-            "{\"path\":\"/exit\"}",
-        ])
+        stdin_fake_info = dict(
+            index=-1,
+            strs=[
+                "",
+                "",
+                "{\"path\":\"/exit\"}",
+            ],
+        )
 
         def stdin_fake():
             stdin_fake_info["index"] = stdin_fake_info.get("index") + 1
@@ -97,13 +101,17 @@ class TestRpcServer:
 
         with patch('sys.stdin.readline', new=stdin_fake) as fake_out:
             server.run()
-        
-    @pytest.mark.parametrize("strs, msg", 
-                             [(["", "", "msg_str", "", ""], "msg_str"),
-                              (["msg_str", "", ""], "msg_str"),
-                              (["", "", "msg_str", "_and_", "msg_str2", "", ""], "msg_str_and_msg_str2")])
+
+    @pytest.mark.parametrize(
+        "strs, msg",
+        [
+            (["", "", "msg_str", "", ""], "msg_str"),
+            (["msg_str", "", ""], "msg_str"),
+            (["", "", "msg_str", "_and_", "msg_str2", "", ""], "msg_str_and_msg_str2"),
+        ],
+    )
     def test_get_std_in_given_any_when_any_pass(self, strs, msg):
-        
+
         server = RpcServer()
         stdin_fake_info = dict(index=-1, strs=strs)
 
@@ -115,8 +123,7 @@ class TestRpcServer:
             msg_recv = ""
             while not msg_recv:
                 msg_recv = server._get_std_in()
-            assert  msg_recv == msg
-
+            assert msg_recv == msg
 
     def test_run_given_large_msg_when_any_pass(self):
         server = RpcServer()
@@ -133,8 +140,7 @@ class TestRpcServer:
                 while not msg_recv:
                     msg_recv = server._get_std_in()
 
-    @pytest.mark.parametrize("msg_pkg, msg", 
-                             [(dict(path="test", msg=123), 123)])
+    @pytest.mark.parametrize("msg_pkg, msg", [(dict(path="test", msg=123), 123)])
     def test_deal_msg_given_any_when_any_pass(self, msg_pkg, msg):
         server = RpcServer()
 
@@ -146,9 +152,7 @@ class TestRpcServer:
         server._deal_msg(msg_pkg, 1)
         assert server.request.get_json() == msg
 
-    @pytest.mark.parametrize("msg_pkg", 
-                             [(dict(path_not_exists="/exit")),
-                              (dict(path="path_not_exists", msg=123))])
+    @pytest.mark.parametrize("msg_pkg", [(dict(path_not_exists="/exit")), (dict(path="path_not_exists", msg=123))])
     def test_deal_msg_given_error_msg_when_any_pass(self, msg_pkg):
         server = RpcServer()
 
@@ -160,7 +164,7 @@ class TestServerError:
     def test_status_given_any_when_any_pass(self):
         error = ServerError("msg", 404)
         assert error.status == 404
-    
+
     def test_msg_given_any_when_any_pass(self):
         error = ServerError("msg", 404)
         assert error.msg == "msg"

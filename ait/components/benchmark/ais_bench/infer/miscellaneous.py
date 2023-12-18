@@ -42,7 +42,7 @@ ACL_JSON_CMD_LIST = [
     "host_sys_usage",
     "host_sys_usage_freq",
     "sys_interconnection_freq",
-    "msproftx"
+    "msproftx",
 ]
 
 
@@ -60,12 +60,13 @@ def version_check(args):
         aclruntime_version = get_modules_version('aclruntime')
     except Exception:
         url = 'https://gitee.com/ascend/tools.git'
-        logger.warning(f"can't find aclruntime, please visit {url} to install ais_bench(benchmark)"
-                       "to install")
+        logger.warning(f"can't find aclruntime, please visit {url} to install ais_bench(benchmark)" "to install")
         args.run_mode = "tensor"
-    if (aclruntime_version != "0.0.2"):
-        logger.warning(f"aclruntime{aclruntime_version} version is lower please update \
-                        aclruntime follow any one method")
+    if aclruntime_version != "0.0.2":
+        logger.warning(
+            f"aclruntime{aclruntime_version} version is lower please update \
+                        aclruntime follow any one method"
+        )
         # set old run mode to run ok
         args.run_mode = "tensor"
 
@@ -84,8 +85,10 @@ def check_valid_acl_json_for_dump(acl_json_path, model):
         dump_list_val = acl_json_dict["dump"].get("dump_list")
         if dump_list_val is not None:
             if dump_list_val == [] or dump_list_val[0].get("model_name") != model_name_correct:
-                logger.warning("dump failed, 'model_name' is not set or set incorrectly. correct"
-                               "'model_name' should be {}".format(model_name_correct))
+                logger.warning(
+                    "dump failed, 'model_name' is not set or set incorrectly. correct"
+                    "'model_name' should be {}".format(model_name_correct)
+                )
         else:
             logger.warning("dump failed, acl.json need to set 'dump_list' attribute")
         # check validity of dump_path
@@ -133,8 +136,13 @@ def get_acl_json_path(args):
             os.makedirs(out_dump_path, PERMISSION_DIR)
 
         model_name = args.model.split("/")[-1]
-        output_json_dict = {"dump": {"dump_path": out_dump_path, "dump_mode": "all",
-                                     "dump_list": [{"model_name": model_name.split('.')[0]}]}}
+        output_json_dict = {
+            "dump": {
+                "dump_path": out_dump_path,
+                "dump_mode": "all",
+                "dump_list": [{"model_name": model_name.split('.')[0]}],
+            }
+        }
 
     out_json_file_path = os.path.join(args.output, "acl.json")
 
@@ -156,7 +164,7 @@ def get_batchsize(session, args):
         for elem in elems:
             tmp_idx = elem.rfind(':')
             name = elem[:tmp_idx]
-            shapestr = elem[tmp_idx + 1:]
+            shapestr = elem[tmp_idx + 1 :]
             if name == intensors_desc[0].name:
                 batchsize = int(shapestr.split(',')[0])
     return batchsize
@@ -169,27 +177,27 @@ def get_range_list(ranges):
         shapes = []
         tmp_idx = elem.rfind(':')
         name = elem[:tmp_idx]
-        shapestr = elem[tmp_idx + 1:]
+        shapestr = elem[tmp_idx + 1 :]
         for content in shapestr.split(','):
             step = 1
             if '~' in content:
                 start = int(content.split('~')[0])
                 end = int(content.split('~')[1])
                 step = int(content.split('~')[2]) if len(content.split('~')) == 3 else 1
-                ranges = [ str(i) for i in range(start, end+1, step)]
-            elif '-' in content :
+                ranges = [str(i) for i in range(start, end + 1, step)]
+            elif '-' in content:
                 ranges = content.split('-')
             else:
                 start = int(content)
-                ranges = [ str(start) ]
+                ranges = [str(start)]
             shapes.append(ranges)
             logger.debug("content:{} get range{}".format(content, ranges))
-        shape_list = [ ','.join(s) for s in list(itertools.product(*shapes)) ]
-        info = [ "{}:{}".format(name, s) for s in shape_list ]
+        shape_list = [','.join(s) for s in list(itertools.product(*shapes))]
+        info = ["{}:{}".format(name, s) for s in shape_list]
         info_list.append(info)
         logger.debug("name:{} shapes:{} info:{}".format(name, shapes, info))
 
-    res = [ ';'.join(s) for s in list(itertools.product(*info_list)) ]
+    res = [';'.join(s) for s in list(itertools.product(*info_list))]
     logger.debug("range list:{}".format(res))
     return res
 
@@ -224,7 +232,7 @@ def get_throughtput_from_log(out_log):
     return "Failed", 0
 
 
-def regenerate_dymshape_cmd(args:BenchMarkArgsAdapter, dym_shape):
+def regenerate_dymshape_cmd(args: BenchMarkArgsAdapter, dym_shape):
     args_dict = args.get_all_args_dict()
     cmd = sys.executable + " -m ais_bench"
     for key, value in args_dict.items():
@@ -239,27 +247,29 @@ def regenerate_dymshape_cmd(args:BenchMarkArgsAdapter, dym_shape):
     return cmd_list
 
 
-def dymshape_range_run(args:BenchMarkArgsAdapter):
+def dymshape_range_run(args: BenchMarkArgsAdapter):
     dymshape_list = get_dymshape_list(args.dym_shape_range)
     results = []
     for dymshape in dymshape_list:
         cmd = regenerate_dymshape_cmd(args, dymshape)
-        result = { "dymshape" : dymshape, "cmd": cmd, "result": "Failed", "throughput" : 0 }
+        result = {"dymshape": dymshape, "cmd": cmd, "result": "Failed", "throughput": 0}
         logger.debug("cmd:{}".format(cmd))
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, _ = p.communicate(timeout=10)
         out_log = stdout.decode('utf-8')
-        print(out_log) # show original log of cmd
+        print(out_log)  # show original log of cmd
         result["result"], result["throughput"] = get_throughtput_from_log(out_log)
         logger.info("dymshape:{} end run result:{}".format(dymshape, result["result"]))
         results.append(result)
 
-    tlist = [ result["throughput"] for result in results if result["result"] == "OK" ]
+    tlist = [result["throughput"] for result in results if result["result"] == "OK"]
     logger.info("-----------------dyshape_range Performance Summary------------------")
-    logger.info("run_count:{} success_count:{} avg_throughput:{}".format(
-        len(results), len(tlist), np.mean(tlist)))
+    logger.info("run_count:{} success_count:{} avg_throughput:{}".format(len(results), len(tlist), np.mean(tlist)))
     results.sort(key=lambda x: x['throughput'], reverse=True)
     for i, result in enumerate(results):
-        logger.info("{} dymshape:{}  result:{} throughput:{}".format(
-            i, result["dymshape"], result["result"], result["throughput"]))
+        logger.info(
+            "{} dymshape:{}  result:{} throughput:{}".format(
+                i, result["dymshape"], result["result"], result["throughput"]
+            )
+        )
     logger.info("------------------------------------------------------")

@@ -50,9 +50,20 @@ VALUE_OBJECT = "value"
 SUBGRAPH_NAME = 'subgraph_name'
 S_OBJECT = "s"
 DTYPE_OBJECT = "dtype"
-DTYPE_MAP = {"DT_FLOAT": np.float32, "DT_FLOAT16": np.float16, "DT_DOUBLE": np.float64, "DT_INT8": np.int8,
-             "DT_INT16": np.int16, "DT_INT32": np.int32, "DT_INT64": np.int64, "DT_UINT8": np.uint8,
-             "DT_UINT16": np.uint16, "DT_UINT32": np.uint32, "DT_UINT64": np.uint64, "DT_BOOL": np.bool}
+DTYPE_MAP = {
+    "DT_FLOAT": np.float32,
+    "DT_FLOAT16": np.float16,
+    "DT_DOUBLE": np.float64,
+    "DT_INT8": np.int8,
+    "DT_INT16": np.int16,
+    "DT_INT32": np.int32,
+    "DT_INT64": np.int64,
+    "DT_UINT8": np.uint8,
+    "DT_UINT16": np.uint16,
+    "DT_UINT32": np.uint32,
+    "DT_UINT64": np.uint64,
+    "DT_BOOL": np.bool_,
+}
 OUT_NODES_NAME = "attr_model_out_nodes_name"
 AIPP_CONFIG_PATH = "aipp_config_path"
 LAYOUT_OBJECT = "layout"
@@ -89,8 +100,7 @@ class OmParser(object):
                 try:
                     return json.load(input_file)
                 except Exception as exc:
-                    utils.logger.error('Load Json {} failed, {}'.format(
-                        json_file_path, str(exc)))
+                    utils.logger.error('Load Json {} failed, {}'.format(json_file_path, str(exc)))
                     raise AccuracyCompareException(utils.ACCURACY_COMPARISON_PARSER_JSON_FILE_ERROR) from exc
         except IOError as input_file_open_except:
             utils.logger.error('Failed to open"' + json_file_path + '", ' + str(input_file_open_except))
@@ -188,7 +198,7 @@ class OmParser(object):
         if scenario in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
             if not dump_data_path:
                 for operator in net_output_list:
-                    return  self._parse_net_output_node_attr(operator)
+                    return self._parse_net_output_node_attr(operator)
             cur_batch_index = utils.get_batch_index(dump_data_path)
             for operator in net_output_list:
                 batch_index_in_operator = utils.get_batch_index_from_name(operator.get(NAME_OBJECT))
@@ -223,8 +233,10 @@ class OmParser(object):
     def _gen_operator_list(self):
         _, scenario = self.get_dynamic_scenario_info()
         for graph in self.json_object.get(GRAPH_OBJECT):
-            if graph.get(NAME_OBJECT) in self.subgraph_name and \
-                    scenario not in [DynamicArgumentEnum.DYM_BATCH, DynamicArgumentEnum.DYM_DIMS]:
+            if graph.get(NAME_OBJECT) in self.subgraph_name and scenario not in [
+                DynamicArgumentEnum.DYM_BATCH,
+                DynamicArgumentEnum.DYM_DIMS,
+            ]:
                 continue
             for operator in graph.get(OP_OBJECT):
                 yield operator
@@ -303,8 +315,7 @@ class OmParser(object):
                 continue
             data_type = DTYPE_MAP.get(input_object.get(DTYPE_OBJECT))
             if not data_type:
-                utils.logger.error(
-                    "The dtype attribute does not support {} value.".format(input_object[DTYPE_OBJECT]))
+                utils.logger.error("The dtype attribute does not support {} value.".format(input_object[DTYPE_OBJECT]))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_KEY_ERROR)
             data_type_size = np.dtype(data_type).itemsize
             if self.shape_range:
@@ -327,8 +338,7 @@ class OmParser(object):
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             data_type = DTYPE_MAP.get(input_object.get(DTYPE_OBJECT))
             if not data_type:
-                utils.logger.error(
-                    "The dtype attribute does not support {} value.".format(input_object[DTYPE_OBJECT]))
+                utils.logger.error("The dtype attribute does not support {} value.".format(input_object[DTYPE_OBJECT]))
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_KEY_ERROR)
             data_type_size = np.dtype(data_type).itemsize
             if self.shape_range:

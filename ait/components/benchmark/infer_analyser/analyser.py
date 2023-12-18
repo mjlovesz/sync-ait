@@ -58,7 +58,7 @@ def analyse_topk_times(args):
         logging.info(f"max-min  rate:{(np.max(times) - np.min(times)) * 100.0 / np.min(times)}% ")
     if np.mean(times) != 0:
         logging.info(f"max-mean rate:{(np.max(times) - np.mean(times)) * 100.0 / np.mean(times)}%")
-    topk_index = [ i[0] for i in topk_list ]
+    topk_index = [i[0] for i in topk_list]
     logging.info(topk_index)
     if args.output is not None:
         with ms_open(os.path.join(args.output, "topk_index.json"), mode="w") as f:
@@ -74,6 +74,7 @@ def get_args():
 
     args = parser.parse_args()
     return args
+
 
 if __name__ == '__main__':
     input_args = get_args()
