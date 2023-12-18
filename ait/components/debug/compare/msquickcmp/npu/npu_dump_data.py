@@ -57,7 +57,7 @@ DTYPE_MAP = {
     "dtype.uint16": np.uint16,
     "dtype.uint32": np.uint32,
     "dtype.uint64": np.uint64,
-    "dtype.bool": np.bool,
+    "dtype.bool": np.bool_,
 }
 
 

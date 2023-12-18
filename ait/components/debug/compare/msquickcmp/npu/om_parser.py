@@ -62,7 +62,7 @@ DTYPE_MAP = {
     "DT_UINT16": np.uint16,
     "DT_UINT32": np.uint32,
     "DT_UINT64": np.uint64,
-    "DT_BOOL": np.bool,
+    "DT_BOOL": np.bool_,
 }
 OUT_NODES_NAME = "attr_model_out_nodes_name"
 AIPP_CONFIG_PATH = "aipp_config_path"
