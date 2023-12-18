@@ -47,7 +47,7 @@ class TensorBinFile:
         elif self.dtype == 9:  # int64
             dtype = np.int64
         elif self.dtype == 12:
-            dtype = np.bool8
+            dtype = np.bool_
         else:
             logger.error("Unsupport dtype:", self.dtype)
             pass

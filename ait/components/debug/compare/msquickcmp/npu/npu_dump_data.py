@@ -53,7 +53,7 @@ OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 DTYPE_MAP = {"dtype.float32": np.float32, "dtype.float16": np.float16, "dtype.float64": np.float64,
              "dtype.int8": np.int8, "dtype.int16": np.int16, "dtype.int32": np.int32,
              "dtype.int64": np.int64, "dtype.uint8": np.uint8, "dtype.uint16": np.uint16,
-             "dtype.uint32": np.uint32, "dtype.uint64": np.uint64, "dtype.bool": np.bool}
+             "dtype.uint32": np.uint32, "dtype.uint64": np.uint64, "dtype.bool": np.bool_}
 
 
 class DynamicInput(object):

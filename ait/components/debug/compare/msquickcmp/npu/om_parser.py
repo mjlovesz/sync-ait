@@ -52,7 +52,7 @@ S_OBJECT = "s"
 DTYPE_OBJECT = "dtype"
 DTYPE_MAP = {"DT_FLOAT": np.float32, "DT_FLOAT16": np.float16, "DT_DOUBLE": np.float64, "DT_INT8": np.int8,
              "DT_INT16": np.int16, "DT_INT32": np.int32, "DT_INT64": np.int64, "DT_UINT8": np.uint8,
-             "DT_UINT16": np.uint16, "DT_UINT32": np.uint32, "DT_UINT64": np.uint64, "DT_BOOL": np.bool}
+             "DT_UINT16": np.uint16, "DT_UINT32": np.uint32, "DT_UINT64": np.uint64, "DT_BOOL": np.bool_}
 OUT_NODES_NAME = "attr_model_out_nodes_name"
 AIPP_CONFIG_PATH = "aipp_config_path"
 LAYOUT_OBJECT = "layout"
