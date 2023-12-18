@@ -33,7 +33,7 @@ def test_data():
 
 
 def test_cosine_similarity(golden_data, test_data):
-    res = cosine_similarity(golden_data, test_data)
+    res = cosine_similarity(golden_data.reshape(-1), test_data.reshape(-1))
     assert res == '1.000000'
 
 
