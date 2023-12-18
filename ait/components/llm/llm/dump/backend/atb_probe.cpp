@@ -66,10 +66,10 @@ static bool CheckDirectory(const std::string &directory)
 
 static bool isInTensorBinPath(const std::string &filePath)
 {
-    size_t sep_pos = filePath.rfind("/");
+    size_t sepPos = filePath.rfind("/");
     std::string fileName = filePath;
-    if (sep_pos != std::string::npos) {
-        fileName.erase(0, sep_pos + 1);
+    if (sepPos != std::string::npos) {
+        fileName.erase(0, sepPos + 1);
     }
     return fileName.find("intensor") != std::string::npos || fileName.find("inTensor") != std::string::npos;
 }
@@ -77,10 +77,10 @@ static bool isInTensorBinPath(const std::string &filePath)
 
 static bool isOutTensorBinPath(const std::string &filePath)
 {
-    size_t sep_pos = filePath.rfind("/");
+    size_t sepPos = filePath.rfind("/");
     std::string fileName = filePath;
-    if (sep_pos != std::string::npos) {
-        fileName.erase(0, sep_pos + 1);
+    if (sepPos != std::string::npos) {
+        fileName.erase(0, sepPos + 1);
     }
     return fileName.find("outtensor") != std::string::npos || fileName.find("outTensor") != std::string::npos;
 }
@@ -207,9 +207,9 @@ bool atb::Probe::IsSaveTensorAfter()
 void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
     const std::string &dims, const void *hostData, uint64_t dataSize,
     const std::string &filePath)
-{   
+{
     // 判断是否需要保存
-    bool SaveFlag = (isInTensorBinPath(filePath) && IsSaveIntensor()) ||
+    bool saveFlag = (isInTensorBinPath(filePath) && IsSaveIntensor()) ||
                 (isOutTensorBinPath(filePath) && IsSaveOuttensor());
     if (!SaveFlag) {
         return;
