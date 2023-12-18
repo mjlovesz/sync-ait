@@ -64,6 +64,28 @@ static bool CheckDirectory(const std::string &directory)
 }
 
 
+static bool isInTensorBinPath(const std::string &filePath)
+{
+    size_t sepPos = filePath.rfind("/");
+    std::string fileName = filePath;
+    if (sepPos != std::string::npos) {
+        fileName.erase(0, sepPos + 1);
+    }
+    return fileName.find("intensor") != std::string::npos || fileName.find("inTensor") != std::string::npos;
+}
+
+
+static bool isOutTensorBinPath(const std::string &filePath)
+{
+    size_t sepPos = filePath.rfind("/");
+    std::string fileName = filePath;
+    if (sepPos != std::string::npos) {
+        fileName.erase(0, sepPos + 1);
+    }
+    return fileName.find("outtensor") != std::string::npos || fileName.find("outTensor") != std::string::npos;
+}
+
+
 bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::string &optype)
 {
     const char *vid = std::getenv("ATB_SAVE_TENSOR_IDS"); // 应该是20_1_9,1_23,5_29_1
@@ -186,6 +208,13 @@ void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
     const std::string &dims, const void *hostData, uint64_t dataSize,
     const std::string &filePath)
 {
+    // 判断是否需要保存
+    bool saveFlag = (isInTensorBinPath(filePath) && IsSaveIntensor()) ||
+                (isOutTensorBinPath(filePath) && IsSaveOuttensor());
+    if (!SaveFlag) {
+        return;
+    }
+
     const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
     std::string outDir = outputDir != nullptr? outputDir : "./";
     std::string outPath = outDir + filePath;
@@ -253,4 +282,32 @@ bool atb::Probe::IsSaveTiling()
     }
     int value = std::stoi(isSaveTiling);
     return value;
+}
+
+
+bool atb::Probe::IsSaveIntensor()
+{
+    const char* saveTensorPart = std::getenv("ATB_SAVE_TENSOR_PART");
+    if (saveTensorPart == nullptr) {
+        return false;
+    }
+    int value = std::stoi(saveTensorPart);
+    if (value == SAVE_INTENSOR || value == SAVE_ALL_TENSOR) {
+        return true;
+    }
+    return false;
+}
+
+
+bool atb::Probe::IsSaveOuttensor()
+{
+    const char* saveTensorPart = std::getenv("ATB_SAVE_TENSOR_PART");
+    if (saveTensorPart == nullptr) {
+        return false;
+    }
+    int value = std::stoi(saveTensorPart);
+    if (value == SAVE_OUTTENSOR || value == SAVE_ALL_TENSOR) {
+        return true;
+    }
+    return false;
 }

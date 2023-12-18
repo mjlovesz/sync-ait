@@ -31,6 +31,10 @@ constexpr int SAVE_TENSOR_AFTER = 1;
 constexpr int SAVE_TENSOR_BOTH = 2;
 constexpr int SAVE_TENSOR_DATA = 1;
 constexpr int RANGE_COUNT = 2;
+constexpr int SAVE_INTENSOR = 0;
+constexpr int SAVE_OUTTENSOR = 1;
+constexpr int SAVE_ALL_TENSOR = 2;
+
 class Probe {
 public:
     static bool IsTensorNeedSave(const std::vector<int64_t> &ids, const std::string &optype);
@@ -45,6 +49,8 @@ public:
         const std::string &filePath);
     static void SaveTiling(const uint8_t* data, uint64_t dataSize, const std::string &filePath);
     static bool IsSaveTiling();
+    static bool IsSaveOuttensor();
+    static bool IsSaveIntensor();
 };
 }
 #endif
