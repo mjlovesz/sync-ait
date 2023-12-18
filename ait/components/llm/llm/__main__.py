@@ -107,6 +107,15 @@ class DumpCommand(BaseCommand):
             type=check_output_path_legality,
             help='Data output directory.E.g:--output /xx/xxxx/xx')
 
+        parser.add_argument(
+            '--only-outtensor',
+            '-oo',
+            required=False,
+            dest="only_outtensor",
+            action='store_true',
+            default=False,
+            help='Dump only outtensor if True, else dump both intensor and outtensor. Default false.E.g:--only-outtensor')
+
     def handle(self, args, **kwargs):
         if args.exec:
             logger.info(f"About to execute command : {args.exec}")
