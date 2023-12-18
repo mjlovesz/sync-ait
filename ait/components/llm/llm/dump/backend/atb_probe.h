@@ -45,6 +45,7 @@ public:
         const std::string &filePath);
     static void SaveTiling(const uint8_t* data, uint64_t dataSize, const std::string &filePath);
     static bool IsSaveTiling();
+    static bool IsOnlyOuttensor();
 };
 }
 #endif

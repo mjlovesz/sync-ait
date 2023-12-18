@@ -64,6 +64,17 @@ static bool CheckDirectory(const std::string &directory)
 }
 
 
+static bool isInTensorBinPath(const std::string &filePath)
+{
+    size_t sep_pos = filePath.rfind("/");
+    std::string fileName = filePath;
+    if (sep_pos != std::string::npos) {
+        fileName.erase(0, sep_pos + 1);
+    }
+    return fileName.find("intensor") != std::string::npos || fileName.find("inTensor") != std::string::npos;
+}
+
+
 bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::string &optype)
 {
     const char *vid = std::getenv("ATB_SAVE_TENSOR_IDS"); // 应该是20_1_9,1_23,5_29_1
@@ -185,7 +196,12 @@ bool atb::Probe::IsSaveTensorAfter()
 void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
     const std::string &dims, const void *hostData, uint64_t dataSize,
     const std::string &filePath)
-{
+{   
+    // 如果只保存outtensor，那么判断路径是intensor以及确实只保存outtensor后直接返回
+    if (isInTensorBinPath(filePath) && IsOnlyOuttensor()) {
+        return;
+    }
+
     const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
     std::string outDir = outputDir != nullptr? outputDir : "./";
     std::string outPath = outDir + filePath;
@@ -252,5 +268,16 @@ bool atb::Probe::IsSaveTiling()
         return false;
     }
     int value = std::stoi(isSaveTiling);
+    return value;
+}
+
+
+bool atb::Probe::IsOnlyOuttensor()
+{
+    const char* onlySaveOut = std::getenv("ATB_ONLY_OUT");
+    if (onlySaveOut == nullptr) {
+        return false;
+    }
+    int value = std::stoi(onlySaveOut);
     return value;
 }
