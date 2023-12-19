@@ -1596,632 +1596,740 @@ python.Tokenizer = class {
 };
 
 python.Execution = class {
-
     constructor(sources, exceptionCallback) {
-        const self = this;
-        this._sources = sources || new Map();
-        this._exceptionCallback = exceptionCallback;
-        this._utf8Decoder = new TextDecoder('utf-8');
-        this._packages = new Map();
-        this._unknownNameMap = new Set();
-        this._context = new python.Execution.Context();
-        this._context.scope.builtins = {};
-        this._context.scope.builtins.type = { __module__: 'builtins', __name__: 'type' };
-        this._context.scope.builtins.type.__class__ = this._context.scope.builtins.type;
-        this._context.scope.builtins.module = { __module__: 'builtins', __name__: 'module', __class__: this._context.scope.builtins.type };
-        this._context.scope.builtins.module.__type__ = this._context.scope.builtins.module;
-        this.registerModule('__builtin__');
-        this.registerModule('_codecs');
-        this.registerModule('argparse');
-        this.registerModule('collections');
-        this.registerModule('copy_reg');
-        this.registerModule('cuml');
-        this.registerModule('gensim');
-        this.registerModule('io');
-        this.registerModule('joblib');
-        this.registerModule('keras');
-        this.registerModule('lightgbm');
-        this.registerModule('numpy');
-        this.registerModule('nolearn');
-        this.registerModule('sklearn');
-        this.registerModule('typing');
-        this.registerModule('xgboost');
-        const builtins = this._context.scope.builtins;
-        const numpy = this._context.scope.numpy;
-        const typing = this._context.scope.typing;
-        this.registerType('builtins.function', class {});
-        this.registerType('builtins.method', class {});
-        this.registerType('builtins.dict', class {});
-        this.registerType('builtins.list', class {});
-        this.registerType('builtins.bool', class {});
-        this.registerType('builtins.int', class {});
-        this.registerType('builtins.float', class {});
-        this.registerType('builtins.object', class {});
-        this.registerType('builtins.str', class {});
-        this.registerType('builtins.tuple', class {});
-        this.registerType('typing._Final', class {});
-        this.registerType('typing._SpecialForm', class extends typing._Final {});
-        this.registerType('typing._BaseGenericAlias', class extends typing._Final {});
-        this.registerType('typing._GenericAlias', class extends typing._BaseGenericAlias {});
-        this.registerType('typing._SpecialGenericAlias', class extends typing._BaseGenericAlias {});
-        this.registerType('typing._TupleType', class extends typing._SpecialGenericAlias {});
-        typing.Optional = self.invoke('typing._SpecialForm', []);
-        typing.List = self.invoke('typing._SpecialGenericAlias', []);
-        typing.Dict = self.invoke('typing._SpecialGenericAlias', []);
-        typing.Tuple = self.invoke('typing._TupleType', []);
-        this.registerType('argparse.Namespace', class {
-            constructor(args) {
-                this.args = args;
+      const self = this;
+      this._sources = sources || new Map();
+      this._exceptionCallback = exceptionCallback;
+      this._utf8Decoder = new TextDecoder('utf-8');
+      this._packages = new Map();
+      this._unknownNameMap = new Set();
+      this._context = new python.Execution.Context();
+      this._context.scope.builtins = {};
+      this._context.scope.builtins.type = { __module__: 'builtins', __name__: 'type' };
+      this._context.scope.builtins.type.__class__ = this._context.scope.builtins.type;
+      this._context.scope.builtins.module = {
+        __module__: 'builtins',
+        __name__: 'module',
+        __class__: this._context.scope.builtins.type,
+      };
+      this._context.scope.builtins.module.__type__ = this._context.scope.builtins.module;
+      this.registerModule('__builtin__');
+      this.registerModule('_codecs');
+      this.registerModule('argparse');
+      this.registerModule('collections');
+      this.registerModule('copy_reg');
+      this.registerModule('cuml');
+      this.registerModule('gensim');
+      this.registerModule('io');
+      this.registerModule('joblib');
+      this.registerModule('keras');
+      this.registerModule('lightgbm');
+      this.registerModule('numpy');
+      this.registerModule('nolearn');
+      this.registerModule('sklearn');
+      this.registerModule('typing');
+      this.registerModule('xgboost');
+      const builtins = this._context.scope.builtins;
+      const numpy = this._context.scope.numpy;
+      const typing = this._context.scope.typing;
+      this.registerType('builtins.function', class {});
+      this.registerType('builtins.method', class {});
+      this.registerType('builtins.dict', class {});
+      this.registerType('builtins.list', class {});
+      this.registerType('builtins.bool', class {});
+      this.registerType('builtins.int', class {});
+      this.registerType('builtins.float', class {});
+      this.registerType('builtins.object', class {});
+      this.registerType('builtins.str', class {});
+      this.registerType('builtins.tuple', class {});
+      this.registerType('typing._Final', class {});
+      this.registerType('typing._SpecialForm', class extends typing._Final {});
+      this.registerType('typing._BaseGenericAlias', class extends typing._Final {});
+      this.registerType('typing._GenericAlias', class extends typing._BaseGenericAlias {});
+      this.registerType('typing._SpecialGenericAlias', class extends typing._BaseGenericAlias {});
+      this.registerType('typing._TupleType', class extends typing._SpecialGenericAlias {});
+      typing.Optional = self.invoke('typing._SpecialForm', []);
+      typing.List = self.invoke('typing._SpecialGenericAlias', []);
+      typing.Dict = self.invoke('typing._SpecialGenericAlias', []);
+      typing.Tuple = self.invoke('typing._TupleType', []);
+      this.registerType(
+        'argparse.Namespace',
+        class {
+          constructor(args) {
+            this.args = args;
+          }
+        }
+      );
+      this.registerType(
+        'collections.deque',
+        class {
+          constructor(iterable) {
+            if (iterable) {
+              let i = 0;
+              for (const value of iterable) {
+                this[i++] = value;
+              }
+              this.length = i;
             }
-        });
-        this.registerType('collections.deque', class {
-            constructor(iterable) {
-                if (iterable) {
-                    let i = 0;
-                    for (const value of iterable) {
-                        this[i++] = value;
-                    }
-                    this.length = i;
+          }
+        }
+      );
+      this.registerType(
+        'collections.OrderedDict',
+        class extends Map {
+          constructor(items) {
+            super();
+            if (items) {
+              for (const pair of items) {
+                this.__setitem__(pair[0], pair[1]);
+              }
+            }
+          }
+          __setitem__(key, value) {
+            this.set(key, value);
+          }
+        }
+      );
+      this.registerType('cuml.common.array_descriptor.CumlArrayDescriptorMeta', class {});
+      this.registerType('cuml.ensemble.randomforestclassifier.RandomForestClassifier', class {});
+      this.registerType(
+        'cuml.raft.common.handle.Handle',
+        class {
+          __setstate__(state) {
+            this._handle = state;
+          }
+        }
+      );
+      this.registerType(
+        'haiku._src.data_structures.FlatMapping',
+        class {
+          constructor(dict) {
+            for (const key of Object.keys(dict)) {
+              this[key] = dict[key];
+            }
+          }
+        }
+      );
+      this.registerType(
+        'io.BytesIO',
+        class {
+          constructor(buf, mode) {
+            this.mode = mode || 'r';
+            this._buf = this.mode === 'w' ? null : buf;
+            this._point = 0;
+          }
+          seek(offset) {
+            this._point = offset;
+          }
+          read(size) {
+            const start = this._point;
+            this._point = size !== undefined ? start + size : this._buf.length;
+            return this._buf.subarray(start, this._point);
+          }
+          write(data) {
+            const src = this._buf || new Uint8Array();
+            this._point = src.length + data.length;
+            this._buf = new Uint8Array(this._point);
+            this._buf.set(src, 0);
+            this._buf.set(data, src.length);
+          }
+        }
+      );
+      this.registerType(
+        'numpy.dtype',
+        class {
+          constructor(obj, align, copy) {
+            switch (obj) {
+              case 'b1':
+              case 'bool':
+                this.name = 'bool';
+                this.itemsize = 1;
+                this.kind = 'b';
+                break;
+              case 'i1':
+              case 'int8':
+                this.name = 'int8';
+                this.itemsize = 1;
+                this.kind = 'i';
+                break;
+              case 'i2':
+              case 'int16':
+                this.name = 'int16';
+                this.itemsize = 2;
+                this.kind = 'i';
+                break;
+              case 'i4':
+              case 'int32':
+                this.name = 'int32';
+                this.itemsize = 4;
+                this.kind = 'i';
+                break;
+              case 'i8':
+              case 'int64':
+              case 'int':
+                this.name = 'int64';
+                this.itemsize = 8;
+                this.kind = 'i';
+                break;
+              case 'u1':
+              case 'uint8':
+                this.name = 'uint8';
+                this.itemsize = 1;
+                this.kind = 'u';
+                break;
+              case 'u2':
+              case 'uint16':
+                this.name = 'uint16';
+                this.itemsize = 2;
+                this.kind = 'u';
+                break;
+              case 'u4':
+              case 'uint32':
+                this.name = 'uint32';
+                this.itemsize = 4;
+                this.kind = 'u';
+                break;
+              case 'u8':
+              case 'uint64':
+              case 'uint':
+                this.name = 'uint64';
+                this.itemsize = 8;
+                this.kind = 'u';
+                break;
+              case 'f2':
+              case 'float16':
+                this.name = 'float16';
+                this.itemsize = 2;
+                this.kind = 'f';
+                break;
+              case 'f4':
+              case 'float32':
+                this.name = 'float32';
+                this.itemsize = 4;
+                this.kind = 'f';
+                break;
+              case 'f8':
+              case 'float64':
+              case 'float':
+                this.name = 'float64';
+                this.itemsize = 8;
+                this.kind = 'f';
+                break;
+              case 'c8':
+              case 'complex64':
+                this.name = 'complex64';
+                this.itemsize = 8;
+                this.kind = 'c';
+                break;
+              case 'c16':
+              case 'complex128':
+              case 'complex':
+                this.name = 'complex128';
+                this.itemsize = 16;
+                this.kind = 'c';
+                break;
+              default:
+                if (obj.startsWith('V')) {
+                  this.itemsize = Number(obj.substring(1));
+                  this.kind = 'V';
+                  this.name = 'void' + (this.itemsize * 8).toString();
+                } else if (obj.startsWith('O')) {
+                  this.itemsize = Number(obj.substring(1));
+                  this.kind = 'O';
+                  this.name = 'object';
+                } else if (obj.startsWith('S')) {
+                  this.itemsize = Number(obj.substring(1));
+                  this.kind = 'S';
+                  this.name = 'string';
+                } else if (obj.startsWith('U')) {
+                  this.itemsize = Number(obj.substring(1));
+                  this.kind = 'U';
+                  this.name = 'string';
+                } else if (obj.startsWith('M')) {
+                  this.itemsize = Number(obj.substring(1));
+                  this.kind = 'M';
+                  this.name = 'datetime';
+                } else {
+                  throw new python.Error("Unknown dtype '" + obj.toString() + "'.");
                 }
+                break;
             }
-        });
-        this.registerType('collections.OrderedDict', class extends Map {
-            constructor(items) {
-                super();
-                if (items) {
-                    for (const pair of items) {
-                        this.__setitem__(pair[0], pair[1]);
-                    }
-                }
+            this.byteorder = '=';
+            if (align) {
+              this.align = align;
             }
-            __setitem__(key, value) {
-                this.set(key, value);
+            if (copy) {
+              this.copy = copy;
             }
-        });
-        this.registerType('cuml.common.array_descriptor.CumlArrayDescriptorMeta', class {});
-        this.registerType('cuml.ensemble.randomforestclassifier.RandomForestClassifier', class {});
-        this.registerType('cuml.raft.common.handle.Handle', class {
-            __setstate__(state) {
-                this._handle = state;
-            }
-        });
-        this.registerType('haiku._src.data_structures.FlatMapping', class {
-            constructor(dict) {
-                for (const key of Object.keys(dict)) {
-                    this[key] = dict[key];
-                }
-            }
-        });
-        this.registerType('io.BytesIO', class {
-            constructor(buf, mode) {
-                this.mode = mode || 'r';
-                this._buf = this.mode === 'w' ? null : buf;
-                this._point = 0;
-            }
-            seek(offset) {
-                this._point = offset;
-            }
-            read(size) {
-                const start = this._point;
-                this._point = size !== undefined ? start + size : this._buf.length;
-                return this._buf.subarray(start, this._point);
-            }
-            write(data) {
-                const src = this._buf || new Uint8Array();
-                this._point = src.length + data.length;
-                this._buf = new Uint8Array(this._point);
-                this._buf.set(src, 0);
-                this._buf.set(data, src.length);
-            }
-        });
-        this.registerType('numpy.dtype', class {
-            constructor(obj, align, copy) {
-                switch (obj) {
-                    case 'b1': case 'bool': this.name = 'bool'; this.itemsize = 1; this.kind = 'b'; break;
-                    case 'i1': case 'int8': this.name = 'int8'; this.itemsize = 1; this.kind = 'i'; break;
-                    case 'i2': case 'int16': this.name = 'int16'; this.itemsize = 2; this.kind = 'i'; break;
-                    case 'i4': case 'int32': this.name = 'int32'; this.itemsize = 4; this.kind = 'i'; break;
-                    case 'i8': case 'int64': case 'int': this.name = 'int64'; this.itemsize = 8; this.kind = 'i'; break;
-                    case 'u1': case 'uint8': this.name = 'uint8'; this.itemsize = 1; this.kind = 'u'; break;
-                    case 'u2': case 'uint16': this.name = 'uint16'; this.itemsize = 2; this.kind = 'u'; break;
-                    case 'u4': case 'uint32': this.name = 'uint32'; this.itemsize = 4; this.kind = 'u'; break;
-                    case 'u8': case 'uint64': case 'uint': this.name = 'uint64'; this.itemsize = 8; this.kind = 'u'; break;
-                    case 'f2': case 'float16': this.name = 'float16'; this.itemsize = 2; this.kind = 'f'; break;
-                    case 'f4': case 'float32': this.name = 'float32'; this.itemsize = 4; this.kind = 'f'; break;
-                    case 'f8': case 'float64': case 'float': this.name = 'float64'; this.itemsize = 8; this.kind = 'f'; break;
-                    case 'c8': case 'complex64': this.name = 'complex64'; this.itemsize = 8; this.kind = 'c'; break;
-                    case 'c16': case 'complex128': case 'complex': this.name = 'complex128'; this.itemsize = 16; this.kind = 'c'; break;
-                    default:
-                        if (obj.startsWith('V')) {
-                            this.itemsize = Number(obj.substring(1));
-                            this.kind = 'V';
-                            this.name = 'void' + (this.itemsize * 8).toString();
-                        }
-                        else if (obj.startsWith('O')) {
-                            this.itemsize = Number(obj.substring(1));
-                            this.kind = 'O';
-                            this.name = 'object';
-                        }
-                        else if (obj.startsWith('S')) {
-                            this.itemsize = Number(obj.substring(1));
-                            this.kind = 'S';
-                            this.name = 'string';
-                        }
-                        else if (obj.startsWith('U')) {
-                            this.itemsize = Number(obj.substring(1));
-                            this.kind = 'U';
-                            this.name = 'string';
-                        }
-                        else if (obj.startsWith('M')) {
-                            this.itemsize = Number(obj.substring(1));
-                            this.kind = 'M';
-                            this.name = 'datetime';
-                        }
-                        else {
-                            throw new python.Error("Unknown dtype '" + obj.toString() + "'.");
-                        }
-                        break;
-                }
-                this.byteorder = '=';
-                if (align) {
-                    this.align = align;
-                }
-                if (copy) {
-                    this.copy = copy;
-                }
-            }
-            get str() {
-                return (this.byteorder === '=' ? '<' : this.byteorder) + this.kind + this.itemsize.toString();
-            }
-            __setstate__(state) {
-                switch (state.length) {
-                    case 8:
-                        this.version = state[0];
-                        this.byteorder = state[1];
-                        this.subarray = state[2];
-                        this.names = state[3];
-                        this.fields = state[4];
-                        this.elsize = state[5];
-                        this.alignment = state[6];
-                        this.int_dtypeflags = state[7];
-                        break;
-                    case 9:
-                        this.version = state[0];
-                        this.byteorder = state[1];
-                        this.subarray = state[2];
-                        this.names = state[3];
-                        this.fields = state[4];
-                        this.elsize = state[5];
-                        this.alignment = state[6];
-                        this.int_dtypeflags = state[7];
-                        this.metadata = state[8];
-                        break;
-                    default:
-                        throw new python.Error("Unknown numpy.dtype setstate length '" + state.length.toString() + "'.");
-                }
-            }
-        });
-        this.registerType('gensim.models.doc2vec.Doctag', class {});
-        this.registerType('gensim.models.doc2vec.Doc2Vec', class {});
-        this.registerType('gensim.models.doc2vec.Doc2VecTrainables', class {});
-        this.registerType('gensim.models.doc2vec.Doc2VecVocab', class {});
-        this.registerType('gensim.models.fasttext.FastText', class {});
-        this.registerType('gensim.models.fasttext.FastTextTrainables', class {});
-        this.registerType('gensim.models.fasttext.FastTextVocab', class {});
-        this.registerType('gensim.models.fasttext.FastTextKeyedVectors', class {});
-        this.registerType('gensim.models.keyedvectors.Doc2VecKeyedVectors', class {});
-        this.registerType('gensim.models.keyedvectors.FastTextKeyedVectors', class {});
-        this.registerType('gensim.models.keyedvectors.KeyedVectors', class {});
-        this.registerType('gensim.models.keyedvectors.Vocab', class {});
-        this.registerType('gensim.models.keyedvectors.Word2VecKeyedVectors', class {});
-        this.registerType('gensim.models.phrases.Phrases', class {});
-        this.registerType('gensim.models.tfidfmodel.TfidfModel', class {});
-        this.registerType('gensim.models.word2vec.Vocab', class {});
-        this.registerType('gensim.models.word2vec.Word2Vec', class {});
-        this.registerType('gensim.models.word2vec.Word2VecTrainables', class {});
-        this.registerType('gensim.models.word2vec.Word2VecVocab', class {});
-        this.registerType('joblib.numpy_pickle.NumpyArrayWrapper', class {
-            constructor(/* subtype, shape, dtype */) {
-            }
-            __setstate__(state) {
-                this.subclass = state.subclass;
-                this.dtype = state.dtype;
-                this.shape = state.shape;
-                this.order = state.order;
-                this.allow_mmap = state.allow_mmap;
-            }
-            __read__(unpickler) {
-                if (this.dtype.name == 'object') {
-                    return unpickler.load((name, args) => self.invoke(name, args), null);
-                }
-                else {
-                    const size = this.dtype.itemsize * this.shape.reduce((a, b) => a * b, 1);
-                    this.data = unpickler.read(size);
-                }
-                return self.invoke(this.subclass, [ this.shape, this.dtype, this.data ]);
-            }
-        });
-        this.registerType('keras.engine.sequential.Sequential', class {});
-        this.registerType('lightgbm.sklearn.LGBMRegressor', class {});
-        this.registerType('lightgbm.sklearn.LGBMClassifier', class {});
-        this.registerType('lightgbm.basic.Booster', class {
-            constructor() {
-                this.average_output = false;
-                this.models = [];
-                this.loaded_parameter = '';
-            }
-            __setstate__(state) {
-                if (typeof state.handle === 'string') {
-                    this.LoadModelFromString(state.handle);
-                    return;
-                }
-                Object.assign(this, state);
-            }
-            LoadModelFromString(model_str) {
-                const lines = model_str.split('\n');
-                const signature = lines.shift() || '?';
-                if (signature.trim() !== 'tree') {
-                    throw new python.Error("Invalid signature '" + signature.trim() + "'.");
-                }
-                const key_vals = new Map();
-                while (lines.length > 0 && !lines[0].startsWith('Tree=')) {
-                    const cur_line = lines.shift().trim();
-                    if (cur_line.length > 0) {
-                        const strs = cur_line.split('=');
-                        if (strs.length === 1) {
-                            key_vals.set(strs[0], '');
-                        }
-                        else if (strs.length === 2) {
-                            key_vals.set(strs[0], strs[1]);
-                        }
-                        else if (strs.length > 2) {
-                            if (strs[0] === "feature_names") {
-                                key_vals.set(strs[0], cur_line.substring("feature_names=".length));
-                            }
-                            else if (strs[0] == 'monotone_constraints') {
-                                key_vals.set(strs[0], cur_line.substring('monotone_constraints='.length));
-                            }
-                            else {
-                                throw new python.Error('Wrong line: ' + cur_line.substring(0, Math.min(128, cur_line.length)));
-                            }
-                        }
-                    }
-                }
-                const atoi = (key, value) => {
-                    if (key_vals.has(key)) {
-                        return parseInt(key_vals.get(key), 10);
-                    }
-                    if (value !== undefined) {
-                        return value;
-                    }
-                    throw new python.Error('Model file does not specify ' + key + '.');
-                };
-                const list = (key, size) => {
-                    if (key_vals.has(key)) {
-                        const value = key_vals.get(key).split(' ');
-                        if (value.length !== size) {
-                            throw new python.Error('Wrong size of ' + key + '.');
-                        }
-                        return value;
-                    }
-                    throw new python.Error('Model file does not contain ' + key + '.');
-                };
-                this.version = key_vals.get('version') || '';
-                this.num_class = atoi('num_class');
-                this.num_tree_per_iteration = atoi('num_tree_per_iteration', this.num_class);
-                this.label_index = atoi('label_index');
-                this.max_feature_idx = atoi('max_feature_idx');
-                if (key_vals.has('average_output')) {
-                    this.average_output = true;
-                }
-                this.feature_names = list('feature_names', this.max_feature_idx + 1);
-                this.feature_infos = list('feature_infos', this.max_feature_idx + 1);
-                if (key_vals.has('monotone_constraints')) {
-                    this.monotone_constraints = list('monotone_constraints', this.max_feature_idx + 1);
-                }
-                if (key_vals.has('objective')) {
-                    this.objective = key_vals.get('objective');
-                }
-                let tree = {};
-                // let lineNumber = 0;
-                while (lines.length > 0) {
-                    // lineNumber++;
-                    const text = lines.shift();
-                    const line = text.trim();
-                    if (line.length === 0) {
-                        continue;
-                    }
-                    if (line.startsWith('Tree=')) {
-                        tree = { index: parseInt(line.split('=').pop(), 10) };
-                        this.models.push(tree);
-                        continue;
-                    }
-                    if (line === 'end of trees') {
-                        break;
-                    }
-                    const param = line.split('=');
-                    if (param.length !== 2) {
-                        throw new python.Error("Invalid property '" + line + "'.");
-                    }
-                    const name = param[0].trim();
-                    const value = param[1].trim();
-                    tree[name] = value;
-                }
-                const ss = [];
-                let is_inparameter = false;
-                while (lines.length > 0) {
-                    const text = lines.shift();
-                    const line = text.trim();
-                    if (line === 'parameters:') {
-                        is_inparameter = true;
-                        continue;
-                    }
-                    else if (line === 'end of parameters') {
-                        break;
-                    }
-                    else if (is_inparameter) {
-                        ss.push(line);
-                    }
-                }
-                if (ss.length > 0) {
-                    this.loaded_parameter = ss.join('\n');
-                }
-            }
-        });
-        this.registerType('nolearn.lasagne.base.BatchIterator', class {});
-        this.registerType('nolearn.lasagne.base.Layers', class {});
-        this.registerType('nolearn.lasagne.base.NeuralNet', class {});
-        this.registerType('nolearn.lasagne.base.TrainSplit', class {});
-        this.registerType('nolearn.lasagne.handlers.PrintLayerInfo', class {});
-        this.registerType('nolearn.lasagne.handlers.PrintLog', class {});
-        this.registerType('numpy.ndarray', class {
-            constructor(shape, dtype, buffer, offset, strides, order) {
-                this.shape = shape;
-                this.dtype = dtype;
-                this.data = buffer !== undefined ? buffer : null;
-                this.offset = offset !== undefined ? offset : 0;
-                this.strides = strides !== undefined ? strides : null;
-                this.order = offset !== undefined ? order : null;
-                this.flags = {};
-            }
-            __setstate__(state) {
+          }
+          get str() {
+            return (this.byteorder === '=' ? '<' : this.byteorder) + this.kind + this.itemsize.toString();
+          }
+          __setstate__(state) {
+            switch (state.length) {
+              case 8:
                 this.version = state[0];
-                this.shape = state[1];
-                this.dtype = state[2];
-                this.flags.fnc = state[3];
-                this.data = state[4];
+                this.byteorder = state[1];
+                this.subarray = state[2];
+                this.names = state[3];
+                this.fields = state[4];
+                this.elsize = state[5];
+                this.alignment = state[6];
+                this.int_dtypeflags = state[7];
+                break;
+              case 9:
+                this.version = state[0];
+                this.byteorder = state[1];
+                this.subarray = state[2];
+                this.names = state[3];
+                this.fields = state[4];
+                this.elsize = state[5];
+                this.alignment = state[6];
+                this.int_dtypeflags = state[7];
+                this.metadata = state[8];
+                break;
+              default:
+                throw new python.Error("Unknown numpy.dtype setstate length '" + state.length.toString() + "'.");
             }
-            __read__(unpickler) {
-                const dims = (this.shape || []).reduce((a, b) => a * b, 1);
-                const size = this.dtype.itemsize * dims;
-                if (typeof this.data == 'string') {
-                    this.data = unpickler.unescape(this.data, size);
-                    if (this.data.length != size) {
-                        throw new python.Error('Invalid string array data size.');
-                    }
+          }
+        }
+      );
+      this.registerType('gensim.models.doc2vec.Doctag', class {});
+      this.registerType('gensim.models.doc2vec.Doc2Vec', class {});
+      this.registerType('gensim.models.doc2vec.Doc2VecTrainables', class {});
+      this.registerType('gensim.models.doc2vec.Doc2VecVocab', class {});
+      this.registerType('gensim.models.fasttext.FastText', class {});
+      this.registerType('gensim.models.fasttext.FastTextTrainables', class {});
+      this.registerType('gensim.models.fasttext.FastTextVocab', class {});
+      this.registerType('gensim.models.fasttext.FastTextKeyedVectors', class {});
+      this.registerType('gensim.models.keyedvectors.Doc2VecKeyedVectors', class {});
+      this.registerType('gensim.models.keyedvectors.FastTextKeyedVectors', class {});
+      this.registerType('gensim.models.keyedvectors.KeyedVectors', class {});
+      this.registerType('gensim.models.keyedvectors.Vocab', class {});
+      this.registerType('gensim.models.keyedvectors.Word2VecKeyedVectors', class {});
+      this.registerType('gensim.models.phrases.Phrases', class {});
+      this.registerType('gensim.models.tfidfmodel.TfidfModel', class {});
+      this.registerType('gensim.models.word2vec.Vocab', class {});
+      this.registerType('gensim.models.word2vec.Word2Vec', class {});
+      this.registerType('gensim.models.word2vec.Word2VecTrainables', class {});
+      this.registerType('gensim.models.word2vec.Word2VecVocab', class {});
+      this.registerType(
+        'joblib.numpy_pickle.NumpyArrayWrapper',
+        class {
+          constructor(/* subtype, shape, dtype */) {}
+          __setstate__(state) {
+            this.subclass = state.subclass;
+            this.dtype = state.dtype;
+            this.shape = state.shape;
+            this.order = state.order;
+            this.allow_mmap = state.allow_mmap;
+          }
+          __read__(unpickler) {
+            if (this.dtype.name == 'object') {
+              return unpickler.load((name, args) => self.invoke(name, args), null);
+            } else {
+              const size = this.dtype.itemsize * this.shape.reduce((a, b) => a * b, 1);
+              this.data = unpickler.read(size);
+            }
+            return self.invoke(this.subclass, [this.shape, this.dtype, this.data]);
+          }
+        }
+      );
+      this.registerType('keras.engine.sequential.Sequential', class {});
+      this.registerType('lightgbm.sklearn.LGBMRegressor', class {});
+      this.registerType('lightgbm.sklearn.LGBMClassifier', class {});
+      this.registerType(
+        'lightgbm.basic.Booster',
+        class {
+          constructor() {
+            this.average_output = false;
+            this.models = [];
+            this.loaded_parameter = '';
+          }
+          __setstate__(state) {
+            if (typeof state.handle === 'string') {
+              this.LoadModelFromString(state.handle);
+              return;
+            }
+            Object.assign(this, state);
+          }
+          LoadModelFromString(model_str) {
+            const lines = model_str.split('\n');
+            const signature = lines.shift() || '?';
+            if (signature.trim() !== 'tree') {
+              throw new python.Error("Invalid signature '" + signature.trim() + "'.");
+            }
+            const key_vals = new Map();
+            while (lines.length > 0 && !lines[0].startsWith('Tree=')) {
+              const cur_line = lines.shift().trim();
+              if (cur_line.length > 0) {
+                const strs = cur_line.split('=');
+                if (strs.length === 1) {
+                  key_vals.set(strs[0], '');
+                } else if (strs.length === 2) {
+                  key_vals.set(strs[0], strs[1]);
+                } else if (strs.length > 2) {
+                  if (strs[0] === 'feature_names') {
+                    key_vals.set(strs[0], cur_line.substring('feature_names='.length));
+                  } else if (strs[0] == 'monotone_constraints') {
+                    key_vals.set(strs[0], cur_line.substring('monotone_constraints='.length));
+                  } else {
+                    throw new python.Error('Wrong line: ' + cur_line.substring(0, Math.min(128, cur_line.length)));
+                  }
                 }
-                else {
-                    if (this.data.length != size) {
-                        // throw new pytorch.Error('Invalid array data size.');
-                    }
+              }
+            }
+            const atoi = (key, value) => {
+              if (key_vals.has(key)) {
+                return parseInt(key_vals.get(key), 10);
+              }
+              if (value !== undefined) {
+                return value;
+              }
+              throw new python.Error('Model file does not specify ' + key + '.');
+            };
+            const list = (key, size) => {
+              if (key_vals.has(key)) {
+                const value = key_vals.get(key).split(' ');
+                if (value.length !== size) {
+                  throw new python.Error('Wrong size of ' + key + '.');
                 }
-                return this;
+                return value;
+              }
+              throw new python.Error('Model file does not contain ' + key + '.');
+            };
+            this.version = key_vals.get('version') || '';
+            this.num_class = atoi('num_class');
+            this.num_tree_per_iteration = atoi('num_tree_per_iteration', this.num_class);
+            this.label_index = atoi('label_index');
+            this.max_feature_idx = atoi('max_feature_idx');
+            if (key_vals.has('average_output')) {
+              this.average_output = true;
             }
-            tobytes() {
-                return this.data;
+            this.feature_names = list('feature_names', this.max_feature_idx + 1);
+            this.feature_infos = list('feature_infos', this.max_feature_idx + 1);
+            if (key_vals.has('monotone_constraints')) {
+              this.monotone_constraints = list('monotone_constraints', this.max_feature_idx + 1);
             }
-        });
-        this.registerType('numpy.ma.core.MaskedArray', class extends numpy.ndarray {
-            constructor(data /*, mask, dtype, copy, subok, ndmin, fill_value, keep_mask, hard_mask, shrink, order */) {
-                super(data.shape, data.dtype, data.data);
+            if (key_vals.has('objective')) {
+              this.objective = key_vals.get('objective');
             }
-        });
-        this.registerType('numpy.core.memmap.memmap', class extends numpy.ndarray {
-            constructor(shape, dtype) {
-                super(shape, dtype);
+            let tree = {};
+            // let lineNumber = 0;
+            while (lines.length > 0) {
+              // lineNumber++;
+              const text = lines.shift();
+              const line = text.trim();
+              if (line.length === 0) {
+                continue;
+              }
+              if (line.startsWith('Tree=')) {
+                tree = { index: parseInt(line.split('=').pop(), 10) };
+                this.models.push(tree);
+                continue;
+              }
+              if (line === 'end of trees') {
+                break;
+              }
+              const param = line.split('=');
+              if (param.length !== 2) {
+                throw new python.Error("Invalid property '" + line + "'.");
+              }
+              const name = param[0].trim();
+              const value = param[1].trim();
+              tree[name] = value;
             }
-        });
-        this.registerType('pathlib.PosixPath', class {
-            constructor() {
-                this.path = Array.from(arguments).join('/');
+            const ss = [];
+            let is_inparameter = false;
+            while (lines.length > 0) {
+              const text = lines.shift();
+              const line = text.trim();
+              if (line === 'parameters:') {
+                is_inparameter = true;
+                continue;
+              } else if (line === 'end of parameters') {
+                break;
+              } else if (is_inparameter) {
+                ss.push(line);
+              }
             }
-        });
-        this.registerType('sklearn.calibration._CalibratedClassifier', class {});
-        this.registerType('sklearn.calibration._SigmoidCalibration', class {});
-        this.registerType('sklearn.calibration.CalibratedClassifierCV', class {});
-        this.registerType('sklearn.compose._column_transformer.ColumnTransformer', class {});
-        this.registerType('sklearn.compose._target.TransformedTargetRegressor', class {});
-        this.registerType('sklearn.cluster._dbscan.DBSCAN', class {});
-        this.registerType('sklearn.cluster._kmeans.KMeans', class {});
-        this.registerType('sklearn.decomposition._pca.PCA', class {});
-        this.registerType('sklearn.decomposition.PCA', class {});
-        this.registerType('sklearn.decomposition.pca.PCA', class {});
-        this.registerType('sklearn.decomposition._truncated_svd.TruncatedSVD', class {});
-        this.registerType('sklearn.decomposition.truncated_svd.TruncatedSVD', class {});
-        this.registerType('sklearn.discriminant_analysis.LinearDiscriminantAnalysis', class {});
-        this.registerType('sklearn.discriminant_analysis.QuadraticDiscriminantAnalysis', class {});
-        this.registerType('sklearn.dummy.DummyClassifier', class {});
-        this.registerType('sklearn.dummy.DummyRegressor', class {});
-        this.registerType('sklearn.externals.joblib.numpy_pickle.NumpyArrayWrapper', class {
-            constructor(/* subtype, shape, dtype */) {
+            if (ss.length > 0) {
+              this.loaded_parameter = ss.join('\n');
             }
-            __setstate__(state) {
-                this.subclass = state.subclass;
-                this.dtype = state.dtype;
-                this.shape = state.shape;
-                this.order = state.order;
-                this.allow_mmap = state.allow_mmap;
+          }
+        }
+      );
+      this.registerType('nolearn.lasagne.base.BatchIterator', class {});
+      this.registerType('nolearn.lasagne.base.Layers', class {});
+      this.registerType('nolearn.lasagne.base.NeuralNet', class {});
+      this.registerType('nolearn.lasagne.base.TrainSplit', class {});
+      this.registerType('nolearn.lasagne.handlers.PrintLayerInfo', class {});
+      this.registerType('nolearn.lasagne.handlers.PrintLog', class {});
+      this.registerType(
+        'numpy.ndarray',
+        class {
+          constructor(shape, dtype, buffer, offset, strides, order) {
+            this.shape = shape;
+            this.dtype = dtype;
+            this.data = buffer !== undefined ? buffer : null;
+            this.offset = offset !== undefined ? offset : 0;
+            this.strides = strides !== undefined ? strides : null;
+            this.order = offset !== undefined ? order : null;
+            this.flags = {};
+          }
+          __setstate__(state) {
+            this.version = state[0];
+            this.shape = state[1];
+            this.dtype = state[2];
+            this.flags.fnc = state[3];
+            this.data = state[4];
+          }
+          __read__(unpickler) {
+            const dims = (this.shape || []).reduce((a, b) => a * b, 1);
+            const size = this.dtype.itemsize * dims;
+            if (typeof this.data == 'string') {
+              this.data = unpickler.unescape(this.data, size);
+              if (this.data.length != size) {
+                throw new python.Error('Invalid string array data size.');
+              }
+            } else {
+              if (this.data.length != size) {
+                // throw new pytorch.Error('Invalid array data size.');
+              }
             }
-            __read__(unpickler) {
-                if (this.dtype.name == 'object') {
-                    return unpickler.load((name, args) => self.invoke(name, args), null);
-                }
-                else {
-                    const size = this.dtype.itemsize * this.shape.reduce((a, b) => a * b, 1);
-                    this.data = unpickler.read(size);
-                }
-                return self.invoke(this.subclass, [ this.shape, this.dtype, this.data ]);
+            return this;
+          }
+          tobytes() {
+            return this.data;
+          }
+        }
+      );
+      this.registerType(
+        'numpy.ma.core.MaskedArray',
+        class extends numpy.ndarray {
+          constructor(data /*, mask, dtype, copy, subok, ndmin, fill_value, keep_mask, hard_mask, shrink, order */) {
+            super(data.shape, data.dtype, data.data);
+          }
+        }
+      );
+      this.registerType(
+        'numpy.core.memmap.memmap',
+        class extends numpy.ndarray {
+          constructor(shape, dtype) {
+            super(shape, dtype);
+          }
+        }
+      );
+      this.registerType(
+        'pathlib.PosixPath',
+        class {
+          constructor() {
+            this.path = Array.from(arguments).join('/');
+          }
+        }
+      );
+      this.registerType('sklearn.calibration._CalibratedClassifier', class {});
+      this.registerType('sklearn.calibration._SigmoidCalibration', class {});
+      this.registerType('sklearn.calibration.CalibratedClassifierCV', class {});
+      this.registerType('sklearn.compose._column_transformer.ColumnTransformer', class {});
+      this.registerType('sklearn.compose._target.TransformedTargetRegressor', class {});
+      this.registerType('sklearn.cluster._dbscan.DBSCAN', class {});
+      this.registerType('sklearn.cluster._kmeans.KMeans', class {});
+      this.registerType('sklearn.decomposition._pca.PCA', class {});
+      this.registerType('sklearn.decomposition.PCA', class {});
+      this.registerType('sklearn.decomposition.pca.PCA', class {});
+      this.registerType('sklearn.decomposition._truncated_svd.TruncatedSVD', class {});
+      this.registerType('sklearn.decomposition.truncated_svd.TruncatedSVD', class {});
+      this.registerType('sklearn.discriminant_analysis.LinearDiscriminantAnalysis', class {});
+      this.registerType('sklearn.discriminant_analysis.QuadraticDiscriminantAnalysis', class {});
+      this.registerType('sklearn.dummy.DummyClassifier', class {});
+      this.registerType('sklearn.dummy.DummyRegressor', class {});
+      this.registerType(
+        'sklearn.externals.joblib.numpy_pickle.NumpyArrayWrapper',
+        class {
+          constructor(/* subtype, shape, dtype */) {}
+          __setstate__(state) {
+            this.subclass = state.subclass;
+            this.dtype = state.dtype;
+            this.shape = state.shape;
+            this.order = state.order;
+            this.allow_mmap = state.allow_mmap;
+          }
+          __read__(unpickler) {
+            if (this.dtype.name == 'object') {
+              return unpickler.load((name, args) => self.invoke(name, args), null);
+            } else {
+              const size = this.dtype.itemsize * this.shape.reduce((a, b) => a * b, 1);
+              this.data = unpickler.read(size);
             }
-        });
-        this.registerType('sklearn.externals.joblib.numpy_pickle.NDArrayWrapper', class {
-            constructor(/* subtype, shape, dtype */) {
-            }
-            __setstate__(state) {
-                this.subclass = state.subclass;
-                this.filename = state.state;
-                this.allow_mmap = state.allow_mmap;
-            }
-            __read__(/* unpickler */) {
-                return this; // return self.invoke(this.subclass, [ this.shape, this.dtype, this.data ]);
-            }
-        });
-        this.registerType('sklearn.ensemble._bagging.BaggingClassifier', class {});
-        this.registerType('sklearn.ensemble._forest.RandomForestRegressor', class {});
-        this.registerType('sklearn.ensemble._forest.RandomForestClassifier', class {});
-        this.registerType('sklearn.ensemble._forest.ExtraTreesClassifier', class {});
-        this.registerType('sklearn.ensemble._gb_losses.BinomialDeviance', class {});
-        this.registerType('sklearn.ensemble._gb_losses.LeastSquaresError', class {});
-        this.registerType('sklearn.ensemble._gb_losses.MultinomialDeviance', class {});
-        this.registerType('sklearn.ensemble._gb.GradientBoostingClassifier', class {});
-        this.registerType('sklearn.ensemble._gb.GradientBoostingRegressor', class {});
-        this.registerType('sklearn.ensemble._iforest.IsolationForest', class {});
-        this.registerType('sklearn.ensemble._stacking.StackingClassifier', class {});
-        this.registerType('sklearn.ensemble._voting.VotingClassifier', class {});
-        this.registerType('sklearn.ensemble.forest.RandomForestClassifier', class {});
-        this.registerType('sklearn.ensemble.forest.RandomForestRegressor', class {});
-        this.registerType('sklearn.ensemble.forest.ExtraTreesClassifier', class {});
-        this.registerType('sklearn.ensemble.gradient_boosting.BinomialDeviance', class {});
-        this.registerType('sklearn.ensemble.gradient_boosting.GradientBoostingClassifier', class {});
-        this.registerType('sklearn.ensemble.gradient_boosting.LogOddsEstimator', class {});
-        this.registerType('sklearn.ensemble.gradient_boosting.MultinomialDeviance', class {});
-        this.registerType('sklearn.ensemble.gradient_boosting.PriorProbabilityEstimator', class {});
-        this.registerType('sklearn.ensemble.weight_boosting.AdaBoostClassifier', class {});
-        this.registerType('sklearn.feature_extraction._hashing.FeatureHasher', class {});
-        this.registerType('sklearn.feature_extraction.text.CountVectorizer', class {});
-        this.registerType('sklearn.feature_extraction.text.HashingVectorizer', class {});
-        this.registerType('sklearn.feature_extraction.text.TfidfTransformer', class {});
-        this.registerType('sklearn.feature_extraction.text.TfidfVectorizer', class {});
-        this.registerType('sklearn.feature_selection._from_model.SelectFromModel', class {});
-        this.registerType('sklearn.feature_selection._univariate_selection.SelectKBest', class {});
-        this.registerType('sklearn.feature_selection._univariate_selection.SelectPercentile', class {});
-        this.registerType('sklearn.feature_selection._variance_threshold.VarianceThreshold', class {});
-        this.registerType('sklearn.feature_selection.univariate_selection.SelectKBest', class {});
-        this.registerType('sklearn.feature_selection.variance_threshold.VarianceThreshold', class {});
-        this.registerType('sklearn.gaussian_process.gpc.GaussianProcessClassifier', class {});
-        this.registerType('sklearn.gaussian_process.kernels.ConstantKernel', class {});
-        this.registerType('sklearn.gaussian_process.kernels.Product', class {});
-        this.registerType('sklearn.gaussian_process.kernels.RBF', class {});
-        this.registerType('sklearn.grid_search._CVScoreTuple', class {});
-        this.registerType('sklearn.grid_search.GridSearchCV', class {});
-        this.registerType('sklearn.impute._base.SimpleImputer', class {});
-        this.registerType('sklearn.impute.SimpleImputer', class {});
-        this.registerType('sklearn.isotonic.IsotonicRegression', class {});
-        this.registerType('sklearn.linear_model._base.LinearRegression', class {});
-        this.registerType('sklearn.linear_model._bayes.BayesianRidge', class {});
-        this.registerType('sklearn.linear_model._coordinate_descent.ElasticNetCV', class {});
-        this.registerType('sklearn.linear_model._coordinate_descent.ElasticNet', class {});
-        this.registerType('sklearn.linear_model._logistic.LogisticRegression', class {});
-        this.registerType('sklearn.linear_model._ridge.Ridge', class {});
-        this.registerType('sklearn.linear_model._sgd_fast.Hinge', class {});
-        this.registerType('sklearn.linear_model._sgd_fast.Log', class {});
-        this.registerType('sklearn.linear_model._sgd_fast.ModifiedHuber', class {});
-        this.registerType('sklearn.linear_model._sgd_fast.SquaredHinge', class {});
-        this.registerType('sklearn.linear_model._stochastic_gradient.SGDClassifier', class {});
-        this.registerType('sklearn.linear_model.base.LinearRegression', class {});
-        this.registerType('sklearn.linear_model.sgd_fast.Hinge', class {});
-        this.registerType('sklearn.linear_model.LogisticRegression', class {});
-        this.registerType('sklearn.linear_model.logistic.LogisticRegression', class {});
-        this.registerType('sklearn.linear_model.logistic.LogisticRegressionCV', class {});
-        this.registerType('sklearn.linear_model.LassoLars​', class {});
-        this.registerType('sklearn.linear_model.ridge.Ridge', class {});
-        this.registerType('sklearn.linear_model.sgd_fast.Log', class {});
-        this.registerType('sklearn.linear_model.stochastic_gradient.SGDClassifier', class {});
-        this.registerType('sklearn.metrics._scorer._PredictScorer', class {});
-        this.registerType('sklearn.metrics.scorer._PredictScorer', class {});
-        this.registerType('sklearn.metrics._scorer._ThresholdScorer', class {});
-        this.registerType('sklearn.mixture._bayesian_mixture.BayesianGaussianMixture', class {});
-        this.registerType('sklearn.model_selection._search.GridSearchCV', class {});
-        this.registerType('sklearn.model_selection._search.RandomizedSearchCV', class {});
-        this.registerType('sklearn.model_selection._split.KFold', class {});
-        this.registerType('sklearn.model_selection._split.StratifiedKFold', class {});
-        this.registerType('sklearn.multiclass.OneVsRestClassifier', class {});
-        this.registerType('sklearn.multioutput.MultiOutputClassifier', class {});
-        this.registerType('sklearn.multioutput.MultiOutputRegressor', class {});
-        this.registerType('sklearn.naive_bayes.BernoulliNB', class {});
-        this.registerType('sklearn.naive_bayes.ComplementNB', class {});
-        this.registerType('sklearn.naive_bayes.GaussianNB', class {});
-        this.registerType('sklearn.naive_bayes.MultinomialNB', class {});
-        this.registerType('sklearn.neighbors._classification.KNeighborsClassifier', class {});
-        this.registerType('sklearn.neighbors._dist_metrics.newObj', class {});
-        this.registerType('sklearn.neighbors._kd_tree.newObj', class {});
-        this.registerType('sklearn.neighbors._regression.KNeighborsRegressor', class {});
-        this.registerType('sklearn.neighbors.classification.KNeighborsClassifier', class {});
-        this.registerType('sklearn.neighbors.dist_metrics.newObj', class {});
-        this.registerType('sklearn.neighbors.kd_tree.newObj', class {});
-        this.registerType('sklearn.neighbors.KNeighborsClassifier', class {});
-        this.registerType('sklearn.neighbors.KNeighborsRegressor', class {});
-        this.registerType('sklearn.neighbors.regression.KNeighborsRegressor', class {});
-        this.registerType('sklearn.neighbors.unsupervised.NearestNeighbors', class {});
-        this.registerType('sklearn.neural_network._multilayer_perceptron.MLPClassifier', class {});
-        this.registerType('sklearn.neural_network._multilayer_perceptron.MLPRegressor', class {});
-        this.registerType('sklearn.neural_network._stochastic_optimizers.AdamOptimizer', class {});
-        this.registerType('sklearn.neural_network._stochastic_optimizers.SGDOptimizer', class {});
-        this.registerType('sklearn.neural_network.rbm.BernoulliRBM', class {});
-        this.registerType('sklearn.neural_network.multilayer_perceptron.MLPClassifier', class {});
-        this.registerType('sklearn.neural_network.multilayer_perceptron.MLPRegressor', class {});
-        this.registerType('sklearn.neural_network.stochastic_gradient.SGDClassifier', class {});
-        this.registerType('sklearn.pipeline.Pipeline', class {});
-        this.registerType('sklearn.pipeline.FeatureUnion', class {});
-        this.registerType('sklearn.preprocessing._data.MinMaxScaler', class {});
-        this.registerType('sklearn.preprocessing._data.MaxAbsScaler', class {});
-        this.registerType('sklearn.preprocessing._data.Normalizer', class {});
-        this.registerType('sklearn.preprocessing._data.PolynomialFeatures', class {});
-        this.registerType('sklearn.preprocessing._data.QuantileTransformer', class {});
-        this.registerType('sklearn.preprocessing._data.RobustScaler', class {});
-        this.registerType('sklearn.preprocessing._data.StandardScaler', class {});
-        this.registerType('sklearn.preprocessing._discretization.KBinsDiscretizer', class {});
-        this.registerType('sklearn.preprocessing._encoders.OneHotEncoder', class {});
-        this.registerType('sklearn.preprocessing._function_transformer.FunctionTransformer', class {});
-        this.registerType('sklearn.preprocessing._label.LabelBinarizer', class {});
-        this.registerType('sklearn.preprocessing._label.LabelEncoder', class {});
-        this.registerType('sklearn.preprocessing.data.Binarizer', class {});
-        this.registerType('sklearn.preprocessing.data.MaxAbsScaler', class {});
-        this.registerType('sklearn.preprocessing.data.MinMaxScaler', class {});
-        this.registerType('sklearn.preprocessing.data.Normalizer', class {});
-        this.registerType('sklearn.preprocessing.data.OneHotEncoder', class {});
-        this.registerType('sklearn.preprocessing.data.PolynomialFeatures', class {});
-        this.registerType('sklearn.preprocessing.data.PowerTransformer', class {});
-        this.registerType('sklearn.preprocessing.data.RobustScaler', class {});
-        this.registerType('sklearn.preprocessing.data.QuantileTransformer', class {});
-        this.registerType('sklearn.preprocessing.data.StandardScaler', class {});
-        this.registerType('sklearn.preprocessing.imputation.Imputer', class {});
-        this.registerType('sklearn.preprocessing.label.LabelBinarizer', class {});
-        this.registerType('sklearn.preprocessing.label.LabelEncoder', class {});
-        this.registerType('sklearn.preprocessing.label.MultiLabelBinarizer', class {});
-        this.registerType('sklearn.svm._classes.LinearSVC', class {});
-        this.registerType('sklearn.svm._classes.SVC', class {});
-        this.registerType('sklearn.svm._classes.SVR', class {});
-        this.registerType('sklearn.svm.classes.LinearSVC', class {});
-        this.registerType('sklearn.svm.classes.OneClassSVM', class {});
-        this.registerType('sklearn.svm.classes.SVC', class {});
-        this.registerType('sklearn.svm.classes.SVR', class {});
-        this.registerType('sklearn.tree._classes.DecisionTreeClassifier', class {});
-        this.registerType('sklearn.tree._classes.DecisionTreeRegressor', class {});
-        this.registerType('sklearn.tree._classes.ExtraTreeClassifier', class {});
-        this.registerType('sklearn.tree._classes.ExtraTreeRegressor', class {});
-        this.registerType('sklearn.tree._tree.Tree', class {
-            constructor(n_features, n_classes, n_outputs) {
-                this.n_features = n_features;
-                this.n_classes = n_classes;
-                this.n_outputs = n_outputs;
-            }
-            __setstate__(state) {
-                this.max_depth = state.max_depth;
-                this.node_count = state.node_count;
-                this.nodes = state.nodes;
-                this.values = state.values;
-            }
-        });
+            return self.invoke(this.subclass, [this.shape, this.dtype, this.data]);
+          }
+        }
+      );
+      this.registerType(
+        'sklearn.externals.joblib.numpy_pickle.NDArrayWrapper',
+        class {
+          constructor(/* subtype, shape, dtype */) {}
+          __setstate__(state) {
+            this.subclass = state.subclass;
+            this.filename = state.state;
+            this.allow_mmap = state.allow_mmap;
+          }
+          __read__(/* unpickler */) {
+            return this; // return self.invoke(this.subclass, [ this.shape, this.dtype, this.data ]);
+          }
+        }
+      );
+      this.registerType('sklearn.ensemble._bagging.BaggingClassifier', class {});
+      this.registerType('sklearn.ensemble._forest.RandomForestRegressor', class {});
+      this.registerType('sklearn.ensemble._forest.RandomForestClassifier', class {});
+      this.registerType('sklearn.ensemble._forest.ExtraTreesClassifier', class {});
+      this.registerType('sklearn.ensemble._gb_losses.BinomialDeviance', class {});
+      this.registerType('sklearn.ensemble._gb_losses.LeastSquaresError', class {});
+      this.registerType('sklearn.ensemble._gb_losses.MultinomialDeviance', class {});
+      this.registerType('sklearn.ensemble._gb.GradientBoostingClassifier', class {});
+      this.registerType('sklearn.ensemble._gb.GradientBoostingRegressor', class {});
+      this.registerType('sklearn.ensemble._iforest.IsolationForest', class {});
+      this.registerType('sklearn.ensemble._stacking.StackingClassifier', class {});
+      this.registerType('sklearn.ensemble._voting.VotingClassifier', class {});
+      this.registerType('sklearn.ensemble.forest.RandomForestClassifier', class {});
+      this.registerType('sklearn.ensemble.forest.RandomForestRegressor', class {});
+      this.registerType('sklearn.ensemble.forest.ExtraTreesClassifier', class {});
+      this.registerType('sklearn.ensemble.gradient_boosting.BinomialDeviance', class {});
+      this.registerType('sklearn.ensemble.gradient_boosting.GradientBoostingClassifier', class {});
+      this.registerType('sklearn.ensemble.gradient_boosting.LogOddsEstimator', class {});
+      this.registerType('sklearn.ensemble.gradient_boosting.MultinomialDeviance', class {});
+      this.registerType('sklearn.ensemble.gradient_boosting.PriorProbabilityEstimator', class {});
+      this.registerType('sklearn.ensemble.weight_boosting.AdaBoostClassifier', class {});
+      this.registerType('sklearn.feature_extraction._hashing.FeatureHasher', class {});
+      this.registerType('sklearn.feature_extraction.text.CountVectorizer', class {});
+      this.registerType('sklearn.feature_extraction.text.HashingVectorizer', class {});
+      this.registerType('sklearn.feature_extraction.text.TfidfTransformer', class {});
+      this.registerType('sklearn.feature_extraction.text.TfidfVectorizer', class {});
+      this.registerType('sklearn.feature_selection._from_model.SelectFromModel', class {});
+      this.registerType('sklearn.feature_selection._univariate_selection.SelectKBest', class {});
+      this.registerType('sklearn.feature_selection._univariate_selection.SelectPercentile', class {});
+      this.registerType('sklearn.feature_selection._variance_threshold.VarianceThreshold', class {});
+      this.registerType('sklearn.feature_selection.univariate_selection.SelectKBest', class {});
+      this.registerType('sklearn.feature_selection.variance_threshold.VarianceThreshold', class {});
+      this.registerType('sklearn.gaussian_process.gpc.GaussianProcessClassifier', class {});
+      this.registerType('sklearn.gaussian_process.kernels.ConstantKernel', class {});
+      this.registerType('sklearn.gaussian_process.kernels.Product', class {});
+      this.registerType('sklearn.gaussian_process.kernels.RBF', class {});
+      this.registerType('sklearn.grid_search._CVScoreTuple', class {});
+      this.registerType('sklearn.grid_search.GridSearchCV', class {});
+      this.registerType('sklearn.impute._base.SimpleImputer', class {});
+      this.registerType('sklearn.impute.SimpleImputer', class {});
+      this.registerType('sklearn.isotonic.IsotonicRegression', class {});
+      this.registerType('sklearn.linear_model._base.LinearRegression', class {});
+      this.registerType('sklearn.linear_model._bayes.BayesianRidge', class {});
+      this.registerType('sklearn.linear_model._coordinate_descent.ElasticNetCV', class {});
+      this.registerType('sklearn.linear_model._coordinate_descent.ElasticNet', class {});
+      this.registerType('sklearn.linear_model._logistic.LogisticRegression', class {});
+      this.registerType('sklearn.linear_model._ridge.Ridge', class {});
+      this.registerType('sklearn.linear_model._sgd_fast.Hinge', class {});
+      this.registerType('sklearn.linear_model._sgd_fast.Log', class {});
+      this.registerType('sklearn.linear_model._sgd_fast.ModifiedHuber', class {});
+      this.registerType('sklearn.linear_model._sgd_fast.SquaredHinge', class {});
+      this.registerType('sklearn.linear_model._stochastic_gradient.SGDClassifier', class {});
+      this.registerType('sklearn.linear_model.base.LinearRegression', class {});
+      this.registerType('sklearn.linear_model.sgd_fast.Hinge', class {});
+      this.registerType('sklearn.linear_model.LogisticRegression', class {});
+      this.registerType('sklearn.linear_model.logistic.LogisticRegression', class {});
+      this.registerType('sklearn.linear_model.logistic.LogisticRegressionCV', class {});
+      this.registerType('sklearn.linear_model.LassoLars​', class {});
+      this.registerType('sklearn.linear_model.ridge.Ridge', class {});
+      this.registerType('sklearn.linear_model.sgd_fast.Log', class {});
+      this.registerType('sklearn.linear_model.stochastic_gradient.SGDClassifier', class {});
+      this.registerType('sklearn.metrics._scorer._PredictScorer', class {});
+      this.registerType('sklearn.metrics.scorer._PredictScorer', class {});
+      this.registerType('sklearn.metrics._scorer._ThresholdScorer', class {});
+      this.registerType('sklearn.mixture._bayesian_mixture.BayesianGaussianMixture', class {});
+      this.registerType('sklearn.model_selection._search.GridSearchCV', class {});
+      this.registerType('sklearn.model_selection._search.RandomizedSearchCV', class {});
+      this.registerType('sklearn.model_selection._split.KFold', class {});
+      this.registerType('sklearn.model_selection._split.StratifiedKFold', class {});
+      this.registerType('sklearn.multiclass.OneVsRestClassifier', class {});
+      this.registerType('sklearn.multioutput.MultiOutputClassifier', class {});
+      this.registerType('sklearn.multioutput.MultiOutputRegressor', class {});
+      this.registerType('sklearn.naive_bayes.BernoulliNB', class {});
+      this.registerType('sklearn.naive_bayes.ComplementNB', class {});
+      this.registerType('sklearn.naive_bayes.GaussianNB', class {});
+      this.registerType('sklearn.naive_bayes.MultinomialNB', class {});
+      this.registerType('sklearn.neighbors._classification.KNeighborsClassifier', class {});
+      this.registerType('sklearn.neighbors._dist_metrics.newObj', class {});
+      this.registerType('sklearn.neighbors._kd_tree.newObj', class {});
+      this.registerType('sklearn.neighbors._regression.KNeighborsRegressor', class {});
+      this.registerType('sklearn.neighbors.classification.KNeighborsClassifier', class {});
+      this.registerType('sklearn.neighbors.dist_metrics.newObj', class {});
+      this.registerType('sklearn.neighbors.kd_tree.newObj', class {});
+      this.registerType('sklearn.neighbors.KNeighborsClassifier', class {});
+      this.registerType('sklearn.neighbors.KNeighborsRegressor', class {});
+      this.registerType('sklearn.neighbors.regression.KNeighborsRegressor', class {});
+      this.registerType('sklearn.neighbors.unsupervised.NearestNeighbors', class {});
+      this.registerType('sklearn.neural_network._multilayer_perceptron.MLPClassifier', class {});
+      this.registerType('sklearn.neural_network._multilayer_perceptron.MLPRegressor', class {});
+      this.registerType('sklearn.neural_network._stochastic_optimizers.AdamOptimizer', class {});
+      this.registerType('sklearn.neural_network._stochastic_optimizers.SGDOptimizer', class {});
+      this.registerType('sklearn.neural_network.rbm.BernoulliRBM', class {});
+      this.registerType('sklearn.neural_network.multilayer_perceptron.MLPClassifier', class {});
+      this.registerType('sklearn.neural_network.multilayer_perceptron.MLPRegressor', class {});
+      this.registerType('sklearn.neural_network.stochastic_gradient.SGDClassifier', class {});
+      this.registerType('sklearn.pipeline.Pipeline', class {});
+      this.registerType('sklearn.pipeline.FeatureUnion', class {});
+      this.registerType('sklearn.preprocessing._data.MinMaxScaler', class {});
+      this.registerType('sklearn.preprocessing._data.MaxAbsScaler', class {});
+      this.registerType('sklearn.preprocessing._data.Normalizer', class {});
+      this.registerType('sklearn.preprocessing._data.PolynomialFeatures', class {});
+      this.registerType('sklearn.preprocessing._data.QuantileTransformer', class {});
+      this.registerType('sklearn.preprocessing._data.RobustScaler', class {});
+      this.registerType('sklearn.preprocessing._data.StandardScaler', class {});
+      this.registerType('sklearn.preprocessing._discretization.KBinsDiscretizer', class {});
+      this.registerType('sklearn.preprocessing._encoders.OneHotEncoder', class {});
+      this.registerType('sklearn.preprocessing._function_transformer.FunctionTransformer', class {});
+      this.registerType('sklearn.preprocessing._label.LabelBinarizer', class {});
+      this.registerType('sklearn.preprocessing._label.LabelEncoder', class {});
+      this.registerType('sklearn.preprocessing.data.Binarizer', class {});
+      this.registerType('sklearn.preprocessing.data.MaxAbsScaler', class {});
+      this.registerType('sklearn.preprocessing.data.MinMaxScaler', class {});
+      this.registerType('sklearn.preprocessing.data.Normalizer', class {});
+      this.registerType('sklearn.preprocessing.data.OneHotEncoder', class {});
+      this.registerType('sklearn.preprocessing.data.PolynomialFeatures', class {});
+      this.registerType('sklearn.preprocessing.data.PowerTransformer', class {});
+      this.registerType('sklearn.preprocessing.data.RobustScaler', class {});
+      this.registerType('sklearn.preprocessing.data.QuantileTransformer', class {});
+      this.registerType('sklearn.preprocessing.data.StandardScaler', class {});
+      this.registerType('sklearn.preprocessing.imputation.Imputer', class {});
+      this.registerType('sklearn.preprocessing.label.LabelBinarizer', class {});
+      this.registerType('sklearn.preprocessing.label.LabelEncoder', class {});
+      this.registerType('sklearn.preprocessing.label.MultiLabelBinarizer', class {});
+      this.registerType('sklearn.svm._classes.LinearSVC', class {});
+      this.registerType('sklearn.svm._classes.SVC', class {});
+      this.registerType('sklearn.svm._classes.SVR', class {});
+      this.registerType('sklearn.svm.classes.LinearSVC', class {});
+      this.registerType('sklearn.svm.classes.OneClassSVM', class {});
+      this.registerType('sklearn.svm.classes.SVC', class {});
+      this.registerType('sklearn.svm.classes.SVR', class {});
+      this.registerType('sklearn.tree._classes.DecisionTreeClassifier', class {});
+      this.registerType('sklearn.tree._classes.DecisionTreeRegressor', class {});
+      this.registerType('sklearn.tree._classes.ExtraTreeClassifier', class {});
+      this.registerType('sklearn.tree._classes.ExtraTreeRegressor', class {});
+      this.registerType(
+        'sklearn.tree._tree.Tree',
+        class {
+          constructor(n_features, n_classes, n_outputs) {
+            this.n_features = n_features;
+            this.n_classes = n_classes;
+            this.n_outputs = n_outputs;
+          }
+          __setstate__(state) {
+            this.max_depth = state.max_depth;
+            this.node_count = state.node_count;
+            this.nodes = state.nodes;
+            this.values = state.values;
+          }
+        }
+      );
         this.registerType('sklearn.tree.tree.DecisionTreeClassifier', class {});
         this.registerType('sklearn.tree.tree.DecisionTreeRegressor', class {});
         this.registerType('sklearn.tree.tree.ExtraTreeClassifier', class {});
