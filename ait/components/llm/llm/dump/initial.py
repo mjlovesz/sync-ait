@@ -18,7 +18,7 @@ import site
 
 from llm.common.constant import ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, \
     ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, ATB_SAVE_TENSOR_RANGE, \
-    ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD, ATB_SAVE_TENSOR_PART
+    ATB_SAVE_TILING, ATB_SAVE_TOPO_INFO, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD, ATB_SAVE_TENSOR_PART
 
 
 def init_dump_task(args):
@@ -40,6 +40,7 @@ def init_dump_task(args):
     os.environ[ATB_SAVE_CHILD] = "1" if args.child else "0"
     os.environ[ATB_SAVE_TENSOR_RANGE] = str(args.range)
     os.environ[ATB_SAVE_TILING] = "1" if args.tiling else "0"
+    os.environ[ATB_SAVE_TOPO_INFO] = "1" if args.topo else "0"
     os.environ[ATB_SAVE_TENSOR_PART] = str(args.save_tensor_part)
     ld_preload = os.getenv(LD_PRELOAD)
     ld_preload = ld_preload or ""

@@ -52,5 +52,15 @@ public:
     static bool IsSaveOuttensor();
     static bool IsSaveIntensor();
 };
+
+}  // namespace atb
+
+namespace atb_speed {
+class SpeedProbe {
+public:
+    bool IsSaveTopoInfo();
+    void SaveTopoInfo(const std::string &modelJson, const std::string &fileName);
 }
+}  // namespace atb_speed
+
 #endif
