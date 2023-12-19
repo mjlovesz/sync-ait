@@ -13,6 +13,8 @@
 # limitations under the License.
 
 from argparse import ArgumentTypeError
+import os
+import stat
 import pytest
 
 from llm.common.utils import (
@@ -37,11 +39,11 @@ def temp_large_file(tmp_path_factory):
     file_permissions = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
 
     # 创建文件并指定权限
-    file_descriptor = os.open("file.txt", os.O_CREAT | os.O_WRONLY, file_permissions)
 
     # 使用文件描述符创建文件对象
-    with os.fdopen(file_descriptor, 'wb') as f:
+    with os.fdopen(os.open("file.txt", os.O_CREAT | os.O_WRONLY, file_permissions), 'wb') as f:
         f.write(b'\0')
+    
     return str(file_path)
 
 
