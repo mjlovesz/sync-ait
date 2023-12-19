@@ -11,8 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import pytest
+
 from argparse import ArgumentTypeError
+import pytest
+
 from llm.common.utils import (
     check_positive_integer,
     safe_string,
@@ -31,7 +33,14 @@ from llm.common.utils import (
 @pytest.fixture(scope='module')
 def temp_large_file(tmp_path_factory):
     file_path = tmp_path_factory.mktemp("data") / "data_file.txt"
-    with open(file_path, 'wb') as f:
+   # 文件权限为 640 (-rw-r-----)
+    file_permissions = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
+
+    # 创建文件并指定权限
+    file_descriptor = os.open("file.txt", os.O_CREAT | os.O_WRONLY, file_permissions)
+
+    # 使用文件描述符创建文件对象
+    with os.fdopen(file_descriptor, 'wb') as f:
         f.write(b'\0')
     return str(file_path)
 
