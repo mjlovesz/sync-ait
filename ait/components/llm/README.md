@@ -32,10 +32,10 @@
 
     |名称| 平台   | CXX11_ABI  | whl链接 |
     |----|--------|------------|-------------|
-    |ait-llm| arm    | abi=0 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231214/ABI0/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
-    |ait-llm| arm    | abi=1 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231214/ABI1/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
-    |ait-llm| x86    | abi=0 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231214/ABI0/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
-    |ait-llm| x86    | abi=1 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231214/ABI1/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
+    |ait-llm| arm    | abi=0 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231219/ABI0/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
+    |ait-llm| arm    | abi=1 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231219/ABI1/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
+    |ait-llm| x86    | abi=0 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231219/ABI0/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
+    |ait-llm| x86    | abi=1 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231219/ABI1/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
 
 - 安装方式：
     ```
