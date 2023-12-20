@@ -212,7 +212,7 @@ void atb::Probe::SaveTensor(const std::string &format, const std::string &dtype,
     // 判断是否需要保存
     bool saveFlag = (isInTensorBinPath(filePath) && IsSaveIntensor()) ||
                 (isOutTensorBinPath(filePath) && IsSaveOuttensor());
-    if (!SaveFlag) {
+    if (!saveFlag) {
         return;
     }
 
