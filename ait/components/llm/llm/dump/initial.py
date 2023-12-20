@@ -37,6 +37,8 @@ def init_dump_task(args):
             os.environ[ATB_OUTPUT_DIR] = str(args.output)
         else:
             os.environ[ATB_OUTPUT_DIR] = str(args.output) + '/'
+        atb_dump_path = os.path.join(args.output, 'atb_temp', 'tensors')
+        os.makedirs(atb_dump_path, exist_ok=True)
     os.environ[ATB_SAVE_CHILD] = "1" if args.child else "0"
     os.environ[ATB_SAVE_TENSOR_RANGE] = str(args.range)
     os.environ[ATB_SAVE_TILING] = "1" if args.tiling else "0"
