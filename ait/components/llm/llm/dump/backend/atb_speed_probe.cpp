@@ -15,6 +15,8 @@
  */
 
 #include "atb_speed_probe.h"
+#include <iostream>
+#include <fstream>
 
 namespace atb_speed {
 bool atb_speed::SpeedProbe::IsSaveTopoInfo()
@@ -23,7 +25,7 @@ bool atb_speed::SpeedProbe::IsSaveTopoInfo()
     if (saveTopoInfo == nullptr) {
         return false;
     }
-    
+
     int value = std::stoi(saveTopoInfo);
     if (value == 1) {
         return true;
