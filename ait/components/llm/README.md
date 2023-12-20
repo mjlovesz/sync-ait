@@ -77,6 +77,7 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py"
 | -time，--save-time         | 选择保存的时间节点，取值[0,1,2]，0代表保存执行前(before)，1代表保存执行后(after)，2代表前后都保存。默认保存after。使用方式：-time 0  | 否    |
 | -opname，--operation-name        | 指定需要dump的算子类型，支持模糊指定，如selfattention只需要填写self。使用方式：-opname self | 否    |
 | -tiling，--save-tiling           | 选择是否需要保存tiling数据，默认为false。使用方式：-tiling                | 否    |
+| -fw, --framework           | 选择是否需要保存模型的拓扑信息，保存路径为模型脚本的当前路径，或者-o指定的路径。默认为false。使用方式：-fw                | 否    |
 | --exec           | 指定拉起执行大模型推理脚本的命令，使用示例： --exec "bash run.sh patches/models/modeling_xxx.py"|是    |
 | --save-tensor-part, -stp | 指定保存tensor的部分，0为仅intensor，1为仅outtensor，2为全部保存，默认为2。使用示例：-stp 1 |否    |
 | -o, --output            | 指定dump数据的输出目录，默认为'./'，使用示例：-o aasx/sss | 否    |
