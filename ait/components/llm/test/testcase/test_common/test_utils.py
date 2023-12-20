@@ -34,7 +34,7 @@ from llm.common.utils import (
 
 @pytest.fixture(scope='module')
 def temp_large_file(tmp_path_factory):
-    file_path = tmp_path_factory.mktemp("data") / "data_file.txt"
+    file_path = str(tmp_path_factory.mktemp("data") / "data_file.txt")
    # 文件权限为 640 (-rw-r-----)
     file_permissions = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
 
@@ -43,8 +43,9 @@ def temp_large_file(tmp_path_factory):
     # 使用文件描述符创建文件对象
     with os.fdopen(os.open(file_path, os.O_CREAT | os.O_WRONLY, file_permissions), 'wb') as f:
         f.write(b'hello')
-    
-    return str(file_path)
+    yield file_path
+    if os.path.exists(file_path):
+        os.remove(file_path)
 
 
 # Test cases for check_positive_integer function
