@@ -40,7 +40,7 @@ def init_dump_task(args):
     os.environ[ATB_SAVE_CHILD] = "1" if args.child else "0"
     os.environ[ATB_SAVE_TENSOR_RANGE] = str(args.range)
     os.environ[ATB_SAVE_TILING] = "1" if args.tiling else "0"
-    os.environ[ATB_SAVE_TOPO_INFO] = "1" if args.topo else "0"
+    os.environ[ATB_SAVE_TOPO_INFO] = "1" if args.topo and args.framework == 0 else "0"
     os.environ[ATB_SAVE_TENSOR_PART] = str(args.save_tensor_part)
     ld_preload = os.getenv(LD_PRELOAD)
     ld_preload = ld_preload or ""
