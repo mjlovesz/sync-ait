@@ -313,34 +313,3 @@ bool atb::Probe::IsSaveOuttensor()
     return false;
 }
 } // namespace atb
-
-namespace atb_speed {
-bool atb_speed::SpeedProbe::IsSaveTopoInfo()
-{
-    const char* saveTopoInfo = std::getenv("ATB_SAVE_TOPO_INFO");
-    int value = std::stoi(saveTopoInfo);
-    if (value == 1) {
-        return true;
-    }
-    return false;
-}
-
-void atb_speed::SpeedProbe::SaveTopoInfo(const std::string &modelJson, const std::string &fileName)
-{
-    const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
-    std::string outDir = outputDir != nullptr ? outputDir : "./";
-
-    std::string outPath = outDir + fileName;
-    std::ofstream outfile(outPath, std::ios::out | std::ios::binary);
-
-    if (outfile.is_open()) {
-        outfile << modelJson << std::endl;
-        outfile.close();
-        std::cout << "Model topo info written to file successfully! File name:" << outPath << std::endl;
-    } else {
-        std::cout << "Unable to open file!" << std::endl;
-    }
-    return;
-}
-
-} // namespace atb_speed
