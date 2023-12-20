@@ -2330,769 +2330,866 @@ python.Execution = class {
           }
         }
       );
-        this.registerType('sklearn.tree.tree.DecisionTreeClassifier', class {});
-        this.registerType('sklearn.tree.tree.DecisionTreeRegressor', class {});
-        this.registerType('sklearn.tree.tree.ExtraTreeClassifier', class {});
-        this.registerType('sklearn.utils.Bunch', class {});
-        this.registerType('sklearn.utils.deprecation.DeprecationDict', class {});
-        this.registerType('re.Pattern', function(pattern, flags) {
-            this.pattern = pattern;
-            this.flags = flags;
-        });
-        this.registerType('spacy._ml.PrecomputableAffine', class {
-            __setstate__(state) {
-                Object.assign(this, python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null));
+      this.registerType('sklearn.tree.tree.DecisionTreeClassifier', class {});
+      this.registerType('sklearn.tree.tree.DecisionTreeRegressor', class {});
+      this.registerType('sklearn.tree.tree.ExtraTreeClassifier', class {});
+      this.registerType('sklearn.utils.Bunch', class {});
+      this.registerType('sklearn.utils.deprecation.DeprecationDict', class {});
+      this.registerType('re.Pattern', function (pattern, flags) {
+        this.pattern = pattern;
+        this.flags = flags;
+      });
+      this.registerType(
+        'spacy._ml.PrecomputableAffine',
+        class {
+          __setstate__(state) {
+            Object.assign(
+              this,
+              python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null)
+            );
+          }
+        }
+      );
+      this.registerType(
+        'spacy.syntax._parser_model.ParserModel',
+        class {
+          __setstate__(state) {
+            Object.assign(
+              this,
+              python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null)
+            );
+          }
+        }
+      );
+      this.registerType(
+        'thinc.describe.Biases',
+        class {
+          __setstate__(state) {
+            Object.assign(this, state);
+          }
+        }
+      );
+      this.registerType(
+        'thinc.describe.Dimension',
+        class {
+          __setstate__(state) {
+            Object.assign(this, state);
+          }
+        }
+      );
+      this.registerType(
+        'thinc.describe.Gradient',
+        class {
+          __setstate__(state) {
+            Object.assign(this, state);
+          }
+        }
+      );
+      this.registerType(
+        'thinc.describe.Weights',
+        class {
+          __setstate__(state) {
+            Object.assign(this, state);
+          }
+        }
+      );
+      this.registerType(
+        'thinc.describe.Synapses',
+        class {
+          __setstate__(state) {
+            Object.assign(this, state);
+          }
+        }
+      );
+      this.registerType(
+        'thinc.neural._classes.affine.Affine',
+        class {
+          __setstate__(state) {
+            Object.assign(
+              this,
+              python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null)
+            );
+          }
+        }
+      );
+      this.registerType(
+        'thinc.neural._classes.convolution.ExtractWindow',
+        class {
+          __setstate__(state) {
+            Object.assign(
+              this,
+              python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null)
+            );
+          }
+        }
+      );
+      this.registerType(
+        'thinc.neural._classes.feature_extracter.FeatureExtracter',
+        class {
+          __setstate__(state) {
+            Object.assign(
+              this,
+              python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null)
+            );
+          }
+        }
+      );
+      this.registerType(
+        'thinc.neural._classes.feed_forward.FeedForward',
+        class {
+          __setstate__(state) {
+            Object.assign(
+              this,
+              python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null)
+            );
+          }
+        }
+      );
+      this.registerType(
+        'thinc.neural._classes.function_layer.FunctionLayer',
+        class {
+          __setstate__(state) {
+            Object.assign(
+              this,
+              python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null)
+            );
+          }
+        }
+      );
+      this.registerType(
+        'thinc.neural._classes.hash_embed.HashEmbed',
+        class {
+          __setstate__(state) {
+            Object.assign(
+              this,
+              python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null)
+            );
+          }
+        }
+      );
+      this.registerType(
+        'thinc.neural._classes.layernorm.LayerNorm',
+        class {
+          __setstate__(state) {
+            Object.assign(
+              this,
+              python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null)
+            );
+          }
+        }
+      );
+      this.registerType(
+        'thinc.neural._classes.maxout.Maxout',
+        class {
+          __setstate__(state) {
+            Object.assign(
+              this,
+              python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null)
+            );
+          }
+        }
+      );
+      this.registerType(
+        'thinc.neural._classes.resnet.Residual',
+        class {
+          __setstate__(state) {
+            Object.assign(
+              this,
+              python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null)
+            );
+          }
+        }
+      );
+      this.registerType(
+        'thinc.neural._classes.softmax.Softmax',
+        class {
+          __setstate__(state) {
+            Object.assign(
+              this,
+              python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null)
+            );
+          }
+        }
+      );
+      this.registerType('thinc.neural.mem.Memory', class {});
+      this.registerType('thinc.neural.ops.NumpyOps', class {});
+      this.registerType(
+        'types.CodeType',
+        class {
+          constructor(/* args */) {}
+        }
+      );
+      this.registerType(
+        'types.MethodType',
+        class {
+          constructor(/* args */) {}
+        }
+      );
+      this.registerType('types.ObjectType', builtins.object);
+      this.registerType('xgboost.compat.XGBoostLabelEncoder', class {});
+      this.registerType('xgboost.core.Booster', class {});
+      this.registerType('xgboost.sklearn.XGBClassifier', class {});
+      this.registerType('xgboost.sklearn.XGBRegressor', class {});
+      this.registerFunction('__builtin__.bytearray', function (source, encoding /*, errors */) {
+        if (source) {
+          if (encoding === 'latin-1') {
+            const array = new Uint8Array(source.length);
+            for (let i = 0; i < source.length; i++) {
+              array[i] = source.charCodeAt(i);
             }
-        });
-        this.registerType('spacy.syntax._parser_model.ParserModel', class {
-            __setstate__(state) {
-                Object.assign(this, python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null));
+            return array;
+          }
+          throw new python.Error("Unsupported bytearray encoding '" + JSON.stringify(encoding) + "'.");
+        }
+        return [];
+      });
+      this.registerFunction('__builtin__.bytes', function (source, encoding /*, errors */) {
+        if (source) {
+          if (encoding === 'latin-1') {
+            const array = new Uint8Array(source.length);
+            for (let i = 0; i < source.length; i++) {
+              array[i] = source.charCodeAt(i);
             }
-        });
-        this.registerType('thinc.describe.Biases', class {
-            __setstate__(state) {
-                Object.assign(this, state);
+            return array;
+          }
+          throw new python.Error("Unsupported bytearray encoding '" + JSON.stringify(encoding) + "'.");
+        }
+        return [];
+      });
+      this.registerFunction('__builtin__.set', function (iterable) {
+        return iterable ? iterable : [];
+      });
+      this.registerFunction('__builtin__.frozenset', function (iterable) {
+        return iterable ? iterable : [];
+      });
+      this.registerFunction('__builtin__.getattr', function (obj, name, defaultValue) {
+        if (Object.prototype.hasOwnProperty.call(obj, name)) {
+          return obj[name];
+        }
+        return defaultValue;
+      });
+      this.registerFunction('__builtin__.slice', function (start, stop, step) {
+        return [start, stop, step];
+      });
+      this.registerFunction('__builtin__.type', function (obj) {
+        return obj ? obj.__class__ : undefined;
+      });
+      this.registerFunction('_codecs.encode', function (obj /*, econding */) {
+        return obj;
+      });
+      this.registerFunction('builtins.bytearray', function (data) {
+        return { data: data };
+      });
+      this.registerFunction('builtins.getattr', function (obj, name, defaultValue) {
+        if (Object.prototype.hasOwnProperty.call(obj, name)) {
+          return obj[name];
+        }
+        return defaultValue;
+      });
+      this.registerFunction('builtins.set', function (iterable) {
+        return iterable ? iterable : [];
+      });
+      this.registerFunction('builtins.slice', function (start, stop, step) {
+        return { start: start, stop: stop, step: step };
+      });
+      this.registerFunction('cloudpickle.cloudpickle._builtin_type', function (name) {
+        return name;
+      });
+      this.registerFunction('collections.Counter', function (/* iterable */) {
+        return { __module__: 'collections', __name__: 'Counter' };
+      });
+      this.registerFunction('collections.defaultdict', function (/* default_factory */) {
+        return {};
+      });
+      this.registerFunction('copy_reg._reconstructor', function (cls, base, state) {
+        // copyreg._reconstructor in Python 3
+        if (base === '__builtin__.object' || base === builtins.object) {
+          return self.invoke(cls, []);
+        } else if (base === '__builtin__.tuple' || base === builtins.tuple) {
+          const obj = self.invoke(cls, []);
+          for (let i = 0; i < state.length; i++) {
+            obj[i] = state[i];
+          }
+          return obj;
+        }
+        throw new python.Error("Unknown copy_reg._reconstructor base type '" + base + "'.");
+      });
+      this.registerFunction('dill._dill._create_cell', function (/* args */) {
+        return function () {
+          // TODO
+        };
+      });
+      this.registerFunction('dill._dill._create_code', function (args) {
+        return self.invoke('types.CodeType', [args]);
+      });
+      this.registerFunction(
+        'dill._dill._create_function',
+        function (/* fcode, fglobals, fname, fdefaults, fclosure, fdict, fkwdefaults */) {
+          return function () {
+            // TODO
+          };
+        }
+      );
+      this.registerFunction('dill._dill._get_attr', function (self, name) {
+        if (Object.prototype.hasOwnProperty.call(self, name)) {
+          return self[name];
+        }
+        return undefined;
+      });
+      this.registerFunction('dill._dill._import_module', function (import_name, safe) {
+        try {
+          return self.context.getx(import_name);
+        } catch (err) {
+          if (safe) {
+            return null;
+          }
+        }
+      });
+      this.registerFunction('dill.dill._load_type', function (name) {
+        return self.context.getx('types.' + name);
+      });
+      this.registerFunction('dill._dill._load_type', function (name) {
+        return self.context.getx('types.' + name);
+      });
+      this.registerFunction('getattr', function (obj, name, defaultValue) {
+        if (Object.prototype.hasOwnProperty.call(obj, name)) {
+          return obj[name];
+        }
+        return defaultValue;
+      });
+      this.registerFunction('numpy.core._multiarray_umath._reconstruct', function (subtype, shape, dtype) {
+        return self.invoke(subtype, [shape, dtype]);
+      });
+      this.registerFunction('numpy.core.multiarray._reconstruct', function (subtype, shape, dtype) {
+        return self.invoke(subtype, [shape, dtype]);
+      });
+      this.registerFunction('numpy.core.multiarray.scalar', function (dtype, rawData) {
+        let data = rawData;
+        if (typeof rawData === 'string' || rawData instanceof String) {
+          data = new Uint8Array(rawData.length);
+          for (let i = 0; i < rawData.length; i++) {
+            data[i] = rawData.charCodeAt(i);
+          }
+        }
+        const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
+        switch (dtype.name) {
+          case 'float32':
+            return dataView.getFloat32(0, true);
+          case 'float64':
+            return dataView.getFloat64(0, true);
+          case 'uint8':
+            return dataView.getUint8(0, true);
+          case 'int8':
+            return dataView.getInt8(0, true);
+          case 'int16':
+            return dataView.getInt16(0, true);
+          case 'int32':
+            return dataView.getInt32(0, true);
+          case 'int64':
+            return dataView.getInt64(0, true);
+          case 'bool':
+            return dataView.getInt8(0, true) ? true : false;
+        }
+        throw new python.Error("Unknown scalar type '" + dtype.name + "'.");
+      });
+      this.registerFunction('numpy.core._multiarray_umath.scalar', function (dtype, rawData) {
+        let data = rawData;
+        if (typeof rawData === 'string') {
+          data = new Uint8Array(rawData.length);
+          for (let i = 0; i < rawData.length; i++) {
+            data[i] = rawData.charCodeAt(i);
+          }
+        }
+        const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
+        switch (dtype.name) {
+          case 'uint8':
+            return dataView.getUint8(0);
+          case 'float32':
+            return dataView.getFloat32(0, true);
+          case 'float64':
+            return dataView.getFloat64(0, true);
+          case 'int8':
+            return dataView.getInt8(0, true);
+          case 'int16':
+            return dataView.getInt16(0, true);
+          case 'int32':
+            return dataView.getInt32(0, true);
+          case 'int64':
+            return dataView.getInt64(0, true);
+        }
+        throw new python.Error("Unknown scalar type '" + dtype.name + "'.");
+      });
+      this.registerFunction('numpy.load', function (file) {
+        const signature = [0x93, 0x4e, 0x55, 0x4d, 0x50, 0x59];
+        if (!file.read(6).every((v, i) => v == signature[i])) {
+          throw new numpy.Error('Invalid signature.');
+        }
+        const major = file.read(1)[0];
+        const minor = file.read(1)[0];
+        if (major > 3) {
+          throw new python.Error("Invalid version '" + [major, minor].join('.') + "'.");
+        }
+        const buffer = new Uint8Array([0, 0, 0, 0]);
+        buffer.set(file.read(major >= 2 ? 4 : 2), 0);
+        const header_length = (buffer[3] << 24) | (buffer[2] << 16) | (buffer[1] << 8) | buffer[0];
+        let header = file.read(header_length);
+        const decoder = new TextDecoder(major >= 3 ? 'utf-8' : 'ascii');
+        header = decoder.decode(header);
+        header = JSON.parse(
+          header
+            .replace(/\(/, '[')
+            .replace(/\)/, ']')
+            .replace('[,', '[1,]')
+            .replace(',]', ',1]')
+            .replace(/'/g, '"')
+            .replace(/:\s*False\s*,/, ':false,')
+            .replace(/:\s*True\s*,/, ':true,')
+            .replace(/,\s*\}/, ' }')
+        );
+        if (!header.descr || header.descr.length < 2) {
+          throw new numpy.Error("Missing property 'descr'.");
+        }
+        if (!header.shape) {
+          throw new numpy.Error("Missing property 'shape'.");
+        }
+        const shape = header.shape;
+        const dtype = self.invoke('numpy.dtype', [header.descr.substring(1)]);
+        dtype.byteorder = header.descr[0];
+        let data = null;
+        switch (dtype.byteorder) {
+          case '|': {
+            data = file.read();
+            break;
+          }
+          case '>':
+          case '<': {
+            if (header.descr.length !== 3) {
+              throw new numpy.Error("Unsupported data type '" + header.descr + "'.");
             }
-        });
-        this.registerType('thinc.describe.Dimension', class {
-            __setstate__(state) {
-                Object.assign(this, state);
+            const count = shape.length === 0 ? 1 : shape.reduce((a, b) => a * b, 1);
+            data = file.read(dtype.itemsize * count);
+            break;
+          }
+          default: {
+            throw new numpy.Error("Unsupported data type '" + header.descr + "'.");
+          }
+        }
+        if (header.fortran_order) {
+          data = null;
+        }
+        return self.invoke('numpy.ndarray', [shape, dtype, data]);
+      });
+      this.registerFunction('numpy.save', function (file, arr) {
+        const descr = arr.dtype.str;
+        if (descr[0] !== '<' && descr[0] !== '>') {
+          throw new numpy.Error("Unknown byte order '" + descr + "'.");
+        }
+        if (
+          descr.length !== 3 ||
+          (descr[1] !== 'f' && descr[1] !== 'i' && descr[1] !== 'u' && descr.substring(1) !== 'b1')
+        ) {
+          throw new numpy.Error("Unsupported data type '" + descr + "'.");
+        }
+        let shape = '';
+        switch (arr.shape.length) {
+          case 0:
+            shape = '()';
+            break;
+          case 1:
+            shape = '(' + arr.shape[0].toString() + ',)';
+            break;
+          default:
+            shape = '(' + arr.shape.map((dimension) => dimension.toString()).join(', ') + ')';
+            break;
+        }
+        const properties = ["'descr': '" + descr + "'", "'fortran_order': False", "'shape': " + shape];
+        let header = '{ ' + properties.join(', ') + ' }';
+        header += ' '.repeat(64 - ((header.length + 2 + 8 + 1) & 0x3f)) + '\n';
+        const encoder = new TextEncoder('ascii');
+        file.write([0x93, 0x4e, 0x55, 0x4d, 0x50, 0x59, 0x01, 0x00]); // '\\x93NUMPY' + version
+        file.write([header.length & 0xff, (header.length >> 8) & 0xff]);
+        file.write(encoder.encode(header));
+        file.write(arr.tobytes());
+      });
+      this.registerFunction('numpy.asarray', function (a, dtype) {
+        const encode = (context, data, dim) => {
+          const size = context.shape[dim];
+          const littleendian = context.littleendian;
+          if (dim == context.shape.length - 1) {
+            for (let i = 0; i < size; i++) {
+              switch (context.dtype) {
+                case 'f2':
+                  context.view.setFloat16(context.position, data[i], littleendian);
+                  break;
+                case 'f4':
+                  context.view.setFloat32(context.position, data[i], littleendian);
+                  break;
+                case 'f8':
+                  context.view.setFloat64(context.position, data[i], littleendian);
+                  break;
+                case 'i1':
+                  context.view.setInt8(context.position, data[i], littleendian);
+                  break;
+                case 'i2':
+                  context.view.setInt16(context.position, data[i], littleendian);
+                  break;
+                case 'i4':
+                  context.view.setInt32(context.position, data[i], littleendian);
+                  break;
+                case 'i8':
+                  context.view.setInt64(context.position, data[i], littleendian);
+                  break;
+                case 'u1':
+                  context.view.setUint8(context.position, data[i], littleendian);
+                  break;
+                case 'u2':
+                  context.view.setUint16(context.position, data[i], littleendian);
+                  break;
+                case 'u4':
+                  context.view.setUint32(context.position, data[i], littleendian);
+                  break;
+                case 'u8':
+                  context.view.setUint64(context.position, data[i], littleendian);
+                  break;
+              }
+              context.position += context.itemsize;
             }
-        });
-        this.registerType('thinc.describe.Gradient', class {
-            __setstate__(state) {
-                Object.assign(this, state);
+          } else {
+            for (let j = 0; j < size; j++) {
+              encode(context, data[j], dim + 1);
             }
-        });
-        this.registerType('thinc.describe.Weights', class {
-            __setstate__(state) {
-                Object.assign(this, state);
-            }
-        });
-        this.registerType('thinc.describe.Synapses', class {
-            __setstate__(state) {
-                Object.assign(this, state);
-            }
-        });
-        this.registerType('thinc.neural._classes.affine.Affine', class {
-            __setstate__(state) {
-                Object.assign(this, python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null));
-            }
-        });
-        this.registerType('thinc.neural._classes.convolution.ExtractWindow', class {
-            __setstate__(state) {
-                Object.assign(this, python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null));
-            }
-        });
-        this.registerType('thinc.neural._classes.feature_extracter.FeatureExtracter', class {
-            __setstate__(state) {
-                Object.assign(this, python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null));
-            }
-        });
-        this.registerType('thinc.neural._classes.feed_forward.FeedForward', class {
-            __setstate__(state) {
-                Object.assign(this, python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null));
-            }
-        });
-        this.registerType('thinc.neural._classes.function_layer.FunctionLayer', class {
-            __setstate__(state) {
-                Object.assign(this, python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null));
-            }
-        });
-        this.registerType('thinc.neural._classes.hash_embed.HashEmbed', class {
-            __setstate__(state) {
-                Object.assign(this, python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null));
-            }
-        });
-        this.registerType('thinc.neural._classes.layernorm.LayerNorm', class {
-            __setstate__(state) {
-                Object.assign(this, python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null));
-            }
-        });
-        this.registerType('thinc.neural._classes.maxout.Maxout', class {
-            __setstate__(state) {
-                Object.assign(this, python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null));
-            }
-        });
-        this.registerType('thinc.neural._classes.resnet.Residual', class {
-            __setstate__(state) {
-                Object.assign(this, python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null));
-            }
-        });
-        this.registerType('thinc.neural._classes.softmax.Softmax', class {
-            __setstate__(state) {
-                Object.assign(this, python.Unpickler.open(state).load((name, args) => self.invoke(name, args), null));
-            }
-        });
-        this.registerType('thinc.neural.mem.Memory', class {
-        });
-        this.registerType('thinc.neural.ops.NumpyOps', class {
-        });
-        this.registerType('types.CodeType', class {
-            constructor(/* args */) {
-            }
-        });
-        this.registerType('types.MethodType', class {
-            constructor(/* args */) {
-            }
-        });
-        this.registerType('types.ObjectType', builtins.object);
-        this.registerType('xgboost.compat.XGBoostLabelEncoder', class {});
-        this.registerType('xgboost.core.Booster', class {});
-        this.registerType('xgboost.sklearn.XGBClassifier', class {});
-        this.registerType('xgboost.sklearn.XGBRegressor', class {});
-        this.registerFunction('__builtin__.bytearray', function(source, encoding /*, errors */) {
-            if (source) {
-                if (encoding === 'latin-1') {
-                    const array = new Uint8Array(source.length);
-                    for (let i = 0; i < source.length; i++) {
-                        array[i] = source.charCodeAt(i);
-                    }
-                    return array;
+          }
+        };
+        const array_size = (value) => {
+          if (value.every((item) => Array.isArray(item))) {
+            const dims = value.map((item) => array_size(item));
+            const dim = dims[0];
+            for (let i = 1; i < dims.length; i++) {
+              if (dim.length === dims[i].length) {
+                if (!dims[i].every((value, i) => value === dim[i])) {
+                  throw new python.Error('Invalid array shape.');
                 }
-                throw new python.Error("Unsupported bytearray encoding '" + JSON.stringify(encoding) + "'.");
+              }
             }
-            return [];
-        });
-        this.registerFunction('__builtin__.bytes', function(source, encoding /*, errors */) {
-            if (source) {
-                if (encoding === 'latin-1') {
-                    const array = new Uint8Array(source.length);
-                    for (let i = 0; i < source.length; i++) {
-                        array[i] = source.charCodeAt(i);
-                    }
-                    return array;
-                }
-                throw new python.Error("Unsupported bytearray encoding '" + JSON.stringify(encoding) + "'.");
-            }
-            return [];
-        });
-        this.registerFunction('__builtin__.set', function(iterable) {
-            return iterable ? iterable : [];
-        });
-        this.registerFunction('__builtin__.frozenset', function(iterable) {
-            return iterable ? iterable : [];
-        });
-        this.registerFunction('__builtin__.getattr', function(obj, name, defaultValue) {
-            if (Object.prototype.hasOwnProperty.call(obj, name)) {
-                return obj[name];
-            }
-            return defaultValue;
-        });
-        this.registerFunction('__builtin__.slice', function(start, stop , step) {
-            return [ start, stop, step ];
-        });
-        this.registerFunction('__builtin__.type', function(obj) {
-            return obj ? obj.__class__ : undefined;
-        });
-        this.registerFunction('_codecs.encode', function(obj /*, econding */) {
-            return obj;
-        });
-        this.registerFunction('builtins.bytearray', function(data) {
-            return { data: data };
-        });
-        this.registerFunction('builtins.getattr', function(obj, name, defaultValue) {
-            if (Object.prototype.hasOwnProperty.call(obj, name)) {
-                return obj[name];
-            }
-            return defaultValue;
-        });
-        this.registerFunction('builtins.set', function(iterable) {
-            return iterable ? iterable : [];
-        });
-        this.registerFunction('builtins.slice', function(start, stop, step) {
-            return { start: start, stop: stop, step: step };
-        });
-        this.registerFunction('cloudpickle.cloudpickle._builtin_type', function(name) {
-            return name;
-        });
-        this.registerFunction('collections.Counter', function(/* iterable */) {
-            return { __module__: 'collections', __name__: 'Counter' };
-        });
-        this.registerFunction('collections.defaultdict', function(/* default_factory */) {
-            return {};
-        });
-        this.registerFunction('copy_reg._reconstructor', function(cls, base, state) {
-            // copyreg._reconstructor in Python 3
-            if (base === '__builtin__.object' || base === builtins.object) {
-                return self.invoke(cls, []);
-            }
-            else if (base === '__builtin__.tuple' || base === builtins.tuple) {
-                const obj = self.invoke(cls, []);
-                for (let i = 0; i < state.length; i++) {
-                    obj[i] = state[i];
-                }
-                return obj;
-            }
-            throw new python.Error("Unknown copy_reg._reconstructor base type '" + base + "'.");
-        });
-        this.registerFunction('dill._dill._create_cell', function(/* args */) {
-            return function() {
-                // TODO
-            };
-        });
-        this.registerFunction('dill._dill._create_code', function(args) {
-            return self.invoke('types.CodeType', [ args ]);
-        });
-        this.registerFunction('dill._dill._create_function', function(/* fcode, fglobals, fname, fdefaults, fclosure, fdict, fkwdefaults */) {
-            return function() {
-                // TODO
-            };
-        });
-        this.registerFunction('dill._dill._get_attr', function(self, name) {
-            if (Object.prototype.hasOwnProperty.call(self, name)) {
-                return self[name];
-            }
-            return undefined;
-        });
-        this.registerFunction('dill._dill._import_module', function(import_name, safe) {
-            try {
-                return self.context.getx(import_name);
-            }
-            catch (err) {
-                if (safe) {
-                    return null;
-                }
-            }
-        });
-        this.registerFunction('dill.dill._load_type', function(name) {
-            return self.context.getx('types.' + name);
-        });
-        this.registerFunction('dill._dill._load_type', function(name) {
-            return self.context.getx('types.' + name);
-        });
-        this.registerFunction('getattr', function(obj, name, defaultValue) {
-            if (Object.prototype.hasOwnProperty.call(obj, name)) {
-                return obj[name];
-            }
-            return defaultValue;
-        });
-        this.registerFunction('numpy.core._multiarray_umath._reconstruct', function(subtype, shape, dtype) {
-            return self.invoke(subtype, [ shape, dtype ]);
-        });
-        this.registerFunction('numpy.core.multiarray._reconstruct', function(subtype, shape, dtype) {
-            return self.invoke(subtype, [ shape, dtype ]);
-        });
-        this.registerFunction('numpy.core.multiarray.scalar', function(dtype, rawData) {
-            let data = rawData;
-            if (typeof rawData === 'string' || rawData instanceof String) {
-                data = new Uint8Array(rawData.length);
-                for (let i = 0; i < rawData.length; i++) {
-                    data[i] = rawData.charCodeAt(i);
-                }
-            }
-            const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
-            switch (dtype.name) {
-                case 'float32':
-                    return dataView.getFloat32(0, true);
-                case 'float64':
-                    return dataView.getFloat64(0, true);
-                case 'uint8':
-                    return dataView.getUint8(0, true);
-                case 'int8':
-                    return dataView.getInt8(0, true);
-                case 'int16':
-                    return dataView.getInt16(0, true);
-                case 'int32':
-                    return dataView.getInt32(0, true);
-                case 'int64':
-                    return dataView.getInt64(0, true);
-                case 'bool':
-                    return dataView.getInt8(0, true) ? true : false;
-            }
-            throw new python.Error("Unknown scalar type '" + dtype.name + "'.");
-        });
-        this.registerFunction('numpy.core._multiarray_umath.scalar', function(dtype, rawData) {
-            let data = rawData;
-            if (typeof rawData === 'string') {
-                data = new Uint8Array(rawData.length);
-                for (let i = 0; i < rawData.length; i++) {
-                    data[i] = rawData.charCodeAt(i);
-                }
-            }
-            const dataView = new DataView(data.buffer, data.byteOffset, data.byteLength);
-            switch (dtype.name) {
-                case 'uint8':
-                    return dataView.getUint8(0);
-                case 'float32':
-                    return dataView.getFloat32(0, true);
-                case 'float64':
-                    return dataView.getFloat64(0, true);
-                case 'int8':
-                    return dataView.getInt8(0, true);
-                case 'int16':
-                    return dataView.getInt16(0, true);
-                case 'int32':
-                    return dataView.getInt32(0, true);
-                case 'int64':
-                    return dataView.getInt64(0, true);
-            }
-            throw new python.Error("Unknown scalar type '" + dtype.name + "'.");
-        });
-        this.registerFunction('numpy.load', function(file) {
-            const signature = [ 0x93, 0x4E, 0x55, 0x4D, 0x50, 0x59 ];
-            if (!file.read(6).every((v, i) => v == signature[i])) {
-                throw new numpy.Error('Invalid signature.');
-            }
-            const major = file.read(1)[0];
-            const minor = file.read(1)[0];
-            if (major > 3) {
-                throw new python.Error("Invalid version '" + [ major, minor ].join('.') + "'.");
-            }
-            const buffer = new Uint8Array([ 0, 0, 0, 0 ]);
-            buffer.set(file.read(major >= 2 ? 4 : 2), 0);
-            const header_length = buffer[3] << 24 | buffer[2] << 16 | buffer[1] << 8 | buffer[0];
-            let header = file.read(header_length);
-            const decoder = new TextDecoder(major >= 3 ? 'utf-8' : 'ascii');
-            header = decoder.decode(header);
-            header = JSON.parse(header.replace(/\(/,'[').replace(/\)/,']').replace('[,','[1,]').replace(',]',',1]').replace(/'/g, '"').replace(/:\s*False\s*,/,':false,').replace(/:\s*True\s*,/,':true,').replace(/,\s*\}/, ' }'));
-            if (!header.descr || header.descr.length < 2) {
-                throw new numpy.Error("Missing property 'descr'.");
-            }
-            if (!header.shape) {
-                throw new numpy.Error("Missing property 'shape'.");
-            }
-            const shape = header.shape;
-            const dtype = self.invoke('numpy.dtype', [ header.descr.substring(1) ]);
-            dtype.byteorder = header.descr[0];
-            let data = null;
-            switch (dtype.byteorder) {
-                case '|': {
-                    data = file.read();
-                    break;
-                }
-                case '>':
-                case '<': {
-                    if (header.descr.length !== 3) {
-                        throw new numpy.Error("Unsupported data type '" + header.descr + "'.");
-                    }
-                    const count = shape.length === 0 ? 1 : shape.reduce((a, b) => a * b, 1);
-                    data = file.read(dtype.itemsize * count);
-                    break;
-                }
-                default: {
-                    throw new numpy.Error("Unsupported data type '" + header.descr + "'.");
-                }
-            }
-            if (header.fortran_order) {
-                data = null;
-            }
-            return self.invoke('numpy.ndarray', [ shape, dtype, data ]);
-        });
-        this.registerFunction('numpy.save', function(file, arr) {
-            const descr = arr.dtype.str;
-            if (descr[0] !== '<' && descr[0] !== '>') {
-                throw new numpy.Error("Unknown byte order '" + descr + "'.");
-            }
-            if (descr.length !== 3 || (descr[1] !== 'f' && descr[1] !== 'i' && descr[1] !== 'u' && descr.substring(1) !== 'b1')) {
-                throw new numpy.Error("Unsupported data type '" + descr + "'.");
-            }
-            let shape = '';
-            switch (arr.shape.length) {
-                case 0: shape = '()'; break;
-                case 1: shape = '(' + arr.shape[0].toString() + ',)'; break;
-                default: shape = '(' + arr.shape.map((dimension) => dimension.toString()).join(', ') + ')'; break;
-            }
-            const properties = [
-                "'descr': '" + descr + "'",
-                "'fortran_order': False",
-                "'shape': " + shape
-            ];
-            let header = '{ ' + properties.join(', ') + ' }';
-            header += ' '.repeat(64 - ((header.length + 2 + 8 + 1) & 0x3f)) + '\n';
-            const encoder = new TextEncoder('ascii');
-            file.write([ 0x93, 0x4E, 0x55, 0x4D, 0x50, 0x59, 0x01, 0x00 ]); // '\\x93NUMPY' + version
-            file.write([ header.length & 0xff, (header.length >> 8) & 0xff ]);
-            file.write(encoder.encode(header));
-            file.write(arr.tobytes());
-        });
-        this.registerFunction('numpy.asarray', function(a, dtype) {
-            const encode = (context, data, dim) => {
-                const size = context.shape[dim];
-                const littleendian = context.littleendian;
-                if (dim == context.shape.length - 1) {
-                    for (let i = 0; i < size; i++) {
-                        switch (context.dtype) {
-                            case 'f2':
-                                context.view.setFloat16(context.position, data[i], littleendian);
-                                break;
-                            case 'f4':
-                                context.view.setFloat32(context.position, data[i], littleendian);
-                                break;
-                            case 'f8':
-                                context.view.setFloat64(context.position, data[i], littleendian);
-                                break;
-                            case 'i1':
-                                context.view.setInt8(context.position, data[i], littleendian);
-                                break;
-                            case 'i2':
-                                context.view.setInt16(context.position, data[i], littleendian);
-                                break;
-                            case 'i4':
-                                context.view.setInt32(context.position, data[i], littleendian);
-                                break;
-                            case 'i8':
-                                context.view.setInt64(context.position, data[i], littleendian);
-                                break;
-                            case 'u1':
-                                context.view.setUint8(context.position, data[i], littleendian);
-                                break;
-                            case 'u2':
-                                context.view.setUint16(context.position, data[i], littleendian);
-                                break;
-                            case 'u4':
-                                context.view.setUint32(context.position, data[i], littleendian);
-                                break;
-                            case 'u8':
-                                context.view.setUint64(context.position, data[i], littleendian);
-                                break;
-                        }
-                        context.position += context.itemsize;
-                    }
-                }
-                else {
-                    for (let j = 0; j < size; j++) {
-                        encode(context, data[j], dim + 1);
-                    }
-                }
-            };
-            const array_size = (value) => {
-                if (value.every((item) => Array.isArray(item))) {
-                    const dims = value.map((item) => array_size(item));
-                    const dim = dims[0];
-                    for (let i = 1; i < dims.length; i++) {
-                        if (dim.length === dims[i].length) {
-                            if (!dims[i].every((value, i) => value ===dim[i])) {
-                                throw new python.Error('Invalid array shape.');
-                            }
-                        }
-                    }
-                    return [ value.length ].concat(dim);
-                }
-                return [ value.length ];
-            };
-            const shape = Array.isArray(a) ? array_size(a) : [];
-            const size = dtype.itemsize * shape.reduce((a, b) => a * b, 1);
-            const context = {
-                position: 0,
-                itemsize: dtype.itemsize,
-                dtype: dtype.str.substring(1),
-                littleendian: dtype.str[0],
-                shape: shape,
-                data: new Uint8Array(size)
-            };
-            context.view = new DataView(context.data.buffer, context.data.byteOffset, size);
-            encode(context, a, 0);
-            return self.invoke('numpy.ndarray', [ shape, dtype, context.data ]);
-
-        });
-        this.registerFunction('numpy.ma.core._mareconstruct', function(subtype, baseclass, baseshape, basetype) {
-            const data = self.invoke(baseclass, [ baseshape, basetype ]);
-            // = ndarray.__new__(ndarray, baseshape, make_mask_descr(basetype))
-            const mask = self.invoke('numpy.ndarray', [ baseshape, '' ]);
-            return self.invoke(subtype, [ data, mask, basetype ]);
-        });
-        this.registerFunction('numpy.random.__RandomState_ctor', function() {
-            return {};
-        });
-        this.registerFunction('numpy.random._pickle.__randomstate_ctor', function() {
-            return {};
-        });
-        this.registerFunction('numpy.core.numeric._frombuffer', function(/* buf, dtype, shape, order */) {
-            return {};
-        });
-        this.registerFunction('re._compile', function(pattern, flags) {
-            return self.invoke('re.Pattern', [ pattern, flags ]);
-        });
-        this.registerFunction('srsly.cloudpickle.cloudpickle._builtin_type', function(name) {
-            return function() {
-                return self.invoke('types.' + name, arguments);
-            };
-        });
+            return [value.length].concat(dim);
+          }
+          return [value.length];
+        };
+        const shape = Array.isArray(a) ? array_size(a) : [];
+        const size = dtype.itemsize * shape.reduce((a, b) => a * b, 1);
+        const context = {
+          position: 0,
+          itemsize: dtype.itemsize,
+          dtype: dtype.str.substring(1),
+          littleendian: dtype.str[0],
+          shape: shape,
+          data: new Uint8Array(size),
+        };
+        context.view = new DataView(context.data.buffer, context.data.byteOffset, size);
+        encode(context, a, 0);
+        return self.invoke('numpy.ndarray', [shape, dtype, context.data]);
+      });
+      this.registerFunction('numpy.ma.core._mareconstruct', function (subtype, baseclass, baseshape, basetype) {
+        const data = self.invoke(baseclass, [baseshape, basetype]);
+        // = ndarray.__new__(ndarray, baseshape, make_mask_descr(basetype))
+        const mask = self.invoke('numpy.ndarray', [baseshape, '']);
+        return self.invoke(subtype, [data, mask, basetype]);
+      });
+      this.registerFunction('numpy.random.__RandomState_ctor', function () {
+        return {};
+      });
+      this.registerFunction('numpy.random._pickle.__randomstate_ctor', function () {
+        return {};
+      });
+      this.registerFunction('numpy.core.numeric._frombuffer', function (/* buf, dtype, shape, order */) {
+        return {};
+      });
+      this.registerFunction('re._compile', function (pattern, flags) {
+        return self.invoke('re.Pattern', [pattern, flags]);
+      });
+      this.registerFunction('srsly.cloudpickle.cloudpickle._builtin_type', function (name) {
+        return function () {
+          return self.invoke('types.' + name, arguments);
+        };
+      });
     }
-
+  
     get context() {
-        return this._context;
+      return this._context;
     }
-
+  
     source(file) {
-        return this._sources.has(file) ? this._sources.get(file) : null;
+      return this._sources.has(file) ? this._sources.get(file) : null;
     }
-
-    debug(/* file */) {
-    }
-
+  
+    debug(/* file */) {}
+  
     parse(file) {
-        const buffer = this.source(file);
-        if (buffer) {
-            const debug = this.debug();
-            const code = this._utf8Decoder.decode(buffer);
-            const reader = new python.Parser(code, file, debug);
-            const program = reader.parse();
-            if (!program) {
-                throw new python.Error("Module '" + file + "' parse error.");
-            }
-            return program;
+      const buffer = this.source(file);
+      if (buffer) {
+        const debug = this.debug();
+        const code = this._utf8Decoder.decode(buffer);
+        const reader = new python.Parser(code, file, debug);
+        const program = reader.parse();
+        if (!program) {
+          throw new python.Error("Module '" + file + "' parse error.");
         }
-        return null;
+        return program;
+      }
+      return null;
     }
-
+  
     package(name) {
-        const index = name.lastIndexOf('.');
-        if (index > 0) {
-            this.package(name.substring(0, index));
+      const index = name.lastIndexOf('.');
+      if (index > 0) {
+        this.package(name.substring(0, index));
+      }
+      if (!this._packages.has(name)) {
+        const file = 'code/' + name.split('.').join('/') + '.py';
+        const program = this.parse(file);
+        if (program) {
+          let globals = this._context.getx(name);
+          if (globals === undefined) {
+            globals = {};
+            this._context.setx(name, globals);
+          }
+          globals.__class__ = this._context.scope.builtins.module;
+          globals.__name__ = name;
+          globals.__file__ = file;
+          this._packages.set(name, globals);
+          const context = this._context.push(globals);
+          this.block(program.body, context);
         }
-        if (!this._packages.has(name)) {
-            const file = 'code/' + name.split('.').join('/') + '.py';
-            const program = this.parse(file);
-            if (program) {
-                let globals = this._context.getx(name);
-                if (globals === undefined) {
-                    globals = {};
-                    this._context.setx(name, globals);
-                }
-                globals.__class__ = this._context.scope.builtins.module;
-                globals.__name__ = name;
-                globals.__file__ = file;
-                this._packages.set(name, globals);
-                const context = this._context.push(globals);
-                this.block(program.body, context);
-            }
-        }
-        return this._packages.get(name);
+      }
+      return this._packages.get(name);
     }
-
+  
     type(name) {
-        const type = this._context.getx(name);
-        if (type !== undefined) {
-            return type;
-        }
-        const parts = name.split('.');
-        const className = parts.pop();
-        const moduleName = parts.join('.');
-        const module = this.package(moduleName);
-        if (module) {
-            return module[className];
-        }
-        return null;
+      const type = this._context.getx(name);
+      if (type !== undefined) {
+        return type;
+      }
+      const parts = name.split('.');
+      const className = parts.pop();
+      const moduleName = parts.join('.');
+      const module = this.package(moduleName);
+      if (module) {
+        return module[className];
+      }
+      return null;
     }
-
+  
     invoke(name, args) {
-        const target = name.__class__ ? name : this.type(name);
-        if (target) {
-            if (target.__class__ === this._context.scope.builtins.type) {
-                if (target.prototype && target.prototype.__class__ === target) {
-                    return Reflect.construct(target, args);
-                }
-                const obj = {};
-                obj.__proto__ = target;
-                if (obj.__init__ && typeof obj.__init__ === 'function') {
-                    obj.__init__.apply(obj, args);
-                }
-                return obj;
-            }
-            else if (target.__class__ === this._context.scope.builtins.function) {
-                if (target.__call__) {
-                    return target.__call__(args);
-                }
-                else {
-                    return target.apply(null, args);
-                }
-            }
+      const target = name.__class__ ? name : this.type(name);
+      if (target) {
+        if (target.__class__ === this._context.scope.builtins.type) {
+          if (target.prototype && target.prototype.__class__ === target) {
+            return Reflect.construct(target, args);
+          }
+          const obj = {};
+          obj.__proto__ = target;
+          if (obj.__init__ && typeof obj.__init__ === 'function') {
+            obj.__init__.apply(obj, args);
+          }
+          return obj;
+        } else if (target.__class__ === this._context.scope.builtins.function) {
+          if (target.__call__) {
+            return target.__call__(args);
+          } else {
+            return target.apply(null, args);
+          }
         }
-        this._raiseUnkownName(name);
-        this.registerType(name, class {});
-        return this.invoke(name, []);
+      }
+      this._raiseUnkownName(name);
+      this.registerType(name, class {});
+      return this.invoke(name, []);
     }
-
+  
     call(target, name, args, context) {
-        const callTarget = this._target(target, context);
-        const callArguments = args.map((argument) => this.expression(argument, context));
-        if (!callTarget || (name !== null && !callTarget[name])) {
-            if (name === '__new__' && callArguments.length === 1 && callArguments[0] == callTarget) {
-                name = null;
-                callArguments.shift();
-            }
-            else {
-                const targetName = python.Utility.target(target) + '.' + name;
-                if (this.type(targetName)) {
-                    return this.invoke(targetName, callArguments);
-                }
-                throw new python.Error("Unsupported function '" +  targetName + "'.");
-            }
+      const callTarget = this._target(target, context);
+      const callArguments = args.map((argument) => this.expression(argument, context));
+      if (!callTarget || (name !== null && !callTarget[name])) {
+        if (name === '__new__' && callArguments.length === 1 && callArguments[0] == callTarget) {
+          name = null;
+          callArguments.shift();
+        } else {
+          const targetName = python.Utility.target(target) + '.' + name;
+          if (this.type(targetName)) {
+            return this.invoke(targetName, callArguments);
+          }
+          throw new python.Error("Unsupported function '" + targetName + "'.");
         }
-        const func = name ? callTarget[name] : callTarget;
-        if (func.__class__ === this._context.scope.builtins.type) {
-            if (func.prototype && func.prototype.__class__ === func) {
-                return Reflect.construct(func, args);
-            }
-            const obj = {};
-            obj.__proto__ = func;
-            obj.__class__ = func;
-            if (obj.__init__ && typeof obj.__init__ === 'function') {
-                obj.__init__.apply(obj, args);
-            }
-            return obj;
+      }
+      const func = name ? callTarget[name] : callTarget;
+      if (func.__class__ === this._context.scope.builtins.type) {
+        if (func.prototype && func.prototype.__class__ === func) {
+          return Reflect.construct(func, args);
         }
-        if (func.__class__ === this._context.scope.builtins.function) {
-            if (func.__call__) {
-                return func.__call__(callArguments);
-            }
+        const obj = {};
+        obj.__proto__ = func;
+        obj.__class__ = func;
+        if (obj.__init__ && typeof obj.__init__ === 'function') {
+          obj.__init__.apply(obj, args);
         }
-        if (func.__class__ === this._context.scope.builtins.method) {
-            if (func.__call__) {
-                return func.__call__([ callTarget ].concat(callArguments));
-            }
+        return obj;
+      }
+      if (func.__class__ === this._context.scope.builtins.function) {
+        if (func.__call__) {
+          return func.__call__(callArguments);
         }
-        if (typeof func === 'function') {
-            return func.apply(callTarget, callArguments);
+      }
+      if (func.__class__ === this._context.scope.builtins.method) {
+        if (func.__call__) {
+          return func.__call__([callTarget].concat(callArguments));
         }
-        throw new python.Error("Unsupported call expression.");
+      }
+      if (typeof func === 'function') {
+        return func.apply(callTarget, callArguments);
+      }
+      throw new python.Error('Unsupported call expression.');
     }
-
+  
     apply(method, args, context) {
-        const locals = Array.prototype.slice.call(args);
-        context = context.push();
-        for (const parameter of method.parameters) {
-            let value = locals.shift();
-            if (value === undefined && parameter.initializer) {
-                value = this.expression(parameter.initializer, context);
-            }
-            context.set(parameter.name, value);
+      const locals = Array.prototype.slice.call(args);
+      context = context.push();
+      for (const parameter of method.parameters) {
+        let value = locals.shift();
+        if (value === undefined && parameter.initializer) {
+          value = this.expression(parameter.initializer, context);
         }
-        return this.block(method.body.statements, context);
+        context.set(parameter.name, value);
+      }
+      return this.block(method.body.statements, context);
     }
-
+  
     block(statements, context) {
-        statements = Array.prototype.slice.call(statements);
-        while (statements.length > 0) {
-            const statement = statements.shift();
-            const value = this.statement(statement, context);
-            if (value !== undefined) {
-                return value;
-            }
+      statements = Array.prototype.slice.call(statements);
+      while (statements.length > 0) {
+        const statement = statements.shift();
+        const value = this.statement(statement, context);
+        if (value !== undefined) {
+          return value;
         }
+      }
     }
-
+  
     statement(statement, context) {
-        switch (statement.type) {
-            case 'pass': {
-                break;
-            }
-            case 'return': {
-                return this.expression(statement.expression, context);
-            }
-            case 'def': {
-                const module = context.get('__name__');
-                const self = this;
-                const parent = context.get('__class__');
-                let type = null;
-                if (parent === this._context.scope.builtins.type) {
-                    type = this._context.scope.builtins.method;
-                }
-                else if (parent === this._context.scope.builtins.module) {
-                    type = this._context.scope.builtins.function;
-                }
-                else {
-                    throw new python.Error('Invalid function scope.');
-                }
-                const func = {
-                    __class__: type,
-                    __globals__: context,
-                    __module__: module,
-                    __name__: statement.name,
-                    __code__: statement,
-                    __call__: function(args) {
-                        return self.apply(this.__code__, args, this.__globals__);
-                    }
-                };
-                context.set(statement.name, func);
-                break;
-            }
-            case 'class': {
-                const scope = {
-                    __class__:this._context.scope.builtins.type,
-                    __module__: context.get('__name__'),
-                    __name__: statement.name,
-                };
-                context.set(statement.name, scope);
-                context = context.push(scope);
-                this.block(statement.body.statements, context);
-                context = context.pop();
-                break;
-            }
-            case 'var': {
-                context.set(statement.name, statement.initializer ? this.expression(statement.initializer, context) : undefined);
-                break;
-            }
-            case '=': {
-                this.expression(statement, context);
-                break;
-            }
-            case 'if': {
-                const condition = this.expression(statement.condition, context);
-                if (condition === true || condition) {
-                    const value = this.block(statement.then.statements, context);
-                    if (value !== undefined) {
-                        return value;
-                    }
-                    break;
-                }
-                else if (condition === false) {
-                    const value = this.block(statement.else.statements, context);
-                    if (value !== undefined) {
-                        return value;
-                    }
-                    break;
-                }
-                throw new python.Error("Unknown condition.");
-            }
-            case 'for': {
-                if (statement.target.length == 1 &&
-                    statement.variable.length === 1 && statement.variable[0].type === 'id') {
-                    const range = this.expression(statement.target[0], context);
-                    const variable = statement.variable[0];
-                    for (const current of range) {
-                        this.statement({ type: '=', target: variable, expression: { type: 'number', value: current }}, context);
-                        const value = this.block(statement.body.statements, context);
-                        if (value !== undefined) {
-                            return value;
-                        }
-                    }
-                    break;
-                }
-                throw new python.Error("Unsupported 'for' statement.");
-            }
-            case 'while': {
-                const condition = this.expression(statement.condition, context);
-                if (condition) {
-                    const value = this.block(statement.body.statements, context);
-                    if (value !== undefined) {
-                        return value;
-                    }
-                }
-                break;
-            }
-            case 'call': {
-                this.expression(statement, context);
-                break;
-            }
-            case 'import': {
-                for (const module of statement.modules) {
-                    const moduleName = python.Utility.target(module.name);
-                    const globals = this.package(moduleName);
-                    if (module.as) {
-                        context.set(module.as, globals);
-                    }
-                }
-                break;
-            }
-            default: {
-                throw new python.Error("Unknown statement '" + statement.type + "'.");
-            }
+      switch (statement.type) {
+        case 'pass': {
+          break;
         }
+        case 'return': {
+          return this.expression(statement.expression, context);
+        }
+        case 'def': {
+          const module = context.get('__name__');
+          const self = this;
+          const parent = context.get('__class__');
+          let type = null;
+          if (parent === this._context.scope.builtins.type) {
+            type = this._context.scope.builtins.method;
+          } else if (parent === this._context.scope.builtins.module) {
+            type = this._context.scope.builtins.function;
+          } else {
+            throw new python.Error('Invalid function scope.');
+          }
+          const func = {
+            __class__: type,
+            __globals__: context,
+            __module__: module,
+            __name__: statement.name,
+            __code__: statement,
+            __call__: function (args) {
+              return self.apply(this.__code__, args, this.__globals__);
+            },
+          };
+          context.set(statement.name, func);
+          break;
+        }
+        case 'class': {
+          const scope = {
+            __class__: this._context.scope.builtins.type,
+            __module__: context.get('__name__'),
+            __name__: statement.name,
+          };
+          context.set(statement.name, scope);
+          context = context.push(scope);
+          this.block(statement.body.statements, context);
+          context = context.pop();
+          break;
+        }
+        case 'var': {
+          context.set(
+            statement.name,
+            statement.initializer ? this.expression(statement.initializer, context) : undefined
+          );
+          break;
+        }
+        case '=': {
+          this.expression(statement, context);
+          break;
+        }
+        case 'if': {
+          const condition = this.expression(statement.condition, context);
+          if (condition === true || condition) {
+            const value = this.block(statement.then.statements, context);
+            if (value !== undefined) {
+              return value;
+            }
+            break;
+          } else if (condition === false) {
+            const value = this.block(statement.else.statements, context);
+            if (value !== undefined) {
+              return value;
+            }
+            break;
+          }
+          throw new python.Error('Unknown condition.');
+        }
+        case 'for': {
+          if (statement.target.length == 1 && statement.variable.length === 1 && statement.variable[0].type === 'id') {
+            const range = this.expression(statement.target[0], context);
+            const variable = statement.variable[0];
+            for (const current of range) {
+              this.statement({ type: '=', target: variable, expression: { type: 'number', value: current } }, context);
+              const value = this.block(statement.body.statements, context);
+              if (value !== undefined) {
+                return value;
+              }
+            }
+            break;
+          }
+          throw new python.Error("Unsupported 'for' statement.");
+        }
+        case 'while': {
+          const condition = this.expression(statement.condition, context);
+          if (condition) {
+            const value = this.block(statement.body.statements, context);
+            if (value !== undefined) {
+              return value;
+            }
+          }
+          break;
+        }
+        case 'call': {
+          this.expression(statement, context);
+          break;
+        }
+        case 'import': {
+          for (const module of statement.modules) {
+            const moduleName = python.Utility.target(module.name);
+            const globals = this.package(moduleName);
+            if (module.as) {
+              context.set(module.as, globals);
+            }
+          }
+          break;
+        }
+        default: {
+          throw new python.Error("Unknown statement '" + statement.type + "'.");
+        }
+      }
     }
-
 
     expression(expression, context) {
         const self = context.getx('self');
