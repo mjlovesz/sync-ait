@@ -911,959 +911,987 @@ dagre.layout = (graph, options) => {
       }
     };
 
-        // Applies heuristics to minimize edge crossings in the graph and sets the best order solution as an order attribute on each node.
+    // Applies heuristics to minimize edge crossings in the graph and sets the best order solution as an order attribute on each node.
+    //
+    // Pre-conditions:
+    //    1. Graph must be DAG
+    //    2. Graph nodes must have the 'rank' attribute
+    //    3. Graph edges must have the 'weight' attribute
+    //
+    // Post-conditions:
+    //    1. Graph nodes will have an 'order' attribute based on the results of the algorithm.
+    const order = (g) => {
+      const sortSubgraph = (g, v, cg, biasRight) => {
+        // Given a list of entries of the form {v, barycenter, weight} and a constraint graph this function will resolve any conflicts between the constraint graph and the barycenters for the entries.
+        // If the barycenters for an entry would violate a constraint in the constraint graph then we coalesce the nodes in the conflict into a new node that respects the contraint and aggregates barycenter and weight information.
+        // This implementation is based on the description in Forster, 'A Fast and Simple Hueristic for Constrained Two-Level Crossing Reduction,' thought it differs in some specific details.
         //
         // Pre-conditions:
-        //    1. Graph must be DAG
-        //    2. Graph nodes must have the 'rank' attribute
-        //    3. Graph edges must have the 'weight' attribute
+        //    1. Each entry has the form {v, barycenter, weight}, or if the node has no barycenter, then {v}.
         //
-        // Post-conditions:
-        //    1. Graph nodes will have an 'order' attribute based on the results of the algorithm.
-        const order = (g) => {
-            const sortSubgraph = (g, v, cg, biasRight) => {
-                // Given a list of entries of the form {v, barycenter, weight} and a constraint graph this function will resolve any conflicts between the constraint graph and the barycenters for the entries.
-                // If the barycenters for an entry would violate a constraint in the constraint graph then we coalesce the nodes in the conflict into a new node that respects the contraint and aggregates barycenter and weight information.
-                // This implementation is based on the description in Forster, 'A Fast and Simple Hueristic for Constrained Two-Level Crossing Reduction,' thought it differs in some specific details.
-                //
-                // Pre-conditions:
-                //    1. Each entry has the form {v, barycenter, weight}, or if the node has no barycenter, then {v}.
-                //
-                // Returns:
-                //    A new list of entries of the form {vs, i, barycenter, weight}.
-                //    The list `vs` may either be a singleton or it may be an aggregation of nodes ordered such that they do not violate constraints from the constraint graph.
-                //    The property `i` is the lowest original index of any of the elements in `vs`.
-                const resolveConflicts = (entries, cg) => {
-                    const mappedEntries = new Map();
-                    for (let i = 0; i < entries.length; i++) {
-                        const entry = entries[i];
-                        const tmp = { indegree: 0, 'in': [], out: [], vs: [ entry.v ], i: i };
-                        if (entry.barycenter !== undefined) {
-                            tmp.barycenter = entry.barycenter;
-                            tmp.weight = entry.weight;
-                        }
-                        mappedEntries.set(entry.v, tmp);
-                    }
-                    for (const e of cg.edges.values()) {
-                        const entryV = mappedEntries.get(e.v);
-                        const entryW = mappedEntries.get(e.w);
-                        if (entryV && entryW) {
-                            entryW.indegree++;
-                            entryV.out.push(entryW);
-                        }
-                    }
-                    const sourceSet = Array.from(mappedEntries.values()).filter((entry) => !entry.indegree);
-                    const results = [];
-                    function handleIn(vEntry) {
-                        return function(uEntry) {
-                            if (uEntry.merged) {
-                                return;
-                            }
-                            if (uEntry.barycenter === undefined || vEntry.barycenter === undefined || uEntry.barycenter >= vEntry.barycenter) {
-                                let sum = 0;
-                                let weight = 0;
-                                if (vEntry.weight) {
-                                    sum += vEntry.barycenter * vEntry.weight;
-                                    weight += vEntry.weight;
-                                }
-                                if (uEntry.weight) {
-                                    sum += uEntry.barycenter * uEntry.weight;
-                                    weight += uEntry.weight;
-                                }
-                                vEntry.vs = uEntry.vs.concat(vEntry.vs);
-                                vEntry.barycenter = sum / weight;
-                                vEntry.weight = weight;
-                                vEntry.i = Math.min(uEntry.i, vEntry.i);
-                                uEntry.merged = true;
-                            }
-                        };
-                    }
-                    function handleOut(vEntry) {
-                        return function(wEntry) {
-                            wEntry.in.push(vEntry);
-                            if (--wEntry.indegree === 0) {
-                                sourceSet.push(wEntry);
-                            }
-                        };
-                    }
-                    while (sourceSet.length) {
-                        const entry = sourceSet.pop();
-                        results.push(entry);
-                        entry.in.reverse().forEach(handleIn(entry));
-                        entry.out.forEach(handleOut(entry));
-                    }
-                    return results.filter((entry) => !entry.merged).map((entry) => {
-                        const value = {
-                            vs: entry.vs,
-                            i: entry.i
-                        };
-                        if (entry.barycenter !== undefined) {
-                            value.barycenter = entry.barycenter;
-                        }
-                        if (entry.weight !== undefined) {
-                            value.weight = entry.weight;
-                        }
-                        return value;
-                    });
-                };
-                const barycenter = (g, movable) => {
-                    return (movable || []).map((v) => {
-                        const inV = g.node(v).in;
-                        if (!inV.length) {
-                            return { v: v };
-                        }
-                        else {
-                            const result = inV.reduce((acc, e) => {
-                                const edge = e.label;
-                                const nodeU = e.vNode.label;
-                                return {
-                                    sum: acc.sum + (edge.weight * nodeU.order),
-                                    weight: acc.weight + edge.weight
-                                };
-                            }, { sum: 0, weight: 0 });
-                            return {
-                                v: v,
-                                barycenter: result.sum / result.weight,
-                                weight: result.weight
-                            };
-                        }
-                    });
-                };
-                const sort = (entries, biasRight) => {
-                    const consumeUnsortable = (vs, unsortable, index) => {
-                        let last;
-                        while (unsortable.length && (last = unsortable[unsortable.length - 1]).i <= index) {
-                            unsortable.pop();
-                            vs.push(last.vs);
-                            index++;
-                        }
-                        return index;
-                    };
-                    const compareWithBias = (bias) => {
-                        return function(entryV, entryW) {
-                            if (entryV.barycenter < entryW.barycenter) {
-                                return -1;
-                            }
-                            else if (entryV.barycenter > entryW.barycenter) {
-                                return 1;
-                            }
-                            return !bias ? entryV.i - entryW.i : entryW.i - entryV.i;
-                        };
-                    };
-                    // partition
-                    const parts = { lhs: [], rhs: [] };
-                    for (const value of entries) {
-                        if ('barycenter' in value) {
-                            parts.lhs.push(value);
-                        }
-                        else {
-                            parts.rhs.push(value);
-                        }
-                    }
-                    const sortable = parts.lhs;
-                    const unsortable = parts.rhs.sort((a, b) => -a.i + b.i);
-                    const vs = [];
-                    let sum = 0;
-                    let weight = 0;
-                    let vsIndex = 0;
-                    sortable.sort(compareWithBias(!!biasRight));
-                    vsIndex = consumeUnsortable(vs, unsortable, vsIndex);
-                    for (const entry of sortable) {
-                        vsIndex += entry.vs.length;
-                        vs.push(entry.vs);
-                        sum += entry.barycenter * entry.weight;
-                        weight += entry.weight;
-                        vsIndex = consumeUnsortable(vs, unsortable, vsIndex);
-                    }
-                    const result = { vs: flat(vs) };
-                    if (weight) {
-                        result.barycenter = sum / weight;
-                        result.weight = weight;
-                    }
-                    return result;
-                };
-                const node = g.node(v);
-                const bl = node && node.label ? node.label.borderLeft : undefined;
-                const br = node && node.label ? node.label.borderRight: undefined;
-                const subgraphs = {};
-                const movable = bl ? g.children(v).filter((w) => w !== bl && w !== br) : g.children(v);
-                const barycenters = barycenter(g, movable);
-                for (const entry of barycenters) {
-                    if (g.children(entry.v).length) {
-                        const result = sortSubgraph(g, entry.v, cg, biasRight);
-                        subgraphs[entry.v] = result;
-                        if ('barycenter' in result) {
-                            if (entry.barycenter !== undefined) {
-                                entry.barycenter = (entry.barycenter * entry.weight + result.barycenter * result.weight) / (entry.weight + result.weight);
-                                entry.weight += result.weight;
-                            }
-                            else {
-                                entry.barycenter = result.barycenter;
-                                entry.weight = result.weight;
-                            }
-                        }
-                    }
-                }
-                const entries = resolveConflicts(barycenters, cg);
-                // expand subgraphs
-                for (const entry of entries) {
-                    entry.vs = flat(entry.vs.map((v) => subgraphs[v] ? subgraphs[v].vs : v));
-                }
-                const result = sort(entries, biasRight);
-                if (bl) {
-                    result.vs = flat([bl, result.vs, br]);
-                    if (g.predecessors(bl).length) {
-                        const blPred = g.node(g.predecessors(bl)[0]).label;
-                        const brPred = g.node(g.predecessors(br)[0]).label;
-                        if (!('barycenter' in result)) {
-                            result.barycenter = 0;
-                            result.weight = 0;
-                        }
-                        result.barycenter = (result.barycenter * result.weight + blPred.order + brPred.order) / (result.weight + 2);
-                        result.weight += 2;
-                    }
-                }
-                return result;
-            };
-            const sweepLayerGraphs = (layerGraphs, biasRight) => {
-                const cg = new dagre.Graph();
-                for (const lg of layerGraphs) {
-                    const root = lg.options.root;
-                    const sorted = sortSubgraph(lg, root, cg, biasRight);
-                    const vs = sorted.vs;
-                    const length = vs.length;
-                    for (let i = 0; i < length; i++) {
-                        lg.node(vs[i]).label.order = i;
-                    }
-                    // add subgraph constraints
-                    const prev = {};
-                    let rootPrev;
-                    let exit = false;
-                    for (const v of vs) {
-                        let child = lg.parent(v);
-                        let prevChild;
-                        while (child) {
-                            const parent = lg.parent(child);
-                            if (parent) {
-                                prevChild = prev[parent];
-                                prev[parent] = child;
-                            }
-                            else {
-                                prevChild = rootPrev;
-                                rootPrev = child;
-                            }
-                            if (prevChild && prevChild !== child) {
-                                cg.setEdge(prevChild, child, null);
-                                exit = true;
-                                break;
-                            }
-                            child = parent;
-                        }
-                        if (exit) {
-                            break;
-                        }
-                    }
-                }
-            };
-            // A function that takes a layering (an array of layers, each with an array of
-            // ordererd nodes) and a graph and returns a weighted crossing count.
-            //
-            // Pre-conditions:
-            //    1. Input graph must be simple (not a multigraph), directed, and include
-            //       only simple edges.
-            //    2. Edges in the input graph must have assigned weights.
-            //
-            // Post-conditions:
-            //    1. The graph and layering matrix are left unchanged.
-            //
-            // This algorithm is derived from Barth, et al., 'Bilayer Cross Counting.'
-            const crossCount = (g, layering) => {
-                let count = 0;
-                for (let i = 1; i < layering.length; i++) {
-                    const northLayer = layering[i - 1];
-                    const southLayer = layering[i];
-                    // Sort all of the edges between the north and south layers by their position in the north layer and then the south.
-                    // Map these edges to the position of their head in the south layer.
-                    const southPos = {};
-                    for (let i = 0; i < southLayer.length; i++) {
-                        southPos[southLayer[i]] = i;
-                    }
-                    const southEntries = [];
-                    for (const v of northLayer) {
-                        const entries = [];
-                        for (const e of g.node(v).out) {
-                            entries.push({
-                                pos: southPos[e.w],
-                                weight: e.label.weight
-                            });
-                        }
-                        entries.sort((a, b) => a.pos - b.pos);
-                        for (const entry of entries) {
-                            southEntries.push(entry);
-                        }
-                    }
-                    // Build the accumulator tree
-                    let firstIndex = 1;
-                    while (firstIndex < southLayer.length) {
-                        firstIndex <<= 1;
-                    }
-                    const treeSize = 2 * firstIndex - 1;
-                    firstIndex -= 1;
-                    const tree = Array.from(new Array(treeSize), () => 0);
-                    // Calculate the weighted crossings
-                    for (const entry of southEntries) {
-                        let index = entry.pos + firstIndex;
-                        tree[index] += entry.weight;
-                        let weightSum = 0;
-                        while (index > 0) {
-                            if (index % 2) {
-                                weightSum += tree[index + 1];
-                            }
-                            index = (index - 1) >> 1;
-                            tree[index] += entry.weight;
-                        }
-                        count += entry.weight * weightSum;
-                    }
-                }
-                return count;
-            };
-            // Assigns an initial order value for each node by performing a DFS search
-            // starting from nodes in the first rank. Nodes are assigned an order in their
-            // rank as they are first visited.
-            //
-            // This approach comes from Gansner, et al., 'A Technique for Drawing Directed
-            // Graphs.'
-            //
-            // Returns a layering matrix with an array per layer and each layer sorted by
-            // the order of its nodes.
-            const initOrder = (g) => {
-                const visited = new Set();
-                const nodes = Array.from(g.nodes.keys()).filter((v) => !g.children(v).length);
-                let maxRank = undefined;
-                for (const v of nodes) {
-                    if (!g.children(v).length > 0) {
-                        const rank = g.node(v).label.rank;
-                        if (maxRank === undefined || (rank !== undefined && rank > maxRank)) {
-                            maxRank = rank;
-                        }
-                    }
-                }
-                if (maxRank !== undefined) {
-                    const layers = Array.from(new Array(maxRank + 1), () => []);
-                    for (const v of nodes.map((v) => [ g.node(v).label.rank, v ]).sort((a, b) => a[0] - b[0]).map((item) => item[1])) {
-                        const queue = [ v ];
-                        while (queue.length > 0) {
-                            const v = queue.shift();
-                            if (!visited.has(v)) {
-                                visited.add(v);
-                                const rank = g.node(v).label.rank;
-                                layers[rank].push(v);
-                                queue.push(...g.successors(v));
-                            }
-                        }
-                    }
-                    return layers;
-                }
-                return [];
-            };
-            // Constructs a graph that can be used to sort a layer of nodes.
-            // The graph will contain all base and subgraph nodes from the request layer in their original
-            // hierarchy and any edges that are incident on these nodes and are of the type requested by the 'relationship' parameter.
-            //
-            // Nodes from the requested rank that do not have parents are assigned a root node in the output graph,
-            // which is set in the root graph attribute.
-            // This makes it easy to walk the hierarchy of movable nodes during ordering.
-            //
-            // Pre-conditions:
-            //    1. Input graph is a DAG
-            //    2. Base nodes in the input graph have a rank attribute
-            //    3. Subgraph nodes in the input graph has minRank and maxRank attributes
-            //    4. Edges have an assigned weight
-            //
-            // Post-conditions:
-            //    1. Output graph has all nodes in the movable rank with preserved hierarchy.
-            //    2. Root nodes in the movable layer are made children of the node
-            //       indicated by the root attribute of the graph.
-            //    3. Non-movable nodes incident on movable nodes, selected by the
-            //       relationship parameter, are included in the graph (without hierarchy).
-            //    4. Edges incident on movable nodes, selected by the relationship parameter, are added to the output graph.
-            //    5. The weights for copied edges are aggregated as need, since the output graph is not a multi-graph.
-            const buildLayerGraph = (g, nodes, rank, relationship) => {
-                let root;
-                while (g.hasNode((root = uniqueId('_root')))) {
-                    // continue
-                }
-                const graph = new dagre.Graph({ compound: true });
-                graph.options = { root: root };
-                graph.setDefaultNodeLabel((v) => { const node = g.node(v); return node ? node.label : undefined; });
-                const length = nodes.length;
-                let i = 0;
-                while (i < length) {
-                    const node = nodes[i++];
-                    const label = node.label;
-                    if (label.rank === rank || 'minRank' in label && 'maxRank' in label && label.minRank <= rank && rank <= label.maxRank) {
-                        const v = node.v;
-                        graph.setNode(v);
-                        const parent = g.parent(v);
-                        graph.setParent(v, parent || root);
-                        // This assumes we have only short edges!
-                        if (relationship) {
-                            for (const e of node.in) {
-                                graph.setEdge(e.v, v, { weight: e.label.weight });
-                            }
-                        }
-                        else {
-                            for (const e of node.out) {
-                                graph.setEdge(e.w, v, { weight: e.label.weight });
-                            }
-                        }
-                        if ('minRank' in label) {
-                            graph.setNode(v, {
-                                borderLeft: label.borderLeft[rank],
-                                borderRight: label.borderRight[rank]
-                            });
-                        }
-                    }
-                }
-                return graph;
-            };
-            let layering = initOrder(g);
-            const assignOrder = (g, layering) => {
-                for (const layer of layering) {
-                    for (let i = 0; i < layer.length; i++) {
-                        g.node(layer[i]).label.order = i;
-                    }
-                }
-            };
-            assignOrder(g, layering);
-            const rank = maxRank(g) || 0;
-            const downLayerGraphs = new Array(rank);
-            const upLayerGraphs = new Array(rank);
-            const nodes = Array.from(g.nodes.values());
-            for (let i = 0; i < rank; i++) {
-                downLayerGraphs[i] = buildLayerGraph(g, nodes, i + 1, true);
-                upLayerGraphs[i] = buildLayerGraph(g, nodes, rank - i - 1, false);
+        // Returns:
+        //    A new list of entries of the form {vs, i, barycenter, weight}.
+        //    The list `vs` may either be a singleton or it may be an aggregation of nodes ordered such that they do not violate constraints from the constraint graph.
+        //    The property `i` is the lowest original index of any of the elements in `vs`.
+        const resolveConflicts = (entries, cg) => {
+          const mappedEntries = new Map();
+          for (let i = 0; i < entries.length; i++) {
+            const entry = entries[i];
+            const tmp = { indegree: 0, in: [], out: [], vs: [entry.v], i: i };
+            if (entry.barycenter !== undefined) {
+              tmp.barycenter = entry.barycenter;
+              tmp.weight = entry.weight;
             }
-            let bestCC = Number.POSITIVE_INFINITY;
-            let best;
-            for (let i = 0, lastBest = 0; lastBest < 4; ++i, ++lastBest) {
-                sweepLayerGraphs(i % 2 ? downLayerGraphs : upLayerGraphs, i % 4 >= 2);
-                layering = buildLayerMatrix(g);
-                const cc = crossCount(g, layering);
-                if (cc < bestCC) {
-                    lastBest = 0;
-                    const length = layering.length;
-                    best = new Array(length);
-                    for (let j = 0; j < length; j++) {
-                        best[j] = layering[j].slice();
-                    }
-                    bestCC = cc;
-                }
+            mappedEntries.set(entry.v, tmp);
+          }
+          for (const e of cg.edges.values()) {
+            const entryV = mappedEntries.get(e.v);
+            const entryW = mappedEntries.get(e.w);
+            if (entryV && entryW) {
+              entryW.indegree++;
+              entryV.out.push(entryW);
             }
-            assignOrder(g, best);
+          }
+          const sourceSet = Array.from(mappedEntries.values()).filter((entry) => !entry.indegree);
+          const results = [];
+          function handleIn(vEntry) {
+            return function (uEntry) {
+              if (uEntry.merged) {
+                return;
+              }
+              if (
+                uEntry.barycenter === undefined ||
+                vEntry.barycenter === undefined ||
+                uEntry.barycenter >= vEntry.barycenter
+              ) {
+                let sum = 0;
+                let weight = 0;
+                if (vEntry.weight) {
+                  sum += vEntry.barycenter * vEntry.weight;
+                  weight += vEntry.weight;
+                }
+                if (uEntry.weight) {
+                  sum += uEntry.barycenter * uEntry.weight;
+                  weight += uEntry.weight;
+                }
+                vEntry.vs = uEntry.vs.concat(vEntry.vs);
+                vEntry.barycenter = sum / weight;
+                vEntry.weight = weight;
+                vEntry.i = Math.min(uEntry.i, vEntry.i);
+                uEntry.merged = true;
+              }
+            };
+          }
+          function handleOut(vEntry) {
+            return function (wEntry) {
+              wEntry.in.push(vEntry);
+              if (--wEntry.indegree === 0) {
+                sourceSet.push(wEntry);
+              }
+            };
+          }
+          while (sourceSet.length) {
+            const entry = sourceSet.pop();
+            results.push(entry);
+            entry.in.reverse().forEach(handleIn(entry));
+            entry.out.forEach(handleOut(entry));
+          }
+          return results
+            .filter((entry) => !entry.merged)
+            .map((entry) => {
+              const value = {
+                vs: entry.vs,
+                i: entry.i,
+              };
+              if (entry.barycenter !== undefined) {
+                value.barycenter = entry.barycenter;
+              }
+              if (entry.weight !== undefined) {
+                value.weight = entry.weight;
+              }
+              return value;
+            });
         };
+        const barycenter = (g, movable) => {
+          return (movable || []).map((v) => {
+            const inV = g.node(v).in;
+            if (!inV.length) {
+              return { v: v };
+            } else {
+              const result = inV.reduce(
+                (acc, e) => {
+                  const edge = e.label;
+                  const nodeU = e.vNode.label;
+                  return {
+                    sum: acc.sum + edge.weight * nodeU.order,
+                    weight: acc.weight + edge.weight,
+                  };
+                },
+                { sum: 0, weight: 0 }
+              );
+              return {
+                v: v,
+                barycenter: result.sum / result.weight,
+                weight: result.weight,
+              };
+            }
+          });
+        };
+        const sort = (entries, biasRight) => {
+          const consumeUnsortable = (vs, unsortable, index) => {
+            let last;
+            while (unsortable.length && (last = unsortable[unsortable.length - 1]).i <= index) {
+              unsortable.pop();
+              vs.push(last.vs);
+              index++;
+            }
+            return index;
+          };
+          const compareWithBias = (bias) => {
+            return function (entryV, entryW) {
+              if (entryV.barycenter < entryW.barycenter) {
+                return -1;
+              } else if (entryV.barycenter > entryW.barycenter) {
+                return 1;
+              }
+              return !bias ? entryV.i - entryW.i : entryW.i - entryV.i;
+            };
+          };
+          // partition
+          const parts = { lhs: [], rhs: [] };
+          for (const value of entries) {
+            if ('barycenter' in value) {
+              parts.lhs.push(value);
+            } else {
+              parts.rhs.push(value);
+            }
+          }
+          const sortable = parts.lhs;
+          const unsortable = parts.rhs.sort((a, b) => -a.i + b.i);
+          const vs = [];
+          let sum = 0;
+          let weight = 0;
+          let vsIndex = 0;
+          sortable.sort(compareWithBias(!!biasRight));
+          vsIndex = consumeUnsortable(vs, unsortable, vsIndex);
+          for (const entry of sortable) {
+            vsIndex += entry.vs.length;
+            vs.push(entry.vs);
+            sum += entry.barycenter * entry.weight;
+            weight += entry.weight;
+            vsIndex = consumeUnsortable(vs, unsortable, vsIndex);
+          }
+          const result = { vs: flat(vs) };
+          if (weight) {
+            result.barycenter = sum / weight;
+            result.weight = weight;
+          }
+          return result;
+        };
+        const node = g.node(v);
+        const bl = node && node.label ? node.label.borderLeft : undefined;
+        const br = node && node.label ? node.label.borderRight : undefined;
+        const subgraphs = {};
+        const movable = bl ? g.children(v).filter((w) => w !== bl && w !== br) : g.children(v);
+        const barycenters = barycenter(g, movable);
+        for (const entry of barycenters) {
+          if (g.children(entry.v).length) {
+            const result = sortSubgraph(g, entry.v, cg, biasRight);
+            subgraphs[entry.v] = result;
+            if ('barycenter' in result) {
+              if (entry.barycenter !== undefined) {
+                entry.barycenter =
+                  (entry.barycenter * entry.weight + result.barycenter * result.weight) /
+                  (entry.weight + result.weight);
+                entry.weight += result.weight;
+              } else {
+                entry.barycenter = result.barycenter;
+                entry.weight = result.weight;
+              }
+            }
+          }
+        }
+        const entries = resolveConflicts(barycenters, cg);
+        // expand subgraphs
+        for (const entry of entries) {
+          entry.vs = flat(entry.vs.map((v) => (subgraphs[v] ? subgraphs[v].vs : v)));
+        }
+        const result = sort(entries, biasRight);
+        if (bl) {
+          result.vs = flat([bl, result.vs, br]);
+          if (g.predecessors(bl).length) {
+            const blPred = g.node(g.predecessors(bl)[0]).label;
+            const brPred = g.node(g.predecessors(br)[0]).label;
+            if (!('barycenter' in result)) {
+              result.barycenter = 0;
+              result.weight = 0;
+            }
+            result.barycenter = (result.barycenter * result.weight + blPred.order + brPred.order) / (result.weight + 2);
+            result.weight += 2;
+          }
+        }
+        return result;
+      };
+      const sweepLayerGraphs = (layerGraphs, biasRight) => {
+        const cg = new dagre.Graph();
+        for (const lg of layerGraphs) {
+          const root = lg.options.root;
+          const sorted = sortSubgraph(lg, root, cg, biasRight);
+          const vs = sorted.vs;
+          const length = vs.length;
+          for (let i = 0; i < length; i++) {
+            lg.node(vs[i]).label.order = i;
+          }
+          // add subgraph constraints
+          const prev = {};
+          let rootPrev;
+          let exit = false;
+          for (const v of vs) {
+            let child = lg.parent(v);
+            let prevChild;
+            while (child) {
+              const parent = lg.parent(child);
+              if (parent) {
+                prevChild = prev[parent];
+                prev[parent] = child;
+              } else {
+                prevChild = rootPrev;
+                rootPrev = child;
+              }
+              if (prevChild && prevChild !== child) {
+                cg.setEdge(prevChild, child, null);
+                exit = true;
+                break;
+              }
+              child = parent;
+            }
+            if (exit) {
+              break;
+            }
+          }
+        }
+      };
+      // A function that takes a layering (an array of layers, each with an array of
+      // ordererd nodes) and a graph and returns a weighted crossing count.
+      //
+      // Pre-conditions:
+      //    1. Input graph must be simple (not a multigraph), directed, and include
+      //       only simple edges.
+      //    2. Edges in the input graph must have assigned weights.
+      //
+      // Post-conditions:
+      //    1. The graph and layering matrix are left unchanged.
+      //
+      // This algorithm is derived from Barth, et al., 'Bilayer Cross Counting.'
+      const crossCount = (g, layering) => {
+        let count = 0;
+        for (let i = 1; i < layering.length; i++) {
+          const northLayer = layering[i - 1];
+          const southLayer = layering[i];
+          // Sort all of the edges between the north and south layers by their position in the north layer and then the south.
+          // Map these edges to the position of their head in the south layer.
+          const southPos = {};
+          for (let i = 0; i < southLayer.length; i++) {
+            southPos[southLayer[i]] = i;
+          }
+          const southEntries = [];
+          for (const v of northLayer) {
+            const entries = [];
+            for (const e of g.node(v).out) {
+              entries.push({
+                pos: southPos[e.w],
+                weight: e.label.weight,
+              });
+            }
+            entries.sort((a, b) => a.pos - b.pos);
+            for (const entry of entries) {
+              southEntries.push(entry);
+            }
+          }
+          // Build the accumulator tree
+          let firstIndex = 1;
+          while (firstIndex < southLayer.length) {
+            firstIndex <<= 1;
+          }
+          const treeSize = 2 * firstIndex - 1;
+          firstIndex -= 1;
+          const tree = Array.from(new Array(treeSize), () => 0);
+          // Calculate the weighted crossings
+          for (const entry of southEntries) {
+            let index = entry.pos + firstIndex;
+            tree[index] += entry.weight;
+            let weightSum = 0;
+            while (index > 0) {
+              if (index % 2) {
+                weightSum += tree[index + 1];
+              }
+              index = (index - 1) >> 1;
+              tree[index] += entry.weight;
+            }
+            count += entry.weight * weightSum;
+          }
+        }
+        return count;
+      };
+      // Assigns an initial order value for each node by performing a DFS search
+      // starting from nodes in the first rank. Nodes are assigned an order in their
+      // rank as they are first visited.
+      //
+      // This approach comes from Gansner, et al., 'A Technique for Drawing Directed
+      // Graphs.'
+      //
+      // Returns a layering matrix with an array per layer and each layer sorted by
+      // the order of its nodes.
+      const initOrder = (g) => {
+        const visited = new Set();
+        const nodes = Array.from(g.nodes.keys()).filter((v) => !g.children(v).length);
+        let maxRank = undefined;
+        for (const v of nodes) {
+          if (!g.children(v).length > 0) {
+            const rank = g.node(v).label.rank;
+            if (maxRank === undefined || (rank !== undefined && rank > maxRank)) {
+              maxRank = rank;
+            }
+          }
+        }
+        if (maxRank !== undefined) {
+          const layers = Array.from(new Array(maxRank + 1), () => []);
+          for (const v of nodes
+            .map((v) => [g.node(v).label.rank, v])
+            .sort((a, b) => a[0] - b[0])
+            .map((item) => item[1])) {
+            const queue = [v];
+            while (queue.length > 0) {
+              const v = queue.shift();
+              if (!visited.has(v)) {
+                visited.add(v);
+                const rank = g.node(v).label.rank;
+                layers[rank].push(v);
+                queue.push(...g.successors(v));
+              }
+            }
+          }
+          return layers;
+        }
+        return [];
+      };
+      // Constructs a graph that can be used to sort a layer of nodes.
+      // The graph will contain all base and subgraph nodes from the request layer in their original
+      // hierarchy and any edges that are incident on these nodes and are of the type requested by the 'relationship' parameter.
+      //
+      // Nodes from the requested rank that do not have parents are assigned a root node in the output graph,
+      // which is set in the root graph attribute.
+      // This makes it easy to walk the hierarchy of movable nodes during ordering.
+      //
+      // Pre-conditions:
+      //    1. Input graph is a DAG
+      //    2. Base nodes in the input graph have a rank attribute
+      //    3. Subgraph nodes in the input graph has minRank and maxRank attributes
+      //    4. Edges have an assigned weight
+      //
+      // Post-conditions:
+      //    1. Output graph has all nodes in the movable rank with preserved hierarchy.
+      //    2. Root nodes in the movable layer are made children of the node
+      //       indicated by the root attribute of the graph.
+      //    3. Non-movable nodes incident on movable nodes, selected by the
+      //       relationship parameter, are included in the graph (without hierarchy).
+      //    4. Edges incident on movable nodes, selected by the relationship parameter, are added to the output graph.
+      //    5. The weights for copied edges are aggregated as need, since the output graph is not a multi-graph.
+      const buildLayerGraph = (g, nodes, rank, relationship) => {
+        let root;
+        while (g.hasNode((root = uniqueId('_root')))) {
+          // continue
+        }
+        const graph = new dagre.Graph({ compound: true });
+        graph.options = { root: root };
+        graph.setDefaultNodeLabel((v) => {
+          const node = g.node(v);
+          return node ? node.label : undefined;
+        });
+        const length = nodes.length;
+        let i = 0;
+        while (i < length) {
+          const node = nodes[i++];
+          const label = node.label;
+          if (
+            label.rank === rank ||
+            ('minRank' in label && 'maxRank' in label && label.minRank <= rank && rank <= label.maxRank)
+          ) {
+            const v = node.v;
+            graph.setNode(v);
+            const parent = g.parent(v);
+            graph.setParent(v, parent || root);
+            // This assumes we have only short edges!
+            if (relationship) {
+              for (const e of node.in) {
+                graph.setEdge(e.v, v, { weight: e.label.weight });
+              }
+            } else {
+              for (const e of node.out) {
+                graph.setEdge(e.w, v, { weight: e.label.weight });
+              }
+            }
+            if ('minRank' in label) {
+              graph.setNode(v, {
+                borderLeft: label.borderLeft[rank],
+                borderRight: label.borderRight[rank],
+              });
+            }
+          }
+        }
+        return graph;
+      };
+      let layering = initOrder(g);
+      const assignOrder = (g, layering) => {
+        for (const layer of layering) {
+          for (let i = 0; i < layer.length; i++) {
+            g.node(layer[i]).label.order = i;
+          }
+        }
+      };
+      assignOrder(g, layering);
+      const rank = maxRank(g) || 0;
+      const downLayerGraphs = new Array(rank);
+      const upLayerGraphs = new Array(rank);
+      const nodes = Array.from(g.nodes.values());
+      for (let i = 0; i < rank; i++) {
+        downLayerGraphs[i] = buildLayerGraph(g, nodes, i + 1, true);
+        upLayerGraphs[i] = buildLayerGraph(g, nodes, rank - i - 1, false);
+      }
+      let bestCC = Number.POSITIVE_INFINITY;
+      let best;
+      for (let i = 0, lastBest = 0; lastBest < 4; ++i, ++lastBest) {
+        sweepLayerGraphs(i % 2 ? downLayerGraphs : upLayerGraphs, i % 4 >= 2);
+        layering = buildLayerMatrix(g);
+        const cc = crossCount(g, layering);
+        if (cc < bestCC) {
+          lastBest = 0;
+          const length = layering.length;
+          best = new Array(length);
+          for (let j = 0; j < length; j++) {
+            best[j] = layering[j].slice();
+          }
+          bestCC = cc;
+        }
+      }
+      assignOrder(g, best);
+    };
 
-        const insertSelfEdges = (g) => {
-            const layers = buildLayerMatrix(g);
-            for (const layer of layers) {
-                let orderShift = 0;
-                layer.forEach(function(v, i) {
-                    const label = g.node(v).label;
-                    label.order = i + orderShift;
-                    if (label.selfEdges) {
-                        for (const selfEdge of label.selfEdges) {
-                            addDummyNode(g, 'selfedge', {
-                                width: selfEdge.label.width,
-                                height: selfEdge.label.height,
-                                rank: label.rank,
-                                order: i + (++orderShift),
-                                e: selfEdge.e,
-                                label: selfEdge.label
-                            }, '_se');
-                        }
-                        delete label.selfEdges;
-                    }
-                });
+    const insertSelfEdges = (g) => {
+      const layers = buildLayerMatrix(g);
+      for (const layer of layers) {
+        let orderShift = 0;
+        layer.forEach(function (v, i) {
+          const label = g.node(v).label;
+          label.order = i + orderShift;
+          if (label.selfEdges) {
+            for (const selfEdge of label.selfEdges) {
+              addDummyNode(
+                g,
+                'selfedge',
+                {
+                  width: selfEdge.label.width,
+                  height: selfEdge.label.height,
+                  rank: label.rank,
+                  order: i + ++orderShift,
+                  e: selfEdge.e,
+                  label: selfEdge.label,
+                },
+                '_se'
+              );
             }
-        };
+            delete label.selfEdges;
+          }
+        });
+      }
+    };
 
-        const coordinateSystem_swapWidthHeight = (g) => {
-            for (const node of g.nodes.values()) {
-                const label = node.label;
-                const w = label.width;
-                label.width = label.height;
-                label.height = w;
-            }
-            for (const e of g.edges.values()) {
-                const label = e.label;
-                const w = label.width;
-                label.width = label.height;
-                label.height = w;
-            }
+    const coordinateSystem_swapWidthHeight = (g) => {
+      for (const node of g.nodes.values()) {
+        const label = node.label;
+        const w = label.width;
+        label.width = label.height;
+        label.height = w;
+      }
+      for (const e of g.edges.values()) {
+        const label = e.label;
+        const w = label.width;
+        label.width = label.height;
+        label.height = w;
+      }
+    };
+    const coordinateSystem_adjust = (g) => {
+      const rankDir = g.options.rankdir.toLowerCase();
+      if (rankDir === 'lr' || rankDir === 'rl') {
+        coordinateSystem_swapWidthHeight(g);
+      }
+    };
+    const coordinateSystem_undo = (g) => {
+      const rankDir = g.options.rankdir.toLowerCase();
+      if (rankDir === 'bt' || rankDir === 'rl') {
+        for (const node of g.nodes.values()) {
+          node.label.y = -node.label.y;
+        }
+        for (const e of g.edges.values()) {
+          const edge = e.label;
+          for (const attr of edge.points) {
+            attr.y = -attr.y;
+          }
+          if ('y' in edge) {
+            edge.y = -edge.y;
+          }
+        }
+      }
+      if (rankDir === 'lr' || rankDir === 'rl') {
+        const swapXYOne = (attrs) => {
+          const x = attrs.x;
+          attrs.x = attrs.y;
+          attrs.y = x;
         };
-        const coordinateSystem_adjust = (g) => {
-            const rankDir = g.options.rankdir.toLowerCase();
-            if (rankDir === 'lr' || rankDir === 'rl') {
-                coordinateSystem_swapWidthHeight(g);
-            }
-        };
-        const coordinateSystem_undo = (g) => {
-            const rankDir = g.options.rankdir.toLowerCase();
-            if (rankDir === 'bt' || rankDir === 'rl') {
-                for (const node of g.nodes.values()) {
-                    node.label.y = -node.label.y;
-                }
-                for (const e of g.edges.values()) {
-                    const edge = e.label;
-                    for (const attr of edge.points) {
-                        attr.y = -attr.y;
-                    }
-                    if ('y' in edge) {
-                        edge.y = -edge.y;
-                    }
-                }
-            }
-            if (rankDir === 'lr' || rankDir === 'rl') {
-                const swapXYOne = (attrs) => {
-                    const x = attrs.x;
-                    attrs.x = attrs.y;
-                    attrs.y = x;
-                };
-                for (const node of g.nodes.values()) {
-                    swapXYOne(node.label);
-                }
-                for (const e of g.edges.values()) {
-                    const edge = e.label;
-                    for (const e of edge.points) {
-                        swapXYOne(e);
-                    }
-                    if (edge.x !== undefined) {
-                        swapXYOne(edge);
-                    }
-                }
-                coordinateSystem_swapWidthHeight(g);
-            }
-        };
+        for (const node of g.nodes.values()) {
+          swapXYOne(node.label);
+        }
+        for (const e of g.edges.values()) {
+          const edge = e.label;
+          for (const e of edge.points) {
+            swapXYOne(e);
+          }
+          if (edge.x !== undefined) {
+            swapXYOne(edge);
+          }
+        }
+        coordinateSystem_swapWidthHeight(g);
+      }
+    };
 
-        const position = (g) => {
-            const addConflict = (conflicts, v, w) => {
-                if (v > w) {
-                    const tmp = v;
-                    v = w;
-                    w = tmp;
+    const position = (g) => {
+      const addConflict = (conflicts, v, w) => {
+        if (v > w) {
+          const tmp = v;
+          v = w;
+          w = tmp;
+        }
+        let conflictsV = conflicts[v];
+        if (!conflictsV) {
+          conflicts[v] = conflictsV = {};
+        }
+        conflictsV[w] = true;
+      };
+      const hasConflict = (conflicts, v, w) => {
+        if (v > w) {
+          const tmp = v;
+          v = w;
+          w = tmp;
+        }
+        return conflicts[v] && w in conflicts[v];
+      };
+      const buildBlockGraph = (g, layering, root, reverseSep) => {
+        const nodeSep = g.options.nodesep;
+        const edgeSep = g.options.edgesep;
+        const blockGraph = new dagre.Graph();
+        for (const layer of layering) {
+          let u;
+          for (const v of layer) {
+            const vRoot = root[v];
+            blockGraph.setNode(vRoot, {});
+            if (u) {
+              const uRoot = root[u];
+              const vLabel = g.node(v).label;
+              const wLabel = g.node(u).label;
+              let sum = 0;
+              let delta;
+              sum += vLabel.width / 2;
+              if ('labelpos' in vLabel) {
+                switch (vLabel.labelpos) {
+                  case 'l':
+                    delta = -vLabel.width / 2;
+                    break;
+                  case 'r':
+                    delta = vLabel.width / 2;
+                    break;
                 }
-                let conflictsV = conflicts[v];
-                if (!conflictsV) {
-                    conflicts[v] = conflictsV = {};
+              }
+              if (delta) {
+                sum += reverseSep ? delta : -delta;
+              }
+              delta = 0;
+              sum += (vLabel.dummy ? edgeSep : nodeSep) / 2;
+              sum += (wLabel.dummy ? edgeSep : nodeSep) / 2;
+              sum += wLabel.width / 2;
+              if ('labelpos' in wLabel) {
+                switch (wLabel.labelpos) {
+                  case 'l':
+                    delta = wLabel.width / 2;
+                    break;
+                  case 'r':
+                    delta = -wLabel.width / 2;
+                    break;
                 }
-                conflictsV[w] = true;
-            };
-            const hasConflict = (conflicts, v, w) => {
-                if (v > w) {
-                    const tmp = v;
-                    v = w;
-                    w = tmp;
-                }
-                return conflicts[v] && w in conflicts[v];
-            };
-            const buildBlockGraph = (g, layering, root, reverseSep) => {
-                const nodeSep = g.options.nodesep;
-                const edgeSep = g.options.edgesep;
-                const blockGraph = new dagre.Graph();
-                for (const layer of layering) {
-                    let u;
-                    for (const v of layer) {
-                        const vRoot = root[v];
-                        blockGraph.setNode(vRoot, {});
-                        if (u) {
-                            const uRoot = root[u];
-                            const vLabel = g.node(v).label;
-                            const wLabel = g.node(u).label;
-                            let sum = 0;
-                            let delta;
-                            sum += vLabel.width / 2;
-                            if ('labelpos' in vLabel) {
-                                switch (vLabel.labelpos) {
-                                    case 'l': delta = -vLabel.width / 2; break;
-                                    case 'r': delta = vLabel.width / 2; break;
-                                }
-                            }
-                            if (delta) {
-                                sum += reverseSep ? delta : -delta;
-                            }
-                            delta = 0;
-                            sum += (vLabel.dummy ? edgeSep : nodeSep) / 2;
-                            sum += (wLabel.dummy ? edgeSep : nodeSep) / 2;
-                            sum += wLabel.width / 2;
-                            if ('labelpos' in wLabel) {
-                                switch (wLabel.labelpos) {
-                                    case 'l': delta = wLabel.width / 2; break;
-                                    case 'r': delta = -wLabel.width / 2; break;
-                                }
-                            }
-                            if (delta) {
-                                sum += reverseSep ? delta : -delta;
-                            }
-                            const edge = blockGraph.edge(uRoot, vRoot);
-                            const max = Math.max(sum, edge ? edge.label : 0);
-                            if (edge) {
-                                edge.label = max;
-                            }
-                            else {
-                                blockGraph.setEdge(uRoot, vRoot, max);
-                            }
-                        }
-                        u = v;
-                    }
-                }
-                return blockGraph;
-            };
-            // Try to align nodes into vertical 'blocks' where possible.
-            // This algorithm attempts to align a node with one of its median neighbors.
-            // If the edge connecting a neighbor is a type-1 conflict then we ignore that possibility.
-            // If a previous node has already formed a block with a node after the node we're trying to form a block with,
-            // we also ignore that possibility - our blocks would be split in that scenario.
-            const verticalAlignment = (layering, conflicts, neighborFn) => {
-                const root = {};
-                const align = {};
-                const pos = {};
-                // We cache the position here based on the layering because the graph and layering may be out of sync.
-                // The layering matrix is manipulated to generate different extreme alignments.
-                for (const layer of layering) {
-                    let order = 0;
-                    for (const v of layer) {
-                        root[v] = v;
-                        align[v] = v;
-                        pos[v] = order;
-                        order++;
-                    }
-                }
-                for (const layer of layering) {
-                    let prevIdx = -1;
-                    for (const v of layer) {
-                        let ws = neighborFn(v);
-                        if (ws.length > 0) {
-                            ws.sort((a, b) => pos[a] - pos[b]);
-                            const mp = (ws.length - 1) / 2.0;
-                            const il = Math.ceil(mp);
-                            for (let i = Math.floor(mp); i <= il; i++) {
-                                const w = ws[i];
-                                if (align[v] === v && prevIdx < pos[w] && !hasConflict(conflicts, v, w)) {
-                                    align[w] = v;
-                                    align[v] = root[v] = root[w];
-                                    prevIdx = pos[w];
-                                }
-                            }
-                        }
-                    }
-                }
-                return { root: root, align: align };
-            };
-            const horizontalCompaction = (g, layering, root, align, reverseSep) => {
-                // This portion of the algorithm differs from BK due to a number of problems.
-                // Instead of their algorithm we construct a new block graph and do two sweeps.
-                const xs = {};
-                const blockG = buildBlockGraph(g, layering, root, reverseSep);
-                const borderType = reverseSep ? 'borderLeft' : 'borderRight';
-                const iterate = (setXsFunc, nextNodesFunc) => {
-                    let stack = Array.from(blockG.nodes.keys());
-                    const visited = new Set();
-                    while (stack.length > 0) {
-                        const v = stack.pop();
-                        if (visited.has(v)) {
-                            setXsFunc(v);
-                        }
-                        else {
-                            visited.add(v);
-                            stack.push(v);
-                            stack = stack.concat(nextNodesFunc(v));
-                        }
-                    }
-                };
-                // First pass, places blocks with the smallest possible coordinates.
-                const pass1 = (v) => {
-                    let max = 0;
-                    for (const e of blockG.node(v).in) {
-                        max = Math.max(max, xs[e.v] + e.label);
-                    }
-                    xs[v] = max;
-                };
-                // Second pass, removes unused space by moving blocks to the greatest coordinates without violating separation.
-                const pass2 = (v) => {
-                    let min = Number.POSITIVE_INFINITY;
-                    for (const e of blockG.node(v).out) {
-                        min = Math.min(min, xs[e.w] - e.label);
-                    }
-                    const label = g.node(v).label;
-                    if (min !== Number.POSITIVE_INFINITY && label.borderType !== borderType) {
-                        xs[v] = Math.max(xs[v], min);
-                    }
-                };
-                iterate(pass1, blockG.predecessors.bind(blockG));
-                iterate(pass2, blockG.successors.bind(blockG));
-                // Assign x coordinates to all nodes
-                for (const v of Object.values(align)) {
-                    xs[v] = xs[root[v]];
-                }
-                return xs;
-            };
-            // Marks all edges in the graph with a type-1 conflict with the 'type1Conflict' property.
-            // A type-1 conflict is one where a non-inner segment crosses an inner segment.
-            // An inner segment is an edge with both incident nodes marked with the 'dummy' property.
-            //
-            // This algorithm scans layer by layer, starting with the second, for type-1
-            // conflicts between the current layer and the previous layer. For each layer
-            // it scans the nodes from left to right until it reaches one that is incident
-            // on an inner segment. It then scans predecessors to determine if they have
-            // edges that cross that inner segment. At the end a final scan is done for all
-            // nodes on the current rank to see if they cross the last visited inner segment.
-            //
-            // This algorithm (safely) assumes that a dummy node will only be incident on a
-            // single node in the layers being scanned.
-            const findType1Conflicts = (g, layering) => {
-                const conflicts = {};
-                if (layering.length > 0) {
-                    let prev = layering[0];
-                    for (let k = 1; k < layering.length; k++) {
-                        const layer = layering[k];
-                        // last visited node in the previous layer that is incident on an inner segment.
-                        let k0 = 0;
-                        // Tracks the last node in this layer scanned for crossings with a type-1 segment.
-                        let scanPos = 0;
-                        const prevLayerLength = prev.length;
-                        const lastNode = layer[layer.length - 1];
-                        for (let i = 0; i < layer.length; i++) {
-                            const v = layer[i];
-                            const w = g.node(v).label.dummy ? g.predecessors(v).find((u) => g.node(u).label.dummy) : null;
-                            if (w || v === lastNode) {
-                                const k1 = w ? g.node(w).label.order : prevLayerLength;
-                                for (const scanNode of layer.slice(scanPos, i + 1)) {
-                                // for (const scanNode of layer.slice(scanPos, scanPos + 1)) {
-                                    for (const u of g.predecessors(scanNode)) {
-                                        const uLabel = g.node(u).label;
-                                        const uPos = uLabel.order;
-                                        if ((uPos < k0 || k1 < uPos) && !(uLabel.dummy && g.node(scanNode).label.dummy)) {
-                                            addConflict(conflicts, u, scanNode);
-                                        }
-                                    }
-                                }
-                                // scanPos += 1;
-                                scanPos = i + 1;
-                                k0 = k1;
-                            }
-                        }
-                        prev = layer;
-                    }
-                }
-                return conflicts;
-            };
-            const findType2Conflicts = (g, layering) => {
-                const conflicts = {};
-                const scan = (south, southPos, southEnd, prevNorthBorder, nextNorthBorder) => {
-                    let v;
-                    for (let i = southPos; i < southEnd; i++) {
-                        v = south[i];
-                        if (g.node(v).labeldummy) {
-                            for (const u of g.predecessors(v)) {
-                                const uNode = g.node(u).label;
-                                if (uNode.dummy && (uNode.order < prevNorthBorder || uNode.order > nextNorthBorder)) {
-                                    addConflict(conflicts, u, v);
-                                }
-                            }
-                        }
-                    }
-                };
-                if (layering.length > 0) {
-                    let north = layering[0];
-                    for (let i = 1; i < layering.length; i++) {
-                        const south = layering[i];
-                        let prevNorthPos = -1;
-                        let nextNorthPos;
-                        let southPos = 0;
-                        south.forEach(function(v, southLookahead) {
-                            if (g.node(v).label.dummy === 'border') {
-                                const predecessors = g.predecessors(v);
-                                if (predecessors.length) {
-                                    nextNorthPos = g.node(predecessors[0]).label.order;
-                                    scan(south, southPos, southLookahead, prevNorthPos, nextNorthPos);
-                                    southPos = southLookahead;
-                                    prevNorthPos = nextNorthPos;
-                                }
-                            }
-                            scan(south, southPos, south.length, nextNorthPos, north.length);
-                        });
-                        north = south;
-                    }
-                }
-                return conflicts;
-            };
-
-            g = asNonCompoundGraph(g);
-            const layering = buildLayerMatrix(g);
-            const ranksep = g.options.ranksep;
-            // Assign y-coordinate based on rank
-            let y = 0;
-            for (const layer of layering) {
-                const maxHeight = layer.reduce((a, v) => Math.max(a, g.node(v).label.height), 0);
-                for (const v of layer) {
-                    g.node(v).label.y = y + maxHeight / 2;
-                }
-                y += maxHeight + ranksep;
+              }
+              if (delta) {
+                sum += reverseSep ? delta : -delta;
+              }
+              const edge = blockGraph.edge(uRoot, vRoot);
+              const max = Math.max(sum, edge ? edge.label : 0);
+              if (edge) {
+                edge.label = max;
+              } else {
+                blockGraph.setEdge(uRoot, vRoot, max);
+              }
             }
-            // Coordinate assignment based on Brandes and Köpf, 'Fast and Simple Horizontal Coordinate Assignment.'
-            const conflicts = Object.assign(findType1Conflicts(g, layering), findType2Conflicts(g, layering));
-            const xss = {};
-            for (const vertical of ['u', 'd']) {
-                let adjustedLayering = vertical === 'u' ? layering : Object.values(layering).reverse();
-                for (const horizontal of ['l', 'r']) {
-                    if (horizontal === 'r') {
-                        adjustedLayering = adjustedLayering.map((layer) => Object.values(layer).reverse());
-                    }
-                    const neighborFn = (vertical === 'u' ? g.predecessors : g.successors).bind(g);
-                    const align = verticalAlignment(adjustedLayering, conflicts, neighborFn);
-                    const xs = horizontalCompaction(g, adjustedLayering, align.root, align.align, horizontal === 'r');
-                    if (horizontal === 'r') {
-                        for (const entry of Object.entries(xs)) {
-                            xs[entry[0]] = -entry[1];
-                        }
-                    }
-                    xss[vertical + horizontal] = xs;
+            u = v;
+          }
+        }
+        return blockGraph;
+      };
+      // Try to align nodes into vertical 'blocks' where possible.
+      // This algorithm attempts to align a node with one of its median neighbors.
+      // If the edge connecting a neighbor is a type-1 conflict then we ignore that possibility.
+      // If a previous node has already formed a block with a node after the node we're trying to form a block with,
+      // we also ignore that possibility - our blocks would be split in that scenario.
+      const verticalAlignment = (layering, conflicts, neighborFn) => {
+        const root = {};
+        const align = {};
+        const pos = {};
+        // We cache the position here based on the layering because the graph and layering may be out of sync.
+        // The layering matrix is manipulated to generate different extreme alignments.
+        for (const layer of layering) {
+          let order = 0;
+          for (const v of layer) {
+            root[v] = v;
+            align[v] = v;
+            pos[v] = order;
+            order++;
+          }
+        }
+        for (const layer of layering) {
+          let prevIdx = -1;
+          for (const v of layer) {
+            let ws = neighborFn(v);
+            if (ws.length > 0) {
+              ws.sort((a, b) => pos[a] - pos[b]);
+              const mp = (ws.length - 1) / 2.0;
+              const il = Math.ceil(mp);
+              for (let i = Math.floor(mp); i <= il; i++) {
+                const w = ws[i];
+                if (align[v] === v && prevIdx < pos[w] && !hasConflict(conflicts, v, w)) {
+                  align[w] = v;
+                  align[v] = root[v] = root[w];
+                  prevIdx = pos[w];
                 }
+              }
             }
-            // Find smallest width alignment: Returns the alignment that has the smallest width of the given alignments.
-            let minWidth = Number.POSITIVE_INFINITY;
-            let minValue = undefined;
-            for (const xs of Object.values(xss)) {
-                let max = Number.NEGATIVE_INFINITY;
-                let min = Number.POSITIVE_INFINITY;
-                for (const entry of Object.entries(xs)) {
-                    const v = entry[0];
-                    const x = entry[1];
-                    const halfWidth = g.node(v).label.width / 2;
-                    max = Math.max(x + halfWidth, max);
-                    min = Math.min(x - halfWidth, min);
-                }
-                const width = max - min;
-                if (width < minWidth) {
-                    minWidth = width;
-                    minValue = xs;
-                }
+          }
+        }
+        return { root: root, align: align };
+      };
+      const horizontalCompaction = (g, layering, root, align, reverseSep) => {
+        // This portion of the algorithm differs from BK due to a number of problems.
+        // Instead of their algorithm we construct a new block graph and do two sweeps.
+        const xs = {};
+        const blockG = buildBlockGraph(g, layering, root, reverseSep);
+        const borderType = reverseSep ? 'borderLeft' : 'borderRight';
+        const iterate = (setXsFunc, nextNodesFunc) => {
+          let stack = Array.from(blockG.nodes.keys());
+          const visited = new Set();
+          while (stack.length > 0) {
+            const v = stack.pop();
+            if (visited.has(v)) {
+              setXsFunc(v);
+            } else {
+              visited.add(v);
+              stack.push(v);
+              stack = stack.concat(nextNodesFunc(v));
             }
-            // Align the coordinates of each of the layout alignments such that
-            // left-biased alignments have their minimum coordinate at the same point as
-            // the minimum coordinate of the smallest width alignment and right-biased
-            // alignments have their maximum coordinate at the same point as the maximum
-            // coordinate of the smallest width alignment.
-            const alignTo = minValue;
-            const range = (values) => {
-                let min = Number.POSITIVE_INFINITY;
-                let max = Number.NEGATIVE_INFINITY;
-                for (const value of values) {
-                    if (value < min) {
-                        min = value;
-                    }
-                    if (value > max) {
-                        max = value;
-                    }
-                }
-                return [ min, max ];
-            };
-            const alignToRange = range(Object.values(alignTo));
-            for (const vertical of ['u', 'd']) {
-                for (const horizontal of ['l', 'r']) {
-                    const alignment = vertical + horizontal;
-                    const xs = xss[alignment];
-                    let delta;
-                    if (xs !== alignTo) {
-                        const vsValsRange = range(Object.values(xs));
-                        delta = horizontal === 'l' ? alignToRange[0] - vsValsRange[0] : alignToRange[1] - vsValsRange[1];
-                        if (delta) {
-                            const list = {};
-                            for (const key of Object.keys(xs)) {
-                                list[key] = xs[key] + delta;
-                            }
-                            xss[alignment] = list;
-                        }
-                    }
-                }
-            }
-            // balance
-            const align = g.options.align;
-            if (align) {
-                const xs = xss[align.toLowerCase()];
-                for (const v of Object.keys(xss.ul)) {
-                    g.node(v).label.x = xs[v];
-                }
-            }
-            else {
-                for (const v of Object.keys(xss.ul)) {
-                    const xs = [ xss.ul[v], xss.ur[v], xss.dl[v], xss.dr[v] ].sort((a, b) => a - b);
-                    g.node(v).label.x = (xs[1] + xs[2]) / 2;
-                }
-            }
+          }
         };
-
-        const positionSelfEdges = (g) => {
-            for (const node of g.nodes.values()) {
-                const label = node.label;
-                if (label.dummy === 'selfedge') {
-                    const v = node.v;
-                    const selfNode = g.node(label.e.v).label;
-                    const x = selfNode.x + selfNode.width / 2;
-                    const y = selfNode.y;
-                    const dx = label.x - x;
-                    const dy = selfNode.height / 2;
-                    g.setEdge(label.e.v, label.e.w, label.label);
-                    g.removeNode(v);
-                    label.label.points = [
-                        { x: x + 2 * dx / 3, y: y - dy },
-                        { x: x + 5 * dx / 6, y: y - dy },
-                        { x: x +     dx    , y: y },
-                        { x: x + 5 * dx / 6, y: y + dy },
-                        { x: x + 2 * dx / 3, y: y + dy }
-                    ];
-                    label.label.x = label.x;
-                    label.label.y = label.y;
-                }
-            }
+        // First pass, places blocks with the smallest possible coordinates.
+        const pass1 = (v) => {
+          let max = 0;
+          for (const e of blockG.node(v).in) {
+            max = Math.max(max, xs[e.v] + e.label);
+          }
+          xs[v] = max;
         };
-
-        const removeBorderNodes = (g) => {
-            for (const node of g.nodes.values()) {
-                const v = node.v;
-                if (g.children(v).length) {
-                    const label = node.label;
-                    const t = g.node(label.borderTop).label;
-                    const b = g.node(label.borderBottom).label;
-                    const l = g.node(label.borderLeft[label.borderLeft.length - 1]).label;
-                    const r = g.node(label.borderRight[label.borderRight.length - 1]).label;
-                    label.width = Math.abs(r.x - l.x);
-                    label.height = Math.abs(b.y - t.y);
-                    label.x = l.x + label.width / 2;
-                    label.y = t.y + label.height / 2;
-                }
-            }
-            for (const node of g.nodes.values()) {
-                if (node.label.dummy === 'border') {
-                    g.removeNode(node.v);
-                }
-            }
+        // Second pass, removes unused space by moving blocks to the greatest coordinates without violating separation.
+        const pass2 = (v) => {
+          let min = Number.POSITIVE_INFINITY;
+          for (const e of blockG.node(v).out) {
+            min = Math.min(min, xs[e.w] - e.label);
+          }
+          const label = g.node(v).label;
+          if (min !== Number.POSITIVE_INFINITY && label.borderType !== borderType) {
+            xs[v] = Math.max(xs[v], min);
+          }
         };
-
-        const fixupEdgeLabelCoords = (g) => {
-            for (const e of g.edges.values()) {
-                const edge = e.label;
-                if ('x' in edge) {
-                    if (edge.labelpos === 'l' || edge.labelpos === 'r') {
-                        edge.width -= edge.labeloffset;
+        iterate(pass1, blockG.predecessors.bind(blockG));
+        iterate(pass2, blockG.successors.bind(blockG));
+        // Assign x coordinates to all nodes
+        for (const v of Object.values(align)) {
+          xs[v] = xs[root[v]];
+        }
+        return xs;
+      };
+      // Marks all edges in the graph with a type-1 conflict with the 'type1Conflict' property.
+      // A type-1 conflict is one where a non-inner segment crosses an inner segment.
+      // An inner segment is an edge with both incident nodes marked with the 'dummy' property.
+      //
+      // This algorithm scans layer by layer, starting with the second, for type-1
+      // conflicts between the current layer and the previous layer. For each layer
+      // it scans the nodes from left to right until it reaches one that is incident
+      // on an inner segment. It then scans predecessors to determine if they have
+      // edges that cross that inner segment. At the end a final scan is done for all
+      // nodes on the current rank to see if they cross the last visited inner segment.
+      //
+      // This algorithm (safely) assumes that a dummy node will only be incident on a
+      // single node in the layers being scanned.
+      const findType1Conflicts = (g, layering) => {
+        const conflicts = {};
+        if (layering.length > 0) {
+          let prev = layering[0];
+          for (let k = 1; k < layering.length; k++) {
+            const layer = layering[k];
+            // last visited node in the previous layer that is incident on an inner segment.
+            let k0 = 0;
+            // Tracks the last node in this layer scanned for crossings with a type-1 segment.
+            let scanPos = 0;
+            const prevLayerLength = prev.length;
+            const lastNode = layer[layer.length - 1];
+            for (let i = 0; i < layer.length; i++) {
+              const v = layer[i];
+              const w = g.node(v).label.dummy ? g.predecessors(v).find((u) => g.node(u).label.dummy) : null;
+              if (w || v === lastNode) {
+                const k1 = w ? g.node(w).label.order : prevLayerLength;
+                for (const scanNode of layer.slice(scanPos, i + 1)) {
+                  // for (const scanNode of layer.slice(scanPos, scanPos + 1)) {
+                  for (const u of g.predecessors(scanNode)) {
+                    const uLabel = g.node(u).label;
+                    const uPos = uLabel.order;
+                    if ((uPos < k0 || k1 < uPos) && !(uLabel.dummy && g.node(scanNode).label.dummy)) {
+                      addConflict(conflicts, u, scanNode);
                     }
-                    switch (edge.labelpos) {
-                        case 'l': edge.x -= edge.width / 2 + edge.labeloffset; break;
-                        case 'r': edge.x += edge.width / 2 + edge.labeloffset; break;
-                    }
+                  }
                 }
+                // scanPos += 1;
+                scanPos = i + 1;
+                k0 = k1;
+              }
             }
+            prev = layer;
+          }
+        }
+        return conflicts;
+      };
+      const findType2Conflicts = (g, layering) => {
+        const conflicts = {};
+        const scan = (south, southPos, southEnd, prevNorthBorder, nextNorthBorder) => {
+          let v;
+          for (let i = southPos; i < southEnd; i++) {
+            v = south[i];
+            if (g.node(v).labeldummy) {
+              for (const u of g.predecessors(v)) {
+                const uNode = g.node(u).label;
+                if (uNode.dummy && (uNode.order < prevNorthBorder || uNode.order > nextNorthBorder)) {
+                  addConflict(conflicts, u, v);
+                }
+              }
+            }
+          }
         };
+        if (layering.length > 0) {
+          let north = layering[0];
+          for (let i = 1; i < layering.length; i++) {
+            const south = layering[i];
+            let prevNorthPos = -1;
+            let nextNorthPos;
+            let southPos = 0;
+            south.forEach(function (v, southLookahead) {
+              if (g.node(v).label.dummy === 'border') {
+                const predecessors = g.predecessors(v);
+                if (predecessors.length) {
+                  nextNorthPos = g.node(predecessors[0]).label.order;
+                  scan(south, southPos, southLookahead, prevNorthPos, nextNorthPos);
+                  southPos = southLookahead;
+                  prevNorthPos = nextNorthPos;
+                }
+              }
+              scan(south, southPos, south.length, nextNorthPos, north.length);
+            });
+            north = south;
+          }
+        }
+        return conflicts;
+      };
+
+      g = asNonCompoundGraph(g);
+      const layering = buildLayerMatrix(g);
+      const ranksep = g.options.ranksep;
+      // Assign y-coordinate based on rank
+      let y = 0;
+      for (const layer of layering) {
+        const maxHeight = layer.reduce((a, v) => Math.max(a, g.node(v).label.height), 0);
+        for (const v of layer) {
+          g.node(v).label.y = y + maxHeight / 2;
+        }
+        y += maxHeight + ranksep;
+      }
+      // Coordinate assignment based on Brandes and Köpf, 'Fast and Simple Horizontal Coordinate Assignment.'
+      const conflicts = Object.assign(findType1Conflicts(g, layering), findType2Conflicts(g, layering));
+      const xss = {};
+      for (const vertical of ['u', 'd']) {
+        let adjustedLayering = vertical === 'u' ? layering : Object.values(layering).reverse();
+        for (const horizontal of ['l', 'r']) {
+          if (horizontal === 'r') {
+            adjustedLayering = adjustedLayering.map((layer) => Object.values(layer).reverse());
+          }
+          const neighborFn = (vertical === 'u' ? g.predecessors : g.successors).bind(g);
+          const align = verticalAlignment(adjustedLayering, conflicts, neighborFn);
+          const xs = horizontalCompaction(g, adjustedLayering, align.root, align.align, horizontal === 'r');
+          if (horizontal === 'r') {
+            for (const entry of Object.entries(xs)) {
+              xs[entry[0]] = -entry[1];
+            }
+          }
+          xss[vertical + horizontal] = xs;
+        }
+      }
+      // Find smallest width alignment: Returns the alignment that has the smallest width of the given alignments.
+      let minWidth = Number.POSITIVE_INFINITY;
+      let minValue = undefined;
+      for (const xs of Object.values(xss)) {
+        let max = Number.NEGATIVE_INFINITY;
+        let min = Number.POSITIVE_INFINITY;
+        for (const entry of Object.entries(xs)) {
+          const v = entry[0];
+          const x = entry[1];
+          const halfWidth = g.node(v).label.width / 2;
+          max = Math.max(x + halfWidth, max);
+          min = Math.min(x - halfWidth, min);
+        }
+        const width = max - min;
+        if (width < minWidth) {
+          minWidth = width;
+          minValue = xs;
+        }
+      }
+      // Align the coordinates of each of the layout alignments such that
+      // left-biased alignments have their minimum coordinate at the same point as
+      // the minimum coordinate of the smallest width alignment and right-biased
+      // alignments have their maximum coordinate at the same point as the maximum
+      // coordinate of the smallest width alignment.
+      const alignTo = minValue;
+      const range = (values) => {
+        let min = Number.POSITIVE_INFINITY;
+        let max = Number.NEGATIVE_INFINITY;
+        for (const value of values) {
+          if (value < min) {
+            min = value;
+          }
+          if (value > max) {
+            max = value;
+          }
+        }
+        return [min, max];
+      };
+      const alignToRange = range(Object.values(alignTo));
+      for (const vertical of ['u', 'd']) {
+        for (const horizontal of ['l', 'r']) {
+          const alignment = vertical + horizontal;
+          const xs = xss[alignment];
+          let delta;
+          if (xs !== alignTo) {
+            const vsValsRange = range(Object.values(xs));
+            delta = horizontal === 'l' ? alignToRange[0] - vsValsRange[0] : alignToRange[1] - vsValsRange[1];
+            if (delta) {
+              const list = {};
+              for (const key of Object.keys(xs)) {
+                list[key] = xs[key] + delta;
+              }
+              xss[alignment] = list;
+            }
+          }
+        }
+      }
+      // balance
+      const align = g.options.align;
+      if (align) {
+        const xs = xss[align.toLowerCase()];
+        for (const v of Object.keys(xss.ul)) {
+          g.node(v).label.x = xs[v];
+        }
+      } else {
+        for (const v of Object.keys(xss.ul)) {
+          const xs = [xss.ul[v], xss.ur[v], xss.dl[v], xss.dr[v]].sort((a, b) => a - b);
+          g.node(v).label.x = (xs[1] + xs[2]) / 2;
+        }
+      }
+    };
+
+    const positionSelfEdges = (g) => {
+      for (const node of g.nodes.values()) {
+        const label = node.label;
+        if (label.dummy === 'selfedge') {
+          const v = node.v;
+          const selfNode = g.node(label.e.v).label;
+          const x = selfNode.x + selfNode.width / 2;
+          const y = selfNode.y;
+          const dx = label.x - x;
+          const dy = selfNode.height / 2;
+          g.setEdge(label.e.v, label.e.w, label.label);
+          g.removeNode(v);
+          label.label.points = [
+            { x: x + (2 * dx) / 3, y: y - dy },
+            { x: x + (5 * dx) / 6, y: y - dy },
+            { x: x + dx, y: y },
+            { x: x + (5 * dx) / 6, y: y + dy },
+            { x: x + (2 * dx) / 3, y: y + dy },
+          ];
+          label.label.x = label.x;
+          label.label.y = label.y;
+        }
+      }
+    };
+
+    const removeBorderNodes = (g) => {
+      for (const node of g.nodes.values()) {
+        const v = node.v;
+        if (g.children(v).length) {
+          const label = node.label;
+          const t = g.node(label.borderTop).label;
+          const b = g.node(label.borderBottom).label;
+          const l = g.node(label.borderLeft[label.borderLeft.length - 1]).label;
+          const r = g.node(label.borderRight[label.borderRight.length - 1]).label;
+          label.width = Math.abs(r.x - l.x);
+          label.height = Math.abs(b.y - t.y);
+          label.x = l.x + label.width / 2;
+          label.y = t.y + label.height / 2;
+        }
+      }
+      for (const node of g.nodes.values()) {
+        if (node.label.dummy === 'border') {
+          g.removeNode(node.v);
+        }
+      }
+    };
+
+    const fixupEdgeLabelCoords = (g) => {
+      for (const e of g.edges.values()) {
+        const edge = e.label;
+        if ('x' in edge) {
+          if (edge.labelpos === 'l' || edge.labelpos === 'r') {
+            edge.width -= edge.labeloffset;
+          }
+          switch (edge.labelpos) {
+            case 'l':
+              edge.x -= edge.width / 2 + edge.labeloffset;
+              break;
+            case 'r':
+              edge.x += edge.width / 2 + edge.labeloffset;
+              break;
+          }
+        }
+      }
+    };
 
         const translateGraph = (g) => {
             let minX = Number.POSITIVE_INFINITY;
