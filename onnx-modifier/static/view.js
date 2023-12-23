@@ -1,4 +1,3 @@
-
 var view = view || {};
 
 var base = base || require('./base');
@@ -17,919 +16,951 @@ var grapher = grapher || require('./view-grapher');
 var DISPLAY_OM_MODEL = false;
 
 view.View = class {
-
-    constructor(host, id) {
-        this._host = host;
-        this._id = id ? ('-' + id) : '';
-        this._options = {
-            initializers: true,
-            attributes: false,
-            names: false,
-            direction: 'vertical',
-            mousewheel: 'scroll'
-        };
-        this.lastScrollLeft = 0;
-        this.lastScrollTop = 0;
-        this._zoom = 1;
-        this._host.initialize(this).then(() => {
-            this._model = null;
-            this._graphs = [];
-            this._showSubGraphNodeCount = 100;
-            this._showSubGraph = null;
-            this._selection = [];
-            this._sidebar = new sidebar.Sidebar(this._host, id);
-            this._searchText = '';
-            this._modelFactoryService = new view.ModelFactoryService(this._host);
-            this._getElementById('zoom-in-button').addEventListener('click', () => {
-                this.zoomIn();
-            });
-            this._getElementById('zoom-out-button').addEventListener('click', () => {
-                this.zoomOut();
-            });
-            this._getElementById('back-button').addEventListener('click', () => {
-                this.popGraph();
-            });
-            this._getElementById('name-button').addEventListener('click', () => {
-                this.showDocumentation(this.activeGraph);
-            });
-            this._getElementById('sub-graph-name-button').addEventListener('click', () => {
-                let dialog = this._host.document.getElementById("set-show-node-count")
-                this._host.show_confirm_dialog(dialog).then((btnValue)=> {
-                    if (!btnValue) {
-                        return
-                    }
-                    let select_elem = this._host.document.getElementById("input-show-node-count")
-                    if (select_elem) {
-                        this._showSubGraphNodeCount = parseInt(select_elem.options[select_elem.selectedIndex].value)
-                        this._updateGraph(this._model, this._graphs)
-                    }
-                })
-            });
-
-            this._getElementById('sidebar').addEventListener('mousewheel', (e) => {
-                this._preventDefault(e);
-            }, { passive: true });
-            this._host.document.addEventListener('keydown', () => {
-                this.clearSelection();
-            });
-            this._host.start();
-            const container = this._getElementById('graph');
-            container.addEventListener('scroll', (e) => this._scrollHandler(e));
-            container.addEventListener('wheel', (e) => this._wheelHandler(e), { passive: false });
-            container.addEventListener('mousedown', (e) => this._mouseDownHandler(e));
-            switch (this._host.agent) {
-                case 'safari':
-                    container.addEventListener('gesturestart', (e) => this._gestureStartHandler(e), false);
-                    break;
-                default:
-                    container.addEventListener('touchstart', (e) => this._touchStartHandler(e), { passive: true });
-                    break;
-            }
-            this.modifier = new modifier.Modifier(this);
-
-        }).catch((err) => {
-            this.error(err, null, null);
-        });
-        this.confirmed = true
-    }
-
-    show(page) {
-        if (!page) {
-            page = (!this._model && !this.activeGraph) ? 'welcome' : 'default';
-        }
-        this._host.screen(page);
-        if (this._sidebar) {
-            this._sidebar.close();
-        }
-        this._host.document.body.setAttribute('class', page);
-        switch (page) {
-            case 'default': {
-                const container = this._getElementById('graph');
-                if (container) {
-                    container.focus();
-                }
-                break;
-            }
-            case 'welcome': {
-                const element = this._getElementById('open-file-button');
-                if (element) {
-                    element.focus();
-                }
-                break;
-            }
-        }
-        this._page = page;
-    }
-
-    cut() {
-        this._host.document.execCommand('cut');
-    }
-
-    copy() {
-        this._host.document.execCommand('copy');
-    }
-
-    paste() {
-        this._host.document.execCommand('paste');
-    }
-
-    selectAll() {
-        this._host.document.execCommand('selectall');
-    }
-
-    find() {
-        if (this._graph) {
-            this.clearSelection();
-            const graphElement = this._getElementById('canvas');
-            const sidebarView = new sidebar.FindSidebar(this._host, graphElement, this._graph);
-            sidebarView.on('search-text-changed', (sender, text) => {
-                this._searchText = text;
-            });
-            sidebarView.on('select', (sender, selection) => {
-                this.select(selection);
-            });
-            sidebarView.on('dblclick-list', (sender, data, event) => {
-                this.showSubGraphByNodeName(data.name, data.graph_node_name)
-            })
-            this._sidebar.open(sidebarView.content, 'Find');
-            sidebarView.focus(this._searchText);
-        }
-    }
-
-    showSubGraphByNodeName(nodeId, nodeName) {
-        if (!this._showSubGraph) {
-            return
-        }
-        this._showSubGraph.setShowNode(nodeId)
-        return this._updateGraph(this._model, this._graphs).then(() => {
-            let elem = document.getElementById(`node-name-${nodeName}`)
-                || document.getElementById(`node-id-${nodeId}`)
-            if (elem) {
-                this.select([elem])
-            }
-        })
-    }
-
-    clearSubGraph() {
-        this._showSubGraph = null;
+  constructor(host, id) {
+    this._host = host;
+    this._id = id ? '-' + id : '';
+    this._options = {
+      initializers: true,
+      attributes: false,
+      names: false,
+      direction: 'vertical',
+      mousewheel: 'scroll',
+    };
+    this.lastScrollLeft = 0;
+    this.lastScrollTop = 0;
+    this._zoom = 1;
+    this._host
+      .initialize(this)
+      .then(() => {
+        this._model = null;
+        this._graphs = [];
         this._showSubGraphNodeCount = 100;
-        this.confirmed = true;
-    }
-
-    get model() {
-        return this._model;
-    }
-
-    get options() {
-        return this._options;
-    }
-
-    toggle(name) {
-        switch (name) {
-            case 'names':
-            case 'attributes':
-            case 'initializers':
-                this._options[name] = !this._options[name];
-                this._reload();
-                break;
-            case 'direction':
-                this._options.direction = this._options.direction === 'vertical' ? 'horizontal' : 'vertical';
-                this._reload();
-                break;
-            case 'mousewheel':
-                this._options.mousewheel = this._options.mousewheel === 'scroll' ? 'zoom' : 'scroll';
-                break;
-        }
-    }
-
-    _reload() {
-        this.show('welcome spinner');
-        if (this._model && this._graphs.length > 0) {
-            this._updateGraph(this._model, this._graphs).catch((error) => {
-                if (error) {
-                    this.error(error, 'Graph update failed.', 'welcome');
-                }
-            });
-        }
-    }
-
-    _timeout(time) {
-        return new Promise((resolve) => {
-            setTimeout(() => { resolve(); }, time);
+        this._showSubGraph = null;
+        this._selection = [];
+        this._sidebar = new sidebar.Sidebar(this._host, id);
+        this._searchText = '';
+        this._modelFactoryService = new view.ModelFactoryService(this._host);
+        this._getElementById('zoom-in-button').addEventListener('click', () => {
+          this.zoomIn();
         });
-    }
-
-    _getElementById(id) {
-        return this._host.document.getElementById(id + this._id);
-    }
-
-    zoomIn() {
-        this._updateZoom(this._zoom * 1.1);
-    }
-
-    zoomOut() {
-        this._updateZoom(this._zoom * 0.9);
-    }
-
-    resetZoom() {
-        this._updateZoom(1);
-    }
-
-    _preventDefault(e) {
-        if (e.shiftKey || e.ctrlKey) {
-            e.preventDefault();
-        }
-    }
-
-    _updateZoom(zoom, e) {
-        const container = this._getElementById('graph');
-        const canvas = this._getElementById('canvas');
-        const limit = this._options.direction === 'vertical' ?
-            container.clientHeight / this._height :
-            container.clientWidth / this._width;
-        const min = Math.min(Math.max(limit, 0.15), 1);
-        zoom = Math.max(min, Math.min(zoom, 1.4));
-        const scrollLeft = this._scrollLeft || container.scrollLeft;
-        const scrollTop = this._scrollTop || container.scrollTop;
-        const x = (e ? e.pageX : (container.clientWidth / 2)) + scrollLeft;
-        const y = (e ? e.pageY : (container.clientHeight / 2)) + scrollTop;
-        const width = zoom * this._width;
-        const height = zoom * this._height;
-        canvas.style.width = width + 'px';
-        canvas.style.height = height + 'px';
-        this._scrollLeft = Math.max(0, ((x * zoom) / this._zoom) - (x - scrollLeft));
-        this._scrollTop = Math.max(0, ((y * zoom) / this._zoom) - (y - scrollTop));
-        container.scrollLeft = this._scrollLeft;
-        container.scrollTop = this._scrollTop;
-        this._zoom = zoom;
-    }
-
-    _mouseDownHandler(e) {
-        if (e.buttons === 1) {
-            const document = this._host.document.documentElement;
-            document.style.cursor = 'grabbing';
-            const container = this._getElementById('graph');
-            this._mousePosition = {
-                left: container.scrollLeft,
-                top: container.scrollTop,
-                x: e.clientX,
-                y: e.clientY
-            };
-            e.stopImmediatePropagation();
-            const mouseMoveHandler = (e) => {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                const dx = e.clientX - this._mousePosition.x;
-                const dy = e.clientY - this._mousePosition.y;
-                this._mousePosition.moved = dx * dx + dy * dy > 0;
-                if (this._mousePosition.moved) {
-                    const container = this._getElementById('graph');
-                    container.scrollTop = this._mousePosition.top - dy;
-                    container.scrollLeft = this._mousePosition.left - dx;
-                }
-            };
-            const mouseUpHandler = () => {
-                document.style.cursor = null;
-                container.removeEventListener('mouseup', mouseUpHandler);
-                container.removeEventListener('mouseleave', mouseUpHandler);
-                container.removeEventListener('mousemove', mouseMoveHandler);
-                if (this._mousePosition && this._mousePosition.moved) {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
-                    delete this._mousePosition;
-                    document.addEventListener('click', clickHandler, true);
-                }
-            };
-            const clickHandler = (e) => {
-                e.stopPropagation();
-                document.removeEventListener('click', clickHandler, true);
-            };
-            container.addEventListener('mousemove', mouseMoveHandler);
-            container.addEventListener('mouseup', mouseUpHandler);
-            container.addEventListener('mouseleave', mouseUpHandler);
-        }
-    }
-
-    _touchStartHandler(e) {
-        if (e.touches.length === 2) {
-            this._touchPoints = Array.from(e.touches);
-            this._touchZoom = this._zoom;
-        }
-        const touchMoveHandler = (e) => {
-            if (Array.isArray(this._touchPoints) && this._touchPoints.length === 2 && e.touches.length === 2) {
-                const distance = (points) => {
-                    const dx =(points[1].clientX - points[0].clientX);
-                    const dy =(points[1].clientY - points[0].clientY);
-                    return Math.sqrt(dx * dx + dy * dy);
-                };
-                const d1 = distance(Array.from(e.touches));
-                const d2 = distance(this._touchPoints);
-                if (d2 !== 0) {
-                    const points = this._touchPoints;
-                    const e = {
-                        pageX: (points[1].pageX + points[0].pageX) / 2,
-                        pageY: (points[1].pageY + points[0].pageY) / 2
-                    };
-                    const zoom = d1 / d2;
-                    this._updateZoom(this._touchZoom * zoom, e);
-                }
+        this._getElementById('zoom-out-button').addEventListener('click', () => {
+          this.zoomOut();
+        });
+        this._getElementById('back-button').addEventListener('click', () => {
+          this.popGraph();
+        });
+        this._getElementById('name-button').addEventListener('click', () => {
+          this.showDocumentation(this.activeGraph);
+        });
+        this._getElementById('sub-graph-name-button').addEventListener('click', () => {
+          let dialog = this._host.document.getElementById('set-show-node-count');
+          this._host.show_confirm_dialog(dialog).then((btnValue) => {
+            if (!btnValue) {
+              return;
             }
-        };
-        const touchEndHandler = () => {
-            container.removeEventListener('touchmove', touchMoveHandler, { passive: true });
-            container.removeEventListener('touchcancel', touchEndHandler, { passive: true });
-            container.removeEventListener('touchend', touchEndHandler, { passive: true });
-            delete this._touchPoints;
-            delete this._touchZoom;
-        };
-        const container = this._getElementById('graph');
-        container.addEventListener('touchmove', touchMoveHandler, { passive: true });
-        container.addEventListener('touchcancel', touchEndHandler, { passive: true });
-        container.addEventListener('touchend', touchEndHandler, { passive: true });
-    }
+            let select_elem = this._host.document.getElementById('input-show-node-count');
+            if (select_elem) {
+              this._showSubGraphNodeCount = parseInt(select_elem.options[select_elem.selectedIndex].value);
+              this._updateGraph(this._model, this._graphs);
+            }
+          });
+        });
 
-    _gestureStartHandler(e) {
+        this._getElementById('sidebar').addEventListener(
+          'mousewheel',
+          (e) => {
+            this._preventDefault(e);
+          },
+          { passive: true }
+        );
+        this._host.document.addEventListener('keydown', () => {
+          this.clearSelection();
+        });
+        this._host.start();
+        const container = this._getElementById('graph');
+        container.addEventListener('scroll', (e) => this._scrollHandler(e));
+        container.addEventListener('wheel', (e) => this._wheelHandler(e), { passive: false });
+        container.addEventListener('mousedown', (e) => this._mouseDownHandler(e));
+        switch (this._host.agent) {
+          case 'safari':
+            container.addEventListener('gesturestart', (e) => this._gestureStartHandler(e), false);
+            break;
+          default:
+            container.addEventListener('touchstart', (e) => this._touchStartHandler(e), { passive: true });
+            break;
+        }
+        this.modifier = new modifier.Modifier(this);
+      })
+      .catch((err) => {
+        this.error(err, null, null);
+      });
+    this.confirmed = true;
+  }
+
+  show(page) {
+    if (!page) {
+      page = !this._model && !this.activeGraph ? 'welcome' : 'default';
+    }
+    this._host.screen(page);
+    if (this._sidebar) {
+      this._sidebar.close();
+    }
+    this._host.document.body.setAttribute('class', page);
+    switch (page) {
+      case 'default': {
+        const container = this._getElementById('graph');
+        if (container) {
+          container.focus();
+        }
+        break;
+      }
+      case 'welcome': {
+        const element = this._getElementById('open-file-button');
+        if (element) {
+          element.focus();
+        }
+        break;
+      }
+    }
+    this._page = page;
+  }
+
+  cut() {
+    this._host.document.execCommand('cut');
+  }
+
+  copy() {
+    this._host.document.execCommand('copy');
+  }
+
+  paste() {
+    this._host.document.execCommand('paste');
+  }
+
+  selectAll() {
+    this._host.document.execCommand('selectall');
+  }
+
+  find() {
+    if (this._graph) {
+      this.clearSelection();
+      const graphElement = this._getElementById('canvas');
+      const sidebarView = new sidebar.FindSidebar(this._host, graphElement, this._graph);
+      sidebarView.on('search-text-changed', (sender, text) => {
+        this._searchText = text;
+      });
+      sidebarView.on('select', (sender, selection) => {
+        this.select(selection);
+      });
+      sidebarView.on('dblclick-list', (sender, data, event) => {
+        this.showSubGraphByNodeName(data.name, data.graph_node_name);
+      });
+      this._sidebar.open(sidebarView.content, 'Find');
+      sidebarView.focus(this._searchText);
+    }
+  }
+
+  showSubGraphByNodeName(nodeId, nodeName) {
+    if (!this._showSubGraph) {
+      return;
+    }
+    this._showSubGraph.setShowNode(nodeId);
+    return this._updateGraph(this._model, this._graphs).then(() => {
+      let elem = document.getElementById(`node-name-${nodeName}`) || document.getElementById(`node-id-${nodeId}`);
+      if (elem) {
+        this.select([elem]);
+      }
+    });
+  }
+
+  clearSubGraph() {
+    this._showSubGraph = null;
+    this._showSubGraphNodeCount = 100;
+    this.confirmed = true;
+  }
+
+  get model() {
+    return this._model;
+  }
+
+  get options() {
+    return this._options;
+  }
+
+  toggle(name) {
+    switch (name) {
+      case 'names':
+      case 'attributes':
+      case 'initializers':
+        this._options[name] = !this._options[name];
+        this._reload();
+        break;
+      case 'direction':
+        this._options.direction = this._options.direction === 'vertical' ? 'horizontal' : 'vertical';
+        this._reload();
+        break;
+      case 'mousewheel':
+        this._options.mousewheel = this._options.mousewheel === 'scroll' ? 'zoom' : 'scroll';
+        break;
+    }
+  }
+
+  _reload() {
+    this.show('welcome spinner');
+    if (this._model && this._graphs.length > 0) {
+      this._updateGraph(this._model, this._graphs).catch((error) => {
+        if (error) {
+          this.error(error, 'Graph update failed.', 'welcome');
+        }
+      });
+    }
+  }
+
+  _timeout(time) {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, time);
+    });
+  }
+
+  _getElementById(id) {
+    return this._host.document.getElementById(id + this._id);
+  }
+
+  zoomIn() {
+    this._updateZoom(this._zoom * 1.1);
+  }
+
+  zoomOut() {
+    this._updateZoom(this._zoom * 0.9);
+  }
+
+  resetZoom() {
+    this._updateZoom(1);
+  }
+
+  _preventDefault(e) {
+    if (e.shiftKey || e.ctrlKey) {
+      e.preventDefault();
+    }
+  }
+
+  _updateZoom(zoom, e) {
+    const container = this._getElementById('graph');
+    const canvas = this._getElementById('canvas');
+    const limit =
+      this._options.direction === 'vertical'
+        ? container.clientHeight / this._height
+        : container.clientWidth / this._width;
+    const min = Math.min(Math.max(limit, 0.15), 1);
+    zoom = Math.max(min, Math.min(zoom, 1.4));
+    const scrollLeft = this._scrollLeft || container.scrollLeft;
+    const scrollTop = this._scrollTop || container.scrollTop;
+    const x = (e ? e.pageX : container.clientWidth / 2) + scrollLeft;
+    const y = (e ? e.pageY : container.clientHeight / 2) + scrollTop;
+    const width = zoom * this._width;
+    const height = zoom * this._height;
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    this._scrollLeft = Math.max(0, (x * zoom) / this._zoom - (x - scrollLeft));
+    this._scrollTop = Math.max(0, (y * zoom) / this._zoom - (y - scrollTop));
+    container.scrollLeft = this._scrollLeft;
+    container.scrollTop = this._scrollTop;
+    this._zoom = zoom;
+  }
+
+  _mouseDownHandler(e) {
+    if (e.buttons === 1) {
+      const document = this._host.document.documentElement;
+      document.style.cursor = 'grabbing';
+      const container = this._getElementById('graph');
+      this._mousePosition = {
+        left: container.scrollLeft,
+        top: container.scrollTop,
+        x: e.clientX,
+        y: e.clientY,
+      };
+      e.stopImmediatePropagation();
+      const mouseMoveHandler = (e) => {
         e.preventDefault();
-        this._gestureZoom = this._zoom;
-        const container = this._getElementById('graph');
-        const gestureChangeHandler = (e) => {
-            e.preventDefault();
-            this._updateZoom(this._gestureZoom * e.scale, e);
+        e.stopImmediatePropagation();
+        const dx = e.clientX - this._mousePosition.x;
+        const dy = e.clientY - this._mousePosition.y;
+        this._mousePosition.moved = dx * dx + dy * dy > 0;
+        if (this._mousePosition.moved) {
+          const container = this._getElementById('graph');
+          container.scrollTop = this._mousePosition.top - dy;
+          container.scrollLeft = this._mousePosition.left - dx;
+        }
+      };
+      const mouseUpHandler = () => {
+        document.style.cursor = null;
+        container.removeEventListener('mouseup', mouseUpHandler);
+        container.removeEventListener('mouseleave', mouseUpHandler);
+        container.removeEventListener('mousemove', mouseMoveHandler);
+        if (this._mousePosition && this._mousePosition.moved) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          delete this._mousePosition;
+          document.addEventListener('click', clickHandler, true);
+        }
+      };
+      const clickHandler = (e) => {
+        e.stopPropagation();
+        document.removeEventListener('click', clickHandler, true);
+      };
+      container.addEventListener('mousemove', mouseMoveHandler);
+      container.addEventListener('mouseup', mouseUpHandler);
+      container.addEventListener('mouseleave', mouseUpHandler);
+    }
+  }
+
+  _touchStartHandler(e) {
+    if (e.touches.length === 2) {
+      this._touchPoints = Array.from(e.touches);
+      this._touchZoom = this._zoom;
+    }
+    const touchMoveHandler = (e) => {
+      if (Array.isArray(this._touchPoints) && this._touchPoints.length === 2 && e.touches.length === 2) {
+        const distance = (points) => {
+          const dx = points[1].clientX - points[0].clientX;
+          const dy = points[1].clientY - points[0].clientY;
+          return Math.sqrt(dx * dx + dy * dy);
         };
-        const gestureEndHandler = (e) => {
-            container.removeEventListener('gesturechange', gestureChangeHandler, false);
-            container.removeEventListener('gestureend', gestureEndHandler, false);
-            e.preventDefault();
-            if (this._gestureZoom) {
-                this._updateZoom(this._gestureZoom * e.scale, e);
-                delete this._gestureZoom;
-            }
-        };
-        container.addEventListener('gesturechange', gestureChangeHandler, false);
-        container.addEventListener('gestureend', gestureEndHandler, false);
-    }
-
-    _scrollHandler(e) {
-        if (this._scrollLeft && e.target.scrollLeft !== Math.floor(this._scrollLeft)) {
-            delete this._scrollLeft;
+        const d1 = distance(Array.from(e.touches));
+        const d2 = distance(this._touchPoints);
+        if (d2 !== 0) {
+          const points = this._touchPoints;
+          const e = {
+            pageX: (points[1].pageX + points[0].pageX) / 2,
+            pageY: (points[1].pageY + points[0].pageY) / 2,
+          };
+          const zoom = d1 / d2;
+          this._updateZoom(this._touchZoom * zoom, e);
         }
-        if (this._scrollTop && e.target.scrollTop !== Math.floor(this._scrollTop)) {
-            delete this._scrollTop;
-        }
+      }
+    };
+    const touchEndHandler = () => {
+      container.removeEventListener('touchmove', touchMoveHandler, { passive: true });
+      container.removeEventListener('touchcancel', touchEndHandler, { passive: true });
+      container.removeEventListener('touchend', touchEndHandler, { passive: true });
+      delete this._touchPoints;
+      delete this._touchZoom;
+    };
+    const container = this._getElementById('graph');
+    container.addEventListener('touchmove', touchMoveHandler, { passive: true });
+    container.addEventListener('touchcancel', touchEndHandler, { passive: true });
+    container.addEventListener('touchend', touchEndHandler, { passive: true });
+  }
+
+  _gestureStartHandler(e) {
+    e.preventDefault();
+    this._gestureZoom = this._zoom;
+    const container = this._getElementById('graph');
+    const gestureChangeHandler = (e) => {
+      e.preventDefault();
+      this._updateZoom(this._gestureZoom * e.scale, e);
+    };
+    const gestureEndHandler = (e) => {
+      container.removeEventListener('gesturechange', gestureChangeHandler, false);
+      container.removeEventListener('gestureend', gestureEndHandler, false);
+      e.preventDefault();
+      if (this._gestureZoom) {
+        this._updateZoom(this._gestureZoom * e.scale, e);
+        delete this._gestureZoom;
+      }
+    };
+    container.addEventListener('gesturechange', gestureChangeHandler, false);
+    container.addEventListener('gestureend', gestureEndHandler, false);
+  }
+
+  _scrollHandler(e) {
+    if (this._scrollLeft && e.target.scrollLeft !== Math.floor(this._scrollLeft)) {
+      delete this._scrollLeft;
     }
-
-    _wheelHandler(e) {
-        if (e.shiftKey || e.ctrlKey || this._options.mousewheel === 'zoom') {
-            const delta = -e.deltaY * (e.deltaMode === 1 ? 0.05 : e.deltaMode ? 1 : 0.002) * (e.ctrlKey ? 10 : 1);
-            this._updateZoom(this._zoom * Math.pow(2, delta), e);
-            e.preventDefault();
-        }
+    if (this._scrollTop && e.target.scrollTop !== Math.floor(this._scrollTop)) {
+      delete this._scrollTop;
     }
+  }
 
-    select(selection) {
-        this.clearSelection();
-        if (selection && selection.length > 0) {
-            const container = this._getElementById('graph');
-            let x = 0;
-            let y = 0;
-            for (const element of selection) {
-                element.classList.add('select');
-                this._selection.push(element);
-                const rect = element.getBoundingClientRect();
-                x += rect.left + (rect.width / 2);
-                y += rect.top + (rect.height / 2);
-            }
-            x = x / selection.length;
-            y = y / selection.length;
-            const rect = container.getBoundingClientRect();
-            const left = (container.scrollLeft + x - rect.left) - (rect.width / 2);
-            const top = (container.scrollTop + y - rect.top) - (rect.height / 2);
-            container.scrollTo({ left: left, top: top, behavior: 'smooth' });
-        }
+  _wheelHandler(e) {
+    if (e.shiftKey || e.ctrlKey || this._options.mousewheel === 'zoom') {
+      const delta = -e.deltaY * (e.deltaMode === 1 ? 0.05 : e.deltaMode ? 1 : 0.002) * (e.ctrlKey ? 10 : 1);
+      this._updateZoom(this._zoom * Math.pow(2, delta), e);
+      e.preventDefault();
     }
+  }
 
-    clearSelection() {
-        while (this._selection.length > 0) {
-            const element = this._selection.pop();
-            element.classList.remove('select');
-        }
+  select(selection) {
+    this.clearSelection();
+    if (selection && selection.length > 0) {
+      const container = this._getElementById('graph');
+      let x = 0;
+      let y = 0;
+      for (const element of selection) {
+        element.classList.add('select');
+        this._selection.push(element);
+        const rect = element.getBoundingClientRect();
+        x += rect.left + rect.width / 2;
+        y += rect.top + rect.height / 2;
+      }
+      x = x / selection.length;
+      y = y / selection.length;
+      const rect = container.getBoundingClientRect();
+      const left = container.scrollLeft + x - rect.left - rect.width / 2;
+      const top = container.scrollTop + y - rect.top - rect.height / 2;
+      container.scrollTo({ left: left, top: top, behavior: 'smooth' });
     }
+  }
 
-    error(err, name, screen) {
-        if (this._sidebar) {
-            this._sidebar.close();
-        }
-        this._host.exception(err, false);
-
-        const knowns = [
-        ];
-        const known = knowns.find((known) => (known.name.length === 0 || known.name === err.name) && err.message.match(known.message));
-        const message = err.message + (known ? '\n\nPlease provide information about this issue at ' + known.url + '.' : '');
-        name = name || err.name;
-        this._host.error(name, message);
-        this.show(screen !== undefined ? screen : 'welcome');
-        if (known) {
-            this._host.openURL(known.url);
-        }
+  clearSelection() {
+    while (this._selection.length > 0) {
+      const element = this._selection.pop();
+      element.classList.remove('select');
     }
+  }
 
-    accept(file) {
-        return this._modelFactoryService.accept(file);
+  error(err, name, screen) {
+    if (this._sidebar) {
+      this._sidebar.close();
     }
+    this._host.exception(err, false);
 
-    open(context) {
-        this._host.event('Model', 'Open', 'Size', context.stream ? context.stream.length : 0);
-        this._sidebar.close();
-        return this._timeout(2).then(() => {
-            return this._modelFactoryService.open(context).then((model) => {
-                const format = [];
-                if (model.format) {
-                    format.push(model.format);
-                }
-                if (model.producer) {
-                    format.push('(' + model.producer + ')');
-                }
-                if (format.length > 0) {
-                    this._host.event('Model', 'Format', format.join(' '));
-                }
-                return this._timeout(20).then(() => {
-                    const graphs = Array.isArray(model.graphs) && model.graphs.length > 0 ? [ model.graphs[0] ] : [];
-                    if (model.format != "DaVinci OM") {
-                        this.modifier.loadModelGraph(model, graphs);
-                        DISPLAY_OM_MODEL = false;
-                    } else {
-                        this._host.show_alert_message("Warning", "Detect om model, modification is not supported");
-                        DISPLAY_OM_MODEL = true;
-                    }
-                    return this._updateGraph(model, graphs);
-                });
-            });
+    const knowns = [];
+    const known = knowns.find(
+      (known) => (known.name.length === 0 || known.name === err.name) && err.message.match(known.message)
+    );
+    const message =
+      err.message + (known ? '\n\nPlease provide information about this issue at ' + known.url + '.' : '');
+    name = name || err.name;
+    this._host.error(name, message);
+    this.show(screen !== undefined ? screen : 'welcome');
+    if (known) {
+      this._host.openURL(known.url);
+    }
+  }
+
+  accept(file) {
+    return this._modelFactoryService.accept(file);
+  }
+
+  open(context) {
+    this._host.event('Model', 'Open', 'Size', context.stream ? context.stream.length : 0);
+    this._sidebar.close();
+    return this._timeout(2).then(() => {
+      return this._modelFactoryService.open(context).then((model) => {
+        const format = [];
+        if (model.format) {
+          format.push(model.format);
+        }
+        if (model.producer) {
+          format.push('(' + model.producer + ')');
+        }
+        if (format.length > 0) {
+          this._host.event('Model', 'Format', format.join(' '));
+        }
+        return this._timeout(20).then(() => {
+          const graphs = Array.isArray(model.graphs) && model.graphs.length > 0 ? [model.graphs[0]] : [];
+          if (model.format != 'DaVinci OM') {
+            this.modifier.loadModelGraph(model, graphs);
+            DISPLAY_OM_MODEL = false;
+          } else {
+            this._host.show_alert_message('Warning', 'Detect om model, modification is not supported');
+            DISPLAY_OM_MODEL = true;
+          }
+          return this._updateGraph(model, graphs);
         });
-    }
+      });
+    });
+  }
 
-    _updateActiveGraph(graph) {
-        this._sidebar.close();
-        if (this._model) {
-            const model = this._model;
-            this.show('welcome spinner');
-            this._timeout(200).then(() => {
-                return this._updateGraph(model, [ graph ]).catch((error) => {
-                    if (error) {
-                        this.error(error, 'Graph update failed.', 'welcome');
-                    }
-                });
-            });
+  _updateActiveGraph(graph) {
+    this._sidebar.close();
+    if (this._model) {
+      const model = this._model;
+      this.show('welcome spinner');
+      this._timeout(200).then(() => {
+        return this._updateGraph(model, [graph]).catch((error) => {
+          if (error) {
+            this.error(error, 'Graph update failed.', 'welcome');
+          }
+        });
+      });
+    }
+  }
+
+  get activeGraph() {
+    return Array.isArray(this._graphs) && this._graphs.length > 0 ? this._graphs[0] : null;
+  }
+
+  _updateGraph(model, graphs) {
+    const lastModel = this._model;
+    const lastGraphs = this._graphs;
+    // update graph if and only if `model` and `graphs` are provided
+    if (model && graphs) {
+      this._model = model;
+      this._graphs = graphs;
+    }
+    this.lastViewGraph = this._graph;
+    const graph = this.activeGraph;
+    const nodes = graph.nodes;
+
+    return this._timeout(100)
+      .then(() => {
+        if (graph && graph != lastGraphs[0]) {
+          if (nodes.length > 1500) {
+            this.confirmed = false;
+            return this._host
+              .confirm(
+                'Large model detected.',
+                `This graph contains a large number of nodes (${nodes.length}) and might take a long time to render. Do you want to continue ?`,
+                { Cancel: '', 'Displays partial networks': 'partial', Comfirm: 'Comfirm' }
+              )
+              .then((confirmed) => {
+                this.confirmed = confirmed;
+                return confirmed;
+              });
+          }
         }
-    }
-
-    get activeGraph() {
-        return Array.isArray(this._graphs) && this._graphs.length > 0 ? this._graphs[0] : null;
-    }
-
-    _updateGraph(model, graphs) {
-        const lastModel = this._model;
-        const lastGraphs = this._graphs;
-        // update graph if and only if `model` and `graphs` are provided
-        if (model && graphs) {
-            this._model = model;
-            this._graphs = graphs;
+        return Promise.resolve(this.confirmed);
+      })
+      .then((confirmed) => {
+        if (!confirmed) {
+          this._host.event('Graph', 'Render', 'Skip', nodes.length);
+          this.show(null);
+          return null;
         }
-        this.lastViewGraph = this._graph;
-        const graph = this.activeGraph;
-        const nodes = graph.nodes;
+        const update = () => {
+          const nameButton = this._getElementById('name-button');
+          const backButton = this._getElementById('back-button');
+          if (this._graphs.length > 1) {
+            const graph = this.activeGraph;
+            nameButton.innerHTML = graph ? graph.name : '';
+            backButton.style.opacity = 1;
+            nameButton.style.opacity = 1;
+          } else {
+            backButton.style.opacity = 0;
+            nameButton.style.opacity = 0;
+          }
+        };
 
-        return this._timeout(100).then(() => {
-            if (graph && graph != lastGraphs[0]) {
-                if (nodes.length > 1500) {
-                    this.confirmed = false
-                    return this._host.confirm(
-                        'Large model detected.',
-                        `This graph contains a large number of nodes (${nodes.length}) and might take a long time to render. Do you want to continue ?`,
-                        {"Cancel": "", "Displays partial networks": "partial", "Comfirm": "Comfirm"}
-                        ).then((confirmed) => {
-                            this.confirmed = confirmed
-                            return confirmed
-                        })
-                }
+        return this.renderGraph(this._model, this.activeGraph, this._showSubGraph)
+          .then(() => {
+            if (this._page !== 'default') {
+              this.show('default');
             }
-            return Promise.resolve(this.confirmed)
-        }).then((confirmed)=> {
-            if (!confirmed) {
-                this._host.event('Graph', 'Render', 'Skip', nodes.length);
-                this.show(null);
-                return null;
-            }
-            const update = () => {
-                const nameButton = this._getElementById('name-button');
-                const backButton = this._getElementById('back-button');
-                if (this._graphs.length > 1) {
-                    const graph = this.activeGraph;
-                    nameButton.innerHTML = graph ? graph.name : '';
-                    backButton.style.opacity = 1;
-                    nameButton.style.opacity = 1;
-                }
-                else {
-                    backButton.style.opacity = 0;
-                    nameButton.style.opacity = 0;
-                }
-            };
-
+            update();
+            return this._model;
+          })
+          .catch((error) => {
+            this._model = lastModel;
+            this._graphs = lastGraphs;
             return this.renderGraph(this._model, this.activeGraph, this._showSubGraph).then(() => {
-                if (this._page !== 'default') {
-                    this.show('default');
-                }
-                update();
-                return this._model;
-            }).catch((error) => {
-                this._model = lastModel;
-                this._graphs = lastGraphs;
-                return this.renderGraph(this._model, this.activeGraph, this._showSubGraph).then(() => {
-                    if (this._page !== 'default') {
-                        this.show('default');
-                    }
-                    update();
-                    throw error;
-                });
+              if (this._page !== 'default') {
+                this.show('default');
+              }
+              update();
+              throw error;
             });
+          });
+      });
+  }
+
+  pushGraph(graph) {
+    if (graph !== this.activeGraph) {
+      this._sidebar.close();
+      this._updateGraph(this._model, [graph].concat(this._graphs));
+    }
+  }
+
+  popGraph() {
+    if (this._graphs.length > 1) {
+      this._sidebar.close();
+      return this._updateGraph(this._model, this._graphs.slice(1));
+    }
+  }
+
+  renderGraph(model, graph) {
+    try {
+      this._graph = null;
+
+      const canvas = this._getElementById('canvas');
+      const linecolor = this._getElementById('linecolor');
+      while (canvas.lastChild) {
+        canvas.removeChild(canvas.lastChild);
+      }
+      canvas.appendChild(linecolor);
+      if (!graph) {
+        return Promise.resolve();
+      } else {
+        // this._zoom = 1;
+
+        const groups = graph.groups;
+        const nodes = graph.nodes;
+        this._host.event('Graph', 'Render', 'Size', nodes.length);
+
+        const options = {};
+        options.nodesep = 20;
+        options.ranksep = 20;
+        const rotate = graph.nodes.every(
+          (node) =>
+            node.inputs.filter((input) => input.arguments.every((argument) => !argument.initializer)).length === 0 &&
+            node.outputs.length === 0
+        );
+        const horizontal = rotate ? this._options.direction === 'vertical' : this._options.direction !== 'vertical';
+        if (horizontal) {
+          options.rankdir = 'LR';
+        }
+        if (nodes.length > 3000) {
+          options.ranker = 'longest-path';
+        }
+
+        const viewGraph = new view.Graph(this, model, this.modifier, groups, options);
+        if (this.lastViewGraph) {
+          const container = this._getElementById('graph');
+          this.lastScrollLeft = container.scrollLeft;
+          this.lastScrollTop = container.scrollTop;
+        }
+
+        viewGraph.add(graph);
+
+        // Workaround for Safari background drag/zoom issue:
+        const background = this._host.document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        background.setAttribute('id', 'background');
+        background.setAttribute('fill', 'none');
+        background.setAttribute('pointer-events', 'all');
+        canvas.appendChild(background);
+
+        const origin = this._host.document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        origin.setAttribute('id', 'origin');
+        canvas.appendChild(origin);
+
+        let subViewGraph = null;
+
+        if (this.confirmed == 'partial') {
+          this._showSubGraph = new view.ShowSubGraph(
+            viewGraph,
+            this._showSubGraph ? this._showSubGraph.showNodes : null,
+            this._showSubGraphNodeCount
+          );
+        } else {
+          this._showSubGraph = null;
+        }
+
+        if (this._showSubGraph) {
+          document.getElementById('sub-graph-name-button').style.display = null;
+          document.getElementById('sub-graph-name-button').getElementsByTagName('b')[0].innerText =
+            this._showSubGraphNodeCount;
+          document.getElementById('sub-graph-name-button').getElementsByTagName('span')[0].innerText =
+            this._showSubGraph.showNodes;
+        } else {
+          document.getElementById('sub-graph-name-button').style.display = 'none';
+        }
+
+        if (this._showSubGraph) {
+          subViewGraph = this._showSubGraph.getShowSubGraph();
+        }
+
+        if (this._showSubGraph && subViewGraph) {
+          subViewGraph.build(this._host.document, origin);
+        } else {
+          viewGraph.build(this._host.document, origin);
+        }
+
+        return this._timeout(20).then(() => {
+          if (this._showSubGraph && subViewGraph) {
+            subViewGraph.update();
+          } else {
+            viewGraph.update();
+          }
+
+          const elements = Array.from(canvas.getElementsByClassName('graph-input') || []);
+          if (elements.length === 0) {
+            const nodeElements = Array.from(canvas.getElementsByClassName('graph-node') || []);
+            if (nodeElements.length > 0) {
+              elements.push(nodeElements[0]);
+            }
+          }
+
+          const size = canvas.getBBox();
+          const margin = 100;
+          const width = Math.ceil(margin + size.width + margin);
+          const height = Math.ceil(margin + size.height + margin);
+          origin.setAttribute('transform', 'translate(' + margin.toString() + ', ' + margin.toString() + ') scale(1)');
+          background.setAttribute('width', width);
+          background.setAttribute('height', height);
+          this._width = width;
+          this._height = height;
+          delete this._scrollLeft;
+          delete this._scrollRight;
+          canvas.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+          canvas.setAttribute('width', width);
+          canvas.setAttribute('height', height);
+
+          const container = this._getElementById('graph');
+          if (this.lastScrollLeft != 0 || this.lastScrollTop != 0 || this._zoom != 1) {
+            this._updateZoom(this._zoom);
+            container.scrollTo({ left: this.lastScrollLeft, top: this.lastScrollTop, behavior: 'auto' });
+          } else {
+            this._zoom = 1;
+            this._updateZoom(this._zoom);
+
+            if (elements.length > 0) {
+              // Center view based on input elements
+              const xs = [];
+              const ys = [];
+              for (let i = 0; i < elements.length; i++) {
+                const element = elements[i];
+                const rect = element.getBoundingClientRect();
+                xs.push(rect.left + rect.width / 2);
+                ys.push(rect.top + rect.height / 2);
+              }
+              let x = xs[0];
+              const y = ys[0];
+              if (ys.every((y) => y === ys[0])) {
+                x = xs.reduce((a, b) => a + b, 0) / xs.length;
+              }
+              const graphRect = container.getBoundingClientRect();
+              const left = container.scrollLeft + x - graphRect.left - graphRect.width / 2;
+              const top = container.scrollTop + y - graphRect.top - graphRect.height / 2;
+              container.scrollTo({ left: left, top: top, behavior: 'auto' });
+            } else {
+              const canvasRect = canvas.getBoundingClientRect();
+              const graphRect = container.getBoundingClientRect();
+              const left = container.scrollLeft + canvasRect.width / 2 - graphRect.left - graphRect.width / 2;
+              const top = container.scrollTop + canvasRect.height / 2 - graphRect.top - graphRect.height / 2;
+              container.scrollTo({ left: left, top: top, behavior: 'auto' });
+            }
+          }
+
+          this._graph = viewGraph;
+          return;
         });
+      }
+    } catch (error) {
+      return Promise.reject(error);
     }
+  }
 
-    pushGraph(graph) {
-        if (graph !== this.activeGraph) {
-            this._sidebar.close();
-            this._updateGraph(this._model, [ graph ].concat(this._graphs));
-        }
+  applyStyleSheet(element, name) {
+    let rules = [];
+    for (const styleSheet of this._host.document.styleSheets) {
+      if (styleSheet && styleSheet.href && styleSheet.href.endsWith('/' + name)) {
+        rules = styleSheet.cssRules;
+        break;
+      }
     }
-
-    popGraph() {
-        if (this._graphs.length > 1) {
-            this._sidebar.close();
-            return this._updateGraph(this._model, this._graphs.slice(1));
+    const nodes = element.getElementsByTagName('*');
+    for (const node of nodes) {
+      for (const rule of rules) {
+        if (node.matches(rule.selectorText)) {
+          for (const item of rule.style) {
+            node.style[item] = rule.style[item];
+          }
         }
+      }
     }
+  }
 
-    renderGraph(model, graph) {
-        try {
-            this._graph = null;
+  export(file) {
+    const lastIndex = file.lastIndexOf('.');
+    const extension = lastIndex != -1 ? file.substring(lastIndex + 1) : '';
+    if (this.activeGraph && (extension === 'png' || extension === 'svg')) {
+      const canvas = this._getElementById('canvas');
+      const clone = canvas.cloneNode(true);
+      this.applyStyleSheet(clone, 'view-grapher.css');
+      clone.setAttribute('id', 'export');
+      clone.removeAttribute('viewBox');
+      clone.removeAttribute('width');
+      clone.removeAttribute('height');
+      clone.style.removeProperty('opacity');
+      clone.style.removeProperty('display');
+      const background = clone.querySelector('#background');
+      const origin = clone.querySelector('#origin');
+      origin.setAttribute('transform', 'translate(0,0) scale(1)');
+      background.removeAttribute('width');
+      background.removeAttribute('height');
 
-            const canvas = this._getElementById('canvas');
-            const linecolor = this._getElementById('linecolor');
-            while (canvas.lastChild) {
-                canvas.removeChild(canvas.lastChild);
+      const parent = canvas.parentElement;
+      parent.insertBefore(clone, canvas);
+      const size = clone.getBBox();
+      parent.removeChild(clone);
+      parent.removeChild(canvas);
+      parent.appendChild(canvas);
+      const delta = (Math.min(size.width, size.height) / 2.0) * 0.1;
+      const width = Math.ceil(delta + size.width + delta);
+      const height = Math.ceil(delta + size.height + delta);
+      origin.setAttribute(
+        'transform',
+        'translate(' + (delta - size.x).toString() + ', ' + (delta - size.y).toString() + ') scale(1)'
+      );
+      clone.setAttribute('width', width);
+      clone.setAttribute('height', height);
+      background.setAttribute('width', width);
+      background.setAttribute('height', height);
+      background.setAttribute('fill', '#fff');
+
+      const data = new XMLSerializer().serializeToString(clone);
+
+      if (extension === 'svg') {
+        const blob = new Blob([data], { type: 'image/svg' });
+        this._host.export(file, blob);
+      }
+
+      if (extension === 'png') {
+        const image = new Image();
+        image.onload = () => {
+          const max = Math.max(width, height);
+          const scale = Math.min(24000.0 / max, 2.0);
+          const canvas = this._host.document.createElement('canvas');
+          canvas.width = Math.ceil(width * scale);
+          canvas.height = Math.ceil(height * scale);
+          const context = canvas.getContext('2d');
+          context.scale(scale, scale);
+          context.drawImage(image, 0, 0);
+          canvas.toBlob((blob) => {
+            if (blob) {
+              this._host.export(file, blob);
+            } else {
+              const err = new Error();
+              err.name = 'Error exporting image.';
+              err.message = 'Image may be too large to render as PNG.';
+              this._host.exception(err, false);
+              this._host.error(err.name, err.message);
             }
-            canvas.appendChild(linecolor)
-            if (!graph) {
-                return Promise.resolve();
-            }
-            else {
-                // this._zoom = 1;
-
-                const groups = graph.groups;
-                const nodes = graph.nodes;
-                this._host.event('Graph', 'Render', 'Size', nodes.length);
-
-                const options = {};
-                options.nodesep = 20;
-                options.ranksep = 20;
-                const rotate = graph.nodes.every((node) => node.inputs.filter((input) => input.arguments.every((argument) => !argument.initializer)).length === 0 && node.outputs.length === 0);
-                const horizontal = rotate ? this._options.direction === 'vertical' : this._options.direction !== 'vertical';
-                if (horizontal) {
-                    options.rankdir = "LR";
-                }
-                if (nodes.length > 3000) {
-                    options.ranker = 'longest-path';
-                }
-
-                const viewGraph = new view.Graph(this, model, this.modifier, groups, options);
-                if (this.lastViewGraph) {
-                    const container = this._getElementById('graph');
-                    this.lastScrollLeft = container.scrollLeft;
-                    this.lastScrollTop = container.scrollTop;
-                }
-
-                viewGraph.add(graph);
-
-                // Workaround for Safari background drag/zoom issue:
-                const background = this._host.document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                background.setAttribute('id', 'background');
-                background.setAttribute('fill', 'none');
-                background.setAttribute('pointer-events', 'all');
-                canvas.appendChild(background);
-
-                const origin = this._host.document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                origin.setAttribute('id', 'origin');
-                canvas.appendChild(origin);
-
-                let subViewGraph = null
-
-                if (this.confirmed == "partial") {
-                    this._showSubGraph = new view.ShowSubGraph(viewGraph,
-                        this._showSubGraph ? this._showSubGraph.showNodes: null,
-                        this._showSubGraphNodeCount)
-                } else {
-                    this._showSubGraph = null
-                }
-
-                if (this._showSubGraph) {
-                    document.getElementById("sub-graph-name-button").style.display = null
-                    document.getElementById("sub-graph-name-button").getElementsByTagName("b")[0].innerText = this._showSubGraphNodeCount
-                    document.getElementById("sub-graph-name-button").getElementsByTagName("span")[0].innerText = this._showSubGraph.showNodes
-                } else {
-                    document.getElementById("sub-graph-name-button").style.display = "none"
-                }
-
-                if (this._showSubGraph) {
-                    subViewGraph = this._showSubGraph.getShowSubGraph()
-                }
-
-                if (this._showSubGraph && subViewGraph) {
-                    subViewGraph.build(this._host.document, origin);
-                } else {
-                    viewGraph.build(this._host.document, origin);
-                }
-
-                return this._timeout(20).then(() => {
-                    if (this._showSubGraph && subViewGraph) {
-                        subViewGraph.update();
-                    } else {
-                        viewGraph.update();
-                    }
-
-                    const elements = Array.from(canvas.getElementsByClassName('graph-input') || []);
-                    if (elements.length === 0) {
-                        const nodeElements = Array.from(canvas.getElementsByClassName('graph-node') || []);
-                        if (nodeElements.length > 0) {
-                            elements.push(nodeElements[0]);
-                        }
-                    }
-
-                    const size = canvas.getBBox();
-                    const margin = 100;
-                    const width = Math.ceil(margin + size.width + margin);
-                    const height = Math.ceil(margin + size.height + margin);
-                    origin.setAttribute('transform', 'translate(' + margin.toString() + ', ' + margin.toString() + ') scale(1)');
-                    background.setAttribute('width', width);
-                    background.setAttribute('height', height);
-                    this._width = width;
-                    this._height = height;
-                    delete this._scrollLeft;
-                    delete this._scrollRight;
-                    canvas.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
-                    canvas.setAttribute('width', width);
-                    canvas.setAttribute('height', height);
-
-                    const container = this._getElementById('graph');
-                    if (this.lastScrollLeft != 0 ||  this.lastScrollTop != 0 || this._zoom != 1) {
-                        this._updateZoom(this._zoom);
-                        container.scrollTo({ left: this.lastScrollLeft, top: this.lastScrollTop, behavior: 'auto' });
-                    }
-                    else {
-                        this._zoom = 1;
-                        this._updateZoom(this._zoom);
-
-                        if (elements.length > 0) {
-                            // Center view based on input elements
-                            const xs = [];
-                            const ys = [];
-                            for (let i = 0; i < elements.length; i++) {
-                                const element = elements[i];
-                                const rect = element.getBoundingClientRect();
-                                xs.push(rect.left + (rect.width / 2));
-                                ys.push(rect.top + (rect.height / 2));
-                            }
-                            let x = xs[0];
-                            const y = ys[0];
-                            if (ys.every(y => y === ys[0])) {
-                                x = xs.reduce((a, b) => a + b, 0) / xs.length;
-                            }
-                            const graphRect = container.getBoundingClientRect();
-                            const left = (container.scrollLeft + x - graphRect.left) - (graphRect.width / 2);
-                            const top = (container.scrollTop + y - graphRect.top) - (graphRect.height / 2);
-                            container.scrollTo({ left: left, top: top, behavior: 'auto' });
-                        }
-                        else {
-                            const canvasRect = canvas.getBoundingClientRect();
-                            const graphRect = container.getBoundingClientRect();
-                            const left = (container.scrollLeft + (canvasRect.width / 2) - graphRect.left) - (graphRect.width / 2);
-                            const top = (container.scrollTop + (canvasRect.height / 2) - graphRect.top) - (graphRect.height / 2);
-                            container.scrollTo({ left: left, top: top, behavior: 'auto' });
-                        }
-                    }
-
-                    this._graph = viewGraph;
-                    return;
-                });
-            }
-        }
-        catch (error) {
-            return Promise.reject(error);
-        }
+          }, 'image/png');
+        };
+        image.src = 'data:image/svg+xml;base64,' + this._host.window.btoa(unescape(encodeURIComponent(data)));
+      }
     }
+  }
 
-    applyStyleSheet(element, name) {
-        let rules = [];
-        for (const styleSheet of this._host.document.styleSheets) {
-            if (styleSheet && styleSheet.href && styleSheet.href.endsWith('/' + name)) {
-                rules = styleSheet.cssRules;
-                break;
-            }
+  showModelProperties(clicked_output_name, clicked_input_name) {
+    if (this._model) {
+      try {
+        const modelSidebar = new sidebar.ModelSidebar(
+          this._host,
+          this._model,
+          this.activeGraph,
+          clicked_output_name,
+          clicked_input_name
+        );
+        modelSidebar.on('update-active-graph', (sender, graph) => {
+          this._updateActiveGraph(graph);
+        });
+
+        if (clicked_input_name) {
+          this._host._view.modifier.clickSingleNode(clicked_input_name);
         }
-        const nodes = element.getElementsByTagName('*');
-        for (const node of nodes) {
-            for (const rule of rules) {
-                if (node.matches(rule.selectorText)) {
-                    for (const item of rule.style) {
-                        node.style[item] = rule.style[item];
-                    }
-                }
-            }
+        if (clicked_output_name) {
+          this._host._view.modifier.clickSingleNode(clicked_output_name);
         }
+
+        const content = modelSidebar.render();
+        this._sidebar.open(content, 'Model Properties');
+
+        document.dispatchEvent(
+          new CustomEvent('node-clicked', {
+            detail: {
+              is_input: clicked_input_name,
+              input_name: clicked_input_name,
+              is_output: clicked_output_name,
+              output_name: clicked_output_name,
+              name: clicked_input_name || clicked_output_name,
+            },
+          })
+        );
+      } catch (error) {
+        const content = " in '" + this._model.identifier + "'.";
+        if (error && !error.message.endsWith(content) && (error.context === undefined || error.context === true)) {
+          error.message = error.message.replace(/\.$/, '') + content;
+        }
+        this.error(error, 'Error showing model properties.', null);
+      }
     }
+  }
 
-    export(file) {
-        const lastIndex = file.lastIndexOf('.');
-        const extension = (lastIndex != -1) ? file.substring(lastIndex + 1) : '';
-        if (this.activeGraph && (extension === 'png' || extension === 'svg')) {
-            const canvas = this._getElementById('canvas');
-            const clone = canvas.cloneNode(true);
-            this.applyStyleSheet(clone, 'view-grapher.css');
-            clone.setAttribute('id', 'export');
-            clone.removeAttribute('viewBox');
-            clone.removeAttribute('width');
-            clone.removeAttribute('height');
-            clone.style.removeProperty('opacity');
-            clone.style.removeProperty('display');
-            const background = clone.querySelector('#background');
-            const origin = clone.querySelector('#origin');
-            origin.setAttribute('transform', 'translate(0,0) scale(1)');
-            background.removeAttribute('width');
-            background.removeAttribute('height');
-
-            const parent = canvas.parentElement;
-            parent.insertBefore(clone, canvas);
-            const size = clone.getBBox();
-            parent.removeChild(clone);
-            parent.removeChild(canvas);
-            parent.appendChild(canvas);
-            const delta = (Math.min(size.width, size.height) / 2.0) * 0.1;
-            const width = Math.ceil(delta + size.width + delta);
-            const height = Math.ceil(delta + size.height + delta);
-            origin.setAttribute('transform', 'translate(' + (delta - size.x).toString() + ', ' + (delta - size.y).toString() + ') scale(1)');
-            clone.setAttribute('width', width);
-            clone.setAttribute('height', height);
-            background.setAttribute('width', width);
-            background.setAttribute('height', height);
-            background.setAttribute('fill', '#fff');
-
-            const data = new XMLSerializer().serializeToString(clone);
-
-            if (extension === 'svg') {
-                const blob = new Blob([ data ], { type: 'image/svg' });
-                this._host.export(file, blob);
-            }
-
-            if (extension === 'png') {
-                const image = new Image();
-                image.onload = () => {
-                    const max = Math.max(width, height);
-                    const scale = Math.min(24000.0 / max, 2.0);
-                    const canvas = this._host.document.createElement('canvas');
-                    canvas.width = Math.ceil(width * scale);
-                    canvas.height = Math.ceil(height * scale);
-                    const context = canvas.getContext('2d');
-                    context.scale(scale, scale);
-                    context.drawImage(image, 0, 0);
-                    canvas.toBlob((blob) => {
-                        if (blob) {
-                            this._host.export(file, blob);
-                        }
-                        else {
-                            const err = new Error();
-                            err.name = 'Error exporting image.';
-                            err.message = 'Image may be too large to render as PNG.';
-                            this._host.exception(err, false);
-                            this._host.error(err.name, err.message);
-                        }
-                    }, 'image/png');
-                };
-                image.src = 'data:image/svg+xml;base64,' + this._host.window.btoa(unescape(encodeURIComponent(data)));
-            }
+  showNodeProperties(node, input, modelNodeName) {
+    if (node) {
+      try {
+        const nodeSidebar = new sidebar.NodeSidebar(this._host, node, modelNodeName);
+        if (modelNodeName) {
+          this._host._view.modifier.clickSingleNode(modelNodeName);
         }
-    }
-
-    showModelProperties(clicked_output_name, clicked_input_name) {
-        if (this._model) {
+        nodeSidebar.on('show-documentation', (/* sender, e */) => {
+          this.showDocumentation(node.type);
+        });
+        nodeSidebar.on('show-graph', (sender, graph) => {
+          this.pushGraph(graph);
+        });
+        nodeSidebar.on('export-tensor', (sender, tensor) => {
+          const defaultPath = tensor.name
+            ? tensor.name.split('/').join('_').split(':').join('_').split('.').join('_')
+            : 'tensor';
+          this._host.save('NumPy Array', 'npy', defaultPath, (file) => {
             try {
-                const modelSidebar = new sidebar.ModelSidebar(this._host, this._model, this.activeGraph, clicked_output_name, clicked_input_name);
-                modelSidebar.on('update-active-graph', (sender, graph) => {
-                    this._updateActiveGraph(graph);
-                });
-
-                if (clicked_input_name) {
-                    this._host._view.modifier.clickSingleNode(clicked_input_name)
-                }
-                if (clicked_output_name) {
-                    this._host._view.modifier.clickSingleNode(clicked_output_name)
-                }
-
-                const content = modelSidebar.render();
-                this._sidebar.open(content, 'Model Properties');
-
-                document.dispatchEvent(new CustomEvent("node-clicked", {detail:{
-                    is_input:clicked_input_name,
-                    input_name: clicked_input_name,
-                    is_output:clicked_output_name,
-                    output_name: clicked_output_name,
-                    name:clicked_input_name|| clicked_output_name
-                }}))
-
+              let data_type = tensor.type.dataType;
+              switch (data_type) {
+                case 'boolean':
+                  data_type = 'bool';
+                  break;
+              }
+              const execution = new python.Execution(null);
+              const bytes = execution.invoke('io.BytesIO', []);
+              const dtype = execution.invoke('numpy.dtype', [data_type]);
+              const array = execution.invoke('numpy.asarray', [tensor.value, dtype]);
+              execution.invoke('numpy.save', [bytes, array]);
+              bytes.seek(0);
+              const blob = new Blob([bytes.read()], { type: 'application/octet-stream' });
+              this._host.export(file, blob);
+            } catch (error) {
+              this.error(error, 'Error saving NumPy tensor.', null);
             }
-            catch (error) {
-                const content = " in '" + this._model.identifier + "'.";
-                if (error && !error.message.endsWith(content) && (error.context === undefined || error.context === true)) {
-                    error.message = error.message.replace(/\.$/, '') + content;
-                }
-                this.error(error, 'Error showing model properties.', null);
-            }
+          });
+        });
+        nodeSidebar.on('error', (sender, error) => {
+          if (this._model) {
+            error.message = error.message.replace(/\.$/, '') + " in '" + this._model.identifier + "'.";
+          }
+          this.error(error, null, null);
+        });
+        nodeSidebar.on('close-sidebar', () => {
+          if (this._sidebar) {
+            this._sidebar.close();
+          }
+        });
+        if (input) {
+          nodeSidebar.toggleInput(input.name);
         }
-    }
+        this._sidebar.open(nodeSidebar.render(), 'Node Properties');
 
-    showNodeProperties(node, input, modelNodeName) {
-        if (node) {
-            try {
-                const nodeSidebar = new sidebar.NodeSidebar(this._host, node, modelNodeName);
-                if (modelNodeName) {
-                    this._host._view.modifier.clickSingleNode(modelNodeName)
-                }
-                nodeSidebar.on('show-documentation', (/* sender, e */) => {
-                    this.showDocumentation(node.type);
-                });
-                nodeSidebar.on('show-graph', (sender, graph) => {
-                    this.pushGraph(graph);
-                });
-                nodeSidebar.on('export-tensor', (sender, tensor) => {
-                    const defaultPath = tensor.name ? tensor.name.split('/').join('_').split(':').join('_').split('.').join('_') : 'tensor';
-                    this._host.save('NumPy Array', 'npy', defaultPath, (file) => {
-                        try {
-                            let data_type = tensor.type.dataType;
-                            switch (data_type) {
-                                case 'boolean': data_type = 'bool'; break;
-                            }
-                            const execution = new python.Execution(null);
-                            const bytes = execution.invoke('io.BytesIO', []);
-                            const dtype = execution.invoke('numpy.dtype', [ data_type ]);
-                            const array = execution.invoke('numpy.asarray', [ tensor.value, dtype ]);
-                            execution.invoke('numpy.save', [ bytes, array ]);
-                            bytes.seek(0);
-                            const blob = new Blob([ bytes.read() ], { type: 'application/octet-stream' });
-                            this._host.export(file, blob);
-                        }
-                        catch (error) {
-                            this.error(error, 'Error saving NumPy tensor.', null);
-                        }
-                    });
-                });
-                nodeSidebar.on('error', (sender, error) => {
-                    if (this._model) {
-                        error.message = error.message.replace(/\.$/, '') + " in '" + this._model.identifier + "'.";
-                    }
-                    this.error(error, null, null);
-                });
-                nodeSidebar.on('close-sidebar', () => {
-                    if (this._sidebar) {
-                        this._sidebar.close()
-                    }
-                });
-                if (input) {
-                    nodeSidebar.toggleInput(input.name);
-                }
-                this._sidebar.open(nodeSidebar.render(), 'Node Properties');
-
-                document.dispatchEvent(new CustomEvent("node-clicked", {detail:{is_node:true, node:node, node_name:modelNodeName}}))
-            }
-            catch (error) {
-                const content = " in '" + this._model.identifier + "'.";
-                if (error && !error.message.endsWith(content) && (error.context === undefined || error.context === true)) {
-                    error.message = error.message.replace(/\.$/, '') + content;
-                }
-                this.error(error, 'Error showing node properties.', null);
-            }
+        document.dispatchEvent(
+          new CustomEvent('node-clicked', { detail: { is_node: true, node: node, node_name: modelNodeName } })
+        );
+      } catch (error) {
+        const content = " in '" + this._model.identifier + "'.";
+        if (error && !error.message.endsWith(content) && (error.context === undefined || error.context === true)) {
+          error.message = error.message.replace(/\.$/, '') + content;
         }
+        this.error(error, 'Error showing node properties.', null);
+      }
     }
+  }
 
-    showDocumentation(type) {
-        if (type && (type.description || type.inputs || type.outputs || type.attributes)) {
-            if (type.nodes && type.nodes.length > 0) {
-                this.pushGraph(type);
-            }
-            const documentationSidebar = new sidebar.DocumentationSidebar(this._host, type);
-            documentationSidebar.on('navigate', (sender, e) => {
-                this._host.openURL(e.link);
-            });
-            const title = type.type === 'function' ? 'Function' : 'Documentation';
-            this._sidebar.push(documentationSidebar.render(), title);
-        }
+  showDocumentation(type) {
+    if (type && (type.description || type.inputs || type.outputs || type.attributes)) {
+      if (type.nodes && type.nodes.length > 0) {
+        this.pushGraph(type);
+      }
+      const documentationSidebar = new sidebar.DocumentationSidebar(this._host, type);
+      documentationSidebar.on('navigate', (sender, e) => {
+        this._host.openURL(e.link);
+      });
+      const title = type.type === 'function' ? 'Function' : 'Documentation';
+      this._sidebar.push(documentationSidebar.render(), title);
     }
+  }
 };
 
 view.Graph = class extends grapher.Graph {
