@@ -1,44 +1,41 @@
-
 var tar = tar || {};
 
 tar.Archive = class {
-
-    static open(data) {
-        const stream = data instanceof Uint8Array ? new tar.BinaryReader(data) : data;
-        if (stream.length > 512) {
-            const buffer = stream.peek(512);
-            const sum = buffer.map((value, index) => (index >= 148 && index < 156) ? 32 : value).reduce((a, b) => a + b, 0);
-            let checksum = '';
-            for (let i = 148; i < 156 && buffer[i] !== 0x00; i++) {
-                checksum += String.fromCharCode(buffer[i]);
-            }
-            checksum = parseInt(checksum, 8);
-            if (!isNaN(checksum) && sum === checksum) {
-                return new tar.Archive(stream);
-            }
-        }
-        return null;
+  static open(data) {
+    const stream = data instanceof Uint8Array ? new tar.BinaryReader(data) : data;
+    if (stream.length > 512) {
+      const buffer = stream.peek(512);
+      const sum = buffer.map((value, index) => (index >= 148 && index < 156 ? 32 : value)).reduce((a, b) => a + b, 0);
+      let checksum = '';
+      for (let i = 148; i < 156 && buffer[i] !== 0x00; i++) {
+        checksum += String.fromCharCode(buffer[i]);
+      }
+      checksum = parseInt(checksum, 8);
+      if (!isNaN(checksum) && sum === checksum) {
+        return new tar.Archive(stream);
+      }
     }
+    return null;
+  }
 
-    constructor(stream) {
-        this._entries = new Map();
-        const position = stream.position;
-        while (stream.position < stream.length) {
-            const entry = new tar.Entry(stream);
-            if (entry.type === '0' || entry.type === '1' || entry.type === '2') {
-                this._entries.set(entry.name, entry.stream);
-            }
-            if (stream.position + 512 > stream.length ||
-                stream.peek(512).every((value) => value === 0x00)) {
-                break;
-            }
-        }
-        stream.seek(position);
+  constructor(stream) {
+    this._entries = new Map();
+    const position = stream.position;
+    while (stream.position < stream.length) {
+      const entry = new tar.Entry(stream);
+      if (entry.type === '0' || entry.type === '1' || entry.type === '2') {
+        this._entries.set(entry.name, entry.stream);
+      }
+      if (stream.position + 512 > stream.length || stream.peek(512).every((value) => value === 0x00)) {
+        break;
+      }
     }
+    stream.seek(position);
+  }
 
-    get entries() {
-        return this._entries;
-    }
+  get entries() {
+    return this._entries;
+  }
 };
 
 tar.Entry = class {
