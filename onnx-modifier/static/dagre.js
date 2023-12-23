@@ -1893,383 +1893,444 @@ dagre.layout = (graph, options) => {
       }
     };
 
-        const translateGraph = (g) => {
-            let minX = Number.POSITIVE_INFINITY;
-            let maxX = 0;
-            let minY = Number.POSITIVE_INFINITY;
-            let maxY = 0;
-            const getExtremes = (attrs) => {
-                const x = attrs.x;
-                const y = attrs.y;
-                const w = attrs.width;
-                const h = attrs.height;
-                minX = Math.min(minX, x - w / 2);
-                maxX = Math.max(maxX, x + w / 2);
-                minY = Math.min(minY, y - h / 2);
-                maxY = Math.max(maxY, y + h / 2);
-            };
-            for (const node of g.nodes.values()) {
-                getExtremes(node.label);
-            }
-            for (const e of g.edges.values()) {
-                const edge = e.label;
-                if ('x' in edge) {
-                    getExtremes(edge);
-                }
-            }
-            for (const node of g.nodes.values()) {
-                node.label.x -= minX;
-                node.label.y -= minY;
-            }
-            for (const e of g.edges.values()) {
-                const edge = e.label;
-                for (const p of edge.points) {
-                    p.x -= minX;
-                    p.y -= minY;
-                }
-                if ('x' in edge) {
-                    edge.x -= minX;
-                }
-                if ('y' in edge) {
-                    edge.y -= minY;
-                }
-            }
-            const graphLabel = g.options;
-            graphLabel.width = maxX - minX;
-            graphLabel.height = maxY - minY;
-        };
-
-        const assignNodeIntersects = (g) => {
-            // Finds where a line starting at point ({x, y}) would intersect a rectangle
-            // ({x, y, width, height}) if it were pointing at the rectangle's center.
-            const intersectRect = (rect, point) => {
-                const x = rect.x;
-                const y = rect.y;
-                // Rectangle intersection algorithm from: http://math.stackexchange.com/questions/108113/find-edge-between-two-boxes
-                const dx = point.x - x;
-                const dy = point.y - y;
-                let w = rect.width / 2;
-                let h = rect.height / 2;
-                if (!dx && !dy) {
-                    throw new Error('Not possible to find intersection inside of the rectangle');
-                }
-                let sx;
-                let sy;
-                if (Math.abs(dy) * w > Math.abs(dx) * h) {
-                    // Intersection is top or bottom of rect.
-                    if (dy < 0) {
-                        h = -h;
-                    }
-                    sx = h * dx / dy;
-                    sy = h;
-                }
-                else {
-                    // Intersection is left or right of rect.
-                    if (dx < 0) {
-                        w = -w;
-                    }
-                    sx = w;
-                    sy = w * dy / dx;
-                }
-                return { x: x + sx, y: y + sy };
-            };
-            for (const e of g.edges.values()) {
-                const edge = e.label;
-                const vNode = e.vNode.label;
-                const wNode = e.wNode.label;
-                let p1;
-                let p2;
-                if (!edge.points) {
-                    edge.points = [];
-                    p1 = wNode;
-                    p2 = vNode;
-                }
-                else {
-                    p1 = edge.points[0];
-                    p2 = edge.points[edge.points.length - 1];
-                }
-                edge.points.unshift(intersectRect(vNode, p1));
-                edge.points.push(intersectRect(wNode, p2));
-            }
-        };
-
-        time('    makeSpaceForEdgeLabels',        () => { makeSpaceForEdgeLabels(g); });
-        time('    removeSelfEdges',               () => { removeSelfEdges(g); });
-        time('    acyclic_run',                   () => { acyclic_run(g); });
-        time('    nestingGraph_run',              () => { nestingGraph_run(g); });
-        time('    rank',                          () => { rank(asNonCompoundGraph(g)); });
-        time('    injectEdgeLabelProxies',        () => { injectEdgeLabelProxies(g); });
-        time('    removeEmptyRanks',              () => { removeEmptyRanks(g); });
-        time('    nestingGraph_cleanup',          () => { nestingGraph_cleanup(g); });
-        time('    assignRankMinMax',              () => { assignRankMinMax(g); });
-        time('    removeEdgeLabelProxies',        () => { removeEdgeLabelProxies(g); });
-        time('    normalize',                     () => { normalize(g); });
-        time('    parentDummyChains',             () => { parentDummyChains(g); });
-        time('    addBorderSegments',             () => { addBorderSegments(g); });
-        time('    order',                         () => { order(g); });
-        time('    insertSelfEdges',               () => { insertSelfEdges(g); });
-        time('    coordinateSystem_adjust',       () => { coordinateSystem_adjust(g); });
-        time('    position',                      () => { position(g); });
-        time('    positionSelfEdges',             () => { positionSelfEdges(g); });
-        time('    removeBorderNodes',             () => { removeBorderNodes(g); });
-        time('    denormalize',                   () => { denormalize(g); });
-        time('    fixupEdgeLabelCoords',          () => { fixupEdgeLabelCoords(g); });
-        time('    coordinateSystem_undo',         () => { coordinateSystem_undo(g); });
-        time('    translateGraph',                () => { translateGraph(g); });
-        time('    assignNodeIntersects',          () => { assignNodeIntersects(g); });
-        time('    acyclic_undo',                  () => { acyclic_undo(g); });
+    const translateGraph = (g) => {
+      let minX = Number.POSITIVE_INFINITY;
+      let maxX = 0;
+      let minY = Number.POSITIVE_INFINITY;
+      let maxY = 0;
+      const getExtremes = (attrs) => {
+        const x = attrs.x;
+        const y = attrs.y;
+        const w = attrs.width;
+        const h = attrs.height;
+        minX = Math.min(minX, x - w / 2);
+        maxX = Math.max(maxX, x + w / 2);
+        minY = Math.min(minY, y - h / 2);
+        maxY = Math.max(maxY, y + h / 2);
+      };
+      for (const node of g.nodes.values()) {
+        getExtremes(node.label);
+      }
+      for (const e of g.edges.values()) {
+        const edge = e.label;
+        if ('x' in edge) {
+          getExtremes(edge);
+        }
+      }
+      for (const node of g.nodes.values()) {
+        node.label.x -= minX;
+        node.label.y -= minY;
+      }
+      for (const e of g.edges.values()) {
+        const edge = e.label;
+        for (const p of edge.points) {
+          p.x -= minX;
+          p.y -= minY;
+        }
+        if ('x' in edge) {
+          edge.x -= minX;
+        }
+        if ('y' in edge) {
+          edge.y -= minY;
+        }
+      }
+      const graphLabel = g.options;
+      graphLabel.width = maxX - minX;
+      graphLabel.height = maxY - minY;
     };
 
-    // Copies final layout information from the layout graph back to the input graph.
-    // This process only copies whitelisted attributes from the layout graph to the input graph,
-    // so it serves as a good place to determine what attributes can influence layout.
-    const updateSourceGraph = (graph, g) => {
-        for (const node of graph.nodes.values()) {
-            const label = node.label;
-            if (label) {
-                const v = node.v;
-                const layoutLabel = g.node(v).label;
-                label.x = layoutLabel.x;
-                label.y = layoutLabel.y;
-                if (g.children(v).length) {
-                    label.width = layoutLabel.width;
-                    label.height = layoutLabel.height;
-                }
-            }
+    const assignNodeIntersects = (g) => {
+      // Finds where a line starting at point ({x, y}) would intersect a rectangle
+      // ({x, y, width, height}) if it were pointing at the rectangle's center.
+      const intersectRect = (rect, point) => {
+        const x = rect.x;
+        const y = rect.y;
+        // Rectangle intersection algorithm from: http://math.stackexchange.com/questions/108113/find-edge-between-two-boxes
+        const dx = point.x - x;
+        const dy = point.y - y;
+        let w = rect.width / 2;
+        let h = rect.height / 2;
+        if (!dx && !dy) {
+          throw new Error('Not possible to find intersection inside of the rectangle');
         }
-        for (const e of graph.edges.values()) {
-            const label = g.edge(e.v, e.w).label;
-            e.label.points = label.points;
-            if ('x' in label) {
-                e.label.x = label.x;
-                e.label.y = label.y;
-            }
+        let sx;
+        let sy;
+        if (Math.abs(dy) * w > Math.abs(dx) * h) {
+          // Intersection is top or bottom of rect.
+          if (dy < 0) {
+            h = -h;
+          }
+          sx = (h * dx) / dy;
+          sy = h;
+        } else {
+          // Intersection is left or right of rect.
+          if (dx < 0) {
+            w = -w;
+          }
+          sx = w;
+          sy = (w * dy) / dx;
         }
-        graph.options.width = g.options.width;
-        graph.options.height = g.options.height;
+        return { x: x + sx, y: y + sy };
+      };
+      for (const e of g.edges.values()) {
+        const edge = e.label;
+        const vNode = e.vNode.label;
+        const wNode = e.wNode.label;
+        let p1;
+        let p2;
+        if (!edge.points) {
+          edge.points = [];
+          p1 = wNode;
+          p2 = vNode;
+        } else {
+          p1 = edge.points[0];
+          p2 = edge.points[edge.points.length - 1];
+        }
+        edge.points.unshift(intersectRect(vNode, p1));
+        edge.points.push(intersectRect(wNode, p2));
+      }
     };
 
-    time('layout', () => {
-        const layoutGraph =
-        time('  buildLayoutGraph',  () => { return buildLayoutGraph(graph); });
-        time('  runLayout',         () => { runLayout(layoutGraph, time); });
-        time('  updateSourceGraph', () => { updateSourceGraph(graph, layoutGraph); });
+    time('    makeSpaceForEdgeLabels', () => {
+      makeSpaceForEdgeLabels(g);
     });
+    time('    removeSelfEdges', () => {
+      removeSelfEdges(g);
+    });
+    time('    acyclic_run', () => {
+      acyclic_run(g);
+    });
+    time('    nestingGraph_run', () => {
+      nestingGraph_run(g);
+    });
+    time('    rank', () => {
+      rank(asNonCompoundGraph(g));
+    });
+    time('    injectEdgeLabelProxies', () => {
+      injectEdgeLabelProxies(g);
+    });
+    time('    removeEmptyRanks', () => {
+      removeEmptyRanks(g);
+    });
+    time('    nestingGraph_cleanup', () => {
+      nestingGraph_cleanup(g);
+    });
+    time('    assignRankMinMax', () => {
+      assignRankMinMax(g);
+    });
+    time('    removeEdgeLabelProxies', () => {
+      removeEdgeLabelProxies(g);
+    });
+    time('    normalize', () => {
+      normalize(g);
+    });
+    time('    parentDummyChains', () => {
+      parentDummyChains(g);
+    });
+    time('    addBorderSegments', () => {
+      addBorderSegments(g);
+    });
+    time('    order', () => {
+      order(g);
+    });
+    time('    insertSelfEdges', () => {
+      insertSelfEdges(g);
+    });
+    time('    coordinateSystem_adjust', () => {
+      coordinateSystem_adjust(g);
+    });
+    time('    position', () => {
+      position(g);
+    });
+    time('    positionSelfEdges', () => {
+      positionSelfEdges(g);
+    });
+    time('    removeBorderNodes', () => {
+      removeBorderNodes(g);
+    });
+    time('    denormalize', () => {
+      denormalize(g);
+    });
+    time('    fixupEdgeLabelCoords', () => {
+      fixupEdgeLabelCoords(g);
+    });
+    time('    coordinateSystem_undo', () => {
+      coordinateSystem_undo(g);
+    });
+    time('    translateGraph', () => {
+      translateGraph(g);
+    });
+    time('    assignNodeIntersects', () => {
+      assignNodeIntersects(g);
+    });
+    time('    acyclic_undo', () => {
+      acyclic_undo(g);
+    });
+  };
+
+  // Copies final layout information from the layout graph back to the input graph.
+  // This process only copies whitelisted attributes from the layout graph to the input graph,
+  // so it serves as a good place to determine what attributes can influence layout.
+  const updateSourceGraph = (graph, g) => {
+    for (const node of graph.nodes.values()) {
+      const label = node.label;
+      if (label) {
+        const v = node.v;
+        const layoutLabel = g.node(v).label;
+        label.x = layoutLabel.x;
+        label.y = layoutLabel.y;
+        if (g.children(v).length) {
+          label.width = layoutLabel.width;
+          label.height = layoutLabel.height;
+        }
+      }
+    }
+    for (const e of graph.edges.values()) {
+      const label = g.edge(e.v, e.w).label;
+      e.label.points = label.points;
+      if ('x' in label) {
+        e.label.x = label.x;
+        e.label.y = label.y;
+      }
+    }
+    graph.options.width = g.options.width;
+    graph.options.height = g.options.height;
+  };
+
+  time('layout', () => {
+    const layoutGraph = time('  buildLayoutGraph', () => {
+      return buildLayoutGraph(graph);
+    });
+    time('  runLayout', () => {
+      runLayout(layoutGraph, time);
+    });
+    time('  updateSourceGraph', () => {
+      updateSourceGraph(graph, layoutGraph);
+    });
+  });
 };
 
 dagre.Graph = class {
-
-    constructor(options) {
-        options = options || {};
-        this._directed = 'directed' in options ? options.directed : true;
-        this._compound = 'compound' in options ? options.compound : false;
-        this._label = undefined;
-        this._defaultNodeLabelFn = () => {
-            return undefined;
-        };
-        this.nodes = new Map();
-        this.edges = new Map();
-        if (this._compound) {
-            this._parent = {};
-            this._children = {};
-            this._children['\x00'] = {};
-        }
+  constructor(options) {
+    options = options || {};
+    this._directed = 'directed' in options ? options.directed : true;
+    this._compound = 'compound' in options ? options.compound : false;
+    this._label = undefined;
+    this._defaultNodeLabelFn = () => {
+      return undefined;
+    };
+    this.nodes = new Map();
+    this.edges = new Map();
+    if (this._compound) {
+      this._parent = {};
+      this._children = {};
+      this._children['\x00'] = {};
     }
+  }
 
-    set options(value) {
-        this._label = value;
+  set options(value) {
+    this._label = value;
+  }
+
+  get options() {
+    return this._label;
+  }
+
+  isDirected() {
+    return this._directed;
+  }
+
+  isCompound() {
+    return this._compound;
+  }
+
+  setDefaultNodeLabel(newDefault) {
+    this._defaultNodeLabelFn = newDefault;
+  }
+
+  setNode(v, label) {
+    const node = this.nodes.get(v);
+    if (node) {
+      if (label) {
+        node.label = label;
+      }
+    } else {
+      const node = {
+        label: label ? label : this._defaultNodeLabelFn(v),
+        in: [],
+        out: [],
+        predecessors: {},
+        successors: {},
+        v: v,
+      };
+      this.nodes.set(v, node);
+      if (this._compound) {
+        this._parent[v] = '\x00';
+        this._children[v] = {};
+        this._children['\x00'][v] = true;
+      }
     }
+  }
 
-    get options() {
-        return this._label;
-    }
+  node(v) {
+    return this.nodes.get(v);
+  }
 
-    isDirected() {
-        return this._directed;
-    }
+  hasNode(v) {
+    return this.nodes.has(v);
+  }
 
-    isCompound() {
-        return this._compound;
-    }
-
-    setDefaultNodeLabel(newDefault) {
-        this._defaultNodeLabelFn = newDefault;
-    }
-
-    setNode(v, label) {
-        const node = this.nodes.get(v);
-        if (node) {
-            if (label) {
-                node.label = label;
-            }
-        }
-        else {
-            const node = { label: label ? label : this._defaultNodeLabelFn(v), in: [], out: [], predecessors: {}, successors: {}, v: v };
-            this.nodes.set(v, node);
-            if (this._compound) {
-                this._parent[v] = '\x00';
-                this._children[v] = {};
-                this._children['\x00'][v] = true;
-            }
-        }
-    }
-
-    node(v) {
-        return this.nodes.get(v);
-    }
-
-    hasNode(v) {
-        return this.nodes.has(v);
-    }
-
-    removeNode(v) {
-        const node = this.nodes.get(v);
-        if (node) {
-            if (this._compound) {
-                delete this._children[this._parent[v]][v];
-                delete this._parent[v];
-                for (const child of this.children(v)) {
-                    this.setParent(child);
-                }
-                delete this._children[v];
-            }
-            for (const edge of node.in) {
-                this.removeEdge(edge);
-            }
-            for (const edge of node.out) {
-                this.removeEdge(edge);
-            }
-            this.nodes.delete(v);
-        }
-    }
-
-    setParent(v, parent) {
-        if (!this._compound) {
-            throw new Error('Cannot set parent in a non-compound graph');
-        }
-        if (parent) {
-            for (let ancestor = parent; ancestor !== undefined; ancestor = this.parent(ancestor)) {
-                if (ancestor === v) {
-                    throw new Error('Setting ' + parent + ' as parent of ' + v + ' would create a cycle.');
-                }
-            }
-            this.setNode(parent);
-        }
-        else {
-            parent = '\x00';
-        }
+  removeNode(v) {
+    const node = this.nodes.get(v);
+    if (node) {
+      if (this._compound) {
         delete this._children[this._parent[v]][v];
-        this._parent[v] = parent;
-        this._children[parent][v] = true;
-    }
-
-    parent(v) {
-        if (this._compound) {
-            const parent = this._parent[v];
-            if (parent !== '\x00') {
-                return parent;
-            }
+        delete this._parent[v];
+        for (const child of this.children(v)) {
+          this.setParent(child);
         }
+        delete this._children[v];
+      }
+      for (const edge of node.in) {
+        this.removeEdge(edge);
+      }
+      for (const edge of node.out) {
+        this.removeEdge(edge);
+      }
+      this.nodes.delete(v);
     }
+  }
 
-    children(v) {
-        if (this._compound) {
-            return Object.keys(this._children[v === undefined ? '\x00' : v]);
+  setParent(v, parent) {
+    if (!this._compound) {
+      throw new Error('Cannot set parent in a non-compound graph');
+    }
+    if (parent) {
+      for (let ancestor = parent; ancestor !== undefined; ancestor = this.parent(ancestor)) {
+        if (ancestor === v) {
+          throw new Error('Setting ' + parent + ' as parent of ' + v + ' would create a cycle.');
         }
-        else if (v === undefined) {
-            return this.nodes.keys();
+      }
+      this.setNode(parent);
+    } else {
+      parent = '\x00';
+    }
+    delete this._children[this._parent[v]][v];
+    this._parent[v] = parent;
+    this._children[parent][v] = true;
+  }
+
+  parent(v) {
+    if (this._compound) {
+      const parent = this._parent[v];
+      if (parent !== '\x00') {
+        return parent;
+      }
+    }
+  }
+
+  children(v) {
+    if (this._compound) {
+      return Object.keys(this._children[v === undefined ? '\x00' : v]);
+    } else if (v === undefined) {
+      return this.nodes.keys();
+    } else if (this.hasNode(v)) {
+      return [];
+    }
+  }
+
+  predecessors(v) {
+    return Object.keys(this.nodes.get(v).predecessors);
+  }
+
+  successors(v) {
+    return Object.keys(this.nodes.get(v).successors);
+  }
+
+  neighbors(v) {
+    return Array.from(new Set(this.predecessors(v).concat(this.successors(v))));
+  }
+
+  edge(v, w) {
+    return this.edges.get(this._edgeKey(this._directed, v, w));
+  }
+
+  setEdge(v, w, label, name) {
+    const key = this._edgeKey(this._directed, v, w, name);
+    const edge = this.edges.get(key);
+    if (edge) {
+      edge.label = label;
+    } else {
+      if (!this._directed && v > w) {
+        const tmp = v;
+        v = w;
+        w = tmp;
+      }
+      const edge = { label: label, v: v, w: w, name: name, key: key, vNode: null, wNode: null };
+      this.edges.set(key, edge);
+      this.setNode(v);
+      this.setNode(w);
+      const wNode = this.nodes.get(w);
+      const vNode = this.nodes.get(v);
+      edge.wNode = wNode;
+      edge.vNode = vNode;
+      const incrementOrInitEntry = (map, k) => {
+        if (map[k]) {
+          map[k]++;
+        } else {
+          map[k] = 1;
         }
-        else if (this.hasNode(v)) {
-            return [];
-        }
+      };
+      incrementOrInitEntry(wNode.predecessors, v);
+      incrementOrInitEntry(vNode.successors, w);
+      wNode.in.push(edge);
+      vNode.out.push(edge);
     }
+  }
 
-    predecessors(v) {
-        return Object.keys(this.nodes.get(v).predecessors);
-    }
+  removeEdge(edge) {
+    const key = edge.key;
+    const v = edge.v;
+    const w = edge.w;
+    const decrementOrRemoveEntry = (map, k) => {
+      if (!--map[k]) {
+        delete map[k];
+      }
+    };
+    const wNode = edge.wNode;
+    const vNode = edge.vNode;
+    decrementOrRemoveEntry(wNode.predecessors, v);
+    decrementOrRemoveEntry(vNode.successors, w);
+    wNode.in = wNode.in.filter((edge) => edge.key !== key);
+    vNode.out = vNode.out.filter((edge) => edge.key !== key);
+    this.edges.delete(key);
+  }
 
-    successors(v) {
-        return Object.keys(this.nodes.get(v).successors);
+  _edgeKey(isDirected, v, w, name) {
+    if (!isDirected && v > w) {
+      return name ? w + ':' + v + ':' + name : w + ':' + v + ':';
     }
+    return name ? v + ':' + w + ':' + name : v + ':' + w + ':';
+  }
 
-    neighbors(v) {
-        return Array.from(new Set(this.predecessors(v).concat(this.successors(v))));
-    }
-
-    edge(v, w) {
-        return this.edges.get(this._edgeKey(this._directed, v, w));
-    }
-
-    setEdge(v, w, label, name) {
-        const key = this._edgeKey(this._directed, v, w, name);
-        const edge = this.edges.get(key);
-        if (edge) {
-            edge.label = label;
-        }
-        else {
-            if (!this._directed && v > w) {
-                const tmp = v;
-                v = w;
-                w = tmp;
-            }
-            const edge = { label: label, v: v, w: w, name: name, key: key, vNode: null, wNode: null };
-            this.edges.set(key, edge);
-            this.setNode(v);
-            this.setNode(w);
-            const wNode = this.nodes.get(w);
-            const vNode = this.nodes.get(v);
-            edge.wNode = wNode;
-            edge.vNode = vNode;
-            const incrementOrInitEntry = (map, k) => {
-                if (map[k]) {
-                    map[k]++;
-                }
-                else {
-                    map[k] = 1;
-                }
-            };
-            incrementOrInitEntry(wNode.predecessors, v);
-            incrementOrInitEntry(vNode.successors, w);
-            wNode.in.push(edge);
-            vNode.out.push(edge);
-        }
-    }
-
-    removeEdge(edge) {
-        const key = edge.key;
-        const v = edge.v;
-        const w = edge.w;
-        const decrementOrRemoveEntry = (map, k) => {
-            if (!--map[k]) {
-                delete map[k];
-            }
-        };
-        const wNode = edge.wNode;
-        const vNode = edge.vNode;
-        decrementOrRemoveEntry(wNode.predecessors, v);
-        decrementOrRemoveEntry(vNode.successors, w);
-        wNode.in = wNode.in.filter((edge) => edge.key !== key);
-        vNode.out = vNode.out.filter((edge) => edge.key !== key);
-        this.edges.delete(key);
-    }
-
-    _edgeKey(isDirected, v, w, name) {
-        if (!isDirected && v > w) {
-            return name ? w + ':' + v + ':' + name : w + ':' + v + ':';
-        }
-        return name ? v + ':' + w + ':' + name : v + ':' + w + ':';
-    }
-
-    toString() {
-        return [
-            '[nodes]', Array.from(this.nodes.values()).map(n => JSON.stringify(n.label)).join('\n'),
-            '[edges]', Array.from(this.edges.values()).map(e => JSON.stringify(e.label)).join('\n'),
-            '[parents]', JSON.stringify(this._parent, null, 2),
-            '[children]', JSON.stringify(this._children, null, 2)
-        ].join('\n');
-    }
+  toString() {
+    return [
+      '[nodes]',
+      Array.from(this.nodes.values())
+        .map((n) => JSON.stringify(n.label))
+        .join('\n'),
+      '[edges]',
+      Array.from(this.edges.values())
+        .map((e) => JSON.stringify(e.label))
+        .join('\n'),
+      '[parents]',
+      JSON.stringify(this._parent, null, 2),
+      '[children]',
+      JSON.stringify(this._children, null, 2),
+    ].join('\n');
+  }
 };
 
 if (typeof module !== 'undefined' && typeof module.exports === 'object') {
-    module.exports = dagre;
+  module.exports = dagre;
 }
