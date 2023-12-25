@@ -19,7 +19,7 @@ import numpy as np
 from msquickcmp.common import utils
 
 
-MSACCUCMP_FILE_PATH =  "toolkit/tools/operator_cmp/compare/msaccucmp.py"
+MSACCUCMP_FILE_PATH = "toolkit/tools/operator_cmp/compare/msaccucmp.py"
 
 
 def convert_bin_dump_data_to_npy(npu_dump_data_path, npu_net_output_data_path, cann_path):
@@ -32,14 +32,21 @@ def convert_bin_dump_data_to_npy(npu_dump_data_path, npu_net_output_data_path, c
     common_path = os.path.commonprefix([npu_dump_data_path, npu_net_output_data_path])
     npu_dump_data_path_diff = os.path.relpath(npu_dump_data_path, common_path)
     time_stamp_file_path = npu_dump_data_path_diff.split(os.path.sep)[1]
-    convert_dir_path = npu_dump_data_path.replace(time_stamp_file_path, time_stamp_file_path+'_bin2npy')
+    convert_dir_path = npu_dump_data_path.replace(time_stamp_file_path, time_stamp_file_path + '_bin2npy')
     convert_dir_path = os.path.normpath(convert_dir_path)
     if not os.path.exists(convert_dir_path):
-            os.makedirs(convert_dir_path)
+        os.makedirs(convert_dir_path)
     msaccucmp_command_file_path = os.path.join(cann_path, MSACCUCMP_FILE_PATH)
     python_version = sys.executable.split('/')[-1]
-    bin2npy_cmd = [python_version, msaccucmp_command_file_path,
-                    "convert", "-d", npu_dump_data_path, "-out", convert_dir_path]
+    bin2npy_cmd = [
+        python_version,
+        msaccucmp_command_file_path,
+        "convert",
+        "-d",
+        npu_dump_data_path,
+        "-out",
+        convert_dir_path,
+    ]
     utils.execute_command(bin2npy_cmd, False)
     utils.logger.info("msaccucmp command line: %s " % " ".join(bin2npy_cmd))
     return convert_dir_path
@@ -63,10 +70,10 @@ def convert_bin_file_to_npy(bin_file_path, npy_dir_path, cann_path):
 
 def convert_npy_to_bin(npy_input_path):
     """
-        Function Description:
-            convert a  file to bin file.
-        Parameter:
-            npy_file_path: the path of the npy file needed to be converted to bin
+    Function Description:
+        convert a  file to bin file.
+    Parameter:
+        npy_file_path: the path of the npy file needed to be converted to bin
     """
     input_initial_path = npy_input_path.split(",")
     outputs = []

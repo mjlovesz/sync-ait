@@ -88,7 +88,7 @@ class Analyser:
         self._strategy_func_dict = {
             STRATEGIES.FIRST_INVALID_OVERALL: self._first_invalid_overall,
             STRATEGIES.FIRST_INVALID_EACH: self._first_invalid_each,
-            STRATEGIES.ALL_INVALID:self._all_invalid,
+            STRATEGIES.ALL_INVALID: self._all_invalid,
         }
 
     def __call__(self, strategy=STRATEGIES.FIRST_INVALID_OVERALL, max_column_len=30):
@@ -163,7 +163,7 @@ class Analyser:
             if row.get(item_key) in invalid_values:
                 return False
         return True
-    
+
     def _first_invalid_overall(self, csv_rows):
         for row in csv_rows:
             cur_invalid_monitors = self._get_monitors_exceeding_threshold(row, self.monitor_threshold)
@@ -251,6 +251,6 @@ def print_in_markdown_table(input_dict, max_column_len=30):
             if len(cur_value) >= max_len:
                 cur_value = " " + cur_value[: max_len - 4] + "..."
             body.append(" " * (max_len - len(cur_value)) + cur_value)
-        print_str +=  "|" + " |".join(body) + " |\n"
+        print_str += "|" + " |".join(body) + " |\n"
 
     utils.logger.info(print_str)
