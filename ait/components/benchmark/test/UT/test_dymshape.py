@@ -21,7 +21,7 @@ import numpy as np
 import pytest
 from test_common import TestCommonClass
 
-logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -55,7 +55,7 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
 
         # only need call this functon compare infer_simple
-        session.set_dynamic_shape(input_tensor_name+":1,3,224,224")
+        session.set_dynamic_shape(input_tensor_name + ":1,3,224,224")
         session.set_custom_outsize([10000])
 
         # create new numpy data according inputs info
@@ -84,7 +84,7 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
 
         # only need call this functon compare infer_simple
-        session.set_dynamic_shape(input_tensor_name+":4,3,224,224")
+        session.set_dynamic_shape(input_tensor_name + ":4,3,224,224")
         session.set_custom_outsize([20000])
 
         # create new numpy data according inputs info
@@ -112,7 +112,7 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
 
         # only need call this functon compare infer_simple
-        session.set_dynamic_shape(input_tensor_name+":8,3,300,200")
+        session.set_dynamic_shape(input_tensor_name + ":8,3,300,200")
         session.set_custom_outsize([80000])
 
         # create new numpy data according inputs info
@@ -163,7 +163,7 @@ class TestClass:
         session = aclruntime.InferenceSession(model_path, device_id, options)
 
         # only need call this functon compare infer_simple
-        session.set_dynamic_shape(input_tensor_name+":1,3,224,224")
+        session.set_dynamic_shape(input_tensor_name + ":1,3,224,224")
 
         # create new numpy data according inputs info
         barray = bytearray(session.get_inputs()[0].realsize)
@@ -172,8 +172,8 @@ class TestClass:
         tensor = aclruntime.Tensor(ndata)
         tensor.to_device(device_id)
 
-        outnames = [ session.get_outputs()[0].name ]
-        feeds = { session.get_inputs()[0].name : tensor}
+        outnames = [session.get_outputs()[0].name]
+        feeds = {session.get_inputs()[0].name: tensor}
 
         with pytest.raises(RuntimeError) as e:
             outputs = session.run(outnames, feeds)
@@ -186,18 +186,18 @@ class TestClass:
         model_path = self.get_resnet_dymshape_om_path()
         session = aclruntime.InferenceSession(model_path, device_id, options)
 
-        session.set_dynamic_shape(input_tensor_name+":1,3,112,112")
+        session.set_dynamic_shape(input_tensor_name + ":1,3,112,112")
         session.set_custom_outsize([80000])
         basesize = session.get_inputs()[0].realsize
 
-        session.set_dynamic_shape(input_tensor_name+":1,3,224,224")
+        session.set_dynamic_shape(input_tensor_name + ":1,3,224,224")
         basesize1 = session.get_inputs()[0].realsize
-        assert basesize1 == basesize*4
+        assert basesize1 == basesize * 4
 
-        session.set_dynamic_shape(input_tensor_name+":2,3,224,224")
+        session.set_dynamic_shape(input_tensor_name + ":2,3,224,224")
         basesize2 = session.get_inputs()[0].realsize
-        assert basesize2 == basesize1*2
+        assert basesize2 == basesize1 * 2
 
-        session.set_dynamic_shape(input_tensor_name+":8,3,224,224")
+        session.set_dynamic_shape(input_tensor_name + ":8,3,224,224")
         basesize3 = session.get_inputs()[0].realsize
-        assert basesize3 == basesize2*4
+        assert basesize3 == basesize2 * 4

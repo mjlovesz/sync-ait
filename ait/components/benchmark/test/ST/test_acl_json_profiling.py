@@ -24,7 +24,7 @@ import logging
 import pytest
 from test_common import TestCommonClass
 
-logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -56,12 +56,9 @@ class TestClass:
         self.base_path = TestCommonClass.get_basepath()
 
     def test_acl_json_using_msprof(self):
-        output_json_dict = {"profiler": {
-            "switch": "on",
-            "aicpu": "on",
-            "output": "testdata/profiler",
-            "aic_metrics": ""
-        }}
+        output_json_dict = {
+            "profiler": {"switch": "on", "aicpu": "on", "output": "testdata/profiler", "aic_metrics": ""}
+        }
         os.environ.pop('AIT_NO_MSPROF_MODE', None)
         profile_out_path = os.path.join(self.base_path, "profiler")
         json_path = os.path.realpath("acl_test.json")
@@ -80,12 +77,9 @@ class TestClass:
         assert len(csv_files) != 0
 
     def test_acl_json_using_aclinit(self):
-        output_json_dict = {"profiler": {
-            "switch": "on",
-            "aicpu": "on",
-            "output": "testdata/profiler",
-            "aic_metrics": ""
-        }}
+        output_json_dict = {
+            "profiler": {"switch": "on", "aicpu": "on", "output": "testdata/profiler", "aic_metrics": ""}
+        }
         os.environ['AIT_NO_MSPROF_MODE'] = "1"
         profile_out_path = os.path.join(self.base_path, "profiler")
         json_path = os.path.realpath("acl_test.json")
@@ -120,12 +114,9 @@ class TestClass:
         assert ret != 0
 
     def test_acl_json_path_not_exist(self):
-        output_json_dict = {"profiler": {
-            "switch": "on",
-            "aicpu": "on",
-            "output": "testdata/profiler",
-            "aic_metrics": ""
-        }}
+        output_json_dict = {
+            "profiler": {"switch": "on", "aicpu": "on", "output": "testdata/profiler", "aic_metrics": ""}
+        }
         os.environ.pop('AIT_NO_MSPROF_MODE', None)
         profile_out_path = os.path.join(self.base_path, "profiler")
         json_path = os.path.realpath("acl_test_invalid.json")

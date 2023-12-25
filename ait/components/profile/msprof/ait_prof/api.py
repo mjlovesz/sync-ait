@@ -15,6 +15,7 @@
 
 import pandas as pd
 
+
 # 读取
 def get_csv_to_df(file_path) -> any:
     '''返回pd类型数据'''
@@ -109,14 +110,14 @@ def add_row(df, rows) -> any:
 def insert_row_1(df, col, col_value, rows) -> any:
     i = df.index[(df[col] == col_value)].values[-1]
     df_1 = df.loc[0:i, :].append(pd.DataFrame(rows), ignore_index=True)
-    return df_1.append(df.loc[i+1:, :], ignore_index=True)
+    return df_1.append(df.loc[i + 1 :, :], ignore_index=True)
 
 
 # 在满足col1、col2两列值条件的末尾插入行
 def insert_row_2(df, col1, col1_value, col2, col2_value, rows) -> any:
     i = df.index[(df[col1] == col1_value) & (df[col2] == col2_value)].values[-1]
     df_1 = df.loc[0:i, :].append(pd.DataFrame(rows), ignore_index=True)
-    return df_1.append(df.loc[i+1:, :], ignore_index=True)
+    return df_1.append(df.loc[i + 1 :, :], ignore_index=True)
 
 
 # 删除指定某列值的行
