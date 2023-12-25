@@ -8,8 +8,9 @@ from ais_bench.infer.interface import InferSession, MultiDeviceSession
 from test_common import TestCommonClass
 
 
-logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
+
 
 class TestClass:
     @classmethod
@@ -24,28 +25,20 @@ class TestClass:
         logger.info('\n ---class level teardown_class')
 
     @classmethod
-    def get_resnet50_static(cls, bs:int = 1):
-        return os.path.join(
-            TestCommonClass.get_basepath(), cls.resnet_name, "model", f"pth_resnet50_bs{bs}.om"
-        )
+    def get_resnet50_static(cls, bs: int = 1):
+        return os.path.join(TestCommonClass.get_basepath(), cls.resnet_name, "model", f"pth_resnet50_bs{bs}.om")
 
     @classmethod
-    def get_resnet50_dynamic(cls, kind:str):
-        return os.path.join(
-            TestCommonClass.get_basepath(), cls.resnet_name, "model", f"pth_resnet50_{kind}.om"
-        )
+    def get_resnet50_dynamic(cls, kind: str):
+        return os.path.join(TestCommonClass.get_basepath(), cls.resnet_name, "model", f"pth_resnet50_{kind}.om")
 
     @classmethod
-    def get_add_model_static(cls, bs:int = 1):
-        return os.path.join(
-            TestCommonClass.get_basepath(), cls.add_name, "model", f"add_model_bs{bs}.om"
-        )
+    def get_add_model_static(cls, bs: int = 1):
+        return os.path.join(TestCommonClass.get_basepath(), cls.add_name, "model", f"add_model_bs{bs}.om")
 
     @classmethod
-    def get_add_model_dynamic(cls, kind:str):
-        return os.path.join(
-            TestCommonClass.get_basepath(), cls.add_name, "model", f"add_model_{kind}.om"
-        )
+    def get_add_model_dynamic(cls, kind: str):
+        return os.path.join(TestCommonClass.get_basepath(), cls.add_name, "model", f"add_model_{kind}.om")
 
     def init(self):
         self.resnet_name = "resnet50"
@@ -53,7 +46,7 @@ class TestClass:
         self.iteration_times = 1000
         self.in_out_list = [-1, 0]
 
-# ====================test single process infer api==========================
+    # ====================test single process infer api==========================
     def test_infer_api_static(self):
         device_id = 0
         model_path = self.get_resnet50_static(1)
@@ -73,7 +66,7 @@ class TestClass:
         session = InferSession(device_id, model_path)
 
         # create new numpy data according inputs info
-        shape = [1,3,256,256]
+        shape = [1, 3, 256, 256]
         ndata = np.full(shape, 0).astype(np.uint8)
 
         # in is numpy list and output is numpy list
@@ -86,7 +79,7 @@ class TestClass:
         session = InferSession(device_id, model_path)
 
         # create new numpy data according inputs info
-        shape = [1,3,224,224]
+        shape = [1, 3, 224, 224]
         ndata = np.full(shape, 0).astype(np.float32)
 
         # in is numpy list and output is numpy list
@@ -99,7 +92,7 @@ class TestClass:
         session = InferSession(device_id, model_path)
 
         # create new numpy data according inputs info
-        shape = [1,3,224,224]
+        shape = [1, 3, 224, 224]
         ndata = np.full(shape, 0).astype(np.float32)
 
         # in is numpy list and output is numpy list
@@ -112,14 +105,14 @@ class TestClass:
         session = InferSession(device_id, model_path)
 
         # create new numpy data according inputs info
-        shape = [1,3,224,224]
+        shape = [1, 3, 224, 224]
         ndata = np.full(shape, 0).astype(np.float32)
 
         # in is numpy list and output is numpy list
         outputs = session.infer([ndata], mode='dymshape', custom_sizes=100000)
         session.free_resource()
 
-# ====================test single process infer pipeline api==========================
+    # ====================test single process infer pipeline api==========================
     def test_infer_pipeline_api_static(self):
         device_id = 0
         model_path = self.get_resnet50_static(1)
@@ -140,7 +133,7 @@ class TestClass:
         session = InferSession(device_id, model_path)
 
         # create new numpy data according inputs info
-        shape = [1,3,256,256]
+        shape = [1, 3, 256, 256]
         ndata = np.full(shape, 0).astype(np.uint8)
         ndata_list = [[ndata], [ndata], [ndata]]
 
@@ -154,7 +147,7 @@ class TestClass:
         session = InferSession(device_id, model_path)
 
         # create new numpy data according inputs info
-        shape = [1,3,224,224]
+        shape = [1, 3, 224, 224]
         ndata = np.full(shape, 0).astype(np.float32)
         ndata_list = [[ndata], [ndata], [ndata]]
 
@@ -168,8 +161,8 @@ class TestClass:
         session = InferSession(device_id, model_path)
 
         # create new numpy data according inputs info
-        shape1 = [1,3,224,224]
-        shape2 = [8,3,448,448]
+        shape1 = [1, 3, 224, 224]
+        shape2 = [8, 3, 448, 448]
         ndata1 = np.full(shape1, 0).astype(np.float32)
         ndata2 = np.full(shape2, 0).astype(np.float32)
         ndata_list = [[ndata1], [ndata2]]
@@ -183,8 +176,8 @@ class TestClass:
         session = InferSession(device_id, model_path)
 
         # create new numpy data according inputs info
-        shape1 = [1,3,224,224]
-        shape2 = [4,3,225,225]
+        shape1 = [1, 3, 224, 224]
+        shape2 = [4, 3, 225, 225]
         ndata1 = np.full(shape1, 0).astype(np.float32)
         ndata2 = np.full(shape2, 0).astype(np.float32)
         ndata_list = [[ndata1], [ndata2]]
@@ -193,7 +186,7 @@ class TestClass:
         outputs = session.infer_pipeline(ndata_list, mode='dymshape', custom_sizes=100000)
         session.free_resource()
 
-# ====================test single process infer iteration api==========================
+    # ====================test single process infer iteration api==========================
     def test_infer_iteration_api_static(self):
         device_id = 0
         model_path = self.get_add_model_static(1)
@@ -204,8 +197,9 @@ class TestClass:
         ndata = np.full(shape, 0).astype(np.float32)
 
         # in is numpy list and output is numpy list
-        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list,
-            iteration_times=self.iteration_times, mode='static')
+        outputs = session.infer_iteration(
+            [ndata, ndata], in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='static'
+        )
         session.free_resource()
 
     def test_infer_iteration_api_dymbatch(self):
@@ -214,12 +208,13 @@ class TestClass:
         session = InferSession(device_id, model_path)
 
         # create new numpy data according inputs info
-        shape = [1,3,32,32]
+        shape = [1, 3, 32, 32]
         ndata = np.full(shape, 0).astype(np.float32)
 
         # in is numpy list and output is numpy list
-        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list,
-            iteration_times=self.iteration_times, mode='dymbatch')
+        outputs = session.infer_iteration(
+            [ndata, ndata], in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='dymbatch'
+        )
         session.free_resource()
 
     def test_infer_iteration_api_dymwh(self):
@@ -228,12 +223,13 @@ class TestClass:
         session = InferSession(device_id, model_path)
 
         # create new numpy data according inputs info
-        shape = [1,3,32,32]
+        shape = [1, 3, 32, 32]
         ndata = np.full(shape, 0).astype(np.float32)
 
         # in is numpy list and output is numpy list
-        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list,
-            iteration_times=self.iteration_times, mode='dymhw')
+        outputs = session.infer_iteration(
+            [ndata, ndata], in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='dymhw'
+        )
         session.free_resource()
 
     def test_infer_iteration_api_dymdim(self):
@@ -242,12 +238,13 @@ class TestClass:
         session = InferSession(device_id, model_path)
 
         # create new numpy data according inputs info
-        shape = [4,3,64,64]
+        shape = [4, 3, 64, 64]
         ndata = np.full(shape, 0).astype(np.float32)
 
         # in is numpy list and output is numpy list
-        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list,
-            iteration_times=self.iteration_times, mode='dymdims')
+        outputs = session.infer_iteration(
+            [ndata, ndata], in_out_list=self.in_out_list, iteration_times=self.iteration_times, mode='dymdims'
+        )
         session.free_resource()
 
     def test_infer_iteration_api_dymshape(self):
@@ -256,10 +253,15 @@ class TestClass:
         session = InferSession(device_id, model_path)
 
         # create new numpy data according inputs info
-        shape = [4,3,32,32]
+        shape = [4, 3, 32, 32]
         ndata = np.full(shape, 0).astype(np.float32)
         out_size = 4 * 3 * 32 * 32 * 4
         # in is numpy list and output is numpy list
-        outputs = session.infer_iteration([ndata, ndata], in_out_list=self.in_out_list,
-            iteration_times=self.iteration_times, mode='dymshape', custom_sizes=out_size)
+        outputs = session.infer_iteration(
+            [ndata, ndata],
+            in_out_list=self.in_out_list,
+            iteration_times=self.iteration_times,
+            mode='dymshape',
+            custom_sizes=out_size,
+        )
         session.free_resource()

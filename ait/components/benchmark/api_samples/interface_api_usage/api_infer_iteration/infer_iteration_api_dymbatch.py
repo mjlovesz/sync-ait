@@ -28,7 +28,7 @@ def infer_api_iteration_dymbatch():
     ndata1 = np.full(shape1, 1).astype(np.float32)
     feeds = [ndata0, ndata1]
     # define unique parameters of infer_iteration
-    in_out_list =[-1, 0]
+    in_out_list = [-1, 0]
     iteration_times = 100
     # execute inference, inputs is ndarray list and outputs is ndarray list
     outputs = session.infer_iteration(feeds, in_out_list, iteration_times, mode='dymbatch')
