@@ -103,7 +103,7 @@ def test_read_atb_data_invalid_file_extension(tmp_path):
 
 def test_tensor_bin_file_unsupported_dtype():
     # Test scenario when an unsupported dtype is encountered
-    bin_file = TensorBinFile(invalid_bin_file)
+    bin_file = TensorBinFile(create_unsupport_dtype_bin_file)
     with pytest.raises(ValueError):
         bin_file.get_data()
             
