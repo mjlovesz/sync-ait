@@ -19,6 +19,7 @@ import logging
 import sys
 
 from pybind11 import get_cmake_dir
+
 # Available at setup time due to pyproject.toml
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
@@ -58,7 +59,6 @@ def is_legal_args_path_string(path):
     if not is_match_path_white_list(path):
         return False
     return True
-
 
 
 # The main interface is through Pybind11Extension.
@@ -106,11 +106,11 @@ def get_cann_path():
     check_file_path = "runtime/lib64/stub/libascendcl.so"
     if os.path.exists(os.path.join(set_env_path, check_file_path)):
         cann_base_path = set_env_path
-    elif os.path.exists(atlas_nnae_path+check_file_path):
+    elif os.path.exists(atlas_nnae_path + check_file_path):
         cann_base_path = atlas_nnae_path
-    elif os.path.exists(atlas_toolkit_path+check_file_path):
+    elif os.path.exists(atlas_toolkit_path + check_file_path):
         cann_base_path = atlas_toolkit_path
-    elif os.path.exists(hisi_fwk_path+check_file_path):
+    elif os.path.exists(hisi_fwk_path + check_file_path):
         cann_base_path = hisi_fwk_path
     cann_lib_path = f'{cann_base_path}/runtime/lib64/stub/'
 
@@ -121,11 +121,11 @@ def get_cann_path():
             check_file_path = "runtime/lib64/stub/aarch64/libascendcl.so"
         if os.path.exists(os.path.join(set_env_path, check_file_path)):
             cann_base_path = set_env_path
-        elif os.path.exists(atlas_nnae_path+check_file_path):
+        elif os.path.exists(atlas_nnae_path + check_file_path):
             cann_base_path = atlas_nnae_path
-        elif os.path.exists(atlas_toolkit_path+check_file_path):
+        elif os.path.exists(atlas_toolkit_path + check_file_path):
             cann_base_path = atlas_toolkit_path
-        elif os.path.exists(hisi_fwk_path+check_file_path):
+        elif os.path.exists(hisi_fwk_path + check_file_path):
             cann_base_path = hisi_fwk_path
 
         if cann_base_path is None:
@@ -136,8 +136,8 @@ def get_cann_path():
         elif platform.machine() == "aarch64":
             cann_lib_path = f'{cann_base_path}/runtime/lib64/stub/aarch64/'
 
-
     logger.info("find cann path: %s", cann_base_path)
+
 
 get_cann_path()
 
@@ -162,8 +162,6 @@ ext_modules = [
             'python/src/PyInterface/PyInterface.cpp',
             'python/src/PyTensor/PyTensor.cpp',
             'python/src/PyInferenceSession/PyInferenceSession.cpp',
-
-
         ],
         include_dirs=[
             'python/include/',
@@ -171,26 +169,26 @@ ext_modules = [
             'base/include/Base/ModelInfer/',
             f'{cann_base_path}/runtime/include',
         ],
-        library_dirs = [cann_lib_path, ],
-
-        extra_compile_args = ['--std=c++11', '-g3'],
-
+        library_dirs=[
+            cann_lib_path,
+        ],
+        extra_compile_args=['--std=c++11', '-g3'],
         libraries=['ascendcl', 'acl_dvpp', 'acl_cblas'],
         language='c++',
-        define_macros = [('ENABLE_DVPP_INTERFACE', 1), ('COMPILE_PYTHON_MODULE', 1)],
+        define_macros=[('ENABLE_DVPP_INTERFACE', 1), ('COMPILE_PYTHON_MODULE', 1)],
     ),
 ]
 
 setup(
-    name = "aclruntime",
-    version = STATIC_VERSION,
-    author = "ais_bench",
-    author_email = "aclruntime",
-    url = "https://xxxxx",
-    description = "A test project using pybind11 and aclruntime",
-    long_description = "",
-    ext_modules = ext_modules,
-    cmdclass = {"build_ext": BuildExt},
-    zip_safe = False,
-    python_requires = ">=3.6",
+    name="aclruntime",
+    version=STATIC_VERSION,
+    author="ais_bench",
+    author_email="aclruntime",
+    url="https://xxxxx",
+    description="A test project using pybind11 and aclruntime",
+    long_description="",
+    ext_modules=ext_modules,
+    cmdclass={"build_ext": BuildExt},
+    zip_safe=False,
+    python_requires=">=3.6",
 )

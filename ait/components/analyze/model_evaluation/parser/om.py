@@ -59,21 +59,15 @@ class OmParser:
         if not isinstance(engine, str):
             return Engine.UNKNOWN
 
-        engine_map = {
-            'aicore': Engine.AICORE,
-            'aicpu': Engine.AICPU,
-            'dvpp': Engine.DVPP,
-            'cpu': Engine.HOST_CPU
-        }
+        engine_map = {'aicore': Engine.AICORE, 'aicpu': Engine.AICPU, 'dvpp': Engine.DVPP, 'cpu': Engine.HOST_CPU}
         engine = engine.lower()
         for key, value in engine_map.items():
             if key in engine:
                 return value
         return Engine.UNKNOWN
 
-    def parse_all_ops(self, convert = False) -> List[OpInnerInfo]:
-        ''' parse all op info from om json
-        '''
+    def parse_all_ops(self, convert=False) -> List[OpInnerInfo]:
+        '''parse all op info from om json'''
         if len(self._om_json) == 0 and convert:
             if not self.parse_om_to_json():
                 logger.error(f'parse model ops failed.')
@@ -99,8 +93,7 @@ class OmParser:
         op_infos: List[OpInnerInfo] = []
         for op_dict in ops:
             op_info = self._parse_op_info(op_dict)
-            if op_info.op_name == '' or \
-                op_info.op_type == '':
+            if op_info.op_name == '' or op_info.op_type == '':
                 continue
             op_infos.append(op_info)
         return op_infos
@@ -113,12 +106,7 @@ class OmParser:
         if os.path.isfile(om_json):
             os.remove(om_json)
 
-        convert_cmd = [
-            'atc',
-            '--mode=1',
-            '--om={}'.format(self._om_path),
-            '--json={}'.format(om_json)
-        ]
+        convert_cmd = ['atc', '--mode=1', '--om={}'.format(self._om_path), '--json={}'.format(om_json)]
         logger.info('convert om to json, please wait...')
         out, err = utils.exec_command(convert_cmd)
         if len(err) != 0:
@@ -135,14 +123,12 @@ class OmParser:
         return True
 
     def _parse_op_info(self, op_dict: Dict) -> OpInnerInfo:
-        ''' parse single op info from om json
-        '''
+        '''parse single op info from om json'''
         op_info = OpInnerInfo()
 
         op_name = op_dict.get('name')
         op_type = op_dict.get('type')
-        if not isinstance(op_name, str) or \
-            not isinstance(op_type, str):
+        if not isinstance(op_name, str) or not isinstance(op_type, str):
             return op_info
         op_info.op_name = op_name
         op_info.op_type = op_type

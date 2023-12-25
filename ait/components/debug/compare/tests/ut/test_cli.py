@@ -27,18 +27,20 @@ from msquickcmp.common import utils
 
 @pytest.fixture(scope="module", autouse=True)
 def compare_cli() -> None:
-    cmp_args = CmpArgsAdapter(gold_model="./fake.onnx",
-                              om_model="./fake.om",
-                              input_data_path = "",
-                              out_path="",
-                              input_shape="",
-                              device='0',
-                              output_size="",
-                              output_nodes="",
-                              advisor=False,
-                              dym_shape_range="",
-                              dump=True,
-                              bin2npy=False)
+    cmp_args = CmpArgsAdapter(
+        gold_model="./fake.onnx",
+        om_model="./fake.om",
+        input_data_path="",
+        out_path="",
+        input_shape="",
+        device='0',
+        output_size="",
+        output_nodes="",
+        advisor=False,
+        dym_shape_range="",
+        dump=True,
+        bin2npy=False,
+    )
     yield cmp_args
 
 
