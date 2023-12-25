@@ -1710,734 +1710,943 @@ view.ArchiveError = class extends Error {
 };
 
 view.ModelFactoryService = class {
+  constructor(host) {
+    this._host = host;
+    this._extensions = new Set(['.zip', '.tar', '.tar.gz', '.tgz', '.gz']);
+    this._factories = [];
+    this.register('./onnx', [
+      '.onnx',
+      '.onn',
+      '.pb',
+      '.onnxtxt',
+      '.pbtxt',
+      '.prototxt',
+      '.txt',
+      '.model',
+      '.pt',
+      '.pth',
+      '.pkl',
+      '.ort',
+      '.ort.onnx',
+    ]);
+    this.register('./om', ['.om', '.onnx', '.pb', '.engine']);
+  }
 
-    constructor(host) {
-        this._host = host;
-        this._extensions = new Set([ '.zip', '.tar', '.tar.gz', '.tgz', '.gz' ]);
-        this._factories = [];
-        this.register('./onnx', [ '.onnx', '.onn', '.pb', '.onnxtxt', '.pbtxt', '.prototxt', '.txt', '.model', '.pt', '.pth', '.pkl', '.ort', '.ort.onnx' ]);
-        this.register('./om', [ '.om', '.onnx', '.pb', '.engine' ]);
+  register(id, factories, containers) {
+    for (const extension of factories) {
+      this._factories.push({ extension: extension, id: id });
+      this._extensions.add(extension);
     }
-
-    register(id, factories, containers) {
-        for (const extension of factories) {
-            this._factories.push({ extension: extension, id: id });
-            this._extensions.add(extension);
-        }
-        for (const extension of containers || []) {
-            this._extensions.add(extension);
-        }
+    for (const extension of containers || []) {
+      this._extensions.add(extension);
     }
+  }
 
-    open(context) {
-        return this._openSignature(context).then((context) => {
-            const containers = new Map();
-            let stream = context.stream;
-            const entries = context.entries;
-            if (!stream && entries && entries.size > 0) {
-                containers.set('', entries);
+  open(context) {
+    return this._openSignature(context).then((context) => {
+      const containers = new Map();
+      let stream = context.stream;
+      const entries = context.entries;
+      if (!stream && entries && entries.size > 0) {
+        containers.set('', entries);
+      } else {
+        const identifier = context.identifier;
+        try {
+          const archive = gzip.Archive.open(stream);
+          if (archive) {
+            const entries = archive.entries;
+            containers.set('gzip', entries);
+            if (entries.size === 1) {
+              stream = entries.values().next().value;
             }
-            else {
-                const identifier = context.identifier;
-                try {
-                    const archive = gzip.Archive.open(stream);
-                    if (archive) {
-                        const entries = archive.entries;
-                        containers.set('gzip', entries);
-                        if (entries.size === 1) {
-                            stream = entries.values().next().value;
-                        }
-                    }
-                }
-                catch (error) {
-                    const message = error && error.message ? error.message : error.toString();
-                    throw new view.ArchiveError(message.replace(/\.$/, '') + " in '" + identifier + "'.");
-                }
-                try {
-                    const formats = new Map([ [ 'zip', zip ], [ 'tar', tar ] ]);
-                    for (const pair of formats) {
-                        const format = pair[0];
-                        const module = pair[1];
-                        const archive = module.Archive.open(stream);
-                        if (archive) {
-                            containers.set(format, archive.entries);
-                            containers.delete('gzip');
-                            break;
-                        }
-                    }
-                }
-                catch (error) {
-                    const message = error && error.message ? error.message : error.toString();
-                    throw new view.ArchiveError(message.replace(/\.$/, '') + " in '" + identifier + "'.");
-                }
+          }
+        } catch (error) {
+          const message = error && error.message ? error.message : error.toString();
+          throw new view.ArchiveError(message.replace(/\.$/, '') + " in '" + identifier + "'.");
+        }
+        try {
+          const formats = new Map([
+            ['zip', zip],
+            ['tar', tar],
+          ]);
+          for (const pair of formats) {
+            const format = pair[0];
+            const module = pair[1];
+            const archive = module.Archive.open(stream);
+            if (archive) {
+              containers.set(format, archive.entries);
+              containers.delete('gzip');
+              break;
             }
-            const modelContext = new view.ModelContext(context, containers);
-            return this._openContext(modelContext).then((model) => {
-                if (model) {
-                    return model;
-                }
-                if (containers.size > 0) {
-                    return this._openEntries(containers.values().next().value).then((context) => {
-                        if (context) {
-                            return this._openContext(context);
-                        }
-                        this._unsupported(modelContext);
-                    });
-                }
-                this._unsupported(modelContext);
+          }
+        } catch (error) {
+          const message = error && error.message ? error.message : error.toString();
+          throw new view.ArchiveError(message.replace(/\.$/, '') + " in '" + identifier + "'.");
+        }
+      }
+      const modelContext = new view.ModelContext(context, containers);
+      return this._openContext(modelContext).then((model) => {
+        if (model) {
+          return model;
+        }
+        if (containers.size > 0) {
+          return this._openEntries(containers.values().next().value).then((context) => {
+            if (context) {
+              return this._openContext(context);
+            }
+            this._unsupported(modelContext);
+          });
+        }
+        this._unsupported(modelContext);
+      });
+    });
+  }
+
+  _unsupported(context) {
+    const identifier = context.identifier;
+    const extension = identifier.split('.').pop().toLowerCase();
+    const stream = context.stream;
+    for (const module of [zip, tar, gzip]) {
+      let archive = null;
+      try {
+        archive = module.Archive.open(stream);
+      } catch (error) {
+        // continue regardless of error
+      }
+      if (archive) {
+        throw new view.Error("Archive contains no model files in '" + identifier + "'.", true);
+      }
+    }
+    const skip = () => {
+      const knownUnsupportedIdentifiers = new Set([
+        'natives_blob.bin',
+        'v8_context_snapshot.bin',
+        'snapshot_blob.bin',
+        'image_net_labels.json',
+        'package.json',
+        'models.json',
+        'LICENSE.meta',
+        'input_0.pb',
+        'output_0.pb',
+      ]);
+      return knownUnsupportedIdentifiers.has(context.identifier);
+    };
+    const json = () => {
+      const obj = context.open('json');
+      if (obj) {
+        const formats = [
+          { name: 'Netron metadata', tags: ['[].name', '[].schema'] },
+          { name: 'Netron metadata', tags: ['[].name', '[].attributes'] },
+          { name: 'Netron metadata', tags: ['[].name', '[].category'] },
+          { name: 'Darkflow metadata', tags: ['net', 'type', 'model'] },
+          { name: 'keras-yolo2 configuration', tags: ['model', 'train', 'valid'] },
+          { name: 'Vulkan SwiftShader ICD manifest', tags: ['file_format_version', 'ICD'] },
+          {
+            name: 'DeepLearningExamples configuration',
+            tags: ['attention_probs_dropout_prob', 'hidden_act', 'hidden_dropout_prob', 'hidden_size'],
+          },
+          { name: 'NuGet assets', tags: ['version', 'targets', 'packageFolders'] },
+          { name: 'NuGet data', tags: ['format', 'restore', 'projects'] },
+          { name: 'NPM package', tags: ['name', 'version', 'dependencies'] },
+          { name: 'NetworkX adjacency_data', tags: ['directed', 'graph', 'nodes'] },
+          { name: 'Waifu2x data', tags: ['name', 'arch_name', 'channels'] },
+          { name: 'Waifu2x data', tags: ['[].nInputPlane', '[].nOutputPlane', '[].weight', '[].bias'] },
+          { name: 'Brain.js data', tags: ['type', 'sizes', 'layers'] },
+          { name: 'Custom Vision metadata', tags: ['CustomVision.Metadata.Version'] },
+        ];
+        const match = (obj, tag) => {
+          if (tag.startsWith('[].')) {
+            tag = tag.substring(3);
+            return Array.isArray(obj) && obj.some((item) => Object.prototype.hasOwnProperty.call(item, tag));
+          }
+          return Object.prototype.hasOwnProperty.call(obj, tag);
+        };
+        for (const format of formats) {
+          if (format.tags.every((tag) => match(obj, tag))) {
+            throw new view.Error('Invalid file content. File contains ' + format.name + '.', true);
+          }
+        }
+        const content = JSON.stringify(obj).substring(0, 100).replace(/\s/, '').substr(0, 48) + '...';
+        throw new view.Error(
+          "Unsupported JSON content '" +
+            (content.length > 64 ? content.substring(0, 100) + '...' : content) +
+            "' for extension '." +
+            extension +
+            "' in '" +
+            identifier +
+            "'.",
+          !skip()
+        );
+      }
+    };
+    const pbtxt = () => {
+      const formats = [
+        { name: 'ImageNet LabelMap data', tags: ['entry', 'entry.target_class'] },
+        { name: 'StringIntLabelMapProto data', tags: ['item', 'item.id', 'item.name'] },
+        { name: 'caffe.LabelMap data', tags: ['item', 'item.name', 'item.label'] },
+        { name: 'Triton Inference Server configuration', tags: ['name', 'platform', 'input', 'output'] },
+        { name: 'TensorFlow OpList data', tags: ['op', 'op.name', 'op.input_arg'] },
+        { name: 'vitis.ai.proto.DpuModelParamList data', tags: ['model', 'model.name', 'model.kernel'] },
+        { name: 'object_detection.protos.DetectionModel data', tags: ['model', 'model.ssd'] },
+        { name: 'object_detection.protos.DetectionModel data', tags: ['model', 'model.faster_rcnn'] },
+        { name: 'tensorflow.CheckpointState data', tags: ['model_checkpoint_path', 'all_model_checkpoint_paths'] },
+        {
+          name: 'apollo.perception.camera.traffic_light.detection.DetectionParam data',
+          tags: ['min_crop_size', 'crop_method'],
+        },
+        { name: 'tidl_meta_arch.TIDLMetaArch data', tags: ['caffe_ssd'] },
+        { name: 'tidl_meta_arch.TIDLMetaArch data', tags: ['tf_od_api_ssd'] },
+        { name: 'tidl_meta_arch.TIDLMetaArch data', tags: ['tidl_ssd'] },
+        { name: 'tidl_meta_arch.TIDLMetaArch data', tags: ['tidl_faster_rcnn'] },
+        { name: 'tidl_meta_arch.TIDLMetaArch data', tags: ['tidl_yolo'] },
+        { name: 'tidl_meta_arch.TIDLMetaArch data', tags: ['tidl_retinanet'] },
+        { name: 'domi.InsertNewOps data', tags: ['aipp_op'] },
+      ];
+      const tags = context.tags('pbtxt');
+      if (tags.size > 0) {
+        for (const format of formats) {
+          if (format.tags.every((tag) => tags.has(tag))) {
+            throw new view.Error('Invalid file content. File contains ' + format.name + '.', true);
+          }
+        }
+        const entries = [];
+        entries.push(...Array.from(tags).filter((pair) => pair[0].toString().indexOf('.') === -1));
+        entries.push(...Array.from(tags).filter((pair) => pair[0].toString().indexOf('.') !== -1));
+        const content = entries
+          .map((pair) => (pair[1] === true ? pair[0] : pair[0] + ':' + JSON.stringify(pair[1])))
+          .join(',');
+        throw new view.Error(
+          "Unsupported Protocol Buffers text content '" +
+            (content.length > 64 ? content.substring(0, 100) + '...' : content) +
+            "' for extension '." +
+            extension +
+            "' in '" +
+            identifier +
+            "'.",
+          !skip()
+        );
+      }
+    };
+    const pb = () => {
+      const tags = context.tags('pb+');
+      if (Object.keys(tags).length > 0) {
+        const formats = [
+          {
+            name: 'sentencepiece.ModelProto data',
+            tags: [
+              [
+                1,
+                [
+                  [1, 2],
+                  [2, 5],
+                  [3, 0],
+                ],
+              ],
+              [
+                2,
+                [
+                  [1, 2],
+                  [2, 2],
+                  [3, 0],
+                  [4, 0],
+                  [5, 2],
+                  [6, 0],
+                  [7, 2],
+                  [10, 5],
+                  [16, 0],
+                  [40, 0],
+                  [41, 0],
+                  [42, 0],
+                  [43, 0],
+                ],
+              ],
+              [3, []],
+              [4, []],
+              [5, []],
+            ],
+          },
+          {
+            name: 'mediapipe.BoxDetectorIndex data',
+            tags: [
+              [
+                1,
+                [
+                  [
+                    1,
+                    [
+                      [
+                        1,
+                        [
+                          [1, 5],
+                          [2, 5],
+                          [3, 5],
+                          [4, 5],
+                          [6, 0],
+                          [7, 5],
+                          [8, 5],
+                          [10, 5],
+                          [11, 0],
+                          [12, 0],
+                        ],
+                      ],
+                      [2, 5],
+                      [3, []],
+                    ],
+                  ],
+                  [2, false],
+                  [3, false],
+                  [4, false],
+                  [5, false],
+                ],
+              ],
+              [2, false],
+              [3, false],
+            ],
+          },
+          {
+            name: 'third_party.tensorflow.python.keras.protobuf.SavedMetadata data',
+            tags: [
+              [
+                1,
+                [
+                  [
+                    1,
+                    [
+                      [1, 0],
+                      [2, 0],
+                    ],
+                  ],
+                  [2, 0],
+                  [3, 2],
+                  [4, 2],
+                  [5, 2],
+                ],
+              ],
+            ],
+          },
+          {
+            name: 'pblczero.Net data',
+            tags: [
+              [1, 5],
+              [2, 2],
+              [
+                3,
+                [
+                  [1, 0],
+                  [2, 0],
+                  [3, 0],
+                ],
+                [
+                  10,
+                  [
+                    [1, []],
+                    [2, []],
+                    [3, []],
+                    [4, []],
+                    [5, []],
+                    [6, []],
+                  ],
+                ],
+                [11, []],
+              ],
+            ],
+          },
+        ];
+        const match = (tags, schema) => {
+          for (const pair of schema) {
+            const key = pair[0];
+            const inner = pair[1];
+            const value = tags[key];
+            if (value === undefined) {
+              continue;
+            }
+            if (inner === false) {
+              return false;
+            }
+            if (Array.isArray(inner)) {
+              if (typeof value !== 'object' || !match(value, inner)) {
+                return false;
+              }
+            } else if (inner !== value) {
+              if (inner === 2 && !Array.isArray(value) && Object(value) === value && Object.keys(value).length === 0) {
+                return true;
+              }
+              return false;
+            }
+          }
+          return true;
+        };
+        const tags = context.tags('pb+');
+        for (const format of formats) {
+          if (match(tags, format.tags)) {
+            throw new view.Error('Invalid file content. File contains ' + format.name + '.', true);
+          }
+        }
+        const format = (tags) => {
+          const content = Object.entries(tags).map((pair) => {
+            const key = pair[0];
+            const value = pair[1];
+            return key.toString() + ':' + (Object(value) === value ? '{' + format(value) + '}' : value.toString());
+          });
+          return content.join(',');
+        };
+        const content = format(tags);
+        throw new view.Error(
+          "Unsupported Protocol Buffers content '" +
+            (content.length > 64 ? content.substring(0, 100) + '...' : content) +
+            "' for extension '." +
+            extension +
+            "' in '" +
+            identifier +
+            "'.",
+          !skip()
+        );
+      }
+    };
+    const flatbuffers = () => {
+      const tags = context.tags('flatbuffers');
+      if (tags.has('file_identifier')) {
+        const file_identifier = tags.get('file_identifier');
+        const formats = [
+          { name: 'onnxruntime.experimental.fbs.InferenceSession data', identifier: 'ORTM' },
+          { name: 'tflite.Model data', identifier: 'TFL3' },
+          { name: 'FlatBuffers ENNC data', identifier: 'ENNC' },
+        ];
+        for (const format of formats) {
+          if (file_identifier === format.identifier) {
+            throw new view.Error('Invalid file content. File contains ' + format.name + '.', true);
+          }
+        }
+      }
+    };
+    const xml = () => {
+      const tags = context.tags('xml');
+      if (tags.size > 0) {
+        const formats = [
+          { name: 'OpenCV storage data', tags: ['opencv_storage'] },
+          { name: 'XHTML markup', tags: ['http://www.w3.org/1999/xhtml:html'] },
+        ];
+        for (const format of formats) {
+          if (format.tags.some((tag) => tags.has(tag))) {
+            throw new view.Error('Invalid file content. File contains ' + format.name + '.', true);
+          }
+        }
+        throw new view.Error(
+          "Unsupported XML content '" + tags.keys().next().value + "' in '" + identifier + "'.",
+          !skip()
+        );
+      }
+    };
+    const unknown = () => {
+      stream.seek(0);
+      const buffer = stream.peek(Math.min(16, stream.length));
+      const bytes = Array.from(buffer)
+        .map((c) => (c < 16 ? '0' : '') + c.toString(16))
+        .join('');
+      const content =
+        stream.length > 268435456 ? '(' + bytes + ') [' + stream.length.toString() + ']' : '(' + bytes + ')';
+      throw new view.Error(
+        'Unsupported file content ' + content + " for extension '." + extension + "' in '" + identifier + "'.",
+        !skip()
+      );
+    };
+    json();
+    pbtxt();
+    pb();
+    flatbuffers();
+    xml();
+    unknown();
+  }
+
+  _openContext(context) {
+    const modules = this._filter(context).filter((module) => module && module.length > 0);
+
+    const errors = [];
+    let success = false;
+
+    const nextModule = () => {
+      if (modules.length > 0) {
+        const id = modules.shift();
+        return this._host.require(id).then((module) => {
+          const updateErrorContext = (error, context) => {
+            const content = " in '" + context.identifier + "'.";
+            if (
+              error &&
+              typeof error.message === 'string' &&
+              !error.message.endsWith(content) &&
+              (error.context === undefined || error.context === true)
+            ) {
+              error.message = error.message.replace(/\.$/, '') + content;
+            }
+          };
+          if (!module.ModelFactory) {
+            throw new view.Error("Failed to load module '" + id + "'.");
+          }
+          const modelFactory = new module.ModelFactory();
+          let match = undefined;
+          try {
+            match = modelFactory.match(context);
+            if (!match) {
+              return nextModule();
+            }
+          } catch (error) {
+            updateErrorContext(error, context);
+            return Promise.reject(error);
+          }
+          success = true;
+          return modelFactory
+            .open(context, match)
+            .then((model) => {
+              if (!model.identifier) {
+                model.identifier = context.identifier;
+              }
+              return model;
+            })
+            .catch((error) => {
+              updateErrorContext(error, context);
+              errors.push(error);
+              return nextModule();
             });
         });
-    }
-
-    _unsupported(context) {
-        const identifier = context.identifier;
-        const extension = identifier.split('.').pop().toLowerCase();
-        const stream = context.stream;
-        for (const module of [ zip, tar, gzip ]) {
-            let archive = null;
-            try {
-                archive = module.Archive.open(stream);
-            }
-            catch (error) {
-                // continue regardless of error
-            }
-            if (archive) {
-                throw new view.Error("Archive contains no model files in '" + identifier + "'.", true);
-            }
+      } else {
+        if (success) {
+          if (errors.length === 1) {
+            const error = errors[0];
+            return Promise.reject(error);
+          }
+          return Promise.reject(new view.Error(errors.map((err) => err.message).join('\n')));
         }
-        const skip = () => {
-            const knownUnsupportedIdentifiers = new Set([
-                'natives_blob.bin',
-                'v8_context_snapshot.bin',
-                'snapshot_blob.bin',
-                'image_net_labels.json',
-                'package.json',
-                'models.json',
-                'LICENSE.meta',
-                'input_0.pb',
-                'output_0.pb'
-            ]);
-            return knownUnsupportedIdentifiers.has(context.identifier);
-        };
-        const json = () => {
-            const obj = context.open('json');
-            if (obj) {
-                const formats = [
-                    { name: 'Netron metadata', tags: [ '[].name', '[].schema' ] },
-                    { name: 'Netron metadata', tags: [ '[].name', '[].attributes' ] },
-                    { name: 'Netron metadata', tags: [ '[].name', '[].category' ] },
-                    { name: 'Darkflow metadata', tags: [ 'net', 'type', 'model' ] },
-                    { name: 'keras-yolo2 configuration', tags: [ 'model', 'train', 'valid' ] },
-                    { name: 'Vulkan SwiftShader ICD manifest', tags: [ 'file_format_version', 'ICD' ] },
-                    { name: 'DeepLearningExamples configuration', tags: [ 'attention_probs_dropout_prob', 'hidden_act', 'hidden_dropout_prob', 'hidden_size', ] },
-                    { name: 'NuGet assets', tags: [ 'version', 'targets', 'packageFolders' ] },
-                    { name: 'NuGet data', tags: [ 'format', 'restore', 'projects' ] },
-                    { name: 'NPM package', tags: [ 'name', 'version', 'dependencies' ] },
-                    { name: 'NetworkX adjacency_data', tags: [ 'directed', 'graph', 'nodes' ] },
-                    { name: 'Waifu2x data', tags: [ 'name', 'arch_name', 'channels' ] },
-                    { name: 'Waifu2x data', tags: [ '[].nInputPlane', '[].nOutputPlane', '[].weight', '[].bias' ] },
-                    { name: 'Brain.js data', tags: [ 'type', 'sizes', 'layers' ] },
-                    { name: 'Custom Vision metadata', tags: [ 'CustomVision.Metadata.Version' ] }
-                ];
-                const match = (obj, tag) => {
-                    if (tag.startsWith('[].')) {
-                        tag = tag.substring(3);
-                        return (Array.isArray(obj) && obj.some((item) => Object.prototype.hasOwnProperty.call(item, tag)));
-                    }
-                    return Object.prototype.hasOwnProperty.call(obj, tag);
-                };
-                for (const format of formats) {
-                    if (format.tags.every((tag) => match(obj, tag))) {
-                        throw new view.Error('Invalid file content. File contains ' + format.name + '.', true);
-                    }
-                }
-                const content = JSON.stringify(obj).substring(0, 100).replace(/\s/, '').substr(0, 48) + '...';
-                throw new view.Error("Unsupported JSON content '" + (content.length > 64 ? content.substring(0, 100) + '...' : content) + "' for extension '." + extension + "' in '" + identifier + "'.", !skip());
-            }
-        };
-        const pbtxt = () => {
-            const formats = [
-                { name: 'ImageNet LabelMap data', tags: [ 'entry', 'entry.target_class' ] },
-                { name: 'StringIntLabelMapProto data', tags: [ 'item', 'item.id', 'item.name' ] },
-                { name: 'caffe.LabelMap data', tags: [ 'item', 'item.name', 'item.label' ] },
-                { name: 'Triton Inference Server configuration', tags: [ 'name', 'platform', 'input', 'output' ] },
-                { name: 'TensorFlow OpList data', tags: [ 'op', 'op.name', 'op.input_arg' ] },
-                { name: 'vitis.ai.proto.DpuModelParamList data', tags: [ 'model', 'model.name', 'model.kernel' ] },
-                { name: 'object_detection.protos.DetectionModel data', tags: [ 'model', 'model.ssd' ] },
-                { name: 'object_detection.protos.DetectionModel data', tags: [ 'model', 'model.faster_rcnn' ] },
-                { name: 'tensorflow.CheckpointState data', tags: [ 'model_checkpoint_path', 'all_model_checkpoint_paths' ] },
-                { name: 'apollo.perception.camera.traffic_light.detection.DetectionParam data', tags: [ 'min_crop_size', 'crop_method' ] },
-                { name: 'tidl_meta_arch.TIDLMetaArch data', tags: [ 'caffe_ssd' ] },
-                { name: 'tidl_meta_arch.TIDLMetaArch data', tags: [ 'tf_od_api_ssd' ] },
-                { name: 'tidl_meta_arch.TIDLMetaArch data', tags: [ 'tidl_ssd' ] },
-                { name: 'tidl_meta_arch.TIDLMetaArch data', tags: [ 'tidl_faster_rcnn' ] },
-                { name: 'tidl_meta_arch.TIDLMetaArch data', tags: [ 'tidl_yolo' ] },
-                { name: 'tidl_meta_arch.TIDLMetaArch data', tags: [ 'tidl_retinanet' ] },
-                { name: 'domi.InsertNewOps data', tags: [ 'aipp_op' ] }
-            ];
-            const tags = context.tags('pbtxt');
-            if (tags.size > 0) {
-                for (const format of formats) {
-                    if (format.tags.every((tag) => tags.has(tag))) {
-                        throw new view.Error('Invalid file content. File contains ' + format.name + '.', true);
-                    }
-                }
-                const entries = [];
-                entries.push(...Array.from(tags).filter((pair) => pair[0].toString().indexOf('.') === -1));
-                entries.push(...Array.from(tags).filter((pair) => pair[0].toString().indexOf('.') !== -1));
-                const content = entries.map((pair) => pair[1] === true ? pair[0] : pair[0] + ':' + JSON.stringify(pair[1])).join(',');
-                throw new view.Error("Unsupported Protocol Buffers text content '" + (content.length > 64 ? content.substring(0, 100) + '...' : content) + "' for extension '." + extension + "' in '" + identifier + "'.", !skip());
-            }
-        };
-        const pb = () => {
-            const tags = context.tags('pb+');
-            if (Object.keys(tags).length > 0) {
-                const formats = [
-                    { name: 'sentencepiece.ModelProto data', tags: [[1,[[1,2],[2,5],[3,0]]],[2,[[1,2],[2,2],[3,0],[4,0],[5,2],[6,0],[7,2],[10,5],[16,0],[40,0],[41,0],[42,0],[43,0]]],[3,[]],[4,[]],[5,[]]] },
-                    { name: 'mediapipe.BoxDetectorIndex data', tags: [[1,[[1,[[1,[[1,5],[2,5],[3,5],[4,5],[6,0],[7,5],[8,5],[10,5],[11,0],[12,0]]],[2,5],[3,[]]]],[2,false],[3,false],[4,false],[5,false]]],[2,false],[3,false]] },
-                    { name: 'third_party.tensorflow.python.keras.protobuf.SavedMetadata data', tags: [[1,[[1,[[1,0],[2,0]]],[2,0],[3,2],[4,2],[5,2]]]] },
-                    { name: 'pblczero.Net data', tags: [[1,5],[2,2],[3,[[1,0],[2,0],[3,0]],[10,[[1,[]],[2,[]],[3,[]],[4,[]],[5,[]],[6,[]]]],[11,[]]]] }
-                ];
-                const match = (tags, schema) => {
-                    for (const pair of schema) {
-                        const key = pair[0];
-                        const inner = pair[1];
-                        const value = tags[key];
-                        if (value === undefined) {
-                            continue;
-                        }
-                        if (inner === false) {
-                            return false;
-                        }
-                        if (Array.isArray(inner)) {
-                            if (typeof value !== 'object' || !match(value, inner)) {
-                                return false;
-                            }
-                        }
-                        else if (inner !== value) {
-                            if (inner === 2 && !Array.isArray(value) && Object(value) === (value) && Object.keys(value).length === 0) {
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    return true;
-                };
-                const tags = context.tags('pb+');
-                for (const format of formats) {
-                    if (match(tags, format.tags)) {
-                        throw new view.Error('Invalid file content. File contains ' + format.name + '.', true);
-                    }
-                }
-                const format = (tags) => {
-                    const content = Object.entries(tags).map((pair) => {
-                        const key = pair[0];
-                        const value = pair[1];
-                        return key.toString() + ':' + (Object(value) === value ? '{' + format(value) + '}' : value.toString());
-                    });
-                    return content.join(',');
-                };
-                const content = format(tags);
-                throw new view.Error("Unsupported Protocol Buffers content '" + (content.length > 64 ? content.substring(0, 100) + '...' : content) + "' for extension '." + extension + "' in '" + identifier + "'.", !skip());
-            }
-        };
-        const flatbuffers = () => {
-            const tags = context.tags('flatbuffers');
-            if (tags.has('file_identifier')) {
-                const file_identifier = tags.get('file_identifier');
-                const formats = [
-                    { name: 'onnxruntime.experimental.fbs.InferenceSession data', identifier: 'ORTM' },
-                    { name: 'tflite.Model data', identifier: 'TFL3' },
-                    { name: 'FlatBuffers ENNC data', identifier: 'ENNC' },
-                ];
-                for (const format of formats) {
-                    if (file_identifier === format.identifier) {
-                        throw new view.Error('Invalid file content. File contains ' + format.name + '.', true);
-                    }
-                }
-            }
-        };
-        const xml = () => {
-            const tags = context.tags('xml');
-            if (tags.size > 0) {
-                const formats = [
-                    { name: 'OpenCV storage data', tags: [ 'opencv_storage' ] },
-                    { name: 'XHTML markup', tags: [ 'http://www.w3.org/1999/xhtml:html' ]}
-                ];
-                for (const format of formats) {
-                    if (format.tags.some((tag) => tags.has(tag))) {
-                        throw new view.Error('Invalid file content. File contains ' + format.name + '.', true);
-                    }
-                }
-                throw new view.Error("Unsupported XML content '" + tags.keys().next().value + "' in '" + identifier + "'.", !skip());
-            }
-        };
-        const unknown = () => {
-            stream.seek(0);
-            const buffer = stream.peek(Math.min(16, stream.length));
-            const bytes = Array.from(buffer).map((c) => (c < 16 ? '0' : '') + c.toString(16)).join('');
-            const content = stream.length > 268435456 ? '(' + bytes + ') [' + stream.length.toString() + ']': '(' + bytes + ')';
-            throw new view.Error("Unsupported file content " + content + " for extension '." + extension + "' in '" + identifier + "'.", !skip());
-        };
-        json();
-        pbtxt();
-        pb();
-        flatbuffers();
-        xml();
-        unknown();
-    }
+        return Promise.resolve(null);
+      }
+    };
+    return nextModule();
+  }
 
-    _openContext(context) {
-        const modules = this._filter(context).filter((module) => module && module.length > 0);
-
-        const errors = [];
-        let success = false;
-
-        const nextModule = () => {
-            if (modules.length > 0) {
+  _openEntries(entries) {
+    try {
+      const rootFolder = (files) => {
+        const map = files.map((file) => file.split('/').slice(0, -1));
+        const at = (index) => (list) => list[index];
+        const rotate = (list) => (list.length === 0 ? [] : list[0].map((item, index) => list.map(at(index))));
+        const equals = (list) => list.every((item) => item === list[0]);
+        const folder = rotate(map).filter(equals).map(at(0)).join('/');
+        return folder.length === 0 ? folder : folder + '/';
+      };
+      const filter = (queue) => {
+        let matches = [];
+        const nextEntry = () => {
+          if (queue.length > 0) {
+            const entry = queue.shift();
+            const context = new view.ModelContext(
+              new view.ArchiveContext(this._host, null, folder, entry.name, entry.stream)
+            );
+            let modules = this._filter(context);
+            const nextModule = () => {
+              if (modules.length > 0) {
                 const id = modules.shift();
                 return this._host.require(id).then((module) => {
-                    const updateErrorContext = (error, context) => {
-                        const content = " in '" + context.identifier + "'.";
-                        if (error && typeof error.message === 'string' && !error.message.endsWith(content) && (error.context === undefined || error.context === true)) {
-                            error.message = error.message.replace(/\.$/, '') + content;
-                        }
-                    };
-                    if (!module.ModelFactory) {
-                        throw new view.Error("Failed to load module '" + id + "'.");
-                    }
-                    const modelFactory = new module.ModelFactory();
-                    let match = undefined;
-                    try {
-                        match = modelFactory.match(context);
-                        if (!match) {
-                            return nextModule();
-                        }
-                    }
-                    catch (error) {
-                        updateErrorContext(error, context);
-                        return Promise.reject(error);
-                    }
-                    success = true;
-                    return modelFactory.open(context, match).then((model) => {
-                        if (!model.identifier) {
-                            model.identifier = context.identifier;
-                        }
-                        return model;
-                    }).catch((error) => {
-                        updateErrorContext(error, context);
-                        errors.push(error);
-                        return nextModule();
-                    });
+                  if (!module.ModelFactory) {
+                    throw new view.ArchiveError("Failed to load module '" + id + "'.", null);
+                  }
+                  const factory = new module.ModelFactory();
+                  if (factory.match(context)) {
+                    matches.push(entry);
+                    modules = [];
+                  }
+                  return nextModule();
                 });
-            }
-            else {
-                if (success) {
-                    if (errors.length === 1) {
-                        const error = errors[0];
-                        return Promise.reject(error);
-                    }
-                    return Promise.reject(new view.Error(errors.map((err) => err.message).join('\n')));
-                }
-                return Promise.resolve(null);
-            }
-        };
-        return nextModule();
-    }
-
-    _openEntries(entries) {
-        try {
-            const rootFolder = (files) => {
-                const map = files.map((file) => file.split('/').slice(0, -1));
-                const at = index => list => list[index];
-                const rotate = list => list.length === 0 ? [] : list[0].map((item, index) => list.map(at(index)));
-                const equals = list => list.every((item) => item === list[0]);
-                const folder = rotate(map).filter(equals).map(at(0)).join('/');
-                return folder.length === 0 ? folder : folder + '/';
-            };
-            const filter = (queue) => {
-                let matches = [];
-                const nextEntry = () => {
-                    if (queue.length > 0) {
-                        const entry = queue.shift();
-                        const context = new view.ModelContext(new view.ArchiveContext(this._host, null, folder, entry.name, entry.stream));
-                        let modules = this._filter(context);
-                        const nextModule = () => {
-                            if (modules.length > 0) {
-                                const id = modules.shift();
-                                return this._host.require(id).then((module) => {
-                                    if (!module.ModelFactory) {
-                                        throw new view.ArchiveError("Failed to load module '" + id + "'.", null);
-                                    }
-                                    const factory = new module.ModelFactory();
-                                    if (factory.match(context)) {
-                                        matches.push(entry);
-                                        modules = [];
-                                    }
-                                    return nextModule();
-                                });
-                            }
-                            else {
-                                return nextEntry();
-                            }
-                        };
-                        return nextModule();
-                    }
-                    else {
-                        if (matches.length === 0) {
-                            return Promise.resolve(null);
-                        }
-                        // MXNet
-                        if (matches.length === 2 &&
-                            matches.some((e) => e.name.toLowerCase().endsWith('.params')) &&
-                            matches.some((e) => e.name.toLowerCase().endsWith('-symbol.json'))) {
-                            matches = matches.filter((e) => e.name.toLowerCase().endsWith('.params'));
-                        }
-                        // TensorFlow.js
-                        if (matches.length > 0 &&
-                            matches.some((e) => e.name.toLowerCase().endsWith('.bin')) &&
-                            matches.some((e) => e.name.toLowerCase().endsWith('.json'))) {
-                            matches = matches.filter((e) => e.name.toLowerCase().endsWith('.json'));
-                        }
-                        // ncnn
-                        if (matches.length > 0 &&
-                            matches.some((e) => e.name.toLowerCase().endsWith('.bin')) &&
-                            matches.some((e) => e.name.toLowerCase().endsWith('.param'))) {
-                            matches = matches.filter((e) => e.name.toLowerCase().endsWith('.param'));
-                        }
-                        // ncnn
-                        if (matches.length > 0 &&
-                            matches.some((e) => e.name.toLowerCase().endsWith('.bin')) &&
-                            matches.some((e) => e.name.toLowerCase().endsWith('.param.bin'))) {
-                            matches = matches.filter((e) => e.name.toLowerCase().endsWith('.param.bin'));
-                        }
-                        // Paddle
-                        if (matches.length > 0 &&
-                            matches.some((e) => e.name.toLowerCase().endsWith('.pdmodel')) &&
-                            matches.some((e) => e.name.toLowerCase().endsWith('.pdiparams'))) {
-                            matches = matches.filter((e) => e.name.toLowerCase().endsWith('.pdmodel'));
-                        }
-                        // Paddle Lite
-                        if (matches.length > 0 &&
-                            matches.some((e) => e.name.toLowerCase().split('/').pop() === '__model__.nb') &&
-                            matches.some((e) => e.name.toLowerCase().split('/').pop() === 'param.nb')) {
-                            matches = matches.filter((e) => e.name.toLowerCase().split('/').pop() == '__model__.nb');
-                        }
-                        // TensorFlow Bundle
-                        if (matches.length > 1 &&
-                            matches.some((e) => e.name.toLowerCase().endsWith('.data-00000-of-00001'))) {
-                            matches = matches.filter((e) => !e.name.toLowerCase().endsWith('.data-00000-of-00001'));
-                        }
-                        // TensorFlow SavedModel
-                        if (matches.length === 2 &&
-                            matches.some((e) => e.name.toLowerCase().split('/').pop() === 'keras_metadata.pb')) {
-                            matches = matches.filter((e) => e.name.toLowerCase().split('/').pop() !== 'keras_metadata.pb');
-                        }
-                        if (matches.length > 1) {
-                            return Promise.reject(new view.ArchiveError('Archive contains multiple model files.'));
-                        }
-                        const match = matches.shift();
-                        return Promise.resolve(new view.ModelContext(new view.ArchiveContext(this._host, entries, folder, match.name, match.stream)));
-                    }
-                };
+              } else {
                 return nextEntry();
+              }
             };
-            const list = Array.from(entries).map((entry) => {
-                return { name: entry[0], stream: entry[1] };
-            });
-            const files = list.filter((entry) => {
-                if (entry.name.endsWith('/')) {
-                    return false;
-                }
-                if (entry.name.split('/').pop().startsWith('.')) {
-                    return false;
-                }
-                if (!entry.name.startsWith('./') && entry.name.startsWith('.')) {
-                    return false;
-                }
-                return true;
-            });
-            const folder = rootFolder(files.map((entry) => entry.name));
-            const queue = files.slice(0).filter((entry) => entry.name.substring(folder.length).indexOf('/') < 0);
-            return filter(queue).then((context) => {
-                if (context) {
-                    return Promise.resolve(context);
-                }
-                const queue = files.slice(0).filter((entry) => entry.name.substring(folder.length).indexOf('/') >= 0);
-                return filter(queue);
-            });
+            return nextModule();
+          } else {
+            if (matches.length === 0) {
+              return Promise.resolve(null);
+            }
+            // MXNet
+            if (
+              matches.length === 2 &&
+              matches.some((e) => e.name.toLowerCase().endsWith('.params')) &&
+              matches.some((e) => e.name.toLowerCase().endsWith('-symbol.json'))
+            ) {
+              matches = matches.filter((e) => e.name.toLowerCase().endsWith('.params'));
+            }
+            // TensorFlow.js
+            if (
+              matches.length > 0 &&
+              matches.some((e) => e.name.toLowerCase().endsWith('.bin')) &&
+              matches.some((e) => e.name.toLowerCase().endsWith('.json'))
+            ) {
+              matches = matches.filter((e) => e.name.toLowerCase().endsWith('.json'));
+            }
+            // ncnn
+            if (
+              matches.length > 0 &&
+              matches.some((e) => e.name.toLowerCase().endsWith('.bin')) &&
+              matches.some((e) => e.name.toLowerCase().endsWith('.param'))
+            ) {
+              matches = matches.filter((e) => e.name.toLowerCase().endsWith('.param'));
+            }
+            // ncnn
+            if (
+              matches.length > 0 &&
+              matches.some((e) => e.name.toLowerCase().endsWith('.bin')) &&
+              matches.some((e) => e.name.toLowerCase().endsWith('.param.bin'))
+            ) {
+              matches = matches.filter((e) => e.name.toLowerCase().endsWith('.param.bin'));
+            }
+            // Paddle
+            if (
+              matches.length > 0 &&
+              matches.some((e) => e.name.toLowerCase().endsWith('.pdmodel')) &&
+              matches.some((e) => e.name.toLowerCase().endsWith('.pdiparams'))
+            ) {
+              matches = matches.filter((e) => e.name.toLowerCase().endsWith('.pdmodel'));
+            }
+            // Paddle Lite
+            if (
+              matches.length > 0 &&
+              matches.some((e) => e.name.toLowerCase().split('/').pop() === '__model__.nb') &&
+              matches.some((e) => e.name.toLowerCase().split('/').pop() === 'param.nb')
+            ) {
+              matches = matches.filter((e) => e.name.toLowerCase().split('/').pop() == '__model__.nb');
+            }
+            // TensorFlow Bundle
+            if (matches.length > 1 && matches.some((e) => e.name.toLowerCase().endsWith('.data-00000-of-00001'))) {
+              matches = matches.filter((e) => !e.name.toLowerCase().endsWith('.data-00000-of-00001'));
+            }
+            // TensorFlow SavedModel
+            if (
+              matches.length === 2 &&
+              matches.some((e) => e.name.toLowerCase().split('/').pop() === 'keras_metadata.pb')
+            ) {
+              matches = matches.filter((e) => e.name.toLowerCase().split('/').pop() !== 'keras_metadata.pb');
+            }
+            if (matches.length > 1) {
+              return Promise.reject(new view.ArchiveError('Archive contains multiple model files.'));
+            }
+            const match = matches.shift();
+            return Promise.resolve(
+              new view.ModelContext(new view.ArchiveContext(this._host, entries, folder, match.name, match.stream))
+            );
+          }
+        };
+        return nextEntry();
+      };
+      const list = Array.from(entries).map((entry) => {
+        return { name: entry[0], stream: entry[1] };
+      });
+      const files = list.filter((entry) => {
+        if (entry.name.endsWith('/')) {
+          return false;
         }
-        catch (error) {
-            return Promise.reject(new view.ArchiveError(error.message));
+        if (entry.name.split('/').pop().startsWith('.')) {
+          return false;
         }
+        if (!entry.name.startsWith('./') && entry.name.startsWith('.')) {
+          return false;
+        }
+        return true;
+      });
+      const folder = rootFolder(files.map((entry) => entry.name));
+      const queue = files.slice(0).filter((entry) => entry.name.substring(folder.length).indexOf('/') < 0);
+      return filter(queue).then((context) => {
+        if (context) {
+          return Promise.resolve(context);
+        }
+        const queue = files.slice(0).filter((entry) => entry.name.substring(folder.length).indexOf('/') >= 0);
+        return filter(queue);
+      });
+    } catch (error) {
+      return Promise.reject(new view.ArchiveError(error.message));
     }
+  }
 
-    accept(identifier) {
-        const extension = identifier.indexOf('.') === -1 ? '' : identifier.split('.').pop().toLowerCase();
-        identifier = identifier.toLowerCase().split('/').pop();
-        for (const extension of this._extensions) {
-            if ((typeof extension === 'string' && identifier.endsWith(extension)) || (extension instanceof RegExp && extension.exec(identifier))) {
-                this._host.event('File', 'Accept', extension, 1);
-                return true;
-            }
-        }
-        this._host.event('File', 'Reject', extension, 1);
-        return false;
+  accept(identifier) {
+    const extension = identifier.indexOf('.') === -1 ? '' : identifier.split('.').pop().toLowerCase();
+    identifier = identifier.toLowerCase().split('/').pop();
+    for (const extension of this._extensions) {
+      if (
+        (typeof extension === 'string' && identifier.endsWith(extension)) ||
+        (extension instanceof RegExp && extension.exec(identifier))
+      ) {
+        this._host.event('File', 'Accept', extension, 1);
+        return true;
+      }
     }
+    this._host.event('File', 'Reject', extension, 1);
+    return false;
+  }
 
-    _filter(context) {
-        const identifier = context.identifier.toLowerCase().split('/').pop();
-        const list = this._factories.filter((entry) =>
-            (typeof entry.extension === 'string' && identifier.endsWith(entry.extension)) ||
-            (entry.extension instanceof RegExp && entry.extension.exec(identifier)));
-        return Array.from(new Set(list.map((entry) => entry.id)));
-    }
+  _filter(context) {
+    const identifier = context.identifier.toLowerCase().split('/').pop();
+    const list = this._factories.filter(
+      (entry) =>
+        (typeof entry.extension === 'string' && identifier.endsWith(entry.extension)) ||
+        (entry.extension instanceof RegExp && entry.extension.exec(identifier))
+    );
+    return Array.from(new Set(list.map((entry) => entry.id)));
+  }
 
-    _openSignature(context) {
-        const stream = context.stream;
-        if (stream) {
-            let empty = true;
-            let position = 0;
-            while (position < stream.length) {
-                const buffer = stream.read(Math.min(4096, stream.length - position));
-                position += buffer.length;
-                if (!buffer.every((value) => value === 0x00)) {
-                    empty = false;
-                    break;
-                }
-            }
-            stream.seek(0);
-            if (empty) {
-                return Promise.reject(new view.Error('File has no content.', true));
-            }
-            /* eslint-disable no-control-regex */
-            const entries = [
-                { name: 'ELF executable', value: /^\x7FELF/ },
-                { name: 'PNG image', value: /^\x89PNG/ },
-                { name: 'Git LFS header', value: /^version https:\/\/git-lfs.github.com/ },
-                { name: 'Git LFS header', value: /^\s*oid sha256:/ },
-                { name: 'HTML markup', value: /^\s*<html>/ },
-                { name: 'HTML markup', value: /^\s*<!doctype\s*html>/ },
-                { name: 'HTML markup', value: /^\s*<!DOCTYPE\s*html>/ },
-                { name: 'HTML markup', value: /^\s*<!DOCTYPE\s*HTML>/ },
-                { name: 'HTML markup', value: /^\s*<!DOCTYPE\s*HTML\s+(PUBLIC|SYSTEM)?/ },
-                { name: 'Unity metadata', value: /^fileFormatVersion:/ },
-                { name: 'Python source code', value: /^\s*import[ ]+(os|sys|types|torch|argparse|onnx|numpy|tensorflow)(,|;|\s)/ },
-                { name: 'Python source code', value: /^\s*import[ ]+([a-z])+[ ]+as[ ]+/ },
-                { name: 'Python source code', value: /^\s*from[ ]+(torch)[ ]+import[ ]+/ },
-                { name: 'Python source code', value: /^\s*from[ ]+(keras)[ ]+import[ ]+/ },
-                { name: 'Bash script', value: /^#!\/usr\/bin\/env\s/ },
-                { name: 'Bash script', value: /^#!\/bin\/bash\s/ },
-                { name: 'TSD header', value: /^%TSD-Header-###%/ },
-                { name: 'AppleDouble data', value: /^\x00\x05\x16\x07/ },
-                { name: 'TensorFlow Hub module', value: /^\x08\x03$/, identifier: 'tfhub_module.pb' },
-                { name: 'OpenVX network binary graph data', value: /^VPMN/ } // network_binary.nb
-            ];
-            /* eslint-enable no-control-regex */
-            const buffer = stream.peek(Math.min(4096, stream.length));
-            const content = String.fromCharCode.apply(null, buffer);
-            for (const entry of entries) {
-                if (content.match(entry.value) && (!entry.identifier || entry.identifier === context.identifier)) {
-                    return Promise.reject(new view.Error('Invalid file content. File contains ' + entry.name + '.', true));
-                }
-            }
+  _openSignature(context) {
+    const stream = context.stream;
+    if (stream) {
+      let empty = true;
+      let position = 0;
+      while (position < stream.length) {
+        const buffer = stream.read(Math.min(4096, stream.length - position));
+        position += buffer.length;
+        if (!buffer.every((value) => value === 0x00)) {
+          empty = false;
+          break;
         }
-        return Promise.resolve(context);
+      }
+      stream.seek(0);
+      if (empty) {
+        return Promise.reject(new view.Error('File has no content.', true));
+      }
+      /* eslint-disable no-control-regex */
+      const entries = [
+        { name: 'ELF executable', value: /^\x7FELF/ },
+        { name: 'PNG image', value: /^\x89PNG/ },
+        { name: 'Git LFS header', value: /^version https:\/\/git-lfs.github.com/ },
+        { name: 'Git LFS header', value: /^\s*oid sha256:/ },
+        { name: 'HTML markup', value: /^\s*<html>/ },
+        { name: 'HTML markup', value: /^\s*<!doctype\s*html>/ },
+        { name: 'HTML markup', value: /^\s*<!DOCTYPE\s*html>/ },
+        { name: 'HTML markup', value: /^\s*<!DOCTYPE\s*HTML>/ },
+        { name: 'HTML markup', value: /^\s*<!DOCTYPE\s*HTML\s+(PUBLIC|SYSTEM)?/ },
+        { name: 'Unity metadata', value: /^fileFormatVersion:/ },
+        {
+          name: 'Python source code',
+          value: /^\s*import[ ]+(os|sys|types|torch|argparse|onnx|numpy|tensorflow)(,|;|\s)/,
+        },
+        { name: 'Python source code', value: /^\s*import[ ]+([a-z])+[ ]+as[ ]+/ },
+        { name: 'Python source code', value: /^\s*from[ ]+(torch)[ ]+import[ ]+/ },
+        { name: 'Python source code', value: /^\s*from[ ]+(keras)[ ]+import[ ]+/ },
+        { name: 'Bash script', value: /^#!\/usr\/bin\/env\s/ },
+        { name: 'Bash script', value: /^#!\/bin\/bash\s/ },
+        { name: 'TSD header', value: /^%TSD-Header-###%/ },
+        { name: 'AppleDouble data', value: /^\x00\x05\x16\x07/ },
+        { name: 'TensorFlow Hub module', value: /^\x08\x03$/, identifier: 'tfhub_module.pb' },
+        { name: 'OpenVX network binary graph data', value: /^VPMN/ }, // network_binary.nb
+      ];
+      /* eslint-enable no-control-regex */
+      const buffer = stream.peek(Math.min(4096, stream.length));
+      const content = String.fromCharCode.apply(null, buffer);
+      for (const entry of entries) {
+        if (content.match(entry.value) && (!entry.identifier || entry.identifier === context.identifier)) {
+          return Promise.reject(new view.Error('Invalid file content. File contains ' + entry.name + '.', true));
+        }
+      }
     }
+    return Promise.resolve(context);
+  }
 };
 
 view.Error = class extends Error {
-
-    constructor(message, telemetry) {
-        super(message);
-        this.name = 'Error loading model.';
-        this.telemetry = telemetry;
-        this.stack = undefined;
-    }
+  constructor(message, telemetry) {
+    super(message);
+    this.name = 'Error loading model.';
+    this.telemetry = telemetry;
+    this.stack = undefined;
+  }
 };
 
 if (typeof module !== 'undefined' && typeof module.exports === 'object') {
-    module.exports.View = view.View;
-    module.exports.ModelFactoryService = view.ModelFactoryService;
+  module.exports.View = view.View;
+  module.exports.ModelFactoryService = view.ModelFactoryService;
 }
 
 view.ShowSubGraph = class {
-    constructor(viewGraph, showNodes, showSubGraphNodeCount) {
-        this._showSubGraphNodeCount = showSubGraphNodeCount
-        this._oriViewGraph = viewGraph
-        this._showGraph = null
-        this._edgeNeighbors = new Map()    // edgeName -> id of nodes around
-        this._edges = new Map()             // argumentName -> Argument
-        this._startNodes = new Map()   // start nodeName -> input Set
-        this._endNodes = new Map()     // end nodeName -> output Set
-        this.initNodesAndEdges()
-        this._showNodes = showNodes || this.setShowNode()
+  constructor(viewGraph, showNodes, showSubGraphNodeCount) {
+    this._showSubGraphNodeCount = showSubGraphNodeCount;
+    this._oriViewGraph = viewGraph;
+    this._showGraph = null;
+    this._edgeNeighbors = new Map(); // edgeName -> id of nodes around
+    this._edges = new Map(); // argumentName -> Argument
+    this._startNodes = new Map(); // start nodeName -> input Set
+    this._endNodes = new Map(); // end nodeName -> output Set
+    this.initNodesAndEdges();
+    this._showNodes = showNodes || this.setShowNode();
+  }
+
+  setShowNode(nodeId) {
+    // 1. 获取所有的邻居节点
+    this._showNodes = nodeId ? [nodeId] : [...this._startNodes.keys()];
+    return this._showNodes;
+  }
+
+  get showNodes() {
+    return this._showNodes.map((id) => this._oriViewGraph.nodes.get(id).label.name);
+  }
+
+  addEdgeInfo(edgeName, nodeId) {
+    if (!this._edgeNeighbors.has(edgeName)) {
+      this._edgeNeighbors.set(edgeName, new Set());
+    }
+    this._edgeNeighbors.get(edgeName).add(nodeId);
+  }
+
+  getNodeEdges(node) {
+    let edges = new Set();
+    for (const inputParam of node.inputs) {
+      for (const args of inputParam.arguments) {
+        if (args.initializer) {
+          continue;
+        }
+        edges.add(args.name);
+        this._edges.set(args.name, args);
+      }
+    }
+    for (const outputParam of node.outputs) {
+      for (const args of outputParam.arguments) {
+        edges.add(args.name);
+        this._edges.set(args.name, args);
+      }
+    }
+    return edges;
+  }
+
+  initNodesAndEdges() {
+    for (const [nodeId, node] of this._oriViewGraph.nodes) {
+      if (node.label instanceof view.Input) {
+        this._startNodes.set(nodeId, node);
+      }
+      if (node.label instanceof view.Output) {
+        this._endNodes.set(nodeId, node);
+      }
+      for (const edgeName of this.getNodeEdges(node.label)) {
+        if (edgeName == '') {
+          continue;
+        }
+        this.addEdgeInfo(edgeName, nodeId);
+      }
+    }
+  }
+
+  getShowSubGraph() {
+    // 获取上下的邻居节点
+    let showNeighbors = this.getNeighbor(this._showNodes, this._showSubGraphNodeCount); // 上下N个节点
+
+    // 获取边缘节点，边缘节点显示为[...]
+    let withHideNeighbors = this.getNeighbor(showNeighbors, Number.MAX_VALUE, true); // 上下N个节点
+
+    let allHideNodeIds = new Set(
+      [...this._oriViewGraph.nodes.keys()].filter((nodeId) => {
+        return (
+          withHideNeighbors.has(nodeId) &&
+          !showNeighbors.has(nodeId) &&
+          !this._startNodes.has(nodeId) &&
+          !this._startNodes.has(nodeId)
+        );
+      })
+    );
+
+    // 构建显示对象
+    function get_proxy(obj, targetProperty, getValue) {
+      return new Proxy(obj, {
+        get: (target, property) => {
+          let ori = target[property];
+          if (property != targetProperty) {
+            return ori;
+          }
+          return getValue(ori, target, property);
+        },
+      });
+    }
+    function apply_proxy(func, applyFunction) {
+      return new Proxy(func, {
+        apply: (target, thisArg, argumentsList) => {
+          return applyFunction.apply(thisArg, [target, argumentsList]);
+        },
+      });
     }
 
-    setShowNode(nodeId) {
-        // 1. 获取所有的邻居节点
-        this._showNodes = nodeId ? [nodeId] : [...this._startNodes.keys()]
-        return this._showNodes
+    class ShowGraph {
+      node(nodeId) {
+        let nodeInfo = super.node(nodeId);
+        if (!allHideNodeIds.has(nodeId)) {
+          return nodeInfo;
+        }
+        // 隐藏的节点显示为 [...]
+        return get_proxy(nodeInfo, 'label', (label) =>
+          get_proxy(label, 'build', (build) => {
+            return apply_proxy(build, function (oriBuild, argumentsList) {
+              if (!this._blocks || this._blocks.length == 0) {
+                return oriBuild.apply(this, argumentsList);
+              }
+              let bak_blocks = this._blocks;
+              let header = new grapher.Node.Header();
+              let title = header.add(
+                this.id,
+                ['node-item-type', 'node-item-type-more'],
+                '...',
+                `double click to show more nodes around ${this.value?.type?.name}(${this.modelNodeName})`
+              );
+              title.on('dblclick', () => {
+                this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName);
+              });
+              this._blocks = [header];
+              oriBuild.apply(this, argumentsList);
+              this._blocks = bak_blocks;
+            });
+          })
+        );
+      }
+      get nodes() {
+        let withHideNeighborNodes = [...super.nodes].filter(([nodeID, _]) => withHideNeighbors.has(nodeID));
+
+        return new Map([...withHideNeighborNodes]);
+      }
+      get edges() {
+        return new Map([...super.edges].filter(([_, e]) => withHideNeighbors.has(e.v) && withHideNeighbors.has(e.w)));
+      }
+    }
+    let sg = new ShowGraph();
+
+    sg.__proto__.__proto__ = this._oriViewGraph;
+    return sg;
+  }
+
+  getNeighbor(nodeIDs, max_node_count, just_nearest_neighbor) {
+    let reachEdges = new Set();
+    let reachNodes = new Set();
+    let nodeList = [];
+    let nodeListIndex = 0;
+    let max_node_length = Number.MAX_VALUE;
+
+    for (const nodeId of nodeIDs) {
+      reachNodes.add(nodeId);
+      nodeList.push(nodeId);
+    }
+    if (just_nearest_neighbor) {
+      // 只原始节点的邻居节点，不做更多扩展
+      max_node_length = reachNodes.size;
     }
 
-    get showNodes() {
-        return this._showNodes.map(id=>this._oriViewGraph.nodes.get(id).label.name)
+    while (reachNodes.size < max_node_count && nodeListIndex < nodeList.length && nodeListIndex < max_node_length) {
+      let thisNode = this._oriViewGraph.nodes.get(nodeList[nodeListIndex]);
+      nodeListIndex += 1;
+
+      let edges = this.getNodeEdges(thisNode.label);
+
+      for (const edgeName of edges) {
+        if (edgeName == '') {
+          continue;
+        }
+        reachEdges.add(edgeName);
+        for (const neighborNodeId of this._edgeNeighbors.get(edgeName)) {
+          if (reachNodes.has(neighborNodeId) || !neighborNodeId) {
+            continue;
+          }
+          reachNodes.add(neighborNodeId);
+          nodeList.push(neighborNodeId);
+        }
+      }
     }
 
-    addEdgeInfo(edgeName, nodeId) {
-        if(!this._edgeNeighbors.has(edgeName)) {
-            this._edgeNeighbors.set(edgeName, new Set())
-        }
-        this._edgeNeighbors.get(edgeName).add(nodeId)
-    }
-
-    getNodeEdges(node) {
-        let edges = new Set()
-        for (const inputParam of node.inputs) {
-            for (const args of inputParam.arguments) {
-                if (args.initializer) {
-                    continue
-                }
-                edges.add(args.name)
-                this._edges.set(args.name, args)
-            }
-        }
-        for (const outputParam of node.outputs) {
-            for (const args of outputParam.arguments) {
-                edges.add(args.name)
-                this._edges.set(args.name, args)
-            }
-        }
-        return edges
-    }
-
-    initNodesAndEdges() {
-        for (const [nodeId, node] of this._oriViewGraph.nodes) {
-            if (node.label instanceof view.Input) {
-                this._startNodes.set(nodeId, node)
-            }
-            if (node.label instanceof view.Output) {
-                this._endNodes.set(nodeId, node)
-            }
-            for (const edgeName of this.getNodeEdges(node.label)) {
-                if (edgeName == "") {
-                    continue
-                }
-                this.addEdgeInfo(edgeName, nodeId)
-            }
-        }
-    }
-
-    getShowSubGraph() {
-        // 获取上下的邻居节点
-        let showNeighbors = this.getNeighbor(this._showNodes, this._showSubGraphNodeCount) // 上下N个节点
-
-        // 获取边缘节点，边缘节点显示为[...]
-        let withHideNeighbors = this.getNeighbor(showNeighbors, Number.MAX_VALUE, true) // 上下N个节点
-
-        let allHideNodeIds = new Set([...this._oriViewGraph.nodes.keys()].filter((nodeId)=> {
-            return withHideNeighbors.has(nodeId) && !showNeighbors.has(nodeId)
-                && !this._startNodes.has(nodeId) && !this._startNodes.has(nodeId)
-        }))
-
-
-        // 构建显示对象
-        function get_proxy(obj, targetProperty, getValue) {
-            return new Proxy(obj, {
-                get:(target, property) => {
-                    let ori = target[property]
-                    if (property != targetProperty) {
-                        return ori
-                    }
-                    return getValue(ori, target, property)
-                }
-            })
-        }
-        function apply_proxy(func, applyFunction) {
-            return new Proxy(func, {
-                apply:(target, thisArg, argumentsList) => {
-                    return applyFunction.apply(thisArg, [target, argumentsList])
-                }
-            })
-        }
-
-        class ShowGraph {
-            node(nodeId) {
-                let nodeInfo = super.node(nodeId)
-                if (!allHideNodeIds.has(nodeId)) {
-                    return nodeInfo
-                }
-                // 隐藏的节点显示为 [...]
-                return get_proxy(nodeInfo, "label", (label) => get_proxy(label, "build", (build) => {
-                    return apply_proxy(build, function(oriBuild, argumentsList) {
-                        if (!this._blocks || this._blocks.length == 0) {
-                            return oriBuild.apply(this, argumentsList)
-                        }
-                        let bak_blocks = this._blocks
-                        let header = new grapher.Node.Header()
-                        let title = header.add(this.id, ['node-item-type', "node-item-type-more"], "...",
-                            `double click to show more nodes around ${this.value?.type?.name}(${this.modelNodeName})`)
-                        title.on('dblclick', () => {this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName)})
-                        this._blocks = [header];
-                        oriBuild.apply(this, argumentsList)
-                        this._blocks = bak_blocks
-                    })
-                }))
-            }
-            get nodes() {
-                let withHideNeighborNodes = [...super.nodes].filter(([nodeID, _]) => withHideNeighbors.has(nodeID))
-
-                return new Map([...withHideNeighborNodes]);
-            }
-            get edges() {
-                return new Map([...super.edges].filter(([_, e]) => withHideNeighbors.has(e.v)
-                                                                    && withHideNeighbors.has(e.w)));
-            }
-        }
-        let sg = new ShowGraph()
-
-        sg.__proto__.__proto__ = this._oriViewGraph
-        return sg;
-    }
-
-    getNeighbor(nodeIDs, max_node_count, just_nearest_neighbor) {
-        let reachEdges = new Set()
-        let reachNodes = new Set()
-        let nodeList = []
-        let nodeListIndex = 0;
-        let max_node_length = Number.MAX_VALUE
-
-        for (const nodeId of nodeIDs) {
-            reachNodes.add(nodeId)
-            nodeList.push(nodeId)
-        }
-        if (just_nearest_neighbor) {
-            // 只原始节点的邻居节点，不做更多扩展
-            max_node_length = reachNodes.size
-        }
-
-        while(reachNodes.size < max_node_count && nodeListIndex < nodeList.length && nodeListIndex < max_node_length) {
-            let thisNode = this._oriViewGraph.nodes.get(nodeList[nodeListIndex])
-            nodeListIndex += 1
-
-            let edges = this.getNodeEdges(thisNode.label)
-
-            for (const edgeName of edges) {
-                if (edgeName == "") {
-                    continue
-                }
-                reachEdges.add(edgeName)
-                for (const neighborNodeId of this._edgeNeighbors.get(edgeName)) {
-                    if (reachNodes.has(neighborNodeId) || !neighborNodeId) {
-                        continue
-                    }
-                    reachNodes.add(neighborNodeId)
-                    nodeList.push(neighborNodeId)
-                }
-            }
-        }
-
-        return reachNodes
-    }
-}
-
+    return reachNodes;
+  }
+};
