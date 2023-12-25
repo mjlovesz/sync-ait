@@ -18,10 +18,28 @@ import numpy as np
 from llm.common.tool import TensorBinFile, read_atb_data
 
 # Mocked binary data for testing purposes
-MOCKED_BINARY_DATA = b"$Version=1.0\n$Object.Count=1\n$Object.Length=4\nformat=2\ndtype=1\n" \
-                      "dims=1,1,2\n$Object.data=0,4\n$End=1\n1212"
-UNSUPPORT_DTYPE_BINARY_DATA = b"$Version=1.0\n$Object.Count=1\n$Object.Length=4\nformat=2\ndtype=999\n" \
-                      "dims=1,1,2\n$Object.data=0,4\n$End=1\n"
+MOCKED_BINARY_DATA = (
+    b"$Version=1.0\n"
+    b"$Object.Count=1\n"
+    b"$Object.Length=4\n"
+    b"format=2\n"
+    b"dtype=1\n"
+    b"dims=1,1,2\n"
+    b"$Object.data=0,4\n"
+    b"$End=1\n"
+    b"1212"
+)
+
+UNSUPPORT_DTYPE_BINARY_DATA = (
+    b"$Version=1.0\n"
+    b"$Object.Count=1\n"
+    b"$Object.Length=4\n"
+    b"format=2\n"
+    b"dtype=999\n"
+    b"dims=1,1,2\n"
+    b"$Object.data=0,4\n"
+    b"$End=1\n"
+)
 
 @pytest.fixture
 def create_mocked_bin_file(tmp_path):
@@ -29,15 +47,6 @@ def create_mocked_bin_file(tmp_path):
     bin_file_path = tmp_path / "mocked_file.bin"
     with open(bin_file_path, "wb") as f:
         f.write(MOCKED_BINARY_DATA)
-    return bin_file_path
-
-
-@pytest.fixture
-def create_error_bin_file(tmp_path):
-    # Create a temporary bin file with mocked data for testing
-    bin_file_path = tmp_path / "error_file.bin"
-    with open(bin_file_path, "wb") as f:
-        f.write(UNSUPPORT_DTYPE_BINARY_DATA)
     return bin_file_path
 
 
@@ -74,11 +83,9 @@ def test_read_atb_data_invalid_file_extension(tmp_path):
 
 def test_tensor_bin_file_unsupported_dtype():
     # Test scenario when an unsupported dtype is encountered
-    invalid_data = b"$Version=1.0\n$Object.Count=1\n$Object.Length=4\nformat=2\ndtype=999\n" \
-                      "dims=1,1,2\n$Object.data=0,4\n$End=1\n"
     with pytest.raises(ValueError):
         with tempfile.NamedTemporaryFile(delete=False) as f:
-            f.write(invalid_data)
+            f.write(UNSUPPORT_DTYPE_BINARY_DATA)
             invalid_bin_file = f.name
             TensorBinFile(invalid_bin_file)
 
