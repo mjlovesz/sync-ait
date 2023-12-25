@@ -39,7 +39,6 @@ class DumpData(object):
     def _to_valid_name(name_str):
         return name_str.replace('.', '_').replace('/', '_')
 
-
     @staticmethod
     def _check_path_exists(input_path, extentions=None):
         input_path = os.path.realpath(input_path)
@@ -65,13 +64,16 @@ class DumpData(object):
         pass
 
     def _generate_dump_data_file_name(self, name_str, node_id):
-        return  ".".join([self._to_valid_name(name_str), str(node_id), str(round(time.time() * 1e6)), "npy"])
+        return ".".join([self._to_valid_name(name_str), str(node_id), str(round(time.time() * 1e6)), "npy"])
 
     def _check_input_data_path(self, input_path, inputs_tensor_info):
         if len(inputs_tensor_info) != len(input_path):
-            logger.error("the number of model inputs tensor_info is not equal the number of "
-                                  "inputs data, inputs tensor_info is: {}, inputs data is: {}".format(
-                len(inputs_tensor_info), len(input_path)))
+            logger.error(
+                "the number of model inputs tensor_info is not equal the number of "
+                "inputs data, inputs tensor_info is: {}, inputs data is: {}".format(
+                    len(inputs_tensor_info), len(input_path)
+                )
+            )
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
 
         for cur_path in input_path:
@@ -86,8 +88,9 @@ class DumpData(object):
             inputs_map[tensor_name] = input_data
             file_name = "input_" + str(index) + ".bin"
             input_data.tofile(os.path.join(save_dir, file_name))
-            logger.info("save input file name: {}, shape: {}, dtype: {}".format(
-                file_name, input_data.shape, input_data.dtype))
+            logger.info(
+                "save input file name: {}, shape: {}, dtype: {}".format(file_name, input_data.shape, input_data.dtype)
+            )
         return inputs_map
 
     def _read_input_data(self, input_pathes, names, shapes, dtypes):
@@ -103,6 +106,9 @@ class DumpData(object):
                 raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
             input_data = input_data.reshape(shape)
             inputs_map[name] = input_data
-            logger.info("load input file name: {}, shape: {}, dtype: {}".format(
-                os.path.basename(input_path), input_data.shape, input_data.dtype))
+            logger.info(
+                "load input file name: {}, shape: {}, dtype: {}".format(
+                    os.path.basename(input_path), input_data.shape, input_data.dtype
+                )
+            )
         return inputs_map
