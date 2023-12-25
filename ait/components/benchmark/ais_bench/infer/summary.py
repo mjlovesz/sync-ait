@@ -35,7 +35,7 @@ class Result(object):
     def __init__(self):
         self.npu_compute_time = None
         self.h2d_latency = None
-        self.d2h_latency  = None
+        self.d2h_latency = None
         self.throughput = None
         self.scale = None
         self.batchsize = None
@@ -60,7 +60,7 @@ class Summary(object):
     @staticmethod
     def get_list_info(work_list, percentile_scale, merge=False):
         list_info = ListInfo()
-        if merge: # work_list is a 2-dim vector each element is a pair containing start and end time
+        if merge:  # work_list is a 2-dim vector each element is a pair containing start and end time
             n = len(work_list)
             if n == 0:
                 raise RuntimeError(f'summary.get_list_info failed: inner error')
@@ -102,26 +102,40 @@ class Summary(object):
     def add_args(self, args):
         self.infodict["args"] = args
 
-    def record(self, result, multi_threads = False):
+    def record(self, result, multi_threads=False):
         if multi_threads:
-            self.infodict['NPU_compute_time'] = {"mean": result.npu_compute_time.mean,
-                                                 "count": len(self.npu_compute_time_interval_list)}
-            self.infodict['H2D_latency'] = {"mean": result.h2d_latency.mean,"count": len(self.h2d_latency_list)}
+            self.infodict['NPU_compute_time'] = {
+                "mean": result.npu_compute_time.mean,
+                "count": len(self.npu_compute_time_interval_list),
+            }
+            self.infodict['H2D_latency'] = {"mean": result.h2d_latency.mean, "count": len(self.h2d_latency_list)}
             self.infodict['D2H_latency'] = {"mean": result.d2h_latency.mean, "count": len(self.d2h_latency_list)}
             self.infodict['npu_compute_time_list'] = self.npu_compute_time_interval_list
         else:
-            self.infodict['NPU_compute_time'] = {"min": result.npu_compute_time.min, "max": result.npu_compute_time.max,
-                                        "mean": result.npu_compute_time.mean, "median": result.npu_compute_time.median,
-                                        "percentile({}%)".format(result.scale): result.npu_compute_time.percentile,
-                                        "count": len(self.npu_compute_time_list)}
-            self.infodict['H2D_latency'] = {"min": result.h2d_latency.min, "max": result.h2d_latency.max,
-                                            "mean": result.h2d_latency.mean, "median": result.h2d_latency.median,
-                                            "percentile({}%)".format(result.scale): result.h2d_latency.percentile,
-                                            "count": len(self.h2d_latency_list)}
-            self.infodict['D2H_latency'] = {"min": result.d2h_latency.min, "max": result.d2h_latency.max,
-                                            "mean": result.d2h_latency.mean, "median": result.d2h_latency.median,
-                                            "percentile({}%)".format(result.scale): result.d2h_latency.percentile,
-                                            "count": len(self.d2h_latency_list)}
+            self.infodict['NPU_compute_time'] = {
+                "min": result.npu_compute_time.min,
+                "max": result.npu_compute_time.max,
+                "mean": result.npu_compute_time.mean,
+                "median": result.npu_compute_time.median,
+                "percentile({}%)".format(result.scale): result.npu_compute_time.percentile,
+                "count": len(self.npu_compute_time_list),
+            }
+            self.infodict['H2D_latency'] = {
+                "min": result.h2d_latency.min,
+                "max": result.h2d_latency.max,
+                "mean": result.h2d_latency.mean,
+                "median": result.h2d_latency.median,
+                "percentile({}%)".format(result.scale): result.h2d_latency.percentile,
+                "count": len(self.h2d_latency_list),
+            }
+            self.infodict['D2H_latency'] = {
+                "min": result.d2h_latency.min,
+                "max": result.d2h_latency.max,
+                "mean": result.d2h_latency.mean,
+                "median": result.d2h_latency.median,
+                "percentile({}%)".format(result.scale): result.d2h_latency.percentile,
+                "count": len(self.d2h_latency_list),
+            }
             self.infodict['npu_compute_time_list'] = self.npu_compute_time_list
         self.infodict['throughput'] = result.throughput
         self.infodict['pid'] = os.getpid()
@@ -136,22 +150,46 @@ class Summary(object):
                 logger.info("D2H_latency (ms): mean = {0}".format(result.d2h_latency.mean))
         else:
             if display_all_summary is True:
-                logger.info("H2D_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
-                        .format(result.h2d_latency.min, result.h2d_latency.max, result.h2d_latency.mean,
-                                result.h2d_latency.median, result.scale, result.h2d_latency.percentile))
+                logger.info(
+                    "H2D_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}".format(
+                        result.h2d_latency.min,
+                        result.h2d_latency.max,
+                        result.h2d_latency.mean,
+                        result.h2d_latency.median,
+                        result.scale,
+                        result.h2d_latency.percentile,
+                    )
+                )
 
-            logger.info("NPU_compute_time (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
-                        .format(result.npu_compute_time.min, result.npu_compute_time.max, result.npu_compute_time.mean,
-                                result.npu_compute_time.median, result.scale, result.npu_compute_time.percentile))
+            logger.info(
+                "NPU_compute_time (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}".format(
+                    result.npu_compute_time.min,
+                    result.npu_compute_time.max,
+                    result.npu_compute_time.mean,
+                    result.npu_compute_time.median,
+                    result.scale,
+                    result.npu_compute_time.percentile,
+                )
+            )
             if display_all_summary is True:
-                logger.info("D2H_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}"
-                            .format(result.d2h_latency.min, result.d2h_latency.max, result.d2h_latency.mean,
-                                    result.d2h_latency.median, result.scale, result.d2h_latency.percentile))
-        logger.info("throughput 1000*batchsize.mean({})/NPU_compute_time.mean({}): {}".format(
-            result.batchsize, result.npu_compute_time.mean, result.throughput))
+                logger.info(
+                    "D2H_latency (ms): min = {0}, max = {1}, mean = {2}, median = {3}, percentile({4}%) = {5}".format(
+                        result.d2h_latency.min,
+                        result.d2h_latency.max,
+                        result.d2h_latency.mean,
+                        result.d2h_latency.median,
+                        result.scale,
+                        result.d2h_latency.percentile,
+                    )
+                )
+        logger.info(
+            "throughput 1000*batchsize.mean({})/NPU_compute_time.mean({}): {}".format(
+                result.batchsize, result.npu_compute_time.mean, result.throughput
+            )
+        )
         logger.info("------------------------------------------------------")
 
-    def report(self, batchsize, output_prefix, display_all_summary=False, multi_threads = False):
+    def report(self, batchsize, output_prefix, display_all_summary=False, multi_threads=False):
         scale = 99
 
         if self.npu_compute_time_list and self.npu_compute_time_interval_list:
@@ -170,7 +208,7 @@ class Summary(object):
         if npu_compute_time.mean == 0:
             throughput = 0
         else:
-            throughput = 1000*batchsize/npu_compute_time.mean
+            throughput = 1000 * batchsize / npu_compute_time.mean
 
         result = Result()
         result.npu_compute_time = npu_compute_time
@@ -182,7 +220,6 @@ class Summary(object):
 
         self.record(result, multi_threads)
         self.display(result, display_all_summary, multi_threads)
-
 
         if output_prefix is not None:
             with ms_open(output_prefix + "_summary.json", mode="w") as f:
