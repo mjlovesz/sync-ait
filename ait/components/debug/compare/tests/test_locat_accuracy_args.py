@@ -20,14 +20,15 @@ import pytest
 from msquickcmp.cmp_process import cmp_process
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 
-logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
 class TestClass:
     '''
-        just for smoking test， not for pipeline or DT
+    just for smoking test， not for pipeline or DT
     '''
+
     # staticmethod or classmethod
     @classmethod
     def get_base_path(cls):
@@ -47,10 +48,12 @@ class TestClass:
             gold_model=os.path.join(cls.get_base_path(), 'onnx/data2vec_1_108.onnx'),
             om_model=os.path.join(cls.get_base_path(), 'om/data2vec_1_108.om'),
             weight_path="",
-            input_data_path=os.path.realpath("{},{}".format(
-                os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_0.bin'),
-                os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_1.bin')
-            )),
+            input_data_path=os.path.realpath(
+                "{},{}".format(
+                    os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_0.bin'),
+                    os.path.join(cls.get_base_path(), 'input_datas/data2vec/1535_1.bin'),
+                )
+            ),
             cann_path=cls.cann_path,
             out_path=os.path.join(cls.get_base_path(), 'output/'),
             input_shape="",
@@ -62,7 +65,7 @@ class TestClass:
             dump=True,
             bin2npy=False,
             custom_op="",
-            locat=True
+            locat=True,
         )
         return args_data2vec_cmp
 
@@ -116,11 +119,11 @@ class TestClass:
         self.args_data2vec_cmp = self.set_accumulate_cmp_args()
         self.args_gelu_cmp = self.set_single_node_cmp_args()
 
- # =======================testcases=============================
+    # =======================testcases=============================
 
     def test_compare_accumlate_accuracy_area_situation(self):
         '''
-            存在累计误差区间的场景
+        存在累计误差区间的场景
         '''
 
         cmp_process(self.args_data2vec_cmp, True)
@@ -128,11 +131,9 @@ class TestClass:
         log_path = os.path.join(latest_path, "error_interval_info.txt")
         assert os.path.exists(log_path)
 
-
-
     def test_compare_cause_by_single_node_situation(self):
         '''
-            正常的场景
+        正常的场景
         '''
         cmp_process(self.args_gelu_cmp, True)
         latest_path = self.get_latest_dir()
