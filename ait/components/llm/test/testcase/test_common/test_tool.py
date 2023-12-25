@@ -79,7 +79,7 @@ def create_unsupport_dtype_bin_file(tmp_path):
 def create_invalid_format_file(tmp_path):
     invalid_file_path = tmp_path / "invalid_file.txt"
     invalid_file_path = str(invalid_file_path)
-    with os.fdopen(os.open(invalid_file_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'wb') as f:
+    with os.fdopen(os.open(invalid_file_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'w') as f:
         f.write("Some random text")
     yield invalid_file_path
     if os.path.exists(invalid_file_path):
