@@ -54,10 +54,10 @@ def create_mocked_bin_file(tmp_path):
     if os.path.exists(bin_file_path):
         os.remove(bin_file_path)
 
-
-def create_mocked_bin_file(tmp_path):
+@pytest.fixture
+def create_unsupport_dtype_bin_file(tmp_path):
     # Create a temporary bin file with mocked data for testing
-    unsupport_dtype_file_path = tmp_path / "mocked_file.bin"
+    unsupport_dtype_file_path = tmp_path / "unsupport_dtype_file.bin"
     unsupport_dtype_file_path = str(unsupport_dtype_file_path)
     with open(unsupport_dtype_file_path, "wb") as f:
         f.write(UNSUPPORT_DTYPE_BINARY_DATA)
@@ -103,11 +103,10 @@ def test_read_atb_data_invalid_file_extension(tmp_path):
 
 def test_tensor_bin_file_unsupported_dtype():
     # Test scenario when an unsupported dtype is encountered
+    bin_file = TensorBinFile(invalid_bin_file)
     with pytest.raises(ValueError):
-        with tempfile.NamedTemporaryFile(delete=False) as f:
-            f.write(UNSUPPORT_DTYPE_BINARY_DATA)
-            invalid_bin_file = f.name
-            TensorBinFile(invalid_bin_file)
+        bin_file.get_data()
+            
 
 
 def test_read_atb_data_valid_non_bin_file(tmp_path):
