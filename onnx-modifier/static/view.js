@@ -964,733 +964,749 @@ view.View = class {
 };
 
 view.Graph = class extends grapher.Graph {
+  constructor(view, model, modifier, compound, options) {
+    super(modifier, compound, options);
+    this.view = view;
+    this.model = model;
+    this._arguments = new Map();
+    this._nodeKey = 0;
 
-    constructor(view, model, modifier, compound, options) {
-        super(modifier, compound, options);
-        this.view = view;
-        this.model = model;
-        this._arguments = new Map();
-        this._nodeKey = 0;
+    // the node key of custom added node
+    this._add_nodeKey = 0;
+  }
 
-        // the node key of custom added node
-        this._add_nodeKey = 0;
+  createNode(node) {
+    var node_id = (this._nodeKey++).toString(); // in case input (onnx) node has no name
+    var modelNodeName = node.name ? node.name : node.type.name + node_id;
+    node.modelNodeName = modelNodeName; // this will take in-place effect for the onnx.Node in onnx.Graph, which can make it more convenient if we want to find a node in onnx.Graph later
+
+    const value = new view.Node(this, node, modelNodeName);
+    value.name = node_id;
+    this.setNode(value);
+    return value;
+  }
+
+  createInput(input) {
+    var show_name = input.name;
+    if (this.modifier.renameMap.get(input.name)) {
+      var show_name = this.modifier.renameMap.get(input.name).get(input.name);
+    }
+    let modelNodeName = input.name; // in case the output has the same name with the last node
+    const value = new view.Input(this, input, modelNodeName, show_name);
+    // value.name = (this._nodeKey++).toString();
+
+    value.name = input.name;
+    input.modelNodeName = input.name;
+    this.setNode(value);
+    return value;
+  }
+
+  createOutput(output) {
+    var modelNodeName = 'out_' + output.name; // in case the output has the same name with the last node
+    var show_name = output.name;
+    if (this.modifier.renameMap.get(modelNodeName)) {
+      var show_name = this.modifier.renameMap.get(modelNodeName).get(output.name);
+    }
+    const value = new view.Output(this, output, modelNodeName, show_name);
+    // value.name = (this._nodeKey++).toString();
+    value.name = 'out_' + output.name; // output nodes should have name
+    output.modelNodeName = 'out_' + output.name;
+    this.setNode(value);
+    return value;
+  }
+
+  createArgument(argument) {
+    const name = argument.name;
+    if (!this._arguments.has(name)) {
+      this._arguments.set(name, new view.Argument(this, argument));
+    }
+    return this._arguments.get(name);
+  }
+
+  createEdge(from, to) {
+    const value = new view.Edge(from, to);
+    return value;
+  }
+
+  add(graph) {
+    const clusters = new Set();
+    const clusterParentMap = new Map();
+    const groups = graph.groups;
+    if (groups) {
+      for (const node of graph.nodes) {
+        if (node.group) {
+          const path = node.group.split('/');
+          while (path.length > 0) {
+            const name = path.join('/');
+            path.pop();
+            clusterParentMap.set(name, path.join('/'));
+          }
+        }
+      }
     }
 
-    createNode(node) {
-        var node_id = (this._nodeKey++).toString();  // in case input (onnx) node has no name
-        var modelNodeName = node.name ? node.name : node.type.name + node_id
-        node.modelNodeName = modelNodeName   // this will take in-place effect for the onnx.Node in onnx.Graph, which can make it more convenient if we want to find a node in onnx.Graph later
-
-        const value = new view.Node(this, node, modelNodeName);
-        value.name = node_id;
-        this.setNode(value);
-        return value;
+    for (const input of graph.inputs) {
+      const viewInput = this.createInput(input);
+      for (const argument of input.arguments) {
+        this.createArgument(argument).from(viewInput);
+      }
     }
 
-    createInput(input) {
-        var show_name = input.name;
-        if (this.modifier.renameMap.get(input.name)) {
-            var show_name = this.modifier.renameMap.get(input.name).get(input.name);
-        }
-        let modelNodeName = input.name;  // in case the output has the same name with the last node
-        const value = new view.Input(this, input, modelNodeName, show_name);
-        // value.name = (this._nodeKey++).toString();
+    for (var node of graph.nodes) {
+      var viewNode = this.createNode(node);
 
-        value.name = input.name;
-        input.modelNodeName = input.name;
-        this.setNode(value);
-        return value;
+      var inputs = node.inputs;
+      for (var input of inputs) {
+        for (var argument of input.arguments) {
+          if (argument.name != '' && !argument.initializer) {
+            this.createArgument(argument).to(viewNode);
+          }
+        }
+      }
+      let outputs = node.outputs;
+      if (node.chain && node.chain.length > 0) {
+        const chainOutputs = node.chain[node.chain.length - 1].outputs;
+        if (chainOutputs.length > 0) {
+          outputs = chainOutputs;
+        }
+      }
+      for (var output of outputs) {
+        for (var argument of output.arguments) {
+          if (!argument) {
+            throw new view.Error("Invalid null argument in '" + this.model.identifier + "'.");
+          }
+          if (argument.name != '') {
+            this.createArgument(argument).from(viewNode);
+          }
+        }
+      }
+
+      if (node.controlDependencies && node.controlDependencies.length > 0) {
+        for (const argument of node.controlDependencies) {
+          this.createArgument(argument).to(viewNode, true);
+        }
+      }
+
+      const createCluster = (name) => {
+        if (!clusters.has(name)) {
+          this.setNode({ name: name, rx: 5, ry: 5 });
+          clusters.add(name);
+          const parent = clusterParentMap.get(name);
+          if (parent) {
+            createCluster(parent);
+            this.setParent(name, parent);
+          }
+        }
+      };
+
+      if (groups) {
+        let groupName = node.group;
+        if (groupName && groupName.length > 0) {
+          if (!clusterParentMap.has(groupName)) {
+            const lastIndex = groupName.lastIndexOf('/');
+            if (lastIndex != -1) {
+              groupName = groupName.substring(0, lastIndex);
+              if (!clusterParentMap.has(groupName)) {
+                groupName = null;
+              }
+            } else {
+              groupName = null;
+            }
+          }
+          if (groupName) {
+            createCluster(groupName);
+            this.setParent(viewNode.name, groupName);
+          }
+        }
+      }
     }
 
-    createOutput(output) {
-        var modelNodeName = "out_" + output.name;  // in case the output has the same name with the last node
-        var show_name = output.name;
-        if (this.modifier.renameMap.get(modelNodeName)) {
-            var show_name = this.modifier.renameMap.get(modelNodeName).get(output.name);
-        }
-        const value = new view.Output(this, output, modelNodeName, show_name);
-        // value.name = (this._nodeKey++).toString();
-        value.name = "out_" + output.name;   // output nodes should have name
-        output.modelNodeName = "out_" + output.name;
-        this.setNode(value);
-        return value;
+    for (const output of graph.outputs) {
+      const viewOutput = this.createOutput(output);
+      for (const argument of output.arguments) {
+        this.createArgument(argument).to(viewOutput);
+      }
     }
+  }
 
-    createArgument(argument) {
-        const name = argument.name;
-        if (!this._arguments.has(name)) {
-            this._arguments.set(name, new view.Argument(this, argument));
-        }
-        return this._arguments.get(name);
+  build(document, origin) {
+    for (const argument of this._arguments.values()) {
+      argument.build();
     }
-
-    createEdge(from, to) {
-        const value = new view.Edge(from, to);
-        return value;
-    }
-
-    add(graph) {
-        const clusters = new Set();
-        const clusterParentMap = new Map();
-        const groups = graph.groups;
-        if (groups) {
-            for (const node of graph.nodes) {
-                if (node.group) {
-                    const path = node.group.split('/');
-                    while (path.length > 0) {
-                        const name = path.join('/');
-                        path.pop();
-                        clusterParentMap.set(name, path.join('/'));
-                    }
-                }
-            }
-        }
-
-        for (const input of graph.inputs) {
-            const viewInput = this.createInput(input);
-            for (const argument of input.arguments) {
-                this.createArgument(argument).from(viewInput);
-            }
-        }
-
-        for (var node of graph.nodes) {
-            var viewNode = this.createNode(node);
-
-            var inputs = node.inputs;
-            for (var input of inputs) {
-                for (var argument of input.arguments) {
-                    if (argument.name != '' && !argument.initializer) {
-                        this.createArgument(argument).to(viewNode);
-                    }
-                }
-            }
-            let outputs = node.outputs;
-            if (node.chain && node.chain.length > 0) {
-                const chainOutputs = node.chain[node.chain.length - 1].outputs;
-                if (chainOutputs.length > 0) {
-                    outputs = chainOutputs;
-                }
-            }
-            for (var output of outputs) {
-                for (var argument of output.arguments) {
-                    if (!argument) {
-                        throw new view.Error("Invalid null argument in '" + this.model.identifier + "'.");
-                    }
-                    if (argument.name != '') {
-                        this.createArgument(argument).from(viewNode);
-                    }
-                }
-            }
-
-            if (node.controlDependencies && node.controlDependencies.length > 0) {
-                for (const argument of node.controlDependencies) {
-                    this.createArgument(argument).to(viewNode, true);
-                }
-            }
-
-            const createCluster = (name) => {
-                if (!clusters.has(name)) {
-                    this.setNode({ name: name, rx: 5, ry: 5});
-                    clusters.add(name);
-                    const parent = clusterParentMap.get(name);
-                    if (parent) {
-                        createCluster(parent);
-                        this.setParent(name, parent);
-                    }
-                }
-            };
-
-            if (groups) {
-                let groupName = node.group;
-                if (groupName && groupName.length > 0) {
-                    if (!clusterParentMap.has(groupName)) {
-                        const lastIndex = groupName.lastIndexOf('/');
-                        if (lastIndex != -1) {
-                            groupName = groupName.substring(0, lastIndex);
-                            if (!clusterParentMap.has(groupName)) {
-                                groupName = null;
-                            }
-                        }
-                        else {
-                            groupName = null;
-                        }
-                    }
-                    if (groupName) {
-                        createCluster(groupName);
-                        this.setParent(viewNode.name, groupName);
-                    }
-                }
-            }
-        }
-
-        for (const output of graph.outputs) {
-            const viewOutput = this.createOutput(output);
-            for (const argument of output.arguments) {
-                this.createArgument(argument).to(viewOutput);
-            }
-        }
-    }
-
-    build(document, origin) {
-        for (const argument of this._arguments.values()) {
-            argument.build();
-        }
-        super.build(document, origin);
-    }
+    super.build(document, origin);
+  }
 };
 
 view.Node = class extends grapher.Node {
+  // 这里的value是一个onnx.Node，这里正在构建的是view.Node
+  // context 是指Graph
+  constructor(context, value, modelNodeName) {
+    super();
+    this.context = context;
+    this.value = value;
+    view.Node.counter = view.Node.counter || 0;
+    this.id = 'node-' + (value.name ? 'name-' + value.name : 'id-' + (view.Node.counter++).toString());
+    this.modelNodeName = modelNodeName;
+    this._add(this.value);
+  }
 
-    // 这里的value是一个onnx.Node，这里正在构建的是view.Node
-    // context 是指Graph
-    constructor(context, value, modelNodeName) {
-        super();
-        this.context = context;
-        this.value = value;
-        view.Node.counter = view.Node.counter || 0;
-        this.id = 'node-' + (value.name ? 'name-' + value.name : 'id-' + (view.Node.counter++).toString());
-        this.modelNodeName = modelNodeName
-        this._add(this.value);
+  get class() {
+    return 'graph-node';
+  }
+
+  get inputs() {
+    return this.value.inputs;
+  }
+
+  get outputs() {
+    return this.value.outputs;
+  }
+
+  _add(node) {
+    // header
+    const header = this.header();
+    const styles = ['node-item-type'];
+    const type = node.type;
+    const category = type && type.category ? type.category : '';
+    if (category) {
+      styles.push('node-item-type-' + category.toLowerCase());
+    }
+    if (typeof type.name !== 'string' || !type.name.split) {
+      // #416
+      const identifier = this.context.model && this.context.model.identifier ? this.context.model.identifier : '?';
+      throw new view.Error("Unknown node type '" + JSON.stringify(type.name) + "' in '" + identifier + "'.");
+    }
+    const content =
+      this.context.view.options.names && (node.name || node.location)
+        ? node.name || node.location
+        : type.name.split('.').pop();
+    const tooltip =
+      this.context.view.options.names && (node.name || node.location) ? type.name : node.name || node.location;
+    const title = header.add(null, styles, content, tooltip);
+    title.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
+    title.on('dblclick', () => {
+      this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName);
+    });
+    if (node.type.nodes && node.type.nodes.length > 0) {
+      const definition = header.add(null, styles, '\u0192', 'Show Function Definition');
+      definition.on('click', () => this.context.view.pushGraph(node.type));
+    }
+    if (node.nodes) {
+      // this._expand = header.add(null, styles, '+', null);
+      // this._expand.on('click', () => this.toggle());
     }
 
-    get class() {
-        return 'graph-node';
+    const initializers = [];
+    let hiddenInitializers = false;
+    if (this.context.view.options.initializers) {
+      for (const input of node.inputs) {
+        if (input.visible && input.arguments.length === 1 && input.arguments[0].initializer != null) {
+          initializers.push(input);
+        }
+        if (
+          (!input.visible || input.arguments.length > 1) &&
+          input.arguments.some((argument) => argument.initializer != null)
+        ) {
+          hiddenInitializers = true;
+        }
+      }
     }
-
-    get inputs() {
-        return this.value.inputs;
+    let sortedAttributes = [];
+    const attributes = node.attributes || [];
+    if (this.context.view.options.attributes) {
+      sortedAttributes = attributes.filter((attribute) => attribute.visible).slice();
     }
-
-    get outputs() {
-        return this.value.outputs;
-    }
-
-    _add(node) {
-
-        // header
-        const header =  this.header();
-        const styles = [ 'node-item-type' ];
-        const type = node.type;
-        const category = type && type.category ? type.category : '';
-        if (category) {
-            styles.push('node-item-type-' + category.toLowerCase());
-        }
-        if (typeof type.name !== 'string' || !type.name.split) { // #416
-            const identifier = this.context.model && this.context.model.identifier ? this.context.model.identifier : '?';
-            throw new view.Error("Unknown node type '" + JSON.stringify(type.name) + "' in '" + identifier + "'.");
-        }
-        const content = this.context.view.options.names && (node.name || node.location) ? (node.name || node.location) : type.name.split('.').pop();
-        const tooltip = this.context.view.options.names && (node.name || node.location) ? type.name : (node.name || node.location);
-        const title = header.add(null, styles, content, tooltip);
-        title.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
-        title.on('dblclick', () => {
-            this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName)
-        });
-        if (node.type.nodes && node.type.nodes.length > 0) {
-            const definition = header.add(null, styles, '\u0192', 'Show Function Definition');
-            definition.on('click', () => this.context.view.pushGraph(node.type));
-        }
-        if (node.nodes) {
-            // this._expand = header.add(null, styles, '+', null);
-            // this._expand.on('click', () => this.toggle());
-        }
-
-        const initializers = [];
-        let hiddenInitializers = false;
-        if (this.context.view.options.initializers) {
-            for (const input of node.inputs) {
-                if (input.visible && input.arguments.length === 1 && input.arguments[0].initializer != null) {
-                    initializers.push(input);
-                }
-                if ((!input.visible || input.arguments.length > 1) &&
-                    input.arguments.some((argument) => argument.initializer != null)) {
-                    hiddenInitializers = true;
-                }
+    sortedAttributes.sort((a, b) => {
+      const au = a.name.toUpperCase();
+      const bu = b.name.toUpperCase();
+      return au < bu ? -1 : au > bu ? 1 : 0;
+    });
+    if (initializers.length > 0 || hiddenInitializers || sortedAttributes.length > 0) {
+      const list = this.list();
+      list.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
+      list.on('dblclick', () => {
+        this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName);
+      });
+      for (const initializer of initializers) {
+        const argument = initializer.arguments[0];
+        const type = argument.type;
+        let shape = '';
+        let separator = '';
+        if (type && type.shape && type.shape.dimensions && Array.isArray(type.shape.dimensions)) {
+          shape = '\u3008' + type.shape.dimensions.map((d) => (d ? d : '?')).join('\u00D7') + '\u3009';
+          if (type.shape.dimensions.length === 0 && argument.initializer && !argument.initializer.state) {
+            try {
+              shape = argument.initializer.toString();
+              if (shape && shape.length > 10) {
+                shape = shape.substring(0, 10) + '\u2026';
+              }
+              separator = ' = ';
+            } catch (err) {
+              let type = '?';
+              try {
+                type = argument.initializer.type.toString();
+              } catch (error) {
+                // continue regardless of error
+              }
+              const identifier =
+                this.context.view.model && this.context.view.model.identifier
+                  ? this.context.view.model.identifier
+                  : '?';
+              throw new view.Error(
+                "Failed to render tensor of type '" + type + "' in '" + identifier + "' (" + err.message + ').'
+              );
             }
+          }
         }
-        let sortedAttributes = [];
-        const attributes = node.attributes || [];
-        if (this.context.view.options.attributes) {
-            sortedAttributes = attributes.filter((attribute) => attribute.visible).slice();
-        }
-        sortedAttributes.sort((a, b) => {
-            const au = a.name.toUpperCase();
-            const bu = b.name.toUpperCase();
-            return (au < bu) ? -1 : (au > bu) ? 1 : 0;
-        });
-        if (initializers.length > 0 || hiddenInitializers || sortedAttributes.length > 0) {
-            const list = this.list();
-            list.on('click', () => this.context.view.showNodeProperties(node, null, this.modelNodeName));
-            list.on('dblclick', () => {
-                this.context.view.showSubGraphByNodeName(this.name, this.modelNodeName)
-            });
-            for (const initializer of initializers) {
-                const argument = initializer.arguments[0];
-                const type = argument.type;
-                let shape = '';
-                let separator = '';
-                if (type && type.shape && type.shape.dimensions && Array.isArray(type.shape.dimensions)) {
-                    shape = '\u3008' + type.shape.dimensions.map((d) => d ? d : '?').join('\u00D7') + '\u3009';
-                    if (type.shape.dimensions.length === 0 && argument.initializer && !argument.initializer.state) {
-                        try {
-                            shape = argument.initializer.toString();
-                            if (shape && shape.length > 10) {
-                                shape = shape.substring(0, 10) + '\u2026';
-                            }
-                            separator = ' = ';
-                        }
-                        catch (err) {
-                            let type = '?';
-                            try {
-                                type = argument.initializer.type.toString();
-                            }
-                            catch (error) {
-                                // continue regardless of error
-                            }
-                            const identifier = this.context.view.model && this.context.view.model.identifier ? this.context.view.model.identifier : '?';
-                            throw new view.Error("Failed to render tensor of type '" + type + "' in '" + identifier + "' (" + err.message + ").");
-                        }
-                    }
-                }
-                list.add(argument.name ? 'initializer-' + argument.name : '', initializer.name, shape, type ? type.toString() : '', separator);
-            }
-            if (hiddenInitializers) {
-                list.add(null, '\u3008' + '\u2026' + '\u3009', '', null, '');
-            }
+        list.add(
+          argument.name ? 'initializer-' + argument.name : '',
+          initializer.name,
+          shape,
+          type ? type.toString() : '',
+          separator
+        );
+      }
+      if (hiddenInitializers) {
+        list.add(null, '\u3008' + '\u2026' + '\u3009', '', null, '');
+      }
 
-            // 节点属性（侧边栏显示）
-            for (const attribute of sortedAttributes) {
-                if (attribute.visible) {
-                    let value = sidebar.NodeSidebar.formatAttributeValue(attribute.value, attribute.type);
-                    if (value && value.length > 25) {
-                        value = value.substring(0, 25) + '\u2026';
-                    }
-                    list.add(null, attribute.name, value, attribute.type, ' = ');
-                }
-            }
+      // 节点属性（侧边栏显示）
+      for (const attribute of sortedAttributes) {
+        if (attribute.visible) {
+          let value = sidebar.NodeSidebar.formatAttributeValue(attribute.value, attribute.type);
+          if (value && value.length > 25) {
+            value = value.substring(0, 25) + '\u2026';
+          }
+          list.add(null, attribute.name, value, attribute.type, ' = ');
         }
-        if (Array.isArray(node.chain) && node.chain.length > 0) {
-            for (const innerNode of node.chain) {
-                this._add(innerNode);
-            }
-        }
-        if (node.inner) {
-            this._add(node.inner);
-        }
-        if (node.nodes) {
-            this.canvas = this.canvas();
-        }
+      }
     }
+    if (Array.isArray(node.chain) && node.chain.length > 0) {
+      for (const innerNode of node.chain) {
+        this._add(innerNode);
+      }
+    }
+    if (node.inner) {
+      this._add(node.inner);
+    }
+    if (node.nodes) {
+      this.canvas = this.canvas();
+    }
+  }
 
-    toggle() {
-        this._expand.content = '-';
-        this._graph = new view.Graph(this.context.view, this.context.model, this.context.modifier, false, {});
-        this._graph.add(this.value);
-        // const document = this.element.ownerDocument;
-        // const parent = this.element.parentElement;
-        // this._graph.build(document, parent);
-        // this._graph.update();
-        this.canvas.width = 300;
-        this.canvas.height = 300;
-        this.layout();
-        this.context.update();
-    }
+  toggle() {
+    this._expand.content = '-';
+    this._graph = new view.Graph(this.context.view, this.context.model, this.context.modifier, false, {});
+    this._graph.add(this.value);
+    // const document = this.element.ownerDocument;
+    // const parent = this.element.parentElement;
+    // this._graph.build(document, parent);
+    // this._graph.update();
+    this.canvas.width = 300;
+    this.canvas.height = 300;
+    this.layout();
+    this.context.update();
+  }
 };
 
-
 view.Input = class extends grapher.Node {
-
-    constructor(context, value, modelNodeName, show_name) {
-        super();
-        this.context = context;
-        this.value = value;
-        view.Input.counter = view.Input.counter || 0;
-        const types = value.arguments.map((argument) => argument.type || '').join('\n');
-        // let name = value.name || '';
-        let name = show_name
-        this.modelNodeName = modelNodeName
-        if (name.length > 16) {
-            name = name.split('/').pop();
-        }
-        const header = this.header();
-        const title = header.add(null, [ 'graph-item-input' ], name, types);
-        title.on('click', () => this.context.view.showModelProperties(null, modelNodeName));
-        this.id = 'input-' + (name ? 'name-' + name : 'id-' + (view.Input.counter++).toString());
+  constructor(context, value, modelNodeName, show_name) {
+    super();
+    this.context = context;
+    this.value = value;
+    view.Input.counter = view.Input.counter || 0;
+    const types = value.arguments.map((argument) => argument.type || '').join('\n');
+    // let name = value.name || '';
+    let name = show_name;
+    this.modelNodeName = modelNodeName;
+    if (name.length > 16) {
+      name = name.split('/').pop();
     }
+    const header = this.header();
+    const title = header.add(null, ['graph-item-input'], name, types);
+    title.on('click', () => this.context.view.showModelProperties(null, modelNodeName));
+    this.id = 'input-' + (name ? 'name-' + name : 'id-' + (view.Input.counter++).toString());
+  }
 
-    get class() {
-        return 'graph-input';
-    }
+  get class() {
+    return 'graph-input';
+  }
 
-    get inputs() {
-        return [];
-    }
+  get inputs() {
+    return [];
+  }
 
-    get outputs() {
-        return [ this.value ];
-    }
+  get outputs() {
+    return [this.value];
+  }
 };
 
 view.Output = class extends grapher.Node {
-
-    constructor(context, value, modelNodeName, show_name) {
-        super();
-        this.context = context;
-        this.value = value;
-        const types = value.arguments.map((argument) => argument.type || '').join('\n');
-        // let name = value.name || '';
-        let name = show_name;
-        this.modelNodeName = modelNodeName
-        if (name.length > 16) {
-            name = name.split('/').pop();
-        }
-        const header = this.header();
-        const title = header.add(null, [ 'graph-item-output' ], name, types);
-        title.on('click', () => this.context.view.showModelProperties(modelNodeName));
+  constructor(context, value, modelNodeName, show_name) {
+    super();
+    this.context = context;
+    this.value = value;
+    const types = value.arguments.map((argument) => argument.type || '').join('\n');
+    // let name = value.name || '';
+    let name = show_name;
+    this.modelNodeName = modelNodeName;
+    if (name.length > 16) {
+      name = name.split('/').pop();
     }
+    const header = this.header();
+    const title = header.add(null, ['graph-item-output'], name, types);
+    title.on('click', () => this.context.view.showModelProperties(modelNodeName));
+  }
 
-    get inputs() {
-        return [ this.value ];
-    }
+  get inputs() {
+    return [this.value];
+  }
 
-    get outputs() {
-        return [];
-    }
+  get outputs() {
+    return [];
+  }
 };
 
 view.LightNodeInfo = class {
-    constructor(properties, attributes, inputs, outputs) {
-        this.properties = properties
-        this.attributes = attributes || new Map()
-        this.inputs = inputs || new Map()
-        this.outputs = outputs || new Map()
-    }
-}
+  constructor(properties, attributes, inputs, outputs) {
+    this.properties = properties;
+    this.attributes = attributes || new Map();
+    this.inputs = inputs || new Map();
+    this.outputs = outputs || new Map();
+  }
+};
 
 view.Argument = class {
+  constructor(context, argument) {
+    this.context = context;
+    this._argument = argument;
+  }
 
-    constructor(context, argument) {
-        this.context = context;
-        this._argument = argument;
+  from(node) {
+    this._from = node;
+  }
+
+  to(node, controlDependency) {
+    this._to = this._to || [];
+    if (controlDependency) {
+      this._controlDependencies = this._controlDependencies || new Set();
+      this._controlDependencies.add(this._to.length);
     }
+    this._to.push(node);
+  }
 
-    from(node) {
-        this._from = node;
-    }
+  build() {
+    this._edges = this._edges || [];
+    if (this._from && this._to) {
+      for (let i = 0; i < this._to.length; i++) {
+        const to = this._to[i];
+        let content = '';
+        const type = this._argument.type;
 
-    to(node, controlDependency) {
-        this._to = this._to || [];
-        if (controlDependency) {
-            this._controlDependencies = this._controlDependencies || new Set();
-            this._controlDependencies.add(this._to.length);
+        if (
+          type &&
+          type.shape &&
+          type.shape.dimensions &&
+          type.shape.dimensions.length > 0 &&
+          type.shape.dimensions.every(
+            (dim) => !dim || Number.isInteger(dim) || dim instanceof base.Int64 || typeof dim === 'string'
+          )
+        ) {
+          content = type.shape.dimensions.map((dim) => dim || '?').join('\u00D7');
+          content = content.length > 16 ? '' : content;
         }
-        this._to.push(node);
-    }
-
-    build() {
-        this._edges = this._edges || [];
-        if (this._from && this._to) {
-            for (let i = 0; i < this._to.length; i++) {
-                const to = this._to[i];
-                let content = '';
-                const type = this._argument.type;
-
-                if (type &&
-                    type.shape &&
-                    type.shape.dimensions &&
-                    type.shape.dimensions.length > 0 &&
-                    type.shape.dimensions.every((dim) => !dim || Number.isInteger(dim) || dim instanceof base.Int64 || (typeof dim === 'string'))) {
-                    content = type.shape.dimensions.map((dim) => dim || '?').join('\u00D7');
-                    content = content.length > 16 ? '' : content;
-                }
-                if (this.context.view.options.names) {
-                    content = this._argument.name.split('\n').shift(); // custom argument id
-                }
-                const edge = this.context.createEdge(this._from, to);
-                edge.v = this._from.name;
-                edge.w = to.name;
-                if (content) {
-                    edge.label = content;
-                }
-                edge.id = 'edge-' + this._argument.name;
-                if (this._controlDependencies && this._controlDependencies.has(i)) {
-                    edge.class = 'edge-path-control-dependency';
-                }
-                this.context.setEdge(edge);
-                this._edges.push(edge);
-            }
+        if (this.context.view.options.names) {
+          content = this._argument.name.split('\n').shift(); // custom argument id
         }
+        const edge = this.context.createEdge(this._from, to);
+        edge.v = this._from.name;
+        edge.w = to.name;
+        if (content) {
+          edge.label = content;
+        }
+        edge.id = 'edge-' + this._argument.name;
+        if (this._controlDependencies && this._controlDependencies.has(i)) {
+          edge.class = 'edge-path-control-dependency';
+        }
+        this.context.setEdge(edge);
+        this._edges.push(edge);
+      }
     }
+  }
 };
 
 view.Edge = class extends grapher.Edge {
+  constructor(from, to) {
+    super(from, to);
+  }
 
-    constructor(from, to) {
-        super(from, to);
+  get minlen() {
+    if (this.from.inputs.every((parameter) => parameter.arguments.every((argument) => argument.initializer))) {
+      return 2;
     }
-
-    get minlen() {
-        if (this.from.inputs.every((parameter) => parameter.arguments.every((argument) => argument.initializer))) {
-            return 2;
-        }
-        return 1;
-    }
+    return 1;
+  }
 };
 
 view.ModelContext = class {
+  constructor(context, formats) {
+    this._context = context;
+    this._tags = new Map();
+    this._content = new Map();
+    this._formats = formats || new Map();
+  }
 
-    constructor(context, formats) {
-        this._context = context;
-        this._tags = new Map();
-        this._content = new Map();
-        this._formats = formats || new Map();
-    }
+  get identifier() {
+    return this._context.identifier;
+  }
 
-    get identifier() {
-        return this._context.identifier;
-    }
+  get stream() {
+    return this._context.stream;
+  }
 
-    get stream() {
-        return this._context.stream;
-    }
+  request(file, encoding, base) {
+    return this._context.request(file, encoding, base);
+  }
 
-    request(file, encoding, base) {
-        return this._context.request(file, encoding, base);
-    }
+  require(id) {
+    return this._context.require(id);
+  }
 
-    require(id) {
-        return this._context.require(id);
-    }
+  exception(error, fatal) {
+    this._context.exception(error, fatal);
+  }
 
-    exception(error, fatal) {
-        this._context.exception(error, fatal);
-    }
+  entries(format) {
+    return this._formats.get(format) || new Map();
+  }
 
-    entries(format) {
-        return this._formats.get(format) || new Map();
-    }
-
-    open(type) {
-        if (!this._content.has(type)) {
-            this._content.set(type, undefined);
-            const stream = this.stream;
-            const position = stream.position;
-            const signatures = [
-                [ 0x89, 0x48, 0x44, 0x46, 0x0D, 0x0A, 0x1A, 0x0A ], // HDF5
-                [ 0x80, undefined, 0x8a, 0x0a, 0x6c, 0xfc, 0x9c, 0x46, 0xf9, 0x20, 0x6a, 0xa8, 0x50, 0x19 ] // PyTorch
-            ];
-            const skip =
-                signatures.some((signature) => signature.length <= stream.length && stream.peek(signature.length).every((value, index) => signature[index] === undefined || signature[index] === value)) ||
-                Array.from(this._tags).some((pair) => pair[0] !== 'flatbuffers' && pair[1].size > 0) ||
-                Array.from(this._content.values()).some((obj) => obj !== undefined);
-            if (!skip) {
-                switch (type) {
-                    case 'json': {
-                        try {
-                            const reader = json.TextReader.open(this.stream);
-                            if (reader) {
-                                const obj = reader.read();
-                                this._content.set(type, obj);
-                            }
-                        }
-                        catch (err) {
-                            // continue regardless of error
-                        }
-                        break;
-                    }
-                    case 'json.gz': {
-                        try {
-                            const archive = gzip.Archive.open(this.stream);
-                            if (archive) {
-                                const entries = archive.entries;
-                                if (entries.size === 1) {
-                                    const stream = entries.values().next().value;
-                                    const reader = json.TextReader.open(stream);
-                                    if (reader) {
-                                        const obj = reader.read();
-                                        this._content.set(type, obj);
-                                    }
-                                }
-                            }
-                        }
-                        catch (err) {
-                            // continue regardless of error
-                        }
-                        break;
-                    }
-                    case 'pkl': {
-                        let unpickler = null;
-                        try {
-                            if (stream.length > 2) {
-                                const zlib = (stream) => {
-                                    const buffer = stream.peek(2);
-                                    if (buffer[0] === 0x78) {
-                                        const check = (buffer[0] << 8) + buffer[1];
-                                        if (check % 31 === 0) {
-                                            const archive = zip.Archive.open(stream);
-                                            return archive.entries.get('');
-                                        }
-                                    }
-                                    return stream;
-                                };
-                                unpickler = python.Unpickler.open(zlib(stream));
-                            }
-                        }
-                        catch (err) {
-                            // continue regardless of error
-                        }
-                        if (unpickler) {
-                            const execution = new python.Execution(null, (error, fatal) => {
-                                const message = error && error.message ? error.message : error.toString();
-                                this.exception(new view.Error(message.replace(/\.$/, '') + " in '" + this.identifier + "'."), fatal);
-                            });
-                            const persistent_load = (saved_id) => {
-                                return saved_id;
-                            };
-                            const obj = unpickler.load((name, args) => execution.invoke(name, args), persistent_load);
-                            this._content.set(type, obj);
-                        }
-                        break;
-                    }
+  open(type) {
+    if (!this._content.has(type)) {
+      this._content.set(type, undefined);
+      const stream = this.stream;
+      const position = stream.position;
+      const signatures = [
+        [0x89, 0x48, 0x44, 0x46, 0x0d, 0x0a, 0x1a, 0x0a], // HDF5
+        [0x80, undefined, 0x8a, 0x0a, 0x6c, 0xfc, 0x9c, 0x46, 0xf9, 0x20, 0x6a, 0xa8, 0x50, 0x19], // PyTorch
+      ];
+      const skip =
+        signatures.some(
+          (signature) =>
+            signature.length <= stream.length &&
+            stream
+              .peek(signature.length)
+              .every((value, index) => signature[index] === undefined || signature[index] === value)
+        ) ||
+        Array.from(this._tags).some((pair) => pair[0] !== 'flatbuffers' && pair[1].size > 0) ||
+        Array.from(this._content.values()).some((obj) => obj !== undefined);
+      if (!skip) {
+        switch (type) {
+          case 'json': {
+            try {
+              const reader = json.TextReader.open(this.stream);
+              if (reader) {
+                const obj = reader.read();
+                this._content.set(type, obj);
+              }
+            } catch (err) {
+              // continue regardless of error
+            }
+            break;
+          }
+          case 'json.gz': {
+            try {
+              const archive = gzip.Archive.open(this.stream);
+              if (archive) {
+                const entries = archive.entries;
+                if (entries.size === 1) {
+                  const stream = entries.values().next().value;
+                  const reader = json.TextReader.open(stream);
+                  if (reader) {
+                    const obj = reader.read();
+                    this._content.set(type, obj);
+                  }
                 }
+              }
+            } catch (err) {
+              // continue regardless of error
             }
-            if (stream.position !== position) {
-                stream.seek(0);
+            break;
+          }
+          case 'pkl': {
+            let unpickler = null;
+            try {
+              if (stream.length > 2) {
+                const zlib = (stream) => {
+                  const buffer = stream.peek(2);
+                  if (buffer[0] === 0x78) {
+                    const check = (buffer[0] << 8) + buffer[1];
+                    if (check % 31 === 0) {
+                      const archive = zip.Archive.open(stream);
+                      return archive.entries.get('');
+                    }
+                  }
+                  return stream;
+                };
+                unpickler = python.Unpickler.open(zlib(stream));
+              }
+            } catch (err) {
+              // continue regardless of error
             }
+            if (unpickler) {
+              const execution = new python.Execution(null, (error, fatal) => {
+                const message = error && error.message ? error.message : error.toString();
+                this.exception(new view.Error(message.replace(/\.$/, '') + " in '" + this.identifier + "'."), fatal);
+              });
+              const persistent_load = (saved_id) => {
+                return saved_id;
+              };
+              const obj = unpickler.load((name, args) => execution.invoke(name, args), persistent_load);
+              this._content.set(type, obj);
+            }
+            break;
+          }
         }
-        return this._content.get(type);
+      }
+      if (stream.position !== position) {
+        stream.seek(0);
+      }
     }
+    return this._content.get(type);
+  }
 
-    tags(type) {
-        if (!this._tags.has(type)) {
-            let tags = new Map();
-            const stream = this.stream;
-            const position = stream.position;
-            if (stream) {
-                const signatures = [
-                    [ 0x89, 0x48, 0x44, 0x46, 0x0D, 0x0A, 0x1A, 0x0A ], // HDF5
-                    [ 0x80, undefined, 0x8a, 0x0a, 0x6c, 0xfc, 0x9c, 0x46, 0xf9, 0x20, 0x6a, 0xa8, 0x50, 0x19 ], // PyTorch
-                    [ 0x50, 0x4b ], // Zip
-                    [ 0x1f, 0x8b ] // Gzip
-                ];
-                const skip =
-                    signatures.some((signature) => signature.length <= stream.length && stream.peek(signature.length).every((value, index) => signature[index] === undefined || signature[index] === value)) ||
-                    (Array.from(this._tags).some((pair) => pair[0] !== 'flatbuffers' && pair[1].size > 0) && type !== 'pb+') ||
-                    Array.from(this._content.values()).some((obj) => obj !== undefined);
-                if (!skip) {
-                    try {
-                        switch (type) {
-                            case 'pbtxt': {
-                                const reader = protobuf.TextReader.open(stream);
-                                tags = reader ? reader.signature() : tags;
-                                break;
-                            }
-                            case 'pb': {
-                                const reader = protobuf.BinaryReader.open(stream);
-                                tags = reader.signature();
-                                break;
-                            }
-                            case 'pb+': {
-                                const reader = protobuf.BinaryReader.open(stream);
-                                tags = reader.decode();
-                                break;
-                            }
-                            case 'flatbuffers': {
-                                if (stream.length >= 8) {
-                                    const buffer = stream.peek(Math.min(32, stream.length));
-                                    const reader = flatbuffers.BinaryReader.open(buffer);
-                                    const identifier = reader.identifier;
-                                    if (identifier.length > 0) {
-                                        tags.set('file_identifier', identifier);
-                                    }
-                                }
-                                break;
-                            }
-                            case 'xml': {
-                                const reader = xml.TextReader.open(stream);
-                                if (reader) {
-                                    const document = reader.peek();
-                                    const element = document.documentElement;
-                                    const namespaceURI = element.namespaceURI;
-                                    const localName = element.localName;
-                                    const name = namespaceURI ? namespaceURI + ':' + localName : localName;
-                                    tags.set(name, element);
-                                }
-                                break;
-                            }
-                        }
-                    }
-                    catch (error) {
-                        tags.clear();
-                    }
+  tags(type) {
+    if (!this._tags.has(type)) {
+      let tags = new Map();
+      const stream = this.stream;
+      const position = stream.position;
+      if (stream) {
+        const signatures = [
+          [0x89, 0x48, 0x44, 0x46, 0x0d, 0x0a, 0x1a, 0x0a], // HDF5
+          [0x80, undefined, 0x8a, 0x0a, 0x6c, 0xfc, 0x9c, 0x46, 0xf9, 0x20, 0x6a, 0xa8, 0x50, 0x19], // PyTorch
+          [0x50, 0x4b], // Zip
+          [0x1f, 0x8b], // Gzip
+        ];
+        const skip =
+          signatures.some(
+            (signature) =>
+              signature.length <= stream.length &&
+              stream
+                .peek(signature.length)
+                .every((value, index) => signature[index] === undefined || signature[index] === value)
+          ) ||
+          (Array.from(this._tags).some((pair) => pair[0] !== 'flatbuffers' && pair[1].size > 0) && type !== 'pb+') ||
+          Array.from(this._content.values()).some((obj) => obj !== undefined);
+        if (!skip) {
+          try {
+            switch (type) {
+              case 'pbtxt': {
+                const reader = protobuf.TextReader.open(stream);
+                tags = reader ? reader.signature() : tags;
+                break;
+              }
+              case 'pb': {
+                const reader = protobuf.BinaryReader.open(stream);
+                tags = reader.signature();
+                break;
+              }
+              case 'pb+': {
+                const reader = protobuf.BinaryReader.open(stream);
+                tags = reader.decode();
+                break;
+              }
+              case 'flatbuffers': {
+                if (stream.length >= 8) {
+                  const buffer = stream.peek(Math.min(32, stream.length));
+                  const reader = flatbuffers.BinaryReader.open(buffer);
+                  const identifier = reader.identifier;
+                  if (identifier.length > 0) {
+                    tags.set('file_identifier', identifier);
+                  }
                 }
+                break;
+              }
+              case 'xml': {
+                const reader = xml.TextReader.open(stream);
+                if (reader) {
+                  const document = reader.peek();
+                  const element = document.documentElement;
+                  const namespaceURI = element.namespaceURI;
+                  const localName = element.localName;
+                  const name = namespaceURI ? namespaceURI + ':' + localName : localName;
+                  tags.set(name, element);
+                }
+                break;
+              }
             }
-            if (stream.position !== position) {
-                stream.seek(position);
-            }
-            this._tags.set(type, tags);
+          } catch (error) {
+            tags.clear();
+          }
         }
-        return this._tags.get(type);
+      }
+      if (stream.position !== position) {
+        stream.seek(position);
+      }
+      this._tags.set(type, tags);
     }
+    return this._tags.get(type);
+  }
 };
 
 view.ArchiveContext = class {
-
-    constructor(host, entries, rootFolder, identifier, stream) {
-        this._host = host;
-        this._entries = new Map();
-        if (entries) {
-            for (const entry of entries) {
-                if (entry[0].startsWith(rootFolder)) {
-                    const name = entry[0].substring(rootFolder.length);
-                    this._entries.set(name, entry[1]);
-                }
-            }
+  constructor(host, entries, rootFolder, identifier, stream) {
+    this._host = host;
+    this._entries = new Map();
+    if (entries) {
+      for (const entry of entries) {
+        if (entry[0].startsWith(rootFolder)) {
+          const name = entry[0].substring(rootFolder.length);
+          this._entries.set(name, entry[1]);
         }
-        this._identifier = identifier.substring(rootFolder.length);
-        this._stream = stream;
+      }
     }
+    this._identifier = identifier.substring(rootFolder.length);
+    this._stream = stream;
+  }
 
-    get identifier() {
-        return this._identifier;
-    }
+  get identifier() {
+    return this._identifier;
+  }
 
-    get stream() {
-        return this._stream;
-    }
+  get stream() {
+    return this._stream;
+  }
 
-    request(file, encoding, base) {
-        if (base === undefined) {
-            const stream = this._entries.get(file);
-            if (!stream) {
-                return Promise.reject(new Error('File not found.'));
-            }
-            if (encoding) {
-                const decoder = new TextDecoder(encoding);
-                const buffer = stream.peek();
-                const value = decoder.decode(buffer);
-                return Promise.resolve(value);
-            }
-            return Promise.resolve(stream);
-        }
-        return this._host.request(file, encoding, base);
+  request(file, encoding, base) {
+    if (base === undefined) {
+      const stream = this._entries.get(file);
+      if (!stream) {
+        return Promise.reject(new Error('File not found.'));
+      }
+      if (encoding) {
+        const decoder = new TextDecoder(encoding);
+        const buffer = stream.peek();
+        const value = decoder.decode(buffer);
+        return Promise.resolve(value);
+      }
+      return Promise.resolve(stream);
     }
+    return this._host.request(file, encoding, base);
+  }
 
-    require(id) {
-        return this._host.require(id);
-    }
+  require(id) {
+    return this._host.require(id);
+  }
 
-    exception(error, fatal) {
-        this._host.exception(error, fatal);
-    }
+  exception(error, fatal) {
+    this._host.exception(error, fatal);
+  }
 };
 
 view.ArchiveError = class extends Error {
-
-    constructor(message) {
-        super(message);
-        this.name = 'Error loading archive.';
-    }
+  constructor(message) {
+    super(message);
+    this.name = 'Error loading archive.';
+  }
 };
 
 view.ModelFactoryService = class {
