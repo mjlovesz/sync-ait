@@ -23,7 +23,6 @@ from testcase.refactor.test_graph_crud import create_graph
 
 
 class TestGraphAdvanced(unittest.TestCase):
-
     def setUp(self):
         self.addTypeEqualityFunc(OnnxNode, is_node_equal)
         self.addTypeEqualityFunc(OnnxPlaceHolder, is_ph_equal)
@@ -39,7 +38,7 @@ class TestGraphAdvanced(unittest.TestCase):
         self.assertEqual(self.graph.get_next_nodes('0_out_0'), [self.graph['Node_1'], self.graph['Node_2']])
 
     def test_infershape(self):
-        input_0 = OnnxPlaceHolder('input_0', np.dtype('float32'), [1,  10000])
+        input_0 = OnnxPlaceHolder('input_0', np.dtype('float32'), [1, 10000])
         output_0 = OnnxPlaceHolder('output_0', np.dtype('float32'), [5000, 2])
         ini_0 = OnnxInitializer('ini_0', np.array([2, 5000], dtype='int64'))
         ini_1 = OnnxInitializer('ini_1', np.array([4, 2500], dtype='int64'))
@@ -47,8 +46,13 @@ class TestGraphAdvanced(unittest.TestCase):
         node_0 = OnnxNode('Node_0', 'Reshape', inputs=['input_0', 'ini_0'], outputs=['0_out_0'], attrs={})
         node_1 = OnnxNode('Node_1', 'Reshape', inputs=['0_out_0', 'ini_1'], outputs=['1_out_0'], attrs={})
         node_2 = OnnxNode('Node_2', 'Reshape', inputs=['1_out_0', 'ini_2'], outputs=['output_0'], attrs={})
-        graph = OnnxGraph(name='test', nodes=[node_0, node_1, node_2], inputs=[
-                          input_0], outputs=[output_0], initializers=[ini_0, ini_1, ini_2])
+        graph = OnnxGraph(
+            name='test',
+            nodes=[node_0, node_1, node_2],
+            inputs=[input_0],
+            outputs=[output_0],
+            initializers=[ini_0, ini_1, ini_2],
+        )
 
         graph.infer_shape()
         self.assertEqual(graph.get_value_info('0_out_0'), OnnxPlaceHolder('0_out_0', np.dtype('float32'), [2, 5000]))
@@ -66,16 +70,10 @@ class TestGraphAdvanced(unittest.TestCase):
                 self.graph['Node_3'],
                 self.graph['Node_4'],
                 self.graph['Node_5'],
-            ]
+            ],
         )
-        self.assertEqual(
-            self.graph.inputs,
-            [self.graph['input_0']]
-        )
-        self.assertEqual(
-            self.graph.outputs,
-            [self.graph['output_0']]
-        )
+        self.assertEqual(self.graph.inputs, [self.graph['input_0']])
+        self.assertEqual(self.graph.outputs, [self.graph['output_0']])
 
 
 if __name__ == "__main__":
