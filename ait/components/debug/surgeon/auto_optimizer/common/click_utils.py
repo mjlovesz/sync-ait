@@ -24,8 +24,12 @@ import argparse
 import click
 
 from auto_optimizer import KnowledgeFactory
-from auto_optimizer.graph_optimizer.optimizer import GraphOptimizer, InferTestConfig, BigKernelConfig, \
-    ARGS_REQUIRED_KNOWLEDGES
+from auto_optimizer.graph_optimizer.optimizer import (
+    GraphOptimizer,
+    InferTestConfig,
+    BigKernelConfig,
+    ARGS_REQUIRED_KNOWLEDGES,
+)
 from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph
 from auto_optimizer.graph_refactor.onnx.graph import OnnxGraph
 from auto_optimizer.tools.log import logger
@@ -94,7 +98,13 @@ def list_knowledges():
         logger.info(f'  {idx+j+1:2d} {name}')
 
 
-def cli_eva(model_path: pathlib.Path, optimizer: GraphOptimizer, recursive: bool, verbose: bool, processes: int,):
+def cli_eva(
+    model_path: pathlib.Path,
+    optimizer: GraphOptimizer,
+    recursive: bool,
+    verbose: bool,
+    processes: int,
+):
     if model_path.is_dir():
         onnx_files = list(model_path.rglob('*.onnx') if recursive else model_path.glob('*.onnx'))
     else:
@@ -125,7 +135,7 @@ def optimize_onnx(
     output_model: pathlib.Path,
     infer_test: bool,
     config: InferTestConfig,
-    big_kernel_config: Optional[BigKernelConfig] = None
+    big_kernel_config: Optional[BigKernelConfig] = None,
 ) -> List[str]:
     '''Optimize a onnx file and save as a new file.'''
     try:
@@ -140,8 +150,9 @@ def optimize_onnx(
         optimizer = GraphOptimizer(knowledges)
 
     if big_kernel_config:
-        optimizer.register_big_kernel(graph, big_kernel_config.attention_start_node,
-                                      big_kernel_config.attention_end_node)
+        optimizer.register_big_kernel(
+            graph, big_kernel_config.attention_start_node, big_kernel_config.attention_end_node
+        )
 
     config.is_static = is_graph_input_static(graph)
     if infer_test:
@@ -209,7 +220,7 @@ default_off_knowledges = [
     'KnowledgeGatherToSplit',
     'KnowledgeSplitQKVMatmul',
     'KnowledgeDynamicReshape',
-    'KnowledgeResizeModeToNearest'
+    'KnowledgeResizeModeToNearest',
 ]
 
 
@@ -227,11 +238,7 @@ def check_args(ctx: click.Context, params: click.Option, value: str):
     """
     check whether the param is provided
     """
-    args = [
-        opt
-        for param in ctx.command.params
-        for opt in param.opts
-    ]
+    args = [opt for param in ctx.command.params for opt in param.opts]
     if value in args:
         opt_name = parse_opt_name(params)
         raise click.BadOptionUsage(option_name=opt_name, message="Option {} requires an argument".format(opt_name))
@@ -240,16 +247,11 @@ def check_args(ctx: click.Context, params: click.Option, value: str):
 
 def check_node_name(ctx: click.Context, params: click.Option, value: str):
     value = check_args(ctx, params, value)
-    args = [
-        opt+"="
-        for param in ctx.command.params
-        for opt in param.opts
-    ]
+    args = [opt + "=" for param in ctx.command.params for opt in param.opts]
     opt_name = parse_opt_name(params)
     for arg in args:
         if value.startswith(arg):
-            raise click.BadOptionUsage(option_name=opt_name,
-                                       message="Option {} requires an argument".format(opt_name))
+            raise click.BadOptionUsage(option_name=opt_name, message="Option {} requires an argument".format(opt_name))
     return value
 
 

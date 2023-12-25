@@ -45,88 +45,75 @@ def check_device_range_valid(value):
     min_value = 0
     max_value = 255
     if ',' in value:
-        ilist = [ int(v) for v in value.split(',') ]
+        ilist = [int(v) for v in value.split(',')]
         for ivalue in ilist:
             if ivalue < min_value or ivalue > max_value:
-                raise argparse.ArgumentTypeError("{} of device:{} is invalid. valid value range is [{}, {}]".format(
-                    ivalue, value, min_value, max_value))
+                raise argparse.ArgumentTypeError(
+                    "{} of device:{} is invalid. valid value range is [{}, {}]".format(
+                        ivalue, value, min_value, max_value
+                    )
+                )
         return ilist
     else:
-		# default as single int value
+        # default as single int value
         ivalue = int(value)
         if ivalue < min_value or ivalue > max_value:
-            raise argparse.ArgumentTypeError("device:{} is invalid. valid value range is [{}, {}]".format(
-                ivalue, min_value, max_value))
+            raise argparse.ArgumentTypeError(
+                "device:{} is invalid. valid value range is [{}, {}]".format(ivalue, min_value, max_value)
+            )
         return ivalue
 
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--application",
-        required=True,
-        help="Configure to run AI task files on the environment"
-    )
+    parser.add_argument("--application", required=True, help="Configure to run AI task files on the environment")
     parser.add_argument(
         "--output",
         default=None,
         help="The storage path for the collected profiling data,"
-             " which defaults to the directory where the app is located"
+        " which defaults to the directory where the app is located",
     )
     parser.add_argument(
         "--model-execution",
         default="on",
         choices=["on", "off"],
-        help="Control ge model execution performance data collection switch"
+        help="Control ge model execution performance data collection switch",
     )
     parser.add_argument(
         "--sys-hardware-mem",
         default="on",
         choices=["on", "off"],
-        help="Control the read/write bandwidth data acquisition switch for ddr and llc"
+        help="Control the read/write bandwidth data acquisition switch for ddr and llc",
     )
-    parser.add_argument(
-        "--sys-cpu-profiling",
-        default="off",
-        choices=["on", "off"],
-        help="CPU acquisition switch"
-    )
+    parser.add_argument("--sys-cpu-profiling", default="off", choices=["on", "off"], help="CPU acquisition switch")
     parser.add_argument(
         "--sys-profiling",
         default="off",
         choices=["on", "off"],
-        help="System CPU usage and system memory acquisition switch"
+        help="System CPU usage and system memory acquisition switch",
     )
     parser.add_argument(
         "--sys-pid-profiling",
         default="off",
         choices=["on", "off"],
-        help="The CPU usage of the process and the memory collection switch of the process"
+        help="The CPU usage of the process and the memory collection switch of the process",
     )
-    parser.add_argument(
-        "--dvpp-profiling",
-        default="on",
-        choices=["on", "off"],
-        help="DVPP acquisition switch"
-    )
+    parser.add_argument("--dvpp-profiling", default="on", choices=["on", "off"], help="DVPP acquisition switch")
 
     parser.add_argument(
         "--runtime-api",
         default="on",
         choices=["on", "off"],
-        help="Control runtime api performance data collection switch"
+        help="Control runtime api performance data collection switch",
     )
     parser.add_argument(
         "--task-time",
         default="on",
         choices=["on", "off"],
-        help="Control ts timeline performance data collection switch"
+        help="Control ts timeline performance data collection switch",
     )
     parser.add_argument(
-        "--aicpu",
-        default="on",
-        choices=["on", "off"],
-        help="Control aicpu performance data collection switch"
+        "--aicpu", default="on", choices=["on", "off"], help="Control aicpu performance data collection switch"
     )
     args_ret = parser.parse_args()
 
@@ -136,8 +123,18 @@ def get_args():
 if __name__ == "__main__":
     args = get_args()
 
-    args = MsProfArgsAdapter(args.application, args.output, args.model_execution,
-        args.sys_hardware_mem, args.sys_cpu_profiling, args.sys_profiling, args.sys_pid_profiling, args.dvpp_profiling,
-        args.runtime_api, args.task_time, args.aicpu)
+    args = MsProfArgsAdapter(
+        args.application,
+        args.output,
+        args.model_execution,
+        args.sys_hardware_mem,
+        args.sys_cpu_profiling,
+        args.sys_profiling,
+        args.sys_pid_profiling,
+        args.dvpp_profiling,
+        args.runtime_api,
+        args.task_time,
+        args.aicpu,
+    )
     ret = msprof_process(args)
     exit(ret)

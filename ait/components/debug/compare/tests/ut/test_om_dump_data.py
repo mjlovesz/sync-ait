@@ -69,7 +69,7 @@ def fake_arguments():
         dump=True,
         output_size="",
         device="0",
-        single_op=False
+        single_op=False,
     )
 
 
@@ -107,11 +107,13 @@ def fake_dym_shape_onnx_model():
     input_name = 'input0'
     input_data = torch.ones(INPUT_SHAPE)
 
-    torch.onnx.export(model,
-                      input_data,
-                      FAKE_DYM_SHAPE_ONNX_MODEL_PATH,
-                      input_names=[input_name],
-                      dynamic_axes={input_name:{0:'bs'}})
+    torch.onnx.export(
+        model,
+        input_data,
+        FAKE_DYM_SHAPE_ONNX_MODEL_PATH,
+        input_names=[input_name],
+        dynamic_axes={input_name: {0: 'bs'}},
+    )
 
     yield FAKE_DYM_SHAPE_ONNX_MODEL_PATH
 
@@ -123,9 +125,9 @@ def fake_dym_shape_onnx_model():
 def fake_om_model(width_onnx_model):
     if not os.path.exists(FAKE_OM_MODEL_PATH):
         cmd = 'atc --model={}  --framework=5 --output={} \
-            --soc_version={}'.format(width_onnx_model,
-                                     OM_OUT_PATH,
-                                     acl.get_soc_name())
+            --soc_version={}'.format(
+            width_onnx_model, OM_OUT_PATH, acl.get_soc_name()
+        )
         subprocess.run(cmd.split(), shell=False)
 
     yield FAKE_OM_MODEL_PATH
@@ -138,29 +140,32 @@ def fake_om_model(width_onnx_model):
 def fake_om_model_with_aipp(width_onnx_model):
     with os.fdopen(os.open("fake_aipp.config", WRITE_FLAGS, WRITE_MODES), 'w') as file:
         if file is not None:
-            aipp_lines = ["aipp_op{\n"
-                    "    aipp_mode:static\n"
-                    "    input_format : RGB888_U8\n"
-                    "    src_image_size_w : 32\n"
-                    "    src_image_size_h : 32\n"
-                    "    crop:false\n"
-                    "    min_chn_0 : 123.675\n"
-                    "    min_chn_1 : 116.28\n"
-                    "    min_chn_2 : 103.53\n"
-                    "    var_reci_chn_0 : 0.0171247538316637\n"
-                    "    var_reci_chn_1 : 0.0175070028011204\n"
-                    "    var_reci_chn_2 : 0.0174291938997821\n"
-                    "}"
-                ]
+            aipp_lines = [
+                "aipp_op{\n"
+                "    aipp_mode:static\n"
+                "    input_format : RGB888_U8\n"
+                "    src_image_size_w : 32\n"
+                "    src_image_size_h : 32\n"
+                "    crop:false\n"
+                "    min_chn_0 : 123.675\n"
+                "    min_chn_1 : 116.28\n"
+                "    min_chn_2 : 103.53\n"
+                "    var_reci_chn_0 : 0.0171247538316637\n"
+                "    var_reci_chn_1 : 0.0175070028011204\n"
+                "    var_reci_chn_2 : 0.0174291938997821\n"
+                "}"
+            ]
             file.writelines(aipp_lines)
             file.close()
 
         if not os.path.exists(FAKE_OM_MODEL_WITH_AIPP_PATH):
             cmd = 'atc --model={} --framework=5 --output={} \
-                --soc_version={} --insert_op_conf={}'.format(width_onnx_model,
-                                                            FAKE_OM_MODEL_WITH_AIPP_PATH.replace(".om", ""),
-                                                            acl.get_soc_name(),
-                                                            "./fake_aipp.config")
+                --soc_version={} --insert_op_conf={}'.format(
+                width_onnx_model,
+                FAKE_OM_MODEL_WITH_AIPP_PATH.replace(".om", ""),
+                acl.get_soc_name(),
+                "./fake_aipp.config",
+            )
             subprocess.run(cmd.split(), shell=False)
 
         yield FAKE_OM_MODEL_WITH_AIPP_PATH
@@ -209,7 +214,7 @@ def test_generate_inputs_data_given_random_when_valid_then_pass(fake_arguments):
     input_bin_files = os.listdir(os.path.join(fake_arguments.out_path, "input"))
 
     for input_file, input_shape in zip(input_bin_files, inputs_list):
-        input_data =  np.fromfile(input_file)
+        input_data = np.fromfile(input_file)
         assert np.prod(input_data.shape) == np.prod(input_shape)
 
     if os.path.exists(fake_arguments.out_path):
@@ -239,7 +244,7 @@ def test_generate_inputs_data_given_input_path_when_valid_then_pass(fake_argumen
     input_bin_files = os.listdir(os.path.join(fake_arguments.out_path, "input"))
 
     for input_file, input_shape in zip(input_bin_files, inputs_list):
-        input_data =  np.fromfile(input_file)
+        input_data = np.fromfile(input_file)
         assert np.prod(input_data.shape) == np.prod(input_shape)
 
     if os.path.exists(fake_arguments.out_path):
@@ -271,7 +276,7 @@ def test_generate_inputs_data_given_input_path_when_golden_then_pass(fake_argume
     input_bin_files = os.listdir(os.path.join(fake_arguments.out_path, "input"))
 
     for input_file, input_shape in zip(input_bin_files, inputs_list):
-        input_data =  np.fromfile(input_file)
+        input_data = np.fromfile(input_file)
         assert np.prod(input_data.shape) == np.prod(input_shape)
 
     if os.path.exists(fake_arguments.out_path):
@@ -301,7 +306,7 @@ def test_generate_inputs_data_given_random_data_when_aipp_then_pass(fake_argumen
     input_bin_files = os.listdir(os.path.join(fake_arguments.out_path, "input"))
 
     for input_file, input_shape in zip(input_bin_files, inputs_list):
-        input_data =  np.fromfile(input_file)
+        input_data = np.fromfile(input_file)
         assert np.prod(input_data.shape) == np.prod(input_shape)
 
     if os.path.exists(fake_arguments.out_path):
