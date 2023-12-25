@@ -12,8 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pytest
 import os
+import stat
+import pytest
 import numpy as np
 from llm.common.tool import TensorBinFile, read_atb_data
 
@@ -43,12 +44,18 @@ UNSUPPORT_DTYPE_BINARY_DATA = (
 )
 
 
+FILE_PERMISSION = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
+
+
 @pytest.fixture
 def create_mocked_bin_file(tmp_path):
     # Create a temporary bin file with mocked data for testing
     bin_file_path = tmp_path / "mocked_file.bin"
     bin_file_path = str(bin_file_path)
-    with open(bin_file_path, "wb") as f:
+    # 创建文件并指定权限
+
+    # 使用文件描述符创建文件对象
+    with os.fdopen(os.open(bin_file_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'wb') as f:
         f.write(MOCKED_BINARY_DATA)
     yield bin_file_path
     if os.path.exists(bin_file_path):
@@ -60,7 +67,8 @@ def create_unsupport_dtype_bin_file(tmp_path):
     # Create a temporary bin file with mocked data for testing
     unsupport_dtype_file_path = tmp_path / "unsupport_dtype_file.bin"
     unsupport_dtype_file_path = str(unsupport_dtype_file_path)
-    with open(unsupport_dtype_file_path, "wb") as f:
+    
+    with os.fdopen(os.open(unsupport_dtype_file_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'wb') as f:
         f.write(UNSUPPORT_DTYPE_BINARY_DATA)
     yield unsupport_dtype_file_path
     if os.path.exists(unsupport_dtype_file_path):
@@ -71,7 +79,7 @@ def create_unsupport_dtype_bin_file(tmp_path):
 def create_invalid_format_file(tmp_path):
     invalid_file_path = tmp_path / "invalid_file.txt"
     invalid_file_path = str(invalid_file_path)
-    with open(invalid_file_path, "w") as f:
+    with os.fdopen(os.open(invalid_file_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'wb') as f:
         f.write("Some random text")
     yield invalid_file_path
     if os.path.exists(invalid_file_path):
