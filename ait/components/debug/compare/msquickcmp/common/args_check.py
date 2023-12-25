@@ -17,8 +17,9 @@ import argparse
 from components.utils.file_open_check import FileStat, is_legal_args_path_string
 
 STR_WHITE_LIST_REGEX = re.compile(r"[^_A-Za-z0-9\"'><=\[\])(,}{: /.~-]")
-MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024 # 32GB
-MAX_SIZE_LIMITE_FUSION_FILE = 1 * 1024 * 1024 * 1024 # 1GB
+MAX_SIZE_LIMITE_NORMAL_MODEL = 32 * 1024 * 1024 * 1024  # 32GB
+MAX_SIZE_LIMITE_FUSION_FILE = 1 * 1024 * 1024 * 1024  # 1GB
+
 
 def check_model_path_legality(value):
     path_value = value
@@ -109,13 +110,13 @@ def valid_json_file_or_dir(value):
         raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.") from err
     if not file_stat.is_basically_legal('read', strict_permission=False):
         raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
-    
+
     # input type: dir or json
     # input type -> json need additional check
     if not file_stat.is_dir:
         if not file_stat.is_legal_file_type(["json"]):
             raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
-    
+
         if not file_stat.is_legal_file_size(MAX_SIZE_LIMITE_NORMAL_MODEL):
             raise argparse.ArgumentTypeError(f"input path:{path_value} is illegal. Please check.")
     return path_value
@@ -137,8 +138,9 @@ def check_device_range_valid(value):
     max_value = 255
     ivalue = int(value)
     if ivalue < min_value or ivalue > max_value:
-        raise argparse.ArgumentTypeError("device:{} is invalid. valid value range is [{}, {}]".format(
-            ivalue, min_value, max_value))
+        raise argparse.ArgumentTypeError(
+            "device:{} is invalid. valid value range is [{}, {}]".format(ivalue, min_value, max_value)
+        )
     return value
 
 

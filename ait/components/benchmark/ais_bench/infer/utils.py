@@ -27,8 +27,13 @@ import shutil
 import shlex
 import subprocess
 import numpy as np
-from ais_bench.infer.path_security_check import (ms_open, MAX_SIZE_LIMITE_NORMAL_FILE,
-    MAX_SIZE_LIMITE_CONFIG_FILE, FileStat, is_legal_args_path_string)
+from ais_bench.infer.path_security_check import (
+    ms_open,
+    MAX_SIZE_LIMITE_NORMAL_FILE,
+    MAX_SIZE_LIMITE_CONFIG_FILE,
+    FileStat,
+    is_legal_args_path_string,
+)
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
@@ -37,18 +42,17 @@ PERMISSION_DIR = 0o750
 READ_WRITE_FLAGS = os.O_RDWR | os.O_CREAT
 WRITE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 WRITE_MODES = stat.S_IWUSR | stat.S_IRUSR
-MSACCUCMP_FILE_PATH =  "tools/operator_cmp/compare/msaccucmp.py"
+MSACCUCMP_FILE_PATH = "tools/operator_cmp/compare/msaccucmp.py"
 CANN_PATH = "/usr/local/Ascend/ascend-toolkit/latest"
 
 
 # Split a List Into Even Chunks of N Elements
 def list_split(list_a, n, padding_file):
     for x in range(0, len(list_a), n):
-        every_chunk = list_a[x: n+x]
+        every_chunk = list_a[x : n + x]
 
         if len(every_chunk) < n:
-            every_chunk = every_chunk + \
-                [padding_file for _ in range(n-len(every_chunk))]
+            every_chunk = every_chunk + [padding_file for _ in range(n - len(every_chunk))]
         yield every_chunk
 
 
@@ -56,10 +60,10 @@ def list_share(list_a, count, num, left):
     head = 0
     for i in range(count):
         if i < left:
-            every_chunk = list_a[head: head + num + 1]
+            every_chunk = list_a[head : head + num + 1]
             head = head + num + 1
         else:
-            every_chunk = list_a[head: head + num]
+            every_chunk = list_a[head : head + num]
             head = head + num
         yield every_chunk
 
@@ -204,7 +208,7 @@ def create_tmp_acl_json(acl_json_path):
     return tmp_acl_json_path, real_dump_path, tmp_dump_path
 
 
-def convert_helper(output_dir, timestamp): # convert bin file in src path and output the npy file in dest path
+def convert_helper(output_dir, timestamp):  # convert bin file in src path and output the npy file in dest path
     '''
     before:
     output_dir--|--2023***2--...  (原来可能存在的时间戳路径)
@@ -257,11 +261,13 @@ def move_subdir(src_dir, dest_dir):
     res_dest, res_subdir = None, None
     subdirs = os.listdir(src_dir)
     if len(subdirs) != 1:
-        logger.error("move_subdir failed: multiple or none directory under src dir %s. "
-                     "The reason might be dump failed.", src_dir)
+        logger.error(
+            "move_subdir failed: multiple or none directory under src dir %s. " "The reason might be dump failed.",
+            src_dir,
+        )
     else:
         if os.path.exists(os.path.join(dest_dir, subdirs[0])):
-            logger.error("move_subdir failed: dest dir %s exists"% os.path.join(dest_dir, subdirs[0]))
+            logger.error("move_subdir failed: dest dir %s exists" % os.path.join(dest_dir, subdirs[0]))
         else:
             shutil.move(os.path.join(src_dir, subdirs[0]), os.path.join(dest_dir, subdirs[0]))
             res_dest, res_subdir = dest_dir, subdirs[0]

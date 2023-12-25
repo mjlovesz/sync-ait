@@ -63,7 +63,7 @@ def get_memory_size_by_soc_type(device_id):
         mem_res = subprocess.run(mem_cmd.split(), shell=False, stdout=subprocess.PIPE)
         mem_capacity = -1
         mem_usage = -1
-        lines =  mem_res.stdout.decode().split('\n')
+        lines = mem_res.stdout.decode().split('\n')
         for idx, line in enumerate(lines):
             if "Capacity" in line:
                 current_capacity = int(line.split()[-1])
@@ -72,7 +72,7 @@ def get_memory_size_by_soc_type(device_id):
                     mem_usage = int(lines[idx + 1].split()[-1])
         if mem_capacity == -1 and mem_usage == -1:
             utils.logger.warning("npu-smi info -i x -t usages cannot be used")
-            mem_capacity = 3 * 1024 # 3GB
+            mem_capacity = 3 * 1024  # 3GB
             mem_usage = 0
         available_mem = mem_capacity * ((100 - mem_usage) / 100)
     else:
@@ -141,15 +141,20 @@ def find_all_csv(out_path):
 
 
 def atc_conversion(onnx_path, om_path):
-    atc_cmd = ["atc", "--framework=5", "--soc_version=" + acl.get_soc_name(), "--model=" + onnx_path,\
-                "--output=" + om_path]
+    atc_cmd = [
+        "atc",
+        "--framework=5",
+        "--soc_version=" + acl.get_soc_name(),
+        "--model=" + onnx_path,
+        "--output=" + om_path,
+    ]
     res = subprocess.run(atc_cmd, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     if res.returncode == 0:
         utils.logger.info("atc conversion Success!")
     else:
         utils.logger.error("atc run failed!")
-        raise  AccuracyCompareException(utils.ACCURACY_COMPARISON_ATC_RUN_ERROR)
+        raise AccuracyCompareException(utils.ACCURACY_COMPARISON_ATC_RUN_ERROR)
 
 
 def accumulate_shape_size(node, og):

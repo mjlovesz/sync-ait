@@ -34,7 +34,7 @@ class LargeKernelConv(MatchBase):
         self.threshold = threshold
 
     def match(self, node: BaseNode, graph: BaseGraph) -> bool:
-        if not isinstance(node, (Node, )) or op.ne(node.op_type, 'Conv'):
+        if not isinstance(node, (Node,)) or op.ne(node.op_type, 'Conv'):
             return False
         auto_pad: str = node.attrs.get('auto_pad', b'NOTSET')
         if auto_pad != b'NOTSET':
@@ -77,9 +77,9 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
         # 确保性能的前提下，尽量减少拆分
         self.threshold = (max(threshold - 1, 15) // 16 + 1) * 16
         self.large_kernel_match = LargeKernelConv(self.threshold)
-        self.large_kernel_pattern = Pattern() \
-            .add_node("LargeKernelConv", ["Conv"], [self.large_kernel_match]) \
-            .set_loop(MatchPattern.MATCH_ONCE)
+        self.large_kernel_pattern = (
+            Pattern().add_node("LargeKernelConv", ["Conv"], [self.large_kernel_match]).set_loop(MatchPattern.MATCH_ONCE)
+        )
         self._register_apply_funcs(self.large_kernel_pattern, [self._large_kernel_pattern_apply])
 
     def pre_process(self, graph: BaseGraph) -> bool:
@@ -97,7 +97,10 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
         return super().post_process(graph)
 
     def _calculate_pads_and_slices(
-        self, kslice: List[Tuple[int, int]], kshape: List[int], pads: List[int],
+        self,
+        kslice: List[Tuple[int, int]],
+        kshape: List[int],
+        pads: List[int],
     ) -> Tuple[List[int], List[int], List[int], List[int]]:
         '''Calculate pads of Conv operator and parameters of Slice operator for each kernel slice.'''
         i32 = np.iinfo(np.int32)
@@ -106,10 +109,7 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
         # 求出卷积核切片相对输入shape的移动范围
         # 起始侧负值表示需要补0，正值表示需要切片，终止侧相反
         move_range = [
-            (
-                -pad_s + kslice_s,           # 起始侧
-                pad_e - (size_k - kslice_e)  # 终止侧
-            )
+            (-pad_s + kslice_s, pad_e - (size_k - kslice_e))  # 起始侧  # 终止侧
             for pad_s, pad_e, (kslice_s, kslice_e), size_k in zip(pads_s, pads_e, kslice, kshape)
         ]
         # 求新的Conv算子的pads参数
@@ -118,13 +118,9 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
         new_pads = new_pads_s + new_pads_e
         # 求slice算子的参数，当终止侧不需要slice时，取end为INT_MAX
         slices = [
-            [
-                max(0, start),                # starts
-                end if end < 0 else i32.max,  # ends
-                axis - length                 # axes
-            ]
+            [max(0, start), end if end < 0 else i32.max, axis - length]  # starts  # ends  # axes
             for axis, (start, end) in enumerate(move_range)
-            if start > 0 or end < 0           # 当不满足这个条件时，说明不需要slice
+            if start > 0 or end < 0  # 当不满足这个条件时，说明不需要slice
         ]
         return new_pads, slices
 
@@ -143,10 +139,7 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
         weight_slice = [slice(None)] * len(kweight.value.shape)
         for axis, (first, last) in enumerate(kslice):
             weight_slice[axis + len_extra] = slice(first, last)
-        graph.add_initializer(
-            name=sliced_weight_name,
-            value=kweight.value[tuple(weight_slice)]
-        )
+        graph.add_initializer(name=sliced_weight_name, value=kweight.value[tuple(weight_slice)])
 
         # 卷积输入切片，适配被切片的卷积核
         slice_name = f'slice_conv_{conv.name}_{identifier}'
@@ -165,7 +158,7 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
             name=slice_name,
             op_type='Slice',
             inputs=[conv.inputs[0], slice_start_name, slice_end_name, slice_axes_name],
-            outputs=[slice_output_name]
+            outputs=[slice_output_name],
         )
 
         new_inputs = [slice_output_name, sliced_weight_name]
@@ -182,8 +175,8 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
                 **conv.attrs,
                 'pads': new_pads,
                 'group': conv.attrs.get('group', 1),
-                'kernel_shape': [end_ - start_ for start_, end_ in kslice]
-            }
+                'kernel_shape': [end_ - start_ for start_, end_ in kslice],
+            },
         )
 
     def _calculate_kernel_slices(self, kshape: List[int]) -> List[List[Tuple[int, int]]]:
@@ -207,13 +200,9 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
             _16s = [16] * (ksize // 16) + ([ksize % 16] if ksize % 16 else [])
             num = (len(_16s) - 1) // (self.threshold // 16) + 1
             each = ((len(_16s) - 1) // num) + 1
-            ksizes = [sum(_16s[i:i+each]) for i in range(0, len(_16s), each)]
+            ksizes = [sum(_16s[i : i + each]) for i in range(0, len(_16s), each)]
             indices = list(accumulate([0, *ksizes[:-1]]))
-            kslices = [
-                [*slc, (i, i + s)]
-                for i, s in zip(indices, ksizes)
-                for slc in kslices
-            ]
+            kslices = [[*slc, (i, i + s)] for i, s in zip(indices, ksizes) for slc in kslices]
         return kslices
 
     def _split_large_kernel(self, graph: BaseGraph, matchinfo: Dict[str, List[Node]]) -> bool:
@@ -231,8 +220,7 @@ class KnowledgeSplitLargeKernelConv(KnowledgeBase):
         kshape: List[int] = conv0.attrs.get('kernel_shape', [1])
         slices = self._calculate_kernel_slices(kshape)
         outputs = [
-            self._create_kernel_slice_branch(conv0, graph, slc, idx == 0).outputs[0]
-            for idx, slc in enumerate(slices)
+            self._create_kernel_slice_branch(conv0, graph, slc, idx == 0).outputs[0] for idx, slc in enumerate(slices)
         ]
 
         graph.add_node(

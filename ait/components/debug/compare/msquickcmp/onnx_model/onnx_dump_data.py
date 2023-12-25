@@ -50,7 +50,7 @@ NODE_TYPE_TO_DTYPE_MAP = {
     "tensor(double)": np.double,
     "tensor(bool)": np.bool_,
     "tensor(complex64)": np.complex64,
-    "tensor(complex128)": np.complex_
+    "tensor(complex128)": np.complex_,
 }
 MAX_PROTOBUF = 2000000000
 
@@ -60,7 +60,7 @@ class OnnxDumpData(DumpData):
     This class is used to generate dump data of the ONNX model.
     """
 
-    def __init__(self, arguments:CmpArgsAdapter, npu_dump_npy_path=None):
+    def __init__(self, arguments: CmpArgsAdapter, npu_dump_npy_path=None):
         super().__init__()
         self.model_path, self.out_path, self.input_path = arguments.model_path, arguments.out_path, arguments.input_path
         self.input_shape, self.dym_shape_range = arguments.input_shape, arguments.dym_shape_range
@@ -92,8 +92,11 @@ class OnnxDumpData(DumpData):
 
     @staticmethod
     def _check_input_shape_fix_value(op_name, model_shape, input_shape):
-        message = "fixed input tensor dim not equal to model input dim." \
-                  "tensor_name:%s, %s vs %s" % (op_name, str(input_shape), str(model_shape))
+        message = "fixed input tensor dim not equal to model input dim." "tensor_name:%s, %s vs %s" % (
+            op_name,
+            str(input_shape),
+            str(model_shape),
+        )
         if len(model_shape) != len(input_shape):
             utils.logger.error(message)
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_DATA_ERROR)
@@ -114,7 +117,7 @@ class OnnxDumpData(DumpData):
             self.inputs_map = self._get_inputs_data_aipp(self.data_dir, inputs_tensor_info, npu_dump_data_path)
         else:
             self.inputs_map = self._get_inputs_data(inputs_tensor_info)
-        
+
         # extend inputs add by removed custom op
         if self.custom_op_type:
             self.inputs_map.update(self.extend_inputs_map)
@@ -141,6 +144,7 @@ class OnnxDumpData(DumpData):
             utils.logger.error(f"Please check onnx model can run in local env. Error: {e}")
             raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_MODEL_TYPE_ERROR)
         return infersession
+
     def _load_onnx(self, model_path):
         # model_path str -> read as bytes -> deserialize to onnx_model
         #                                 -> onnxruntime load as session
@@ -186,10 +190,12 @@ class OnnxDumpData(DumpData):
         new_onnx_model = select_model_inputs_outputs(onnx_model, outputs_name)
         bytes_model = new_onnx_model.SerializeToString()
         save_as_external_data_switch = sys.getsizeof(bytes_model) > MAX_PROTOBUF
-        onnx.save_model(new_onnx_model,
-                        save_path,
-                        save_as_external_data=save_as_external_data_switch,
-                        location=self.model_dir if save_as_external_data_switch else None)
+        onnx.save_model(
+            new_onnx_model,
+            save_path,
+            save_as_external_data=save_as_external_data_switch,
+            location=self.model_dir if save_as_external_data_switch else None,
+        )
         utils.logger.info("modify model outputs success: %s", save_path)
         return bytes_model
 
@@ -210,15 +216,17 @@ class OnnxDumpData(DumpData):
                 if not self.input_shapes:
                     utils.logger.error(
                         "The dynamic shape {} are not supported. Please "
-                        "set '-is' or '--input-shape' to fix the dynamic shape.".format(tensor_shape))
+                        "set '-is' or '--input-shape' to fix the dynamic shape.".format(tensor_shape)
+                    )
                     raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR)
             if self.input_shapes and tensor_name in self.input_shapes:
                 input_shape = self.input_shapes.get(tensor_name)
                 try:
                     number_shape = [int(dim) for dim in input_shape]
                 except (ValueError, TypeError) as error:
-                    utils.logger.error(utils.get_shape_not_match_message(
-                        InputShapeError.FORMAT_NOT_MATCH, self.input_shape))
+                    utils.logger.error(
+                        utils.get_shape_not_match_message(InputShapeError.FORMAT_NOT_MATCH, self.input_shape)
+                    )
                     raise utils.AccuracyCompareException(utils.ACCURACY_COMPARISON_INVALID_PARAM_ERROR) from error
                 self._check_input_shape_fix_value(tensor_name, tensor_shape, number_shape)
                 tensor_info = {"name": tensor_name, "shape": tuple(number_shape), "type": tensor_type}
@@ -263,8 +271,7 @@ class OnnxDumpData(DumpData):
                 aipp_input.append(os.path.join(npu_dump_data_path, bin_file))
         for i, tensor_info in enumerate(inputs_tensor_info):
             convert_bin_file_to_npy(aipp_input[i], os.path.join(self.out_path, "input"), self.cann_path)
-            aipp_output_path = os.path.join(self.out_path, "input", aipp_input[i].rsplit("/", 1)[1]) + \
-                               ".output.0.npy"
+            aipp_output_path = os.path.join(self.out_path, "input", aipp_input[i].rsplit("/", 1)[1]) + ".output.0.npy"
             aipp_output = np.load(aipp_output_path)
             nchw_prod = np.prod(tensor_info["shape"])
             nchwc_prod_without_c1 = np.prod(aipp_output.shape[:-1])
@@ -282,8 +289,7 @@ class OnnxDumpData(DumpData):
         if numpy_data_type:
             return numpy_data_type
         else:
-            utils.logger.error(
-                "unsupported tensor type: {}".format(tensor_type))
+            utils.logger.error("unsupported tensor type: {}".format(tensor_type))
             raise AccuracyCompareException(utils.ACCURACY_COMPARISON_TENSOR_TYPE_ERROR)
 
     def _run_model(self, session, inputs_map):
@@ -302,7 +308,7 @@ class OnnxDumpData(DumpData):
                     self.net_output[net_output_node.index(output)] = file_path
                 np.save(file_path, dump_bins[res_idx])
                 res_idx += 1
-        
+
         if not self.single_op:
             for key, value in self.net_output.items():
                 utils.logger.info("net_output node is:{}, file path is {}".format(key, value))

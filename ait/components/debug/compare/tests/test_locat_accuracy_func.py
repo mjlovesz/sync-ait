@@ -23,7 +23,7 @@ from auto_optimizer.graph_refactor import Node
 from msquickcmp.adapter_cli.args_adapter import CmpArgsAdapter
 from msquickcmp.accuracy_locat import accuracy_locat as al
 
-logging.basicConfig(stream = sys.stdout, level = logging.INFO, format = '[%(levelname)s] %(message)s')
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='[%(levelname)s] %(message)s')
 logger = logging.getLogger(__name__)
 
 
@@ -66,7 +66,7 @@ class TestClass:
             dump=True,
             bin2npy=False,
             custom_op="",
-            locat=True
+            locat=True,
         )
 
     def test_calculate_flow(self):
@@ -84,5 +84,3 @@ class TestClass:
         linear_size_real = 22
         linear_size = len(satisfied_nodes)
         assert linear_size == linear_size_real
-
-
