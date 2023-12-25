@@ -54,6 +54,7 @@ def create_mocked_bin_file(tmp_path):
     if os.path.exists(bin_file_path):
         os.remove(bin_file_path)
 
+
 @pytest.fixture
 def create_unsupport_dtype_bin_file(tmp_path):
     # Create a temporary bin file with mocked data for testing
@@ -64,6 +65,17 @@ def create_unsupport_dtype_bin_file(tmp_path):
     yield unsupport_dtype_file_path
     if os.path.exists(unsupport_dtype_file_path):
         os.remove(unsupport_dtype_file_path)
+
+
+@pytest.fixture
+def create_invalid_format_file(tmp_path):
+    invalid_file_path = tmp_path / "invalid_file.txt"
+    invalid_file_path = str(invalid_file_path)
+    with open(invalid_file_path, "w") as f:
+        f.write("Some random text")
+    yield invalid_file_path
+    if os.path.exists(invalid_file_path):
+        os.remove(invalid_file_path)
 
 
 def test_tensor_bin_file_create_and_get_data(create_mocked_bin_file):
@@ -87,37 +99,15 @@ def test_read_atb_data_valid_bin_file(create_mocked_bin_file):
     assert data.dtype == expected_dtype
 
 
-def test_read_atb_data_invalid_file_extension(tmp_path):
+def test_read_atb_data_invalid_file_extension(create_invalid_format_file):
     # Create a temporary file with an invalid extension for testing
-    invalid_file_path = tmp_path / "invalid_file.txt"
-    invalid_file_path = str(invalid_file_path)
-    with open(invalid_file_path, "w") as f:
-        f.write("Some random text")
-    yield invalid_file_path
-    if os.path.exists(invalid_file_path):
-        os.remove(invalid_file_path)
-
     with pytest.raises(ValueError):
-        read_atb_data(invalid_file_path)
+        read_atb_data(create_invalid_format_file)
 
 
-def test_tensor_bin_file_unsupported_dtype():
+def test_tensor_bin_file_unsupported_dtype(create_unsupport_dtype_bin_file):
     # Test scenario when an unsupported dtype is encountered
     bin_file = TensorBinFile(create_unsupport_dtype_bin_file)
     with pytest.raises(ValueError):
         bin_file.get_data()
-            
-
-
-def test_read_atb_data_valid_non_bin_file(tmp_path):
-    # Test scenario when a valid file with a non-bin extension is provided
-    non_bin_file_path = tmp_path / "valid_file.txt"
-    non_bin_file_path = str(non_bin_file_path)
-    with open(non_bin_file_path, "w") as f:
-        f.write("This is a valid text file.")
-    yield non_bin_file_path
-    if os.path.exists(non_bin_file_path):
-        os.remove(non_bin_file_path)
-    with pytest.raises(ValueError):
-        read_atb_data(non_bin_file_path)
 
