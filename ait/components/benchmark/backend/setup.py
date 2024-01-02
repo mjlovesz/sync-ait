@@ -172,7 +172,7 @@ ext_modules = [
         library_dirs=[
             cann_lib_path,
         ],
-        extra_compile_args=['--std=c++11', '-g3', '-pie', '-Wl,-z,relro,-z,now', '-fstack-protector-all'],
+        extra_compile_args=['--std=c++11', '-g3', '-pie', '-z now', '-fstack-protector-all'],
         libraries=['ascendcl', 'acl_dvpp', 'acl_cblas'],
         language='c++',
         define_macros=[('ENABLE_DVPP_INTERFACE', 1), ('COMPILE_PYTHON_MODULE', 1)],
