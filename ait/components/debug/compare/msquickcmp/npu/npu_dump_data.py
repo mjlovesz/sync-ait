@@ -255,8 +255,8 @@ class NpuDumpData(DumpData):
                 file_name = "input_" + str(i) + ".bin"
                 dest_file = os.path.join(self.out_path, "input", file_name)
                 shutil.copy(input_file, dest_file)
-                os.chmod(input_file, 0o750)
-                os.chmod(dest_file, 0o750)
+                os.chmod(input_file, 0o640)
+                os.chmod(dest_file, 0o640)
             return
         if use_aipp:
             self._generate_inputs_data_for_aipp(self.data_dir)
@@ -411,7 +411,7 @@ class NpuDumpData(DumpData):
             input_data = np.random.random(input_shape).astype(data_type)
             file_name = "input_" + str(i) + ".bin"
             input_data.tofile(os.path.join(input_dir, file_name))
-            os.chmod(os.path.join(input_dir, file_name), 0o750)
+            os.chmod(os.path.join(input_dir, file_name), 0o640)
 
     def _generate_inputs_data_for_aipp(self, input_dir):
         aipp_content = self.om_parser.get_aipp_config_content()
@@ -456,7 +456,7 @@ class NpuDumpData(DumpData):
             input_data = np.random.randint(0, 256, int(np.prod(item) / div_input_format)).astype(np.uint8)
             file_name = "input_" + str(i) + ".bin"
             input_data.tofile(os.path.join(input_dir, file_name))
-            os.chmod(os.path.join(input_dir, file_name), 0o750)
+            os.chmod(os.path.join(input_dir, file_name), 0o640)
 
     def _make_benchmark_cmd_for_shape_range(self, benchmark_cmd):
         pattern = re.compile(r'^[0-9]+$')
