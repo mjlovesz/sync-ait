@@ -33,3 +33,6 @@ cmake ..
 
 # 使用make来编译项目
 make
+
+# 调整生成二进制的权限
+find .. -name "*.so" -exec chmod 550 {} \;
