@@ -143,7 +143,7 @@ install(){
     pre_check_skl2onnx
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${arg_force_reinstall}
-    
+
     bash ${CURRENT_DIR}/components/debug/compare/msquickcmp/build.sh
   fi
 
@@ -159,6 +159,7 @@ install(){
     pip3 install ${CURRENT_DIR}/components/benchmark/backend \
     ${CURRENT_DIR}/components/benchmark \
     ${arg_force_reinstall}
+    chmod -R 550 ${CURRENT_DIR}/components/benchmark/backend/build/lib.*/
   fi
 
   if [ ! -z $only_analyze ]
@@ -210,7 +211,7 @@ install(){
     else
       AIT_LLM_ABI=1 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
     fi
-    
+
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \
     ${CURRENT_DIR}/components/benchmark/backend \
@@ -222,8 +223,10 @@ install(){
     ${CURRENT_DIR}/components/llm \
     ${arg_force_reinstall}
 
+    chmod -R 550 ${CURRENT_DIR}/components/benchmark/backend/build/lib.*/
+
     bash ${CURRENT_DIR}/components/convert/build.sh
-    bash ${CURRENT_DIR}/components/debug/compare/msquickcmp/build.sh  
+    bash ${CURRENT_DIR}/components/debug/compare/msquickcmp/build.sh
 
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi
