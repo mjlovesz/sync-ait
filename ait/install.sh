@@ -197,7 +197,8 @@ install(){
       AIT_LLM_ABI=1 python3 ${CURRENT_DIR}/components/llm/setup.py build_ext
     fi
       pip3 install ${CURRENT_DIR}/components/llm \
-      ${arg_force_reinstall}
+      ${arg_force_reinstall} && 
+      rm -rf ${CURRENT_DIR}/components/llm/build
   fi
 
   if [ -z $only_compare ] && [ -z $only_surgeon ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_llm ]
