@@ -32,7 +32,7 @@ class BaseDataset(metaclass=ABCMeta):
     def _download(self):
         parent_path = os.path.dirname(os.path.realpath(__file__))
         download_sh_path = os.path.join(parent_path, "download.sh")
-        os.chmod(download_sh_path, 0o755)
+        os.chmod(download_sh_path, 0o550)
         result = subprocess.run([download_sh_path, self.dataset_name], check=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if result.returncode == 0:
