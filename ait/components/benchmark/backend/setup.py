@@ -17,6 +17,7 @@ import re
 import platform
 import logging
 import sys
+import subprocess
 
 from pybind11 import get_cmake_dir
 
@@ -193,3 +194,6 @@ setup(
     zip_safe=False,
     python_requires=">=3.6",
 )
+
+chmod_cmd_list = ["chmod", "-R", "550", "./build/lib.*/"]
+subprocess.call(chmod_cmd_list, shell=False)

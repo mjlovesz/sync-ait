@@ -58,7 +58,6 @@ done
     res=`echo $?`
     if [ $res =  $ret_run_failed ]; then
         pip3 wheel ./ -v
-        chmod -R 550 ./build/lib.*/
         pip3 install ./aclruntime-*.whl
     fi
 }
