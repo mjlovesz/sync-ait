@@ -1,3 +1,6 @@
+
+
+
 # 加速库在线推理精度比对工具介绍
 
 ## 1. 精度问题定位流程
@@ -84,7 +87,7 @@ export ATB_SAVE_TENSOR_RUNNER="AllReduceHcclRunner"
 bash run_quant_parallel.sh patches/models/modeling_chatglm2_6b_quant_mix_parallel_fa.py --evaluate_single
 ```
 
-获取allreduce前后数据后，在`/llama_parallel/atb_temp/tensors/`目录下获得双卡上的两个进程名称，按照`2.4.1`命令进行调用
+获取allreduce前后数据后，在`/chatglm2_6b/atb_temp/tensors/`目录下获得双卡上的两个进程名称，按照`2.4.1`命令进行调用
 
 #### 2.4.3 比对结果
 
