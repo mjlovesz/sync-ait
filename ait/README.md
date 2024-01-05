@@ -81,6 +81,8 @@ ait debug compare -h
 
 [Apache License 2.0](LICENSE)
 
+## 公网URL说明
+[公网URL说明](./公网URL使用说明.md)
 
 ## 免责声明
 
