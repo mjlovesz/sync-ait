@@ -19,12 +19,17 @@ import time
 import shutil
 import copy
 import subprocess
+import re
 
 from ait_prof.utils import logger
 from ait_prof.args_adapter import MsProfArgsAdapter
 
 PATH_MAX_LENGTH = 255
 
+def remove_invalid_chars(msprof_cmd):
+    invalid_chars = r'[`$|;&><]+'
+    clean_msprof_cmd = re.sub(invalid_chars, '', msprof_cmd)
+    return clean_msprof_cmd
 
 def msprof_run_profiling(args, msprof_bin):
     bin_path = ' '.join(sys.argv).split(" ")[0]
@@ -50,6 +55,8 @@ def msprof_run_profiling(args, msprof_bin):
             args.aicpu,
         )
     )
+    #非法字符过滤
+    msprof_cmd = remove_invalid_chars(msprof_cmd)
     logger.info("msprof cmd:{} begin run".format(msprof_cmd))
     ret = os.system(msprof_cmd)
     if ret != 0:
@@ -58,13 +65,40 @@ def msprof_run_profiling(args, msprof_bin):
 
 
 def args_rules(args):
+    # output校验
     if args.output is not None and len(args.output) > PATH_MAX_LENGTH:
         logger.error("parameter --output length out of range. " "Please use it together with the parameter --output!\n")
         raise RuntimeError('error bad parameters --output')
     if args.output is None:
         args.output = os.getcwd()
-    return args
 
+    #application校验
+    if args.application is None:
+        logger.error("parameter --application is required. " "Please use it together with the parameter --application!\n")
+        raise RuntimeError('error bad parameters --application')
+    if args.application is not None and len(args.application) > PATH_MAX_LENGTH:
+        logger.error("parameter --application length out of range. " "Please use it together with the parameter --application!\n")
+        raise RuntimeError('error bad parameters --application')
+    
+    #其他参数校验，只可能为on/off
+    args_list = {
+        'model_execution':args.model_execution,
+        'sys_hardware_mem':args.sys_hardware_mem,
+        'sys_cpu_profiling':args.sys_cpu_profiling,
+        'sys_profiling':args.sys_profiling,
+        'sys_pid_profiling':args.sys_pid_profiling,
+        'dvpp_profiling':args.dvpp_profiling,
+        'runtime_api':args.runtime_api,
+        'task_time':args.task_time,
+        'aicpu':args.aicpu
+    }
+
+    for args_name, args_value in args_list.items():
+        if args_value is not None and args_value not in ['on', 'off']:
+            logger.error(f"parameter --{args_name} is not valid. " f"Please use it together with the parameter --{args_name}!\n")
+            raise RuntimeError(f'error bad parameters --{args_name}') 
+
+    return args
 
 def msprof_process(args: MsProfArgsAdapter):
     try:
