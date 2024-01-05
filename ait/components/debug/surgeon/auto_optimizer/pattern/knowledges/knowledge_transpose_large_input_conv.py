@@ -40,7 +40,7 @@ class HugeConv(MatchBase):
         if not op.eq(node.op_type, 'Conv'):
             return False
         kernel_shape = node.attrs.get('kernel_shape', None)
-        if not (kernel_shape is not None and isinstance(kernel_shape, (list, ))):
+        if not (kernel_shape is not None and isinstance(kernel_shape, (list,))):
             return False
         if len(kernel_shape) != 2:
             return False
@@ -77,22 +77,24 @@ r"""
       NextNode                         NextNode
 """
 # Selu_0 is special here because it has two next nodes
-pattern_aasist = Pattern() \
-    .add_node("Selu_0", ["Selu"], [NextNodeCount(2)]) \
-    .add_node("Conv_0", ["Conv"], [NextNodeCount(1), HugeConv()]) \
-    .add_node("Conv_1", ["Conv"], [NextNodeCount(1), HugeConv()]) \
-    .add_node("Selu_1", ["Selu"], [NextNodeCount(1)]) \
-    .add_node("Conv_2", ["Conv"], [NextNodeCount(1), HugeConv()]) \
-    .add_node("Add_0", ["Add"], [NextNodeCount(1)]) \
-    .add_node("MaxPool_0", ["MaxPool"]) \
-    .add_edge("Selu_0", "Conv_0") \
-    .add_edge("Selu_0", "Conv_1") \
-    .add_edge("Conv_1", "Selu_1") \
-    .add_edge("Selu_1", "Conv_2") \
-    .add_edge("Conv_0", "Add_0") \
-    .add_edge("Conv_2", "Add_0") \
-    .add_edge("Add_0", "MaxPool_0") \
+pattern_aasist = (
+    Pattern()
+    .add_node("Selu_0", ["Selu"], [NextNodeCount(2)])
+    .add_node("Conv_0", ["Conv"], [NextNodeCount(1), HugeConv()])
+    .add_node("Conv_1", ["Conv"], [NextNodeCount(1), HugeConv()])
+    .add_node("Selu_1", ["Selu"], [NextNodeCount(1)])
+    .add_node("Conv_2", ["Conv"], [NextNodeCount(1), HugeConv()])
+    .add_node("Add_0", ["Add"], [NextNodeCount(1)])
+    .add_node("MaxPool_0", ["MaxPool"])
+    .add_edge("Selu_0", "Conv_0")
+    .add_edge("Selu_0", "Conv_1")
+    .add_edge("Conv_1", "Selu_1")
+    .add_edge("Selu_1", "Conv_2")
+    .add_edge("Conv_0", "Add_0")
+    .add_edge("Conv_2", "Add_0")
+    .add_edge("Add_0", "MaxPool_0")
     .set_loop(MatchPattern.MATCH_ONCE)
+)
 
 
 @KnowledgeFactory.register()
@@ -131,7 +133,7 @@ class KnowledgeTransposeLargeInputConv(KnowledgeBase):
 
         pads = conv.attrs.get('pads', [0, 0, 0, 0])
         pads[-1], pads[-2] = pads[-2], pads[-1]
-        pads[len(pads)//2-1], pads[len(pads)//2-2] = pads[len(pads)//2-2], pads[len(pads)//2-1]
+        pads[len(pads) // 2 - 1], pads[len(pads) // 2 - 2] = pads[len(pads) // 2 - 2], pads[len(pads) // 2 - 1]
         conv.attrs['pads'] = pads
 
         strides = conv.attrs.get('strides', [1, 1])
@@ -148,11 +150,7 @@ class KnowledgeTransposeLargeInputConv(KnowledgeBase):
 
     def _aasist_match_apply(self, graph: BaseGraph, matchinfo: Dict[str, List[Node]]) -> bool:
         # make sure nodes of matching subgraph still exist in case some previous apply functions modified graph
-        if any(
-            graph.get_node(node.name, node_type=Node) is None
-            for nodes in matchinfo.values()
-            for node in nodes
-        ):
+        if any(graph.get_node(node.name, node_type=Node) is None for nodes in matchinfo.values() for node in nodes):
             logging.info("Some matching node have been removed or renamed, failed to optimizd.")
             return False
 
@@ -168,9 +166,7 @@ class KnowledgeTransposeLargeInputConv(KnowledgeBase):
 
         # add transpose node before selu_0
         transpose_pre = graph.add_node(
-            name=f'Transpose_pre_{selu_0.name}_aasist_pattern',
-            op_type='Transpose',
-            attrs={'perm': perm}
+            name=f'Transpose_pre_{selu_0.name}_aasist_pattern', op_type='Transpose', attrs={'perm': perm}
         )
         graph.insert_node(selu_0.name, transpose_pre, 0, 'before')
 
@@ -180,9 +176,7 @@ class KnowledgeTransposeLargeInputConv(KnowledgeBase):
 
         # add transpose node after add_0
         transpose_post = graph.add_node(
-            name=f'Transpose_post_{add_0.name}_aasist_pattern',
-            op_type='Transpose',
-            attrs={'perm': perm}
+            name=f'Transpose_post_{add_0.name}_aasist_pattern', op_type='Transpose', attrs={'perm': perm}
         )
         graph.insert_node(add_0.name, transpose_post, 0, 'after')
         graph.update_map()

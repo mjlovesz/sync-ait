@@ -19,7 +19,7 @@ import numpy as np
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.pattern.pattern import Pattern, MatchPattern, MatchBase
 from auto_optimizer.pattern.matcher import MatchResult
-from auto_optimizer.graph_refactor.interface.base_graph import (BaseGraph, Initializer, Node)
+from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph, Initializer, Node
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 from auto_optimizer.pattern.utils import insert_squeeze, insert_unsqueeze
@@ -37,7 +37,7 @@ class DynamicReshapeMatch(MatchBase):
             return False
         if len(node.inputs) <= 1:
             return False
-        shape = graph.get_node(node.inputs[1], node_type = Initializer)
+        shape = graph.get_node(node.inputs[1], node_type=Initializer)
         if shape is None:
             return True
         for i in shape.value:
@@ -48,18 +48,20 @@ class DynamicReshapeMatch(MatchBase):
 
 @KnowledgeFactory.register()
 class KnowledgeDynamicReshape(KnowledgeBase):
-    """ calculate Reshape 'shape' value and replace """
+    """calculate Reshape 'shape' value and replace"""
 
     def __init__(self) -> None:
         super().__init__()
 
-        pattern = Pattern() \
-            .add_node('Reshape', ['Reshape'], [DynamicReshapeMatch()]) \
+        pattern = (
+            Pattern()
+            .add_node('Reshape', ['Reshape'], [DynamicReshapeMatch()])
             .set_node_loop('Reshape', MatchPattern.MATCH_ONCE)
+        )
         self._register_apply_funcs(pattern, [self._optimize_apply])
 
         # inference config
-        self._dump_num = 3 # generate inference dump data for 3 time
+        self._dump_num = 3  # generate inference dump data for 3 time
         self._dump_path = 'dump'
 
     def pre_process(self, graph: BaseGraph) -> bool:
@@ -89,9 +91,9 @@ class KnowledgeDynamicReshape(KnowledgeBase):
         '''
         generate random number for model input
         '''
-        static_shape = [ dynamic_input.get(i) or i for i in input_shape ]
+        static_shape = [dynamic_input.get(i) or i for i in input_shape]
         if input_dtype in ['int32', 'int64']:
-            data = np.random.randint(1, 10, static_shape, dtype = input_dtype)
+            data = np.random.randint(1, 10, static_shape, dtype=input_dtype)
         elif input_dtype in ['float16', 'float32', 'float64']:
             data = np.random.rand(*static_shape).astype(input_dtype)
         else:
@@ -105,7 +107,7 @@ class KnowledgeDynamicReshape(KnowledgeBase):
         res = {}
         for axes in dynamic_axes:
             res[axes] = [1, 64]
-        input_shape_range = '' # 'n,h,w=1~100,-1,64*'
+        input_shape_range = ''  # 'n,h,w=1~100,-1,64*'
         cfg_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '../../model.cfg')
         if not os.path.exists(cfg_path):
             return res
@@ -118,7 +120,7 @@ class KnowledgeDynamicReshape(KnowledgeBase):
                 pos = line.find('=')
                 if pos == -1:
                     break
-                input_shape_range = line[pos + 1:].replace(' ', '')
+                input_shape_range = line[pos + 1 :].replace(' ', '')
                 if input_shape_range.startswith('\''):
                     input_shape_range = input_shape_range[1:]
                 if input_shape_range.endswith('\''):
@@ -164,13 +166,13 @@ class KnowledgeDynamicReshape(KnowledgeBase):
             for axis in dynamic_axes:
                 rng = inputs_shape_range.get(axis)
                 if rng is None:
-                    rng = [1, 64] # default range
+                    rng = [1, 64]  # default range
                 if len(rng) == self._dump_num:
                     dynamic_input[axis] = rng[j]
                 elif rng[0] == rng[1]:
                     dynamic_input[axis] = rng[0]
                 else:
-                    dynamic_input[axis] = np.random.randint(rng[0], rng[1], 1, dtype = np.int32)[0]
+                    dynamic_input[axis] = np.random.randint(rng[0], rng[1], 1, dtype=np.int32)[0]
             # generate operator dump
             input_data = []
             for x in graph.inputs:
@@ -188,7 +190,7 @@ class KnowledgeDynamicReshape(KnowledgeBase):
             real_dump_path = f'{self._dump_path}{j}'
             if not os.path.exists(real_dump_path):
                 continue
-            for root, dirs, files in os.walk(real_dump_path, topdown = False):
+            for root, dirs, files in os.walk(real_dump_path, topdown=False):
                 for name in files:
                     os.remove(os.path.join(root, name))
                 for name in dirs:
@@ -202,7 +204,7 @@ class KnowledgeDynamicReshape(KnowledgeBase):
         # check reshape type
         prev_node = graph.get_prev_node(reshape.inputs[0])
         if prev_node is None:
-            prev_node = graph[reshape.inputs[0]] # model input, prev node type is 'PlaceHolder'
+            prev_node = graph[reshape.inputs[0]]  # model input, prev node type is 'PlaceHolder'
 
         # get input and output shapes from multi-group dump data
         in_shapes, out_shapes = [], []
@@ -229,10 +231,12 @@ class KnowledgeDynamicReshape(KnowledgeBase):
             raise RuntimeError('invalid input or output shapes.')
 
         # init shape, dynamic dim need to calculate
-        shape = [out_shapes[0][i] if is_constant else None
-            for i, is_constant in enumerate(np.all(out_shapes == out_shapes[0, :], axis = 0))]
+        shape = [
+            out_shapes[0][i] if is_constant else None
+            for i, is_constant in enumerate(np.all(out_shapes == out_shapes[0, :], axis=0))
+        ]
 
-        insert = { 'squeeze': [], 'unsqueeze': [] }
+        insert = {'squeeze': [], 'unsqueeze': []}
         in_dim = 0
         for dim, _ in enumerate(shape):
             if not shape[dim] is None:
@@ -266,12 +270,12 @@ class KnowledgeDynamicReshape(KnowledgeBase):
         modify dimension by insert unsqueeze or squeeze
         '''
         if unsqueeze_dims is not None and len(unsqueeze_dims) != 0:
-            attrs = {'axes': np.array(unsqueeze_dims, dtype = np.int64)}
-            insert_unsqueeze(graph, reshape, attrs, mode = 'before', refer_index = 0)
+            attrs = {'axes': np.array(unsqueeze_dims, dtype=np.int64)}
+            insert_unsqueeze(graph, reshape, attrs, mode='before', refer_index=0)
 
         if squeeze_dims is not None and len(squeeze_dims) != 0:
-            attrs = {'axes': np.array(squeeze_dims, dtype = np.int64)}
-            insert_squeeze(graph, reshape, attrs, mode = 'after', refer_index = 0)
+            attrs = {'axes': np.array(squeeze_dims, dtype=np.int64)}
+            insert_squeeze(graph, reshape, attrs, mode='after', refer_index=0)
 
     def _optimize_reshape(self, graph: BaseGraph, reshape: Node):
         '''
@@ -302,5 +306,5 @@ class KnowledgeDynamicReshape(KnowledgeBase):
 
         # optimize Reshape
         node = match_result.node_dicts[0].get('Reshape')[0]
-        reshape = graph.get_node(node.name, node_type = Node)
+        reshape = graph.get_node(node.name, node_type=Node)
         return self._optimize_reshape(graph, reshape)

@@ -19,6 +19,7 @@ from ais_bench.infer.interface import InferSession
 
 model_path = sys.argv[1]
 
+
 def infer_loop_create_session(loop_times):
     device_id = 0
     session_list = []

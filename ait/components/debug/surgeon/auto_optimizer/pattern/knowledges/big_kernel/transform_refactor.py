@@ -21,12 +21,7 @@ from auto_optimizer.graph_refactor import Node
 from auto_optimizer.pattern.knowledges.big_kernel.attention_parser import AttentionParser
 from auto_optimizer.tools.log import logger
 from auto_optimizer.graph_refactor.onnx import OnnxNode, OnnxInitializer, OnnxGraph
-from auto_optimizer.pattern.knowledges.big_kernel.util import (
-    QK_MASK_ADD,
-    CONVERT_3DIMS_TO_4DIMS,
-    START_ADD,
-    END_ADD
-)
+from auto_optimizer.pattern.knowledges.big_kernel.util import QK_MASK_ADD, CONVERT_3DIMS_TO_4DIMS, START_ADD, END_ADD
 
 
 class TransformRefactor:
@@ -127,11 +122,13 @@ class TransformRefactor:
             self.graph.nodes.append(node)
 
     def insert_reshape_node(self, ref_name, reshape_name, shape, mode="after"):
-        insert_reshape_s = self.graph.add_initializer(name=reshape_name+"_s",
-                                                      value=np.array(shape))
-        insert_reshape = self.graph.add_node(name=reshape_name, op_type="Reshape",
-                                             inputs=[reshape_name + "_input", insert_reshape_s.name],
-                                             outputs=[reshape_name + "_output"])
+        insert_reshape_s = self.graph.add_initializer(name=reshape_name + "_s", value=np.array(shape))
+        insert_reshape = self.graph.add_node(
+            name=reshape_name,
+            op_type="Reshape",
+            inputs=[reshape_name + "_input", insert_reshape_s.name],
+            outputs=[reshape_name + "_output"],
+        )
 
         self.graph.insert_node(refer_name=ref_name, insert_node=insert_reshape, mode=mode)
         insert_reshape.inputs.append(insert_reshape_s.name)
@@ -147,13 +144,13 @@ class TransformRefactor:
                 normal_init.value = value
 
             if init_name.endswith("_perm"):
-                transpose_name = init_name[:init_name.index("_perm")]
-                transpose_node = normal_subgraph.get_node(prefix+transpose_name, node_type=OnnxNode)
+                transpose_name = init_name[: init_name.index("_perm")]
+                transpose_node = normal_subgraph.get_node(prefix + transpose_name, node_type=OnnxNode)
                 transpose_node.attrs = {"perm": value}
 
         for node_name, node in attention_parser.branch_nodes.items():
             input_x = node.inputs[1]
-            normal_node = normal_subgraph.get_node(prefix+node_name, node_type=OnnxNode)
+            normal_node = normal_subgraph.get_node(prefix + node_name, node_type=OnnxNode)
             normal_node.inputs[1] = input_x
             if node_name == QK_MASK_ADD and attention_parser.params.get(CONVERT_3DIMS_TO_4DIMS):
                 input_x_value = self.graph.get_value_info(input_x)
@@ -190,11 +187,7 @@ class TransformRefactor:
                     next_node.inputs[idx] = end_add.outputs[0]
 
     def update_layernorm(self, match_result, ori_shape):
-        match_nodes = [
-            node_dict
-            for result in match_result
-            for node_dict in result.node_dicts
-        ]
+        match_nodes = [node_dict for result in match_result for node_dict in result.node_dicts]
         for i, nodes in enumerate(match_nodes):
             ln_nodes = list(nodes.values())
             first_node = ln_nodes[0][0]
@@ -205,13 +198,14 @@ class TransformRefactor:
             if i == 0:
                 self.insert_reshape_node(first_node.name, reshape_name, [-1, ori_shape[-1]])
 
-            #在最后一个layer norm的最后一个节点之后插入reshape，将reshape重新reshape原来的shape，否则后面的计算shape会对不上
+            # 在最后一个layer norm的最后一个节点之后插入reshape，将reshape重新reshape原来的shape，否则后面的计算shape会对不上
             if i + 1 == len(match_nodes):
                 last_node = ln_nodes[-1][0]
                 self.insert_reshape_node(last_node.name, reshape_name, ori_shape)
                 if first_node.op_type == "Transpose":
-                    transpose_node = self.graph.add_node(name=str(i) + "_transpose", op_type="Transpose",
-                                                         attrs=first_node.attrs)
+                    transpose_node = self.graph.add_node(
+                        name=str(i) + "_transpose", op_type="Transpose", attrs=first_node.attrs
+                    )
                     self.graph.insert_node(refer_name=reshape_name, insert_node=transpose_node)
 
             # 有的layer norm的第一个节点是add， 之前的FFN层输出的shape不是2维，需要将shape转成2维
@@ -236,13 +230,15 @@ class TransformRefactor:
             next_nodes = self.graph.get_next_nodes(start_add.outputs[0])
             if len(next_nodes) < 4:
                 start_add_b = self.graph.get_node(start_add.inputs[1], node_type=OnnxInitializer)
-                unused_add_node_b = self.graph.add_initializer(prefix + "unused_add_node_b",
-                                                            np.zeros(start_add_b.value.shape)
-                                                               .astype(start_add_b.value.dtype))
-                self.graph.add_node(prefix + "unused_add_node", op_type="Add",
-                                    inputs=[start_add.outputs[0], unused_add_node_b.name],
-                                    outputs=[prefix + "unused_add_node_output"]
-                                    )
+                unused_add_node_b = self.graph.add_initializer(
+                    prefix + "unused_add_node_b", np.zeros(start_add_b.value.shape).astype(start_add_b.value.dtype)
+                )
+                self.graph.add_node(
+                    prefix + "unused_add_node",
+                    op_type="Add",
+                    inputs=[start_add.outputs[0], unused_add_node_b.name],
+                    outputs=[prefix + "unused_add_node_output"],
+                )
 
             qk_mask_add = self.graph.get_node(prefix + QK_MASK_ADD, node_type=OnnxNode)
             input1 = self.graph.get_value_info(qk_mask_add.inputs[0])
@@ -260,12 +256,15 @@ class TransformRefactor:
                 else:
                     raise ValueError("The dims of {} is bigger than the dims of {}".format(input2, input1))
 
-                expand_node = self.graph.add_node(name=prefix+"mask_expand", op_type="Expand",
-                                                  outputs=[prefix + "mask_expand"])
-                self.graph.insert_node(refer_name=qk_mask_add.name, insert_node=expand_node, refer_index=1,
-                                       mode="before")
-                expand_shape = self.graph.add_initializer(name=prefix + "mask_expand_s",
-                                                          value=np.array(expand_shape_value))
+                expand_node = self.graph.add_node(
+                    name=prefix + "mask_expand", op_type="Expand", outputs=[prefix + "mask_expand"]
+                )
+                self.graph.insert_node(
+                    refer_name=qk_mask_add.name, insert_node=expand_node, refer_index=1, mode="before"
+                )
+                expand_shape = self.graph.add_initializer(
+                    name=prefix + "mask_expand_s", value=np.array(expand_shape_value)
+                )
                 expand_node.inputs.append(expand_shape.name)
 
             elif input1 and not input2:
@@ -276,11 +275,7 @@ class TransformRefactor:
                     input2.value = np.array(value)
 
     def remove_unused_initializers(self):
-        all_input = [
-            inp
-            for node in self.graph.nodes
-            for inp in node.inputs
-        ]
+        all_input = [inp for node in self.graph.nodes for inp in node.inputs]
         all_init = [init.name for init in self.graph.initializers]
         unused_init_names = set(all_init) - set(all_input)
         for init in self.graph.initializers:

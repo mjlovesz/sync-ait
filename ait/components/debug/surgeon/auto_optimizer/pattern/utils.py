@@ -33,6 +33,7 @@ def timing(func: Callable):
         te = time.time()
         logging.info(f'func:{func.__name__} args:[{args}, {kwargs}] took: {te - ts: 0.3f}s')
         return res
+
     return wrapper
 
 
@@ -48,7 +49,7 @@ class NextNodeCount(MatchBase):
         self._count = cnt
 
     def match(self, node: BaseNode, graph: BaseGraph) -> bool:
-        if not isinstance(node, (Node, )):
+        if not isinstance(node, (Node,)):
             return False
         if len(node.outputs) != 1:
             return False
@@ -58,12 +59,13 @@ class NextNodeCount(MatchBase):
 
 class HasInputShape(MatchBase):
     '''This class constraint matching node to have shape info for the specified input.'''
+
     def __init__(self, idx: int = 0) -> None:
         super().__init__()
         self._index = idx
 
     def match(self, node: BaseNode, graph: BaseGraph) -> bool:
-        if not isinstance(node, (Node, )):
+        if not isinstance(node, (Node,)):
             return False
         place_holder = graph.get_node(node.inputs[self._index], node_type=PlaceHolder)
         return place_holder is not None and bool(place_holder.shape)
@@ -71,12 +73,13 @@ class HasInputShape(MatchBase):
 
 class HasInputValue(MatchBase):
     '''This class constraint matching node to have initializer for the specified input.'''
+
     def __init__(self, idx: int = 0) -> None:
         self._index = idx
         super().__init__()
 
     def match(self, node: BaseNode, graph: BaseGraph) -> bool:
-        if not isinstance(node, (Node, )):
+        if not isinstance(node, (Node,)):
             return False
         ini = graph.get_node(node.inputs[self._index], node_type=Initializer)
         return ini is not None and ini.value is not None
@@ -84,8 +87,9 @@ class HasInputValue(MatchBase):
 
 class AllNextnodesAreGather(MatchBase):
     '''限制节点的后置节点全部是Gather算子，且他们的axis属性都相同'''
+
     def match(self, node: BaseNode, graph: BaseGraph) -> bool:
-        if not isinstance(node, (Node, )):
+        if not isinstance(node, (Node,)):
             return False
         if len(node.outputs) != 1:
             return False
@@ -93,8 +97,7 @@ class AllNextnodesAreGather(MatchBase):
         if not nodes:
             return False
         for node_ in nodes:
-            if not isinstance(node_, (Node, )) \
-                    or op.ne(node_.op_type, 'Gather'):
+            if not isinstance(node_, (Node,)) or op.ne(node_.op_type, 'Gather'):
                 return False
         inputs = [node_.inputs[0] for node_ in nodes]
         if len(set(inputs)) != 1:
@@ -105,12 +108,14 @@ class AllNextnodesAreGather(MatchBase):
         return True
 
 
-def is_lower_onnx_version(graph: BaseGraph, limit_version = 13) -> bool:
+def is_lower_onnx_version(graph: BaseGraph, limit_version=13) -> bool:
     """
     check current onnx version is lower than limit version
     """
-    def domain_check(domain): 
+
+    def domain_check(domain):
         return domain == '' or domain == 'ai.onnx'
+
     opset_versions = [opset.version for opset in graph.opset_imports if domain_check(opset.domain)]
     return len(opset_versions) == 0 or opset_versions[0] < limit_version
 
@@ -130,7 +135,7 @@ def insert_unsqueeze(graph: BaseGraph, node: BaseNode, attrs, mode: str, refer_i
     if not graph.get_node(op_name, Node) is None:
         raise RuntimeError(f'unsqueeze has bean existed, op_name:{op_name}.')
     if is_lower_onnx_version(graph, 13):
-        us = graph.add_node(op_name, 'Unsqueeze', attrs = attrs)
+        us = graph.add_node(op_name, 'Unsqueeze', attrs=attrs)
         graph.insert_node(node.name, us, mode=mode, refer_index=refer_index)
     else:
         us = graph.add_node(op_name, 'Unsqueeze')
@@ -157,7 +162,7 @@ def insert_squeeze(graph: BaseGraph, node: BaseNode, attrs, mode: str, refer_ind
     if not graph.get_node(op_name, Node) is None:
         raise RuntimeError(f'squeeze has bean existed, op_name:{op_name}.')
     if is_lower_onnx_version(graph, 13):
-        sq = graph.add_node(op_name, 'Squeeze', attrs = attrs)
+        sq = graph.add_node(op_name, 'Squeeze', attrs=attrs)
         graph.insert_node(node.name, sq, mode=mode, refer_index=refer_index)
     else:
         sq = graph.add_node(op_name, 'Squeeze')

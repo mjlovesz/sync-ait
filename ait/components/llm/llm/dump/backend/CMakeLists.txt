@@ -28,5 +28,9 @@ target_include_directories(MyLibrary PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 # 设置共享库输出目录
 set_target_properties(MyLibrary PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/lib")
 
+# 设置安全编译参数
+target_compile_options(MyLibrary PRIVATE -fstack-protector-all)
+set_target_properties(MyLibrary PROPERTIES LINK_FLAGS "-Wl,-z,relro,-z,now")
+
 # 可选：如果你希望设置.so文件的输出名称，可以使用下面的命令
 set_target_properties(MyLibrary PROPERTIES OUTPUT_NAME "atb_probe")

@@ -28,8 +28,9 @@ class TestCommonClass:
     default_device_id = 0
     EPSILON = 1e-6
     epsilon = 1e-6
-    cmd_prefix = sys.executable + " " + os.path.join(os.path.dirname(os.path.realpath(__file__)),
-                                                      "../ais_bench/__main__.py")
+    cmd_prefix = (
+        sys.executable + " " + os.path.join(os.path.dirname(os.path.realpath(__file__)), "../ais_bench/__main__.py")
+    )
     base_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../test/testdata")
     msame_bin_path = os.getenv('MSAME_BIN_PATH')
 
@@ -97,7 +98,7 @@ class TestCommonClass:
                     |_ 5            # input_file_num_folder_path
 
         """
-        size_path = os.path.join(input_path,  str(size))
+        size_path = os.path.join(input_path, str(size))
         if not os.path.exists(size_path):
             os.makedirs(size_path, 0o750)
 
@@ -133,4 +134,3 @@ class TestCommonClass:
     def get_model_static_om_path(cls, batchsize, modelname):
         base_path = cls.get_basepath()
         return os.path.join(base_path, "{}/model".format(modelname), "pth_{}_bs{}.om".format(modelname, batchsize))
-
