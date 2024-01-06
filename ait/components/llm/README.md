@@ -54,6 +54,7 @@ chmod +x install.sh
 # 如果需要重装可在下面脚本执行添加 --force-reinstall
 ./install.sh --llm
 ```
+【注意】：源码安装ait-llm时，若abi=0，则需要增加--nabi参数
 ### 3. 验证是否安装成功
 - 执行如下命令：
 ```
