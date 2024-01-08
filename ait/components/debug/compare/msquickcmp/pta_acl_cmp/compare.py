@@ -180,8 +180,10 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
             write_acl_map_file(tensor_path)
             pid = os.getpid()
             data_save_dir = os.getenv("ASDOPS_LOG_TO_FILE_DIR")
+            data_save_dir = data_save_dir or "./"
             if not os.path.isdir(data_save_dir):
-                data_save_dir = "./"
+                return
+            
             tensor_path = os.path.join(data_save_dir, "tensors",
                                        str(pid), task_id, tensor_path)
             data = save_acl_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
