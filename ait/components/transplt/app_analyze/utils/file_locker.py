@@ -27,12 +27,10 @@ if platform.system() != 'Windows':
     import fcntl
 
     IS_UNIX = True
-    LOCK_FILE = '/tmp/file.lock'
 else:
     import msvcrt
 
     IS_UNIX = False
-    LOCK_FILE = 'C:\\file.lock'
 
 NBYTES = 1
 LOCK_EX = 2
