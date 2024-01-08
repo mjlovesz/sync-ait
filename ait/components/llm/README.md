@@ -18,8 +18,8 @@
 
 在使用本工具之前，请**谨慎阅读并理解以上免责声明的内容**。对于使用本工具所产生的任何问题或疑问，请及时联系开发者。
 
-## 安装方式
-### 1. 下载whl包构建
+## 安装方式(任选其一即可)
+### 1. 下载whl包安装
 需要下载框架whl和工具whl。
 - 下载链接：
     > 框架whl:
@@ -32,10 +32,10 @@
 
     |名称| 平台   | CXX11_ABI  | whl链接 |
     |----|--------|------------|-------------|
-    |ait-llm| arm    | abi=0 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231214/ABI0/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
-    |ait-llm| arm    | abi=1 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231214/ABI1/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
-    |ait-llm| x86    | abi=0 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231214/ABI0/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
-    |ait-llm| x86    | abi=1 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231214/ABI1/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
+    |ait-llm| arm    | abi=0 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI0/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
+    |ait-llm| arm    | abi=1 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI1/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
+    |ait-llm| x86    | abi=0 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI0/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
+    |ait-llm| x86    | abi=1 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI1/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
 
 - 安装方式：
     ```
@@ -54,6 +54,7 @@ chmod +x install.sh
 # 如果需要重装可在下面脚本执行添加 --force-reinstall
 ./install.sh --llm
 ```
+【注意】：源码安装ait-llm时，若abi=0，则需要增加--nabi参数
 ### 3. 验证是否安装成功
 - 执行如下命令：
 ```
@@ -72,7 +73,7 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py"
 | ------------------------ | ---------------------------------------- | ---- |
 | -sd，--only-save-desc          | 只保存tensor描述信息开关，默认为否。使用方式：-sd       | 否    |
 | -ids，--save-operation-ids | 选择dump指定索引的tensor，默认为空，全量dump。使用方式：-ids 24_1,2_3_5     | 否    |
-| -er，--execute-range          | 指定dump的token轮次范围，区间左右全闭，默认为第0次，使用方式：-er 1,3。| 否    |
+| -er，--execute-range          | 指定dump的token轮次范围，区间左右全闭，可以支持多个区间序列，默认为第0次，使用方式：-er 1,3 或 -er 3,5,7,7（代表区间[3,5],[7,7],也就是第3，4，5，7次token。）| 否    |
 | -child，--save-operation-child | 选择是否dump所有子操作的tensor数据，仅使用ids场景下有效，默认为true。使用方式：-child True| 否    |
 | -time，--save-time         | 选择保存的时间节点，取值[0,1,2]，0代表保存执行前(before)，1代表保存执行后(after)，2代表前后都保存。默认保存after。使用方式：-time 0  | 否    |
 | -opname，--operation-name        | 指定需要dump的算子类型，支持模糊指定，如selfattention只需要填写self。使用方式：-opname self | 否    |

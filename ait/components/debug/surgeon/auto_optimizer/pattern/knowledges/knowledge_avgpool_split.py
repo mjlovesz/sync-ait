@@ -18,7 +18,7 @@ import numpy as np
 from auto_optimizer.pattern.knowledge_factory import KnowledgeFactory
 from auto_optimizer.pattern.pattern import Pattern, MatchPattern, MatchBase
 from auto_optimizer.pattern.matcher import MatchResult
-from auto_optimizer.graph_refactor.interface.base_graph import (BaseGraph, Node)
+from auto_optimizer.graph_refactor.interface.base_graph import BaseGraph, Node
 from auto_optimizer.graph_refactor.interface.base_node import BaseNode
 from auto_optimizer.pattern.knowledges.knowledge_base import KnowledgeBase
 
@@ -33,8 +33,7 @@ class OpMatch(MatchBase):
     def match(self, node: BaseNode, graph: BaseGraph) -> bool:
         if node is None:
             return False
-        if node.attrs.get('kernel_shape') is None or \
-            node.attrs.get('strides') is None:
+        if node.attrs.get('kernel_shape') is None or node.attrs.get('strides') is None:
             return False
         # kernel_shape need to equal strides
         kernel_shape = node.attrs['kernel_shape']
@@ -50,14 +49,16 @@ class OpMatch(MatchBase):
 
 @KnowledgeFactory.register()
 class KnowledgeAvgPoolSplit(KnowledgeBase):
-    """ split AvgPool to multi-concat little AvgPool if kernal size large than 255 """
+    """split AvgPool to multi-concat little AvgPool if kernal size large than 255"""
 
     def __init__(self) -> None:
         super().__init__()
 
-        pattern = Pattern() \
-            .add_node('AvgPool', ['AveragePool'], [OpMatch()]) \
+        pattern = (
+            Pattern()
+            .add_node('AvgPool', ['AveragePool'], [OpMatch()])
             .set_node_loop('AvgPool', MatchPattern.MATCH_ONCE)
+        )
         self._register_apply_funcs(pattern, [self._optimize_apply])
 
     def _calculate_mini_factor(self, n):
@@ -122,8 +123,8 @@ class KnowledgeAvgPoolSplit(KnowledgeBase):
             attrs['kernel_shape'] = list(split)
             attrs['strides'] = list(split)
             # add new AveragePool
-            new_node = graph.add_node(f'{node.name}_{i}', 'AveragePool', attrs = attrs)
-            graph.insert_node(node.name, new_node, mode = 'before', refer_index = 0)
+            new_node = graph.add_node(f'{node.name}_{i}', 'AveragePool', attrs=attrs)
+            graph.insert_node(node.name, new_node, mode='before', refer_index=0)
         # remove old AveragePool
         graph.remove(node.name)
         return True
@@ -148,4 +149,3 @@ class KnowledgeAvgPoolSplit(KnowledgeBase):
             # split operator to multi little operator
             optimized_result |= self._optimize_avgpool(graph, nodes[0], splits)
         return optimized_result
-

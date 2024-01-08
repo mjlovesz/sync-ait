@@ -26,13 +26,9 @@ OP_FILTER_LIST = ['Constant', 'Const', 'Input', 'Placeholder']
 
 
 class OpResult:
-    ''' Operator analysis result '''
-    def __init__(self,
-                 ori_op_name,
-                 ori_op_type,  # origin op type
-                 soc_type='',
-                 is_supported=True,
-                 details=''):
+    '''Operator analysis result'''
+
+    def __init__(self, ori_op_name, ori_op_type, soc_type='', is_supported=True, details=''):  # origin op type
         self._ori_op_name = ori_op_name
         self._ori_op_type = ori_op_type
         self._op_name = ''
@@ -113,7 +109,7 @@ class OpResult:
 class Result:
     def __init__(self) -> None:
         self._op_results: Dict[str, OpResult] = {}
-    
+
     def insert(self, op_result: OpResult) -> None:
         ori_op = op_result.ori_op_name
         if isinstance(ori_op, str):
@@ -132,17 +128,8 @@ class Result:
             f = open(out_csv, 'x', newline='')
         except Exception as e:
             logger.error(f'open result.csv failed, err:{e}')
-        fields = [
-            'ori_op_name',
-            'ori_op_type',
-            'op_name',
-            'op_type',
-            'soc_type',
-            'engine',
-            'is_supported',
-            'details'
-        ]
-        writer = csv.DictWriter(f, fieldnames = fields)
+        fields = ['ori_op_name', 'ori_op_type', 'op_name', 'op_type', 'soc_type', 'engine', 'is_supported', 'details']
+        writer = csv.DictWriter(f, fieldnames=fields)
         writer.writeheader()
         err_op_num = 0
         for op_result in self._op_results.values():
@@ -156,7 +143,7 @@ class Result:
                 'soc_type': op_result.soc_type,
                 'engine': op_result.op_engine.name,
                 'is_supported': op_result.is_supported,
-                'details': op_result.details
+                'details': op_result.details,
             }
             writer.writerow(row)
             if not op_result.is_supported:

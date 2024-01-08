@@ -105,6 +105,7 @@ class DumpCommand(BaseCommand):
             dest="output",
             required=False,
             type=check_output_path_legality,
+            default='./',
             help='Data output directory.E.g:--output /xx/xxxx/xx')
 
         parser.add_argument(

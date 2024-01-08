@@ -60,7 +60,7 @@ def execute_command(cmd: str):
         utils.logger.error("Command is None.")
         return -1
     utils.logger.info("[Run CMD]: %s" % cmd)
-    complete_process = subprocess.run(cmd, shell=True)
+    complete_process = subprocess.run(cmd, shell=False)
     return complete_process.returncode
 
 

@@ -22,16 +22,17 @@ def multidevice_infer_pipeline_static():
     # create multidevice session of om model for inference
     multi_session = MultiDeviceSession(model_path)
     # create new numpy data
-    shape1 = [1,3,32,32]
-    shape2 = [1,3,32,32]
+    shape1 = [1, 3, 32, 32]
+    shape2 = [1, 3, 32, 32]
     ndata1 = np.full(shape1, 0).astype(np.float32)
     ndata2 = np.full(shape2, 0).astype(np.float32)
     feeds = [ndata1, ndata2]
     feeds_list = [feeds, feeds]
     # create {device_id : input datas} dict
-    device_feeds = {device_id:[feeds_list, feeds_list]}
+    device_feeds = {device_id: [feeds_list, feeds_list]}
     # in is numpy list and output is numpy list
     outputs = multi_session.infer_pipeline(device_feeds, mode='static')
     print(f"outputs: {outputs}")
+
 
 multidevice_infer_pipeline_static()
