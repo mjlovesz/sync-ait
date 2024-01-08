@@ -1,34 +1,35 @@
-ÎÄ¼şÃû,¹«ÍøIPµØÖ·/¹«ÍøURLµØÖ·/ÓòÃû/ÓÊÏäµØÖ·,ÓÃÍ¾ËµÃ÷
-ait/install.sh,http://mirrors.huaweicloud.com/repository/pypi/simple,ÈôpipÔ´Îª»ªÎªÔÆ£¬ÔòÓÅÏÈ°²×°skl2onnx(µ±Ç°mirrors.huaweicloud.comÖĞskl2onnxÒÑÍ£Ö¹¸üĞÂ£¬²»°üº¬1.14.1¼°ÒÔÉÏ°æ±¾)
-ait/install.sh,https://mirrors.huaweicloud.com/repository/pypi/simple,ÈôpipÔ´Îª»ªÎªÔÆ£¬ÔòÓÅÏÈ°²×°skl2onnx(µ±Ç°mirrors.huaweicloud.comÖĞskl2onnxÒÑÍ£Ö¹¸üĞÂ£¬²»°üº¬1.14.1¼°ÒÔÉÏ°æ±¾)
-ait/install.sh,https://mirrors.tools.huawei.com/pypi/simple,ÈôpipÔ´Îª»ªÎªÔÆ£¬ÔòÓÅÏÈ°²×°skl2onnx(µ±Ç°mirrors.huaweicloud.comÖĞskl2onnxÒÑÍ£Ö¹¸üĞÂ£¬²»°üº¬1.14.1¼°ÒÔÉÏ°æ±¾)
-ait/setup.py,https://gitee.com/ascend/ait,ÓÃÓÚait¹¤¾ß´ò°ü³Épython°üµÄÖ÷Ò³ËµÃ÷
-ait/components/debug/compare/Dockerfile,http://.*archive.ubuntu.com,¹¹½¨compare×é¼şµÄdocker°²×°¾µÏñ
-ait/components/debug/compare/Dockerfile,http://repo.huaweicloud.com,¹¹½¨compare×é¼şµÄdocker°²×°¾µÏñ
-ait/components/debug/compare/Dockerfile,http://ports.ubuntu.com,¹¹½¨compare×é¼şµÄdocker°²×°¾µÏñ
-ait/components/debug/compare/Dockerfile,https://www.python.org/ftp/python/3.7.5/Python-3.7.5.tgz,¹¹½¨compare×é¼şµÄdocker°²×°¾µÏñ
-ait/components/debug/compare/Dockerfile,https://repo.huaweicloud.com/repository/pypi/simple,¹¹½¨compare×é¼şµÄdocker°²×°¾µÏñ
-ait/components/debug/compare/Dockerfile,https://gitee.com/ascend/ait.git,¹¹½¨compare×é¼şµÄdocker°²×°¾µÏñ
-ait/components/debug/compare/Dockerfile,https://pypi.tuna.tsinghua.edu.cn/simple/,¹¹½¨compare×é¼şµÄdocker°²×°¾µÏñ
-ait/components/debug/compare/setup.py,https://gitee.com/ascend/ait/tree/master/ait/components/debug/compare,ÓÃÓÚcompare×é¼ş´ò°ü³Épython°üµÄÖ÷Ò³ËµÃ÷
-ait/components/debug/compare/tests/get_pth_resnet18_model.sh,https://download.pytorch.org/models/resnet18-f37072fd.pth,ÓÃÓÚÏÂÔØcompare×é¼ş²âÊÔÓÃÀıËùĞèµÄ¿ªÔ´Ä£ĞÍ
-ait/components/debug/compare/tests/get_pth_resnet18_model.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet18_for_PyTorch/resnet18_pth2onnx.py,ÓÃÓÚÏÂÔØcompare×é¼ş²âÊÔÓÃÀıËùĞèµÄ¿ªÔ´Ä£ĞÍ
-ait/components/benchmark/test/test.sh,https://aisbench.obs.myhuaweicloud.com/packet/msame/x86/msame,aisbench obsÍ°ÉÏ´æ·ÅµÄÏÂx86_64¼Ü¹¹ÉÏÊ¹ÓÃµÄmsameÍÆÀí¹¤¾ß£¬ÓÃÓÚÔÚDT´úÂëÖĞºÍbenchmarkÍÆÀí¹¤¾ßµÄÍÆÀíĞ§¹û½øĞĞ±È½Ï
-ait/components/benchmark/test/test.sh,https://aisbench.obs.myhuaweicloud.com/packet/msame/arm/msame,aisbench obsÍ°ÉÏ´æ·ÅµÄÏÂaarch64¼Ü¹¹ÉÏÊ¹ÓÃµÄmsameÍÆÀí¹¤¾ß£¬ÓÃÓÚÔÚDT´úÂëÖĞºÍbenchmarkÍÆÀí¹¤¾ßµÄÍÆÀíĞ§¹û½øĞĞ±È½Ï
-ait/components/benchmark/test/get_pth_crnn_data.sh,https://ascend-repo-modelzoo.obs.cn-east-2.myhuaweicloud.com/c-version/CRNN_for_PyTorch/zh/1.3/m/CRNN_for_PyTorch_1.3_model.zip,ÓÃÓÚDT½Å±¾£¬ascend-repo-modelzoo obsÍ°ÖĞ´æ·ÅµÄcrnnµÄonnxÄ£ĞÍÎÄ¼ş£¨¸ÃÎÄ¼şÔÚÑ¹Ëõ°üÖĞ£©
-ait/components/benchmark/test/get_pth_crnn_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/aipp_resnet50.aippconfig,ÓÃÓÚDT½Å±¾£¬Ascend/modelzoo gitee repoÖĞ´æ·ÅµÄresnet50Ä£ĞÍÔÚatc×ª»»Ê±ĞèÒªÓÃµ½µÄaippÅäÖÃÎÄ¼ş
-ait/components/benchmark/test/get_pth_crnn_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet101_Pytorch_Infer/resnet101_pth2onnx.py",ÓÃÓÚDT½Å±¾£¬Ascend/modelzoo gitee repoÖĞ´æ·ÅµÄresnet101Ä£ĞÍ´Ópth¸ñÊ½×ª»»³Éonnx¸ñÊ½µÄ×ª»»½Å±¾
-ait/components/benchmark/test/get_bert_data.sh,https://ascend-repo-modelzoo.obs.myhuaweicloud.com/model/ATC%20BERT_BASE_SQuAD1.1%28FP16%29%20from%20Tensorflow-Ascend310/zh/1.1/ATC%20BERT_BASE_SQuAD1.1%28FP16%29%20from%20Tensorflow-Ascend310.zip,ÓÃÓÚDT½Å±¾£¬ascend-repo-modelzoo obsÍ°ÖĞ´æ·ÅµÄbertµÄpbÄ£ĞÍÎÄ¼ş£¨¸ÃÎÄ¼şÔÚÑ¹Ëõ°üÖĞ£©
-ait/components/benchmark/test/get_pth_resnet101_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet101_Pytorch_Infer/resnet101_pth2onnx.py,ÓÃÓÚDT½Å±¾£¬Ascend/modelzoo gitee repoÖĞ´æ·ÅµÄresnet101Ä£ĞÍ´Ópth¸ñÊ½×ª»»³Éonnx¸ñÊ½µÄ×ª»»½Å±¾
-ait/components/benchmark/test/get_pth_resnet101_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/aipp_resnet50.aippconfig,ÓÃÓÚDT½Å±¾£¬Ascend/modelzoo gitee repoÖĞ´æ·ÅµÄresnet50Ä£ĞÍÔÚatc×ª»»Ê±ĞèÒªÓÃµ½µÄaippÅäÖÃÎÄ¼ş
-ait/components/benchmark/test/get_pth_resnet101_data.sh,https://download.pytorch.org/models/resnet101-63fe2227.pth,ÓÃÓÚDT½Å±¾£¬pytorch¹ÙÍø´æ·ÅµÄresnet101µÄpthÄ£ĞÍÎÄ¼ş
-ait/components/benchmark/test/get_pth_resnet50_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/pth2onnx.py,ÓÃÓÚDT½Å±¾£¬Ascend/modelzoo gitee repoÖĞ´æ·ÅµÄresnet50Ä£ĞÍ´Ópth¸ñÊ½×ª»»³Éonnx¸ñÊ½µÄ×ª»»½Å±¾
-ait/components/benchmark/test/get_pth_resnet50_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/aipp_resnet50.aippconfig,ÓÃÓÚDT½Å±¾£¬Ascend/modelzoo gitee repoÖĞ´æ·ÅµÄresnet50Ä£ĞÍÔÚatc×ª»»Ê±ĞèÒªÓÃµ½µÄaippÅäÖÃÎÄ¼ş
-ait/components/benchmark/test/get_pth_resnet50_data.sh,https://download.pytorch.org/models/resnet50-0676ba61.pth,ÓÃÓÚDT½Å±¾£¬pytorch¹ÙÍø´æ·ÅµÄresnet50µÄpthÄ£ĞÍÎÄ¼ş
-ait/components/benchmark/test/get_pth_inception_v3_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/InceptionV3_for_Pytorch/aipp_inceptionv3_pth.config,ÓÃÓÚDT½Å±¾£¬Ascend/modelzoo gitee repoÖĞ´æ·ÅµÄinceptionv3Ä£ĞÍÔÚatc×ª»»Ê±ĞèÒªÓÃµ½µÄaippÅäÖÃÎÄ¼ş
-ait/components/benchmark/test/get_pth_inception_v3_data.sh,https://obs-9be7.obs.cn-east-2.myhuaweicloud.com/003_Atc_Models/AE/ATC%20Model/InceptionV3/inceptionv3.onnx,ÓÃÓÚDT½Å±¾£¬obs-9be7 obsÍ°ÖĞ´æ·ÅµÄinceptionv3µÄonnxÄ£ĞÍÎÄ¼ş
-ait/components/benchmark/test/get_yolo_data.sh,https://obs-9be7.obs.cn-east-2.myhuaweicloud.com/turing/resourcecenter/model/ATC%20Yolov3%20from%20Pytorch%20Ascend310/zh/1.1/ATC_Yolov3_from_Pytorch_Ascend310.zip,ÓÃÓÚDT½Å±¾£¬obs-9be7 obsÍ°ÖĞ´æ·ÅµÄyolov3µÄonnxÄ£ĞÍÎÄ¼ş£¨¸ÃÎÄ¼şÔÚÑ¹Ëõ°üÖĞ£©
-ait/components/benchmark/ais_bench/infer/miscellaneous.py,https://gitee.com/ascend/ait/tree/master/ait/components/benchmark,ÓÃÓÚÖ¸ÒıÓÃ»§°²×°benchmarkÈ±Ê§µÄaclruntime°ü£¬Ascend/ait gitee repoÖĞbenchmark×é¼şµÄÖ÷Ò³ÎÄµµ
-ait/components/benchmark/ais_bench/infer/path_security_check.py,https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution,ÓÃÓÚÖ¸ÒıÓÃ»§Ê¹ÓÃbenchmark¹¤¾ßÊäÈë·Ç·¨ĞÅÏ¢³öÏÖ±¨´íµÄ½â¾ö·½·¨£¬Ascend/ait repoµÄwiki
-ait/components/benchmark/ais_bench/evaluate/dataset/download.sh,https://llm-dataset.obs.myhuaweicloud.com/$dataset.tar.gz,ÓÃÓÚ»ñÈ¡Êı¾İ¼¯£¬llm-dataset obsÍ°ÖĞ´æ·ÅµÄÊı¾İ¼¯µÄÑ¹Ëõ°ü
-ait/components/benchmark/ais_bench/backend/setup.py,https://github.com/pybind/python_example/pull/53,×¢ÊÍÖĞËµÃ÷pylind11Ê¹ÓÃµÄ²Î¿¼¶ÔÏó£¬github pybind repoÖĞpybind11µÄpythonÊ¹ÓÃÑùÀı
+æ–‡ä»¶å,å…¬ç½‘IPåœ°å€/å…¬ç½‘URLåœ°å€/åŸŸå/é‚®ç®±åœ°å€,ç”¨é€”è¯´æ˜
+ait/install.sh,http://mirrors.huaweicloud.com/repository/pypi/simple,è‹¥pipæºä¸ºåä¸ºäº‘ï¼Œåˆ™ä¼˜å…ˆå®‰è£…skl2onnx(å½“å‰mirrors.huaweicloud.comä¸­skl2onnxå·²åœæ­¢æ›´æ–°ï¼Œä¸åŒ…å«1.14.1åŠä»¥ä¸Šç‰ˆæœ¬)
+ait/install.sh,https://mirrors.huaweicloud.com/repository/pypi/simple,è‹¥pipæºä¸ºåä¸ºäº‘ï¼Œåˆ™ä¼˜å…ˆå®‰è£…skl2onnx(å½“å‰mirrors.huaweicloud.comä¸­skl2onnxå·²åœæ­¢æ›´æ–°ï¼Œä¸åŒ…å«1.14.1åŠä»¥ä¸Šç‰ˆæœ¬)
+ait/install.sh,https://mirrors.tools.huawei.com/pypi/simple,è‹¥pipæºä¸ºåä¸ºäº‘ï¼Œåˆ™ä¼˜å…ˆå®‰è£…skl2onnx(å½“å‰mirrors.huaweicloud.comä¸­skl2onnxå·²åœæ­¢æ›´æ–°ï¼Œä¸åŒ…å«1.14.1åŠä»¥ä¸Šç‰ˆæœ¬)
+ait/setup.py,https://gitee.com/ascend/ait,ç”¨äºaitå·¥å…·æ‰“åŒ…æˆpythonåŒ…çš„ä¸»é¡µè¯´æ˜
+ait/components/debug/compare/Dockerfile,http://.*archive.ubuntu.com,æ„å»ºcompareç»„ä»¶çš„dockerå®‰è£…é•œåƒ
+ait/components/debug/compare/Dockerfile,http://repo.huaweicloud.com,æ„å»ºcompareç»„ä»¶çš„dockerå®‰è£…é•œåƒ
+ait/components/debug/compare/Dockerfile,http://ports.ubuntu.com,æ„å»ºcompareç»„ä»¶çš„dockerå®‰è£…é•œåƒ
+ait/components/debug/compare/Dockerfile,https://www.python.org/ftp/python/3.7.5/Python-3.7.5.tgz,æ„å»ºcompareç»„ä»¶çš„dockerå®‰è£…é•œåƒ
+ait/components/debug/compare/Dockerfile,https://repo.huaweicloud.com/repository/pypi/simple,æ„å»ºcompareç»„ä»¶çš„dockerå®‰è£…é•œåƒ
+ait/components/debug/compare/Dockerfile,https://gitee.com/ascend/ait.git,æ„å»ºcompareç»„ä»¶çš„dockerå®‰è£…é•œåƒ
+ait/components/debug/compare/Dockerfile,https://pypi.tuna.tsinghua.edu.cn/simple/,æ„å»ºcompareç»„ä»¶çš„dockerå®‰è£…é•œåƒ
+ait/components/debug/compare/setup.py,https://gitee.com/ascend/ait/tree/master/ait/components/debug/compare,ç”¨äºcompareç»„ä»¶æ‰“åŒ…æˆpythonåŒ…çš„ä¸»é¡µè¯´æ˜
+ait/components/debug/compare/tests/get_pth_resnet18_model.sh,https://download.pytorch.org/models/resnet18-f37072fd.pth,ç”¨äºä¸‹è½½compareç»„ä»¶æµ‹è¯•ç”¨ä¾‹æ‰€éœ€çš„å¼€æºæ¨¡å‹
+ait/components/debug/compare/tests/get_pth_resnet18_model.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet18_for_PyTorch/resnet18_pth2onnx.py,ç”¨äºä¸‹è½½compareç»„ä»¶æµ‹è¯•ç”¨ä¾‹æ‰€éœ€çš„å¼€æºæ¨¡å‹
+ait/components/benchmark/test/test.sh,https://aisbench.obs.myhuaweicloud.com/packet/msame/x86/msame,aisbench obsæ¡¶ä¸Šå­˜æ”¾çš„ä¸‹x86_64æ¶æ„ä¸Šä½¿ç”¨çš„msameæ¨ç†å·¥å…·ï¼Œç”¨äºåœ¨DTä»£ç ä¸­å’Œbenchmarkæ¨ç†å·¥å…·çš„æ¨ç†æ•ˆæœè¿›è¡Œæ¯”è¾ƒ
+ait/components/benchmark/test/test.sh,https://aisbench.obs.myhuaweicloud.com/packet/msame/arm/msame,aisbench obsæ¡¶ä¸Šå­˜æ”¾çš„ä¸‹aarch64æ¶æ„ä¸Šä½¿ç”¨çš„msameæ¨ç†å·¥å…·ï¼Œç”¨äºåœ¨DTä»£ç ä¸­å’Œbenchmarkæ¨ç†å·¥å…·çš„æ¨ç†æ•ˆæœè¿›è¡Œæ¯”è¾ƒ
+ait/components/benchmark/test/get_pth_crnn_data.sh,https://ascend-repo-modelzoo.obs.cn-east-2.myhuaweicloud.com/c-version/CRNN_for_PyTorch/zh/1.3/m/CRNN_for_PyTorch_1.3_model.zip,ç”¨äºDTè„šæœ¬ï¼Œascend-repo-modelzoo obsæ¡¶ä¸­å­˜æ”¾çš„crnnçš„onnxæ¨¡å‹æ–‡ä»¶ï¼ˆè¯¥æ–‡ä»¶åœ¨å‹ç¼©åŒ…ä¸­ï¼‰
+ait/components/benchmark/test/get_pth_crnn_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/aipp_resnet50.aippconfig,ç”¨äºDTè„šæœ¬ï¼ŒAscend/modelzoo gitee repoä¸­å­˜æ”¾çš„resnet50æ¨¡å‹åœ¨atcè½¬æ¢æ—¶éœ€è¦ç”¨åˆ°çš„aippé…ç½®æ–‡ä»¶
+ait/components/benchmark/test/get_pth_crnn_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet101_Pytorch_Infer/resnet101_pth2onnx.py",ç”¨äºDTè„šæœ¬ï¼ŒAscend/modelzoo gitee repoä¸­å­˜æ”¾çš„resnet101æ¨¡å‹ä»pthæ ¼å¼è½¬æ¢æˆonnxæ ¼å¼çš„è½¬æ¢è„šæœ¬
+ait/components/benchmark/test/get_bert_data.sh,https://ascend-repo-modelzoo.obs.myhuaweicloud.com/model/ATC%20BERT_BASE_SQuAD1.1%28FP16%29%20from%20Tensorflow-Ascend310/zh/1.1/ATC%20BERT_BASE_SQuAD1.1%28FP16%29%20from%20Tensorflow-Ascend310.zip,ç”¨äºDTè„šæœ¬ï¼Œascend-repo-modelzoo obsæ¡¶ä¸­å­˜æ”¾çš„bertçš„pbæ¨¡å‹æ–‡ä»¶ï¼ˆè¯¥æ–‡ä»¶åœ¨å‹ç¼©åŒ…ä¸­ï¼‰
+ait/components/benchmark/test/get_pth_resnet101_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet101_Pytorch_Infer/resnet101_pth2onnx.py,ç”¨äºDTè„šæœ¬ï¼ŒAscend/modelzoo gitee repoä¸­å­˜æ”¾çš„resnet101æ¨¡å‹ä»pthæ ¼å¼è½¬æ¢æˆonnxæ ¼å¼çš„è½¬æ¢è„šæœ¬
+ait/components/benchmark/test/get_pth_resnet101_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/aipp_resnet50.aippconfig,ç”¨äºDTè„šæœ¬ï¼ŒAscend/modelzoo gitee repoä¸­å­˜æ”¾çš„resnet50æ¨¡å‹åœ¨atcè½¬æ¢æ—¶éœ€è¦ç”¨åˆ°çš„aippé…ç½®æ–‡ä»¶
+ait/components/benchmark/test/get_pth_resnet101_data.sh,https://download.pytorch.org/models/resnet101-63fe2227.pth,ç”¨äºDTè„šæœ¬ï¼Œpytorchå®˜ç½‘å­˜æ”¾çš„resnet101çš„pthæ¨¡å‹æ–‡ä»¶
+ait/components/benchmark/test/get_pth_resnet50_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/pth2onnx.py,ç”¨äºDTè„šæœ¬ï¼ŒAscend/modelzoo gitee repoä¸­å­˜æ”¾çš„resnet50æ¨¡å‹ä»pthæ ¼å¼è½¬æ¢æˆonnxæ ¼å¼çš„è½¬æ¢è„šæœ¬
+ait/components/benchmark/test/get_pth_resnet50_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/aipp_resnet50.aippconfig,ç”¨äºDTè„šæœ¬ï¼ŒAscend/modelzoo gitee repoä¸­å­˜æ”¾çš„resnet50æ¨¡å‹åœ¨atcè½¬æ¢æ—¶éœ€è¦ç”¨åˆ°çš„aippé…ç½®æ–‡ä»¶
+ait/components/benchmark/test/get_pth_resnet50_data.sh,https://download.pytorch.org/models/resnet50-0676ba61.pth,ç”¨äºDTè„šæœ¬ï¼Œpytorchå®˜ç½‘å­˜æ”¾çš„resnet50çš„pthæ¨¡å‹æ–‡ä»¶
+ait/components/benchmark/test/get_pth_inception_v3_data.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/InceptionV3_for_Pytorch/aipp_inceptionv3_pth.config,ç”¨äºDTè„šæœ¬ï¼ŒAscend/modelzoo gitee repoä¸­å­˜æ”¾çš„inceptionv3æ¨¡å‹åœ¨atcè½¬æ¢æ—¶éœ€è¦ç”¨åˆ°çš„aippé…ç½®æ–‡ä»¶
+ait/components/benchmark/test/get_pth_inception_v3_data.sh,https://obs-9be7.obs.cn-east-2.myhuaweicloud.com/003_Atc_Models/AE/ATC%20Model/InceptionV3/inceptionv3.onnx,ç”¨äºDTè„šæœ¬ï¼Œobs-9be7 obsæ¡¶ä¸­å­˜æ”¾çš„inceptionv3çš„onnxæ¨¡å‹æ–‡ä»¶
+ait/components/benchmark/test/get_yolo_data.sh,https://obs-9be7.obs.cn-east-2.myhuaweicloud.com/turing/resourcecenter/model/ATC%20Yolov3%20from%20Pytorch%20Ascend310/zh/1.1/ATC_Yolov3_from_Pytorch_Ascend310.zip,ç”¨äºDTè„šæœ¬ï¼Œobs-9be7 obsæ¡¶ä¸­å­˜æ”¾çš„yolov3çš„onnxæ¨¡å‹æ–‡ä»¶ï¼ˆè¯¥æ–‡ä»¶åœ¨å‹ç¼©åŒ…ä¸­ï¼‰
+ait/components/benchmark/ais_bench/infer/miscellaneous.py,https://gitee.com/ascend/ait/tree/master/ait/components/benchmark,ç”¨äºæŒ‡å¼•ç”¨æˆ·å®‰è£…benchmarkç¼ºå¤±çš„aclruntimeåŒ…ï¼ŒAscend/ait gitee repoä¸­benchmarkç»„ä»¶çš„ä¸»é¡µæ–‡æ¡£
+ait/components/benchmark/ais_bench/infer/path_security_check.py,https://gitee.com/ascend/ait/wikis/ait_security_error_log_solution,ç”¨äºæŒ‡å¼•ç”¨æˆ·ä½¿ç”¨benchmarkå·¥å…·è¾“å…¥éæ³•ä¿¡æ¯å‡ºç°æŠ¥é”™çš„è§£å†³æ–¹æ³•ï¼ŒAscend/ait repoçš„wiki
+ait/components/benchmark/ais_bench/evaluate/dataset/download.sh,https://llm-dataset.obs.myhuaweicloud.com/$dataset.tar.gz,ç”¨äºè·å–æ•°æ®é›†ï¼Œllm-dataset obsæ¡¶ä¸­å­˜æ”¾çš„æ•°æ®é›†çš„å‹ç¼©åŒ…
+ait/components/benchmark/ais_bench/backend/setup.py,https://github.com/pybind/python_example/pull/53,æ³¨é‡Šä¸­è¯´æ˜pylind11ä½¿ç”¨çš„å‚è€ƒå¯¹è±¡ï¼Œgithub pybind repoä¸­pybind11çš„pythonä½¿ç”¨æ ·ä¾‹
+ait/components/llm/setup.py,https://gitee.com/ascend/ait/ait/components/llm,ç”¨äºait-llmå·¥å…·æ‰“åŒ…æˆpythonåŒ…çš„ä¸»é¡µè¯´æ˜
