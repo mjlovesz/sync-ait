@@ -44,7 +44,9 @@ def set_task_id():
     if os.getenv(MODEL_INFER_TASK_ID) != task_id:
         os.environ[MODEL_INFER_TASK_ID] = task_id
 
-    logger.info("Acl transformer dump data dir: {}".format(os.getenv(dump_env_name)))
+    pid = os.getenv(dump_env_name)
+    if pid and pid.isdigit():
+        logger.info("Acl transformer dump data dir: {}".format(os.getenv(dump_env_name)))
 
     token_counts += 1
 
@@ -132,10 +134,17 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
 
     task_id = os.getenv(MODEL_INFER_TASK_ID)
     task_id = task_id or ""
+    if not task_id.isdigit():
+        return
+
     ait_task_dir = os.getenv(AIT_CMP_TASK_DIR)
-    ait_task_dir = ait_task_dir or ""
+    if not os.path.isdir(ait_task_dir):
+        return
+    
     ait_cmp_task_pid = os.getenv(AIT_CMP_TASK_PID)
     ait_cmp_task_pid = ait_cmp_task_pid or ""
+    if not ait_cmp_task_pid.isdigit():
+        return
 
     csv_result_dir = os.path.join(ait_task_dir, ait_cmp_task_pid)
     csv_path = os.path.join(csv_result_dir, task_id + "_cmp_result.csv")
@@ -171,8 +180,10 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
             write_acl_map_file(tensor_path)
             pid = os.getpid()
             data_save_dir = os.getenv("ASDOPS_LOG_TO_FILE_DIR")
-            if not data_save_dir:
-                data_save_dir = "./"
+            data_save_dir = data_save_dir or "./"
+            if not os.path.isdir(data_save_dir):
+                return
+            
             tensor_path = os.path.join(data_save_dir, "tensors",
                                        str(pid), task_id, tensor_path)
             data = save_acl_dump_tensor(csv_data=data, data_id=data_id, tensor_path=tensor_path)
@@ -182,7 +193,7 @@ def set_label(data_src: str, data_id: str, data_val=None, tensor_path=None):
 
 def write_acl_map_file(tensor_path):
     ait_cmp_task_pid = os.getenv(AIT_CMP_TASK_PID)
-    if ait_cmp_task_pid:
+    if ait_cmp_task_pid and ait_cmp_task_pid.isdigit():
         acl_map_file_dir = os.path.join('/tmp', ait_cmp_task_pid)
     else:
         acl_map_file_dir = '/tmp'
@@ -228,7 +239,11 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
         elif tensor_path:  # low-level
             token_tensor_path = os.path.join(str(token_id), tensor_path)
             write_acl_map_file(token_tensor_path)
-            golden_data_path = os.path.join(os.getenv("ASDOPS_LOG_TO_FILE_DIR"), "tensors",
+            asdops_log_to_file_dir = os.getenv("ASDOPS_LOG_TO_FILE_DIR")
+            if not os.path.isdir(asdops_log_to_file_dir):
+                return
+        
+            golden_data_path = os.path.join(asdops_log_to_file_dir, "tensors",
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
         json_path = os.path.join(".", dump_data_dir, "golden_tensor", "metadata.json")
         write_json_file(data_id, golden_data_path, json_path, token_id)
@@ -244,7 +259,10 @@ def dump_data(data_src, data_id, data_val=None, tensor_path=None, token_id=0):
         elif tensor_path:  # low-level
             token_tensor_path = os.path.join(str(token_id), tensor_path)
             write_acl_map_file(token_tensor_path)
-            acl_data_path = os.path.join(os.getenv("ASDOPS_LOG_TO_FILE_DIR"), "tensors",
+            asdops_log_to_file_dir = os.getenv("ASDOPS_LOG_TO_FILE_DIR")
+            if not os.path.isdir(asdops_log_to_file_dir):
+                return
+            acl_data_path = os.path.join(asdops_log_to_file_dir, "tensors",
                                        f"thread_{str(pid)}", str(token_id), tensor_path)
         json_path = os.path.join(".", dump_data_dir, "acl_tensor", "metadata.json") 
         write_json_file(data_id, acl_data_path, json_path, token_id)
