@@ -117,6 +117,16 @@ class DumpCommand(BaseCommand):
             default=2,
             help='0 when only need dump intensor, '
                  '1 when only need dump outtensor, 2 both.Default 2')
+        
+        parser.add_argument(
+            '--type=cpu_profiling',
+            '-cp',
+            required=False,
+            dest="type=cpu_profiling",
+            action='store_true',
+            default=False,
+            help='Dump all data of CPU performance if True, do nothing if False'
+        )
 
     def handle(self, args, **kwargs):
         if args.exec:
