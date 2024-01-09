@@ -26,11 +26,13 @@ from ait_prof.args_adapter import MsProfArgsAdapter
 
 PATH_MAX_LENGTH = 255
 
+
 def remove_invalid_chars(msprof_cmd):
     invalid_chars = r'[`$|;&><]+'
     clean_msprof_cmd = re.sub(invalid_chars, '', msprof_cmd)
     return clean_msprof_cmd
 
+z
 def msprof_run_profiling(args, msprof_bin):
     bin_path = ' '.join(sys.argv).split(" ")[0]
     bin_path = bin_path.rsplit('/', 1)[0]
@@ -99,6 +101,7 @@ def args_rules(args):
             raise RuntimeError(f'error bad parameters --{args_name}') 
 
     return args
+
 
 def msprof_process(args: MsProfArgsAdapter):
     try:
