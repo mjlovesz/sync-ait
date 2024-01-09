@@ -122,7 +122,7 @@ class DumpCommand(BaseCommand):
             '--type=cpu_profiling',
             '-cp',
             required=False,
-            dest="type=cpu_profiling",
+            dest="cpu_profiling",
             action='store_true',
             default=False,
             help='Dump all data of CPU performance if True, do nothing if False'
