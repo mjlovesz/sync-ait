@@ -71,3 +71,4 @@ ait/components/debug/surgeon/test/dataset/test_img/cat.jpg,http://ns.adobe.com/x
 ait/components/debug/surgeon/setup.py,https://gitee.com/ascend/ait.git,ait的gitee仓地址
 ait/components/convert/setup.py,https://gitee.com/ascend/ait,ait的gitee仓地址
 ait/components/analyze/setup.py,https://gitee.com/ascend/ait,ait的gitee仓地址
+ait/components/debug/surgeon/setup.py,https://gitee.com/ascend/ait,ait的gitee仓地址
