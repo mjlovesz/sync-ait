@@ -32,7 +32,7 @@ def remove_invalid_chars(msprof_cmd):
     clean_msprof_cmd = re.sub(invalid_chars, '', msprof_cmd)
     return clean_msprof_cmd
 
-z
+
 def msprof_run_profiling(args, msprof_bin):
     bin_path = ' '.join(sys.argv).split(" ")[0]
     bin_path = bin_path.rsplit('/', 1)[0]
