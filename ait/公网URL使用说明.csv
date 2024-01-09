@@ -33,40 +33,38 @@ ait/components/benchmark/ais_bench/infer/path_security_check.py,https://gitee.co
 ait/components/benchmark/ais_bench/evaluate/dataset/download.sh,https://llm-dataset.obs.myhuaweicloud.com/$dataset.tar.gz,用于获取数据集，llm-dataset obs桶中存放的数据集的压缩包
 ait/components/benchmark/ais_bench/backend/setup.py,https://github.com/pybind/python_example/pull/53,注释中说明pylind11使用的参考对象，github pybind repo中pybind11的python使用样例
 ait/components/llm/setup.py,https://gitee.com/ascend/ait/ait/components/llm,用于ait-llm工具打包成python包的主页说明
+ait/components/debug/surgeon/setup.py,https://gitee.com/ascend/ait.git,ait的gitee仓地址
+ait/components/convert/setup.py,https://gitee.com/ascend/ait,ait的gitee仓地址
+ait/components/analyze/setup.py,https://gitee.com/ascend/ait,ait的gitee仓地址
+ait/components/transplt/config.ini,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip,ait transplt的配置文件下载地址
+ait/components/transplt/config.ini,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/float.h,mingw的windows安装包patch文件下载地址
+ait/components/transplt/config.ini,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip,ait transplt的配置文件下载地址
+ait/components/transplt/config.ini,https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/LLVM-12.0.0-win64.exe,LLVM的官网下载地址
+ait/components/transplt/config.ini,https://nchc.dl.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/8.1.0/threads-posix/seh/x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z,mingw官网下载地址
+ait/components/transplt/config.ini,https://www.7-zip.org/a/7z2301-x64.msi,7-zip官网下载地址
 ait/components/transplt/Dockerfile,http://.*archive.ubuntu.com@http://repo.huaweicloud.com,ubuntu的yum软件包源地址
-ait/components/transplt/install.sh,http://.*archive.ubuntu.com@http://repo.huaweicloud.com,ubuntu的yum软件包源地址
 ait/components/transplt/Dockerfile,http://.*security.ubuntu.com@http://repo.huaweicloud.com,ubuntu的yum软件包源地址
-ait/components/transplt/install.sh,http://.*security.ubuntu.com@http://repo.huaweicloud.com,ubuntu的yum软件包源地址
 ait/components/transplt/Dockerfile,http://apt.llvm.org/llvm-snapshot.gpg.key,LLVM的官方gpg key下载地址
+ait/components/transplt/Dockerfile,http://ports.ubuntu.com@http://repo.huaweicloud.com,ubuntu的yum软件包源地址
+ait/components/transplt/Dockerfile,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip,ait transplt的配置文件下载地址
+ait/components/transplt/Dockerfile,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip,ait transplt的配置文件下载地址
+ait/components/transplt/Dockerfile,https://bootstrap.pypa.io/get-pip.py,pip安装脚本官网下载地址
+ait/components/transplt/Dockerfile,https://gitee.com/ascend/ait.git,ait的gitee仓地址
+ait/components/transplt/Dockerfile,https://mirrors.cernet.edu.cn/llvm-apt/focal/,ubuntu的llvm源地址
+ait/components/transplt/Dockerfile,https://repo.huaweicloud.com/repository/pypi/simple,华为云官方pip源地址
+ait/components/transplt/install.sh,http://.*archive.ubuntu.com@http://repo.huaweicloud.com,ubuntu的yum软件包源地址
+ait/components/transplt/install.sh,http://.*security.ubuntu.com@http://repo.huaweicloud.com,ubuntu的yum软件包源地址
 ait/components/transplt/install.sh,http://apt.llvm.org/llvm-snapshot.gpg.key,LLVM的官方gpg key下载地址
 ait/components/transplt/install.sh,http://mirrors.163.com/openSUSE/distribution/leap/15.1/repo/non-oss,openSUSE软件包源地址
 ait/components/transplt/install.sh,http://mirrors.163.com/openSUSE/distribution/leap/15.1/repo/oss,openSUSE软件包源地址
 ait/components/transplt/install.sh,http://mirrors.163.com/openSUSE/update/leap/15.1/non-oss,openSUSE软件包源地址
 ait/components/transplt/install.sh,http://mirrors.163.com/openSUSE/update/leap/15.1/oss,openSUSE软件包源地址
-ait/components/transplt/Dockerfile,http://ports.ubuntu.com@http://repo.huaweicloud.com,ubuntu的yum软件包源地址
-ait/components/transplt/Dockerfile,http://ports.ubuntu.com@http://repo.huaweicloud.com,ubuntu的yum软件包源地址
 ait/components/transplt/install.sh,http://ports.ubuntu.com@http://repo.huaweicloud.com,ubuntu的yum软件包源地址
-ait/components/transplt/install.sh,http://ports.ubuntu.com@http://repo.huaweicloud.com,ubuntu的yum软件包源地址
-ait/components/transplt/test/test.sh,https://ait-resources.obs.cn-south-1.myhuaweicloud.com,ait transplt的配置文件下载地址
-ait/components/transplt/config.ini,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip,ait transplt的配置文件下载地址
-ait/components/transplt/Dockerfile,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip,ait transplt的配置文件下载地址
 ait/components/transplt/install.sh,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip,ait transplt的配置文件下载地址
-ait/components/transplt/config.ini,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/float.h,mingw的windows安装包patch文件下载地址
-ait/components/transplt/config.ini,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip,ait transplt的配置文件下载地址
-ait/components/transplt/Dockerfile,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip,ait transplt的配置文件下载地址
 ait/components/transplt/install.sh,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/headers.zip,ait transplt的配置文件下载地址
-ait/components/transplt/Dockerfile,https://bootstrap.pypa.io/get-pip.py,pip安装脚本官网下载地址
-ait/components/transplt/setup.py,https://gitee.com/ascend/ait,ait的gitee仓地址
-ait/components/transplt/Dockerfile,https://gitee.com/ascend/ait.git,ait的gitee仓地址
-ait/components/transplt/config.ini,https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.0/LLVM-12.0.0-win64.exe,LLVM的官网下载地址
-ait/components/transplt/Dockerfile,https://mirrors.cernet.edu.cn/llvm-apt/focal/,ubuntu的llvm源地址
 ait/components/transplt/install.sh,https://mirrors.cernet.edu.cn/llvm-apt/focal/,ubuntu的llvm源地址
-ait/components/transplt/config.ini,https://nchc.dl.sourceforge.net/project/mingw-w64/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/8.1.0/threads-posix/seh/x86_64-8.1.0-release-posix-seh-rt_v6-rev0.7z,mingw官网下载地址
-ait/components/transplt/Dockerfile,https://repo.huaweicloud.com/repository/pypi/simple,华为云官方pip源地址
-ait/components/transplt/config.ini,https://www.7-zip.org/a/7z2301-x64.msi,7-zip官网下载地址
+ait/components/transplt/setup.py,https://gitee.com/ascend/ait,ait的gitee仓地址
+ait/components/transplt/test/test.sh,https://ait-resources.obs.cn-south-1.myhuaweicloud.com,ait transplt的配置文件下载地址
 ait/components/transplt/tools/update_link/config.json,"https://www.hiascend.com/document/detail/zh/canncommercial//inferapplicationdev/aclcppdevg/aclcppdevg_03_%04d.html,",昇腾社区cann API地址
 ait/components/transplt/tools/update_link/config.json,"https://www.hiascend.com/document/detail/zh/mind-sdk//vision/mxvisionug/mxvisionug_%04d.html,",昇腾社区mind sdk API地址
 ait/components/transplt/tools/update_link/src/web_crawler.py,https://www.hiascend.com,昇腾社区地址
-ait/components/debug/surgeon/setup.py,https://gitee.com/ascend/ait.git,ait的gitee仓地址
-ait/components/convert/setup.py,https://gitee.com/ascend/ait,ait的gitee仓地址
-ait/components/analyze/setup.py,https://gitee.com/ascend/ait,ait的gitee仓地址
