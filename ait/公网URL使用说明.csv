@@ -67,8 +67,6 @@ ait/components/transplt/config.ini,https://www.7-zip.org/a/7z2301-x64.msi,7-zip¹
 ait/components/transplt/tools/update_link/config.json,"https://www.hiascend.com/document/detail/zh/canncommercial//inferapplicationdev/aclcppdevg/aclcppdevg_03_%04d.html,",•NÌÚÉçÇøcann APIµØÖ·
 ait/components/transplt/tools/update_link/config.json,"https://www.hiascend.com/document/detail/zh/mind-sdk//vision/mxvisionug/mxvisionug_%04d.html,",•NÌÚÉçÇømind sdk APIµØÖ·
 ait/components/transplt/tools/update_link/src/web_crawler.py,https://www.hiascend.com,•NÌÚÉçÇøµØÖ·
-ait/components/debug/surgeon/test/dataset/test_img/cat.jpg,http://ns.adobe.com/xap/1.0/,ÑùÀıÍ¼Æ¬ÏÂÔØµØÖ·
 ait/components/debug/surgeon/setup.py,https://gitee.com/ascend/ait.git,aitµÄgitee²ÖµØÖ·
 ait/components/convert/setup.py,https://gitee.com/ascend/ait,aitµÄgitee²ÖµØÖ·
 ait/components/analyze/setup.py,https://gitee.com/ascend/ait,aitµÄgitee²ÖµØÖ·
-ait/components/debug/surgeon/setup.py,https://gitee.com/ascend/ait,aitµÄgitee²ÖµØÖ·
