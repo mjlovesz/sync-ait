@@ -118,6 +118,26 @@ class DumpCommand(BaseCommand):
             help='0 when only need dump intensor, '
                  '1 when only need dump outtensor, 2 both.Default 2')
 
+        parser.add_argument(
+            '--save-topo-info',
+            '-topo',
+            required=False,
+            dest="topo",
+            action='store_true',
+            default=False,
+            help='Save model topo info if true, do nothing if False. Default False.')
+        
+        parser.add_argument(
+            '--framework',
+            '-fw',
+            required=False,
+            dest="framework",
+            type=int,
+            default=0,
+            choices=[0, 4],
+            help='0: pytorch, '
+                 '4 : panddle. Default 0')
+        
     def handle(self, args, **kwargs):
         if args.exec:
             logger.info(f"About to execute command : {args.exec}")

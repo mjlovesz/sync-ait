@@ -18,6 +18,7 @@
 #include "atb_probe.h"
 #include "binfile.h"
 
+
 static bool IsPrefix(const std::string &str, const std::string &prefix)
 {
     return str.compare(0, prefix.length(), prefix) == 0;
@@ -85,7 +86,7 @@ static bool isOutTensorBinPath(const std::string &filePath)
     return fileName.find("outtensor") != std::string::npos || fileName.find("outTensor") != std::string::npos;
 }
 
-
+namespace atb {
 bool atb::Probe::IsTensorNeedSave(const std::vector<int64_t> &ids, const std::string &optype)
 {
     const char *vid = std::getenv("ATB_SAVE_TENSOR_IDS"); // 应该是20_1_9,1_23,5_29_1
@@ -311,3 +312,4 @@ bool atb::Probe::IsSaveOuttensor()
     }
     return false;
 }
+} // namespace atb

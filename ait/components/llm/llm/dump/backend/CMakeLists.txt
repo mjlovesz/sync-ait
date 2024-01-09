@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # 添加共享库
-add_library(MyLibrary SHARED atb_probe.cpp binfile.cpp)
+add_library(MyLibrary SHARED atb_probe.cpp atb_speed_probe.cpp binfile.cpp)
 
 # 设置ABI值
 if (DEFINED ENV{AIT_LLM_ABI})

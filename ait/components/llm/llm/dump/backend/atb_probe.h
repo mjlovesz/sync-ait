@@ -52,5 +52,7 @@ public:
     static bool IsSaveOuttensor();
     static bool IsSaveIntensor();
 };
-}
+
+}  // namespace atb
+
 #endif
