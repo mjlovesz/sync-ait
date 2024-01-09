@@ -39,7 +39,6 @@ function get_aippConfig_file()
 {
     rm -rf "$1"
     local aipp_config_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet50_Pytorch_Infer/aipp_resnet50.aippconfig"
-    #local aipp_config_url="https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet101_Pytorch_Infer/aipp.config"
     wget $aipp_config_url -O $1 --no-check-certificate
 }
 
@@ -163,7 +162,7 @@ convert_dymshape_om()
     fi
 }
 
-# 基准路径 https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/Resnet101_Pytorch_Infer
+
 main()
 {
     SOC_VERSION=${1:-"Ascend310P3"}
