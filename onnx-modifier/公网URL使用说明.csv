@@ -17,6 +17,7 @@ onnx-modifier/static/onnx-metadata.json,https://github.com/onnx/onnx/blob/master
 onnx-modifier/static/onnx-metadata.json,https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.matmul.html,算子说明信息
 onnx-modifier/static/onnx-metadata.json,https://en.wikipedia.org/wiki/Rounding,算子说明信息
 onnx-modifier/static/onnx-metadata.json,https://en.wikipedia.org/wiki/Basic_Linear_Algebra_Subprograms#Level_3,算子说明信息
+onnx-modifier/static/onnx-metadata.json,https://gitee.com/ascend/ait/,本仓库位置
 onnx-modifier/static/onnx-metadata.json,https://gitee.com/ascend/ait.git,本仓库位置
 onnx-modifier/static/onnx-metadata.json,https://gitee.com/ascend/ait/onnx-modifier/,本仓库位置
 onnx-modifier/static/onnx-metadata.json,https://github.com/dagrejs/dagre,算子说明信息
@@ -30,3 +31,5 @@ onnx-modifier/static/onnx-metadata.json,https://ieeexplore.ieee.org/document/116
 onnx-modifier/static/onnx-metadata.json,https://numpy.org/doc/stable/user/basics.indexing.html?highlight=slice#slicing-and-striding,算子说明信息
 onnx-modifier/static/onnx-metadata.json,https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf,算子说明信息
 onnx-modifier/static/onnx-metadata.json,https://pytorch.org/docs/stable/nn.html#torch.nn.NLLLoss,算子说明信息
+onnx-modifier\static\favicon.png,www.inkscape.org,图片绘制
+onnx-modifier\static\view.js,https://git-lfs.github.com/,LFS header
