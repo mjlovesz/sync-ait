@@ -329,7 +329,7 @@ void atb::Probe::ReportOperationSetupStatistic(const uint64_t executeCount, cons
     std::string fileName = "./DUMP_DIR/cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
     std::ofstream file(fileName);
     if (file.is_open) {
-        file << "[" << opname << "]:[" << st << "]" << std:endl;
+        file << "[" << opname << "]:[" << st << "]" << std::endl;
         file.close();
     }
 }
@@ -340,7 +340,7 @@ void atb::Probe::ReportOperationExecuteStatistic(const uint64_t executeCount, co
     std::string fileName = "./DUMP_DIR/cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
     std::ofstream file(filename, std::ios_base::app);
     if (file.is_open) {
-        file << "[" << opname << "]:[" << st << "]" << std:endl;
+        file << "[" << opname << "]:[" << st << "]" << std::endl;
         file.close();
     }
 }
