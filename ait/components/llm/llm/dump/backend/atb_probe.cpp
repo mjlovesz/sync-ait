@@ -326,7 +326,7 @@ bool atb::Probe::ReportOperationStatisticEnable()
 
 void atb::Probe::ReportOperationSetupStatistic(const uint64_t executeCount, const std::string &opname, const std::string &st)
 {
-    std::string fileName = "./DUMP_DIR/cpu_statistic/operation_statistic_" + std:to_string(executeCount) + ".txt";
+    std::string fileName = "./DUMP_DIR/cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
     std::ofstream file(fileName);
     if (file.is_open) {
         file << "[" << opname << "]:[" << st << "]" << std:endl;
@@ -337,7 +337,7 @@ void atb::Probe::ReportOperationSetupStatistic(const uint64_t executeCount, cons
 
 void atb::Probe::ReportOperationExecuteStatistic(const uint64_t executeCount, const std::string &opname, const std::string &st)
 {
-    std::string fileName = "./DUMP_DIR/cpu_statistic/operation_statistic_" + std:to_string(executeCount) + ".txt";
+    std::string fileName = "./DUMP_DIR/cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
     std::ofstream file(filename, std::ios_base::app);
     if (file.is_open) {
         file << "[" << opname << "]:[" << st << "]" << std:endl;
