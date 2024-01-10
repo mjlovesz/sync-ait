@@ -311,3 +311,26 @@ bool atb::Probe::IsSaveOuttensor()
     }
     return false;
 }
+
+
+bool atb::Probe::ReportOperationStatisticEnable()
+{
+    const char* isSaveCpuProfiling = std::getenv("ATB_SAVE_CPU_PROFILING");
+    if (isSaveCpuProfiling == nullptr) {
+        return false;
+    }
+    int value = std::stoi(isSaveCpuProfiling);
+    return value;
+}
+
+
+void atb::Probe::ReportOperationSetupStatistic(const uint64_t executeCount, const std::string &opname, const std::string &st)
+{
+    
+}
+
+
+void atb::Probe::ReportOperationExecuteStatistic(const uint64_t executeCount, const std::string &opname, const std::string &st)
+{
+
+}
