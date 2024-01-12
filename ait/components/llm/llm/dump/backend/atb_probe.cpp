@@ -326,9 +326,9 @@ bool atb::Probe::ReportOperationStatisticEnable()
 
 void atb::Probe::ReportOperationSetupStatistic(const uint64_t executeCount, const std::string &opname, const std::string &st)
 {
-    std::cout << "===================================ReportOperationSetupStatistic begin===================================" << std:endl;
-    std::cout << "executeCount" << executeCount << std:endl;
-    std::cout << "opname:" << opname << std:endl;
+    std::cout << "===================================ReportOperationSetupStatistic begin===================================" << std::endl;
+    std::cout << "executeCount" << executeCount << std::endl;
+    std::cout << "opname:" << opname << std::endl;
     
     // 得到文件保存地址
     const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
@@ -352,15 +352,15 @@ void atb::Probe::ReportOperationSetupStatistic(const uint64_t executeCount, cons
     } else {
         std::cout << "Unable to open file!" << std::endl;
     }
-    std::cout << "===================================ReportOperationSetupStatistic end===================================" << std:endl;
+    std::cout << "===================================ReportOperationSetupStatistic end===================================" << std::endl;
 }
 
 
 void atb::Probe::ReportOperationExecuteStatistic(const uint64_t executeCount, const std::string &opname, const std::string &st)
 {
-    std::cout << "===================================ReportOperationExecuteStatistic begin===================================" << std:endl;
-    std::cout << "executeCount" << executeCount << std:endl;
-    std::cout << "opname:" << opname << std:endl;
+    std::cout << "===================================ReportOperationExecuteStatistic begin===================================" << std::endl;
+    std::cout << "executeCount" << executeCount << std::endl;
+    std::cout << "opname:" << opname << std::endl;
     
     // 得到文件保存地址
     const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
@@ -384,5 +384,5 @@ void atb::Probe::ReportOperationExecuteStatistic(const uint64_t executeCount, co
     } else {
         std::cout << "Unable to open file!" << std::endl;
     }
-    std::cout << "===================================ReportOperationExecuteStatistic end===================================" << std:endl;
+    std::cout << "===================================ReportOperationExecuteStatistic end===================================" << std::endl;
 }
