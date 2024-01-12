@@ -40,7 +40,7 @@ class SeqProject(Project):
 
         all_idx_dict = {}
         for val in KitConfig.API_INDEX_MAP.values():
-            idx_seq_dict = IOUtil.bin_safe_load(val)
+            idx_seq_dict = IOUtil.json_safe_load(val)
             all_idx_dict.update(idx_seq_dict)
         set_api_lut(all_idx_dict)
 

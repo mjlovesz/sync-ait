@@ -182,7 +182,7 @@ def set_api_lut(idx_dict=None):
         acc_libs = set()
         base_id_dict = dict(zip(KitConfig.ACC_LIB_ID_PREFIX.values(), KitConfig.ACC_LIB_ID_PREFIX.keys()))
         for idx, name in idx_dict.items():
-            res = idx // KitConfig.ACC_ID_BASE
+            res = int(idx) // KitConfig.ACC_ID_BASE
             acc_name = base_id_dict[res]
             acc_libs.add(acc_name)
 
@@ -191,5 +191,5 @@ def set_api_lut(idx_dict=None):
         for acc_name in acc_libs:
             api_dict = _GLOBAl_FUNC_ID_DICT[acc_name]
             max_idx = max(api_dict.values())
-            idx = max_idx % KitConfig.ACC_ID_BASE
+            idx = int(max_idx) % KitConfig.ACC_ID_BASE
             _FUNC_ID_COUNTER_DICT[acc_name].value = idx + 1
