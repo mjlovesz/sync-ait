@@ -333,7 +333,7 @@ void atb::Probe::ReportOperationSetupStatistic(const uint64_t executeCount, cons
     // 得到文件保存地址
     const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
     std::string outDir = outputDir != nullptr? outputDir : "./";
-    std::string filePath = "DUMP_DIR/cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
+    std::string filePath = "cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
     std::string outPath = outDir + filePath;
     size_t found = outPath.find_last_of("/");
     std::string directory = outPath.substr(0, found);
@@ -365,7 +365,7 @@ void atb::Probe::ReportOperationExecuteStatistic(const uint64_t executeCount, co
     // 得到文件保存地址
     const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
     std::string outDir = outputDir != nullptr? outputDir : "./";
-    std::string filePath = "DUMP_DIR/cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
+    std::string filePath = "cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
     std::string outPath = outDir + filePath;
     size_t found = outPath.find_last_of("/");
     std::string directory = outPath.substr(0, found);
