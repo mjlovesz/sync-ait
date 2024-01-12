@@ -131,13 +131,13 @@ class SeqHandler:
 
     @staticmethod
     def _store_api_seqs(seqs, id_dict=None, path='./'):
-        seqs_file = path + 'seqs.tmp.bin'
-        IOUtil.bin_safe_dump(seqs, seqs_file)
+        seqs_file = path + 'seqs.tmp.json'
+        IOUtil.json_safe_dump(seqs, seqs_file)
 
-        seqs_idx_file = path + 'seqs_idx.tmp.bin'
+        seqs_idx_file = path + 'seqs_idx.tmp.json'
         if not id_dict:
             id_dict = get_idx_tbl()
-        IOUtil.bin_safe_dump(id_dict, seqs_idx_file)
+        IOUtil.json_safe_dump(id_dict, seqs_idx_file)
 
     @staticmethod
     def debug_string(seqs, idx_dict=None):
@@ -249,9 +249,3 @@ def mining_api_seqs(seqs, idx_seq_dict=None):
     logger.debug('===============Sequences After Mining===============')
     handler.debug_string(all_seqs, idx_seq_dict)
     return all_seqs
-
-
-if __name__ == "__main__":
-    api_seqs = IOUtil.bin_safe_load('../../model/seqs.bin')
-    idx_seqs = IOUtil.bin_safe_load('../../model/seqs_idx.bin')
-    mining_api_seqs(api_seqs, idx_seqs)
