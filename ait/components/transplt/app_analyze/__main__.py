@@ -74,7 +74,7 @@ class TranspltCommand(BaseCommand):
             c_plus_include_path = f"{extra_path}:{c_plus_include_path}"
             os.environ["CPLUS_INCLUDE_PATH"] = c_plus_include_path
 
-    def handle(self, args):
+    def handle(self, args, **kwargs):
         log_util.set_logger_level(args.log_level)
         log_util.init_file_logger()
         self._set_env()
