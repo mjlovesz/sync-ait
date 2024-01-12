@@ -52,7 +52,7 @@ class FileMatrix:
         """
         make_names = ('makefile', 'gnumakefile')
         # "Makefile.g++_openmpi.20220217223008.bak.0"形如这种文件则为备份makefile文件需过滤
-        bak_file_check = re.match(r"(Makefile|makefile|config.mk)(.*)?(\.\d{14}\.bak\.0)$", file_name)
+        bak_file_check = re.match(r"^(Makefile|makefile|config.mk)\S+?\d{14}\.bak\.0$", file_name)
         if bak_file_check:
             return False
         is_makefile = file_name.lower() in make_names
