@@ -326,21 +326,63 @@ bool atb::Probe::ReportOperationStatisticEnable()
 
 void atb::Probe::ReportOperationSetupStatistic(const uint64_t executeCount, const std::string &opname, const std::string &st)
 {
-    std::string fileName = "./DUMP_DIR/cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
-    std::ofstream file(fileName);
-    if (file.is_open()) {
-        file << "[" << opname << "]:[" << st << "]" << std::endl;
-        file.close();
+    std::cout << "===================================ReportOperationSetupStatistic begin===================================" << std:endl;
+    std::cout << "executeCount" << executeCount << std:endl;
+    std::cout << "opname:" << opname << std:endl;
+    
+    // 得到文件保存地址
+    const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
+    std::string outDir = outputDir != nullptr? outputDir : "./";
+    std::string filePath = "DUMP_DIR/cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
+    std::string outPath = outDir + filePath;
+    size_t found = outPath.find_last_of("/");
+    std::string directory = outPath.substr(0, found);
+
+    // 检验地址是否存在
+    bool ret = CheckDirectory(directory);
+    if (!ret) {
+        std::cout << "Create directory failed: " << directory << std::endl;
+        return;
     }
+
+    std::ofstream file(outPath, std::ios_base::app);
+    if (file.is_open()) {
+        file << "[" << opname << "]:" << st << std::endl;
+        file.close();
+    } else {
+        std::cout << "Unable to open file!" << std::endl;
+    }
+    std::cout << "===================================ReportOperationSetupStatistic end===================================" << std:endl;
 }
 
 
 void atb::Probe::ReportOperationExecuteStatistic(const uint64_t executeCount, const std::string &opname, const std::string &st)
 {
-    std::string fileName = "./DUMP_DIR/cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
-    std::ofstream file(fileName, std::ios_base::app);
-    if (file.is_open()) {
-        file << "[" << opname << "]:[" << st << "]" << std::endl;
-        file.close();
+    std::cout << "===================================ReportOperationExecuteStatistic begin===================================" << std:endl;
+    std::cout << "executeCount" << executeCount << std:endl;
+    std::cout << "opname:" << opname << std:endl;
+    
+    // 得到文件保存地址
+    const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
+    std::string outDir = outputDir != nullptr? outputDir : "./";
+    std::string filePath = "DUMP_DIR/cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
+    std::string outPath = outDir + filePath;
+    size_t found = outPath.find_last_of("/");
+    std::string directory = outPath.substr(0, found);
+
+    // 检验地址是否存在
+    bool ret = CheckDirectory(directory);
+    if (!ret) {
+        std::cout << "Create directory failed: " << directory << std::endl;
+        return;
     }
+
+    std::ofstream file(outPath, std::ios_base::app);
+    if (file.is_open()) {
+        file << "[" << opname << "]:" << st << std::endl;
+        file.close();
+    } else {
+        std::cout << "Unable to open file!" << std::endl;
+    }
+    std::cout << "===================================ReportOperationExecuteStatistic end===================================" << std:endl;
 }
