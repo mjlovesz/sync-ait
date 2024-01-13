@@ -125,7 +125,7 @@ class DumpCommand(BaseCommand):
             required=False,
             type=safe_string,
             default='tensor',
-            help='The optional values are'
+            help='The optional values are: '
             'model|layer|op|kernel|tensor|cpu_profiling, '
             'model: the topology information of the model, '
             'layer: the topology information of the layer, '
