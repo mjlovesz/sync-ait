@@ -348,7 +348,6 @@ void atb::Probe::ReportOperationSetupStatistic(const uint64_t executeCount, cons
     } else {
         std::cout << "Unable to open file!" << std::endl;
     }
-    std::cout << "===================================ReportOperationSetupStatistic end===================================" << std::endl;
 }
 
 
@@ -376,5 +375,4 @@ void atb::Probe::ReportOperationExecuteStatistic(const uint64_t executeCount, co
     } else {
         std::cout << "Unable to open file!" << std::endl;
     }
-    std::cout << "===================================ReportOperationExecuteStatistic end===================================" << std::endl;
 }
