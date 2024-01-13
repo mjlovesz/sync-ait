@@ -43,7 +43,7 @@ def init_dump_task(args):
     os.environ[ATB_SAVE_TENSOR_RANGE] = str(args.range)
     os.environ[ATB_SAVE_TILING] = "1" if args.tiling else "0"
     os.environ[ATB_SAVE_TENSOR_PART] = str(args.save_tensor_part)
-    os.environ[ATB_SAVE_CPU_PROFILING] = "1" if args.cpu_profiling else "0"
+    os.environ[ATB_SAVE_CPU_PROFILING] = "1" if args.type.find("cpu_profiling") != -1 else "0"
     ld_preload = os.getenv(LD_PRELOAD)
     ld_preload = ld_preload or ""
     save_tensor_so_path = os.path.join(site.getsitepackages()[0], "llm/dump/backend/lib", \

@@ -119,13 +119,21 @@ class DumpCommand(BaseCommand):
                  '1 when only need dump outtensor, 2 both.Default 2')
         
         parser.add_argument(
-            '--type=cpu_profiling',
-            '-cp',
+            '--type',
+            '-tp',
+            dest="type",
             required=False,
-            dest="cpu_profiling",
-            action='store_true',
-            default=False,
-            help='Dump all data of CPU performance if True, do nothing if False'
+            type=safe_string,
+            default='tensor',
+            help='The optional values are'
+            'model|layer|op|kernel|tensor|cpu_profiling, '
+            'model: the topology information of the model, '
+            'layer: the topology information of the layer, '
+            'op: the information of the operation, '
+            'kernel: the information of the kernel, '
+            'tensor: the dump tensor, '
+            'cpu_profiling: dump cpu_profiling data, '
+            'The default value is tensor.'
         )
 
     def handle(self, args, **kwargs):
