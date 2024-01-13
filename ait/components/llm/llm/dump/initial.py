@@ -21,6 +21,14 @@ from llm.common.constant import ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, \
     ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD, ATB_SAVE_TENSOR_PART
 
 
+def is_torch_use_cxx11():
+    try:
+        import torch
+    except ModuleNotFoundError:
+        return False
+    return torch.compiled_with_cxx11_abi()
+
+
 def init_dump_task(args):
     if args.save_desc:
         os.environ[ATB_SAVE_TENSOR] = "2"
@@ -43,10 +51,16 @@ def init_dump_task(args):
     os.environ[ATB_SAVE_TENSOR_RANGE] = str(args.range)
     os.environ[ATB_SAVE_TILING] = "1" if args.tiling else "0"
     os.environ[ATB_SAVE_TENSOR_PART] = str(args.save_tensor_part)
+
+    cann_path = os.environ.get("ASCEND_TOOLKIT_HOME", "")
+    if not cann_path:
+        raise OSError("cann_path is empty")
+
+    save_tensor_so_name = "libatb_probe_abi1.so" if is_torch_use_cxx11() else "libatb_probe_abi0.so"
+    save_tensor_so_path = os.path.join(cann_path, "latest", "tools", "ait_backend", "dump", save_tensor_so_name)
+
     ld_preload = os.getenv(LD_PRELOAD)
     ld_preload = ld_preload or ""
-    save_tensor_so_path = os.path.join(site.getsitepackages()[0], "llm/dump/backend/lib", \
-                                       "libatb_probe.so")
     os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
 
 
