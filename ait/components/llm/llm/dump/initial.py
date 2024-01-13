@@ -18,7 +18,8 @@ import site
 
 from llm.common.constant import ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, \
     ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, ATB_SAVE_TENSOR_RANGE, \
-    ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD, ATB_SAVE_TENSOR_PART
+    ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD, ATB_SAVE_TENSOR_PART, \
+    ASCEND_TOOLKIT_HOME, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI
 
 
 def is_torch_use_cxx11():
@@ -52,12 +53,14 @@ def init_dump_task(args):
     os.environ[ATB_SAVE_TILING] = "1" if args.tiling else "0"
     os.environ[ATB_SAVE_TENSOR_PART] = str(args.save_tensor_part)
 
-    cann_path = os.environ.get("ASCEND_TOOLKIT_HOME", "")
+    cann_path = os.environ.get(ASCEND_TOOLKIT_HOME, "")
     if not cann_path:
         raise OSError("cann_path is empty")
 
-    save_tensor_so_name = "libatb_probe_abi1.so" if is_torch_use_cxx11() else "libatb_probe_abi0.so"
-    save_tensor_so_path = os.path.join(cann_path, "latest", "tools", "ait_backend", "dump", save_tensor_so_name)
+    save_tensor_so_name = ATB_PROB_LIB_WITH_ABI if is_torch_use_cxx11() else ATB_PROB_LIB_WITHOUT_ABI
+    save_tensor_so_path = os.path.join(cann_path, "tools", "ait_backend", "dump", save_tensor_so_name)
+    if not os.path.exists(save_tensor_so_path):
+        raise OSError(f"{save_tensor_so_name} is not found in cann_path {cann_path}")
 
     ld_preload = os.getenv(LD_PRELOAD)
     ld_preload = ld_preload or ""
