@@ -18,8 +18,32 @@
 
 在使用本工具之前，请**谨慎阅读并理解以上免责声明的内容**。对于使用本工具所产生的任何问题或疑问，请及时联系开发者。
 
-## 安装方式
-### 下载源码编译安装
+## 安装方式(任选其一即可)
+### 1. 下载whl包安装
+- 需要下载框架whl和工具whl。
+- ait 框架 whl:
+    | 版本  | 发布日期   | 平台 | CANN 版本 | whl 链接                                                                                                                                         | MD5 校验码                       |
+    | ----- | ---------- | ---- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+    | 0.1.0 | 2023/12/13 | arm  | 7.0.0.RC1 | [ait-0.0.1-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ait-0.0.1-py3-none-linux_aarch64.whl) | 271051e901bb3513c7a0edbd1e096cb2 |
+    | 0.1.0 | 2023/12/13 | x86  | 7.0.0.RC1 | [ait-0.0.1-py3-none-linux_x86_64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ait-0.0.1-py3-none-linux_x86_64.whl)   | 9903fa06b9ff76cba667abf0cbc4da50 |
+
+- ait-llm 工具 whl：
+
+    | 版本  | 发布日期   | 平台       | CANN 版本 | whl链接                                                                                                                                                       | MD5 校验码                       |
+    | ----- | ---------- | ---------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+    | 0.1.0 | 2023/12/13 | arm, abi=0 | 7.0.0.RC1 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI0/ait_llm-0.1.0-py3-none-linux_aarch64.whl) | 48215f3ce18881f60beab6fad88ce30a |
+    | 0.1.0 | 2023/12/13 | arm, abi=1 | 7.0.0.RC1 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI1/ait_llm-0.1.0-py3-none-linux_aarch64.whl) | b96e8e7e4786f1abcbec1458ca3ede5d |
+    | 0.1.0 | 2023/12/13 | x86, abi=0 | 7.0.0.RC1 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI0/ait_llm-0.1.0-py3-none-linux_x86_64.whl)      | c605e9d50891632a09b21e90403b5b96 |
+    | 0.1.0 | 2023/12/13 | x86, abi=1 | 7.0.0.RC1 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI1/ait_llm-0.1.0-py3-none-linux_x86_64.whl)      | ea88611dc4358f51a47f7659a36d5a48 |
+
+- 安装方式：
+    ```
+    # 安装框架whl
+    pip3 install ait-0.0.1-py3-none-linux_aarch64.whl
+    # 安装工具whl
+    pip3 install ait_llm-0.1.0-py3-none-linux_aarch64.whl
+    ```
+### 2. 下载源码编译安装
 - 需要下载ait仓后编译使用
 - 执行命令如下：
 ```
