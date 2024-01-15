@@ -20,22 +20,21 @@
 
 ## 安装方式(任选其一即可)
 ### 1. 下载whl包安装
-需要下载框架whl和工具whl。
-- 下载链接：
-    > 框架whl:
+- 需要下载框架whl和工具whl。
+- ait 框架 whl:
+    | 版本  | 发布日期   | 平台 | CANN 版本 | whl 链接                                                                                                                                         | MD5 校验码                       |
+    | ----- | ---------- | ---- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+    | 0.1.0 | 2023/12/13 | arm  | 7.0.0.RC1 | [ait-0.0.1-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ait-0.0.1-py3-none-linux_aarch64.whl) | 271051e901bb3513c7a0edbd1e096cb2 |
+    | 0.1.0 | 2023/12/13 | x86  | 7.0.0.RC1 | [ait-0.0.1-py3-none-linux_x86_64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ait-0.0.1-py3-none-linux_x86_64.whl)   | 9903fa06b9ff76cba667abf0cbc4da50 |
 
-    |名称| 平台   | whl链接 |
-    |----|--------|------------|
-    | ait | arm   |[ait-0.0.1-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ait-0.0.1-py3-none-linux_aarch64.whl)|
-    | ait | x86   |[ait-0.0.1-py3-none-linux_x86_64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ait-0.0.1-py3-none-linux_x86_64.whl)|            
-    > 工具whl：
+- ait-llm 工具 whl：
 
-    |名称| 平台   | CXX11_ABI  | whl链接 |
-    |----|--------|------------|-------------|
-    |ait-llm| arm    | abi=0 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI0/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
-    |ait-llm| arm    | abi=1 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI1/ait_llm-0.1.0-py3-none-linux_aarch64.whl) |
-    |ait-llm| x86    | abi=0 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI0/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
-    |ait-llm| x86    | abi=1 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI1/ait_llm-0.1.0-py3-none-linux_x86_64.whl) |
+    | 版本  | 发布日期   | 平台       | CANN 版本 | whl链接                                                                                                                                                       | MD5 校验码                       |
+    | ----- | ---------- | ---------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+    | 0.1.0 | 2023/12/13 | arm, abi=0 | 7.0.0.RC1 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI0/ait_llm-0.1.0-py3-none-linux_aarch64.whl) | 48215f3ce18881f60beab6fad88ce30a |
+    | 0.1.0 | 2023/12/13 | arm, abi=1 | 7.0.0.RC1 | [ait_llm-0.1.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI1/ait_llm-0.1.0-py3-none-linux_aarch64.whl) | b96e8e7e4786f1abcbec1458ca3ede5d |
+    | 0.1.0 | 2023/12/13 | x86, abi=0 | 7.0.0.RC1 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI0/ait_llm-0.1.0-py3-none-linux_x86_64.whl)      | c605e9d50891632a09b21e90403b5b96 |
+    | 0.1.0 | 2023/12/13 | x86, abi=1 | 7.0.0.RC1 | [ait_llm-0.1.0-py3-none-linux_x86.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI1/ait_llm-0.1.0-py3-none-linux_x86_64.whl)      | ea88611dc4358f51a47f7659a36d5a48 |
 
 - 安装方式：
     ```
@@ -54,8 +53,7 @@ chmod +x install.sh
 # 如果需要重装可在下面脚本执行添加 --force-reinstall
 ./install.sh --llm
 ```
-【注意】：源码安装ait-llm时，若abi=0，则需要增加--nabi参数
-### 3. 验证是否安装成功
+### 验证是否安装成功
 - 执行如下命令：
 ```
 ait llm -h
