@@ -311,3 +311,70 @@ bool atb::Probe::IsSaveOuttensor()
     }
     return false;
 }
+
+
+bool atb::Probe::ReportOperationStatisticEnable()
+{
+    const char* isSaveCpuProfiling = std::getenv("ATB_SAVE_CPU_PROFILING");
+    if (isSaveCpuProfiling == nullptr) {
+        return false;
+    }
+    int value = std::stoi(isSaveCpuProfiling);
+    return value;
+}
+
+
+void atb::Probe::ReportOperationSetupStatistic(const uint64_t executeCount, 
+    const std::string &opname, const std::string &st)
+{
+    // 得到文件保存地址
+    const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
+    std::string outDir = outputDir != nullptr? outputDir : "./";
+    std::string filePath = "cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
+    std::string outPath = outDir + filePath;
+    size_t found = outPath.find_last_of("/");
+    std::string directory = outPath.substr(0, found);
+
+    // 检验地址是否存在
+    bool ret = CheckDirectory(directory);
+    if (!ret) {
+        std::cout << "Create directory failed: " << directory << std::endl;
+        return;
+    }
+
+    std::ofstream file(outPath, std::ios_base::app);
+    if (file.is_open()) {
+        file << "[" << opname << "]:" << st << std::endl;
+        file.close();
+    } else {
+        std::cout << "Unable to open file!" << std::endl;
+    }
+}
+
+
+void atb::Probe::ReportOperationExecuteStatistic(const uint64_t executeCount, 
+    const std::string &opname, const std::string &st)
+{
+    // 得到文件保存地址
+    const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
+    std::string outDir = outputDir != nullptr? outputDir : "./";
+    std::string filePath = "cpu_statistic/operation_statistic_" + std::to_string(executeCount) + ".txt";
+    std::string outPath = outDir + filePath;
+    size_t found = outPath.find_last_of("/");
+    std::string directory = outPath.substr(0, found);
+
+    // 检验地址是否存在
+    bool ret = CheckDirectory(directory);
+    if (!ret) {
+        std::cout << "Create directory failed: " << directory << std::endl;
+        return;
+    }
+
+    std::ofstream file(outPath, std::ios_base::app);
+    if (file.is_open()) {
+        file << "[" << opname << "]:" << st << std::endl;
+        file.close();
+    } else {
+        std::cout << "Unable to open file!" << std::endl;
+    }
+}
