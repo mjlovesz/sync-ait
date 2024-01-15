@@ -324,7 +324,8 @@ bool atb::Probe::ReportOperationStatisticEnable()
 }
 
 
-void atb::Probe::ReportOperationSetupStatistic(const uint64_t executeCount, const std::string &opname, const std::string &st)
+void atb::Probe::ReportOperationSetupStatistic(const uint64_t executeCount, 
+    const std::string &opname, const std::string &st)
 {
     // 得到文件保存地址
     const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
@@ -351,7 +352,8 @@ void atb::Probe::ReportOperationSetupStatistic(const uint64_t executeCount, cons
 }
 
 
-void atb::Probe::ReportOperationExecuteStatistic(const uint64_t executeCount, const std::string &opname, const std::string &st)
+void atb::Probe::ReportOperationExecuteStatistic(const uint64_t executeCount, 
+    const std::string &opname, const std::string &st)
 {
     // 得到文件保存地址
     const char* outputDir = std::getenv("ATB_OUTPUT_DIR");
