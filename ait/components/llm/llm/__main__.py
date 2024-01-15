@@ -14,6 +14,7 @@
 
 
 import os
+import subprocess
 
 from components.utils.parser import BaseCommand
 from llm.common.utils import str2bool, check_positive_integer, safe_string, check_exec_cmd, \
@@ -124,7 +125,8 @@ class DumpCommand(BaseCommand):
             logger.warning("Please ensure that your execution command is secure.")
             init_dump_task(args)
             # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
-            os.system(args.exec)
+            cmds = args.exec.split()
+            subprocess.run(cmds, shell=False)
             clear_dump_task()
             return
 

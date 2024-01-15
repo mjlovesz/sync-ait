@@ -155,7 +155,7 @@ convert_dymshape_om()
     fi
 }
 
-# 基准路径 https://gitee.com/ascend/ModelZoo-PyTorch/tree/master/ACL_PyTorch/built-in/cv/Resnet101_Pytorch_Infer
+
 main()
 {
     SOC_VERSION=${1:-"Ascend310P3"}
