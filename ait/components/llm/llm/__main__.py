@@ -162,9 +162,10 @@ class CompareCommand(BaseCommand):
             '--type',
             dest="type",
             required=False,
+            nargs='+',
             default=['tensor'],
             choices=['model', 'layer', 'op', 'kernel', 'tensor', 'cpu_profiling'],
-            help='Log level, default info.')
+            help='dump type.')
 
 
     def handle(self, args, **kwargs):
