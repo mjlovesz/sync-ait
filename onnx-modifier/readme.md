@@ -289,24 +289,8 @@
 ## 打开om模型
 .om格式的模型是昇腾AI处理器支持的离线模型。onnx-modifier在打开模型的过程中可以选择.om后缀的模型文件，onnx-modifier能够可视化其模型结构。注意，对于om模型**仅支持可视化，不支持改图操作**。
 
-## 公网URL说明
+# 公网URL说明
 [公网URL说明](./公网URL使用说明.csv)
-
-# 外部链接网址
-
-| 网址                                      | 功能                                     |
-|-------------------------------------------|-----------------------------------------|
-| https://gitee.com/ascend/ait               | 本仓库位置      |
-| https://github.com/ZhangGe6               | 该仓库原始仓库位置，在About菜单中展示      |
-| https://arxiv.org/ | 算子说明信息        |
-| https://github.com/onnx/onnx/ | 算子说明信息 |
-| https://pytorch.org/docs/ | 算子说明信息 |
-| https://docs.scipy.org/doc/ | 算子说明信息 |
-| https://devblogs.nvidia.com/ | 算子说明信息 |
-| https://github.com/numpy/numpy/issues/8621 | 算子说明信息 |
-| https://en.wikipedia.org/wiki/ | 算子说明信息 |
-| https://papers.nips.cc/paper/ | 算子说明信息 |
-| https://ieeexplore.ieee.org/document | 算子说明信息 |
 
 # 常见问题 Q&A
 
