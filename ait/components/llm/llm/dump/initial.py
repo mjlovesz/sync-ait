@@ -20,7 +20,8 @@ from components.utils.file_open_check import FileStat
 from llm.common.constant import ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, \
     ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, ATB_SAVE_TENSOR_RANGE, \
     ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD, ATB_SAVE_TENSOR_PART, \
-    ASCEND_TOOLKIT_HOME, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI, ATB_SAVE_CPU_PROFILING
+    ASCEND_TOOLKIT_HOME, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI, ATB_SAVE_CPU_PROFILING, \
+    ATB_SAVE_OPERATION_INFO, ATB_SAVE_KERNEL_INFO
 
 
 def is_torch_use_cxx11():
@@ -62,6 +63,8 @@ def init_dump_task(args):
     os.environ[ATB_SAVE_TILING] = "1" if args.tiling else "0"
     os.environ[ATB_SAVE_TENSOR_PART] = str(args.save_tensor_part)
     os.environ[ATB_SAVE_CPU_PROFILING] = "1" if "cpu_profiling" in args.type else "0"
+    os.environ[ATB_SAVE_OPERATION_INFO] = "1" if "op" in args.type else "0"
+    os.environ[ATB_SAVE_KERNEL_INFO] = "1" if "kernel" in args.type else "0"
 
     cann_path = os.environ.get(ASCEND_TOOLKIT_HOME, "/usr/local/Ascend/ascend-toolkit/latest")
     if not cann_path or not os.path.exists(cann_path):
