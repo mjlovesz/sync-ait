@@ -34,7 +34,11 @@ def is_use_cxx11():
         raise OSError(f"{lib_atb_path} not exists, please make sure atb is compiled correctly")
 
     result_code, abi_result = subprocess.getstatusoutput(f"nm -D {lib_atb_path} | grep Probe | grep cxx11")
-    return result_code == 0 and len(abi_result) > 0
+    if result_code != 0:
+        logger.warning("Detecting abi status from atb so failed, will regard it as False")
+        return False
+    else:
+        return len(abi_result) > 0
 
 
 def init_dump_task(args):
