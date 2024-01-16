@@ -32,3 +32,4 @@ onnx-modifier/static/onnx-metadata.json,https://numpy.org/doc/stable/user/basics
 onnx-modifier/static/onnx-metadata.json,https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf,算子说明信息
 onnx-modifier/static/onnx-metadata.json,https://pytorch.org/docs/stable/nn.html#torch.nn.NLLLoss,算子说明信息
 onnx-modifier/static/view.js,https://git-lfs.github.com/,LFS header
+onnx-modifier/static/favicon.png,www.inkscape.org,PNG图片来源
