@@ -36,6 +36,7 @@ ait/components/benchmark/ais_bench/evaluate/dataset/download.sh,https://llm-data
 ait/components/benchmark/ais_bench/backend/setup.py,https://github.com/pybind/python_example/pull/53,注释中说明pylind11使用的参考对象，github pybind repo中pybind11的python使用样例
 ait/components/llm/setup.py,https://gitee.com/ascend/ait/ait/components/llm,用于ait-llm工具打包成python包的主页说明
 ait/components/debug/surgeon/setup.py,https://gitee.com/ascend/ait.git,ait的gitee仓地址
+ait/components/debug/surgeon/docs/img/inference.png,www.iodraw.com,样例图片文件中的来源
 ait/components/convert/setup.py,https://gitee.com/ascend/ait,ait的gitee仓地址
 ait/components/analyze/setup.py,https://gitee.com/ascend/ait,ait的gitee仓地址
 ait/components/transplt/config.ini,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip,ait transplt的配置文件下载地址
