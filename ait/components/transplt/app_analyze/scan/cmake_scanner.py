@@ -30,7 +30,7 @@ class CMakeScanner(Scanner):
     """
     cmake扫描器的具体子类
     """
-    PATTERN = r'(?:(?P<data>(?P<key_word>(.*?))(?P<data_inner>((?:\s*\()([^\)]+)))\)))'
+    PATTERN = r'^(?:(?P<data>(?P<key_word>(\w*?))(?P<data_inner>((?:\s*\()([^\)]+)))\)))'
     SAVE_VAR_INFO_INPUT = namedtuple('save_var_info_input',
                                      ['func_name', 'body', 'start_line', 'match_flag', 'var_def_dict'])
 
@@ -39,7 +39,7 @@ class CMakeScanner(Scanner):
         self.name = 'CMakelists.txt'
         self.var_rel_commands = ['set', 'find_file', 'find_library', 'find_path', 'aux_source_directory',
                                  'pkg_check_modules']
-        self.marco_pattern = r'\$\{(.*?)\}'
+        self.marco_pattern = r'\$\{[^{}]*?\}'
         self.pkg_pattern = r'PkgConfig::([0-9a-zA-Z]+)'
 
     @staticmethod
@@ -51,7 +51,7 @@ class CMakeScanner(Scanner):
         return flag
 
     @staticmethod
-    def _read_cmake_file_content(filepath):
+    def read_cmake_file_content(filepath):
         """
         功能：读取CMakelists.txt文件内容，并删除注释
         :param filepath:文件路径
@@ -106,7 +106,7 @@ class CMakeScanner(Scanner):
         获取自定义include_directories的路径
         return:返回自定义include_directories的路径列表
         """
-        pattern = r'include_directories\(([^)]+)\)'
+        pattern = r'include_directories\(([^()]+)\)'
         with open(file) as f:
             cmake_content = f.read()
         include_directories_pattern = re.compile(pattern, re.DOTALL)
@@ -142,7 +142,7 @@ class CMakeScanner(Scanner):
     @staticmethod
     def _extract_variable_path(path, set_customization_dir):
         """判断是否为类似${TEXT_DIR}/include自定义的其他路径"""
-        pattern = re.compile(r'\$\{([^}]+_DIR)\}/(.*)')
+        pattern = re.compile(r'\$\{([^{}]+_DIR)}/(.*)')
         match = pattern.match(path)
         if match:
             variable_name, path_after_variable = match.groups()
@@ -159,8 +159,8 @@ class CMakeScanner(Scanner):
 
     def _match_set_dir(self, file, set_customization_dir, root_dir):
         """匹配set的库路径，匹配的格式为set(XXXX_DIR /xxx/xxxx/xxxx)"""
-        set_pattern = re.compile(r'^set\((\w+_DIR)\s+([^)]+)\)')
-        get_filename_pattern = re.compile(r'^get_filename_component\((\w+_DIR)\s+([^)]+)\)')
+        set_pattern = re.compile(r'^set\((\w+_DIR)\s{1,20}([^)]+)\)')
+        get_filename_pattern = re.compile(r'^get_filename_component\((\w+_DIR)\s+([^\s()]+)\)')
         with open(file) as f:
             while True:
                 line = f.readline()
@@ -187,7 +187,7 @@ class CMakeScanner(Scanner):
             variable_value = os.path.join(root_dir, variable_value[len("${CMAKE_CURRENT_SOURCE_DIR}"):].lstrip("/"))
             return variable_value
         else:
-            pattern = re.compile(r'\$\{([^}]+)_SOURCE_DIR\}/?(.*)')
+            pattern = re.compile(r'\$\{([^{}]+)_SOURCE_DIR}/?(.*)')
             variable_value = pattern.sub(lambda match: os.path.join(root_dir, match.group(2)), variable_value)
         return variable_value
 
@@ -210,18 +210,28 @@ class CMakeScanner(Scanner):
 
     def _scan_cmake_function(self, filepath):
         rst_dict = {}
+
+        contents = self.read_cmake_file_content(filepath)
+        content_list = contents.split(")")
+        for content in content_list:
+            sentence = content + ")"
+            rst_dict.update(self._match_cmake_function(contents, sentence))
+
+        return list(rst_dict.values())
+
+    def _match_cmake_function(self, contents, sentence):
+        rst_dict = {}
         var_def_dict = OrderedDict()
 
-        contents = self._read_cmake_file_content(filepath)
-        match = re.finditer(CMakeScanner.PATTERN, contents, re.M)
+        match = re.finditer(CMakeScanner.PATTERN, sentence, re.M)
 
         for item in match:
-            start_line, end_line = scanner_utils.get_line_number(contents, item)
-
             content = item['data']
             func_name = item['key_word']
-
             body = item['data_inner']
+
+            start_line = contents.count("\n", 0, contents.index(content))
+
             match_flag = False
             if KitConfig.MACRO_PATTERN.search(content) or KitConfig.LIBRARY_PATTERN.search(
                     content) or KitConfig.FILE_PATTERN.search(content):
@@ -243,7 +253,7 @@ class CMakeScanner(Scanner):
                 func_name, body, start_line, match_flag, var_def_dict)
             self._save_var_info(save_var_info_input)
 
-        return list(rst_dict.values())
+        return rst_dict
 
     def _check_var_ref_info(self, body, start_line, var_def_dict):
         macros = []
