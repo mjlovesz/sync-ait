@@ -14,6 +14,7 @@
 
 
 import os
+import subprocess
 
 from components.utils.parser import BaseCommand
 from llm.common.utils import str2bool, check_positive_integer, safe_string, check_exec_cmd, \
@@ -118,13 +119,23 @@ class DumpCommand(BaseCommand):
             help='0 when only need dump intensor, '
                  '1 when only need dump outtensor, 2 both.Default 2')
 
+        parser.add_argument(
+            '--type',
+            dest="type",
+            required=False,
+            nargs='+',
+            default=['tensor'],
+            choices=['model', 'layer', 'op', 'kernel', 'tensor', 'cpu_profiling'],
+            help='dump type.')
+
     def handle(self, args, **kwargs):
         if args.exec:
             logger.info(f"About to execute command : {args.exec}")
             logger.warning("Please ensure that your execution command is secure.")
             init_dump_task(args)
             # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
-            os.system(args.exec)
+            cmds = args.exec.split()
+            subprocess.run(cmds, shell=False)
             clear_dump_task()
             return
 
