@@ -158,6 +158,16 @@ class CompareCommand(BaseCommand):
             type=str,
             help='Log level, default info.')
 
+        parser.add_argument(
+            '--type',
+            dest="type",
+            required=False,
+            nargs='+',
+            default=['tensor'],
+            choices=['model', 'layer', 'op', 'kernel', 'tensor', 'cpu_profiling'],
+            help='dump type.')
+
+
     def handle(self, args, **kwargs):
         set_log_level(args.log_level)
         acc_compare(args.golden_path, args.my_path)
