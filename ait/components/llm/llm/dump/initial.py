@@ -28,11 +28,11 @@ def is_use_cxx11():
     atb_home_path = os.environ.get(ATB_HOME_PATH, "")
     if not atb_home_path or not os.path.exists(atb_home_path):
         raise OSError("ATB_HOME_PATH from atb is required, but it is empty or invalid.")
-    lib_atb_path = os.path.join(atb_home_path, "libatb.so")
+    lib_atb_path = os.path.join(atb_home_path, "lib", "libatb.so")
     if not os.path.exists(lib_atb_path):
         raise OSError(f"{lib_atb_path} not exists, please make sure atb is compiled correctly")
 
-    result_code, abi_result = subprocess.getstatusouput(f"nm -D {lib_atb_path} | grep Probe | grep cxx11")
+    result_code, abi_result = subprocess.getstatusoutput(f"nm -D {lib_atb_path} | grep Probe | grep cxx11")
     return result_code == 0 and len(abi_result) > 0
 
 
