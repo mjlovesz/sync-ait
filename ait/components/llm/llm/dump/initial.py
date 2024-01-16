@@ -15,20 +15,25 @@
 
 import os
 import site
+import subprocess
 
 from components.utils.file_open_check import FileStat
-from llm.common.constant import ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, \
+from llm.common.constant import ATB_HOME_PATH, ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, \
     ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, ATB_SAVE_TENSOR_RANGE, \
     ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD, ATB_SAVE_TENSOR_PART, \
     ASCEND_TOOLKIT_HOME, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI, ATB_SAVE_CPU_PROFILING
 
 
-def is_torch_use_cxx11():
-    try:
-        import torch
-    except ModuleNotFoundError:
-        return False
-    return torch.compiled_with_cxx11_abi()
+def is_use_cxx11():
+    atb_home_path = os.environ.get(ATB_HOME_PATH, "")
+    if not atb_home_path or not os.path.exists(atb_home_path):
+        raise OSError("ATB_HOME_PATH from atb is required, but it is empty or invalid.")
+    lib_atb_path = os.path.join(atb_home_path, "libatb.so")
+    if not os.path.exists(lib_atb_path):
+        raise OSError(f"{lib_atb_path} not exists, please make sure atb is compiled correctly")
+
+    result_code, abi_result = subprocess.getstatusouput(f"nm -D {lib_atb_path} | grep Probe | grep cxx11")
+    return result_code == 0 and len(abi_result) > 0
 
 
 def init_dump_task(args):
@@ -67,7 +72,7 @@ def init_dump_task(args):
     if not cann_path or not os.path.exists(cann_path):
         raise OSError("cann_path is invalid, please install cann-toolkit and set the environment variables.")
 
-    save_tensor_so_name = ATB_PROB_LIB_WITH_ABI if is_torch_use_cxx11() else ATB_PROB_LIB_WITHOUT_ABI
+    save_tensor_so_name = ATB_PROB_LIB_WITH_ABI if is_use_cxx11() else ATB_PROB_LIB_WITHOUT_ABI
     save_tensor_so_path = os.path.join(cann_path, "tools", "ait_backend", "dump", save_tensor_so_name)
     if not os.path.exists(save_tensor_so_path):
         raise OSError(f"{save_tensor_so_name} is not found in {cann_path}. Try installing the latest cann-toolkit")
