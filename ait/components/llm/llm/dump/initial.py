@@ -18,6 +18,7 @@ import site
 import subprocess
 
 from components.utils.file_open_check import FileStat
+from llm.common.log import logger
 from llm.common.constant import ATB_HOME_PATH, ATB_SAVE_TENSOR_TIME, ATB_SAVE_TENSOR_IDS, \
     ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, ATB_SAVE_TENSOR_RANGE, \
     ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD, ATB_SAVE_TENSOR_PART, \
@@ -72,14 +73,16 @@ def init_dump_task(args):
     if not cann_path or not os.path.exists(cann_path):
         raise OSError("cann_path is invalid, please install cann-toolkit and set the environment variables.")
 
-    save_tensor_so_name = ATB_PROB_LIB_WITH_ABI if is_use_cxx11() else ATB_PROB_LIB_WITHOUT_ABI
+    cur_is_use_cxx11 = is_use_cxx11()
+    logger.debug(f"Info detected from ATB so is_use_cxx11: {cur_is_use_cxx11}")
+    save_tensor_so_name = ATB_PROB_LIB_WITH_ABI if cur_is_use_cxx11 else ATB_PROB_LIB_WITHOUT_ABI
     save_tensor_so_path = os.path.join(cann_path, "tools", "ait_backend", "dump", save_tensor_so_name)
     if not os.path.exists(save_tensor_so_path):
         raise OSError(f"{save_tensor_so_name} is not found in {cann_path}. Try installing the latest cann-toolkit")
     if not FileStat(save_tensor_so_path).is_basically_legal('read', strict_permission=True):
         raise OSError(f"{save_tensor_so_name} is illegal, group or others writable file stat is not permitted")
 
-
+    logger.debug(f"Append save_tensor_so_path: {save_tensor_so_path} to LD_PRELOAD")
     ld_preload = os.getenv(LD_PRELOAD)
     ld_preload = ld_preload or ""
     os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
