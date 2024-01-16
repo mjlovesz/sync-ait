@@ -232,8 +232,8 @@ class KitConfig:
     }
 
     API_INDEX_MAP = {
-        OPENCV: os.path.join(API_MAP_FOLDER, 'opencv.lut.bin'),
-        MxBASE: os.path.join(API_MAP_FOLDER, 'mxbase.lut.bin'),
+        OPENCV: os.path.join(API_MAP_FOLDER, 'opencv.lut.json'),
+        MxBASE: os.path.join(API_MAP_FOLDER, 'mxbase.lut.json'),
     }
     EXPERT_LIBS_FILE = os.path.join(API_MAP_FOLDER, 'expert_libs.json')
 

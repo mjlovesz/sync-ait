@@ -92,10 +92,10 @@ class Model:
 
     @staticmethod
     def clean_seqs(seqs_file, idx_seq_file):
-        idx_seq_dict = IOUtil.bin_safe_load(idx_seq_file)
+        idx_seq_dict = IOUtil.json_safe_load(idx_seq_file)
         set_api_lut(idx_seq_dict)
 
-        api_seqs = IOUtil.bin_safe_load(seqs_file)
+        api_seqs = IOUtil.json_safe_load(seqs_file)
         seqs = filter_api_seqs(api_seqs, idx_seq_dict)
         return api_seqs, seqs, idx_seq_dict
 
@@ -103,7 +103,7 @@ class Model:
     def export_expert_libs(path='./'):
         all_idx_dict = dict()
         for val in KitConfig.API_INDEX_MAP.values():
-            idx_seq_dict = IOUtil.bin_safe_load(val)
+            idx_seq_dict = IOUtil.json_safe_load(val)
             all_idx_dict.update(idx_seq_dict)
         set_api_lut(all_idx_dict)
 
