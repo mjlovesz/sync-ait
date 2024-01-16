@@ -37,6 +37,7 @@ ait/components/benchmark/ais_bench/backend/setup.py,https://github.com/pybind/py
 ait/components/llm/setup.py,https://gitee.com/ascend/ait/ait/components/llm,用于ait-llm工具打包成python包的主页说明
 ait/components/debug/surgeon/setup.py,https://gitee.com/ascend/ait.git,ait的gitee仓地址
 ait/components/debug/surgeon/docs/img/inference.png,www.iodraw.com,样例图片文件中的来源
+ait/components/debug/surgeon/test/dataset/test_img/cat.jpg,http://ns.adobe.com/xap/1.0/,样例图片文件中的来源
 ait/components/convert/setup.py,https://gitee.com/ascend/ait,ait的gitee仓地址
 ait/components/analyze/setup.py,https://gitee.com/ascend/ait,ait的gitee仓地址
 ait/components/transplt/config.ini,https://ait-resources.obs.cn-south-1.myhuaweicloud.com/config.zip,ait transplt的配置文件下载地址
