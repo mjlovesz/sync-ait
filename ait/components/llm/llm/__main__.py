@@ -119,6 +119,15 @@ class DumpCommand(BaseCommand):
             help='0 when only need dump intensor, '
                  '1 when only need dump outtensor, 2 both.Default 2')
 
+        parser.add_argument(
+            '--type',
+            dest="type",
+            required=False,
+            nargs='+',
+            default=['tensor'],
+            choices=['model', 'layer', 'op', 'kernel', 'tensor', 'cpu_profiling'],
+            help='dump type.')
+
     def handle(self, args, **kwargs):
         if args.exec:
             logger.info(f"About to execute command : {args.exec}")
@@ -157,16 +166,6 @@ class CompareCommand(BaseCommand):
             default="info",
             type=str,
             help='Log level, default info.')
-
-        parser.add_argument(
-            '--type',
-            dest="type",
-            required=False,
-            nargs='+',
-            default=['tensor'],
-            choices=['model', 'layer', 'op', 'kernel', 'tensor', 'cpu_profiling'],
-            help='dump type.')
-
 
     def handle(self, args, **kwargs):
         set_log_level(args.log_level)
