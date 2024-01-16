@@ -136,3 +136,6 @@ compare功能可以直接通过ait命令行形式启动精度对比。启动方�
 ### 常见问题FAQ
 
 * [compare常见问题](./FAQ.md)
+
+### 公网URL说明
+* [公网URL说明](../../../components/debug/compare/公网URL使用说明.xlsx)
