@@ -33,3 +33,7 @@ ATTR_OBJECT_COUNT = "$Object.Count"
 ATTR_OBJECT_PREFIX = "$Object."
 
 MAX_DATA_SIZE = 2 * 1024 * 1024 * 1024  # 2G
+
+ASCEND_TOOLKIT_HOME = "ASCEND_TOOLKIT_HOME"
+ATB_PROB_LIB_WITH_ABI = "libatb_probe_abi1.so"
+ATB_PROB_LIB_WITHOUT_ABI = "libatb_probe_abi0.so"
