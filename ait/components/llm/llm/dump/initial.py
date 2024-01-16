@@ -74,7 +74,7 @@ def init_dump_task(args):
         raise OSError("cann_path is invalid, please install cann-toolkit and set the environment variables.")
 
     cur_is_use_cxx11 = is_use_cxx11()
-    logger.debug(f"Info detected from ATB so is_use_cxx11: {cur_is_use_cxx11}")
+    logger.info(f"Info detected from ATB so is_use_cxx11: {cur_is_use_cxx11}")
     save_tensor_so_name = ATB_PROB_LIB_WITH_ABI if cur_is_use_cxx11 else ATB_PROB_LIB_WITHOUT_ABI
     save_tensor_so_path = os.path.join(cann_path, "tools", "ait_backend", "dump", save_tensor_so_name)
     if not os.path.exists(save_tensor_so_path):
@@ -82,7 +82,7 @@ def init_dump_task(args):
     if not FileStat(save_tensor_so_path).is_basically_legal('read', strict_permission=True):
         raise OSError(f"{save_tensor_so_name} is illegal, group or others writable file stat is not permitted")
 
-    logger.debug(f"Append save_tensor_so_path: {save_tensor_so_path} to LD_PRELOAD")
+    logger.info(f"Append save_tensor_so_path: {save_tensor_so_path} to LD_PRELOAD")
     ld_preload = os.getenv(LD_PRELOAD)
     ld_preload = ld_preload or ""
     os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
