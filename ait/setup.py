@@ -23,7 +23,7 @@ with open(os.path.join(abs_path, "requirements.txt")) as f:
 
 setup(
     name='ait',
-    version='0.0.1',
+    version='0.2.0',
     description='AIT, Ascend Inference Tools',
     long_description_content_type='text/markdown',
     url='https://gitee.com/ascend/ait',
