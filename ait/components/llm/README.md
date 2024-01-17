@@ -39,9 +39,9 @@
 
 - 安装方式：
   ```
-  # 安装框架whl
+  # 安装所需版本的框架 whl
   pip3 install ait-0.2.0-py3-none-linux_aarch64.whl
-  # 安装工具whl
+  # 安装所需版本的工具 whl
   pip3 install ait_llm-0.2.0-py3-none-linux_aarch64.whl
   ```
 ### 2. 下载源码编译安装
