@@ -22,9 +22,6 @@
   | ----- | ---------- | ---- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
   | 0.0.1 | 2023/12/13 | arm  | 7.0.0.RC1 | [ait-0.0.1-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ait-0.0.1-py3-none-linux_aarch64.whl) | 271051e901bb3513c7a0edbd1e096cb2 |
   | 0.0.1 | 2023/12/13 | x86  | 7.0.0.RC1 | [ait-0.0.1-py3-none-linux_x86_64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ait-0.0.1-py3-none-linux_x86_64.whl)   | 9903fa06b9ff76cba667abf0cbc4da50 |
-  |       |            |      |           |                                                                                                                                                  |                                  |
-  | 0.2.0 | 2024/01/17 | arm  | 8.0.RC1   | [ait-0.2.0-py3-none-linux_aarch64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20240117/ait-0.2.0-py3-none-linux_aarch64.whl) | 0d817c136b4a0e500b9eef4e63059382 |
-  | 0.2.0 | 2024/01/17 | x86  | 8.0.RC1   | [ait-0.2.0-py3-none-linux_x86_64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20240117/ait-0.2.0-py3-none-linux_x86_64.whl)   | c32a869882e5a06959096c93801def63 |
 
 - ait-llm 工具 whl：
   | 版本  | 发布日期   | 平台       | CANN 版本 | whl链接                                                                                                                                                       | MD5 校验码                       |
@@ -40,7 +37,7 @@
 - 安装方式：
   ```
   # 安装所需版本的框架 whl
-  pip3 install ait-0.2.0-py3-none-linux_aarch64.whl
+  pip3 install ait-0.0.1-py3-none-linux_aarch64.whl
   # 安装所需版本的工具 whl
   pip3 install ait_llm-0.2.0-py3-none-linux_aarch64.whl
   ```
