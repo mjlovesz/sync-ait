@@ -1,6 +1,7 @@
 # 大模型推理精度工具（Large Language Model Debug Tool)
 ## 简介
-大模型推理精度工具（llm）提供对大模型推理的数据落盘（dump）以及精度定位（compare）功能。
+- 大模型推理精度工具（llm）提供对大模型推理的数据落盘（dump）以及精度定位（compare）功能。
+- 使用依赖 CANN-toolkit，以及加速库 ATB
 
 ### 免责声明
 
