@@ -1353,7 +1353,7 @@ host.BrowserHost = class {
         (error && error.name ? error.name + ': ' : '') + (error && error.message ? error.message : '(null)')
       );
       if (error.stack) {
-        const match = error.stack.match(/\n {4}at (.*)\((.*)\)/);
+        const match = error.stack.match(/\n {4}at (.{1,100})\((.{1,100})\)/);
         if (match) {
           description.push(match[1] + '(' + match[2].split('/').pop() + ')');
         } else {
