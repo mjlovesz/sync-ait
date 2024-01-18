@@ -34,6 +34,13 @@
   | 0.1.0 | 2023/12/13 | x86, abi=0 | 7.0.0.RC1 | [ait_llm-0.1.0-py3-none-linux_x86_64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI0/ait_llm-0.1.0-py3-none-linux_x86_64.whl)   | c605e9d50891632a09b21e90403b5b96 | [llm大模型推理精度工具功能说明_v0.1.0](https://gitee.com/ascend/ait/tree/master/ait/docs/llm/llm大模型推理精度工具功能说明_v0.1.0.md)|
   | 0.1.0 | 2023/12/13 | x86, abi=1 | 7.0.0.RC1 | [ait_llm-0.1.0-py3-none-linux_x86_64.whl](https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI1/ait_llm-0.1.0-py3-none-linux_x86_64.whl)   | ea88611dc4358f51a47f7659a36d5a48 | [llm大模型推理精度工具功能说明_v0.1.0](https://gitee.com/ascend/ait/tree/master/ait/docs/llm/llm大模型推理精度工具功能说明_v0.1.0.md)|
 
+- 校验whl包是否正确
+  ```
+  # 校验whl包是否正确
+  md5sum xxxx.whl
+  ```
+  比对 md5 值与所提供的校验值一致
+
 - 安装方式：
   ```
   # 安装所需版本的框架 whl
