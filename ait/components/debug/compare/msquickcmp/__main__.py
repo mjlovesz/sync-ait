@@ -243,16 +243,6 @@ class AclCompare(BaseCommand):
             help='Set clean true if you want clean the dump data.E.g: --clean True')
 
     def handle(self, args, **kwargs):
-        if args.exec and check_exec_cmd(args.exec):
-            import subprocess
-
-            init_aclcmp_task(args.clean)
-            # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
-            cmds = args.exec.split()
-            subprocess.run(cmds, shell=False)
-            clear_aclcmp_task()
-            return
-
         if args.golden_path and args.my_path:
             compare_metadata(args.golden_path, args.my_path, args.output, args.clean)
             if args.clean and os.path.isdir(args.golden_path) and os.path.isdir(args.my_path):
