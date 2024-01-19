@@ -27,8 +27,14 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py"
 | -o, --output            | 指定dump数据的输出目录，默认为'./'，使用示例：-o aasx/sss | 否    |
 
 ### Dump 落盘位置
-- Dump默认落盘路径在当前目录下的atb_temp目录下，具体路径是`./atb_temp/tensors/{PID}_{TID}`目录下。
-- 如果指定 output 目录，则会生成在`{OUTPUT_DIR}/atb_temp/tensors/{PID}_{TID}`目录下。
+Dump默认落盘路径`{DUMP_DIR}`在当前目录下，如果指定output目录，落盘路径则为指定的`{OUTPUT_DIR}`。
+- tensor信息会生成在默认落盘路径的atb_temp目录下，具体路径是`{DUMP_DIR}/atb_temp/tensors/{PID}_{TID}`目录下。
+- layer信息会生成在默认落盘路径的ait_dump目录下，具体路径是`{DUMP_DIR}/ait_dump/layer/{PID}`目录下。
+- cpu_profiling信息会生成在默认落盘路径的ait_dump目录下，具体路径是`{DUMP_DIR}/ait_dump/cpu_profiling/{TIMESTAMP}/operation_statistic_{executeCount}.txt`。
+- 算子信息会生成在默认落盘路径的ait_dump目录下，具体路径是`{DUMP_DIR}/ait_dump/operation_io_tensors/{PID}/operation_tensors_{executeCount}.csv`。
+- kernel算子信息会生成在默认落盘路径的ait_dump目录下，具体路径是`{DUMP_DIR}/ait_dump/kerne_io_tensors/{PID}/kerne_tensors_{executeCount}.csv`。
+
+注：`{PID}`为进程号；`{TID}`为`token_id`；`{TIMESTAMP}`为时间戳；`{executeCount}`为`operation`运行次数。
 ***
 
 ## Compare 特性
