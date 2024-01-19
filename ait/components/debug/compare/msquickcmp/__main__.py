@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-import subprocess
 import re
 import shutil
 import argparse
@@ -245,10 +244,12 @@ class AclCompare(BaseCommand):
 
     def handle(self, args, **kwargs):
         if args.exec and check_exec_cmd(args.exec):
+            import subprocess
+
             init_aclcmp_task(args.clean)
             # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
             cmds = args.exec.split()
-            subprocess.run(cmds.split(), shell=False, stdout=subprocess.PIPE)
+            subprocess.run(cmds.split(), shell=False)
             clear_aclcmp_task()
             return
 
