@@ -36,10 +36,10 @@ def dump_data(token_id=0, data_id=0, golden_data=None, my_path='', output_path='
         np.save(golden_data_path, golden_data)
 
     json_path = os.path.join(output_path, "golden_tensor", "metadata.json")
-    write_json_file(data_id, golden_data_path, json_path, token_id)
+    write_json_file(data_id, golden_data_path, json_path, token_id, my_path)
             
 
-def write_json_file(data_id, data_path, json_path, token_id):
+def write_json_file(data_id, data_path, json_path, token_id, my_path):
     # 建议与json解耦，需要的时候用
     import json
 
@@ -48,6 +48,6 @@ def write_json_file(data_id, data_path, json_path, token_id):
             json_data = json.load(json_file)
     except FileNotFoundError:
         json_data = {}
-    json_data[data_id] = {token_id: data_path}
+    json_data[data_id] = {token_id: [data_path, my_path]}
     with ms_open(json_path, "w") as f:
         json.dump(json_data, f)
