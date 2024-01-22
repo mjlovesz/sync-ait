@@ -61,10 +61,7 @@ def init_dump_task(args):
         if "tensor" in args.type:
             atb_dump_path = os.path.join(args.output, 'atb_temp', 'tensors')
             os.makedirs(atb_dump_path, exist_ok=True)
-        if "layer" in args.type:
-            atb_dump_path = os.path.join(args.output, 'operation_graph')
-            os.makedirs(atb_dump_path, exist_ok=True) 
-    
+
     if args.type:
         os.environ['ATB_DUMP_TYPE'] = "|".join(args.type)
 
