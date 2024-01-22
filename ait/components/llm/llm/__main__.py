@@ -166,10 +166,19 @@ class CompareCommand(BaseCommand):
             default="info",
             type=str,
             help='Log level, default info.')
+        
+        parser.add_argument(
+            '--output',
+            '-o',
+            dest="output",
+            required=False,
+            type=check_output_path_legality,
+            default='./',
+            help='Data output directory.E.g:--output /xx/xxxx/xx')
 
     def handle(self, args, **kwargs):
         set_log_level(args.log_level)
-        acc_compare(args.golden_path, args.my_path)
+        acc_compare(args.golden_path, args.my_path, args.output)
 
 
 class LlmCommand(BaseCommand):
