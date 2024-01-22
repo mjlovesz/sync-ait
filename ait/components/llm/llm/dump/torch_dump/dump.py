@@ -41,6 +41,13 @@ class DumpConfig:
         self.tensor_part = tensor_part or "1"
         self.dump_flag = True
         self.token_id = 0
+        self.module_ids = {}
+        self.cur_module_id = 0
+
+    def update_module_ids(self, module_name):
+        self.cur_module_id += 1
+        if module_name not in self.module_ids:
+            self.module_ids[module_name] = self.cur_module_id
 
 
 def dump_tensor(feat, feat_path):
@@ -55,11 +62,14 @@ def dump_tensor(feat, feat_path):
 
 
 def dump_module_hook():
-    dump_config = DumpConfig()
     exec_count = 0
 
     def hook_func(module: torch.nn.Module, inputs, outputs):
         nonlocal exec_count
+        dump_config = DumpConfig()
+        if dump_config.token_id == 0:
+            dump_config.update_module_ids(module.name)
+
         if not dump_config.dump_flag:
             return
 
@@ -77,6 +87,8 @@ def dump_module_hook():
             dump_tensor(inputs, os.path.join(dump_path, "input_exec" + str(exec_count)))
             dump_tensor(outputs, os.path.join(dump_path, "output_exec" + str(exec_count)))
 
+        # 将dump_config.module_ids传给方锴的update接口，将模型树状信息保存成json文件。
+
     return hook_func
 
 
@@ -87,7 +99,7 @@ def set_dump_flag():
         nonlocal cur_token_id
         config = DumpConfig()
         # 通过root module执行的轮次来判断当前在第几个token
-        if module.name == "root" and (cur_token_id < config.start_token_id or cur_token_id > config.stop_token_id)
+        if module.name == "root" and (cur_token_id < config.start_token_id or cur_token_id > config.stop_token_id):
             config.dump_flag = False
 
         config.token_id = cur_token_id
