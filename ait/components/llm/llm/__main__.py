@@ -154,7 +154,7 @@ class CompareCommand(BaseCommand):
             '--my-path',
             '-mp',
             dest="my_path",
-            required=True,
+            required=False,
             type=check_input_path_legality,
             help='Compared data path. It supports directory or file.')
 
