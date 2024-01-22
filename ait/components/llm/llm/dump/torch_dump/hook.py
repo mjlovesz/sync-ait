@@ -29,82 +29,63 @@ from llm.dump.torch_dump.dump import DumpConfig, dump_tensor, dump_module_hook, 
 class HookModule:
     def __init__(self, model):
         self.model = model
-        self.tensor_ori_attr = {}
-        self.torch_ori_attr = {}
-        self.functional_ori_attr = {}
-        self.distributed_ori_attr = {}
-        self.npu_distributed_ori_attr = {}
-        self.vf_ori_attr = {}
-        self.aten_ori_attr = {}
-        self.torch_npu_ori_attr = {}
-
-        self.tensor_hook_attr = {}
-        self.torch_hook_attr = {}
-        self.functional_hook_attr = {}
-        self.distributed_hook_attr = {}
-        self.npu_distributed_hook_attr = {}
-        self.vf_hook_attr = {}
-        self.aten_hook_attr = {}
-        self.torch_npu_hook_attr = {}
         self.hook_torch_ops = get_torch_ops()
         self.hook_function_ops = get_functional_ops()
-        self.ori_module_attr = {}
-        self.dump_config = DumpConfig()
-
-    def store_ori_attr(self, module_name, api_list):
-        for api_name in api_list:
-            self.ori_module_attr[api_name] = getattr(module_name, api_name)
-
-    @staticmethod
-    def set_api_attr(api_group, attr_dict):
-        for api, api_attr in attr_dict.items():
-            setattr(api_group, api, api_attr)
-
-    def api_modularity(self):
-        self.set_api_attr(torch.Tensor, self.tensor_hook_attr)
-        self.set_api_attr(torch, self.torch_hook_attr)
-        self.set_api_attr(torch.nn.functional, self.functional_hook_attr)
-        if not is_gpu:
-            self.set_api_attr(torch_npu, self.torch_npu_hook_attr)
-
-    def api_originality(self):
-        self.set_api_attr(torch.Tensor, self.tensor_ori_attr)
-        self.set_api_attr(torch, self.torch_ori_attr)
-        self.set_api_attr(torch.nn.functional, self.functional_ori_attr)
+        self.ori_torch_ops_attr = {}
+        self.ori_function_ops_attr = {}
 
     def add_hook(self):
         self._add_module_hook()
         self._add_api_hook()
 
-    def reset_hook(self):
-        pass
+    def remove_hook(self):
+        self._remove_module_hook()
+        self._remove_api_hook()
 
     def _add_module_hook(self):
         model_name = "root"
 
         def add_hook(module, prefix=""):
-            module.register_forward_hook(dump_module_hook())
+            module.ait_forward_handle = module.register_forward_hook(dump_module_hook())
             module.name = prefix
             for name, child_module in module.named_children():
-                child_module.register_forward_hook(dump_module_hook())
+                module.ait_forward_handle = child_module.register_forward_hook(dump_module_hook())
                 child_module.name = prefix + "." + name
 
-            return
-        # 遗留保存module的顺序
         self.model.name = model_name
-        self.model.register_forward_pre_hook(set_dump_flag())
-        self.model.register_forward_hook(dump_module_hook())
-        for name_, module_ in self.model.named_children():
-            add_hook(module_, prefix=model_name+"."+name_)
+        self.model.ait_forward_pre_handle = self.model.register_forward_pre_hook(set_dump_flag())
+        add_hook(self.model, prefix=model_name)
+
+    def _remove_module_hook(self):
+        self.model.ait_forward_pre_handle.remove()
+        self.model.ait_forward_handle.remove()
+
+        def _remove_hook(module):
+            module.ait_forward_handle.remove()
+            for _, _child_module in module.named_children():
+                _remove_hook(_child_module)
+
+        _remove_hook(self.model)
 
     def _add_api_hook(self):
-        self.store_ori_attr(torch, self.hook_torch_ops)
         for ops in self.hook_torch_ops:
-            wrap_func(ops)
+            self.ori_torch_ops_attr[ops] = getattr(torch, ops)
+            new_ops = wrap_func(ops)
+            setattr(torch, ops, new_ops)
+            # self.new_torch_ops_attr[ops] = new_ops
 
-        self.store_ori_attr(torch.nn.functional, self.hook_function_ops)
         for ops in self.hook_function_ops:
-            wrap_func(ops)
+            self.ori_function_ops_attr[ops] = getattr(torch.nn.functional, ops)
+            new_ops = wrap_func(ops)
+            setattr(torch.nn.functional, ops, new_ops)
+            # self.new_function_ops_attr[ops] = new_ops
+
+    def _remove_api_hook(self):
+        for ops in self.hook_torch_ops:
+            setattr(torch, self.ori_torch_ops_attr.get(ops))
+
+        for ops in self.hook_function_ops:
+            setattr(torch.nn.functional, self.ori_function_ops_attr.get(ops))
 
 
 def wrap_func(func):
