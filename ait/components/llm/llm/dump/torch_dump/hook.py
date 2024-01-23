@@ -116,3 +116,10 @@ def wrap_func(func):
     return run
 
 
+def register_hook(model, dump_path="./", token_range=None, mode=None, module_list=None):
+    dump_config = DumpConfig(dump_path=dump_path, token_range=token_range, mode=mode, module_list=module_list)
+    hook_module = HookModule(model, dump_config)
+    hook_module.add_hook()
+
+
+

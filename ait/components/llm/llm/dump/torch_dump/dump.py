@@ -30,12 +30,11 @@ def singleton(cls):
 
 @singleton
 class DumpConfig:
-    def __init__(self, dump_path=None, mode=None, start_token_id=None, stop_token_id=None,
+    def __init__(self, dump_path=None, mode=None, token_range=None,
                  module_list=None, api_list=None, tensor_part=None):
         self.dump_path = dump_path or "./"
         self.mode = mode or "module"
-        self.start_token_id = start_token_id or 0
-        self.stop_token_id = stop_token_id or 0
+        self.token_range = token_range or 0
         self.module_list = module_list or []
         self.api_list = api_list or []
         self.tensor_part = tensor_part or "1"
@@ -105,7 +104,7 @@ def set_dump_flag():
         nonlocal cur_token_id
         config = DumpConfig()
         # 通过root module执行的轮次来判断当前在第几个token
-        if module.name == "root" and (cur_token_id < config.start_token_id or cur_token_id > config.stop_token_id):
+        if module.name == "root" and cur_token_id not in config.token_range:
             config.dump_flag = False
 
         config.token_id = cur_token_id
