@@ -19,7 +19,7 @@ import pandas as pd
 import json
 
 from llm.common.log import logger
-from llm.common.tool import read_atb_data, TensorBinFile
+from llm.common.tool import  TensorBinFile, read_atb_data
 from llm.compare.cmp_algorithm import CMP_ALG_MAP
 from llm.common.constant import (
     TOKEN_ID,
@@ -150,7 +150,7 @@ def compare_tensor(csv_data: pd.DataFrame, dump_clean=False):
             if acl_data_path.endswith(".npy"):
                 acl_data = np.load(acl_data_path)
             else:
-                acl_data = read_acl_transformer_data(acl_data_path)
+                acl_data = read_atb_data(acl_data_path)
         else:
             csv_data[CMP_FAIL_REASON][idx] = "acl_data_path is not exist."
             csv_data[CMP_FLAG][idx] = True
@@ -194,14 +194,3 @@ def _get_data_path(data, idx, data_src):
     data_path = data[path_key][idx]
     return data_path
 
-
-def read_acl_transformer_data(file_path):
-    if not os.path.exists(file_path):
-        raise FileNotFoundError("{} is not exists".format(file_path))
-
-    if file_path.endswith(".bin"):
-        bin_tensor = TensorBinFile(file_path)
-        data = bin_tensor.get_data()
-        return data
-
-    raise ValueError("Tensor file path must be end with .bin.")
