@@ -1,0 +1,52 @@
+import torch
+
+HOOK_OPS = {
+    torch: [
+        "threshold",
+        "threshold_",
+        "relu",
+        "relu_",
+        "glu",
+        "hardtanh",
+        "hardtanh_",
+        "relu6",
+        "elu",
+        "elu_",
+        "selu",
+        "selu_",
+        "celu"
+        "celu_",
+        "leaky_relu",
+        "leaky_relu_",
+        "prelu",
+        "rrelu",
+        "rrelu_",
+        "logsigmoid",
+        "gelu",
+        "hardshrink",
+        "tanhshrink",
+        "softsign",
+        "softplus",
+        "softmin",
+        "softmax",
+        "gumbel_softmax",
+        "log_softmax"
+        "softshrink",
+        "tanh",
+        "sigmoid",
+        "hardsigmoid",
+        "linear",
+        "bilinear",
+        "silu",
+        "hardswish",
+        "pixel_shuffle",
+        "pixel_unshuffle",
+        "channel_shuffle",
+        "upsample_nearest",
+        "upsample_bilinear",
+        "grid_sample",
+        "affine_grid",
+        "pdist",
+        "one_hot"
+    ]
+}
