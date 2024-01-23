@@ -24,14 +24,14 @@ from llm.compare.cmp_algorithm import CMP_ALG_MAP
 from llm.common.constant import (
     TOKEN_ID,
     DATA_ID,
-    ACL_DATA_PATH,
+    MY_DATA_PATH,
     CMP_FLAG,
     CMP_FAIL_REASON,
-    ACL_DTYPE,
-    ACL_SHAPE,
-    ACL_MAX_VALUE,
-    ACL_MIN_VALUE,
-    ACL_MEAN_VALUE,
+    MY_DTYPE,
+    MY_SHAPE,
+    MY_MAX_VALUE,
+    MY_MIN_VALUE,
+    MY_MEAN_VALUE,
     GOLDEN_DATA_PATH,
     GOLDEN_DTYPE,
     GOLDEN_SHAPE,
@@ -108,12 +108,12 @@ def manual_compare_metadata(golden_meta):
     for data_id, golden_info in golden_meta.items():
         for token_id, path_list in golden_info.items():
             golden_data_path = path_list[0]
-            acl_data_path = path_list[1]
-            if not acl_data_path:
-                logger.warning(f"acl data path is none.")
+            my_path = path_list[1]
+            if not my_path:
+                logger.warning(f"my data path is none.")
                 continue
-            if not os.path.exists(acl_data_path):
-                logger.warning(f"acl data path is not exists.")
+            if not os.path.exists(my_path):
+                logger.warning(f"my data path is not exists.")
                 continue
 
             row_data = pd.DataFrame(
@@ -121,7 +121,7 @@ def manual_compare_metadata(golden_meta):
                     TOKEN_ID: [str(token_id)],
                     DATA_ID: [data_id],
                     GOLDEN_DATA_PATH: [golden_data_path],
-                    ACL_DATA_PATH: [acl_data_path],
+                    MY_DATA_PATH: [my_path],
                     CMP_FLAG: [False],
                 }
             )
@@ -138,7 +138,7 @@ def compare_tensor(csv_data: pd.DataFrame, dump_clean=False):
 
     for idx in data.index:
         golden_data_path = _get_data_path(data, idx, data_src="golden")
-        acl_data_path = _get_data_path(data, idx, data_src="acl")
+        my_path = _get_data_path(data, idx, data_src="my")
 
         if os.path.exists(golden_data_path):
             golden_data = np.load(golden_data_path)
@@ -146,18 +146,18 @@ def compare_tensor(csv_data: pd.DataFrame, dump_clean=False):
             csv_data[CMP_FAIL_REASON][idx] = "golden_data_path is not exist."
             csv_data[CMP_FLAG][idx] = True
             continue
-        if os.path.exists(acl_data_path):
-            if acl_data_path.endswith(".npy"):
-                acl_data = np.load(acl_data_path)
+        if os.path.exists(my_path):
+            if my_path.endswith(".npy"):
+                my_data = np.load(my_path)
             else:
-                acl_data = read_atb_data(acl_data_path)
+                my_data = read_atb_data(my_path)
         else:
-            csv_data[CMP_FAIL_REASON][idx] = "acl_data_path is not exist."
+            csv_data[CMP_FAIL_REASON][idx] = "my_path is not exist."
             csv_data[CMP_FLAG][idx] = True
             continue
 
         golden_data_fp32 = golden_data.reshape(-1).astype("float32")
-        acl_data_fp32 = acl_data.reshape(-1).astype("float32")
+        my_data_fp32 = my_data.reshape(-1).astype("float32")
 
         csv_data[GOLDEN_DTYPE][idx] = str(golden_data.dtype)
         csv_data[GOLDEN_SHAPE][idx] = str(golden_data.shape)
@@ -165,29 +165,29 @@ def compare_tensor(csv_data: pd.DataFrame, dump_clean=False):
         csv_data[GOLDEN_MIN_VALUE][idx] = np.min(golden_data_fp32)
         csv_data[GOLDEN_MEAN_VALUE][idx] = np.mean(golden_data_fp32)
 
-        csv_data[ACL_DTYPE][idx] = str(acl_data.dtype)
-        csv_data[ACL_SHAPE][idx] = str(acl_data.shape)
-        csv_data[ACL_MAX_VALUE][idx] = np.max(acl_data_fp32)
-        csv_data[ACL_MIN_VALUE][idx] = np.min(acl_data_fp32)
-        csv_data[ACL_MEAN_VALUE][idx] = np.mean(acl_data_fp32)
+        csv_data[MY_DTYPE][idx] = str(my_data.dtype)
+        csv_data[MY_SHAPE][idx] = str(my_data.shape)
+        csv_data[MY_MAX_VALUE][idx] = np.max(my_data_fp32)
+        csv_data[MY_MIN_VALUE][idx] = np.min(my_data_fp32)
+        csv_data[MY_MEAN_VALUE][idx] = np.mean(my_data_fp32)
 
-        if len(golden_data_fp32) != len(acl_data_fp32):
+        if len(golden_data_fp32) != len(my_data_fp32):
             csv_data[CMP_FAIL_REASON][idx] = "data shape doesn't match."
             csv_data[CMP_FLAG][idx] = True
             continue
         for name, cmp_func in CMP_ALG_MAP.items():
-            result = cmp_func(golden_data_fp32, acl_data_fp32)
+            result = cmp_func(golden_data_fp32, my_data_fp32)
             csv_data[name][idx] = result
             csv_data[CMP_FLAG][idx] = True
         if dump_clean:
-            os.remove(acl_data_path)
+            os.remove(my_path)
             os.remove(golden_data_path)
     return csv_data    
 
 
 def _get_data_path(data, idx, data_src):
-    if data_src == "acl":
-        path_key = ACL_DATA_PATH
+    if data_src == "my":
+        path_key = MY_DATA_PATH
     else:
         path_key = GOLDEN_DATA_PATH
 
