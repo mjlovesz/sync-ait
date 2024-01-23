@@ -12,9 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
-import time
 
-import pandas as pd
 import numpy as np
 import torch
 from components.utils.file_open_check import ms_open
@@ -24,7 +22,7 @@ def dump_data(token_id=0, data_id=0, golden_data=None, my_path='', output_path='
     if golden_data is None:
         return
 
-    if golden_data is not None and not isinstance(golden_data, torch.Tensor):
+    if golden_data is not isinstance(golden_data, torch.Tensor):
         return
     
     golden_data_dir = os.path.join(output_path, "golden_tensor", str(token_id))
