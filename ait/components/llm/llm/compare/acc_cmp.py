@@ -88,10 +88,8 @@ def compare_data(golden_data, my_data):
 
 # 下面是和手动映射比对相关的
 def compare_metadata(golden_path, output_path="./", dump_clean=False):
-    if golden_path.endswith(".json"):
-        golden_meta_path = golden_path
-    else:
-        golden_meta_path = os.path.join(golden_path, "metadata.json")
+
+    golden_meta_path = os.path.join(golden_path, "metadata.json")
 
     with open(golden_meta_path, 'r') as file:
         golden_meta = json.load(file)
