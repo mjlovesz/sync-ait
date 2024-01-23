@@ -27,8 +27,9 @@ from llm.dump.torch_dump.dump import DumpConfig, dump_tensor, dump_module_hook, 
 
 
 class HookModule:
-    def __init__(self, model):
+    def __init__(self, model, dump_config=None):
         self.model = model
+        self.dump_config = dump_config
         self.hook_torch_ops = get_torch_ops()
         self.hook_function_ops = get_functional_ops()
         self.ori_torch_ops_attr = {}
@@ -96,6 +97,9 @@ def wrap_func(func):
         nonlocal forward_count
         output = func(*args, **kwargs)
         dump_config = DumpConfig()
+        if dump_config == "module":
+            return
+
         api_dump_path = os.path.join(dump_config.dump_path, func.__name__, str(forward_count))
         if not os.path.exists(api_dump_path):
             os.makedirs(api_dump_path)
