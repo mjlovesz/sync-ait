@@ -67,6 +67,12 @@ def dump_module_hook():
     def hook_func(module: torch.nn.Module, inputs, outputs):
         nonlocal exec_count
         dump_config = DumpConfig()
+        if dump_config.mode == "api":  # 仅dump api的数据
+            return
+        # 只dump指定module的数据
+        if dump_config.module_list and not isinstance(module, dump_config.module_list):
+            return
+
         if dump_config.token_id == 0:
             dump_config.update_module_ids(module.name)
 
