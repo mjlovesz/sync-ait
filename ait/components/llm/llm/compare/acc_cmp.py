@@ -21,7 +21,7 @@ import json
 from llm.common.log import logger
 from llm.common.tool import read_atb_data, TensorBinFile
 from llm.compare.cmp_algorithm import CMP_ALG_MAP
-from llm.compare.constant import (
+from llm.common.constant import (
     TOKEN_ID,
     DATA_ID,
     ACL_DATA_PATH,
@@ -32,9 +32,6 @@ from llm.compare.constant import (
     ACL_MAX_VALUE,
     ACL_MIN_VALUE,
     ACL_MEAN_VALUE,
-    ATTR_END,
-    ATTR_OBJECT_LENGTH,
-    ATTR_OBJECT_PREFIX,
     GOLDEN_DATA_PATH,
     GOLDEN_DTYPE,
     GOLDEN_SHAPE,

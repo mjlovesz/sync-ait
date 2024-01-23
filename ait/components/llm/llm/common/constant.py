@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+from llm.compare.cmp_algorithm import CMP_ALG_MAP
 
 ATB_HOME_PATH = "ATB_HOME_PATH"
 ATB_SAVE_TENSOR_TIME = "ATB_SAVE_TENSOR_TIME"
@@ -40,3 +40,50 @@ MAX_DATA_SIZE = 2 * 1024 * 1024 * 1024  # 2G
 ASCEND_TOOLKIT_HOME = "ASCEND_TOOLKIT_HOME"
 ATB_PROB_LIB_WITH_ABI = "libatb_probe_abi1.so"
 ATB_PROB_LIB_WITHOUT_ABI = "libatb_probe_abi0.so"
+
+ATTR_VERSION = "$Version"
+ATTR_END = "$End"
+ATTR_OBJECT_LENGTH = "$Object.Length"
+ATTR_OBJECT_COUNT = "$Object.Count"
+ATTR_OBJECT_PREFIX = "$Object."
+
+PTA = "pta"
+ACL = "acl"
+DATA_ID = 'data_id'
+TOKEN_ID = "token_id"
+ACL_DATA_PATH = 'acl_data_path'
+ACL_DTYPE = "acl_dtype"
+ACL_SHAPE = "acl_shape"
+ACL_MAX_VALUE = "acl_max_value"
+ACL_MIN_VALUE = "acl_min_value"
+ACL_MEAN_VALUE = "acl_mean_value"
+ACL_STACK = "acl_stack"
+GOLDEN_DATA_PATH = 'golden_data_path'
+GOLDEN_DTYPE = 'golden_dtype'
+GOLDEN_SHAPE = 'golden_shape'
+GOLDEN_MAX_VALUE = "golden_max_value"
+GOLDEN_MIN_VALUE = "golden_min_value"
+GOLDEN_MEAN_VALUE = "golden_mean_value"
+GOLDEN_STACK = "golden_stack"
+CMP_FLAG = "cmp_flag"
+CMP_FAIL_REASON = "cmp_fail_reason"
+CSV_GOLDEN_HEADER = [TOKEN_ID, DATA_ID, GOLDEN_DATA_PATH, GOLDEN_DTYPE, GOLDEN_SHAPE, GOLDEN_MAX_VALUE, GOLDEN_MIN_VALUE, GOLDEN_MEAN_VALUE,
+              ACL_DATA_PATH, ACL_DTYPE, ACL_SHAPE, ACL_MAX_VALUE, ACL_MIN_VALUE, ACL_MEAN_VALUE, CMP_FLAG]
+CSV_GOLDEN_HEADER.extend(list(CMP_ALG_MAP.keys()))
+CSV_GOLDEN_HEADER.append(CMP_FAIL_REASON)
+
+MODEL_INFER_TASK_ID = "AIT_CMP_TASK_ID"
+AIT_CMP_TASK_DIR = 'AIT_CMP_TASK_DIR'
+AIT_CMP_TASK = "AIT_CMP_TASK"
+AIT_CMP_TASK_PID = "AIT_CMP_TASK_PID"
+AIT_IS_SAVE_MD5 = "AIT_IS_SAVE_MD5"
+AIT_DIALOG_DUMP_PATH = "AIT_DIALOG_DUMP_PATH"
+AIT_DUMP_CLEAN = "AIT_DUMP_CLEAN"
+LD_PRELOAD = "LD_PRELOAD"
+
+ACL_DATA_MAP_FILE = "ait_compare_acl_map.txt"
+
+ACLTRANSFORMER_SAVE_TENSOR_MAX = "ACLTRANSFORMER_SAVE_TENSOR_MAX"
+ACLTRANSFORMER_SAVE_TENSOR = "ACLTRANSFORMER_SAVE_TENSOR"
+MAX_TOKEN_NUM = "10000"
+AIT_DUMP_PATH = "AIT_DUMP_PATH"
