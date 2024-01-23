@@ -152,6 +152,7 @@ def compare_data(golden_data, my_data):
         res_err.setdefault(name, result)
     return res_err
 
+
 # 下面是和手动映射比对相关的
 def compare_metadata(golden_path, output_path="./", dump_clean=False):
     if golden_path.endswith(".json"):
@@ -166,6 +167,7 @@ def compare_metadata(golden_path, output_path="./", dump_clean=False):
     cmp_data_frame = compare_tensor(data_frame, dump_clean)
     cmp_data_frame.dropna(axis=0, how="all", inplace=True)
     cmp_data_frame.to_csv(os.path.join(output_path, "cmp_report.csv"), index=False)
+
 
 def manual_compare_metadata(golden_meta):
     # 用于用户指定data_id的比对
@@ -193,6 +195,7 @@ def manual_compare_metadata(golden_meta):
 
             data_frame = pd.concat([data_frame, row_data], ignore_index=True)
     return data_frame
+
 
 def compare_tensor(csv_data: pd.DataFrame, dump_clean=False):
     csv_data.fillna(value="", inplace=True)
@@ -248,6 +251,7 @@ def compare_tensor(csv_data: pd.DataFrame, dump_clean=False):
             os.remove(golden_data_path)
     return csv_data    
 
+
 def _get_data_path(data, idx, data_src):
     if data_src == "acl":
         path_key = ACL_DATA_PATH
@@ -256,6 +260,7 @@ def _get_data_path(data, idx, data_src):
 
     data_path = data[path_key][idx]
     return data_path
+
 
 def read_acl_transformer_data(file_path):
     if not os.path.exists(file_path):
