@@ -19,7 +19,7 @@ import pandas as pd
 import json
 
 from llm.common.log import logger
-from llm.common.tool import  TensorBinFile, read_atb_data
+from llm.common.tool import read_atb_data
 from llm.compare.cmp_algorithm import CMP_ALG_MAP
 from llm.common.constant import (
     TOKEN_ID,
