@@ -22,18 +22,19 @@ except ImportError:
 else:
     is_gpu = False
 
-from llm.dump.torch_dump.util import get_torch_ops, get_functional_ops
 from llm.dump.torch_dump.dump import DumpConfig, dump_tensor, dump_module_hook, set_dump_flag
+from llm.dump.torch_dump.hook_ops import HOOK_OPS
 
 
 class HookModule:
     def __init__(self, model, dump_config=None):
         self.model = model
         self.dump_config = dump_config
-        self.hook_torch_ops = get_torch_ops()
-        self.hook_function_ops = get_functional_ops()
-        self.ori_torch_ops_attr = {}
-        self.ori_function_ops_attr = {}
+        # self.hook_torch_ops = HOOK_OPS.get(torch) or []
+        # self.hook_function_ops = HOOK_OPS.get(torch.nn.functional) or []
+        self.ori_torch_attr = {}
+        # self.new_torch_attr = {}
+        # self.ori_function_ops_attr = {}
 
     def add_hook(self):
         self._add_module_hook()
@@ -69,24 +70,41 @@ class HookModule:
         _remove_hook(self.model)
 
     def _add_api_hook(self):
-        for ops in self.hook_torch_ops:
-            self.ori_torch_ops_attr[ops] = getattr(torch, ops)
-            new_ops = wrap_func(ops)
-            setattr(torch, ops, new_ops)
-            # self.new_torch_ops_attr[ops] = new_ops
+        for py_module, api_list in HOOK_OPS.items():
+            ori_module_attrs = {}
+            for api_name in api_list:
+                if not hasattr(py_module, api_name):
+                    continue
+                api = getattr(py_module, api_name)
+                ori_module_attrs[api_name] = api_name
+                new_api = wrap_func(api)
+                setattr(py_module, api_name, new_api)  # hook api
 
-        for ops in self.hook_function_ops:
-            self.ori_function_ops_attr[ops] = getattr(torch.nn.functional, ops)
-            new_ops = wrap_func(ops)
-            setattr(torch.nn.functional, ops, new_ops)
+            self.ori_torch_attr[py_module] = ori_module_attrs
+
+        # for ops in self.hook_torch_ops:
+        #     self.ori_torch_ops_attr[ops] = getattr(torch, ops)
+        #     new_ops = wrap_func(ops)
+        #     setattr(torch, ops, new_ops)
+        #     # self.new_torch_ops_attr[ops] = new_ops
+        #
+        # for ops in self.hook_function_ops:
+        #     self.ori_function_ops_attr[ops] = getattr(torch.nn.functional, ops)
+        #     new_ops = wrap_func(ops)
+        #     setattr(torch.nn.functional, ops, new_ops)
             # self.new_function_ops_attr[ops] = new_ops
 
     def _remove_api_hook(self):
-        for ops in self.hook_torch_ops:
-            setattr(torch, self.ori_torch_ops_attr.get(ops))
-
-        for ops in self.hook_function_ops:
-            setattr(torch.nn.functional, self.ori_function_ops_attr.get(ops))
+        for py_module, ori_attrs in self.ori_torch_attr:
+            for api_name, api in ori_attrs:
+                if not hasattr(py_module, api_name):
+                    continue
+                setattr(py_module, api_name, api)
+        # for ops in self.hook_torch_ops:
+        #     setattr(torch, self.ori_torch_ops_attr.get(ops))
+        #
+        # for ops in self.hook_function_ops:
+        #     setattr(torch.nn.functional, self.ori_function_ops_attr.get(ops))
 
 
 def wrap_func(func):
