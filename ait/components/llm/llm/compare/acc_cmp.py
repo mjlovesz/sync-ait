@@ -19,7 +19,7 @@ import pandas as pd
 import json
 
 from llm.common.log import logger
-from llm.common.tool import read_atb_data
+from llm.common.tool import read_atb_data, TensorBinFile
 from llm.compare.cmp_algorithm import CMP_ALG_MAP
 from llm.compare.constant import (
     TOKEN_ID,
@@ -44,70 +44,6 @@ from llm.compare.constant import (
     CSV_GOLDEN_HEADER,
 )
 
-class TensorBinFile:
-    def __init__(self, file_path) -> None:
-        self.file_path = file_path
-        self.dtype = 0
-        self.format = 0
-        self.dims = []
-
-        self.__parse_bin_file()
-
-    def get_data(self):
-        if self.dtype == 0:
-            dtype = np.float32
-        elif self.dtype == 1:
-            dtype = np.float16
-        elif self.dtype == 2:  # int8
-            dtype = np.int8
-        elif self.dtype == 3:  # int32
-            dtype = np.int32
-        elif self.dtype == 9:  # int64
-            dtype = np.int64
-        elif self.dtype == 12:
-            dtype = np.bool_
-        else:
-            logger.error("Unsupport dtype:", self.dtype)
-            pass
-        data = np.frombuffer(self.obj_buffer, dtype=dtype)
-        data = data.reshape(self.dims)
-        return data
-
-    def __parse_bin_file(self):
-        with open(self.file_path, "rb") as fd:
-            file_data = fd.read()
-
-            begin_offset = 0
-            for i, byte in enumerate(file_data):
-                if byte == ord("\n"):
-                    line = file_data[begin_offset:i].decode("utf-8")
-                    begin_offset = i + 1
-                    fields = line.split("=")
-                    attr_name = fields[0]
-                    attr_value = fields[1]
-                    if attr_name == ATTR_END:
-                        self.obj_buffer = file_data[i + 1 :]
-                        break
-                    elif attr_name.startswith("$"):
-                        self.__parse_system_atrr(attr_name, attr_value)
-                    else:
-                        self.__parse_user_attr(attr_name, attr_value)
-                        pass
-
-    def __parse_system_atrr(self, attr_name, attr_value):
-        if attr_name == ATTR_OBJECT_LENGTH:
-            self.obj_len = int(attr_value)
-        elif attr_name == ATTR_OBJECT_PREFIX:
-            pass
-
-    def __parse_user_attr(self, attr_name, attr_value):
-        if attr_name == "dtype":
-            self.dtype = int(attr_value)
-        elif attr_name == "format":
-            self.format = int(attr_value)
-        elif attr_name == "dims":
-            self.dims = attr_value.split(",")
-            self.dims = [int(dim) for dim in self.dims]
 
 def acc_compare(golden_path, my_path, output_path):
     if os.path.isdir(golden_path): 
