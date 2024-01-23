@@ -177,7 +177,7 @@ def manual_compare_metadata(golden_meta):
             if not acl_data_path:
                 logger.warning(f"acl data path is none.")
                 continue
-            if os.path.exists(acl_data_path):
+            if not os.path.exists(acl_data_path):
                 logger.warning(f"acl data path is not exists.")
                 continue
 
