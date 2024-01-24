@@ -87,21 +87,20 @@ def compare_data(golden_data, my_data):
 
 
 # 下面是和手动映射比对相关的
-def compare_metadata(golden_path, output_path="./", dump_clean=False):
+def compare_metadata(golden_path, output_path="./"):
 
     golden_meta_path = os.path.join(golden_path, "metadata.json")
 
     with open(golden_meta_path, 'r') as file:
         golden_meta = json.load(file)
-        data_frame = manual_compare_metadata(golden_meta)
+        data_frame = fill_in_data(golden_meta)
 
-    cmp_data_frame = compare_tensor(data_frame, dump_clean)
+    cmp_data_frame = compare_tensor(data_frame)
     cmp_data_frame.dropna(axis=0, how="all", inplace=True)
     cmp_data_frame.to_csv(os.path.join(output_path, "cmp_report.csv"), index=False)
 
 
-def manual_compare_metadata(golden_meta):
-    # 用于用户指定data_id的比对
+def fill_in_data(golden_meta):
     data_frame = pd.DataFrame(columns=CSV_GOLDEN_HEADER, index=[0])
     for data_id, golden_info in golden_meta.items():
         for token_id, path_list in golden_info.items():
@@ -128,7 +127,7 @@ def manual_compare_metadata(golden_meta):
     return data_frame
 
 
-def compare_tensor(csv_data: pd.DataFrame, dump_clean=False):
+def compare_tensor(csv_data: pd.DataFrame):
     csv_data.fillna(value="", inplace=True)
     data = csv_data[csv_data[CMP_FLAG] == False]
     if data.empty:
@@ -177,9 +176,6 @@ def compare_tensor(csv_data: pd.DataFrame, dump_clean=False):
             result = cmp_func(golden_data_fp32, my_data_fp32)
             csv_data[name][idx] = result
             csv_data[CMP_FLAG][idx] = True
-        if dump_clean:
-            os.remove(my_path)
-            os.remove(golden_data_path)
     return csv_data    
 
 
