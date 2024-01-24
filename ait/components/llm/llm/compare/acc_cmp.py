@@ -97,7 +97,7 @@ def compare_metadata(golden_path, output_path="./"):
 
     # cmp_data_frame = compare_tensor(data_frame)
     data_frame.dropna(axis=0, how="all", inplace=True)
-    data_frame.to_csv(os.path.join(output_path, "cmp_report.csv"), index=False)
+    data_frame.to_csv(os.path.join(output_path, str(os.getpid()), "cmp_report.csv"), index=False)
 
 
 def fill_in_data(golden_meta):
