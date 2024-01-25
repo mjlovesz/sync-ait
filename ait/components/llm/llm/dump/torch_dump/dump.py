@@ -92,7 +92,7 @@ def dump_module_hook():
 
         exec_count += 1
         module_name = module.name
-        dump_path = os.path.join(dump_config.dump_path, dump_config.token_id, module_name)
+        dump_path = os.path.join(dump_config.dump_path, str(dump_config.token_id), module_name)
         if not os.path.exists(dump_path):
             os.makedirs(dump_path)
 

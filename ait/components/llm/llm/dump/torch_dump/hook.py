@@ -14,7 +14,7 @@
 import functools
 import os.path
 
-from llm.dump.torch_dump.dump import DumpConfig, dump_tensor, dump_module_hook, set_dump_flag
+from llm.dump.torch_dump.dump import DumpConfig, dump_data, dump_module_hook, set_dump_flag
 from llm.dump.torch_dump.hook_ops import HOOK_OPS
 
 
@@ -78,26 +78,21 @@ class HookModule:
 
 
 def wrap_func(func):
-    forward_count = 0
+    exec_count = 0
 
     @functools.wraps(func)
     def run(*args, **kwargs):
-        nonlocal forward_count
+        nonlocal exec_count
         output = func(*args, **kwargs)
         dump_config = DumpConfig()
         if dump_config == "module":
             return output
 
-        api_dump_path = os.path.join(dump_config.dump_path, func.__name__, str(forward_count))
+        api_dump_path = os.path.join(dump_config.dump_path, func.__name__, str(exec_count))
         if not os.path.exists(api_dump_path):
             os.makedirs(api_dump_path)
-        if dump_config.tensor_part == "1":
-            dump_tensor(output, os.path.join(api_dump_path, "output"))
-        elif dump_config.tensor_part == "0":
-            dump_tensor(args, os.path.join(api_dump_path, "input"))
-        else:
-            dump_tensor(args, os.path.join(api_dump_path, "input"))
-            dump_tensor(output, os.path.join(api_dump_path, "output"))
+
+        dump_data(args, output, api_dump_path, exec_count, dump_config.tensor_part)
 
         return output
 
