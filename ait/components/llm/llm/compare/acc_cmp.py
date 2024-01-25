@@ -88,7 +88,7 @@ def compare_data(golden_data, my_data):
 
 # 手动映射比对能力
 def compare_metadata(golden_path, output_path="./"):
-
+    curPid = str(os.getpid())
     golden_meta_path = os.path.join(golden_path, "metadata.json")
 
     with open(golden_meta_path, 'r') as file:
@@ -97,7 +97,10 @@ def compare_metadata(golden_path, output_path="./"):
 
     # cmp_data_frame = compare_tensor(data_frame)
     data_frame.dropna(axis=0, how="all", inplace=True)
-    data_frame.to_csv(os.path.join(output_path, str(os.getpid()), "cmp_report.csv"), index=False)
+    csv_data_path = os.path.join(output_path, curPid)
+    if not os.path.exists(csv_data_path):
+        os.makedirs(csv_data_path)
+    data_frame.to_csv(os.path.join(csv_data_path, "cmp_report.csv"), index=False)
 
 
 def fill_in_data(golden_meta):
