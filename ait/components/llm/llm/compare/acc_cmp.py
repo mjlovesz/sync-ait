@@ -103,41 +103,22 @@ def compare_metadata(golden_path, output_path="./"):
 
 
 def fill_in_data(golden_meta):
+    # 创建data_frame
     data_frame = pd.DataFrame(columns=CSV_GOLDEN_HEADER, index=[0])
+
     for data_id, golden_info in golden_meta.items():
         for token_id, path_list in golden_info.items():
+            
+            # 读取映射关系json文件中的tenor路径
             golden_data_path = path_list[0]
             my_path = path_list[1]
+
             # 创建一条比较数据
-            row_data = pd.DataFrame(
-                {
-                    TOKEN_ID: [str(token_id)],
-                    DATA_ID: [data_id],
-                    GOLDEN_DATA_PATH: [golden_data_path],
-                    MY_DATA_PATH: [my_path],
-                    CMP_FLAG: [False],
-                }
-            )
-            row_data.fillna(value="", inplace=True)
+            row_data = create_row_data(data_id, token_id, golden_data_path, my_path)
 
             # 检验my_path和golden data path是否存在并读取数据
-            if os.path.exists(golden_data_path):
-                golden_data = np.load(golden_data_path)
-            else:
-                logger.warning(f"golden data path is not exists.")
-                row_data[CMP_FAIL_REASON] = "golden_data_path is not exist."
-                row_data[CMP_FLAG] = True
-                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
-                continue
-            if os.path.exists(my_path):
-                if my_path.endswith(".npy"):
-                    my_data = np.load(my_path)
-                else:
-                    my_data = read_atb_data(my_path)
-            else:
-                logger.warning(f"my data path is not exists.")
-                row_data[CMP_FAIL_REASON] = "my_path is not exist."
-                row_data[CMP_FLAG] = True
+            path_is_exist, golden_data, my_data = check_data_path(golden_data_path, my_path, row_data)
+            if not path_is_exist:
                 data_frame = pd.concat([data_frame, row_data], ignore_index=True)
                 continue
 
@@ -145,55 +126,113 @@ def fill_in_data(golden_meta):
             golden_data_fp32 = golden_data.reshape(-1).astype("float32")
             my_data_fp32 = my_data.reshape(-1).astype("float32")
 
-            # 检验golden tensor和my tensor的shape是否一致
-            if len(golden_data_fp32) != len(my_data_fp32):
-                logger.warning(f"data shape doesn't match.")
-                row_data[CMP_FAIL_REASON] = "data shape doesn't match."
-                row_data[CMP_FLAG] = True
+            # 检查tensor的shape是否一致、是否存在NAN或inf
+            tensor_pass = check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
+            if not tensor_pass:
                 data_frame = pd.concat([data_frame, row_data], ignore_index=True)
                 continue
             
-            # 检验tensor中是否存在NAN或者inf
-            if not np.alltrue(np.isfinite(golden_data)):
-                logger.warning(f"golden_data include NAN or inf.")
-                row_data[CMP_FAIL_REASON] = "golden_data include NAN or inf."
-                row_data[CMP_FLAG] = True
-                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
-                continue
+            # 填充数据
+            write_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
 
-            if not np.alltrue(np.isfinite(my_data)):
-                logger.warning(f"my_data include NAN or inf.")
-                row_data[CMP_FAIL_REASON] = "my_data include NAN or inf."
-                row_data[CMP_FLAG] = True
-                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
-                continue
+            # 比较数据
+            compare_tensor(row_data, golden_data_fp32, my_data_fp32)
 
-            row_data[GOLDEN_DTYPE] = str(golden_data.dtype)
-            row_data[GOLDEN_SHAPE] = str(golden_data.shape)
-            row_data[GOLDEN_MAX_VALUE] = np.max(golden_data_fp32)
-            row_data[GOLDEN_MIN_VALUE] = np.min(golden_data_fp32)
-            row_data[GOLDEN_MEAN_VALUE] = np.mean(golden_data_fp32)
-            row_data[MY_DTYPE] = str(my_data.dtype)
-            row_data[MY_SHAPE] = str(my_data.shape)
-            row_data[MY_MAX_VALUE] = np.max(my_data_fp32)
-            row_data[MY_MIN_VALUE] = np.min(my_data_fp32)
-            row_data[MY_MEAN_VALUE] = np.mean(my_data_fp32)
-
-            for name, cmp_func in CMP_ALG_MAP.items():
-                if name == 'cosine_similarity':
-                    result, message = cmp_func(golden_data_fp32, my_data_fp32)
-                    if result == 'NaN':
-                        row_data[CMP_FAIL_REASON] = message
-                        row_data[name] = result
-                        row_data[CMP_FLAG] = True
-                    else:
-                        row_data[name] = result
-                        row_data[CMP_FLAG] = True
-                else:        
-                    result = cmp_func(golden_data_fp32, my_data_fp32)
-                    row_data[name] = result
-                    row_data[CMP_FLAG] = True
-
+            # 将数据写入data_frame的下一行
             data_frame = pd.concat([data_frame, row_data], ignore_index=True)
 
     return data_frame
+
+
+def create_row_data(data_id, token_id, golden_data_path, my_path):
+    row_data = pd.DataFrame(
+        {
+            TOKEN_ID: [str(token_id)],
+            DATA_ID: [data_id],
+            GOLDEN_DATA_PATH: [golden_data_path],
+            MY_DATA_PATH: [my_path],
+            CMP_FLAG: [False],
+        }
+    )
+    row_data.fillna(value="", inplace=True)
+
+    return row_data
+
+
+def check_data_path(golden_data_path, my_path, row_data):
+    path_is_exist = True
+    if os.path.exists(golden_data_path):
+        golden_data = np.load(golden_data_path)
+    else:
+        logger.warning(f"golden data path is not exists.")
+        row_data[CMP_FAIL_REASON] = "golden_data_path is not exist."
+        row_data[CMP_FLAG] = True
+        path_is_exist = False
+    if os.path.exists(my_path):
+        if my_path.endswith(".npy"):
+            my_data = np.load(my_path)
+        else:
+            my_data = read_atb_data(my_path)
+    else:
+        logger.warning(f"my data path is not exists.")
+        row_data[CMP_FAIL_REASON] = "my_path is not exist."
+        row_data[CMP_FLAG] = True
+        path_is_exist = False
+
+    return path_is_exist, golden_data, my_data
+
+
+def check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
+    tensor_pass = True
+    # 检验golden tensor和my tensor的shape是否一致
+    if len(golden_data_fp32) != len(my_data_fp32):
+        logger.warning(f"data shape doesn't match.")
+        row_data[CMP_FAIL_REASON] = "data shape doesn't match."
+        row_data[CMP_FLAG] = True
+        tensor_pass = False
+
+    # 检验golden_data中是否存在NAN或者inf
+    if not np.alltrue(np.isfinite(golden_data)):
+        logger.warning(f"golden_data include NAN or inf.")
+        row_data[CMP_FAIL_REASON] = "golden_data include NAN or inf."
+        row_data[CMP_FLAG] = True
+        tensor_pass = False
+
+    # 检验my_data中是否存在NAN或者inf
+    if not np.alltrue(np.isfinite(my_data)):
+        logger.warning(f"my_data include NAN or inf.")
+        row_data[CMP_FAIL_REASON] = "my_data include NAN or inf."
+        row_data[CMP_FLAG] = True
+        tensor_pass = False
+
+    return tensor_pass
+
+
+def write_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
+    row_data[GOLDEN_DTYPE] = str(golden_data.dtype)
+    row_data[GOLDEN_SHAPE] = str(golden_data.shape)
+    row_data[GOLDEN_MAX_VALUE] = np.max(golden_data_fp32)
+    row_data[GOLDEN_MIN_VALUE] = np.min(golden_data_fp32)
+    row_data[GOLDEN_MEAN_VALUE] = np.mean(golden_data_fp32)
+    row_data[MY_DTYPE] = str(my_data.dtype)
+    row_data[MY_SHAPE] = str(my_data.shape)
+    row_data[MY_MAX_VALUE] = np.max(my_data_fp32)
+    row_data[MY_MIN_VALUE] = np.min(my_data_fp32)
+    row_data[MY_MEAN_VALUE] = np.mean(my_data_fp32)
+
+
+def compare_tensor(row_data, golden_data_fp32, my_data_fp32):
+    for name, cmp_func in CMP_ALG_MAP.items():
+        if name == 'cosine_similarity':
+            result, message = cmp_func(golden_data_fp32, my_data_fp32)
+            if result == 'NaN':
+                row_data[CMP_FAIL_REASON] = message
+                row_data[name] = result
+                row_data[CMP_FLAG] = True
+            else:
+                row_data[name] = result
+                row_data[CMP_FLAG] = True
+        else:        
+            result = cmp_func(golden_data_fp32, my_data_fp32)
+            row_data[name] = result
+            row_data[CMP_FLAG] = True
