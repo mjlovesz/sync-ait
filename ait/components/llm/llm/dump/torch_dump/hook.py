@@ -14,14 +14,6 @@
 import functools
 import os.path
 
-import torch
-try:
-    import torch_npu
-except ImportError:
-    is_gpu = True
-else:
-    is_gpu = False
-
 from llm.dump.torch_dump.dump import DumpConfig, dump_tensor, dump_module_hook, set_dump_flag
 from llm.dump.torch_dump.hook_ops import HOOK_OPS
 
@@ -30,11 +22,7 @@ class HookModule:
     def __init__(self, model, dump_config=None):
         self.model = model
         self.dump_config = dump_config
-        # self.hook_torch_ops = HOOK_OPS.get(torch) or []
-        # self.hook_function_ops = HOOK_OPS.get(torch.nn.functional) or []
         self.ori_torch_attr = {}
-        # self.new_torch_attr = {}
-        # self.ori_function_ops_attr = {}
 
     def add_hook(self):
         self._add_module_hook()
@@ -51,8 +39,7 @@ class HookModule:
             module.ait_forward_handle = module.register_forward_hook(dump_module_hook())
             module.name = prefix
             for name, child_module in module.named_children():
-                module.ait_forward_handle = child_module.register_forward_hook(dump_module_hook())
-                child_module.name = prefix + "." + name
+                add_hook(child_module, prefix + "." + name)
 
         self.model.name = model_name
         self.model.ait_forward_pre_handle = self.model.register_forward_pre_hook(set_dump_flag())
@@ -82,41 +69,24 @@ class HookModule:
 
             self.ori_torch_attr[py_module] = ori_module_attrs
 
-        # for ops in self.hook_torch_ops:
-        #     self.ori_torch_ops_attr[ops] = getattr(torch, ops)
-        #     new_ops = wrap_func(ops)
-        #     setattr(torch, ops, new_ops)
-        #     # self.new_torch_ops_attr[ops] = new_ops
-        #
-        # for ops in self.hook_function_ops:
-        #     self.ori_function_ops_attr[ops] = getattr(torch.nn.functional, ops)
-        #     new_ops = wrap_func(ops)
-        #     setattr(torch.nn.functional, ops, new_ops)
-            # self.new_function_ops_attr[ops] = new_ops
-
     def _remove_api_hook(self):
         for py_module, ori_attrs in self.ori_torch_attr:
             for api_name, api in ori_attrs:
                 if not hasattr(py_module, api_name):
                     continue
                 setattr(py_module, api_name, api)
-        # for ops in self.hook_torch_ops:
-        #     setattr(torch, self.ori_torch_ops_attr.get(ops))
-        #
-        # for ops in self.hook_function_ops:
-        #     setattr(torch.nn.functional, self.ori_function_ops_attr.get(ops))
 
 
 def wrap_func(func):
     forward_count = 0
 
-    @functools.wraps
+    @functools.wraps(func)
     def run(*args, **kwargs):
         nonlocal forward_count
         output = func(*args, **kwargs)
         dump_config = DumpConfig()
         if dump_config == "module":
-            return
+            return output
 
         api_dump_path = os.path.join(dump_config.dump_path, func.__name__, str(forward_count))
         if not os.path.exists(api_dump_path):

@@ -31,17 +31,19 @@ def singleton(cls):
 @singleton
 class DumpConfig:
     def __init__(self, dump_path=None, mode=None, token_range=None,
-                 module_list=None, api_list=None, tensor_part=None):
+                 module_list=None, api_list=None, tensor_part=None, device_id=None):
         self.dump_path = dump_path or "./"
         self.mode = mode or "module"
-        self.token_range = token_range or 0
+        self.token_range = token_range or [0]
         self.module_list = module_list or []
         self.api_list = api_list or []
-        self.tensor_part = tensor_part or "1"
+        self.tensor_part = tensor_part
         self.dump_flag = True
         self.token_id = 0
         self.module_ids = {}
         self.cur_module_id = 0
+        self.device_id = device_id or 0
+        self.dump_dir = os.path.join(self.dump_path, "{}_{}".format(str(os.getpid()), str(self.device_id)))
 
     def update_module_ids(self, module_name):
         self.cur_module_id += 1
@@ -52,12 +54,22 @@ class DumpConfig:
 def dump_tensor(feat, feat_path):
     if isinstance(feat, (tuple, list)):
         for idx, tensor in enumerate(feat):
-            dump_tensor(tensor, "{}_{}.{}".format(feat_path, idx, "npy"))
+            dump_tensor(tensor, "{}_{}".format(feat_path, idx))
     elif isinstance(feat, torch.Tensor):
-        data = feat.cpu().numpy()
+        data = feat.cpu().detach().numpy()
         if not feat_path.endswith(".npy"):
             feat_path = feat_path + ".npy"
         np.save(feat_path, data)
+
+
+def dump_data(inputs, outputs, dump_path, exec_count, tensor_part):
+    if tensor_part == "0":
+        dump_tensor(inputs, os.path.join(dump_path, "output_exec" + str(exec_count)))
+    elif tensor_part == "1":
+        dump_tensor(outputs, os.path.join(dump_path, "input_exec" + str(exec_count)))
+    else:
+        dump_tensor(inputs, os.path.join(dump_path, "input_exec" + str(exec_count)))
+        dump_tensor(outputs, os.path.join(dump_path, "output_exec" + str(exec_count)))
 
 
 def dump_module_hook():
@@ -84,15 +96,12 @@ def dump_module_hook():
         if not os.path.exists(dump_path):
             os.makedirs(dump_path)
 
-        if dump_config.tensor_part == "1":
-            dump_tensor(outputs, os.path.join(dump_path, "output_exec" + str(exec_count)))
-        elif dump_config.tensor_part == "0":
-            dump_tensor(inputs, os.path.join(dump_path, "input_exec" + str(exec_count)))
-        else:
-            dump_tensor(inputs, os.path.join(dump_path, "input_exec" + str(exec_count)))
-            dump_tensor(outputs, os.path.join(dump_path, "output_exec" + str(exec_count)))
-
+        dump_data(inputs, outputs, dump_path, exec_count, dump_config.tensor_part)
         # 将dump_config.module_ids传给方锴的update接口，将模型树状信息保存成json文件。
+        if module.name == "root" and dump_config.token_id == 0:
+            import json
+            with open("module_ids.json", "w") as file:
+                json.dump(dump_config.module_ids, file)
 
     return hook_func
 
@@ -103,11 +112,13 @@ def set_dump_flag():
     def hook_func(module, inputs):
         nonlocal cur_token_id
         config = DumpConfig()
+        config.token_id = cur_token_id
         # 通过root module执行的轮次来判断当前在第几个token
-        if module.name == "root" and cur_token_id not in config.token_range:
+        if config.token_id in config.token_range:
+            config.dump_flag = True
+        else:
             config.dump_flag = False
 
-        config.token_id = cur_token_id
         cur_token_id += 1
         return
 
