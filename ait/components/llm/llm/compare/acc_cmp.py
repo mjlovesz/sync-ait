@@ -128,6 +128,7 @@ def fill_in_data(golden_meta):
                 logger.warning(f"golden data path is not exists.")
                 row_data[CMP_FAIL_REASON] = "golden_data_path is not exist."
                 row_data[CMP_FLAG] = True
+                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
                 continue
             if os.path.exists(my_path):
                 if my_path.endswith(".npy"):
@@ -138,6 +139,7 @@ def fill_in_data(golden_meta):
                 logger.warning(f"my data path is not exists.")
                 row_data[CMP_FAIL_REASON] = "my_path is not exist."
                 row_data[CMP_FLAG] = True
+                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
                 continue
 
             # 比较my tensor和golden tensor：
@@ -158,6 +160,7 @@ def fill_in_data(golden_meta):
             if len(golden_data_fp32) != len(my_data_fp32):
                 row_data[CMP_FAIL_REASON] = "data shape doesn't match."
                 row_data[CMP_FLAG] = True
+                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
                 continue
             for name, cmp_func in CMP_ALG_MAP.items():
                 result = cmp_func(golden_data_fp32, my_data_fp32)
