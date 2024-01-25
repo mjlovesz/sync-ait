@@ -146,6 +146,7 @@ def fill_in_data(golden_meta):
             golden_data_fp32 = golden_data.reshape(-1).astype("float32")
             my_data_fp32 = my_data.reshape(-1).astype("float32")
 
+            # 检验golden tensor和my tensor的shape是否一致
             if len(golden_data_fp32) != len(my_data_fp32):
                 logger.warning(f"data shape doesn't match.")
                 row_data[CMP_FAIL_REASON] = "data shape doesn't match."
@@ -153,6 +154,21 @@ def fill_in_data(golden_meta):
                 data_frame = pd.concat([data_frame, row_data], ignore_index=True)
                 continue
             
+            # 检验tensor中是否存在NAN或者inf
+            if not np.alltrue(np.isfinite(golden_data)):
+                logger.warning(f"golden_data include NAN or inf.")
+                row_data[CMP_FAIL_REASON] = "golden_data include NAN or inf."
+                row_data[CMP_FLAG] = True
+                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
+                continue
+
+            if not np.alltrue(np.isfinite(my_data)):
+                logger.warning(f"my_data include NAN or inf.")
+                row_data[CMP_FAIL_REASON] = "my_data include NAN or inf."
+                row_data[CMP_FLAG] = True
+                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
+                continue
+
             row_data[GOLDEN_DTYPE] = str(golden_data.dtype)
             row_data[GOLDEN_SHAPE] = str(golden_data.shape)
             row_data[GOLDEN_MAX_VALUE] = np.max(golden_data_fp32)
@@ -165,9 +181,19 @@ def fill_in_data(golden_meta):
             row_data[MY_MEAN_VALUE] = np.mean(my_data_fp32)
 
             for name, cmp_func in CMP_ALG_MAP.items():
-                result = cmp_func(golden_data_fp32, my_data_fp32)
-                row_data[name] = result
-                row_data[CMP_FLAG] = True
+                if name == 'cosine_similarity':
+                    result, message = cmp_func(golden_data_fp32, my_data_fp32)
+                    if result == 'NaN':
+                        row_data[CMP_FAIL_REASON] = message
+                        row_data[name] = result
+                        row_data[CMP_FLAG] = True
+                    else:
+                        row_data[name] = result
+                        row_data[CMP_FLAG] = True
+                else:        
+                    result = cmp_func(golden_data_fp32, my_data_fp32)
+                    row_data[name] = result
+                    row_data[CMP_FLAG] = True
 
             data_frame = pd.concat([data_frame, row_data], ignore_index=True)
 
