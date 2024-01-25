@@ -145,23 +145,24 @@ def fill_in_data(golden_meta):
             # 比较my tensor和golden tensor：
             golden_data_fp32 = golden_data.reshape(-1).astype("float32")
             my_data_fp32 = my_data.reshape(-1).astype("float32")
+            
+            if len(golden_data_fp32) != len(my_data_fp32):
+                row_data[CMP_FAIL_REASON] = "data shape doesn't match."
+                row_data[CMP_FLAG] = True
+                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
+                continue
+            
             row_data[GOLDEN_DTYPE] = str(golden_data.dtype)
             row_data[GOLDEN_SHAPE] = str(golden_data.shape)
             row_data[GOLDEN_MAX_VALUE] = np.max(golden_data_fp32)
             row_data[GOLDEN_MIN_VALUE] = np.min(golden_data_fp32)
             row_data[GOLDEN_MEAN_VALUE] = np.mean(golden_data_fp32)
-
             row_data[MY_DTYPE] = str(my_data.dtype)
             row_data[MY_SHAPE] = str(my_data.shape)
             row_data[MY_MAX_VALUE] = np.max(my_data_fp32)
             row_data[MY_MIN_VALUE] = np.min(my_data_fp32)
             row_data[MY_MEAN_VALUE] = np.mean(my_data_fp32)
 
-            if len(golden_data_fp32) != len(my_data_fp32):
-                row_data[CMP_FAIL_REASON] = "data shape doesn't match."
-                row_data[CMP_FLAG] = True
-                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
-                continue
             for name, cmp_func in CMP_ALG_MAP.items():
                 result = cmp_func(golden_data_fp32, my_data_fp32)
                 row_data[name] = result
