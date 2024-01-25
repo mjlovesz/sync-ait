@@ -19,13 +19,18 @@ from components.utils.file_open_check import ms_open
 from llm.common.log import logger
 
 def dump_data(token_id=-1, data_id=-1, golden_data=None, my_path='', output_path='./'):
-    if token_id == -1 or data_id == -1 or golden_data is None or my_path == '':
-        logger.warning('Please check whether the parameters passed in are correct')
+    if token_id == -1:
+        logger.warning('Please check whether token_id passed in are correct')
         return
-
-    if golden_data is not isinstance(golden_data, torch.Tensor):
+    elif data_id == -1:
+        logger.warning('Please check whether data_id passed in are correct')
+        return
+    elif golden_data is not isinstance(golden_data, torch.Tensor):
         logger.warning('The golden_data is not a torch tensor!')
         return
+    elif my_path == '':
+        logger.warning('Please check whether my_path passed in are correct')
+        return        
     
     golden_data_dir = os.path.join(output_path, "golden_tensor", str(token_id))
     if not os.path.exists(golden_data_dir):
