@@ -19,7 +19,7 @@ from components.utils.file_open_check import ms_open
 from llm.common.log import logger
 
 def dump_data(token_id=-1, data_id=-1, golden_data=None, my_path='', output_path='./'):
-    
+    # 传参失败的提示
     if token_id == -1:
         logger.warning('Please check whether token_id passed in are correct')
         return
