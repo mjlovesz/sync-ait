@@ -145,8 +145,9 @@ def fill_in_data(golden_meta):
             # 比较my tensor和golden tensor：
             golden_data_fp32 = golden_data.reshape(-1).astype("float32")
             my_data_fp32 = my_data.reshape(-1).astype("float32")
-            
+
             if len(golden_data_fp32) != len(my_data_fp32):
+                logger.warning(f"data shape doesn't match.")
                 row_data[CMP_FAIL_REASON] = "data shape doesn't match."
                 row_data[CMP_FLAG] = True
                 data_frame = pd.concat([data_frame, row_data], ignore_index=True)
