@@ -95,7 +95,6 @@ def compare_metadata(golden_path, output_path="./"):
         golden_meta = json.load(file)
         data_frame = fill_in_data(golden_meta)
 
-    # cmp_data_frame = compare_tensor(data_frame)
     data_frame.dropna(axis=0, how="all", inplace=True)
     csv_data_path = os.path.join(output_path, curPid)
     if not os.path.exists(csv_data_path):
@@ -142,7 +141,7 @@ def fill_in_data(golden_meta):
                 data_frame = pd.concat([data_frame, row_data], ignore_index=True)
                 continue
 
-            # 比较my tensor和golden tensor：
+            # 转换数据格式：
             golden_data_fp32 = golden_data.reshape(-1).astype("float32")
             my_data_fp32 = my_data.reshape(-1).astype("float32")
 
@@ -198,66 +197,3 @@ def fill_in_data(golden_meta):
             data_frame = pd.concat([data_frame, row_data], ignore_index=True)
 
     return data_frame
-
-
-# def compare_tensor(csv_data: pd.DataFrame):
-#     csv_data.fillna(value="", inplace=True)
-#     data = csv_data[csv_data[CMP_FLAG] == False]
-#     if data.empty:
-#         return csv_data
-
-#     for idx in data.index:
-#         golden_data_path = _get_data_path(data, idx, data_src="golden")
-#         my_path = _get_data_path(data, idx, data_src="my")
-
-#         if os.path.exists(golden_data_path):
-#             golden_data = np.load(golden_data_path)
-#         else:
-#             csv_data[CMP_FAIL_REASON][idx] = "golden_data_path is not exist."
-#             csv_data[CMP_FLAG][idx] = True
-#             continue
-#         if os.path.exists(my_path):
-#             if my_path.endswith(".npy"):
-#                 my_data = np.load(my_path)
-#             else:
-#                 my_data = read_atb_data(my_path)
-#         else:
-#             csv_data[CMP_FAIL_REASON][idx] = "my_path is not exist."
-#             csv_data[CMP_FLAG][idx] = True
-#             continue
-
-#         golden_data_fp32 = golden_data.reshape(-1).astype("float32")
-#         my_data_fp32 = my_data.reshape(-1).astype("float32")
-
-#         csv_data[GOLDEN_DTYPE][idx] = str(golden_data.dtype)
-#         csv_data[GOLDEN_SHAPE][idx] = str(golden_data.shape)
-#         csv_data[GOLDEN_MAX_VALUE][idx] = np.max(golden_data_fp32)
-#         csv_data[GOLDEN_MIN_VALUE][idx] = np.min(golden_data_fp32)
-#         csv_data[GOLDEN_MEAN_VALUE][idx] = np.mean(golden_data_fp32)
-
-#         csv_data[MY_DTYPE][idx] = str(my_data.dtype)
-#         csv_data[MY_SHAPE][idx] = str(my_data.shape)
-#         csv_data[MY_MAX_VALUE][idx] = np.max(my_data_fp32)
-#         csv_data[MY_MIN_VALUE][idx] = np.min(my_data_fp32)
-#         csv_data[MY_MEAN_VALUE][idx] = np.mean(my_data_fp32)
-
-#         if len(golden_data_fp32) != len(my_data_fp32):
-#             csv_data[CMP_FAIL_REASON][idx] = "data shape doesn't match."
-#             csv_data[CMP_FLAG][idx] = True
-#             continue
-#         for name, cmp_func in CMP_ALG_MAP.items():
-#             result = cmp_func(golden_data_fp32, my_data_fp32)
-#             csv_data[name][idx] = result
-#             csv_data[CMP_FLAG][idx] = True
-#     return csv_data    
-
-
-# def _get_data_path(data, idx, data_src):
-#     if data_src == "my":
-#         path_key = MY_DATA_PATH
-#     else:
-#         path_key = GOLDEN_DATA_PATH
-
-#     data_path = data[path_key][idx]
-#     return data_path
-
