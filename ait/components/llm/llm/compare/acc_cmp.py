@@ -216,13 +216,9 @@ def fill_row_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data
 
 def compare_tensor(row_data, golden_data_fp32, my_data_fp32):
     for name, cmp_func in CMP_ALG_MAP.items():
-        if name == 'cosine_similarity':
-            result, message = cmp_func(golden_data_fp32, my_data_fp32)
-            if result == 'NaN':
-                row_data[CMP_FAIL_REASON] = message
-                row_data[name] = result
-            else:
-                row_data[name] = result
-        else:        
-            result = cmp_func(golden_data_fp32, my_data_fp32)
+        result, message = cmp_func(golden_data_fp32, my_data_fp32)
+        if result == 'NaN':
+            row_data[CMP_FAIL_REASON] = message
+            row_data[name] = result
+        else:
             row_data[name] = result
