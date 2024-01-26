@@ -180,6 +180,7 @@ def check_data_path(golden_data_path, my_path, row_data):
 
 def check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
     tensor_pass = True
+    row_data[CMP_FAIL_REASON] = ''
     # 检验golden tensor和my tensor的shape是否一致
     if len(golden_data_fp32) != len(my_data_fp32):
         logger.warning(f"data shape doesn't match.")
