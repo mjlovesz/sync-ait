@@ -15,6 +15,14 @@ ait/components/debug/compare/Dockerfile,https://pypi.tuna.tsinghua.edu.cn/simple
 ait/components/debug/compare/setup.py,https://gitee.com/ascend/ait/tree/master/ait/components/debug/compare,用于compare组件打包成python包的主页说明
 ait/components/debug/compare/tests/get_pth_resnet18_model.sh,https://download.pytorch.org/models/resnet18-f37072fd.pth,用于下载compare组件测试用例所需的开源模型
 ait/components/debug/compare/tests/get_pth_resnet18_model.sh,https://gitee.com/ascend/ModelZoo-PyTorch/raw/master/ACL_PyTorch/built-in/cv/Resnet18_for_PyTorch/resnet18_pth2onnx.py,用于下载compare组件测试用例所需的开源模型
+ait/components/llm/README.md,https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ait-0.0.1-py3-none-linux_aarch64.whl,ait预编译whl包下载地址
+ait/components/llm/README.md,https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231213/ait-0.0.1-py3-none-linux_x86_64.whl,ait预编译whl包下载地址
+ait/components/llm/README.md,https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI0/ait_llm-0.1.0-py3-none-linux_aarch64.whl,ait_llm预编译whl包下载地址
+ait/components/llm/README.md,https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI1/ait_llm-0.1.0-py3-none-linux_aarch64.whl,ait_llm预编译whl包下载地址
+ait/components/llm/README.md,https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI0/ait_llm-0.1.0-py3-none-linux_x86_64.whl,ait_llm预编译whl包下载地址
+ait/components/llm/README.md,https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20231226/ABI1/ait_llm-0.1.0-py3-none-linux_x86_64.whl,ait_llm预编译whl包下载地址
+ait/components/llm/README.md,https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20240117/ait_llm-0.2.0-py3-none-linux_aarch64.whl,ait_llm预编译whl包下载地址
+ait/components/llm/README.md,https://ais-bench.obs.cn-north-4.myhuaweicloud.com/compare/20240117/ait_llm-0.2.0-py3-none-linux_x86_64.whl,ait_llm预编译whl包下载地址
 ait/examples/cli/debug/compare/12_pta_acl_cmp_weight_map/matched_pie.png,https://matplotlib.org/,样例图片文件中的来源
 ait/components/benchmark/test/test.sh,https://aisbench.obs.myhuaweicloud.com/packet/msame/x86/msame,aisbench obs桶上存放的下x86_64架构上使用的msame推理工具，用于在DT代码中和benchmark推理工具的推理效果进行比较
 ait/components/benchmark/test/test.sh,https://aisbench.obs.myhuaweicloud.com/packet/msame/arm/msame,aisbench obs桶上存放的下aarch64架构上使用的msame推理工具，用于在DT代码中和benchmark推理工具的推理效果进行比较
