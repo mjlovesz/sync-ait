@@ -45,7 +45,7 @@ def max_relative_error(golden_data: np.ndarray, my_data: np.ndarray):
         np.abs(my_data / golden_data - 1),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
         0,
     ).max()
-    return result
+    return result, ''
 
 
 def mean_relative_error(golden_data: np.ndarray, my_data: np.ndarray):
@@ -54,7 +54,7 @@ def mean_relative_error(golden_data: np.ndarray, my_data: np.ndarray):
         np.abs(my_data / golden_data - 1),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
         0,
     ).mean()
-    return result
+    return result, ''
 
 
 def relative_euclidean_distance(golden_data: np.ndarray, my_data: np.ndarray):
@@ -63,7 +63,7 @@ def relative_euclidean_distance(golden_data: np.ndarray, my_data: np.ndarray):
         result = 0.0
     else:
         result = ((my_data - golden_data) ** 2).sum() / ground_truth_square_num
-    return result
+    return result, ''
 
 
 CMP_ALG_MAP = {
