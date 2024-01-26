@@ -25,7 +25,6 @@ from llm.common.constant import (
     TOKEN_ID,
     DATA_ID,
     MY_DATA_PATH,
-    CMP_FLAG,
     CMP_FAIL_REASON,
     MY_DTYPE,
     MY_SHAPE,
@@ -151,7 +150,6 @@ def create_row_data(data_id, token_id, golden_data_path, my_path):
             DATA_ID: [data_id],
             GOLDEN_DATA_PATH: [golden_data_path],
             MY_DATA_PATH: [my_path],
-            CMP_FLAG: [False],
         }
     )
     row_data.fillna(value="", inplace=True)
@@ -166,7 +164,6 @@ def check_data_path(golden_data_path, my_path, row_data):
     else:
         logger.warning(f"golden data path is not exists.")
         row_data[CMP_FAIL_REASON] = "golden_data_path is not exist."
-        row_data[CMP_FLAG] = True
         path_is_exist = False
     if os.path.exists(my_path):
         if my_path.endswith(".npy"):
@@ -176,7 +173,6 @@ def check_data_path(golden_data_path, my_path, row_data):
     else:
         logger.warning(f"my data path is not exists.")
         row_data[CMP_FAIL_REASON] = "my_path is not exist."
-        row_data[CMP_FLAG] = True
         path_is_exist = False
 
     return path_is_exist, golden_data, my_data
@@ -188,21 +184,18 @@ def check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
     if len(golden_data_fp32) != len(my_data_fp32):
         logger.warning(f"data shape doesn't match.")
         row_data[CMP_FAIL_REASON] = "data shape doesn't match."
-        row_data[CMP_FLAG] = True
         tensor_pass = False
 
     # 检验golden_data中是否存在NAN或者inf
     if not np.alltrue(np.isfinite(golden_data)):
         logger.warning(f"golden_data include NAN or inf.")
         row_data[CMP_FAIL_REASON] = "golden_data include NAN or inf."
-        row_data[CMP_FLAG] = True
         tensor_pass = False
 
     # 检验my_data中是否存在NAN或者inf
     if not np.alltrue(np.isfinite(my_data)):
         logger.warning(f"my_data include NAN or inf.")
         row_data[CMP_FAIL_REASON] = "my_data include NAN or inf."
-        row_data[CMP_FLAG] = True
         tensor_pass = False
 
     return tensor_pass
@@ -228,11 +221,8 @@ def compare_tensor(row_data, golden_data_fp32, my_data_fp32):
             if result == 'NaN':
                 row_data[CMP_FAIL_REASON] = message
                 row_data[name] = result
-                row_data[CMP_FLAG] = True
             else:
                 row_data[name] = result
-                row_data[CMP_FLAG] = True
         else:        
             result = cmp_func(golden_data_fp32, my_data_fp32)
             row_data[name] = result
-            row_data[CMP_FLAG] = True
