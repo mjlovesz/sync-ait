@@ -180,24 +180,24 @@ def check_data_path(golden_data_path, my_path, row_data):
 
 def check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
     tensor_pass = True
-    row_data[CMP_FAIL_REASON] = ''
+    fail_reason = ''
+    
     # 检验golden tensor和my tensor的shape是否一致
     if len(golden_data_fp32) != len(my_data_fp32):
         logger.warning(f"data shape doesn't match.")
-        row_data[CMP_FAIL_REASON] = f"{row_data[CMP_FAIL_REASON]} data shape doesn't match."
+        fail_reason = f"{fail_reason} data shape doesn't match."
         tensor_pass = False
-
     # 检验golden_data中是否存在NAN或者inf
     if not np.alltrue(np.isfinite(golden_data)):
         logger.warning(f"golden_data include NAN or inf.")
-        row_data[CMP_FAIL_REASON] = f"{row_data[CMP_FAIL_REASON]} golden_data include NAN or inf."
+        fail_reason = f"{fail_reason} golden_data include NAN or inf."
         tensor_pass = False
-
     # 检验my_data中是否存在NAN或者inf
     if not np.alltrue(np.isfinite(my_data)):
         logger.warning(f"my_data include NAN or inf.")
-        row_data[CMP_FAIL_REASON] = f"{row_data[CMP_FAIL_REASON]} my_data include NAN or inf."
+        fail_reason = f"{fail_reason} my_data include NAN or inf."
         tensor_pass = False
+    row_data[CMP_FAIL_REASON] = fail_reason
 
     return tensor_pass
 
