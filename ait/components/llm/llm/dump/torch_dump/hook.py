@@ -17,6 +17,8 @@ import os.path
 from llm.dump.torch_dump.dump import DumpConfig, dump_data, dump_module_hook, set_dump_flag
 from llm.dump.torch_dump.hook_ops import HOOK_OPS
 
+import torch
+
 
 class HookModule:
     def __init__(self, model, dump_config=None):
@@ -64,7 +66,8 @@ class HookModule:
                     continue
                 api = getattr(py_module, api_name)
                 ori_module_attrs[api_name] = api_name
-                new_api = wrap_func(api)
+                # new_api = wrap_func(api)
+                new_api = wrap_torch_api(api_name, api)
                 setattr(py_module, api_name, new_api)  # hook api
 
             self.ori_torch_attr[py_module] = ori_module_attrs
@@ -88,7 +91,7 @@ def wrap_func(func):
         if dump_config == "module":
             return output
 
-        api_dump_path = os.path.join(dump_config.dump_path, func.__name__, str(exec_count))
+        api_dump_path = os.path.join(dump_config.dump_dir, func.__name__, str(exec_count))
         if not os.path.exists(api_dump_path):
             os.makedirs(api_dump_path)
 
@@ -97,6 +100,36 @@ def wrap_func(func):
         return output
 
     return run
+
+
+class TorchApiHook(torch.nn.Module):
+    def __init__(self, api_name, api):
+        super().__init__()
+        self.api_name = api_name
+        self.api = api
+        self.exec_count = 0
+        self.dump_config = DumpConfig()
+
+    def forward(self, *args, **kwargs):
+        output = self.api(*args, **kwargs)
+        if self.dump_config.mode == "module":
+            return output
+
+        api_dump_path = os.path.join(self.dump_config.dump_dir, self.api_name, str(self.exec_count))
+        if not os.path.exists(api_dump_path):
+            os.makedirs(api_dump_path, mode=0o755)
+
+        dump_data(args, output, api_dump_path, self.exec_count, self.dump_config.tensor_part)
+
+        return output
+
+
+def wrap_torch_api(api_name, api):
+
+    def func(*args, **kwargs):
+        return TorchApiHook(api_name, api)(*args, **kwargs)
+
+    return func
 
 
 def register_hook(model, dump_path="./", token_range=None, mode=None, module_list=None):
