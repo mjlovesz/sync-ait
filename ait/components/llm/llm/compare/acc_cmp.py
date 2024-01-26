@@ -108,7 +108,7 @@ def fill_in_data(golden_meta):
 
     for data_id, golden_info in golden_meta.items():
         for token_id, path_list in golden_info.items():
-            
+
             # 读取映射关系json文件中的tenor路径
             golden_data_path = path_list[0]
             my_path = path_list[1]
@@ -133,7 +133,7 @@ def fill_in_data(golden_meta):
                 continue
             
             # 填充数据
-            write_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
+            fill_row_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
 
             # 比较数据
             compare_tensor(row_data, golden_data_fp32, my_data_fp32)
@@ -208,7 +208,7 @@ def check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
     return tensor_pass
 
 
-def write_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
+def fill_row_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
     row_data[GOLDEN_DTYPE] = str(golden_data.dtype)
     row_data[GOLDEN_SHAPE] = str(golden_data.shape)
     row_data[GOLDEN_MAX_VALUE] = np.max(golden_data_fp32)
