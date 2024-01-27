@@ -141,6 +141,7 @@ def fill_in_data(golden_meta):
             compare_tensor(row_data, golden_data_fp32, my_data_fp32)
 
             # 将数据写入data_frame的下一行
+            row_data.fillna(value="", inplace=True)
             data_frame = pd.concat([data_frame, row_data], ignore_index=True)
 
     return data_frame
@@ -155,8 +156,6 @@ def create_row_data(data_id, token_id, golden_data_path, my_path):
             MY_DATA_PATH: [my_path],
         }
     )
-    row_data.fillna(value="", inplace=True)
-
     return row_data
 
 
