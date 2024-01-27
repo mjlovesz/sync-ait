@@ -200,5 +200,5 @@ class CompareCommand(BaseCommand):
 
 def get_cmd_instance():
     help_info = "one-click network-wide accuracy analysis of golden models."
-    cmd_instance = CompareCommand("compare", help_info, children=[])
+    cmd_instance = CompareCommand("compare", help_info)
     return cmd_instance
