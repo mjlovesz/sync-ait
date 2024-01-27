@@ -164,6 +164,7 @@ def check_data_path(golden_data_path, my_path, row_data):
     else:
         logger.warning(f"golden data path is not exists.")
         row_data[CMP_FAIL_REASON] = "golden_data_path is not exist."
+        golden_data = 0
         path_is_exist = False
     if os.path.exists(my_path):
         if my_path.endswith(".npy"):
@@ -173,6 +174,7 @@ def check_data_path(golden_data_path, my_path, row_data):
     else:
         logger.warning(f"my data path is not exists.")
         row_data[CMP_FAIL_REASON] = "my_path is not exist."
+        my_data = 0
         path_is_exist = False
 
     return path_is_exist, golden_data, my_data
@@ -181,7 +183,7 @@ def check_data_path(golden_data_path, my_path, row_data):
 def check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
     tensor_pass = True
     fail_reason = ''
-    
+
     # 检验golden tensor和my tensor的shape是否一致
     if len(golden_data_fp32) != len(my_data_fp32):
         logger.warning(f"data shape doesn't match.")
