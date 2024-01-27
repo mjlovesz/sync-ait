@@ -26,7 +26,7 @@ def dump_data(token_id=-1, data_id=-1, golden_data=None, my_path='', output_path
     elif data_id == -1:
         logger.warning('Please check whether data_id passed in are correct')
         return
-    elif golden_data is not isinstance(golden_data, torch.Tensor):
+    elif not isinstance(golden_data, torch.Tensor):
         logger.warning('The golden_data is not a torch tensor!')
         return
     elif my_path == '':
