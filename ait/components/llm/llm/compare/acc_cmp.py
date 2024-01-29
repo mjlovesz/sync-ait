@@ -48,7 +48,6 @@ def acc_compare(golden_path, my_path, output_path):
             compare_metadata(golden_tensor_path, output_path)
         else:
             logger.error("Can not find 'golden_tensor'.")
-            exit(1)
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
         logger.info("Compared results: %s", res)
@@ -87,7 +86,7 @@ def compare_data(golden_data, my_data):
 
 # 手动映射比对能力
 def compare_metadata(golden_path, output_path="./"):
-    curPid = str(os.getpid())
+    cur_pid = str(os.getpid())
     golden_meta_path = os.path.join(golden_path, "metadata.json")
 
     with open(golden_meta_path, 'r') as file:
@@ -95,7 +94,7 @@ def compare_metadata(golden_path, output_path="./"):
         data_frame = fill_in_data(golden_meta)
 
     data_frame.dropna(axis=0, how="all", inplace=True)
-    csv_data_path = os.path.join(output_path, curPid)
+    csv_data_path = os.path.join(output_path, cur_pid)
     if not os.path.exists(csv_data_path):
         os.makedirs(csv_data_path)
     data_frame.to_csv(os.path.join(csv_data_path, "cmp_report.csv"), index=False)
