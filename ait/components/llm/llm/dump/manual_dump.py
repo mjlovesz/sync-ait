@@ -46,14 +46,13 @@ def dump_data(token_id=-1, data_id=-1, golden_data=None, my_path='', output_path
             
 
 def write_json_file(data_id, data_path, json_path, token_id, my_path):
-    # 建议与json解耦，需要的时候用
     import json
-
-    try:
+    if not os.path.exists(json_path):  
+        json_data = {}
+    else:
         with open(json_path, 'r') as json_file:
             json_data = json.load(json_file)
-    except FileNotFoundError:
-        json_data = {}
+
     json_data[data_id] = {token_id: [data_path, my_path]}
     with ms_open(json_path, "w") as f:
         json.dump(json_data, f)
