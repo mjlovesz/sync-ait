@@ -42,7 +42,7 @@ class DumpConfig:
         self.token_id = 0
         self.module_ids = {}
         self.cur_module_id = 0
-        self.device_id = device_id or 0
+        self.device_id = device_id or "0"
         self.dump_dir = os.path.join(self.dump_path, "{}_{}".format(str(os.getpid()), str(self.device_id)))
 
     def update_module_ids(self, module_name):
@@ -58,7 +58,7 @@ def dump_tensor(feat, feat_path):
     elif isinstance(feat, torch.Tensor):
         data = feat.cpu().detach().numpy()
         if not feat_path.endswith(".npy"):
-            feat_path = feat_path + ".npy"
+            feat_path += ".npy"
         np.save(feat_path, data)
 
 
@@ -82,12 +82,14 @@ def dump_module_hook():
             return
         # 只dump指定module的数据
         if dump_config.module_list and not isinstance(module, dump_config.module_list):
+            exec_count += 1
             return
 
         if dump_config.token_id == 0:
             dump_config.update_module_ids(module.name)
 
         if not dump_config.dump_flag:
+            exec_count += 1
             return
 
         exec_count += 1
@@ -102,6 +104,8 @@ def dump_module_hook():
             import json
             with open("module_ids.json", "w") as file:
                 json.dump(dump_config.module_ids, file)
+
+        exec_count += 1
 
     return hook_func
 

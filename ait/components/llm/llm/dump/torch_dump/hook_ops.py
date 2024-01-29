@@ -52,8 +52,6 @@ HOOK_OPS = {
         "tanh",
         "sigmoid",
         "hardsigmoid",
-        "linear",
-        "bilinear",
         "silu",
         "hardswish",
         "pixel_shuffle",
