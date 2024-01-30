@@ -18,15 +18,32 @@ from llm.dump.torch_dump.dump_config import DumpConfig
 from llm.dump.torch_dump.dump_hook import DumpHookModule
 
 
-def register_hook(model, hook_type="dump_data", config=None):
+HOOK_TYPE = ""
+
+
+def get_device(model):
+    return next(model.parameters()).device
+
+
+def register_hook(model, config: DumpConfig, hook_type="dump_data"):
+    global HOOK_TYPE
+    if HOOK_TYPE:
+        logger.warning("%s has been register in model.", HOOK_TYPE)
+        return
+    else:
+        HOOK_TYPE = hook_type
+
     if not isinstance(model, torch.nn.Module):
         logger.error("model must be instance of torch.nn.Module.")
-    if hook_type != "dump_data":
-        logger.error("hook_type must be dump_data.")
-    if not isinstance(config, DumpConfig):
-        logger.error("model must be instance of DumpConfig.")
+        return
 
-    dump_config = config or DumpConfig()
-    if hook_type == "dump_data":
-        hook_module = DumpHookModule(model, dump_config)
+    if type(config).__name__ != "DumpConfig":
+        logger.error("config must be instance of DumpConfig.")
+        return
+
+    device = get_device(model)
+    config.set_device_and_dump_dir(device)
+
+    if HOOK_TYPE == "dump_data":
+        hook_module = DumpHookModule(model, config)
         hook_module.add_hook()

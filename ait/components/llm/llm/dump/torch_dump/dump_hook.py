@@ -146,14 +146,16 @@ def dump_module_data():
             if module.name == "root":
                 logger.debug("module ids: %s", dump_config.module_ids)
 
-        if (dump_config.mode == "api") or (not dump_config.dump_flag) or \
-                (dump_config.module_list and module in dump_config.module_list):
+        if dump_config.mode == "api" or not dump_config.dump_flag:
+            return
+
+        if dump_config.module_list and not isinstance(module, tuple(dump_config.module_list)):
             return
 
         module_name = module.name
         dump_path = os.path.join(dump_config.dump_dir, str(dump_config.token_id), module_name)
         if not os.path.exists(dump_path):
-            os.makedirs(dump_path, mode=750)
+            os.makedirs(dump_path, mode=0o750)
         dump_data(inputs, outputs, dump_path, exec_count, dump_config.tensor_part)
 
     return hook_func
