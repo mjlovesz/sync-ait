@@ -41,10 +41,15 @@ class DumpConfig:
         self.token_id = 0
         self.module_ids = {}
         self.cur_module_id = 0
-        self.device_id = "0"
-        self.dump_dir = os.path.join(self.dump_path, "{}_{}".format(str(os.getpid()), str(self.device_id)))
+        self.device = "0"
+        self.dump_dir = ""
+
         if not self._check_args():
             raise ValueError("Invalid args of DumpConfig.")
+
+    def set_device_and_dump_dir(self, device):
+        self.device = device
+        self.dump_dir = os.path.join(self.dump_path, "{}_{}".format(str(os.getpid()), str(self.device)))
 
     def update_module_ids(self, module_name):
         self.cur_module_id += 1
