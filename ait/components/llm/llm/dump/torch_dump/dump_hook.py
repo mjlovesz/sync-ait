@@ -41,12 +41,7 @@ class DumpHookModule:
         model_name = "root"
 
         def add_hook(module, prefix=""):
-            if not self.dump_config.module_list:  # 不设置module_list时，默认dump所有module
-                module.ait_forward_handle = module.register_forward_hook(dump_module_data())
-            else:  # 设置module_list时，只dump设置的module
-                if module in self.dump_config.module_list:
-                    module.ait_forward_handle = module.register_forward_hook(dump_module_data())
-
+            module.ait_forward_handle = module.register_forward_hook(dump_module_data())
             module.name = prefix
             for name, child_module in module.named_children():
                 add_hook(child_module, prefix + "." + name)
