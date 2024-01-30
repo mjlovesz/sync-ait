@@ -31,17 +31,21 @@ def dump_data(token_id=-1, data_id=-1, golden_data=None, my_path='', output_path
         return
     elif my_path == '':
         logger.warning('Please check whether my_path passed in are correct')
-        return        
+        return
     
-    golden_data_dir = os.path.join(output_path, "golden_tensor", str(token_id))
-    if not os.path.exists(golden_data_dir):
-        os.makedirs(golden_data_dir)
     if golden_data is not None:
+        cur_pid = os.getpid()
+        device_id = golden_data.get_device()
+        golden_data_dir = os.path.join(output_path, "ait_dump", f"{cur_pid}_{device_id}", "golden_tensor", str(token_id))
+
+        if not os.path.exists(golden_data_dir):
+            os.makedirs(golden_data_dir)
+        
         golden_data_path = os.path.join(golden_data_dir, f'{data_id}_tensor.npy')
         golden_data = golden_data.cpu().numpy()
         np.save(golden_data_path, golden_data)
 
-    json_path = os.path.join(output_path, "golden_tensor", "metadata.json")
+    json_path = os.path.join(output_path, "ait_dump", f"{cur_pid}_{device_id}", "golden_tensor", "metadata.json")
     write_json_file(data_id, golden_data_path, json_path, token_id, my_path)
             
 
