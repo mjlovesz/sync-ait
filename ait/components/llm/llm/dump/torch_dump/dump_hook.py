@@ -146,8 +146,10 @@ def dump_module_data():
             if module.name == "root":
                 logger.debug("module ids: %s", dump_config.module_ids)
 
-        if (dump_config.mode == "api") or (not dump_config.dump_flag) or \
-                (dump_config.module_list and not isinstance(module, tuple(dump_config.module_list))):
+        if dump_config.mode == "api" or not dump_config.dump_flag:
+            return
+
+        if dump_config.module_list and not isinstance(module, tuple(dump_config.module_list)):
             return
 
         module_name = module.name
