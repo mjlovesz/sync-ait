@@ -20,7 +20,7 @@ from google.protobuf.json_format import Parse
 
 
 def atbNodeToPlainNode(atbNodeDict, level, target_level):
-    if target_level !=-1 and level >= target_level:
+    if target_level != -1 and level >= target_level:
         return [atbNodeDict]
     
     # 递归元
@@ -97,19 +97,19 @@ def atbJsonToOnnxJson(atbJsonDict, target_level):
     onnxJsonDict = {}
     plain_nodes = atbJsonDictNodeParse(atbJsonDict, target_level)
 
-    for i in range(len(plain_nodes)):
-        plain_nodes[i] = atbNodeToOnnxNode(plain_nodes[i])
+    for plain_node in plain_nodes:
+        plain_node = atbNodeToOnnxNode(plain_node)
 
     onnxJsonDict["graph"] = {}
-    onnxJsonDict["graph"] ["node"] = plain_nodes
+    onnxJsonDict["graph"]["node"] = plain_nodes
 
-    onnxJsonDict["graph"] ["input"] = []
+    onnxJsonDict["graph"]["input"] = []
     for inTensorName in atbJsonDict["inTensors"]:
         onnxInputTensorDict = {}
         onnxInputTensorDict["name"] = inTensorName
         onnxJsonDict["graph"]["input"].append(onnxInputTensorDict)
 
-    onnxJsonDict["graph"] ["output"] = []
+    onnxJsonDict["graph"]["output"] = []
     for outTensorName in atbJsonDict["outTensors"]:
         onnxOutputTensorDict = {}
         onnxOutputTensorDict["name"] = outTensorName
