@@ -78,8 +78,8 @@ def parseOnnxAttrFromAtbNodeDict(atbNodeDict):
                 onnxAttrDict = atbParamToOnnxAttribute(fullName, atbNodeDict["param"][paramName][subParamName])
                 onnxAttrs.append(onnxAttrDict)
         else:
-            onnxAttrDict = atbParamToOnnxAttribute(fullName, atbNodeDict["param"][paramName])
-            onnxAttrs.append(onnxAttrDict)
+            onnxAttrDict = atbParamToOnnxAttribute(paramName, atbNodeDict["param"][paramName])
+        onnxAttrs.append(onnxAttrDict)
     return onnxAttrs
 
 
@@ -101,7 +101,7 @@ def atbJsonToOnnxJson(atbJsonDict, target_level):
         plain_nodes[i] = atbNodeToOnnxNode(plain_nodes[i])
 
     onnxJsonDict["graph"] = {}
-    onnxJsonDict["graph"] ["nodes"] = plain_nodes
+    onnxJsonDict["graph"] ["node"] = plain_nodes
 
     onnxJsonDict["graph"] ["input"] = []
     for inTensorName in atbJsonDict["inTensors"]:
@@ -119,7 +119,7 @@ def atbJsonToOnnxJson(atbJsonDict, target_level):
 
 def atbJsonToOnnx(atbJsonPath, target_level=-1):
     with open(atbJsonPath, "r") as file:
-        jsonContent = json.loads(file, parse_constant=lambda x: None)
+        jsonContent = json.loads(file.read(), parse_constant=lambda x: None)
         onnxJson = atbJsonToOnnxJson(jsonContent, target_level)
         onnxStr = json.dumps(onnxJson)
         convertModel = Parse(onnxStr, onnx.ModelProto())
