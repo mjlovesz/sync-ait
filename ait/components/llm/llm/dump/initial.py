@@ -98,22 +98,22 @@ def init_dump_task(args):
 
 
 def clear_dump_task(args):
-    if "onnx" not in args.type and "model" not in args.type and "layer" not in args.type:
+    if "onnx" in args.type and ("model" in args.type or "layer" in args.type):
+        subprocess_info_file = str(args.output) + str(os.getpid()) + '/' + 'subprocess_info.txt'
+        if not os.path.exists(subprocess_info_file):
+            return
+        
+        with open(subprocess_info_file) as f:
+            from llm.common.json_fitter import atbJsonToOnnx
+            content = f.read().split('\n')
+            for path in content:
+                if not os.path.exists(path):
+                    continue
+                atbJsonToOnnx(path)
+        
+        # clean tmp file
+        subprocess_info_dir = str(args.output) + str(os.getpid()) + '/'
+        shutil.rmtree(subprocess_info_dir)
+    else:
         return
-    
-    subprocess_info_file = str(args.output) + str(os.getpid()) + '/' + 'subprocess_info.txt'
-    if not os.path.exists(subprocess_info_file):
-        return
-    
-    with open(subprocess_info_file) as f:
-        from llm.common.json_fitter import atbJsonToOnnx
-        content = f.read().split('\n')
-        for path in content:
-            if not os.path.exists(path):
-                continue
-            atbJsonToOnnx(path)
-    
-    # clean tmp file
-    subprocess_info_dir = str(args.output) + str(os.getpid()) + '/'
-    shutil.rmtree(subprocess_info_dir)
     
