@@ -57,7 +57,7 @@ class DumpConfig:
             self.module_ids[module_name] = self.cur_module_id
 
     def _check_args(self):
-        utils.check_input_path_legality(self.dump_path)
+        utils.check_output_path_legality(self.dump_path)
         if not isinstance(self.token_range, list):
             logger.error("dump_path must be list.")
             return False
