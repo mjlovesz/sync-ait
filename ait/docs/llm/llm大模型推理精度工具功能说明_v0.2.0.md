@@ -5,7 +5,6 @@ v0.2.0版本的新特性包括：
 - 支持保存加速库layer拓扑信息（由ait llm dump --type layer开启）
 - 支持保存模型cpu性能信息（由ait llm dump --type cpu_profiling开启)
 - 支持保存加速库base算子信息（算子信息由ait llm dump --type op开启；kernel算子信息由ait llm dump --type kernel开启）
-- 支持dump_data接口，手动设置tensor映射关系实现比对：[手动映射比对能力说明](./手动映射比对能力说明.md)
 
 ## Dump 特性
 
