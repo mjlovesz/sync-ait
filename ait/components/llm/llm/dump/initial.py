@@ -98,7 +98,7 @@ def init_dump_task(args):
 
 
 def clear_dump_task(args):
-    if "onnx" not in args.type and "model" not in args.type and  "layer" not in args.type:
+    if "onnx" not in args.type and "model" not in args.type and "layer" not in args.type:
         return
     
     subprocess_info_file = str(args.output) + str(os.getpid()) + '/' + 'subprocess_info.txt'
