@@ -42,7 +42,7 @@ def atbJsonDictNodeParse(atbJsonDict, target_level):
             plainAtbNodes = plainAtbNodes + atbNodeToPlainNode(node, level, target_level)
         return plainAtbNodes
     else:
-        return []
+        return [atbJsonDict]
 
 
 def atbParamToOnnxAttribute(atbParamName, atbParamValue):
