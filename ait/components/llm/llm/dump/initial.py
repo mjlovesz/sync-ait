@@ -67,7 +67,7 @@ def init_dump_task(args):
         os.environ['ATB_DUMP_TYPE'] = "|".join(args.type)
     
     if "onnx" in args.type and ("model" in args.type or "layer" in args.type):
-        os.environ[ATB_DUMP_SUB_PROC_INFO_SAVE_PATH] = str(args.output) + str(os.getpid()) + '/'
+        os.environ[ATB_DUMP_SUB_PROC_INFO_SAVE_PATH] = os.path.join(str(args.output), str(os.getpid()))
         subprocess_info_path = os.path.join(args.output, str(os.getpid()))
         os.makedirs(subprocess_info_path, exist_ok=True)
 
@@ -99,7 +99,7 @@ def init_dump_task(args):
 
 def clear_dump_task(args):
     if "onnx" in args.type and ("model" in args.type or "layer" in args.type):
-        subprocess_info_file = str(args.output) + str(os.getpid()) + '/' + 'subprocess_info.txt'
+        subprocess_info_file = os.path.join(str(args.output), str(os.getpid()), 'subprocess_info.txt')
         if not os.path.exists(subprocess_info_file):
             return
         
@@ -112,8 +112,9 @@ def clear_dump_task(args):
                 atb_json_to_onnx(path)
         
         # clean tmp file
-        subprocess_info_dir = str(args.output) + str(os.getpid()) + '/'
-        shutil.rmtree(subprocess_info_dir)
+        subprocess_info_dir = os.path.join(args.output, str(os.getpid()))
+        if os.path.isdir(subprocess_info_dir):
+            shutil.rmtree(subprocess_info_dir)
     else:
         return
     
