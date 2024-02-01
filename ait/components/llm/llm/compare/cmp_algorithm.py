@@ -25,16 +25,18 @@ def cosine_similarity(golden_data: np.ndarray, my_data: np.ndarray):
     my_data_norm = np.linalg.norm(my_data, axis=-1, keepdims=True)
     golden_data_norm = np.linalg.norm(golden_data, axis=-1, keepdims=True)
     if my_data_norm <= FLOAT_EPSILON and golden_data_norm < FLOAT_EPSILON:
-        return "1.0"
+        return "1.0", ''
     elif my_data_norm ** 0.5 <= FLOAT_EPSILON:
-        logger.warning('Cannot compare by Cosine Similarity. All the my_data is zero')
-        return NAN
+        message = 'Cannot compare by Cosine Similarity. All the my_data is zero'
+        logger.warning(message)
+        return NAN, message
     elif golden_data_norm ** 0.5 <= FLOAT_EPSILON:
-        logger.warning('Cannot compare by Cosine Similarity. All the golden_data is zero')
-        return NAN
+        message = 'Cannot compare by Cosine Similarity. All the golden_data is zero'
+        logger.warning(message)
+        return NAN, message
 
     result = (my_data / my_data_norm) @ (golden_data / golden_data_norm)
-    return '{:.6f}'.format(result)
+    return '{:.6f}'.format(result), ''
 
 
 def max_relative_error(golden_data: np.ndarray, my_data: np.ndarray):
@@ -43,7 +45,7 @@ def max_relative_error(golden_data: np.ndarray, my_data: np.ndarray):
         np.abs(my_data / golden_data - 1),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
         0,
     ).max()
-    return result
+    return result, ''
 
 
 def mean_relative_error(golden_data: np.ndarray, my_data: np.ndarray):
@@ -52,7 +54,7 @@ def mean_relative_error(golden_data: np.ndarray, my_data: np.ndarray):
         np.abs(my_data / golden_data - 1),  # abs(aa - bb) / abs(bb) -> abs(aa / bb - 1)
         0,
     ).mean()
-    return result
+    return result, ''
 
 
 def relative_euclidean_distance(golden_data: np.ndarray, my_data: np.ndarray):
@@ -61,7 +63,7 @@ def relative_euclidean_distance(golden_data: np.ndarray, my_data: np.ndarray):
         result = 0.0
     else:
         result = ((my_data - golden_data) ** 2).sum() / ground_truth_square_num
-    return result
+    return result, ''
 
 
 CMP_ALG_MAP = {
