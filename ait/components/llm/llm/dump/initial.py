@@ -104,12 +104,12 @@ def clear_dump_task(args):
             return
         
         with open(subprocess_info_file) as f:
-            from llm.common.json_fitter import atbJsonToOnnx
+            from llm.common.json_fitter import atb_json_to_onnx
             content = f.read().split('\n')
             for path in content:
                 if not os.path.exists(path):
                     continue
-                atbJsonToOnnx(path)
+                atb_json_to_onnx(path)
         
         # clean tmp file
         subprocess_info_dir = str(args.output) + str(os.getpid()) + '/'

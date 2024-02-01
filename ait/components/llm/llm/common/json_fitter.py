@@ -19,109 +19,109 @@ import onnx
 from google.protobuf.json_format import Parse
 
 
-def atbNodeToPlainNode(atbNodeDict, level, target_level):
+def atb_node_to_plain_node(atb_node_dict, level, target_level):
     if target_level != -1 and level >= target_level:
-        return [atbNodeDict]
+        return [atb_node_dict]
     
     # 递归元
-    if "nodes" in atbNodeDict:
-        plainNodes = []
-        for nodeDict in atbNodeDict["nodes"]:
-            plainNodes = plainNodes + atbNodeToPlainNode(nodeDict, level + 1, target_level)
-        return plainNodes
+    if "nodes" in atb_node_dict:
+        plain_nodes = []
+        for node_dict in atb_node_dict["nodes"]:
+            plain_nodes = plain_nodes + atb_node_to_plain_node(node_dict, level + 1, target_level)
+        return plain_nodes
     else:
-        return [atbNodeDict]
+        return [atb_node_dict]
 
 
-def atbJsonDictNodeParse(atbJsonDict, target_level):
-    plainAtbNodes = []
-    if "nodes" in atbJsonDict:
-        rawAtbNodes = atbJsonDict["nodes"]
+def atb_json_dict_node_parse(atb_json_dict, target_level):
+    plain_atb_nodes = []
+    if "nodes" in atb_json_dict:
+        rawAtbNodes = atb_json_dict["nodes"]
         level = 0
         for node in rawAtbNodes:
-            plainAtbNodes = plainAtbNodes + atbNodeToPlainNode(node, level, target_level)
-        return plainAtbNodes
+            plain_atb_nodes = plain_atb_nodes + atb_node_to_plain_node(node, level, target_level)
+        return plain_atb_nodes
     else:
-        return [atbJsonDict]
+        return [atb_json_dict]
 
 
-def atbParamToOnnxAttribute(atbParamName, atbParamValue):
-    onnxAttrDict = {}
-    onnxAttrDict["name"] = atbParamName
+def atb_param_to_onnx_attribute(atbParamName, atb_param_value):
+    onnx_attr_dict = {}
+    onnx_attr_dict["name"] = atbParamName
 
-    if isinstance(atbParamValue, str):
-        onnxAttrDict["type"] = "STRINGS"
-        onnxAttrDict["strings"] = [str(base64.b64decode(atbParamValue.encode("utf-8")), "utf-8")]
-        return onnxAttrDict
+    if isinstance(atb_param_value, str):
+        onnx_attr_dict["type"] = "STRINGS"
+        onnx_attr_dict["strings"] = [str(base64.b64decode(atb_param_value.encode("utf-8")), "utf-8")]
+        return onnx_attr_dict
 
-    onnxAttrDict["type"] = "FLOATS"
+    onnx_attr_dict["type"] = "FLOATS"
     values = []
-    if isinstance(atbParamValue, list):
-        for v in atbParamValue:
+    if isinstance(atb_param_value, list):
+        for v in atb_param_value:
             values.append(float(v))
     else:
-        values.append(float(atbParamValue))
-    onnxAttrDict["floats"] = values
-    return onnxAttrDict
+        values.append(float(atb_param_value))
+    onnx_attr_dict["floats"] = values
+    return onnx_attr_dict
 
 
-def parseOnnxAttrFromAtbNodeDict(atbNodeDict):
-    onnxAttrs = []
+def parse_onnx_attr_from_atb_node_dict(atb_node_dict):
+    onnx_attrs = []
 
-    if "param" not in atbNodeDict:
-        return onnxAttrs
+    if "param" not in atb_node_dict:
+        return onnx_attrs
     
-    for paramName in atbNodeDict["param"]:
-        if isinstance(atbNodeDict["param"][paramName], dict):
-            for subParamName in atbNodeDict["param"][paramName]:
-                fullName = paramName + "." + subParamName
-                onnxAttrDict = atbParamToOnnxAttribute(fullName, atbNodeDict["param"][paramName][subParamName])
-                onnxAttrs.append(onnxAttrDict)
+    for param_name in atb_node_dict["param"]:
+        if isinstance(atb_node_dict["param"][param_name], dict):
+            for sub_param_name in atb_node_dict["param"][param_name]:
+                fullName = param_name + "." + sub_param_name
+                onnx_attr_dict = atb_param_to_onnx_attribute(fullName, atb_node_dict["param"][param_name][sub_param_name])
+                onnx_attrs.append(onnx_attr_dict)
         else:
-            onnxAttrDict = atbParamToOnnxAttribute(paramName, atbNodeDict["param"][paramName])
-        onnxAttrs.append(onnxAttrDict)
-    return onnxAttrs
+            onnx_attr_dict = atb_param_to_onnx_attribute(param_name, atb_node_dict["param"][param_name])
+        onnx_attrs.append(onnx_attr_dict)
+    return onnx_attrs
 
 
-def atbNodeToOnnxNode(atbNodeDict):
-    onnxNodeDict = {}
-    onnxNodeDict["name"] = atbNodeDict["opName"]
-    onnxNodeDict["opType"] = atbNodeDict["opType"]
-    onnxNodeDict["input"] = atbNodeDict["inTensors"]
-    onnxNodeDict["output"] = atbNodeDict["outTensors"]
-    onnxNodeDict["attribute"] = parseOnnxAttrFromAtbNodeDict(atbNodeDict)
-    return onnxNodeDict
+def atb_node_to_onnx_node(atb_node_dict):
+    onnx_node_dict = {}
+    onnx_node_dict["name"] = atb_node_dict["opName"]
+    onnx_node_dict["opType"] = atb_node_dict["opType"]
+    onnx_node_dict["input"] = atb_node_dict["inTensors"]
+    onnx_node_dict["output"] = atb_node_dict["outTensors"]
+    onnx_node_dict["attribute"] = parse_onnx_attr_from_atb_node_dict(atb_node_dict)
+    return onnx_node_dict
 
 
-def atbJsonToOnnxJson(atbJsonDict, target_level):
-    onnxJsonDict = {}
-    plain_nodes = atbJsonDictNodeParse(atbJsonDict, target_level)
+def atb_json_to_onnx_json(atb_json_dict, target_level):
+    onnx_json_dict = {}
+    plain_nodes = atb_json_dict_node_parse(atb_json_dict, target_level)
 
     for plain_node in plain_nodes:
-        plain_node = atbNodeToOnnxNode(plain_node)
+        plain_node = atb_node_to_onnx_node(plain_node)
 
-    onnxJsonDict["graph"] = {}
-    onnxJsonDict["graph"]["node"] = plain_nodes
+    onnx_json_dict["graph"] = {}
+    onnx_json_dict["graph"]["node"] = plain_nodes
 
-    onnxJsonDict["graph"]["input"] = []
-    for inTensorName in atbJsonDict["inTensors"]:
-        onnxInputTensorDict = {}
-        onnxInputTensorDict["name"] = inTensorName
-        onnxJsonDict["graph"]["input"].append(onnxInputTensorDict)
+    onnx_json_dict["graph"]["input"] = []
+    for in_tensor_name in atb_json_dict["inTensors"]:
+        onnx_input_tensor_dict = {}
+        onnx_input_tensor_dict["name"] = in_tensor_name
+        onnx_json_dict["graph"]["input"].append(onnx_input_tensor_dict)
 
-    onnxJsonDict["graph"]["output"] = []
-    for outTensorName in atbJsonDict["outTensors"]:
-        onnxOutputTensorDict = {}
-        onnxOutputTensorDict["name"] = outTensorName
-        onnxJsonDict["graph"]["output"].append(onnxOutputTensorDict)
-    return onnxJsonDict
+    onnx_json_dict["graph"]["output"] = []
+    for out_tensor_name in atb_json_dict["outTensors"]:
+        onnx_output_tensor_dict = {}
+        onnx_output_tensor_dict["name"] = out_tensor_name
+        onnx_json_dict["graph"]["output"].append(onnx_output_tensor_dict)
+    return onnx_json_dict
 
 
-def atbJsonToOnnx(atbJsonPath, target_level=-1):
-    with open(atbJsonPath, "r") as file:
-        jsonContent = json.loads(file.read(), parse_constant=lambda x: None)
-        onnxJson = atbJsonToOnnxJson(jsonContent, target_level)
-        onnxStr = json.dumps(onnxJson)
-        convertModel = Parse(onnxStr, onnx.ModelProto())
-        onnxDir = atbJsonPath[0:-5] + ".onnx"
-        onnx.save(convertModel, onnxDir)
+def atbJsonToOnnx(atb_json_path, target_level=-1):
+    with open(atb_json_path, "r") as file:
+        json_content = json.loads(file.read(), parse_constant=lambda x: None)
+        onnx_json = atb_json_to_onnx_json(json_content, target_level)
+        onnx_str = json.dumps(onnx_json)
+        convert_model = Parse(onnx_str, onnx.ModelProto())
+        onnx_dir = atb_json_path[0:-5] + ".onnx"
+        onnx.save(convert_model, onnx_dir)
