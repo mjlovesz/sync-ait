@@ -239,7 +239,7 @@ def build_metadata_single_token(graph_map, ge_dump_data, fx_dump_data, token_id=
 
                 cur_fx_inputs = fx_dump_data.get(fx_tensor_name, {}).get("input", [])
                 cur_fx_outputs = fx_dump_data.get(fx_tensor_name, {}).get("output", [])
-                cur_map_item = [cur_ge_data, {"inputs": cur_fx_inputs, "outputs": cur_fx_outputs}]
+                cur_map_item = [{"inputs": cur_fx_inputs, "outputs": cur_fx_outputs}, cur_ge_data]  # [golden, my]
                 metadata[data_id] = {token_id: cur_map_item}
                 data_id += 1
     return metadata

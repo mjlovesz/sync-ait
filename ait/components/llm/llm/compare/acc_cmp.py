@@ -142,12 +142,15 @@ def fill_in_data(golden_meta):
 
 # torchair 比对相关
 def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
-    my_inputs, my_ouytputs = parse_msaccucmp_bin_dump_data(my_path)
+    my_inputs, my_ouytputs = torchair_utils.parse_torchair_bin_dump_data(my_path)
     sub_gathered_row_data = []
+    print(">>>> len(my_inputs):", len(my_inputs), "len(golden_data_path['inputs']):", len(golden_data_path['inputs']))
+    print(">>>> len(my_ouytputs):", len(my_ouytputs), "len(golden_data_path['outputs']):", len(golden_data_path['outputs']))
+
     for golden_input, my_input in zip(golden_data_path["inputs"], my_inputs):
-        gathered_row_data.append(fill_row_data(token_id, data_id, golden_input, my_path, loaded_my_data=my_input))
+        sub_gathered_row_data.append(fill_row_data(token_id, data_id, golden_input, my_path, loaded_my_data=my_input))
     for golden_output, my_output in zip(golden_data_path["outputs"], my_ouytputs):
-        gathered_row_data.append(fill_row_data(token_id, data_id, golden_output, my_path, loaded_my_data=my_output))
+        sub_gathered_row_data.append(fill_row_data(token_id, data_id, golden_output, my_path, loaded_my_data=my_output))
     return sub_gathered_row_data
 
 
