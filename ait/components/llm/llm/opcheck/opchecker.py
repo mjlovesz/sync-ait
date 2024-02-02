@@ -29,9 +29,6 @@ class OpChecker:
         '''
         self.csv_data = {}
         self.cases_info = {}
-        #测试：只传一个算子(tensor_path等待添加)
-        # self.cases_info = {'2_2_10': {'op_id': '2_2_10', 'op_name':'ConcatOperation','op_param':{},'tensor_path':''}}
-
         self.completed_op_id_queue = queue.Queue()
         self.special_cases = ['KvCacheOperation', 'ReshapeAndCacheOperation', 'SelfAttentionOperation']
         self.tensor_path = ''
@@ -48,8 +45,7 @@ class OpChecker:
     @staticmethod   
     def third_party_init():
         # LIB path设置
-        lib_path = "/home/wgw/xuchuan/test_framework/build/libatb_test_framework.so"
-        # lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
+        lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
         if os.path.exists(lib_path):
             logger.info(lib_path)
             torch.classes.load_library(lib_path)
