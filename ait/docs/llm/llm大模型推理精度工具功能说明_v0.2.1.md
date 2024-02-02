@@ -7,7 +7,7 @@ v0.2.1版本的新特性包括：
 ```
 ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py" --type model
 ```
-- 支持dump onnx可视化模型，需要和layer、model配合使用，使用方法：
+- 支持dump onnx可视化模型，需要和layer、model配合使用，将dump出来的model和layer拓扑信息，转成onnx可视化模型，使用方法：
 
 ```
 ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py" --type layer onnx
@@ -15,7 +15,7 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py" --type layer on
 
 **注**：该onnx模型不包括权重信息，无法用onnxruntime运行该onnx模型，可以使用Netron或者ait仓里的[onnx-modifer](../../../onnx-modifier/readme.md)工具打开查看模型结构。
 
-- 支持api方式将dump的model和layer拓扑信息，转成onnx可视化模型，使用方法：
+- 支持api方式将之前dump出来的model和layer拓扑信息，转成onnx可视化模型，使用方法：
 ```python
 from llm.common.json_fitter import atb_json_to_onnx
 
