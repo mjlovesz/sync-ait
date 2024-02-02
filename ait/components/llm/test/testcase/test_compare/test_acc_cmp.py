@@ -50,22 +50,22 @@ def test_dat_path():
         os.remove(test_data_path)
 
 
-def test_acc_compare_when_data_file(golden_data_file, test_data_file):
+def test_acc_compare_given_data_file_when_valid_then_pass(golden_data_file, test_data_file):
     acc_compare(golden_data_file, test_data_file)
 
 
-def test_read_data_when_npy(golden_data_file, test_data_file):
+def test_read_data_given_data_file_when_valid_npy_then_pass(golden_data_file, test_data_file):
     data = read_data(test_data_file)
     golden = np.load(golden_data_file)
     assert (data == golden).all()
 
 
-def test_read_data_when_invalid_type(test_dat_path):
+def test_read_dataa_given_data_file_when_invalid_type_then_error(test_dat_path):
     with pytest.raises(TypeError):
         read_data(test_dat_path)
 
 
-def test_compare_data_when_no_error(golden_data_file, test_data_file):
+def test_compare_data_given_data_file_when_valid_then_pass(golden_data_file, test_data_file):
     test_data = read_data(test_data_file)
     golden_data = read_data(golden_data_file)
     res = compare_data(test_data, golden_data)
@@ -73,7 +73,7 @@ def test_compare_data_when_no_error(golden_data_file, test_data_file):
                    'relative_euclidean_distance': 0.0}
 
 
-def test_compare_file(golden_data_file, test_data_file):
+def test_compare_file_given_data_file_when_valid_then_pass(golden_data_file, test_data_file):
     res = compare_file(golden_data_file, test_data_file)
     assert res == {'cosine_similarity': '1.000000', 'max_relative_error': 0.0, 'mean_relative_error': 0.0,
                    'relative_euclidean_distance': 0.0}
