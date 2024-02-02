@@ -87,13 +87,13 @@ class OpChecker:
 
         # 4.格式化文件
         data = pd.read_csv(self.output_path, dtype='str')
-        data.to_excel(self.output_path, index=False)
+        data.to_excel(os.path.join(self.output_dir, f"opcheck_result_{self.timestamp}.xlsx"), index=False)
 
     def args_init(self, args):
         self.tensor_path = args.input
         self.op_path = args.csv_path
         self.output_dir = args.output
-        self.output_path = os.path.join(self.output_dir, f"opcheck_result_{self.timestamp}.xlsx")
+        self.output_path = os.path.join(self.output_dir, f"opcheck_result_{self.timestamp}.csv")
         self.ids = args.ids
         if self.ids != '':
             self.check_ids_string = [x.lower().strip() for x in self.ids.split(',')]
