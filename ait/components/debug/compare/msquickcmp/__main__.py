@@ -26,8 +26,6 @@ from msquickcmp.common.args_check import (
     check_number_list, check_dym_range_string, check_fusion_cfg_path_legality, check_quant_json_path_legality,
     valid_json_file_or_dir, safe_string, str2bool
 )
-from msquickcmp.pta_acl_cmp.initial import init_aclcmp_task, clear_aclcmp_task
-from msquickcmp.pta_acl_cmp.utils import compare_metadata
 
 CANN_PATH = os.environ.get('ASCEND_TOOLKIT_HOME', "/usr/local/Ascend/ascend-toolkit/latest")
 
@@ -200,65 +198,7 @@ class CompareCommand(BaseCommand):
         cmp_process(cmp_args, True)
 
 
-class AclCompare(BaseCommand):
-    def add_arguments(self, parser, **kwargs):
-        parser.add_argument(
-            '--exec',
-            dest="exec",
-            required=False,
-            type=safe_string,
-            default='',
-            help='Exec command to run acltransformer model inference')
-
-        parser.add_argument(
-            '--golden-path',
-            dest="golden_path",
-            required=False,
-            type=valid_json_file_or_dir,
-            default='',
-            help='Metadata path of golden model')
-
-        parser.add_argument(
-            '--my-path',
-            dest="my_path",
-            required=False,
-            type=valid_json_file_or_dir,
-            default='',
-            help='Metadata path of my model')
-
-        parser.add_argument(
-            '--output',
-            dest="output",
-            required=False,
-            type=check_output_path_legality,
-            default='./',
-            help='The output compared report path')
-        
-        parser.add_argument(
-            '--clean',
-            dest="clean",
-            required=False,
-            type=str2bool,
-            default=False,
-            help='Set clean true if you want clean the dump data.E.g: --clean True')
-
-    def handle(self, args, **kwargs):
-        if args.exec and check_exec_cmd(args.exec):
-            init_aclcmp_task(args.clean)
-            # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
-            os.system(args.exec)
-            clear_aclcmp_task()
-            return
-
-        if args.golden_path and args.my_path:
-            compare_metadata(args.golden_path, args.my_path, args.output, args.clean)
-            if args.clean and os.path.isdir(args.golden_path) and os.path.isdir(args.my_path):
-                shutil.rmtree(args.golden_path)
-                shutil.rmtree(args.my_path)
-
-
 def get_cmd_instance():
     help_info = "one-click network-wide accuracy analysis of golden models."
-    acl_cmp = AclCompare("aclcmp", help_info="Ascend transformer acceleration accuracy compare.")
-    cmd_instance = CompareCommand("compare", help_info, children=[acl_cmp])
+    cmd_instance = CompareCommand("compare", help_info)
     return cmd_instance

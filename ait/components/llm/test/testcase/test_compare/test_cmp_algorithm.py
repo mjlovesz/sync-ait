@@ -33,20 +33,24 @@ def test_data():
 
 
 def test_cosine_similarity(golden_data, test_data):
-    res = cosine_similarity(golden_data.reshape(-1), test_data.reshape(-1))
+    res, message = cosine_similarity(golden_data.reshape(-1), test_data.reshape(-1))
     assert res == '1.000000'
+    assert message == ''
 
 
 def test_max_relative_error(golden_data, test_data):
-    res = max_relative_error(golden_data, test_data)
+    res, message = max_relative_error(golden_data, test_data)
     assert res == 0.0
+    assert message == ''
 
 
 def test_mean_relative_error(golden_data, test_data):
-    res = mean_relative_error(golden_data, test_data)
+    res, message = mean_relative_error(golden_data, test_data)
     assert res == 0.0
+    assert message == ''
 
 
 def test_relative_euclidean_distance(golden_data, test_data):
-    res = relative_euclidean_distance(golden_data, test_data)
+    res, message = relative_euclidean_distance(golden_data, test_data)
     assert res == 0.0
+    assert message == ''

@@ -18,14 +18,18 @@ import os
 
 from setuptools import setup, find_packages
 
+with open('requirements.txt', encoding='utf-8') as f:
+    required = f.read().splitlines()
+
 setup(
     name='ait-llm',
-    version='0.2.0',
+    version='0.2.1',
     description='Debug tools for large language model(llm)',
     url='https://gitee.com/ascend/ait/ait/components/llm',
     packages=find_packages(),
     license='Apache-2.0',
     keywords='llm',
+    install_requires=required,
     classifiers=[
         'Development Status :: Alpha',
         'Intended Audience :: Developers',
