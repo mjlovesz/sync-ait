@@ -39,10 +39,14 @@ from llm.common.constant import (
     GOLDEN_MEAN_VALUE,
     CSV_GOLDEN_HEADER,
 )
+from llm.compare import torchair_utils
 
 
 def acc_compare(golden_path, my_path, output_path):
-    if os.path.isdir(golden_path): 
+    torchair_ge_dump_path = torchair_utils.get_torchair_ge_dump_path(my_path)
+    if torchair_ge_dump_path is not None:
+        compare_torchair(golden_path, my_path, torchair_ge_dump_path, output_path=output_path)
+    elif os.path.isdir(golden_path): 
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
         if os.path.isdir(golden_tensor_path):
             compare_metadata(golden_tensor_path, output_path)
@@ -86,24 +90,37 @@ def compare_data(golden_data, my_data):
 
 # 手动映射比对能力
 def compare_metadata(golden_path, output_path="./"):
-    cur_pid = str(os.getpid())
     golden_meta_path = os.path.join(golden_path, "metadata.json")
-
     with open(golden_meta_path, 'r') as file:
         golden_meta = json.load(file)
-        data_frame = fill_in_data(golden_meta)
+    data_frame = fill_in_data(golden_meta)
+    save_compare_dataframe_to_csv(data_frame, output_path)
 
-    data_frame.dropna(axis=0, how="all", inplace=True)
+
+def save_compare_dataframe_to_csv(data_frame, output_path="./"):
+    cur_pid = str(os.getpid())
     csv_data_path = os.path.join(output_path, cur_pid)
     if not os.path.exists(csv_data_path):
         os.makedirs(csv_data_path)
+
+    data_frame.dropna(axis=0, how="all", inplace=True)
     data_frame.to_csv(os.path.join(csv_data_path, "cmp_report.csv"), index=False)
 
 
-def fill_in_data(golden_meta):
-    # 创建data_frame
-    data_frame = pd.DataFrame(columns=CSV_GOLDEN_HEADER, index=[0])
+# torchair 比对相关
+def compare_torchair(golden_path, my_path, ge_graph_path, output_path="./"):
+    torchair_utils.set_msaccucmp_path_from_cann()
+    graph_map = torchair_utils.parse_pbtxt_to_dict(ge_graph_path)
+    ge_dump_data = torchair_utils.init_ge_dump_data_from_bin_path(ge_dump_path)
+    fx_dump_data = torchair_utils.init_fx_dump_data_from_path(fx_dump_path)
+    metadata = torchair_utils.build_metadata(graph_map, ge_dump_data, fx_dump_data)
 
+    data_frame = fill_in_data(metadata)
+    save_compare_dataframe_to_csv(data_frame, output_path)
+
+
+def fill_in_data(golden_meta):
+    gathered_row_data = []
     for data_id, golden_info in golden_meta.items():
         for token_id, path_list in golden_info.items():
 
@@ -114,71 +131,59 @@ def fill_in_data(golden_meta):
             golden_data_path = path_list[0]
             my_path = path_list[1]
 
-            # 创建一条比较数据
-            row_data = create_row_data(data_id, token_id, golden_data_path, my_path)
-
-            # 检验my_path和golden data path是否存在并读取数据
-            path_is_exist, golden_data, my_data = check_data_path(golden_data_path, my_path, row_data)
-            if not path_is_exist:
-                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
-                continue
-
-            # 转换数据格式：
-            golden_data_fp32 = golden_data.reshape(-1).astype("float32")
-            my_data_fp32 = my_data.reshape(-1).astype("float32")
-
-            # 检查tensor的shape是否一致、是否存在NAN或inf
-            tensor_pass = check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
-            if not tensor_pass:
-                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
-                continue
-            
-            # 填充数据
-            fill_row_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
-
-            # 比较数据
-            compare_tensor(row_data, golden_data_fp32, my_data_fp32)
-
-            # 将数据写入data_frame的下一行
-            row_data.fillna(value="", inplace=True)
-            data_frame = pd.concat([data_frame, row_data], ignore_index=True)
-
-    return data_frame
+            if torchair_utils.is_torchair_dump_data(golden_data_path, my_path):
+                sub_gathered_row_data = fill_row_data_torchair(token_id, data_id, golden_data_path, my_path)
+                gathered_row_data.extend(sub_gathered_row_data)
+            else:
+                row_data = fill_row_data(token_id, data_id, golden_data_path, my_path)
+                gathered_row_data.append(row_data)
+    return pd.DataFrame(row_data).fillna(value="", inplace=True)
 
 
-def create_row_data(data_id, token_id, golden_data_path, my_path):
-    row_data = pd.DataFrame(
-        {
-            TOKEN_ID: [str(token_id)],
-            DATA_ID: [data_id],
-            GOLDEN_DATA_PATH: [golden_data_path],
-            MY_DATA_PATH: [my_path],
-        }
-    )
-    return row_data
+# torchair 比对相关
+def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
+    my_inputs, my_ouytputs = parse_msaccucmp_bin_dump_data(my_path)
+    sub_gathered_row_data = []
+    for golden_input, my_input in zip(golden_data_path["inputs"], my_inputs):
+        gathered_row_data.append(fill_row_data(token_id, data_id, golden_input, my_path, loaded_my_data=my_input))
+    for golden_output, my_output in zip(golden_data_path["outputs"], my_ouytputs):
+        gathered_row_data.append(fill_row_data(token_id, data_id, golden_output, my_path, loaded_my_data=my_output))
+    return sub_gathered_row_data
 
 
-def check_data_path(golden_data_path, my_path, row_data):
-    path_is_exist = True
-    if os.path.exists(golden_data_path):
-        golden_data = np.load(golden_data_path)
-    else:
-        logger.warning(f"golden data path is not exists.")
+def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=None):
+    # 创建一条比较数据
+    row_data = {TOKEN_ID: [str(token_id)], DATA_ID: [data_id], GOLDEN_DATA_PATH: [golden_data_path], MY_DATA_PATH: [my_path]}
+    if not os.path.exists(golden_data_path):
         row_data[CMP_FAIL_REASON] = "golden_data_path is not exist."
-        golden_data = 0
-        path_is_exist = False
-    if os.path.exists(my_path):
-        if my_path.endswith(".npy"):
-            my_data = np.load(my_path)
-        else:
-            my_data = read_atb_data(my_path)
-    else:
-        logger.warning(f"my data path is not exists.")
+        return row_data
+    if not os.path.exists(my_path):
         row_data[CMP_FAIL_REASON] = "my_path is not exist."
-        my_data = 0
-        path_is_exist = False
+        return row_data
+    
+    golden_data = np.load(golden_data_path)
+    if loaded_my_data is not None:
+        my_data = loaded_my_data
+    elif my_path.endswith(".npy"):
+        my_data = np.load(my_path)
+    else:
+        my_data = read_atb_data(my_path)
 
-    return path_is_exist, golden_data, my_data
+    # 转换数据格式：
+    golden_data_fp32 = golden_data.reshape(-1).astype("float32")
+    my_data_fp32 = my_data.reshape(-1).astype("float32")
+    
+    # 检查tensor的shape是否一致、是否存在NAN或inf
+    tensor_pass = check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
+    if not tensor_pass:
+        return row_data
+
+    # 填充数据
+    set_tensor_basic_info_in_row_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
+
+    # 比较数据
+    compare_tensor(row_data, golden_data_fp32, my_data_fp32)
+    return row_data
 
 
 def check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
@@ -205,7 +210,7 @@ def check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
     return tensor_pass
 
 
-def fill_row_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
+def set_tensor_basic_info_in_row_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
     row_data[GOLDEN_DTYPE] = str(golden_data.dtype)
     row_data[GOLDEN_SHAPE] = str(golden_data.shape)
     row_data[GOLDEN_MAX_VALUE] = np.max(golden_data_fp32)
