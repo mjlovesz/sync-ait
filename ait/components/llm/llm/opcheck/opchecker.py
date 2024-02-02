@@ -46,10 +46,10 @@ class OpChecker:
     def third_party_init():
         # LIB path设置
         lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
-        if os.path.exists(lib_path):
+        try os.path.exists(lib_path):
             logger.info(lib_path)
             torch.classes.load_library(lib_path)
-        else:
+        except TypeError as e:
             raise RuntimeError("AIT_OPCHECK_LIB_PATH not exist")
 
         # 指定需要使用的npu设备
