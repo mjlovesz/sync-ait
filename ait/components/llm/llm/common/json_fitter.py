@@ -117,11 +117,13 @@ def atb_json_to_onnx_json(atb_json_dict, target_level):
     return onnx_json_dict
 
 
-def atbJsonToOnnx(atb_json_path, target_level=-1):
+def atb_json_to_onnx(atb_json_path, target_level=-1):
     with open(atb_json_path, "r") as file:
         json_content = json.loads(file.read(), parse_constant=lambda x: None)
-        onnx_json = atb_json_to_onnx_json(json_content, target_level)
-        onnx_str = json.dumps(onnx_json)
-        convert_model = Parse(onnx_str, onnx.ModelProto())
-        onnx_dir = atb_json_path[0:-5] + ".onnx"
-        onnx.save(convert_model, onnx_dir)
+    
+    onnx_json = atb_json_to_onnx_json(json_content, target_level)
+    onnx_str = json.dumps(onnx_json)
+    convert_model = Parse(onnx_str, onnx.ModelProto())
+    onnx_dir = atb_json_path[0:-5] + ".onnx"
+    onnx.save(convert_model, onnx_dir)
+
