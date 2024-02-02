@@ -137,9 +137,9 @@ def dump_module_data():
         dump_config = DumpConfig()
         if dump_config.token_id == 0:
             dump_config.update_module_ids(module.name)
-            # 将dump_config.module_ids传给方锴的update接口，将模型树状信息保存成json文件。
-            if module.name == "root":
-                logger.debug("module ids: %s", dump_config.module_ids)
+            from llm.dump.torch_dump.topo import ModelTopo
+            obj = ModelTopo()
+            obj.create_topo(module, dump_config.module_ids, "./topo.json")
 
         if dump_config.mode == "api" or not dump_config.dump_flag:
             return
