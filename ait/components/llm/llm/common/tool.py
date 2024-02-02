@@ -13,7 +13,8 @@
 # limitations under the License.
 import os
 
-import numpy as np
+import torch
+import array
 
 from llm.common.constant import ATTR_END, ATTR_OBJECT_LENGTH
 from llm.common.log import logger
@@ -26,7 +27,8 @@ class TensorBinFile:
         self.dtype = 0
         self.format = 0
         self.dims = []
-        self.dtype_dict = {0: np.float32, 1: np.float16, 2: np.int8, 3: np.int32, 9: np.int64, 12: np.bool_}
+        self.dtype_dict = {0: torch.float32, 1: torch.float16, 2: torch.int8, 3: torch.int32, 9: torch.int64,
+                           12: torch.bool, 27: torch.bfloat16}
 
         self._parse_bin_file()
 
@@ -35,9 +37,9 @@ class TensorBinFile:
             logger.error("Unsupported dtype %s", self.dtype)
             raise ValueError("Unsupported dtype {}".format(self.dtype))
         dtype = self.dtype_dict.get(self.dtype)
-        data = np.frombuffer(self.obj_buffer, dtype=dtype)
-        data = data.reshape(self.dims)
-        return data
+        tensor = torch.frombuffer(array.array('b', self.obj_buffer), dtype=dtype)
+        tensor = tensor.view(self.dims)
+        return tensor
 
     def _parse_bin_file(self):
         with open(self.file_path, "rb") as fd:

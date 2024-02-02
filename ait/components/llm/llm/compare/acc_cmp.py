@@ -15,6 +15,7 @@
 import os
 
 import numpy as np
+import torch
 
 from llm.common.log import logger
 from llm.common.tool import read_atb_data
@@ -38,6 +39,8 @@ def read_data(data_path):
         data = np.load(data_path)
     elif data_path.endswith(".bin"):
         data = read_atb_data(data_path)
+    elif data_path.endswith(".pth") or data_path.endswith(".pt"):
+        data = torch.load(data_path)
     else:
         logger.error("Unsupported data format %s", data_path)
         raise TypeError("Unsupported data format.")
@@ -51,8 +54,8 @@ def compare_file(golden_path, my_path):
 
 
 def compare_data(golden_data, my_data):
-    golden_data_fp32 = golden_data.reshape(-1).astype("float32")
-    my_data_fp32 = my_data.reshape(-1).astype("float32")
+    golden_data_fp32 = golden_data.reshape(-1)
+    my_data_fp32 = my_data.reshape(-1)
 
     res_err = {}
     for name, cmp_func in CMP_ALG_MAP.items():
