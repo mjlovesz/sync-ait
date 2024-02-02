@@ -13,7 +13,7 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py" --type model
 ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py" --type layer onnx
 ```
 
-该onnx模型不包括权重信息，无法用onnxruntime运行该onnx模型，可以使用Netron或者ait仓里的[onnx-modifer](../../../onnx-modifier/readme.md)工具打开查看模型结构。
+**注**：该onnx模型不包括权重信息，无法用onnxruntime运行该onnx模型，可以使用Netron或者ait仓里的[onnx-modifer](../../../onnx-modifier/readme.md)工具打开查看模型结构。
 
 - 支持api方式将dump的model和layer拓扑信息，转成onnx可视化模型，使用方法：
 ```python
