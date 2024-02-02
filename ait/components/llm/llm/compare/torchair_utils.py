@@ -156,6 +156,8 @@ def init_ge_dump_data_from_bin_path(ge_dump_path):
     for inference_id, file_list in gathered_files.items():
         cur_dump_data = {}
         for file_name in sorted(file_list):
+            if file_name.endswith(".txt"):
+                continue
             split_name = file_name.split(".")
             if len(split_name) < 5:
                 logger.warning(f"invalid file name: {file_name}, should contain at least 4 '.'")
@@ -216,13 +218,13 @@ def filter_valid_fx_desc_tensor_info(desc_key, desc_value):
 
 def build_metadata_single_token(graph_map, ge_dump_data, fx_dump_data, token_id=0):
     metadata = {}
-    for data_id, cur_op in enumerate(graph_map, start=token_id * len(graph_map)):
+    data_id = token_id * len(graph_map)
+    for cur_op in graph_map:
         op_info = cur_op.get("op", {})
         if op_info.get("name", None) not in ge_dump_data:
             continue
 
         cur_ge_data = ge_dump_data[op_info["name"]]
-        cur_map_list = []
         for kk, vv in op_info.items():
             if not (kk == "output_desc" or kk.startswith("output_desc#")) or not isinstance(vv, dict):
                 continue
@@ -237,8 +239,9 @@ def build_metadata_single_token(graph_map, ge_dump_data, fx_dump_data, token_id=
 
                 cur_fx_inputs = fx_dump_data.get(fx_tensor_name, {}).get("input", [])
                 cur_fx_outputs = fx_dump_data.get(fx_tensor_name, {}).get("output", [])
-                cur_map_list.append([cur_ge_data, {"inputs": cur_fx_inputs, "outputs": cur_fx_outputs}])
-        metadata[data_id] = {token_id: cur_map_list}
+                cur_map_item = [cur_ge_data, {"inputs": cur_fx_inputs, "outputs": cur_fx_outputs}]
+                metadata[data_id] = {token_id: cur_map_item}
+                data_id += 1
     return metadata
 
 
