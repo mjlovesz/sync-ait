@@ -99,8 +99,8 @@ def atb_json_to_onnx_json(atb_json_dict, target_level):
     onnx_json_dict = {}
     plain_nodes = atb_json_dict_node_parse(atb_json_dict, target_level)
 
-    for i in range(len(plain_nodes)):
-        plain_nodes[i] = atb_node_to_onnx_node(plain_nodes[i])
+    for i, plain_node in enumerate(plain_nodes):
+        plain_nodes[i] = atb_node_to_onnx_node(plain_node)
 
     onnx_json_dict["graph"] = {}
     onnx_json_dict["graph"]["node"] = plain_nodes
