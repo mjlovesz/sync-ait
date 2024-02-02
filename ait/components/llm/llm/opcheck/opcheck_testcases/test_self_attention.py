@@ -1,0 +1,155 @@
+import sys
+import os
+import unittest
+import json
+import math
+import torch
+import torch_npu
+
+from llm.opcheck import operation_test
+
+
+class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
+    def group_matmul(self, heads, group_num, in_a, in_b):
+        group_head = heads // group_num
+        score = None
+        for i in range(group_num):
+            group_score = np.matmul(in_a[i * group_head: (i + 1) * group_head, :, :].astype(np.float32),
+                                    in_b[i:(i + 1), :, :].astype(np.float32)).astype(np.float16)
+            if score is None:
+                score = group_score
+            else:
+                score = np.concatenate((score, group_score), 0)
+        logging.debug(score.shape)
+        return score
+
+    def encoder_golden_func(self, in_tensors):
+        mixed_q = in_tensors[0]
+        mixed_k = in_tensors[1]
+        mixed_v = in_tensors[2]
+        attention_mask = in_tensors[3]
+        seq_len = in_tensors[4]
+        batch_status = intensors[5]
+
+        heads = self.op_param["headNum"]
+        group_num = self.op_param["kvHeadNum"]
+        embeds = 128
+        q_seqlen = kv_seqlen = seq_len # crossattention时，q_seqlen != k_seqlen 
+        max_s = np.max(q_seqlen)
+        ntokens2 = (q_seqlen * kv_seqlen).sum()
+
+        q_offset, k_offset, v_offset = 0, 0, 0
+        s, _p, out = None, None, None
+
+        for idx, _ in enumerate(range(batch_status)):
+            q_s = q_seqlen[idx]
+            kv_s = kv_seqlen[idx]
+            q_slice = q[q_offset:q_offset + q_s][:].reshape(q_s, heads, embed)
+            q_slice = np.transpose(q_slice, (1, 0, 2))  # (heads, q_seq, embed)
+            k_slice = k[k_offset:k_offset + kv_s][:].reshape(kv_s, group_num, embed)
+            k_slice = np.transpose(k_slice, (1, 0, 2))
+            k_slice_t = np.transpose(k_slice, (0, 2, 1))   # get K^T (kv_heads, embed, k_seq)
+            v_slice = v[v_offset:v_offset + kv_s][:].reshape(kv_s, group_num, embed)
+            v_slice = np.transpose(v_slice, (1, 0, 2))
+            score = self.group_matmul(heads, group_num, q_slice, k_slice_t)
+            s = score.reshape([-1, ]) if s is None else np.concatenate((s, score.reshape([-1, ])), 0)
+
+            score = score * np.float16(1.0 / math.sqrt(1.0 * embed))
+            if is_mask:
+                score = score + mask[:, :q_s, :kv_s]
+            score_max = np.max(score, axis=-1)
+            score = score - score_max.reshape((heads, q_s, 1))
+            score_exp = np.exp(score.astype(np.float32))
+            if not fp32:
+                score_sum = np.sum(score_exp.astype(np.float16), axis=-1)
+                _p = score_exp.astype(np.float16).reshape([-1, ]) if _p is None else \
+                    np.concatenate((_p, score_exp.astype(np.float16).reshape([-1, ])), 0)
+                p = score_exp.astype(np.float16) / score_sum.reshape((heads, q_s, 1)).astype(np.float16)
+                out_sub = self.group_matmul(heads, group_num, p, v_slice)
+            else:
+                score_sum = np.sum(score_exp, axis=-1)
+                _p = score_exp.astype(np.float16).reshape([-1, ]) if _p is None else \
+                    np.concatenate((_p, score_exp.astype(np.float16).reshape([-1, ])), 0)
+                p = score_exp.astype(np.float16)
+                out_sub = self.group_matmul(heads, group_num, p, v_slice)
+                out_sub = out_sub / score_sum.reshape((heads, q_s, 1)).astype(np.float16)
+            out_sub = out_sub.reshape(heads, q_s, embed)
+            out_sub = np.transpose(out_sub, (1, 0, 2))
+            out_sub = np.ascontiguousarray(out_sub)
+            out = out_sub if out is None else np.concatenate((out, out_sub), 0)
+
+        return out.astype(src_type).reshape(-1, heads, 128)
+
+    def not_encoder_golden_func(self, in_tensors):
+        mixed_q = in_tensors[0]
+        mixed_k = in_tensors[1]
+        mixed_v = in_tensors[2]
+        cache_k = in_tensors[3]
+        cache_v = in_tensors[4]
+        attention_mask = in_tensors[5]
+        token_offset = in_tensors[6]
+        seq_len = in_tensors[7]
+        layerid = int(in_tensors[8][0])
+        batch_status = in_tensors[9]
+
+        offset = 0
+        context_list = []
+
+        for i, _ in enumerate(range(batch_status)):
+            cur_seqlen = seq_len[i]
+            cur_token_offset = token_offset[i]
+            cur_token_offset_start = cur_token_offset - cur_seqlen
+            next_offset = offset + cur_seqlen
+            cur_q = mixed_q[offset:next_offset]
+            cur_k = mixed_k[offset:next_offset]
+            cur_v = mixed_v[offset:next_offset]
+            if cur_token_offset_start > 0:
+                past_k = cache_k[layerid, i, :cur_token_offset_start, :]
+                past_v = cache_v[layerid, i, :cur_token_offset_start, :]
+                cur_k = torch.concat([past_k, cur_k], dim=0)
+                cur_v = torch.concat([past_v, cur_v], dim=0)
+            cur_q = (cur_q * self.q_scale).view(cur_seqlen, self.head_num, self.head_size).transpose(0, 1)
+            cur_k = cur_k.view(cur_token_offset, self.head_num, self.head_size).permute(1, 2, 0)
+            cur_qk = torch.bmm(cur_q, cur_k) # [head_num, seqlen, token_offset]
+            if (self.op_param["isClamp"]):
+                clamp_min = self.op_param["clampMin"]
+                clamp_max = self.op_param["clampMax"]
+                cur_qk = torch.clamp(cur_qk, clamp_min, clamp_max)
+            if attention_mask.ndim == 3: # masked_fill
+                cur_qk = cur_qk + attention_mask[i, :cur_seqlen, :cur_token_offset]
+            else:
+                cur_qk = cur_qk + attention_mask[:cur_seqlen, :cur_token_offset]
+            cur_qk = cur_qk * self.qk_scale
+            cur_qk = torch.nn.functional.softmax(cur_qk.type(torch.float32), dim=-1).type(torch.float16)
+
+            cur_v = cur_v.view(cur_token_offset, self.head_num, self.head_size).transpose(0, 1)
+            cur_context = torch.bmm(cur_qk, cur_v).transpose(0, 1).contiguous().view(cur_seqlen, 
+                                                                                    self.head_num * self.head_size)
+            context_list.append(cur_context)
+
+            offset = next_offset
+
+        out = torch.concat(context_list, dim=0)
+        return out
+
+    def golden_calc(self, in_tensors):
+        if self.op_param["isEncoder"]:
+            out = self.encoder_golden_func(in_tensors)
+        else:
+            out = self.not_encoder_golden_func(in_tensors)
+        return [out]
+
+    def test(self):
+        soc_version = self.get_soc_version()
+        if soc_version != 'Ascend910B':
+            raise RuntimeError(f"{soc_version} is not supported! SelfAttentionOperation only supports Ascend910B!")
+
+        if self.op_param["isEncoder"]:
+            self.case_info["run_param"] = json.dumps({"seqLen": self.in_tensors[4].tolist(),
+                                                      "batchRunStatus": self.in_tensors[9].tolist()})
+        else:
+            self.case_info['run_param'] = json.dumps({"tokenOffset": self.in_tensors[6].tolist(), 
+                                                      "seqLen": self.in_tensors[7].tolist(),
+                                                      "batchRunStatus": self.in_tensors[9].tolist()})
+
+        self.execute_with_param()
