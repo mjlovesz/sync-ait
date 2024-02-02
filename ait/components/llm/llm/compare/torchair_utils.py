@@ -14,6 +14,8 @@
 import os
 import sys
 
+import numpy as np
+
 from llm.common.log import logger
 
 GE_GRAPH_FILE_PREFIX = "dynamo_original_graph_"
@@ -168,7 +170,7 @@ def init_ge_dump_data_from_bin_path(ge_dump_path):
                 logger.warning(f"duplicated op name: {cur_op_name}")
                 continue
 
-            cur_dump_data[cur_op_name] = os.path.join(ge_dump_path, file_name)
+            cur_dump_data[cur_op_name] = file_name
         dump_data_with_inference_id[inference_id] = cur_dump_data
     return dump_data_with_inference_id
 

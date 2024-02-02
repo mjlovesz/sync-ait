@@ -103,6 +103,7 @@ def save_compare_dataframe_to_csv(data_frame, output_path="./"):
     if not os.path.exists(csv_data_path):
         os.makedirs(csv_data_path)
 
+    data_frame.fillna(value="", inplace=True)
     data_frame.dropna(axis=0, how="all", inplace=True)
     data_frame.to_csv(os.path.join(csv_data_path, "cmp_report.csv"), index=False)
 
@@ -137,7 +138,7 @@ def fill_in_data(golden_meta):
             else:
                 row_data = fill_row_data(token_id, data_id, golden_data_path, my_path)
                 gathered_row_data.append(row_data)
-    return pd.DataFrame(gathered_row_data).fillna(value="", inplace=True)
+    return pd.DataFrame(gathered_row_data)
 
 
 # torchair 比对相关
@@ -156,7 +157,7 @@ def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
 
 def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=None):
     # 创建一条比较数据
-    row_data = {TOKEN_ID: [str(token_id)], DATA_ID: [data_id], GOLDEN_DATA_PATH: [golden_data_path], MY_DATA_PATH: [my_path]}
+    row_data = {TOKEN_ID: str(token_id), DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path}
     if not os.path.exists(golden_data_path):
         row_data[CMP_FAIL_REASON] = "golden_data_path is not exist."
         return row_data
