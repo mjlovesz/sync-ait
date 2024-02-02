@@ -103,9 +103,11 @@ def save_compare_dataframe_to_csv(data_frame, output_path="./"):
     if not os.path.exists(csv_data_path):
         os.makedirs(csv_data_path)
 
+    csv_save_path = os.path.join(csv_data_path, "cmp_report.csv")
     data_frame.fillna(value="", inplace=True)
     data_frame.dropna(axis=0, how="all", inplace=True)
-    data_frame.to_csv(os.path.join(csv_data_path, "cmp_report.csv"), index=False)
+    data_frame.to_csv(csv_save_path, index=False)
+    logger.info(f"Saved Compare results: {csv_save_path}")
 
 
 # torchair 比对相关
@@ -145,8 +147,8 @@ def fill_in_data(golden_meta):
 def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
     my_inputs, my_ouytputs = torchair_utils.parse_torchair_bin_dump_data(my_path)
     sub_gathered_row_data = []
-    print(">>>> len(my_inputs):", len(my_inputs), "len(golden_data_path['inputs']):", len(golden_data_path['inputs']))
-    print(">>>> len(my_ouytputs):", len(my_ouytputs), "len(golden_data_path['outputs']):", len(golden_data_path['outputs']))
+    logger.debug(f"my_inputs length: {len(my_inputs)}, golden_data_path inputs length:, {len(golden_data_path['inputs'])}")
+    logger.debug(f"my_ouytputs length: {len(my_ouytputs)}, golden_data_path outputs length:, {len(golden_data_path['outputs'])}")
 
     for golden_input, my_input in zip(golden_data_path["inputs"], my_inputs):
         sub_gathered_row_data.append(fill_row_data(token_id, data_id, golden_input, my_path, loaded_my_data=my_input))
