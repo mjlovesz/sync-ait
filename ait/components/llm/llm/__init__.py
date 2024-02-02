@@ -14,3 +14,4 @@
 
 from llm.common.tool import read_atb_data
 from llm.compare.acc_cmp import compare_data
+from llm.common.json_fitter import atb_json_to_onnx

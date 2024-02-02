@@ -16,6 +16,7 @@
 import os
 import site
 import subprocess
+import shutil
 
 from components.utils.file_open_check import FileStat
 from llm.common.log import logger
@@ -23,7 +24,7 @@ from llm.common.constant import ATB_HOME_PATH, ATB_SAVE_TENSOR_TIME, ATB_SAVE_TE
     ATB_SAVE_TENSOR_RUNNER, ATB_SAVE_TENSOR, ATB_SAVE_TENSOR_RANGE, \
     ATB_SAVE_TILING, LD_PRELOAD, ATB_OUTPUT_DIR, ATB_SAVE_CHILD, ATB_SAVE_TENSOR_PART, \
     ASCEND_TOOLKIT_HOME, ATB_PROB_LIB_WITH_ABI, ATB_PROB_LIB_WITHOUT_ABI, ATB_SAVE_CPU_PROFILING, \
-    ATB_CUR_PID
+    ATB_CUR_PID, ATB_DUMP_SUB_PROC_INFO_SAVE_PATH
 
 
 def is_use_cxx11():
@@ -64,6 +65,11 @@ def init_dump_task(args):
 
     if args.type:
         os.environ['ATB_DUMP_TYPE'] = "|".join(args.type)
+    
+    if "onnx" in args.type and ("model" in args.type or "layer" in args.type):
+        os.environ[ATB_DUMP_SUB_PROC_INFO_SAVE_PATH] = os.path.join(str(args.output), str(os.getpid()))
+        subprocess_info_path = os.path.join(args.output, str(os.getpid()))
+        os.makedirs(subprocess_info_path, exist_ok=True)
 
     os.environ[ATB_SAVE_CHILD] = "1" if args.child else "0"
     os.environ[ATB_SAVE_TENSOR_RANGE] = str(args.range)
@@ -91,5 +97,28 @@ def init_dump_task(args):
     os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
 
 
-def clear_dump_task():
-    pass
+def json_to_onnx(args):
+    subprocess_info_file = os.path.join(str(args.output), str(os.getpid()), 'subprocess_info.txt')
+    if not os.path.exists(subprocess_info_file):
+        return
+
+    with open(subprocess_info_file) as f:
+        from llm.common.json_fitter import atb_json_to_onnx
+        for line in f.readlines():
+            path = line.strip()
+            if not os.path.exists(path):
+                continue
+            atb_json_to_onnx(path)
+
+    # clean tmp file
+    subprocess_info_dir = os.path.join(args.output, str(os.getpid()))
+    if os.path.isdir(subprocess_info_dir):
+        shutil.rmtree(subprocess_info_dir)
+
+
+def clear_dump_task(args):
+    if "onnx" in args.type and ("model" in args.type or "layer" in args.type):
+        json_to_onnx(args)
+    else:
+        return
+    
