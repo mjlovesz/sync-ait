@@ -97,24 +97,28 @@ def init_dump_task(args):
     os.environ[LD_PRELOAD] = save_tensor_so_path + ":" + ld_preload
 
 
+def json_to_onnx(args):
+    subprocess_info_file = os.path.join(str(args.output), str(os.getpid()), 'subprocess_info.txt')
+    if not os.path.exists(subprocess_info_file):
+        return
+
+    with open(subprocess_info_file) as f:
+        from llm.common.json_fitter import atb_json_to_onnx
+        for line in f.readlines():
+            path = line.strip()
+            if not os.path.exists(path):
+                continue
+            atb_json_to_onnx(path)
+
+    # clean tmp file
+    subprocess_info_dir = os.path.join(args.output, str(os.getpid()))
+    if os.path.isdir(subprocess_info_dir):
+        shutil.rmtree(subprocess_info_dir)
+
+
 def clear_dump_task(args):
     if "onnx" in args.type and ("model" in args.type or "layer" in args.type):
-        subprocess_info_file = os.path.join(str(args.output), str(os.getpid()), 'subprocess_info.txt')
-        if not os.path.exists(subprocess_info_file):
-            return
-        
-        with open(subprocess_info_file) as f:
-            from llm.common.json_fitter import atb_json_to_onnx
-            for line in f.readlines():
-                path = line.strip()
-                if not os.path.exists(path):
-                    continue
-                atb_json_to_onnx(path)
-        
-        # clean tmp file
-        subprocess_info_dir = os.path.join(args.output, str(os.getpid()))
-        if os.path.isdir(subprocess_info_dir):
-            shutil.rmtree(subprocess_info_dir)
+        json_to_onnx(args)
     else:
         return
     

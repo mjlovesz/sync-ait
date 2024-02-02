@@ -15,15 +15,7 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py" --type layer on
 
 **注**：该onnx模型不包括权重信息，无法用onnxruntime运行该onnx模型，可以使用Netron或者ait仓里的[onnx-modifer](../../../onnx-modifier/readme.md)工具打开查看模型结构。
 
-- 支持api方式将之前dump出来的model和layer拓扑信息，转成onnx可视化模型，使用方法：
-```python
-from llm.common.json_fitter import atb_json_to_onnx
-
-model_level = 1   # 可视化模型的节点深度，按需填写，比如填写为1，则表示生成深度为1的可视化模型，不填默认生成最大深度可视化模型
-layer_topo_info = "./XXX_layer.json"   # dump出来的layer拓扑信息或者model拓扑信息
-atb_json_to_onnx(layer_topo_info, model_level)
-
-```
+- 支持api方式将之前dump出来的model和layer拓扑信息，转成onnx可视化模型，使用方法：[拓扑信息转onnx可视化模型](#api说明)
 
 ## Dump 特性
 
@@ -67,6 +59,16 @@ Dump默认落盘路径 `{DUMP_DIR}`在当前目录下，如果指定output目录
 
 ---
 
+#### API说明
+- 拓扑信息转onnx可视化模型：
+```python
+from llm.common.json_fitter import atb_json_to_onnx
+
+model_level = 1   # 可视化模型的节点深度，按需填写，比如填写为1，则表示生成深度为1的可视化模型，不填默认生成最大深度可视化模型
+layer_topo_info = "./XXX_layer.json"   # dump出来的layer拓扑信息或者model拓扑信息
+atb_json_to_onnx(layer_topo_info, model_level)
+```
+
 ## Compare 特性
 
 提供有精度问题的数据与标杆数据之间的比对能力。
@@ -84,3 +86,4 @@ ait llm compare --golden-path golden_data.bin --my-path my-path.bin
 | --golden-path, -gp | 标杆数据路径，支持单个数据文件路径或文件夹 | 是       |
 | --my-path, -mp     | 待比较的数据路径，为单个数据文件路径       | 是       |
 | --log-level, -l    | 日志级别，默认为info                       | 否       |
+
