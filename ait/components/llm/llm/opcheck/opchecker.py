@@ -34,13 +34,13 @@ class OpChecker:
         self.tensor_path = ''
         self.op_path = ''
         self.output_dir = ''
+        self.output_path = ''
         self.ids = ''
         self.check_ids_string = []
         self.opname = None
         self.check_patterns = []
         utc_time = datetime.datetime.now(tz=pytz.utc)
         self.timestamp = utc_time.astimezone(pytz.timezone('Asia/Shanghai')).strftime("%Y%m%d_%H%M%S")
-        self.output_path = os.path.join(self.output_dir, f"opcheck_result_{self.timestamp}.xlsx")
 
     @staticmethod   
     def third_party_init():
@@ -93,6 +93,7 @@ class OpChecker:
         self.tensor_path = args.input
         self.op_path = args.csv_path
         self.output_dir = args.output
+        self.output_path = os.path.join(self.output_dir, f"opcheck_result_{self.timestamp}.xlsx")
         self.ids = args.ids
         if self.ids != '':
             self.check_ids_string = [x.lower().strip() for x in self.ids.split(',')]
