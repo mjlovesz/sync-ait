@@ -19,6 +19,7 @@ import numpy as np
 from llm.common.log import logger
 
 GE_GRAPH_FILE_PREFIX = "dynamo_original_graph_"
+DUMP_FILE_FILTER_SUFIX = ["txt", "npy", "bin"]
 
 def set_msaccucmp_path_from_cann():
     cann_path = os.environ.get('ASCEND_TOOLKIT_HOME', "")
@@ -158,7 +159,7 @@ def init_ge_dump_data_from_bin_path(ge_dump_path):
     for inference_id, file_list in gathered_files.items():
         cur_dump_data = {}
         for file_name in sorted(file_list):
-            if file_name.endswith(".txt"):
+            if os.path.splitext(file_name)[-1] in DUMP_FILE_FILTER_SUFIX:
                 continue
             split_name = file_name.split(".")
             if len(split_name) < 5:

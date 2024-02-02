@@ -29,11 +29,11 @@ def get_ge_dump_config(dump_path="ait_ge_dump", dump_mode="all", use_fusion=True
 
     config = CompilerConfig()
 
-    # 打印映射关系
+    # Generate GE mapping graph
     config.debug.graph_dump.type = "txt"
     config.debug.graph_dump.path = dump_path
 
-    # 是能 GE dump
+    # Enable GE dump
     config.dump_config.enable_dump = True
     config.dump_config.dump_mode = dump_mode
     config.dump_config.dump_path = dump_path
@@ -47,5 +47,6 @@ def get_fx_dump_config(dump_path="ait_ge_dump", dump_mode="all"):
     from torchair.configs.compiler_config import CompilerConfig
 
     config = CompilerConfig()
+    # Enable FX dump
     config.dump.data_dump.type = "npy"
     return config
