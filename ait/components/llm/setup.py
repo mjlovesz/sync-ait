@@ -23,7 +23,7 @@ with open('requirements.txt', encoding='utf-8') as f:
 
 setup(
     name='ait-llm',
-    version='0.2.0',
+    version='0.2.1',
     description='Debug tools for large language model(llm)',
     url='https://gitee.com/ascend/ait/ait/components/llm',
     packages=find_packages(),

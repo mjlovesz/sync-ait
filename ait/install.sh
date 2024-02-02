@@ -141,7 +141,6 @@ install(){
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${arg_force_reinstall}
 
-    bash ${CURRENT_DIR}/components/debug/compare/msquickcmp/build.sh
   fi
 
   if [ ! -z $only_surgeon	 ]
@@ -210,7 +209,6 @@ install(){
     chmod -R 550 ${CURRENT_DIR}/components/benchmark/backend/build/lib.*/
 
     bash ${CURRENT_DIR}/components/convert/build.sh
-    bash ${CURRENT_DIR}/components/debug/compare/msquickcmp/build.sh
 
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
   fi

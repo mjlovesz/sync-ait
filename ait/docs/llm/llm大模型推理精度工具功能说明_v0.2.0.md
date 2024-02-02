@@ -5,7 +5,6 @@ v0.2.0版本的新特性包括：
 - 支持保存加速库layer拓扑信息（由ait llm dump --type layer开启）
 - 支持保存模型cpu性能信息（由ait llm dump --type cpu_profiling开启)
 - 支持保存加速库base算子信息（算子信息由ait llm dump --type op开启；kernel算子信息由ait llm dump --type kernel开启）
-- 支持dump_data接口，手动设置tensor映射关系实现比对：[手动映射比对能力说明](./手动映射比对能力说明.md)
 
 ## Dump 特性
 
@@ -43,7 +42,7 @@ Dump默认落盘路径 `{DUMP_DIR}`在当前目录下，如果指定output目录
 - onnx需要和layer、model配合使用，落盘位置和model、layer相同的目录。该onnx模型不包括权重信息，无法用onnxruntime运行该onnx模型，可以使用Netron或者ait仓里的[onnx-modifer](../../../onnx-modifier/readme.md)工具打开查看模型结构。
 - cpu_profiling信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/cpu_profiling/{TIMESTAMP}/operation_statistic_{executeCount}.txt`。
 - 算子信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/operation_io_tensors/{PID}/operation_tensors_{executeCount}.csv`。
-- kernel算子信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/kerne_io_tensors/{PID}/kerne_tensors_{executeCount}.csv`。
+- kernel算子信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/kernel_io_tensors/{PID}/kernel_tensors_{executeCount}.csv`。
 
 注：`{PID}`为进程号；`{TID}`为 `token_id`；`{TIMESTAMP}`为时间戳；`{executeCount}`为 `operation`运行次数。
 
@@ -66,69 +65,3 @@ ait llm compare --golden-path golden_data.bin --my-path my-path.bin
 | --golden-path, -gp | 标杆数据路径，支持单个数据文件路径或文件夹 | 是       |
 | --my-path, -mp     | 待比较的数据路径，为单个数据文件路径       | 是       |
 | --log-level, -l    | 日志级别，默认为info                       | 否       |
-
-## dump_data 代码插入使用说明
-
-### 使用方式
-
-使用方式分为两步，**dump数据**和**compare数据**，具体如下：
-
-* 工具对外提供dump_data函数用于数据dump，需要插入在模型脚本中。
-* 数据dump结束后会在指定目录生成两个json文件，将对应json的路径作入参输入到工具完成比对。
-
-工具命令如下：
-
-`ait llm compare --golden-path golden_path_dir --my-path my-path.bin --output output_dir`
-
-#### dump数据
-
-##### 函数原型
-
-`dump_data(token_id, data_id, golden_data, my_path, output_path)`
-
-##### 功能说明
-
-* 函数实现将需要dump的数据落盘，落盘路径为 `output_path`
-* token_id，data_id，golden_data，my_path由用户指定，最后会将加速库和手动dump数据的映射关系写到一个 ``metadata.json``中，用于后续比对
-
-##### 参数说明
-
-| 参数名      | 说明                                                             | 是否必选 |
-| ----------- | ---------------------------------------------------------------- | -------- |
-| token_id    | 用于标识token的轮次                                              | 是       |
-| data_id     | 数据的**唯一标识**，用于与加速库侧数据匹配，以实现数据比对 | 是       |
-| golden_data | 需要dump的数据，格式为torch tensor                               | 是       |
-| my_path     | 需要dump数据对应的加速库侧.bin文件的路径                         | 是       |
-| output_path | dump数据保存的路径                                               | 否       |
-
-##### 使用注意
-
-* data_id是数据匹配的唯一标识，需匹配对应。
-* token_id只用作数据区分不用作数据标识
-
-##### 使用示例
-
-###### 1. 模型代码添加
-
-* 在模型py文件中文件开头导入对应函数
-
-  `from llm.dump.manual_dump import dump_data`
-* 在需要dump比对的数据位置插入dump_data代码
-
-  `dump_data(token_id, data_id, golden_data, my_path, output_path)`
-
-###### 2. 运行模型推理dump数据
-
-* 示例：
-
-  `python main.py --mode precision_single --model_path /ATB/ascend-speed-inference/pytorch/examples/chatglm2_6b --batch 1`
-
-###### 3. 数据比对
-
-模型推理运行完毕后数据会落盘，同时在out_path下生成一个metadata.json，将out_path传入工具入参并指定结果输出路径完成比对。
-
-命令如下：
-
-`ait llm compare --golden-path golden_path_dir --my-path my-path.bin --output output_dir`
-
-完成比对后会在output_dir下生成一个cmp_report.csv，保存比对的最终结果。
