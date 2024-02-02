@@ -36,18 +36,18 @@ def atb_node_to_plain_node(atb_node_dict, level, target_level):
 def atb_json_dict_node_parse(atb_json_dict, target_level):
     plain_atb_nodes = []
     if "nodes" in atb_json_dict:
-        rawAtbNodes = atb_json_dict["nodes"]
+        raw_atb_nodes = atb_json_dict["nodes"]
         level = 0
-        for node in rawAtbNodes:
+        for node in raw_atb_nodes:
             plain_atb_nodes = plain_atb_nodes + atb_node_to_plain_node(node, level, target_level)
         return plain_atb_nodes
     else:
         return [atb_json_dict]
 
 
-def atb_param_to_onnx_attribute(atbParamName, atb_param_value):
+def atb_param_to_onnx_attribute(atb_param_name, atb_param_value):
     onnx_attr_dict = {}
-    onnx_attr_dict["name"] = atbParamName
+    onnx_attr_dict["name"] = atb_param_name
 
     if isinstance(atb_param_value, str):
         onnx_attr_dict["type"] = "STRINGS"
@@ -74,8 +74,8 @@ def parse_onnx_attr_from_atb_node_dict(atb_node_dict):
     for param_name in atb_node_dict["param"]:
         if isinstance(atb_node_dict["param"][param_name], dict):
             for sub_param_name in atb_node_dict["param"][param_name]:
-                fullName = param_name + "." + sub_param_name
-                onnx_attr_dict = atb_param_to_onnx_attribute(fullName, atb_node_dict["param"][param_name][sub_param_name])
+                full_name = param_name + "." + sub_param_name
+                onnx_attr_dict = atb_param_to_onnx_attribute(full_name, atb_node_dict["param"][param_name][sub_param_name])
                 onnx_attrs.append(onnx_attr_dict)
         else:
             onnx_attr_dict = atb_param_to_onnx_attribute(param_name, atb_node_dict["param"][param_name])
