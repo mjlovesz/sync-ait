@@ -111,8 +111,8 @@ def save_compare_dataframe_to_csv(data_frame, output_path="./"):
 def compare_torchair(golden_path, my_path, ge_graph_path, output_path="./"):
     torchair_utils.set_msaccucmp_path_from_cann()
     graph_map = torchair_utils.parse_pbtxt_to_dict(ge_graph_path)
-    ge_dump_data = torchair_utils.init_ge_dump_data_from_bin_path(ge_dump_path)
-    fx_dump_data = torchair_utils.init_fx_dump_data_from_path(fx_dump_path)
+    ge_dump_data = torchair_utils.init_ge_dump_data_from_bin_path(my_path)
+    fx_dump_data = torchair_utils.init_fx_dump_data_from_path(golden_path)
     metadata = torchair_utils.build_metadata(graph_map, ge_dump_data, fx_dump_data)
 
     data_frame = fill_in_data(metadata)
