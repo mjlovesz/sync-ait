@@ -105,8 +105,8 @@ def clear_dump_task(args):
         
         with open(subprocess_info_file) as f:
             from llm.common.json_fitter import atb_json_to_onnx
-            content = f.read().split('\n')
-            for path in content:
+            for line in f.readlines():
+                path = line.strip()
                 if not os.path.exists(path):
                     continue
                 atb_json_to_onnx(path)

@@ -35,14 +35,16 @@ def atb_node_to_plain_node(atb_node_dict, level, target_level):
 
 def atb_json_dict_node_parse(atb_json_dict, target_level):
     plain_atb_nodes = []
-    if "nodes" in atb_json_dict:
+
+    if target_level == 0 or "nodes" not in atb_json_dict:
+        return [atb_json_dict]
+
+    else:
         raw_atb_nodes = atb_json_dict["nodes"]
-        level = 0
+        level = 1
         for node in raw_atb_nodes:
             plain_atb_nodes = plain_atb_nodes + atb_node_to_plain_node(node, level, target_level)
         return plain_atb_nodes
-    else:
-        return [atb_json_dict]
 
 
 def atb_param_to_onnx_attribute(atb_param_name, atb_param_value):
