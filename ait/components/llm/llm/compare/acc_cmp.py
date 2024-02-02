@@ -145,15 +145,17 @@ def fill_in_data(golden_meta):
 
 # torchair 比对相关
 def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
-    my_inputs, my_ouytputs = torchair_utils.parse_torchair_bin_dump_data(my_path)
+    my_inputs, my_outputs = torchair_utils.parse_torchair_bin_dump_data(my_path)
     sub_gathered_row_data = []
     logger.debug(f"my_inputs length: {len(my_inputs)}, golden_data_path inputs length:, {len(golden_data_path['inputs'])}")
-    logger.debug(f"my_ouytputs length: {len(my_ouytputs)}, golden_data_path outputs length:, {len(golden_data_path['outputs'])}")
+    logger.debug(f"my_outputs length: {len(my_outputs)}, golden_data_path outputs length:, {len(golden_data_path['outputs'])}")
 
-    for golden_input, my_input in zip(golden_data_path["inputs"], my_inputs):
-        sub_gathered_row_data.append(fill_row_data(token_id, data_id, golden_input, my_path, loaded_my_data=my_input))
-    for golden_output, my_output in zip(golden_data_path["outputs"], my_ouytputs):
-        sub_gathered_row_data.append(fill_row_data(token_id, data_id, golden_output, my_path, loaded_my_data=my_output))
+    for cur_id, (golden_input, my_input) in enumerate(zip(golden_data_path["inputs"], my_inputs)):
+        sub_my_path = "{},{},{}".format(my_path, "inputs", cur_id)
+        sub_gathered_row_data.append(fill_row_data(token_id, data_id, golden_input, sub_my_path, loaded_my_data=my_input))
+    for cur_id, (golden_output, my_output) in enumerate(zip(golden_data_path["outputs"], my_outputs)):
+        sub_my_path = "{},{},{}".format(my_path, "outputs", cur_id)
+        sub_gathered_row_data.append(fill_row_data(token_id, data_id, golden_output, sub_my_path, loaded_my_data=my_output))
     return sub_gathered_row_data
 
 
@@ -163,7 +165,7 @@ def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=N
     if not os.path.exists(golden_data_path):
         row_data[CMP_FAIL_REASON] = "golden_data_path is not exist."
         return row_data
-    if not os.path.exists(my_path):
+    if loaded_my_data is None and not os.path.exists(my_path):
         row_data[CMP_FAIL_REASON] = "my_path is not exist."
         return row_data
     
