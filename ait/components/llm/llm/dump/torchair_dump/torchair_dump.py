@@ -50,5 +50,5 @@ def get_fx_dump_config(dump_path="ait_ge_dump", dump_mode="all"):
 
     config = CompilerConfig()
     # Enable FX dump
-    config.dump.data_dump.type = "npy"
+    config.debug.data_dump.type = "npy"
     return config
