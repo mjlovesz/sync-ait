@@ -17,6 +17,7 @@ import os
 import numpy as np
 import pandas as pd
 import json
+import torch
 
 from llm.common.log import logger
 from llm.common.tool import read_atb_data
@@ -42,7 +43,7 @@ from llm.common.constant import (
 
 
 def acc_compare(golden_path, my_path, output_path):
-    if os.path.isdir(golden_path): 
+    if os.path.isdir(golden_path):
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
         if os.path.isdir(golden_tensor_path):
             compare_metadata(golden_tensor_path, output_path)
@@ -61,6 +62,8 @@ def read_data(data_path):
         data = np.load(data_path)
     elif data_path.endswith(".bin"):
         data = read_atb_data(data_path)
+    elif data_path.endswith(".pth") or data_path.endswith(".pt"):
+        data = torch.load(data_path)
     else:
         logger.error("Unsupported data format %s", data_path)
         raise TypeError("Unsupported data format.")
@@ -74,8 +77,8 @@ def compare_file(golden_path, my_path):
 
 
 def compare_data(golden_data, my_data):
-    golden_data_fp32 = golden_data.reshape(-1).astype("float32")
-    my_data_fp32 = my_data.reshape(-1).astype("float32")
+    golden_data_fp32 = golden_data.reshape(-1)
+    my_data_fp32 = my_data.reshape(-1)
 
     res_err = {}
     for name, cmp_func in CMP_ALG_MAP.items():
@@ -132,7 +135,7 @@ def fill_in_data(golden_meta):
             if not tensor_pass:
                 data_frame = pd.concat([data_frame, row_data], ignore_index=True)
                 continue
-            
+
             # 填充数据
             fill_row_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
 

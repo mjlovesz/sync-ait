@@ -125,7 +125,7 @@ class DumpCommand(BaseCommand):
             required=False,
             nargs='+',
             default=['tensor'],
-            choices=['model', 'layer', 'op', 'kernel', 'tensor', 'cpu_profiling'],
+            choices=['model', 'layer', 'op', 'kernel', 'tensor', 'cpu_profiling', 'onnx'],
             help='dump type.')
 
     def handle(self, args, **kwargs):
@@ -136,7 +136,7 @@ class DumpCommand(BaseCommand):
             # 有的大模型推理任务启动后，输入对话时有提示符，使用subprocess拉起子进程无法显示提示符
             cmds = args.exec.split()
             subprocess.run(cmds, shell=False)
-            clear_dump_task()
+            clear_dump_task(args)
             return
 
 
