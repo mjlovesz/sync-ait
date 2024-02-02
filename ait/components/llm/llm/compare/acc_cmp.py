@@ -46,7 +46,7 @@ def acc_compare(golden_path, my_path, output_path):
     torchair_ge_dump_path = torchair_utils.get_torchair_ge_dump_path(my_path)
     if torchair_ge_dump_path is not None:
         compare_torchair(golden_path, my_path, torchair_ge_dump_path, output_path=output_path)
-    elif os.path.isdir(golden_path): 
+    elif os.path.isdir(golden_path):
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
         if os.path.isdir(golden_tensor_path):
             compare_metadata(golden_tensor_path, output_path)
@@ -91,7 +91,7 @@ def compare_data(golden_data, my_data):
 # 手动映射比对能力
 def compare_metadata(golden_path, output_path="./"):
     golden_meta_path = os.path.join(golden_path, "metadata.json")
-    with open(golden_meta_path, 'r') as file:
+    with open(golden_meta_path, "r") as file:
         golden_meta = json.load(file)
     data_frame = fill_in_data(golden_meta)
     save_compare_dataframe_to_csv(data_frame, output_path)
@@ -147,15 +147,21 @@ def fill_in_data(golden_meta):
 def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
     my_inputs, my_outputs = torchair_utils.parse_torchair_bin_dump_data(my_path)
     sub_gathered_row_data = []
-    logger.debug(f"my_inputs length: {len(my_inputs)}, golden_data_path inputs length:, {len(golden_data_path['inputs'])}")
-    logger.debug(f"my_outputs length: {len(my_outputs)}, golden_data_path outputs length:, {len(golden_data_path['outputs'])}")
+    logger.debug(
+        f"my_inputs length: {len(my_inputs)}, golden_data_path inputs length:, {len(golden_data_path['inputs'])}"
+    )
+    logger.debug(
+        f"my_outputs length: {len(my_outputs)}, golden_data_path outputs length:, {len(golden_data_path['outputs'])}"
+    )
 
     for cur_id, (golden_input, my_input) in enumerate(zip(golden_data_path["inputs"], my_inputs)):
         sub_my_path = "{},{},{}".format(my_path, "inputs", cur_id)
-        sub_gathered_row_data.append(fill_row_data(token_id, data_id, golden_input, sub_my_path, loaded_my_data=my_input))
+        row_data = fill_row_data(token_id, data_id, golden_input, sub_my_path, loaded_my_data=my_input)
+        sub_gathered_row_data.append(row_data)
     for cur_id, (golden_output, my_output) in enumerate(zip(golden_data_path["outputs"], my_outputs)):
         sub_my_path = "{},{},{}".format(my_path, "outputs", cur_id)
-        sub_gathered_row_data.append(fill_row_data(token_id, data_id, golden_output, sub_my_path, loaded_my_data=my_output))
+        row_data = fill_row_data(token_id, data_id, golden_output, sub_my_path, loaded_my_data=my_output)
+        sub_gathered_row_data.append(row_data)
     return sub_gathered_row_data
 
 
@@ -168,7 +174,7 @@ def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=N
     if loaded_my_data is None and not os.path.exists(my_path):
         row_data[CMP_FAIL_REASON] = "my_path is not exist."
         return row_data
-    
+
     golden_data = np.load(golden_data_path)
     if loaded_my_data is not None:
         my_data = loaded_my_data
@@ -180,7 +186,7 @@ def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=N
     # 转换数据格式：
     golden_data_fp32 = golden_data.reshape(-1).astype("float32")
     my_data_fp32 = my_data.reshape(-1).astype("float32")
-    
+
     # 检查tensor的shape是否一致、是否存在NAN或inf
     tensor_pass = check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
     if not tensor_pass:
@@ -196,7 +202,7 @@ def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=N
 
 def check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
     tensor_pass = True
-    fail_reason = ''
+    fail_reason = ""
 
     # 检验golden tensor和my tensor的shape是否一致
     if len(golden_data_fp32) != len(my_data_fp32):

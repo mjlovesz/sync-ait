@@ -13,13 +13,15 @@
 # limitations under the License.
 from llm.common.log import logger
 
+
 def try_import_torchair():
     try:
         import torch
         import torch_npu
         import torchair
-    except:
-        raise ModuleNotFoundError("torch or torch_npu with torchair not found. Try installing the latest torch_npu.")
+    except ModuleNotFoundError as ee:
+        logger.error("torch or torch_npu with torchair not found. Try installing the latest torch_npu.")
+        raise ee
 
 
 def get_ge_dump_config(dump_path="ait_ge_dump", dump_mode="all", use_fusion=True):

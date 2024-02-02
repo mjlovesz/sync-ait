@@ -21,8 +21,9 @@ from llm.common.log import logger
 GE_GRAPH_FILE_PREFIX = "dynamo_original_graph_"
 DUMP_FILE_FILTER_SUFIX = ["txt", "npy", "bin"]
 
+
 def set_msaccucmp_path_from_cann():
-    cann_path = os.environ.get('ASCEND_TOOLKIT_HOME', "")
+    cann_path = os.environ.get("ASCEND_TOOLKIT_HOME", "")
     msaccucmp_path = os.path.join(cann_path, "python", "site-packages", "operator_cmp", "compare")
     if not os.path.exists(msaccucmp_path):
         raise OSError("CANN toolkit in not installed or not set, try installing the latest CANN toolkit.")
@@ -69,12 +70,13 @@ def get_unique_key(cur_dict, cur_key, split_sign="#"):
         cur_key = original_cur_key + f"{split_sign}{cur_key_id}"
     return cur_key
 
+
 def parse_pbtxt_to_dict(pbtxt_path):
     with open(pbtxt_path) as ff:
         contents = ff.read()
 
     result, cur_dict, superior_dicts, brackets_depth = [], {}, [], 0
-    for cur_line in contents.split('\n'):
+    for cur_line in contents.split("\n"):
         cur_line = cur_line.strip()
         if len(cur_line) == 0:
             continue
@@ -138,6 +140,7 @@ def gather_data_with_inference_id(data_path):
         for file_name in file_names:
             gathered_files.setdefault(cur_inference_id, []).append(os.path.join(cur_path, file_name))
     return gathered_files
+
 
 def init_ge_dump_data_from_bin_path(ge_dump_path):
     """
@@ -219,6 +222,7 @@ def filter_valid_fx_desc_tensor_info(desc_key, desc_value):
         return False
     return True
 
+
 def build_metadata_single_token(graph_map, ge_dump_data, fx_dump_data, token_id=0):
     metadata = {}
     data_id = token_id * len(graph_map)
@@ -236,8 +240,8 @@ def build_metadata_single_token(graph_map, ge_dump_data, fx_dump_data, token_id=
                     continue
                 fx_tensor_name = out_vv.get("value", {}).get("s", None)
                 if fx_tensor_name.split(".")[-2] == "OUTPUT":
-                    fx_tensor_name = ".".join(fx_tensor_name.split('.')[:-2])
-                if not fx_tensor_name in fx_dump_data:
+                    fx_tensor_name = ".".join(fx_tensor_name.split(".")[:-2])
+                if fx_tensor_name not in fx_dump_data:
                     continue
 
                 cur_fx_inputs = fx_dump_data.get(fx_tensor_name, {}).get("input", [])
@@ -251,7 +255,7 @@ def build_metadata_single_token(graph_map, ge_dump_data, fx_dump_data, token_id=
 def build_metadata(graph_map, ge_dump_data, fx_dump_data):
     gathered_metadata = {}
     for token_id in ge_dump_data:
-        if not token_id in fx_dump_data:
+        if token_id not in fx_dump_data:
             logger.warning(f"GE token_id {token_id} not found in FX dump data")
             continue
         meta_data = build_metadata_single_token(graph_map, ge_dump_data[token_id], fx_dump_data[token_id], token_id)
