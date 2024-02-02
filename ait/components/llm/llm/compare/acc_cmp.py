@@ -138,7 +138,7 @@ def fill_in_data(golden_meta):
             else:
                 row_data = fill_row_data(token_id, data_id, golden_data_path, my_path)
                 gathered_row_data.append(row_data)
-    return pd.DataFrame(gathered_row_data)
+    return pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
 
 
 # torchair 比对相关
