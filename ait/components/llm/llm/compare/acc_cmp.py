@@ -92,11 +92,11 @@ def check_tensor(golden_data_fp32, my_data_fp32):
         fail_reasons.append("data shape doesn't match.")
         tensor_pass = False
     # 检验golden_data中是否存在NAN或者inf
-    if not np.alltrue(np.isfinite(golden_data_fp32)):
+    if not np.all(np.isfinite(golden_data_fp32)):
         fail_reasons.append("golden_data includes NAN or inf.")
         tensor_pass = False
     # 检验my_data中是否存在NAN或者inf
-    if not np.alltrue(np.isfinite(my_data_fp32)):
+    if not np.all(np.isfinite(my_data_fp32)):
         fail_reasons.append("my_data includes NAN or inf.")
         tensor_pass = False
     return tensor_pass, " ".join(fail_reasons)
