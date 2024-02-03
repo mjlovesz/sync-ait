@@ -67,8 +67,29 @@ def test_fill_row_data_given_loaded_my_data_when_valid_then_pass(golden_data_fil
 
 def test_fill_row_data_given_my_path_when_dir_then_error(golden_data_file):
     row_data = fill_row_data(0, 0, golden_data_file, my_path="/")
-    assert isinstance(row_data, dict) and len(row_data) == 19
-    assert row_data["cosine_similarity"] == 'NaN'
+    assert isinstance(row_data, dict) and len(row_data) == 5
+    assert len(row_data["cmp_fail_reason"]) > 0
+
+
+def test_fill_row_data_given_golden_data_path_when_empty_then_error(test_data_file):
+    row_data = fill_row_data(0, 0, golden_data_path="", my_path=test_data_file)
+    assert isinstance(row_data, dict) and len(row_data) == 5
+    assert len(row_data["cmp_fail_reason"]) > 0
+
+
+def test_fill_row_data_given_my_path_when_nan_then_error(golden_data_file):
+    golden_data = np.load(golden_data_file)
+    loaded_my_data = np.zeros_like(golden_data) + np.nan
+    row_data = fill_row_data(0, 0, golden_data_path=golden_data_file, my_path="test", loaded_my_data=loaded_my_data)
+    assert isinstance(row_data, dict) and len(row_data) == 5
+    assert len(row_data["cmp_fail_reason"]) > 0
+
+
+def test_fill_row_data_given_my_path_when_shape_not_match_then_error(golden_data_file):
+    golden_data = np.load(golden_data_file)
+    loaded_my_data = np.zeros([])
+    row_data = fill_row_data(0, 0, golden_data_path=golden_data_file, my_path="test", loaded_my_data=loaded_my_data)
+    assert isinstance(row_data, dict) and len(row_data) == 5
     assert len(row_data["cmp_fail_reason"]) > 0
 
     
