@@ -83,7 +83,7 @@ def test_fill_row_data_given_my_path_when_nan_then_error(golden_data_file):
     golden_data = np.load(golden_data_file)
     loaded_my_data = np.zeros_like(golden_data) + np.nan
     row_data = acc_cmp.fill_row_data(0, 0, golden_data_file, my_path="test", loaded_my_data=loaded_my_data)
-    assert isinstance(row_data, dict) and len(row_data) == 5
+    assert isinstance(row_data, dict) and len(row_data) == 15
     assert len(row_data["cmp_fail_reason"]) > 0
 
 
@@ -91,7 +91,7 @@ def test_fill_row_data_given_my_path_when_shape_not_match_then_error(golden_data
     golden_data = np.load(golden_data_file)
     loaded_my_data = np.zeros([])
     row_data = acc_cmp.fill_row_data(0, 0, golden_data_file, my_path="test", loaded_my_data=loaded_my_data)
-    assert isinstance(row_data, dict) and len(row_data) == 5
+    assert isinstance(row_data, dict) and len(row_data) == 15
     assert len(row_data["cmp_fail_reason"]) > 0
 
 
@@ -121,10 +121,10 @@ def test_compare_data_given_data_file_when_valid_then_pass(golden_data_file, tes
     golden_data = acc_cmp.read_data(golden_data_file)
     res = acc_cmp.compare_data(test_data, golden_data)
     assert res == {'cosine_similarity': '1.000000', 'max_relative_error': 0.0, 'mean_relative_error': 0.0,
-                   'relative_euclidean_distance': 0.0}
+                   'relative_euclidean_distance': 0.0, 'cmp_fail_reason': ''}
 
 
 def test_compare_file_given_data_file_when_valid_then_pass(golden_data_file, test_data_file):
     res = acc_cmp.compare_file(golden_data_file, test_data_file)
     assert res == {'cosine_similarity': '1.000000', 'max_relative_error': 0.0, 'mean_relative_error': 0.0,
-                   'relative_euclidean_distance': 0.0}
+                   'relative_euclidean_distance': 0.0, 'cmp_fail_reason': ''}
