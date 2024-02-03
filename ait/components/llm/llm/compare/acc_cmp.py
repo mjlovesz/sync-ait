@@ -108,6 +108,7 @@ def save_compare_dataframe_to_csv(data_frame, output_path="./"):
     data_frame.dropna(axis=0, how="all", inplace=True)
     data_frame.to_csv(csv_save_path, index=False)
     logger.info(f"Saved comparing results: {csv_save_path}")
+    return csv_save_path
 
 
 # torchair 比对相关
