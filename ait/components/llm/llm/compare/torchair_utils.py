@@ -67,7 +67,7 @@ def get_unique_key(cur_dict, cur_key, split_sign="#"):
     original_cur_key, cur_key_id = cur_key, 0
     while cur_key in cur_dict:
         cur_key_id += 1
-        cur_key = original_cur_key + f"{split_sign}{cur_key_id}"
+        cur_key = f"{original_cur_key}{split_sign}{cur_key_id}"
     return cur_key
 
 
