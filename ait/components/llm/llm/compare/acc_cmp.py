@@ -168,11 +168,11 @@ def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
 def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=None):
     # 创建一条比较数据
     row_data = {TOKEN_ID: str(token_id), DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path}
-    if not os.path.exists(golden_data_path):
-        row_data[CMP_FAIL_REASON] = "golden_data_path is not exist."
+    if not os.path.isfile(golden_data_path):
+        row_data[CMP_FAIL_REASON] = f"golden_data_path: {golden_data_path} is not a file."
         return row_data
-    if loaded_my_data is None and not os.path.exists(my_path):
-        row_data[CMP_FAIL_REASON] = "my_path is not exist."
+    if loaded_my_data is None and not os.path.isfile(my_path):
+        row_data[CMP_FAIL_REASON] = f"my_path: {golden_data_path} is not a file."
         return row_data
 
     golden_data = np.load(golden_data_path)
@@ -238,7 +238,10 @@ def set_tensor_basic_info_in_row_data(row_data, golden_data_fp32, my_data_fp32, 
 
 
 def compare_tensor(row_data, golden_data_fp32, my_data_fp32):
+    fail_messages = []
     for name, cmp_func in CMP_ALG_MAP.items():
         result, message = cmp_func(golden_data_fp32, my_data_fp32)
-        row_data[CMP_FAIL_REASON] = message
         row_data[name] = result
+        if len(message) > 0:
+            fail_messages.append(message)
+    row_data[CMP_FAIL_REASON] = " ".join(fail_messages)

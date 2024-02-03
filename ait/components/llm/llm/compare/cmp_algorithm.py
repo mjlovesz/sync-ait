@@ -27,11 +27,11 @@ def cosine_similarity(golden_data: np.ndarray, my_data: np.ndarray):
     if my_data_norm <= FLOAT_EPSILON and golden_data_norm < FLOAT_EPSILON:
         return "1.0", ''
     elif my_data_norm ** 0.5 <= FLOAT_EPSILON:
-        message = 'Cannot compare by Cosine Similarity. All the my_data is zero'
+        message = 'Cannot compare by Cosine Similarity. All the values in my_data are zeros.'
         logger.warning(message)
         return NAN, message
     elif golden_data_norm ** 0.5 <= FLOAT_EPSILON:
-        message = 'Cannot compare by Cosine Similarity. All the golden_data is zero'
+        message = 'Cannot compare by Cosine Similarity. All the values in golden_data are zeros.'
         logger.warning(message)
         return NAN, message
 

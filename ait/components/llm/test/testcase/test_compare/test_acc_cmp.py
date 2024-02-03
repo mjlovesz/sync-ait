@@ -17,7 +17,7 @@ import unittest
 import numpy as np
 import pytest
 
-from llm.compare.acc_cmp import acc_compare, read_data, compare_data, compare_file
+from llm.compare.acc_cmp import acc_compare, read_data, compare_data, compare_file, fill_row_data
 
 
 @pytest.fixture(scope='module')
@@ -50,6 +50,28 @@ def test_dat_path():
         os.remove(test_data_path)
 
 
+def test_fill_row_data_given_my_path_when_valid_then_pass(golden_data_file, test_data_file):
+    row_data = fill_row_data(0, 0, golden_data_file, test_data_file)
+    assert isinstance(row_data, dict) and len(row_data) == 19
+    assert row_data["cosine_similarity"] == '1.000000'
+    assert len(row_data["cmp_fail_reason"]) == 0
+
+
+def test_fill_row_data_given_loaded_my_data_when_valid_then_pass(golden_data_file):
+    golden_data = np.load(golden_data_file)
+    row_data = fill_row_data(0, 0, golden_data_file, my_path="test", loaded_my_data=np.zeros_like(golden_data))
+    assert isinstance(row_data, dict) and len(row_data) == 19
+    assert row_data["cosine_similarity"] == 'NaN'
+    assert len(row_data["cmp_fail_reason"]) > 0
+
+
+def test_fill_row_data_given_my_path_when_dir_then_error(golden_data_file):
+    row_data = fill_row_data(0, 0, golden_data_file, my_path="/")
+    assert isinstance(row_data, dict) and len(row_data) == 19
+    assert row_data["cosine_similarity"] == 'NaN'
+    assert len(row_data["cmp_fail_reason"]) > 0
+
+    
 def test_acc_compare_given_data_file_when_valid_then_pass(golden_data_file, test_data_file):
     acc_compare(golden_data_file, test_data_file)
 
