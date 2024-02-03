@@ -106,7 +106,7 @@ def compare_tensor(golden_data_fp32, my_data_fp32):
     row_data, fail_messages = {}, []
 
     # 检查tensor的shape是否一致、是否存在NAN或inf
-    tensor_pass, message = check_tensor(golden_data_fp32, my_data_fp32, golden_data, my_data)
+    tensor_pass, message = check_tensor(golden_data_fp32, my_data_fp32)
     if not tensor_pass:
         logger.warning(f"check_tensor failed: {message}")
         row_data[CMP_FAIL_REASON] = message
