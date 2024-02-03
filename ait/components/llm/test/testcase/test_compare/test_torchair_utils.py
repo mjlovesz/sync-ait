@@ -12,14 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import stat
+import shutil
 
 import pytest
-import shutil
 import numpy as np
 
 from llm.compare import torchair_utils
 
 
+FILE_PERMISSION = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
 FAKE_PBTXT_FILE_NAME = "test_torchair_utils_fake_pbtxt_file.txt"
 FAKE_GE_DUMP_DATA_NAME = "test_torchair_utils_fake_ge_dump_data"
 FAKE_FX_DUMP_DATA_NAME = "test_torchair_utils_fake_fx_dump_data"
@@ -43,7 +45,7 @@ def fake_pbtxt_file():
       }
     }"""
 
-    with open(FAKE_PBTXT_FILE_NAME, "w") as ff:
+    with os.fdopen(os.open(FAKE_PBTXT_FILE_NAME, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'w') as ff:
         ff.write(contents)
 
     yield
@@ -61,7 +63,8 @@ def fake_ge_dump_data():
         "Add.Add_2.44.6.17065969121619", "Cast.Cast_9.19.6.17065969118878", "ConcatV2D.ConcatV2.42.6.17065969121611"
     ]
     for file_name in file_names:
-        with open(os.path.join(base_path, file_name), "wb") as ff:
+        file_path = os.path.join(base_path, file_name)
+        with os.fdopen(os.open(file_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'wb') as ff:
             pass
     
     yield

@@ -63,8 +63,8 @@ def parse_torchair_bin_dump_data(bin_dump_file):
     return inputs, outputs
 
 
-def get_unique_key(cur_dict, cur_key, split_sign="#"):
-    original_cur_key, cur_key_id = cur_key, 0
+def get_unique_key(cur_dict, cur_key):
+    split_sign, original_cur_key, cur_key_id = "#", cur_key, 0
     while cur_key in cur_dict:
         cur_key_id += 1
         cur_key = f"{original_cur_key}{split_sign}{cur_key_id}"
@@ -106,39 +106,14 @@ def parse_pbtxt_to_dict(pbtxt_path):
     return result
 
 
-def init_ge_dump_data_from_numpy_path(ge_dump_path):
-    """
-    For data like:
-      npy_out/Mul.Mul_1.8.2.1706152333994087.input.0.npy
-      npy_out/Mul.Mul_1.8.2.1706152333994087.input.1.npy
-      npy_out/Mul.Mul_1.8.2.1706152333994087.output.0.npy
-
-    Return dict:
-      {'Mul_1': {
-        'input': [
-          'npy_out/Mul.Mul_1.8.2.1706152333994087.input.0.npy', 'npy_out/Mul.Mul_1.8.2.1706152333994087.input.1.npy'
-        ],
-        'output': ['npy_out/Mul.Mul_1.8.2.1706152333994087.output.0.npy']
-      }}
-    """
-    ge_dump_data = {}
-    for file_name in sorted(os.listdir(ge_dump_path)):
-        split_name = file_name.split(".")
-        is_input = split_name[-3] == "input"
-        cur_op_map = ge_dump_data.get(split_name[1], {})
-        cur_op_map.setdefault("input" if is_input else "output", []).append(os.path.join(ge_dump_path, file_name))
-        ge_dump_data[split_name[1]] = cur_op_map
-    return ge_dump_data
-
-
-def gather_data_with_inference_id(data_path):
-    gathered_files, cur_inference_id = {}, 0
+def gather_data_with_token_id(data_path):
+    gathered_files, cur_token_id = {}, 0
     for cur_path, dirs, file_names in os.walk(data_path):
         if cur_path != data_path:
             cur_basename = os.path.basename(cur_path)
-            cur_inference_id = int(cur_basename) if str.isdigit(cur_basename) else 0
+            cur_token_id = int(cur_basename) if str.isdigit(cur_basename) else 0
         for file_name in file_names:
-            gathered_files.setdefault(cur_inference_id, []).append(os.path.join(cur_path, file_name))
+            gathered_files.setdefault(cur_token_id, []).append(os.path.join(cur_path, file_name))
     return gathered_files
 
 
@@ -156,10 +131,10 @@ def init_ge_dump_data_from_bin_path(ge_dump_path):
             'ConcatV2': '1/ConcatV2D.ConcatV2.42.6.1706596912161117',
       }}
     """
-    gathered_files = gather_data_with_inference_id(ge_dump_path)
+    gathered_files = gather_data_with_token_id(ge_dump_path)
 
-    dump_data_with_inference_id = {}
-    for inference_id, file_list in gathered_files.items():
+    dump_data_with_token_id = {}
+    for token_id, file_list in gathered_files.items():
         cur_dump_data = {}
         for file_name in sorted(file_list):
             if os.path.splitext(file_name)[-1] in DUMP_FILE_FILTER_SUFIX:
@@ -175,8 +150,8 @@ def init_ge_dump_data_from_bin_path(ge_dump_path):
                 continue
 
             cur_dump_data[cur_op_name] = file_name
-        dump_data_with_inference_id[inference_id] = cur_dump_data
-    return dump_data_with_inference_id
+        dump_data_with_token_id[token_id] = cur_dump_data
+    return dump_data_with_token_id
 
 
 def init_fx_dump_data_from_path(fx_dump_path):
@@ -195,10 +170,10 @@ def init_fx_dump_data_from_path(fx_dump_path):
         'output': ['1/mm-aten.mm.default.OUTPUT.0.20240125031118787351.npy']
       }}}
     """
-    gathered_files = gather_data_with_inference_id(fx_dump_path)
+    gathered_files = gather_data_with_token_id(fx_dump_path)
 
-    dump_data_with_inference_id = {}
-    for inference_id, file_list in gathered_files.items():
+    dump_data_with_token_id = {}
+    for token_id, file_list in gathered_files.items():
         cur_dump_data = {}
         for file_path in sorted(file_list):
             file_name = os.path.basename(file_path)
@@ -208,8 +183,8 @@ def init_fx_dump_data_from_path(fx_dump_path):
             cur_op_map = cur_dump_data.get(cur_op_name, {})
             cur_op_map.setdefault("input" if is_input else "output", []).append(file_path)
             cur_dump_data[cur_op_name] = cur_op_map
-        dump_data_with_inference_id[inference_id] = cur_dump_data
-    return dump_data_with_inference_id
+        dump_data_with_token_id[token_id] = cur_dump_data
+    return dump_data_with_token_id
 
 
 def filter_valid_fx_desc_tensor_info(desc_key, desc_value):
@@ -228,10 +203,12 @@ def build_metadata_single_token(graph_map, ge_dump_data, fx_dump_data, token_id=
     data_id = token_id * len(graph_map)
     for cur_op in graph_map:
         op_info = cur_op.get("op", {})
-        if op_info.get("name", None) not in ge_dump_data:
+        ge_tensor_name = op_info.get("name", None)
+        if ge_tensor_name not in ge_dump_data:
+            logger.warning(f"GE data missing, GE name: {ge_tensor_name}")
             continue
 
-        cur_ge_data = ge_dump_data[op_info["name"]]
+        cur_ge_data = ge_dump_data[ge_tensor_name]
         for kk, vv in op_info.items():
             if not (kk == "output_desc" or kk.startswith("output_desc#")) or not isinstance(vv, dict):
                 continue
@@ -242,6 +219,9 @@ def build_metadata_single_token(graph_map, ge_dump_data, fx_dump_data, token_id=
                 if fx_tensor_name.split(".")[-2] == "OUTPUT":
                     fx_tensor_name = ".".join(fx_tensor_name.split(".")[:-2])
                 if fx_tensor_name not in fx_dump_data:
+                    logger.warning(
+                        f"FX data missing, GE tensor name: {ge_tensor_name}, FX tensor name: {fx_tensor_name}"
+                    )
                     continue
 
                 cur_fx_inputs = fx_dump_data.get(fx_tensor_name, {}).get("input", [])
@@ -258,6 +238,7 @@ def build_metadata(graph_map, ge_dump_data, fx_dump_data):
         if token_id not in fx_dump_data:
             logger.warning(f"GE token_id {token_id} not found in FX dump data")
             continue
+        logger.info(f"Comparing token_id: {token_id}")
         meta_data = build_metadata_single_token(graph_map, ge_dump_data[token_id], fx_dump_data[token_id], token_id)
         gathered_metadata.update(meta_data)
     return gathered_metadata
