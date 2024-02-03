@@ -42,7 +42,7 @@ from llm.common.constant import (
 from llm.compare import torchair_utils
 
 
-def acc_compare(golden_path, my_path, output_path):
+def acc_compare(golden_path, my_path, output_path="."):
     torchair_ge_dump_path = torchair_utils.get_torchair_ge_dump_path(my_path)
     if torchair_ge_dump_path is not None:
         compare_torchair(golden_path, my_path, torchair_ge_dump_path, output_path=output_path)
@@ -80,16 +80,49 @@ def compare_file(golden_path, my_path):
 def compare_data(golden_data, my_data):
     golden_data_fp32 = golden_data.reshape(-1).astype("float32")
     my_data_fp32 = my_data.reshape(-1).astype("float32")
+    return compare_tensor(golden_data_fp32, my_data_fp32)
 
-    res_err = {}
+
+def check_tensor(golden_data_fp32, my_data_fp32):
+    tensor_pass = True
+    fail_reasons = []
+
+    # 检验golden tensor和my tensor的shape是否一致
+    if len(golden_data_fp32) != len(my_data_fp32):
+        fail_reasons.append("data shape doesn't match.")
+        tensor_pass = False
+    # 检验golden_data中是否存在NAN或者inf
+    if not np.alltrue(np.isfinite(golden_data_fp32)):
+        fail_reasons.append("golden_data includes NAN or inf.")
+        tensor_pass = False
+    # 检验my_data中是否存在NAN或者inf
+    if not np.alltrue(np.isfinite(my_data_fp32)):
+        fail_reasons.append("my_data includes NAN or inf.")
+        tensor_pass = False
+    return tensor_pass, " ".join(fail_reasons)
+
+
+def compare_tensor(golden_data_fp32, my_data_fp32):
+    row_data, fail_messages = {}, []
+
+    # 检查tensor的shape是否一致、是否存在NAN或inf
+    tensor_pass, message = check_tensor(golden_data_fp32, my_data_fp32, golden_data, my_data)
+    if not tensor_pass:
+        logger.warning(f"check_tensor failed: {message}")
+        row_data[CMP_FAIL_REASON] = message
+        return row_data
+
     for name, cmp_func in CMP_ALG_MAP.items():
-        result = cmp_func(golden_data_fp32, my_data_fp32)
-        res_err.setdefault(name, result)
-    return res_err
+        result, message = cmp_func(golden_data_fp32, my_data_fp32)
+        row_data[name] = result
+        if len(message) > 0:
+            fail_messages.append(message)
+    row_data[CMP_FAIL_REASON] = " ".join(fail_messages)
+    return row_data
 
 
 # 手动映射比对能力
-def compare_metadata(golden_path, output_path="./"):
+def compare_metadata(golden_path, output_path="."):
     golden_meta_path = os.path.join(golden_path, "metadata.json")
     with open(golden_meta_path, "r") as file:
         golden_meta = json.load(file)
@@ -97,7 +130,7 @@ def compare_metadata(golden_path, output_path="./"):
     save_compare_dataframe_to_csv(data_frame, output_path)
 
 
-def save_compare_dataframe_to_csv(data_frame, output_path="./"):
+def save_compare_dataframe_to_csv(data_frame, output_path="."):
     cur_pid = str(os.getpid())
     csv_data_path = os.path.join(output_path, cur_pid)
     if not os.path.exists(csv_data_path):
@@ -112,7 +145,7 @@ def save_compare_dataframe_to_csv(data_frame, output_path="./"):
 
 
 # torchair 比对相关
-def compare_torchair(golden_path, my_path, ge_graph_path, output_path="./"):
+def compare_torchair(golden_path, my_path, ge_graph_path, output_path="."):
     torchair_utils.set_msaccucmp_path_from_cann()
     graph_map = torchair_utils.parse_pbtxt_to_dict(ge_graph_path)
     ge_dump_data = torchair_utils.init_ge_dump_data_from_bin_path(my_path)
@@ -177,72 +210,28 @@ def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=N
         return row_data
 
     golden_data = np.load(golden_data_path)
-    if loaded_my_data is not None:
-        my_data = loaded_my_data
-    elif my_path.endswith(".npy"):
-        my_data = np.load(my_path)
-    else:
-        my_data = read_atb_data(my_path)
+    my_data = read_data(my_path) if loaded_my_data is None else loaded_my_data        
 
     # 转换数据格式：
     golden_data_fp32 = golden_data.reshape(-1).astype("float32")
     my_data_fp32 = my_data.reshape(-1).astype("float32")
 
-    # 检查tensor的shape是否一致、是否存在NAN或inf
-    tensor_pass = check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
-    if not tensor_pass:
-        return row_data
-
-    # 填充数据
-    set_tensor_basic_info_in_row_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
-
     # 比较数据
-    compare_tensor(row_data, golden_data_fp32, my_data_fp32)
+    row_data.update(compare_tensor(golden_data_fp32, my_data_fp32))
+    row_data.update(set_tensor_basic_info_in_row_data(golden_data, my_data))
     return row_data
 
 
-def check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
-    tensor_pass = True
-    fail_reasons = []
-
-    # 检验golden tensor和my tensor的shape是否一致
-    if len(golden_data_fp32) != len(my_data_fp32):
-        logger.warning(f"data shape doesn't match.")
-        fail_reasons.append("data shape doesn't match.")
-        tensor_pass = False
-    # 检验golden_data中是否存在NAN或者inf
-    if not np.alltrue(np.isfinite(golden_data)):
-        logger.warning(f"golden_data includes NAN or inf.")
-        fail_reasons.append("golden_data includes NAN or inf.")
-        tensor_pass = False
-    # 检验my_data中是否存在NAN或者inf
-    if not np.alltrue(np.isfinite(my_data)):
-        logger.warning(f"my_data includes NAN or inf.")
-        fail_reasons.append("my_data includes NAN or inf.")
-        tensor_pass = False
-    row_data[CMP_FAIL_REASON] = " ".join(fail_reasons)
-
-    return tensor_pass
-
-
-def set_tensor_basic_info_in_row_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
+def set_tensor_basic_info_in_row_data(golden_data, my_data):
+    row_data = {}
     row_data[GOLDEN_DTYPE] = str(golden_data.dtype)
     row_data[GOLDEN_SHAPE] = str(golden_data.shape)
-    row_data[GOLDEN_MAX_VALUE] = np.max(golden_data_fp32)
-    row_data[GOLDEN_MIN_VALUE] = np.min(golden_data_fp32)
-    row_data[GOLDEN_MEAN_VALUE] = np.mean(golden_data_fp32)
+    row_data[GOLDEN_MAX_VALUE] = np.max(golden_data)
+    row_data[GOLDEN_MIN_VALUE] = np.min(golden_data)
+    row_data[GOLDEN_MEAN_VALUE] = np.mean(golden_data)
     row_data[MY_DTYPE] = str(my_data.dtype)
     row_data[MY_SHAPE] = str(my_data.shape)
-    row_data[MY_MAX_VALUE] = np.max(my_data_fp32)
-    row_data[MY_MIN_VALUE] = np.min(my_data_fp32)
-    row_data[MY_MEAN_VALUE] = np.mean(my_data_fp32)
-
-
-def compare_tensor(row_data, golden_data_fp32, my_data_fp32):
-    fail_messages = []
-    for name, cmp_func in CMP_ALG_MAP.items():
-        result, message = cmp_func(golden_data_fp32, my_data_fp32)
-        row_data[name] = result
-        if len(message) > 0:
-            fail_messages.append(message)
-    row_data[CMP_FAIL_REASON] = " ".join(fail_messages)
+    row_data[MY_MAX_VALUE] = np.max(my_data)
+    row_data[MY_MIN_VALUE] = np.min(my_data)
+    row_data[MY_MEAN_VALUE] = np.mean(my_data)
+    return row_data
