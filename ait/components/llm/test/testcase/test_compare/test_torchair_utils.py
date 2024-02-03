@@ -117,10 +117,10 @@ def test_init_fx_dump_data_from_path_given_path_when_valid_then_pass():
     expected_result = {1: {
         'mm-aten.mm.default': {
             'input': [
-                os.path.join(FAKE_FX_DUMP_DATA_NAME, '1', 'mm-aten.mm.default.INPUT.0.20240125031118787351.npy')
+                os.path.join(FAKE_FX_DUMP_DATA_NAME, '1', 'mm-aten.mm.default.INPUT.0.20240125031118787351.npy'),
                 os.path.join(FAKE_FX_DUMP_DATA_NAME, '1', 'mm-aten.mm.default.INPUT.1.20240125031118787351.npy')],
             'output': [
-                os.path.join(FAKE_FX_DUMP_DATA_NAME, '1', 'mm-aten.mm.default.OUTPUT.0.20240125031118787351.npy'
+                os.path.join(FAKE_FX_DUMP_DATA_NAME, '1', 'mm-aten.mm.default.OUTPUT.0.20240125031118787351.npy')
             ]
         }
     }}
