@@ -42,7 +42,7 @@ from llm.common.constant import (
 )
 
 
-def acc_compare(golden_path, my_path, output_path):
+def acc_compare(golden_path, my_path, output_path="./"):
     if os.path.isdir(golden_path):
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
         if os.path.isdir(golden_tensor_path):

@@ -16,6 +16,7 @@ import unittest
 
 import numpy as np
 import pytest
+import torch
 
 from llm.compare.acc_cmp import acc_compare, read_data, compare_data, compare_file
 
@@ -56,8 +57,8 @@ def test_acc_compare_when_data_file(golden_data_file, test_data_file):
 
 def test_read_data_when_npy(golden_data_file, test_data_file):
     data = read_data(test_data_file)
-    golden = np.load(golden_data_file)
-    assert (data == golden).all()
+    golden = torch.tensor(np.load(golden_data_file))
+    assert torch.all(data == golden).item()
 
 
 def test_read_data_when_invalid_type(test_dat_path):
