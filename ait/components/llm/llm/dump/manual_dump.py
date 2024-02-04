@@ -46,8 +46,6 @@ def dump_data(token_id=-1, data_id=-1, golden_data=None, my_path='', output_path
 
         golden_data_path = os.path.join(golden_data_dir, f'{data_id}_tensor.pth')
         torch.save(golden_data, golden_data_path)
-        # golden_data = golden_data.cpu().numpy()
-        # np.save(golden_data_path, golden_data)
 
         json_path = os.path.join(output_path, "ait_dump", f"{cur_pid}_{device_id}", "golden_tensor", "metadata.json")
         write_json_file(data_id, golden_data_path, json_path, token_id, my_path)

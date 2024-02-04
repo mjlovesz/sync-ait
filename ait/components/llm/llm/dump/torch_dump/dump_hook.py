@@ -153,9 +153,6 @@ def dump_module_data():
         if not os.path.exists(dump_path):
             os.makedirs(dump_path, mode=0o750)
         dump_data(inputs, outputs, dump_path, exec_count, dump_config.tensor_part)
-        # if module_name == "root":
-        #     logger.debug("--------->inputs: %s", inputs)
-        #     logger.debug("--------->outputs: %s", outputs)
 
     return hook_func
 

@@ -59,9 +59,9 @@ def mean_relative_error(golden_data: torch.Tensor, my_data: torch.Tensor):
 def relative_euclidean_distance(golden_data: torch.Tensor, my_data: torch.Tensor):
     ground_truth_square_num = (golden_data ** 2).sum()
     if ground_truth_square_num ** 0.5 <= FLOAT_EPSILON:
-        result = torch.tensor(0, dtype=my_data.dtype)
-    else:
-        result = ((my_data - golden_data) ** 2).sum() / ground_truth_square_num
+        return 0.0, ''
+
+    result = ((my_data - golden_data) ** 2).sum() / ground_truth_square_num
     return result.item(), ''
 
 
