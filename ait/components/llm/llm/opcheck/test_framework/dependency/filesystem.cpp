@@ -1,5 +1,5 @@
-/*
- * Copyright(C) 2023. Huawei Technologies Co.,Ltd. All rights reserved.
+/**
+ * Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,11 +40,12 @@ bool FileSystem::Exists(const std::string &path)
 
 std::string FileSystem::DirName(const std::string &path)
 {
-    int32_t idx = path.size() - 1;
+    if (path.size() < 1) {return "";}
+    int32_t idx = static_cast<int32_t>(path.size() - 1);
     while (idx >= 0 && path[idx] == '/') {
         idx--;
     }
-    std::string sub = path.substr(0, idx);
+    std::string sub = path.substr(0, static_cast<uint32_t>(idx));
     const char *str = strrchr(sub.c_str(), '/');
     if (str == nullptr) {
         return ".";
@@ -56,19 +57,48 @@ std::string FileSystem::DirName(const std::string &path)
     if (idx < 0) {
         return "/";
     }
-    return path.substr(0, idx + 1);
+    return path.substr(0, static_cast<uint32_t>(idx) + 1);
 }
 
-bool FileSystem::MakeDir(const std::string &dirPath, int mode)
+static bool CheckNameValid(const std::string &name)
 {
+    // 1. check the name not empty
+    if (name.empty()) {
+        std::cout << "The name is empty" << std::endl;
+        return false;
+    }
+
+    // 2. check the length of the name
+    const size_t MAX_NAME_LEN = 256U;
+    if (name.size() > MAX_NAME_LEN) {
+        std::cout << "The length of the name " << name.size() << " > " << MAX_NAME_LEN << std::endl;
+        return false;
+    }
+
+    // 3. check the name has invalid characters
+    const std::vector<char> invalidChars = { '\n', '\f', '\r', '\v', '\t', '\b', '\u007f', ' ', '$'};
+    for (auto c : invalidChars) {
+        if (name.find(c) != std::string::npos) {
+            std::cout << "Name contains invalid characters: " << c << std::endl;
+            return false;
+        }
+    }
+    return true;
+}
+
+static bool MakeDir(const std::string &dirPath, int mode)
+{
+    if (!CheckNameValid(dirPath)) {
+        return false;
+    }
     int ret = mkdir(dirPath.c_str(), mode);
     return ret == 0;
 }
 
 bool FileSystem::Makedirs(const std::string &dirPath, const mode_t mode)
 {
-    int32_t offset = 0;
-    int32_t pathLen = dirPath.size();
+    uint32_t offset = 0;
+    uint32_t pathLen = dirPath.size();
     do {
         const char *str = strchr(dirPath.c_str() + offset, '/');
         offset = (str == nullptr) ? pathLen : str - dirPath.c_str() + 1;
