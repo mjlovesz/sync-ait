@@ -67,7 +67,7 @@ def read_data(data_path):
     else:
         logger.error("Unsupported data format %s", data_path)
         raise TypeError("Unsupported data format.")
-    return data
+    return data.cpu()
 
 
 def compare_file(golden_path, my_path):
@@ -77,8 +77,8 @@ def compare_file(golden_path, my_path):
 
 
 def compare_data(golden_data: torch.Tensor, my_data: torch.Tensor):
-    golden_data_fp32 = golden_data.reshape(-1)
-    my_data_fp32 = my_data.reshape(-1)
+    golden_data_fp32 = golden_data.reshape(-1).float()
+    my_data_fp32 = my_data.reshape(-1).float()
 
     res_err = {}
     for name, cmp_func in CMP_ALG_MAP.items():
@@ -127,8 +127,8 @@ def fill_in_data(golden_meta):
                 continue
 
             # 转换数据格式：
-            golden_data_fp32 = golden_data.reshape(-1)
-            my_data_fp32 = my_data.reshape(-1)
+            golden_data_fp32 = golden_data.reshape(-1).float()
+            my_data_fp32 = my_data.reshape(-1).float()
 
             # 检查tensor的shape是否一致、是否存在NAN或inf
             tensor_pass = check_tensor(row_data, golden_data_fp32, my_data_fp32)
@@ -214,14 +214,14 @@ def check_tensor(row_data, golden_data_fp32, my_data_fp32):
 def fill_row_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
     row_data[GOLDEN_DTYPE] = str(golden_data.dtype)
     row_data[GOLDEN_SHAPE] = str(golden_data.shape)
-    row_data[GOLDEN_MAX_VALUE] = np.max(golden_data_fp32)
-    row_data[GOLDEN_MIN_VALUE] = np.min(golden_data_fp32)
-    row_data[GOLDEN_MEAN_VALUE] = np.mean(golden_data_fp32)
+    row_data[GOLDEN_MAX_VALUE] = golden_data_fp32.max().item()
+    row_data[GOLDEN_MIN_VALUE] = golden_data_fp32.min().item()
+    row_data[GOLDEN_MEAN_VALUE] = golden_data_fp32.mean().item()
     row_data[MY_DTYPE] = str(my_data.dtype)
     row_data[MY_SHAPE] = str(my_data.shape)
-    row_data[MY_MAX_VALUE] = np.max(my_data_fp32)
-    row_data[MY_MIN_VALUE] = np.min(my_data_fp32)
-    row_data[MY_MEAN_VALUE] = np.mean(my_data_fp32)
+    row_data[MY_MAX_VALUE] = my_data_fp32.max().item()
+    row_data[MY_MIN_VALUE] = my_data_fp32.min().item()
+    row_data[MY_MEAN_VALUE] = my_data_fp32.mean().item()
 
 
 def compare_tensor(row_data, golden_data_fp32, my_data_fp32):

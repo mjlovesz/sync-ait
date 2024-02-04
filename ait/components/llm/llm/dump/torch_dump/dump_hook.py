@@ -114,6 +114,8 @@ def dump_tensor(feat, feat_path):
         if not feat_path.endswith(".pth"):
             feat_path += ".pth"
         torch.save(feat, feat_path)
+    else:
+        logger.warning("Unrecognized data type %s, cannot be saved in path %s.", type(feat), feat_path)
 
 
 def dump_data(inputs, outputs, dump_path, exec_count, tensor_part):
@@ -151,6 +153,9 @@ def dump_module_data():
         if not os.path.exists(dump_path):
             os.makedirs(dump_path, mode=0o750)
         dump_data(inputs, outputs, dump_path, exec_count, dump_config.tensor_part)
+        # if module_name == "root":
+        #     logger.debug("--------->inputs: %s", inputs)
+        #     logger.debug("--------->outputs: %s", outputs)
 
     return hook_func
 

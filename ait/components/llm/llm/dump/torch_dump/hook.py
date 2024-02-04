@@ -22,12 +22,13 @@ HOOK_TYPE = ""
 
 
 def get_device(model):
-    return next(model.parameters()).device
+    device = str(next(model.parameters()).device)
+    return device.replace(":", "")
 
 
 def register_hook(model, config: DumpConfig, hook_type="dump_data"):
     global HOOK_TYPE
-    if HOOK_TYPE:
+    if HOOK_TYPE:  # 避免重复hook
         logger.warning("%s has been register in model.", HOOK_TYPE)
         return
     else:
