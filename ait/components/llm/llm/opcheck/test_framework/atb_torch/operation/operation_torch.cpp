@@ -107,7 +107,7 @@ void OperationTorch::SetVaraintPackParam(std::string varaintPackParam)
             nlohmann::json paramJson = nlohmann::json::parse(varaintPackParam);
             hostTensorBinder_->ParseParam(paramJson);
         } catch (const std::exception &e) {
-            ATB_LOG(ERROR) << " parse json fail, error:" << e.what();
+            ATB_LOG(ERROR) << "parse json fail, error:" << e.what();
         }
     } else {
         ATB_LOG(ERROR) << "hostTensorBinder is nullptr";
@@ -185,7 +185,7 @@ std::string OperationTorch::Setup(std::vector<torch::Tensor> atInTensors, std::v
 std::vector<torch::Tensor> OperationTorch::Execute(std::vector<torch::Tensor> atInTensors)
 {
     ATB_LOG(INFO) << name_ << " execute start";
-    if (!operation_){
+    if (!operation_) {
         ATB_LOG(FATAL) << name_ << " execute fail, operation is null";
     }
 
