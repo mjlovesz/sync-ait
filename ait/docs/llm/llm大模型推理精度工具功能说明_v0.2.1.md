@@ -13,9 +13,10 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py" --type model
 ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py" --type layer onnx
 ```
 
-**注**：该onnx模型不包括权重信息，无法用onnxruntime运行该onnx模型，可以使用Netron或者ait仓里的[onnx-modifer](../../../onnx-modifier/readme.md)工具打开查看模型结构。
+注**：该onnx模型不包括权重信息，无法用onnxruntime运行该onnx模型，可以使用Netron或者ait仓里的[onnx-modifer](../../../onnx-modifier/readme.md)工具打开查看模型结构。
 
 - 支持api方式将之前dump出来的model和layer拓扑信息，转成onnx可视化模型，使用方法：[拓扑信息转onnx可视化模型](#api说明)
+- 支持dump torch-npu和torch-gpu模型推理数据，使用方法可参考[接口说明](#dump torch-npu(gpu)模型推理数据)
 
 ## Dump 特性
 
@@ -59,8 +60,10 @@ Dump默认落盘路径 `{DUMP_DIR}`在当前目录下，如果指定output目录
 
 ---
 
-#### API说明
-- 拓扑信息转onnx可视化模型：
+### API说明
+
+#### 拓扑信息转onnx可视化模型：
+
 ```python
 from llm.common.json_fitter import atb_json_to_onnx
 
@@ -69,7 +72,36 @@ layer_topo_info = "./XXX_layer.json"   # dump出来的layer拓扑信息或者mod
 atb_json_to_onnx(layer_topo_info, model_level)
 ```
 
-## Compare 特性
+#### dump torch-npu(gpu)模型推理数据
+
+##### DumpConfig
+
+接口说明：dump数据配置类，可用于按需dump模型数据。
+
+接口原型：DumpConfig(dump_path, token_range, module_list, tensor_part)
+
+| 参数名      | 含义                   | 使用说明                                                     | 是否必填 |
+| ----------- | ---------------------- | ------------------------------------------------------------ | -------- |
+| dump_path   | 设置dump的数据路径     | 数据类型：str，默认为当前目录。                              | 否       |
+| token_range | 需要dump的token列表    | 数据类型：list。默认为[0]，只dump第0个token的数据。          | 否       |
+| module_list | 指定要hook的module类型 | 数据类型：list，默认为[]，即dump所有module的数据。           | 否       |
+| tensor_part | 指定要dump哪部分数据   | 数据类型：int，默认为2。当tensor_part=0时，只dump输入数据；当tensor_part=1时，只dump输出数据； 当tensor_part=2时，dump输入和输出的数据。 | 否       |
+
+##### register_hook
+
+接口说明：给模型添加hook，用于dump数据
+
+接口原型：register_hook(model, config, hook_name=”dump_data”)
+
+| 参数名    | 含义           | 使用说明                                                | 是否必填 |
+| --------- | -------------- | ------------------------------------------------------- | -------- |
+| model     | 需要hook的模型 | 数据类型：torch.nn.Module，建议设置为最外层的torch模型  | 是       |
+| config    | Hook配置       | 数据类型：DumpConfig                                    | 是       |
+| hook_type | hook类型       | 数据类型：str，默认值为dump_data，当前仅支持dump_data。 | 否       |
+
+
+
+### Compare 特性
 
 提供有精度问题的数据与标杆数据之间的比对能力。
 

@@ -15,7 +15,7 @@
 import os
 import stat
 import pytest
-import numpy as np
+import torch
 from llm.common.tool import TensorBinFile, read_atb_data
 
 # Mocked binary data for testing purposes
@@ -92,7 +92,7 @@ def test_tensor_bin_file_create_and_get_data(create_mocked_bin_file):
 
     # Asserting the expected values based on the mocked data
     expected_shape = (1, 1, 2)
-    expected_dtype = np.float16
+    expected_dtype = torch.float16
     assert data.shape == expected_shape
     assert data.dtype == expected_dtype
 
@@ -102,7 +102,7 @@ def test_read_atb_data_valid_bin_file(create_mocked_bin_file):
 
     # Asserting the expected values based on the mocked data
     expected_shape = (1, 1, 2)
-    expected_dtype = np.float16
+    expected_dtype = torch.float16
     assert data.shape == expected_shape
     assert data.dtype == expected_dtype
 

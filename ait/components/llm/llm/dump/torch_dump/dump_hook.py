@@ -119,10 +119,10 @@ def dump_tensor(feat, feat_path):
 
 
 def dump_data(inputs, outputs, dump_path, exec_count, tensor_part):
-    if tensor_part == "0":
-        dump_tensor(inputs, os.path.join(dump_path, "output_exec" + str(exec_count)))
-    elif tensor_part == "1":
-        dump_tensor(outputs, os.path.join(dump_path, "input_exec" + str(exec_count)))
+    if tensor_part == 0:
+        dump_tensor(inputs, os.path.join(dump_path, "input_exec" + str(exec_count)))
+    elif tensor_part == 1:
+        dump_tensor(outputs, os.path.join(dump_path, "output_exec" + str(exec_count)))
     else:
         dump_tensor(inputs, os.path.join(dump_path, "input_exec" + str(exec_count)))
         dump_tensor(outputs, os.path.join(dump_path, "output_exec" + str(exec_count)))
