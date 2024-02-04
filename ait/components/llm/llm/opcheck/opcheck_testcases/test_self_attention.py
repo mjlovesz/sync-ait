@@ -11,7 +11,10 @@ from llm.opcheck import operation_test
 
 class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
     def group_matmul(self, heads, group_num, in_a, in_b):
-        group_head = heads // group_num
+        try:
+            group_head = heads // group_num
+        except ZeroDivisionError as e:
+            raise RuntimeError(f"Self attention: The divisor cannot be zero! Exception: {}".format(e))         
         score = None
         for i in range(group_num):
             group_score = np.matmul(in_a[i * group_head: (i + 1) * group_head, :, :].astype(np.float32),
@@ -24,26 +27,18 @@ class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
         return score
 
     def encoder_golden_func(self, in_tensors):
-        mixed_q = in_tensors[0]
-        mixed_k = in_tensors[1]
-        mixed_v = in_tensors[2]
-        attention_mask = in_tensors[3]
-        seq_len = in_tensors[4]
-        batch_status = intensors[5]
+        mixed_q, mixed_k, mixed_v,  attention_mask, seq_len, batch_status = in_tensors[0], in_tensors[1], \
+            in_tensors[2], in_tensors[3], in_tensors[4], intensors[5]
 
-        heads = self.op_param["headNum"]
-        group_num = self.op_param["kvHeadNum"]
-        embeds = 128
+        heads, group_num, embeds = self.op_param["headNum"], self.op_param["kvHeadNum"], 128
         q_seqlen = kv_seqlen = seq_len # crossattention时，q_seqlen != k_seqlen 
-        max_s = np.max(q_seqlen)
-        ntokens2 = (q_seqlen * kv_seqlen).sum()
+        max_s, ntokens2 = np.max(q_seqlen), (q_seqlen * kv_seqlen).sum()
 
         q_offset, k_offset, v_offset = 0, 0, 0
         s, _p, out = None, None, None
 
         for idx, _ in enumerate(range(batch_status)):
-            q_s = q_seqlen[idx]
-            kv_s = kv_seqlen[idx]
+            q_s, kv_s = q_seqlen[idx], kv_seqlen[idx]
             q_slice = q[q_offset:q_offset + q_s][:].reshape(q_s, heads, embed)
             q_slice = np.transpose(q_slice, (1, 0, 2))  # (heads, q_seq, embed)
             k_slice = k[k_offset:k_offset + kv_s][:].reshape(kv_s, group_num, embed)
@@ -53,10 +48,13 @@ class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
             v_slice = np.transpose(v_slice, (1, 0, 2))
             score = self.group_matmul(heads, group_num, q_slice, k_slice_t)
             s = score.reshape([-1, ]) if s is None else np.concatenate((s, score.reshape([-1, ])), 0)
+            
+            try:
+                score = score * np.float16(1.0 / math.sqrt(1.0 * embed))
+            except ZeroDivisionError as e:
+                raise RuntimeError(f"Self attention: The divisor cannot be zero! Exception: {}".format(e))
 
-            score = score * np.float16(1.0 / math.sqrt(1.0 * embed))
-            if is_mask:
-                score = score + mask[:, :q_s, :kv_s]
+            score = score + mask[:, :q_s, :kv_s] if is_mask
             score_max = np.max(score, axis=-1)
             score = score - score_max.reshape((heads, q_s, 1))
             score_exp = np.exp(score.astype(np.float32))
@@ -64,7 +62,10 @@ class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
                 score_sum = np.sum(score_exp.astype(np.float16), axis=-1)
                 _p = score_exp.astype(np.float16).reshape([-1, ]) if _p is None else \
                     np.concatenate((_p, score_exp.astype(np.float16).reshape([-1, ])), 0)
-                p = score_exp.astype(np.float16) / score_sum.reshape((heads, q_s, 1)).astype(np.float16)
+                try:
+                    p = score_exp.astype(np.float16) / score_sum.reshape((heads, q_s, 1)).astype(np.float16)
+                except ZeroDivisionError as e:
+                    raise RuntimeError(f"Self attention: The divisor cannot be zero! Exception: {}".format(e)) 
                 out_sub = self.group_matmul(heads, group_num, p, v_slice)
             else:
                 score_sum = np.sum(score_exp, axis=-1)
@@ -72,7 +73,10 @@ class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
                     np.concatenate((_p, score_exp.astype(np.float16).reshape([-1, ])), 0)
                 p = score_exp.astype(np.float16)
                 out_sub = self.group_matmul(heads, group_num, p, v_slice)
-                out_sub = out_sub / score_sum.reshape((heads, q_s, 1)).astype(np.float16)
+                try:
+                    out_sub = out_sub / score_sum.reshape((heads, q_s, 1)).astype(np.float16)
+                except ZeroDivisionError as e:
+                    raise RuntimeError(f"Self attention: The divisor cannot be zero! Exception: {}".format(e)) 
             out_sub = out_sub.reshape(heads, q_s, embed)
             out_sub = np.transpose(out_sub, (1, 0, 2))
             out_sub = np.ascontiguousarray(out_sub)

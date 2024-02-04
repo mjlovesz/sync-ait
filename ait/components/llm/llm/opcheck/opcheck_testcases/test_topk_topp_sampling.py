@@ -24,7 +24,7 @@ class TestToppOperation(operation_test.OperationTest):
         try:
             probs_div_sorted = probs_sorted / topp
         except ZeroDivisionError as e:
-            raise RuntimeError(f"Topp: The divisor cannot be zero!")    
+            raise RuntimeError(f"Topp: The divisor cannot be zero! Exception: {}".format(e))    
         indices_sorted = np.argsort(-probs, kind='mergesort', axis=-1)[..., :topk]
         probs_sorted_sumed = np.cumsum(probs_sorted, axis=-1, dtype=np.float16).astype(np.float16)
         mask = np.zeros_like(probs_sorted_sumed, dtype=np.int32)
