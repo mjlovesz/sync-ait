@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,13 +22,13 @@ SelfAttentionBinder::~SelfAttentionBinder() {}
 void SelfAttentionBinder::ParseParam(const nlohmann::json &paramJson)
 {
     tokenOffset_.clear();
-    if (paramJson.contains("token_offset")) {
-        for (auto &item : paramJson["token_offset"]) {
-            tokenOffset_.push_back(item.get<int32_t>();
+    if (paramJson.contains("tokenOffset")) {
+        for (auto item : paramJson["tokenOffset"]) {
+            tokenOffset_.push_back(item.get<int32_t>());
         }
     }
     seqLen_.clear();
-    for (auto item : paramJson["seq_len"]) {
+    for (auto item : paramJson["seqLen"]) {
         seqLen_.push_back(item.get<int32_t>());
     }
 }
@@ -37,11 +37,11 @@ void SelfAttentionBinder::BindTensor(atb::VariantPack &variantPack)
 {
     if (variantPack.inTensors.size() == 5) { // 5: flash encoder input num
         const uint32_t seqLenTensorId = 4;
-        variantPack.inTensors.at(seqLenTensorId).hostData = seqLen.data();
+        variantPack.inTensors.at(seqLenTensorId).hostData = seqLen_.data();
     } else {
         const uint32_t tokenOffsetTensorId = 6; // 6: 设置tokenOffset的tensor位置
-        const uint32_t seqLenTensorId = 7; // 7: 设置seqLen的tensor位置
-        variantPack.inTensors.at(tokenOffsetTensorId).hostData = tokenOffset.data();
-        variantPack.inTensors.at(seqLenTensorId).hostData = seqLen.data();
+        const uint32_t seqLenTensorId = 7;      // 7: 设置seqLen的tensor位置
+        variantPack.inTensors.at(tokenOffsetTensorId).hostData = tokenOffset_.data();
+        variantPack.inTensors.at(seqLenTensorId).hostData = seqLen_.data();
     }
 }

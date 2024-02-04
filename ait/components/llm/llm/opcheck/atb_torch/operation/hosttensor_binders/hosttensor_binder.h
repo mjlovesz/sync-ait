@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,7 +15,7 @@
  */
 #ifndef ATB_HOSTTENSOR_BINDER_H
 #define ATB_HOSTTENSOR_BINDER_H
-#include <nlohman/json.hpp>
+#include <nlohmann/json.hpp>
 #include <atb/atb_infer.h>
 
 class HostTensorBinder {

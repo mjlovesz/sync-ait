@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) Huawei Technologies Co., Ltd. 2023. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,14 +15,14 @@
  */
 #ifndef SELFATTENTIONBINDER_H
 #define SELFATTENTIONBINDER_H
-#include "hosttensor_binders.h"
+#include "hosttensor_binder.h"
 #include <vector>
 
-class SelfAttetionBinder : public HostTensorBinder {
+class SelfAttentionBinder : public HostTensorBinder {
 public:
     SelfAttentionBinder();
     virtual ~SelfAttentionBinder();
-    void ParseParam(const nlohman::json &paramJson) override;
+    void ParseParam(const nlohmann::json &paramJson) override;
     void BindTensor(atb::VariantPack &variantPack) override;
 
 private:
