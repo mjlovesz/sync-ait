@@ -175,5 +175,5 @@ def test_compare_file_given_data_file_when_valid_then_pass(golden_data_file, tes
 
 
 def test_compare_metadata_given_golden_path_when_valid_then_pass(test_metadata_path):
-    csv_save_path = compare_metadata(test_metadata_path, output_path=".")
+    csv_save_path = acc_cmp.compare_metadata(test_metadata_path, output_path=".")
     assert os.path.exists(csv_save_path) and os.path.getsize(csv_save_path) > 0
