@@ -46,7 +46,7 @@ private:
     void BuildVariantPack(std::vector<torch::Tensor> &atInTensors, std::vector<torch::Tensor> &atOutTensors);
     std::string GetSaveTensorDir();
     atb::Status InferShapeOutTensorDesc(std::vector<torch::Tensor> &atInTensors, 
-                                        atb::SVctor<atb::TensorDesc> &outTensorDescs);
+                                        atb::SVector<atb::TensorDesc> &outTensorDescs);
     bool IsCopyStreamValid();
 
 private:
