@@ -14,6 +14,7 @@
 import os
 import shutil
 import json
+import stat
 
 import pytest
 import numpy as np
@@ -23,6 +24,7 @@ from llm.compare import acc_cmp
 from llm.compare import torchair_utils
 
 
+FILE_PERMISSION = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP
 FAKE_GOLDEN_DATA_PATH = "test_acc_cmp_fake_golden_data.npy"
 FAKE_MY_DATA_PATH = "test_acc_cmp_fake_test_data.npy"
 
@@ -73,11 +75,11 @@ def test_metadata_path():
         os.makedirs(test_metadata_path, mode=0o750)
     metadata = {0: {0: [FAKE_GOLDEN_DATA_PATH, FAKE_MY_DATA_PATH]}}
 
-    metadata_path = os.path.join(test_metadata_path, "metadata.json")
-    with open(metadata_path, "w") as ff:
+    metadata_json_path = os.path.join(test_metadata_path, "metadata.json")
+    with os.fdopen(os.open(metadata_json_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'w') as ff:
         json.dump(metadata, ff)
 
-    yield metadata_path
+    yield test_metadata_path
 
     if os.path.exists(test_metadata_path):
         shutil.rmtree(test_metadata_path)
