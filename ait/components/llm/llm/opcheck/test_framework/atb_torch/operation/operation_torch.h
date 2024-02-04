@@ -42,11 +42,11 @@ public:
 
 private:
     void CreateAtOutTensors(std::vector<torch::Tensor> &atInTensors, std::vector<torch::Tensor> &atOutTensors);
-    void ExecuteOutImpl(std::vector<torch::Tensor> &inTensors, std::vector<torch::Tensor> &outTensors);
+    void ExecuteOutImpl(std::vector<torch::Tensor> &inTensors, std::vector<torch::Tensor> &outTensor);
     void BuildVariantPack(std::vector<torch::Tensor> &atInTensors, std::vector<torch::Tensor> &atOutTensors);
     std::string GetSaveTensorDir();
     atb::Status InferShapeOutTensorDesc(std::vector<torch::Tensor> &atInTensors, 
-                                        atb::Svector<atb::TensorDesc> &outTensorDescs);
+                                        atb::SVector<atb::TensorDesc> &outTensorDescs);
     bool IsCopyStreamValid();
 
 private:
