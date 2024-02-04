@@ -19,6 +19,7 @@
 #include <string>
 #include <atb/types.h>
 #include <torch/torch.h>
+#include "atb/operation.h"
 
 class Utils {
 public:
