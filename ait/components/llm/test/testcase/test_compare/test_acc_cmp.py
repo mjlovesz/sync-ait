@@ -132,7 +132,7 @@ def test_fill_row_data_given_my_path_when_shape_not_match_then_error(golden_data
     assert len(row_data["cmp_fail_reason"]) > 0
 
 
-def test_fill_row_data_torchair_given_golden_data_path_when_valid_then_pass(golden_data_file)
+def test_fill_row_data_torchair_given_golden_data_path_when_valid_then_pass(golden_data_file):
     golden_data_path = {"inputs": [golden_data_file], "outputs": [golden_data_file]}
     result = acc_cmp.fill_row_data_torchair(0, 0, golden_data_path, my_path="test")
     assert len(result) == 2 and len(result[0]) == 19 and len(result[1]) == 19
