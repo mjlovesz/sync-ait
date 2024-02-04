@@ -127,7 +127,7 @@ def compare_metadata(golden_path, output_path="."):
     with open(golden_meta_path, "r") as file:
         golden_meta = json.load(file)
     data_frame = fill_in_data(golden_meta)
-    save_compare_dataframe_to_csv(data_frame, output_path)
+    return save_compare_dataframe_to_csv(data_frame, output_path)
 
 
 def save_compare_dataframe_to_csv(data_frame, output_path="."):
@@ -153,7 +153,7 @@ def compare_torchair(golden_path, my_path, ge_graph_path, output_path="."):
     metadata = torchair_utils.build_metadata(graph_map, ge_dump_data, fx_dump_data)
 
     data_frame = fill_in_data(metadata)
-    save_compare_dataframe_to_csv(data_frame, output_path)
+    return save_compare_dataframe_to_csv(data_frame, output_path)
 
 
 def fill_in_data(golden_meta):

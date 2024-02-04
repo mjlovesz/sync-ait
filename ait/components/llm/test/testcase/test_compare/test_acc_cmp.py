@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import shutil
+import json
 
 import pytest
 import numpy as np
@@ -19,6 +21,10 @@ import pandas as pd
 
 from llm.compare import acc_cmp
 from llm.compare import torchair_utils
+
+
+FAKE_GOLDEN_DATA_PATH = "test_acc_cmp_fake_golden_data.npy"
+FAKE_MY_DATA_PATH = "test_acc_cmp_fake_test_data.npy"
 
 
 @pytest.fixture(scope='module', autouse=True)
@@ -31,20 +37,28 @@ def set_fake_parse_torchair_bin_dump_data():
 @pytest.fixture(scope='module')
 def golden_data_file():
     golden_data = np.ones((2, 3)).astype(np.float32)
-    golden_data_path = "./golden_data.npy"
-    np.save(golden_data_path, golden_data)
+    golden_data_path = "test_acc_cmp_fake_golden_data.npy"
 
-    yield golden_data_path
+    yield FAKE_GOLDEN_DATA_PATH
 
-    if os.path.exists(golden_data_path):
-        os.remove(golden_data_path)
+    if os.path.exists(FAKE_GOLDEN_DATA_PATH):
+        os.remove(FAKE_GOLDEN_DATA_PATH)
 
 
 @pytest.fixture(scope='module')
 def test_data_file():
     test_data = np.ones((2, 3)).astype(np.float32)
-    test_data_path = "./test_data.npy"
-    np.save(test_data_path, test_data)
+    np.save(FAKE_MY_DATA_PATH, test_data)
+
+    yield FAKE_MY_DATA_PATH
+
+    if os.path.exists(FAKE_MY_DATA_PATH):
+        os.remove(FAKE_MY_DATA_PATH)
+
+
+@pytest.fixture(scope='module')
+def test_dat_path():
+    test_data_path = "test_acc_cmp_fake_test_data.dat"  # No need to create actual file
 
     yield test_data_path
 
@@ -53,13 +67,20 @@ def test_data_file():
 
 
 @pytest.fixture(scope='module')
-def test_dat_path():
-    test_data_path = "./test_data.dat"  # No need to create actual file
+def test_metadata_path():
+    test_metadata_path = "test_acc_cmp_fake_metadata"
+    if not os.path.exists(test_metadata_path):
+        os.makedirs(test_metadata_path, mode=0o750)
+    metadata = {0: {0: [FAKE_GOLDEN_DATA_PATH, FAKE_MY_DATA_PATH]}}
 
-    yield test_data_path
+    metadata_path = os.path.join(test_metadata_path, "metadata.json")
+    with open(metadata_path, "w") as ff:
+        json.dump(metadata, ff)
 
-    if os.path.exists(test_data_path):
-        os.remove(test_data_path)
+    yield metadata_path
+
+    if os.path.exists(test_metadata_path):
+        shutil.rmtree(test_metadata_path)
 
 
 def test_check_tensor_given_golden_data_when_nan_then_false():
@@ -151,3 +172,8 @@ def test_compare_file_given_data_file_when_valid_then_pass(golden_data_file, tes
     res = acc_cmp.compare_file(golden_data_file, test_data_file)
     assert res == {'cosine_similarity': '1.000000', 'max_relative_error': 0.0, 'mean_relative_error': 0.0,
                    'relative_euclidean_distance': 0.0, 'cmp_fail_reason': ''}
+
+
+def test_compare_metadata_given_golden_path_when_valid_then_pass(test_metadata_path):
+    csv_save_path = compare_metadata(test_metadata_path, output_path=".")
+    assert os.path.exists(csv_save_path) and os.path.getsize(csv_save_path) > 0
