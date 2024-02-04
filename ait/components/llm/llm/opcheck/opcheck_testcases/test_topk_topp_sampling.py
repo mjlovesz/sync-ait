@@ -21,7 +21,10 @@ class TestToppOperation(operation_test.OperationTest):
         probs = in_tensors[0].cpu().numpy()
         topp = in_tensors[1].cpu().numpy()
         probs_sorted = np.sort(probs, axis=-1)[..., ::-1][..., :topk]
-        probs_div_sorted = probs_sorted / topp
+        try:
+            probs_div_sorted = probs_sorted / topp
+        except ZeroDivisionError as e:
+            raise RuntimeError(f"Topp: The divisor cannot be zero!")    
         indices_sorted = np.argsort(-probs, kind='mergesort', axis=-1)[..., :topk]
         probs_sorted_sumed = np.cumsum(probs_sorted, axis=-1, dtype=np.float16).astype(np.float16)
         mask = np.zeros_like(probs_sorted_sumed, dtype=np.int32)

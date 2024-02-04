@@ -135,8 +135,11 @@ class OperationTest(unittest.TestCase):
         size = out.shape[0]
         golden_denom = golden.clone().float()
         golden_denom[golden_denom == 0] += torch.finfo(torch.bfloat16).eps
-        rel_errors = torch.abs((out - golden) / golden_denom)
-        rel_error_rate = torch.sum(rel_errors <= etol) / size
+        try:
+            rel_errors = torch.abs((out - golden) / golden_denom)
+            rel_error_rate = torch.sum(rel_errors <= etol) / size
+        except ZeroDivisionError as e:
+            raise RuntimeError(f"Rel error rate: The divisor cannot be zero!")
         return rel_error_rate
 
     def __golden_compare_all(self, out_tensors, golden_out_tensors):
