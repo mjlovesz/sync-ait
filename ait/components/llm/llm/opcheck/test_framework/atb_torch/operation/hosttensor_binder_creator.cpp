@@ -21,8 +21,8 @@
  {
     if (opName == "SelfAttentionOperation") {
         return new SelfAttentionBinder();
-    } else {
-        ATB_LOG(INFO) << "opName: " << opName << " not host binder";
+    }else {
+        ATB_LOG(INFO) << "opName:" << opName << " not host binder";
     }
     return nullptr;
  }
