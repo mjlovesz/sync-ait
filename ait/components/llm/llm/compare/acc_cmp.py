@@ -59,7 +59,7 @@ def acc_compare(golden_path, my_path, output_path):
 
 def read_data(data_path):
     if data_path.endswith(".npy"):
-        data = np.load(data_path)
+        data = torch.Tensor(np.load(data_path))
     elif data_path.endswith(".bin"):
         data = read_atb_data(data_path)
     elif data_path.endswith(".pth") or data_path.endswith(".pt"):
@@ -76,13 +76,13 @@ def compare_file(golden_path, my_path):
     return compare_data(golden_data, my_data)
 
 
-def compare_data(golden_data, my_data):
+def compare_data(golden_data: torch.Tensor, my_data: torch.Tensor):
     golden_data_fp32 = golden_data.reshape(-1)
     my_data_fp32 = my_data.reshape(-1)
 
     res_err = {}
     for name, cmp_func in CMP_ALG_MAP.items():
-        result = cmp_func(golden_data_fp32, my_data_fp32)
+        result, _ = cmp_func(golden_data_fp32, my_data_fp32)
         res_err.setdefault(name, result)
     return res_err
 
@@ -127,11 +127,11 @@ def fill_in_data(golden_meta):
                 continue
 
             # 转换数据格式：
-            golden_data_fp32 = golden_data.reshape(-1).astype("float32")
-            my_data_fp32 = my_data.reshape(-1).astype("float32")
+            golden_data_fp32 = golden_data.reshape(-1)
+            my_data_fp32 = my_data.reshape(-1)
 
             # 检查tensor的shape是否一致、是否存在NAN或inf
-            tensor_pass = check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
+            tensor_pass = check_tensor(row_data, golden_data_fp32, my_data_fp32)
             if not tensor_pass:
                 data_frame = pd.concat([data_frame, row_data], ignore_index=True)
                 continue
@@ -161,20 +161,17 @@ def create_row_data(data_id, token_id, golden_data_path, my_path):
     return row_data
 
 
-def check_data_path(golden_data_path, my_path, row_data):
+def check_data_path(golden_data_path, my_data_path, row_data):
     path_is_exist = True
     if os.path.exists(golden_data_path):
-        golden_data = np.load(golden_data_path)
+        golden_data = read_data(golden_data_path)
     else:
         logger.warning(f"golden data path is not exists.")
         row_data[CMP_FAIL_REASON] = "golden_data_path is not exist."
         golden_data = 0
         path_is_exist = False
-    if os.path.exists(my_path):
-        if my_path.endswith(".npy"):
-            my_data = np.load(my_path)
-        else:
-            my_data = read_atb_data(my_path)
+    if os.path.exists(my_data_path):
+        my_data = read_data(my_data_path)
     else:
         logger.warning(f"my data path is not exists.")
         row_data[CMP_FAIL_REASON] = "my_path is not exist."
@@ -184,7 +181,11 @@ def check_data_path(golden_data_path, my_path, row_data):
     return path_is_exist, golden_data, my_data
 
 
-def check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
+def check_has_inf_nan(tensor: torch.Tensor):
+    return not torch.all(torch.isfinite(tensor))
+
+
+def check_tensor(row_data, golden_data_fp32, my_data_fp32):
     tensor_pass = True
     fail_reason = ''
 
@@ -193,13 +194,15 @@ def check_tensor(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
         logger.warning(f"data shape doesn't match.")
         fail_reason = f"{fail_reason} data shape doesn't match."
         tensor_pass = False
+
     # 检验golden_data中是否存在NAN或者inf
-    if not np.alltrue(np.isfinite(golden_data)):
+    if check_has_inf_nan(golden_data_fp32):
         logger.warning(f"golden_data include NAN or inf.")
         fail_reason = f"{fail_reason} golden_data include NAN or inf."
         tensor_pass = False
+
     # 检验my_data中是否存在NAN或者inf
-    if not np.alltrue(np.isfinite(my_data)):
+    if check_has_inf_nan(my_data_fp32):
         logger.warning(f"my_data include NAN or inf.")
         fail_reason = f"{fail_reason} my_data include NAN or inf."
         tensor_pass = False
