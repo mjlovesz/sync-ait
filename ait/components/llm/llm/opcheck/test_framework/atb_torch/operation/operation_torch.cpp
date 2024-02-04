@@ -21,7 +21,7 @@
 #include <torch_npu/csrc/core/npu/register/OptionsManager.h>
 #include "singleton.h"
 #include "atb/log.h"
-#include "atb/context.h
+#include "atb/context.h"
 #include "atb_torch/utils/utils.h"
 #include "test_utils/context/memory_context.h"
 #include "operation_creator.h"
@@ -46,7 +46,7 @@ static atb::Context* GetAtbContext()
     if (context) {
         context->SetExecuteStream(Utils::GetCurrentStream());
         const char *env = std::getenv("ATB_USE_TILING_COPY_STREAM");
-        if(env && std::string(env) == "1"){
+        if(env && std::string(env) == "1") {
             ATB_LOG(INFO) << "ATB_USE_TILING_COPY_STREAM is 1, call SetAsyncTilingCopyStatus";
             context->SetAsyncTilingCopyStatus(true);
         } else {
@@ -54,7 +54,7 @@ static atb::Context* GetAtbContext()
         }
     }
 
-    return context
+    return context;
 }
 
 OperationTorch::OperationTorch(std::string opName) : opName_(opName), name_(opName)
@@ -71,17 +71,17 @@ void OperationTorch::SetName(std::string name)
     name_ = name; 
 }
 
-void OperationTorch::SetParam(std::string param)
+std::string OperationTorch::SetParam(std::string param)
 {
     ATB_LOG(INFO) << name_ << " set param start, param:" << param;
     param_ = param;
 
     atb::Operation *operation = nullptr;
-    atb::Status st = atb::CreateOperation(opName_, param_, &operation);
+    atb::Status st = CreateOperation(opName_, param_, &operation);
     nlohmann::json setParamStat = {};
-    SetParamStat["result"] = st;
+    setParamStat["result"] = st;
     if (st != 0) {
-        ATB_LOG(ERROR) << name_ << " create operation fail, error code" << st;
+        ATB_LOG(ERROR) << name_ << " create operation fail, error code: " << st;
         return setParamStat.dump();
     }
     if (operation == nullptr) {
@@ -92,7 +92,7 @@ void OperationTorch::SetParam(std::string param)
     operation_.reset(operation);
 
     HostTensorBinder *binder = CreateHostTensorBinder(opName_);
-    hostTensorBinder_reset(binder);
+    hostTensorBinder_.reset(binder);
 
     ATB_LOG(INFO) << name_ << " set param end";
     return setParamStat.dump();
@@ -107,10 +107,10 @@ void OperationTorch::SetVaraintPackParam(std::string varaintPackParam)
             nlohmann::json paramJson = nlohmann::json::parse(varaintPackParam);
             hostTensorBinder_->ParseParam(paramJson);
         } catch (const std::exception &e) {
-            ATB_LOG(ERROR) << " parse param fail, error:" << e.what();
+            ATB_LOG(ERROR) << " parse json fail, error:" << e.what();
         }
     } else {
-        ATB_LOG(ERROR) << " hostTensorBinder is nullptr";
+        ATB_LOG(ERROR) << "hostTensorBinder is nullptr";
     }
     ATB_LOG(INFO) << name_ << " set varaint pack param end";
 }
@@ -122,7 +122,7 @@ atb::Status OperationTorch::InferShapeOutTensorDesc(std::vector<torch::Tensor> &
     for (size_t i = 0; i < atInTensors.size(); ++i) {
         auto &atInTensor = atInTensors.at(i);
         atb::Tensor inTensor = Utils::AtTensor2Tensor(atInTensor);
-        if (inTensor.desc.format == ACL_FORMAT_NCHW){
+        if (inTensor.desc.format == ACL_FORMAT_NCHW) {
             inTensor.desc.format = ACL_FORMAT_ND;
         }
         inTensorDescs.push_back(inTensor.desc);
@@ -130,7 +130,7 @@ atb::Status OperationTorch::InferShapeOutTensorDesc(std::vector<torch::Tensor> &
     return operation_->InferShape(inTensorDescs, outTensorDescs);
 }
 
-std::string OperationTorch::inferShape(std::vector<torch::Tensor> atInTensors)
+std::string OperationTorch::InferShape(std::vector<torch::Tensor> atInTensors)
 {
     ATB_LOG(INFO) << " infershape start";
 
@@ -152,7 +152,7 @@ std::string OperationTorch::inferShape(std::vector<torch::Tensor> atInTensors)
             inferShapeStat["format"].push_back(desc.format);
             vector<int> dims;
             int dimNum = desc.shape.dimNum;
-            for (int i = 0; i < dimNum; i++) {
+            for (int i = 0; i < dimNum; ++i) {
                 dims.push_back(desc.shape.dims[i]);
             }
             inferShapeStat["shape"].push_back(dims);
@@ -174,7 +174,7 @@ std::string OperationTorch::Setup(std::vector<torch::Tensor> atInTensors, std::v
 
     nlohmann::json setupStat = {};
     setupStat["result"] = st;
-    setupStat["workspaceSize"] = workspaceSize;
+    setupStat["workspace_size"] = workspaceSize;
     if (st != 0) {
         ATB_LOG(ERROR) << name_ << " setup fail, not call execute, error code: " << st;
     }
@@ -185,7 +185,7 @@ std::string OperationTorch::Setup(std::vector<torch::Tensor> atInTensors, std::v
 std::vector<torch::Tensor> OperationTorch::Execute(std::vector<torch::Tensor> atInTensors)
 {
     ATB_LOG(INFO) << name_ << " execute start";
-    if (operation_){
+    if (!operation_){
         ATB_LOG(FATAL) << name_ << " execute fail, operation is null";
     }
 
@@ -207,7 +207,7 @@ void OperationTorch::ExecuteOut(std::vector<torch::Tensor> atInTensors, std::vec
 
 void OperationTorch::ExecuteOutImpl(std::vector<torch::Tensor> &atInTensors, std::vector<torch::Tensor> &atOutTensors)
 {
-    ASD_LOG(INFO) << name_ << " execute impl execCount:" << executeCount_;
+    ATB_LOG(INFO) << name_ << " execute impl execCount:" << executeCount_;
 
     BuildVariantPack(atInTensors, atOutTensors);
 
@@ -222,7 +222,7 @@ void OperationTorch::ExecuteOutImpl(std::vector<torch::Tensor> &atInTensors, std
 
     ATB_LOG(INFO) << name_ << " get plan workspace size:" << workspaceSize;
 
-    uint8_t* workspace = nullptr;
+    uint8_t *workspace = nullptr;
     if (workspaceSize > 0) {
         workspace = (uint8_t *)AsdOps::GetSingleton<atb::MemoryContext>().GetWorkspaceBuffer(workspaceSize);
     }
@@ -233,7 +233,7 @@ void OperationTorch::ExecuteOutImpl(std::vector<torch::Tensor> &atInTensors, std
     executeCount_++;
 }
 
-void OperationTorch::CreateAtOutTensors(const std::vector<torch::Tensor> &atInTensors,
+void OperationTorch::CreateAtOutTensors(std::vector<torch::Tensor> &atInTensors,
     std::vector<torch::Tensor> &atOutTensors)
 {
     atb::SVector<atb::TensorDesc> outTensorDescs;
@@ -255,24 +255,24 @@ void OperationTorch::BuildVariantPack(std::vector<torch::Tensor> &atInTensors, s
     Utils::ContiguousAtTensor(atOutTensors);
     variantPack_.inTensors.resize(atInTensors.size());
     for (size_t i = 0; i < atInTensors.size(); ++i) {
-        ASD_LOG(INFO) << name_ << " execute start, atInTensors[" << i << "].options:" << atInTensors.at(i).options() << 
+        ATB_LOG(INFO) << name_ << " execute start, atInTensors[" << i << "].options:" << atInTensors.at(i).options() << 
             ", data:" << atInTensors.at(i).data_ptr() << ", storage_offset:" << atInTensors.at(i).storage_offset() << 
             ", format:" << Utils::GetTensorNpuFormat(atInTensors.at(i));
         atInTensors.at(i) = Utils::NpuFormatCast(atInTensors.at(i));
-        variantPack_.inTensors.at(i) = Utils::AtTensor2AsdTensor(atInTensors.at(i));
+        variantPack_.inTensors.at(i) = Utils::AtTensor2Tensor(atInTensors.at(i));
         if (variantPack_.inTensors.at(i).desc.format == ACL_FORMAT_NCHW) {
             variantPack_.inTensors.at(i).desc.format = ACL_FORMAT_ND;
         }
     }
 
-    variantPack.outTensors.resize(atOutTensors.size());
+    variantPack_.outTensors.resize(atOutTensors.size());
     for (size_t i = 0; i < atOutTensors.size(); ++i) {
         ATB_LOG(INFO) << name_ << " execute start, atOutTensors[" << i << "].options:" << 
             atOutTensors.at(i).options() << ", data:" << atOutTensors.at(i).data_ptr() << ", storage_offset:" << 
             atOutTensors.at(i).storage_offset() << ", format:" << Utils::GetTensorNpuFormat(atOutTensors.at(i));
-        variantPack.outTensors.at(i) = Utils::AtTensor2Tensor(atOutTensors.at(i));
-        if (variantPack.outTensors.at(i).desc.format == AsdOps::TENSOR_FORMAT_NCHW) {
-            variantPack.outTensors.at(i).desc.format = AsdOps::TENSOR_FORMAT_ND;
+        variantPack_.outTensors.at(i) = Utils::AtTensor2Tensor(atOutTensors.at(i));
+        if (variantPack_.outTensors.at(i).desc.format == ACL_FORMAT_NCHW) {
+            variantPack_.outTensors.at(i).desc.format = ACL_FORMAT_ND;
         }
     }
 
