@@ -29,7 +29,7 @@ class TestRmsNormOperation(operation_test.OperationTest):
             norm = torch.sum(x / gamma_size * x, dim=-1, keepdim=True) + eps
             golden_output = x * gamma / torch.sqrt(norm)
         except ZeroDivisionError as e:
-            raise RuntimeError(f"RmsNorm: The divisor cannot be zero! Exception: {}".format(e))
+            raise RuntimeError("RmsNorm: The divisor cannot be zero! Exception: {}".format(e))
 
         def rms_norm_quant(golden_output, beta):
             golden_output = golden_output.float()

@@ -20,7 +20,7 @@ class ActivationGolden:
             float_result = 0.5 * float_in_tensors * (1 + torch.nn.functional.tanh(np.sqrt(2 / np.pi) * (float_in_tensors + 
                         0.044715 * torch.pow(float_in_tensors, 3))))
         except ZeroDivisionError as e:
-            raise RuntimeError(f"Gelu golden: The divisor cannot be zero! Exception: {}".format(e))
+            raise RuntimeError("Gelu golden: The divisor cannot be zero! Exception: {}".format(e))
         return float_result.half() if in_tensors.dtype == torch.float16 else float_result
 
     @staticmethod
@@ -30,7 +30,7 @@ class ActivationGolden:
             float_result = float_in_tensors * torch.exp(0.851 * (float_in_tensors - torch.abs(float_in_tensors))) / (1 + 
                             torch.exp(-1.702 * torch.abs(float_in_tensors)))
         except ZeroDivisionError as e:
-            raise RuntimeError(f"Fast gelu golden: The divisor cannot be zero! Exception: {}".format(e))
+            raise RuntimeError("Fast gelu golden: The divisor cannot be zero! Exception: {}".format(e))
         return float_result.half()
 
     @staticmethod
@@ -39,7 +39,7 @@ class ActivationGolden:
         try:
             float_result = float_in_tensors / (1 + torch.exp(-float_in_tensors * scale))
         except ZeroDivisionError as e:
-            raise RuntimeError(f"Swish golden: The divisor cannot be zero! Exception: {}".format(e))
+            raise RuntimeError("Swish golden: The divisor cannot be zero! Exception: {}".format(e))
         return float_result.half()
 
     @staticmethod

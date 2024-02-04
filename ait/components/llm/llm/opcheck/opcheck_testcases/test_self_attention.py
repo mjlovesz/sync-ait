@@ -14,7 +14,7 @@ class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
         try:
             group_head = heads // group_num
         except ZeroDivisionError as e:
-            raise RuntimeError(f"Self attention: The divisor cannot be zero! Exception: {}".format(e))         
+            raise RuntimeError("Self attention: The divisor cannot be zero! Exception: {}".format(e))         
         score = None
         for i in range(group_num):
             group_score = np.matmul(in_a[i * group_head: (i + 1) * group_head, :, :].astype(np.float32),
@@ -52,7 +52,7 @@ class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
             try:
                 score = score * np.float16(1.0 / math.sqrt(1.0 * embed))
             except ZeroDivisionError as e:
-                raise RuntimeError(f"Self attention: The divisor cannot be zero! Exception: {}".format(e))
+                raise RuntimeError("Self attention: The divisor cannot be zero! Exception: {}".format(e))
 
             score = score + mask[:, :q_s, :kv_s] if is_mask
             score_max = np.max(score, axis=-1)
@@ -65,7 +65,7 @@ class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
                 try:
                     p = score_exp.astype(np.float16) / score_sum.reshape((heads, q_s, 1)).astype(np.float16)
                 except ZeroDivisionError as e:
-                    raise RuntimeError(f"Self attention: The divisor cannot be zero! Exception: {}".format(e)) 
+                    raise RuntimeError("Self attention: The divisor cannot be zero! Exception: {}".format(e)) 
                 out_sub = self.group_matmul(heads, group_num, p, v_slice)
             else:
                 score_sum = np.sum(score_exp, axis=-1)
@@ -76,7 +76,7 @@ class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
                 try:
                     out_sub = out_sub / score_sum.reshape((heads, q_s, 1)).astype(np.float16)
                 except ZeroDivisionError as e:
-                    raise RuntimeError(f"Self attention: The divisor cannot be zero! Exception: {}".format(e)) 
+                    raise RuntimeError("Self attention: The divisor cannot be zero! Exception: {}".format(e)) 
             out_sub = out_sub.reshape(heads, q_s, embed)
             out_sub = np.transpose(out_sub, (1, 0, 2))
             out_sub = np.ascontiguousarray(out_sub)
