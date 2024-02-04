@@ -107,12 +107,12 @@ void OperationTorch::SetVaraintPackParam(std::string varaintPackParam)
             nlohmann::json paramJson = nlohmann::json::parse(varaintPackParam);
             hostTensorBinder_->ParseParam(paramJson);
         } catch (const std::exception &e) {
-            ATB_LOG(ERROR) << " parse json fail, error:" << e.what();
+            ATB_LOG(ERROR) << "parse json fail, error:" << e.what();
         }
     } else {
         ATB_LOG(ERROR) << " hostTensorBinder is nullptr";
     }
-    ATB_LOG(INFO) << name_ << " set varaint pack param end";
+    ATB_LOG(INFO) << name_ << "set varaint pack param end";
 }
 
 atb::Status OperationTorch::InferShapeOutTensorDesc(std::vector<torch::Tensor> &atInTensors, atb::SVector<atb::TensorDesc> &outTensorDescs)
