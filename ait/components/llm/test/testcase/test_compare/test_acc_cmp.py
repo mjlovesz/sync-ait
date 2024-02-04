@@ -37,7 +37,7 @@ def set_fake_parse_torchair_bin_dump_data():
 @pytest.fixture(scope='module')
 def golden_data_file():
     golden_data = np.ones((2, 3)).astype(np.float32)
-    golden_data_path = "test_acc_cmp_fake_golden_data.npy"
+    np.save(FAKE_GOLDEN_DATA_PATH, golden_data)
 
     yield FAKE_GOLDEN_DATA_PATH
 
