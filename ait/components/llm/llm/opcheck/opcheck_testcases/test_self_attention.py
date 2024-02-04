@@ -54,11 +54,11 @@ class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
             except ZeroDivisionError as e:
                 raise RuntimeError("Self attention: The divisor cannot be zero! Exception: {}".format(e))
 
-            score = score + mask[:, :q_s, :kv_s] if is_mask
+            score = score + mask[:, :q_s, :kv_s] if self.op_param["isTriuMask"]
             score_max = np.max(score, axis=-1)
             score = score - score_max.reshape((heads, q_s, 1))
             score_exp = np.exp(score.astype(np.float32))
-            if not fp32:
+            if not self.op_param["isFp32"]:
                 score_sum = np.sum(score_exp.astype(np.float16), axis=-1)
                 _p = score_exp.astype(np.float16).reshape([-1, ]) if _p is None else \
                     np.concatenate((_p, score_exp.astype(np.float16).reshape([-1, ])), 0)
@@ -115,7 +115,7 @@ class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
             cur_q = (cur_q * self.q_scale).view(cur_seqlen, self.head_num, self.head_size).transpose(0, 1)
             cur_k = cur_k.view(cur_token_offset, self.head_num, self.head_size).permute(1, 2, 0)
             cur_qk = torch.bmm(cur_q, cur_k) # [head_num, seqlen, token_offset]
-            if (self.op_param["isClamp"]):
+            if self.op_param["isClamp"]:
                 clamp_min = self.op_param["clampMin"]
                 clamp_max = self.op_param["clampMax"]
                 cur_qk = torch.clamp(cur_qk, clamp_min, clamp_max)
