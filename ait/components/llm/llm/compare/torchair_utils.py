@@ -31,7 +31,7 @@ def set_msaccucmp_path_from_cann():
     sys.path.append(msaccucmp_path)
 
 
-def get_torchair_ge_dump_path(my_path):
+def get_torchair_ge_graph_path(my_path):
     if not os.path.isdir(my_path):
         return None
     for ff in os.listdir(my_path):

@@ -66,6 +66,10 @@ def fake_ge_dump_data():
         file_path = os.path.join(base_path, file_name)
         with os.fdopen(os.open(file_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'wb') as ff:
             pass
+
+    ge_graph_path = os.path.join(FAKE_GE_DUMP_DATA_NAME, torchair_utils.GE_GRAPH_FILE_PREFIX + "_test.txt")
+    with os.fdopen(os.open(ge_graph_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'wb') as ff:
+        pass
     
     yield
 
@@ -90,6 +94,16 @@ def fake_fx_dump_data():
 
     if os.path.exists(FAKE_FX_DUMP_DATA_NAME):
         shutil.rmtree(FAKE_FX_DUMP_DATA_NAME)
+
+
+def test_get_torchair_ge_graph_path_given_path_when_valid_then_pass():
+    ge_graph_path = torchair_utils.get_torchair_ge_graph_path(FAKE_GE_DUMP_DATA_NAME)
+    assert ge_graph_path is not None and ge_graph_path.startswith(torchair_utils.GE_GRAPH_FILE_PREFIX)
+
+
+def test_get_torchair_ge_graph_path_given_path_when_invalid_then_none():
+    ge_graph_path = torchair_utils.get_torchair_ge_graph_path(FAKE_FX_DUMP_DATA_NAME)
+    assert ge_graph_path is None
 
 
 def test_parse_pbtxt_to_dict_given_path_when_valid_then_pass():

@@ -43,9 +43,9 @@ from llm.compare import torchair_utils
 
 
 def acc_compare(golden_path, my_path, output_path="."):
-    torchair_ge_dump_path = torchair_utils.get_torchair_ge_dump_path(my_path)
-    if torchair_ge_dump_path is not None:
-        compare_torchair(golden_path, my_path, torchair_ge_dump_path, output_path=output_path)
+    torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
+    if torchair_ge_graph_path is not None:
+        compare_torchair(golden_path, my_path, torchair_ge_graph_path, output_path=output_path)
     elif os.path.isdir(golden_path):
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
         if os.path.isdir(golden_tensor_path):
