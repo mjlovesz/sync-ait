@@ -98,7 +98,8 @@ def fake_fx_dump_data():
 
 def test_get_torchair_ge_graph_path_given_path_when_valid_then_pass():
     ge_graph_path = torchair_utils.get_torchair_ge_graph_path(FAKE_GE_DUMP_DATA_NAME)
-    assert ge_graph_path is not None and ge_graph_path.startswith(torchair_utils.GE_GRAPH_FILE_PREFIX)
+    assert ge_graph_path is not None
+    assert os.path.basename(ge_graph_path).startswith(torchair_utils.GE_GRAPH_FILE_PREFIX)
 
 
 def test_get_torchair_ge_graph_path_given_path_when_invalid_then_none():
@@ -122,7 +123,7 @@ def test_parse_pbtxt_to_dict_given_path_when_valid_then_pass():
 
 def test_init_ge_dump_data_from_bin_path_given_path_when_valid_then_pass():
     result = torchair_utils.init_ge_dump_data_from_bin_path(FAKE_GE_DUMP_DATA_NAME)
-    expected_result = {1: {
+    expected_result = {0: {}, 1: {
         'Add_2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'Add.Add_2.44.6.17065969121619'),
         'Cast_9': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'Cast.Cast_9.19.6.17065969118878'),
         'ConcatV2': os.path.join(FAKE_GE_DUMP_DATA_NAME, '1', 'ConcatV2D.ConcatV2.42.6.17065969121611')

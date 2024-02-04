@@ -19,7 +19,7 @@ import numpy as np
 from llm.common.log import logger
 
 GE_GRAPH_FILE_PREFIX = "dynamo_original_graph_"
-DUMP_FILE_FILTER_SUFIX = ["txt", "npy", "bin"]
+DUMP_FILE_FILTER_SUFIX = [".txt", ".npy", ".bin"]
 
 
 def set_msaccucmp_path_from_cann():
