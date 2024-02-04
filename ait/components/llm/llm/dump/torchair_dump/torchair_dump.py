@@ -40,6 +40,9 @@ def get_ge_dump_config(dump_path="ait_ge_dump", dump_mode="all", use_fusion=True
     config.dump_config.dump_mode = dump_mode
     config.dump_config.dump_path = dump_path
 
+    if not os.path.exists(dump_path):
+        os.makedirs(dump_path, mode=0o750)
+
     return config
 
 
