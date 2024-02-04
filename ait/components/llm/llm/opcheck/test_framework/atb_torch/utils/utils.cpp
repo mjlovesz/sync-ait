@@ -108,7 +108,7 @@ static uint64_t CalcTensorDataSize(const atb::TensorDesc &tensorDesc, at::Scalar
     return dataItemSize * elementCount;
 }
 
-atb::Tensor Utils::AtTensor2AsdTensor(const at::Tensor &atTensor)
+atb::Tensor Utils::AtTensor2Tensor(const at::Tensor &atTensor)
 {
     static std::map<at::ScalarType, aclDataType> dtypeMap = {
         {at::ScalarType::Bool, ACL_BOOL},   {at::ScalarType::Byte, ACL_UINT8},
@@ -140,7 +140,7 @@ atb::Tensor Utils::AtTensor2AsdTensor(const at::Tensor &atTensor)
     return tensor;
 }
 
-at::Tensor Utils::CreateAtTensorFromAsdOpsTensorDesc(const atb::TensorDesc &tensorDesc)
+at::Tensor Utils::CreateAtTensorFromTensorDesc(const atb::TensorDesc &tensorDesc)
 {
     static std::map<aclDataType, at::ScalarType> dtypeMap = {
         {ACL_BOOL, at::ScalarType::Bool},   {ACL_UINT8, at::ScalarType::Byte},
@@ -160,7 +160,7 @@ at::Tensor Utils::CreateAtTensorFromAsdOpsTensorDesc(const atb::TensorDesc &tens
     options = options.layout(torch::kStrided).requires_grad(false).device(at::DeviceType::XLA);
 
     at::Tensor newTensor = at_npu::native::OpPreparation::ApplyTensorWithFormat(
-        at::IntArrayRef(tensorDesc.shape.dims, tensorDesc.shape.dimsNum), options, tensorDesc.format);
+        at::IntArrayRef(tensorDesc.shape.dims, tensorDesc.shape.dimNum), options, tensorDesc.format);
     ATB_LOG(INFO) << "ApplyTensorWithFormat end, newTensor.format:" << GetTensorNpuFormat(newTensor)
                   << ", is_contiguous:" << newTensor.is_contiguous();
     if (GetTensorNpuFormat(newTensor) != tensorDesc.format) {
