@@ -20,7 +20,7 @@
 #include <torch/script.h>
 #include <torch/custom_class.h>
 #include "atb/operation.h"
-#include "hosttensor_binders/hosttensor_binders.h"
+#include "hosttensor_binders/hosttensor_binder.h"
 
 class OperationTorch : public torch::CustomClassHolder {
 public:
@@ -41,12 +41,12 @@ public:
     c10::intrusive_ptr<OperationTorch> clone() const { return c10::make_intrusive<OperationTorch>(opName_); }
 
 private:
-    void CreateAtOutTensors(const std::vector<torch::Tensor> &atInTensors, std::vector<torch::Tensor> &atOutTensors);
-    void ExecuteOutImpl(std::vector<torch::Tensor> &inTensors, std::vector<torch::Tensor> &outTensor);
-    void BuildVariantPack(std::vector<torch::Tensor> &inTensors, std::vector<torch::Tensor> &outTensor);
+    void CreateAtOutTensors(std::vector<torch::Tensor> &atInTensors, std::vector<torch::Tensor> &atOutTensors);
+    void ExecuteOutImpl(std::vector<torch::Tensor> &inTensors, std::vector<torch::Tensor> &outTensors);
+    void BuildVariantPack(std::vector<torch::Tensor> &atInTensors, std::vector<torch::Tensor> &atOutTensors);
     std::string GetSaveTensorDir();
     atb::Status InferShapeOutTensorDesc(std::vector<torch::Tensor> &atInTensors, 
-                                        atb::Svector<atb::TensorDesc> &atOutTensors);
+                                        atb::Svector<atb::TensorDesc> &outTensorDescs);
     bool IsCopyStreamValid();
 
 private:
