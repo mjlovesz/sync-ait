@@ -54,7 +54,7 @@ class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
             except ZeroDivisionError as e:
                 raise RuntimeError("Self attention: The divisor cannot be zero! Exception: {}".format(e))
 
-            score = score + mask[:, :q_s, :kv_s] if self.op_param["isTriuMask"]
+            score = score + mask[:, :q_s, :kv_s] if self.op_param["isTriuMask"] else score
             score_max = np.max(score, axis=-1)
             score = score - score_max.reshape((heads, q_s, 1))
             score_exp = np.exp(score.astype(np.float32))
