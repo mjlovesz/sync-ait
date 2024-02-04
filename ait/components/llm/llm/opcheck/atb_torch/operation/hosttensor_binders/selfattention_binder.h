@@ -13,17 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef ATB_HOSTTENSOR_BINDER_H
-#define ATB_HOSTTENSOR_BINDER_H
-#include <nlohman/json.hpp>
-#include <atb/atb_infer.h>
+#ifndef SELFATTENTIONBINDER_H
+#define SELFATTENTIONBINDER_H
+#include "hosttensor_binders.h"
+#include <vector>
 
-class HostTensorBinder {
+class SelfAttetionBinder : public HostTensorBinder {
 public:
-    HostTensorBinder() = default;
-    virtual ~HostTensorBinder() = default;
-    virtual void ParseParam(const nlohmann::json &paramJson) = 0;
-    virtual void BindTensor(atb::VariantPack &variantPack) = 0;
+    SelfAttentionBinder();
+    virtual ~SelfAttentionBinder();
+    void ParseParam(const nlohman::json &paramJson) override;
+    void BindTensor(atb::VariantPack &variantPack) override;
+
+private:
+    std::vector<int32_t> tokenOffset_;
+    std::vector<int32_t> seqLen_;
 };
 
 #endif
