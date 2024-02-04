@@ -1,6 +1,6 @@
 import os
 import sys
-
+import re
 import json
 import queue
 import threading
@@ -25,7 +25,7 @@ class OpChecker:
             'op_name': string
             'op_param': dict
             'tensor_path': string
-            'out_format: list
+            'out_dtype: list
         '''
         self.csv_data = {}
         self.cases_info = {}
@@ -64,28 +64,29 @@ class OpChecker:
         OpChecker.third_party_init()
         self.args_init(args)
         ut_manager = UtManager(self.completed_op_id_queue)
-
-        self.add_cases()
+        
+        # 1.将csv文件中的算子信息添加到self.cases_info
+        self.add_file_info_to_cases()
         result_info = 'excuted_information'
 
         for _, case_info in self.cases_info.items():
-            # 1.将self.cases_info中的用例添加到ut_manager
+            # 2.将self.cases_info中的用例添加到ut_manager
             if_successed_add_case = ut_manager.add_case(case_info)
             if if_successed_add_case:
                 case_info[result_info] = 'addition successed'
             else:
                 case_info[result_info] = 'addition failed'
 
-        # 2.执行测试用例并提供专家建议
+        # 3.执行测试用例并提供专家建议
         self.excute_cases(ut_manager)
 
-        # 3.写入未添加成功的算子
+        # 4.写入未添加成功的算子
         for v in self.cases_info.values():
             if v[result_info] == 'addition failed':
                 v['res_detail'] = []
                 self.write_op_result_to_csv(v)
 
-        # 4.格式化文件
+        # 5.格式化文件
         data = pd.read_csv(self.output_path, dtype='str')
         data.to_excel(os.path.join(self.output_dir, f"opcheck_result_{self.timestamp}.xlsx"), index=False)
 
@@ -105,15 +106,30 @@ class OpChecker:
         in_tensor_path = os.path.join(self.tensor_path, '_*/'.join(ids.split("_")) + '_*', "after")
         files = glob.glob(in_tensor_path)
         if not len(files) == 1:
-            raise RuntimeError(f"{in_tensor_path} could not find a dir!")
+            raise RuntimeError("{} could not find a dir!".format(in_tensor_path))
         return files[0]
     
     def parse_csv_files(self):
-        df = pd.read_csv(self.op_path, sep='|')
-        df['Ids'] = df['OpName'].apply(lambda x:x.split("_", 1)[1])
-        df['RealOpName'] = df['OpName'].apply(lambda x:x.split("_", 1)[0])
-        df['InTensorPath'] = df['Ids'].apply(lambda x:self.parse_in_tensor_path(x))
-        df['OutDTypeParse'] = df['OutDType'].apply(lambda x:x.split(";"))
+        try:
+            df = pd.read_csv(self.op_path, sep='|')
+        except Exception as e:
+            logger_text = f"Cannot read csv file: {self.op_path}"
+            logger.info(logger_text)
+            raise e
+        
+        op_name_str = "OpName"
+        if op_name_str in df.columns and "OutDType" in df.columns:
+            try:
+                df['Ids'] = df[op_name_str].apply(lambda x:x.split("_", 1)[1])
+                df['RealOpName'] = df[op_name_str].apply(lambda x:x.split("_", 1)[0])
+                df['InTensorPath'] = df['Ids'].apply(lambda x:self.parse_in_tensor_path(x))
+                df['OutDTypeParse'] = df['OutDType'].apply(lambda x:x.split(";"))
+            except Exception as e:
+                logger_text = f"Cannot parse csv file: {self.op_path}"
+                logger.info(logger_text)
+                raise e
+        else:
+            raise RuntimeError("Cannot find enough info in csv file: {}".format(self.op_path))
         return df
 
     def check_id_range(self, op_id):
@@ -121,7 +137,8 @@ class OpChecker:
             return True
         else:
             for p in self.check_ids_string:
-                if op_id.startswith(p):
+                ret = re.match("^" + p + "(_[1-9]+)*$", op_id)
+                if ret:
                     return True
             return False
     
@@ -154,11 +171,11 @@ class OpChecker:
             op_param = {}
 
         tensor_path = row["InTensorPath"]
-        out_format = row["OutDTypeParse"]
+        out_dtype = row["OutDTypeParse"]
 
         case_info = {
             'op_id': op_id, 'op_name': op_name, 'op_param': op_param, 'tensor_path': tensor_path, 
-            'out_format':out_format
+            'out_dtype':out_dtype
         }
 
         if op_name == 'KvCacheOperation':
@@ -172,7 +189,7 @@ class OpChecker:
         else:
             self.cases_info[op_id] = case_info 
 
-    def add_cases(self):
+    def add_file_info_to_cases(self):
         if os.path.exists(self.op_path):
             csv_data = self.parse_csv_files()
 

@@ -146,7 +146,7 @@ class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
     def test(self):
         soc_version = self.get_soc_version()
         if soc_version != 'Ascend910B':
-            raise RuntimeError(f"{soc_version} is not supported! SelfAttentionOperation only supports Ascend910B!")
+            raise RuntimeError("{} is not supported! Only supports Ascend910B!".format(soc_version))
 
         if self.op_param["isEncoder"]:
             self.case_info["run_param"] = json.dumps({"seqLen": self.in_tensors[4].tolist(),

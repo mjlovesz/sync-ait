@@ -23,7 +23,7 @@ class OperationTest(unittest.TestCase):
         self.op_param = case_info['op_param']
         self.tensor_path = case_info['tensor_path']
         self.in_tensors = []
-        self.out_format = self.case_info["out_format"]
+        self.out_dtype = self.case_info["out_dtype"]
         
         error1 = 'Error0.1‰'
         error2 = 'Error0.5‰'
@@ -139,45 +139,8 @@ class OperationTest(unittest.TestCase):
             rel_errors = torch.abs((out - golden) / golden_denom)
             rel_error_rate = torch.sum(rel_errors <= etol) / size
         except ZeroDivisionError as e:
-            raise RuntimeError("Rel error rate: The divisor cannot be zero! Exception: {}".format(e))
-        return rel_error_rate
-
-    def __golden_compare_all(self, out_tensors, golden_out_tensors):
-        flag = True
-
-        try:
-            self.assertEqual(len(out_tensors), len(golden_out_tensors))
-            self.assertEqual(len(out_tensors), len(self.out_format))
-        except AssertionError as e:
-            flag = False
             raise e
-
-        tensor_count = len(out_tensors)
-        for i in range(tensor_count):
-            p_s = self.precision_standard.get(self.out_format[i], [])
-            if len(p_s) != 2:
-                raise RuntimeError(f"{self.out_format[i]} not supported!")
-            etol = self.erol_dict.get(p_s[0], 0.001)
-            err_rate = p_s[1]
-            ps_standard = f"{err_rate}%(error<{etol})"
-
-            rel_error_rate = self.get_rel_error_rate(out_tensors[i], golden_out_tensors[i], etol)
-
-            try:
-                self.assertLess(err_rate, rel_error_rate * 100)
-            except AssertionError as e:
-                flag = False
-                raise e
-            
-            rel_error_rate = "%.16f" % float(rel_error_rate.item() * 100)
-
-            self.case_info['res_detail'].append({"precision_standard": ps_standard,
-                                                "rel_error_rate": rel_error_rate})
-            
-            if flag:
-                self.case_info['excuted_information'] = 'execution successful'
-            else:
-                self.case_info['excuted_information'] = 'execution failed'
+        return rel_error_rate
         
     def get_npu_device(self):
         npu_device = os.environ.get("NPU_DEVICE")
@@ -201,3 +164,40 @@ class OperationTest(unittest.TestCase):
                     .format(device_name, soc_version, device_count, current_device)
         logger.info(logger_text)
         return soc_version
+
+    def __golden_compare_all(self, out_tensors, golden_out_tensors):
+        flag = True
+
+        try:
+            self.assertEqual(len(out_tensors), len(golden_out_tensors))
+            self.assertEqual(len(out_tensors), len(self.out_dtype))
+        except AssertionError as e:
+            flag = False
+            raise e
+
+        tensor_count = len(out_tensors)
+        for i in range(tensor_count):
+            p_s = self.precision_standard.get(self.out_dtype[i], [])
+            if len(p_s) != 2:
+                raise RuntimeError(f"{self.out_dtype[i]} not supported!")
+            etol = self.erol_dict.get(p_s[0], 0.001)
+            err_rate = p_s[1]
+            ps_standard = f"{err_rate}%(error<{etol})"
+
+            rel_error_rate = self.get_rel_error_rate(out_tensors[i], golden_out_tensors[i], etol)
+
+            try:
+                self.assertLess(err_rate, rel_error_rate * 100)
+            except AssertionError as e:
+                flag = False
+                raise e
+            
+            rel_error_rate = "%.16f" % float(rel_error_rate.item() * 100)
+
+            self.case_info['res_detail'].append({"precision_standard": ps_standard,
+                                                "rel_error_rate": rel_error_rate})
+            
+            if flag:
+                self.case_info['excuted_information'] = 'execution successful'
+            else:
+                self.case_info['excuted_information'] = 'execution failed'
