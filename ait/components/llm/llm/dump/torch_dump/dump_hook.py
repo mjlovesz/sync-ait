@@ -111,10 +111,11 @@ def dump_tensor(feat, feat_path):
         for idx, tensor in enumerate(feat):
             dump_tensor(tensor, "{}_{}".format(feat_path, idx))
     elif isinstance(feat, torch.Tensor):
-        data = feat.cpu().detach().numpy()
-        if not feat_path.endswith(".npy"):
-            feat_path += ".npy"
-        np.save(feat_path, data)
+        if not feat_path.endswith(".pth"):
+            feat_path += ".pth"
+        torch.save(feat, feat_path)
+    else:
+        logger.warning("Unrecognized data type %s, cannot be saved in path %s.", type(feat), feat_path)
 
 
 def dump_data(inputs, outputs, dump_path, exec_count, tensor_part):
