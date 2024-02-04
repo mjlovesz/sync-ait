@@ -225,7 +225,7 @@ class OpcheckCommand(BaseCommand):
             dest="opname",
             type=safe_string,
             default=None,
-            help='Operation names need to dump, default none.E.g:-opname self')
+            help='Operation names need to dump, default none.E.g:-opname self,linear')
 
     def handle(self, args, **kwargs):
         op = OpChecker()

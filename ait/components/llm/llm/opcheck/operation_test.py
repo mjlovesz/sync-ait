@@ -83,52 +83,38 @@ class OperationTest(unittest.TestCase):
         self.excuted_ids.put(self.op_id)
         if self.case_info['excuted_information'] != 'execution successful':
             self.case_info['excuted_information'] = 'execution failed'
+    
+    def excute_common(self, excute_type):
+        logger_text = f"———————— {self.op_id} {self.op_name} test start ————————"
+        logger.info(logger_text)
+        operation = torch.classes.OperationTorch.OperationTorch(self.op_name)
+        if isinstance(self.op_param, dict):
+            operation.set_param(json.dumps(self.op_param))
+        elif isinstance(self.op_param, str):
+            operation.set_param(self.op_param)
+        if excute_type == "inplace":
+            operation.execute(self.in_tensors)
+            out_tensors = []
+            for index in self.case_info['inplace_idx']:
+                out_tensors.append(self.in_tensors[index])
+        elif excute_type == "with_param":
+            operation.set_varaintpack_param(self.case_info['run_param'])
+            out_tensors = operation.execute(self.in_tensors)
+        else:
+            out_tensors = operation.execute(self.in_tensors)
+        logger.info("out_tensor", out_tensors[0].size())
+        golden_out_tensors = self.golden_calc(self.in_tensors)
+        logger.info("golden_calc", golden_out_tensors[0].size())
+        self.__golden_compare_all(out_tensors, golden_out_tensors)
 
     def execute(self):
-        logger_text = f"———————— {self.op_id} {self.op_name} test start ————————"
-        logger.info(logger_text)
-        operation = torch.classes.OperationTorch.OperationTorch(self.op_name)
-        if isinstance(self.op_param, dict):
-            operation.set_param(json.dumps(self.op_param))
-        elif isinstance(self.op_param, str):
-            operation.set_param(self.op_param)
-        out_tensors = operation.execute(self.in_tensors)
-        logger.info("out_tensor", out_tensors[0].size())
-        golden_out_tensors = self.golden_calc(self.in_tensors)
-        logger.info("golden_calc", golden_out_tensors[0].size())
-        self.__golden_compare_all(out_tensors, golden_out_tensors)
+        self.excute_common("common")
 
     def execute_with_param(self):
-        logger_text = f"———————— {self.op_id} {self.op_name} test start ————————"
-        logger.info(logger_text)
-        operation = torch.classes.OperationTorch.OperationTorch(self.op_name)
-        if isinstance(self.op_param, dict):
-            operation.set_param(json.dumps(self.op_param))
-        elif isinstance(self.op_param, str):
-            operation.set_param(self.op_param)
-        operation.set_varaintpack_param(self.case_info['run_param'])
-        out_tensors = operation.execute(self.in_tensors)
-        logger.info("out_tensor", out_tensors[0].size())
-        golden_out_tensors = self.golden_calc(self.in_tensors)
-        logger.info("golden_calc", golden_out_tensors[0].size())
-        self.__golden_compare_all(out_tensors, golden_out_tensors)
+        self.excute_common("with_param")
 
     def execute_inplace(self):
-        logger_text = f"———————— {self.op_id} {self.op_name} test start ————————"
-        logger.info(logger_text)
-        operation = torch.classes.OperationTorch.OperationTorch(self.op_name)
-        if isinstance(self.op_param, dict):
-            operation.set_param(json.dumps(self.op_param))
-        elif isinstance(self.op_param, str):
-            operation.set_param(self.op_param)
-        operation.execute(self.in_tensors)
-        out_tensors = []
-        for index in self.case_info['inplace_idx']:
-            out_tensors.append(self.in_tensors[index])
-        logger.info("out_tensor", out_tensors[0].size())
-        golden_out_tensors = golden_calc(self.in_tensors)
-        logger.info("golden_calc", golden_out_tensors[0].size())
-        self.__golden_compare_all(out_tensors, golden_out_tensors)
+        self.excute_common("inplace")
 
     def get_rel_error_rate(self, out, golden, etol):
         out, golden = out.reshape(-1), golden.reshape(-1)
