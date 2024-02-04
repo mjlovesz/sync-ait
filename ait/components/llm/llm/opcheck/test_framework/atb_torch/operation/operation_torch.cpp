@@ -110,9 +110,9 @@ void OperationTorch::SetVaraintPackParam(std::string varaintPackParam)
             ATB_LOG(ERROR) << "parse json fail, error:" << e.what();
         }
     } else {
-        ATB_LOG(ERROR) << " hostTensorBinder is nullptr";
+        ATB_LOG(ERROR) << "hostTensorBinder is nullptr";
     }
-    ATB_LOG(INFO) << name_ << "set varaint pack param end";
+    ATB_LOG(INFO) << name_ << " set varaint pack param end";
 }
 
 atb::Status OperationTorch::InferShapeOutTensorDesc(std::vector<torch::Tensor> &atInTensors, atb::SVector<atb::TensorDesc> &outTensorDescs)
