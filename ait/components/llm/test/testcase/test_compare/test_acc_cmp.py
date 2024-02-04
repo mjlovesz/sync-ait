@@ -18,6 +18,14 @@ import numpy as np
 import pandas as pd
 
 from llm.compare import acc_cmp
+from llm.compare import torchair_utils
+
+
+@pytest.fixture(scope='module', autouse=True)
+def set_fake_parse_torchair_bin_dump_data():
+    def fake_parse_torchair_bin_dump_data(my_path):
+        return [np.ones([2, 3]).astype(np.float32)], [np.ones([2, 3]).astype(np.float32)]
+    setattr(torchair_utils, "parse_torchair_bin_dump_data", fake_parse_torchair_bin_dump_data)
 
 
 @pytest.fixture(scope='module')
@@ -25,7 +33,9 @@ def golden_data_file():
     golden_data = np.ones((2, 3)).astype(np.float32)
     golden_data_path = "./golden_data.npy"
     np.save(golden_data_path, golden_data)
+
     yield golden_data_path
+
     if os.path.exists(golden_data_path):
         os.remove(golden_data_path)
 
@@ -35,19 +45,26 @@ def test_data_file():
     test_data = np.ones((2, 3)).astype(np.float32)
     test_data_path = "./test_data.npy"
     np.save(test_data_path, test_data)
+
     yield test_data_path
+
     if os.path.exists(test_data_path):
         os.remove(test_data_path)
 
 
 @pytest.fixture(scope='module')
 def test_dat_path():
-    test_data = np.ones((2, 3)).astype(np.float32)
-    test_data_path = "./test_data.dat"
-    np.save(test_data_path, test_data)
+    test_data_path = "./test_data.dat"  # No need to create actual file
+
     yield test_data_path
+
     if os.path.exists(test_data_path):
         os.remove(test_data_path)
+
+
+def test_check_tensor_given_golden_data_when_nan_then_false():
+    result, message = acc_cmp.check_tensor(np.zeros([2]).astype("float32") + np.nan, np.zeros([2]).astype("float32"))
+    assert result is False and len(message) > 0 and "golden" in message.lower()
 
 
 def test_fill_row_data_given_my_path_when_valid_then_pass(golden_data_file, test_data_file):
@@ -94,6 +111,13 @@ def test_fill_row_data_given_my_path_when_shape_not_match_then_error(golden_data
     assert len(row_data["cmp_fail_reason"]) > 0
 
 
+def test_fill_row_data_torchair_given_golden_data_path_when_valid_then_pass(golden_data_file)
+    golden_data_path = {"inputs": [golden_data_file], "outputs": [golden_data_file]}
+    result = acc_cmp.fill_row_data_torchair(0, 0, golden_data_path, my_path="test")
+    assert len(result) == 2 and len(result[0]) == 19 and len(result[1]) == 19
+    assert result[0]["cosine_similarity"] == "1.000000" and result[1]["cosine_similarity"] == "1.000000"
+
+
 def test_save_compare_dataframe_to_csv_given_data_frame_when_valid_then_pass():
     dd = pd.DataFrame([{"aa": 11}, {"bb": 12}])
     csv_save_path = acc_cmp.save_compare_dataframe_to_csv(dd)
@@ -110,7 +134,7 @@ def test_read_data_given_data_file_when_valid_npy_then_pass(golden_data_file, te
     assert (data == golden).all()
 
 
-def test_read_dataa_given_data_file_when_invalid_type_then_error(test_dat_path):
+def test_read_data_given_data_file_when_invalid_type_then_error(test_dat_path):
     with pytest.raises(TypeError):
         acc_cmp.read_data(test_dat_path)
 
