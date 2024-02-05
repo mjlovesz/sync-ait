@@ -147,10 +147,7 @@ def test_init_fx_dump_data_from_path_given_path_when_valid_then_pass():
 
 
 def test_build_metadata_given_path_when_valid_then_pass():
-    graph_map = torchair_utils.parse_pbtxt_to_dict(FAKE_PBTXT_FILE_NAME)
-    ge_dump_data = torchair_utils.init_ge_dump_data_from_bin_path(FAKE_GE_DUMP_DATA_NAME)
-    fx_dump_data = torchair_utils.init_fx_dump_data_from_path(FAKE_FX_DUMP_DATA_NAME)
-    result = torchair_utils.build_metadata(graph_map, ge_dump_data, fx_dump_data)
+    result = torchair_utils.build_metadata(FAKE_FX_DUMP_DATA_NAME, FAKE_GE_DUMP_DATA_NAME, FAKE_PBTXT_FILE_NAME)
     expected_result = {1: {1: [
         {
             'inputs': [

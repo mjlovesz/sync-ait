@@ -24,11 +24,15 @@ DUMP_FILE_FILTER_SUFIX = [".txt", ".npy", ".bin"]
 
 def set_msaccucmp_path_from_cann():
     cann_path = os.environ.get("ASCEND_TOOLKIT_HOME", "")
-    msaccucmp_path = os.path.join(cann_path, "python", "site-packages", "operator_cmp", "compare")
-    if not os.path.exists(msaccucmp_path):
+    if not cann_path:
         raise OSError("CANN toolkit in not installed or not set, try installing the latest CANN toolkit.")
 
-    sys.path.append(msaccucmp_path)
+    msaccucmp_path = os.path.join(cann_path, "python", "site-packages", "operator_cmp", "compare")
+    if not os.path.exists(msaccucmp_path):
+        raise OSError(f"{msaccucmp_path} not exists, try installing the latest CANN toolkit.")
+
+    if msaccucmp_path not in sys.path:
+        sys.path.append(msaccucmp_path)
 
 
 def get_torchair_ge_graph_path(my_path):
@@ -46,20 +50,17 @@ def is_torchair_dump_data(golden_data_path, my_path):
 
 
 def parse_torchair_bin_dump_data(bin_dump_file):
-    from dump_parser import DumpDataParser
-    from dump_parse.big_dump_data import BigDumpDataParser
+    from dump_parse.dump_utils import parse_dump_file  # Parser tool from CANN msaccucmp
     from cmp_utils.constant.const_manager import ConstManager
 
-    bin_dump_data = BigDumpDataParser(bin_dump_file).parse()  # Parser tool from CANN msaccucmp
+    bin_dump_data = parse_dump_file(bin_dump_file, dump_version=ConstManager.OLD_DUMP_TYPE)
     inputs = []
-    for input_data in bin_dump_data.input:
-        dtype = ConstManager.DATA_TYPE_TO_STR_DTYPE_MAP.get(input_data.data_type, "float32")
-        inputs.append(np.frombuffer(input_data.data, dtype=dtype))
+    for input_data in bin_dump_data.input_data:
+        inputs.append(input_data.data.reshape(input_data.shape))
 
     outputs = []
-    for output_data in bin_dump_data.output:
-        dtype = ConstManager.DATA_TYPE_TO_STR_DTYPE_MAP.get(output_data.data_type, "float32")
-        outputs.append(np.frombuffer(output_data.data, dtype=dtype))
+    for output_data in bin_dump_data.output_data:
+        outputs.append(output_data.data.reshape(output_data.shape))
     return inputs, outputs
 
 
@@ -232,7 +233,12 @@ def build_metadata_single_token(graph_map, ge_dump_data, fx_dump_data, token_id=
     return metadata
 
 
-def build_metadata(graph_map, ge_dump_data, fx_dump_data):
+def build_metadata(golden_path, my_path, ge_graph_path):
+    set_msaccucmp_path_from_cann()
+    graph_map = parse_pbtxt_to_dict(ge_graph_path)
+    ge_dump_data = init_ge_dump_data_from_bin_path(my_path)
+    fx_dump_data = init_fx_dump_data_from_path(golden_path)
+
     gathered_metadata = {}
     for token_id in ge_dump_data:
         if token_id not in fx_dump_data:
