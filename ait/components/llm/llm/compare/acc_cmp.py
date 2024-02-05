@@ -219,13 +219,18 @@ def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=N
 def set_tensor_basic_info_in_row_data(golden_data, my_data):
     row_data = {}
     row_data[GOLDEN_DTYPE] = str(golden_data.dtype)
-    row_data[GOLDEN_SHAPE] = str(golden_data.shape)
-    row_data[GOLDEN_MAX_VALUE] = golden_data.max().item()
-    row_data[GOLDEN_MIN_VALUE] = golden_data.min().item()
-    row_data[GOLDEN_MEAN_VALUE] = golden_data.mean().item()
+    row_data[GOLDEN_SHAPE] = str(list(golden_data.shape))
+    if 0 not in golden_data.shape:
+        golden_data = golden_data.float()
+        row_data[GOLDEN_MAX_VALUE] = golden_data.max().item()
+        row_data[GOLDEN_MIN_VALUE] = golden_data.min().item()
+        row_data[GOLDEN_MEAN_VALUE] = golden_data.mean().item()
+
     row_data[MY_DTYPE] = str(my_data.dtype)
-    row_data[MY_SHAPE] = str(my_data.shape)
-    row_data[MY_MAX_VALUE] = my_data.max().item()
-    row_data[MY_MIN_VALUE] = my_data.min().item()
-    row_data[MY_MEAN_VALUE] = my_data.mean().item()
+    row_data[MY_SHAPE] = str(list(my_data.shape))
+    if 0 not in my_data.shape:
+        my_data = my_data.float()
+        row_data[MY_MAX_VALUE] = my_data.max().item()
+        row_data[MY_MIN_VALUE] = my_data.min().item()
+        row_data[MY_MEAN_VALUE] = my_data.mean().item()
     return row_data
