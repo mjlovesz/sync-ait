@@ -87,7 +87,7 @@ def test_metadata_path():
 
 
 def test_check_tensor_given_golden_data_when_nan_then_false():
-    result, message = acc_cmp.check_tensor(np.zeros([2]).astype("float32") + np.nan, np.zeros([2]).astype("float32"))
+    result, message = acc_cmp.check_tensor(torch.zeros([2]).float() + torch.nan, torch.zeros([2])float())
     assert result is False and len(message) > 0 and "golden" in message.lower()
 
 
@@ -154,12 +154,12 @@ def test_acc_compare_given_data_file_when_valid_then_pass(golden_data_file, test
 
 def test_read_data_given_data_file_when_valid_npy_then_pass(golden_data_file, test_data_file):
     data = acc_cmp.read_data(test_data_file)
-    golden = np.load(golden_data_file)
+    golden = acc_cmp.read_data(golden_data_file)
     assert (data == golden).all()
 
 
 def test_read_data_when_npy(golden_data_file, test_data_file):
-    data = read_data(test_data_file)
+    data = acc_cmp.read_data(test_data_file)
     golden = torch.tensor(np.load(golden_data_file))
     assert torch.all(data == golden).item()
 
