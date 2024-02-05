@@ -40,10 +40,14 @@ from llm.common.constant import (
     GOLDEN_MEAN_VALUE,
     CSV_GOLDEN_HEADER,
 )
+from llm.compare import torchair_utils
 
 
-def acc_compare(golden_path, my_path, output_path="./"):
-    if os.path.isdir(golden_path):
+def acc_compare(golden_path, my_path, output_path="."):
+    torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
+    if torchair_ge_graph_path is not None:
+        compare_torchair(golden_path, my_path, torchair_ge_graph_path, output_path=output_path)
+    elif os.path.isdir(golden_path):
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
         if os.path.isdir(golden_tensor_path):
             compare_metadata(golden_tensor_path, output_path)
@@ -63,7 +67,7 @@ def read_data(data_path):
     elif data_path.endswith(".bin"):
         data = read_atb_data(data_path)
     elif data_path.endswith(".pth") or data_path.endswith(".pt"):
-        data = torch.load(data_path)
+        data = torch.load(data_path, map_location=torch.device("cpu"))
     else:
         logger.error("Unsupported data format %s", data_path)
         raise TypeError("Unsupported data format.")
@@ -76,37 +80,82 @@ def compare_file(golden_path, my_path):
     return compare_data(golden_data, my_data)
 
 
-def compare_data(golden_data: torch.Tensor, my_data: torch.Tensor):
+def compare_data(golden_data, my_data):
     golden_data_fp32 = golden_data.reshape(-1).float()
     my_data_fp32 = my_data.reshape(-1).float()
+    return compare_tensor(golden_data_fp32, my_data_fp32)
 
-    res_err = {}
+
+def check_tensor(golden_data_fp32, my_data_fp32):
+    tensor_pass = True
+    fail_reasons = []
+
+    # 检验golden tensor和my tensor的shape是否一致
+    if len(golden_data_fp32) != len(my_data_fp32):
+        fail_reasons.append("data shape doesn't match.")
+        tensor_pass = False
+    # 检验golden_data中是否存在NAN或者inf
+    if not torch.all(torch.isfinite(golden_data_fp32)):
+        fail_reasons.append("golden_data includes NAN or inf.")
+        tensor_pass = False
+    # 检验my_data中是否存在NAN或者inf
+    if not torch.all(torch.isfinite(my_data_fp32)):
+        fail_reasons.append("my_data includes NAN or inf.")
+        tensor_pass = False
+    return tensor_pass, " ".join(fail_reasons)
+
+
+def compare_tensor(golden_data_fp32, my_data_fp32):
+    row_data, fail_messages = {}, []
+
+    # 检查tensor的shape是否一致、是否存在NAN或inf
+    tensor_pass, message = check_tensor(golden_data_fp32, my_data_fp32)
+    if not tensor_pass:
+        logger.warning(f"check_tensor failed: {message}")
+        row_data[CMP_FAIL_REASON] = message
+        return row_data
+
     for name, cmp_func in CMP_ALG_MAP.items():
-        result, _ = cmp_func(golden_data_fp32, my_data_fp32)
-        res_err.setdefault(name, result)
-    return res_err
+        result, message = cmp_func(golden_data_fp32, my_data_fp32)
+        row_data[name] = result
+        if len(message) > 0:
+            fail_messages.append(message)
+    row_data[CMP_FAIL_REASON] = " ".join(fail_messages)
+    return row_data
 
 
 # 手动映射比对能力
-def compare_metadata(golden_path, output_path="./"):
-    cur_pid = str(os.getpid())
+def compare_metadata(golden_path, output_path="."):
     golden_meta_path = os.path.join(golden_path, "metadata.json")
-
-    with open(golden_meta_path, 'r') as file:
+    with open(golden_meta_path, "r") as file:
         golden_meta = json.load(file)
-        data_frame = fill_in_data(golden_meta)
+    data_frame = fill_in_data(golden_meta)
+    return save_compare_dataframe_to_csv(data_frame, output_path)
 
-    data_frame.dropna(axis=0, how="all", inplace=True)
+
+def save_compare_dataframe_to_csv(data_frame, output_path="."):
+    cur_pid = str(os.getpid())
     csv_data_path = os.path.join(output_path, cur_pid)
     if not os.path.exists(csv_data_path):
         os.makedirs(csv_data_path)
-    data_frame.to_csv(os.path.join(csv_data_path, "cmp_report.csv"), index=False)
+
+    csv_save_path = os.path.join(csv_data_path, "cmp_report.csv")
+    data_frame.fillna(value="", inplace=True)
+    data_frame.dropna(axis=0, how="all", inplace=True)
+    data_frame.to_csv(csv_save_path, index=False)
+    logger.info(f"Saved comparing results: {csv_save_path}")
+    return csv_save_path
+
+
+# torchair 比对相关
+def compare_torchair(golden_path, my_path, ge_graph_path, output_path="."):
+    metadata = torchair_utils.build_metadata(golden_path, my_path, ge_graph_path)
+    data_frame = fill_in_data(metadata)
+    return save_compare_dataframe_to_csv(data_frame, output_path)
 
 
 def fill_in_data(golden_meta):
-    # 创建data_frame
-    data_frame = pd.DataFrame(columns=CSV_GOLDEN_HEADER, index=[0])
-
+    gathered_row_data = []
     for data_id, golden_info in golden_meta.items():
         for token_id, path_list in golden_info.items():
 
@@ -117,115 +166,71 @@ def fill_in_data(golden_meta):
             golden_data_path = path_list[0]
             my_path = path_list[1]
 
-            # 创建一条比较数据
-            row_data = create_row_data(data_id, token_id, golden_data_path, my_path)
-
-            # 检验my_path和golden data path是否存在并读取数据
-            path_is_exist, golden_data, my_data = check_data_path(golden_data_path, my_path, row_data)
-            if not path_is_exist:
-                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
-                continue
-
-            # 转换数据格式：
-            golden_data_fp32 = golden_data.reshape(-1).float()
-            my_data_fp32 = my_data.reshape(-1).float()
-
-            # 检查tensor的shape是否一致、是否存在NAN或inf
-            tensor_pass = check_tensor(row_data, golden_data_fp32, my_data_fp32)
-            if not tensor_pass:
-                data_frame = pd.concat([data_frame, row_data], ignore_index=True)
-                continue
-
-            # 填充数据
-            fill_row_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data)
-
-            # 比较数据
-            compare_tensor(row_data, golden_data_fp32, my_data_fp32)
-
-            # 将数据写入data_frame的下一行
-            row_data.fillna(value="", inplace=True)
-            data_frame = pd.concat([data_frame, row_data], ignore_index=True)
-
-    return data_frame
+            if torchair_utils.is_torchair_dump_data(golden_data_path, my_path):
+                sub_gathered_row_data = fill_row_data_torchair(token_id, data_id, golden_data_path, my_path)
+                gathered_row_data.extend(sub_gathered_row_data)
+            else:
+                row_data = fill_row_data(token_id, data_id, golden_data_path, my_path)
+                gathered_row_data.append(row_data)
+    return pd.DataFrame(gathered_row_data, columns=CSV_GOLDEN_HEADER)
 
 
-def create_row_data(data_id, token_id, golden_data_path, my_path):
-    row_data = pd.DataFrame(
-        {
-            TOKEN_ID: [str(token_id)],
-            DATA_ID: [data_id],
-            GOLDEN_DATA_PATH: [golden_data_path],
-            MY_DATA_PATH: [my_path],
-        }
+# torchair 比对相关
+def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
+    my_inputs, my_outputs = torchair_utils.parse_torchair_bin_dump_data(my_path)
+    sub_gathered_row_data = []
+    logger.debug(
+        f"my_inputs length: {len(my_inputs)}, golden_data_path inputs length:, {len(golden_data_path['inputs'])}"
     )
+    logger.debug(
+        f"my_outputs length: {len(my_outputs)}, golden_data_path outputs length:, {len(golden_data_path['outputs'])}"
+    )
+
+    for cur_id, (golden_input, my_input) in enumerate(zip(golden_data_path["inputs"], my_inputs)):
+        sub_my_path = "{},{},{}".format(my_path, "inputs", cur_id)
+        row_data = fill_row_data(token_id, data_id, golden_input, sub_my_path, loaded_my_data=my_input)
+        sub_gathered_row_data.append(row_data)
+    for cur_id, (golden_output, my_output) in enumerate(zip(golden_data_path["outputs"], my_outputs)):
+        sub_my_path = "{},{},{}".format(my_path, "outputs", cur_id)
+        row_data = fill_row_data(token_id, data_id, golden_output, sub_my_path, loaded_my_data=my_output)
+        sub_gathered_row_data.append(row_data)
+    return sub_gathered_row_data
+
+
+def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=None):
+    # 创建一条比较数据
+    row_data = {TOKEN_ID: str(token_id), DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path}
+    if not os.path.isfile(golden_data_path):
+        row_data[CMP_FAIL_REASON] = f"golden_data_path: {golden_data_path} is not a file."
+        return row_data
+    if loaded_my_data is None and not os.path.isfile(my_path):
+        row_data[CMP_FAIL_REASON] = f"my_path: {my_path} is not a file."
+        return row_data
+
+    golden_data = read_data(golden_data_path)
+    my_data = read_data(my_path) if loaded_my_data is None else torch.from_numpy(loaded_my_data)
+
+    # 比较数据
+    row_data.update(compare_data(golden_data, my_data))
+    row_data.update(set_tensor_basic_info_in_row_data(golden_data, my_data))
     return row_data
 
 
-def check_data_path(golden_data_path, my_data_path, row_data):
-    path_is_exist = True
-    if os.path.exists(golden_data_path):
-        golden_data = read_data(golden_data_path)
-    else:
-        logger.warning(f"golden data path is not exists.")
-        row_data[CMP_FAIL_REASON] = "golden_data_path is not exist."
-        golden_data = 0
-        path_is_exist = False
-    if os.path.exists(my_data_path):
-        my_data = read_data(my_data_path)
-    else:
-        logger.warning(f"my data path is not exists.")
-        row_data[CMP_FAIL_REASON] = "my_path is not exist."
-        my_data = 0
-        path_is_exist = False
-
-    return path_is_exist, golden_data, my_data
-
-
-def check_has_inf_nan(tensor: torch.Tensor):
-    return not torch.all(torch.isfinite(tensor))
-
-
-def check_tensor(row_data, golden_data_fp32, my_data_fp32):
-    tensor_pass = True
-    fail_reason = ''
-
-    # 检验golden tensor和my tensor的shape是否一致
-    if len(golden_data_fp32) != len(my_data_fp32):
-        logger.warning(f"data shape doesn't match.")
-        fail_reason = f"{fail_reason} data shape doesn't match."
-        tensor_pass = False
-
-    # 检验golden_data中是否存在NAN或者inf
-    if check_has_inf_nan(golden_data_fp32):
-        logger.warning(f"golden_data include NAN or inf.")
-        fail_reason = f"{fail_reason} golden_data include NAN or inf."
-        tensor_pass = False
-
-    # 检验my_data中是否存在NAN或者inf
-    if check_has_inf_nan(my_data_fp32):
-        logger.warning(f"my_data include NAN or inf.")
-        fail_reason = f"{fail_reason} my_data include NAN or inf."
-        tensor_pass = False
-    row_data[CMP_FAIL_REASON] = fail_reason
-
-    return tensor_pass
-
-
-def fill_row_data(row_data, golden_data_fp32, my_data_fp32, golden_data, my_data):
+def set_tensor_basic_info_in_row_data(golden_data, my_data):
+    row_data = {}
     row_data[GOLDEN_DTYPE] = str(golden_data.dtype)
-    row_data[GOLDEN_SHAPE] = str(golden_data.shape)
-    row_data[GOLDEN_MAX_VALUE] = golden_data_fp32.max().item()
-    row_data[GOLDEN_MIN_VALUE] = golden_data_fp32.min().item()
-    row_data[GOLDEN_MEAN_VALUE] = golden_data_fp32.mean().item()
+    row_data[GOLDEN_SHAPE] = str(list(golden_data.shape))
+    if 0 not in golden_data.shape:
+        golden_data = golden_data.float()
+        row_data[GOLDEN_MAX_VALUE] = golden_data.max().item()
+        row_data[GOLDEN_MIN_VALUE] = golden_data.min().item()
+        row_data[GOLDEN_MEAN_VALUE] = golden_data.mean().item()
+
     row_data[MY_DTYPE] = str(my_data.dtype)
-    row_data[MY_SHAPE] = str(my_data.shape)
-    row_data[MY_MAX_VALUE] = my_data_fp32.max().item()
-    row_data[MY_MIN_VALUE] = my_data_fp32.min().item()
-    row_data[MY_MEAN_VALUE] = my_data_fp32.mean().item()
-
-
-def compare_tensor(row_data, golden_data_fp32, my_data_fp32):
-    for name, cmp_func in CMP_ALG_MAP.items():
-        result, message = cmp_func(golden_data_fp32, my_data_fp32)
-        row_data[CMP_FAIL_REASON] = message
-        row_data[name] = result
+    row_data[MY_SHAPE] = str(list(my_data.shape))
+    if 0 not in my_data.shape:
+        my_data = my_data.float()
+        row_data[MY_MAX_VALUE] = my_data.max().item()
+        row_data[MY_MIN_VALUE] = my_data.min().item()
+        row_data[MY_MEAN_VALUE] = my_data.mean().item()
+    return row_data
