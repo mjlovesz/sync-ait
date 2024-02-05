@@ -65,7 +65,7 @@ class OpChecker:
             torch.classes.load_library(lib_path)
         else:
             try:
-                lib_path = "./test_framework/build/libatb_test_framework.so"
+                lib_path = "./libopchecker.so"
                 logger.info(lib_path)
                 torch.classes.load_library(lib_path)                
             except Exception as e:
