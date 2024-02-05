@@ -17,6 +17,7 @@ import json
 import stat
 
 import pytest
+import torch
 import numpy as np
 import pandas as pd
 
@@ -155,6 +156,12 @@ def test_read_data_given_data_file_when_valid_npy_then_pass(golden_data_file, te
     data = acc_cmp.read_data(test_data_file)
     golden = np.load(golden_data_file)
     assert (data == golden).all()
+
+
+def test_read_data_when_npy(golden_data_file, test_data_file):
+    data = read_data(test_data_file)
+    golden = torch.tensor(np.load(golden_data_file))
+    assert torch.all(data == golden).item()
 
 
 def test_read_data_given_data_file_when_invalid_type_then_error(test_dat_path):

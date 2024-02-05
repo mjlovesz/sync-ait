@@ -31,7 +31,7 @@ def singleton(cls):
 @singleton
 class DumpConfig:
     def __init__(self, dump_path=None, token_range=None,
-                 module_list=None, tensor_part=1):
+                 module_list=None, tensor_part=2):
         self.dump_path = dump_path or "./"
         self.mode = "module"
         self.token_range = token_range or [0]

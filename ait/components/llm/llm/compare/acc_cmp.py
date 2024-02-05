@@ -17,6 +17,7 @@ import os
 import numpy as np
 import pandas as pd
 import json
+import torch
 
 from llm.common.log import logger
 from llm.common.tool import read_atb_data
@@ -62,13 +63,15 @@ def acc_compare(golden_path, my_path, output_path="."):
 
 def read_data(data_path):
     if data_path.endswith(".npy"):
-        data = np.load(data_path)
+        data = torch.Tensor(np.load(data_path))
     elif data_path.endswith(".bin"):
         data = read_atb_data(data_path)
+    elif data_path.endswith(".pth") or data_path.endswith(".pt"):
+        data = torch.load(data_path)
     else:
         logger.error("Unsupported data format %s", data_path)
         raise TypeError("Unsupported data format.")
-    return data
+    return data.cpu()
 
 
 def compare_file(golden_path, my_path):
@@ -78,8 +81,8 @@ def compare_file(golden_path, my_path):
 
 
 def compare_data(golden_data, my_data):
-    golden_data_fp32 = golden_data.reshape(-1).astype("float32")
-    my_data_fp32 = my_data.reshape(-1).astype("float32")
+    golden_data_fp32 = golden_data.reshape(-1).float()
+    my_data_fp32 = my_data.reshape(-1).float()
     return compare_tensor(golden_data_fp32, my_data_fp32)
 
 
@@ -92,11 +95,11 @@ def check_tensor(golden_data_fp32, my_data_fp32):
         fail_reasons.append("data shape doesn't match.")
         tensor_pass = False
     # 检验golden_data中是否存在NAN或者inf
-    if not np.all(np.isfinite(golden_data_fp32)):
+    if not torch.all(torch.isfinite(golden_data_fp32)):
         fail_reasons.append("golden_data includes NAN or inf.")
         tensor_pass = False
     # 检验my_data中是否存在NAN或者inf
-    if not np.all(np.isfinite(my_data_fp32)):
+    if not torch.all(torch.isfinite(my_data_fp32)):
         fail_reasons.append("my_data includes NAN or inf.")
         tensor_pass = False
     return tensor_pass, " ".join(fail_reasons)
@@ -226,12 +229,11 @@ def set_tensor_basic_info_in_row_data(golden_data, my_data):
     row_data = {}
     row_data[GOLDEN_DTYPE] = str(golden_data.dtype)
     row_data[GOLDEN_SHAPE] = str(golden_data.shape)
-    row_data[GOLDEN_MAX_VALUE] = np.max(golden_data)
-    row_data[GOLDEN_MIN_VALUE] = np.min(golden_data)
-    row_data[GOLDEN_MEAN_VALUE] = np.mean(golden_data)
+    row_data[GOLDEN_MAX_VALUE] = golden_data_fp32.max().item()
+    row_data[GOLDEN_MIN_VALUE] = golden_data_fp32.min().item()
+    row_data[GOLDEN_MEAN_VALUE] = golden_data_fp32.mean().item()
     row_data[MY_DTYPE] = str(my_data.dtype)
     row_data[MY_SHAPE] = str(my_data.shape)
-    row_data[MY_MAX_VALUE] = np.max(my_data)
-    row_data[MY_MIN_VALUE] = np.min(my_data)
-    row_data[MY_MEAN_VALUE] = np.mean(my_data)
-    return row_data
+    row_data[MY_MAX_VALUE] = my_data_fp32.max().item()
+    row_data[MY_MIN_VALUE] = my_data_fp32.min().item()
+    row_data[MY_MEAN_VALUE] = my_data_fp32.mean().item()

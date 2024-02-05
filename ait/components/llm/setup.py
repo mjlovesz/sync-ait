@@ -18,6 +18,9 @@ import os
 
 from setuptools import setup, find_packages
 
+with open('requirements.txt', encoding='utf-8') as f:
+    required = f.read().splitlines()
+
 setup(
     name='ait-llm',
     version='0.2.1',
@@ -26,6 +29,7 @@ setup(
     packages=find_packages(),
     license='Apache-2.0',
     keywords='llm',
+    install_requires=required,
     classifiers=[
         'Development Status :: Alpha',
         'Intended Audience :: Developers',
