@@ -64,7 +64,12 @@ class OpChecker:
             logger.info(lib_path)
             torch.classes.load_library(lib_path)
         else:
-            raise RuntimeError("AIT_OPCHECK_LIB_PATH not exist")
+            try:
+                lib_path = "./test_framework/build/libatb_test_framework.so"
+                logger.info(lib_path)
+                torch.classes.load_library(lib_path)                
+            except Exception as e:
+                raise e
 
         # 指定需要使用的npu设备
         device_id = os.environ.get("SET_NPU_DEVICE")
