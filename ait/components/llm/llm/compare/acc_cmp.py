@@ -67,7 +67,7 @@ def read_data(data_path):
     elif data_path.endswith(".bin"):
         data = read_atb_data(data_path)
     elif data_path.endswith(".pth") or data_path.endswith(".pt"):
-        data = torch.load(data_path)
+        data = torch.load(data_path, map_location=torch.device("cpu"))
     else:
         logger.error("Unsupported data format %s", data_path)
         raise TypeError("Unsupported data format.")
@@ -229,11 +229,12 @@ def set_tensor_basic_info_in_row_data(golden_data, my_data):
     row_data = {}
     row_data[GOLDEN_DTYPE] = str(golden_data.dtype)
     row_data[GOLDEN_SHAPE] = str(golden_data.shape)
-    row_data[GOLDEN_MAX_VALUE] = golden_data_fp32.max().item()
-    row_data[GOLDEN_MIN_VALUE] = golden_data_fp32.min().item()
-    row_data[GOLDEN_MEAN_VALUE] = golden_data_fp32.mean().item()
+    row_data[GOLDEN_MAX_VALUE] = golden_data.max().item()
+    row_data[GOLDEN_MIN_VALUE] = golden_data.min().item()
+    row_data[GOLDEN_MEAN_VALUE] = golden_data.mean().item()
     row_data[MY_DTYPE] = str(my_data.dtype)
     row_data[MY_SHAPE] = str(my_data.shape)
-    row_data[MY_MAX_VALUE] = my_data_fp32.max().item()
-    row_data[MY_MIN_VALUE] = my_data_fp32.min().item()
-    row_data[MY_MEAN_VALUE] = my_data_fp32.mean().item()
+    row_data[MY_MAX_VALUE] = my_data.max().item()
+    row_data[MY_MIN_VALUE] = my_data.min().item()
+    row_data[MY_MEAN_VALUE] = my_data.mean().item()
+    return row_data
