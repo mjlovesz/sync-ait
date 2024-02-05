@@ -212,15 +212,11 @@ def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=N
         row_data[CMP_FAIL_REASON] = f"my_path: {my_path} is not a file."
         return row_data
 
-    golden_data = np.load(golden_data_path)
-    my_data = read_data(my_path) if loaded_my_data is None else loaded_my_data        
-
-    # 转换数据格式：
-    golden_data_fp32 = golden_data.reshape(-1).astype("float32")
-    my_data_fp32 = my_data.reshape(-1).astype("float32")
+    golden_data = read_data(golden_data_path)
+    my_data = read_data(my_path) if loaded_my_data is None else torch.from_numpy(loaded_my_data)
 
     # 比较数据
-    row_data.update(compare_tensor(golden_data_fp32, my_data_fp32))
+    row_data.update(compare_data(golden_data, my_data))
     row_data.update(set_tensor_basic_info_in_row_data(golden_data, my_data))
     return row_data
 
