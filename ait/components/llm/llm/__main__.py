@@ -21,6 +21,7 @@ from llm.common.utils import str2bool, check_positive_integer, safe_string, chec
     check_ids_string, check_number_list, check_output_path_legality, check_input_path_legality
 from llm.dump.initial import init_dump_task, clear_dump_task
 from llm.compare.acc_cmp import acc_compare
+from llm.opcheck.opchecker import OpChecker
 from llm.common.log import set_log_level
 from llm.common.log import logger
 
@@ -181,6 +182,58 @@ class CompareCommand(BaseCommand):
         acc_compare(args.golden_path, args.my_path, args.output)
 
 
+class OpcheckCommand(BaseCommand):
+    def add_arguments(self, parser, **kwargs):
+        parser.add_argument(
+            '--input',
+            '-i',
+            dest="input",
+            required=True,
+            type=check_input_path_legality,
+            help='input directory.E.g:--input OUTPUT_DIR/PID_TID/0/')
+
+        parser.add_argument(
+            '--csv-path',
+            '-c',
+            dest="csv_path",
+            required=True,
+            type=check_input_path_legality,
+            help='csv file path.E.g:--csv-path OUTPUT_DIR/ait_dump/operation_io_tensors/PID/operation_tensors_0.csv')
+
+        parser.add_argument(
+            '--output',
+            '-o',
+            dest="output",
+            required=False,
+            type=check_output_path_legality,
+            default='./',
+            help='Data output directory.E.g:--output /xx/xxxx/xx')
+            
+        parser.add_argument(
+            '--operation-ids',
+            '-ids',
+            required=False,
+            dest="ids",
+            type=check_ids_string,
+            default="",
+            help='Save Tensor Ids.E.g:-ids 24_1,2_3_5')
+
+        parser.add_argument(
+            '--operation-name',
+            '-opname',
+            required=False,
+            dest="opname",
+            type=safe_string,
+            default=None,
+            help='Operation names need to dump, default none.E.g:-opname self,linear')
+
+    def handle(self, args, **kwargs):
+        op = OpChecker()
+        logger.info(f"===================Opcheck start====================")
+        op.start_test(args)
+        logger.info(f"===================Opcheck end====================")
+
+
 class LlmCommand(BaseCommand):
     def __init__(self, name="", help_info="", children=None, has_handle=False, **kwargs):
         super().__init__(name, help_info, children, has_handle, **kwargs)
@@ -197,4 +250,6 @@ def get_cmd_instance():
     dump_cmd_instance = DumpCommand("dump", "Dump tool for ascend transformer boost", alias_name="dd")
     compare_cmd_instance = CompareCommand("compare", "Accuracy compare tool for large language model",
                                           alias_name="cc")
-    return LlmCommand("llm", llm_help_info, [dump_cmd_instance, compare_cmd_instance])
+    opcheck_cmd_instance = OpcheckCommand("opcheck", "Operation check tool for large language model", 
+                                          alias_name='oo')
+    return LlmCommand("llm", llm_help_info, [dump_cmd_instance, compare_cmd_instance, opcheck_cmd_instance])
