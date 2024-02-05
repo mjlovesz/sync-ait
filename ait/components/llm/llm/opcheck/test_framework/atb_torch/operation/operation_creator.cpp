@@ -81,7 +81,7 @@ static atb::Status AllGatherOperationCreate(const nlohmann::json &paramJson, atb
     ATB_LOG(INFO) << "AllGatherParam rank:" << param.rank;
     ATB_LOG(INFO) << "AllGatherParam rankSize:" << param.rankSize;
     ATB_LOG(INFO) << "AllGatherParam backend:" << param.backend;
-    return CreateOperation(param, op)
+    return CreateOperation(param, op);
 }
 
 static atb::Status LinearParallelOperationCreate(const nlohmann::json &paramJson, atb::Operation **op)
