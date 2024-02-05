@@ -154,7 +154,7 @@ class OpChecker:
             return True
         else:
             for p in self.check_ids_string:
-                ret = re.match("^" + p + "(_[1-9]+)*$", op_id)
+                ret = re.match("^" + p + "(_[0-9]+){0,20}$", op_id)
                 if ret:
                     return True
             return False
