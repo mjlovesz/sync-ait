@@ -41,7 +41,7 @@ class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
         return score
 
     def encoder_golden_func(self, in_tensors):
-        mixed_q, mixed_k, mixed_v,  attention_mask, seq_len, batch_status = in_tensors[0], in_tensors[1], \
+        mixed_q, mixed_k, mixed_v, attention_mask, seq_len, batch_status = in_tensors[0], in_tensors[1], \
             in_tensors[2], in_tensors[3], in_tensors[4], intensors[5]
 
         heads, group_num, embeds = self.op_param["headNum"], self.op_param["kvHeadNum"], 128
