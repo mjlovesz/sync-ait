@@ -59,18 +59,18 @@ class OpChecker:
     @staticmethod   
     def third_party_init():
         # LIB path设置
-        lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
+        try:
+            lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
+        except:
+            lib_path = "./libopchecker.so"
+        
         if lib_path and os.path.exists(lib_path):
             logger.info(lib_path)
             torch.classes.load_library(lib_path)
+            flag = True
         else:
-            try:
-                lib_path = "./libopchecker.so"
-                logger.info(lib_path)
-                torch.classes.load_library(lib_path)                
-            except Exception as e:
-                raise e
-
+            flag = False
+            
         # 指定需要使用的npu设备
         device_id = os.environ.get("SET_NPU_DEVICE")
         if device_id is not None:
@@ -78,9 +78,15 @@ class OpChecker:
         else:
             torch.npu.set_device(torch.device("npu:0"))
 
+        return flag
+
     def start_test(self, args):
         # 0.初始化
-        OpChecker.third_party_init()
+        res = OpChecker.third_party_init()
+        if not res:
+            logger.info("Initialization failed!")
+            return
+            
         self.args_init(args)
         ut_manager = UtManager(self.completed_op_id_queue)
         
