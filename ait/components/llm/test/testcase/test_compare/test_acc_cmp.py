@@ -87,7 +87,7 @@ def test_metadata_path():
 
 
 def test_check_tensor_given_golden_data_when_nan_then_false():
-    result, message = acc_cmp.check_tensor(torch.zeros([2]).float() + torch.nan, torch.zeros([2])float())
+    result, message = acc_cmp.check_tensor(torch.zeros([2]).float() + torch.nan, torch.zeros([2]).float())
     assert result is False and len(message) > 0 and "golden" in message.lower()
 
 
