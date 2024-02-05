@@ -14,7 +14,7 @@
 import os.path
 
 import pytest
-import numpy as np
+import torch
 
 from llm.compare.cmp_algorithm import cosine_similarity, max_relative_error, mean_relative_error, \
     relative_euclidean_distance
@@ -22,13 +22,13 @@ from llm.compare.cmp_algorithm import cosine_similarity, max_relative_error, mea
 
 @pytest.fixture(scope='module', autouse=True)
 def golden_data():
-    golden_data = np.ones((2, 3)).astype(np.float32)
+    golden_data = torch.ones((2, 3))
     yield golden_data
 
 
 @pytest.fixture(scope='module', autouse=True)
 def test_data():
-    test_data = np.ones((2, 3)).astype(np.float32)
+    test_data = torch.ones((2, 3))
     yield test_data
 
 

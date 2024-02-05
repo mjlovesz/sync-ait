@@ -15,8 +15,10 @@ import os
 
 import numpy as np
 import torch
+
 from components.utils.file_open_check import ms_open
 from llm.common.log import logger
+
 
 def dump_data(token_id=-1, data_id=-1, golden_data=None, my_path='', output_path='./'):
     # 传参失败的提示
@@ -32,26 +34,26 @@ def dump_data(token_id=-1, data_id=-1, golden_data=None, my_path='', output_path
     elif my_path == '':
         logger.warning('Please check whether my_path passed in are correct')
         return
-    
+
     if golden_data is not None:
         cur_pid = os.getpid()
         device_id = golden_data.get_device()
-        golden_data_dir = os.path.join(output_path, "ait_dump", f"{cur_pid}_{device_id}", "golden_tensor", str(token_id))
+        golden_data_dir = os.path.join(output_path, "ait_dump", f"{cur_pid}_{device_id}", "golden_tensor",
+                                       str(token_id))
 
         if not os.path.exists(golden_data_dir):
             os.makedirs(golden_data_dir)
-        
-        golden_data_path = os.path.join(golden_data_dir, f'{data_id}_tensor.npy')
-        golden_data = golden_data.cpu().numpy()
-        np.save(golden_data_path, golden_data)
 
-    json_path = os.path.join(output_path, "ait_dump", f"{cur_pid}_{device_id}", "golden_tensor", "metadata.json")
-    write_json_file(data_id, golden_data_path, json_path, token_id, my_path)
-            
+        golden_data_path = os.path.join(golden_data_dir, f'{data_id}_tensor.pth')
+        torch.save(golden_data, golden_data_path)
+
+        json_path = os.path.join(output_path, "ait_dump", f"{cur_pid}_{device_id}", "golden_tensor", "metadata.json")
+        write_json_file(data_id, golden_data_path, json_path, token_id, my_path)
+
 
 def write_json_file(data_id, data_path, json_path, token_id, my_path):
     import json
-    if not os.path.exists(json_path):  
+    if not os.path.exists(json_path):
         json_data = {}
     else:
         with open(json_path, 'r') as json_file:

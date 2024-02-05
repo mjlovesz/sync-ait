@@ -111,17 +111,18 @@ def dump_tensor(feat, feat_path):
         for idx, tensor in enumerate(feat):
             dump_tensor(tensor, "{}_{}".format(feat_path, idx))
     elif isinstance(feat, torch.Tensor):
-        data = feat.cpu().detach().numpy()
-        if not feat_path.endswith(".npy"):
-            feat_path += ".npy"
-        np.save(feat_path, data)
+        if not feat_path.endswith(".pth"):
+            feat_path += ".pth"
+        torch.save(feat, feat_path)
+    else:
+        logger.warning("Unrecognized data type %s, cannot be saved in path %s.", type(feat), feat_path)
 
 
 def dump_data(inputs, outputs, dump_path, exec_count, tensor_part):
-    if tensor_part == "0":
-        dump_tensor(inputs, os.path.join(dump_path, "output_exec" + str(exec_count)))
-    elif tensor_part == "1":
-        dump_tensor(outputs, os.path.join(dump_path, "input_exec" + str(exec_count)))
+    if tensor_part == 0:
+        dump_tensor(inputs, os.path.join(dump_path, "input_exec" + str(exec_count)))
+    elif tensor_part == 1:
+        dump_tensor(outputs, os.path.join(dump_path, "output_exec" + str(exec_count)))
     else:
         dump_tensor(inputs, os.path.join(dump_path, "input_exec" + str(exec_count)))
         dump_tensor(outputs, os.path.join(dump_path, "output_exec" + str(exec_count)))
@@ -137,9 +138,10 @@ def dump_module_data():
         dump_config = DumpConfig()
         if dump_config.token_id == 0:
             dump_config.update_module_ids(module.name)
-            # 将dump_config.module_ids传给方锴的update接口，将模型树状信息保存成json文件。
-            if module.name == "root":
-                logger.debug("module ids: %s", dump_config.module_ids)
+            # 将模型树状信息保存成json文件
+            from llm.dump.torch_dump.topo import ModelTree
+            obj = ModelTree()
+            obj.create_tree(module, dump_config.module_ids, "./model_tree.json")
 
         if dump_config.mode == "api" or not dump_config.dump_flag:
             return
