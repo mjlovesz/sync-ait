@@ -28,6 +28,11 @@ FAKE_FX_DUMP_DATA_NAME = "test_torchair_utils_fake_fx_dump_data"
 
 
 @pytest.fixture(scope='module', autouse=True)
+def set_fake_set_msaccucmp_path_from_cann():
+    setattr(torchair_utils, "set_msaccucmp_path_from_cann", lambda: None)
+
+
+@pytest.fixture(scope='module', autouse=True)
 def fake_pbtxt_file():
     contents = """op {
       name: "Add_2"
