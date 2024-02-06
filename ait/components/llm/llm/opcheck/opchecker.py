@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import sys
 import re
 import json
 import queue
@@ -25,10 +24,8 @@ import datetime
 import pytz
 import pandas as pd
 import torch
-import torch_npu
 
 from llm.common.log import logger
-from llm.opcheck.ut_manager import UtManager
 
 
 class OpChecker:
@@ -59,16 +56,20 @@ class OpChecker:
     @staticmethod   
     def third_party_init():
         # LIB path设置
+        import torch_npu
+        import llm
+
         lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
         if not lib_path:
-            lib_path = "./libopchecker.so"
+            lib_path_dir = os.path.dirname(os.path.abspath(llm.__file__))
+            lib_path = os.path.join(lib_path_dir, "opcheck", "libopchecker.so")
         
         if os.path.exists(lib_path):
             logger.info(lib_path)
             torch.classes.load_library(lib_path)
         else:
             raise RuntimeError("Libpath is not valid")
-            
+
         # 指定需要使用的npu设备
         device_id = os.environ.get("SET_NPU_DEVICE")
         if device_id is not None:
@@ -80,6 +81,8 @@ class OpChecker:
         # 0.初始化
         OpChecker.third_party_init()
         self.args_init(args)
+        
+        from llm.opcheck.ut_manager import UtManager
         ut_manager = UtManager(self.completed_op_id_queue)
         
         # 1.将csv文件中的算子信息添加到self.cases_info
