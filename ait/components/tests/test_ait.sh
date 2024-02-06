@@ -40,7 +40,6 @@ function get_modified_module_list() {
         echo "found modify_files"
         while read line
         do
-            echo "line: $line"
             for test_case in ${ALL_VALID_TEST_CASES[@]}; do
                 if [[ "$line" =~ "$test_case" ]]; then
                     RUN_TESTCASES=(${RUN_TESTCASES[@]} "$test_case")
