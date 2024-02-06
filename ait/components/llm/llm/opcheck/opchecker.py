@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import sys
 import re
 import json
 import queue
@@ -25,7 +24,6 @@ import datetime
 import pytz
 import pandas as pd
 import torch
-import torch_npu
 
 from llm.common.log import logger
 from llm.opcheck.ut_manager import UtManager
