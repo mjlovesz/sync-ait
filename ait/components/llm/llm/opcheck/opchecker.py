@@ -26,7 +26,6 @@ import pandas as pd
 import torch
 
 from llm.common.log import logger
-from llm.opcheck.ut_manager import UtManager
 
 
 class OpChecker:
@@ -59,9 +58,13 @@ class OpChecker:
         execution_flag = True
 
         # LIB path设置
+        import torch_npu
+        import llm
+
         lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
         if not lib_path:
-            lib_path = "./libopchecker.so"
+            lib_path_dir = os.path.dirname(os.path.abspath(llm.__file__))
+            lib_path = os.path.join(lib_path_dir, "opcheck", "libopchecker.so")
         
         if os.path.exists(lib_path):
             try:
@@ -122,6 +125,8 @@ class OpChecker:
         execution_flag_res = self.args_init(args)
         if not execution_flag_res:
             return
+        
+        from llm.opcheck.ut_manager import UtManager
         ut_manager = UtManager(self.completed_op_id_queue)
         
         # 1.将csv文件中的算子信息添加到self.cases_info
