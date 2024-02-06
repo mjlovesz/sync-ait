@@ -16,7 +16,6 @@ import stat
 import shutil
 
 import pytest
-import numpy as np
 
 from llm.compare import torchair_utils
 
