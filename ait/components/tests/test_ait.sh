@@ -53,9 +53,9 @@ function get_modified_module_list() {
 main() {
     export dt_mode=${1:-"normal"} # or "pr"
     if [[ $dt_mode == "pr" ]];then
-        RUN_TESTCASES=$(get_modified_module_list)
+        get_modified_module_list
     else
-        RUN_TESTCASES=$ALL_VALID_TEST_CASES
+        RUN_TESTCASES=${ALL_VALID_TEST_CASES[@]}
     fi
     echo "RUN_TESTCASES ${RUN_TESTCASES[@]}"
 
