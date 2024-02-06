@@ -29,7 +29,7 @@ if [ $ret != 0 ]; then
 fi
 
 coverage combine
-coverage report -m --omit="test_*.py" > ${pwd_dir}/test.coverage
+coverage report -m --omit="test_*.py" -i > ${pwd_dir}/test.coverage
 
 coverage_line=`cat ${pwd_dir}/test.coverage | grep "TOTAL" | awk '{print $4}' | awk '{print int($0)}'`
 
