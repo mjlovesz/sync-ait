@@ -63,7 +63,7 @@ main() {
     all_part_test_ok=0
     if [[ $PWD =~ "components/tests" ]]; then
         TEST_CASES=( $(find ../* -name test.sh) )  # In tests dir
-    else:
+    else
         TEST_CASES=( $(find ./* -name test.sh) )
     fi
 
