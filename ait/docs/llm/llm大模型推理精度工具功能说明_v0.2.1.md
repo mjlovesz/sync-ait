@@ -99,7 +99,13 @@ atb_json_to_onnx(layer_topo_info, model_level)
 | config    | Hook配置       | 数据类型：DumpConfig                                    | 是       |
 | hook_type | hook类型       | 数据类型：str，默认值为dump_data，当前仅支持dump_data。 | 否       |
 
+##### 使用示例
 
+```
+from llm import DumpConfig， register_hook
+dump_config = DumpConfig(dump_path="./ait_dump")
+register_hook(model, dump_config)  # model是要dump中间tensor的模型实例，在模型初始化后添加代码
+```
 
 ### Compare 特性
 
