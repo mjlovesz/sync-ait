@@ -118,4 +118,4 @@ ait llm compare --golden-path golden_data.bin --my-path my-path.bin
 | --golden-path, -gp | 标杆数据路径，支持单个数据文件路径或文件夹 | 是       |
 | --my-path, -mp     | 待比较的数据路径，为单个数据文件路径       | 是       |
 | --log-level, -l    | 日志级别，默认为info                       | 否       |
-
+| --output, -o    | 比对结果CSV的输出路径                       | 否       |
