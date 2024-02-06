@@ -69,7 +69,7 @@ class OpChecker:
             torch.classes.load_library(lib_path)
         else:
             raise RuntimeError("Libpath is not valid")
-        
+
         # 指定需要使用的npu设备
         device_id = os.environ.get("SET_NPU_DEVICE")
         if device_id is not None:
