@@ -69,13 +69,14 @@ main() {
     failed_case_names=""
     all_part_test_ok=0
     TEST_CASES=( $(find ./* -name test.sh) )
-    for test_case in ${AA[@]}; do
+    for test_case in ${TEST_CASES[@]}; do
         echo ">>>> Current test_case=$test_case"
         CASE_PATH=`dirname $test_case`
 
         cd $CASE_PATH
         bash test.sh
         cur_result=$?
+        echo ">>>> test_case=$test_case, cur_result=$cur_result"
         if [ "$cur_result" -eq "0" ]; then
             failed_case_names="$failed_case_names, $test_case"
             all_part_test_ok=$(( $all_part_test_ok + $cur_result ))
@@ -83,35 +84,7 @@ main() {
         cd $CUR_PATH
     done
 
-    echo "failed_case_names: ${failed_case_names2:}"  # Exclude the first ", "
-    return $all_part_test_ok
-
-
-    if [[ ${dt_list[0]} -eq 1 ]];then
-        test_analyze || { echo "developer test analyze failed";all_part_test_ok=$ret_failed; }
-    fi
-    if [[ ${dt_list[1]} -eq 1 ]];then
-        test_benchmark $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE || { echo "developer test benchmark failed";all_part_test_ok=$ret_failed; }
-    fi
-    if [[ ${dt_list[2]} -eq 1 ]];then
-        test_convert || { echo "developer test convert failed";all_part_test_ok=$ret_failed; }
-    fi
-    if [[ ${dt_list[3]} -eq 1 ]];then
-        test_debug_compare || { echo "developer test comnpare failed";all_part_test_ok=$ret_failed; }
-    fi
-    if [[ ${dt_list[4]} -eq 1 ]];then
-        test_debug_surgeon || { echo "developer test surgeon failed";all_part_test_ok=$ret_failed; }
-    fi
-    if [[ ${dt_list[5]} -eq 1 ]];then
-        test_profile || { echo "developer test profile failed";all_part_test_ok=$ret_failed; }
-    fi
-    if [[ ${dt_list[6]} -eq 1 ]];then
-        test_transplt || { echo "developer test transplt failed";all_part_test_ok=$ret_failed; }
-    fi
-    cd $CUR_PATH
-
-    echo "all_part_test_ok: $all_part_test_ok"
-
+    echo "failed_case_names: ${failed_case_names:2:}"  # Exclude the first ", "
     return $all_part_test_ok
 }
 
