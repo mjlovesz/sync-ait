@@ -61,7 +61,12 @@ main() {
 
     failed_case_names=""
     all_part_test_ok=0
-    TEST_CASES=( $(find ./* -name test.sh) )
+    if [[ $PWD =~ "components/tests" ]]; then
+        TEST_CASES=( $(find ../* -name test.sh) )  # In tests dir
+    else:
+        TEST_CASES=( $(find ./* -name test.sh) )
+    fi
+
     echo "pwd: $PWD, TEST_CASES: ${TEST_CASES[@]}"
     for test_case in ${TEST_CASES[@]}; do
         is_valid=$(is_path_in_all_valid_test_cases $test_case)
