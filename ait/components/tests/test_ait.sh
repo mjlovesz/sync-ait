@@ -64,7 +64,7 @@ main() {
     all_part_test_ok=0
     TEST_CASES=( $(find ./* -name test.sh) )
     for test_case in ${TEST_CASES[@]}; do
-        is_valid=is_path_in_all_valid_test_cases $test_case
+        is_valid=$(is_path_in_all_valid_test_cases $test_case)
         echo ">>>> Current test_case=$test_case, is_valid=$is_valid"
 
         if [ $is_valid -eq 0 ]; then
