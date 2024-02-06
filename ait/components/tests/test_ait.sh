@@ -20,7 +20,7 @@ CUR_PATH=$("pwd")
 ALL_VALID_TEST_CASES=(/analyze/ /benchmark/ /convert/ /debug/compare/ /debug/surgeon/ /llm/ /profile/ /transplt/)
 
 function is_path_in_all_valid_test_cases() {
-    for test_case in ${ALL_VALID_TEST_CASES[@]}; do
+    for test_case in ${ALL_VALID_TEST_CASES[@]}; dopa
         if [[ "$1" =~ "$test_case" ]]; then
             echo 1
             return
@@ -57,11 +57,12 @@ main() {
     else
         RUN_TESTCASES=${ALL_VALID_TEST_CASES[@]}
     fi
-    echo "RUN_TESTCASES ${RUN_TESTCASES[@]}"
+    echo "RUN_TESTCASES: ${RUN_TESTCASES[@]}"
 
     failed_case_names=""
     all_part_test_ok=0
     TEST_CASES=( $(find ./* -name test.sh) )
+    echo "pwd: $PWD, TEST_CASES: ${TEST_CASES[@]}"
     for test_case in ${TEST_CASES[@]}; do
         is_valid=$(is_path_in_all_valid_test_cases $test_case)
         echo ">>>> Current test_case=$test_case, is_valid=$is_valid"
