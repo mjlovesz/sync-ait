@@ -133,7 +133,7 @@ def read_cpu_profiling_data(lines, data_map):
 def split_cpu_profiling_data(data, opname):
     execute_data = ''
     setup_data = ''
-    # 便利每个opname的数据
+    # 遍历每个opname的数据
     for stats in data[opname]:
         # 提取execute和setup数据
         execute_match = re.search(r'kernelExecuteTime:(\d+)', stats)
@@ -166,7 +166,7 @@ def clear_dump_task(args):
     if "onnx" in args.type and ("model" in args.type or "layer" in args.type):
         json_to_onnx(args)
     elif "cpu_profiling" in args.type:
-        cpu_profiling_data_path = f"{os.environ[ATB_OUTPUT_DIR]}ait_dump/cpu_profiling{os.environ[ATB_CUR_PID]}/"
+        cpu_profiling_data_path = f"{os.environ[ATB_OUTPUT_DIR]}ait_dump/cpu_profiling/{os.environ[ATB_CUR_PID]}/"
         merge_cpu_profiling_data(cpu_profiling_data_path)
     else:
         return
