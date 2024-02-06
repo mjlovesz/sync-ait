@@ -58,36 +58,82 @@ class OpChecker:
 
     @staticmethod   
     def third_party_init():
+        execution_flag = True
+
         # LIB path设置
         lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
         if not lib_path:
             lib_path = "./libopchecker.so"
         
         if os.path.exists(lib_path):
-            logger.info(lib_path)
-            torch.classes.load_library(lib_path)
+            try:
+                logger.info(lib_path)
+                torch.classes.load_library(lib_path)
+            except OSError as e:
+                logger_text = "Failed to load libopchecker.so, Please source atb/set_env.sh first. Error: {}".format(e)
+                logger.error(logger_text)
+                execution_flag = False
         else:
-            raise RuntimeError("Libpath is not valid")
-            
+            logger_text = "libopchecker.so not found in {}".format(lib_path)
+            logger.error(logger_text)
+            execution_flag = False
+        
+        return execution_flag
+    
+    def args_init(self, args):
+        execution_flag = True
+        
+        self.tensor_path = args.input
+        self.op_path = args.csv_path
+        self.output_dir = args.output
+        self.output_path = os.path.join(self.output_dir, f"opcheck_result_{self.timestamp}.csv")
+        self.ids = args.ids
+        if self.ids != '':
+            try:
+                self.check_ids_string = [x.lower().strip() for x in self.ids.split(',')]
+            except ValueError as e:
+                logger_text = "Failed to parse ids. Error: {}".format(e)
+                logger.error(logger_text)
+                execution_flag = False
+        self.opname = args.opname
+        if self.opname is not None:
+            try:
+                self.check_patterns = [x.lower().strip() for x in self.opname.split(',')]
+            except ValueError as e:
+                logger_text = "Failed to parse opname. Error: {}".format(e)
+                logger.error(logger_text)
+                execution_flag = False
+
+        print(args.type)
+
         # 指定需要使用的npu设备
-        device_id = os.environ.get("SET_NPU_DEVICE")
-        if device_id is not None:
-            torch.npu.set_device(torch.device(f"npu:{device_id}"))
-        else:
-            torch.npu.set_device(torch.device("npu:0"))
+        try:
+            torch.npu.set_device(torch.device(f"npu:{args.device_id}"))
+        except RuntimeError as e:
+            logger_text = "Failed to set the device. Device_id: {}".format(args.device_id)
+            logger.error(logger_text)
+            execution_flag = False
+
+        return execution_flag
 
     def start_test(self, args):
         # 0.初始化
-        OpChecker.third_party_init()
-        self.args_init(args)
+        execution_flag_res = OpChecker.third_party_init()
+        if not execution_flag_res:
+            return
+        execution_flag_res = self.args_init(args)
+        if not execution_flag_res:
+            return
         ut_manager = UtManager(self.completed_op_id_queue)
         
         # 1.将csv文件中的算子信息添加到self.cases_info
-        self.add_file_info_to_cases()
+        execution_flag_res = self.add_file_info_to_cases()
+        if not execution_flag_res:
+            return
         result_info = 'excuted_information'
-
+        
+        # 2.将self.cases_info中的用例添加到ut_manager
         for _, case_info in self.cases_info.items():
-            # 2.将self.cases_info中的用例添加到ut_manager
             if_successed_add_case = ut_manager.add_case(case_info)
             if if_successed_add_case:
                 case_info[result_info] = 'addition successed'
@@ -107,23 +153,13 @@ class OpChecker:
         data = pd.read_csv(self.output_path, dtype='str')
         data.to_excel(os.path.join(self.output_dir, f"opcheck_result_{self.timestamp}.xlsx"), index=False)
 
-    def args_init(self, args):
-        self.tensor_path = args.input
-        self.op_path = args.csv_path
-        self.output_dir = args.output
-        self.output_path = os.path.join(self.output_dir, f"opcheck_result_{self.timestamp}.csv")
-        self.ids = args.ids
-        if self.ids != '':
-            self.check_ids_string = [x.lower().strip() for x in self.ids.split(',')]
-        self.opname = args.opname
-        if self.opname is not None:
-            self.check_patterns = [x.lower().strip() for x in self.opname.split(',')]
-
     def parse_in_tensor_path(self, ids):
         in_tensor_path = os.path.join(self.tensor_path, '_*/'.join(ids.split("_")) + '_*', "after")
         files = glob.glob(in_tensor_path)
         if not len(files) == 1:
-            raise RuntimeError("{} could not find a dir!".format(in_tensor_path))
+            logger_text = "{} could not find a dir!".format(in_tensor_path)
+            logger.error(logger_text)
+            return None
         return files[0]
     
     def parse_csv_files(self):
@@ -131,8 +167,8 @@ class OpChecker:
             df = pd.read_csv(self.op_path, sep='|')
         except Exception as e:
             logger_text = f"Cannot read csv file: {self.op_path}"
-            logger.info(logger_text)
-            raise e
+            logger.error(logger_text)
+            df = None
         
         op_name_str = "OpName"
         if op_name_str in df.columns and "OutDType" in df.columns:
@@ -143,10 +179,13 @@ class OpChecker:
                 df['OutDTypeParse'] = df['OutDType'].apply(lambda x:x.split(";"))
             except Exception as e:
                 logger_text = f"Cannot parse csv file: {self.op_path}"
-                logger.info(logger_text)
-                raise e
+                logger.error(logger_text) 
+                df = None
         else:
-            raise RuntimeError("Cannot find enough info in csv file: {}".format(self.op_path))
+            logger_text = f"Cannot find enough info in csv file: {self.op_path}"
+            logger.error(logger_text)
+            df = None
+
         return df
 
     def check_id_range(self, op_id):
@@ -185,6 +224,8 @@ class OpChecker:
         try:
             op_param = json.loads(row['OpParam'])
         except TypeError as e:
+            logger_text = f"Cannot loads OpParam to json! OpParam: {row['OpParam']}"
+            logger.info(logger_text)
             op_param = {}
 
         tensor_path = row["InTensorPath"]
@@ -207,15 +248,22 @@ class OpChecker:
             self.cases_info[op_id] = case_info 
 
     def add_file_info_to_cases(self):
+        execution_flag = True
         if os.path.exists(self.op_path):
             csv_data = self.parse_csv_files()
-
-            for _, row in csv_data.iterrows():
-                flag = self.if_exec_node(row)
-                if flag:
-                    self.add_case_to_cases_info(row)    
+            if csv_data:
+                for _, row in csv_data.iterrows():
+                    flag = self.if_exec_node(row)
+                    if flag:
+                        self.add_case_to_cases_info(row)
+            else:
+                execution_flag = False
         else:
-            raise RuntimeError(f"{op_path} not valid")
+            logger_text = f"{self.op_path} not exists"
+            logger.error(logger_text)
+            execution_flag = False
+        
+        return execution_flag
  
     def excute_cases(self, ut_manager):
         # 定义监控队列函数

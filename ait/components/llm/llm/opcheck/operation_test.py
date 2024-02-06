@@ -19,6 +19,7 @@ import unittest
 import json
 import numpy as np
 import torch
+import torch.nn.functional as F
 import torch_npu
 
 from llm.common.tensor_file import read_tensor
@@ -141,6 +142,28 @@ class OperationTest(unittest.TestCase):
         except ZeroDivisionError as e:
             raise e
         return rel_error_rate
+    
+    def get_abs_error_rate(self, out, golden, etol):
+        out, golden = out.reshape(-1), golden.reshape(-1)
+        size = out.shape[0]
+        abs_errors = torch.abs(out - golden)
+        try:
+            abs_error_rate = torch.sum(abs_errors <= etol) / size
+        except ZeroDivisionError as e:
+            raise e
+        return abs_error_rate
+
+    def get_kl_divergence(self, out, golden):
+        logp_out = F.log_softmax(out, dim=-1)
+        p_golden = F.softmax(golden, dim=-1)
+        return F.kl_div(logp_out, p_golden, reduction='batchmean')
+    
+    def get_cos_similarity(self, out, golden):
+        print(F.cosine_similarity(out, golden))
+        out, golden = out.reshape(-1).tolist(), golden.reshape(-1).tolist()
+        num = float(np.dot(out, golden))
+        denom = np.linalg.norm(out) * np.linalg.norm(golden)
+        return 0.5 + 0.5 * (num / denom) if denom != 0 else 0
         
     def get_npu_device(self):
         npu_device = os.environ.get("NPU_DEVICE")
