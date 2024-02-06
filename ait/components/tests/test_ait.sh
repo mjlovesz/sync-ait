@@ -20,7 +20,7 @@ CUR_PATH=$("pwd")
 ALL_VALID_TEST_CASES=(/analyze/ /benchmark/ /convert/ /debug/compare/ /debug/surgeon/ /llm/ /profile/ /transplt/)
 
 function is_path_in_all_valid_test_cases() {
-    for test_case in ${ALL_VALID_TEST_CASES[@]}; do
+    for test_case in ${RUN_TESTCASES[@]}; do
         if [[ "$1" =~ "$test_case" ]]; then
             echo 1
             return
