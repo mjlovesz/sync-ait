@@ -18,10 +18,16 @@ declare -i ret_ok=0
 declare -i ret_failed=1
 declare -i ret_invalid_args=1
 CUR_PATH=$(dirname $(readlink -f "$0"))
+
+PYTHON_COMMAND="python3"
+SOC_VERSION=`$PYTHON_COMMAND -c 'import acl; print(acl.get_soc_name())'`
+BENCKMARK_DT_MODE="simple"
+
 . $CUR_PATH/utils.sh
 set -x
 set -e
 MSAME_PATH=$CUR_PATH/msame
+
 function get_msame_file()
 {
     get_arch=`arch`
@@ -46,14 +52,17 @@ function chmod_file_data()
 
 main() {
     chmod_file_data
-    if [ $# -lt 2 ]; then
-        echo "at least one parameter. for example: bash test.sh Ascend310P3 python3"
-        return $ret_invalid_args
+    echo "Usage: bash test.sh {SOC_VERSION} {PYTHON_COMMAND} {BENCKMARK_DT_MODE}"
+
+    if [ $# -gt 1 ]; then
+        SOC_VERSION=$1
+    else if [ $# -gt 2 ]; then
+        PYTHON_COMMAND=$2
+    else if [ $# -gt 3 ]; then
+        BENCKMARK_DT_MODE=$3
     fi
 
-    export SOC_VERSION=${1:-"Ascend310P3"}
-    export PYTHON_COMMAND=${2:-"python3"}
-    export BENCKMARK_DT_MODE=${3:-"simple"}
+    echo "SOC_VERSION=$SOC_VERSION, PYTHON_COMMAND=$PYTHON_COMMAND, BENCKMARK_DT_MODE=$BENCKMARK_DT_MODE"
     export PYTHONPATH=$CUR_PATH:$PYTHONPATH
 
     get_msame_file $MSAME_PATH || { echo "get msame bin file failed";return 1; }
