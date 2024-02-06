@@ -56,7 +56,9 @@ class OpChecker:
     @staticmethod   
     def third_party_init():
         # LIB path设置
+        import torch_npu
         import llm
+
         lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
         if not lib_path:
             lib_path_dir = os.path.dirname(os.path.abspath(llm.__file__))
@@ -67,8 +69,7 @@ class OpChecker:
             torch.classes.load_library(lib_path)
         else:
             raise RuntimeError("Libpath is not valid")
-            
-        import torch_npu
+                    
         # 指定需要使用的npu设备
         device_id = os.environ.get("SET_NPU_DEVICE")
         if device_id is not None:
@@ -80,7 +81,7 @@ class OpChecker:
         # 0.初始化
         OpChecker.third_party_init()
         self.args_init(args)
-
+        
         from llm.opcheck.ut_manager import UtManager
         ut_manager = UtManager(self.completed_op_id_queue)
         
