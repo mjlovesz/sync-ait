@@ -235,16 +235,16 @@ class OpcheckCommand(BaseCommand):
             nargs='+',
             default=[],
             choices=['abs', 'kl', 'cos_sim'],
-            help=' Output more precision results.')
+            help=' Output more precision results, default empty.E.g:-type kl cos_sim')
 
         parser.add_argument(
             '--device-id',
-            '-dev',
+            '-device',
             required=False,
             dest="device_id",
             type=check_device_integer,
             default=0,
-            help='Spicifies the NPU device to bu used(0-7). Default 0.')
+            help='Spicifies the NPU device to bu used(0-7), default 0.E.g.:-device 1')
 
     def handle(self, args, **kwargs):
         op = OpChecker()

@@ -17,7 +17,7 @@ import re
 import json
 import queue
 import threading
-import csv
+import openpyxl
 import time
 import glob
 import datetime
@@ -50,6 +50,7 @@ class OpChecker:
         self.check_ids_string = []
         self.opname = None
         self.check_patterns = []
+        self.precision_type = []
         utc_time = datetime.datetime.now(tz=pytz.utc)
         self.timestamp = utc_time.astimezone(pytz.timezone('Asia/Shanghai')).strftime("%Y%m%d_%H%M%S")
 
@@ -71,7 +72,7 @@ class OpChecker:
                 logger.info(lib_path)
                 torch.classes.load_library(lib_path)
             except OSError as e:
-                logger_text = "Failed to load libopchecker.so, Please source atb/set_env.sh first. Error: {}".format(e)
+                logger_text = "Failed to load libopchecker.so, please check. Error: {}".format(e)
                 logger.error(logger_text)
                 execution_flag = False
         else:
@@ -87,7 +88,7 @@ class OpChecker:
         self.tensor_path = args.input
         self.op_path = args.csv_path
         self.output_dir = args.output
-        self.output_path = os.path.join(self.output_dir, f"opcheck_result_{self.timestamp}.csv")
+        self.output_path = os.path.join(self.output_dir, f"opcheck_result_{self.timestamp}.xlsx")
         self.ids = args.ids
         if self.ids != '':
             try:
@@ -104,8 +105,7 @@ class OpChecker:
                 logger_text = "Failed to parse opname. Error: {}".format(e)
                 logger.error(logger_text)
                 execution_flag = False
-
-        print(args.type)
+        self.precision_type = args.type
 
         # 指定需要使用的npu设备
         try:
@@ -152,10 +152,6 @@ class OpChecker:
                 v['res_detail'] = []
                 self.write_op_result_to_csv(v)
 
-        # 5.格式化文件
-        data = pd.read_csv(self.output_path, dtype='str')
-        data.to_excel(os.path.join(self.output_dir, f"opcheck_result_{self.timestamp}.xlsx"), index=False)
-
     def parse_in_tensor_path(self, ids):
         in_tensor_path = os.path.join(self.tensor_path, '_*/'.join(ids.split("_")) + '_*', "after")
         files = glob.glob(in_tensor_path)
@@ -171,7 +167,7 @@ class OpChecker:
         except Exception as e:
             logger_text = f"Cannot read csv file: {self.op_path}"
             logger.error(logger_text)
-            df = None
+            df = pd.DataFrame()
         
         op_name_str = "OpName"
         if op_name_str in df.columns and "OutDType" in df.columns:
@@ -183,11 +179,11 @@ class OpChecker:
             except Exception as e:
                 logger_text = f"Cannot parse csv file: {self.op_path}"
                 logger.error(logger_text) 
-                df = None
+                df = pd.DataFrame()
         else:
             logger_text = f"Cannot find enough info in csv file: {self.op_path}"
             logger.error(logger_text)
-            df = None
+            df = pd.DataFrame()
 
         return df
 
@@ -226,7 +222,7 @@ class OpChecker:
         op_name = row['RealOpName']
         try:
             op_param = json.loads(row['OpParam'])
-        except TypeError as e:
+        except TypeError:
             logger_text = f"Cannot loads OpParam to json! OpParam: {row['OpParam']}"
             logger.info(logger_text)
             op_param = {}
@@ -236,7 +232,7 @@ class OpChecker:
 
         case_info = {
             'op_id': op_id, 'op_name': op_name, 'op_param': op_param, 'tensor_path': tensor_path, 
-            'out_dtype':out_dtype
+            'out_dtype':out_dtype, 'precision_type':self.precision_type
         }
 
         if op_name == 'KvCacheOperation':
@@ -254,13 +250,14 @@ class OpChecker:
         execution_flag = True
         if os.path.exists(self.op_path):
             csv_data = self.parse_csv_files()
-            if csv_data:
+            if csv_data.empty:
+                execution_flag = False
+            else:
                 for _, row in csv_data.iterrows():
                     flag = self.if_exec_node(row)
                     if flag:
                         self.add_case_to_cases_info(row)
-            else:
-                execution_flag = False
+                
         else:
             logger_text = f"{self.op_path} not exists"
             logger.error(logger_text)
@@ -290,27 +287,36 @@ class OpChecker:
         watching_thread.join()
     
     def write_op_result_to_csv(self, op_result):
-        with open(self.output_path, mode='a', newline='') as csv_file:
-            writer = csv.writer(csv_file)
-            if csv_file.tell() == 0:
-                writer.writerow(['op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 
-                                'precision_standard', 'precision_result(%)', 'excuted_information'])
+        if not os.path.exists(self.output_path):
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.append(['op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard', 
+                'precision_result(%)', 'excuted_information', 'abs_pass_rate(%)', 'cosine_similarity', 'kl_divergence'])
+            
+        wb = openpyxl.load_workbook(self.output_path)
+        ws = wb.active
 
-            op_id = op_result['op_id']
-            op_name = op_result['op_name']
-            op_param = op_result['op_param']
-            tensor_path = op_result['tensor_path']
-            excuted_information = op_result['excuted_information']
-            if len(op_result['res_detail']) > 0:
-                for i, res_detail in enumerate(op_result['res_detail']):
-                    precision_standard = res_detail['precision_standard']
-                    rel_error_rate = res_detail['rel_error_rate']
-                    writer.writerow([op_id, op_name, op_param, tensor_path, i, precision_standard, 
-                                    rel_error_rate, excuted_information])
-            else:
-                default_str = 'NA'
-                i = default_str
-                precision_standard = default_str
-                rel_error_rate = default_str
-                writer.writerow([op_id, op_name, op_param, tensor_path, i, precision_standard, 
-                                rel_error_rate, excuted_information])
+        op_id = op_result['op_id']
+        op_name = op_result['op_name']
+        op_param = op_result['op_param']
+        tensor_path = op_result['tensor_path']
+        excuted_information = op_result['excuted_information']
+        if len(op_result['res_detail']) > 0:
+            for i, res_detail in enumerate(op_result['res_detail']):
+                precision_standard = res_detail['precision_standard']
+                rel_pass_rate = res_detail['rel_pass_rate']
+                abs_pass_rate = res_detail['abs_pass_rate']
+                cos_sim = res_detail['cos_sim']
+                kl_div = res_detail['kl_div']
+                ws.append([op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, 
+                        excuted_information, abs_pass_rate, cos_sim, kl_div])
+        else:
+            default_str = 'NA'
+            i = default_str
+            precision_standard = default_str
+            rel_pass_rate = default_str
+            abs_pass_rate = default_str
+            cos_sim = default_str
+            kl_div = default_str
+            ws.append([op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, 
+                    excuted_information, abs_pass_rate, cos_sim, kl_div])
