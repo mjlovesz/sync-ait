@@ -13,7 +13,6 @@
 # limitations under the License.
 
 import os
-import sys
 import re
 import json
 import queue
@@ -25,8 +24,8 @@ import datetime
 import pytz
 import pandas as pd
 import torch
-import torch_npu
 
+import llm
 from llm.common.log import logger
 from llm.opcheck.ut_manager import UtManager
 
@@ -61,7 +60,8 @@ class OpChecker:
         # LIB path设置
         lib_path = os.environ.get("AIT_OPCHECK_LIB_PATH")
         if not lib_path:
-            lib_path = "./libopchecker.so"
+            lib_path_dir = os.path.dirname(os.path.abspath(llm.__file__))
+            lib_path = os.path.join(lib_path_dir, "opcheck", "libopchecker.so")
         
         if os.path.exists(lib_path):
             logger.info(lib_path)
