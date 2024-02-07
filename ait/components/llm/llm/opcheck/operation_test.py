@@ -157,7 +157,7 @@ class OperationTest(unittest.TestCase):
         return abs_pass_rate
     
     def get_cos_similarity(self, out, golden):
-        out, golden = out.reshape(-1).tolist(), golden.reshape(-1).tolist()
+        out, golden = out.tolist(), golden.tolist()
         num = float(np.dot(out, golden))
         denom = np.linalg.norm(out) * np.linalg.norm(golden)
         return 0.5 + 0.5 * (num / denom) if denom != 0 else 0
@@ -182,10 +182,10 @@ class OperationTest(unittest.TestCase):
         out, golden = out.reshape(-1), golden.reshape(-1)
         if 'abs' in precision_type:
             abs_pass_rate = self.get_abs_pass_rate(out, golden, etol)
-        if 'kl' in precision_type:
-            kl_div = self.get_kl_divergence(out, golden)
         if 'cos_sim' in precision_type:
             cos_sim = self.get_cos_similarity(out, golden)
+        if 'kl' in precision_type:
+            kl_div = self.get_kl_divergence(out, golden)
         abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate else "NaN"
         cos_sim_str = "%.16f" % cos_sim if cos_sim else "NaN"
         kl_div_str = "%.16f" % kl_div if kl_div else "NaN"
