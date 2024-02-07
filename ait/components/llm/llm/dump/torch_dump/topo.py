@@ -74,7 +74,6 @@ def _tree_to_dict(node):
 
 def _tree_to_json(node, json_path):
     with os.fdopen(os.open(json_path, os.O_CREAT | os.O_WRONLY, FILE_PERMISSION), 'w') as file:
-    # with open(json_path, "w") as file:
         json.dump(_tree_to_dict(node), file)
 
 
