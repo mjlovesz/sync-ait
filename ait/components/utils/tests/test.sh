@@ -14,16 +14,19 @@
 # limitations under the License.
 
 CUR_PATH=$(dirname $(readlink -f $0))
-COMPONENTS_PATH=$CUR_PATH/../../components
-ln -s $COMPONENTS_PATH
-echo "CUR_PATH=$CUR_PATH, COMPONENTS_PATH=$COMPONENTS_PATH"
+COMPONENTS_PATH=$CUR_PATH/../../../
+SOURCE_CODE_PATH=$COMPONENTS_PATH/components/utils
+echo "CUR_PATH=$CUR_PATH, COMPONENTS_PATH=$COMPONENTS_PATH, SOURCE_CODE_PATH=$SOURCE_CODE_PATH"
 
 if [ -f "../requirements.txt" ]; then
     pip3 install -r ../requirements.txt
 fi
 
-chmod -R 750 $CUR_PATH/resources
-coverage run -m pytest -vv $CUR_PATH --disable-warnings
+if [ -f "$CUR_PATH/resources" ]; then
+    chmod -R 750 $CUR_PATH/resources
+fi
+
+PYTHONPATH=$COMPONENTS_PATH:$PYTHONPATH coverage run --source $SOURCE_CODE_PATH coverage run -m pytest -vv $CUR_PATH --disable-warnings
 
 RETURN_CODE=0
 if [ $? == 0 ]; then
