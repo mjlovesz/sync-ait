@@ -104,7 +104,7 @@ class OpChecker:
                 logger_text = "Failed to parse opname. Error: {}".format(e)
                 logger.error(logger_text)
                 execution_flag = False
-        self.precision_type = args.type
+        self.precision_type = args.metric
 
         # 指定需要使用的npu设备
         try:
@@ -287,7 +287,7 @@ class OpChecker:
     
     def write_op_result_to_csv(self, op_result):
         import openpyxl
-        
+
         if not os.path.exists(self.output_path):
             wb = openpyxl.Workbook()
             ws = wb.active

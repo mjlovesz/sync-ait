@@ -230,7 +230,7 @@ class OpcheckCommand(BaseCommand):
         parser.add_argument(
             '--precision-metric',
             '-metric',
-            dest="type",
+            dest="metric",
             required=False,
             nargs='+',
             default=[],
