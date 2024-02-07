@@ -177,7 +177,7 @@ class OperationTest(unittest.TestCase):
     
     def get_other_precisions(self, out, golden, etol):
         precision_type = self.case_info['precision_type']
-        abs_pass_rate, kl_div = None, None
+        abs_pass_rate, cos_sim, kl_div = None, None
         
         out, golden = out.reshape(-1), golden.reshape(-1)
         if 'abs' in precision_type:
