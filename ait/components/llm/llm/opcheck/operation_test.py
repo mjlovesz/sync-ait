@@ -22,7 +22,7 @@ import torch
 import torch.nn.functional as F
 import torch_npu
 
-from llm.common.tensor_file import read_tensor
+from llm.common.tool import read_atb_data
 from llm.common.log import logger
 from llm.compare import cmp_algorithm
 
@@ -85,10 +85,10 @@ class OperationTest(unittest.TestCase):
                 _tensor_path.sort(key=lambda x:int(x.split('intensor')[1].split('.')[0]))  
                 _tensor_path = [os.path.join(self.tensor_path, x) for x in _tensor_path] 
                 for path in _tensor_path:
-                    _in_tensor = read_tensor(path).npu()
+                    _in_tensor = read_atb_data(path).npu()
                     self.in_tensors.append(_in_tensor)
             elif os.path.isfile(self.tensor_path):
-                _in_tensor = read_tensor(self.tensor_path).npu()
+                _in_tensor = read_atb_data(self.tensor_path).npu()
                 self.in_tensors.append(_in_tensor)
             else:
                 raise RuntimeError(f"{self.tensor_path} not valid")
