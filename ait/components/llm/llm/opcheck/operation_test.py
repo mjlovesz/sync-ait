@@ -24,7 +24,6 @@ import torch_npu
 
 from llm.common.tool import read_atb_data
 from llm.common.log import logger
-from llm.compare import cmp_algorithm
 
 
 class OperationTest(unittest.TestCase):
@@ -156,6 +155,12 @@ class OperationTest(unittest.TestCase):
             logger.error(logger_text)
             abs_pass_rate = None
         return abs_pass_rate
+    
+    def get_cos_similarity(self, out, golden):
+        out, golden = out.reshape(-1).tolist(), golden.reshape(-1).tolist()
+        num = float(np.dot(out, golden))
+        denom = np.linalg.norm(out) * np.linalg.norm(golden)
+        return 0.5 + 0.5 * (num / denom) if denom != 0 else 0
 
     def get_kl_divergence(self, out, golden):
         out, golden = out.tolist(), golden.tolist()
@@ -179,13 +184,11 @@ class OperationTest(unittest.TestCase):
             abs_pass_rate = self.get_abs_pass_rate(out, golden, etol)
         if 'kl' in precision_type:
             kl_div = self.get_kl_divergence(out, golden)
-        
+        if 'cos_sim' in precision_type:
+            cos_sim = self.get_cos_similarity(out, golden)
         abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate else "NaN"
+        cos_sim_str = "%.16f" % cos_sim if cos_sim else "NaN"
         kl_div_str = "%.16f" % kl_div if kl_div else "NaN"
-
-        cos_sim_str, logger_text = cmp_algorithm.cosine_similarity(golden, out)
-        if logger_text != '':
-            logger.error(logger_text)
 
         return abs_pass_rate_str, cos_sim_str, kl_div_str
         
