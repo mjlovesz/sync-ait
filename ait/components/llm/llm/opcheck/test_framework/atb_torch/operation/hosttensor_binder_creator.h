@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- #ifndef ATB_HOSTTENSOR_BINDER_CREATOR_H
- #define ATB_HOSTTENSOR_BINDER_CREATOR_H
- #include <string>
- #include "hosttensor_binders/hosttensor_binder.h"
+#ifndef ATB_HOSTTENSOR_BINDER_CREATOR_H
+#define ATB_HOSTTENSOR_BINDER_CREATOR_H
+#include <string>
+#include "hosttensor_binders/hosttensor_binder.h"
 
- HostTensorBinder *CreateHostTensorBinder(const std::string &opName);
+HostTensorBinder *CreateHostTensorBinder(const std::string &opName);
 
- #endif
+#endif

@@ -10,6 +10,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
 ADD_LINK_OPTIONS(-s)
 
 include_directories(
+    ${CMAKE_CURRENT_LIST_DIR}/dependency
     $ENV{ATB_HOME_PATH}/include
     $ENV{ASCEND_HOME_PATH}/include
     $ENV{PYTORCH_INSTALL_PATH}/include
@@ -17,7 +18,6 @@ include_directories(
     $ENV{PYTORCH_NPU_INSTALL_PATH}/include
     ${CMAKE_CURRENT_LIST_DIR}/atb_util/include
     ${CMAKE_CURRENT_LIST_DIR}/
-    ${CMAKE_CURRENT_LIST_DIR}/dependency
     )
 
 link_directories(

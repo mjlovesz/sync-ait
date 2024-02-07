@@ -130,7 +130,7 @@ static atb::Status ConcatOperationCreate(const nlohmann::json &paramJson, atb::O
     ATB_LOG(INFO) << "ConcatParam axis:" << param.concatDim;
     if (paramJson.contains("concatDim")) {
         param.concatDim = paramJson["concatDim"].get<int>();
-    } 
+    }
     return CreateOperation(param, op);
 }
 
@@ -221,7 +221,7 @@ static atb::Status SelfAttentionOperationCreate(const nlohmann::json &paramJson,
     }
     ATB_LOG(INFO) << "SelfAttentionParam headNum:" << param.headNum << ", qScale:" << param.qScale
                   << ", headDim:" << param.headDim << ", qkScale:" << param.qkScale
-                  << ", isSupportAlibi:" << param.isSupportAlibi 
+                  << ", isSupportAlibi:" << param.isSupportAlibi
                   << ", kvHeadNum:" << param.kvHeadNum << ", isEncoder:" << param.isEncoder;
     return CreateOperation(param, op);
 }
@@ -279,7 +279,7 @@ static atb::Status LinearActivationQuantOperationCreate(const nlohmann::json &pa
     if (paramJson.contains("activationFuncType")) {
         param.activationFuncType = atb::infer::ActivationType(paramJson["activationFuncType"].get<int32_t>());
     }
-    ATB_LOG(INFO) << "LinearActivationQuantParam transposeA:" << param.transposeA << ", transposeB:" << param.transposeB 
+    ATB_LOG(INFO) << "LinearActivationQuantParam transposeA:" << param.transposeA << ", transposeB:" << param.transposeB
     << ", hasBias:" << param.hasBias << ", activationFuncType:" << param.activationFuncType;
 
     return CreateOperation(param, op);
@@ -358,8 +358,8 @@ static atb::Status PagedAttentionOperationCreate(const nlohmann::json &paramJson
     if (paramJson.contains("hasQuantOffset")) {
         param.hasQuantOffset = paramJson["hasQuantOffset"].get<bool>();
     }
-    ATB_LOG(INFO) << "PagedAttentionOperationCreate headNum:" << param.headNum << ", scale:" << param.qkScale 
-                  << ", kvHeadNum:" << param.kvHeadNum << ", isSupportAlibi:" << param.isSupportAlibi 
+    ATB_LOG(INFO) << "PagedAttentionOperationCreate headNum:" << param.headNum << ", scale:" << param.qkScale
+                  << ", kvHeadNum:" << param.kvHeadNum << ", isSupportAlibi:" << param.isSupportAlibi
                   << ", quantType:" << param.quantType << ", hasQuantOffset:" << param.hasQuantOffset;
     return CreateOperation(param, op);
 }
@@ -382,7 +382,7 @@ static atb::Status LinearQuantOperationCreate(const nlohmann::json &paramJson, a
     if (paramJson.contains("hasBias")) {
         param.hasBias = paramJson["hasBias"].get<bool>();
     }
-    ATB_LOG(INFO) << "LinearQuantParam transposeA:" << param.transposeA << ", transposeB:" << param.transposeB 
+    ATB_LOG(INFO) << "LinearQuantParam transposeA:" << param.transposeA << ", transposeB:" << param.transposeB
                   << ", hasBias:" << param.hasBias;
     return CreateOperation(param, op);
 }
@@ -424,7 +424,7 @@ static atb::Status FillOperationCreate(const nlohmann::json &paramJson, atb::Ope
         }
     }
     ATB_LOG(INFO) << "FillParam withMask:" << param.withMask << ", value:" << param.value
-                  << ", outDim:" << param.outDim;   
+                  << ", outDim:" << param.outDim;
     return CreateOperation(param, op);
 }
 
@@ -527,12 +527,8 @@ static atb::Status RmsNormBackwardOperationCreate(const nlohmann::json &paramJso
     return CreateOperation(param, op);
 }
 
-static atb::Status LayerNormOperationCreate(const nlohmann::json &paramJson, atb::Operation **op)
+static void LayerNormNormCreate(const nlohmann::json &paramJson, atb::infer::LayerNormParam &param)
 {
-    atb::infer::LayerNormParam param;
-    if (paramJson.contains("layerType")) {
-        param.layerType = atb::infer::LayerNormParam::LayerNormType(paramJson["layerType"].get<int32_t>());
-    }
     if (param.layerType == atb::infer::LayerNormParam::LAYER_NORM_NORM) {
         if (paramJson.contains("epsilon")) {
             param.normParam.epsilon = paramJson["epsilon"].get<float>();
@@ -556,6 +552,10 @@ static atb::Status LayerNormOperationCreate(const nlohmann::json &paramJson, atb
             param.normParam.quantInputAlpha = paramJson["quantInputAlpha"].get<float>();
         }
     }
+}
+
+static void LayerNormPostNormCreate(const nlohmann::json &paramJson, atb::infer::LayerNormParam &param)
+{
     if (param.layerType == atb::infer::LayerNormParam::LAYER_NORM_POSTNORM) {
         if (paramJson.contains("epsilon")) {
             param.postNormParam.epsilon = paramJson["epsilon"].get<float>();
@@ -579,6 +579,16 @@ static atb::Status LayerNormOperationCreate(const nlohmann::json &paramJson, atb
             param.postNormParam.quantInputAlpha = paramJson["quantInputAlpha"].get<float>();
         }
     }
+}
+
+static atb::Status LayerNormOperationCreate(const nlohmann::json &paramJson, atb::Operation **op)
+{
+    atb::infer::LayerNormParam param;
+    if (paramJson.contains("layerType")) {
+        param.layerType = atb::infer::LayerNormParam::LayerNormType(paramJson["layerType"].get<int32_t>());
+    }
+    LayerNormNormCreate(paramJson, param);
+    LayerNormPostNormCreate(paramJson, param);
     return CreateOperation(param, op);
 }
 
@@ -621,7 +631,7 @@ static atb::Status RmsNormOperationCreate(const nlohmann::json &paramJson, atb::
         if (paramJson.contains("quantInputOffset")) {
             param.preNormParam.quantInputOffset = paramJson["quantInputOffset"].get<int>();
         }
-    }  
+    }
     return CreateOperation(param, op);
 }
 
@@ -719,7 +729,7 @@ static atb::Status TransdataOperationCreate(const nlohmann::json &paramJson, atb
     atb::infer::TransdataParam param;
     if (paramJson.contains("transdataType")) {
         param.transdataType = atb::infer::TransdataParam::TransdataType(paramJson["transdataType"].get<int>());
-    }   
+    }
     if (paramJson.contains("outCrops")) {
         param.outCrops.clear();
         for (auto item : paramJson["outCrops"]) {
@@ -846,7 +856,7 @@ static atb::Status PadWithHiddenStateOperationCreate(const nlohmann::json &param
     return CreateOperation(param, op);
 }
 
-std::map<std::string, OperationCreateFunc> g_funcMap = {
+static std::map<std::string, OperationCreateFunc> g_funcMap = {
     {"AllReduceOperation", &AllReduceOperationCreate},
     {"BroadcastOperation", &BroadcastOperationCreate},
     {"AllGatherOperation", &AllGatherOperationCreate},
