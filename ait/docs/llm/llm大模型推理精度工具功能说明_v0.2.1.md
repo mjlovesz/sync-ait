@@ -18,7 +18,7 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py" --type layer on
 - 支持api方式将之前dump出来的model和layer拓扑信息，转成onnx可视化模型，使用方法：[拓扑信息转onnx可视化模型](#api说明)
 - 支持dump torch-npu和torch-gpu模型推理数据，使用方法可参考[接口说明](#api说明)
 
-- 支持opcheck精度预检功能，检测算子精度，使用方法，具体参考[精度预检能力使用说明](./精度预检能力使用说明.md)：
+- 支持opcheck精度预检功能，检测算子精度，使用方法具体参考[精度预检能力使用说明](./精度预检能力使用说明.md)：
 ```
 ait llm opcheck -i {tensor_dir} -c {op_csv_path} -o {output_dir}
 ```
