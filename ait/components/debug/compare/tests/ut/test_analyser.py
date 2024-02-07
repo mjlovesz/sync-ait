@@ -18,6 +18,7 @@ import pytest
 
 from msquickcmp.net_compare import analyser
 
+
 OPEN_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
 OPEN_MODES = stat.S_IWUSR | stat.S_IRUSR
 

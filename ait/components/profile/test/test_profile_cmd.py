@@ -18,9 +18,7 @@ import pytest
 class TestClass:
     @classmethod
     def setup_class(cls):
-        """
-        class level setup_class
-        """
+        """class level setup_class"""
         cls.init(TestClass)
 
     @classmethod

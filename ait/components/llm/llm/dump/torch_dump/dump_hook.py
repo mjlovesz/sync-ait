@@ -19,7 +19,7 @@ import numpy as np
 import torch
 
 from llm.dump.torch_dump.dump_config import DumpConfig
-from llm.dump.torch_dump.hook_ops import HOOK_OPS
+from llm.dump.torch_dump import hook_ops
 from llm.common.log import logger
 
 
@@ -28,6 +28,8 @@ class DumpHookModule:
         self.model = model
         self.dump_config = dump_config
         self.ori_torch_attr = {}
+        hook_ops.add_torch_ops()
+        hook_ops.add_torch_npu_ops()
 
     def add_hook(self):
         self._add_module_hook()
@@ -63,7 +65,7 @@ class DumpHookModule:
         _remove_hook(self.model)
 
     def _add_api_hook(self):
-        for py_module, api_list in HOOK_OPS.items():
+        for py_module, api_list in hook_ops.HOOK_OPS.items():
             ori_module_attrs = {}
             for api_name in api_list:
                 if not hasattr(py_module, api_name):

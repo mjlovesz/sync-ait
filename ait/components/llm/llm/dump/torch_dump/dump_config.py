@@ -50,6 +50,8 @@ class DumpConfig:
     def set_device_and_dump_dir(self, device):
         self.device = device
         self.dump_dir = os.path.join(self.dump_path, "{}_{}".format(str(os.getpid()), str(self.device)))
+        if not os.path.exists(self.dump_dir):
+            os.makedirs(self.dump_dir, mode=0o750)
 
     def update_module_ids(self, module_name):
         self.cur_module_id += 1

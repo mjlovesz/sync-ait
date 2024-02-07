@@ -17,10 +17,10 @@
 declare -i ret_ok=0
 declare -i ret_failed=1
 CUR_PATH=$("pwd")
-ALL_VALID_TEST_CASES=(/analyze/ /benchmark/ /convert/ /debug/compare/ /debug/surgeon/ /llm/ /profile/ /transplt/)
+ALL_VALID_TEST_CASES=(/analyze/ /benchmark/ /convert/ /debug/compare/ /debug/surgeon/ /llm/ /profile/ /transplt/ /utils/)
 
 function is_path_in_all_valid_test_cases() {
-    for test_case in ${ALL_VALID_TEST_CASES[@]}; do
+    for test_case in ${RUN_TESTCASES[@]}; do
         if [[ "$1" =~ "$test_case" ]]; then
             echo 1
             return
@@ -53,15 +53,21 @@ function get_modified_module_list() {
 main() {
     export dt_mode=${1:-"normal"} # or "pr"
     if [[ $dt_mode == "pr" ]];then
-        RUN_TESTCASES=get_modified_module_list
+        get_modified_module_list
     else
-        RUN_TESTCASES=$ALL_VALID_TEST_CASES
+        RUN_TESTCASES=${ALL_VALID_TEST_CASES[@]}
     fi
-    echo "RUN_TESTCASES ${RUN_TESTCASES[@]}"
+    echo "RUN_TESTCASES: ${RUN_TESTCASES[@]}"
 
     failed_case_names=""
     all_part_test_ok=0
-    TEST_CASES=( $(find ./* -name test.sh) )
+    if [[ $PWD =~ "components/tests" ]]; then
+        TEST_CASES=( $(find ../* -name test.sh) )  # In tests dir
+    else
+        TEST_CASES=( $(find ./* -name test.sh) )
+    fi
+
+    echo "pwd: $PWD, TEST_CASES: ${TEST_CASES[@]}"
     for test_case in ${TEST_CASES[@]}; do
         is_valid=$(is_path_in_all_valid_test_cases $test_case)
         echo ">>>> Current test_case=$test_case, is_valid=$is_valid"
