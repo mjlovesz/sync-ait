@@ -225,7 +225,7 @@ class OpcheckCommand(BaseCommand):
             dest="opname",
             type=safe_string,
             default=None,
-            help='Operation names need to dump, default none.E.g:-opname self,linear')
+            help='Operation names need to dump.E.g:-opname self,linear')
 
         parser.add_argument(
             '--precision-type',
@@ -235,7 +235,7 @@ class OpcheckCommand(BaseCommand):
             nargs='+',
             default=[],
             choices=['abs', 'kl', 'cos_sim'],
-            help=' Output more precision results, default empty.E.g:-type kl cos_sim')
+            help=' Output more precision results.E.g:-type kl cos_sim')
 
         parser.add_argument(
             '--device-id',
@@ -244,7 +244,7 @@ class OpcheckCommand(BaseCommand):
             dest="device_id",
             type=check_device_integer,
             default=0,
-            help='Spicifies the NPU device to bu used(0-7), default 0.E.g.:-device 1')
+            help='Spicifies the NPU device to bu used(0-7).E.g.:-device 1')
 
     def handle(self, args, **kwargs):
         op = OpChecker()
