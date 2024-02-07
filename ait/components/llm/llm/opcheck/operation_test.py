@@ -141,7 +141,7 @@ class OperationTest(unittest.TestCase):
             rel_pass_rate = torch.sum(rel_errors <= etol) / size
         except ZeroDivisionError as e:
             logger_text = "Pass rate of rel error cannot be calculated because the denom is 0. Exception: {}".format(e)
-            logger.error(logger_text) 
+            logger.error(logger_text)
             raise e
         return rel_pass_rate
     
@@ -149,14 +149,25 @@ class OperationTest(unittest.TestCase):
         out, golden = out.reshape(-1), golden.reshape(-1)
         size = out.shape[0]
         abs_errors = torch.abs(out - golden)
-        abs_pass_rate = torch.sum(abs_errors <= etol) / size if size != 0 else 0
+        try:
+            abs_pass_rate = torch.sum(abs_errors <= etol) / size if size != 0 else 0
+        except ZeroDivisionError as e:
+            logger_text = "Pass rate of abs error cannot be calculated because the denom is 0. Exception: {}".format(e)
+            logger.error(logger_text)
+            abs_pass_rate = None
         return abs_pass_rate
     
     def get_cos_similarity(self, out, golden):
         out, golden = out.reshape(-1).tolist(), golden.reshape(-1).tolist()
         num = float(np.dot(out, golden))
         denom = np.linalg.norm(out) * np.linalg.norm(golden)
-        return 0.5 + 0.5 * (num / denom) if denom != 0 else 0
+        try:
+            cos_sim = 0.5 + 0.5 * (num / denom) if denom != 0 else 0
+        except ZeroDivisionError as e:
+            logger_text = "Cosine similarity cannot be calculated because the denom is 0. Exception: {}".format(e)
+            logger.error(logger_text)
+            cos_sim = None
+        return cos_sim
 
     def get_kl_divergence(self, out, golden):
         out, golden = out.reshape(-1).tolist(), golden.reshape(-1).tolist()
@@ -172,22 +183,20 @@ class OperationTest(unittest.TestCase):
     
     def get_other_precisions(self, out, golden, etol):
         precision_type = self.case_info['precision_type']
-        abs_pass_rate, kl_div, cos_sim = 'NA', 'NA', 'NA'
+        abs_pass_rate, kl_div, cos_sim = None, None, None
 
         if 'abs' in precision_type:
             abs_pass_rate = self.get_abs_pass_rate(out, golden, etol)
-            abs_pass_rate = "%.16f" % float(abs_pass_rate.item() * 100)
         if 'cos_sim' in precision_type:
             cos_sim = self.get_cos_similarity(out, golden)
-            cos_sim = "%.16f" % cos_sim
         if 'kl' in precision_type:
             kl_div = self.get_kl_divergence(out, golden)
-            try:
-                kl_div = "%.16f" % kl_div
-            except:
-                kl_div = "NA"
         
-        return abs_pass_rate, cos_sim, kl_div
+        abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate else "NA"
+        cos_sim_str = "%.16f" % cos_sim if cos_sim else "NA"
+        kl_div_str = "%.16f" % kl_div if kl_div else "NA"
+
+        return abs_pass_rate_str, cos_sim_str, kl_div_str
         
     def get_npu_device(self):
         npu_device = os.environ.get("NPU_DEVICE")
