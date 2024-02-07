@@ -17,7 +17,7 @@ import os
 import subprocess
 
 from components.utils.parser import BaseCommand
-from llm.common.utils import str2bool, check_positive_integer, safe_string, check_exec_cmd, \
+from llm.common.utils import str2bool, check_positive_integer, check_device_integer, safe_string, check_exec_cmd, \
     check_ids_string, check_number_list, check_output_path_legality, check_input_path_legality
 from llm.dump.initial import init_dump_task, clear_dump_task
 from llm.compare.acc_cmp import acc_compare
@@ -225,7 +225,26 @@ class OpcheckCommand(BaseCommand):
             dest="opname",
             type=safe_string,
             default=None,
-            help='Operation names need to dump, default none.E.g:-opname self,linear')
+            help='Operation names need to dump.E.g:-opname self,linear')
+
+        parser.add_argument(
+            '--precision-type',
+            '-type',
+            dest="type",
+            required=False,
+            nargs='+',
+            default=[],
+            choices=['abs', 'kl', 'cos_sim'],
+            help=' Output more precision results.E.g:-type kl cos_sim')
+
+        parser.add_argument(
+            '--device-id',
+            '-device',
+            required=False,
+            dest="device_id",
+            type=check_device_integer,
+            default=0,
+            help='Spicifies the NPU device to bu used(0-7).E.g.:-device 1')
 
     def handle(self, args, **kwargs):
         op = OpChecker()

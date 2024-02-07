@@ -40,6 +40,11 @@ def check_positive_integer(value):
         raise argparse.ArgumentTypeError("%s is an invalid int value" % value)
     return ivalue
 
+def check_device_integer(value):
+    ivalue = int(value)
+    if ivalue < 0 or ivalue > 7:
+        raise argparse.ArgumentTypeError("%s is an invalid int value" % value)
+    return ivalue
 
 def safe_string(value):
     if not value:
