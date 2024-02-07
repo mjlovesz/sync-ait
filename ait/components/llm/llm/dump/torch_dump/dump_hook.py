@@ -140,6 +140,8 @@ def dump_module_data():
             dump_config.update_module_ids(module.name)
             # 将模型树状信息保存成json文件
             from llm.dump.torch_dump.topo import ModelTree
+            if not os.path.exists(dump_config.dump_dir):
+                os.makedirs(dump_config.dump_dir, mode=0o750)
             model_tree_path = os.path.join(dump_config.dump_dir, "model_tree.json")
             obj = ModelTree()
             obj.create_tree(module, dump_config.module_ids, model_tree_path)
