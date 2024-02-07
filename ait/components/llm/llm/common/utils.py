@@ -33,11 +33,13 @@ def str2bool(v):
     else:
         raise argparse.ArgumentTypeError('Boolean value expected true, 1, false, 0 with case insensitive.')
 
+
 def check_positive_integer(value):
     ivalue = int(value)
     if ivalue < 0 or ivalue > 2:
         raise argparse.ArgumentTypeError("%s is an invalid int value" % value)
     return ivalue
+
 
 def check_device_integer(value):
     ivalue = int(value)
@@ -45,12 +47,14 @@ def check_device_integer(value):
         raise argparse.ArgumentTypeError("%s is an invalid int value" % value)
     return ivalue
 
+
 def safe_string(value):
     if not value:
         return value
     if re.search(STR_WHITE_LIST_REGEX, value):
         raise ValueError("String parameter contains invalid characters.")
     return value
+
 
 def check_number_list(value):
     # just like "1241414,124141,124424"
