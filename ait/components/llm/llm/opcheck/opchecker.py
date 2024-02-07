@@ -292,6 +292,7 @@ class OpChecker:
             ws = wb.active
             ws.append(['op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard', 
                 'precision_result(%)', 'excuted_information', 'abs_pass_rate(%)', 'cosine_similarity', 'kl_divergence'])
+            wb.save(self.output_path)
             
         wb = openpyxl.load_workbook(self.output_path)
         ws = wb.active
@@ -320,3 +321,4 @@ class OpChecker:
             kl_div = default_str
             ws.append([op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, 
                     excuted_information, abs_pass_rate, cos_sim, kl_div])
+        wb.save(self.output_path)
