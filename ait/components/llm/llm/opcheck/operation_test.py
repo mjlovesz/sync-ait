@@ -160,7 +160,13 @@ class OperationTest(unittest.TestCase):
         out, golden = out.tolist(), golden.tolist()
         num = float(np.dot(out, golden))
         denom = np.linalg.norm(out) * np.linalg.norm(golden)
-        return 0.5 + 0.5 * (num / denom) if denom != 0 else 0
+        try:
+            cos_sim = 0.5 + 0.5 * (num / denom) if denom != 0 else 0
+        except ZeroDivisionError as e:
+            logger_text = "Cosine Similarity cannot be calculated because the denom is 0. Exception: {}".format(e)
+            logger.error(logger_text)
+            cos_sim = None
+        return cos_sim
 
     def get_kl_divergence(self, out, golden):
         out, golden = out.tolist(), golden.tolist()
