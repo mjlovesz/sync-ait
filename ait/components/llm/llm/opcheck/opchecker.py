@@ -299,7 +299,7 @@ class OpChecker:
 
         op_id = op_result['op_id']
         op_name = op_result['op_name']
-        op_param = op_result['op_param']
+        op_param = json.dumps(op_result['op_param'])
         tensor_path = op_result['tensor_path']
         excuted_information = op_result['excuted_information']
         if len(op_result['res_detail']) > 0:
