@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- #include "hosttensor_binder_creator.h"
- #include <atb/log.h>
- #include "hosttensor_binders/selfattention_binder.h"
+#include "hosttensor_binder_creator.h"
+#include <atb/log.h>
+#include "hosttensor_binders/selfattention_binder.h"
 
- HostTensorBinder *CreateHostTensorBinder(const std::string &opName)
- {
+HostTensorBinder *CreateHostTensorBinder(const std::string &opName)
+{
     if (opName == "SelfAttentionOperation") {
         return new SelfAttentionBinder();
     }else {
         ATB_LOG(INFO) << "opName:" << opName << " not host binder";
     }
     return nullptr;
- }
+}

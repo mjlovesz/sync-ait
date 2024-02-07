@@ -69,9 +69,9 @@ static bool CheckNameValid(const std::string &name)
     }
 
     // 2. check the length of the name
-    const size_t MAX_NAME_LEN = 256U;
-    if (name.size() > MAX_NAME_LEN) {
-        std::cout << "The length of the name " << name.size() << " > " << MAX_NAME_LEN << std::endl;
+    const size_t maxNameLen = 256U;
+    if (name.size() > maxNameLen) {
+        std::cout << "The length of the name " << name.size() << " > " << maxNameLen << std::endl;
         return false;
     }
 
@@ -101,6 +101,9 @@ bool FileSystem::Makedirs(const std::string &dirPath, const mode_t mode)
     uint32_t pathLen = dirPath.size();
     do {
         const char *str = strchr(dirPath.c_str() + offset, '/');
+        if (str == nullptr) {
+            std::cout << "using path.size to initialize offset." << std::endl;
+        }
         offset = (str == nullptr) ? pathLen : str - dirPath.c_str() + 1;
         std::string curPath = dirPath.substr(0, offset);
         if (!Exists(curPath)) {

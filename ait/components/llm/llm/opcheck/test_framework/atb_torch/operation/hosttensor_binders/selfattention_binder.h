@@ -15,13 +15,13 @@
  */
 #ifndef SELFATTENTIONBINDER_H
 #define SELFATTENTIONBINDER_H
-#include "hosttensor_binder.h"
 #include <vector>
+#include "hosttensor_binder.h"
 
 class SelfAttentionBinder : public HostTensorBinder {
 public:
     SelfAttentionBinder();
-    virtual ~SelfAttentionBinder();
+    ~SelfAttentionBinder() override;
     void ParseParam(const nlohmann::json &paramJson) override;
     void BindTensor(atb::VariantPack &variantPack) override;
 
