@@ -24,6 +24,7 @@ import torch_npu
 
 from llm.common.tensor_file import read_tensor
 from llm.common.log import logger
+from llm.compare import cmp_algorithm
 
 
 class OperationTest(unittest.TestCase):
@@ -156,18 +157,6 @@ class OperationTest(unittest.TestCase):
             logger.error(logger_text)
             abs_pass_rate = None
         return abs_pass_rate
-    
-    def get_cos_similarity(self, out, golden):
-        out, golden = out.reshape(-1).tolist(), golden.reshape(-1).tolist()
-        num = float(np.dot(out, golden))
-        denom = np.linalg.norm(out) * np.linalg.norm(golden)
-        try:
-            cos_sim = 0.5 + 0.5 * (num / denom) if denom != 0 else 0
-        except ZeroDivisionError as e:
-            logger_text = "Cosine similarity cannot be calculated because the denom is 0. Exception: {}".format(e)
-            logger.error(logger_text)
-            cos_sim = None
-        return cos_sim
 
     def get_kl_divergence(self, out, golden):
         out, golden = out.reshape(-1).tolist(), golden.reshape(-1).tolist()
@@ -175,6 +164,7 @@ class OperationTest(unittest.TestCase):
             out_prob = out / np.sum(out)
             golden_prob = golden / np.sum(golden)
             kl = np.sum(np.where(out_prob != 0, out_prob * np.log(out_prob / golden_prob), 0))
+            kl = kl if kl > 0 else 0
         except ZeroDivisionError as e:
             logger_text = "Kl divergence cannot be calculated because the denom is 0. Exception: {}".format(e)
             logger.error(logger_text)
@@ -187,14 +177,15 @@ class OperationTest(unittest.TestCase):
 
         if 'abs' in precision_type:
             abs_pass_rate = self.get_abs_pass_rate(out, golden, etol)
-        if 'cos_sim' in precision_type:
-            cos_sim = self.get_cos_similarity(out, golden)
         if 'kl' in precision_type:
             kl_div = self.get_kl_divergence(out, golden)
         
-        abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate else "NA"
-        cos_sim_str = "%.16f" % cos_sim if cos_sim else "NA"
-        kl_div_str = "%.16f" % kl_div if kl_div else "NA"
+        abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate else "NaN"
+        kl_div_str = "%.16f" % kl_div if kl_div else "NaN"
+
+        cos_sim_str, logger_text = cmp_algorithm.cosine_similarity(golden, out)
+        if logger_text != '':
+            logger.error(logger_text)
 
         return abs_pass_rate_str, cos_sim_str, kl_div_str
         

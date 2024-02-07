@@ -20,7 +20,6 @@ import threading
 import time
 import glob
 import datetime
-import openpyxl
 import pytz
 import pandas as pd
 import torch
@@ -287,6 +286,8 @@ class OpChecker:
         watching_thread.join()
     
     def write_op_result_to_csv(self, op_result):
+        import openpyxl
+        
         if not os.path.exists(self.output_path):
             wb = openpyxl.Workbook()
             ws = wb.active
@@ -312,7 +313,7 @@ class OpChecker:
                 ws.append([op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, 
                         excuted_information, abs_pass_rate, cos_sim, kl_div])
         else:
-            default_str = 'NA'
+            default_str = 'NaN'
             i = default_str
             precision_standard = default_str
             rel_pass_rate = default_str
