@@ -147,7 +147,6 @@ class OperationTest(unittest.TestCase):
         return rel_pass_rate
     
     def get_abs_pass_rate(self, out, golden, etol):
-        out, golden = out.reshape(-1), golden.reshape(-1)
         size = out.shape[0]
         abs_errors = torch.abs(out - golden)
         try:
@@ -159,7 +158,7 @@ class OperationTest(unittest.TestCase):
         return abs_pass_rate
 
     def get_kl_divergence(self, out, golden):
-        out, golden = out.reshape(-1).tolist(), golden.reshape(-1).tolist()
+        out, golden = out.tolist(), golden.tolist()
         try:
             out_prob = out / np.sum(out)
             golden_prob = golden / np.sum(golden)
@@ -173,8 +172,9 @@ class OperationTest(unittest.TestCase):
     
     def get_other_precisions(self, out, golden, etol):
         precision_type = self.case_info['precision_type']
-        abs_pass_rate, kl_div, cos_sim = None, None, None
-
+        abs_pass_rate, kl_div = None, None
+        
+        out, golden = out.reshape(-1), golden.reshape(-1)
         if 'abs' in precision_type:
             abs_pass_rate = self.get_abs_pass_rate(out, golden, etol)
         if 'kl' in precision_type:
