@@ -97,7 +97,6 @@ def add_torch_ops():
         ]
     }
     HOOK_OPS.update(torch_hooks)
-}
 
 
 def add_torch_npu_ops():
