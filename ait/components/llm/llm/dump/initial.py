@@ -153,26 +153,26 @@ def split_cpu_profiling_data(data, opname):
 
 def merge_cpu_profiling_data(path):
     # 遍历目录下所有文件
-    files = os.listdir(path)
-    for file in files:
-        data = {}
-        if re.match(r'operation_statistic_\d+\.txt', file):
-            with open(os.path.join(path, file), 'r+') as f:
-                lines = f.readlines()
-                read_cpu_profiling_data(lines, data)
-                f.truncate(0)
-                f.seek(0, os.SEEK_SET)
-                for opname in data.keys():
-                    execute_data, setup_data = split_cpu_profiling_data(data, opname)
-                    merged_data = f"{opname}:\n[execute] {execute_data}\n[setup] {setup_data}\n\n"
-                    f.write(merged_data)
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if re.match(r'operation_statistic_\d+\.txt', file):
+                data = {}
+                with open(os.path.join(root, file), 'r+') as f:
+                    lines = f.readlines()
+                    read_cpu_profiling_data(lines, data)
+                    f.truncate(0)
+                    f.seek(0, os.SEEK_SET)
+                    for opname in data.keys():
+                        execute_data, setup_data = split_cpu_profiling_data(data, opname)
+                        merged_data = f"{opname}:\n[execute] {execute_data}\n[setup] {setup_data}\n\n"
+                        f.write(merged_data)
 
 
 def clear_dump_task(args):
     if "onnx" in args.type and ("model" in args.type or "layer" in args.type):
         json_to_onnx(args)
     elif "cpu_profiling" in args.type:
-        cpu_profiling_data_path = f"{os.environ[ATB_OUTPUT_DIR]}ait_dump/cpu_profiling/{os.environ[ATB_CUR_PID]}/"
+        cpu_profiling_data_path = f"{os.environ[ATB_OUTPUT_DIR]}ait_dump/cpu_profiling/"
         merge_cpu_profiling_data(cpu_profiling_data_path)
     else:
         return
