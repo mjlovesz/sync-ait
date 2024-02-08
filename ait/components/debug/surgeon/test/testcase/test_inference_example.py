@@ -29,6 +29,7 @@ from auto_optimizer.inference_engine.data_process_factory import PreProcessFacto
 from auto_optimizer.inference_engine.data_process_factory import PostProcessFactory
 from auto_optimizer.inference_engine.data_process_factory import DatasetFactory
 
+
 logging = logging.getLogger("auto-optimizer")
 setup_logging(level=LogLevel.WARNING)
 

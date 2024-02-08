@@ -22,7 +22,6 @@ from model_evaluation.parser import AtcErrParser
 
 
 class TestAtcErrParser(unittest.TestCase):
-
     def setUp(self) -> None:
         err_file_map = {
             AtcErr.E19010: 'atc_err_e19010.txt',

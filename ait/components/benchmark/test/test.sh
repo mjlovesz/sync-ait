@@ -52,13 +52,13 @@ function chmod_file_data()
 
 main() {
     chmod_file_data
-    echo "Usage: bash test.sh {SOC_VERSION} {PYTHON_COMMAND} {BENCKMARK_DT_MODE}"
+    echo "Usage: bash test.sh {SOC_VERSION:$SOC_VERSION} {PYTHON_COMMAND:$PYTHON_COMMAND} {BENCKMARK_DT_MODE:$BENCKMARK_DT_MODE}"
 
     if [ $# -gt 1 ]; then
         SOC_VERSION=$1
-    else if [ $# -gt 2 ]; then
+    elif [ $# -gt 2 ]; then
         PYTHON_COMMAND=$2
-    else if [ $# -gt 3 ]; then
+    elif [ $# -gt 3 ]; then
         BENCKMARK_DT_MODE=$3
     fi
 
