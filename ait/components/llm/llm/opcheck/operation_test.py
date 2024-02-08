@@ -169,12 +169,16 @@ class OperationTest(unittest.TestCase):
         return cos_sim
 
     def get_kl_divergence(self, out, golden):
-        softmax_a = F.softmax(out, dim=-1)
-        log_a = F.log_softmax(softmax_a, dim=-1)
-        softmax_b = F.softmax(golden, dim=-1)
-        kl = F.kl_div(log_a, softmax_b, reduction='batchmean')
-        kl = kl if kl > 0 else 0
-        return kl
+        out, golden = out.tolist(), golden.tolist()
+        try:
+            out_prob = out / np.sum(out)
+            golden_prob = golden / np.sum(golden)
+            kl = np.sum(np.where(out_prob != 0, out_prob * np.log(out_prob / golden_prob), 0))
+            kl = kl if kl > 0 else 0
+        except ZeroDivisionError as e:
+            logger_text = "Kl divergence cannot be calculated because the denom is 0. Exception: {}".format(e)
+            logger.error(logger_text)
+            kl = None
     
     def get_other_precisions(self, out, golden, etol):
         precision_type = self.case_info['precision_type']
@@ -187,9 +191,9 @@ class OperationTest(unittest.TestCase):
             cos_sim = self.get_cos_similarity(out, golden)
         if 'kl' in precision_type:
             kl_div = self.get_kl_divergence(out, golden)
-        abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate else "NaN"
-        cos_sim_str = "%.16f" % cos_sim if cos_sim else "NaN"
-        kl_div_str = "%.16f" % kl_div if kl_div else "NaN"
+        abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate is not None else "NaN"
+        cos_sim_str = "%.16f" % cos_sim if cos_sim  is not None else "NaN"
+        kl_div_str = "%.16f" % kl_div if kl_div is not None  else "NaN"
 
         return abs_pass_rate_str, cos_sim_str, kl_div_str
         
