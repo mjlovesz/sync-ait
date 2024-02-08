@@ -142,5 +142,5 @@ ait llm opcheck -i {tensor_dir} -c {op_csv_path} -o {output_dir}
 | --output, -o              | 输出文件的保存路径，为文件夹，示例：xx/xxx/xx                                                                                                                    | 否       |
 | --operation-ids, -ids     | 选择预检指定索引的tensor，默认为空，全量算子预检。使用方式：-ids 24_1,2_3_5                                                                                       | 否       |
 | --operation-name, -opname | 指定需要预检的算子类型，支持模糊指定，如selfattention只需要填写self。使用方式：-opname self，linear                                                                | 否       |
-| --precision-metric, -metric   | 指定需要输出的精度类型，可选范围：['abs', 'cos_sim'，'kl']，分别表示绝对误差通过率、余弦相似度、KL散度。默认为[]，即只输出相对误差通过率。使用方式：--type kl cos_sim | 否       |
+| --precision-metric, -metric   | 指定需要输出的精度类型，可选范围：['abs', 'cos_sim'，'kl']，分别表示绝对误差通过率、余弦相似度、KL散度。默认为[]，即只输出相对误差通过率。使用方式：--metric kl cos_sim | 否       |
 | --device-id, -device      | 指定需要使用的NPU设备，默认为0                                                                                                                                   | 否       |
