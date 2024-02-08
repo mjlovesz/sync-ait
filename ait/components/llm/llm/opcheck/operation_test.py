@@ -179,6 +179,7 @@ class OperationTest(unittest.TestCase):
             logger_text = "Kl divergence cannot be calculated because the denom is 0. Exception: {}".format(e)
             logger.error(logger_text)
             kl = None
+        return kl
     
     def get_other_precisions(self, out, golden, etol):
         precision_type = self.case_info['precision_type']
