@@ -72,10 +72,6 @@ def init_dump_task(args):
         subprocess_info_path = os.path.join(args.output, str(os.getpid()))
         os.makedirs(subprocess_info_path, exist_ok=True)
     
-    if "cpu_profiling" in args.type:
-        os.environ[ATB_DUMP_SUB_PROC_INFO_SAVE_PATH] = os.path.join(str(args.output), str(os.getpid()))
-        subprocess_info_path = os.path.join(args.output, str(os.getpid()))
-        os.makedirs(subprocess_info_path, exist_ok=True)
 
     os.environ[ATB_SAVE_CHILD] = "1" if args.child else "0"
     os.environ[ATB_SAVE_TENSOR_RANGE] = str(args.range)
