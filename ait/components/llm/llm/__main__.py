@@ -235,7 +235,7 @@ class OpcheckCommand(BaseCommand):
             nargs='+',
             default=[],
             choices=['abs', 'kl', 'cos_sim'],
-            help=' Output more results of other precision metrics.E.g:-type abs kl cos_sim')
+            help=' Output more results of other precision metrics.E.g:-metric abs kl cos_sim')
 
         parser.add_argument(
             '--device-id',
