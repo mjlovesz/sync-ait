@@ -169,7 +169,8 @@ class OperationTest(unittest.TestCase):
         return cos_sim
 
     def get_kl_divergence(self, out, golden):
-        log_a = F.log_softmax(out, dim=-1)
+        softmax_a = F.softmax(out, dim=-1)
+        log_a = F.log_softmax(softmax_a, dim=-1)
         softmax_b = F.softmax(golden, dim=-1)
         kl = F.kl_div(log_a, softmax_b, reduction='batchmean')
         kl = kl if kl > 0 else 0
