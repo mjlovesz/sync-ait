@@ -193,8 +193,8 @@ class OperationTest(unittest.TestCase):
         if 'kl' in precision_type:
             kl_div = self.get_kl_divergence(out, golden)
         abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate is not None else "NaN"
-        cos_sim_str = "%.16f" % cos_sim if cos_sim  is not None else "NaN"
-        kl_div_str = "%.16f" % kl_div if kl_div is not None  else "NaN"
+        cos_sim_str = "%.16f" % cos_sim if cos_sim is not None else "NaN"
+        kl_div_str = "%.16f" % kl_div if kl_div is not None else "NaN"
 
         return abs_pass_rate_str, cos_sim_str, kl_div_str
         
