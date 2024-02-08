@@ -21,6 +21,10 @@ from setuptools import setup, find_packages
 with open('requirements.txt', encoding='utf-8') as f:
     required = f.read().splitlines()
 
+opchecker_lib_src = []
+for root, dirs, files in os.walk('./llm/opcheck/test_framework/'):
+    opchecker_lib_src.append((root, [os.path.join(root, f) for f in files]))
+
 setup(
     name='ait-llm',
     version='0.2.1',
@@ -45,4 +49,5 @@ setup(
     entry_points={
         'llm_sub_task': ['llm=llm.__main__:get_cmd_instance'],
     },
+    data_files=opchecker_lib_src,
 )
