@@ -19,9 +19,10 @@ import unittest
 import json
 import numpy as np
 import torch
+import torch.nn.functional as F
 import torch_npu
 
-from llm.common.tensor_file import read_tensor
+from llm.common.tool import read_atb_data
 from llm.common.log import logger
 
 
@@ -83,10 +84,10 @@ class OperationTest(unittest.TestCase):
                 _tensor_path.sort(key=lambda x:int(x.split('intensor')[1].split('.')[0]))  
                 _tensor_path = [os.path.join(self.tensor_path, x) for x in _tensor_path] 
                 for path in _tensor_path:
-                    _in_tensor = read_tensor(path).npu()
+                    _in_tensor = read_atb_data(path).npu()
                     self.in_tensors.append(_in_tensor)
             elif os.path.isfile(self.tensor_path):
-                _in_tensor = read_tensor(self.tensor_path).npu()
+                _in_tensor = read_atb_data(self.tensor_path).npu()
                 self.in_tensors.append(_in_tensor)
             else:
                 raise RuntimeError(f"{self.tensor_path} not valid")
@@ -130,17 +131,72 @@ class OperationTest(unittest.TestCase):
     def execute_inplace(self):
         self.excute_common("inplace")
 
-    def get_rel_error_rate(self, out, golden, etol):
+    def get_rel_pass_rate(self, out, golden, etol):
         out, golden = out.reshape(-1), golden.reshape(-1)
         size = out.shape[0]
         golden_denom = golden.clone().float()
         golden_denom[golden_denom == 0] += torch.finfo(torch.bfloat16).eps
         try:
             rel_errors = torch.abs((out - golden) / golden_denom)
-            rel_error_rate = torch.sum(rel_errors <= etol) / size
+            rel_pass_rate = torch.sum(rel_errors <= etol) / size
         except ZeroDivisionError as e:
+            logger_text = "Pass rate of rel error cannot be calculated because the denom is 0. Exception: {}".format(e)
+            logger.error(logger_text)
             raise e
-        return rel_error_rate
+        return rel_pass_rate
+    
+    def get_abs_pass_rate(self, out, golden, etol):
+        size = out.shape[0]
+        abs_errors = torch.abs(out - golden)
+        try:
+            abs_pass_rate = torch.sum(abs_errors <= etol) / size if size != 0 else 0
+        except ZeroDivisionError as e:
+            logger_text = "Pass rate of abs error cannot be calculated because the denom is 0. Exception: {}".format(e)
+            logger.error(logger_text)
+            abs_pass_rate = None
+        return abs_pass_rate
+    
+    def get_cos_similarity(self, out, golden):
+        out, golden = out.tolist(), golden.tolist()
+        num = float(np.dot(out, golden))
+        denom = np.linalg.norm(out) * np.linalg.norm(golden)
+        try:
+            cos_sim = 0.5 + 0.5 * (num / denom) if denom != 0 else 0
+        except ZeroDivisionError as e:
+            logger_text = "Cosine Similarity cannot be calculated because the denom is 0. Exception: {}".format(e)
+            logger.error(logger_text)
+            cos_sim = None
+        return cos_sim
+
+    def get_kl_divergence(self, out, golden):
+        out, golden = out.tolist(), golden.tolist()
+        try:
+            out_prob = out / np.sum(out)
+            golden_prob = golden / np.sum(golden)
+            kl = np.sum(np.where(out_prob != 0, out_prob * np.log(out_prob / golden_prob), 0))
+            kl = kl if kl > 0 else 0
+        except ZeroDivisionError as e:
+            logger_text = "Kl divergence cannot be calculated because the denom is 0. Exception: {}".format(e)
+            logger.error(logger_text)
+            kl = None
+        return kl
+    
+    def get_other_precisions(self, out, golden, etol):
+        precision_type = self.case_info['precision_type']
+        abs_pass_rate, cos_sim, kl_div = None, None, None
+        
+        out, golden = out.reshape(-1), golden.reshape(-1)
+        if 'abs' in precision_type:
+            abs_pass_rate = self.get_abs_pass_rate(out, golden, etol)
+        if 'cos_sim' in precision_type:
+            cos_sim = self.get_cos_similarity(out, golden)
+        if 'kl' in precision_type:
+            kl_div = self.get_kl_divergence(out, golden)
+        abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate is not None else "NaN"
+        cos_sim_str = "%.16f" % cos_sim if cos_sim is not None else "NaN"
+        kl_div_str = "%.16f" % kl_div if kl_div is not None else "NaN"
+
+        return abs_pass_rate_str, cos_sim_str, kl_div_str
         
     def get_npu_device(self):
         npu_device = os.environ.get("NPU_DEVICE")
@@ -184,18 +240,22 @@ class OperationTest(unittest.TestCase):
             err_rate = p_s[1]
             ps_standard = f"{err_rate}%(error<{etol})"
 
-            rel_error_rate = self.get_rel_error_rate(out_tensors[i], golden_out_tensors[i], etol)
+            rel_pass_rate = self.get_rel_pass_rate(out_tensors[i], golden_out_tensors[i], etol)
 
             try:
-                self.assertLess(err_rate, rel_error_rate * 100)
+                self.assertLess(err_rate, rel_pass_rate * 100)
             except AssertionError as e:
                 flag = False
                 raise e
             
-            rel_error_rate = "%.16f" % float(rel_error_rate.item() * 100)
+            rel_pass_rate = "%.16f" % float(rel_pass_rate.item() * 100)
+            abs_pass_rate, cos_sim, kl_div = self.get_other_precisions(out_tensors[i], golden_out_tensors[i], etol)
 
             self.case_info['res_detail'].append({"precision_standard": ps_standard,
-                                                "rel_error_rate": rel_error_rate})
+                                                "rel_pass_rate": rel_pass_rate,
+                                                "abs_pass_rate": abs_pass_rate,
+                                                "cos_sim": cos_sim,
+                                                "kl_div": kl_div})
             
             if flag:
                 self.case_info['excuted_information'] = 'execution successful'
