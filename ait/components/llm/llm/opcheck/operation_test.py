@@ -170,15 +170,10 @@ class OperationTest(unittest.TestCase):
 
     def get_kl_divergence(self, out, golden):
         out, golden = out.tolist(), golden.tolist()
-        try:
-            out_prob = out / np.sum(out)
-            golden_prob = golden / np.sum(golden)
-            kl = np.sum(np.where(out_prob != 0, out_prob * np.log(out_prob / golden_prob), 0))
-            kl = kl if kl > 0 else 0
-        except ZeroDivisionError as e:
-            logger_text = "Kl divergence cannot be calculated because the denom is 0. Exception: {}".format(e)
-            logger.error(logger_text)
-            kl = None
+        log_a = F.log_softmax(out, dim=-1)
+        softmax_b = F.softmax(golden, dim=-1)
+        kl = F.kl_div(log_a, softmax_b, reduction='batchmean')
+        kl = kl if kl > 0 else 0
         return kl
     
     def get_other_precisions(self, out, golden, etol):
