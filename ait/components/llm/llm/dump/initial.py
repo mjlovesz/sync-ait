@@ -72,7 +72,6 @@ def init_dump_task(args):
         subprocess_info_path = os.path.join(args.output, str(os.getpid()))
         os.makedirs(subprocess_info_path, exist_ok=True)
     
-
     os.environ[ATB_SAVE_CHILD] = "1" if args.child else "0"
     os.environ[ATB_SAVE_TENSOR_RANGE] = str(args.range)
     os.environ[ATB_SAVE_TILING] = "1" if args.tiling else "0"
