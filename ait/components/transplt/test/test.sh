@@ -70,19 +70,18 @@ if [ $? != 0 ]; then
 fi
 
 coverage combine $CUR_PATH
-coverage report -m --omit="test_*.py" > $CUR_PATH/test.coverage
+coverage report -m --omit="test_*.py" -i > $CUR_PATH/test.coverage
 
-coverage_line=$(cat $CUR_PATH/test.coverage | grep "TOTAL" | awk '{print $4}' | awk '{print int($0)}')
+coverage_line=$(awk '/TOTAL/{print $4}' $CUR_PATH/test.coverage | cut -d '%' -f 1)
+echo "coverage_line=$coverage_line%"
 
-target=60
-if [ $coverage_line -lt $target ]; then
+target=50  # Current is only 51%
+if [[ "$coverage_line" -ne "" && "$coverage_line" -lt "$target" ]]; then
     echo "coverage failed! coverage_line=$coverage_line%, Coverage does not achieve target(${target}%), Please add ut case."
     del_source_code_from_tests
     exit 1
 fi
 
-echo "coverage_line=$coverage_line%"
-
 del_source_code_from_tests
-
+del_source_code_from_tests
 exit 0

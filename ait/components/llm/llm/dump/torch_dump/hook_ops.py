@@ -17,102 +17,103 @@ import torch
 import torch.nn.functional as function
 import torch.distributed as dist
 
-HOOK_OPS = {
-    function: [
-        "threshold",
-        "threshold_",
-        "relu",
-        "relu_",
-        "glu",
-        "hardtanh",
-        "hardtanh_",
-        "relu6",
-        "elu",
-        "elu_",
-        "selu",
-        "selu_",
-        "celu"
-        "celu_",
-        "leaky_relu",
-        "leaky_relu_",
-        "prelu",
-        "rrelu",
-        "rrelu_",
-        "logsigmoid",
-        "gelu",
-        "hardshrink",
-        "tanhshrink",
-        "softsign",
-        "softplus",
-        "softmin",
-        "softmax",
-        "gumbel_softmax",
-        "log_softmax"
-        "softshrink",
-        "tanh",
-        "sigmoid",
-        "hardsigmoid",
-        "silu",
-        "hardswish",
-        "pixel_shuffle",
-        "pixel_unshuffle",
-        "channel_shuffle",
-        "upsample_nearest",
-        "upsample_bilinear",
-        "grid_sample",
-        "affine_grid",
-        "pdist",
-        "one_hot"
-    ],
-    torch: [
-        "relu",
-        "relu_",
-        "rrelu",
-        "rrelu_",
-        "selu",
-        "selu_",
-        "sigmoid",
-        "sigmoid_",
-        "softmax",
-        "tanh",
-        "tanh_",
-        "topk",
-    ],
-    dist: [
-        "send",
-        "recv",
-        "broadcast",
-        "all_reduce",
-        "reduce",
-        "all_gather",
-        "gather",
-        "isend",
-        "irecv",
-        "scatter",
-        "reduce_scatter",
-    ]
-}
+HOOK_OPS = {}
 
 
-TORCH_NPU_OPS = [
-    "fast_gelu",
-    "npu_mish",
-    "npu_scaled_masked_softmax",
-    "npu_dropout_with_add_softmax",
-    "npu_random_choice_with_mask",
-    "npu_roi_align",
-    "npu_roi_alignbk",
-    "npu_all_gather_base_mm"
-]
+def add_torch_ops():
+    torch_hooks = {
+        function: [
+            "threshold",
+            "threshold_",
+            "relu",
+            "relu_",
+            "glu",
+            "hardtanh",
+            "hardtanh_",
+            "relu6",
+            "elu",
+            "elu_",
+            "selu",
+            "selu_",
+            "celu"
+            "celu_",
+            "leaky_relu",
+            "leaky_relu_",
+            "prelu",
+            "rrelu",
+            "rrelu_",
+            "logsigmoid",
+            "gelu",
+            "hardshrink",
+            "tanhshrink",
+            "softsign",
+            "softplus",
+            "softmin",
+            "softmax",
+            "gumbel_softmax",
+            "log_softmax"
+            "softshrink",
+            "tanh",
+            "sigmoid",
+            "hardsigmoid",
+            "silu",
+            "hardswish",
+            "pixel_shuffle",
+            "pixel_unshuffle",
+            "channel_shuffle",
+            "upsample_nearest",
+            "upsample_bilinear",
+            "grid_sample",
+            "affine_grid",
+            "pdist",
+            "one_hot"
+        ],
+        torch: [
+            "relu",
+            "relu_",
+            "rrelu",
+            "rrelu_",
+            "selu",
+            "selu_",
+            "sigmoid",
+            "sigmoid_",
+            "softmax",
+            "tanh",
+            "tanh_",
+            "topk",
+        ],
+        dist: [
+            "send",
+            "recv",
+            "broadcast",
+            "all_reduce",
+            "reduce",
+            "all_gather",
+            "gather",
+            "isend",
+            "irecv",
+            "scatter",
+            "reduce_scatter",
+        ]
+    }
+    HOOK_OPS.update(torch_hooks)
 
 
-def add_npu_ops():
+def add_torch_npu_ops():
     try:
         import torch_npu
     except ImportError:
-        logger.debug("torch_npu is not installed.")
-    else:
-        HOOK_OPS[torch_npu] = TORCH_NPU_OPS
-
-
-add_npu_ops()
+        logger.warning("torch_npu is not installed.")
+        return
+        
+    torch_npu_hooks = [
+        "fast_gelu",
+        "npu_mish",
+        "npu_scaled_masked_softmax",
+        "npu_dropout_with_add_softmax",
+        "npu_random_choice_with_mask",
+        "npu_roi_align",
+        "npu_roi_alignbk",
+        "npu_all_gather_base_mm"
+    ]
+    HOOK_OPS[torch_npu] = torch_npu_hooks

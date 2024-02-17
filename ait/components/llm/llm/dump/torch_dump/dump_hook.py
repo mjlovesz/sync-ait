@@ -19,7 +19,7 @@ import numpy as np
 import torch
 
 from llm.dump.torch_dump.dump_config import DumpConfig
-from llm.dump.torch_dump.hook_ops import HOOK_OPS
+from llm.dump.torch_dump import hook_ops
 from llm.common.log import logger
 
 
@@ -28,6 +28,8 @@ class DumpHookModule:
         self.model = model
         self.dump_config = dump_config
         self.ori_torch_attr = {}
+        hook_ops.add_torch_ops()
+        hook_ops.add_torch_npu_ops()
 
     def add_hook(self):
         self._add_module_hook()
@@ -63,7 +65,7 @@ class DumpHookModule:
         _remove_hook(self.model)
 
     def _add_api_hook(self):
-        for py_module, api_list in HOOK_OPS.items():
+        for py_module, api_list in hook_ops.HOOK_OPS.items():
             ori_module_attrs = {}
             for api_name in api_list:
                 if not hasattr(py_module, api_name):
@@ -140,8 +142,11 @@ def dump_module_data():
             dump_config.update_module_ids(module.name)
             # 将模型树状信息保存成json文件
             from llm.dump.torch_dump.topo import ModelTree
+            if not os.path.exists(dump_config.dump_dir):
+                os.makedirs(dump_config.dump_dir, mode=0o750)
+            model_tree_path = os.path.join(dump_config.dump_dir, "model_tree.json")
             obj = ModelTree()
-            obj.create_tree(module, dump_config.module_ids, "./model_tree.json")
+            obj.create_tree(module, dump_config.module_ids, model_tree_path)
 
         if dump_config.mode == "api" or not dump_config.dump_flag:
             return

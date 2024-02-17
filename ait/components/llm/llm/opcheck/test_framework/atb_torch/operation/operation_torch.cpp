@@ -27,7 +27,7 @@
 #include "operation_creator.h"
 #include "hosttensor_binder_creator.h"
 
-uint64_t GetNewOpId()
+static uint64_t GetNewOpId()
 {
     static uint64_t opId = 0;
     uint64_t newOpId = opId++;
@@ -46,7 +46,7 @@ static atb::Context* GetAtbContext()
     if (context) {
         context->SetExecuteStream(Utils::GetCurrentStream());
         const char *env = std::getenv("ATB_USE_TILING_COPY_STREAM");
-        if(env && std::string(env) == "1") {
+        if (env && std::string(env) == "1") {
             ATB_LOG(INFO) << "ATB_USE_TILING_COPY_STREAM is 1, call SetAsyncTilingCopyStatus";
             context->SetAsyncTilingCopyStatus(true);
         } else {
@@ -66,9 +66,9 @@ OperationTorch::OperationTorch(std::string opName) : opName_(opName), name_(opNa
 
 OperationTorch::~OperationTorch() {}
 
-void OperationTorch::SetName(std::string name) 
-{ 
-    name_ = name; 
+void OperationTorch::SetName(std::string name)
+{
+    name_ = name;
 }
 
 std::string OperationTorch::SetParam(std::string param)
@@ -115,7 +115,8 @@ void OperationTorch::SetVaraintPackParam(std::string varaintPackParam)
     ATB_LOG(INFO) << name_ << " set varaint pack param end";
 }
 
-atb::Status OperationTorch::InferShapeOutTensorDesc(std::vector<torch::Tensor> &atInTensors, atb::SVector<atb::TensorDesc> &outTensorDescs)
+atb::Status OperationTorch::InferShapeOutTensorDesc(std::vector<torch::Tensor> &atInTensors,
+    atb::SVector<atb::TensorDesc> &outTensorDescs)
 {
     Utils::ContiguousAtTensor(atInTensors);
     atb::SVector<atb::TensorDesc> inTensorDescs;
@@ -250,13 +251,13 @@ void OperationTorch::CreateAtOutTensors(std::vector<torch::Tensor> &atInTensors,
 }
 
 void OperationTorch::BuildVariantPack(std::vector<torch::Tensor> &atInTensors, std::vector<torch::Tensor> &atOutTensors)
-{   
+{
     Utils::ContiguousAtTensor(atInTensors);
     Utils::ContiguousAtTensor(atOutTensors);
     variantPack_.inTensors.resize(atInTensors.size());
     for (size_t i = 0; i < atInTensors.size(); ++i) {
-        ATB_LOG(INFO) << name_ << " execute start, atInTensors[" << i << "].options:" << atInTensors.at(i).options() << 
-            ", data:" << atInTensors.at(i).data_ptr() << ", storage_offset:" << atInTensors.at(i).storage_offset() << 
+        ATB_LOG(INFO) << name_ << " execute start, atInTensors[" << i << "].options:" << atInTensors.at(i).options() <<
+            ", data:" << atInTensors.at(i).data_ptr() << ", storage_offset:" << atInTensors.at(i).storage_offset() <<
             ", format:" << Utils::GetTensorNpuFormat(atInTensors.at(i));
         atInTensors.at(i) = Utils::NpuFormatCast(atInTensors.at(i));
         variantPack_.inTensors.at(i) = Utils::AtTensor2Tensor(atInTensors.at(i));
@@ -267,8 +268,8 @@ void OperationTorch::BuildVariantPack(std::vector<torch::Tensor> &atInTensors, s
 
     variantPack_.outTensors.resize(atOutTensors.size());
     for (size_t i = 0; i < atOutTensors.size(); ++i) {
-        ATB_LOG(INFO) << name_ << " execute start, atOutTensors[" << i << "].options:" << 
-            atOutTensors.at(i).options() << ", data:" << atOutTensors.at(i).data_ptr() << ", storage_offset:" << 
+        ATB_LOG(INFO) << name_ << " execute start, atOutTensors[" << i << "].options:" <<
+            atOutTensors.at(i).options() << ", data:" << atOutTensors.at(i).data_ptr() << ", storage_offset:" <<
             atOutTensors.at(i).storage_offset() << ", format:" << Utils::GetTensorNpuFormat(atOutTensors.at(i));
         variantPack_.outTensors.at(i) = Utils::AtTensor2Tensor(atOutTensors.at(i));
         if (variantPack_.outTensors.at(i).desc.format == ACL_FORMAT_NCHW) {

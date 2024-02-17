@@ -17,138 +17,78 @@
 declare -i ret_ok=0
 declare -i ret_failed=1
 CUR_PATH=$("pwd")
-SOC_VERSION=""
+ALL_VALID_TEST_CASES=(/analyze/ /benchmark/ /convert/ /debug/compare/ /debug/surgeon/ /llm/ /profile/ /transplt/ /utils/)
 
-function get_npu_type()
-{
-    get_npu_310=`lspci | grep d100`
-    get_npu_310P3=`lspci | grep d500`
-    get_npu_310B=`lspci | grep d107`
-    if [[ $get_npu_310 != "" ]];then
-        SOC_VERSION="Ascend310"
-        echo "npu is Ascend310"
-    elif [[ $get_npu_310P3 != "" ]];then
-        SOC_VERSION="Ascend310P3"
-        echo "npu is Ascend310P3"
-    elif [[ $get_npu_310B != "" ]];then
-        SOC_VERSION="Ascend310B"
-        echo "npu is Ascend310B"
-    else
-        return $ret_failed
+function is_path_in_all_valid_test_cases() {
+    for test_case in ${RUN_TESTCASES[@]}; do
+        if [[ "$1" =~ "$test_case" ]]; then
+            echo 1
+            return
+        fi
+    done
+    echo 0
+}
+
+function get_modified_module_list() {
+    soft_link_path=/home/dcs-50/ait_test/ait/ait/components
+    [[ -d $soft_link_path ]] || { echo "can't find origin dt data";return $ret_failed; }
+    cur_testdata_path=$CUR_PATH/../benchmark/test/testdata
+    [[ -d $cur_testdata_path ]] || { `ln -s $soft_link_path/benchmark/test/testdata $cur_testdata_path`; }
+    modify_files=$CUR_PATH/../../../../modify_files.txt
+    RUN_TESTCASES=()
+    if [[ -f $modify_files ]];then
+        echo "found modify_files"
+        while read line
+        do
+            for test_case in ${ALL_VALID_TEST_CASES[@]}; do
+                if [[ "$line" =~ "$test_case" ]]; then
+                    RUN_TESTCASES=(${RUN_TESTCASES[@]} "$test_case")
+                    echo "run $test_case DT"
+                fi
+            done
+        done < $modify_files
     fi
-}
-
-function test_analyze()
-{
-    cd $CUR_PATH/../analyze/tests/model_eval/
-    bash test.sh
-}
-function test_benchmark()
-{
-    cd $CUR_PATH/../benchmark/test/
-    bash test.sh $1 $2
-}
-function test_convert()
-{
-    cd $CUR_PATH/../convert/test/
-    bash test.sh
-}
-function test_debug_compare()
-{
-    cd $CUR_PATH/../debug/compare/tests/ut/
-    bash test.sh
-
-    cd $CUR_PATH/../debug/compare/tests/st/
-    bash test.sh
-}
-function test_debug_surgeon()
-{
-    cd $CUR_PATH/../debug/surgeon/test/
-    bash test.sh
-}
-function test_profile()
-{
-    cd $CUR_PATH/../profile/test/
-    bash test.sh
-}
-function test_transplt()
-{
-    cd $CUR_PATH/../transplt/test/
-    bash test.sh
 }
 
 main() {
     export dt_mode=${1:-"normal"} # or "pr"
-    dt_list=(0 0 0 0 0 0 0)
     if [[ $dt_mode == "pr" ]];then
-        soft_link_path=/home/dcs-50/ait_test/ait/ait/components
-        [[ -d $soft_link_path ]] || { echo "can't find origin dt data";return $ret_failed; }
-        cur_testdata_path=$CUR_PATH/../benchmark/test/testdata
-        [[ -d $cur_testdata_path ]] || { `ln -s $soft_link_path/benchmark/test/testdata $cur_testdata_path`; }
-        modify_files=$CUR_PATH/../../../../modify_files.txt
-        if [[ -f $modify_files ]];then
-            echo "found modify_files"
-            while read line
-            do
-                result=""
-                result=$(echo $line | grep "components/analyze")
-                [[ $result == "" ]] || { dt_list[0]=1;echo "run analyze DT"; }
-                result=""
-                result=$(echo $line | grep "components/benchmark")
-                [[ $result == "" ]] || { dt_list[1]=1;echo "run benchmark DT"; }
-                result=""
-                result=$(echo $line | grep "components/convert")
-                [[ $result == "" ]] || { dt_list[2]=1;echo "run convert DT"; }
-                result=""
-                result=$(echo $line | grep "components/debug/compare")
-                [[ $result == "" ]] || { dt_list[3]=1;echo "run compare DT"; }
-                result=""
-                result=$(echo $line | grep "components/debug/surgeon")
-                [[ $result == "" ]] || { dt_list[4]=1;echo "run surgeon DT"; }
-                result=""
-                result=$(echo $line | grep "components/profile")
-                [[ $result == "" ]] || { dt_list[5]=1;echo "run profile DT"; }
-                result=""
-                result=$(echo $line | grep "components/transplt")
-                [[ $result == "" ]] || { dt_list[6]=1;echo "run transplt DT"; }
-
-            done < $modify_files
-        fi
+        get_modified_module_list
     else
-        dt_list=(1 1 1 1 1 1 1)
+        RUN_TESTCASES=${ALL_VALID_TEST_CASES[@]}
     fi
-    echo "dt_list ${dt_list[@]}"
+    echo "RUN_TESTCASES: ${RUN_TESTCASES[@]}"
 
-    get_npu_type || { echo "invalid npu device";return $ret_failed; }
-    PYTHON_COMMAND="python3"
-    BENCKMARK_DT_MODE="simple"
+    failed_case_names=""
+    all_part_test_ok=0
+    if [[ $PWD =~ "components/tests" ]]; then
+        TEST_CASES=( $(find ../* -name test.sh) )  # In tests dir
+    else
+        TEST_CASES=( $(find ./* -name test.sh) )
+    fi
 
-    all_part_test_ok=$ret_ok
-    if [[ ${dt_list[0]} -eq 1 ]];then
-        test_analyze || { echo "developer test analyze failed";all_part_test_ok=$ret_failed; }
-    fi
-    if [[ ${dt_list[1]} -eq 1 ]];then
-        test_benchmark $SOC_VERSION $PYTHON_COMMAND $BENCKMARK_DT_MODE || { echo "developer test benchmark failed";all_part_test_ok=$ret_failed; }
-    fi
-    if [[ ${dt_list[2]} -eq 1 ]];then
-        test_convert || { echo "developer test convert failed";all_part_test_ok=$ret_failed; }
-    fi
-    if [[ ${dt_list[3]} -eq 1 ]];then
-        test_debug_compare || { echo "developer test comnpare failed";all_part_test_ok=$ret_failed; }
-    fi
-    if [[ ${dt_list[4]} -eq 1 ]];then
-        test_debug_surgeon || { echo "developer test surgeon failed";all_part_test_ok=$ret_failed; }
-    fi
-    if [[ ${dt_list[5]} -eq 1 ]];then
-        test_profile || { echo "developer test profile failed";all_part_test_ok=$ret_failed; }
-    fi
-    if [[ ${dt_list[6]} -eq 1 ]];then
-        test_transplt || { echo "developer test transplt failed";all_part_test_ok=$ret_failed; }
-    fi
-    cd $CUR_PATH
+    echo "pwd: $PWD, TEST_CASES: ${TEST_CASES[@]}"
+    for test_case in ${TEST_CASES[@]}; do
+        is_valid=$(is_path_in_all_valid_test_cases $test_case)
+        echo ">>>> Current test_case=$test_case, is_valid=$is_valid"
 
-    echo "all_part_test_ok: $all_part_test_ok"
+        if [ $is_valid -eq 0 ]; then
+            continue
+        fi
 
+        CASE_PATH=`dirname $test_case`
+        cd $CASE_PATH
+        bash test.sh
+        cur_result=$?
+        echo ">>>> test_case=$test_case, cur_result=$cur_result"
+        if [ "$cur_result" -ne "0" ]; then
+            failed_case_names="$failed_case_names, $test_case"
+            all_part_test_ok=$(( $all_part_test_ok + $cur_result ))
+        fi
+        cd $CUR_PATH
+    done
+
+    echo "failed_case_names: ${failed_case_names:2}"  # Exclude the first ", "
     return $all_part_test_ok
 }
 

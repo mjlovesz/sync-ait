@@ -19,6 +19,5 @@
 #include "atb/operation.h"
 
 atb::Status CreateOperation(const std::string &opName, const std::string &param, atb::Operation **operation);
-// AsdOps::Any ParseParam(const std::string &opName, const std::string &param);
 
 #endif

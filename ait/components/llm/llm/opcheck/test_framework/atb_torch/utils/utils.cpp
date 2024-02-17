@@ -23,10 +23,10 @@
 #pragma GCC diagnostic pop
 #include <torch_npu/csrc/framework/utils/CalcuOpUtil.h>
 #include <torch_npu/csrc/framework/utils/OpPreparation.h>
-#include "singleton.h"
-#include "filesystem.h"
 #include <acl/acl_rt.h>
 #include <atb/log.h>
+#include "singleton.h"
+#include "filesystem.h"
 
 aclrtStream Utils::GetCurrentStream()
 {
