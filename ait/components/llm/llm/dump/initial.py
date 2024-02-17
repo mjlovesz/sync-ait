@@ -150,17 +150,18 @@ def merge_cpu_profiling_data(path):
     # 遍历目录下所有文件
     for root, dirs, files in os.walk(path):
         for file in files:
-            if re.match(r'operation_statistic_\d+\.txt', file):
-                data = {}
-                with open(os.path.join(root, file), 'r+') as f:
-                    lines = f.readlines()
-                    read_cpu_profiling_data(lines, data)
-                    f.truncate(0)
-                    f.seek(0, os.SEEK_SET)
-                    for opname in data.keys():
-                        execute_data, setup_data = split_cpu_profiling_data(data, opname)
-                        merged_data = f"{opname}:\n[execute] {execute_data}\n[setup] {setup_data}\n\n"
-                        f.write(merged_data)
+            if not re.match(r'operation_statistic_\d+\.txt', file):
+                continue
+            data = {}
+            with open(os.path.join(root, file), 'r+') as f:
+                lines = f.readlines()
+                read_cpu_profiling_data(lines, data)
+                f.truncate(0)
+                f.seek(0, os.SEEK_SET)
+                for opname in data.keys():
+                    execute_data, setup_data = split_cpu_profiling_data(data, opname)
+                    merged_data = f"{opname}:\n[execute] {execute_data}\n[setup] {setup_data}\n\n"
+                    f.write(merged_data)
 
 
 def clear_dump_task(args):
