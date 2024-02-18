@@ -17,6 +17,7 @@ import os
 import site
 import subprocess
 import shutil
+import re
 
 from components.utils.file_open_check import FileStat
 from llm.common.log import logger
@@ -116,9 +117,59 @@ def json_to_onnx(args):
         shutil.rmtree(subprocess_info_dir)
 
 
+def read_cpu_profiling_data(lines, data_map):
+    for line in lines:
+        # 解析opname和数据
+        match = re.match(r'\[([a-zA-Z0-9_]*)\]:(.*)', line)
+        if match:
+            opname = match.group(1)
+            stats = match.group(2)
+            # 将数据添加到字典中
+            if opname in data_map:
+                data_map[opname].append(stats)
+            else:
+                data_map[opname] = [stats]
+
+
+def split_cpu_profiling_data(data, opname):
+    execute_data = ''
+    setup_data = ''
+    # 遍历每个opname的数据
+    for stats in data[opname]:
+        # 提取execute和setup数据
+        execute_match = re.search(r'kernelExecuteTime:(\d+)', stats)
+        setup_match = re.search(r'runnerSetupTime:(\d+)', stats)
+        if execute_match:
+            execute_data = stats
+        elif setup_match:
+            setup_data = stats
+    return execute_data, setup_data
+
+
+def merge_cpu_profiling_data(path):
+    # 遍历目录下所有文件
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            if not re.match(r'operation_statistic_\d+\.txt', file):
+                continue
+            data = {}
+            with open(os.path.join(root, file), 'r+') as f:
+                lines = f.readlines()
+                read_cpu_profiling_data(lines, data)
+                f.truncate(0)
+                f.seek(0, os.SEEK_SET)
+                for opname in data.keys():
+                    execute_data, setup_data = split_cpu_profiling_data(data, opname)
+                    merged_data = f"{opname}:\n[execute] {execute_data}\n[setup] {setup_data}\n\n"
+                    f.write(merged_data)
+
+
 def clear_dump_task(args):
     if "onnx" in args.type and ("model" in args.type or "layer" in args.type):
         json_to_onnx(args)
+    elif "cpu_profiling" in args.type:
+        cpu_profiling_data_path = os.path.join(os.environ.get(ATB_OUTPUT_DIR, ""), "ait_dump", "cpu_profiling")
+        merge_cpu_profiling_data(cpu_profiling_data_path)
     else:
         return
     
