@@ -20,8 +20,8 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py" --type layer on
 
 - 支持api方式将之前dump出来的model和layer拓扑信息，转成onnx可视化模型，使用方法：[拓扑信息转onnx可视化模型](#api说明)
 - 支持dump torch-npu和torch-gpu模型推理数据，使用方法可参考[接口说明](#api说明)
-
 - 支持opcheck精度预检功能，检测算子精度，使用方法具体参考[精度预检能力使用说明](./精度预检能力使用说明.md)：
+
 ```
 ait llm opcheck -i {tensor_dir} -c {op_csv_path} -o {output_dir}
 ```
@@ -115,7 +115,7 @@ dump_config = DumpConfig(dump_path="./ait_dump")
 register_hook(model, dump_config)  # model是要dump中间tensor的模型实例，在模型初始化后添加代码
 ```
 
-### Compare 特性
+## Compare 特性
 
 提供有精度问题的数据与标杆数据之间的比对能力。
 
@@ -134,7 +134,8 @@ ait llm compare --golden-path golden_data.bin --my-path my-path.bin
 | --log-level, -l    | 日志级别，默认为info                       | 否       |
 | --output, -o       | 比对结果csv的输出路径                      | 否       |
 
-### Opcheck 特性
+## Opcheck 特性
+
 支持算子精度预检，根据dump出的tensor及算子信息，执行单算子UT，检测算子精度。具体参考[精度预检能力使用说明](./精度预检能力使用说明.md)。
 
 ### 使用方式
@@ -145,12 +146,12 @@ ait llm opcheck -i {tensor_dir} -c {op_csv_path} -o {output_dir}
 
 #### 参数说明
 
-| 参数名                    | 描述                                                                                                                                                            | 是否必选 |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
-| --input, -i               | tensor数据路径，为文件夹，由ait llm dump --type tensor落盘，示例：OUTPUT_DIR/PID_TID/0/                                                                          | 是       |
-| --csv-path, -c            | 算子信息csv文件路径，为单个数据文件路径，由ait llm dump --type op落盘，示例：OUTPUT_DIR/ait_dump/operation_io_tensors/PID/operation_tensors_0.csv                 | 是       |
-| --output, -o              | 输出文件的保存路径，为文件夹，示例：xx/xxx/xx                                                                                                                    | 否       |
-| --operation-ids, -ids     | 选择预检指定索引的tensor，默认为空，全量算子预检。使用方式：-ids 24_1,2_3_5                                                                                       | 否       |
-| --operation-name, -opname | 指定需要预检的算子类型，支持模糊指定，如selfattention只需要填写self。使用方式：-opname self，linear                                                                | 否       |
-| --precision-metric, -metric   | 指定需要输出的精度类型，可选范围：['abs', 'cos_sim'，'kl']，分别表示绝对误差通过率、余弦相似度、KL散度。默认为[]，即只输出相对误差通过率。使用方式：--metric kl cos_sim | 否       |
-| --device-id, -device      | 指定需要使用的NPU设备，默认为0                                                                                                                                   | 否       |
+| 参数名                      | 描述                                                                                                                                                                    | 是否必选 |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
+| --input, -i                 | tensor数据路径，为文件夹，由ait llm dump --type tensor落盘，示例：OUTPUT_DIR/PID_TID/0/                                                                                 | 是       |
+| --csv-path, -c              | 算子信息csv文件路径，为单个数据文件路径，由ait llm dump --type op落盘，示例：OUTPUT_DIR/ait_dump/operation_io_tensors/PID/operation_tensors_0.csv                       | 是       |
+| --output, -o                | 输出文件的保存路径，为文件夹，示例：xx/xxx/xx                                                                                                                           | 否       |
+| --operation-ids, -ids       | 选择预检指定索引的tensor，默认为空，全量算子预检。使用方式：-ids 24_1,2_3_5                                                                                             | 否       |
+| --operation-name, -opname   | 指定需要预检的算子类型，支持模糊指定，如selfattention只需要填写self。使用方式：-opname self，linear                                                                     | 否       |
+| --precision-metric, -metric | 指定需要输出的精度类型，可选范围：['abs', 'cos_sim'，'kl']，分别表示绝对误差通过率、余弦相似度、KL散度。默认为[]，即只输出相对误差通过率。使用方式：--metric kl cos_sim | 否       |
+| --device-id, -device        | 指定需要使用的NPU设备，默认为0                                                                                                                                          | 否       |
