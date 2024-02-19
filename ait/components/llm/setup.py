@@ -17,6 +17,18 @@ import site
 import os
 
 from setuptools import setup, find_packages
+from setuptools.command.build_ext import build_ext
+
+
+class CustomBuildExt(build_ext):
+    def run(self):
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        build_file_path = os.path.join(current_dir, 'llm/opcheck/test_framework/build.sh')
+        exec_method = 'bash'
+        cmd_list = [exec_method, build_file_path]
+        subprocess.check_call(cmd_list, shell=False)
+        super().run()
+
 
 with open('requirements.txt', encoding='utf-8') as f:
     required = f.read().splitlines()
@@ -45,9 +57,12 @@ setup(
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development'
     ],
+    cmdclass={'build_ext': CustomBuildExt},
+    data_dir=f"{site.getsitepackages()[0]}",
+    data_files=opchecker_lib_src,
+    include_package_data=True,
     python_requires='>=3.7',
     entry_points={
         'llm_sub_task': ['llm=llm.__main__:get_cmd_instance'],
     },
-    data_files=opchecker_lib_src,
 )
