@@ -90,7 +90,7 @@
 
   - 请先检查加速库版本是否为2023年12月5日之后的版本。
   - 自查abi与所选包的abi是否匹配，请选择正确abi的版本包。
-  - check下是否设置环境变量ATB_SAVE_TENSOR_RUNNER，若设置，unset掉。
+  - check下是否设置环境变量ATB_SAVE_TENSOR_RUNNER，若设置，执行unset ATB_SAVE_TENSOR_RUNNER。
   - 开启加速库日志，查看日志中是否有报错，确认所有算子成功运行。
 - **2.执行命令时，报错script_path：**
 
