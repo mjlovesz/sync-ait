@@ -81,6 +81,27 @@ pre_check_skl2onnx(){
 }
 
 
+download_and_install_aclruntime() {
+    ACLRUNTIME_VERSION=`pip show aclruntime | awk '/Version: /{print $2}'`
+    if [ "$ACLRUNTIME_VERSION" = "0.0.2" ]; then
+        echo "aclruntime==0.0.2 already installed, skip"
+        return
+    fi
+
+    echo "download and install aclruntime"
+    PYTHON3_MINI_VERSION=`python3 --version | cut -d'.' -f 2`
+    if [ "$PYTHON3_MINI_VERSION" = "7" ]; then
+        SUB_SUFFIX="m"
+    else
+        SUB_SUFFIX=""
+    fi
+    echo "PYTHON3_MINI_VERSION=$PYTHON3_MINI_VERSION, SUB_SUFFIX=$SUB_SUFFIX"
+    WHL_NAME="aclruntime-0.0.2-cp3${PYTHON3_MINI_VERSION}-cp3${PYTHON3_MINI_VERSION}${SUB_SUFFIX}-linux_$(uname -m).whl"
+    wget --no-check-certificate "https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ait/${WHL_NAME}"
+    pip3 install $WHL_NAME
+}
+
+
 uninstall(){
   if [ -z $only_debug ] && [ -z $only_compare ] && [ -z $only_surgen ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_llm ]
   then
@@ -152,10 +173,8 @@ install(){
 
   if [ ! -z $only_benchmark ]
   then
-    pip3 install ${CURRENT_DIR}/components/benchmark/backend \
-    ${CURRENT_DIR}/components/benchmark \
-    ${arg_force_reinstall}
-    chmod -R 550 ${CURRENT_DIR}/components/benchmark/backend/build/lib.*/
+    download_and_install_aclruntime
+    pip3 install ${CURRENT_DIR}/components/benchmark ${arg_force_reinstall}
   fi
 
   if [ ! -z $only_analyze ]
@@ -194,10 +213,10 @@ install(){
   if [ -z $only_compare ] && [ -z $only_surgeon ] && [ -z $only_benchmark ] && [ -z $only_analyze ] && [ -z $only_convert ] && [ -z $only_transplt ] && [ -z $only_profile ] && [ -z $only_llm ]
   then
     pre_check_skl2onnx
+    download_and_install_aclruntime
 
     pip3 install ${CURRENT_DIR}/components/debug/compare \
     ${CURRENT_DIR}/components/debug/surgeon \
-    ${CURRENT_DIR}/components/benchmark/backend \
     ${CURRENT_DIR}/components/benchmark \
     ${CURRENT_DIR}/components/analyze \
     ${CURRENT_DIR}/components/convert \
@@ -205,9 +224,7 @@ install(){
     ${CURRENT_DIR}/components/profile/msprof \
     ${CURRENT_DIR}/components/llm \
     ${arg_force_reinstall}
-
-    chmod -R 550 ${CURRENT_DIR}/components/benchmark/backend/build/lib.*/
-
+    
     bash ${CURRENT_DIR}/components/convert/build.sh
 
     source ${CURRENT_DIR}/components/transplt/install.sh $full_install
