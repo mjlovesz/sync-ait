@@ -46,10 +46,8 @@ from llm.compare import torchair_utils
 NCHW_DIMS = 4
 NC1HWC0_DIMS = 5
 
-def acc_compare(golden_path, my_path, output_path=".", torchair_ge_graph_path=None):
-    if torchair_ge_graph_path is None:
-        torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
-
+def acc_compare(golden_path, my_path, output_path="."):
+    torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
     if torchair_ge_graph_path is not None:
         compare_torchair(golden_path, my_path, torchair_ge_graph_path, output_path=output_path)
     elif os.path.isdir(golden_path):

@@ -176,19 +176,10 @@ class CompareCommand(BaseCommand):
             type=check_output_path_legality,
             default='./',
             help='Data output directory.E.g:--output /xx/xxxx/xx')
-        
-        parser.add_argument(
-            '--ge-graph-path',
-            '-ggp',
-            dest="ge_graph_path",
-            required=False,
-            type=check_input_path_legality,
-            default=None,
-            help='Specify dumped ge graph txt path. Default None for auto detecting from `my-path`')
 
     def handle(self, args, **kwargs):
         set_log_level(args.log_level)
-        acc_compare(args.golden_path, args.my_path, args.output, args.ge_graph_path)
+        acc_compare(args.golden_path, args.my_path, args.output)
 
 
 class OpcheckCommand(BaseCommand):

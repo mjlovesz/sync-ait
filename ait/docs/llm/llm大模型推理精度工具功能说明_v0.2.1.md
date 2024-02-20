@@ -132,7 +132,6 @@ ait llm compare --golden-path golden_data.bin --my-path my-path.bin
 | --golden-path, -gp    | 标杆数据路径，支持单个数据文件路径或文件夹                                      | 是       |
 | --my-path, -mp        | 待比较的数据路径，为单个数据文件路径                                            | 是       |
 | --log-level, -l       | 日志级别，默认为info                                                            | 否       |
-| --ge-graph-path, -ggp | 指定 torchair GE 图映射关系文件路径，默认值 None 表示由 `my-path` 中自动获取该路径 | 否       |
 | --output, -o          | 比对结果csv的输出路径                                                           | 否       |
 
 ## Opcheck 特性
