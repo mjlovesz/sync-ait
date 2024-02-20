@@ -34,4 +34,3 @@
     ```sh
     ait llm compare --my-path dump --golden-path gm_{time stamp}_dump
     ```
-    如果当前 GE dump 路径下包含多个图映射关系 `dynamo_original_graph_xxx.txt` 文件，可通过参数 `--ge-graph-path` 指定具体使用的映射关系文件
