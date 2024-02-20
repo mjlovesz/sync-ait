@@ -178,8 +178,9 @@ class OperationTest(unittest.TestCase):
     
     def get_other_precisions(self, out, golden, etol):
         precision_type = self.case_info['precision_type']
+        default_str = 'NaN'
         abs_pass_rate, kl_div = None, None
-        cos_sim_str = "NaN"
+        cos_sim_str = default_str
         
         out, golden = out.reshape(-1).float(), golden.reshape(-1).float()
         if 'abs' in precision_type:
@@ -188,8 +189,8 @@ class OperationTest(unittest.TestCase):
             cos_sim_str = self.get_cos_similarity(out, golden)
         if 'kl' in precision_type:
             kl_div = self.get_kl_divergence(out, golden)
-        abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate is not None else "NaN"
-        kl_div_str = "%.16f" % kl_div if kl_div is not None else "NaN"
+        abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate is not None else default_str
+        kl_div_str = "%.16f" % kl_div if kl_div is not None else default_str
 
         return abs_pass_rate_str, cos_sim_str, kl_div_str
         

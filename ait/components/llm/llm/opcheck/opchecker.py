@@ -155,7 +155,7 @@ class OpChecker:
         in_tensor_path = os.path.join(self.tensor_path, '_*/'.join(ids.split("_")) + '_*', "after")
         files = glob.glob(in_tensor_path)
         if not len(files) == 1:
-            return None
+            return ""
         return files[0]
     
     def parse_csv_files(self):
@@ -239,7 +239,13 @@ class OpChecker:
         elif op_name == 'SelfAttentionOperation':
             self.cases_info[op_id] = case_info
         else:
-            self.cases_info[op_id] = case_info 
+            self.cases_info[op_id] = case_info
+
+    def add_parse_info_to_cases(self, csv_data):
+        for _, row in csv_data.iterrows():
+            flag = self.if_exec_node(row)
+            if flag:
+                self.add_case_to_cases_info(row)
 
     def add_file_info_to_cases(self):
         execution_flag = True
@@ -248,11 +254,7 @@ class OpChecker:
             if csv_data.empty:
                 execution_flag = False
             else:
-                for _, row in csv_data.iterrows():
-                    flag = self.if_exec_node(row)
-                    if flag:
-                        self.add_case_to_cases_info(row)
-                
+                self.add_parse_info_to_cases(csv_data)
         else:
             execution_flag = False
         
@@ -279,9 +281,7 @@ class OpChecker:
         ut_manager.excute_cases()
         watching_thread.join()
     
-    def write_op_result_to_csv(self, op_result):
-        import openpyxl
-        
+    def get_optional_idx(self):
         optional_idx = []
         if 'abs' in self.precision_type:
             optional_idx.append(0)
@@ -289,12 +289,19 @@ class OpChecker:
             optional_idx.append(1)
         if 'kl' in self.precision_type:
             optional_idx.append(2)
+        return optional_idx
 
+    def write_op_result_to_csv(self, op_result):
+        import openpyxl
+
+        optional_idx = self.get_optional_idx()
         if not os.path.exists(self.output_path):
             wb = openpyxl.Workbook()
             ws = wb.active
-            required_head = ['op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard', 
-                'precision_result(%)', 'max_rel_error', 'excuted_information']
+            required_head = [
+                'op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard', 
+                'precision_result(%)', 'max_rel_error', 'excuted_information'
+            ]
             optional_head = ['abs_pass_rate(%)', 'cosine_similarity', 'kl_divergence']
             optional_head_cp = [optional_head[i] for i in optional_idx]
             ws.append(required_head + optional_head_cp)
@@ -316,8 +323,10 @@ class OpChecker:
                 abs_pass_rate = res_detail['abs_pass_rate']
                 cos_sim = res_detail['cos_sim']
                 kl_div = res_detail['kl_div']
-                required = [op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, max_rel, 
-                            excuted_information]
+                required = [
+                    op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, max_rel, 
+                    excuted_information
+                ]
                 optional = [abs_pass_rate, cos_sim, kl_div]
                 optional_cp = [optional[i] for i in optional_idx]
                 ws.append(required + optional_cp)
@@ -330,8 +339,10 @@ class OpChecker:
             abs_pass_rate = default_str
             cos_sim = default_str
             kl_div = default_str
-            required = [op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, max_rel, 
-                        excuted_information]
+            required = [
+                op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, max_rel, 
+                excuted_information
+            ]
             optional = [abs_pass_rate, cos_sim, kl_div]
             optional_cp = [optional[i] for i in optional_idx]
             ws.append(required + optional_cp)
