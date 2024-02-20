@@ -43,8 +43,10 @@ from llm.common.constant import (
 from llm.compare import torchair_utils
 
 
-def acc_compare(golden_path, my_path, output_path="."):
-    torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
+def acc_compare(golden_path, my_path, output_path=".", torchair_ge_graph_path=None):
+    if torchair_ge_graph_path is None:
+        torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
+
     if torchair_ge_graph_path is not None:
         compare_torchair(golden_path, my_path, torchair_ge_graph_path, output_path=output_path)
     elif os.path.isdir(golden_path):
@@ -63,7 +65,7 @@ def acc_compare(golden_path, my_path, output_path="."):
 
 def read_data(data_path):
     if data_path.endswith(".npy"):
-        data = torch.Tensor(np.load(data_path))
+        data = torch.as_tensor(np.load(data_path))
     elif data_path.endswith(".bin"):
         data = read_atb_data(data_path)
     elif data_path.endswith(".pth") or data_path.endswith(".pt"):
@@ -149,6 +151,7 @@ def save_compare_dataframe_to_csv(data_frame, output_path="."):
 
 # torchair 比对相关
 def compare_torchair(golden_path, my_path, ge_graph_path, output_path="."):
+    logger.info(f"[compare_torchair], golden_path: {golden_path}, my_path: {my_path}, ge_graph_path: {ge_graph_path}")
     metadata = torchair_utils.build_metadata(golden_path, my_path, ge_graph_path)
     data_frame = fill_in_data(metadata)
     return save_compare_dataframe_to_csv(data_frame, output_path)

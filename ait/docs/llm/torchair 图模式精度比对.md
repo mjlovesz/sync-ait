@@ -32,5 +32,6 @@
 ## Compare 比对
   - 执行 `ait llm compare --my-path [GE dump data] --golden-path [FX dump data]`，输出比对结果 csv 文件
     ```sh
-    ait llm compare --my-path dump dump --golden-path gm_{time stamp}_dump
+    ait llm compare --my-path dump --golden-path gm_{time stamp}_dump
     ```
+    如果当前 GE dump 路径下包含多个图映射关系 `dynamo_original_graph_xxx.txt` 文件，可通过参数 `--ge-graph-path` 指定具体使用的映射关系文件
