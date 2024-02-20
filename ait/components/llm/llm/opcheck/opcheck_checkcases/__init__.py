@@ -57,7 +57,7 @@ from llm.opcheck.opcheck_checkcases.transdata import TestTransdataOperation
 from llm.opcheck.opcheck_checkcases.where import TestWhereOperation
 
 
-OP_NAME_DICT = {
+OP_NAME_DICT = dict({
     "ActivationOperation":TestActivationOperation,
     "AllGatherOperation":AllGatherOperationTest,
     "AllReduceOperation":AllReduceOperationTest,
@@ -101,4 +101,4 @@ OP_NAME_DICT = {
     "ReduceOperation":TestReduceOperation,
     "TransdataOperation":TestTransdataOperation,
     "WhereOperation":TestWhereOperation,
-}
+})
