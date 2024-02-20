@@ -144,7 +144,7 @@ class OperationTest(unittest.TestCase):
         return rel_pass_rate
     
     def get_max_rel_error(self, out, golden):
-        out, golden = out.reshape(-1), golden.reshape(-1)
+        out, golden = out.reshape(-1).float(), golden.reshape(-1).float()
         max_rel_error, _ = CMP_ALG_MAP["max_relative_error"](golden, out)
         return max_rel_error
 
@@ -191,8 +191,9 @@ class OperationTest(unittest.TestCase):
     def get_other_precisions(self, out, golden, etol):
         precision_type = self.case_info['precision_type']
         abs_pass_rate, kl_div = None, None
+        cos_sim_str = "NaN"
         
-        out, golden = out.reshape(-1), golden.reshape(-1)
+        out, golden = out.reshape(-1).float(), golden.reshape(-1).float()
         if 'abs' in precision_type:
             abs_pass_rate = self.get_abs_pass_rate(out, golden, etol)
         if 'cos_sim' in precision_type:
@@ -246,7 +247,7 @@ class OperationTest(unittest.TestCase):
 
             try:
                 self.assertLess(err_rate, rel_pass_rate * 100)
-            except AssertionError as e:
+            except AssertionError as e: 
                 flag = False
                 raise e
             
