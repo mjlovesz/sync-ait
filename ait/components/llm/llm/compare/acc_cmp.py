@@ -43,6 +43,9 @@ from llm.common.constant import (
 from llm.compare import torchair_utils
 
 
+NCHW_DIMS = 4
+NC1HWC0_DIMS = 5
+
 def acc_compare(golden_path, my_path, output_path=".", torchair_ge_graph_path=None):
     if torchair_ge_graph_path is None:
         torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
@@ -200,8 +203,21 @@ def fill_row_data_torchair(token_id, data_id, golden_data_path, my_path):
     return sub_gathered_row_data
 
 
+def is_converting_nc1hwc0_to_nchw(golden_data, my_data):
+    if not (golden_data.dim() == NCHW_DIMS and my_data.dim() == NC1HWC0_DIMS):
+        return False
+
+    golden_shape, my_shape = golden_data.shape, my_data.shape
+    if not (golden_shape[0] == my_shape[0] and golden_shape[2] == my_shape[2] and golden_shape[3] == my_shape[3]):
+        return False
+    if np.prod(golden_shape) != np.prod(my_shape):
+        return False
+    return True
+
+
 def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=None):
     # 创建一条比较数据
+    logger.debug(f"[fill_row_data], golden_data_path: {golden_data_path}, my_path: {my_path}")
     row_data = {TOKEN_ID: str(token_id), DATA_ID: data_id, GOLDEN_DATA_PATH: golden_data_path, MY_DATA_PATH: my_path}
     if not os.path.isfile(golden_data_path):
         row_data[CMP_FAIL_REASON] = f"golden_data_path: {golden_data_path} is not a file."
@@ -212,6 +228,9 @@ def fill_row_data(token_id, data_id, golden_data_path, my_path, loaded_my_data=N
 
     golden_data = read_data(golden_data_path)
     my_data = read_data(my_path) if loaded_my_data is None else torch.from_numpy(loaded_my_data)
+    if is_converting_nc1hwc0_to_nchw(golden_data, my_data):
+        logger.debug(f"[fill_row_data] NC1HWC0 -> NCHW, my_data: {my_data.shape}, golden_data: {golden_data.shape}")
+        my_data.permute([0, 4, 1, 2, 3]).reshape(golden_data.shape)
 
     # 比较数据
     row_data.update(compare_data(golden_data, my_data))
