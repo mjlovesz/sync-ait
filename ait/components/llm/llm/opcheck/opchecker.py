@@ -328,22 +328,17 @@ class OpChecker:
                     excuted_information
                 ]
                 optional = [abs_pass_rate, cos_sim, kl_div]
-                optional_cp = [optional[i] for i in optional_idx]
+                optional_cp = [optional[idx] for idx in optional_idx]
                 ws.append(required + optional_cp)
         else:
             default_str = 'NaN'
-            i = default_str
-            precision_standard = default_str
-            rel_pass_rate = default_str
-            max_rel = default_str
-            abs_pass_rate = default_str
-            cos_sim = default_str
-            kl_div = default_str
+            i, precision_standard, rel_pass_rate, max_rel, abs_pass_rate, cos_sim, kl_div = default_str, default_str,\
+                default_str, default_str, default_str, default_str, default_str
             required = [
                 op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, max_rel, 
                 excuted_information
             ]
             optional = [abs_pass_rate, cos_sim, kl_div]
-            optional_cp = [optional[i] for i in optional_idx]
+            optional_cp = [optional[idx] for idx in optional_idx]
             ws.append(required + optional_cp)
         wb.save(self.output_path)
