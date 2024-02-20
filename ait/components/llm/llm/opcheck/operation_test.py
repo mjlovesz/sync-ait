@@ -158,18 +158,6 @@ class OperationTest(unittest.TestCase):
             logger.error(logger_text)
             abs_pass_rate = None
         return abs_pass_rate
-    
-    # def get_cos_similarity(self, out, golden):
-    #     out, golden = out.tolist(), golden.tolist()
-    #     num = float(np.dot(out, golden))
-    #     denom = np.linalg.norm(out) * np.linalg.norm(golden)
-    #     try:
-    #         cos_sim = 0.5 + 0.5 * (num / denom) if denom != 0 else 0
-    #     except ZeroDivisionError as e:
-    #         logger_text = "Cosine Similarity cannot be calculated because the denom is 0. Exception: {}".format(e)
-    #         logger.error(logger_text)
-    #         cos_sim = None
-    #     return cos_sim
 
     def get_cos_similarity(self, out, golden):
         cos_sim, _ = CMP_ALG_MAP["cosine_similarity"](golden, out)
