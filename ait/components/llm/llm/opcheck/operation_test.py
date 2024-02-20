@@ -235,7 +235,7 @@ class OperationTest(unittest.TestCase):
 
             try:
                 self.assertLess(err_rate, rel_pass_rate * 100)
-            except AssertionError as e: 
+            except AssertionError as e:
                 flag = False
                 raise e
             
