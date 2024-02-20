@@ -19,8 +19,20 @@
 
 #include <iostream>
 
+static bool opcheckLogEnabled = []() -> bool {
+    constexpr int logStatusOn = 1;
+    const char* logStatus = std::getenv("LIB_OPCHECKER_LOG_ON");
+    if (logStatus != nullptr) {
+        int value = std::stoi(logStatus);
+        if (value == logStatusOn) {
+            return true;
+        }
+    }
+    return false;
+}();
+
 #define ATB_COUT_LOG std::cout << "\n"
-#define ATB_LOG(level) ATB_LOG_##level
+#define ATB_LOG(level) if (opcheckLogEnabled) ATB_LOG_##level
 #define ATB_LOG_TRACE ATB_COUT_LOG
 #define ATB_LOG_DEBUG ATB_COUT_LOG
 #define ATB_LOG_INFO ATB_COUT_LOG
@@ -28,7 +40,7 @@
 #define ATB_LOG_ERROR ATB_COUT_LOG
 #define ATB_LOG_FATAL ATB_COUT_LOG
 #define ATB_LOG_IF(condition, level) \
-    if (condition)                   \
+    if (opcheckLogEnabled && condition) \
     ATB_LOG(level)
 
 #endif
