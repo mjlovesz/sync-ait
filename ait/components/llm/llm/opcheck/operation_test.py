@@ -19,11 +19,11 @@ import unittest
 import json
 import numpy as np
 import torch
-import torch.nn.functional as F
 import torch_npu
 
 from llm.common.tool import read_atb_data
 from llm.common.log import logger
+from llm.compare.cmp_algorithm import CMP_ALG_MAP
 
 
 class OperationTest(unittest.TestCase):
@@ -117,9 +117,7 @@ class OperationTest(unittest.TestCase):
             out_tensors = operation.execute(self.in_tensors)
         else:
             out_tensors = operation.execute(self.in_tensors)
-        logger.info("out_tensor", out_tensors[0].size())
         golden_out_tensors = self.golden_calc(self.in_tensors)
-        logger.info("golden_calc", golden_out_tensors[0].size())
         self.__golden_compare_all(out_tensors, golden_out_tensors)
 
     def execute(self):
@@ -145,6 +143,11 @@ class OperationTest(unittest.TestCase):
             raise e
         return rel_pass_rate
     
+    def get_max_rel_error(self, out, golden):
+        out, golden = out.reshape(-1).float().cpu(), golden.reshape(-1).float().cpu()
+        max_rel_error, _ = CMP_ALG_MAP["max_relative_error"](golden, out)
+        return max_rel_error
+
     def get_abs_pass_rate(self, out, golden, etol):
         size = out.shape[0]
         abs_errors = torch.abs(out - golden)
@@ -156,18 +159,22 @@ class OperationTest(unittest.TestCase):
             abs_pass_rate = None
         return abs_pass_rate
     
-    def get_cos_similarity(self, out, golden):
-        out, golden = out.tolist(), golden.tolist()
-        num = float(np.dot(out, golden))
-        denom = np.linalg.norm(out) * np.linalg.norm(golden)
-        try:
-            cos_sim = 0.5 + 0.5 * (num / denom) if denom != 0 else 0
-        except ZeroDivisionError as e:
-            logger_text = "Cosine Similarity cannot be calculated because the denom is 0. Exception: {}".format(e)
-            logger.error(logger_text)
-            cos_sim = None
-        return cos_sim
+    # def get_cos_similarity(self, out, golden):
+    #     out, golden = out.tolist(), golden.tolist()
+    #     num = float(np.dot(out, golden))
+    #     denom = np.linalg.norm(out) * np.linalg.norm(golden)
+    #     try:
+    #         cos_sim = 0.5 + 0.5 * (num / denom) if denom != 0 else 0
+    #     except ZeroDivisionError as e:
+    #         logger_text = "Cosine Similarity cannot be calculated because the denom is 0. Exception: {}".format(e)
+    #         logger.error(logger_text)
+    #         cos_sim = None
+    #     return cos_sim
 
+    def get_cos_similarity(self, out, golden):
+        cos_sim, _ = CMP_ALG_MAP["cosine_similarity"](golden, out)
+        return cos_sim      
+    
     def get_kl_divergence(self, out, golden):
         out, golden = out.tolist(), golden.tolist()
         try:
@@ -183,17 +190,17 @@ class OperationTest(unittest.TestCase):
     
     def get_other_precisions(self, out, golden, etol):
         precision_type = self.case_info['precision_type']
-        abs_pass_rate, cos_sim, kl_div = None, None, None
+        abs_pass_rate, kl_div = None, None
+        cos_sim_str = "NaN"
         
-        out, golden = out.reshape(-1), golden.reshape(-1)
+        out, golden = out.reshape(-1).float(), golden.reshape(-1).float()
         if 'abs' in precision_type:
             abs_pass_rate = self.get_abs_pass_rate(out, golden, etol)
         if 'cos_sim' in precision_type:
-            cos_sim = self.get_cos_similarity(out, golden)
+            cos_sim_str = self.get_cos_similarity(out, golden)
         if 'kl' in precision_type:
             kl_div = self.get_kl_divergence(out, golden)
         abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate is not None else "NaN"
-        cos_sim_str = "%.16f" % cos_sim if cos_sim is not None else "NaN"
         kl_div_str = "%.16f" % kl_div if kl_div is not None else "NaN"
 
         return abs_pass_rate_str, cos_sim_str, kl_div_str
@@ -214,11 +221,6 @@ class OperationTest(unittest.TestCase):
             soc_version = 'Ascend310P'
         else:
             raise RuntimeError(f"{device_name} is not supported")
-        device_count = torch.npu.device_count()
-        current_device = torch.npu.current_device()
-        logger_text = "Device Properties: device_name: {}, soc_version: {}, device_count: {}, current_device: {}"\
-                    .format(device_name, soc_version, device_count, current_device)
-        logger.info(logger_text)
         return soc_version
 
     def __golden_compare_all(self, out_tensors, golden_out_tensors):
@@ -241,18 +243,21 @@ class OperationTest(unittest.TestCase):
             ps_standard = f"{err_rate}%(error<{etol})"
 
             rel_pass_rate = self.get_rel_pass_rate(out_tensors[i], golden_out_tensors[i], etol)
+            max_rel = self.get_max_rel_error(out_tensors[i], golden_out_tensors[i])
 
             try:
                 self.assertLess(err_rate, rel_pass_rate * 100)
-            except AssertionError as e:
+            except AssertionError as e: 
                 flag = False
                 raise e
             
             rel_pass_rate = "%.16f" % float(rel_pass_rate.item() * 100)
+            max_rel = "%.16f" % float(max_rel)
             abs_pass_rate, cos_sim, kl_div = self.get_other_precisions(out_tensors[i], golden_out_tensors[i], etol)
 
             self.case_info['res_detail'].append({"precision_standard": ps_standard,
                                                 "rel_pass_rate": rel_pass_rate,
+                                                "max_rel": max_rel,
                                                 "abs_pass_rate": abs_pass_rate,
                                                 "cos_sim": cos_sim,
                                                 "kl_div": kl_div})

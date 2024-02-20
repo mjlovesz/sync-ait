@@ -155,8 +155,6 @@ class OpChecker:
         in_tensor_path = os.path.join(self.tensor_path, '_*/'.join(ids.split("_")) + '_*', "after")
         files = glob.glob(in_tensor_path)
         if not len(files) == 1:
-            logger_text = "{} could not find a dir!".format(in_tensor_path)
-            logger.error(logger_text)
             return None
         return files[0]
     
@@ -222,8 +220,6 @@ class OpChecker:
         try:
             op_param = json.loads(row['OpParam'])
         except TypeError:
-            logger_text = f"Cannot loads OpParam to json! OpParam: {row['OpParam']}"
-            logger.info(logger_text)
             op_param = {}
 
         tensor_path = row["InTensorPath"]
@@ -258,8 +254,6 @@ class OpChecker:
                         self.add_case_to_cases_info(row)
                 
         else:
-            logger_text = f"{self.op_path} not exists"
-            logger.error(logger_text)
             execution_flag = False
         
         return execution_flag
@@ -287,12 +281,23 @@ class OpChecker:
     
     def write_op_result_to_csv(self, op_result):
         import openpyxl
+        
+        optional_idx = []
+        if 'abs' in self.precision_type:
+            optional_idx.append(0)
+        if 'cos_sim' in self.precision_type:
+            optional_idx.append(1)
+        if 'kl' in self.precision_type:
+            optional_idx.append(2)
 
         if not os.path.exists(self.output_path):
             wb = openpyxl.Workbook()
             ws = wb.active
-            ws.append(['op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard', 
-                'precision_result(%)', 'excuted_information', 'abs_pass_rate(%)', 'cosine_similarity', 'kl_divergence'])
+            required_head = ['op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard', 
+                'precision_result(%)', 'max_rel_error', 'excuted_information']
+            optional_head = ['abs_pass_rate(%)', 'cosine_similarity', 'kl_divergence']
+            optional_head_cp = [optional_head[i] for i in optional_idx]
+            ws.append(required_head + optional_head_cp)
             wb.save(self.output_path)
             
         wb = openpyxl.load_workbook(self.output_path)
@@ -307,19 +312,27 @@ class OpChecker:
             for i, res_detail in enumerate(op_result['res_detail']):
                 precision_standard = res_detail['precision_standard']
                 rel_pass_rate = res_detail['rel_pass_rate']
+                max_rel = res_detail['max_rel']
                 abs_pass_rate = res_detail['abs_pass_rate']
                 cos_sim = res_detail['cos_sim']
                 kl_div = res_detail['kl_div']
-                ws.append([op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, 
-                        excuted_information, abs_pass_rate, cos_sim, kl_div])
+                required = [op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, max_rel, 
+                            excuted_information]
+                optional = [abs_pass_rate, cos_sim, kl_div]
+                optional_cp = [optional[i] for i in optional_idx]
+                ws.append(required + optional_cp)
         else:
             default_str = 'NaN'
             i = default_str
             precision_standard = default_str
             rel_pass_rate = default_str
+            max_rel = default_str
             abs_pass_rate = default_str
             cos_sim = default_str
             kl_div = default_str
-            ws.append([op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, 
-                    excuted_information, abs_pass_rate, cos_sim, kl_div])
+            required = [op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, max_rel, 
+                        excuted_information]
+            optional = [abs_pass_rate, cos_sim, kl_div]
+            optional_cp = [optional[i] for i in optional_idx]
+            ws.append(required + optional_cp)
         wb.save(self.output_path)
