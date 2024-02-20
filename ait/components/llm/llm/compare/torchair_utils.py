@@ -24,11 +24,12 @@ DUMP_FILE_FILTER_SUFIX = [".txt", ".npy", ".bin"]
 
 
 def set_msaccucmp_path_from_cann():
-    cann_path = os.environ.get("ASCEND_TOOLKIT_HOME", "")
+    # env TOOLCHAIN_HOME works for both development and product packages.
+    cann_path = os.environ.get("TOOLCHAIN_HOME", os.environ.get("ASCEND_TOOLKIT_HOME", ""))
     if not cann_path:
         raise OSError("CANN toolkit in not installed or not set, try installing the latest CANN toolkit.")
 
-    msaccucmp_path = os.path.join(cann_path, "python", "site-packages", "operator_cmp", "compare")
+    msaccucmp_path = os.path.join(cann_path, "tools", "operator_cmp", "compare")
     if not os.path.exists(msaccucmp_path):
         raise OSError(f"{msaccucmp_path} not exists, try installing the latest CANN toolkit.")
 
@@ -239,6 +240,9 @@ def build_metadata(golden_path, my_path, ge_graph_path):
     graph_map = parse_pbtxt_to_dict(ge_graph_path)
     ge_dump_data = init_ge_dump_data_from_bin_path(my_path)
     fx_dump_data = init_fx_dump_data_from_path(golden_path)
+
+    logger.info(f"All token ids in ge_dump_data: {ge_dump_data.keys()}")
+    logger.info(f"All token ids in fx_dump_data: {fx_dump_data.keys()}")
 
     gathered_metadata = {}
     for token_id in ge_dump_data:

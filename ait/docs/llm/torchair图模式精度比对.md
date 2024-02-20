@@ -32,5 +32,5 @@
 ## Compare 比对
   - 执行 `ait llm compare --my-path [GE dump data] --golden-path [FX dump data]`，输出比对结果 csv 文件
     ```sh
-    ait llm compare --my-path dump dump --golden-path gm_{time stamp}_dump
+    ait llm compare --my-path dump --golden-path gm_{time stamp}_dump
     ```

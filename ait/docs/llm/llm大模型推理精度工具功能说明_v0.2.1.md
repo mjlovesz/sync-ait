@@ -3,7 +3,7 @@
 v0.2.1版本的新特性包括：
 
 - 支持dump_data接口，手动设置tensor映射关系实现比对：[手动映射比对能力说明](./手动映射比对能力说明.md)
-- 支持 torchair GE 图与 FX 图 dump 数据比对：[torchair 图模式精度比对](torchair 图模式精度比对.md)
+- 支持 torchair GE 图与 FX 图 dump 数据比对：[torchair图模式精度比对](./torchair图模式精度比对.md)
 - 支持dump model拓扑信息，使用方法：
 
 ```
