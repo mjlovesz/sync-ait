@@ -144,7 +144,7 @@ class OperationTest(unittest.TestCase):
         return rel_pass_rate
     
     def get_max_rel_error(self, out, golden):
-        out, golden = out.reshape(-1).float(), golden.reshape(-1).float()
+        out, golden = out.reshape(-1).float().cpu(), golden.reshape(-1).float().cpu()
         max_rel_error, _ = CMP_ALG_MAP["max_relative_error"](golden, out)
         return max_rel_error
 
