@@ -309,7 +309,7 @@ class OpChecker:
                 'op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard', 
                 'excuted_information', 'precision_result(%)', 'max_rel_error'
             ]
-            optional_head = ['abs_pass_rate(%)', 'max_abs_error', 'cosine_similarity', 'kl_divergence']
+            optional_head = ['abs_precision_result(%)', 'max_abs_error', 'cosine_similarity', 'kl_divergence']
             optional_head_cp = [optional_head[i] for i in optional_idx]
             ws.append(required_head + optional_head_cp)
             wb.save(self.output_path)
