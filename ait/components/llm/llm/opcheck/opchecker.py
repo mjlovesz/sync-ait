@@ -155,7 +155,7 @@ class OpChecker:
         in_tensor_path = os.path.join(self.tensor_path, '_*/'.join(ids.split("_")) + '_*', "after")
         files = glob.glob(in_tensor_path)
         if not len(files) == 1:
-            logger_text = "{} Cannot find a dir!".format(in_tensor_path)
+            logger_text = "{} could not find a dir!".format(in_tensor_path)
             logger.debug(logger_text)
             return ""
         return files[0]
