@@ -260,7 +260,7 @@ class OpChecker:
             else:
                 self.add_parse_info_to_cases(csv_data)
         else:
-            logger_text = f"{self.op_path} not exist"
+            logger_text = f"{self.op_path} not exists"
             logger.error(logger_text)
             execution_flag = False
         
