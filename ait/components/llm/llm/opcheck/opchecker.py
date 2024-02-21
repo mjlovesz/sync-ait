@@ -340,8 +340,8 @@ class OpChecker:
                 ws.append(required + optional_cp)
         else:
             default_str = 'NaN'
-            i, precision_standard, rel_pass_rate, max_rel, abs_pass_rate, cos_sim, kl_div = default_str, default_str,\
-                default_str, default_str, default_str, default_str, default_str
+            i, precision_standard, rel_pass_rate, max_rel, abs_pass_rate, max_abs, cos_sim, kl_div = default_str, \
+                default_str, default_str, default_str, default_str, default_str, default_str, default_str
             required = [
                 op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, max_rel, 
                 excuted_information
