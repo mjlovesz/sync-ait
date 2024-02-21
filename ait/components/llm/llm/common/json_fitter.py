@@ -61,7 +61,7 @@ def atb_param_to_onnx_attribute(atb_param_name, atb_param_value):
     if isinstance(atb_param_value, list):
         for v in atb_param_value:
             values.append(float(v))
-    else:
+    elif atb_param_value:
         values.append(float(atb_param_value))
     onnx_attr_dict["floats"] = values
     return onnx_attr_dict
