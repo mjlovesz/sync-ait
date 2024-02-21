@@ -61,9 +61,9 @@ class OpcheckAllReduceOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         all_reduce_type = self.op_param['allReduceType']
         backend = self.op_param['backend']
-        logger_text1 = "backend: %s, allreduceType: %s" % (backend, all_reduce_type)
-        logger_text2 = "env: %s" % os.getenv("LCCL_DETERMINISTIC")
-        logger_text3 = "env: %s" % os.getenv("HCCL_DETERMINISTIC")
+        logger_text1 = f"backend: {backend}, allreduceType: {all_reduce_type}"
+        logger_text2 = "env: {}".format(os.getenv("LCCL_DETERMINISTIC"))
+        logger_text3 = "env: {}".format(os.getenv("HCCL_DETERMINISTIC"))
         logger.debug(logger_text1)
         logger.debug(logger_text2)
         logger.debug(logger_text3)

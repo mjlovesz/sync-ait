@@ -21,6 +21,7 @@ import torch
 import torch_npu
 
 from llm.opcheck import operation_test
+from llm.common.log import logger
 
 
 class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
@@ -37,7 +38,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
                 score = group_score
             else:
                 score = np.concatenate((score, group_score), 0)
-        logging.debug(score.shape)
+        logger.debug(score.shape)
         return score
 
     def encoder_golden_func(self, in_tensors):

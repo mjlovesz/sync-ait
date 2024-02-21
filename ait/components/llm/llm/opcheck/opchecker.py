@@ -126,7 +126,7 @@ class OpChecker:
             return
         
         from llm.opcheck.case_manager import CaseManager
-        ut_manager = CaseManager(self.completed_op_id_queue)
+        case_manager = CaseManager(self.completed_op_id_queue)
         
         # 1.将csv文件中的算子信息添加到self.cases_info
         execution_flag_res = self.add_file_info_to_cases()
@@ -134,16 +134,16 @@ class OpChecker:
             return
         result_info = 'excuted_information'
         
-        # 2.将self.cases_info中的用例添加到ut_manager
+        # 2.将self.cases_info中的用例添加到case_manager
         for _, case_info in self.cases_info.items():
-            if_successed_add_case = ut_manager.add_case(case_info)
+            if_successed_add_case = case_manager.add_case(case_info)
             if if_successed_add_case:
                 case_info[result_info] = 'addition successed'
             else:
                 case_info[result_info] = 'addition failed'
 
         # 3.执行测试用例并提供专家建议
-        self.excute_cases(ut_manager)
+        self.excute_cases(case_manager)
 
         # 4.写入未添加成功的算子
         for v in self.cases_info.values():
@@ -266,7 +266,7 @@ class OpChecker:
         
         return execution_flag
  
-    def excute_cases(self, ut_manager):
+    def excute_cases(self, case_manager):
         # 定义监控队列函数
         def watching_queue():
             cases_num = len([1 for v in self.cases_info.values() if v["excuted_information"] == 'addition successed'])
@@ -284,17 +284,18 @@ class OpChecker:
 
         watching_thread = threading.Thread(target=watching_queue)
         watching_thread.start()      
-        ut_manager.excute_cases()
+        case_manager.excute_cases()
         watching_thread.join()
     
     def get_optional_idx(self):
         optional_idx = []
         if 'abs' in self.precision_type:
             optional_idx.append(0)
-        if 'cos_sim' in self.precision_type:
             optional_idx.append(1)
-        if 'kl' in self.precision_type:
+        if 'cos_sim' in self.precision_type:
             optional_idx.append(2)
+        if 'kl' in self.precision_type:
+            optional_idx.append(3)
         return optional_idx
 
     def write_op_result_to_csv(self, op_result):
@@ -308,7 +309,7 @@ class OpChecker:
                 'op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard', 
                 'precision_result(%)', 'max_rel_error', 'excuted_information'
             ]
-            optional_head = ['abs_pass_rate(%)', 'cosine_similarity', 'kl_divergence']
+            optional_head = ['abs_pass_rate(%)', 'max_abs_error', 'cosine_similarity', 'kl_divergence']
             optional_head_cp = [optional_head[i] for i in optional_idx]
             ws.append(required_head + optional_head_cp)
             wb.save(self.output_path)
@@ -327,13 +328,14 @@ class OpChecker:
                 rel_pass_rate = res_detail['rel_pass_rate']
                 max_rel = res_detail['max_rel']
                 abs_pass_rate = res_detail['abs_pass_rate']
+                max_abs = res_detail['max_abs']
                 cos_sim = res_detail['cos_sim']
                 kl_div = res_detail['kl_div']
                 required = [
                     op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, max_rel, 
                     excuted_information
                 ]
-                optional = [abs_pass_rate, cos_sim, kl_div]
+                optional = [abs_pass_rate, max_abs, cos_sim, kl_div]
                 optional_cp = [optional[idx] for idx in optional_idx]
                 ws.append(required + optional_cp)
         else:
@@ -344,7 +346,7 @@ class OpChecker:
                 op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, max_rel, 
                 excuted_information
             ]
-            optional = [abs_pass_rate, cos_sim, kl_div]
+            optional = [abs_pass_rate, max_abs, cos_sim, kl_div]
             optional_cp = [optional[idx] for idx in optional_idx]
             ws.append(required + optional_cp)
         wb.save(self.output_path)

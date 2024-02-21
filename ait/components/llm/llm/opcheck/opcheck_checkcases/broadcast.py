@@ -29,7 +29,7 @@ from llm.opcheck import operation_test
 class OpcheckBroadcastOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         rank_root = self.op_param['rankRoot']
-        golden_result = intensors[rank_root]
+        golden_result = in_tensors[rank_root]
         return [golden_result]
 
     def test_broadcast(self):

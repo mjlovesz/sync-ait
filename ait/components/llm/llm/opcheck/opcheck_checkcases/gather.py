@@ -19,6 +19,7 @@ import torch
 import torch_npu
 
 from llm.opcheck import operation_test
+from llm.common.log import logger
 
 
 class OpcheckGatherOperation(operation_test.OperationTest):
@@ -45,7 +46,8 @@ class OpcheckGatherOperation(operation_test.OperationTest):
             dim2 *= in_tensors[0].shape[i]
         input_flatten = in_tensors[0].clone().reshape(-1)
         indices_flatten = in_tensors[1].clone().reshape(-1)
-        logging.debug("output_size", output_size)
+        logger_text = f"output_size: {output_size}"
+        logger.debug(logger_text)
         golden_result_np = torch.zeros(output_size, dtype=torch.float16).reshape(-1).numpy()
         idx = 0
         for i in range(0, dim0):

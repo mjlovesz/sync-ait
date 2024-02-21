@@ -158,13 +158,14 @@ class OperationTest(unittest.TestCase):
     def get_abs_pass_rate(self, out, golden, etol):
         size = out.shape[0]
         abs_errors = torch.abs(out - golden)
+        max_abs_error = torch.max(abs_errors)
         try:
             abs_pass_rate = torch.sum(abs_errors <= etol) / size if size != 0 else 0
         except ZeroDivisionError as e:
             logger_text = "Pass rate of abs error cannot be calculated because the denom is 0. Exception: {}".format(e)
             logger.debug(logger_text)
             abs_pass_rate = None
-        return abs_pass_rate
+        return abs_pass_rate, max_abs_error
 
     def get_cos_similarity(self, out, golden):
         cos_sim, _ = CMP_ALG_MAP["cosine_similarity"](golden, out)
@@ -186,20 +187,21 @@ class OperationTest(unittest.TestCase):
     def get_other_precisions(self, out, golden, etol):
         precision_type = self.case_info['precision_type']
         default_str = 'NaN'
-        abs_pass_rate, kl_div = None, None
+        abs_pass_rate, max_abs_error, kl_div = None, None, None
         cos_sim_str = default_str
         
         out, golden = out.reshape(-1).float(), golden.reshape(-1).float()
         if 'abs' in precision_type:
-            abs_pass_rate = self.get_abs_pass_rate(out, golden, etol)
+            abs_pass_rate, max_abs_error = self.get_abs_pass_rate(out, golden, etol)
         if 'cos_sim' in precision_type:
             cos_sim_str = self.get_cos_similarity(out, golden)
         if 'kl' in precision_type:
             kl_div = self.get_kl_divergence(out, golden)
         abs_pass_rate_str = "%.16f" % float(abs_pass_rate.item() * 100) if abs_pass_rate is not None else default_str
+        max_abs_error_str = "%.16f" % float(max_abs_error.item()) if max_abs_error is not None else default_str
         kl_div_str = "%.16f" % kl_div if kl_div is not None else default_str
 
-        return abs_pass_rate_str, cos_sim_str, kl_div_str
+        return abs_pass_rate_str, max_abs_error_str, cos_sim_str, kl_div_str
         
     def get_npu_device(self):
         npu_device = os.environ.get("NPU_DEVICE")
@@ -254,12 +256,14 @@ class OperationTest(unittest.TestCase):
             
             rel_pass_rate = "%.16f" % float(rel_pass_rate.item() * 100)
             max_rel = "%.16f" % float(max_rel)
-            abs_pass_rate, cos_sim, kl_div = self.get_other_precisions(out_tensors[i], golden_out_tensors[i], etol)
+            abs_pass_rate, max_abs, cos_sim, kl_div = self.get_other_precisions(out_tensors[i], golden_out_tensors[i], 
+                                                                                etol)
 
             self.case_info['res_detail'].append({"precision_standard": ps_standard,
                                                 "rel_pass_rate": rel_pass_rate,
                                                 "max_rel": max_rel,
                                                 "abs_pass_rate": abs_pass_rate,
+                                                "max_abs": max_abs,
                                                 "cos_sim": cos_sim,
                                                 "kl_div": kl_div})
             
