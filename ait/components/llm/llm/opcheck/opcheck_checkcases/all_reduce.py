@@ -22,6 +22,7 @@ import torch
 import torch_npu
 
 from llm.opcheck import operation_test
+from llm.common.log import logger
 
 
 class OpcheckAllReduceOperation(operation_test.OperationTest):
@@ -60,9 +61,12 @@ class OpcheckAllReduceOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         all_reduce_type = self.op_param['allReduceType']
         backend = self.op_param['backend']
-        logging.debug("backend: %s, allreduceType: %s", backend, all_reduce_type)
-        logging.debug("env: %s", os.getenv("LCCL_DETERMINISTIC"))
-        logging.debug("env: %s", os.getenv("HCCL_DETERMINISTIC"))
+        logger_text1 = "backend: %s, allreduceType: %s" % (backend, all_reduce_type)
+        logger_text2 = "env: %s" % os.getenv("LCCL_DETERMINISTIC")
+        logger_text3 = "env: %s" % os.getenv("HCCL_DETERMINISTIC")
+        logger.debug(logger_text1)
+        logger.debug(logger_text2)
+        logger.debug(logger_text3)
         
         if all_reduce_type == "sum":
             if backend == "lccl":
