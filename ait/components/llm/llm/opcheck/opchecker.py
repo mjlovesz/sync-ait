@@ -125,8 +125,8 @@ class OpChecker:
         if not execution_flag_res:
             return
         
-        from llm.opcheck.ut_manager import UtManager
-        ut_manager = UtManager(self.completed_op_id_queue)
+        from llm.opcheck.case_manager import CaseManager
+        case_manager = CaseManager(self.completed_op_id_queue)
         
         # 1.将csv文件中的算子信息添加到self.cases_info
         execution_flag_res = self.add_file_info_to_cases()
@@ -134,16 +134,16 @@ class OpChecker:
             return
         result_info = 'excuted_information'
         
-        # 2.将self.cases_info中的用例添加到ut_manager
+        # 2.将self.cases_info中的用例添加到case_manager
         for _, case_info in self.cases_info.items():
-            if_successed_add_case = ut_manager.add_case(case_info)
+            if_successed_add_case = case_manager.add_case(case_info)
             if if_successed_add_case:
                 case_info[result_info] = 'addition successed'
             else:
                 case_info[result_info] = 'addition failed'
 
         # 3.执行测试用例并提供专家建议
-        self.excute_cases(ut_manager)
+        self.excute_cases(case_manager)
 
         # 4.写入未添加成功的算子
         for v in self.cases_info.values():
@@ -156,8 +156,8 @@ class OpChecker:
         files = glob.glob(in_tensor_path)
         if not len(files) == 1:
             logger_text = "{} could not find a dir!".format(in_tensor_path)
-            logger.error(logger_text)
-            return None
+            logger.debug(logger_text)
+            return ""
         return files[0]
     
     def parse_csv_files(self):
@@ -223,7 +223,7 @@ class OpChecker:
             op_param = json.loads(row['OpParam'])
         except TypeError:
             logger_text = f"Cannot loads OpParam to json! OpParam: {row['OpParam']}"
-            logger.info(logger_text)
+            logger.debug(logger_text)
             op_param = {}
 
         tensor_path = row["InTensorPath"]
@@ -243,7 +243,13 @@ class OpChecker:
         elif op_name == 'SelfAttentionOperation':
             self.cases_info[op_id] = case_info
         else:
-            self.cases_info[op_id] = case_info 
+            self.cases_info[op_id] = case_info
+
+    def add_parse_info_to_cases(self, csv_data):
+        for _, row in csv_data.iterrows():
+            flag = self.if_exec_node(row)
+            if flag:
+                self.add_case_to_cases_info(row)
 
     def add_file_info_to_cases(self):
         execution_flag = True
@@ -252,11 +258,7 @@ class OpChecker:
             if csv_data.empty:
                 execution_flag = False
             else:
-                for _, row in csv_data.iterrows():
-                    flag = self.if_exec_node(row)
-                    if flag:
-                        self.add_case_to_cases_info(row)
-                
+                self.add_parse_info_to_cases(csv_data)
         else:
             logger_text = f"{self.op_path} not exists"
             logger.error(logger_text)
@@ -264,7 +266,7 @@ class OpChecker:
         
         return execution_flag
  
-    def excute_cases(self, ut_manager):
+    def excute_cases(self, case_manager):
         # 定义监控队列函数
         def watching_queue():
             cases_num = len([1 for v in self.cases_info.values() if v["excuted_information"] == 'addition successed'])
@@ -282,17 +284,34 @@ class OpChecker:
 
         watching_thread = threading.Thread(target=watching_queue)
         watching_thread.start()      
-        ut_manager.excute_cases()
+        case_manager.excute_cases()
         watching_thread.join()
     
+    def get_optional_idx(self):
+        optional_idx = []
+        if 'abs' in self.precision_type:
+            optional_idx.append(0)
+            optional_idx.append(1)
+        if 'cos_sim' in self.precision_type:
+            optional_idx.append(2)
+        if 'kl' in self.precision_type:
+            optional_idx.append(3)
+        return optional_idx
+
     def write_op_result_to_csv(self, op_result):
         import openpyxl
 
+        optional_idx = self.get_optional_idx()
         if not os.path.exists(self.output_path):
             wb = openpyxl.Workbook()
             ws = wb.active
-            ws.append(['op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard', 
-                'precision_result(%)', 'excuted_information', 'abs_pass_rate(%)', 'cosine_similarity', 'kl_divergence'])
+            required_head = [
+                'op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard', 
+                'excuted_information', 'precision_result(%)', 'max_rel_error'
+            ]
+            optional_head = ['abs_precision_result(%)', 'max_abs_error', 'cosine_similarity', 'kl_divergence']
+            optional_head_cp = [optional_head[i] for i in optional_idx]
+            ws.append(required_head + optional_head_cp)
             wb.save(self.output_path)
             
         wb = openpyxl.load_workbook(self.output_path)
@@ -307,19 +326,27 @@ class OpChecker:
             for i, res_detail in enumerate(op_result['res_detail']):
                 precision_standard = res_detail['precision_standard']
                 rel_pass_rate = res_detail['rel_pass_rate']
+                max_rel = res_detail['max_rel']
                 abs_pass_rate = res_detail['abs_pass_rate']
+                max_abs = res_detail['max_abs']
                 cos_sim = res_detail['cos_sim']
                 kl_div = res_detail['kl_div']
-                ws.append([op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, 
-                        excuted_information, abs_pass_rate, cos_sim, kl_div])
+                required = [
+                    op_id, op_name, op_param, tensor_path, i, precision_standard, excuted_information, rel_pass_rate, 
+                    max_rel
+                ]
+                optional = [abs_pass_rate, max_abs, cos_sim, kl_div]
+                optional_cp = [optional[idx] for idx in optional_idx]
+                ws.append(required + optional_cp)
         else:
             default_str = 'NaN'
-            i = default_str
-            precision_standard = default_str
-            rel_pass_rate = default_str
-            abs_pass_rate = default_str
-            cos_sim = default_str
-            kl_div = default_str
-            ws.append([op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, 
-                    excuted_information, abs_pass_rate, cos_sim, kl_div])
+            i, precision_standard, rel_pass_rate, max_rel, abs_pass_rate, max_abs, cos_sim, kl_div = default_str, \
+                default_str, default_str, default_str, default_str, default_str, default_str, default_str
+            required = [
+                op_id, op_name, op_param, tensor_path, i, precision_standard, excuted_information, rel_pass_rate, 
+                max_rel
+            ]
+            optional = [abs_pass_rate, max_abs, cos_sim, kl_div]
+            optional_cp = [optional[idx] for idx in optional_idx]
+            ws.append(required + optional_cp)
         wb.save(self.output_path)
