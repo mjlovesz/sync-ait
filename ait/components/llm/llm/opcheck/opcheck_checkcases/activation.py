@@ -74,7 +74,7 @@ class OpcheckActivationOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         activation_type = self.op_param["activationType"]
         scale = self.op_param["scale"]
-        golden_result = TestActivationOperation.golden_func[activation_type](in_tensors[0], scale)
+        golden_result = OpcheckActivationOperation.golden_func[activation_type](in_tensors[0], scale)
         return [golden_result]
 
     def test(self):
