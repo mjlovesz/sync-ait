@@ -118,6 +118,12 @@ class OperationTest(unittest.TestCase):
         else:
             out_tensors = operation.execute(self.in_tensors)
         golden_out_tensors = self.golden_calc(self.in_tensors)
+        try:
+            logger.debug("out_tensor", out_tensors[0].size())
+            logger.debug("golden_out_tensor", golden_out_tensors[0].size())
+        except TypeError as e:
+            logger.debug("The output is abnormal. Please check! Exception: {}".format(e))
+
         self.__golden_compare_all(out_tensors, golden_out_tensors)
 
     def execute(self):
@@ -139,7 +145,7 @@ class OperationTest(unittest.TestCase):
             rel_pass_rate = torch.sum(rel_errors <= etol) / size
         except ZeroDivisionError as e:
             logger_text = "Pass rate of rel error cannot be calculated because the denom is 0. Exception: {}".format(e)
-            logger.error(logger_text)
+            logger.debug(logger_text)
             raise e
         return rel_pass_rate
     
@@ -155,7 +161,7 @@ class OperationTest(unittest.TestCase):
             abs_pass_rate = torch.sum(abs_errors <= etol) / size if size != 0 else 0
         except ZeroDivisionError as e:
             logger_text = "Pass rate of abs error cannot be calculated because the denom is 0. Exception: {}".format(e)
-            logger.error(logger_text)
+            logger.debug(logger_text)
             abs_pass_rate = None
         return abs_pass_rate
 
@@ -172,7 +178,7 @@ class OperationTest(unittest.TestCase):
             kl = kl if kl > 0 else 0
         except ZeroDivisionError as e:
             logger_text = "Kl divergence cannot be calculated because the denom is 0. Exception: {}".format(e)
-            logger.error(logger_text)
+            logger.debug(logger_text)
             kl = None
         return kl
     
@@ -210,6 +216,11 @@ class OperationTest(unittest.TestCase):
             soc_version = 'Ascend310P'
         else:
             raise RuntimeError(f"{device_name} is not supported")
+        device_count = torch.npu.device_count()
+        current_device = torch.npu.current_device()
+        logger_text = "Device Properties: device_name: {}, soc_version: {}, device_count: {}, current_device: {}"\
+                    .format(device_name, soc_version, device_count, current_device)
+        logger.debug(logger_text)
         return soc_version
 
     def __golden_compare_all(self, out_tensors, golden_out_tensors):

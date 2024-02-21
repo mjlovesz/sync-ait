@@ -21,7 +21,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestGatherOperation(operation_test.OperationTest):
+class OpcheckGatherOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         axis = self.op_param["axis"]
         if axis == 0:

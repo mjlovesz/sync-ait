@@ -125,8 +125,8 @@ class OpChecker:
         if not execution_flag_res:
             return
         
-        from llm.opcheck.ut_manager import UtManager
-        ut_manager = UtManager(self.completed_op_id_queue)
+        from ait.components.llm.llm.opcheck.case_manager import CaseManager
+        ut_manager = CaseManager(self.completed_op_id_queue)
         
         # 1.将csv文件中的算子信息添加到self.cases_info
         execution_flag_res = self.add_file_info_to_cases()
@@ -155,6 +155,8 @@ class OpChecker:
         in_tensor_path = os.path.join(self.tensor_path, '_*/'.join(ids.split("_")) + '_*', "after")
         files = glob.glob(in_tensor_path)
         if not len(files) == 1:
+            logger_text = "{} Cannot find a dir!".format(in_tensor_path)
+            logger.debug(logger_text)
             return ""
         return files[0]
     
@@ -220,6 +222,8 @@ class OpChecker:
         try:
             op_param = json.loads(row['OpParam'])
         except TypeError:
+            logger_text = f"Cannot loads OpParam to json! OpParam: {row['OpParam']}"
+            logger.debug(logger_text)
             op_param = {}
 
         tensor_path = row["InTensorPath"]
@@ -256,6 +260,8 @@ class OpChecker:
             else:
                 self.add_parse_info_to_cases(csv_data)
         else:
+            logger_text = f"{self.op_path} not exist"
+            logger.error(logger_text)
             execution_flag = False
         
         return execution_flag

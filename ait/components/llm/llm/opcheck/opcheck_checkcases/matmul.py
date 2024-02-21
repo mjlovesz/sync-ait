@@ -23,7 +23,7 @@ import numpy as np
 from llm.opcheck import operation_test
 
 
-class TestMatmulOperation(operation_test.OperationTest):
+class OpcheckMatmulOperation(operation_test.OperationTest):
     def golden_flp(self, transpose_a: bool, transpose_b: bool, in_tensor_0, in_tensor_1):
         if transpose_a:
             if len(in_tensor_0.shape) == 2:

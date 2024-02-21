@@ -23,7 +23,7 @@ import numpy as np
 from llm.opcheck import operation_test
 
 
-class TestLinearSparseOperation(operation_test.OperationTest):
+class OpcheckLinearSparseOperation(operation_test.OperationTest):
     def golden_quant(self, transpose_a: bool, transpose_b: bool, in_tensors):
         in_tensor_0 = in_tensors[0]
         in_tensor_1 = in_tensors[1]

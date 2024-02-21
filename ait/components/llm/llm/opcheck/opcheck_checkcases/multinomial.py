@@ -21,7 +21,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestMultinomialOperation(operation_test.OperationTest):
+class OpcheckMultinomialOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         samples = self.op_param["numSamples"]
         rand_seed = self.op_param["randSeed"]

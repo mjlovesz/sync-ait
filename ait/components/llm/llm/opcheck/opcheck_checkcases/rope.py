@@ -21,7 +21,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestUnpadRopeOperation(operation_test.OperationTest):
+class OpcheckUnpadRopeOperation(operation_test.OperationTest):
     def rotate_half(self, x):
         x0, x1 = x.chunk(2, -1)
         return torch.cat((-x1, x0), dim=x0.ndim - 1)

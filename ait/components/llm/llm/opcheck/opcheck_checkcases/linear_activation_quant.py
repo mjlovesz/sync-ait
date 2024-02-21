@@ -63,7 +63,7 @@ class ActivationGolden:
         return float_result.half() if in_tensors.dtype == torch.float16 else float_result
 
 
-class TestLinearActivationQuantOperation(operation_test.OperationTest):
+class OpcheckLinearActivationQuantOperation(operation_test.OperationTest):
     def golden_flp(self, transpose_a: bool, transpose_b: bool, in_tensor_0, in_tensor_1):
         if transpose_a:
             if len(in_tensor_0.shape) == 2:

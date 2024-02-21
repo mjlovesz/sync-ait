@@ -21,7 +21,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestElewiseAddOperation(operation_test.OperationTest):
+class OpcheckElewiseAddOperation(operation_test.OperationTest):
     def elewise_cast(self, in_tensors, op_params):
         out_type = op_params['outTensorType']
         golden_result = in_tensors[0]

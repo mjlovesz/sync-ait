@@ -21,7 +21,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestReduceOperation(operation_test.OperationTest):
+class OpcheckReduceOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         op_type = self.op_param['reduceType']
         axis = self.op_param['axis']

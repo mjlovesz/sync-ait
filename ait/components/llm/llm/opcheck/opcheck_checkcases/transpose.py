@@ -21,7 +21,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestTransposeOperation(operation_test.OperationTest):
+class OpcheckTransposeOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         perm = self.op_param["perm"]
         golden_result = in_tensors[0].permute(perm)

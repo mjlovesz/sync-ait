@@ -24,7 +24,7 @@ import torch.nn as nn
 from llm.opcheck import operation_test
 
 
-class TestToppOperation(operation_test.OperationTest):
+class OpcheckToppOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         rand_seed = self.op_param["randSeed"]
         topk = self.op_param["topk"]

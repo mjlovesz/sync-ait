@@ -62,7 +62,7 @@ class ActivationGolden:
         return float_result.half() if in_tensors.dtype == torch.float16 else float_result
 
 
-class TestActivationOperation(operation_test.OperationTest):
+class OpcheckActivationOperation(operation_test.OperationTest):
     golden_func = {
         1: ActivationGolden.relu_golden,
         2: ActivationGolden.gelu_golden,

@@ -21,7 +21,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestStridedBatchMatmulOperation(operation_test.OperationTest):
+class OpcheckStridedBatchMatmulOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         a = in_tensors[0].flatten()
         b = in_tensors[1].flatten()

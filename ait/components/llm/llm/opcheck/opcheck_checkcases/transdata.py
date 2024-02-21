@@ -21,7 +21,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestTransdataOperation(operation_test.OperationTest):
+class OpcheckTransdataOperation(operation_test.OperationTest):
     def __init__(self):
         self.align_int8 = 32
         self.default_align = 16

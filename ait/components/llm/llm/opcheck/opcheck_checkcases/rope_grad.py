@@ -23,7 +23,7 @@ import torch.nn as nn
 from llm.opcheck import operation_test
 
 
-class TestRopeGradOperation(operation_test.OperationTest):
+class OpcheckRopeGradOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         # x,128*32-->reshape x,32,128
         cos_list = [in_tensors[2][:x, :] for x in self.op_param['qSeqLen']]

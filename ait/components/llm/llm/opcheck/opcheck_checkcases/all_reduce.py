@@ -24,7 +24,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class AllReduceOperationTest(operation_test.OperationTest):
+class OpcheckAllReduceOperation(operation_test.OperationTest):
     def lccl_sum_cal(self, in_tensors):
         cal_tensors = [0] * 8 
         for idx, in_tensor in enumerate(in_tensors):

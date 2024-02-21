@@ -22,7 +22,7 @@ import numpy as np
 from llm.opcheck import operation_test
 
 
-class TestPadOperation(operation_test.OperationTest):
+class OpcheckPadOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         tmp_out = in_tensors[0]
         padding_offset = in_tensors[1]

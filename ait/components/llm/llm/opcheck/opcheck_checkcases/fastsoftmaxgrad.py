@@ -33,7 +33,7 @@ def gen_softmax_grad(head_num, seq_len):
     return (y.detach().to(torch.float16), y.grad.detach().to(torch.float16), x.grad.detach().to(torch.float16))
 
 
-class TestFastSoftMaxGradOperation(operation_test.OperationTest):
+class OpcheckFastSoftMaxGradOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         batch_size_imm = 4
         head_num_imm = 8

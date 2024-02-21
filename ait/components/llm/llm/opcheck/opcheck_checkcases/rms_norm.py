@@ -21,7 +21,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestRmsNormOperation(operation_test.OperationTest):
+class OpcheckRmsNormOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         if 'normParam' in self.op_param.keys():
             normparam = self.op_param['normParam']

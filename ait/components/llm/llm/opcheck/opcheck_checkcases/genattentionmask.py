@@ -21,7 +21,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestElewiseSubOperation(operation_test.OperationTest):
+class OpcheckElewiseSubOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         out = []
         for i, s in enumerate(self.op_param['seqLen']):

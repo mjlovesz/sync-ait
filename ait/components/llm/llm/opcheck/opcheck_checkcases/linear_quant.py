@@ -22,7 +22,7 @@ import numpy as np
 from llm.opcheck import operation_test
 
 
-class TestLinearQuantOperation(operation_test.OperationTest):
+class OpcheckLinearQuantOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         golden_result = torch.matmul(in_tensors[0].to(torch.int32), in_tensors[1].to(torch.int32))
         if self.op_param["hasBias"]:

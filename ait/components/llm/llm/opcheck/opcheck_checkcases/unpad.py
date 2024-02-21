@@ -22,7 +22,7 @@ import numpy as np
 from llm.opcheck import operation_test
 
 
-class TestUnpadOperation(operation_test.OperationTest):
+class OpcheckUnpadOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         input_ids = in_tensors[0]
         cum_offsets_now = in_tensors[1].reshape(-1)

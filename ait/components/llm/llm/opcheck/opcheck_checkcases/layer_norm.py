@@ -21,7 +21,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestLayerNormOperation(operation_test.OperationTest):
+class OpcheckLayerNormOperation(operation_test.OperationTest):
     def layer_norm_quant(self, layer_norm_res):
         golden_result_quant = (layer_norm_res * quant_scale + quant_offset).float()
         golden_result_quant = torch.round(golden_result_quant)

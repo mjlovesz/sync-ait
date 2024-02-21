@@ -26,7 +26,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestReshapeAndCacheOperation(operation_test.OperationTest):
+class OpcheckReshapeAndCacheOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         golden = []
         for index in self.case_info['inplace_idx']:

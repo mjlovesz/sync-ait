@@ -12,93 +12,93 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from llm.opcheck.opcheck_checkcases.activation import TestActivationOperation
-from llm.opcheck.opcheck_checkcases.all_gather import AllGatherOperationTest
-from llm.opcheck.opcheck_checkcases.all_reduce import AllReduceOperationTest
-from llm.opcheck.opcheck_checkcases.broadcast import BroadcastOperationTest
-from llm.opcheck.opcheck_checkcases.concat import TestConcatOperation
-from llm.opcheck.opcheck_checkcases.cumsum import TestCumsumOperation
-from llm.opcheck.opcheck_checkcases.elewise import TestElewiseAddOperation
-from llm.opcheck.opcheck_checkcases.fastsoftmax import TestFastSoftMaxOperation
-from llm.opcheck.opcheck_checkcases.fastsoftmaxgrad import TestFastSoftMaxGradOperation
-from llm.opcheck.opcheck_checkcases.fill import TestFillOperation
-from llm.opcheck.opcheck_checkcases.gather import TestGatherOperation
-from llm.opcheck.opcheck_checkcases.genattentionmask import TestElewiseSubOperation
-from llm.opcheck.opcheck_checkcases.kv_cache import TestKvCacheOperation
-from llm.opcheck.opcheck_checkcases.linear_activation import TestLinearActivationOperation
-from llm.opcheck.opcheck_checkcases.linear import TestLinearOperation
-from llm.opcheck.opcheck_checkcases.linear_activation_quant import TestLinearActivationQuantOperation
-from llm.opcheck.opcheck_checkcases.linear_quant import TestLinearQuantOperation
-from llm.opcheck.opcheck_checkcases.linear_sparse import TestLinearSparseOperation
-from llm.opcheck.opcheck_checkcases.matmul import TestMatmulOperation
-from llm.opcheck.opcheck_checkcases.pad import TestPadOperation
-from llm.opcheck.opcheck_checkcases.paged_attention import TestPagedAttentionAttentionOperation
-from llm.opcheck.opcheck_checkcases.repeat import TestRepeatOperation
-from llm.opcheck.opcheck_checkcases.reshape_and_cache import TestReshapeAndCacheOperation
-from llm.opcheck.opcheck_checkcases.rms_norm import TestRmsNormOperation
-from llm.opcheck.opcheck_checkcases.rope_grad import TestRopeGradOperation
-from llm.opcheck.opcheck_checkcases.rope import TestUnpadRopeOperation
-from llm.opcheck.opcheck_checkcases.self_attention import TestUnpadSelfAttentionOperation
-from llm.opcheck.opcheck_checkcases.set_value import TestSetValueOperation
-from llm.opcheck.opcheck_checkcases.slice import TestSliceOperation
-from llm.opcheck.opcheck_checkcases.softmax import TestSoftmaxOperation
-from llm.opcheck.opcheck_checkcases.sort import TestSortOperation
-from llm.opcheck.opcheck_checkcases.split import TestAddOperation
-from llm.opcheck.opcheck_checkcases.stridebatchmatmul import TestStridedBatchMatmulOperation
-from llm.opcheck.opcheck_checkcases.topk_topp_sampling import TestToppOperation
-from llm.opcheck.opcheck_checkcases.transpose import TestTransposeOperation
-from llm.opcheck.opcheck_checkcases.unpad import TestUnpadOperation
-from llm.opcheck.opcheck_checkcases.as_strided import TestAsStridedOperation
-from llm.opcheck.opcheck_checkcases.layer_norm import TestLayerNormOperation
-from llm.opcheck.opcheck_checkcases.linear_parallel import TestLinearParallelOperation
-from llm.opcheck.opcheck_checkcases.multinomial import TestMultinomialOperation
-from llm.opcheck.opcheck_checkcases.reduce import TestReduceOperation
-from llm.opcheck.opcheck_checkcases.transdata import TestTransdataOperation
-from llm.opcheck.opcheck_checkcases.where import TestWhereOperation
+from llm.opcheck.opcheck_checkcases.activation import OpcheckActivationOperation
+from llm.opcheck.opcheck_checkcases.all_gather import OpcheckAllGatherOperation
+from llm.opcheck.opcheck_checkcases.all_reduce import OpcheckAllReduceOperation
+from llm.opcheck.opcheck_checkcases.broadcast import OpcheckBroadcastOperation
+from llm.opcheck.opcheck_checkcases.concat import OpcheckConcatOperation
+from llm.opcheck.opcheck_checkcases.cumsum import OpcheckCumsumOperation
+from llm.opcheck.opcheck_checkcases.elewise import OpcheckElewiseAddOperation
+from llm.opcheck.opcheck_checkcases.fastsoftmax import OpcheckFastSoftMaxOperation
+from llm.opcheck.opcheck_checkcases.fastsoftmaxgrad import OpcheckFastSoftMaxGradOperation
+from llm.opcheck.opcheck_checkcases.fill import OpcheckFillOperation
+from llm.opcheck.opcheck_checkcases.gather import OpcheckGatherOperation
+from llm.opcheck.opcheck_checkcases.genattentionmask import OpcheckElewiseSubOperation
+from llm.opcheck.opcheck_checkcases.kv_cache import OpcheckKvCacheOperation
+from llm.opcheck.opcheck_checkcases.linear_activation import OpcheckLinearActivationOperation
+from llm.opcheck.opcheck_checkcases.linear import OpcheckLinearOperation
+from llm.opcheck.opcheck_checkcases.linear_activation_quant import OpcheckLinearActivationQuantOperation
+from llm.opcheck.opcheck_checkcases.linear_quant import OpcheckLinearQuantOperation
+from llm.opcheck.opcheck_checkcases.linear_sparse import OpcheckLinearSparseOperation
+from llm.opcheck.opcheck_checkcases.matmul import OpcheckMatmulOperation
+from llm.opcheck.opcheck_checkcases.pad import OpcheckPadOperation
+from llm.opcheck.opcheck_checkcases.paged_attention import OpcheckPagedAttentionAttentionOperation
+from llm.opcheck.opcheck_checkcases.repeat import OpcheckRepeatOperation
+from llm.opcheck.opcheck_checkcases.reshape_and_cache import OpcheckReshapeAndCacheOperation
+from llm.opcheck.opcheck_checkcases.rms_norm import OpcheckRmsNormOperation
+from llm.opcheck.opcheck_checkcases.rope_grad import OpcheckRopeGradOperation
+from llm.opcheck.opcheck_checkcases.rope import OpcheckUnpadRopeOperation
+from llm.opcheck.opcheck_checkcases.self_attention import OpcheckUnpadSelfAttentionOperation
+from llm.opcheck.opcheck_checkcases.set_value import OpcheckSetValueOperation
+from llm.opcheck.opcheck_checkcases.slice import OpcheckSliceOperation
+from llm.opcheck.opcheck_checkcases.softmax import OpcheckSoftmaxOperation
+from llm.opcheck.opcheck_checkcases.sort import OpcheckSortOperation
+from llm.opcheck.opcheck_checkcases.split import OpcheckAddOperation
+from llm.opcheck.opcheck_checkcases.stridebatchmatmul import OpcheckStridedBatchMatmulOperation
+from llm.opcheck.opcheck_checkcases.topk_topp_sampling import OpcheckToppOperation
+from llm.opcheck.opcheck_checkcases.transpose import OpcheckTransposeOperation
+from llm.opcheck.opcheck_checkcases.unpad import OpcheckUnpadOperation
+from llm.opcheck.opcheck_checkcases.as_strided import OpcheckAsStridedOperation
+from llm.opcheck.opcheck_checkcases.layer_norm import OpcheckLayerNormOperation
+from llm.opcheck.opcheck_checkcases.linear_parallel import OpcheckLinearParallelOperation
+from llm.opcheck.opcheck_checkcases.multinomial import OpcheckMultinomialOperation
+from llm.opcheck.opcheck_checkcases.reduce import OpcheckReduceOperation
+from llm.opcheck.opcheck_checkcases.transdata import OpcheckTransdataOperation
+from llm.opcheck.opcheck_checkcases.where import OpcheckWhereOperation
 
 
 OP_NAME_DICT = dict({
-    "ActivationOperation":TestActivationOperation,
-    "AllGatherOperation":AllGatherOperationTest,
-    "AllReduceOperation":AllReduceOperationTest,
-    "BroadcastOperation":BroadcastOperationTest,
-    "ConcatOperation":TestConcatOperation,
-    "CumsumOperation":TestCumsumOperation,
-    "ElewiseOperation":TestElewiseAddOperation,
-    "FastSoftMaxOperation":TestFastSoftMaxOperation,
-    "FastSoftMaxGradOperation":TestFastSoftMaxGradOperation,
-    "FillOperation":TestFillOperation,
-    "GatherOperation":TestGatherOperation,
-    "GenAttentionMaskOperation":TestElewiseSubOperation,
-    "KvCacheOperation":TestKvCacheOperation,
-    "LinearOperation":TestLinearOperation,
-    "LinearActivationOperation":TestLinearActivationOperation,
-    "LinearActivationQuantOperation":TestLinearActivationQuantOperation,
-    "LinearQuantOperation":TestLinearQuantOperation,
-    "LinearSparseOperation":TestLinearSparseOperation,
-    "MatmulOperation":TestMatmulOperation,
-    "PadOperation":TestPadOperation,
-    "PagedAttentionOperation":TestPagedAttentionAttentionOperation,
-    "RepeatOperation":TestRepeatOperation,
-    "ReshapeAndCacheOperation":TestReshapeAndCacheOperation,
-    "RmsNormOperation":TestRmsNormOperation,
-    "RopeOperation":TestUnpadRopeOperation,
-    "RopeGradOperation":TestRopeGradOperation,
-    "SelfAttentionOperation":TestUnpadSelfAttentionOperation,
-    "SetValueOperation":TestSetValueOperation,
-    "SliceOperation":TestSliceOperation,
-    "SoftmaxOperation":TestSoftmaxOperation,
-    "SortOperation":TestSortOperation,
-    "SplitOperation":TestAddOperation,
-    "StridedBatchMatmulOperation":TestStridedBatchMatmulOperation,
-    "TopkToppSamplingOperation":TestToppOperation,
-    "TransposeOperation":TestTransposeOperation,
-    "UnpadOperation":TestUnpadOperation,
-    "AsStridedOperation":TestAsStridedOperation,
-    "LayerNormOperation":TestLayerNormOperation,
-    "LinearParallelOperation":TestLinearParallelOperation,
-    "MultinomialOperation":TestMultinomialOperation,
-    "ReduceOperation":TestReduceOperation,
-    "TransdataOperation":TestTransdataOperation,
-    "WhereOperation":TestWhereOperation,
+    "ActivationOperation":OpcheckActivationOperation,
+    "AllGatherOperation":OpcheckAllGatherOperation,
+    "AllReduceOperation":OpcheckAllReduceOperation,
+    "BroadcastOperation":OpcheckBroadcastOperation,
+    "ConcatOperation":OpcheckConcatOperation,
+    "CumsumOperation":OpcheckCumsumOperation,
+    "ElewiseOperation":OpcheckElewiseAddOperation,
+    "FastSoftMaxOperation":OpcheckFastSoftMaxOperation,
+    "FastSoftMaxGradOperation":OpcheckFastSoftMaxGradOperation,
+    "FillOperation":OpcheckFillOperation,
+    "GatherOperation":OpcheckGatherOperation,
+    "GenAttentionMaskOperation":OpcheckElewiseSubOperation,
+    "KvCacheOperation":OpcheckKvCacheOperation,
+    "LinearOperation":OpcheckLinearOperation,
+    "LinearActivationOperation":OpcheckLinearActivationOperation,
+    "LinearActivationQuantOperation":OpcheckLinearActivationQuantOperation,
+    "LinearQuantOperation":OpcheckLinearQuantOperation,
+    "LinearSparseOperation":OpcheckLinearSparseOperation,
+    "MatmulOperation":OpcheckMatmulOperation,
+    "PadOperation":OpcheckPadOperation,
+    "PagedAttentionOperation":OpcheckPagedAttentionAttentionOperation,
+    "RepeatOperation":OpcheckRepeatOperation,
+    "ReshapeAndCacheOperation":OpcheckReshapeAndCacheOperation,
+    "RmsNormOperation":OpcheckRmsNormOperation,
+    "RopeOperation":OpcheckUnpadRopeOperation,
+    "RopeGradOperation":OpcheckRopeGradOperation,
+    "SelfAttentionOperation":OpcheckUnpadSelfAttentionOperation,
+    "SetValueOperation":OpcheckSetValueOperation,
+    "SliceOperation":OpcheckSliceOperation,
+    "SoftmaxOperation":OpcheckSoftmaxOperation,
+    "SortOperation":OpcheckSortOperation,
+    "SplitOperation":OpcheckAddOperation,
+    "StridedBatchMatmulOperation":OpcheckStridedBatchMatmulOperation,
+    "TopkToppSamplingOperation":OpcheckToppOperation,
+    "TransposeOperation":OpcheckTransposeOperation,
+    "UnpadOperation":OpcheckUnpadOperation,
+    "AsStridedOperation":OpcheckAsStridedOperation,
+    "LayerNormOperation":OpcheckLayerNormOperation,
+    "LinearParallelOperation":OpcheckLinearParallelOperation,
+    "MultinomialOperation":OpcheckMultinomialOperation,
+    "ReduceOperation":OpcheckReduceOperation,
+    "TransdataOperation":OpcheckTransdataOperation,
+    "WhereOperation":OpcheckWhereOperation,
 })

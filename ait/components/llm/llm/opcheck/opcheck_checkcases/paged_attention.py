@@ -26,7 +26,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestPagedAttentionAttentionOperation(operation_test.OperationTest):
+class OpcheckPagedAttentionAttentionOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         if 'isSupportAlibi' in self.op_param:
             is_support_alibi = self.op_param["isSupportAlibi"]

@@ -26,7 +26,7 @@ import torch.multiprocessing as mp
 from llm.opcheck import operation_test
 
 
-class BroadcastOperationTest(operation_test.OperationTest):
+class OpcheckBroadcastOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         rank_root = self.op_param['rankRoot']
         golden_result = intensors[rank_root]

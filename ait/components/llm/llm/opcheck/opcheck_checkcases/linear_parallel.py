@@ -23,7 +23,7 @@ import torch.distributed as dist
 from llm.opcheck import operation_test
 
 
-class TestLinearParallelOperation(operation_test.OperationTest):
+class OpcheckLinearParallelOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         golden_result = torch.matmul(in_tensor_0.to(torch.float32), in_tensor_1.to(torch.float32)).to(torch.float16)
         dist.all_reduce(golden_result, op=ReduceOp.SUM)

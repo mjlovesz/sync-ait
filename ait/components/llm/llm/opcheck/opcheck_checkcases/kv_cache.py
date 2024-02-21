@@ -24,7 +24,7 @@ import numpy as np
 from llm.opcheck import operation_test
 
 
-class TestKvCacheOperation(operation_test.OperationTest):
+class OpcheckKvCacheOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         golden = []
         for index in self.case_info['inplace_idx']:

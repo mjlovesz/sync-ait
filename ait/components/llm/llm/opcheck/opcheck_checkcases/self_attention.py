@@ -23,7 +23,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestUnpadSelfAttentionOperation(operation_test.OperationTest):
+class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
     def group_matmul(self, heads, group_num, in_a, in_b):
         try:
             group_head = heads // group_num

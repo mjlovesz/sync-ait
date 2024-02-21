@@ -21,7 +21,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestSliceOperation(operation_test.OperationTest):
+class OpcheckSliceOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         offset_list = self.op_param['offsets']
         size_list = self.op_param['size']

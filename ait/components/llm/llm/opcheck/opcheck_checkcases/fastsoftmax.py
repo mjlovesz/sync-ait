@@ -22,7 +22,7 @@ import torch.nn as nn
 from llm.opcheck import operation_test
 
 
-class TestFastSoftMaxOperation(operation_test.OperationTest):
+class OpcheckFastSoftMaxOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         data_input = in_tensors[0]
         seq_len_list = self.op_param['qSeqLen']

@@ -21,7 +21,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestFillOperation(operation_test.OperationTest):
+class OpcheckFillOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         if self.op_param["withMask"]:
             golden_result = in_tensors[0].masked_fill_(in_tensors[1], self.op_param["value"][0])

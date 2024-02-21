@@ -22,7 +22,7 @@ import torch_npu
 from llm.opcheck import operation_test
 
 
-class TestSetValueOperation(operation_test.OperationTest):
+class OpcheckSetValueOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
         golden_result = [in_tensors[0].clone(), in_tensors[1].clone()]
         for i in range(len(self.op_param["starts"])):

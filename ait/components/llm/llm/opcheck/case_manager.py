@@ -13,10 +13,10 @@
 # limitations under the License.
 
 import unittest
-from llm.opcheck.opcheck_testcases import OP_NAME_DICT
+from llm.opcheck.opcheck_checkcases import OP_NAME_DICT
 
 
-class UtManager:
+class CaseManager:
     def __init__(self, excuted_ids=None):
         self.suite = unittest.TestSuite()
         self.cases = []
