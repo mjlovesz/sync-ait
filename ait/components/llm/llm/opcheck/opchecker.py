@@ -307,7 +307,7 @@ class OpChecker:
             ws = wb.active
             required_head = [
                 'op_id', 'op_name', 'op_param', 'tensor_path', 'out_tensor_id', 'precision_standard', 
-                'precision_result(%)', 'max_rel_error', 'excuted_information'
+                'excuted_information', 'precision_result(%)', 'max_rel_error'
             ]
             optional_head = ['abs_pass_rate(%)', 'max_abs_error', 'cosine_similarity', 'kl_divergence']
             optional_head_cp = [optional_head[i] for i in optional_idx]
@@ -332,8 +332,8 @@ class OpChecker:
                 cos_sim = res_detail['cos_sim']
                 kl_div = res_detail['kl_div']
                 required = [
-                    op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, max_rel, 
-                    excuted_information
+                    op_id, op_name, op_param, tensor_path, i, precision_standard, excuted_information, rel_pass_rate, 
+                    max_rel
                 ]
                 optional = [abs_pass_rate, max_abs, cos_sim, kl_div]
                 optional_cp = [optional[idx] for idx in optional_idx]
@@ -343,8 +343,8 @@ class OpChecker:
             i, precision_standard, rel_pass_rate, max_rel, abs_pass_rate, max_abs, cos_sim, kl_div = default_str, \
                 default_str, default_str, default_str, default_str, default_str, default_str, default_str
             required = [
-                op_id, op_name, op_param, tensor_path, i, precision_standard, rel_pass_rate, max_rel, 
-                excuted_information
+                op_id, op_name, op_param, tensor_path, i, precision_standard, excuted_information, rel_pass_rate, 
+                max_rel
             ]
             optional = [abs_pass_rate, max_abs, cos_sim, kl_div]
             optional_cp = [optional[idx] for idx in optional_idx]
