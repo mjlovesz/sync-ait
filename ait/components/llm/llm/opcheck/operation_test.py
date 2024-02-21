@@ -122,7 +122,8 @@ class OperationTest(unittest.TestCase):
             logger.debug("out_tensor", out_tensors[0].size())
             logger.debug("golden_out_tensor", golden_out_tensors[0].size())
         except TypeError as e:
-            logger.debug("The output is abnormal. Please check! Exception: {}".format(e))
+            logger_text = "The output is abnormal. Please check! Exception: {}".format(e)
+            logger.debug(logger_text)
 
         self.__golden_compare_all(out_tensors, golden_out_tensors)
 
