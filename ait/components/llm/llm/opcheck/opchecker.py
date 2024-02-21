@@ -125,7 +125,7 @@ class OpChecker:
         if not execution_flag_res:
             return
         
-        from ait.components.llm.llm.opcheck.case_manager import CaseManager
+        from llm.opcheck.case_manager import CaseManager
         ut_manager = CaseManager(self.completed_op_id_queue)
         
         # 1.将csv文件中的算子信息添加到self.cases_info
