@@ -82,9 +82,6 @@ def check_exec_script_file(script_path: str):
     if not os.path.exists(script_path):
         raise argparse.ArgumentTypeError(f"Script Path does not exist : {script_path}")
 
-    if not os.access(script_path, os.X_OK):
-        raise argparse.ArgumentTypeError(f"Script Path does not have x(execution) authority : {script_path}")
-
 
 def check_input_args(args: list):
     for arg in args:

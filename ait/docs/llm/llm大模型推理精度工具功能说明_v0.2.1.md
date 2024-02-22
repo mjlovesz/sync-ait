@@ -56,9 +56,9 @@ ait llm dump --exec "bash run.sh patches/models/modeling_xxx.py"
 
 Dump默认落盘路径 `{DUMP_DIR}`在当前目录下，如果指定output目录，落盘路径则为指定的 `{OUTPUT_DIR}`。
 
-- tensor信息会生成在默认落盘路径的atb_temp目录下，具体路径是 `{DUMP_DIR}/{PID}_{TID}`目录下。
-- layer信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/layer/{PID}`目录下。
-- model信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/model/{PID}`目录下。注：由于model有layer组合而成，因此使用model时，默认同时会落盘layer信息。
+- tensor信息会生成在默认落盘路径的 ait_dump 目录下，具体路径是 `{DUMP_DIR}/{PID}_{TID}`目录下。
+- layer信息会生成在默认落盘路径的 ait_dump 目录下，具体路径是 `{DUMP_DIR}/ait_dump/layer/{PID}`目录下。
+- model信息会生成在默认落盘路径的 ait_dump 目录下，具体路径是 `{DUMP_DIR}/ait_dump/model/{PID}`目录下。注：由于model有layer组合而成，因此使用model时，默认同时会落盘layer信息。
 - onnx需要和layer、model配合使用，落盘位置和model、layer相同的目录。
 - cpu_profiling信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/cpu_profiling/{TIMESTAMP}/operation_statistic_{executeCount}.txt`。
 - 算子信息会生成在默认落盘路径的ait_dump目录下，具体路径是 `{DUMP_DIR}/ait_dump/operation_io_tensors/{PID}/operation_tensors_{executeCount}.csv`。
