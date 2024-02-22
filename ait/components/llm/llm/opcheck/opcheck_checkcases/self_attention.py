@@ -19,7 +19,6 @@ import json
 import math
 import torch
 import torch_npu
-import numpy as np
 
 from llm.opcheck import operation_test
 from llm.common.log import logger
@@ -43,13 +42,10 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         return score
 
     def encoder_golden_func(self, in_tensors):
-        mixed_q, mixed_k, mixed_v, attention_mask, seq_len = in_tensors[0], in_tensors[1], in_tensors[2], \
-            in_tensors[3], in_tensors[4]
-        
-        if self.op_param["batchRunStatusEnable"]:
-            batch_status = in_tensors[5]
+        mixed_q, mixed_k, mixed_v, attention_mask, seq_len, batch_status = in_tensors[0], in_tensors[1], \
+            in_tensors[2], in_tensors[3], in_tensors[4], intensors[5]
 
-        heads, group_num, embed = self.op_param["headNum"], self.op_param["kvHeadNum"], 128
+        heads, group_num, embeds = self.op_param["headNum"], self.op_param["kvHeadNum"], 128
         q_seqlen = kv_seqlen = seq_len # crossattention时，q_seqlen != k_seqlen 
         max_s, ntokens2 = np.max(q_seqlen), (q_seqlen * kv_seqlen).sum()
 
@@ -58,12 +54,12 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
 
         for idx, _ in enumerate(range(batch_status)):
             q_s, kv_s = q_seqlen[idx], kv_seqlen[idx]
-            q_slice = mixed_q[q_offset:q_offset + q_s][:].reshape(q_s, heads, embed)
+            q_slice = q[q_offset:q_offset + q_s][:].reshape(q_s, heads, embed)
             q_slice = np.transpose(q_slice, (1, 0, 2))  # (heads, q_seq, embed)
-            k_slice = mixed_k[k_offset:k_offset + kv_s][:].reshape(kv_s, group_num, embed)
+            k_slice = k[k_offset:k_offset + kv_s][:].reshape(kv_s, group_num, embed)
             k_slice = np.transpose(k_slice, (1, 0, 2))
             k_slice_t = np.transpose(k_slice, (0, 2, 1))   # get K^T (kv_heads, embed, k_seq)
-            v_slice = mixed_v[v_offset:v_offset + kv_s][:].reshape(kv_s, group_num, embed)
+            v_slice = v[v_offset:v_offset + kv_s][:].reshape(kv_s, group_num, embed)
             v_slice = np.transpose(v_slice, (1, 0, 2))
             score = self.group_matmul(heads, group_num, q_slice, k_slice_t)
             s = score.reshape([-1, ]) if s is None else np.concatenate((s, score.reshape([-1, ])), 0)
@@ -73,7 +69,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             except ZeroDivisionError as e:
                 raise e
 
-            score = score + attention_mask[:, :q_s, :kv_s] if self.op_param["isTriuMask"] else score
+            score = score + mask[:, :q_s, :kv_s] if self.op_param["isTriuMask"] else score
             score_max = np.max(score, axis=-1)
             score = score - score_max.reshape((heads, q_s, 1))
             score_exp = np.exp(score.astype(np.float32))
@@ -101,15 +97,19 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             out_sub = np.ascontiguousarray(out_sub)
             out = out_sub if out is None else np.concatenate((out, out_sub), 0)
 
-        return out.astype("float16").reshape(-1, heads, 128)
+        return out.astype(src_type).reshape(-1, heads, 128)
 
     def not_encoder_golden_func(self, in_tensors):
-        mixed_q, mixed_k, mixed_v, cache_k, cache_v, attention_mask, token_offset, seq_len, layerid = in_tensors[0], \
-            in_tensors[1], in_tensors[2], in_tensors[3], in_tensors[4], in_tensors[5], in_tensors[6], in_tensors[7], \
-            int(in_tensors[8][0])
-        if self.op_param["batchRunStatusEnable"]:
-            batch_status = in_tensors[9]
-        q_scale, head_num, head_size = self.op_param["qScale"], self.op_param["headNum"], self.op_param["headDim"]
+        mixed_q = in_tensors[0]
+        mixed_k = in_tensors[1]
+        mixed_v = in_tensors[2]
+        cache_k = in_tensors[3]
+        cache_v = in_tensors[4]
+        attention_mask = in_tensors[5]
+        token_offset = in_tensors[6]
+        seq_len = in_tensors[7]
+        layerid = int(in_tensors[8][0])
+        batch_status = in_tensors[9]
 
         offset = 0
         context_list = []
@@ -127,8 +127,8 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
                 past_v = cache_v[layerid, i, :cur_token_offset_start, :]
                 cur_k = torch.concat([past_k, cur_k], dim=0)
                 cur_v = torch.concat([past_v, cur_v], dim=0)
-            cur_q = (cur_q * q_scale).view(cur_seqlen, head_num, head_size).transpose(0, 1)
-            cur_k = cur_k.view(cur_token_offset, head_num, head_size).permute(1, 2, 0)
+            cur_q = (cur_q * self.q_scale).view(cur_seqlen, self.head_num, self.head_size).transpose(0, 1)
+            cur_k = cur_k.view(cur_token_offset, self.head_num, self.head_size).permute(1, 2, 0)
             cur_qk = torch.bmm(cur_q, cur_k) # [head_num, seqlen, token_offset]
             if self.op_param["isClamp"]:
                 clamp_min = self.op_param["clampMin"]
@@ -141,8 +141,9 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             cur_qk = cur_qk * self.qk_scale
             cur_qk = torch.nn.functional.softmax(cur_qk.type(torch.float32), dim=-1).type(torch.float16)
 
-            cur_v = cur_v.view(cur_token_offset, head_num, head_size).transpose(0, 1)
-            cur_context = torch.bmm(cur_qk, cur_v).transpose(0, 1).contiguous().view(cur_seqlen, head_num * head_size)
+            cur_v = cur_v.view(cur_token_offset, self.head_num, self.head_size).transpose(0, 1)
+            cur_context = torch.bmm(cur_qk, cur_v).transpose(0, 1).contiguous().view(cur_seqlen, 
+                                                                                    self.head_num * self.head_size)
             context_list.append(cur_context)
 
             offset = next_offset
@@ -163,18 +164,11 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             raise RuntimeError("{} is not supported! Only supports Ascend910B!".format(soc_version))
 
         if self.op_param["isEncoder"]:
-            if self.op_param["batchRunStatusEnable"]:
-                self.case_info["run_param"] = json.dumps({"seqLen": self.in_tensors[4].tolist(),
-                                                        "batchRunStatus": self.in_tensors[5].tolist()})
-            else:
-                self.case_info["run_param"] = json.dumps({"seqLen": self.in_tensors[4].tolist()})
+            self.case_info["run_param"] = json.dumps({"seqLen": self.in_tensors[4].tolist(),
+                                                      "batchRunStatus": self.in_tensors[9].tolist()})
         else:
-            if self.op_param["batchRunStatusEnable"]:
-                self.case_info['run_param'] = json.dumps({"tokenOffset": self.in_tensors[6].tolist(), 
-                                                        "seqLen": self.in_tensors[7].tolist(),
-                                                        "batchRunStatus": self.in_tensors[9].tolist()})
-            else:
-                self.case_info["run_param"] = json.dumps({"tokenOffset": self.in_tensors[6].tolist(), 
-                                                        "seqLen": self.in_tensors[7].tolist()})
+            self.case_info['run_param'] = json.dumps({"tokenOffset": self.in_tensors[6].tolist(), 
+                                                      "seqLen": self.in_tensors[7].tolist(),
+                                                      "batchRunStatus": self.in_tensors[9].tolist()})
 
         self.execute_with_param()
