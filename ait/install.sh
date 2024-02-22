@@ -97,8 +97,9 @@ download_and_install_aclruntime() {
     fi
     echo "PYTHON3_MINI_VERSION=$PYTHON3_MINI_VERSION, SUB_SUFFIX=$SUB_SUFFIX"
     WHL_NAME="aclruntime-0.0.2-cp3${PYTHON3_MINI_VERSION}-cp3${PYTHON3_MINI_VERSION}${SUB_SUFFIX}-linux_$(uname -m).whl"
-    wget --no-check-certificate "https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ait/${WHL_NAME}"
+    wget --no-check-certificate -c "https://aisbench.obs.myhuaweicloud.com/packet/ais_bench_infer/0.0.2/ait/${WHL_NAME}"
     pip3 install $WHL_NAME
+    rm -f $WHL_NAME
 }
 
 
