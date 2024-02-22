@@ -169,7 +169,7 @@ class OpChecker:
             df = pd.DataFrame()
         
         op_name_str = "OpName"
-        if op_name_str in df.columns and "OutDType" in df.columns:
+        if "OpName" in df.columns and "OutDType" in df.columns and "InTensorFile" in df.columns:
             try:
                 df['Ids'] = df[op_name_str].apply(lambda x:x.split("_", 1)[1])
                 df['RealOpName'] = df[op_name_str].apply(lambda x:x.split("_", 1)[0])
