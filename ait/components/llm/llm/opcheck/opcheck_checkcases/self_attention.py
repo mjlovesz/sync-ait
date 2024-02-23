@@ -48,6 +48,8 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         
         if self.op_param["batchRunStatusEnable"]:
             batch_status = in_tensors[5]
+        else:
+            batch_status = seq_len[0]
 
         heads, group_num, embed = self.op_param["headNum"], self.op_param["kvHeadNum"], 128
         q_seqlen = kv_seqlen = seq_len # crossattention时，q_seqlen != k_seqlen 
@@ -109,6 +111,8 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             int(in_tensors[8][0])
         if self.op_param["batchRunStatusEnable"]:
             batch_status = in_tensors[9]
+        else:
+            batch_status = seq_len[0]
         q_scale, head_num, head_size = self.op_param["qScale"], self.op_param["headNum"], self.op_param["headDim"]
 
         offset = 0
