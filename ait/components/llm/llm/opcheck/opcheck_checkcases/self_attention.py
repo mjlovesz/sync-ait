@@ -117,15 +117,20 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             self.op_param["headNum"], self.op_param["headDim"]
         offset = 0
         context_list = []
+        print(seq_len)
+        print(token_offset)
 
         for i, _ in enumerate(range(batch_status)):
-            cur_seqlen = seq_len[0]
-            cur_token_offset = token_offset[0]
+            cur_seqlen = seq_len[i]
+            cur_token_offset = token_offset[i]
             cur_token_offset_start = cur_token_offset - cur_seqlen
             next_offset = offset + cur_seqlen
             cur_q = mixed_q[offset:next_offset]
             cur_k = mixed_k[offset:next_offset]
             cur_v = mixed_v[offset:next_offset]
+            print(cur_q.size())
+            print(cur_k.size())
+            print(cur_qk.size())
             if cur_token_offset_start > 0:
                 past_k = cache_k[layerid, i, :cur_token_offset_start, :]
                 past_v = cache_v[layerid, i, :cur_token_offset_start, :]
