@@ -120,7 +120,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             batch_status = in_tensors[9]
         else:
             batch_status = len(seq_len)
-        q_scale, qk_scale, head_num, head_size = self.op_param["qScale"], self.op_param["qkScale"], \
+        q_scale, qk_scale, head_num, head_size = float(self.op_param["qScale"]), float(self.op_param["qkScale"]), \
             self.op_param["headNum"], self.op_param["headDim"]
         offset = 0
         context_list = []
@@ -149,7 +149,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
                 cur_qk = cur_qk + attention_mask[i, :cur_seqlen, :cur_token_offset]
             else:
                 cur_qk = cur_qk + attention_mask[:cur_seqlen, :cur_token_offset]
-            cur_qk = cur_qk * qk_scale
+            cur_qk = cur_qk.type(torch.float32) * qk_scale
             cur_qk = torch.nn.functional.softmax(cur_qk.type(torch.float32), dim=-1).type(torch.float16)
 
             cur_v = cur_v.view(cur_token_offset, head_num, head_size).transpose(0, 1)
