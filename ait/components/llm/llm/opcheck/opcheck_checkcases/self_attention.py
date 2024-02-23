@@ -130,7 +130,6 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             cur_v = mixed_v[offset:next_offset]
             print(cur_q.size())
             print(cur_k.size())
-            print(cur_qk.size())
             if cur_token_offset_start > 0:
                 past_k = cache_k[layerid, i, :cur_token_offset_start, :]
                 past_v = cache_v[layerid, i, :cur_token_offset_start, :]
