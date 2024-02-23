@@ -49,7 +49,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         if self.op_param["batchRunStatusEnable"]:
             batch_status = in_tensors[5]
         else:
-            batch_status = seq_len[0]
+            batch_status = len(seq_len)
 
         heads, group_num, embed = self.op_param["headNum"], self.op_param["kvHeadNum"], 128
         q_seqlen = kv_seqlen = seq_len # crossattention时，q_seqlen != k_seqlen 
@@ -112,7 +112,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         if self.op_param["batchRunStatusEnable"]:
             batch_status = in_tensors[9]
         else:
-            batch_status = seq_len[0]
+            batch_status = len(seq_len)
         q_scale, qk_scale, head_num, head_size = self.op_param["qScale"], self.op_param["qkScale"], \
             self.op_param["headNum"], self.op_param["headDim"]
         offset = 0
@@ -121,8 +121,8 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         print(token_offset)
 
         for i, _ in enumerate(range(batch_status)):
-            cur_seqlen = seq_len[0]
-            cur_token_offset = token_offset[0]
+            cur_seqlen = seq_len[i]
+            cur_token_offset = token_offset[i]
             cur_token_offset_start = cur_token_offset - cur_seqlen
             next_offset = offset + cur_seqlen
             cur_q = mixed_q[offset:next_offset]
@@ -136,8 +136,6 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             print(cur_q.size())
             print(cur_k.size())
             print(cur_v.size())
-            if len(cur_q.size()) == 4:
-                cur_q = cur_q.squeeze(0)
             cur_q = (cur_q * q_scale).view(cur_seqlen, head_num, head_size).transpose(0, 1)
             cur_k = cur_k.view(cur_token_offset, head_num, head_size).permute(1, 2, 0)
             print(cur_q.size())
