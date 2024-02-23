@@ -119,8 +119,8 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         context_list = []
 
         for i, _ in enumerate(range(batch_status)):
-            cur_seqlen = seq_len[i]
-            cur_token_offset = token_offset[i]
+            cur_seqlen = seq_len[0]
+            cur_token_offset = token_offset[0]
             cur_token_offset_start = cur_token_offset - cur_seqlen
             next_offset = offset + cur_seqlen
             cur_q = mixed_q[offset:next_offset]
