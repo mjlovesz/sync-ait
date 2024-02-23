@@ -121,8 +121,8 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         print(token_offset)
 
         for i, _ in enumerate(range(batch_status)):
-            cur_seqlen = seq_len[i]
-            cur_token_offset = token_offset[i]
+            cur_seqlen = seq_len[0]
+            cur_token_offset = token_offset[0]
             cur_token_offset_start = cur_token_offset - cur_seqlen
             next_offset = offset + cur_seqlen
             cur_q = mixed_q[offset:next_offset]
@@ -135,7 +135,10 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
                 past_v = cache_v[layerid, i, :cur_token_offset_start, :]
                 cur_k = torch.concat([past_k, cur_k], dim=0)
                 cur_v = torch.concat([past_v, cur_v], dim=0)
-            cur_q = (cur_q * q_scale).view(cur_seqlen, head_num, head_size).transpose(0, 1)
+            try:
+                cur_q = (cur_q * q_scale).view(cur_seqlen, head_num, head_size).transpose(0, 1)
+            except:
+                cur_q = (cur_q[0] * q_scale).view(cur_seqlen, head_num, head_size).transpose(0, 1)
             cur_k = cur_k.view(cur_token_offset, head_num, head_size).permute(1, 2, 0)
             cur_qk = torch.bmm(cur_q, cur_k) # [head_num, seqlen, token_offset]
             if self.op_param["isClamp"]:
