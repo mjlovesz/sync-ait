@@ -106,9 +106,16 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         return out.astype("float16").reshape(-1, heads, 128)
 
     def not_encoder_golden_func(self, in_tensors):
-        mixed_q, mixed_k, mixed_v, cache_k, cache_v, attention_mask, token_offset, seq_len, layerid = in_tensors[0], \
-            in_tensors[1], in_tensors[2], in_tensors[3], in_tensors[4], in_tensors[5], in_tensors[6], in_tensors[7], \
-            int(in_tensors[8][0])
+        mixed_q = in_tensors[0].type(torch.float16).npu()
+        mixed_k = in_tensors[1].type(torch.float16).npu()
+        mixed_v = in_tensors[2].type(torch.float16).npu()
+        cache_k = in_tensors[3].type(torch.float16).npu()
+        cache_v = in_tensors[4].type(torch.float16).npu()
+        attention_mask = in_tensors[5].type(torch.float16).npu()
+        token_offset = in_tensors[6].type(torch.int32).npu()
+        seq_len = in_tensors[7].type(torch.int32).npu()
+        layerid = int(in_tensors[8][0])
+
         if self.op_param["batchRunStatusEnable"]:
             batch_status = in_tensors[9]
         else:
@@ -153,13 +160,13 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
 
         out = torch.concat(context_list, dim=0)
         return out
-
+ 
     def golden_calc(self, in_tensors):
         if self.op_param["isEncoder"]:
             out = self.encoder_golden_func(in_tensors)
         else:
             out = self.not_encoder_golden_func(in_tensors)
-        return [out]
+        return [out.unsqueeze(0)]
 
     def test(self):
         soc_version = self.get_soc_version()
