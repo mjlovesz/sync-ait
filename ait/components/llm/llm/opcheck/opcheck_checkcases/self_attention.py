@@ -106,24 +106,19 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
         return out.astype("float16").reshape(-1, heads, 128)
 
     def not_encoder_golden_func(self, in_tensors):
-        mixed_q = in_tensors[0].type(torch.float16).npu()
-        mixed_k = in_tensors[1].type(torch.float16).npu()
-        mixed_v = in_tensors[2].type(torch.float16).npu()
-        cache_k = in_tensors[3].type(torch.float16).npu()
-        cache_v = in_tensors[4].type(torch.float16).npu()
-        attention_mask = in_tensors[5].type(torch.float16).npu()
-        token_offset = in_tensors[6].type(torch.int32).npu()
-        seq_len = in_tensors[7].type(torch.int32).npu()
-        layerid = int(in_tensors[8][0])
-
+        mixed_q, mixed_k, mixed_v, cache_k, cache_v, attention_mask, token_offset, seq_len, layerid = in_tensors[0], \
+            in_tensors[1], in_tensors[2], in_tensors[3], in_tensors[4], in_tensors[5], in_tensors[6], in_tensors[7], \
+            int(in_tensors[8][0])
         if self.op_param["batchRunStatusEnable"]:
             batch_status = in_tensors[9]
         else:
             batch_status = len(seq_len)
-        q_scale, qk_scale, head_num, head_size = float(self.op_param["qScale"]), float(self.op_param["qkScale"]), \
+        q_scale, qk_scale, head_num, head_size = self.op_param["qScale"], self.op_param["qkScale"], \
             self.op_param["headNum"], self.op_param["headDim"]
         offset = 0
         context_list = []
+        print(seq_len)
+        print(token_offset)
 
         for i, _ in enumerate(range(batch_status)):
             cur_seqlen = seq_len[i]
@@ -138,8 +133,13 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
                 past_v = cache_v[layerid, i, :cur_token_offset_start, :]
                 cur_k = torch.concat([past_k, cur_k], dim=0)
                 cur_v = torch.concat([past_v, cur_v], dim=0)
+            print(cur_q.size())
+            print(cur_k.size())
+            print(cur_v.size())
             cur_q = (cur_q * q_scale).view(cur_seqlen, head_num, head_size).transpose(0, 1)
             cur_k = cur_k.view(cur_token_offset, head_num, head_size).permute(1, 2, 0)
+            print(cur_q.size())
+            print(cur_k.size())
             cur_qk = torch.bmm(cur_q, cur_k) # [head_num, seqlen, token_offset]
             if self.op_param["isClamp"]:
                 clamp_min = self.op_param["clampMin"]
@@ -149,7 +149,7 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
                 cur_qk = cur_qk + attention_mask[i, :cur_seqlen, :cur_token_offset]
             else:
                 cur_qk = cur_qk + attention_mask[:cur_seqlen, :cur_token_offset]
-            cur_qk = cur_qk.type(torch.float32) * qk_scale
+            cur_qk = cur_qk * qk_scale
             cur_qk = torch.nn.functional.softmax(cur_qk.type(torch.float32), dim=-1).type(torch.float16)
 
             cur_v = cur_v.view(cur_token_offset, head_num, head_size).transpose(0, 1)
@@ -160,13 +160,13 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
 
         out = torch.concat(context_list, dim=0)
         return out
- 
+
     def golden_calc(self, in_tensors):
         if self.op_param["isEncoder"]:
             out = self.encoder_golden_func(in_tensors)
         else:
             out = self.not_encoder_golden_func(in_tensors)
-        return [out.unsqueeze(0)]
+        return [out]
 
     def test(self):
         soc_version = self.get_soc_version()
