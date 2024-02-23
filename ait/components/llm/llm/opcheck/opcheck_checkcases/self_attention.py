@@ -136,11 +136,13 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
             print(cur_q.size())
             print(cur_k.size())
             print(cur_v.size())
-            cur_q = (cur_q * q_scale).view(1, cur_seqlen, head_num, head_size).transpose(0, 1)
+            if len(cur_q.size()) == 4:
+                cur_q = cur_q.squeeze(0)
+            cur_q = (cur_q * q_scale).view(cur_seqlen, head_num, head_size).transpose(0, 1)
             cur_k = cur_k.view(cur_token_offset, head_num, head_size).permute(1, 2, 0)
             print(cur_q.size())
             print(cur_k.size())
-            cur_qk = torch.bmm(cur_q.squeeze(0), cur_k.squeeze(0)) # [head_num, seqlen, token_offset]
+            cur_qk = torch.bmm(cur_q, cur_k) # [head_num, seqlen, token_offset]
             if self.op_param["isClamp"]:
                 clamp_min = self.op_param["clampMin"]
                 clamp_max = self.op_param["clampMax"]
