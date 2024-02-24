@@ -184,10 +184,10 @@ def compare_metadata_auto(golden_path, my_path, output_path=".", my_model_path="
     
     for match in matches:
         try:
-            golden_out_path = [x for x in os.listdir(match[0]['golden_path']) if x.startswith('out')]
+            golden_out_path = [x for x in os.listdir(match['golden']['golden_path']) if x.startswith('out')]
             golden_out_path.sort(key=lambda x: int(x.split('output_exec')[1].split('.')[0]))
-            golden_out_path = [os.path.join(match[0]['golden_path'], x) for x in golden_out_path]
-            _my_path = glob.glob(match[1]['my_path'])[0]
+            golden_out_path = [os.path.join(match['golden']['golden_path'], x) for x in golden_out_path]
+            _my_path = glob.glob(match['my']['my_path'])[0]
             my_out_path = [x for x in os.listdir(_my_path) if x.startswith('out')]
             my_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
             my_out_path = [os.path.join(_my_path, x) for x in my_out_path]
@@ -196,7 +196,7 @@ def compare_metadata_auto(golden_path, my_path, output_path=".", my_model_path="
                 res = compare_file(_golden_tensor_path, _my_tensor_path)
                 logger.info(f"Compared results: {res}")
         except IndexError as e:
-            msg = f"Cannot find path! golden: {match[0]['golden_path']}, my: {match[1]['my_path']}"
+            msg = f"Cannot find path! golden: {match['golden']['golden_path']}, my: {match['my']['my_path']}"
             logger.debug(msg)
 
 
