@@ -55,7 +55,8 @@ def acc_compare(golden_path, my_path, output_path="."):
         if os.path.isdir(golden_tensor_path):
             compare_metadata(golden_tensor_path, output_path)
         else:
-            logger.error("Can not find 'golden_tensor'.")
+            # logger.error("Can not find 'golden_tensor'.")
+            compare_metadata_auto(golden_path, my_path, output_path)
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
         logger.info("Compared results: %s", res)
@@ -148,6 +149,19 @@ def save_compare_dataframe_to_csv(data_frame, output_path="."):
     data_frame.to_csv(csv_save_path, index=False)
     logger.info(f"Saved comparing results: {csv_save_path}")
     return csv_save_path
+
+
+# 自动映射比对能力
+def compare_metadata_auto(golden_path, my_path, my_model_path, output_path="."):
+    golden_meta_path = os.path.join(golden_path, "model_tree.json")
+    my_meta_path = os.listdir(my_model_path)[0]
+    with open(golden_meta_path, "r") as file:
+        golden_meta = json.load(file)
+    with open(my_meta_path, "r") as file:
+        my_meta = json.load(file)
+    data_frame = fill_in_data(golden_meta)
+    print(data_frame)
+    
 
 
 # torchair 比对相关
