@@ -13,7 +13,7 @@
 # limitations under the License.
 
 import os
-
+import glob
 import numpy as np
 import pandas as pd
 import json
@@ -152,16 +152,78 @@ def save_compare_dataframe_to_csv(data_frame, output_path="."):
 
 
 # 自动映射比对能力
-def compare_metadata_auto(golden_path, my_path, my_model_path, output_path="."):
+def compare_metadata_auto(golden_path, my_path, output_path=".", my_model_path="/home/wgw/xuchuan/model/bloom/ait_dump/model/5204"):
     golden_meta_path = os.path.join(golden_path, "model_tree.json")
-    my_meta_path = os.listdir(my_model_path)[0]
+    my_meta_path = os.path.join(my_model_path, os.listdir(my_model_path)[0])
     with open(golden_meta_path, "r") as file:
         golden_meta = json.load(file)
     with open(my_meta_path, "r") as file:
         my_meta = json.load(file)
-    data_frame = fill_in_data(golden_meta)
-    print(data_frame)
+
+    map_dic = {
+        'BloomMLP':'MlpGateLayerV2'
+    }
+
+    gathered_golden_data = []
+    gathered_golden_data.extend(traverse_tree(golden_meta, golden_path, 'golden'))
+    gathered_my_data = []
+    gathered_my_data.extend(traverse_tree(my_meta, my_path, 'my'))
+
+    matches = []
+    j = 0
+    for x in gathered_golden_data:
+        golden_type = x['type']
+        if golden_type in map_dic.keys():
+            while j < len(gathered_my_data):
+                if 'opType' in gathered_my_data[j].keys() and gathered_my_data[j]['opType'] == map_dic[golden_type]:
+                    matches.append({'golden': x, 'my': gathered_my_data[j]})
+                    j += 1
+                    break
+                else:
+                    j += 1
     
+    for match in matches:
+        try:
+            golden_out_path = [x for x in os.listdir(match[0]['golden_path']) if x.startswith('out')]
+            golden_out_path.sort(key=lambda x: int(x.split('output_exec')[1].split('.')[0]))
+            golden_out_path = [os.path.join(match[0]['golden_path'], x) for x in golden_out_path]
+            _my_path = glob.glob(match[1]['my_paht'])[0]
+            my_out_path = [x for x in os.listdir(_my_path) if x.startswith('out')]
+            my_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
+            my_out_path = [os.path.join(_my_path, x) for x in my_out_path]
+            for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
+                print(_golden_tensor_path, _my_tensor_path)
+                res = compare_file(_golden_tensor_path, _my_tensor_path)
+                logger.info(f"Compared results: {res}")
+        except IndexError as e:
+            msg = f"Cannot find path! golden: {match[0]['golden_path']}, my: {match[1]['my_path']}"
+            logger.debug(msg)
+
+
+def enumerate_children(children, path, traverse_type='golden', node_id=''):
+    res = []
+    for idx, children_node in enumerate(children):
+        if node_id != '':
+            res.extend(traverse_tree(children_node, path, traverse_type, node_id + f'_{idx}'))
+        else:
+            res.extend(traverse_tree(children_node, path, traverse_type, str(idx)))
+    return res
+
+
+def traverse_tree(node, path, traverse_type='golden', node_id=''):
+    res = []
+    node['id'] = node_id
+    if traverse_type == 'golden':
+        node['golden_path'] = os.path.join(os.path.abspath(path), '0', node['name'])
+        res.append({k:v for k, v in node.items() if k != 'children'})
+        if len(node['children']) > 0:
+            res.extend(enumerate_children(node['children'], path, traverse_type, node_id))
+    else:
+        node['my_path'] = os.path.join(os.path.abspath(path), '0', '_*/'.join(node_id.split('_')) + '_*', 'after')
+        res.append({k:v for k, v in node.items() if k != 'nodes'})
+        if 'nodes' in node.keys() and len(node['nodes']) > 0:
+            res.extend(enumerate_children(node['nodes'], path, traverse_type, node_id))
+    return res
 
 
 # torchair 比对相关
