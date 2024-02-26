@@ -15,9 +15,6 @@ import sys
 import json
 import base64
 
-import onnx
-from google.protobuf.json_format import Parse
-
 
 def atb_node_to_plain_node(atb_node_dict, level, target_level):
     if target_level != -1 and level >= target_level:
@@ -120,6 +117,9 @@ def atb_json_to_onnx_json(atb_json_dict, target_level):
 
 
 def atb_json_to_onnx(atb_json_path, target_level=-1):
+    import onnx
+    from google.protobuf.json_format import Parse
+
     with open(atb_json_path, "r") as file:
         json_content = json.loads(file.read(), parse_constant=lambda x: None)
     
