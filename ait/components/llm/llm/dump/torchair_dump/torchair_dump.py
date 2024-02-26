@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import os
+import time
 
 from llm.common.log import logger
 
@@ -32,6 +33,7 @@ def get_ge_dump_config(dump_path="ait_ge_dump", dump_mode="all", use_fusion=True
     from torchair.configs.compiler_config import CompilerConfig
 
     config = CompilerConfig()
+    dump_path = os.path.join(dump_path, "dump_" + time.strftime('%Y%m%d_%H%M%S'))  # Timestamp like '20240222_095519'
     if not os.path.exists(dump_path):
         os.makedirs(dump_path, mode=0o750)
 

@@ -61,7 +61,7 @@ def init_dump_task(args):
         else:
             os.environ[ATB_OUTPUT_DIR] = str(args.output) + '/'
         if "tensor" in args.type:
-            atb_dump_path = os.path.join(args.output, 'atb_temp', 'tensors')
+            atb_dump_path = os.path.join(args.output, 'ait_dump', 'tensors')
             os.makedirs(atb_dump_path, exist_ok=True)
 
     if args.type:

@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 import json
 import torch
+from tqdm import tqdm
 
 from llm.common.log import logger
 from llm.common.tool import read_atb_data
@@ -160,7 +161,7 @@ def compare_torchair(golden_path, my_path, ge_graph_path, output_path="."):
 
 def fill_in_data(golden_meta):
     gathered_row_data = []
-    for data_id, golden_info in golden_meta.items():
+    for data_id, golden_info in tqdm(golden_meta.items(), total=len(golden_meta)):
         for token_id, path_list in golden_info.items():
 
             # 读取映射关系json文件中的tenor路径
