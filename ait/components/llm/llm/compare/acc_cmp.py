@@ -152,9 +152,18 @@ def save_compare_dataframe_to_csv(data_frame, output_path="."):
 
 
 # 自动映射比对能力
-def compare_metadata_auto(golden_path, my_path, output_path=".", my_model_path="/home/wgw/xuchuan/model/bloom/ait_dump/model/5204"):
+def compare_metadata_auto(golden_path, my_path, output_path="."):
     golden_meta_path = os.path.join(golden_path, "model_tree.json")
+
+    # my_model_path = "/home/wgw/xuchuan/model/bloom/ait_dump/model/5204"
+
+    parent_dir = os.path.dirname(my_path)
+    pid = my_path.split("/")[-1].split("_")[0]
+    my_model_path = os.path.join(parent_dir, "model", pid)
+    print(my_model_path)
+
     my_meta_path = os.path.join(my_model_path, os.listdir(my_model_path)[0])
+
     with open(golden_meta_path, "r") as file:
         golden_meta = json.load(file)
     with open(my_meta_path, "r") as file:
@@ -192,7 +201,7 @@ def compare_metadata_auto(golden_path, my_path, output_path=".", my_model_path="
             my_out_path.sort(key=lambda x: int(x.split('outtensor')[1].split('.')[0]))
             my_out_path = [os.path.join(_my_path, x) for x in my_out_path]
             for _golden_tensor_path, _my_tensor_path in zip(golden_out_path, my_out_path):
-                print(_golden_tensor_path, _my_tensor_path)
+                print(_golden_tensor_path, _my_tensor_path)  
                 res = compare_file(_golden_tensor_path, _my_tensor_path)
                 logger.info(f"Compared results: {res}")
         except IndexError as e:
