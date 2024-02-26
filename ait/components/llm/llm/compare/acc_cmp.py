@@ -158,7 +158,7 @@ def compare_metadata_auto(golden_path, my_path, output_path="."):
     cur_my_path = os.path.dirname(os.path.abspath(my_path))
     pid = os.path.basename(cur_my_path).split('_')[1]
     my_meta_path = glob.glob(os.path.join(os.path.dirname(os.path.dirname(cur_my_path)), "model", pid, "*.json"))[0]
-    
+
     with open(golden_meta_path, "r") as file:
         golden_meta = json.load(file)
     with open(my_meta_path, "r") as file:
@@ -169,9 +169,9 @@ def compare_metadata_auto(golden_path, my_path, output_path="."):
     }
 
     gathered_golden_data = []
-    gathered_golden_data.extend(traverse_tree(golden_meta, golden_path, 'golden'))
+    gathered_golden_data.extend(traverse_tree(golden_meta, golden_path, 'torch'))
     gathered_my_data = []
-    gathered_my_data.extend(traverse_tree(my_meta, my_path, 'my'))
+    gathered_my_data.extend(traverse_tree(my_meta, my_path, 'atb'))
 
     matches = []
     j = 0
@@ -204,7 +204,7 @@ def compare_metadata_auto(golden_path, my_path, output_path="."):
             logger.debug(msg)
 
 
-def enumerate_children(children, path, traverse_type='golden', node_id=''):
+def enumerate_children(children, path, traverse_type='torch', node_id=''):
     res = []
     for idx, children_node in enumerate(children):
         if node_id != '':
@@ -214,10 +214,10 @@ def enumerate_children(children, path, traverse_type='golden', node_id=''):
     return res
 
 
-def traverse_tree(node, path, traverse_type='golden', node_id=''):
+def traverse_tree(node, path, traverse_type='torch', node_id=''):
     res = []
     node['id'] = node_id
-    if traverse_type == 'golden':
+    if traverse_type == 'torch':
         node['golden_path'] = os.path.join(os.path.abspath(path), node['name'])
         res.append({k:v for k, v in node.items() if k != 'children'})
         if len(node['children']) > 0:
