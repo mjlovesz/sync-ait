@@ -164,7 +164,9 @@ class OpcheckUnpadSelfAttentionOperation(operation_test.OperationTest):
     def test(self):
         soc_version = self.get_soc_version()
         if soc_version != 'Ascend910B':
-            raise RuntimeError("{} is not supported! Only supports Ascend910B!".format(soc_version))
+            logger_text = "{} is not supported! Only supports Ascend910B!".format(soc_version)
+            logger.error(logger_text)
+            return
 
         if self.op_param["isEncoder"]:
             if self.op_param["batchRunStatusEnable"]:
