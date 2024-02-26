@@ -50,18 +50,64 @@ def acc_compare(golden_path, my_path, output_path="."):
     torchair_ge_graph_path = torchair_utils.get_torchair_ge_graph_path(my_path)
     if torchair_ge_graph_path is not None:
         compare_torchair(golden_path, my_path, torchair_ge_graph_path, output_path=output_path)
-    elif os.path.isdir(golden_path):
+    elif os.path.isdir(golden_path):       
         golden_tensor_path = os.path.join(golden_path, "golden_tensor")
         if os.path.isdir(golden_tensor_path):
+            # 如果路径中包含"golden_tensor"，就走手动映射比对的逻辑
             compare_metadata(golden_tensor_path, output_path)
         else:
-            logger.error("Can not find 'golden_tensor'.")
+            golden_topo_flag, golden_topo_json_path = if_dumped_model_topo(golden_path)
+            my_topo_flag, my_topo_json_path = if_dumped_model_topo(my_path)
+            # 如果路径往上回退两层有“model”路径，说明用户开启了模型拓扑信息dump，对比golden path和my path的模型拓扑信息是否一致
+            if golden_topo_flag and my_topo_flag:
+                # 对比golden path和my path的模型拓扑信息是否一致，走不同分支
+                if compare_topo_json(golden_topo_json_path, my_topo_json_path):
+                    # topo信息一致，走dtype和bs比对逻辑：
+                    logger.info('topo信息一致')
+                else:
+                    # topo信息不一致，走量化比对逻辑，待补充
+                    logger.info('topo information is different')
+            else:
+                logger.error("Can not find '/golden_tensor' or model topo, please use ait llm dump.")
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
         logger.info("Compared results: %s", res)
     else:
         logger.error("The golden_path and my_path must both be directory or file.")
         exit(1)
+
+
+def if_dumped_model_topo(golden_path):
+    # 判断用户输入路径的ait_dump目录下是否包括/model路径，即是否包括模型拓扑信息
+    absolute_path = os.path.abspath(golden_path)      
+    model_dir_path = os.path.join(absolute_path, '../../../', 'model')
+    model_dir_path = os.path.normpath(model_dir_path)
+    if not os.path.isdir(model_dir_path): 
+        logger.error("Can not find model topo infomation, please use ait llm dump.")
+        return False, "" 
+    # 搜索/model目录下的所有文件，查找JSON文件  
+    for root, dirs, files in os.walk(model_dir_path):  
+        for file in files:
+            if file.endswith('.json'):    
+                json_file_path = os.path.join(root, file)  
+                return True, json_file_path  
+    # 如果没有找到json文件，返回False和空字符串  
+    logger.error("Can not find model topo infomation, please use ait llm dump.")        
+    return False, ""      
+
+
+def compare_topo_json(golden_topo_json_path, my_topo_json_path):  
+    try: 
+        with open(golden_topo_json_path, 'r') as file1:  
+            data1 = json.load(file1)  
+        with open(my_topo_json_path, 'r') as file2:  
+            data2 = json.load(file2)  
+        if data1 == data2:  
+            return True  
+        else: 
+            return False  
+    except (IOError, json.JSONDecodeError):  
+        return False 
 
 
 def read_data(data_path):
