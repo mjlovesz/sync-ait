@@ -154,17 +154,11 @@ def save_compare_dataframe_to_csv(data_frame, output_path="."):
 
 # 自动映射比对能力
 def compare_metadata_auto(golden_path, my_path, output_path="."):
-    # golden_path = "/home/wgw/xuchuan/model/bloom/torch/18454_npu1/0/"
-    # golden_meta_path = "/home/wgw/xuchuan/model/bloom/torch/18454_npu1/model_tree.json"
-    # my_path = "/home/wgw/xuchuan/model/bloom/ait_dump/tensors/0_5204/0/"
-    # my_mate_path = /home/wgw/xuchuan/model/bloom/ait_dump/model/5204/*.json""
-
     golden_meta_path = os.path.join(os.path.dirname(os.path.abspath(golden_path)), "model_tree.json")
     cur_my_path = os.path.dirname(os.path.abspath(my_path))
-    pid = os.path.basename(cur_my_path).split('_')[0]
+    pid = os.path.basename(cur_my_path).split('_')[1]
     my_meta_path = glob.glob(os.path.join(os.path.dirname(os.path.dirname(cur_my_path)), "model", pid, "*.json"))[0]
-    print(golden_meta_path, my_meta_path)
-
+    
     with open(golden_meta_path, "r") as file:
         golden_meta = json.load(file)
     with open(my_meta_path, "r") as file:
@@ -224,12 +218,12 @@ def traverse_tree(node, path, traverse_type='golden', node_id=''):
     res = []
     node['id'] = node_id
     if traverse_type == 'golden':
-        node['golden_path'] = os.path.join(os.path.abspath(path), '0', node['name'])
+        node['golden_path'] = os.path.join(os.path.abspath(path), node['name'])
         res.append({k:v for k, v in node.items() if k != 'children'})
         if len(node['children']) > 0:
             res.extend(enumerate_children(node['children'], path, traverse_type, node_id))
     else:
-        node['my_path'] = os.path.join(os.path.abspath(path), '0', '_*/'.join(node_id.split('_')) + '_*', 'after')
+        node['my_path'] = os.path.join(os.path.abspath(path), '_*/'.join(node_id.split('_')) + '_*', 'after')
         res.append({k:v for k, v in node.items() if k != 'nodes'})
         if 'nodes' in node.keys() and len(node['nodes']) > 0:
             res.extend(enumerate_children(node['nodes'], path, traverse_type, node_id))
