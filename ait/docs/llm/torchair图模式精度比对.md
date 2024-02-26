@@ -15,7 +15,7 @@
   model = torch.compile(model, backend=npu_backend, dynamic=True)
   ...
   ```
-  输出路径为指定的 `dump_path="dump"`
+  输出路径为指定的 `{dump_path}/dump_{time_stamp}`
 - **FX 模式 dump 数据** 添加 `get_fx_dump_config`，获取配置后的 `CompilerConfig` 实例，配置模型 compile，并执行推理
   ```py
   import torch, torch_npu, torchair
@@ -32,5 +32,5 @@
 ## Compare 比对
   - 执行 `ait llm compare --my-path [GE dump data] --golden-path [FX dump data]`，输出比对结果 csv 文件
     ```sh
-    ait llm compare --my-path dump --golden-path gm_{time stamp}_dump
+    ait llm compare --my-path {dump_path}/dump_{time_stamp} --golden-path gm_{time stamp}_dump
     ```
