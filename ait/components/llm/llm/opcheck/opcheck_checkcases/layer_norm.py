@@ -38,7 +38,6 @@ class OpcheckLayerNormOperation(operation_test.OperationTest):
         else:
             raise ValueError('layerType should be 1 or 3')
 
-
         eps = cur_param['epsilon'] if 'epsilon' in cur_param.keys() else 1e-5
         is_quant = cur_param['quantType'] != 0 if "quantType" in cur_param.keys() else False
         quant_scale = cur_param['quantInputScale'] if 'quantInputScale' in cur_param.keys() else 1
