@@ -33,7 +33,7 @@ def get_ge_dump_config(dump_path="ait_ge_dump", dump_mode="all", use_fusion=True
     from torchair.configs.compiler_config import CompilerConfig
 
     config = CompilerConfig()
-    dump_path = os.path.join(dump_path, time.strftime('%Y%m%d_%H%M%S'))  # Timestamp format like '20240222_095519'
+    dump_path = os.path.join(dump_path, "dump_" + time.strftime('%Y%m%d_%H%M%S'))  # Timestamp like '20240222_095519'
     if not os.path.exists(dump_path):
         os.makedirs(dump_path, mode=0o750)
 
