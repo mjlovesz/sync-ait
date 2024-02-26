@@ -23,15 +23,16 @@ from llm.opcheck import operation_test
 
 class OpcheckRmsNormOperation(operation_test.OperationTest):
     def golden_calc(self, in_tensors):
-        if 'normParam' in self.op_param.keys():
-            normparam = self.op_param['normParam']
-        else:
-            normparam = self.op_param
-        
-        quant_type = normparam['quantType']
         layertype = self.op_param['layerType']
-
-        eps = normparam['epsilon'] if 'epsilon' in normparam.keys() else 0.00001
+        if layertype == 1:
+            cur_param = self.op_param['normParam']
+        elif layertype == 2:
+            cur_param = self.op_param['preNormParam']
+        else:
+            raise ValueError('layerType should be 1 or 2')
+        
+        quant_type = cur_param['quantType']
+        eps = cur_param['epsilon'] if 'epsilon' in cur_param.keys() else 0.00001
         x = in_tensors[0].float()
         gamma = in_tensors[1].float()
         gamma = gamma.view(1, -1)
@@ -48,8 +49,8 @@ class OpcheckRmsNormOperation(operation_test.OperationTest):
         def rms_norm_quant(golden_output, beta):
             golden_output = golden_output.float()
             beta = beta.float()
-            quant_scale = normparam['quantInputScale'] if 'quantInputScale' in normparam.keys() else 1
-            quant_offset = normparam['quantInputOffset'] if 'quantInputOffset' in normparam.keys() else 0
+            quant_scale = cur_param['quantInputScale'] if 'quantInputScale' in cur_param.keys() else 1
+            quant_offset = cur_param['quantInputOffset'] if 'quantInputOffset' in cur_param.keys() else 0
             golden_output = golden_output + beta
             golden_output = golden_output * quant_scale + quant_offset
             golden_output = torch.clamp(golden_output, -128, 127)
