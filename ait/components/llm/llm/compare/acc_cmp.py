@@ -154,16 +154,16 @@ def save_compare_dataframe_to_csv(data_frame, output_path="."):
 
 # 自动映射比对能力
 def compare_metadata_auto(golden_path, my_path, output_path="."):
-    golden_meta_path = os.path.join(golden_path, "model_tree.json")
+    # golden_path = "/home/wgw/xuchuan/model/bloom/torch/18454_npu1/0/"
+    # golden_meta_path = "/home/wgw/xuchuan/model/bloom/torch/18454_npu1/model_tree.json"
+    # my_path = "/home/wgw/xuchuan/model/bloom/ait_dump/tensors/0_5204/0/"
+    # my_mate_path = /home/wgw/xuchuan/model/bloom/ait_dump/model/5204/*.json""
 
-    # my_model_path = "/home/wgw/xuchuan/model/bloom/ait_dump/model/5204"
-
-    parent_dir = os.path.dirname(my_path)
-    pid = my_path.split("/")[-1].split("_")[0]
-    my_model_path = os.path.join(parent_dir, "model", pid)
-    print(my_model_path)
-
-    my_meta_path = os.path.join(my_model_path, os.listdir(my_model_path)[0])
+    golden_meta_path = os.path.join(os.path.dirname(os.path.abspath(golden_path)), "model_tree.json")
+    cur_my_path = os.path.dirname(os.path.abspath(my_path))
+    pid = os.path.basename(cur_my_path).split('_')[0]
+    my_meta_path = glob.glob(os.path.join(os.path.dirname(os.path.dirname(cur_my_path)), "model", pid, "*.json"))[0]
+    print(golden_meta_path, my_meta_path)
 
     with open(golden_meta_path, "r") as file:
         golden_meta = json.load(file)
