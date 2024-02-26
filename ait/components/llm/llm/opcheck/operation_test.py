@@ -234,7 +234,7 @@ class OperationTest(unittest.TestCase):
             self.assertEqual(len(out_tensors), len(self.out_dtype))
         except AssertionError as e:
             flag = False
-            raise e
+            logger.debug(e)
 
         tensor_count = len(out_tensors)
         for i in range(tensor_count):
@@ -252,7 +252,7 @@ class OperationTest(unittest.TestCase):
                 self.assertLess(err_rate, rel_pass_rate * 100)
             except AssertionError as e:
                 flag = False
-                raise e
+                logger.debug(e)
             
             rel_pass_rate = "%.16f" % float(rel_pass_rate.item() * 100)
             max_rel = "%.16f" % float(max_rel)
