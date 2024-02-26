@@ -56,8 +56,11 @@ def acc_compare(golden_path, my_path, output_path="."):
         if os.path.isdir(golden_tensor_path):
             compare_metadata(golden_tensor_path, output_path)
         else:
-            # logger.error("Can not find 'golden_tensor'.")
-            compare_metadata_auto(golden_path, my_path, output_path)
+            golden_meta_path = os.path.join(os.path.dirname(os.path.abspath(golden_path)), "model_tree.json")
+            if os.path.exists(golden_meta_path):
+                compare_metadata_auto(golden_path, my_path, output_path)
+            else:
+                pass
     elif os.path.isfile(golden_path) and os.path.isfile(my_path):
         res = compare_file(golden_path, my_path)
         logger.info("Compared results: %s", res)
